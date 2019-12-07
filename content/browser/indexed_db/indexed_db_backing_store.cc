@@ -32,7 +32,6 @@
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_factory.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_iterator.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_transaction.h"
-#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/indexed_db/indexed_db_active_blob_registry.h"
 #include "content/browser/indexed_db/indexed_db_blob_info.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
@@ -46,8 +45,6 @@
 #include "content/browser/indexed_db/indexed_db_reporting.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -297,7 +294,7 @@ bool DecodeBlobInfos(const std::string& data,
     if (!DecodeBool(&slice, &is_file))
       return false;
     if (!DecodeVarInt(&slice, &key) ||
-        !DatabaseMetaDataKey::IsValidBlobKey(key))
+        !DatabaseMetaDataKey::IsValidBlobNumber(key))
       return false;
     if (!DecodeStringWithLength(&slice, &type))
       return false;
@@ -529,16 +526,18 @@ IndexedDBBackingStore::IndexedDBBackingStore(
     std::unique_ptr<TransactionalLevelDBDatabase> db,
     BlobFilesCleanedCallback blob_files_cleaned,
     ReportOutstandingBlobsCallback report_outstanding_blobs,
-    base::SequencedTaskRunner* task_runner)
+    scoped_refptr<base::SequencedTaskRunner> idb_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner)
     : backing_store_mode_(backing_store_mode),
       transactional_leveldb_factory_(transactional_leveldb_factory),
       origin_(origin),
       blob_path_(blob_path),
       origin_identifier_(ComputeOriginIdentifier(origin)),
-      task_runner_(task_runner),
+      idb_task_runner_(idb_task_runner),
+      io_task_runner_(io_task_runner),
       db_(std::move(db)),
       blob_files_cleaned_(std::move(blob_files_cleaned)) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(idb_task_runner_->RunsTasksInCurrentSequence());
   if (backing_store_mode == Mode::kInMemory)
     blob_path_ = FilePath();
   active_blob_registry_ = std::make_unique<IndexedDBActiveBlobRegistry>(
@@ -549,12 +548,6 @@ IndexedDBBackingStore::IndexedDBBackingStore(
 
 IndexedDBBackingStore::~IndexedDBBackingStore() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
-  if (!blob_path_.empty() && !child_process_ids_granted_.empty()) {
-    ChildProcessSecurityPolicyImpl* policy =
-        ChildProcessSecurityPolicyImpl::GetInstance();
-    for (const auto& pid : child_process_ids_granted_)
-      policy->RevokeAllPermissionsForFile(pid, blob_path_);
-  }
 }
 
 IndexedDBBackingStore::RecordIdentifier::RecordIdentifier(
@@ -908,16 +901,6 @@ bool IndexedDBBackingStore::RecordCorruptionInfo(const FilePath& path_base,
                                                         output_js.c_str());
 }
 
-void IndexedDBBackingStore::GrantChildProcessPermissions(int child_process_id) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
-
-  if (!child_process_ids_granted_.count(child_process_id)) {
-    child_process_ids_granted_.insert(child_process_id);
-    ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
-        child_process_id, blob_path_);
-  }
-}
-
 Status IndexedDBBackingStore::DeleteDatabase(
     const base::string16& name,
     TransactionalLevelDBTransaction* transaction) {
@@ -1197,20 +1180,21 @@ Status IndexedDBBackingStore::DeleteRange(
   if (!end_cursor)
     return Status::OK();  // Empty range == delete success.
 
-  BlobEntryKey start_blob_key, end_blob_key;
+  BlobEntryKey start_blob_number, end_blob_number;
   std::string start_key = ObjectStoreDataKey::Encode(
       database_id, object_store_id, start_cursor->key());
   StringPiece start_key_piece(start_key);
-  if (!BlobEntryKey::FromObjectStoreDataKey(&start_key_piece, &start_blob_key))
+  if (!BlobEntryKey::FromObjectStoreDataKey(&start_key_piece,
+                                            &start_blob_number))
     return InternalInconsistencyStatus();
   std::string stop_key = ObjectStoreDataKey::Encode(
       database_id, object_store_id, end_cursor->key());
   StringPiece stop_key_piece(stop_key);
-  if (!BlobEntryKey::FromObjectStoreDataKey(&stop_key_piece, &end_blob_key))
+  if (!BlobEntryKey::FromObjectStoreDataKey(&stop_key_piece, &end_blob_number))
     return InternalInconsistencyStatus();
 
-  s = DeleteBlobsInRange(transaction, database_id, start_blob_key.Encode(),
-                         end_blob_key.Encode(), false);
+  s = DeleteBlobsInRange(transaction, database_id, start_blob_number.Encode(),
+                         end_blob_number.Encode(), false);
   if (!s.ok())
     return s;
   s = transaction->transaction()->RemoveRange(
@@ -1386,11 +1370,11 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
   static scoped_refptr<ChainedBlobWriterImpl> Create(
       int64_t database_id,
       WriteDescriptorVec* blobs,
-      blink::mojom::IDBTransactionDurability durability,
+      storage::FlushPolicy flush_policy,
       WriteBlobFileCallback write_file_callback,
       BlobWriteCallback callback) {
     auto writer = base::WrapRefCounted(new ChainedBlobWriterImpl(
-        database_id, durability, std::move(write_file_callback),
+        database_id, flush_policy, std::move(write_file_callback),
         std::move(callback)));
     writer->blobs_.swap(*blobs);
     writer->iter_ = writer->blobs_.begin();
@@ -1400,19 +1384,11 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
     return writer;
   }
 
-  void set_delegate(std::unique_ptr<FileWriterDelegate> delegate) override {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    delegate_.reset(delegate.release());
-  }
-
   void ReportWriteCompletion(bool succeeded, int64_t bytes_written) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
     DCHECK(waiting_for_callback_);
     DCHECK(!succeeded || bytes_written >= 0);
     waiting_for_callback_ = false;
-    if (delegate_.get())  // Only present for Blob, not File.
-      base::DeleteSoon(FROM_HERE, {content::BrowserThread::IO},
-                       delegate_.release());
     if (aborted_) {
       self_ref_ = nullptr;
       return;
@@ -1436,24 +1412,20 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
   }
 
   storage::FlushPolicy GetFlushPolicy() const override {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    return IndexedDBBackingStore::ShouldSyncOnCommit(durability_)
-               ? storage::FlushPolicy::FLUSH_ON_COMPLETION
-               : storage::FlushPolicy::NO_FLUSH_ON_COMPLETION;
+    DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
+    return flush_policy_;
   }
 
  private:
   // Must be called on the IDB task runner.
   ChainedBlobWriterImpl(int64_t database_id,
-                        blink::mojom::IDBTransactionDurability durability,
+                        storage::FlushPolicy flush_policy,
                         WriteBlobFileCallback write_file_callback,
                         BlobWriteCallback callback)
-      : waiting_for_callback_(false),
-        durability_(durability),
+      : flush_policy_(flush_policy),
         database_id_(database_id),
         write_file_callback_(std::move(write_file_callback)),
-        callback_(std::move(callback)),
-        aborted_(false) {}
+        callback_(std::move(callback)) {}
   ~ChainedBlobWriterImpl() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   }
@@ -1478,8 +1450,7 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
     }
   }
 
-  bool waiting_for_callback_;
-  blink::mojom::IDBTransactionDurability durability_;
+  storage::FlushPolicy flush_policy_;
   scoped_refptr<ChainedBlobWriterImpl> self_ref_;
   WriteDescriptorVec blobs_;
   WriteDescriptorVec::const_iterator iter_;
@@ -1489,8 +1460,8 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
   // operations queue. Errors are instead handled in
   // IndexedDBTransaction::BlobWriteComplete.
   BlobWriteCallback callback_;
-  std::unique_ptr<FileWriterDelegate> delegate_;
-  bool aborted_;
+  bool aborted_ = false;
+  bool waiting_for_callback_ = false;
 
   SEQUENCE_CHECKER(idb_sequence_checker_);
 
@@ -1507,21 +1478,23 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
 class LocalWriteClosure : public base::RefCountedThreadSafe<LocalWriteClosure> {
  public:
   LocalWriteClosure(scoped_refptr<ChainedBlobWriter> chained_blob_writer,
+                    std::unique_ptr<FileWriterDelegate> delegate,
                     scoped_refptr<base::SequencedTaskRunner> idb_task_runner,
                     FilePath file_path,
                     base::Time last_modified)
       : chained_blob_writer_(std::move(chained_blob_writer)),
+        delegate_(std::move(delegate)),
         idb_task_runner_(std::move(idb_task_runner)),
         file_path_(std::move(file_path)),
         last_modified_(last_modified) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   }
 
   // Called on the IO thread.
   void Run(base::File::Error rv,
            int64_t bytes,
            FileWriterDelegate::WriteProgressStatus write_status) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
     DCHECK_GE(bytes, 0);
     bytes_written_ += bytes;
     if (write_status == FileWriterDelegate::SUCCESS_IO_PENDING)
@@ -1567,22 +1540,24 @@ class LocalWriteClosure : public base::RefCountedThreadSafe<LocalWriteClosure> {
             },
             success, file_path_, last_modified_, bytes_written_,
             chained_blob_writer_));
+
+    // Explicitly delete FileWriterDelegate to break reference cycle.
+    delegate_.reset();
   }
 
   static void WriteBlobToFileOnIOThread(
       scoped_refptr<ChainedBlobWriter> chained_blob_writer,
+      storage::FlushPolicy flush_policy,
       scoped_refptr<base::SequencedTaskRunner> idb_task_runner,
       const FilePath& file_path,
       mojo::SharedRemote<blink::mojom::Blob> blob,
       const base::Time& last_modified) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     std::unique_ptr<storage::FileStreamWriter> writer =
         storage::FileStreamWriter::CreateForLocalFile(
             idb_task_runner.get(), file_path, 0,
             storage::FileStreamWriter::CREATE_NEW_FILE);
     std::unique_ptr<FileWriterDelegate> delegate(
-        std::make_unique<FileWriterDelegate>(
-            std::move(writer), chained_blob_writer->GetFlushPolicy()));
+        std::make_unique<FileWriterDelegate>(std::move(writer), flush_policy));
 
     DCHECK(blob);
     MojoCreateDataPipeOptions options;
@@ -1602,17 +1577,19 @@ class LocalWriteClosure : public base::RefCountedThreadSafe<LocalWriteClosure> {
     }
 
     blob->ReadAll(std::move(producer_handle), mojo::NullRemote());
-    scoped_refptr<LocalWriteClosure> write_closure(new LocalWriteClosure(
-        chained_blob_writer, idb_task_runner, file_path, last_modified));
-    delegate->Start(
+    auto* raw_delegate = delegate.get();
+    scoped_refptr<LocalWriteClosure> write_closure(
+        new LocalWriteClosure(chained_blob_writer, std::move(delegate),
+                              idb_task_runner, file_path, last_modified));
+
+    raw_delegate->Start(
         std::move(consumer_handle),
         base::BindRepeating(&LocalWriteClosure::Run, std::move(write_closure)));
-    chained_blob_writer->set_delegate(std::move(delegate));
   }
 
  private:
   virtual ~LocalWriteClosure() {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
     // Make sure the last reference to a ChainedBlobWriter is released (and
     // deleted) on the IDB sequence since it owns a transaction which has
     // sequence affinity.
@@ -1621,11 +1598,17 @@ class LocalWriteClosure : public base::RefCountedThreadSafe<LocalWriteClosure> {
   friend class base::RefCountedThreadSafe<LocalWriteClosure>;
 
   scoped_refptr<ChainedBlobWriter> chained_blob_writer_;
+  // Preserve lifetime of delegate until Run is called.  Note, this is a
+  // circular reference in that: |this| owns |delegate_| which owns a callback
+  // which owns |this|. This is broken during the Run callback explicitly.
+  std::unique_ptr<FileWriterDelegate> delegate_;
   scoped_refptr<base::SequencedTaskRunner> idb_task_runner_;
   int64_t bytes_written_ = 0;
 
   FilePath file_path_;
   base::Time last_modified_;
+
+  THREAD_CHECKER(io_thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(LocalWriteClosure);
 };
@@ -1667,29 +1650,31 @@ bool IndexedDBBackingStore::WriteBlobFile(
       // TODO(ericu): Complain quietly; timestamp's probably not vital.
     }
 
-    task_runner_->PostTask(
+    idb_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&ChainedBlobWriter::ReportWriteCompletion,
                                   chained_blob_writer, true, info.size));
   } else {
     DCHECK(descriptor.blob());
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::IO},
+
+    io_task_runner_->PostTask(
+        FROM_HERE,
         base::BindOnce(&LocalWriteClosure::WriteBlobToFileOnIOThread,
-                       base::WrapRefCounted(chained_blob_writer), task_runner_,
+                       base::WrapRefCounted(chained_blob_writer),
+                       chained_blob_writer->GetFlushPolicy(), idb_task_runner_,
                        path, descriptor.blob(), descriptor.last_modified()));
   }
   return true;
 }
 
 void IndexedDBBackingStore::ReportBlobUnused(int64_t database_id,
-                                             int64_t blob_key) {
+                                             int64_t blob_number) {
   DCHECK(KeyPrefix::IsValidDatabaseId(database_id));
 #if DCHECK_IS_ON()
   DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(initialized_);
 #endif
-  bool all_blobs = blob_key == DatabaseMetaDataKey::kAllBlobsKey;
-  DCHECK(all_blobs || DatabaseMetaDataKey::IsValidBlobKey(blob_key));
+  bool all_blobs = blob_number == DatabaseMetaDataKey::kAllBlobsKey;
+  DCHECK(all_blobs || DatabaseMetaDataKey::IsValidBlobNumber(blob_number));
   std::unique_ptr<LevelDBDirectTransaction> transaction =
       transactional_leveldb_factory_->CreateLevelDBDirectTransaction(db_.get());
 
@@ -1700,27 +1685,28 @@ void IndexedDBBackingStore::ReportBlobUnused(int64_t database_id,
   if (!GetRecoveryBlobJournal(transaction.get(), &recovery_journal).ok())
     return;
 
-  // There are several cases to handle.  If blob_key is kAllBlobsKey, we want to
-  // remove all entries with database_id from the active blob journal and add
+  // There are several cases to handle.  If blob_number is kAllBlobsKey, we want
+  // to remove all entries with database_id from the active blob journal and add
   // only kAllBlobsKey to the recovery journal.  Otherwise if
-  // IsValidBlobKey(blob_key) and we hit kAllBlobsKey for the right database_id
-  // in the journal, we leave the kAllBlobsKey entry in the active blob journal
-  // but add the specific blob to the recovery.  Otherwise if
-  // IsValidBlobKey(blob_key) and we find a matching (database_id, blob_key)
-  // tuple, we should move it to the recovery journal.
+  // IsValidBlobNumber(blob_number) and we hit kAllBlobsKey for the right
+  // database_id in the journal, we leave the kAllBlobsKey entry in the active
+  // blob journal but add the specific blob to the recovery.  Otherwise if
+  // IsValidBlobNumber(blob_number) and we find a matching (database_id,
+  // blob_number) tuple, we should move it to the recovery journal.
   BlobJournalType new_active_blob_journal;
   for (auto journal_iter = active_blob_journal.begin();
        journal_iter != active_blob_journal.end(); ++journal_iter) {
     int64_t current_database_id = journal_iter->first;
-    int64_t current_blob_key = journal_iter->second;
+    int64_t current_blob_number = journal_iter->second;
     bool current_all_blobs =
-        current_blob_key == DatabaseMetaDataKey::kAllBlobsKey;
+        current_blob_number == DatabaseMetaDataKey::kAllBlobsKey;
     DCHECK(KeyPrefix::IsValidDatabaseId(current_database_id) ||
            current_all_blobs);
     if (current_database_id == database_id &&
-        (all_blobs || current_all_blobs || blob_key == current_blob_key)) {
+        (all_blobs || current_all_blobs ||
+         blob_number == current_blob_number)) {
       if (!all_blobs) {
-        recovery_journal.push_back({database_id, current_blob_key});
+        recovery_journal.push_back({database_id, current_blob_number});
         if (current_all_blobs)
           new_active_blob_journal.push_back(*journal_iter);
         new_active_blob_journal.insert(
@@ -1847,14 +1833,14 @@ Status IndexedDBBackingStore::CleanUpBlobJournalEntries(
     return Status::OK();
   for (const auto& entry : journal) {
     int64_t database_id = entry.first;
-    int64_t blob_key = entry.second;
+    int64_t blob_number = entry.second;
     DCHECK(KeyPrefix::IsValidDatabaseId(database_id));
-    if (blob_key == DatabaseMetaDataKey::kAllBlobsKey) {
+    if (blob_number == DatabaseMetaDataKey::kAllBlobsKey) {
       if (!RemoveBlobDirectory(database_id))
         return IOErrorStatus();
     } else {
-      DCHECK(DatabaseMetaDataKey::IsValidBlobKey(blob_key));
-      if (!RemoveBlobFile(database_id, blob_key))
+      DCHECK(DatabaseMetaDataKey::IsValidBlobNumber(blob_number));
+      if (!RemoveBlobFile(database_id, blob_number))
         return IOErrorStatus();
     }
   }
@@ -2975,7 +2961,7 @@ IndexedDBBackingStore::Transaction::Transaction(
       committing_(false),
       durability_(durability) {
   DCHECK(!backing_store_ ||
-         backing_store_->task_runner()->RunsTasksInCurrentSequence());
+         backing_store_->idb_task_runner()->RunsTasksInCurrentSequence());
 }
 
 IndexedDBBackingStore::Transaction::~Transaction() {
@@ -3018,29 +3004,29 @@ Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction(
       transactional_leveldb_factory_->CreateLevelDBDirectTransaction(
           backing_store_->db_.get());
 
-  int64_t next_blob_key = -1;
-  bool result = indexed_db::GetBlobKeyGeneratorCurrentNumber(
-      direct_txn.get(), database_id_, &next_blob_key);
-  if (!result || next_blob_key < 0)
+  int64_t next_blob_number = -1;
+  bool result = indexed_db::GetBlobNumberGeneratorCurrentNumber(
+      direct_txn.get(), database_id_, &next_blob_number);
+  if (!result || next_blob_number < 0)
     return InternalInconsistencyStatus();
   for (auto& iter : blob_change_map_) {
-    std::vector<IndexedDBBlobInfo*> new_blob_keys;
+    std::vector<IndexedDBBlobInfo*> new_blob_numbers;
     for (auto& entry : iter.second->mutable_blob_info()) {
-      blobs_to_write_.push_back({database_id_, next_blob_key});
+      blobs_to_write_.push_back({database_id_, next_blob_number});
       if (entry.is_file() && !entry.file_path().empty()) {
         new_files_to_write->push_back(
-            WriteDescriptor(entry.file_path(), next_blob_key, entry.size(),
+            WriteDescriptor(entry.file_path(), next_blob_number, entry.size(),
                             entry.last_modified()));
       } else {
         new_files_to_write->push_back(
-            WriteDescriptor(entry.remote(), next_blob_key, entry.size(),
+            WriteDescriptor(entry.remote(), next_blob_number, entry.size(),
                             entry.last_modified()));
       }
-      entry.set_key(next_blob_key);
-      new_blob_keys.push_back(&entry);
-      ++next_blob_key;
-      result = indexed_db::UpdateBlobKeyGeneratorCurrentNumber(
-          direct_txn.get(), database_id_, next_blob_key);
+      entry.set_key(next_blob_number);
+      new_blob_numbers.push_back(&entry);
+      ++next_blob_number;
+      result = indexed_db::UpdateBlobNumberGeneratorCurrentNumber(
+          direct_txn.get(), database_id_, next_blob_number);
       if (!result)
         return InternalInconsistencyStatus();
     }
@@ -3051,7 +3037,7 @@ Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction(
       return InternalInconsistencyStatus();
     }
     new_blob_entries->push_back(
-        {blob_entry_key, EncodeBlobInfos(new_blob_keys)});
+        {blob_entry_key, EncodeBlobInfos(new_blob_numbers)});
   }
 
   AppendBlobsToRecoveryBlobJournal(direct_txn.get(), blobs_to_write_);
@@ -3127,7 +3113,7 @@ Status IndexedDBBackingStore::Transaction::CommitPhaseOne(
   IDB_TRACE("IndexedDBBackingStore::Transaction::CommitPhaseOne");
   DCHECK(transaction_.get());
   DCHECK(backing_store_);
-  DCHECK(backing_store_->task_runner()->RunsTasksInCurrentSequence());
+  DCHECK(backing_store_->idb_task_runner()->RunsTasksInCurrentSequence());
 
   Status s;
 
@@ -3289,8 +3275,12 @@ leveldb::Status IndexedDBBackingStore::Transaction::WriteNewBlobs(
   }
   // Creating the writer will start it going asynchronously. The transaction
   // can be destructed before the callback is triggered.
+
+  auto flush_policy = IndexedDBBackingStore::ShouldSyncOnCommit(durability_)
+                          ? storage::FlushPolicy::FLUSH_ON_COMPLETION
+                          : storage::FlushPolicy::NO_FLUSH_ON_COMPLETION;
   chained_blob_writer_ = ChainedBlobWriterImpl::Create(
-      database_id_, new_files_to_write, durability_,
+      database_id_, new_files_to_write, flush_policy,
       base::BindRepeating(
           [](base::WeakPtr<IndexedDBBackingStore> backing_store,
              int64_t database_id, const WriteDescriptor& descriptor,

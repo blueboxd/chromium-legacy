@@ -31,8 +31,8 @@ enum class PermissionType {
   FLASH = 11,
   SENSORS = 12,
   ACCESSIBILITY_EVENTS = 13,
-  CLIPBOARD_READ = 14,
-  CLIPBOARD_WRITE = 15,
+  // CLIPBOARD_READ = 14, // Replaced by CLIPBOARD_READ_WRITE in M81.
+  // CLIPBOARD_WRITE = 15, // Replaced by CLIPBOARD_SANITIZED_WRITE in M81.
   PAYMENT_HANDLER = 16,
   BACKGROUND_FETCH = 17,
   IDLE_DETECTION = 18,
@@ -40,6 +40,8 @@ enum class PermissionType {
   WAKE_LOCK_SCREEN = 20,
   WAKE_LOCK_SYSTEM = 21,
   NFC = 22,
+  CLIPBOARD_READ_WRITE = 23,
+  CLIPBOARD_SANITIZED_WRITE = 24,
 
   // Always keep this at the end.
   NUM,

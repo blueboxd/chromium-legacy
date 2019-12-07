@@ -14,6 +14,8 @@ import static org.chromium.components.feed.core.proto.ui.piet.ErrorsProto.ErrorC
 import android.support.annotation.VisibleForTesting;
 import android.view.View;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.host.config.DebugBehavior;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 import org.chromium.chrome.browser.feed.library.piet.DebugLogger.MessageType;
@@ -235,7 +237,7 @@ class FrameContext {
      * Return a {@link GridCellWidth} for the binding if there is one defined; otherwise returns
      * {@code null}.
      */
-    /*@Nullable*/
+    @Nullable
     GridCellWidth getGridCellWidthFromBinding(GridCellWidthBindingRef binding) {
         BindingValue bindingValue = mBindingValues.get(binding.getBindingId());
         // Purposefully check for host binding and overwrite here as we want to perform the
@@ -299,7 +301,7 @@ class FrameContext {
     }
 
     /** Returns the {@link BindingValue} for the BindingRef; otherwise returns null. */
-    /*@Nullable*/
+    @Nullable
     Visibility getVisibilityFromBinding(VisibilityBindingRef binding) {
         BindingValue bindingValue = mBindingValues.get(binding.getBindingId());
         if (bindingValue != null && bindingValue.hasHostBindingData()) {
@@ -446,7 +448,7 @@ class FrameContext {
      * Return an {@link LogData} for the binding if there is one defined; otherwise returns the
      * default instance.
      */
-    /*@Nullable*/
+    @Nullable
     LogData getLogDataFromBinding(LogDataBindingRef binding) {
         BindingValue bindingValue = mBindingValues.get(binding.getBindingId());
         if (bindingValue != null && bindingValue.hasHostBindingData()) {
@@ -522,7 +524,7 @@ class FrameContext {
     /** Map that throws whenever you try to look anything up in it. */
     private static class ThrowingEmptyMap extends HashMap<String, BindingValue> {
         @Override
-        public BindingValue get(/*@Nullable*/ Object key) {
+        public BindingValue get(@Nullable Object key) {
             throw new PietFatalException(ErrorCode.ERR_MISSING_BINDING_VALUE,
                     "Looking up bindings not supported in this context; no BindingValues defined.");
         }

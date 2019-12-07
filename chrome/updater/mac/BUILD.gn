@@ -2,20 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/mac/rules.gni")
+
 group("mac") {
   deps = [
-    ":updater",
-  ]
-}
-
-executable("updater") {
-  sources = [
-    "main.cc",
-  ]
-
-  deps = [
-    ":network_fetcher_sources",
-    "//chrome/updater:common",
+    ":updater_bundle",
   ]
 }
 
@@ -49,21 +40,15 @@ source_set("updater_tests") {
   ]
 }
 
-bundle_data("info_plist") {
-  sources = [
-    "Info.plist",
-  ]
-  outputs = [
-    "{{bundle_contents_dir}}/Info.plist",
-  ]
-}
+mac_app_bundle("updater_bundle") {
+  info_plist = "Info.plist"
+  output_name = "GoogleUpdate"
 
-create_bundle("GoogleUpdate.bundle") {
-  deps = [
-    ":info_plist",
+  sources = [
+    "main.cc",
   ]
-  bundle_root_dir = "${root_build_dir}/GoogleUpdate.bundle"
-  bundle_contents_dir = "${bundle_root_dir}/Contents"
-  bundle_resources_dir = "${bundle_contents_dir}/Resources"
-  bundle_executable_dir = "${bundle_contents_dir}/MacOS"
+  deps = [
+    ":network_fetcher_sources",
+    "//chrome/updater:common",
+  ]
 }

@@ -1205,9 +1205,9 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
     }
 
     @Override
-    public void onProfileCreated(Profile profile) {
+    public void onProfileAdded(Profile profile) {
         ProfileManager.removeObserver(this);
-        DownloadManagerServiceJni.get().onProfileCreated(
+        DownloadManagerServiceJni.get().onProfileAdded(
                 mNativeDownloadManagerService, DownloadManagerService.this);
     }
 
@@ -2054,7 +2054,7 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
     interface Natives {
         boolean isSupportedMimeType(String mimeType);
         int getAutoResumptionLimit();
-        long init(DownloadManagerService caller, boolean isProfileCreated);
+        long init(DownloadManagerService caller, boolean isProfileAdded);
         void openDownload(long nativeDownloadManagerService, DownloadManagerService caller,
                 String downloadGuid, boolean isOffTheRecord, int source);
         void resumeDownload(long nativeDownloadManagerService, DownloadManagerService caller,
@@ -2076,7 +2076,7 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
                 DownloadManagerService caller, boolean isOffTheRecord);
         void updateLastAccessTime(long nativeDownloadManagerService, DownloadManagerService caller,
                 String downloadGuid, boolean isOffTheRecord);
-        void onProfileCreated(long nativeDownloadManagerService, DownloadManagerService caller);
+        void onProfileAdded(long nativeDownloadManagerService, DownloadManagerService caller);
         void createInterruptedDownloadForTest(long nativeDownloadManagerService,
                 DownloadManagerService caller, String url, String guid, String targetPath);
         void recordFirstBackgroundInterruptReason(long nativeDownloadManagerService,

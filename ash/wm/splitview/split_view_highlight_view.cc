@@ -199,7 +199,8 @@ void SplitViewHighlightView::OnWindowDraggingStateChanged(
                                   SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_OUT);
       return;
     }
-    if (is_right_or_bottom_ != IsPhysicalLeftOrTop(previous_preview_position)) {
+    if (is_right_or_bottom_ !=
+        SplitViewController::IsPhysicalLeftOrTop(previous_preview_position)) {
       DoSplitviewOpacityAnimation(layer(),
                                   SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_OUT);
     }
@@ -211,16 +212,19 @@ void SplitViewHighlightView::OnWindowDraggingStateChanged(
 
   if (preview_position != SplitViewController::NONE) {
     DoSplitviewOpacityAnimation(
-        layer(), is_right_or_bottom_ != IsPhysicalLeftOrTop(preview_position)
-                     ? SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_IN
-                     : SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_OUT);
+        layer(),
+        is_right_or_bottom_ !=
+                SplitViewController::IsPhysicalLeftOrTop(preview_position)
+            ? SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_IN
+            : SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_OUT);
     return;
   }
 
   if (previous_preview_position != SplitViewController::NONE) {
     // There was a snap preview showing, but now the user has dragged away from
     // the edge of the screen, so that the preview should go away.
-    if (is_right_or_bottom_ != IsPhysicalLeftOrTop(previous_preview_position)) {
+    if (is_right_or_bottom_ !=
+        SplitViewController::IsPhysicalLeftOrTop(previous_preview_position)) {
       // This code is for the preview. If |previews_only|, just fade out. Else
       // fade in from |kPreviewAreaHighlightOpacity| to |kHighlightOpacity|.
       DoSplitviewOpacityAnimation(

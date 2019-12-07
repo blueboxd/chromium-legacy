@@ -22,10 +22,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/audio/audio_device.h"
 #include "chromeos/audio/audio_devices_pref_handler_stub.h"
-#include "mojo/public/cpp/bindings/remote.h"
-#include "services/media_session/public/mojom/constants.mojom.h"
-#include "services/media_session/public/mojom/media_controller.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 using std::max;
 using std::min;
@@ -100,9 +96,11 @@ void CrasAudioHandler::AudioObserver::OnOutputStopped() {}
 
 // static
 void CrasAudioHandler::Initialize(
-    service_manager::Connector* connector,
+    mojo::PendingRemote<media_session::mojom::MediaControllerManager>
+        media_controller_manager,
     scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler) {
-  g_cras_audio_handler = new CrasAudioHandler(connector, audio_pref_handler);
+  g_cras_audio_handler = new CrasAudioHandler(
+      std::move(media_controller_manager), audio_pref_handler);
 }
 
 // static
@@ -110,7 +108,7 @@ void CrasAudioHandler::InitializeForTesting() {
   // Make sure CrasAudioClient has been initialized.
   if (!CrasAudioClient::Get())
     CrasAudioClient::InitializeFake();
-  CrasAudioHandler::Initialize(/*connector=*/nullptr,
+  CrasAudioHandler::Initialize(mojo::NullRemote(),
                                new AudioDevicesPrefHandlerStub());
 }
 
@@ -651,9 +649,11 @@ void CrasAudioHandler::SetActiveHDMIOutoutRediscoveringIfNecessary(
 }
 
 CrasAudioHandler::CrasAudioHandler(
-    service_manager::Connector* connector,
+    mojo::PendingRemote<media_session::mojom::MediaControllerManager>
+        media_controller_manager,
     scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler)
-    : connector_(connector), audio_pref_handler_(audio_pref_handler) {
+    : media_controller_manager_(std::move(media_controller_manager)),
+      audio_pref_handler_(audio_pref_handler) {
   DCHECK(audio_pref_handler);
   DCHECK(CrasAudioClient::Get());
   CrasAudioClient::Get()->AddObserver(this);
@@ -1183,14 +1183,8 @@ bool CrasAudioHandler::GetActiveDeviceFromUserPref(bool is_input,
 }
 
 void CrasAudioHandler::PauseAllStreams() {
-  if (!connector_) {
-    LOG(ERROR) << "Failed to get connector";
-    return;
-  }
-  mojo::Remote<media_session::mojom::MediaControllerManager> controller_manager;
-  connector_->Connect(media_session::mojom::kServiceName,
-                      controller_manager.BindNewPipeAndPassReceiver());
-  controller_manager->SuspendAllSessions();
+  if (media_controller_manager_)
+    media_controller_manager_->SuspendAllSessions();
 }
 
 void CrasAudioHandler::HandleNonHotplugNodesChange(

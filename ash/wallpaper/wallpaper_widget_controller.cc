@@ -8,7 +8,9 @@
 
 #include "ash/ash_export.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_view.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "base/scoped_observer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -117,7 +119,11 @@ class WallpaperWidgetController::WidgetHandler
       parent_window_->layer()->RemoveCacheRenderSurfaceRequest();
     }
 
-    // Reset the paint blur if any.
+    // Reset the paint blur if any, unless we are in overview, which will reset
+    // the paint blur on exit.
+    if (Shell::Get()->overview_controller()->InOverviewSession())
+      return;
+
     if (wallpaper_view_->repaint_blur() != 0.f ||
         wallpaper_view_->repaint_opacity() != 1.f) {
       wallpaper_view_->RepaintBlurAndOpacity(0, 1.f);

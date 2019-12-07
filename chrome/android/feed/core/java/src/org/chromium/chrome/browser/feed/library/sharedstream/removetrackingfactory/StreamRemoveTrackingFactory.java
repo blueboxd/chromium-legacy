@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.sharedstream.removetrackingfactory;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.ContentRemoval;
 import org.chromium.chrome.browser.feed.library.api.common.MutationContext;
 import org.chromium.chrome.browser.feed.library.api.internal.knowncontent.FeedKnownContent;
@@ -22,7 +24,7 @@ public class StreamRemoveTrackingFactory implements RemoveTrackingFactory<Conten
         this.mFeedKnownContent = feedKnownContent;
     }
 
-    /*@Nullable*/
+    @Nullable
     @Override
     public RemoveTracking<ContentRemoval> create(MutationContext mutationContext) {
         String requestingSessionId = mutationContext.getRequestingSessionId();

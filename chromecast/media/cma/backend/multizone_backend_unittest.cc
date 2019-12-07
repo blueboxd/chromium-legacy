@@ -310,7 +310,8 @@ void BufferFeeder::OnPushBufferComplete(BufferStatus status) {
 
 }  // namespace
 
-MultizoneBackendTest::MultizoneBackendTest() {}
+MultizoneBackendTest::MultizoneBackendTest()
+    : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
 
 MultizoneBackendTest::~MultizoneBackendTest() {}
 

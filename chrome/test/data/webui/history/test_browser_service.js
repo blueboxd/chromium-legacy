@@ -6,6 +6,7 @@ class TestBrowserService extends TestBrowserProxy {
   constructor() {
     super([
       'deleteForeignSession',
+      'getForeignSessions',
       'historyLoaded',
       'navigateToUrl',
       'openForeignSessionTab',
@@ -18,6 +19,7 @@ class TestBrowserService extends TestBrowserProxy {
     this.actionMap = {};
     /** @private {?PromiseResolver} */
     this.delayedRemove_ = null;
+    this.foreignSessions_ = [];
   }
 
   delayDelete() {
@@ -27,6 +29,17 @@ class TestBrowserService extends TestBrowserProxy {
   /** @override */
   deleteForeignSession(sessionTag) {
     this.methodCalled('deleteForeignSession', sessionTag);
+  }
+
+  /** @override */
+  getForeignSessions() {
+    this.methodCalled('getForeignSessions');
+    return Promise.resolve(this.foreignSessions_);
+  }
+
+  /** @param {!Array<!ForeignSession>} sessions */
+  setForeignSessions(sessions) {
+    this.foreignSessions_ = sessions;
   }
 
   /** @override */

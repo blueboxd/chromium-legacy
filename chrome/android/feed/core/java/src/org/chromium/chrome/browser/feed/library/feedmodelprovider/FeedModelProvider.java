@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.feed.library.feedmodelprovider;
 
 import android.support.annotation.VisibleForTesting;
 
+import androidx.annotation.Nullable;
+
 import com.google.protobuf.ByteString;
 
 import org.chromium.chrome.browser.feed.library.api.common.MutationContext;
@@ -84,7 +86,7 @@ public final class FeedModelProvider
     private final Object mLock = new Object();
 
     @GuardedBy("mLock")
-    /*@Nullable*/
+    @Nullable
     private UpdatableModelChild mRoot;
 
     // The tree is model as a parent with an list of children.  A container is created for every
@@ -124,14 +126,18 @@ public final class FeedModelProvider
     private final TimingUtils mTimingUtils;
     private final BasicLoggingApi mBasicLoggingApi;
 
-    /*@Nullable*/ private final Predicate<StreamStructure> mFilterPredicate;
-    /*@Nullable*/ private RemoveTrackingFactory<?> mRemoveTrackingFactory;
+    @Nullable
+    private final Predicate<StreamStructure> mFilterPredicate;
+    @Nullable
+    private RemoveTrackingFactory<?> mRemoveTrackingFactory;
 
     private final int mInitialPageSize;
     private final int mPageSize;
     private final int mMinPageSize;
 
-    @VisibleForTesting /*@Nullable*/ String mSessionId;
+    @VisibleForTesting
+    @Nullable
+    String mSessionId;
 
     @GuardedBy("mLock")
     private boolean mDelayedTriggerRefresh;
@@ -142,7 +148,7 @@ public final class FeedModelProvider
 
     FeedModelProvider(FeedSessionManager feedSessionManager, ThreadUtils threadUtils,
             TimingUtils timingUtils, TaskQueue taskQueue, MainThreadRunner mainThreadRunner,
-            /*@Nullable*/ Predicate<StreamStructure> filterPredicate, Configuration config,
+            @Nullable Predicate<StreamStructure> filterPredicate, Configuration config,
             BasicLoggingApi basicLoggingApi) {
         this.mFeedSessionManager = feedSessionManager;
         this.mThreadUtils = threadUtils;
@@ -176,7 +182,7 @@ public final class FeedModelProvider
     }
 
     @Override
-    /*@Nullable*/
+    @Nullable
     public ModelFeature getRootFeature() {
         synchronized (mLock) {
             UpdatableModelChild localRoot = mRoot;
@@ -194,7 +200,7 @@ public final class FeedModelProvider
     }
 
     @Override
-    /*@Nullable*/
+    @Nullable
     public ModelChild getModelChild(String contentId) {
         synchronized (mLock) {
             return mContents.get(contentId);
@@ -202,7 +208,7 @@ public final class FeedModelProvider
     }
 
     @Override
-    /*@Nullable*/
+    @Nullable
     public StreamSharedState getSharedState(ContentId contentId) {
         return mFeedSessionManager.getSharedState(contentId);
     }
@@ -272,7 +278,7 @@ public final class FeedModelProvider
     }
 
     @Override
-    /*@Nullable*/
+    @Nullable
     public String getSessionId() {
         if (mSessionId == null) {
             Logger.w(TAG, "sessionId is null, this should have been set during population");
@@ -400,14 +406,14 @@ public final class FeedModelProvider
      * This wraps the ViewDepthProvider provided by the UI. It does this so it can verify that the
      * returned contentId is one with the Root as the parent.
      */
-    /*@Nullable*/
-    ViewDepthProvider getViewDepthProvider(/*@Nullable*/ ViewDepthProvider delegate) {
+    @Nullable
+    ViewDepthProvider getViewDepthProvider(@Nullable ViewDepthProvider delegate) {
         if (delegate == null) {
             return null;
         }
         return new ViewDepthProvider() {
             @Override
-            public /*@Nullable*/ String getChildViewDepth() {
+            public @Nullable String getChildViewDepth() {
                 String cid = Validators.checkNotNull(delegate).getChildViewDepth();
                 synchronized (mLock) {
                     if (cid == null || mRoot == null) {
@@ -647,7 +653,7 @@ public final class FeedModelProvider
             return null;
         }
 
-        private int findFirstUnboundChild(/*@Nullable*/ List<UpdatableModelChild> children) {
+        private int findFirstUnboundChild(@Nullable List<UpdatableModelChild> children) {
             int firstUnboundChild = 0;
             if (children != null) {
                 firstUnboundChild = children.size() - 1;
@@ -662,8 +668,8 @@ public final class FeedModelProvider
         }
 
         /** Returns a MutationHandler for processing the mutation */
-        private MutationHandler getMutationHandler(List<StreamStructure> updatedChildren,
-                /*@Nullable*/ MutationContext mutationContext) {
+        private MutationHandler getMutationHandler(
+                List<StreamStructure> updatedChildren, @Nullable MutationContext mutationContext) {
             synchronized (mLock) {
                 StreamToken mutationSourceToken =
                         mutationContext != null ? mutationContext.getContinuationToken() : null;
@@ -690,8 +696,8 @@ public final class FeedModelProvider
         void processMutation(MutationHandler mutationHandler,
                 List<StreamStructure> structureChanges,
                 Map<String, UpdatableModelChild> appendedChildren,
-                /*@Nullable*/ RemoveTracking<?> removeTracking,
-                /*@Nullable*/ MutationContext mutationContext) {
+                @Nullable RemoveTracking<?> removeTracking,
+                @Nullable MutationContext mutationContext) {
             ElapsedTimeTracker timeTracker = mTimingUtils.getElapsedTimeTracker(TAG);
             int appends = 0;
             int removes = 0;
@@ -957,7 +963,7 @@ public final class FeedModelProvider
     }
 
     private void handleRemoveOperation(MutationHandler mutationHandler, StreamStructure removeChild,
-            /*@Nullable*/ RemoveTracking<?> removeTracking) {
+            @Nullable RemoveTracking<?> removeTracking) {
         if (!removeChild.hasParentContentId()) {
             // It shouldn't be legal to remove the root, that is what CLEAR_HEAD is for.
             Logger.e(TAG, "** Unable to remove the root element");
@@ -1072,7 +1078,8 @@ public final class FeedModelProvider
     @VisibleForTesting
     final class TokenMutation extends MutationHandler {
         private final StreamToken mMutationSourceToken;
-        /*@Nullable*/ TokenTracking mToken;
+        @Nullable
+        TokenTracking mToken;
         int mNewCursorStart = -1;
 
         TokenMutation(StreamToken mutationSourceToken) {
@@ -1208,7 +1215,7 @@ public final class FeedModelProvider
             });
         }
 
-        /*@Nullable*/
+        @Nullable
         private FeatureChangeImpl getChange(String contentIdKey) {
             FeatureChangeImpl change = mChanges.get(contentIdKey);
             if (change == null) {

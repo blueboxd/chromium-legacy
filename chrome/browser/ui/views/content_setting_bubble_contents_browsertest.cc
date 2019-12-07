@@ -6,7 +6,7 @@
 
 #include "base/run_loop.h"
 #include "build/build_config.h"
-#include "chrome/browser/permissions/permission_request_manager_test_api.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"

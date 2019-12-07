@@ -24,14 +24,14 @@ try mkdir out
 CN=root_ca_cert \
   try root_cert root_ca_cert
 
-CA_ID=root_ca_cert CN="127.0.0.1" \
-  try issue_cert ok_cert leaf_cert_san_ip as_pem
+CA_ID=root_ca_cert CN="127.0.0.1" SAN="IP:127.0.0.1" \
+  try issue_cert ok_cert leaf_cert_san as_pem
 
 CA_ID=root_ca_cert CN=intermediate_ca_cert \
   try issue_cert intermediate_ca_cert ca_cert as_pem
 
-CA_ID=intermediate_ca_cert CN="127.0.0.1" \
-  try issue_cert ok_cert_by_intermediate leaf_cert_san_ip as_pem
+CA_ID=intermediate_ca_cert CN="127.0.0.1" SAN="IP:127.0.0.1" \
+  try issue_cert ok_cert_by_intermediate leaf_cert_san as_pem
 
 try rm -rf out
 

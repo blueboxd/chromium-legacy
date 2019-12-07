@@ -5,12 +5,13 @@
 #include "media/mojo/services/media_manifest.h"
 
 #include "base/no_destructor.h"
+#include "build/chromecast_buildflags.h"
 #include "media/mojo/buildflags.h"
 #include "media/mojo/mojom/constants.mojom.h"
 #include "media/mojo/mojom/media_service.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
-#if defined(IS_CHROMECAST)
+#if BUILDFLAG(IS_CHROMECAST)
 #include "chromecast/common/mojom/constants.mojom.h"
 #endif
 
@@ -36,7 +37,7 @@ const service_manager::Manifest& GetMediaManifest() {
         .ExposeCapability(
             "media:media",
             service_manager::Manifest::InterfaceList<mojom::MediaService>())
-#if defined(IS_CHROMECAST)
+#if BUILDFLAG(IS_CHROMECAST)
         .RequireCapability(chromecast::mojom::kChromecastServiceName,
                            "multizone")
 #endif
@@ -58,7 +59,7 @@ const service_manager::Manifest& GetMediaRendererManifest() {
         .ExposeCapability(
             "media:media",
             service_manager::Manifest::InterfaceList<mojom::MediaService>())
-#if defined(IS_CHROMECAST)
+#if BUILDFLAG(IS_CHROMECAST)
         .RequireCapability(chromecast::mojom::kChromecastServiceName,
                            "multizone")
 #endif

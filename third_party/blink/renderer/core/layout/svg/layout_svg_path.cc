@@ -56,6 +56,12 @@ void LayoutSVGPath::UpdateShapeFromElement() {
   UpdateMarkers();
 }
 
+const StylePath* LayoutSVGPath::GetStylePath() const {
+  if (!IsA<SVGPathElement>(*GetElement()))
+    return nullptr;
+  return StyleRef().SvgStyle().D();
+}
+
 void LayoutSVGPath::UpdateMarkers() {
   marker_positions_.clear();
 
@@ -74,12 +80,16 @@ void LayoutSVGPath::UpdateMarkers() {
   if (!(marker_start || marker_mid || marker_end))
     return;
 
-  SVGMarkerDataBuilder(marker_positions_).Build(GetPath());
+  SVGMarkerDataBuilder builder(marker_positions_);
+  if (const StylePath* style_path = GetStylePath())
+    builder.Build(style_path->ByteStream());
+  else
+    builder.Build(GetPath());
 
   if (marker_positions_.IsEmpty())
     return;
 
-  const float stroke_width = StrokeWidth();
+  const float stroke_width = StrokeWidthForMarkerUnits();
   FloatRect boundaries;
   for (const auto& position : marker_positions_) {
     if (LayoutSVGResourceMarker* marker =

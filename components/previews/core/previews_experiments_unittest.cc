@@ -384,6 +384,15 @@ TEST(PreviewsExperimentsTest, TestDeferAllScriptPreviewsCoinFlipExperiment) {
   EXPECT_FALSE(params::IsLitePageServerPreviewsEnabled());
 }
 
+TEST(PreviewsExperimentsTest, TestOverrideShouldShowPreviewCheck) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeaturesAndParameters(
+      {{features::kPreviews, {{"override_should_show_preview_check", "true"}}}},
+      {});
+
+  EXPECT_TRUE(params::OverrideShouldShowPreviewCheck());
+}
+
 }  // namespace
 
 }  // namespace previews

@@ -235,10 +235,10 @@ void WebTestMessageFilter::OnSetPermission(
     type = PermissionType::BACKGROUND_SYNC;
   } else if (name == "accessibility-events") {
     type = PermissionType::ACCESSIBILITY_EVENTS;
-  } else if (name == "clipboard-read") {
-    type = PermissionType::CLIPBOARD_READ;
-  } else if (name == "clipboard-write") {
-    type = PermissionType::CLIPBOARD_WRITE;
+  } else if (name == "clipboard-read-write") {
+    type = PermissionType::CLIPBOARD_READ_WRITE;
+  } else if (name == "clipboard-sanitized-write") {
+    type = PermissionType::CLIPBOARD_SANITIZED_WRITE;
   } else if (name == "payment-handler") {
     type = PermissionType::PAYMENT_HANDLER;
   } else if (name == "accelerometer" || name == "gyroscope" ||

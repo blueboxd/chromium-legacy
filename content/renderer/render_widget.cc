@@ -55,8 +55,6 @@
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/renderer/browser_plugin/browser_plugin.h"
-#include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/drop_data_builder.h"
 #include "content/renderer/external_popup_menu.h"
@@ -830,10 +828,6 @@ void RenderWidget::OnUpdateVisualProperties(
         observer.UpdateCaptureSequenceNumber(
             visual_properties.capture_sequence_number);
       }
-      for (auto& observer : browser_plugins_) {
-        observer.UpdateCaptureSequenceNumber(
-            visual_properties.capture_sequence_number);
-      }
     }
   }
 
@@ -1064,8 +1058,6 @@ void RenderWidget::SetZoomLevel(double zoom_level) {
     // BrowserPlugins in other frame trees/processes.
     for (auto& observer : render_frame_proxies_)
       observer.OnZoomLevelChanged(zoom_level);
-    for (auto& plugin : browser_plugins_)
-      plugin.OnZoomLevelChanged(zoom_level);
   }
 }
 
@@ -1220,10 +1212,6 @@ void RenderWidget::OnSetFocus(bool enable) {
 
   for (auto& observer : render_frames_)
     observer.RenderWidgetSetFocus(enable);
-
-  // Notify all BrowserPlugins of the RenderWidget's focus state.
-  if (BrowserPluginManager::Get())
-    BrowserPluginManager::Get()->UpdateFocusState();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2402,8 +2390,6 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
       if (!is_undead_)
         observer.OnScreenInfoChanged(GetOriginalScreenInfo());
     }
-    for (auto& observer : browser_plugins_)
-      observer.ScreenInfoChanged(GetOriginalScreenInfo());
   }
 }
 
@@ -3720,15 +3706,6 @@ void RenderWidget::RegisterRenderFrame(RenderFrameImpl* frame) {
 
 void RenderWidget::UnregisterRenderFrame(RenderFrameImpl* frame) {
   render_frames_.RemoveObserver(frame);
-}
-
-void RenderWidget::RegisterBrowserPlugin(BrowserPlugin* browser_plugin) {
-  browser_plugins_.AddObserver(browser_plugin);
-  browser_plugin->ScreenInfoChanged(GetOriginalScreenInfo());
-}
-
-void RenderWidget::UnregisterBrowserPlugin(BrowserPlugin* browser_plugin) {
-  browser_plugins_.RemoveObserver(browser_plugin);
 }
 
 void RenderWidget::OnWaitNextFrameForTests(

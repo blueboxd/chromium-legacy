@@ -159,8 +159,8 @@ class LockManager::LockRequestImpl final
       return;
     }
 
-    Lock* lock = Lock::Create(script_state, name_, mode_,
-                              std::move(handle_remote), manager_);
+    Lock* lock = MakeGarbageCollected<Lock>(script_state, name_, mode_,
+                                            std::move(handle_remote), manager_);
     manager_->held_locks_.insert(lock);
 
     ScriptState::Scope scope(script_state);

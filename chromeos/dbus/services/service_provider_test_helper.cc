@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
+#include "base/test/task_environment.h"
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"
 #include "dbus/object_path.h"
@@ -22,10 +22,7 @@ using ::testing::Unused;
 
 namespace chromeos {
 
-ServiceProviderTestHelper::ServiceProviderTestHelper() {
-  if (!base::MessageLoopCurrent::Get())
-    message_loop_.reset(new base::MessageLoop());
-}
+ServiceProviderTestHelper::ServiceProviderTestHelper() = default;
 
 ServiceProviderTestHelper::~ServiceProviderTestHelper() = default;
 

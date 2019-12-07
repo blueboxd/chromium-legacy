@@ -341,27 +341,6 @@ TEST_F(BubbleManagerTest, AllowBubbleChainingOnCloseAll) {
   ASSERT_TRUE(chained_bubble);  // Bubble is now visible.
 }
 
-// This test validates that a show chain will not happen in the destructor.
-// While chaining is during the normal life span of the manager, it should NOT
-// happen when the manager is being destroyed.
-TEST_F(BubbleManagerTest, BubblesDoNotChainOnDestroy) {
-  MockBubbleManagerObserver metrics;
-  // |chained_delegate| should never be shown.
-  EXPECT_CALL(metrics, OnBubbleNeverShown(testing::_));
-  // The ChainShowBubbleDelegate should be closed when the manager is destroyed.
-  EXPECT_CALL(metrics, OnBubbleClosed(testing::_, BUBBLE_CLOSE_FORCED));
-  manager_->AddBubbleManagerObserver(&metrics);
-
-  std::unique_ptr<MockBubbleDelegate> chained_delegate(new MockBubbleDelegate);
-  EXPECT_CALL(*chained_delegate->bubble_ui(), Show(testing::_)).Times(0);
-  EXPECT_CALL(*chained_delegate, ShouldClose(testing::_)).Times(0);
-  EXPECT_CALL(*chained_delegate, DidClose(testing::_)).Times(0);
-
-  manager_->ShowBubble(std::make_unique<ChainShowBubbleDelegate>(
-      manager_.get(), std::move(chained_delegate), nullptr));
-  manager_.reset();
-}
-
 TEST_F(BubbleManagerTest, BubbleCloseReasonIsCalled) {
   MockBubbleManagerObserver metrics;
   EXPECT_CALL(metrics, OnBubbleNeverShown(testing::_)).Times(0);

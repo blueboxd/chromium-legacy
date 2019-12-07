@@ -518,7 +518,6 @@ void ShelfWidget::Initialize(aura::Window* shelf_container) {
 
 void ShelfWidget::Shutdown() {
   hotseat_transition_animator_->RemoveObserver(delegate_view_);
-  hotseat_transition_animator_.reset();
   // Shutting down the status area widget may cause some widgets (e.g. bubbles)
   // to close, so uninstall the ShelfLayoutManager event filters first. Don't
   // reset the pointer until later because other widgets (e.g. app list) may

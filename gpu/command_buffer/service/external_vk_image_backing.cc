@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/service/external_vk_image_gl_representation.h"
 #include "gpu/command_buffer/service/external_vk_image_skia_representation.h"
@@ -169,23 +170,6 @@ class ScopedPixelStore {
   DISALLOW_COPY_AND_ASSIGN(ScopedPixelStore);
 };
 
-base::Optional<WGPUTextureFormat> GetWGPUFormat(viz::ResourceFormat format) {
-  switch (format) {
-    case viz::RED_8:
-    case viz::ALPHA_8:
-    case viz::LUMINANCE_8:
-      return WGPUTextureFormat_R8Unorm;
-    case viz::RG_88:
-      return WGPUTextureFormat_RG8Unorm;
-    case viz::RGBA_8888:
-      return WGPUTextureFormat_RGBA8Unorm;
-    case viz::BGRA_8888:
-      return WGPUTextureFormat_BGRA8Unorm;
-    default:
-      return {};
-  }
-}
-
 }  // namespace
 
 // static
@@ -262,10 +246,14 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
     return nullptr;
   }
 
+  base::Optional<WGPUTextureFormat> wgpu_format = viz::ToWGPUFormat(format);
+  if (wgpu_format.value() == WGPUTextureFormat_Undefined) {
+    wgpu_format = base::nullopt;
+  }
   auto backing = base::WrapUnique(new ExternalVkImageBacking(
       mailbox, format, size, color_space, usage, context_state, image, memory,
       requirements.size, vk_format, command_pool, GrVkYcbcrConversionInfo(),
-      GetWGPUFormat(format), mem_alloc_info.memoryTypeIndex));
+      wgpu_format, mem_alloc_info.memoryTypeIndex));
 
   if (!pixel_data.empty()) {
     backing->WritePixels(
@@ -327,10 +315,15 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
                                           ->GetVulkanPhysicalDevice(),
                                       vk_image_info.tiling, ycbcr_info);
 
+    base::Optional<WGPUTextureFormat> wgpu_format =
+        viz::ToWGPUFormat(resource_format);
+    if (wgpu_format.value() == WGPUTextureFormat_Undefined) {
+      wgpu_format = base::nullopt;
+    }
     return base::WrapUnique(new ExternalVkImageBacking(
         mailbox, resource_format, size, color_space, usage, context_state,
         vk_image, vk_device_memory, memory_size, vk_image_info.format,
-        command_pool, gr_ycbcr_info, GetWGPUFormat(resource_format), {}));
+        command_pool, gr_ycbcr_info, wgpu_format, {}));
   }
 
   if (gfx::NumberOfPlanesForLinearBufferFormat(buffer_format) != 1) {
@@ -516,7 +509,12 @@ void ExternalVkImageBacking::Destroy() {
       context_state()->MakeCurrent(nullptr, true /* need_gl */);
     texture_->RemoveLightweightRef(have_context());
   }
+
   if (texture_passthrough_) {
+    // Ensure that a context is current before releasing |texture_passthrough_|,
+    // it calls glDeleteTextures.
+    if (!gl::GLContext::GetCurrent())
+      context_state()->MakeCurrent(nullptr, true /* need_gl */);
     if (!have_context())
       texture_passthrough_->MarkContextLost();
     texture_passthrough_ = nullptr;

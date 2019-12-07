@@ -7,8 +7,10 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_controller.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_enforcer.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
 #include "url/gurl.h"
+
 namespace chromeos {
 
 ChildUserService::TestApi::TestApi(ChildUserService* service)
@@ -27,8 +29,11 @@ app_time::WebTimeLimitEnforcer* ChildUserService::TestApi::web_time_enforcer() {
 }
 
 ChildUserService::ChildUserService(content::BrowserContext* context) {
-  if (app_time::AppTimeController::ArePerAppTimeLimitsEnabled())
-    app_time_controller_ = std::make_unique<app_time::AppTimeController>();
+  DCHECK(context);
+  if (app_time::AppTimeController::ArePerAppTimeLimitsEnabled()) {
+    app_time_controller_ = std::make_unique<app_time::AppTimeController>(
+        Profile::FromBrowserContext(context));
+  }
 }
 
 ChildUserService::~ChildUserService() = default;

@@ -79,6 +79,7 @@ PreviewsResourceLoadingHints::PreviewsResourceLoadingHints(
   block_resource_type_[static_cast<int>(ResourceType::kCSSStyleSheet)] = true;
   block_resource_type_[static_cast<int>(ResourceType::kScript)] = true;
   block_resource_type_[static_cast<int>(ResourceType::kRaw)] = true;
+  block_resource_type_[static_cast<int>(ResourceType::kFont)] = true;
   for (int i = 0; i < static_cast<int>(ResourceType::kMaxValue) + 1; ++i) {
     // Parameter names are of format: "block_resource_type_%d". The value
     // should be either "true" or "false".

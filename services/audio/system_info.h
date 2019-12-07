@@ -14,7 +14,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/audio/public/mojom/system_info.mojom.h"
-#include "services/audio/traced_service_ref.h"
 
 namespace media {
 class AudioManager;
@@ -27,8 +26,7 @@ class SystemInfo : public mojom::SystemInfo {
   explicit SystemInfo(media::AudioManager* audio_manager);
   ~SystemInfo() override;
 
-  void Bind(mojo::PendingReceiver<mojom::SystemInfo> receiver,
-            TracedServiceRef context_ref);
+  void Bind(mojo::PendingReceiver<mojom::SystemInfo> receiver);
 
  private:
   // audio::mojom::SystemInfo implementation.
@@ -52,9 +50,7 @@ class SystemInfo : public mojom::SystemInfo {
 
   media::AudioSystemHelper helper_;
 
-  // Each receiver increases ref count of the service context, so that the
-  // service knows when it is in use.
-  mojo::ReceiverSet<mojom::SystemInfo, TracedServiceRef> receivers_;
+  mojo::ReceiverSet<mojom::SystemInfo> receivers_;
 
   // Validates thread-safe access to |bindings_| only. |helper_| takes care of
   // its thread safety/affinity itself.

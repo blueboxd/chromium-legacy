@@ -31,6 +31,10 @@ class XRObjectSpace : public XRSpace {
     return std::make_unique<TransformationMatrix>(object_from_mojo.Inverse());
   }
 
+  std::unique_ptr<TransformationMatrix> SpaceFromMojo() final {
+    return TryInvert(MojoFromSpace());
+  }
+
   base::Optional<XRNativeOriginInformation> NativeOrigin() const override {
     return XRNativeOriginInformation::Create(object_);
   }

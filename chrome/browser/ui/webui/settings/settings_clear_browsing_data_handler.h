@@ -12,6 +12,7 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
@@ -33,7 +34,7 @@ namespace settings {
 class ClearBrowsingDataHandler : public SettingsPageUIHandler,
                                  public syncer::SyncServiceObserver {
  public:
-  explicit ClearBrowsingDataHandler(content::WebUI* webui);
+  ClearBrowsingDataHandler(content::WebUI* webui, Profile* profile);
   ~ClearBrowsingDataHandler() override;
 
   // WebUIMessageHandler implementation.
@@ -44,7 +45,17 @@ class ClearBrowsingDataHandler : public SettingsPageUIHandler,
   // Calls |HandleClearBrowsingData| with test data for browser test.
   void HandleClearBrowsingDataForTest();
 
+ protected:
+  // Fetches a list of installed apps to be displayed in the clear browsing
+  // data confirmation dialog. Called by Javascript.
+  void GetRecentlyLaunchedInstalledApps(const base::ListValue* args);
+
  private:
+  // Respond to the WebUI callback with the list of installed apps.
+  void OnGotInstalledApps(
+      const std::string& webui_callback_id,
+      std::vector<ImportantSitesUtil::ImportantDomainInfo> installed_apps);
+
   // Clears browsing data, called by Javascript.
   void HandleClearBrowsingData(const base::ListValue* value);
 

@@ -18,6 +18,7 @@
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/browsing_data/counters/browsing_data_counter_factory.h"
 #include "chrome/browser/browsing_data/counters/browsing_data_counter_utils.h"
+#include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -26,6 +27,7 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/browsing_data/core/history_notice_utils.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/feature_engagement/buildflags.h"
@@ -48,6 +50,7 @@ using BrowsingDataType = browsing_data::BrowsingDataType;
 namespace {
 
 const int kMaxTimesHistoryNoticeShown = 1;
+const int kMaxInstalledAppsToWarnOf = 5;
 
 // TODO(msramek): Get the list of deletion preferences from the JS side.
 const char* kCounterPrefsAdvanced[] = {
@@ -66,14 +69,19 @@ const char* kCounterPrefsBasic[] = {
     browsing_data::prefs::kDeleteCacheBasic,
 };
 
+const char kRegisterableDomainField[] = "registerableDomain";
+const char kReasonBitfieldField[] = "reasonBitfield";
+const char kIsCheckedField[] = "isChecked";
+
 } // namespace
 
 namespace settings {
 
 // ClearBrowsingDataHandler ----------------------------------------------------
 
-ClearBrowsingDataHandler::ClearBrowsingDataHandler(content::WebUI* webui)
-    : profile_(Profile::FromWebUI(webui)),
+ClearBrowsingDataHandler::ClearBrowsingDataHandler(content::WebUI* webui,
+                                                   Profile* profile)
+    : profile_(profile),
       sync_service_(ProfileSyncServiceFactory::GetForProfile(profile_)),
       sync_service_observer_(this),
       show_history_deletion_dialog_(false) {}
@@ -82,6 +90,11 @@ ClearBrowsingDataHandler::~ClearBrowsingDataHandler() {
 }
 
 void ClearBrowsingDataHandler::RegisterMessages() {
+  web_ui()->RegisterMessageCallback(
+      "getImportantInstalledApps",
+      base::BindRepeating(
+          &ClearBrowsingDataHandler::GetRecentlyLaunchedInstalledApps,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "clearBrowsingData",
       base::BindRepeating(&ClearBrowsingDataHandler::HandleClearBrowsingData,
@@ -142,6 +155,43 @@ void ClearBrowsingDataHandler::HandleClearBrowsingDataForTest() {
   list_args.Append(std::move(data_types));
   list_args.AppendInteger(1u);
   HandleClearBrowsingData(&list_args);
+}
+
+void ClearBrowsingDataHandler::GetRecentlyLaunchedInstalledApps(
+    const base::ListValue* args) {
+  CHECK_EQ(2U, args->GetSize());
+  std::string webui_callback_id;
+  int period_selected;
+  CHECK(args->GetString(0, &webui_callback_id));
+
+  CHECK(args->GetInteger(1, &period_selected));
+  browsing_data::TimePeriod time_period =
+      static_cast<browsing_data::TimePeriod>(period_selected);
+
+  auto installed_apps = ImportantSitesUtil::GetInstalledRegisterableDomains(
+      time_period, profile_, kMaxInstalledAppsToWarnOf);
+
+  OnGotInstalledApps(webui_callback_id, installed_apps);
+}
+
+void ClearBrowsingDataHandler::OnGotInstalledApps(
+    const std::string& webui_callback_id,
+    std::vector<ImportantSitesUtil::ImportantDomainInfo> installed_apps) {
+  base::ListValue installed_apps_list;
+  for (auto info : installed_apps) {
+    auto entry = std::make_unique<base::DictionaryValue>();
+    // Used to get favicon in ClearBrowsingDataDialog and display URL next to
+    // app name in the dialog.
+    entry->SetString(kRegisterableDomainField, info.registerable_domain);
+    // The |reason_bitfield| is only passed to Javascript to be logged
+    // from |HandleClearBrowsingData|.
+    entry->SetInteger(kReasonBitfieldField, info.reason_bitfield);
+    // Initially all sites are selected for deletion.
+    entry->SetBoolean(kIsCheckedField, true);
+    installed_apps_list.Append(std::move(entry));
+  }
+  ResolveJavascriptCallback(base::Value(webui_callback_id),
+                            installed_apps_list);
 }
 
 void ClearBrowsingDataHandler::HandleClearBrowsingData(

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.api.host.storage;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.host.storage.ContentOperation.Delete;
 import org.chromium.chrome.browser.feed.library.api.host.storage.ContentOperation.DeleteAll;
 import org.chromium.chrome.browser.feed.library.api.host.storage.ContentOperation.DeleteByPrefix;
@@ -93,7 +95,7 @@ public final class ContentMutation {
     }
 
     @Override
-    public boolean equals(/*@Nullable*/ Object o) {
+    public boolean equals(@Nullable Object o) {
         if (this == o) {
             return true;
         }

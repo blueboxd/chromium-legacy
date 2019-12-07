@@ -188,7 +188,8 @@ cr.define('certificate_manager', function() {
     /** @type {!CaTrustInfo} */
     const caTrustInfo = {ssl: true, email: false, objSign: false};
 
-    setup(function() {
+    setup(async function() {
+      await settings.forceLazyLoaded();
       settings.navigateTo(settings.routes.CERTIFICATES);
       browserProxy = new TestCertificatesBrowserProxy();
       browserProxy.setCaCertificateTrust(caTrustInfo);

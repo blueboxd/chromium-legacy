@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.testing.requestmanager;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.host.logging.RequestReason;
 import org.chromium.chrome.browser.feed.library.api.host.logging.Task;
@@ -33,7 +35,8 @@ public class FakeFeedRequestManager implements FeedRequestManager {
     private final ProtocolAdapter mProtocolAdapter;
     private final Queue<ResponseWithDelay> mResponses = new ArrayDeque<>();
     private final TaskQueue mTaskQueue;
-    /*@Nullable*/ private StreamToken mLatestStreamToken;
+    @Nullable
+    private StreamToken mLatestStreamToken;
     @RequestReason
     private int mLatestRequestReason = RequestReason.UNKNOWN;
 
@@ -114,7 +117,7 @@ public class FakeFeedRequestManager implements FeedRequestManager {
     }
 
     /** Returns the latest {@link StreamToken} passed in to the {@link FeedRequestManager}. */
-    /*@Nullable*/
+    @Nullable
     public StreamToken getLatestStreamToken() {
         return mLatestStreamToken;
     }

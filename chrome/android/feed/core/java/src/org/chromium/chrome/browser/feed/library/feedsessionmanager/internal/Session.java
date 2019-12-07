@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.feedsessionmanager.internal;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.common.MutationContext;
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.ModelProvider;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamStructure;
@@ -17,7 +19,7 @@ public interface Session {
      * Called to update the Session, this is responsible for updating the Stored session instance.
      */
     void updateSession(boolean clearHead, List<StreamStructure> streamStructures, int schemaVersion,
-            /*@Nullable*/ MutationContext mutationContext);
+            @Nullable MutationContext mutationContext);
 
     boolean invalidateOnResetHead();
 
@@ -25,7 +27,7 @@ public interface Session {
     String getSessionId();
 
     /** Returns a ModelProvider for a Session, if one is defined. */
-    /*@Nullable*/
+    @Nullable
     ModelProvider getModelProvider();
 
     /** Returns an unmodifiable set of the StreamContentIds used by the session. */

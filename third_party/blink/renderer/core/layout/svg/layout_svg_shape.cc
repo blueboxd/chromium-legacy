@@ -393,6 +393,21 @@ float LayoutSVGShape::StrokeWidth() const {
   return length_context.ValueForLength(StyleRef().SvgStyle().StrokeWidth());
 }
 
+float LayoutSVGShape::StrokeWidthForMarkerUnits() const {
+  float stroke_width = StrokeWidth();
+  if (HasNonScalingStroke()) {
+    const auto& non_scaling_transform = NonScalingStrokeTransform();
+    if (!non_scaling_transform.IsInvertible())
+      return 0;
+    float scale_factor =
+        clampTo<float>(sqrt((non_scaling_transform.XScaleSquared() +
+                             non_scaling_transform.YScaleSquared()) /
+                            2));
+    stroke_width /= scale_factor;
+  }
+  return stroke_width;
+}
+
 LayoutSVGShapeRareData& LayoutSVGShape::EnsureRareData() const {
   if (!rare_data_)
     rare_data_ = std::make_unique<LayoutSVGShapeRareData>();

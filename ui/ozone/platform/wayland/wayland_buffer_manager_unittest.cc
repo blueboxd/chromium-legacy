@@ -189,12 +189,12 @@ class WaylandBufferManagerTest : public WaylandTest {
 
   std::unique_ptr<WaylandWindow> CreateWindow() {
     testing::Mock::VerifyAndClearExpectations(&delegate_);
-    auto new_window =
-        std::make_unique<WaylandWindow>(&delegate_, connection_.get());
     PlatformWindowInitProperties properties;
     properties.bounds = gfx::Rect(0, 0, 800, 600);
     properties.type = PlatformWindowType::kWindow;
-    EXPECT_TRUE(new_window->Initialize(std::move(properties)));
+    auto new_window = WaylandWindow::Create(&delegate_, connection_.get(),
+                                            std::move(properties));
+    EXPECT_TRUE(new_window);
 
     Sync();
 
@@ -832,6 +832,166 @@ TEST_P(WaylandBufferManagerTest, DestroyedWindowNoSubmissionMultipleBuffers) {
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId1, bounds);
 
   Sync();
+
+  DestroyBufferAndSetTerminateExpectation(widget, kBufferId1, false /*fail*/);
+  DestroyBufferAndSetTerminateExpectation(widget, kBufferId2, false /*fail*/);
+}
+
+// This test verifies that submitting the buffer more than once results in
+// OnSubmission callback as Wayland compositor is not supposed to release the
+// buffer committed twice.
+TEST_P(WaylandBufferManagerTest, SubmitSameBufferMultipleTimes) {
+  constexpr uint32_t kBufferId1 = 1;
+  constexpr uint32_t kBufferId2 = 2;
+
+  const gfx::AcceleratedWidget widget = window_->GetWidget();
+  const gfx::Rect bounds = window_->GetBounds();
+
+  MockSurfaceGpu mock_surface_gpu(buffer_manager_gpu_.get(), widget);
+
+  auto* linux_dmabuf = server_.zwp_linux_dmabuf_v1();
+  EXPECT_CALL(*linux_dmabuf, CreateParams(_, _, _)).Times(2);
+  CreateDmabufBasedBufferAndSetTerminateExpecation(false /*fail*/, kBufferId1);
+  CreateDmabufBasedBufferAndSetTerminateExpecation(false /*fail*/, kBufferId2);
+
+  Sync();
+
+  ProcessCreatedBufferResourcesWithExpectation(2u /* expected size */,
+                                               false /* fail */);
+
+  EXPECT_CALL(mock_surface_gpu,
+              OnSubmission(kBufferId1, gfx::SwapResult::SWAP_ACK))
+      .Times(1);
+  ASSERT_TRUE(!connection_->presentation());
+  EXPECT_CALL(mock_surface_gpu, OnPresentation(kBufferId1, _)).Times(1);
+  auto* mock_surface = server_.GetObject<wl::MockSurface>(widget);
+  EXPECT_CALL(*mock_surface, Attach(_, _, _)).Times(1);
+  EXPECT_CALL(*mock_surface, Frame(_)).Times(1);
+  EXPECT_CALL(*mock_surface,
+              DamageBuffer(0, 0, bounds.width(), bounds.height()))
+      .Times(1);
+  EXPECT_CALL(*mock_surface, Commit()).Times(1);
+
+  buffer_manager_gpu_->CommitBuffer(widget, kBufferId1, bounds);
+
+  Sync();
+
+  testing::Mock::VerifyAndClearExpectations(&mock_surface_gpu);
+  testing::Mock::VerifyAndClearExpectations(mock_surface);
+
+  EXPECT_CALL(mock_surface_gpu, OnSubmission(_, _)).Times(0);
+  EXPECT_CALL(mock_surface_gpu, OnPresentation(_, _)).Times(0);
+
+  mock_surface->SendFrameCallback();
+
+  Sync();
+
+  EXPECT_CALL(*mock_surface, Attach(_, _, _)).Times(1);
+  EXPECT_CALL(*mock_surface, Frame(_)).Times(1);
+  EXPECT_CALL(*mock_surface,
+              DamageBuffer(0, 0, bounds.width(), bounds.height()))
+      .Times(1);
+  EXPECT_CALL(*mock_surface, Commit()).Times(1);
+
+  // Commit second buffer now.
+  buffer_manager_gpu_->CommitBuffer(widget, kBufferId2, bounds);
+
+  Sync();
+
+  testing::Mock::VerifyAndClearExpectations(&mock_surface_gpu);
+  testing::Mock::VerifyAndClearExpectations(mock_surface);
+
+  EXPECT_CALL(mock_surface_gpu,
+              OnSubmission(kBufferId2, gfx::SwapResult::SWAP_ACK))
+      .Times(1);
+  EXPECT_CALL(mock_surface_gpu, OnPresentation(kBufferId2, _)).Times(1);
+
+  EXPECT_CALL(*mock_surface, Attach(_, _, _)).Times(0);
+  EXPECT_CALL(*mock_surface, Frame(_)).Times(0);
+  EXPECT_CALL(*mock_surface, DamageBuffer(_, _, _, _)).Times(0);
+  EXPECT_CALL(*mock_surface, Commit()).Times(0);
+
+  mock_surface->ReleasePrevAttachedBuffer();
+  mock_surface->SendFrameCallback();
+
+  Sync();
+
+  testing::Mock::VerifyAndClearExpectations(&mock_surface_gpu);
+  testing::Mock::VerifyAndClearExpectations(mock_surface);
+
+  // Now, commit the buffer with the |kBufferId2| again and make sure the
+  // manager manually sends the submission callback as long as the compositor is
+  // not going to release a buffer as it was the same buffer submitted more than
+  // once.
+  EXPECT_CALL(mock_surface_gpu,
+              OnSubmission(kBufferId2, gfx::SwapResult::SWAP_ACK))
+      .Times(1);
+  EXPECT_CALL(mock_surface_gpu, OnPresentation(kBufferId2, _)).Times(1);
+
+  EXPECT_CALL(*mock_surface, Attach(_, _, _)).Times(0);
+  EXPECT_CALL(*mock_surface, Frame(_)).Times(1);
+  EXPECT_CALL(*mock_surface,
+              DamageBuffer(0, 0, bounds.width(), bounds.height()))
+      .Times(1);
+  EXPECT_CALL(*mock_surface, Commit()).Times(1);
+
+  // Commit second buffer now.
+  buffer_manager_gpu_->CommitBuffer(widget, kBufferId2, bounds);
+
+  Sync();
+
+  testing::Mock::VerifyAndClearExpectations(&mock_surface_gpu);
+  testing::Mock::VerifyAndClearExpectations(mock_surface);
+
+  EXPECT_CALL(mock_surface_gpu, OnSubmission(_, _)).Times(0);
+  EXPECT_CALL(mock_surface_gpu, OnPresentation(_, _)).Times(0);
+
+  EXPECT_CALL(*mock_surface, Attach(_, _, _)).Times(0);
+  EXPECT_CALL(*mock_surface, Frame(_)).Times(0);
+  EXPECT_CALL(*mock_surface, DamageBuffer(_, _, _, _)).Times(0);
+  EXPECT_CALL(*mock_surface, Commit()).Times(0);
+
+  // It must be ok if Wayland compositor decides to release the buffer at some
+  // point.
+  mock_surface->ReleasePrevAttachedBuffer();
+  mock_surface->SendFrameCallback();
+
+  Sync();
+
+  testing::Mock::VerifyAndClearExpectations(&mock_surface_gpu);
+  testing::Mock::VerifyAndClearExpectations(mock_surface);
+
+  // If we commit another buffer now, the manager host must not automatically
+  // trigger OnSubmission and OnPresentation callbacks.
+  EXPECT_CALL(mock_surface_gpu, OnSubmission(_, _)).Times(0);
+  EXPECT_CALL(mock_surface_gpu, OnPresentation(_, _)).Times(0);
+
+  EXPECT_CALL(*mock_surface, Attach(_, _, _)).Times(1);
+  EXPECT_CALL(*mock_surface, Frame(_)).Times(1);
+  EXPECT_CALL(*mock_surface,
+              DamageBuffer(0, 0, bounds.width(), bounds.height()))
+      .Times(1);
+  EXPECT_CALL(*mock_surface, Commit()).Times(1);
+
+  buffer_manager_gpu_->CommitBuffer(widget, kBufferId1, bounds);
+
+  Sync();
+
+  testing::Mock::VerifyAndClearExpectations(&mock_surface_gpu);
+  testing::Mock::VerifyAndClearExpectations(mock_surface);
+
+  // Now, they must be triggered once the buffer is released.
+  EXPECT_CALL(mock_surface_gpu,
+              OnSubmission(kBufferId1, gfx::SwapResult::SWAP_ACK))
+      .Times(1);
+  EXPECT_CALL(mock_surface_gpu, OnPresentation(kBufferId1, _)).Times(1);
+
+  mock_surface->ReleasePrevAttachedBuffer();
+  mock_surface->SendFrameCallback();
+
+  Sync();
+
+  testing::Mock::VerifyAndClearExpectations(&mock_surface_gpu);
 
   DestroyBufferAndSetTerminateExpectation(widget, kBufferId1, false /*fail*/);
   DestroyBufferAndSetTerminateExpectation(widget, kBufferId2, false /*fail*/);

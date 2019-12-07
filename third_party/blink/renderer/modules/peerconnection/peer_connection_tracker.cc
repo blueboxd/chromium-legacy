@@ -20,7 +20,6 @@
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_user_media_request.h"
@@ -28,10 +27,10 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_answer_options_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_ice_candidate_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_peer_connection_handler_client.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
-using blink::WebRTCPeerConnectionHandlerClient;
 using webrtc::StatsReport;
 using webrtc::StatsReports;
 
@@ -95,7 +94,7 @@ static String SerializeAnswerOptions(blink::RTCAnswerOptionsPlatform* options) {
 }
 
 static String SerializeMediaStreamIds(
-    const blink::WebVector<blink::WebString>& stream_ids) {
+    const blink::WebVector<String>& stream_ids) {
   if (!stream_ids.size())
     return "[]";
   StringBuilder result;
@@ -104,7 +103,7 @@ static String SerializeMediaStreamIds(
     if (result.length() > 2u)
       result.Append(",");
     result.Append("'");
-    result.Append(String(stream_id));
+    result.Append(stream_id);
     result.Append("'");
   }
   result.Append("]");

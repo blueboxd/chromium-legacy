@@ -49,10 +49,6 @@ target(link_target_type, "renderer") {
     "android/synchronous_layer_tree_frame_sink.h",
     "browser_exposed_renderer_interfaces.cc",
     "browser_exposed_renderer_interfaces.h",
-    "browser_plugin/browser_plugin.cc",
-    "browser_plugin/browser_plugin.h",
-    "browser_plugin/browser_plugin_manager.cc",
-    "browser_plugin/browser_plugin_manager.h",
     "categorized_worker_pool.cc",
     "categorized_worker_pool.h",
     "child_frame_compositing_helper.cc",
@@ -667,10 +663,6 @@ target(link_target_type, "renderer") {
 
   if (enable_ipc_fuzzer) {
     configs += [ "//tools/ipc_fuzzer:ipc_fuzzer_config" ]
-  }
-
-  if (is_chromecast) {
-    defines += [ "IS_CHROMECAST" ]
   }
 }
 

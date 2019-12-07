@@ -14,8 +14,10 @@ namespace ui {
 namespace test {
 
 TestWebDialogDelegate::TestWebDialogDelegate(const GURL& url)
-    : url_(url), size_(400, 400), did_delete_(nullptr) {
-}
+    : url_(url),
+      size_(400, 400),
+      did_delete_(nullptr),
+      close_on_escape_(true) {}
 
 TestWebDialogDelegate::~TestWebDialogDelegate() {
   if (did_delete_) {
@@ -28,6 +30,10 @@ void TestWebDialogDelegate::SetDeleteOnClosedAndObserve(
     bool* destroy_observer) {
   CHECK(destroy_observer);
   did_delete_ = destroy_observer;
+}
+
+void TestWebDialogDelegate::SetCloseOnEscape(bool enabled) {
+  close_on_escape_ = enabled;
 }
 
 ModalType TestWebDialogDelegate::GetDialogModalType() const {
@@ -66,6 +72,10 @@ void TestWebDialogDelegate::OnCloseContents(WebContents* source,
 
 bool TestWebDialogDelegate::ShouldShowDialogTitle() const {
   return true;
+}
+
+bool TestWebDialogDelegate::ShouldCloseDialogOnEscape() const {
+  return close_on_escape_;
 }
 
 }  // namespace test

@@ -45,6 +45,10 @@ class CONTENT_EXPORT PeakGpuMemoryTracker {
   // stops.
   virtual void Cancel() = 0;
 
+  // Sets a new PeakMemoryCallback to replace the one provided at construction
+  // time. The original is not called.
+  virtual void SetCallback(PeakMemoryCallback callback) = 0;
+
  protected:
   PeakGpuMemoryTracker() = default;
 };

@@ -431,16 +431,6 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<TestParams>,
                                         should_include_version, fin, data);
   }
 
-  std::unique_ptr<quic::QuicReceivedPacket>
-  ConstructClientMultipleDataFramesPacket(
-      uint64_t packet_number,
-      bool should_include_version,
-      bool fin,
-      const std::vector<std::string>& data) {
-    return client_maker_.MakeMultipleDataFramesPacket(
-        packet_number, stream_id_, should_include_version, fin, data);
-  }
-
   std::unique_ptr<quic::QuicReceivedPacket> ConstructServerDataPacket(
       uint64_t packet_number,
       bool should_include_version,

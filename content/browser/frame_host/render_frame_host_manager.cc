@@ -311,7 +311,8 @@ void RenderFrameHostManager::OnBeforeUnloadACK(
 void RenderFrameHostManager::DidNavigateFrame(
     RenderFrameHostImpl* render_frame_host,
     bool was_caused_by_user_gesture,
-    bool is_same_document_navigation) {
+    bool is_same_document_navigation,
+    const blink::FramePolicy& frame_policy) {
   CommitPendingIfNecessary(render_frame_host, was_caused_by_user_gesture,
                            is_same_document_navigation);
 
@@ -319,7 +320,7 @@ void RenderFrameHostManager::DidNavigateFrame(
   // policy that were made prior to navigation take effect.  This should only
   // happen for cross-document navigations.
   if (!is_same_document_navigation)
-    CommitPendingFramePolicy();
+    CommitFramePolicy(frame_policy);
 }
 
 void RenderFrameHostManager::CommitPendingIfNecessary(
@@ -410,10 +411,10 @@ void RenderFrameHostManager::DidChangeOpener(
   }
 }
 
-void RenderFrameHostManager::CommitPendingFramePolicy() {
-  // Return early if there were no pending updates to sandbox flags or container
-  // policy.
-  if (!frame_tree_node_->CommitPendingFramePolicy())
+void RenderFrameHostManager::CommitFramePolicy(
+    const blink::FramePolicy& frame_policy) {
+  // Return early if there were no updates to sandbox flags or container policy.
+  if (!frame_tree_node_->CommitFramePolicy(frame_policy))
     return;
 
   // Policy updates can only happen when the frame has a parent.
@@ -430,8 +431,7 @@ void RenderFrameHostManager::CommitPendingFramePolicy() {
   for (const auto& pair : proxy_hosts_) {
     if (pair.second->GetSiteInstance() != parent_site_instance) {
       pair.second->Send(new FrameMsg_DidUpdateFramePolicy(
-          pair.second->GetRoutingID(),
-          frame_tree_node_->current_replication_state().frame_policy));
+          pair.second->GetRoutingID(), frame_policy));
     }
   }
 }
@@ -616,6 +616,8 @@ bool RenderFrameHostManager::DeleteFromPendingList(
 
 void RenderFrameHostManager::RestoreFromBackForwardCache(
     std::unique_ptr<BackForwardCacheImpl::Entry> entry) {
+  TRACE_EVENT0("navigation",
+               "RenderFrameHostManager::RestoreFromBackForwardCache");
   // Matched in CommitPending().
   entry->render_frame_host->GetProcess()->AddPendingView();
 

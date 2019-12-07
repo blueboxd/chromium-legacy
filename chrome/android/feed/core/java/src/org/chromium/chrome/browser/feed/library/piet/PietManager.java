@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.feed.library.piet;
 import android.content.Context;
 import android.view.ViewGroup;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.feed.library.api.host.config.DebugBehavior;
 import org.chromium.chrome.browser.feed.library.common.functional.Suppliers;
@@ -33,12 +35,12 @@ public interface PietManager {
         return new Builder();
     }
 
-    FrameAdapter createPietFrameAdapter(Supplier</*@Nullable*/ ViewGroup> cardViewProducer,
+    FrameAdapter createPietFrameAdapter(Supplier<ViewGroup> cardViewProducer,
             ActionHandler actionHandler, EventLogger eventLogger, Context context);
 
-    FrameAdapter createPietFrameAdapter(Supplier</*@Nullable*/ ViewGroup> cardViewProducer,
+    FrameAdapter createPietFrameAdapter(Supplier<ViewGroup> cardViewProducer,
             ActionHandler actionHandler, EventLogger eventLogger, Context context,
-            /*@Nullable*/ LogDataCallback logDataCallback);
+            @Nullable LogDataCallback logDataCallback);
 
     void purgeRecyclerPools();
 
@@ -65,9 +67,9 @@ public interface PietManager {
         private Supplier<Boolean> mIsRtLSupplier = LayoutUtils::isDefaultLocaleRtl;
 
         private DebugBehavior mDebugBehavior = DebugBehavior.SILENT;
-        /*@MonotonicNonNull*/ private CustomElementProvider mCustomElementProvider;
-        /*@MonotonicNonNull*/ private HostBindingProvider mHostBindingProvider;
-        /*@MonotonicNonNull*/ private Clock mClock;
+        private CustomElementProvider mCustomElementProvider;
+        private HostBindingProvider mHostBindingProvider;
+        private Clock mClock;
         private boolean mAllowLegacyRoundedCornerImpl;
         private boolean mAllowOutlineRoundedCornerImpl;
 

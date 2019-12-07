@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.testing.requestmanager;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.internal.requestmanager.ActionUploadRequestManager;
 import org.chromium.chrome.browser.feed.library.common.Result;
@@ -19,7 +21,8 @@ public final class FakeActionUploadRequestManager implements ActionUploadRequest
     private final FakeThreadUtils mFakeThreadUtils;
     private Result<ConsistencyToken> mResult =
             Result.success(ConsistencyToken.getDefaultInstance());
-    /*@Nullable*/ private Set<StreamUploadableAction> mActions;
+    @Nullable
+    private Set<StreamUploadableAction> mActions;
 
     public FakeActionUploadRequestManager(FakeThreadUtils fakeThreadUtils) {
         this.mFakeThreadUtils = fakeThreadUtils;

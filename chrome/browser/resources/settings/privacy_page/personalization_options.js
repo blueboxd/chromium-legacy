@@ -35,7 +35,9 @@ Polymer({
     /** @private */
     passwordsLeakDetectionEnabled_: {
       type: Boolean,
-      value: loadTimeData.getBoolean('passwordsLeakDetectionEnabled'),
+      value: function() {
+        return loadTimeData.getBoolean('passwordsLeakDetectionEnabled');
+      },
     },
 
     // <if expr="_google_chrome and not chromeos">

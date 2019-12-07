@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.api.common;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamToken;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.UiContext;
 
@@ -12,8 +14,10 @@ import org.chromium.components.feed.core.proto.libraries.api.internal.StreamData
  * request and pass this information back with the response.
  */
 public final class MutationContext {
-    /*@Nullable*/ private final StreamToken mContinuationToken;
-    /*@Nullable*/ private final String mRequestingSessionId;
+    @Nullable
+    private final StreamToken mContinuationToken;
+    @Nullable
+    private final String mRequestingSessionId;
     private final boolean mUserInitiated;
 
     /** Static used to represent an empty Mutation Context */
@@ -22,9 +26,8 @@ public final class MutationContext {
 
     private final UiContext mUiContext;
 
-    private MutationContext(
-            /*@Nullable*/ StreamToken continuationToken,
-            /*@Nullable*/ String requestingSessionId, UiContext uiContext, boolean userInitiated) {
+    private MutationContext(@Nullable StreamToken continuationToken,
+            @Nullable String requestingSessionId, UiContext uiContext, boolean userInitiated) {
         this.mContinuationToken = continuationToken;
         this.mRequestingSessionId = requestingSessionId;
         this.mUserInitiated = userInitiated;
@@ -32,13 +35,13 @@ public final class MutationContext {
     }
 
     /** Returns the continuation token used to make the request. */
-    /*@Nullable*/
+    @Nullable
     public StreamToken getContinuationToken() {
         return mContinuationToken;
     }
 
     /** Returns the session which made the request. */
-    /*@Nullable*/
+    @Nullable
     public String getRequestingSessionId() {
         return mRequestingSessionId;
     }
@@ -61,8 +64,8 @@ public final class MutationContext {
      * org.chromium.chrome.browser.feed.library.api.common.MutationContext
      */
     public static final class Builder {
-        /*@MonotonicNonNull*/ private StreamToken mContinuationToken;
-        /*@MonotonicNonNull*/ private String mRequestingSessionId;
+        private StreamToken mContinuationToken;
+        private String mRequestingSessionId;
         private UiContext mUiContext = UiContext.getDefaultInstance();
         private boolean mUserInitiated;
 

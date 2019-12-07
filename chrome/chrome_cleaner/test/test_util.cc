@@ -20,12 +20,14 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "base/test/test_switches.h"
+#include "base/test/test_timeouts.h"
 #include "base/time/time.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"
@@ -408,6 +410,37 @@ bool CheckTestPrivileges() {
   }
 
   return true;
+}
+
+bool ResetAclForUcrtbase() {
+  base::FilePath exe_path;
+  if (!base::PathService::Get(base::BasePathKey::DIR_EXE, &exe_path)) {
+    LOG(ERROR) << "Failed to get directory path.";
+    return false;
+  }
+  base::FilePath abs_path = base::MakeAbsoluteFilePath(exe_path);
+#ifdef NDEBUG
+  base::FilePath ucrt_path = abs_path.Append(L"ucrtbase.dll");
+#else
+  base::FilePath ucrt_path = abs_path.Append(L"ucrtbased.dll");
+#endif
+  base::CommandLine cmd({L"icacls"});
+  cmd.AppendArgPath(ucrt_path);
+  cmd.AppendArg("/reset");
+  cmd.AppendArg("/t");
+  base::Process process =
+      base::LaunchProcess(cmd, base::LaunchOptionsForTest());
+  int exit_code = 0;
+  if (!process.WaitForExitWithTimeout(TestTimeouts::action_timeout(),
+                                      &exit_code)) {
+    LOG(ERROR) << "Failed to reset acl for file " << ucrt_path.AsUTF16Unsafe();
+    return false;
+  }
+  if (exit_code) {
+    LOG(ERROR) << "Failed to reset acl for file " << ucrt_path.AsUTF16Unsafe()
+               << " with exit code " << exit_code;
+  }
+  return !exit_code;
 }
 
 }  // namespace chrome_cleaner

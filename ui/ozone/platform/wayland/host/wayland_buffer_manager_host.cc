@@ -219,14 +219,20 @@ class WaylandBufferManagerHost::Surface {
     DCHECK(buffer && window_);
     DCHECK(!pending_buffer_);
 
-    // Once the BufferRelease is called, the buffer will be released.
-    DCHECK(buffer->released);
-    buffer->released = false;
-
     DCHECK(!submitted_buffer_);
     submitted_buffer_ = buffer;
 
-    AttachAndDamageBuffer(buffer);
+    // if the same buffer has been submitted again right after the client
+    // received OnSubmission for that buffer, just damage the buffer and
+    // commit the surface again.
+    if (prev_submitted_buffer_ != submitted_buffer_) {
+      // Once the BufferRelease is called, the buffer will be released.
+      DCHECK(buffer->released);
+      buffer->released = false;
+      AttachBuffer(buffer);
+    }
+
+    DamageBuffer(buffer);
 
     SetupFrameCallback();
     SetupPresentationFeedback(buffer->buffer_id);
@@ -246,13 +252,18 @@ class WaylandBufferManagerHost::Surface {
     // If it was the very first frame, the surface has not had a back buffer
     // before, and Wayland won't release the front buffer until next buffer is
     // attached. Thus, notify about successful submission immediately.
-    if (!prev_submitted_buffer_)
+    //
+    // As said above, if the client submits the same buffer again, we must
+    // notify the client about the submission immediately as Wayland compositor
+    // is not going to send a release callback for a buffer committed more than
+    // once.
+    if (!prev_submitted_buffer_ || prev_submitted_buffer_ == submitted_buffer_)
       CompleteSubmission();
 
     return true;
   }
 
-  void AttachAndDamageBuffer(WaylandBuffer* buffer) {
+  void DamageBuffer(WaylandBuffer* buffer) {
     DCHECK(window_);
 
     gfx::Rect pending_damage_region = std::move(buffer->damage_region);
@@ -263,11 +274,15 @@ class WaylandBufferManagerHost::Surface {
       pending_damage_region.set_size(buffer->size);
     DCHECK(!pending_damage_region.size().IsEmpty());
 
-    auto* surface = window_->surface();
-    wl_surface_damage_buffer(
-        surface, pending_damage_region.x(), pending_damage_region.y(),
-        pending_damage_region.width(), pending_damage_region.height());
-    wl_surface_attach(surface, buffer->wl_buffer.get(), 0, 0);
+    wl_surface_damage_buffer(window_->surface(), pending_damage_region.x(),
+                             pending_damage_region.y(),
+                             pending_damage_region.width(),
+                             pending_damage_region.height());
+  }
+
+  void AttachBuffer(WaylandBuffer* buffer) {
+    DCHECK(window_);
+    wl_surface_attach(window_->surface(), buffer->wl_buffer.get(), 0, 0);
   }
 
   void CommitSurface() {

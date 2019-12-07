@@ -15,84 +15,19 @@
 
 namespace ui {
 
-XDGSurfaceWrapperImpl::XDGSurfaceWrapperImpl(WaylandWindow* wayland_window)
-    : wayland_window_(wayland_window) {}
+XDGSurfaceWrapperImpl::XDGSurfaceWrapperImpl(WaylandWindow* wayland_window,
+                                             WaylandConnection* connection)
+    : wayland_window_(wayland_window), connection_(connection) {}
 
 XDGSurfaceWrapperImpl::~XDGSurfaceWrapperImpl() {}
 
-bool XDGSurfaceWrapperImpl::InitializeStable(WaylandConnection* connection,
-                                             wl_surface* surface,
-                                             bool with_toplevel) {
-  static const xdg_surface_listener xdg_surface_listener = {
-      &XDGSurfaceWrapperImpl::ConfigureStable,
-  };
-  static const xdg_toplevel_listener xdg_toplevel_listener = {
-      &XDGSurfaceWrapperImpl::ConfigureTopLevelStable,
-      &XDGSurfaceWrapperImpl::CloseTopLevelStable,
-  };
-
-  // if this surface is created for the popup role, mark that it requires
-  // configuration acknowledgement on each configure event.
-  surface_for_popup_ = !with_toplevel;
-
-  xdg_surface_.reset(xdg_wm_base_get_xdg_surface(connection->shell(), surface));
-  if (!xdg_surface_) {
-    LOG(ERROR) << "Failed to create xdg_surface";
-    return false;
-  }
-  xdg_surface_add_listener(xdg_surface_.get(), &xdg_surface_listener, this);
-  // XDGPopup requires a separate surface to be created, so this is just a
-  // request to get an xdg_surface for it.
-  if (surface_for_popup_)
-    return true;
-
-  xdg_toplevel_.reset(xdg_surface_get_toplevel(xdg_surface_.get()));
-  if (!xdg_toplevel_) {
-    LOG(ERROR) << "Failed to create xdg_toplevel";
-    return false;
-  }
-  xdg_toplevel_add_listener(xdg_toplevel_.get(), &xdg_toplevel_listener, this);
-  wl_surface_commit(surface);
-  return true;
-}
-
-bool XDGSurfaceWrapperImpl::InitializeV6(WaylandConnection* connection,
-                                         wl_surface* surface,
-                                         bool with_toplevel) {
-  static const zxdg_surface_v6_listener zxdg_surface_v6_listener = {
-      &XDGSurfaceWrapperImpl::ConfigureV6,
-  };
-  static const zxdg_toplevel_v6_listener zxdg_toplevel_v6_listener = {
-      &XDGSurfaceWrapperImpl::ConfigureTopLevelV6,
-      &XDGSurfaceWrapperImpl::CloseTopLevelV6,
-  };
-
-  // if this surface is created for the popup role, mark that it requires
-  // configuration acknowledgement on each configure event.
-  surface_for_popup_ = !with_toplevel;
-
-  zxdg_surface_v6_.reset(
-      zxdg_shell_v6_get_xdg_surface(connection->shell_v6(), surface));
-  if (!zxdg_surface_v6_) {
-    LOG(ERROR) << "Failed to create zxdg_surface";
-    return false;
-  }
-  zxdg_surface_v6_add_listener(zxdg_surface_v6_.get(),
-                               &zxdg_surface_v6_listener, this);
-  // XDGPopupV6 requires a separate surface to be created, so this is just a
-  // request to get an xdg_surface for it.
-  if (surface_for_popup_)
-    return true;
-
-  zxdg_toplevel_v6_.reset(zxdg_surface_v6_get_toplevel(zxdg_surface_v6_.get()));
-  if (!zxdg_toplevel_v6_) {
-    LOG(ERROR) << "Failed to create zxdg_toplevel";
-    return false;
-  }
-  zxdg_toplevel_v6_add_listener(zxdg_toplevel_v6_.get(),
-                                &zxdg_toplevel_v6_listener, this);
-  wl_surface_commit(surface);
-  return true;
+bool XDGSurfaceWrapperImpl::Initialize(bool with_toplevel) {
+  if (connection_->shell())
+    return InitializeStable(with_toplevel);
+  else if (connection_->shell_v6())
+    return InitializeV6(with_toplevel);
+  NOTREACHED() << "Wrong shell protocol";
+  return false;
 }
 
 void XDGSurfaceWrapperImpl::SetMaximized() {
@@ -142,25 +77,25 @@ void XDGSurfaceWrapperImpl::SetMinimized() {
 
 void XDGSurfaceWrapperImpl::SurfaceMove(WaylandConnection* connection) {
   if (xdg_toplevel_) {
-    xdg_toplevel_move(xdg_toplevel_.get(), connection->seat(),
-                      connection->serial());
+    xdg_toplevel_move(xdg_toplevel_.get(), connection_->seat(),
+                      connection_->serial());
   } else {
     DCHECK(zxdg_toplevel_v6_);
-    zxdg_toplevel_v6_move(zxdg_toplevel_v6_.get(), connection->seat(),
-                          connection->serial());
+    zxdg_toplevel_v6_move(zxdg_toplevel_v6_.get(), connection_->seat(),
+                          connection_->serial());
   }
 }
 
 void XDGSurfaceWrapperImpl::SurfaceResize(WaylandConnection* connection,
                                           uint32_t hittest) {
   if (xdg_toplevel_) {
-    xdg_toplevel_resize(xdg_toplevel_.get(), connection->seat(),
-                        connection->serial(),
+    xdg_toplevel_resize(xdg_toplevel_.get(), connection_->seat(),
+                        connection_->serial(),
                         wl::IdentifyDirection(*connection, hittest));
   } else {
     DCHECK(zxdg_toplevel_v6_);
-    zxdg_toplevel_v6_resize(zxdg_toplevel_v6_.get(), connection->seat(),
-                            connection->serial(),
+    zxdg_toplevel_v6_resize(zxdg_toplevel_v6_.get(), connection_->seat(),
+                            connection_->serial(),
                             wl::IdentifyDirection(*connection, hittest));
   }
 }
@@ -315,6 +250,86 @@ zxdg_surface_v6* XDGSurfaceWrapperImpl::zxdg_surface() const {
 xdg_surface* XDGSurfaceWrapperImpl::xdg_surface() const {
   DCHECK(xdg_surface_);
   return xdg_surface_.get();
+}
+
+bool XDGSurfaceWrapperImpl::InitializeStable(bool with_toplevel) {
+  static const xdg_surface_listener xdg_surface_listener = {
+      &XDGSurfaceWrapperImpl::ConfigureStable,
+  };
+  static const xdg_toplevel_listener xdg_toplevel_listener = {
+      &XDGSurfaceWrapperImpl::ConfigureTopLevelStable,
+      &XDGSurfaceWrapperImpl::CloseTopLevelStable,
+  };
+
+  // if this surface is created for the popup role, mark that it requires
+  // configuration acknowledgement on each configure event.
+  surface_for_popup_ = !with_toplevel;
+
+  xdg_surface_.reset(xdg_wm_base_get_xdg_surface(connection_->shell(),
+                                                 wayland_window_->surface()));
+  if (!xdg_surface_) {
+    LOG(ERROR) << "Failed to create xdg_surface";
+    return false;
+  }
+  xdg_surface_add_listener(xdg_surface_.get(), &xdg_surface_listener, this);
+  // XDGPopup requires a separate surface to be created, so this is just a
+  // request to get an xdg_surface for it.
+  if (surface_for_popup_) {
+    connection_->ScheduleFlush();
+    return true;
+  }
+
+  xdg_toplevel_.reset(xdg_surface_get_toplevel(xdg_surface_.get()));
+  if (!xdg_toplevel_) {
+    LOG(ERROR) << "Failed to create xdg_toplevel";
+    return false;
+  }
+  xdg_toplevel_add_listener(xdg_toplevel_.get(), &xdg_toplevel_listener, this);
+  wl_surface_commit(wayland_window_->surface());
+
+  connection_->ScheduleFlush();
+  return true;
+}
+
+bool XDGSurfaceWrapperImpl::InitializeV6(bool with_toplevel) {
+  static const zxdg_surface_v6_listener zxdg_surface_v6_listener = {
+      &XDGSurfaceWrapperImpl::ConfigureV6,
+  };
+  static const zxdg_toplevel_v6_listener zxdg_toplevel_v6_listener = {
+      &XDGSurfaceWrapperImpl::ConfigureTopLevelV6,
+      &XDGSurfaceWrapperImpl::CloseTopLevelV6,
+  };
+
+  // if this surface is created for the popup role, mark that it requires
+  // configuration acknowledgement on each configure event.
+  surface_for_popup_ = !with_toplevel;
+
+  zxdg_surface_v6_.reset(zxdg_shell_v6_get_xdg_surface(
+      connection_->shell_v6(), wayland_window_->surface()));
+  if (!zxdg_surface_v6_) {
+    LOG(ERROR) << "Failed to create zxdg_surface";
+    return false;
+  }
+  zxdg_surface_v6_add_listener(zxdg_surface_v6_.get(),
+                               &zxdg_surface_v6_listener, this);
+  // XDGPopupV6 requires a separate surface to be created, so this is just a
+  // request to get an xdg_surface for it.
+  if (surface_for_popup_) {
+    connection_->ScheduleFlush();
+    return true;
+  }
+
+  zxdg_toplevel_v6_.reset(zxdg_surface_v6_get_toplevel(zxdg_surface_v6_.get()));
+  if (!zxdg_toplevel_v6_) {
+    LOG(ERROR) << "Failed to create zxdg_toplevel";
+    return false;
+  }
+  zxdg_toplevel_v6_add_listener(zxdg_toplevel_v6_.get(),
+                                &zxdg_toplevel_v6_listener, this);
+  wl_surface_commit(wayland_window_->surface());
+
+  connection_->ScheduleFlush();
+  return true;
 }
 
 }  // namespace ui

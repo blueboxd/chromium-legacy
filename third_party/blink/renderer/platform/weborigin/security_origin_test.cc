@@ -960,7 +960,7 @@ TEST_F(SecurityOriginTest, IsSameOriginWith) {
                // Opaque
                {false, "data:text/html,whatever", "data:text/html,whatever"}};
 
-  for (auto test : tests) {
+  for (const auto& test : tests) {
     SCOPED_TRACE(testing::Message() << "Origin 1: `" << test.a << "` "
                                     << "Origin 2: `" << test.b << "`\n");
     scoped_refptr<SecurityOrigin> a = SecurityOrigin::CreateFromString(test.a);
@@ -1034,6 +1034,138 @@ TEST_F(SecurityOriginTest, IsSameOriginWithWithLocalScheme) {
   a->GrantUniversalAccess();
   EXPECT_FALSE(a->IsSameOriginWith(b.get()));
   EXPECT_FALSE(b->IsSameOriginWith(a.get()));
+}
+
+TEST_F(SecurityOriginTest, IsSameOriginDomainWith) {
+  struct TestCase {
+    bool same_origin_domain;
+    const char* a;
+    const char* domain_a;  // empty string === no `domain` set.
+    const char* b;
+    const char* domain_b;
+  } tests[] = {
+      {true, "https://a.com", "", "https://a.com", ""},
+      {false, "https://a.com", "a.com", "https://a.com", ""},
+      {true, "https://a.com", "a.com", "https://a.com", "a.com"},
+      {false, "https://sub.a.com", "", "https://a.com", ""},
+      {false, "https://sub.a.com", "a.com", "https://a.com", ""},
+      {true, "https://sub.a.com", "a.com", "https://a.com", "a.com"},
+      {true, "https://sub.a.com", "a.com", "https://sub.a.com", "a.com"},
+      {true, "https://sub.a.com", "a.com", "https://sub.sub.a.com", "a.com"},
+
+      // Schemes.
+      {false, "https://a.com", "", "http://a.com", ""},
+      {false, "https://a.com", "a.com", "http://a.com", ""},
+      {false, "https://a.com", "a.com", "http://a.com", "a.com"},
+      {false, "https://sub.a.com", "a.com", "http://a.com", ""},
+      {false, "https://a.com", "a.com", "http://sub.a.com", "a.com"},
+
+      // Ports? Why would they matter?
+      {true, "https://a.com:443", "", "https://a.com", ""},
+      {false, "https://a.com:444", "", "https://a.com", ""},
+      {false, "https://a.com:444", "", "https://a.com:442", ""},
+
+      {false, "https://a.com:443", "a.com", "https://a.com", ""},
+      {false, "https://a.com:444", "a.com", "https://a.com", ""},
+      {false, "https://a.com:444", "a.com", "https://a.com:442", ""},
+
+      {true, "https://a.com:443", "a.com", "https://a.com", "a.com"},
+      {true, "https://a.com:444", "a.com", "https://a.com", "a.com"},
+      {true, "https://a.com:444", "a.com", "https://a.com:442", "a.com"},
+
+      {false, "https://sub.a.com:443", "", "https://a.com", ""},
+      {false, "https://sub.a.com:444", "", "https://a.com", ""},
+      {false, "https://sub.a.com:444", "", "https://a.com:442", ""},
+
+      {false, "https://sub.a.com:443", "a.com", "https://a.com", ""},
+      {false, "https://sub.a.com:444", "a.com", "https://a.com", ""},
+      {false, "https://sub.a.com:444", "a.com", "https://a.com:442", ""},
+
+      {true, "https://sub.a.com:443", "a.com", "https://a.com", "a.com"},
+      {true, "https://sub.a.com:444", "a.com", "https://a.com", "a.com"},
+      {true, "https://sub.a.com:444", "a.com", "https://a.com:442", "a.com"},
+  };
+
+  for (const auto& test : tests) {
+    SCOPED_TRACE(testing::Message()
+                 << "Origin 1: `" << test.a << "` (`" << test.domain_a << "`)\n"
+                 << "Origin 2: `" << test.b << "` (`" << test.domain_b
+                 << "`)\n");
+    scoped_refptr<SecurityOrigin> a = SecurityOrigin::CreateFromString(test.a);
+    if (strlen(test.domain_a))
+      a->SetDomainFromDOM(test.domain_a);
+    scoped_refptr<SecurityOrigin> b = SecurityOrigin::CreateFromString(test.b);
+    if (strlen(test.domain_b))
+      b->SetDomainFromDOM(test.domain_b);
+    EXPECT_EQ(test.same_origin_domain, a->IsSameOriginDomainWith(b.get()));
+    EXPECT_EQ(test.same_origin_domain, b->IsSameOriginDomainWith(a.get()));
+
+    // Self-comparison
+    EXPECT_TRUE(a->IsSameOriginDomainWith(a.get()));
+    EXPECT_TRUE(b->IsSameOriginDomainWith(b.get()));
+
+    // DeriveNewOpaqueOrigin
+    EXPECT_FALSE(a->DeriveNewOpaqueOrigin()->IsSameOriginDomainWith(a.get()));
+    EXPECT_FALSE(b->DeriveNewOpaqueOrigin()->IsSameOriginDomainWith(a.get()));
+    EXPECT_FALSE(a->DeriveNewOpaqueOrigin()->IsSameOriginDomainWith(b.get()));
+    EXPECT_FALSE(b->DeriveNewOpaqueOrigin()->IsSameOriginDomainWith(b.get()));
+    EXPECT_FALSE(b->IsSameOriginDomainWith(a->DeriveNewOpaqueOrigin().get()));
+    EXPECT_FALSE(b->IsSameOriginDomainWith(a->DeriveNewOpaqueOrigin().get()));
+    EXPECT_FALSE(a->IsSameOriginDomainWith(b->DeriveNewOpaqueOrigin().get()));
+    EXPECT_FALSE(b->IsSameOriginDomainWith(b->DeriveNewOpaqueOrigin().get()));
+    EXPECT_FALSE(a->DeriveNewOpaqueOrigin()->IsSameOriginDomainWith(
+        a->DeriveNewOpaqueOrigin().get()));
+    EXPECT_FALSE(b->DeriveNewOpaqueOrigin()->IsSameOriginDomainWith(
+        b->DeriveNewOpaqueOrigin().get()));
+
+    // UniversalAccess does not override.
+    a->GrantUniversalAccess();
+    EXPECT_EQ(test.same_origin_domain, a->IsSameOriginDomainWith(b.get()));
+    EXPECT_EQ(test.same_origin_domain, b->IsSameOriginDomainWith(a.get()));
+  }
+}
+
+TEST_F(SecurityOriginTest, IsSameOriginDomainWithWithLocalScheme) {
+  scoped_refptr<SecurityOrigin> a =
+      SecurityOrigin::CreateFromString("file:///etc/passwd");
+  scoped_refptr<SecurityOrigin> b =
+      SecurityOrigin::CreateFromString("file:///etc/hosts");
+
+  // Self-comparison
+  EXPECT_TRUE(a->IsSameOriginDomainWith(a.get()));
+  EXPECT_TRUE(b->IsSameOriginDomainWith(b.get()));
+
+  // block_local_access_from_local_origin_ defaults to `false`:
+  EXPECT_TRUE(a->IsSameOriginDomainWith(b.get()));
+  EXPECT_TRUE(b->IsSameOriginDomainWith(a.get()));
+
+  // DeriveNewOpaqueOrigin
+  EXPECT_FALSE(a->DeriveNewOpaqueOrigin()->IsSameOriginDomainWith(a.get()));
+  EXPECT_FALSE(b->DeriveNewOpaqueOrigin()->IsSameOriginDomainWith(a.get()));
+  EXPECT_FALSE(a->DeriveNewOpaqueOrigin()->IsSameOriginDomainWith(b.get()));
+  EXPECT_FALSE(b->DeriveNewOpaqueOrigin()->IsSameOriginDomainWith(b.get()));
+  EXPECT_FALSE(b->IsSameOriginDomainWith(a->DeriveNewOpaqueOrigin().get()));
+  EXPECT_FALSE(b->IsSameOriginDomainWith(a->DeriveNewOpaqueOrigin().get()));
+  EXPECT_FALSE(a->IsSameOriginDomainWith(b->DeriveNewOpaqueOrigin().get()));
+  EXPECT_FALSE(b->IsSameOriginDomainWith(b->DeriveNewOpaqueOrigin().get()));
+  EXPECT_FALSE(a->DeriveNewOpaqueOrigin()->IsSameOriginDomainWith(
+      a->DeriveNewOpaqueOrigin().get()));
+  EXPECT_FALSE(b->DeriveNewOpaqueOrigin()->IsSameOriginDomainWith(
+      b->DeriveNewOpaqueOrigin().get()));
+
+  // Set block_local_access_from_local_origin_ to `true`:
+  a->BlockLocalAccessFromLocalOrigin();
+  EXPECT_FALSE(a->IsSameOriginDomainWith(b.get()));
+  EXPECT_FALSE(b->IsSameOriginDomainWith(a.get()));
+
+  // Self-comparison should still be true.
+  EXPECT_TRUE(a->IsSameOriginDomainWith(a.get()));
+  EXPECT_TRUE(b->IsSameOriginDomainWith(b.get()));
+
+  // UniversalAccess does not override
+  a->GrantUniversalAccess();
+  EXPECT_FALSE(a->IsSameOriginDomainWith(b.get()));
+  EXPECT_FALSE(b->IsSameOriginDomainWith(a.get()));
 }
 
 }  // namespace blink

@@ -10,27 +10,25 @@
 namespace media_session {
 
 MediaSessionService::MediaSessionService(
-    service_manager::mojom::ServiceRequest request)
-    : service_binding_(this, std::move(request)),
-      audio_focus_manager_(std::make_unique<AudioFocusManager>()) {
-  registry_.AddInterface(
-      base::BindRepeating(&AudioFocusManager::BindToInterface,
-                          base::Unretained(audio_focus_manager_.get())));
-  registry_.AddInterface(
-      base::BindRepeating(&AudioFocusManager::BindToDebugInterface,
-                          base::Unretained(audio_focus_manager_.get())));
-  registry_.AddInterface(
-      base::BindRepeating(&AudioFocusManager::BindToControllerManagerInterface,
-                          base::Unretained(audio_focus_manager_.get())));
-}
+    mojo::PendingReceiver<mojom::MediaSessionService> receiver)
+    : receiver_(this, std::move(receiver)),
+      audio_focus_manager_(std::make_unique<AudioFocusManager>()) {}
 
 MediaSessionService::~MediaSessionService() = default;
 
-void MediaSessionService::OnBindInterface(
-    const service_manager::BindSourceInfo& source_info,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  registry_.BindInterface(interface_name, std::move(interface_pipe));
+void MediaSessionService::BindAudioFocusManager(
+    mojo::PendingReceiver<mojom::AudioFocusManager> receiver) {
+  audio_focus_manager_->BindToInterface(std::move(receiver));
+}
+
+void MediaSessionService::BindAudioFocusManagerDebug(
+    mojo::PendingReceiver<mojom::AudioFocusManagerDebug> receiver) {
+  audio_focus_manager_->BindToDebugInterface(std::move(receiver));
+}
+
+void MediaSessionService::BindMediaControllerManager(
+    mojo::PendingReceiver<mojom::MediaControllerManager> receiver) {
+  audio_focus_manager_->BindToControllerManagerInterface(std::move(receiver));
 }
 
 }  // namespace media_session

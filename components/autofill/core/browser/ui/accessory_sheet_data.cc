@@ -56,7 +56,11 @@ std::ostream& operator<<(std::ostream& os, const UserInfo::Field& field) {
 
 UserInfo::UserInfo() = default;
 
-UserInfo::UserInfo(std::string origin) : origin_(std::move(origin)) {}
+UserInfo::UserInfo(std::string origin)
+    : UserInfo(std::move(origin), IsPslMatch(false)) {}
+
+UserInfo::UserInfo(std::string origin, IsPslMatch is_psl_match)
+    : origin_(std::move(origin)), is_psl_match_(is_psl_match) {}
 
 UserInfo::UserInfo(const UserInfo& user_info) = default;
 
@@ -69,11 +73,13 @@ UserInfo& UserInfo::operator=(const UserInfo& user_info) = default;
 UserInfo& UserInfo::operator=(UserInfo&& user_info) = default;
 
 bool UserInfo::operator==(const UserInfo& user_info) const {
-  return fields_ == user_info.fields_ && origin_ == user_info.origin_;
+  return fields_ == user_info.fields_ && origin_ == user_info.origin_ &&
+         is_psl_match_ == user_info.is_psl_match_;
 }
 
 std::ostream& operator<<(std::ostream& os, const UserInfo& user_info) {
-  os << "origin: \"" << user_info.origin() << "\", \n"
+  os << "origin: \"" << user_info.origin() << "\", "
+     << "is_psl_match: " << std::boolalpha << user_info.is_psl_match() << ", "
      << "fields: [\n";
   for (const UserInfo::Field& field : user_info.fields()) {
     os << field << ", \n";
@@ -186,14 +192,17 @@ AccessorySheetData::Builder& AccessorySheetData::Builder::SetWarning(
 }
 
 AccessorySheetData::Builder&& AccessorySheetData::Builder::AddUserInfo(
-    std::string origin) && {
+    std::string origin,
+    UserInfo::IsPslMatch is_psl_match) && {
   // Calls AddUserInfo()& since |this| is an lvalue.
-  return std::move(AddUserInfo(std::move(origin)));
+  return std::move(AddUserInfo(std::move(origin), is_psl_match));
 }
 
 AccessorySheetData::Builder& AccessorySheetData::Builder::AddUserInfo(
-    std::string origin) & {
-  accessory_sheet_data_.add_user_info(UserInfo(std::move(origin)));
+    std::string origin,
+    UserInfo::IsPslMatch is_psl_match) & {
+  accessory_sheet_data_.add_user_info(
+      UserInfo(std::move(origin), is_psl_match));
   return *this;
 }
 

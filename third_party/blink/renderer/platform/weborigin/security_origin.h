@@ -139,19 +139,22 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   static bool IsSecure(const KURL&);
 
   // Returns true if this SecurityOrigin can script objects in the given
-  // SecurityOrigin. For example, call this function before allowing
-  // script from one security origin to read or write objects from
-  // another SecurityOrigin.
+  // SecurityOrigin. This check is similar to `IsSameOriginDomainWith()`, but
+  // additionally takes "universal access" flag into account, as well as the
+  // origin's agent cluster (see https://tc39.es/ecma262/#sec-agent-clusters).
+  //
+  // Note: This kind of access check should be rare; `IsSameOriginWith()` is
+  // almost certainly the right choice for new security checks.
+  //
+  // TODO(1027191): We're currently calling this method in a number of places
+  // where either `IsSameOriginWith()` or `IsSameOriginDomainWith()` might
+  // be more appropriate. We should audit its existing usage, and it might
+  // make sense to move it out of SecurityOrigin entirely to align it more
+  // tightly with `BindingSecurity` where it's clearly necessary.
   bool CanAccess(const SecurityOrigin* other) const {
     AccessResultDomainDetail unused_detail;
     return CanAccess(other, unused_detail);
   }
-
-  // Returns true if this SecurityOrigin can script objects in |other|, just
-  // as above, but also returns the category into which the access check fell.
-  //
-  // TODO(crbug.com/787905): Remove this variant once we have enough data to
-  // make decisions about `document.domain`.
   bool CanAccess(const SecurityOrigin* other, AccessResultDomainDetail&) const;
 
   // Returns true if this SecurityOrigin can read content retrieved from
@@ -293,6 +296,25 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   // https://html.spec.whatwg.org/#same-origin
   bool IsSameOriginWith(const SecurityOrigin*) const;
   static bool AreSameOrigin(const KURL& a, const KURL& b);
+
+  // This method implements HTML's "same origin-domain" check, which takes
+  // `document.domain` into account when comparing two origins.
+  //
+  // This method does not take the "universal access" flag into account. It does
+  // take the "local access" flag into account, considering `file:` origins that
+  // set the flag to be same origin-domain with all other `file:` origins that
+  // set the flag (assuming no `document.domain` mismatch).
+  //
+  // Note: Same origin-domain checks should be rare, and `IsSameOriginWith()`
+  // is almost certainly the right choice for new security checks.
+  //
+  // https://html.spec.whatwg.org/#same-origin-domain
+  bool IsSameOriginDomainWith(const SecurityOrigin* other) const {
+    AccessResultDomainDetail unused_detail;
+    return IsSameOriginDomainWith(other, unused_detail);
+  }
+  bool IsSameOriginDomainWith(const SecurityOrigin*,
+                              AccessResultDomainDetail&) const;
 
   static const KURL& UrlWithUniqueOpaqueOrigin();
 

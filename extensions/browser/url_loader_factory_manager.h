@@ -14,8 +14,8 @@
 #include "url/gurl.h"
 
 namespace content {
+class BrowserContext;
 class RenderFrameHost;
-class RenderProcessHost;
 }  // namespace content
 
 namespace url {
@@ -72,7 +72,7 @@ class URLLoaderFactoryManager {
   //   extensions), but some extensions might need to set extension-specific
   //   security properties in the URLLoaderFactory used by content scripts.
   // The method recognizes the intended consumer based on |origin| ("web" vs
-  // other cases) and |process| ("extension" vs "content script").
+  // other cases) and |is_for_isolated_world| ("extension" vs "content script").
   //
   // The following examples might help understand the difference between
   // |origin| and other properties of a factory and/or network request:
@@ -92,8 +92,9 @@ class URLLoaderFactoryManager {
   //    - is_corb_enabled          |  secure     |  ext-based  | ext-based if
   //    - ..._access_patterns      |    default  |             |   allowlisted
   static void OverrideURLLoaderFactoryParams(
-      content::RenderProcessHost* process,
+      content::BrowserContext* browser_context,
       const url::Origin& origin,
+      bool is_for_isolated_world,
       network::mojom::URLLoaderFactoryParams* factory_params);
 
   static void AddExtensionToAllowlistForTesting(const Extension& extension);

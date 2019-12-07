@@ -121,6 +121,16 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
 
   String ToString() const;
 
+  struct FloatingObject {
+    DISALLOW_NEW();
+
+    void Trace(blink::Visitor* visitor) {}
+
+    const ComputedStyle& float_style;
+    const ComputedStyle& style;
+    LayoutUnit float_inline_max_size_with_margin;
+  };
+
  protected:
   bool IsPrepareLayoutFinished() const;
 
@@ -201,5 +211,8 @@ struct DowncastTraits<NGInlineNode> {
 };
 
 }  // namespace blink
+
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(
+    blink::NGInlineNode::FloatingObject)
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_INLINE_NODE_H_

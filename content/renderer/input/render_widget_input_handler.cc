@@ -19,7 +19,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/input_event_ack_state.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
@@ -181,18 +180,14 @@ viz::FrameSinkId GetRemoteFrameSinkId(const blink::WebHitTestResult& result) {
   const blink::WebNode& node = result.GetNode();
   DCHECK(!node.IsNull());
   blink::WebFrame* result_frame = blink::WebFrame::FromFrameOwnerElement(node);
-  if (result_frame && result_frame->IsWebRemoteFrame()) {
-    blink::WebRemoteFrame* remote_frame = result_frame->ToWebRemoteFrame();
-    if (remote_frame->IsIgnoredForHitTest())
-      return viz::FrameSinkId();
+  if (!result_frame || !result_frame->IsWebRemoteFrame())
+    return viz::FrameSinkId();
 
-    if (!result.ContentBoxContainsPoint())
-      return viz::FrameSinkId();
+  blink::WebRemoteFrame* remote_frame = result_frame->ToWebRemoteFrame();
+  if (remote_frame->IsIgnoredForHitTest() || !result.ContentBoxContainsPoint())
+    return viz::FrameSinkId();
 
-    return RenderFrameProxy::FromWebFrame(remote_frame)->frame_sink_id();
-  }
-  auto* plugin = BrowserPlugin::GetFromNode(node);
-  return plugin ? plugin->frame_sink_id() : viz::FrameSinkId();
+  return RenderFrameProxy::FromWebFrame(remote_frame)->frame_sink_id();
 }
 
 }  // namespace

@@ -2576,6 +2576,7 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
   // BackForwardCache:
   // Navigate immediately if the document is in the BackForwardCache.
   if (back_forward_cache_.GetEntry(nav_entry_id)) {
+    TRACE_EVENT0("navigation", "BackForwardCache_CreateNavigationRequest");
     DCHECK_EQ(reload_type, ReloadType::NONE);
     auto navigation_request = CreateNavigationRequestFromEntry(
         root, pending_entry_, pending_entry_->GetFrameEntry(root),
@@ -3194,13 +3195,7 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
           params.started_from_context_menu, has_user_gesture,
           InitiatorCSPInfo(), std::vector<int>(), params.href_translate,
           false /* is_history_navigation_in_new_child_frame */,
-          params.input_start,
-          // TODO(chenleihu): The value of frame policy should be set to a
-          // valid value here. Currently when we navigate a remote frame, the
-          // frame_policy value in common_params is not used to initialize
-          // container policy in document.cc.
-          // https://crbug.com/972089
-          base::nullopt /* frame policy */);
+          params.input_start);
 
   mojom::CommitNavigationParamsPtr commit_params =
       mojom::CommitNavigationParams::New(
@@ -3227,7 +3222,8 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
           false, /* is_browser_initiated */
           network::mojom::IPAddressSpace::kUnknown,
           GURL() /* web_bundle_physical_url */,
-          GURL() /* base_url_override_for_web_bundle */);
+          GURL() /* base_url_override_for_web_bundle */,
+          node->pending_frame_policy());
 #if defined(OS_ANDROID)
   if (ValidateDataURLAsString(params.data_url_as_string)) {
     commit_params->data_url_as_string = params.data_url_as_string->data();
@@ -3338,8 +3334,7 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
           *frame_entry, request_body, dest_url,
           blink::mojom::Referrer::New(dest_referrer.url, dest_referrer.policy),
           navigation_type, previews_state, navigation_start,
-          base::TimeTicks() /* input_start */,
-          frame_tree_node->pending_frame_policy());
+          base::TimeTicks() /* input_start */);
   common_params->is_history_navigation_in_new_child_frame =
       is_history_navigation_in_new_child_frame;
 
@@ -3351,8 +3346,8 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
           *frame_entry, common_params->url, origin_to_commit,
           common_params->method, entry->GetSubframeUniqueNames(frame_tree_node),
           GetPendingEntryIndex() == -1 /* intended_as_new_entry */,
-          GetIndexOfEntry(entry), GetLastCommittedEntryIndex(),
-          GetEntryCount());
+          GetIndexOfEntry(entry), GetLastCommittedEntryIndex(), GetEntryCount(),
+          frame_tree_node->pending_frame_policy());
   commit_params->post_content_type = post_content_type;
 
   return NavigationRequest::CreateBrowserInitiated(

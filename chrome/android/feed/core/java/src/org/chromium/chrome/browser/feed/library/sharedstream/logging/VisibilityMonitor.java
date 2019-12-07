@@ -10,6 +10,8 @@ import android.view.View;
 import android.view.ViewParent;
 import android.view.ViewTreeObserver;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration.ConfigKey;
 
@@ -22,7 +24,8 @@ public class VisibilityMonitor
     private final View mView;
     private final double mViewLogThreshold;
     private boolean mVisible;
-    /*@Nullable*/ private VisibilityListener mVisibilityListener;
+    @Nullable
+    private VisibilityListener mVisibilityListener;
 
     public VisibilityMonitor(View view, Configuration configuration) {
         this.mView = view;
@@ -67,7 +70,7 @@ public class VisibilityMonitor
         mView.getViewTreeObserver().removeOnPreDrawListener(this);
     }
 
-    public void setListener(/*@Nullable*/ VisibilityListener visibilityListener) {
+    public void setListener(@Nullable VisibilityListener visibilityListener) {
         if (visibilityListener != null) {
             detach();
         }

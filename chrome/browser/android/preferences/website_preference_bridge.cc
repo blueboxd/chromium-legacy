@@ -348,7 +348,7 @@ static void JNI_WebsitePreferenceBridge_GetClipboardOrigins(
     JNIEnv* env,
     const JavaParamRef<jobject>& list) {
   JNI_WebsitePreferenceBridge_GetOrigins(
-      env, ContentSettingsType::CLIPBOARD_READ,
+      env, ContentSettingsType::CLIPBOARD_READ_WRITE,
       &Java_WebsitePreferenceBridge_insertClipboardInfoIntoList, list, false);
 }
 
@@ -357,7 +357,8 @@ static jint JNI_WebsitePreferenceBridge_GetClipboardSettingForOrigin(
     const JavaParamRef<jstring>& origin,
     jboolean is_incognito) {
   return JNI_WebsitePreferenceBridge_GetSettingForOrigin(
-      env, ContentSettingsType::CLIPBOARD_READ, origin, origin, is_incognito);
+      env, ContentSettingsType::CLIPBOARD_READ_WRITE, origin, origin,
+      is_incognito);
 }
 
 static void JNI_WebsitePreferenceBridge_SetClipboardSettingForOrigin(
@@ -366,7 +367,7 @@ static void JNI_WebsitePreferenceBridge_SetClipboardSettingForOrigin(
     jint value,
     jboolean is_incognito) {
   JNI_WebsitePreferenceBridge_SetSettingForOrigin(
-      env, ContentSettingsType::CLIPBOARD_READ, origin, origin,
+      env, ContentSettingsType::CLIPBOARD_READ_WRITE, origin, origin,
       static_cast<ContentSetting>(value), is_incognito);
 }
 
@@ -962,7 +963,7 @@ static jboolean JNI_WebsitePreferenceBridge_IsContentSettingEnabled(
   DCHECK(type == ContentSettingsType::JAVASCRIPT ||
          type == ContentSettingsType::POPUPS ||
          type == ContentSettingsType::ADS ||
-         type == ContentSettingsType::CLIPBOARD_READ ||
+         type == ContentSettingsType::CLIPBOARD_READ_WRITE ||
          type == ContentSettingsType::USB_GUARD ||
          type == ContentSettingsType::BLUETOOTH_SCANNING);
   return GetBooleanForContentSetting(type);
@@ -1123,7 +1124,7 @@ static void JNI_WebsitePreferenceBridge_SetClipboardEnabled(JNIEnv* env,
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetDefaultContentSetting(
-      ContentSettingsType::CLIPBOARD_READ,
+      ContentSettingsType::CLIPBOARD_READ_WRITE,
       allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
 }
 

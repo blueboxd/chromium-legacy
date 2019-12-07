@@ -9,7 +9,7 @@
 #include "build/build_config.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/media/session/mock_media_session_player_observer.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/media_session_service.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/shell/browser/shell.h"
 #include "media/base/media_content_type.h"
@@ -19,8 +19,6 @@
 #include "services/media_session/public/cpp/test/audio_focus_test_util.h"
 #include "services/media_session/public/cpp/test/mock_media_session.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
-#include "services/media_session/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
 
@@ -37,8 +35,8 @@ class AudioFocusDelegateDefaultBrowserTest : public ContentBrowserTest {
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
 
-    GetSystemConnector()->Connect(media_session::mojom::kServiceName,
-                                  audio_focus_.BindNewPipeAndPassReceiver());
+    GetMediaSessionService().BindAudioFocusManager(
+        audio_focus_.BindNewPipeAndPassReceiver());
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

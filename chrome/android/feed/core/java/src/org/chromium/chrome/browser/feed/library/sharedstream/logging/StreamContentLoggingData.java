@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.sharedstream.logging;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.host.logging.ContentLoggingData;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.ClientBasicLoggingMetadata;
 import org.chromium.components.feed.core.proto.ui.stream.StreamStructureProto.BasicLoggingMetadata;
@@ -77,7 +79,7 @@ public class StreamContentLoggingData implements ContentLoggingData {
     }
 
     @Override
-    public boolean equals(/*@Nullable*/ Object o) {
+    public boolean equals(@Nullable Object o) {
         if (this == o) {
             return true;
         }

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.piet;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.piet.host.AssetProvider;
 import org.chromium.chrome.browser.feed.library.piet.host.CustomElementProvider;
 import org.chromium.chrome.browser.feed.library.piet.host.HostBindingProvider;
@@ -14,11 +16,11 @@ public class HostProviders {
     private final AssetProvider mAssetProvider;
     private final CustomElementProvider mCustomElementProvider;
     private final HostBindingProvider mHostBindingProvider;
-    /*@Nullable*/ private final LogDataCallback mLogDataCallback;
+    @Nullable
+    private final LogDataCallback mLogDataCallback;
 
     public HostProviders(AssetProvider assetProvider, CustomElementProvider customElementProvider,
-            HostBindingProvider hostBindingProvider,
-            /*@Nullable*/ LogDataCallback logDataCallback) {
+            HostBindingProvider hostBindingProvider, @Nullable LogDataCallback logDataCallback) {
         this.mAssetProvider = assetProvider;
         this.mCustomElementProvider = customElementProvider;
         this.mHostBindingProvider = hostBindingProvider;
@@ -37,7 +39,7 @@ public class HostProviders {
         return mHostBindingProvider;
     }
 
-    /*@Nullable*/
+    @Nullable
     public LogDataCallback getLogDataCallback() {
         return mLogDataCallback;
     }

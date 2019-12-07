@@ -738,8 +738,7 @@ NavigationEntryImpl::ConstructCommonNavigationParams(
     mojom::NavigationType navigation_type,
     PreviewsState previews_state,
     base::TimeTicks navigation_start,
-    base::TimeTicks input_start,
-    const blink::FramePolicy& frame_policy) {
+    base::TimeTicks input_start) {
   NavigationDownloadPolicy download_policy;
   if (IsViewSourceMode())
     download_policy.SetDisallowed(NavigationDownloadType::kViewSource);
@@ -752,8 +751,7 @@ NavigationEntryImpl::ConstructCommonNavigationParams(
       post_body ? post_body : post_data_, base::Optional<SourceLocation>(),
       has_started_from_context_menu(), has_user_gesture(), InitiatorCSPInfo(),
       std::vector<int>(), std::string(),
-      false /* is_history_navigation_in_new_child_frame */, input_start,
-      frame_policy);
+      false /* is_history_navigation_in_new_child_frame */, input_start);
 }
 
 mojom::CommitNavigationParamsPtr
@@ -766,7 +764,8 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
     bool intended_as_new_entry,
     int pending_history_list_offset,
     int current_history_list_offset,
-    int current_history_list_length) {
+    int current_history_list_length,
+    const blink::FramePolicy& frame_policy) {
   // Set the redirect chain to the navigation's redirects, unless returning to a
   // completed navigation (whose previous redirects don't apply).
   std::vector<GURL> redirects;
@@ -804,7 +803,7 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
 #endif
           false, network::mojom::IPAddressSpace::kUnknown,
           GURL() /* web_bundle_physical_url */,
-          GURL() /* base_url_override_for_web_bundle */);
+          GURL() /* base_url_override_for_web_bundle */, frame_policy);
 #if defined(OS_ANDROID)
   if (NavigationControllerImpl::ValidateDataURLAsString(GetDataURLAsString())) {
     commit_params->data_url_as_string = GetDataURLAsString()->data();

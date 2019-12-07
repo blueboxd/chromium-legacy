@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.api.internal.modelprovider;
 
+import androidx.annotation.Nullable;
+
 /**
  * This represents a Cursor through the children of a {@link ModelFeature}. A Cursor will provide
  * forward only access to the children of the container. When a cursor is created by calling {@link
@@ -11,7 +13,7 @@ package org.chromium.chrome.browser.feed.library.api.internal.modelprovider;
  */
 public interface ModelCursor {
     /** Returns the next {@link ModelChild} in the cursor or {@code null} if at end. */
-    /*@Nullable*/
+    @Nullable
     ModelChild getNextItem();
 
     /** Returns {@literal true} if the cursor is at the end. */

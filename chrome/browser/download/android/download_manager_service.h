@@ -49,13 +49,14 @@ class DownloadManagerService
   DownloadManagerService();
   ~DownloadManagerService() override;
 
-  // Called to Initialize this object. If |is_profile_created| is false,
-  // it means only the service manager is launched. OnProfileCreated() will
-  // be called later when the profile is created.
-  void Init(JNIEnv* env, jobject obj, bool is_profile_created);
+  // Called to Initialize this object. If |is_profile_added| is false,
+  // it means only the service manager is launched. OnProfileAdded() will
+  // be called later when the profile is added.
+  void Init(JNIEnv* env, jobject obj, bool is_profile_added);
 
-  // Called when the prfile is created.
-  void OnProfileCreated(JNIEnv* env, jobject obj);
+  // Called when the profile is added to the ProfileManager and fully
+  // initialized.
+  void OnProfileAdded(JNIEnv* env, jobject obj);
 
   // Called to handle subsequent steps, after a download was determined as a OMA
   // download type.

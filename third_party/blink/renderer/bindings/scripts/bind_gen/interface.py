@@ -12,15 +12,15 @@ from .blink_v8_bridge import blink_class_name
 from .blink_v8_bridge import blink_type_info
 from .blink_v8_bridge import make_v8_to_blink_value
 from .blink_v8_bridge import make_v8_to_blink_value_variadic
-from .code_node import CodeNode
-from .code_node import FunctionDefinitionNode
-from .code_node import LiteralNode
 from .code_node import SequenceNode
 from .code_node import SymbolDefinitionNode
 from .code_node import SymbolNode
 from .code_node import SymbolScopeNode
 from .code_node import TextNode
-from .code_node import UnlikelyExitNode
+from .code_node_cxx import CxxBreakableBlockNode
+from .code_node_cxx import CxxFuncDefNode
+from .code_node_cxx import CxxLikelyIfNode
+from .code_node_cxx import CxxUnlikelyIfNode
 from .codegen_accumulator import CodeGenAccumulator
 from .codegen_context import CodeGenContext
 from .codegen_expr import expr_from_exposure
@@ -234,7 +234,7 @@ def bind_return_value(code_node, cg_context):
     T = TextNode
 
     def create_definition(symbol_node):
-        api_calls = []
+        api_calls = []  # Pairs of (num_of_args, api_call_text)
         arguments = (cg_context.function_like.arguments
                      if cg_context.function_like else [])
         for index, arg in enumerate(arguments):
@@ -258,33 +258,32 @@ def bind_return_value(code_node, cg_context):
                 nodes.append(
                     T(_format("const auto& ${return_value} = {};", api_call)))
         else:
-            branches = SymbolScopeNode()
+            branches = SequenceNode()
             for index, api_call in api_calls:
                 if is_return_type_void or cg_context.is_return_by_argument:
-                    assignment = api_call
+                    assignment = "{};".format(api_call)
                 else:
-                    assignment = _format("${return_value} = {}", api_call)
+                    assignment = _format("${return_value} = {};", api_call)
                 if index is not None:
-                    pattern = ("if (${info}[{index}]->IsUndefined()) {{\n"
-                               "  {assignment};\n"
-                               "  break;\n"
-                               "}}")
+                    branches.append(
+                        CxxLikelyIfNode(
+                            cond=_format("${info}[{}]->IsUndefined()", index),
+                            body=[
+                                T(assignment),
+                                T("break;"),
+                            ]))
                 else:
-                    pattern = "{assignment};"
-                text = _format(pattern, index=index, assignment=assignment)
-                branches.append(T(text))
+                    branches.append(T(assignment))
 
             if not is_return_type_void:
                 nodes.append(T(_format("{} ${return_value};", return_type)))
-            nodes.append(T("do {  // Dummy loop for use of 'break'"))
-            nodes.append(branches)
-            nodes.append(T("} while (false);"))
+            nodes.append(CxxBreakableBlockNode(branches))
 
         if cg_context.may_throw_exception:
             nodes.append(
-                UnlikelyExitNode(
-                    cond=T("${exception_state}.HadException()"),
-                    body=SymbolScopeNode([T("return;")])))
+                CxxUnlikelyIfNode(
+                    cond="${exception_state}.HadException()",
+                    body=T("return;")))
 
         return SymbolDefinitionNode(symbol_node, nodes)
 
@@ -332,24 +331,22 @@ def make_check_receiver(cg_context):
             and "LenientThis" in cg_context.attribute.extended_attributes):
         return SequenceNode([
             T("// [LenientThis]"),
-            UnlikelyExitNode(
-                cond=T(
-                    "!${v8_class}::HasInstance(${v8_receiver}, ${isolate})"),
-                body=SymbolScopeNode([T("return;")])),
+            CxxUnlikelyIfNode(
+                cond="!${v8_class}::HasInstance(${v8_receiver}, ${isolate})",
+                body=T("return;")),
         ])
 
     if cg_context.return_type.unwrap().is_promise:
         return SequenceNode([
             T("// Promise returning function: "
               "Convert a TypeError to a reject promise."),
-            UnlikelyExitNode(
-                cond=T(
-                    "!${v8_class}::HasInstance(${v8_receiver}, ${isolate})"),
-                body=SymbolScopeNode([
+            CxxUnlikelyIfNode(
+                cond="!${v8_class}::HasInstance(${v8_receiver}, ${isolate})",
+                body=[
                     T("${exception_state}.ThrowTypeError("
                       "\"Illegal invocation\");"),
-                    T("return;")
-                ])),
+                    T("return;"),
+                ])
         ])
 
     return None
@@ -509,11 +506,7 @@ def _make_overload_dispatcher_per_arg_size(items):
         node = make_node(pattern)
         conditional = expr_from_exposure(func_like.exposure)
         if not conditional.is_always_true:
-            node = SymbolScopeNode([
-                TextNode("if (" + conditional.to_text() + ") {"),
-                node,
-                TextNode("}"),
-            ])
+            node = CxxUnlikelyIfNode(cond=conditional, body=node)
         dispatcher_nodes.append(node)
         return expr is True and conditional.is_always_true
 
@@ -656,36 +649,21 @@ def make_overload_dispatcher(cg_context):
         node, can_fail = _make_overload_dispatcher_per_arg_size(items)
 
         if arg_size > 0:
-            node = SymbolScopeNode([
-                T("if (${info}.Length() >= " + str(arg_size) + ") {"),
-                node,
-                T("break;") if can_fail else None,
-                T("}"),
-            ])
+            node = CxxLikelyIfNode(
+                cond=_format("${info}.Length() >= {}", arg_size),
+                body=[node, T("break;") if can_fail else None])
             did_use_break = did_use_break or can_fail
 
-        terms = map(
-            lambda item: expr_from_exposure(item.function_like.exposure),
-            items)
-        conditional = expr_or(terms)
+        conditional = expr_or(
+            map(lambda item: expr_from_exposure(item.function_like.exposure),
+                items))
         if not conditional.is_always_true:
-            node = SymbolScopeNode([
-                T("if (" + conditional.to_text() + ") {"),
-                node,
-                T("}"),
-            ])
+            node = CxxUnlikelyIfNode(cond=conditional, body=node)
 
         branches.append(node)
 
     if did_use_break:
-        branches = SymbolScopeNode([
-            T("do {  // Dummy loop for use of 'break'"),
-            branches,
-            T("} while (false);"),
-        ])
-    # Make the entire branches an indivisible chunk so that SymbolDefinitionNode
-    # will not be inserted in-between.
-    branches = LiteralNode(branches)
+        branches = CxxBreakableBlockNode(branches)
 
     if not did_use_break and arg_size == 0 and conditional.is_always_true:
         return branches
@@ -861,10 +839,10 @@ def make_attribute_get_callback_def(cg_context, function_name):
 
     cg_context = cg_context.make_copy(attribute_get=True)
 
-    func_def = FunctionDefinitionNode(
-        name=T(function_name),
-        arg_decls=[T("const v8::FunctionCallbackInfo<v8::Value>& info")],
-        return_type=T("void"))
+    func_def = CxxFuncDefNode(
+        name=function_name,
+        arg_decls=["const v8::FunctionCallbackInfo<v8::Value>& info"],
+        return_type="void")
 
     body = func_def.body
     body.add_template_var("info", "info")
@@ -903,10 +881,10 @@ def make_operation_function_def(cg_context, function_name):
 
     T = TextNode
 
-    func_def = FunctionDefinitionNode(
-        name=T(function_name),
-        arg_decls=[T("const v8::FunctionCallbackInfo<v8::Value>& info")],
-        return_type=T("void"))
+    func_def = CxxFuncDefNode(
+        name=function_name,
+        arg_decls=["const v8::FunctionCallbackInfo<v8::Value>& info"],
+        return_type="void")
 
     body = func_def.body
     body.add_template_var("info", "info")
@@ -933,12 +911,10 @@ def make_overload_dispatcher_function_def(cg_context, function_name):
     assert isinstance(cg_context, CodeGenContext)
     assert isinstance(function_name, str)
 
-    T = TextNode
-
-    func_def = FunctionDefinitionNode(
-        name=T(function_name),
-        arg_decls=[T("const v8::FunctionCallbackInfo<v8::Value>& info")],
-        return_type=T("void"))
+    func_def = CxxFuncDefNode(
+        name=function_name,
+        arg_decls=["const v8::FunctionCallbackInfo<v8::Value>& info"],
+        return_type="void")
 
     body = func_def.body
     body.add_template_var("info", "info")
@@ -1011,14 +987,14 @@ def make_install_interface_template_def(cg_context):
 
     T = TextNode
 
-    func_def = FunctionDefinitionNode(
-        name=T("InstallInterfaceTemplate"),
+    func_def = CxxFuncDefNode(
+        name="InstallInterfaceTemplate",
         arg_decls=[
-            T("v8::Isolate* isolate"),
-            T("const DOMWrapperWorld& world"),
-            T("v8::Local<v8::FunctionTemplate> interface_template"),
+            "v8::Isolate* isolate",
+            "const DOMWrapperWorld& world",
+            "v8::Local<v8::FunctionTemplate> interface_template",
         ],
-        return_type=T("void"))
+        return_type="void")
 
     body = func_def.body
     body.add_template_var("isolate", "isolate")

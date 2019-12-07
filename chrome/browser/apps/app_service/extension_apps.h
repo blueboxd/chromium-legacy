@@ -57,8 +57,6 @@ class ExtensionApps : public apps::mojom::Publisher,
   static void RecordUninstallCanceledAction(Profile* profile,
                                             const std::string& app_id);
 
-  static bool ShowPauseAppDialog(const std::string& app_id);
-
   ExtensionApps(const mojo::Remote<apps::mojom::AppService>& app_service,
                 Profile* profile,
                 apps::mojom::AppType app_type,

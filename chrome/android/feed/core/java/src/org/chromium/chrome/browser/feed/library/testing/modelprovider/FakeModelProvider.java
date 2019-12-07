@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.testing.modelprovider;
 
+import androidx.annotation.Nullable;
+
 import com.google.common.collect.ImmutableList;
 
 import org.chromium.chrome.browser.feed.library.api.host.logging.RequestReason;
@@ -32,11 +34,14 @@ public class FakeModelProvider implements ModelProvider {
     private ModelFeature mRootFeature;
     private boolean mWasRefreshTriggered;
     private boolean mTokensEnabled = true;
-    /*@Nullable*/ private String mSessionId;
+    @Nullable
+    private String mSessionId;
     @RequestReason
     private int mLastRequestReason = RequestReason.UNKNOWN;
-    /*@Nullable*/ private ModelFeature mImmediateSessionStartModel;
-    /*@Nullable*/ private UiContext mUnusedTriggerRefreshUiContext;
+    @Nullable
+    private ModelFeature mImmediateSessionStartModel;
+    @Nullable
+    private UiContext mUnusedTriggerRefreshUiContext;
     private FakeModelMutation mLatestModelMutation = new FakeModelMutation();
     private boolean mIsInvalidated;
 
@@ -63,19 +68,19 @@ public class FakeModelProvider implements ModelProvider {
     public void raiseError(ModelError error) {}
 
     @Override
-    /*@Nullable*/
+    @Nullable
     public ModelFeature getRootFeature() {
         return mRootFeature;
     }
 
     @Override
-    /*@Nullable*/
+    @Nullable
     public ModelChild getModelChild(String contentId) {
         return null;
     }
 
     @Override
-    /*@Nullable*/
+    @Nullable
     public StreamSharedState getSharedState(ContentId contentId) {
         return null;
     }
@@ -103,7 +108,7 @@ public class FakeModelProvider implements ModelProvider {
     }
 
     @Override
-    /*@Nullable*/
+    @Nullable
     public String getSessionId() {
         return mSessionId;
     }

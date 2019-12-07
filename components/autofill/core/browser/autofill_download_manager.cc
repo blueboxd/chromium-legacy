@@ -24,6 +24,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/form_structure.h"
@@ -852,9 +853,15 @@ bool AutofillDownloadManager::StartRequest(FormRequestData request_data) {
   resource_request->url = request_url;
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->method = method;
+
+  // On iOS we have a single, shared URLLoaderFactory provided by BrowserState.
+  // As it is shared, it is not trusted and we cannot assign trusted_params
+  // to the network request.
+#if !defined(OS_IOS)
   resource_request->trusted_params = network::ResourceRequest::TrustedParams();
   resource_request->trusted_params->network_isolation_key =
       driver_->NetworkIsolationKey();
+#endif
 
   // Add Chrome experiment state to the request headers.
   variations::AppendVariationsHeaderUnknownSignedIn(

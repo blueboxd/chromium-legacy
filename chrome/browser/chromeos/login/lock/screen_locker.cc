@@ -195,6 +195,7 @@ ScreenLocker::ScreenLocker(const user_manager::UserList& users)
 
   GetLoginScreenCertProviderService()->pin_dialog_manager()->AddPinDialogHost(
       &security_token_pin_dialog_host_ash_impl_);
+  user_manager::UserManager::Get()->AddSessionStateObserver(this);
 }
 
 void ScreenLocker::Init() {
@@ -264,6 +265,8 @@ void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
       << "Authentication is disabled for this user.";
 
   incorrect_passwords_count_ = 0;
+  DCHECK(!unlock_started_);
+  unlock_started_ = true;
   if (authentication_start_time_.is_null()) {
     if (user_context.GetAccountId().is_valid())
       LOG(ERROR) << "Start time is not set at authentication success";
@@ -700,6 +703,7 @@ ScreenLocker::AuthState::~AuthState() = default;
 ScreenLocker::~ScreenLocker() {
   VLOG(1) << "Destroying ScreenLocker " << this;
   DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
 
   GetLoginScreenCertProviderService()
       ->pin_dialog_manager()
@@ -825,6 +829,12 @@ void ScreenLocker::OnAuthScanDone(
 
 void ScreenLocker::OnSessionFailed() {
   LOG(ERROR) << "Fingerprint session failed.";
+}
+
+void ScreenLocker::ActiveUserChanged(user_manager::User* active_user) {
+  // During ScreenLocker lifetime active user could only change when unlock has
+  // started. See https://crbug.com/1022667 for more details.
+  CHECK(unlock_started_);
 }
 
 void ScreenLocker::OnFingerprintAuthFailure(const user_manager::User& user) {

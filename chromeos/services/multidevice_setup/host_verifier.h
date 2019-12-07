@@ -14,9 +14,12 @@ namespace multidevice_setup {
 
 // Verifies that this device can connect to the currently-set MultiDevice host.
 // In order for a host device to be considered set, its BETTER_TOGETHER_HOST
-// software feature must be enabled, and in order for a host device to be
-// considered verified, at least one of its other host software features must be
-// enabled.
+// software feature must be enabled. In order for a host device to be
+// considered verified,
+//   * at least one of its other host software features must be enabled, and
+//   * the host device's public key, persistent symmetric key, and beacon
+//     seeds--data necessary for Bluetooth communication with the MultiDevice
+//     client--must be available.
 //
 // HostVerifier waits for that situation to occur and has the ability (via its
 // AttemptVerificationNow() function) to send a tickle message to the phone to

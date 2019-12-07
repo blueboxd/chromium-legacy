@@ -1,6 +1,7 @@
 include_rules = [
   "+content/public",
   "+content/test/test_content_browser_client.h",
+  "+content/test/test_web_contents.h",
   "+ui/content_accelerators",
   "+ui/views",
   "+ui/web_dialogs",

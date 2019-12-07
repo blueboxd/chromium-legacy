@@ -292,6 +292,14 @@ ContentSecurityPolicy* DocumentInit::GetContentSecurityPolicy() const {
 DocumentInit& DocumentInit::WithFramePolicy(
     const base::Optional<FramePolicy>& frame_policy) {
   frame_policy_ = frame_policy;
+  if (frame_policy_.has_value()) {
+    DCHECK(document_loader_);
+    // Make the snapshot value of sandbox flags from the beginning of navigation
+    // available in frame loader, so that the value could be further used to
+    // initialize sandbox flags in security context. crbug.com/1026627
+    document_loader_->GetFrame()->Loader().SetFrameOwnerSandboxFlags(
+        frame_policy_.value().sandbox_flags);
+  }
   return *this;
 }
 

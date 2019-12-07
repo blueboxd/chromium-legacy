@@ -66,7 +66,7 @@ class DisplayPanel extends HTMLElement {
                   align-items: stretch;
                   background-color: #FFF;
                   box-shadow: 0px 1px 2px 0px rgba(60, 64, 67, 0.3),
-                              1px 1px 3px 1px rgba(60, 64, 67, 0.15);
+                              1px 1px 3px 0px rgba(60, 64, 67, 0.15);
                   border-radius: 4px;
                   display: flex;
                   flex-direction: column;
@@ -288,7 +288,7 @@ class DisplayPanel extends HTMLElement {
    * @public
    */
   updateSummaryPanel() {
-    let summaryHost = this.shadowRoot.querySelector('#summary');
+    const summaryHost = this.shadowRoot.querySelector('#summary');
     let summaryPanel = summaryHost.querySelector('#summary-panel');
 
     // Make the display panel available by tab if there are panels to
@@ -418,7 +418,7 @@ class DisplayPanel extends HTMLElement {
    * @public
    */
   findPanelItemById(id) {
-    for (let item of this.items_) {
+    for (const item of this.items_) {
       if (item.getAttribute('id') === id) {
         return item;
       }

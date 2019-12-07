@@ -50,12 +50,13 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
                                        public TabletModeObserver,
                                        public AccessibilityObserver {
  public:
-  // "LEFT" and "RIGHT" are the snap positions corresponding to "primary
-  // landscape" screen orientation. In other screen orientation, we still use
-  // "LEFT" and "RIGHT" but it doesn't literally mean left side of the screen or
-  // right side of the screen. For example, if the screen orientation is
-  // "portait primary", snapping a window to LEFT means snapping it to the
-  // top of the screen.
+  // |LEFT| and |RIGHT| are named for the positions to which they correspond in
+  // clamshell mode or primary-landscape-oriented tablet mode. In portrait-
+  // oriented tablet mode, we actually snap windows on the top and bottom, but
+  // in clamshell mode, although the display orientation may sometimes be
+  // portrait, we always snap windows on the left and right (see
+  // |IsLayoutHorizontal|). The snap positions are swapped in secondary-oriented
+  // tablet mode (see |IsLayoutRightSideUp|).
   enum SnapPosition { NONE, LEFT, RIGHT };
 
   // Why splitview was ended.
@@ -101,6 +102,24 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // the |ash::features::kMultiDisplayOverviewAndSplitView| feature flag is
   // disabled, |window| is ignored as there is only one |SplitViewController|.
   static SplitViewController* Get(const aura::Window* window);
+
+  // The return values of these two functions together indicate what actual
+  // positions correspond to |LEFT| and |RIGHT|:
+  // |IsLayoutHorizontal|  |IsLayoutRightSideUp|  |LEFT|               |RIGHT|
+  // -------------------------------------------------------------------------
+  // true                  true                   left                 right
+  // true                  false                  right                left
+  // false                 true                   top                  bottom
+  // false                 false                  bottom               top
+  // In tablet mode, these functions return values based on display orientation.
+  // In clamshell mode, these functions return true.
+  static bool IsLayoutHorizontal();
+  static bool IsLayoutRightSideUp();
+
+  // Returns true if |position| actually signifies a left or top position,
+  // according to the return values of |IsLayoutHorizontal| and
+  // |IsLayoutRightSideUp|.
+  static bool IsPhysicalLeftOrTop(SnapPosition position);
 
   explicit SplitViewController(aura::Window* root_window);
   ~SplitViewController() override;
@@ -223,6 +242,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   void OnTabletModeStarting() override;
   void OnTabletModeStarted() override;
   void OnTabletModeEnding() override;
+  void OnTabletModeEnded() override;
   void OnTabletControllerDestroyed() override;
 
   // AccessibilityObserver:
@@ -452,8 +472,10 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // versa.
   SnapPosition default_snap_position_ = NONE;
 
-  // Whether the previous screen orientation is a primary orientation.
-  bool is_previous_screen_orientation_primary_ = true;
+  // Whether the previous layout is right-side-up (see |IsLayoutRightSideUp|).
+  // Consistent with |IsLayoutRightSideUp|, |is_previous_layout_right_side_up_|
+  // is always true in clamshell mode.
+  bool is_previous_layout_right_side_up_ = true;
 
   // True when the divider is being dragged (not during its snap animation).
   bool is_resizing_ = false;

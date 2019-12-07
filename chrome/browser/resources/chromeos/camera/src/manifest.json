@@ -26,11 +26,14 @@
   "app": {
     "background": {
       "scripts": [
+        "js/chrome_util.js",
         "js/mojo/mojo_bindings_lite.js",
         "js/mojo/camera_intent.mojom-lite.js",
         "js/mojo/camera_app_helper.mojom-lite.js",
         "js/mojo/chrome_helper.js",
+        "js/type.js",
         "js/intent.js",
+        "js/background_ops.js",
         "js/background.js"
       ]
     }

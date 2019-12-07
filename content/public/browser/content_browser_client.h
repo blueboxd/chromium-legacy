@@ -379,8 +379,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   //   In this case |origin| is the origin of the isolated world and the
   //   |request_initiator_site_lock| is the origin committed in the frame.
   virtual void OverrideURLLoaderFactoryParams(
-      RenderProcessHost* process,
+      BrowserContext* browser_context,
       const url::Origin& origin,
+      bool is_for_isolated_world,
       network::mojom::URLLoaderFactoryParams* factory_params);
 
   // Returns a list additional WebUI schemes, if any.  These additional schemes
@@ -533,13 +534,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // switches::kProcessType will already be set at this point.
   virtual void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                               int child_process_id) {}
-
-  // Allows the content embedder to adjust the command line arguments for
-  // a utility process started to run a service. This is called on a background
-  // thread.
-  virtual void AdjustUtilityServiceProcessCommandLine(
-      const service_manager::Identity& identity,
-      base::CommandLine* command_line) {}
 
   // Returns a client GUID used for virus scanning.
   virtual std::string GetApplicationClientGUIDForQuarantineCheck();

@@ -25,7 +25,6 @@ class ChooserBubbleDelegate : public BubbleDelegate {
   ~ChooserBubbleDelegate() override;
 
   // BubbleDelegate:
-  std::string GetName() const override;
   std::unique_ptr<BubbleUi> BuildBubbleUi() override;
   const content::RenderFrameHost* OwningFrame() const override;
 

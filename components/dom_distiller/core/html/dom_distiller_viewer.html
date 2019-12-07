@@ -33,10 +33,10 @@ found in the LICENSE file.
           </div>
           <div id="settings-fields">
             <div class="setting">
-              <label for="font-family-selection" class="screen-reader-only">
+              <label id="font-family-label" class="screen-reader-only">
                 Font Style
               </label>
-              <select id="font-family-selection" name="font-family">
+              <select id="font-family-selection" aria-labelledby="font-family-label" name="font-family">
                 <option value="sans-serif" selected>Sans-serif font</option>
                 <option value="serif">Serif font</option>
                 <option value="monospace">Monospace font</option>
@@ -49,37 +49,41 @@ found in the LICENSE file.
                 </legend>
                 <ul>
                   <li class="theme-option">
-                    <label for="theme-option-light" class="screen-reader-only">
+                    <label id="theme-option-light-label" class="screen-reader-only">
                       Light
                     </label>
                     <input type="radio" name="theme" value="light"
-                       id="theme-option-light" class="light" checked/>
+                       aria-labelledby="theme-option-light-label"
+                       id="theme-option-light" class="light" checked>
                     <div class="checkmark"><i class="material-icons">check_circle</i></div>
                   </li>
                   <li class="theme-option">
-                    <label for="theme-option-sepia" class="screen-reader-only">
+                    <label id="theme-option-sepia-label" class="screen-reader-only">
                       Sepia
                     </label>
                     <input type="radio" name="theme" value="sepia"
-                       id="theme-option-sepia" class="sepia"/>
+                       aria-labelledby="theme-option-sepia-label"
+                       id="theme-option-sepia" class="sepia">
                     <div class="checkmark"><i class="material-icons">check_circle</i></div>
                   </li>
                   <li class="theme-option">
-                    <label for="theme-option-dark" class="screen-reader-only">
+                    <label id="theme-option-dark-label" class="screen-reader-only">
                       Dark
                     </label>
                     <input type="radio" name="theme" value="dark"
-                        id="theme-option-dark" class="dark"/>
+                       aria-labelledby="theme-option-dark-label"
+                       id="theme-option-dark" class="dark">
                     <div class="checkmark"><i class="material-icons">check_circle</i></div>
                   </li>
                 </ul>
               </fieldset>
             </div>
             <div class="setting" id="font-size-wrapper">
-              <label for="font-size-selection" class="screen-reader-only">
+              <label id="font-size-label" class="screen-reader-only">
                 Font Size
               </label>
-              <input id="font-size-selection"
+              <input aria-labelledby="font-size-label"
+                     id="font-size-selection"
                      type="range"
                      name="font-size"
                      list="tickmarks"

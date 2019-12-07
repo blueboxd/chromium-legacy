@@ -12,6 +12,7 @@
 #include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "build/chromecast_buildflags.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 
 namespace tracing {
@@ -102,7 +103,7 @@ perfetto::TraceConfig GetDefaultPerfettoConfig(
 // Capture system trace events if supported and enabled. The datasources will
 // only emit events if system tracing is enabled in |chrome_config|.
   if (!privacy_filtering_enabled) {
-#if defined(OS_CHROMEOS) || (defined(IS_CHROMECAST) && defined(OS_LINUX))
+#if defined(OS_CHROMEOS) || (BUILDFLAG(IS_CHROMECAST) && defined(OS_LINUX))
     AddDataSourceConfig(&perfetto_config,
                         tracing::mojom::kSystemTraceDataSourceName,
                         chrome_config_string, privacy_filtering_enabled);

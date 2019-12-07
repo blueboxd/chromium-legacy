@@ -258,7 +258,8 @@ class CONTENT_EXPORT RenderFrameHostManager
   // Called when a renderer's frame navigates.
   void DidNavigateFrame(RenderFrameHostImpl* render_frame_host,
                         bool was_caused_by_user_gesture,
-                        bool is_same_document_navigation);
+                        bool is_same_document_navigation,
+                        const blink::FramePolicy& frame_policy);
 
   // Called when this frame's opener is changed to the frame specified by
   // |opener_routing_id| in |source_site_instance|'s process.  This change
@@ -718,9 +719,8 @@ class CONTENT_EXPORT RenderFrameHostManager
                                 bool was_caused_by_user_gesture,
                                 bool is_same_document_navigation);
 
-  // Commits any pending sandbox flag or feature policy updates when the
-  // renderer's frame navigates.
-  void CommitPendingFramePolicy();
+  // Commits given frame policy when the renderer's frame navigates.
+  void CommitFramePolicy(const blink::FramePolicy& frame_policy);
 
   // Runs the unload handler in the old RenderFrameHost, after the new
   // RenderFrameHost has committed.  |old_render_frame_host| will either be

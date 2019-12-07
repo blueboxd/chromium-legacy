@@ -156,10 +156,8 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
                         int preview_request_id);
 
   // Notifies the Web UI renderer that preview data is available.
-  // |expected_pages_count| specifies the total number of pages.
   // |preview_request_id| indicates which request resulted in this response.
-  void OnPreviewDataIsAvailable(int expected_pages_count,
-                                scoped_refptr<base::RefCountedMemory> data,
+  void OnPreviewDataIsAvailable(scoped_refptr<base::RefCountedMemory> data,
                                 int preview_request_id);
 
   // Notifies the Web UI that the print preview failed to render for the request

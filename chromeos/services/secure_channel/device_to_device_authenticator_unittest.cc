@@ -31,9 +31,6 @@ namespace secure_channel {
 
 namespace {
 
-// The account id of the user.
-const char kAccountId[] = "example@gmail.com";
-
 // The initiator's session public key in base64url form. Note that this is
 // actually a serialized proto.
 const char kInitiatorSessionPublicKeyBase64[] =
@@ -115,7 +112,6 @@ class DeviceToDeviceAuthenticatorForTest : public DeviceToDeviceAuthenticator {
       std::unique_ptr<multidevice::SecureMessageDelegate>
           secure_message_delegate)
       : DeviceToDeviceAuthenticator(connection,
-                                    kAccountId,
                                     std::move(secure_message_delegate)),
         timer_(nullptr) {}
   ~DeviceToDeviceAuthenticatorForTest() override {}

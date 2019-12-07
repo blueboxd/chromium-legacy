@@ -1487,7 +1487,8 @@ void InProcessCommandBuffer::LazyCreateSharedImageFactory() {
       GetGpuPreferences(), context_group_->feature_info()->workarounds(),
       GetGpuFeatureInfo(), context_state_.get(),
       context_group_->mailbox_manager(), task_executor_->shared_image_manager(),
-      image_factory_, nullptr, enable_wrapped_sk_image);
+      image_factory_, context_group_->memory_tracker(),
+      enable_wrapped_sk_image);
 }
 
 void InProcessCommandBuffer::CreateSharedImageOnGpuThread(

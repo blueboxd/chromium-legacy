@@ -1597,16 +1597,7 @@ TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedGestureScroll) {
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 }
 
-// Disabled due to random failures on win-asan: https://crbug.com/1030589.
-#if defined(ADDRESS_SANITIZER) && defined(OS_WIN)
-#define MAYBE_VSyncAlignedGestureScrollPinchScroll \
-  DISABLED_VSyncAlignedGestureScrollPinchScroll
-#else
-#define MAYBE_VSyncAlignedGestureScrollPinchScroll \
-  VSyncAlignedGestureScrollPinchScroll
-#endif
-TEST_F(InputHandlerProxyEventQueueTest,
-       MAYBE_VSyncAlignedGestureScrollPinchScroll) {
+TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedGestureScrollPinchScroll) {
   // Handle scroll on compositor.
   cc::InputHandlerScrollResult scroll_result_did_scroll_;
   scroll_result_did_scroll_.did_scroll = true;

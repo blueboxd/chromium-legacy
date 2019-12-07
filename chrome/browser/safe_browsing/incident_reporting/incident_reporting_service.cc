@@ -36,7 +36,6 @@
 #include "chrome/browser/safe_browsing/incident_reporting/preference_validation_delegate.h"
 #include "chrome/browser/safe_browsing/incident_reporting/state_store.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
@@ -124,20 +123,11 @@ PersistentIncidentState ComputeIncidentState(const Incident& incident) {
   return state;
 }
 
-// Returns the shutdown behavior for the task runners of the incident reporting
-// service. Current metrics suggest that CONTINUE_ON_SHUTDOWN will reduce the
-// number of browser hangs on shutdown.
-base::TaskShutdownBehavior GetShutdownBehavior() {
-  return base::FeatureList::IsEnabled(features::kBrowserHangFixesExperiment)
-             ? base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN
-             : base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN;
-}
-
 // Returns a task runner for blocking tasks in the background.
 scoped_refptr<base::TaskRunner> GetBackgroundTaskRunner() {
-  return base::CreateTaskRunner({base::ThreadPool(),
-                                 base::TaskPriority::BEST_EFFORT,
-                                 GetShutdownBehavior(), base::MayBlock()});
+  return base::CreateTaskRunner(
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()});
 }
 
 }  // namespace

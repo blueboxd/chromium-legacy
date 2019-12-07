@@ -15,6 +15,8 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.common.ui.LayoutUtils;
 import org.chromium.components.feed.core.proto.ui.piet.ErrorsProto.ErrorCode;
 
@@ -67,7 +69,7 @@ class DebugLogger {
     /**
      * Create a {@code View} containing all the messages of a certain type; null for no messages.
      */
-    /*@Nullable*/
+    @Nullable
     View getReportView(@MessageType int messageType, Context context) {
         List<ErrorCodeAndMessage> errors = this.mMessages.get(messageType);
         if (errors.isEmpty()) {
@@ -133,7 +135,7 @@ class DebugLogger {
         }
 
         @Override
-        public boolean equals(/*@Nullable*/ Object o) {
+        public boolean equals(@Nullable Object o) {
             if (this == o) {
                 return true;
             }

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.testing.host.stream;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.host.stream.TooltipInfo.FeatureName;
 import org.chromium.chrome.browser.feed.library.api.host.stream.TooltipSupportedApi;
@@ -15,7 +17,8 @@ import java.util.ArrayList;
 public final class FakeTooltipSupportedApi implements TooltipSupportedApi {
     private final ArrayList<String> mUnsupportedFeatures = new ArrayList<>();
     private final ThreadUtils mThreadUtils;
-    /*@Nullable*/ private String mLastFeatureName;
+    @Nullable
+    private String mLastFeatureName;
 
     public FakeTooltipSupportedApi(ThreadUtils threadUtils) {
         this.mThreadUtils = threadUtils;
@@ -38,7 +41,7 @@ public final class FakeTooltipSupportedApi implements TooltipSupportedApi {
      * Gets the last feature name that was passed in to {@link wouldTriggerHelpUi(String,
      * Consumer)}.
      */
-    /*@Nullable*/
+    @Nullable
     public String getLatestFeatureName() {
         return mLastFeatureName;
     }

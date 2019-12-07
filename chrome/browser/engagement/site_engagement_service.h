@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/engagement/site_engagement_details.mojom.h"
+#include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "third_party/blink/public/mojom/site_engagement/site_engagement.mojom.h"
@@ -152,6 +153,14 @@ class SiteEngagementService : public KeyedService,
   // Note that this method is quite expensive, so try to avoid calling it in
   // performance-critical code.
   std::vector<mojom::SiteEngagementDetails> GetAllDetails() const;
+
+  // Return an array of engagement score details for all origins which have
+  // had engagement since the specified time.
+  //
+  // Note that this method is quite expensive, so try to avoid calling it in
+  // performance-critical code.
+  std::vector<mojom::SiteEngagementDetails> GetAllDetailsEngagedInTimePeriod(
+      browsing_data::TimePeriod time_period) const;
 
   // Update the engagement score of |url| for a notification interaction.
   void HandleNotificationInteraction(const GURL& url);

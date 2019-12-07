@@ -789,6 +789,8 @@ source_set("chromeos") {
     "child_accounts/time_limit_notifier.h",
     "child_accounts/time_limit_override.cc",
     "child_accounts/time_limit_override.h",
+    "child_accounts/time_limits/app_activity_registry.cc",
+    "child_accounts/time_limits/app_activity_registry.h",
     "child_accounts/time_limits/app_service_wrapper.cc",
     "child_accounts/time_limits/app_service_wrapper.h",
     "child_accounts/time_limits/app_time_controller.cc",

@@ -53,7 +53,6 @@ class DeviceToDeviceAuthenticator : public Authenticator,
    public:
     static std::unique_ptr<Authenticator> NewInstance(
         Connection* connection,
-        const std::string& account_id,
         std::unique_ptr<multidevice::SecureMessageDelegate>
             secure_message_delegate);
 
@@ -62,7 +61,6 @@ class DeviceToDeviceAuthenticator : public Authenticator,
    protected:
     virtual std::unique_ptr<Authenticator> BuildInstance(
         Connection* connection,
-        const std::string& account_id,
         std::unique_ptr<multidevice::SecureMessageDelegate>
             secure_message_delegate);
 
@@ -73,12 +71,9 @@ class DeviceToDeviceAuthenticator : public Authenticator,
   // Creates the instance:
   // |connection|: The connection to the remote device, which must be in a
   //     connected state. Not owned.
-  // |account_id|: The canonical account id of the user who is the owner of both
-  //     the local and remote devices.
   // |secure_message_delegate|: Handles the SecureMessage crypto operations.
   DeviceToDeviceAuthenticator(
       Connection* connection,
-      const std::string& account_id,
       std::unique_ptr<multidevice::SecureMessageDelegate>
           secure_message_delegate);
 
@@ -148,10 +143,6 @@ class DeviceToDeviceAuthenticator : public Authenticator,
   // state at all times during authentication.
   // Not owned, and must outlive this instance.
   Connection* const connection_;
-
-  // The account id of the user who owns the local and remote devices. This is
-  // normally an email address, and should be canonicalized.
-  const std::string account_id_;
 
   // Handles SecureMessage crypto operations.
   std::unique_ptr<multidevice::SecureMessageDelegate> secure_message_delegate_;

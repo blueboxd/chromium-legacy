@@ -13,10 +13,9 @@
 #include "content/browser/media/session/mock_media_session_player_observer.h"
 #include "content/browser/media/session/mock_media_session_service_impl.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/media_session_service.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_renderer_host.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "content/test/test_web_contents.h"
 #include "media/base/media_content_type.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -25,9 +24,7 @@
 #include "services/media_session/public/cpp/test/audio_focus_test_util.h"
 #include "services/media_session/public/cpp/test/mock_media_session.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
-#include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 using ::testing::_;
 
@@ -103,15 +100,12 @@ class MediaSessionImplTest : public RenderViewHostTestHarness {
 
     // Connect to the Media Session service and bind |audio_focus_remote_| to
     // it.
-    service_manager_context_ = std::make_unique<TestServiceManagerContext>();
-    GetSystemConnector()->Connect(
-        media_session::mojom::kServiceName,
+    GetMediaSessionService().BindAudioFocusManager(
         audio_focus_remote_.BindNewPipeAndPassReceiver());
   }
 
   void TearDown() override {
     mock_media_session_service_.reset();
-    service_manager_context_.reset();
 
     RenderViewHostTestHarness::TearDown();
   }
@@ -189,8 +183,6 @@ class MediaSessionImplTest : public RenderViewHostTestHarness {
   std::unique_ptr<MockMediaSessionServiceImpl> mock_media_session_service_;
 
   mojo::Remote<media_session::mojom::AudioFocusManager> audio_focus_remote_;
-
-  std::unique_ptr<TestServiceManagerContext> service_manager_context_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSessionImplTest);
 };

@@ -147,8 +147,9 @@ bool ContentBrowserClient::ShouldIgnoreSameSiteCookieRestrictionsWhenTopLevel(
 }
 
 void ContentBrowserClient::OverrideURLLoaderFactoryParams(
-    RenderProcessHost* process,
+    BrowserContext* browser_context,
     const url::Origin& origin,
+    bool is_for_isolated_world,
     network::mojom::URLLoaderFactoryParams* factory_params) {}
 
 void ContentBrowserClient::GetAdditionalViewSourceSchemes(

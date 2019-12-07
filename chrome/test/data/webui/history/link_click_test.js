@@ -3,7 +3,11 @@
 // found in the LICENSE file.
 
 suite('listenForPrivilegedLinkClicks unit test', function() {
-  test('click handler', function() {
+  test('click handler', async () => {
+    PolymerTest.clearBody();
+    const testService = new TestBrowserService();
+    history.BrowserService.instance_ = testService;
+
     history.listenForPrivilegedLinkClicks();
     document.body.innerHTML = `
       <a id="file" href="file:///path/to/file">File</a>
@@ -11,18 +15,18 @@ suite('listenForPrivilegedLinkClicks unit test', function() {
       <a href="about:blank"><b id="blank">Click me</b></a>
     `;
 
-    let clickArgs = null;
-    const oldSend = chrome.send;
-    chrome.send = function(message, args) {
-      assertEquals('navigateToUrl', message);
-      clickArgs = args;
-    };
     $('file').click();
-    assertEquals('file:///path/to/file', clickArgs[0]);
+    let clickUrl = await testService.whenCalled('navigateToUrl');
+    assertEquals('file:///path/to/file', clickUrl);
+    testService.resetResolver('navigateToUrl');
+
     $('chrome').click();
-    assertEquals('about:chrome', clickArgs[0]);
+    clickUrl = await testService.whenCalled('navigateToUrl');
+    assertEquals('about:chrome', clickUrl);
+    testService.resetResolver('navigateToUrl');
+
     $('blank').click();
-    assertEquals('about:blank', clickArgs[0]);
-    chrome.send = oldSend;
+    clickUrl = await testService.whenCalled('navigateToUrl');
+    assertEquals('about:blank', clickUrl);
   });
 });

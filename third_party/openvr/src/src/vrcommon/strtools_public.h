@@ -4,6 +4,7 @@
 #include <string>
 #include <stdint.h>
 #include <sys/types.h>
+#include <vector>
 
 /** returns true if the string has the prefix */
 bool StringHasPrefix( const std::string & sString, const std::string & sPrefix );
@@ -39,11 +40,17 @@ std::string StringToLower( const std::string & sString );
 #if defined( OSX ) || defined( LINUX )
 #include <strings.h>
 inline int stricmp(const char *pStr1, const char *pStr2) { return strcasecmp(pStr1,pStr2); }
+#ifndef _stricmp
 #define _stricmp stricmp
+#endif
 inline int strnicmp( const char *pStr1, const char *pStr2, size_t unBufferLen ) { return strncasecmp( pStr1,pStr2, unBufferLen ); }
+#ifndef _strnicmp
 #define _strnicmp strnicmp
+#endif
 
+#ifndef _vsnprintf_s
 #define _vsnprintf_s vsnprintf
+#endif
 
 #define _TRUNCATE ((size_t)-1)
 
@@ -90,9 +97,6 @@ inline uint64_t strtoull(const char *str, char **endptr, int base) { return _str
 /* Handles copying a std::string into a buffer as would be provided in an API */
 uint32_t ReturnStdString( const std::string & sValue, char *pchBuffer, uint32_t unBufferLen );
 
-/* Handles copying a buffer into an std::string and auto adds null terminator */
-void BufferToStdString( std::string & sDest, const char *pchBuffer, uint32_t unBufferLen );
-
 /** Returns a std::string from a uint64_t */
 std::string Uint64ToString( uint64_t ulValue );
 
@@ -108,6 +112,9 @@ uint64_t StringToUint64( const std::string & sValue );
 //-----------------------------------------------------------------------------
 void V_URLEncode( char *pchDest, int nDestLen, const char *pchSource, int nSourceLen );
 
+/** Same as V_URLEncode, but without plus for space. */
+void V_URLEncodeNoPlusForSpace( char *pchDest, int nDestLen, const char *pchSource, int nSourceLen );
+
 //-----------------------------------------------------------------------------
 // Purpose: Decodes a string (or binary data) from URL encoding format, see rfc1738 section 2.2.  
 //          This version of the call isn't a strict RFC implementation, but uses + for space as is
@@ -118,9 +125,14 @@ void V_URLEncode( char *pchDest, int nDestLen, const char *pchSource, int nSourc
 //-----------------------------------------------------------------------------
 size_t V_URLDecode( char *pchDecodeDest, int nDecodeDestLen, const char *pchEncodedSource, int nEncodedSourceLen );
 
+/** Same as V_URLDecode, but without plus for space. */
+size_t V_URLDecodeNoPlusForSpace( char *pchDecodeDest, int nDecodeDestLen, const char *pchEncodedSource, int nEncodedSourceLen );
+
 //-----------------------------------------------------------------------------
 // Purpose: strip extension from a path
 //-----------------------------------------------------------------------------
 void V_StripExtension( std::string &in );
 
 
+/** Tokenizes a string into a vector of strings */
+std::vector<std::string> TokenizeString( const std::string & sString, char cToken );

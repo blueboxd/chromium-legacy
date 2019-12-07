@@ -8,6 +8,30 @@ namespace chromeos {
 
 namespace app_time {
 
+namespace {
+
+std::string AppTypeToString(apps::mojom::AppType app_type) {
+  switch (app_type) {
+    case apps::mojom::AppType::kUnknown:
+      return "Unknown";
+    case apps::mojom::AppType::kArc:
+      return "Arc";
+    case apps::mojom::AppType::kWeb:
+      return "Web";
+    case apps::mojom::AppType::kExtension:
+      return "Extension";
+    case apps::mojom::AppType::kBuiltIn:
+      return "Built in";
+    case apps::mojom::AppType::kCrostini:
+      return "Crostini";
+    case apps::mojom::AppType::kMacNative:
+      return "Mac native";
+  }
+  NOTREACHED();
+}
+
+}  // namespace
+
 AppId::AppId(apps::mojom::AppType app_type, const std::string& app_id)
     : app_type_(app_type), app_id_(app_id) {
   DCHECK(!app_id.empty());
@@ -29,6 +53,15 @@ bool AppId::operator==(const AppId& rhs) const {
 
 bool AppId::operator!=(const AppId& rhs) const {
   return !(*this == rhs);
+}
+
+bool AppId::operator<(const AppId& rhs) const {
+  return app_id_ < rhs.app_id();
+}
+
+std::ostream& operator<<(std::ostream& out, const AppId& id) {
+  return out << " [" << AppTypeToString(id.app_type()) << " : " << id.app_id()
+             << "]";
 }
 
 AppLimit::AppLimit(AppRestriction restriction,

@@ -13,6 +13,7 @@
 #include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
+#include "build/chromecast_buildflags.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/demuxer_memory_limit.h"
 #include "media/base/encryption_pattern.h"
@@ -497,7 +498,7 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
           // If we don't have a per-sample IV, get the constant IV.
           bool is_encrypted = index == 0 ? track_encryption->is_encrypted
                                          : info_entry->is_encrypted;
-#if defined(IS_CHROMECAST)
+#if BUILDFLAG(IS_CHROMECAST)
           // On Chromecast, we only support setting the pattern values in the
           // 'tenc' box for the track (not varying on per sample group basis).
           // Thus we need to verify that the settings in the sample group
@@ -516,7 +517,7 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
                                 "sample group does not match that in the tenc "
                                 "box . This is not currently supported.");
           }
-#endif  // defined(IS_CHROMECAST)
+#endif  // BUILDFLAG(IS_CHROMECAST)
           if (is_encrypted && !iv_size) {
             const uint8_t constant_iv_size =
                 index == 0 ? track_encryption->default_constant_iv_size

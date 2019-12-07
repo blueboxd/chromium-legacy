@@ -15,10 +15,6 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/controls/button/button.h"
 
-namespace service_manager {
-class Connector;
-}
-
 namespace views {
 class Label;
 class ImageView;
@@ -97,8 +93,7 @@ class ASH_EXPORT LockScreenMediaControlsView
     DISALLOW_COPY_AND_ASSIGN(Callbacks);
   };
 
-  LockScreenMediaControlsView(service_manager::Connector* connector,
-                              const Callbacks& callbacks);
+  explicit LockScreenMediaControlsView(const Callbacks& callbacks);
   ~LockScreenMediaControlsView() override;
 
   // views::View:
@@ -201,9 +196,6 @@ class ASH_EXPORT LockScreenMediaControlsView
 
   // Animates |contents_view_| to its original position.
   void RunResetControlsAnimation();
-
-  // Used to connect to the Media Session service.
-  service_manager::Connector* const connector_;
 
   // Used to control the active session.
   mojo::Remote<media_session::mojom::MediaController> media_controller_remote_;

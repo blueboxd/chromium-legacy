@@ -4,7 +4,10 @@
 
 #include "chrome/browser/chromeos/file_manager/file_manager_test_util.h"
 
+#include "base/files/file_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
+#include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -12,6 +15,25 @@
 
 namespace file_manager {
 namespace test {
+
+FolderInMyFiles::~FolderInMyFiles() = default;
+
+void FolderInMyFiles::Add(const std::vector<base::FilePath>& files) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  for (const auto& file : files) {
+    files_.push_back(folder_.Append(file.BaseName()));
+    base::CopyFile(file, files_.back());
+  }
+}
+
+FolderInMyFiles::FolderInMyFiles(Profile* profile) {
+  const base::FilePath root = util::GetMyFilesFolderForProfile(profile);
+  VolumeManager::Get(profile)->RegisterDownloadsDirectoryForTesting(root);
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  constexpr base::FilePath::CharType kPrefix[] = FILE_PATH_LITERAL("a_folder");
+  CHECK(CreateTemporaryDirInDir(root, kPrefix, &folder_));
+}
 
 void AddDefaultComponentExtensionsOnMainThread(Profile* profile) {
   CHECK(profile);

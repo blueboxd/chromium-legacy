@@ -40,8 +40,8 @@ async function loadBlob(fileName) {
 }
 
 promise_test(async t => {
-  await PermissionsHelper.setPermission('clipboard-read', 'granted');
-  await PermissionsHelper.setPermission('clipboard-write', 'granted');
+  await PermissionsHelper.setPermission('clipboard-read-write', 'granted');
+  await PermissionsHelper.setPermission('clipboard-sanitized-write', 'granted');
 
   const blobInput = await loadBlob('resources/greenbox.png');
 
@@ -67,8 +67,8 @@ promise_test(async t => {
 }, 'Verify write and read clipboard [image/png ClipboardItem]');
 
 promise_test(async t => {
-  await PermissionsHelper.setPermission('clipboard-read', 'granted');
-  await PermissionsHelper.setPermission('clipboard-write', 'granted');
+  await PermissionsHelper.setPermission('clipboard-read-write', 'granted');
+  await PermissionsHelper.setPermission('clipboard-sanitized-write', 'granted');
 
   const invalidPngBlob = new Blob(['this text is not a valid png image'],
       {type: "image/png"});

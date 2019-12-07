@@ -1,38 +1,74 @@
 [
     {
-        "duration": "23.0",
+        "duration": "41.0",
+        "name": "heap_profiling.mobile.disabled/load:news:cnn:2018"
+    },
+    {
+        "duration": "29.0",
+        "name": "heap_profiling.mobile.disabled/load:search:google:2018"
+    },
+    {
+        "duration": "28.0",
+        "name": "heap_profiling.mobile.disabled/load:social:twitter"
+    },
+    {
+        "duration": "44.0",
+        "name": "heap_profiling.mobile.native/load:news:cnn:2018"
+    },
+    {
+        "duration": "30.0",
+        "name": "heap_profiling.mobile.native/load:search:google:2018"
+    },
+    {
+        "duration": "30.0",
+        "name": "heap_profiling.mobile.native/load:social:twitter"
+    },
+    {
+        "duration": "43.0",
+        "name": "heap_profiling.mobile.pseudo/load:news:cnn:2018"
+    },
+    {
+        "duration": "29.0",
+        "name": "heap_profiling.mobile.pseudo/load:search:google:2018"
+    },
+    {
+        "duration": "29.0",
+        "name": "heap_profiling.mobile.pseudo/load:social:twitter"
+    },
+    {
+        "duration": "14.0",
         "name": "tracing.tracing_with_background_memory_infra/Facebook"
     },
     {
-        "duration": "23.0",
+        "duration": "17.0",
         "name": "tracing.tracing_with_background_memory_infra/Wikipedia"
     },
     {
-        "duration": "22.0",
+        "duration": "12.0",
         "name": "tracing.tracing_with_background_memory_infra/http://www.amazon.com"
     },
     {
-        "duration": "19.0",
+        "duration": "13.0",
         "name": "tracing.tracing_with_background_memory_infra/http://www.ask.com/"
     },
     {
-        "duration": "19.0",
+        "duration": "13.0",
         "name": "tracing.tracing_with_background_memory_infra/http://www.bing.com/"
     },
     {
-        "duration": "20.0",
+        "duration": "16.0",
         "name": "tracing.tracing_with_background_memory_infra/http://www.yahoo.com/"
     },
     {
-        "duration": "22.0",
+        "duration": "14.0",
         "name": "tracing.tracing_with_background_memory_infra/http://www.youtube.com"
     },
     {
-        "duration": "24.0",
+        "duration": "16.0",
         "name": "tracing.tracing_with_background_memory_infra/https://www.google.com/#hl=en&q=barack+obama"
     },
     {
-        "duration": "22.0",
+        "duration": "14.0",
         "name": "tracing.tracing_with_background_memory_infra/https://www.google.com/calendar/"
     }
 ]

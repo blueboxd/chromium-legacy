@@ -26,10 +26,6 @@
 #include "services/audio/public/mojom/audio_processing.mojom.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
 
-namespace service_manager {
-class Connector;
-}
-
 namespace media {
 class AudioParameters;
 class UserInputMonitorBase;
@@ -62,16 +58,10 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
    public:
     Core(base::WeakPtr<ForwardingAudioStreamFactory> owner,
          media::UserInputMonitorBase* user_input_monitor,
-         std::unique_ptr<service_manager::Connector> connector,
          std::unique_ptr<AudioStreamBrokerFactory> factory);
     ~Core() final;
 
     const base::UnguessableToken& group_id() const { return group_id_; }
-
-    // E.g. to override binder.
-    service_manager::Connector* get_connector_for_testing() {
-      return connector_.get();
-    }
 
     base::WeakPtr<ForwardingAudioStreamFactory::Core> AsWeakPtr();
 
@@ -149,8 +139,6 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
     // |this|.
     const base::UnguessableToken group_id_;
 
-    const std::unique_ptr<service_manager::Connector> connector_;
-
     // Lazily acquired. Reset on connection error and when we no longer have any
     // streams. Note: we don't want muting to force the connection to be open,
     // since we want to clean up the service when not in use. If we have active
@@ -190,11 +178,9 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
 
   // |web_contents| is null in the browser-privileged access case, i.e., when
   // the streams created with this factory will not be consumed by a renderer.
-  // |connector| will be used on the IO thread.
   ForwardingAudioStreamFactory(
       WebContents* web_contents,
       media::UserInputMonitorBase* user_input_monitor,
-      std::unique_ptr<service_manager::Connector> connector,
       std::unique_ptr<AudioStreamBrokerFactory> factory);
 
   ~ForwardingAudioStreamFactory() final;
@@ -219,6 +205,12 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
   void FrameDeleted(RenderFrameHost* render_frame_host) final;
 
   Core* core() { return core_.get(); }
+
+  // Allows tests to override how StreamFactory interface receivers are bound
+  // instead of sending them to the Audio Service.
+  using StreamFactoryBinder = base::RepeatingCallback<void(
+      mojo::PendingReceiver<audio::mojom::StreamFactory>)>;
+  static void OverrideStreamFactoryBinderForTesting(StreamFactoryBinder binder);
 
  private:
   std::unique_ptr<Core> core_;

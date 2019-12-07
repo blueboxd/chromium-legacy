@@ -111,4 +111,10 @@ void SecurityInterstitialControllerClient::LaunchDateAndTimeSettings() {
   NOTREACHED();
 }
 
+bool SecurityInterstitialControllerClient::CanGoBackBeforeNavigation() {
+  // If checking before navigating to the interstitial, back to safety is
+  // possible if there is already at least one prior entry.
+  return web_contents_->GetController().GetEntryCount() > 0;
+}
+
 }  // namespace security_interstitials

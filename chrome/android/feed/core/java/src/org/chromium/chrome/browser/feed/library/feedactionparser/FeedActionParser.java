@@ -47,13 +47,12 @@ public final class FeedActionParser implements ActionParser {
 
     private final PietFeedActionPayloadRetriever mPietFeedActionPayloadRetriever;
     private final ProtocolAdapter mProtocolAdapter;
-    private final Supplier</*@Nullable*/ ContentMetadata> mContentMetadata;
+    private final Supplier<ContentMetadata> mContentMetadata;
     private final BasicLoggingApi mBasicLoggingApi;
 
     FeedActionParser(ProtocolAdapter protocolAdapter,
             PietFeedActionPayloadRetriever pietFeedActionPayloadRetriever,
-            Supplier</*@Nullable*/ ContentMetadata> contentMetadata,
-            BasicLoggingApi basicLoggingApi) {
+            Supplier<ContentMetadata> contentMetadata, BasicLoggingApi basicLoggingApi) {
         this.mProtocolAdapter = protocolAdapter;
         this.mPietFeedActionPayloadRetriever = pietFeedActionPayloadRetriever;
         this.mContentMetadata = contentMetadata;

@@ -80,14 +80,8 @@ void MaybeRecordThirdPartyServiceWorkerUsage(
   Document* document = To<Document>(execution_context);
   DCHECK(document);
 
-  // Don't record the use counter if the frame is same-origin to the top frame,
-  // or if we can't tell whether the frame was ever cross-origin or not.
-  if (!document->TopFrameOrigin() ||
-      document->TopFrameOrigin()->CanAccess(document->GetSecurityOrigin())) {
-    return;
-  }
-
-  UseCounter::Count(document, WebFeature::kThirdPartyServiceWorker);
+  if (document->IsCrossSiteSubframe())
+    UseCounter::Count(document, WebFeature::kThirdPartyServiceWorker);
 }
 
 bool HasFiredDomContentLoaded(const Document& document) {

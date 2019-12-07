@@ -28,7 +28,7 @@ def Main():
   package_type = plist['CFBundlePackageType']
   if package_type != 'APPL':
     raise ValueError('Expected CFBundlePackageType to be %s, got %s' % \
-        ('AAPL', package_type))
+        ('APPL', package_type))
 
   # The format of PkgInfo is eight characters, representing the bundle type
   # and bundle signature, each four characters. If that is missing, four

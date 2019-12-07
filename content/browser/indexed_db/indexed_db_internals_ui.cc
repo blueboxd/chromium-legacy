@@ -89,7 +89,7 @@ IndexedDBInternalsUI::~IndexedDBInternalsUI() {}
 void IndexedDBInternalsUI::AddContextFromStoragePartition(
     StoragePartition* partition) {
   scoped_refptr<IndexedDBContext> context = partition->GetIndexedDBContext();
-  context->TaskRunner()->PostTask(
+  context->IDBTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&IndexedDBInternalsUI::GetAllOriginsOnIndexedDBThread,
                      base::Unretained(this), context, partition->GetPath()));
@@ -110,7 +110,7 @@ void IndexedDBInternalsUI::GetAllOrigins(const base::ListValue* args) {
 void IndexedDBInternalsUI::GetAllOriginsOnIndexedDBThread(
     scoped_refptr<IndexedDBContext> context,
     const base::FilePath& context_path) {
-  DCHECK(context->TaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(context->IDBTaskRunner()->RunsTasksInCurrentSequence());
 
   IndexedDBContextImpl* context_impl =
       static_cast<IndexedDBContextImpl*>(context.get());
@@ -193,7 +193,7 @@ void IndexedDBInternalsUI::DownloadOriginData(const base::ListValue* args) {
     return;
 
   DCHECK(context.get());
-  context->TaskRunner()->PostTask(
+  context->IDBTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&IndexedDBInternalsUI::DownloadOriginDataOnIndexedDBThread,
                      base::Unretained(this), partition_path, context, origin));
@@ -208,7 +208,7 @@ void IndexedDBInternalsUI::ForceCloseOrigin(const base::ListValue* args) {
   if (!GetOriginData(args, &partition_path, &origin, &context))
     return;
 
-  context->TaskRunner()->PostTask(
+  context->IDBTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&IndexedDBInternalsUI::ForceCloseOriginOnIndexedDBThread,
                      base::Unretained(this), partition_path, context, origin));
@@ -224,7 +224,7 @@ void IndexedDBInternalsUI::ForceSchemaDowngradeOrigin(
   if (!GetOriginData(args, &partition_path, &origin, &context))
     return;
 
-  context->TaskRunner()->PostTask(
+  context->IDBTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(
           &IndexedDBInternalsUI::ForceSchemaDowngradeOriginOnIndexedDBThread,
@@ -235,7 +235,7 @@ void IndexedDBInternalsUI::DownloadOriginDataOnIndexedDBThread(
     const base::FilePath& partition_path,
     const scoped_refptr<IndexedDBContextImpl> context,
     const Origin& origin) {
-  DCHECK(context->TaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(context->IDBTaskRunner()->RunsTasksInCurrentSequence());
   // This runs on the IndexedDB task runner to prevent script from reopening
   // the origin while we are zipping.
 
@@ -271,7 +271,7 @@ void IndexedDBInternalsUI::ForceCloseOriginOnIndexedDBThread(
     const base::FilePath& partition_path,
     const scoped_refptr<IndexedDBContextImpl> context,
     const Origin& origin) {
-  DCHECK(context->TaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(context->IDBTaskRunner()->RunsTasksInCurrentSequence());
 
   // Make sure the database hasn't been deleted since the page was loaded.
   if (!context->HasOrigin(origin))
@@ -290,7 +290,7 @@ void IndexedDBInternalsUI::ForceSchemaDowngradeOriginOnIndexedDBThread(
     const base::FilePath& partition_path,
     const scoped_refptr<IndexedDBContextImpl> context,
     const Origin& origin) {
-  DCHECK(context->TaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(context->IDBTaskRunner()->RunsTasksInCurrentSequence());
 
   // Make sure the database hasn't been deleted since the page was loaded.
   if (!context->HasOrigin(origin))

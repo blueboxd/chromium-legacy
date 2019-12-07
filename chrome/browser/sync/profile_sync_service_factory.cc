@@ -273,6 +273,13 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
     if (base::FeatureList::IsEnabled(switches::kSyncManualStartAndroid))
       is_auto_start = false;
 #endif
+#if defined(OS_CHROMEOS)
+    // TODO(https://crbug.com/1013466): Replace this with kSplitSettingsSync
+    // when the browser sync consent dialog is working on Chrome OS. This is
+    // here temporarily for manual testing of the OS sync consent flow.
+    if (base::FeatureList::IsEnabled(switches::kSyncManualStartChromeOS))
+      is_auto_start = false;
+#endif
     init_params.start_behavior = is_auto_start
                                      ? syncer::ProfileSyncService::AUTO_START
                                      : syncer::ProfileSyncService::MANUAL_START;

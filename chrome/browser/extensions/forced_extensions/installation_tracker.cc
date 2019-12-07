@@ -211,7 +211,7 @@ void InstallationTracker::ReportResults() {
         InstallationReporter::FailureReason failure_reason =
             installation.failure_reason.value_or(
                 InstallationReporter::FailureReason::UNKNOWN);
-        UMA_HISTOGRAM_ENUMERATION("Extensions.ForceInstalledFailureReason",
+        UMA_HISTOGRAM_ENUMERATION("Extensions.ForceInstalledFailureReason2",
                                   failure_reason);
         VLOG(2) << "Forced extension " << extension_id
                 << " failed to install with data="

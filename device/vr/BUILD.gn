@@ -88,6 +88,10 @@ if (enable_vr) {
     }
 
     if (enable_openvr) {
+      if (!is_component_build) {
+        defines += ["OPENVR_BUILD_STATIC"]
+      }
+
       deps += [ "//third_party/openvr:openvr" ]
       sources += [
         "openvr/openvr_api_wrapper.cc",

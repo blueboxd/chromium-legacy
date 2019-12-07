@@ -149,12 +149,15 @@ operator=(const SuggestResult& rhs) = default;
 void SearchSuggestionParser::SuggestResult::ClassifyMatchContents(
     const bool allow_bolding_all,
     const base::string16& input_text) {
-  if (input_text.empty()) {
-    // In case of zero-suggest results, do not highlight matches.
-    match_contents_class_.push_back(
-        ACMatchClassification(0, ACMatchClassification::NONE));
+  // Start with the trivial nothing-bolded classification.
+  DCHECK(!match_contents_.empty());
+  match_contents_class_.clear();
+  match_contents_class_.push_back(
+      ACMatchClassification(0, ACMatchClassification::NONE));
+
+  // Leave trivial classification alone in the ZeroSuggest case.
+  if (input_text.empty())
     return;
-  }
 
   base::string16 lookup_text = input_text;
   if (type_ == AutocompleteMatchType::SEARCH_SUGGEST_TAIL) {
@@ -181,6 +184,7 @@ void SearchSuggestionParser::SuggestResult::ClassifyMatchContents(
     return;
   }
 
+  // Note we discard our existing match_contents_class_ with this call.
   match_contents_class_ = AutocompleteProvider::ClassifyAllMatchesInString(
       input_text, match_contents_, true);
 }
@@ -244,12 +248,15 @@ void
 SearchSuggestionParser::NavigationResult::CalculateAndClassifyMatchContents(
     const bool allow_bolding_nothing,
     const base::string16& input_text) {
-  if (input_text.empty()) {
-    // In case of zero-suggest results, do not highlight matches.
-    match_contents_class_.push_back(
-        ACMatchClassification(0, ACMatchClassification::NONE));
+  // Start with the trivial nothing-bolded classification.
+  DCHECK(url_.is_valid());
+  match_contents_class_.clear();
+  match_contents_class_.push_back(
+      ACMatchClassification(0, ACMatchClassification::NONE));
+
+  // Leave trivial classification alone in the ZeroSuggest case.
+  if (input_text.empty())
     return;
-  }
 
   // Set contents to the formatted URL while ensuring the scheme and subdomain
   // are kept if the user text seems to include them. E.g., for the user text

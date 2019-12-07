@@ -1183,13 +1183,17 @@ void AutocompleteMatch::TryAutocompleteWithTitle(
 
 #if DCHECK_IS_ON()
 void AutocompleteMatch::Validate() const {
-  ValidateClassifications(contents, contents_class);
-  ValidateClassifications(description, description_class);
+  std::string provider_name = provider ? provider->GetName() : "None";
+  ValidateClassifications(contents, contents_class, provider_name);
+  ValidateClassifications(description, description_class, provider_name);
 }
+#endif  // DCHECK_IS_ON()
 
+// static
 void AutocompleteMatch::ValidateClassifications(
     const base::string16& text,
-    const ACMatchClassifications& classifications) const {
+    const ACMatchClassifications& classifications,
+    const std::string& provider_name) {
   if (text.empty()) {
     DCHECK(classifications.empty());
     return;
@@ -1205,7 +1209,6 @@ void AutocompleteMatch::ValidateClassifications(
   // The classifications should always be sorted.
   size_t last_offset = classifications[0].offset;
   for (auto i(classifications.begin() + 1); i != classifications.end(); ++i) {
-    const char* provider_name = provider ? provider->GetName() : "None";
     DCHECK_GT(i->offset, last_offset)
         << " Classification for \"" << text << "\" with offset of " << i->offset
         << " is unsorted in relation to last offset of " << last_offset
@@ -1217,4 +1220,3 @@ void AutocompleteMatch::ValidateClassifications(
     last_offset = i->offset;
   }
 }
-#endif  // DCHECK_IS_ON()

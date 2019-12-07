@@ -62,7 +62,7 @@ static inline bool IsAbsolutePathSegType(const SVGPathSegType type) {
 }
 
 struct PathSegmentData {
-  STACK_ALLOCATED();
+  DISALLOW_NEW();
 
  public:
   PathSegmentData()

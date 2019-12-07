@@ -16,7 +16,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/media/session/media_session_impl.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/media_session_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_service_manager_context.h"
@@ -28,8 +28,6 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/cpp/features.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
-#include "services/media_session/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace {
@@ -342,8 +340,7 @@ class MediaInternalsAudioFocusTest : public RenderViewHostTestHarness,
                             base::Unretained(this));
     run_loop_ = std::make_unique<base::RunLoop>();
 
-    content::GetSystemConnector()->Connect(
-        media_session::mojom::kServiceName,
+    GetMediaSessionService().BindAudioFocusManager(
         audio_focus_.BindNewPipeAndPassReceiver());
 
     content::MediaInternals::GetInstance()->AddUpdateCallback(update_cb_);

@@ -163,6 +163,9 @@ Polymer({
   /** @private {?function(!Event)} */
   boundOnKeyDown_: null,
 
+  /** @private {?history.BrowserService} */
+  browserService_: null,
+
   /** @override */
   created: function() {
     history.listenForPrivilegedLinkClicks();
@@ -178,7 +181,13 @@ Polymer({
     this.addWebUIListener(
         'has-other-forms-changed',
         hasOtherForms => this.onHasOtherFormsChanged_(hasOtherForms));
-    history.BrowserService.getInstance().historyLoaded();
+    this.addWebUIListener(
+        'foreign-sessions-changed',
+        sessionList => this.setForeignSessions_(sessionList));
+    this.browserService_ = history.BrowserService.getInstance();
+    this.browserService_.historyLoaded();
+    this.browserService_.getForeignSessions().then(
+        sessionList => this.setForeignSessions_(sessionList));
   },
 
   /** @override */
@@ -188,8 +197,8 @@ Polymer({
   },
 
   onFirstRender: function() {
-    setTimeout(function() {
-      history.BrowserService.getInstance().recordTime(
+    setTimeout(() => {
+      this.browserService_.recordTime(
           'History.ResultsRenderedTime', window.performance.now());
     });
 
@@ -223,7 +232,7 @@ Polymer({
 
   /** @private */
   onCrToolbarMenuPromoShown_: function() {
-    history.BrowserService.getInstance().menuPromoShown();
+    this.browserService_.menuPromoShown();
   },
 
   /** @private */
@@ -322,8 +331,9 @@ Polymer({
   /**
    * @param {!Array<!ForeignSession>} sessionList Array of objects describing
    *     the sessions from other devices.
+   * @private
    */
-  setForeignSessions: function(sessionList) {
+  setForeignSessions_: function(sessionList) {
     this.set('queryResult_.sessionList', sessionList);
   },
 
@@ -427,7 +437,7 @@ Polymer({
         break;
     }
 
-    history.BrowserService.getInstance().recordHistogram(
+    this.browserService_.recordHistogram(
         'History.HistoryPageView', histogramValue,
         HistoryPageViewHistogram.END);
   },

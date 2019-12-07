@@ -47,6 +47,8 @@ public class InstalledAppProviderTest {
             InstalledAppProviderImpl.ASSET_STATEMENT_NAMESPACE_WEB;
     private static final String PLATFORM_ANDROID =
             InstalledAppProviderImpl.RELATED_APP_PLATFORM_ANDROID;
+    private static final int MAX_ALLOWED_RELATED_APPS =
+            InstalledAppProviderImpl.MAX_ALLOWED_RELATED_APPS;
     private static final String PLATFORM_OTHER = "itunes";
     // Note: Android package name and origin deliberately unrelated (there is no requirement that
     // they be the same).
@@ -785,14 +787,13 @@ public class InstalledAppProviderTest {
         RelatedApplication[] manifestRelatedApps = new RelatedApplication[] {
                 createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null),
                 createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_2, null),
-                createRelatedApplication(PLATFORM_OTHER, PACKAGE_NAME_2, null),
                 createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_3, null)};
 
         setAssetStatement(PACKAGE_NAME_2, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN);
         setAssetStatement(PACKAGE_NAME_3, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN);
 
         RelatedApplication[] expectedInstalledRelatedApps =
-                new RelatedApplication[] {manifestRelatedApps[1], manifestRelatedApps[3]};
+                new RelatedApplication[] {manifestRelatedApps[1], manifestRelatedApps[2]};
         verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
     }
 
@@ -829,10 +830,6 @@ public class InstalledAppProviderTest {
     public void testMultipleAppsIncludingInstantApps() {
         RelatedApplication[] manifestRelatedApps = new RelatedApplication[] {
                 createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null),
-                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_2, null),
-                createRelatedApplication(PLATFORM_OTHER, PACKAGE_NAME_2, null),
-                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_3, null),
-
                 // Instant Apps:
                 createRelatedApplication(
                         PLATFORM_ANDROID, InstalledAppProviderImpl.INSTANT_APP_ID_STRING, ORIGIN),
@@ -843,7 +840,30 @@ public class InstalledAppProviderTest {
         mFakeInstantAppsHandler.addInstantApp(ORIGIN, true);
 
         RelatedApplication[] expectedInstalledRelatedApps =
-                new RelatedApplication[] {manifestRelatedApps[0], manifestRelatedApps[5]};
+                new RelatedApplication[] {manifestRelatedApps[0], manifestRelatedApps[2]};
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /**
+     * Multiple related uninstalled apps (over the allowed limit) followed by one related Android
+     * app which is installed and mutually related.
+     */
+    @Test
+    @Feature({"InstalledApp"})
+    public void testRelatedAppsOverAllowedThreshold() {
+        RelatedApplication manifestRelatedApps[] =
+                new RelatedApplication[MAX_ALLOWED_RELATED_APPS + 1];
+        for (int i = 0; i < MAX_ALLOWED_RELATED_APPS; i++) {
+            manifestRelatedApps[i] = createRelatedApplication(
+                    PLATFORM_ANDROID, PACKAGE_NAME_2 + String.valueOf(i), null);
+        }
+        manifestRelatedApps[MAX_ALLOWED_RELATED_APPS] =
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null);
+        setAssetStatement(PACKAGE_NAME_1, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN);
+
+        // Although the app is installed, and verifiable, it was included after the maximum allowed
+        // number of related apps.
+        RelatedApplication[] expectedInstalledRelatedApps = new RelatedApplication[] {};
         verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
     }
 }

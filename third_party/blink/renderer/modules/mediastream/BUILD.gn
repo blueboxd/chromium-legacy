@@ -95,6 +95,7 @@ blink_modules_sources("mediastream") {
     "webmediaplayer_ms_compositor.h",
   ]
   deps = [
+    "//build:chromecast_buildflags",
     "//media/capture/mojom:image_capture_blink",
     "//media/webrtc",
   ]

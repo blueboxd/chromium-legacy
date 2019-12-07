@@ -866,9 +866,7 @@ void RenderAccessibilityImpl::OnHitTest(const gfx::Point& point,
   AXContentNodeData data;
   ScopedFreezeBlinkAXTreeSource freeze(&tree_source_);
   tree_source_.SerializeNode(obj, &data);
-  if (data.HasContentIntAttribute(AX_CONTENT_ATTR_CHILD_ROUTING_ID) ||
-      data.HasContentIntAttribute(
-          AX_CONTENT_ATTR_CHILD_BROWSER_PLUGIN_INSTANCE_ID)) {
+  if (data.HasContentIntAttribute(AX_CONTENT_ATTR_CHILD_ROUTING_ID)) {
     gfx::Point transformed_point = point;
     bool is_remote_frame = RenderFrameProxy::FromRoutingID(
         data.GetContentIntAttribute(AX_CONTENT_ATTR_CHILD_ROUTING_ID));
@@ -887,9 +885,7 @@ void RenderAccessibilityImpl::OnHitTest(const gfx::Point& point,
     }
     Send(new AccessibilityHostMsg_ChildFrameHitTestResult(
         routing_id(), action_request_id, transformed_point,
-        data.GetContentIntAttribute(AX_CONTENT_ATTR_CHILD_ROUTING_ID),
-        data.GetContentIntAttribute(
-            AX_CONTENT_ATTR_CHILD_BROWSER_PLUGIN_INSTANCE_ID),
+        data.GetContentIntAttribute(AX_CONTENT_ATTR_CHILD_ROUTING_ID), 0,
         event_to_fire));
     return;
   }

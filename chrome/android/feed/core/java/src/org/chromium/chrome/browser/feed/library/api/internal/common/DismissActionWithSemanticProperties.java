@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.api.internal.common;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.components.feed.core.proto.wire.ContentIdProto.ContentId;
 
 import java.util.Arrays;
@@ -14,10 +16,11 @@ import java.util.Arrays;
  */
 public final class DismissActionWithSemanticProperties {
     private final ContentId mContentId;
-    private final byte /*@Nullable*/[] mSemanticProperties;
+    @Nullable
+    private final byte[] mSemanticProperties;
 
     public DismissActionWithSemanticProperties(
-            ContentId contentId, byte /*@Nullable*/[] semanticProperties) {
+            ContentId contentId, @Nullable byte[] semanticProperties) {
         this.mContentId = contentId;
         this.mSemanticProperties = semanticProperties;
     }
@@ -26,12 +29,12 @@ public final class DismissActionWithSemanticProperties {
         return mContentId;
     }
 
-    public byte /*@Nullable*/[] getSemanticProperties() {
+    public byte[] getSemanticProperties() {
         return mSemanticProperties;
     }
 
     @Override
-    public boolean equals(/*@Nullable*/ Object o) {
+    public boolean equals(@Nullable Object o) {
         if (this == o) {
             return true;
         }

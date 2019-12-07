@@ -152,7 +152,8 @@ void AppManagementPageHandler::GetApps(GetAppsCallback callback) {
   std::vector<app_management::mojom::AppPtr> apps;
   proxy->AppRegistryCache().ForEachApp(
       [this, &apps](const apps::AppUpdate& update) {
-        if (update.ShowInManagement() == apps::mojom::OptionalBool::kTrue) {
+        if (update.ShowInManagement() == apps::mojom::OptionalBool::kTrue &&
+            update.Readiness() != apps::mojom::Readiness::kUninstalledByUser) {
           apps.push_back(CreateUIAppPtr(update));
         }
       });

@@ -170,7 +170,7 @@ base::span<const PermissionsUIInfo> GetContentSettingsUIInfo() {
 #endif
     {ContentSettingsType::ADS, IDS_PAGE_INFO_TYPE_ADS},
     {ContentSettingsType::SOUND, IDS_PAGE_INFO_TYPE_SOUND},
-    {ContentSettingsType::CLIPBOARD_READ, IDS_PAGE_INFO_TYPE_CLIPBOARD},
+    {ContentSettingsType::CLIPBOARD_READ_WRITE, IDS_PAGE_INFO_TYPE_CLIPBOARD},
     {ContentSettingsType::SENSORS,
      base::FeatureList::IsEnabled(features::kGenericSensorExtraClasses)
          ? IDS_PAGE_INFO_TYPE_SENSORS
@@ -607,7 +607,7 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(const PermissionInfo& info,
     case ContentSettingsType::SOUND:
       icon = &kVolumeUpIcon;
       break;
-    case ContentSettingsType::CLIPBOARD_READ:
+    case ContentSettingsType::CLIPBOARD_READ_WRITE:
       icon = &kPageInfoContentPasteIcon;
       break;
     case ContentSettingsType::SENSORS:

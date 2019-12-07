@@ -203,12 +203,6 @@ class QuicTestPacketMaker {
       bool fin,
       quic::QuicStreamOffset* offset,
       quic::QuicStringPiece data);
-  std::unique_ptr<quic::QuicReceivedPacket> MakeMultipleDataFramesPacket(
-      uint64_t packet_number,
-      quic::QuicStreamId stream_id,
-      bool should_include_version,
-      bool fin,
-      const std::vector<std::string>& data_writes);
   std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndDataPacket(
       uint64_t packet_number,
       bool include_version,
@@ -218,15 +212,6 @@ class QuicTestPacketMaker {
       uint64_t least_unacked,
       bool fin,
       quic::QuicStringPiece data);
-  std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndMultipleDataFramesPacket(
-      uint64_t packet_number,
-      bool include_version,
-      quic::QuicStreamId stream_id,
-      uint64_t largest_received,
-      uint64_t smallest_received,
-      uint64_t least_unacked,
-      bool fin,
-      const std::vector<std::string>& data);
 
   std::unique_ptr<quic::QuicReceivedPacket>
   MakeRequestHeadersAndMultipleDataFramesPacket(
@@ -335,10 +320,6 @@ class QuicTestPacketMaker {
     return stream_offsets_[stream_id];
   }
 
-  void set_coalesce_http_frames(bool coalesce_http_frames) {
-    coalesce_http_frames_ = coalesce_http_frames;
-  }
-
   void set_save_packet_frames(bool save_packet_frames) {
     save_packet_frames_ = save_packet_frames;
   }
@@ -423,7 +404,6 @@ class QuicTestPacketMaker {
   quic::QuicStreamId max_allowed_push_id_;
   spdy::SpdyFramer spdy_request_framer_;
   spdy::SpdyFramer spdy_response_framer_;
-  bool coalesce_http_frames_;
   bool save_packet_frames_;
   DecoderStreamErrorDelegate decoder_stream_error_delegate_;
   EncoderStreamSenderDelegate encoder_stream_sender_delegate_;

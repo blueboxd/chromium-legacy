@@ -112,7 +112,7 @@ public class PasswordAccessorySheetModernViewTest {
         final AtomicReference<Boolean> clicked = new AtomicReference<>(false);
         assertThat(mView.get().getChildCount(), is(0));
 
-        UserInfo testInfo = new UserInfo("", null);
+        UserInfo testInfo = new UserInfo("", false);
         testInfo.addField(new UserInfoField(
                 "Name Suggestion", "Name Suggestion", "", false, item -> clicked.set(true)));
         testInfo.addField(new UserInfoField(
@@ -145,13 +145,13 @@ public class PasswordAccessorySheetModernViewTest {
                 new UserInfoField("Unused Name", "Unused Password", "", false, cb -> {});
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            UserInfo sameOriginInfo = new UserInfo("", null);
+            UserInfo sameOriginInfo = new UserInfo("", false);
             sameOriginInfo.addField(kUnusedInfoField);
             sameOriginInfo.addField(kUnusedInfoField);
             mModel.add(new AccessorySheetDataPiece(
                     sameOriginInfo, AccessorySheetDataPiece.Type.PASSWORD_INFO));
 
-            UserInfo pslOriginInfo = new UserInfo("other.origin.eg", null);
+            UserInfo pslOriginInfo = new UserInfo("other.origin.eg", true);
             pslOriginInfo.addField(kUnusedInfoField);
             pslOriginInfo.addField(kUnusedInfoField);
             mModel.add(new AccessorySheetDataPiece(

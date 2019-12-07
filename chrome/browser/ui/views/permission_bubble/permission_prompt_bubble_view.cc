@@ -104,11 +104,6 @@ void PermissionPromptBubbleView::CloseWithoutNotifyingDelegate() {
   GetWidget()->CloseWithReason(views::Widget::ClosedReason::kUnspecified);
 }
 
-gfx::NativeWindow PermissionPromptBubbleView::GetNativeWindow() {
-  views::Widget* widget = GetWidget();
-  return widget ? widget->GetNativeWindow() : nullptr;
-}
-
 void PermissionPromptBubbleView::AddedToWidget() {
   if (name_or_origin_.is_origin) {
     // There is a risk of URL spoofing from origins that are too wide to fit in

@@ -68,12 +68,6 @@ const int32_t kMaxDecodeHistory = 32;
 // requesting fallback to software decode.
 const int32_t kMaxConsecutiveErrors = 5;
 
-// Currently, RTCVideoDecoderAdapter only tries one VideoDecoderImplementation.
-// Since we use it in multiple places, memorize it here to make it clear that
-// they must be changed together.
-constexpr media::VideoDecoderImplementation kImplementation =
-    media::VideoDecoderImplementation::kDefault;
-
 // Map webrtc::VideoCodecType to media::VideoCodec.
 media::VideoCodec ToVideoCodec(webrtc::VideoCodecType video_codec_type) {
   switch (video_codec_type) {

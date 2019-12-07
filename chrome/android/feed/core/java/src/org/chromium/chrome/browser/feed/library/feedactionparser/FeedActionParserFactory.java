@@ -26,7 +26,7 @@ public final class FeedActionParserFactory implements ActionParserFactory {
     }
 
     @Override
-    public ActionParser build(Supplier</*@Nullable*/ ContentMetadata> contentMetadataSupplier) {
+    public ActionParser build(Supplier<ContentMetadata> contentMetadataSupplier) {
         return new FeedActionParser(mProtocolAdapter, mPietFeedActionPayloadRetriever,
                 contentMetadataSupplier, mBasicLoggingApi);
     }

@@ -37,13 +37,13 @@
 #include "third_party/blink/renderer/core/dom/mutation_observer_registration.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
 struct SameSizeAsNodeRareData {
-  void* pointer_;
-  Member<void*> willbe_member_[3];
+  Member<void*> willbe_member_[4];
   unsigned bitfields_;
 };
 
@@ -77,9 +77,28 @@ void NodeMutationObserverData::RemoveRegistration(
   registry_.EraseAt(registry_.Find(registration));
 }
 
+NodeRenderingData::NodeRenderingData(
+    LayoutObject* layout_object,
+    scoped_refptr<const ComputedStyle> computed_style)
+    : layout_object_(layout_object), computed_style_(computed_style) {}
+
+void NodeRenderingData::SetComputedStyle(
+    scoped_refptr<const ComputedStyle> computed_style) {
+  DCHECK_NE(&SharedEmptyData(), this);
+  computed_style_ = computed_style;
+}
+
+NodeRenderingData& NodeRenderingData::SharedEmptyData() {
+  DEFINE_STATIC_LOCAL(
+      Persistent<NodeRenderingData>, shared_empty_data,
+      (MakeGarbageCollected<NodeRenderingData>(nullptr, nullptr)));
+  return *shared_empty_data;
+}
+
 void NodeRareData::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(mutation_observer_data_);
   visitor->Trace(flat_tree_node_data_);
+  visitor->Trace(node_layout_data_);
   // Do not keep empty NodeListsNodeData objects around.
   if (node_lists_ && node_lists_->IsEmpty())
     node_lists_.Clear();

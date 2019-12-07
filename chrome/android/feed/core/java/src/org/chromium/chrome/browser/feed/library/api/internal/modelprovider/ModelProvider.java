@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.feed.library.api.internal.modelprovider;
 
 import android.support.annotation.IntDef;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.common.MutationContext;
 import org.chromium.chrome.browser.feed.library.api.host.logging.RequestReason;
 import org.chromium.chrome.browser.feed.library.common.feedobservable.Observable;
@@ -28,7 +30,7 @@ public interface ModelProvider extends Observable<ModelProviderObserver> {
      */
     interface ViewDepthProvider {
         /** Returns a contentId of the lowest root child seen by the user. */
-        /*@Nullable*/
+        @Nullable
         String getChildViewDepth();
     }
 
@@ -62,18 +64,18 @@ public interface ModelProvider extends Observable<ModelProviderObserver> {
      * Returns a {@code ModelFeature} which represents the root of the stream tree. Returns {@code
      * null} if the stream is empty.
      */
-    /*@Nullable*/
+    @Nullable
     ModelFeature getRootFeature();
 
     /** Return a ModelChild for a String ContentId */
-    /*@Nullable*/
+    @Nullable
     ModelChild getModelChild(String contentId);
 
     /**
      * Returns a {@code StreamSharedState} containing shared state such as the Piet shard state.
      * Returns {@code null} if the shared state is not found.
      */
-    /*@Nullable*/
+    @Nullable
     StreamSharedState getSharedState(ContentId contentId);
 
     /**
@@ -125,7 +127,7 @@ public interface ModelProvider extends Observable<ModelProviderObserver> {
     int getCurrentState();
 
     /** A String which represents the session bound to the ModelProvider. */
-    /*@Nullable*/
+    @Nullable
     String getSessionId();
 
     /**
@@ -141,7 +143,7 @@ public interface ModelProvider extends Observable<ModelProviderObserver> {
          * Returns the {@link RemoveTracking}, if this returns {@code null} then no remove tracking
          * will be preformed on this ModelProvider mutation.
          */
-        /*@Nullable*/
+        @Nullable
         RemoveTracking<T> create(MutationContext mutationContext);
     }
 

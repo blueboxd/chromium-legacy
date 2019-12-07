@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.api.client.knowncontent;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 import org.chromium.components.feed.core.proto.ui.stream.StreamStructureProto.OfflineMetadata;
 import org.chromium.components.feed.core.proto.ui.stream.StreamStructureProto.RepresentationData;
@@ -17,12 +19,16 @@ public final class ContentMetadata {
     private final String mUrl;
     private final String mTitle;
     private final long mTimePublished;
-    /*@Nullable*/ private final String mImageUrl;
-    /*@Nullable*/ private final String mPublisher;
-    /*@Nullable*/ private final String mFaviconUrl;
-    /*@Nullable*/ private final String mSnippet;
+    @Nullable
+    private final String mImageUrl;
+    @Nullable
+    private final String mPublisher;
+    @Nullable
+    private final String mFaviconUrl;
+    @Nullable
+    private final String mSnippet;
 
-    /*@Nullable*/
+    @Nullable
     public static ContentMetadata maybeCreateContentMetadata(
             OfflineMetadata offlineMetadata, RepresentationData representationData) {
         if (!representationData.hasUri()) {
@@ -48,11 +54,8 @@ public final class ContentMetadata {
                 publishedTimeSeconds, imageUrl, publisher, faviconUrl, snippet);
     }
 
-    public ContentMetadata(String url, String title, long timePublished,
-            /*@Nullable*/ String imageUrl,
-            /*@Nullable*/ String publisher,
-            /*@Nullable*/ String faviconUrl,
-            /*@Nullable*/ String snippet) {
+    public ContentMetadata(String url, String title, long timePublished, @Nullable String imageUrl,
+            @Nullable String publisher, @Nullable String faviconUrl, @Nullable String snippet) {
         this.mUrl = url;
         this.mTitle = title;
         this.mImageUrl = imageUrl;
@@ -71,13 +74,13 @@ public final class ContentMetadata {
         return mTitle;
     }
 
-    /*@Nullable*/
+    @Nullable
     public String getImageUrl() {
         return mImageUrl;
     }
 
     /** {@link String} representation of the publisher. */
-    /*@Nullable*/
+    @Nullable
     public String getPublisher() {
         return mPublisher;
     }
@@ -90,13 +93,13 @@ public final class ContentMetadata {
         return mTimePublished;
     }
 
-    /*@Nullable*/
+    @Nullable
     public String getFaviconUrl() {
         return mFaviconUrl;
     }
 
     /** A {@link String} that can be displayed that is part of the content, typically the start. */
-    /*@Nullable*/
+    @Nullable
     public String getSnippet() {
         return mSnippet;
     }

@@ -36,8 +36,9 @@ void IndexedDBBlobInfo::ConvertBlobInfo(
 }
 
 IndexedDBBlobInfo::IndexedDBBlobInfo()
-    : is_file_(false), size_(-1), key_(DatabaseMetaDataKey::kInvalidBlobKey) {
-}
+    : is_file_(false),
+      size_(-1),
+      key_(DatabaseMetaDataKey::kInvalidBlobNumber) {}
 
 IndexedDBBlobInfo::IndexedDBBlobInfo(
     mojo::PendingRemote<blink::mojom::Blob> blob_remote,
@@ -49,7 +50,7 @@ IndexedDBBlobInfo::IndexedDBBlobInfo(
       uuid_(uuid),
       type_(type),
       size_(size),
-      key_(DatabaseMetaDataKey::kInvalidBlobKey) {}
+      key_(DatabaseMetaDataKey::kInvalidBlobNumber) {}
 
 IndexedDBBlobInfo::IndexedDBBlobInfo(const base::string16& type,
                                      int64_t size,
@@ -69,7 +70,7 @@ IndexedDBBlobInfo::IndexedDBBlobInfo(
       size_(-1),
       file_name_(file_name),
       file_path_(file_path),
-      key_(DatabaseMetaDataKey::kInvalidBlobKey) {}
+      key_(DatabaseMetaDataKey::kInvalidBlobNumber) {}
 
 IndexedDBBlobInfo::IndexedDBBlobInfo(int64_t key,
                                      const base::string16& type,
@@ -110,7 +111,7 @@ void IndexedDBBlobInfo::set_last_modified(const base::Time& time) {
 }
 
 void IndexedDBBlobInfo::set_key(int64_t key) {
-  DCHECK_EQ(DatabaseMetaDataKey::kInvalidBlobKey, key_);
+  DCHECK_EQ(DatabaseMetaDataKey::kInvalidBlobNumber, key_);
   key_ = key;
 }
 

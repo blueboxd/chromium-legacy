@@ -16,10 +16,6 @@
 #include "ui/base/accelerators/media_keys_listener.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace content {
 
 class HardwareKeyMediaController;
@@ -33,7 +29,7 @@ class CONTENT_EXPORT MediaKeysListenerManagerImpl
     : public MediaKeysListenerManager,
       public ui::MediaKeysListener::Delegate {
  public:
-  explicit MediaKeysListenerManagerImpl(service_manager::Connector* connector);
+  MediaKeysListenerManagerImpl();
   ~MediaKeysListenerManagerImpl() override;
 
   // MediaKeysListenerManager implementation.
@@ -102,7 +98,6 @@ class CONTENT_EXPORT MediaKeysListenerManagerImpl
   base::flat_map<ui::KeyboardCode, std::unique_ptr<ListeningData>>
       delegate_map_;
   std::unique_ptr<ui::MediaKeysListener> media_keys_listener_;
-  service_manager::Connector* connector_;
   std::unique_ptr<HardwareKeyMediaController> hardware_key_media_controller_;
   std::unique_ptr<SystemMediaControlsNotifier> system_media_controls_notifier_;
 

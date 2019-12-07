@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -25,6 +26,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/internal/identity_manager/account_info_util.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "ui/gfx/image/image.h"
 
 #if defined(OS_ANDROID)
@@ -183,7 +185,7 @@ AccountInfo AccountTrackerService::FindAccountInfoByEmail(
 // static
 bool AccountTrackerService::IsMigrationSupported() {
 #if defined(OS_CHROMEOS)
-  return false;
+  return base::FeatureList::IsEnabled(switches::kAccountIdMigration);
 #else
   return true;
 #endif

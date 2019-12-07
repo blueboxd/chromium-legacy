@@ -25,8 +25,6 @@
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/transaction_impl.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/blob/blob_impl.h"
@@ -204,7 +202,6 @@ IndexedDBDispatcherHost::IndexedDBDispatcherHost(
           base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
                                   base::TaskPriority::USER_VISIBLE})),
       ipc_process_id_(ipc_process_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(indexed_db_context_);
   DCHECK(remote.is_valid());
@@ -280,7 +277,6 @@ void IndexedDBDispatcherHost::AddTransactionBinding(
 void IndexedDBDispatcherHost::RenderProcessExited(
     RenderProcessHost* host,
     const ChildProcessTerminationInfo& info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Since |this| is destructed on the IDB task runner, the next call would be
   // issued and run before any destruction event.  This guarantees that the
   // base::Unretained(this) usage is safe below.
@@ -418,10 +414,10 @@ void IndexedDBDispatcherHost::BindFileReader(
     return;
   }
 
-  auto io_task_runner = base::CreateSingleThreadTaskRunner({BrowserThread::IO});
   auto reader = std::make_unique<IndexedDBDataItemReader>(
       this, path, expected_modification_time, std::move(release_callback),
-      file_task_runner_, std::move(io_task_runner), std::move(receiver));
+      file_task_runner_, indexed_db_context_->IOTaskRunner(),
+      std::move(receiver));
   file_reader_map_.insert({path, std::move(reader)});
 }
 
@@ -481,7 +477,7 @@ void IndexedDBDispatcherHost::InvalidateWeakPtrsAndClearBindings() {
 }
 
 base::SequencedTaskRunner* IndexedDBDispatcherHost::IDBTaskRunner() const {
-  return indexed_db_context_->TaskRunner();
+  return indexed_db_context_->IDBTaskRunner();
 }
 
 }  // namespace content

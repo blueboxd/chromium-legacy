@@ -824,6 +824,60 @@ class HtmlInlineUnittest(unittest.TestCase):
     self.failUnlessEqual(expected_inlined, actually_inlined);
     tmp_dir.CleanUp()
 
+  def testPreprocessOnlyEvaluatesIncludeAndIf(self):
+    '''Tests that preprocess_only=true evaluates <include> and <if> only.  '''
+
+    files = {
+      'index.html': '''
+      <html>
+        <head>
+          <link rel="stylesheet" href="not_inlined.css">
+          <script src="also_not_inlined.js">
+        </head>
+        <body>
+          <include src="inline_this.html">
+          <if expr="True">
+            <p>'if' should be evaluated.</p>
+          </if>
+        </body>
+      </html>
+      ''',
+      'not_inlined.css': ''' /* <link> should not be inlined. */ ''',
+      'also_not_inlined.js': ''' // <script> should not be inlined. ''',
+      'inline_this.html': ''' <p>'include' should be inlined.</p> '''
+    }
+
+    expected_inlined = '''
+      <html>
+        <head>
+          <link rel="stylesheet" href="not_inlined.css">
+          <script src="also_not_inlined.js">
+        </head>
+        <body>
+          <p>'include' should be inlined.</p>
+          <p>'if' should be evaluated.</p>
+        </body>
+      </html>
+      '''
+
+    source_resources = set()
+    tmp_dir = util.TempDir(files)
+    source_resources.add(tmp_dir.GetPath('index.html'))
+    source_resources.add(tmp_dir.GetPath('inline_this.html'))
+
+    result = html_inline.DoInline(tmp_dir.GetPath('index.html'), None,
+                                  preprocess_only=True)
+    resources = result.inlined_files
+    resources.add(tmp_dir.GetPath('index.html'))
+    self.failUnlessEqual(resources, source_resources)
+
+    # Ignore whitespace
+    expected_inlined = re.sub(r'\s+', ' ', expected_inlined)
+    actually_inlined = re.sub(r'\s+', ' ',
+                              util.FixLineEnd(result.inlined_data, '\n'))
+    self.failUnlessEqual(expected_inlined, actually_inlined)
+
+    tmp_dir.CleanUp()
 
 if __name__ == '__main__':
   unittest.main()

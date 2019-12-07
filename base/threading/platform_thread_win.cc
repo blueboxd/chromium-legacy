@@ -37,6 +37,10 @@ constexpr int kWin7BackgroundThreadModePriority = 4;
 // set to normal on Windows 7.
 constexpr int kWin7NormalPriority = 3;
 
+// These values are sometimes returned by ::GetThreadPriority() on Windows 10.
+constexpr int kWin10NormalPriority1 = 5;
+constexpr int kWin10NormalPriority2 = 6;
+
 // The information on how to set the thread name comes from
 // a MSDN article: http://msdn2.microsoft.com/en-us/library/xcb2z8hs.aspx
 const DWORD kVCThreadNameException = 0x406D1388;
@@ -449,6 +453,12 @@ ThreadPriority PlatformThread::GetCurrentThreadPriority() {
       DCHECK_EQ(win::GetVersion(), win::Version::WIN7);
       FALLTHROUGH;
     case THREAD_PRIORITY_NORMAL:
+      return ThreadPriority::NORMAL;
+    case kWin10NormalPriority1:
+      FALLTHROUGH;
+    case kWin10NormalPriority2:
+      DCHECK_GE(win::GetVersion(), win::Version::WIN10);
+      DCHECK_LT(win::GetVersion(), win::Version::WIN_LAST);
       return ThreadPriority::NORMAL;
     case THREAD_PRIORITY_ABOVE_NORMAL:
     case THREAD_PRIORITY_HIGHEST:

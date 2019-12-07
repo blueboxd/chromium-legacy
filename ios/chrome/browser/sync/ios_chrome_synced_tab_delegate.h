@@ -15,6 +15,7 @@
 #include "components/sync_sessions/synced_tab_delegate.h"
 #import "ios/web/public/web_state_user_data.h"
 
+@class CRWSessionStorage;
 class IOSTaskTabHelper;
 
 class IOSChromeSyncedTabDelegate
@@ -52,7 +53,15 @@ class IOSChromeSyncedTabDelegate
   const IOSTaskTabHelper* ios_task_tab_helper() const;
   friend class web::WebStateUserData<IOSChromeSyncedTabDelegate>;
 
+  // Whether navigation data should be taken from session storage.
+  // Storage must be used if slim navigation is enabled and the tab has not be
+  // displayed.
+  // If the session storage must be used and was not fetched yet, bet it from
+  // |web_state_|.
+  bool GetSessionStorageIfNeeded() const;
+
   web::WebState* web_state_;
+  mutable CRWSessionStorage* session_storage_;
 
   WEB_STATE_USER_DATA_KEY_DECL();
 

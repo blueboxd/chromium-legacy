@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/load_error_reporter.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
@@ -206,16 +205,6 @@ ToolbarActionsBarUnitTest::CreateAndAddExtension(const std::string& name,
   extensions::ExtensionSystem::Get(profile())->extension_service()->
       AddExtension(extension.get());
   return extension;
-}
-
-void ToolbarActionsBarUnitTest::SetActionWantsToRunOnTab(
-    ExtensionAction* action,
-    content::WebContents* web_contents,
-    bool wants_to_run) {
-  action->SetIsVisible(SessionTabHelper::IdForTab(web_contents).id(),
-                       wants_to_run);
-  extensions::ExtensionActionAPI::Get(profile())->NotifyChange(
-      action, web_contents, profile());
 }
 
 testing::AssertionResult ToolbarActionsBarUnitTest::VerifyToolbarOrder(

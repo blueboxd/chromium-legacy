@@ -167,7 +167,7 @@ void CastAudioManagerAlsa::GetAudioInputDeviceNames(
     NOTIMPLEMENTED() << "Capture Service is not enabled, return nullptr.";
     return nullptr;
 #endif  // BUILDFLAG(ENABLE_AUDIO_CAPTURE_SERVICE)
-    return new CastAudioInputStream(params, device_name);
+    return new CastAudioInputStream(this, params, device_name);
   }
   return new ::media::AlsaPcmInputStream(this, device_name, params,
                                          wrapper_.get());

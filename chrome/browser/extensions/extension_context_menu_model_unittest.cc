@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/extensions/api/context_menus.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -636,7 +638,8 @@ TEST_F(ExtensionContextMenuModelTest,
 }
 
 // Test that the "show" and "hide" menu items appear correctly in the extension
-// context menu.
+// context menu. When kExtensionsToolbarMenu is enabled, the "hide" is instead
+// an "unpin" menu item.
 TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
   InitializeEmptyExtensionService();
   Browser* browser = GetBrowser();
@@ -653,8 +656,10 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
   // For laziness.
   const ExtensionContextMenuModel::MenuEntries visibility_command =
       ExtensionContextMenuModel::TOGGLE_VISIBILITY;
-  base::string16 hide_string =
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_HIDE_BUTTON_IN_MENU);
+  base::string16 hide_string = l10n_util::GetStringUTF16(
+      base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)
+          ? IDS_EXTENSIONS_UNPIN_FROM_TOOLBAR
+          : IDS_EXTENSIONS_HIDE_BUTTON_IN_MENU);
   base::string16 show_string =
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_BUTTON_IN_TOOLBAR);
   base::string16 keep_string =

@@ -132,7 +132,7 @@ ContentSettingsType kPermissionType[] = {
     ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
 #endif
     ContentSettingsType::MIDI_SYSEX,
-    ContentSettingsType::CLIPBOARD_READ,
+    ContentSettingsType::CLIPBOARD_READ_WRITE,
 #if defined(OS_ANDROID)
     ContentSettingsType::NFC,
 #endif

@@ -182,12 +182,6 @@ crbug.com/974383 [ mac ] Pixel_CanvasDisplayLinearRGBAccelerated2D [ Skip ]
 # Fails when the browser features SkiaRenderer & Vulkan are enabled on Android
 crbug.com/991289 [ android skia-renderer use-vulkan ] Pixel_CSS3DBlueBox [ Skip ]
 crbug.com/991291 [ android android-chromium skia-renderer use-vulkan ] Pixel_Video_Context_Loss_VP9 [ Skip ]
-crbug.com/991291 [ android skia-renderer use-vulkan ] Pixel_Video_MP4 [ Skip ]
-crbug.com/991291 [ android skia-renderer use-vulkan ] Pixel_Video_MP4_FourColors_Aspect_4x3 [ Skip ]
-crbug.com/991291 [ android skia-renderer use-vulkan ] Pixel_Video_MP4_FourColors_Rot_180 [ Skip ]
-crbug.com/991291 [ android skia-renderer use-vulkan ] Pixel_Video_MP4_FourColors_Rot_270 [ Skip ]
-crbug.com/991291 [ android skia-renderer use-vulkan ] Pixel_Video_MP4_FourColors_Rot_90 [ Skip ]
-crbug.com/991291 [ android skia-renderer use-vulkan ] Pixel_Video_VP9 [ Skip ]
 
 # Fails when the browser features SkiaRenderer & GL are enabled on Android.
 # The more specific matching criteria is to prevent collisions with other expectations.

@@ -130,34 +130,34 @@
                 "abridged": false
             },
             "system_health.memory_mobile": {
-                "end": 14,
-                "abridged": false
+                "end": 8,
+                "abridged": true
             }
         }
     },
     "6": {
         "benchmarks": {
             "system_health.memory_mobile": {
-                "begin": 14,
-                "end": 36,
-                "abridged": false
+                "begin": 8,
+                "end": 16,
+                "abridged": true
             }
         }
     },
     "7": {
         "benchmarks": {
             "system_health.memory_mobile": {
-                "begin": 36,
-                "end": 78,
-                "abridged": false
+                "begin": 16,
+                "end": 24,
+                "abridged": true
             }
         }
     },
     "8": {
         "benchmarks": {
             "system_health.memory_mobile": {
-                "begin": 78,
-                "abridged": false
+                "begin": 24,
+                "abridged": true
             },
             "system_health.webview_startup": {
                 "abridged": false

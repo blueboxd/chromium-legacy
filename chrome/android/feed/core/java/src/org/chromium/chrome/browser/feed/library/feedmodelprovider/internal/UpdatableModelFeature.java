@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.feedmodelprovider.internal;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.FeatureChangeObserver;
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.ModelCursor;
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.ModelFeature;
@@ -35,8 +37,8 @@ public final class UpdatableModelFeature
     }
 
     @Override
-    /*@Nullable*/
-    public ModelCursor getDirectionalCursor(boolean forward, /*@Nullable*/ String startingChild) {
+    @Nullable
+    public ModelCursor getDirectionalCursor(boolean forward, @Nullable String startingChild) {
         return null;
     }
 

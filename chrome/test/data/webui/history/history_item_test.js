@@ -21,9 +21,12 @@ suite('<history-item> unit test', function() {
   let item;
 
   setup(function() {
+    PolymerTest.clearBody();
+    history.BrowserService.instance_ = new TestBrowserService();
+
     item = document.createElement('history-item');
     item.item = TEST_HISTORY_RESULTS[0];
-    replaceBody(item);
+    document.body.appendChild(item);
   });
 
   test('click targets for selection', function() {
@@ -71,7 +74,12 @@ suite('<history-item> integration test', function() {
   let element;
 
   setup(function() {
-    element = replaceApp().$.history;
+    PolymerTest.clearBody();
+    history.BrowserService.instance_ = new TestBrowserService();
+
+    const app = document.createElement('history-app');
+    document.body.appendChild(app);
+    element = app.$.history;
   });
 
   test('basic separator insertion', function() {

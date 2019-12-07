@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/address_normalizer_factory.h"
 #include "chrome/browser/autofill/autocomplete_history_manager_factory.h"
-#include "chrome/browser/autofill/autofill_gstatic_reader.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/risk_util.h"
 #include "chrome/browser/autofill/strike_database_factory.h"
@@ -192,6 +191,26 @@ std::string ChromeAutofillClient::GetPageLanguage() const {
     return translate_manager->GetLanguageState().original_language();
   return std::string();
 }
+
+#if !defined(OS_ANDROID)
+std::vector<std::string>
+ChromeAutofillClient::GetMerchantWhitelistForVirtualCards() {
+  if (!::autofill::prefs::IsAutofillCreditCardEnabled(GetPrefs()))
+    return std::vector<std::string>();
+
+  return AutofillGstaticReader::GetInstance()
+      ->GetTokenizationMerchantWhitelist();
+}
+
+std::vector<std::string>
+ChromeAutofillClient::GetBinRangeWhitelistForVirtualCards() {
+  if (!::autofill::prefs::IsAutofillCreditCardEnabled(GetPrefs()))
+    return std::vector<std::string>();
+
+  return AutofillGstaticReader::GetInstance()
+      ->GetTokenizationBinRangesWhitelist();
+}
+#endif
 
 void ChromeAutofillClient::ShowAutofillSettings(
     bool show_credit_card_settings) {
@@ -597,8 +616,6 @@ ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
           user_prefs::UserPrefs::Get(web_contents->GetBrowserContext()),
           Profile::FromBrowserContext(web_contents->GetBrowserContext())
               ->IsOffTheRecord()) {
-  if (::autofill::prefs::IsAutofillCreditCardEnabled(GetPrefs()))
-    AutofillGstaticReader::GetInstance()->SetUp();
   // TODO(crbug.com/928595): Replace the closure with a callback to the renderer
   // that indicates if log messages should be sent from the renderer.
   log_manager_ =

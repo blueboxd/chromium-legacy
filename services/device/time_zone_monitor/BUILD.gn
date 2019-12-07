@@ -24,6 +24,7 @@ source_set("time_zone_monitor") {
 
   deps = [
     "//base",
+    "//build:chromecast_buildflags",
     "//mojo/public/cpp/bindings",
     "//third_party/icu",
   ]
@@ -50,10 +51,6 @@ source_set("time_zone_monitor") {
 
   if (is_fuchsia) {
     sources += [ "time_zone_monitor_fuchsia.cc" ]
-  }
-
-  if (is_chromecast) {
-    defines = [ "IS_CHROMECAST" ]
   }
 }
 

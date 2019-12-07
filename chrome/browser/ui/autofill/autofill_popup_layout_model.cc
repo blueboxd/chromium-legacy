@@ -196,6 +196,7 @@ const gfx::FontList& AutofillPopupLayoutModel::GetValueFontListForRow(
     case POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY:
     case POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS:
     case POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPTIN:
+    case POPUP_ITEM_ID_USE_VIRTUAL_CARD:
       return normal_font_list_;
     case POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY:
     case POPUP_ITEM_ID_DATALIST_ENTRY:

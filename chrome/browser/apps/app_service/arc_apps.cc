@@ -10,8 +10,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/arc_apps_factory.h"
@@ -21,6 +23,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_dialog.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/component_extension_resources.h"
 #include "chrome/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/arc/app_permissions/arc_app_permissions_bridge.h"
@@ -477,7 +480,7 @@ void ArcApps::PauseApp(const std::string& app_id) {
   paused_apps_.insert(app_id);
   SetIconEffect(app_id);
 
-  // TODO(crbug.com/1011235): If the app is running, Stop the app.
+  CloseTasks(app_id);
 }
 
 void ArcApps::UnpauseApps(const std::string& app_id) {
@@ -599,6 +602,12 @@ void ArcApps::OnAppStatesChanged(const std::string& app_id,
 
 void ArcApps::OnAppRemoved(const std::string& app_id) {
   paused_apps_.erase(app_id);
+  if (base::Contains(app_id_to_task_ids_, app_id)) {
+    for (int task_id : app_id_to_task_ids_[app_id]) {
+      task_id_to_app_id_.erase(task_id);
+    }
+    app_id_to_task_ids_.erase(app_id);
+  }
 
   apps::mojom::AppPtr app = apps::mojom::App::New();
   app->app_type = apps::mojom::AppType::kArc;
@@ -674,6 +683,30 @@ void ArcApps::OnPackageListInitialRefreshed() {
     if (app_info) {
       Publish(Convert(prefs, app_id, *app_info, update_icon));
     }
+  }
+}
+
+void ArcApps::OnTaskCreated(int task_id,
+                            const std::string& package_name,
+                            const std::string& activity,
+                            const std::string& intent) {
+  const std::string app_id = ArcAppListPrefs::GetAppId(package_name, activity);
+  app_id_to_task_ids_[app_id].insert(task_id);
+  task_id_to_app_id_[task_id] = app_id;
+}
+
+void ArcApps::OnTaskDestroyed(int task_id) {
+  auto it = task_id_to_app_id_.find(task_id);
+  if (it == task_id_to_app_id_.end()) {
+    return;
+  }
+
+  const std::string app_id = it->second;
+  task_id_to_app_id_.erase(it);
+  DCHECK(base::Contains(app_id_to_task_ids_, app_id));
+  app_id_to_task_ids_[app_id].erase(task_id);
+  if (app_id_to_task_ids_[app_id].empty()) {
+    app_id_to_task_ids_.erase(app_id);
   }
 }
 
@@ -911,6 +944,22 @@ void ArcApps::SetIconEffect(const std::string& app_id) {
   app->app_id = app_id;
   app->icon_key = icon_key_factory_.MakeIconKey(icon_effects);
   Publish(std::move(app));
+}
+
+void ArcApps::CloseTasks(const std::string& app_id) {
+  if (!base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry)) {
+    return;
+  }
+
+  if (!base::Contains(app_id_to_task_ids_, app_id)) {
+    return;
+  }
+
+  for (int task_id : app_id_to_task_ids_[app_id]) {
+    arc::CloseTask(task_id);
+    task_id_to_app_id_.erase(task_id);
+  }
+  app_id_to_task_ids_.erase(app_id);
 }
 
 void ArcApps::UpdateAppIntentFilters(

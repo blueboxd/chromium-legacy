@@ -398,3 +398,19 @@ TEST(CreateChild, IsPendingNavigation_NoErrors) {
   ASSERT_NO_FATAL_FAILURE(
       child_view->IsPendingNavigation("1234", &timeout, &result));
 }
+
+TEST(ManageCookies, AddCookie_SameSiteTrue) {
+  std::unique_ptr<FakeDevToolsClient> client_uptr =
+      std::make_unique<FakeDevToolsClient>();
+  FakeDevToolsClient* client_ptr = client_uptr.get();
+  BrowserInfo browser_info;
+  WebViewImpl view(client_ptr->GetId(), true, nullptr, &browser_info,
+                   std::move(client_uptr), nullptr, PageLoadStrategy::kEager);
+  std::string samesite = "Strict";
+  base::DictionaryValue dict;
+  dict.SetBoolean("success", true);
+  client_ptr->set_result(dict);
+  Status status = view.AddCookie("utest", "chrome://version", "value", "domain",
+                                 "path", samesite, true, true, 123456789);
+  ASSERT_EQ(kOk, status.code());
+}

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.testing.network;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.host.network.HttpRequest;
 import org.chromium.chrome.browser.feed.library.api.host.network.HttpResponse;
@@ -16,8 +18,10 @@ import java.util.ArrayList;
 public final class FakeNetworkClient implements NetworkClient {
     private final FakeThreadUtils mFakeThreadUtils;
     private final ArrayList<HttpResponse> mResponses = new ArrayList<>();
-    /*@Nullable*/ private HttpRequest mRequest;
-    /*@Nullable*/ private HttpResponse mDefaultResponse;
+    @Nullable
+    private HttpRequest mRequest;
+    @Nullable
+    private HttpResponse mDefaultResponse;
 
     public FakeNetworkClient(FakeThreadUtils fakeThreadUtils) {
         this.mFakeThreadUtils = fakeThreadUtils;
@@ -55,7 +59,7 @@ public final class FakeNetworkClient implements NetworkClient {
     }
 
     /** Returns the last {@link HttpRequest} sent. */
-    /*@Nullable*/
+    @Nullable
     public HttpRequest getLatestRequest() {
         return mRequest;
     }

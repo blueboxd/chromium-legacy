@@ -14,6 +14,8 @@ import android.view.ViewParent;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import androidx.annotation.Nullable;
+
 import java.util.List;
 
 /**
@@ -22,7 +24,8 @@ import java.util.List;
  */
 public class FloatingContextMenuManager implements ContextMenuManager {
     private final Context mContext;
-    /*@Nullable*/ private AlertDialog mAlertDialog;
+    @Nullable
+    private AlertDialog mAlertDialog;
 
     public FloatingContextMenuManager(Context context) {
         this.mContext = context;

@@ -205,38 +205,6 @@ typename BreakList<T>::const_iterator IncrementBreakListIteratorToPosition(
   return iter;
 }
 
-// Determines the equivalent codepoint (same rank) at |text[index]| in
-// |other_text|. The size of each codepoint may no longer match due to elision,
-// truncation or revision but their ordering is still the same. The following
-// code assumes that |other_text| is a transformation from |text| that preserves
-// the number and ordering of codepoints. Replacing a 1x with a 2x character
-// codepoint is valid, however replacing one codepoint with two codepoints is
-// not (see http://crbug.com/1021720).
-size_t GetTextIndexForOtherText(const base::string16& text,
-                                size_t index,
-                                const base::string16& other_text) {
-  // Move index to the beginning of the surrogate pair, if needed.
-  U16_SET_CP_START(text.data(), 0, index);
-
-  // Iterates through codepoints in both strings until we reach |index| in
-  // |text|.
-  base::i18n::UTF16CharIterator text_iter(&text);
-  base::i18n::UTF16CharIterator other_text_iter(&other_text);
-  while (!text_iter.end() && !other_text_iter.end()) {
-    // Codepoint at |index| is found, returns the corresponding index in
-    // |other_text|.
-    if (text_iter.array_pos() == static_cast<int32_t>(index))
-      return other_text_iter.array_pos();
-
-    // Move both iterator to the next codepoints.
-    if (!text_iter.Advance() || !other_text_iter.Advance())
-      break;
-  }
-
-  // The index is out-of-bound. Returns the end of other_text.
-  return other_text.length();
-}
-
 // Returns the offset (codepoint rank) for the codepoint at text[index].
 size_t GetOffsetForTextIndex(const base::string16& text, size_t index) {
   DCHECK_LT(index, text.length());
@@ -859,7 +827,7 @@ bool RenderText::SelectRange(const Range& range) {
   uint32_t text_length = static_cast<uint32_t>(text().length());
   Range sel(std::min(range.start(), text_length),
             std::min(range.end(), text_length));
-  // Allow selection bounds at valid indicies amid multi-character graphemes.
+  // Allow selection bounds at valid indices amid multi-character graphemes.
   if (!IsValidLogicalIndex(sel.start()) || !IsValidLogicalIndex(sel.end()))
     return false;
   LogicalCursorDirection affinity =
@@ -1053,6 +1021,11 @@ bool RenderText::IsValidLogicalIndex(size_t index) const {
        IsValidCodePointIndex(text(), index));
 }
 
+bool RenderText::IsValidCursorIndex(size_t index) {
+  return index == 0 || index == text().length() ||
+         (IsValidLogicalIndex(index) && IsGraphemeBoundary(index));
+}
+
 Rect RenderText::GetCursorBounds(const SelectionModel& caret,
                                  bool insert_mode) {
   EnsureLayout();
@@ -1103,28 +1076,59 @@ const Rect& RenderText::GetUpdatedCursorBounds() {
   return cursor_bounds_;
 }
 
-size_t RenderText::IndexOfAdjacentGrapheme(size_t index,
-                                           LogicalCursorDirection direction) {
-  if (index > text().length())
-    return text().length();
+bool RenderText::IsGraphemeBoundary(size_t index) {
+  if (index >= text().length())
+    return true;
 
   EnsureLayout();
 
+  DCHECK(!text_to_display_indices_.empty());
+
+  // The function std::lower_bound(...) finds the first not less than |index|.
+  auto iter = std::lower_bound(text_to_display_indices_.begin(),
+                               text_to_display_indices_.end(), index,
+                               [](const TextToDisplayIndex& lhs, size_t rhs) {
+                                 return lhs.text_index < rhs;
+                               });
+
+  return (iter != text_to_display_indices_.end() && iter->text_index == index);
+}
+
+size_t RenderText::IndexOfAdjacentGrapheme(size_t index,
+                                           LogicalCursorDirection direction) {
+  if (text_.empty())
+    return 0;
+  if (index > text_.length())
+    return text_.length();
+
+  EnsureLayout();
+
+  DCHECK(!text_to_display_indices_.empty());
+
+  // The function std::lower_bound(...) finds the first not less than |index|.
+  auto iter = std::lower_bound(text_to_display_indices_.begin(),
+                               text_to_display_indices_.end(), index,
+                               [](const TextToDisplayIndex& lhs, size_t rhs) {
+                                 return lhs.text_index < rhs;
+                               });
+
   if (direction == CURSOR_FORWARD) {
-    while (index < text().length()) {
-      index++;
-      if (IsValidCursorIndex(index))
-        return index;
-    }
-    return text().length();
+    // |index| is already a grapheme boundary. Move to the next grapheme.
+    if (iter != text_to_display_indices_.end() && iter->text_index == index)
+      ++iter;
+    if (iter == text_to_display_indices_.end())
+      return text_.length();
+    DCHECK_LT(index, iter->text_index);
+  } else {
+    DCHECK_EQ(direction, CURSOR_BACKWARD);
+    if (iter != text_to_display_indices_.begin())
+      --iter;
+    if (iter == text_to_display_indices_.begin())
+      return 0;
+    DCHECK_GT(index, iter->text_index);
   }
 
-  while (index > 0) {
-    index--;
-    if (IsValidCursorIndex(index))
-      return index;
-  }
-  return 0;
+  return iter->text_index;
 }
 
 SelectionModel RenderText::GetSelectionModelForSelectionStart() const {
@@ -1444,6 +1448,8 @@ void RenderText::EnsuresLayoutTextAttributeUpdated() {
   if (layout_text_attributes_up_to_date_)
     return;
 
+  EnsureLayoutTextUpdated();
+
   // Reset the previous layout text attributes.
   size_t max_length = layout_text_.length();
   layout_colors_.SetMax(max_length);
@@ -1453,6 +1459,7 @@ void RenderText::EnsuresLayoutTextAttributeUpdated() {
   layout_styles_.resize(TEXT_STYLE_COUNT);
   for (auto& layout_style : layout_styles_)
     layout_style.SetMax(max_length);
+  text_to_display_indices_.clear();
 
   // Create an iterator to ensure layout BreakLists don't break graphemes.
   base::i18n::BreakIterator grapheme_iter(
@@ -1466,19 +1473,27 @@ void RenderText::EnsuresLayoutTextAttributeUpdated() {
   base::i18n::UTF16CharIterator text_iter(&text_);
   base::i18n::UTF16CharIterator layout_text_iter(&layout_text_);
   internal::StyleIterator styles = GetTextStyleIterator();
-  size_t current_grapheme_start_position = 0;
+  size_t text_grapheme_start_position = 0;
+  size_t layout_grapheme_start_position = 0;
   while (!text_iter.end() && !layout_text_iter.end()) {
     size_t current_text_position = text_iter.array_pos();
     size_t current_layout_text_position = layout_text_iter.array_pos();
-    if (grapheme_iter.IsGraphemeBoundary(current_text_position))
-      current_grapheme_start_position = current_text_position;
+    if (grapheme_iter.IsGraphemeBoundary(current_text_position)) {
+      text_grapheme_start_position = current_text_position;
+      layout_grapheme_start_position = current_layout_text_position;
+
+      // Keep track of the mapping between |text_| and |layout_text_| indices.
+      TextToDisplayIndex mapping = {text_grapheme_start_position,
+                                    layout_grapheme_start_position};
+      text_to_display_indices_.push_back(mapping);
+    }
 
     // Move text iterators to their next character.
     text_iter.Advance();
     layout_text_iter.Advance();
 
     // Apply the style at current grapheme position to the layout text.
-    styles.IncrementToPosition(current_grapheme_start_position);
+    styles.IncrementToPosition(text_grapheme_start_position);
 
     Range range(current_layout_text_position, layout_text_iter.array_pos());
     layout_colors_.ApplyValue(styles.color(), range);
@@ -1491,14 +1506,13 @@ void RenderText::EnsuresLayoutTextAttributeUpdated() {
     }
 
     // Apply an underline to the composition range in |underlines|.
-    if (composition_range_.Contains(
-            gfx::Range(current_grapheme_start_position))) {
+    if (composition_range_.Contains(gfx::Range(text_grapheme_start_position))) {
       layout_styles_[TEXT_STYLE_HEAVY_UNDERLINE].ApplyValue(true, range);
     }
 
     // Apply the selected text color to the selection range.
     if (!selection().is_empty() &&
-        selection().Contains(gfx::Range(current_grapheme_start_position))) {
+        selection().Contains(gfx::Range(text_grapheme_start_position))) {
       layout_colors_.ApplyValue(selection_color_, range);
     }
   }
@@ -1797,30 +1811,58 @@ base::i18n::TextDirection RenderText::GetTextDirection(
   return text_direction_;
 }
 
-size_t RenderText::TextIndexToGivenTextIndex(const base::string16& given_text,
-                                             size_t index) const {
-  DCHECK(layout_text_up_to_date_);
-  DCHECK(given_text == layout_text_ || given_text == display_text());
-  DCHECK_LE(index, text().length());
-  return GetTextIndexForOtherText(text(), index, given_text);
-}
-
-size_t RenderText::GivenTextIndexToTextIndex(const base::string16& given_text,
-                                             size_t index) const {
-  DCHECK(layout_text_up_to_date_);
-  DCHECK(given_text == layout_text_ || given_text == display_text());
-  DCHECK_LE(index, text().length());
-  return GetTextIndexForOtherText(given_text, index, text());
-}
-
 size_t RenderText::TextIndexToDisplayIndex(size_t index) {
-  DCHECK_LE(index, text().length());
-  return GetTextIndexForOtherText(text(), index, GetDisplayText());
+  EnsuresLayoutTextAttributeUpdated();
+
+  // it is valid to query the index after the last character.
+  if (index == text_.length())
+    return layout_text_.size();
+
+  DCHECK_LT(index, text_.length());
+  DCHECK(!text_to_display_indices_.empty());
+
+  // The function std::lower_bound(...) finds the first not less than |index|.
+  // Handle the case where it's equal by returning the current element.
+  // Otherwise returns the previous element.
+  auto iter = std::lower_bound(text_to_display_indices_.begin(),
+                               text_to_display_indices_.end(), index,
+                               [](const TextToDisplayIndex& lhs, size_t rhs) {
+                                 return lhs.text_index < rhs;
+                               });
+
+  if (iter != text_to_display_indices_.end() && iter->text_index == index)
+    return iter->display_index;
+  --iter;
+
+  CHECK_LT(iter->display_index, layout_text_.length());
+  return iter->display_index;
 }
 
 size_t RenderText::DisplayIndexToTextIndex(size_t index) {
-  DCHECK_LE(index, GetDisplayText().length());
-  return GetTextIndexForOtherText(GetDisplayText(), index, text());
+  EnsuresLayoutTextAttributeUpdated();
+
+  // it is valid to query the index after the last character.
+  if (index == layout_text_.length())
+    return text_.size();
+
+  DCHECK_LT(index, layout_text_.length());
+  DCHECK(!text_to_display_indices_.empty());
+
+  // The function std::lower_bound(...) finds the first not less than |index|.
+  // Handle the case where it's equal by returning the current element.
+  // Otherwise returns the previous element.
+  auto iter = std::lower_bound(text_to_display_indices_.begin(),
+                               text_to_display_indices_.end(), index,
+                               [](const TextToDisplayIndex& lhs, size_t rhs) {
+                                 return lhs.display_index < rhs;
+                               });
+
+  if (iter != text_to_display_indices_.end() && iter->display_index == index)
+    return iter->text_index;
+  --iter;
+
+  CHECK_LT(iter->text_index, text().length());
+  return iter->text_index;
 }
 
 void RenderText::UpdateStyleLengths() {

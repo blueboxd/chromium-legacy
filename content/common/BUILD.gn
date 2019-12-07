@@ -60,7 +60,6 @@ source_set("common") {
     "background_fetch/background_fetch_types.h",
     "browser_plugin/browser_plugin_constants.cc",
     "browser_plugin/browser_plugin_constants.h",
-    "browser_plugin/browser_plugin_messages.h",
     "child_process_host_impl.cc",
     "child_process_host_impl.h",
     "common_param_traits.cc",

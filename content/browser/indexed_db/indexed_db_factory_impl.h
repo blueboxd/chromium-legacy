@@ -149,7 +149,8 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
       IndexedDBBackingStore::BlobFilesCleanedCallback blob_files_cleaned,
       IndexedDBBackingStore::ReportOutstandingBlobsCallback
           report_outstanding_blobs,
-      base::SequencedTaskRunner* task_runner);
+      scoped_refptr<base::SequencedTaskRunner> idb_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
 
   IndexedDBContextImpl* context() const { return context_; }
 

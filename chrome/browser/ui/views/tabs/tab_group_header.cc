@@ -82,7 +82,14 @@ void TabGroupHeader::OnMouseReleased(const ui::MouseEvent& event) {
   tab_strip_->EndDrag(END_DRAG_COMPLETE);
 }
 
+void TabGroupHeader::OnMouseEntered(const ui::MouseEvent& event) {
+  // Hide the hover card, since there currently isn't anything to display
+  // for a group.
+  tab_strip_->UpdateHoverCard(nullptr);
+}
+
 void TabGroupHeader::OnGestureEvent(ui::GestureEvent* event) {
+  tab_strip_->UpdateHoverCard(nullptr);
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN: {
       if (!editor_bubble_tracker_.is_open()) {

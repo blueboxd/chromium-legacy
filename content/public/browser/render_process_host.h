@@ -66,7 +66,6 @@ class BrowserMessageFilter;
 class IsolationContext;
 class RenderProcessHostObserver;
 class StoragePartition;
-struct WebPreferences;
 #if defined(OS_ANDROID)
 enum class ChildProcessImportance;
 #endif
@@ -419,56 +418,15 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // MockRenderProcessHost usage in tests.
   virtual mojom::Renderer* GetRendererInterface() = 0;
 
-  // Create an URLLoaderFactory that can be used by |origin| being hosted in
-  // |this| process.
+  // Create an URLLoaderFactory from |this| renderer process.
   //
-  // |main_world_origin| specifies the origin of the main world that will use
-  // the URLLoaderFactory.  In most cases |main_world_origin| and |origin|
-  // should be the same, but they may differ if |origin| specifies an origin of
-  // an isolated world (e.g. a content script of a Chrome Extension - see also
-  // the doc comment for extensions::URLLoaderFactoryManager::CreateFactory).
-  // TODO(lukasza): Remove |main_world_origin| once there is no need for
-  // a separate URLLoaderFactory for allowlisted extensions (in all other cases
-  // |main_world_origin| should be the same as |origin|).  At the same time,
-  // consider renaming |origin| to |request_initiator|.
-  //
-  // When NetworkService is enabled, |receiver| will be bound with a new
-  // URLLoaderFactory created from the storage partition's Network Context. Note
-  // that the URLLoaderFactory returned by this method does NOT support
-  // auto-reconnect after a crash of Network Service.
-  // When NetworkService is not enabled, |receiver| will be bound with a
-  // URLLoaderFactory which routes requests to ResourceDispatcherHost.
-  //
-  // |preferences| is an optional argument that might be used to control some
-  // aspects of the URLLoaderFactory (e.g. via
-  // allow_universal_access_from_file_urls).
-  //
-  // |header_client| will be used in URLLoaderFactoryParams when creating the
-  // factory.
-  //
-  // |network_isolation_key| will be used in URLLoaderFactoryParams when
-  // creating the factory. All resource requests through this factory will
-  // propagate the key to the network stack so that resources with different
-  // keys do not share network resources like the http cache.
-  //
-  // |top_frame_token| is a token for the top level frame, and used for resource
-  // accounting for keepalive requests.
-  //
-  // |factory_override|, when non-null, replaces the lower level network
-  // URLLoaderFactory used by security features (e.g., CORS) in the network
-  // service.
-
+  // This method will bind |receiver| with a new URLLoaderFactory created from
+  // the storage partition's Network Context. Note that the URLLoaderFactory
+  // returned by this method does NOT support auto-reconnect after a crash of
+  // Network Service.
   virtual void CreateURLLoaderFactory(
-      const url::Origin& origin,
-      const url::Origin& main_world_origin,
-      network::mojom::CrossOriginEmbedderPolicy embedder_policy,
-      const WebPreferences* preferences,
-      const net::NetworkIsolationKey& network_isolation_key,
-      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
-          header_client,
-      const base::Optional<base::UnguessableToken>& top_frame_token,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-      network::mojom::URLLoaderFactoryOverridePtr factory_override) = 0;
+      network::mojom::URLLoaderFactoryParamsPtr params) = 0;
 
   // Whether this process is locked out from ever being reused for sites other
   // than the ones it currently has.

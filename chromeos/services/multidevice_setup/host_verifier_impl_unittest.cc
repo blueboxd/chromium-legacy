@@ -41,7 +41,18 @@ const char kLastUsedTimeDeltaMsPrefName[] =
 const int64_t kFirstRetryDeltaMs = 10 * 60 * 1000;
 const double kExponentialBackoffMultiplier = 1.5;
 
-enum class HostState { kHostNotSet, kHostSetButNotVerified, kHostVerified };
+enum class HostState {
+  // A device has not been marked as a BetterTogether host.
+  kHostNotSet,
+
+  // A device has been marked as a BetterTogether host, but that device has not
+  // enabled any of its individual features yet.
+  kHostSetButFeaturesDisabled,
+
+  // A device has been marked as a BetterTogether host, and that device has
+  // enabled at least one of its individual features.
+  kHostSetAndFeaturesEnabled
+};
 
 }  // namespace
 
@@ -99,10 +110,16 @@ class MultiDeviceSetupHostVerifierImplTest
     host_verifier_->AddObserver(fake_observer_.get());
   }
 
+  void RemoveTestDeviceCryptoData() {
+    GetMutableRemoteDevice(test_device_)->public_key.clear();
+    GetMutableRemoteDevice(test_device_)->beacon_seeds.clear();
+    GetMutableRemoteDevice(test_device_)->persistent_symmetric_key.clear();
+  }
+
   void SetHostState(HostState host_state) {
     for (const auto& feature : kPotentialHostSoftwareFeatures) {
       GetMutableRemoteDevice(test_device_)->software_features[feature] =
-          host_state == HostState::kHostVerified
+          host_state == HostState::kHostSetAndFeaturesEnabled
               ? multidevice::SoftwareFeatureState::kEnabled
               : multidevice::SoftwareFeatureState::kSupported;
     }
@@ -162,7 +179,11 @@ class MultiDeviceSetupHostVerifierImplTest
     mock_sync_timer_->Fire();
     fake_device_sync_client_->InvokePendingForceSyncNowCallback(
         true /* success */);
-    SetHostState(HostState::kHostVerified);
+    SetHostState(HostState::kHostSetAndFeaturesEnabled);
+  }
+
+  bool DoesTestDeviceHaveInstanceId() const {
+    return !test_device_.instance_id().empty();
   }
 
   FakeHostBackendDelegate* fake_host_backend_delegate() {
@@ -189,7 +210,7 @@ class MultiDeviceSetupHostVerifierImplTest
 TEST_P(MultiDeviceSetupHostVerifierImplTest, StartWithoutHost_SetAndVerify) {
   CreateVerifier(HostState::kHostNotSet);
 
-  SetHostState(HostState::kHostSetButNotVerified);
+  SetHostState(HostState::kHostSetButFeaturesDisabled);
   InvokePendingDeviceNotificationCall(true /* success */);
   VerifyState(
       false /* expected_is_verified */, 0u /* expected_num_verified_events */,
@@ -197,7 +218,7 @@ TEST_P(MultiDeviceSetupHostVerifierImplTest, StartWithoutHost_SetAndVerify) {
       kFirstRetryDeltaMs /* expected_retry_delta_value */);
 
   SimulateRetryTimePassing(base::TimeDelta::FromMinutes(1));
-  SetHostState(HostState::kHostVerified);
+  SetHostState(HostState::kHostSetAndFeaturesEnabled);
   VerifyState(true /* expected_is_verified */,
               1u /* expected_num_verified_events */,
               0 /* expected_retry_timestamp_value */,
@@ -207,7 +228,7 @@ TEST_P(MultiDeviceSetupHostVerifierImplTest, StartWithoutHost_SetAndVerify) {
 TEST_P(MultiDeviceSetupHostVerifierImplTest,
        StartWithoutHost_DeviceNotificationFails) {
   CreateVerifier(HostState::kHostNotSet);
-  SetHostState(HostState::kHostSetButNotVerified);
+  SetHostState(HostState::kHostSetButFeaturesDisabled);
 
   // If the device notification call fails, a retry should still be scheduled.
   InvokePendingDeviceNotificationCall(false /* success */);
@@ -220,7 +241,7 @@ TEST_P(MultiDeviceSetupHostVerifierImplTest,
 TEST_P(MultiDeviceSetupHostVerifierImplTest, SyncAfterDeviceNotification) {
   CreateVerifier(HostState::kHostNotSet);
 
-  SetHostState(HostState::kHostSetButNotVerified);
+  SetHostState(HostState::kHostSetButFeaturesDisabled);
   InvokePendingDeviceNotificationCall(true /* success */);
   VerifyState(
       false /* expected_is_verified */, 0u /* expected_num_verified_events */,
@@ -237,7 +258,7 @@ TEST_P(MultiDeviceSetupHostVerifierImplTest, SyncAfterDeviceNotification) {
 TEST_P(MultiDeviceSetupHostVerifierImplTest, StartWithoutHost_Retry) {
   CreateVerifier(HostState::kHostNotSet);
 
-  SetHostState(HostState::kHostSetButNotVerified);
+  SetHostState(HostState::kHostSetButFeaturesDisabled);
   InvokePendingDeviceNotificationCall(true /* success */);
   VerifyState(
       false /* expected_is_verified */, 0u /* expected_num_verified_events */,
@@ -275,7 +296,7 @@ TEST_P(MultiDeviceSetupHostVerifierImplTest, StartWithoutHost_Retry) {
               /* expected_retry_delta_value */);
 
   // Succeed.
-  SetHostState(HostState::kHostVerified);
+  SetHostState(HostState::kHostSetAndFeaturesEnabled);
   VerifyState(true /* expected_is_verified */,
               1u /* expected_num_verified_events */,
               0 /* expected_retry_timestamp_value */,
@@ -284,7 +305,7 @@ TEST_P(MultiDeviceSetupHostVerifierImplTest, StartWithoutHost_Retry) {
 
 TEST_P(MultiDeviceSetupHostVerifierImplTest,
        StartWithUnverifiedHost_NoInitialPrefs) {
-  CreateVerifier(HostState::kHostSetButNotVerified);
+  CreateVerifier(HostState::kHostSetButFeaturesDisabled);
 
   InvokePendingDeviceNotificationCall(true /* success */);
   VerifyState(
@@ -297,7 +318,7 @@ TEST_P(MultiDeviceSetupHostVerifierImplTest,
        StartWithUnverifiedHost_InitialPrefs_HasNotPassedRetryTime) {
   // Simulate starting up the device to find that the retry timer is in 5
   // minutes.
-  CreateVerifier(HostState::kHostSetButNotVerified,
+  CreateVerifier(HostState::kHostSetButFeaturesDisabled,
                  kTestTimeMs + base::TimeDelta::FromMinutes(5).InMilliseconds()
                  /* initial_timer_pref_value */,
                  kFirstRetryDeltaMs /* initial_time_delta_pref_value */);
@@ -318,7 +339,7 @@ TEST_P(MultiDeviceSetupHostVerifierImplTest,
        StartWithUnverifiedHost_InitialPrefs_AlreadyPassedRetryTime) {
   // Simulate starting up the device to find that the retry timer had already
   // fired 5 minutes ago.
-  CreateVerifier(HostState::kHostSetButNotVerified,
+  CreateVerifier(HostState::kHostSetButFeaturesDisabled,
                  kTestTimeMs - base::TimeDelta::FromMinutes(5).InMilliseconds()
                  /* initial_timer_pref_value */,
                  kFirstRetryDeltaMs /* initial_time_delta_pref_value */);
@@ -337,7 +358,7 @@ TEST_P(MultiDeviceSetupHostVerifierImplTest,
        StartWithUnverifiedHost_InitialPrefs_AlreadyPassedMultipleRetryTimes) {
   // Simulate starting up the device to find that the retry timer had already
   // fired 20 minutes ago.
-  CreateVerifier(HostState::kHostSetButNotVerified,
+  CreateVerifier(HostState::kHostSetButFeaturesDisabled,
                  kTestTimeMs - base::TimeDelta::FromMinutes(20).InMilliseconds()
                  /* initial_timer_pref_value */,
                  kFirstRetryDeltaMs /* initial_time_delta_pref_value */);
@@ -360,7 +381,7 @@ TEST_P(MultiDeviceSetupHostVerifierImplTest,
 
 TEST_P(MultiDeviceSetupHostVerifierImplTest,
        StartWithVerifiedHost_HostChanges) {
-  CreateVerifier(HostState::kHostVerified);
+  CreateVerifier(HostState::kHostSetAndFeaturesEnabled);
   VerifyState(true /* expected_is_verified */,
               0u /* expected_num_verified_events */,
               0 /* expected_retry_timestamp_value */,
@@ -372,7 +393,7 @@ TEST_P(MultiDeviceSetupHostVerifierImplTest,
               0 /* expected_retry_timestamp_value */,
               0 /* expected_retry_delta_value */);
 
-  SetHostState(HostState::kHostSetButNotVerified);
+  SetHostState(HostState::kHostSetButFeaturesDisabled);
   InvokePendingDeviceNotificationCall(true /* success */);
   VerifyState(
       false /* expected_is_verified */, 0u /* expected_num_verified_events */,
@@ -382,7 +403,7 @@ TEST_P(MultiDeviceSetupHostVerifierImplTest,
 
 TEST_P(MultiDeviceSetupHostVerifierImplTest,
        StartWithVerifiedHost_PendingRemoval) {
-  CreateVerifier(HostState::kHostVerified);
+  CreateVerifier(HostState::kHostSetAndFeaturesEnabled);
   VerifyState(true /* expected_is_verified */,
               0u /* expected_num_verified_events */,
               0 /* expected_retry_timestamp_value */,
@@ -396,7 +417,19 @@ TEST_P(MultiDeviceSetupHostVerifierImplTest,
               0 /* expected_retry_delta_value */);
 }
 
-// Runs tests for a device with and without an Instance ID.
+TEST_P(MultiDeviceSetupHostVerifierImplTest, HostMissingCryptoData) {
+  // Remove the host device's public key, persistent symmetric key, and beacon
+  // seeds. Without any of these, the host is not considered verified.
+  RemoveTestDeviceCryptoData();
+  CreateVerifier(HostState::kHostSetAndFeaturesEnabled);
+  InvokePendingDeviceNotificationCall(true /* success */);
+  VerifyState(
+      false /* expected_is_verified */, 0u /* expected_num_verified_events */,
+      kTestTimeMs + kFirstRetryDeltaMs /* expected_retry_timestamp_value */,
+      kFirstRetryDeltaMs /* expected_retry_delta_value */);
+}
+
+// Runs tests for a host device with and without an Instance ID.
 // TODO(https://crbug.com/1019206): Remove when v1 DeviceSync is deprecated,
 // when all devices should have an Instance ID.
 INSTANTIATE_TEST_SUITE_P(All,

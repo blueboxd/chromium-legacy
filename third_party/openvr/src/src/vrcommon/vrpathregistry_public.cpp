@@ -9,7 +9,7 @@
 
 #if defined( WIN32 )
 #include <windows.h>
-#include <Shlobj.h>
+#include <shlobj.h>
 
 #undef GetEnvironmentVariable
 #elif defined OSX
@@ -23,7 +23,7 @@
 #include <algorithm>
 
 #ifndef VRLog
-	#undef VRLog
+#undef VRLog
 #endif
 
 #define VRLog(...)
@@ -52,21 +52,21 @@ static std::string GetAppSettingsPath()
 		{
 			return "";
 		}
-		
+
 		NSString *resolvedPath = [paths objectAtIndex:0];
 		resolvedPath = [resolvedPath stringByAppendingPathComponent: @"OpenVR"];
-		
-		if ( ![[NSFileManager new] createDirectoryAtPath: resolvedPath withIntermediateDirectories:YES attributes:nil error:nil] )
+
+		if ( ![[NSFileManager defaultManager] createDirectoryAtPath: resolvedPath withIntermediateDirectories:YES attributes:nil error:nil] )
 		{
 			return "";
 		}
-		
+
 		sSettingsDir.assign( [resolvedPath UTF8String] );
 	}
 	return sSettingsDir;
 #elif defined( LINUX )
 
-	// As defined by XDG Base Directory Specification 
+	// As defined by XDG Base Directory Specification
 	// https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
 
 	const char *pchHome = getenv("XDG_CONFIG_HOME");
@@ -77,7 +77,7 @@ static std::string GetAppSettingsPath()
 
 	//
 	// XDG_CONFIG_HOME is not defined, use ~/.config instead
-	// 
+	//
 	pchHome = getenv( "HOME" );
 	if ( pchHome == NULL )
 	{
@@ -112,7 +112,7 @@ std::string CVRPathRegistry_Public::GetOpenVRConfigPath()
 
 #if defined( _WIN32 ) || defined( LINUX )
 	sConfigPath = Path_Join( sConfigPath, "openvr" );
-#elif defined ( OSX ) 
+#elif defined ( OSX )
 	sConfigPath = Path_Join( sConfigPath, ".openvr" );
 #else
 	#warning "Unsupported platform"
@@ -128,13 +128,17 @@ std::string CVRPathRegistry_Public::GetOpenVRConfigPath()
 //-----------------------------------------------------------------------------
 std::string CVRPathRegistry_Public::GetVRPathRegistryFilename()
 {
+	std::string sOverridePath = GetEnvironmentVariable( "VR_PATHREG_OVERRIDE" );
+	if ( !sOverridePath.empty() )
+		return sOverridePath;
+
 	std::string sPath = GetOpenVRConfigPath();
 	if ( sPath.empty() )
 		return "";
 
 #if defined( _WIN32 )
 	sPath = Path_Join( sPath, "openvrpaths.vrpath" );
-#elif defined ( POSIX ) 
+#elif defined ( POSIX )
 	sPath = Path_Join( sPath, "openvrpaths.vrpath" );
 #else
 	#error "Unsupported platform"
@@ -190,7 +194,7 @@ bool CVRPathRegistry_Public::ToJsonString( std::string &sJsonString )
 	std::string sRegPath = GetVRPathRegistryFilename();
 	if( sRegPath.empty() )
 		return false;
-	
+
 	std::string sRegistryContents = Path_ReadTextFile( sRegPath );
 	if( sRegistryContents.empty() )
 		return false;
@@ -223,19 +227,30 @@ bool CVRPathRegistry_Public::BLoadFromFile()
 	Json::Value root;
 	Json::Reader reader;
 
-	if( !reader.parse( sRegistryContents, root ) )
+#if JSON_USE_EXCEPTION
+	try {
+#endif // JSON_USE_EXCEPTION
+		if ( !reader.parse( sRegistryContents, root ) )
+		{
+			VRLog( "Unable to parse %s: %s\n", sRegPath.c_str(), reader.getFormattedErrorMessages().c_str() );
+			return false;
+		}
+
+		ParseStringListFromJson( &m_vecRuntimePath, root, "runtime" );
+		ParseStringListFromJson( &m_vecConfigPath, root, "config" );
+		ParseStringListFromJson( &m_vecLogPath, root, "log" );
+		if ( root.isMember( "external_drivers" ) && root["external_drivers"].isArray() )
+		{
+			ParseStringListFromJson( &m_vecExternalDrivers, root, "external_drivers" );
+		}
+#if JSON_USE_EXCEPTION
+	}
+	catch ( ... )
 	{
-		VRLog( "Unable to parse %s: %s\n", sRegPath.c_str(), reader.getFormattedErrorMessages().c_str() );
+		VRLog( "Unable to parse %s: %s\n", sRegPath.c_str(), "exception thrown in JSON library" );
 		return false;
 	}
-
-	ParseStringListFromJson( &m_vecRuntimePath, root, "runtime" );
-	ParseStringListFromJson( &m_vecConfigPath, root, "config" );
-	ParseStringListFromJson( &m_vecLogPath, root, "log" );
-	if (root.isMember( "external_drivers" ) && root[ "external_drivers" ].isArray() )
-	{
-		ParseStringListFromJson( &m_vecExternalDrivers, root, "external_drivers" );
-	}
+#endif // JSON_USE_EXCEPTION
 
 	return true;
 }
@@ -252,9 +267,9 @@ bool CVRPathRegistry_Public::BSaveToFile() const
 	std::string sRegPath = GetVRPathRegistryFilename();
 	if( sRegPath.empty() )
 		return false;
-	
+
 	Json::Value root;
-	
+
 	root[ "version" ] = 1;
 	root[ "jsonid" ] = "vrpathreg";
 
@@ -323,7 +338,7 @@ std::string CVRPathRegistry_Public::GetLogPath() const
 
 
 // ---------------------------------------------------------------------------
-// Purpose: Returns paths using the path registry and the provided override 
+// Purpose: Returns paths using the path registry and the provided override
 //			values. Pass NULL for any paths you don't care about.
 // ---------------------------------------------------------------------------
 bool CVRPathRegistry_Public::GetPaths( std::string *psRuntimePath, std::string *psConfigPath, std::string *psLogPath, const char *pchConfigPathOverride, const char *pchLogPathOverride, std::vector<std::string> *pvecExternalDrivers )
@@ -398,7 +413,7 @@ bool CVRPathRegistry_Public::GetPaths( std::string *psRuntimePath, std::string *
 
 	if ( nCountEnvironmentVariables == 3 )
 	{
-		// all three environment variables where set, so we don't need the physical file
+		// all three environment variables were set, so we don't need the physical file
 		return true;
 	}
 

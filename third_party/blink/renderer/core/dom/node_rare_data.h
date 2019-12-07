@@ -63,13 +63,10 @@ class NodeMutationObserverData final
   DISALLOW_COPY_AND_ASSIGN(NodeMutationObserverData);
 };
 
-class NodeRenderingData {
-  USING_FAST_MALLOC(NodeRenderingData);
-
+class NodeRenderingData final : public GarbageCollected<NodeRenderingData> {
  public:
   NodeRenderingData(LayoutObject*,
                     scoped_refptr<const ComputedStyle> computed_style);
-  ~NodeRenderingData();
 
   LayoutObject* GetLayoutObject() const { return layout_object_; }
   void SetLayoutObject(LayoutObject* layout_object) {
@@ -85,42 +82,29 @@ class NodeRenderingData {
   static NodeRenderingData& SharedEmptyData();
   bool IsSharedEmptyData() { return this == &SharedEmptyData(); }
 
+  void Trace(Visitor*) {}
+
  private:
   LayoutObject* layout_object_;
   scoped_refptr<const ComputedStyle> computed_style_;
   DISALLOW_COPY_AND_ASSIGN(NodeRenderingData);
 };
 
-class NodeRareDataBase {
- public:
-  NodeRenderingData* GetNodeRenderingData() const { return node_layout_data_; }
-  void SetNodeRenderingData(NodeRenderingData* node_layout_data) {
-    DCHECK(node_layout_data);
-    node_layout_data_ = node_layout_data;
-  }
-
- protected:
-  explicit NodeRareDataBase(NodeRenderingData* node_layout_data)
-      : node_layout_data_(node_layout_data) {}
-  ~NodeRareDataBase() {
-    if (node_layout_data_ && !node_layout_data_->IsSharedEmptyData())
-      delete node_layout_data_;
-  }
-
- protected:
-  NodeRenderingData* node_layout_data_;
-};
-
-class NodeRareData : public GarbageCollected<NodeRareData>,
-                     public NodeRareDataBase {
+class NodeRareData : public GarbageCollected<NodeRareData> {
  public:
   explicit NodeRareData(NodeRenderingData* node_layout_data)
-      : NodeRareDataBase(node_layout_data),
+      : node_layout_data_(node_layout_data),
         connected_frame_count_(0),
         element_flags_(0),
         restyle_flags_(0),
         is_element_rare_data_(false) {
     CHECK_NE(node_layout_data, nullptr);
+  }
+
+  NodeRenderingData* GetNodeRenderingData() const { return node_layout_data_; }
+  void SetNodeRenderingData(NodeRenderingData* node_layout_data) {
+    DCHECK(node_layout_data);
+    node_layout_data_ = node_layout_data;
   }
 
   void ClearNodeLists() { node_lists_.Clear(); }
@@ -186,6 +170,9 @@ class NodeRareData : public GarbageCollected<NodeRareData>,
   void Trace(Visitor*);
   void TraceAfterDispatch(blink::Visitor*);
   void FinalizeGarbageCollectedObject();
+
+ protected:
+  Member<NodeRenderingData> node_layout_data_;
 
  private:
   NodeListsNodeData& CreateNodeLists();

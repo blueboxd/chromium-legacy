@@ -47,8 +47,10 @@ cca.views.Camera = class extends cca.views.View {
    * @param {!cca.device.DeviceInfoUpdater} infoUpdater
    * @param {!cca.device.PhotoConstraintsPreferrer} photoPreferrer
    * @param {!cca.device.VideoConstraintsPreferrer} videoPreferrer
+   * @param {Mode} defaultMode
    */
-  constructor(resultSaver, infoUpdater, photoPreferrer, videoPreferrer) {
+  constructor(
+      resultSaver, infoUpdater, photoPreferrer, videoPreferrer, defaultMode) {
     super('#camera');
 
     /**
@@ -56,6 +58,12 @@ cca.views.Camera = class extends cca.views.View {
      * @private
      */
     this.infoUpdater_ = infoUpdater;
+
+    /**
+     * @type {!Mode}
+     * @protected
+     */
+    this.defaultMode_ = defaultMode;
 
     /**
      * Layout handler for the camera view.
@@ -171,21 +179,6 @@ cca.views.Camera = class extends cca.views.View {
   get suspended() {
     return this.locked_ || chrome.app.window.current().isMinimized() ||
         cca.state.get('suspend');
-  }
-
-  /**
-   * @return {!Mode}
-   * @protected
-   */
-  get defaultMode_() {
-    switch (window.intent && window.intent.mode) {
-      case cca.intent.Mode.PHOTO:
-        return Mode.PHOTO;
-      case cca.intent.Mode.VIDEO:
-        return Mode.VIDEO;
-      default:
-        return Mode.PHOTO;
-    }
   }
 
   /**

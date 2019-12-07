@@ -10,11 +10,12 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_tick_clock.h"
 #include "content/browser/media/audio_log_factory.h"
+#include "content/public/browser/audio_service.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "services/audio/public/mojom/constants.mojom.h"
+#include "services/audio/public/mojom/audio_service.mojom.h"
 #include "services/audio/public/mojom/log_factory_manager.mojom.h"
 
 namespace content {
@@ -24,12 +25,10 @@ AudioServiceListener::Metrics::Metrics(const base::TickClock* clock)
 
 AudioServiceListener::Metrics::~Metrics() = default;
 
-void AudioServiceListener::Metrics::ServiceAlreadyRunning(
-    service_manager::mojom::InstanceState state) {
+void AudioServiceListener::Metrics::ServiceAlreadyRunning() {
   LogServiceStartStatus(ServiceStartStatus::kAlreadyStarted);
   initial_downtime_start_ = base::TimeTicks();
-  if (state == service_manager::mojom::InstanceState::kStarted)
-    started_ = clock_->NowTicks();
+  started_ = clock_->NowTicks();
 }
 
 void AudioServiceListener::Metrics::ServiceCreated() {
@@ -65,11 +64,6 @@ void AudioServiceListener::Metrics::ServiceStarted() {
   }
 }
 
-void AudioServiceListener::Metrics::ServiceFailedToStart() {
-  LogServiceStartStatus(ServiceStartStatus::kFailure);
-  created_ = base::TimeTicks();
-}
-
 void AudioServiceListener::Metrics::ServiceStopped() {
   stopped_ = clock_->NowTicks();
 
@@ -87,26 +81,15 @@ void AudioServiceListener::Metrics::LogServiceStartStatus(
   UMA_HISTOGRAM_ENUMERATION("Media.AudioService.ObservedStartStatus", status);
 }
 
-AudioServiceListener::AudioServiceListener(
-    std::unique_ptr<service_manager::Connector> connector)
-    : connector_(std::move(connector)),
-      metrics_(base::DefaultTickClock::GetInstance()) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
-  if (!connector_)
-    return;  // Happens in unittests.
-
-  mojo::Remote<service_manager::mojom::ServiceManager> service_manager;
-  connector_->Connect(service_manager::mojom::kServiceName,
-                      service_manager.BindNewPipeAndPassReceiver());
-  mojo::PendingRemote<service_manager::mojom::ServiceManagerListener> listener;
-  mojo::PendingReceiver<service_manager::mojom::ServiceManagerListener> request(
-      listener.InitWithNewPipeAndPassReceiver());
-  service_manager->AddListener(std::move(listener));
-  receiver_.Bind(std::move(request));
+AudioServiceListener::AudioServiceListener()
+    : metrics_(base::DefaultTickClock::GetInstance()) {
+  ServiceProcessHost::AddObserver(this);
+  Init(ServiceProcessHost::GetRunningProcessInfo());
 }
 
 AudioServiceListener::~AudioServiceListener() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+  ServiceProcessHost::RemoveObserver(this);
 }
 
 base::ProcessId AudioServiceListener::GetProcessId() const {
@@ -114,110 +97,55 @@ base::ProcessId AudioServiceListener::GetProcessId() const {
   return process_id_;
 }
 
-void AudioServiceListener::OnInit(
-    std::vector<service_manager::mojom::RunningServiceInfoPtr>
-        running_services) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
-  for (const service_manager::mojom::RunningServiceInfoPtr& instance :
-       running_services) {
-    if (instance->identity.name() == audio::mojom::kServiceName &&
-        instance->state !=
-            service_manager::mojom::InstanceState::kUnreachable) {
-      current_instance_identity_ = instance->identity;
-      current_instance_state_ = instance->state;
-      metrics_.ServiceAlreadyRunning(instance->state);
+void AudioServiceListener::Init(
+    std::vector<ServiceProcessInfo> running_service_processes) {
+  for (const auto& info : running_service_processes) {
+    if (info.IsService<audio::mojom::AudioService>()) {
+      process_id_ = info.pid;
+      metrics_.ServiceAlreadyRunning();
       MaybeSetLogFactory();
-
-      // NOTE: This may not actually be a valid PID yet. If not, we will
-      // receive OnServicePIDReceived soon.
-      process_id_ = instance->pid;
       break;
     }
   }
 }
 
-void AudioServiceListener::OnServiceCreated(
-    service_manager::mojom::RunningServiceInfoPtr service) {
+void AudioServiceListener::OnServiceProcessLaunched(
+    const ServiceProcessInfo& info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
-  if (service->identity.name() != audio::mojom::kServiceName)
+  if (!info.IsService<audio::mojom::AudioService>())
     return;
 
-  if (current_instance_identity_) {
-    // If we were already tracking an instance of the service, it must be dying
-    // soon. We'll start tracking the new instance instead now, so simulate
-    // stoppage of the old one.
-    DCHECK(service->identity != current_instance_identity_);
-    if (current_instance_state_ ==
-        service_manager::mojom::InstanceState::kCreated) {
-      OnServiceFailedToStart(*current_instance_identity_);
-    } else {
-      DCHECK_EQ(service_manager::mojom::InstanceState::kStarted,
-                *current_instance_state_);
-      OnServiceStopped(*current_instance_identity_);
-    }
-  }
-
-  current_instance_identity_ = service->identity;
-  current_instance_state_ = service_manager::mojom::InstanceState::kCreated;
+  process_id_ = info.pid;
   metrics_.ServiceCreated();
-  MaybeSetLogFactory();
-}
-
-void AudioServiceListener::OnServiceStarted(
-    const ::service_manager::Identity& identity,
-    uint32_t pid) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
-  if (identity.name() != audio::mojom::kServiceName)
-    return;
-
-  DCHECK(identity == current_instance_identity_);
-  DCHECK(current_instance_state_ ==
-         service_manager::mojom::InstanceState::kCreated);
-  current_instance_state_ = service_manager::mojom::InstanceState::kStarted;
   metrics_.ServiceStarted();
 }
 
-void AudioServiceListener::OnServicePIDReceived(
-    const ::service_manager::Identity& identity,
-    uint32_t pid) {
+void AudioServiceListener::OnServiceProcessTerminatedNormally(
+    const ServiceProcessInfo& info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
-  if (identity != current_instance_identity_)
+  if (!info.IsService<audio::mojom::AudioService>())
     return;
 
-  process_id_ = pid;
-}
-
-void AudioServiceListener::OnServiceFailedToStart(
-    const ::service_manager::Identity& identity) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
-  if (identity != current_instance_identity_)
-    return;
-
-  metrics_.ServiceFailedToStart();
-  current_instance_identity_.reset();
-  current_instance_state_.reset();
+  metrics_.ServiceStopped();
   process_id_ = base::kNullProcessId;
   log_factory_is_set_ = false;
 }
 
-void AudioServiceListener::OnServiceStopped(
-    const ::service_manager::Identity& identity) {
+void AudioServiceListener::OnServiceProcessCrashed(
+    const ServiceProcessInfo& info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
-  if (identity != current_instance_identity_)
+  if (!info.IsService<audio::mojom::AudioService>())
     return;
 
   metrics_.ServiceStopped();
-  current_instance_identity_.reset();
-  current_instance_state_.reset();
   process_id_ = base::kNullProcessId;
   log_factory_is_set_ = false;
 }
 
 void AudioServiceListener::MaybeSetLogFactory() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
-  DCHECK(current_instance_identity_);
   if (!base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess) ||
-      !connector_ || log_factory_is_set_)
+      log_factory_is_set_)
     return;
 
   mojo::PendingRemote<media::mojom::AudioLogFactory> audio_log_factory;
@@ -225,8 +153,8 @@ void AudioServiceListener::MaybeSetLogFactory() {
       std::make_unique<AudioLogFactory>(),
       audio_log_factory.InitWithNewPipeAndPassReceiver());
   mojo::Remote<audio::mojom::LogFactoryManager> log_factory_manager;
-  connector_->Connect(*current_instance_identity_,
-                      log_factory_manager.BindNewPipeAndPassReceiver());
+  GetAudioService().BindLogFactoryManager(
+      log_factory_manager.BindNewPipeAndPassReceiver());
   log_factory_manager->SetLogFactory(std::move(audio_log_factory));
   log_factory_is_set_ = true;
 }

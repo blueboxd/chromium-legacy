@@ -16,30 +16,24 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_observer.h"
+#include "content/common/content_export.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
-
-struct BrowserPluginHostMsg_Attach_Params;
 
 namespace content {
 
 class BrowserPluginGuest;
 class BrowserPluginGuestManager;
+class WebContents;
+class WebContentsImpl;
 struct NativeWebKeyboardEvent;
 
-class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
+// TODO(wjmaclean): Get rid of "BrowserPlugin" in the name of this class.
+// Perhaps "WebContentsEmbedderDelegate" would be better?
+class CONTENT_EXPORT BrowserPluginEmbedder {
  public:
-  ~BrowserPluginEmbedder() override;
+  ~BrowserPluginEmbedder();
 
   static BrowserPluginEmbedder* Create(WebContentsImpl* web_contents);
-
-  // Called when embedder's |rwh| has sent screen rects to renderer.
-  void DidSendScreenRects();
-
-  // WebContentsObserver implementation.
-  bool OnMessageReceived(const IPC::Message& message,
-                         RenderFrameHost* render_frame_host) override;
 
   // Sends a 'dragend' message to the guest that started the drag.
   void DragSourceEndedAt(float client_x,
@@ -100,11 +94,8 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
 
   static bool GuestCurrentlyAudibleCallback(WebContents* guest);
 
-  // Message handlers.
-
-  void OnAttach(RenderFrameHost* render_frame_host,
-                int instance_id,
-                const BrowserPluginHostMsg_Attach_Params& params);
+  // Pointer to the WebContentsImpl that owns this object.
+  WebContentsImpl* web_contents_;
 
   // Used to correctly update the cursor when dragging over a guest, and to
   // handle a race condition when dropping onto the guest that started the drag

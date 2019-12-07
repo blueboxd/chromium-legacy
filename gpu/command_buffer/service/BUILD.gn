@@ -364,6 +364,13 @@ target(link_target_type, "gles2_sources") {
         "external_vk_image_dawn_representation.h",
       ]
     }
+
+    if (use_ozone && use_dawn) {
+      sources += [
+        "shared_image_representation_dawn_ozone.cc",
+        "shared_image_representation_dawn_ozone.h",
+      ]
+    }
   }
 
   if (use_dawn) {

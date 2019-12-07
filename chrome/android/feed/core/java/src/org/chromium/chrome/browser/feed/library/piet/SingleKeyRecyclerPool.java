@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.feed.library.piet;
 
 import android.support.v4.util.Pools.SimplePool;
 
+import androidx.annotation.Nullable;
+
 /** A very simple, single pool version of a {@link RecyclerPool} */
 class SingleKeyRecyclerPool<A extends ElementAdapter<?, ?>> implements RecyclerPool<A> {
     private static final String KEY_ERROR_MESSAGE = "Given key %s does not match singleton key %s";
@@ -21,7 +23,7 @@ class SingleKeyRecyclerPool<A extends ElementAdapter<?, ?>> implements RecyclerP
         mPool = new SimplePool<>(capacity);
     }
 
-    /*@Nullable*/
+    @Nullable
     @Override
     public A get(RecyclerKey key) {
         if (!mSingletonKey.equals(key)) {

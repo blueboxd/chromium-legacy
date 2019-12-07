@@ -15,8 +15,8 @@
 #include "chrome/browser/background_fetch/background_fetch_permission_context.h"
 #include "chrome/browser/background_sync/background_sync_permission_context.h"
 #include "chrome/browser/background_sync/periodic_background_sync_permission_context.h"
-#include "chrome/browser/clipboard/clipboard_read_permission_context.h"
-#include "chrome/browser/clipboard/clipboard_write_permission_context.h"
+#include "chrome/browser/clipboard/clipboard_read_write_permission_context.h"
+#include "chrome/browser/clipboard/clipboard_sanitized_write_permission_context.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/generic_sensor/sensor_permission_context.h"
 #include "chrome/browser/idle/idle_detection_permission_context.h"
@@ -138,10 +138,10 @@ ContentSettingsType PermissionTypeToContentSettingSafe(
       return ContentSettingsType::SENSORS;
     case PermissionType::ACCESSIBILITY_EVENTS:
       return ContentSettingsType::ACCESSIBILITY_EVENTS;
-    case PermissionType::CLIPBOARD_READ:
-      return ContentSettingsType::CLIPBOARD_READ;
-    case PermissionType::CLIPBOARD_WRITE:
-      return ContentSettingsType::CLIPBOARD_WRITE;
+    case PermissionType::CLIPBOARD_READ_WRITE:
+      return ContentSettingsType::CLIPBOARD_READ_WRITE;
+    case PermissionType::CLIPBOARD_SANITIZED_WRITE:
+      return ContentSettingsType::CLIPBOARD_SANITIZED_WRITE;
     case PermissionType::PAYMENT_HANDLER:
       return ContentSettingsType::PAYMENT_HANDLER;
     case PermissionType::BACKGROUND_FETCH:
@@ -340,10 +340,10 @@ PermissionManager::PermissionManager(Profile* profile) : profile_(profile) {
       std::make_unique<SensorPermissionContext>(profile);
   permission_contexts_[ContentSettingsType::ACCESSIBILITY_EVENTS] =
       std::make_unique<AccessibilityPermissionContext>(profile);
-  permission_contexts_[ContentSettingsType::CLIPBOARD_READ] =
-      std::make_unique<ClipboardReadPermissionContext>(profile);
-  permission_contexts_[ContentSettingsType::CLIPBOARD_WRITE] =
-      std::make_unique<ClipboardWritePermissionContext>(profile);
+  permission_contexts_[ContentSettingsType::CLIPBOARD_READ_WRITE] =
+      std::make_unique<ClipboardReadWritePermissionContext>(profile);
+  permission_contexts_[ContentSettingsType::CLIPBOARD_SANITIZED_WRITE] =
+      std::make_unique<ClipboardSanitizedWritePermissionContext>(profile);
   permission_contexts_[ContentSettingsType::PAYMENT_HANDLER] =
       std::make_unique<payments::PaymentHandlerPermissionContext>(profile);
   permission_contexts_[ContentSettingsType::BACKGROUND_FETCH] =

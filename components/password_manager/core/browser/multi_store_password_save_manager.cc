@@ -94,6 +94,13 @@ void MultiStorePasswordSaveManager::Unblacklist(
   }
 }
 
+std::unique_ptr<PasswordSaveManager> MultiStorePasswordSaveManager::Clone() {
+  auto result = std::make_unique<MultiStorePasswordSaveManager>(
+      form_saver_->Clone(), account_store_form_saver_->Clone());
+  CloneInto(result.get());
+  return result;
+}
+
 bool MultiStorePasswordSaveManager::IsAccountStoreActive() {
   return client_->GetPasswordSyncState() ==
          password_manager::ACCOUNT_PASSWORDS_ACTIVE_NORMAL_ENCRYPTION;

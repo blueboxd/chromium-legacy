@@ -38,10 +38,10 @@ class IpcNetworkManager;
 class IpcPacketSocketFactory;
 class MdnsResponderAdapter;
 class P2PSocketDispatcher;
+class RTCPeerConnectionHandlerClient;
+class RTCPeerConnectionHandlerPlatform;
 class StunProberTrial;
 class WebLocalFrame;
-class WebRTCPeerConnectionHandler;
-class WebRTCPeerConnectionHandlerClient;
 class WebRtcAudioDeviceImpl;
 
 // Object factory for RTC PeerConnections.
@@ -57,10 +57,10 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
   static PeerConnectionDependencyFactory* GetInstance();
 
   // Create a RTCPeerConnectionHandler object that implements the
-  // WebKit WebRTCPeerConnectionHandler interface.
-  std::unique_ptr<blink::WebRTCPeerConnectionHandler>
+  // WebKit RTCPeerConnectionHandlerPlatform interface.
+  std::unique_ptr<RTCPeerConnectionHandlerPlatform>
   CreateRTCPeerConnectionHandler(
-      blink::WebRTCPeerConnectionHandlerClient* client,
+      RTCPeerConnectionHandlerClient* client,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Create a proxy object for a VideoTrackSource that makes sure it's called on

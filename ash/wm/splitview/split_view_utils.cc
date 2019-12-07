@@ -5,7 +5,6 @@
 #include "ash/wm/splitview/split_view_utils.h"
 
 #include "ash/accessibility/accessibility_controller_impl.h"
-#include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/toast_data.h"
@@ -326,13 +325,6 @@ void ShowAppCannotSnapToast() {
       kAppCannotSnapToastDurationMs, base::Optional<base::string16>()));
 }
 
-bool IsPhysicalLeftOrTop(SplitViewController::SnapPosition position) {
-  DCHECK_NE(SplitViewController::NONE, position);
-  return position == (IsCurrentScreenOrientationPrimary()
-                          ? SplitViewController::LEFT
-                          : SplitViewController::RIGHT);
-}
-
 SplitViewController::SnapPosition GetSnapPosition(
     aura::Window* root_window,
     aura::Window* window,
@@ -342,26 +334,26 @@ SplitViewController::SnapPosition GetSnapPosition(
     return SplitViewController::NONE;
   }
 
-  const bool is_landscape = IsCurrentScreenOrientationLandscape();
-  const bool is_primary = IsCurrentScreenOrientationPrimary();
+  const bool horizontal = SplitViewController::IsLayoutHorizontal();
+  const bool right_side_up = SplitViewController::IsLayoutRightSideUp();
 
   // Check to see if the current event location |location_in_screen|is within
   // the drag indicators bounds.
   gfx::Rect area(
       screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           root_window));
-  if (is_landscape) {
+  if (horizontal) {
     const int screen_edge_inset_for_drag =
         area.width() * kHighlightScreenPrimaryAxisRatio +
         kHighlightScreenEdgePaddingDp;
     area.Inset(screen_edge_inset_for_drag, 0);
     if (location_in_screen.x() <= area.x()) {
-      return is_primary ? SplitViewController::LEFT
-                        : SplitViewController::RIGHT;
+      return right_side_up ? SplitViewController::LEFT
+                           : SplitViewController::RIGHT;
     }
     if (location_in_screen.x() >= area.right() - 1) {
-      return is_primary ? SplitViewController::RIGHT
-                        : SplitViewController::LEFT;
+      return right_side_up ? SplitViewController::RIGHT
+                           : SplitViewController::LEFT;
     }
     return SplitViewController::NONE;
   }
@@ -371,9 +363,11 @@ SplitViewController::SnapPosition GetSnapPosition(
       kHighlightScreenEdgePaddingDp;
   area.Inset(0, screen_edge_inset_for_drag);
   if (location_in_screen.y() <= area.y())
-    return is_primary ? SplitViewController::LEFT : SplitViewController::RIGHT;
+    return right_side_up ? SplitViewController::LEFT
+                         : SplitViewController::RIGHT;
   if (location_in_screen.y() >= area.bottom() - 1)
-    return is_primary ? SplitViewController::RIGHT : SplitViewController::LEFT;
+    return right_side_up ? SplitViewController::RIGHT
+                         : SplitViewController::LEFT;
   return SplitViewController::NONE;
 }
 

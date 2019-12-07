@@ -307,6 +307,10 @@ class ProfileSyncService : public SyncService,
   // Helper to install and configure a data type manager.
   void ConfigureDataTypeManager(ConfigureReason reason);
 
+  // Returns the ModelTypes allowed in transport-only mode (i.e. those that are
+  // not tied to sync-the-feature).
+  ModelTypeSet GetModelTypesForTransportOnlyMode() const;
+
   // Shuts down the engine sync components.
   // |reason| dictates if syncing is being disabled or not.
   void ShutdownImpl(ShutdownReason reason);

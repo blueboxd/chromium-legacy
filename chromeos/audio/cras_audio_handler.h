@@ -27,13 +27,12 @@
 #include "chromeos/dbus/audio/cras_audio_client.h"
 #include "chromeos/dbus/audio/volume_state.h"
 #include "media/base/video_facing.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "services/media_session/public/mojom/media_controller.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;
-}
-
-namespace service_manager {
-class Connector;
 }
 
 namespace chromeos {
@@ -108,7 +107,8 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
 
   // Sets the global instance. Must be called before any calls to Get().
   static void Initialize(
-      service_manager::Connector* connector,
+      mojo::PendingRemote<media_session::mojom::MediaControllerManager>
+          media_controller_manager,
       scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler);
 
   // Sets the global instance for testing.
@@ -300,8 +300,9 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
   int32_t system_aec_group_id() const;
 
  protected:
-  explicit CrasAudioHandler(
-      service_manager::Connector* connector,
+  CrasAudioHandler(
+      mojo::PendingRemote<media_session::mojom::MediaControllerManager>
+          media_controller_manager,
       scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler);
   ~CrasAudioHandler() override;
 
@@ -527,7 +528,8 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
   void OnVideoCaptureStartedOnMainThread(media::VideoFacingMode facing);
   void OnVideoCaptureStoppedOnMainThread(media::VideoFacingMode facing);
 
-  service_manager::Connector* const connector_;
+  mojo::Remote<media_session::mojom::MediaControllerManager>
+      media_controller_manager_;
 
   scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler_;
   base::ObserverList<AudioObserver>::Unchecked observers_;

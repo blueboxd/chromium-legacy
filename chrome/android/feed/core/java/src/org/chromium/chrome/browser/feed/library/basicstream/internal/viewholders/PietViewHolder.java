@@ -14,6 +14,8 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.FrameLayout;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.host.action.StreamActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.stream.CardConfiguration;
@@ -51,11 +53,16 @@ public class PietViewHolder extends FeedViewHolder implements SwipeableViewHolde
     private final View mViewport;
     private boolean mBound;
 
-    /*@Nullable*/ private ActionParser mActionParser;
-    /*@Nullable*/ private LoggingListener mLoggingListener;
-    /*@Nullable*/ private StreamActionApi mStreamActionApi;
-    /*@Nullable*/ private FeedActionPayload mSwipeAction;
-    /*@Nullable*/ private PietViewActionScrollObserver mScrollobserver;
+    @Nullable
+    private ActionParser mActionParser;
+    @Nullable
+    private LoggingListener mLoggingListener;
+    @Nullable
+    private StreamActionApi mStreamActionApi;
+    @Nullable
+    private FeedActionPayload mSwipeAction;
+    @Nullable
+    private PietViewActionScrollObserver mScrollobserver;
 
     public PietViewHolder(CardConfiguration cardConfiguration, FrameLayout cardView,
             PietManager pietManager, ScrollObservable scrollObservable, View viewport,
@@ -166,22 +173,21 @@ public class PietViewHolder extends FeedViewHolder implements SwipeableViewHolde
     }
 
     @VisibleForTesting
-    VisibilityMonitor createVisibilityMonitor(
-            /*@UnderInitialization*/ PietViewHolder this, View view, Configuration configuration) {
+    VisibilityMonitor createVisibilityMonitor(View view, Configuration configuration) {
         return new VisibilityMonitor(view, configuration);
     }
 
-    private LoggingListener getLoggingListener(/*@UnknownInitialization*/ PietViewHolder this) {
+    private LoggingListener getLoggingListener() {
         return checkNotNull(mLoggingListener,
                 "Logging listener can only be retrieved once view holder has been bound.");
     }
 
-    private StreamActionApi getStreamActionApi(/*@UnknownInitialization*/ PietViewHolder this) {
+    private StreamActionApi getStreamActionApi() {
         return checkNotNull(mStreamActionApi,
                 "Stream action api can only be retrieved once view holder has been bound.");
     }
 
-    private ActionParser getActionParser(/*@UnknownInitialization*/ PietViewHolder this) {
+    private ActionParser getActionParser() {
         return checkNotNull(mActionParser,
                 "Action parser can only be retrieved once view holder has been bound");
     }

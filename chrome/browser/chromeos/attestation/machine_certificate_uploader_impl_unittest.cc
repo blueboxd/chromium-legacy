@@ -230,7 +230,7 @@ TEST_P(MachineCertificateUploaderTest, DBusFailureRetry) {
                 kEnterpriseMachineKey));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          MachineCertificateUploaderTest,
                          testing::Values(false, true));
 

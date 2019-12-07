@@ -21,6 +21,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "build/chromecast_buildflags.h"
 #include "media/base/audio_fifo.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
@@ -531,10 +532,10 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
         base::FeatureList::IsEnabled(features::kWebRtcHybridAgc);
 
     config.Set<webrtc::ExperimentalAgc>(experimental_agc);
-#if defined(IS_CHROMECAST)
+#if BUILDFLAG(IS_CHROMECAST)
   } else {
     config.Set<webrtc::ExperimentalAgc>(new webrtc::ExperimentalAgc(false));
-#endif  // defined(IS_CHROMECAST)
+#endif  // BUILDFLAG(IS_CHROMECAST)
   }
 
   // Create and configure the webrtc::AudioProcessing.
@@ -617,12 +618,12 @@ void MediaStreamAudioProcessor::InitializeCaptureFifo(
   // what format it would prefer.
   const int output_sample_rate = audio_processing_
                                      ?
-#if defined(IS_CHROMECAST)
+#if BUILDFLAG(IS_CHROMECAST)
                                      std::min(blink::kAudioProcessingSampleRate,
                                               input_format.sample_rate())
 #else
                                      blink::kAudioProcessingSampleRate
-#endif  // defined(IS_CHROMECAST)
+#endif  // BUILDFLAG(IS_CHROMECAST)
                                      : input_format.sample_rate();
 
   media::ChannelLayout output_channel_layout;

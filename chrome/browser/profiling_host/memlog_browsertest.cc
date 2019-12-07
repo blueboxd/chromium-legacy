@@ -96,9 +96,12 @@ std::vector<TestParam> GetParams() {
   params.push_back({Mode::kBrowser, mojom::StackMode::NATIVE_WITH_THREAD_NAMES,
                     true /* start_profiling_with_command_line_flag */});
 
+  // TODO(https://crbug.com/843467): Teporarily disabled due to failures on
+  // bots.
   // Test that we can start profiling without command line flag.
-  params.push_back({Mode::kBrowser, mojom::StackMode::NATIVE_WITH_THREAD_NAMES,
-                    false /* start_profiling_with_command_line_flag */});
+  // params.push_back({Mode::kBrowser,
+  // mojom::StackMode::NATIVE_WITH_THREAD_NAMES,
+  //                  false /* start_profiling_with_command_line_flag */});
 
   // Test that we can start profiling for the renderer process.
   params.push_back({Mode::kAllRenderers,

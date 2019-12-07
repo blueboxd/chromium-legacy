@@ -14,6 +14,7 @@
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom-forward.h"
+#include "services/media_session/public/mojom/media_session_service.mojom-forward.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace aura {
@@ -53,6 +54,10 @@ class ASH_EXPORT ShellDelegate {
   virtual void BindMultiDeviceSetup(
       mojo::PendingReceiver<
           chromeos::multidevice_setup::mojom::MultiDeviceSetup> receiver) = 0;
+
+  // Returns an interface to the Media Session service, or null if not
+  // available.
+  virtual media_session::mojom::MediaSessionService* GetMediaSessionService();
 
   virtual void OpenKeyboardShortcutHelpPage() const {}
 };

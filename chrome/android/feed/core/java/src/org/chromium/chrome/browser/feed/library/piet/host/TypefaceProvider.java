@@ -33,7 +33,7 @@ public interface TypefaceProvider {
      *     {@code null}. If the host does NOT call consumer.accept(null), Piet will not load the
      *     fallback font, and will just use the platform default.
      */
-    void getTypeface(String typeface, boolean isItalic, Consumer</*@Nullable*/ Typeface> consumer);
+    void getTypeface(String typeface, boolean isItalic, Consumer<Typeface> consumer);
 
     /**
      * Strings the host can expect to receive to request Google Sans fonts. These are intentionally

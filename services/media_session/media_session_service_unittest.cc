@@ -6,8 +6,7 @@
 
 #include "base/macros.h"
 #include "base/test/task_environment.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media_session {
@@ -24,7 +23,7 @@ class MediaSessionTest : public testing::Test {
 };
 
 TEST_F(MediaSessionTest, InstantiateService) {
-  MediaSessionService service(nullptr);
+  MediaSessionService service{mojo::NullReceiver()};
 }
 
 }  // namespace media_session

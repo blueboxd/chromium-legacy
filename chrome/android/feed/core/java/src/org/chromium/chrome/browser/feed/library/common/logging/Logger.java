@@ -15,6 +15,8 @@ import android.os.Build;
 import android.util.Base64;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
+
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.IllegalFormatException;
@@ -92,40 +94,30 @@ public final class Logger {
      * @param message the string format recognized by {@link String#format(String, Object...)}.
      * @param arg1 the formatting arg for the previous string.
      */
-    public static void v(String tag, String message, /*@Nullable*/ Object arg1) {
+    public static void v(String tag, String message, @Nullable Object arg1) {
         internalLog(VERBOSE, tag, null, message, false, arg1);
     }
 
     /** @see #v(String, String, Object) */
-    public static void v(
-            String tag, String message, /*@Nullable*/ Object arg1, /*@Nullable*/ Object arg2) {
+    public static void v(String tag, String message, @Nullable Object arg1, @Nullable Object arg2) {
         internalLog(VERBOSE, tag, null, message, false, arg1, arg2);
     }
 
     /** @see #v(String, String, Object) */
-    public static void v(String tag, String message,
-            /*@Nullable*/ Object arg1,
-            /*@Nullable*/ Object arg2,
-            /*@Nullable*/ Object arg3) {
+    public static void v(String tag, String message, @Nullable Object arg1, @Nullable Object arg2,
+            @Nullable Object arg3) {
         internalLog(VERBOSE, tag, null, message, false, arg1, arg2, arg3);
     }
 
     /** @see #v(String, String, Object) */
-    public static void v(String tag, String message,
-            /*@Nullable*/ Object arg1,
-            /*@Nullable*/ Object arg2,
-            /*@Nullable*/ Object arg3,
-            /*@Nullable*/ Object arg4) {
+    public static void v(String tag, String message, @Nullable Object arg1, @Nullable Object arg2,
+            @Nullable Object arg3, @Nullable Object arg4) {
         internalLog(VERBOSE, tag, null, message, false, arg1, arg2, arg3, arg4);
     }
 
     /** @see #v(String, String, Object) */
-    public static void v(String tag, String message,
-            /*@Nullable*/ Object arg1,
-            /*@Nullable*/ Object arg2,
-            /*@Nullable*/ Object arg3,
-            /*@Nullable*/ Object arg4,
-            /*@Nullable*/ Object arg5) {
+    public static void v(String tag, String message, @Nullable Object arg1, @Nullable Object arg2,
+            @Nullable Object arg3, @Nullable Object arg4, @Nullable Object arg5) {
         internalLog(VERBOSE, tag, null, message, false, arg1, arg2, arg3, arg4, arg5);
     }
 
@@ -154,40 +146,32 @@ public final class Logger {
      * @param message the string format recognized by {@link String#format(String, Object...)}.
      * @param arg1 the formatting arg for the previous string.
      */
-    public static void vWithStackTrace(String tag, String message, /*@Nullable*/ Object arg1) {
+    public static void vWithStackTrace(String tag, String message, @Nullable Object arg1) {
         internalLog(VERBOSE, tag, null, message, true, arg1);
     }
 
     /** @see #vWithStackTrace(String, String, Object) */
     public static void vWithStackTrace(
-            String tag, String message, /*@Nullable*/ Object arg1, /*@Nullable*/ Object arg2) {
+            String tag, String message, @Nullable Object arg1, @Nullable Object arg2) {
         internalLog(VERBOSE, tag, null, message, true, arg1, arg2);
     }
 
     /** @see #vWithStackTrace(String, String, Object) */
-    public static void vWithStackTrace(String tag, String message,
-            /*@Nullable*/ Object arg1,
-            /*@Nullable*/ Object arg2,
-            /*@Nullable*/ Object arg3) {
+    public static void vWithStackTrace(String tag, String message, @Nullable Object arg1,
+            @Nullable Object arg2, @Nullable Object arg3) {
         internalLog(VERBOSE, tag, null, message, true, arg1, arg2, arg3);
     }
 
     /** @see #vWithStackTrace(String, String, Object) */
-    public static void vWithStackTrace(String tag, String message,
-            /*@Nullable*/ Object arg1,
-            /*@Nullable*/ Object arg2,
-            /*@Nullable*/ Object arg3,
-            /*@Nullable*/ Object arg4) {
+    public static void vWithStackTrace(String tag, String message, @Nullable Object arg1,
+            @Nullable Object arg2, @Nullable Object arg3, @Nullable Object arg4) {
         internalLog(VERBOSE, tag, null, message, true, arg1, arg2, arg3, arg4);
     }
 
     /** @see #vWithStackTrace(String, String, Object) */
-    public static void vWithStackTrace(String tag, String message,
-            /*@Nullable*/ Object arg1,
-            /*@Nullable*/ Object arg2,
-            /*@Nullable*/ Object arg3,
-            /*@Nullable*/ Object arg4,
-            /*@Nullable*/ Object arg5) {
+    public static void vWithStackTrace(String tag, String message, @Nullable Object arg1,
+            @Nullable Object arg2, @Nullable Object arg3, @Nullable Object arg4,
+            @Nullable Object arg5) {
         internalLog(VERBOSE, tag, null, message, true, arg1, arg2, arg3, arg4, arg5);
     }
 
@@ -216,107 +200,69 @@ public final class Logger {
      * @param message the string format recognized by {@link String#format(String, Object...)}.
      * @param arg1 the formatting arg for the previous string.
      */
-    public static void d(String tag, String message, /*@Nullable*/ Object arg1) {
+    public static void d(String tag, String message, @Nullable Object arg1) {
         internalLog(DEBUG, tag, null, message, false, arg1);
     }
 
     /** @see #d(String, String, Object) */
-    public static void d(
-            String tag, String message, /*@Nullable*/ Object arg1, /*@Nullable*/ Object arg2) {
+    public static void d(String tag, String message, @Nullable Object arg1, @Nullable Object arg2) {
         internalLog(DEBUG, tag, null, message, false, arg1, arg2);
     }
 
     /** @see #d(String, String, Object) */
-    public static void d(String tag, String message,
-            /*@Nullable*/ Object arg1,
-            /*@Nullable*/ Object arg2,
-            /*@Nullable*/ Object arg3) {
+    public static void d(String tag, String message, @Nullable Object arg1, @Nullable Object arg2,
+            @Nullable Object arg3) {
         internalLog(DEBUG, tag, null, message, false, arg1, arg2, arg3);
     }
 
     /** @see #d(String, String, Object) */
-    public static void d(String tag, String message,
-            /*@Nullable*/ Object arg1,
-            /*@Nullable*/ Object arg2,
-            /*@Nullable*/ Object arg3,
-            /*@Nullable*/ Object arg4) {
+    public static void d(String tag, String message, @Nullable Object arg1, @Nullable Object arg2,
+            @Nullable Object arg3, @Nullable Object arg4) {
         internalLog(DEBUG, tag, null, message, false, arg1, arg2, arg3, arg4);
     }
 
     /** @see #d(String, String, Object) */
-    public static void d(String tag, String message,
-            /*@Nullable*/ Object arg1,
-            /*@Nullable*/ Object arg2,
-            /*@Nullable*/ Object arg3,
-            /*@Nullable*/ Object arg4,
-            /*@Nullable*/ Object arg5) {
+    public static void d(String tag, String message, @Nullable Object arg1, @Nullable Object arg2,
+            @Nullable Object arg3, @Nullable Object arg4, @Nullable Object arg5) {
         internalLog(DEBUG, tag, null, message, false, arg1, arg2, arg3, arg4, arg5);
     }
 
     /** @see #d(String, String, Object) */
-    public static void d(String tag, String message,
-            /*@Nullable*/ Object arg1,
-            /*@Nullable*/ Object arg2,
-            /*@Nullable*/ Object arg3,
-            /*@Nullable*/ Object arg4,
-            /*@Nullable*/ Object arg5,
-            /*@Nullable*/ Object arg6) {
+    public static void d(String tag, String message, @Nullable Object arg1, @Nullable Object arg2,
+            @Nullable Object arg3, @Nullable Object arg4, @Nullable Object arg5,
+            @Nullable Object arg6) {
         internalLog(DEBUG, tag, null, message, false, arg1, arg2, arg3, arg4, arg5, arg6);
     }
 
     /** @see #d(String, String, Object) */
-    public static void d(String tag, String message,
-            /*@Nullable*/ Object arg1,
-            /*@Nullable*/ Object arg2,
-            /*@Nullable*/ Object arg3,
-            /*@Nullable*/ Object arg4,
-            /*@Nullable*/ Object arg5,
-            /*@Nullable*/ Object arg6,
-            /*@Nullable*/ Object arg7) {
+    public static void d(String tag, String message, @Nullable Object arg1, @Nullable Object arg2,
+            @Nullable Object arg3, @Nullable Object arg4, @Nullable Object arg5,
+            @Nullable Object arg6, @Nullable Object arg7) {
         internalLog(DEBUG, tag, null, message, false, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
     }
 
     /** @see #d(String, String, Object) */
-    public static void d(String tag, String message,
-            /*@Nullable*/ Object arg1,
-            /*@Nullable*/ Object arg2,
-            /*@Nullable*/ Object arg3,
-            /*@Nullable*/ Object arg4,
-            /*@Nullable*/ Object arg5,
-            /*@Nullable*/ Object arg6,
-            /*@Nullable*/ Object arg7,
-            /*@Nullable*/ Object arg8) {
+    public static void d(String tag, String message, @Nullable Object arg1, @Nullable Object arg2,
+            @Nullable Object arg3, @Nullable Object arg4, @Nullable Object arg5,
+            @Nullable Object arg6, @Nullable Object arg7, @Nullable Object arg8) {
         internalLog(
                 DEBUG, tag, null, message, false, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
     }
 
     /** @see #d(String, String, Object) */
-    public static void d(String tag, String message,
-            /*@Nullable*/ Object arg1,
-            /*@Nullable*/ Object arg2,
-            /*@Nullable*/ Object arg3,
-            /*@Nullable*/ Object arg4,
-            /*@Nullable*/ Object arg5,
-            /*@Nullable*/ Object arg6,
-            /*@Nullable*/ Object arg7,
-            /*@Nullable*/ Object arg8,
-            /*@Nullable*/ Object arg9) {
+    public static void d(String tag, String message, @Nullable Object arg1, @Nullable Object arg2,
+            @Nullable Object arg3, @Nullable Object arg4, @Nullable Object arg5,
+            @Nullable Object arg6, @Nullable Object arg7, @Nullable Object arg8,
+            @Nullable Object arg9) {
         internalLog(DEBUG, tag, null, message, false, arg1, arg2, arg3, arg4, arg5, arg6, arg7,
                 arg8, arg9);
     }
 
     /** @see #d(String, String, Object) */
-    public static void d(String tag, String message,
-            /*@Nullable*/ Object arg1,
-            /*@Nullable*/ Object arg2,
-            /*@Nullable*/ Object arg3,
-            /*@Nullable*/ Object arg4,
-            /*@Nullable*/ Object arg5,
-            /*@Nullable*/ Object arg6,
-            /*@Nullable*/ Object arg7,
-            /*@Nullable*/ Object arg8,
-            /*@Nullable*/ Object arg9,
-            /*@Nullable*/ Object arg10) {
+    public static void d(String tag, String message, @Nullable Object arg1, @Nullable Object arg2,
+            @Nullable Object arg3, @Nullable Object arg4, @Nullable Object arg5,
+            @Nullable Object arg6, @Nullable Object arg7, @Nullable Object arg8,
+            @Nullable Object arg9, @Nullable Object arg10) {
         internalLog(DEBUG, tag, null, message, false, arg1, arg2, arg3, arg4, arg5, arg6, arg7,
                 arg8, arg9, arg10);
     }
@@ -346,40 +292,32 @@ public final class Logger {
      * @param message the string format recognized by {@link String#format(String, Object...)}.
      * @param arg1 the formatting arg for the previous string.
      */
-    public static void dWithStackTrace(String tag, String message, /*@Nullable*/ Object arg1) {
+    public static void dWithStackTrace(String tag, String message, @Nullable Object arg1) {
         internalLog(DEBUG, tag, null, message, true, arg1);
     }
 
     /** @see #dWithStackTrace(String, String, Object) */
     public static void dWithStackTrace(
-            String tag, String message, /*@Nullable*/ Object arg1, /*@Nullable*/ Object arg2) {
+            String tag, String message, @Nullable Object arg1, @Nullable Object arg2) {
         internalLog(DEBUG, tag, null, message, true, arg1, arg2);
     }
 
     /** @see #dWithStackTrace(String, String, Object) */
-    public static void dWithStackTrace(String tag, String message,
-            /*@Nullable*/ Object arg1,
-            /*@Nullable*/ Object arg2,
-            /*@Nullable*/ Object arg3) {
+    public static void dWithStackTrace(String tag, String message, @Nullable Object arg1,
+            @Nullable Object arg2, @Nullable Object arg3) {
         internalLog(DEBUG, tag, null, message, true, arg1, arg2, arg3);
     }
 
     /** @see #dWithStackTrace(String, String, Object) */
-    public static void dWithStackTrace(String tag, String message,
-            /*@Nullable*/ Object arg1,
-            /*@Nullable*/ Object arg2,
-            /*@Nullable*/ Object arg3,
-            /*@Nullable*/ Object arg4) {
+    public static void dWithStackTrace(String tag, String message, @Nullable Object arg1,
+            @Nullable Object arg2, @Nullable Object arg3, @Nullable Object arg4) {
         internalLog(DEBUG, tag, null, message, true, arg1, arg2, arg3, arg4);
     }
 
     /** @see #dWithStackTrace(String, String, Object) */
-    public static void dWithStackTrace(String tag, String message,
-            /*@Nullable*/ Object arg1,
-            /*@Nullable*/ Object arg2,
-            /*@Nullable*/ Object arg3,
-            /*@Nullable*/ Object arg4,
-            /*@Nullable*/ Object arg5) {
+    public static void dWithStackTrace(String tag, String message, @Nullable Object arg1,
+            @Nullable Object arg2, @Nullable Object arg3, @Nullable Object arg4,
+            @Nullable Object arg5) {
         internalLog(DEBUG, tag, null, message, true, arg1, arg2, arg3, arg4, arg5);
     }
 
@@ -395,7 +333,7 @@ public final class Logger {
      * as a result".
      * @param args the formatting args for the previous string.
      */
-    public static void i(String tag, /*@Nullable*/ String message, /*@Nullable*/ Object... args) {
+    public static void i(String tag, @Nullable String message, @Nullable Object... args) {
         internalLog(INFO, tag, null, message, false, args);
     }
 
@@ -411,7 +349,7 @@ public final class Logger {
      * as a result".
      * @param args the formatting args for the previous string.
      */
-    public static void iWithStackTrace(String tag, String message, /*@Nullable*/ Object... args) {
+    public static void iWithStackTrace(String tag, String message, @Nullable Object... args) {
         internalLog(INFO, tag, null, message, true, args);
     }
 
@@ -427,7 +365,7 @@ public final class Logger {
      * as a result".
      * @param args the formatting args for the previous string.
      */
-    public static void w(String tag, /*@Nullable*/ String message, /*@Nullable*/ Object... args) {
+    public static void w(String tag, @Nullable String message, @Nullable Object... args) {
         internalLog(WARN, tag, null, message, false, args);
     }
 
@@ -445,7 +383,7 @@ public final class Logger {
      * @param args the formatting args for the previous string.
      */
     public static void w(
-            String tag, Throwable th, /*@Nullable*/ String message, /*@Nullable*/ Object... args) {
+            String tag, Throwable th, @Nullable String message, @Nullable Object... args) {
         internalLog(WARN, tag, th, message, false, args);
     }
 
@@ -462,7 +400,7 @@ public final class Logger {
      * @param args the formatting args for the previous string.
      */
     public static void wWithStackTrace(
-            String tag, /*@Nullable*/ String message, /*@Nullable*/ Object... args) {
+            String tag, @Nullable String message, @Nullable Object... args) {
         internalLog(WARN, tag, null, message, true, args);
     }
 
@@ -478,7 +416,7 @@ public final class Logger {
      * as a result".
      * @param args the formatting args for the previous string.
      */
-    public static void e(String tag, /*@Nullable*/ String message, /*@Nullable*/ Object... args) {
+    public static void e(String tag, @Nullable String message, @Nullable Object... args) {
         internalLog(ERROR, tag, null, message, false, args);
     }
 
@@ -496,7 +434,7 @@ public final class Logger {
      * @param args the formatting args for the previous string.
      */
     public static void e(
-            String tag, Throwable th, /*@Nullable*/ String message, /*@Nullable*/ Object... args) {
+            String tag, Throwable th, @Nullable String message, @Nullable Object... args) {
         internalLog(ERROR, tag, th, message, false, args);
     }
 
@@ -513,7 +451,7 @@ public final class Logger {
      * @param args the formatting args for the previous string.
      */
     public static void eWithStackTrace(
-            String tag, /*@Nullable*/ String message, /*@Nullable*/ Object... args) {
+            String tag, @Nullable String message, @Nullable Object... args) {
         internalLog(ERROR, tag, null, message, true, args);
     }
 
@@ -533,7 +471,7 @@ public final class Logger {
      * as a result".
      * @param args the formatting args for the previous string.
      */
-    public static void wtf(String tag, /*@Nullable*/ String message, /*@Nullable*/ Object... args) {
+    public static void wtf(String tag, @Nullable String message, @Nullable Object... args) {
         internalLog(WARN, tag, null, message, false, args);
         if (shouldWtfCrash()) {
             throw new RuntimeException(buildMessage(message, args));
@@ -558,7 +496,7 @@ public final class Logger {
      * @param args the formatting args for the previous string.
      */
     public static void wtf(
-            String tag, Throwable th, /*@Nullable*/ String message, /*@Nullable*/ Object... args) {
+            String tag, Throwable th, @Nullable String message, @Nullable Object... args) {
         internalLog(WARN, tag, th, message, false, args);
         if (shouldWtfCrash()) {
             throw new RuntimeException(buildMessage(message, args), th);
@@ -621,23 +559,19 @@ public final class Logger {
     }
 
     public static void log(
-            int level, String tag, /*@Nullable*/ String message, /*@Nullable*/ Object... args) {
+            int level, String tag, @Nullable String message, @Nullable Object... args) {
         internalLog(level, tag, null, message, false, args);
     }
 
-    public static void log(int level, String tag,
-            /*@Nullable*/ Throwable th,
-            /*@Nullable*/ String message,
-            /*@Nullable*/ Object... args) {
+    public static void log(int level, String tag, @Nullable Throwable th, @Nullable String message,
+            @Nullable Object... args) {
         internalLog(level, tag, th, message, false, args);
     }
 
     // if (sensitive), all args must be instances of Redactable
-    // uses array rather than varargs to avoid ambiguous conversion of /*@Nullable*/ Redactable...
-    private static void internalLog(int level, String tag,
-            /*@Nullable*/ Throwable th,
-            /*@Nullable*/ String message, boolean withStackTrace,
-            /*@Nullable*/ Object... args) {
+    // uses array rather than varargs to avoid ambiguous conversion of @Nullable Redactable...
+    private static void internalLog(int level, String tag, @Nullable Throwable th,
+            @Nullable String message, boolean withStackTrace, @Nullable Object... args) {
         tag = capTag(tag);
 
         // Return early if we should not be logging this tag at the given level.
@@ -709,7 +643,7 @@ public final class Logger {
         }
     }
 
-    static String buildMessage(/*@Nullable*/ String message, /*@Nullable*/ Object[] args) {
+    static String buildMessage(@Nullable String message, @Nullable Object[] args) {
         // If the message is null, ignore the args and return "null";
         if (message == null) {
             return STRING_MEANING_NULL;

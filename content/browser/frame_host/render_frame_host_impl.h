@@ -54,6 +54,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_routing_id.h"
+#include "content/public/browser/peak_gpu_memory_tracker.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/common/javascript_dialog_type.h"
@@ -1635,35 +1636,21 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const mojom::CommonNavigationParams& common_params,
       const mojom::CommitNavigationParams& commit_params);
 
+  network::mojom::URLLoaderFactoryParamsPtr
+  CreateURLLoaderFactoryParamsForMainWorld(
+      const url::Origin& main_world_origin);
+
   // Creates a Network Service-backed factory from appropriate |NetworkContext|
   // and sets a connection error handler to trigger
   // |OnNetworkServiceConnectionError()| if the factory is out-of-process.  If
   // this returns true, any redirect safety checks should be bypassed in
   // downstream loaders.
-  //
-  // |origin| is the origin that will use the URLLoaderFactory.
-  //
-  // |main_world_origin| is the origin that the RenderFrame is either committing
-  // (in the case of navigation) or has last committed (when handling network
-  // process crashes).  In most cases |main_world_origin| and |origin| should be
-  // the same, but they may differ if |origin| specifies an origin of an
-  // isolated world (e.g. a content script of a Chrome Extension - see also the
-  // doc comment for extensions::URLLoaderFactoryManager::CreateFactory).
-  //
-  // |network_isolation_key| is the NetworkIsolationKey for the URLLoaderFactory
-  // to be initialized with. A nullopt key means the created URLLoaderFactory
-  // should not be initialized with a NetworkIsolationKey, and will be trusted
-  // so it can consume requests with a TrustedParams::network_isolation_key.
   bool CreateNetworkServiceDefaultFactoryAndObserve(
-      const url::Origin& origin,
-      const url::Origin& main_world_origin,
-      base::Optional<net::NetworkIsolationKey> network_isolation_key,
+      network::mojom::URLLoaderFactoryParamsPtr params,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>
           default_factory_receiver);
   bool CreateNetworkServiceDefaultFactoryInternal(
-      const url::Origin& origin,
-      const url::Origin& main_world_origin,
-      base::Optional<net::NetworkIsolationKey> network_isolation_key,
+      network::mojom::URLLoaderFactoryParamsPtr params,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>
           default_factory_receiver);
 
@@ -1673,10 +1660,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Map a routing ID from a frame in the same frame tree to a globally
   // unique AXTreeID.
   ui::AXTreeID RoutingIDToAXTreeID(int routing_id);
-
-  // Map a browser plugin instance ID to the AXTreeID of the plugin's
-  // main frame.
-  ui::AXTreeID BrowserPluginInstanceIDToAXTreeID(int routing_id);
 
   // Convert the content-layer-specific AXContentNodeData to a general-purpose
   // AXNodeData structure.
@@ -2574,6 +2557,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // The portals owned by this frame. |Portal::owner_render_frame_host_| points
   // back to |this|.
   base::flat_set<std::unique_ptr<Portal>, base::UniquePtrComparator> portals_;
+
+  // Optional PeakGpuMemoryTracker, when this frame is the main frame. Created
+  // by NavigationRequest, ownership is maintained until the frame has stopped
+  // loading. Or newer navigations occur.
+  std::unique_ptr<PeakGpuMemoryTracker> loading_mem_tracker_ = nullptr;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_{this};

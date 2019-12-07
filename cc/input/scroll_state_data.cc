@@ -25,31 +25,17 @@ ScrollStateData::ScrollStateData()
       delta_granularity(0),
       caused_scroll_x(false),
       caused_scroll_y(false),
-      is_scroll_chain_cut(false),
-      current_native_scrolling_node_(nullptr) {}
+      is_scroll_chain_cut(false) {}
 
 ScrollStateData::ScrollStateData(const ScrollStateData& other) = default;
 
-ScrollNode* ScrollStateData::current_native_scrolling_node() const {
-  return current_native_scrolling_node_;
-}
-
-void ScrollStateData::set_current_native_scrolling_node(
-    ScrollNode* current_native_scrolling_node) {
-  current_native_scrolling_node_ = current_native_scrolling_node;
-  current_native_scrolling_element_ = ElementId();
-}
-
 ElementId ScrollStateData::current_native_scrolling_element() const {
-  if (current_native_scrolling_node_)
-    return current_native_scrolling_node_->element_id;
   return current_native_scrolling_element_;
 }
 
 void ScrollStateData::set_current_native_scrolling_element(
     ElementId element_id) {
   current_native_scrolling_element_ = element_id;
-  current_native_scrolling_node_ = nullptr;
 }
 
 }  // namespace cc

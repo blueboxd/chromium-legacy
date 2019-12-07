@@ -44,7 +44,7 @@ class Blob;
 class DOMArrayBuffer;
 class DOMArrayBufferView;
 class ExceptionState;
-class WebRTCPeerConnectionHandler;
+class RTCPeerConnectionHandlerPlatform;
 
 class MODULES_EXPORT RTCDataChannel final
     : public EventTargetWithInlineData,
@@ -57,7 +57,7 @@ class MODULES_EXPORT RTCDataChannel final
  public:
   RTCDataChannel(ExecutionContext*,
                  scoped_refptr<webrtc::DataChannelInterface> channel,
-                 WebRTCPeerConnectionHandler* peer_connection_handler);
+                 RTCPeerConnectionHandlerPlatform* peer_connection_handler);
   ~RTCDataChannel() override;
 
   String label() const;

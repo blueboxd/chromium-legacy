@@ -19,6 +19,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 import org.chromium.chrome.browser.feed.library.common.ui.LayoutUtils;
 import org.chromium.chrome.browser.feed.library.sharedstream.publicapi.menumeasurer.MenuMeasurer;
@@ -44,9 +46,11 @@ public class ContextMenuManagerImpl implements ContextMenuManager {
 
     private final MenuMeasurer mMenuMeasurer;
     private final Context mContext;
-    /*@Nullable*/ private View mView;
+    @Nullable
+    private View mView;
 
-    /*@Nullable*/ private PopupWindow mPopupWindow;
+    @Nullable
+    private PopupWindow mPopupWindow;
 
     public ContextMenuManagerImpl(MenuMeasurer menuMeasurer, Context context) {
         this.mMenuMeasurer = menuMeasurer;

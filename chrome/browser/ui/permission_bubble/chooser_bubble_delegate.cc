@@ -19,10 +19,6 @@ ChooserBubbleDelegate::ChooserBubbleDelegate(
 
 ChooserBubbleDelegate::~ChooserBubbleDelegate() {}
 
-std::string ChooserBubbleDelegate::GetName() const {
-  return "ChooserBubble";
-}
-
 const content::RenderFrameHost* ChooserBubbleDelegate::OwningFrame() const {
   return owning_frame_;
 }

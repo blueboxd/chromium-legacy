@@ -222,7 +222,7 @@ void SVGShapePainter::PaintMarkers(const PaintInfo& paint_info,
   if (!marker_start && !marker_mid && !marker_end)
     return;
 
-  float stroke_width = layout_svg_shape_.StrokeWidth();
+  const float stroke_width = layout_svg_shape_.StrokeWidthForMarkerUnits();
 
   for (const MarkerPosition& marker_position : *marker_positions) {
     if (LayoutSVGResourceMarker* marker = marker_position.SelectMarker(

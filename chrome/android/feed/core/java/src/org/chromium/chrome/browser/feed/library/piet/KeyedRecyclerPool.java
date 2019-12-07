@@ -8,6 +8,8 @@ import static org.chromium.chrome.browser.feed.library.common.Validators.checkNo
 
 import android.util.LruCache;
 
+import androidx.annotation.Nullable;
+
 /**
  * This is a simple implementation of a recycling pool for Adapters.
  *
@@ -23,7 +25,7 @@ class KeyedRecyclerPool<A extends ElementAdapter<?, ?>> implements RecyclerPool<
     }
 
     @Override
-    /*@Nullable*/
+    @Nullable
     public A get(RecyclerKey key) {
         if (key == null) {
             return null;

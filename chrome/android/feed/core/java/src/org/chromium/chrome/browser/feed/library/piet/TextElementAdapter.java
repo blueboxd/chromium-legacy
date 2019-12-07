@@ -16,6 +16,8 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.common.ui.LayoutUtils;
 import org.chromium.chrome.browser.feed.library.piet.AdapterFactory.AdapterKeySupplier;
@@ -379,7 +381,7 @@ abstract class TextElementAdapter extends ElementAdapter<TextView, Element> {
         }
 
         @Override
-        public boolean equals(/*@Nullable*/ Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (obj == this) {
                 return true;
             }
@@ -469,7 +471,8 @@ abstract class TextElementAdapter extends ElementAdapter<TextView, Element> {
             return mFrameContextForErrors;
         }
 
-        StylesProto./*@Nullable*/ Typeface getTypefaceToLoad() {
+        @Nullable
+        StylesProto.Typeface getTypefaceToLoad() {
             if (mTypefaceList.size() <= mFontIndexToLoad) {
                 return null;
             }
@@ -485,7 +488,7 @@ abstract class TextElementAdapter extends ElementAdapter<TextView, Element> {
         }
     }
 
-    class TypefaceCallback implements Consumer</*@Nullable*/ Typeface> {
+    class TypefaceCallback implements Consumer<Typeface> {
         private final TextView mTextView;
         private final FontDetails mFontDetails;
 
@@ -495,7 +498,7 @@ abstract class TextElementAdapter extends ElementAdapter<TextView, Element> {
         }
 
         @Override
-        public void accept(/*@Nullable*/ Typeface typeface) {
+        public void accept(@Nullable Typeface typeface) {
             if (typeface == null) {
                 mFontDetails.currentTypefaceFailedToLoad();
                 loadFont(mTextView, mFontDetails);

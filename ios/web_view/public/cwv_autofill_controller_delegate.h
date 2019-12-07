@@ -42,35 +42,42 @@ typedef NS_ENUM(NSInteger, CWVPasswordUserDecision) {
 @optional
 
 // Called when a form field element receives a "focus" event.
+// |userInitiated| is YES if field was focused as a result of user interaction.
 - (void)autofillController:(CWVAutofillController*)autofillController
     didFocusOnFieldWithIdentifier:(NSString*)fieldIdentifier
                         fieldType:(NSString*)fieldType
                          formName:(NSString*)formName
                           frameID:(NSString*)frameID
-                            value:(NSString*)value;
+                            value:(NSString*)value
+                    userInitiated:(BOOL)userInitiated;
 
 // Called when a form field element receives an "input" event.
+// |userInitiated| is YES if field received input as a result of user
+// interaction.
 - (void)autofillController:(CWVAutofillController*)autofillController
     didInputInFieldWithIdentifier:(NSString*)fieldIdentifier
                         fieldType:(NSString*)fieldType
                          formName:(NSString*)formName
                           frameID:(NSString*)frameID
-                            value:(NSString*)value;
+                            value:(NSString*)value
+                    userInitiated:(BOOL)userInitiated;
 
 // Called when a form field element receives a "blur" (un-focused) event.
+// |userInitiated| is YES if field was blurred as a result of user interaction.
 - (void)autofillController:(CWVAutofillController*)autofillController
     didBlurOnFieldWithIdentifier:(NSString*)fieldIdentifier
                        fieldType:(NSString*)fieldType
                         formName:(NSString*)formName
                          frameID:(NSString*)frameID
-                           value:(NSString*)value;
+                           value:(NSString*)value
+                   userInitiated:(BOOL)userInitiated;
 
-// Called when a form was submitted. |userInitiated| is YES if form is submitted
-// as a result of user interaction.
+// Called when a form was submitted.
+// |userInitiated| is YES if form was submitted as a result of user interaction.
 - (void)autofillController:(CWVAutofillController*)autofillController
      didSubmitFormWithName:(NSString*)formName
-             userInitiated:(BOOL)userInitiated
-               isMainFrame:(BOOL)isMainFrame;
+                   frameID:(NSString*)frameID
+             userInitiated:(BOOL)userInitiated;
 
 // Called when |forms| are found in a frame with |frameID|.
 // Will be called after initial load and after any form mutations.

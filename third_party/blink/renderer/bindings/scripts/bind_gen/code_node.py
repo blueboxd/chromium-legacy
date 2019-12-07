@@ -89,7 +89,7 @@ class CodeNode(object):
             #     (Scope1, Scope2A, Scope3),  # [1]
             #     (Scope1, Scope2B),          # [4]
             #   ])
-            self.undefined_code_symbols_scope_chains = {}
+            self.symbol_to_scope_chains = {}
 
     _gensym_seq_id = 0
 
@@ -336,6 +336,15 @@ class CodeNode(object):
             return self.outer.is_code_symbol_registered(symbol_node)
         return False
 
+    def on_code_symbol_referenced(self, symbol_node, symbol_scope_chain):
+        """Receives a report of use of a symbol node."""
+        assert isinstance(symbol_node, SymbolNode)
+        assert isinstance(symbol_scope_chain, tuple)
+        assert all(
+            isinstance(scope, SymbolScopeNode) for scope in symbol_scope_chain)
+        self.current_render_state.symbol_to_scope_chains.setdefault(
+            symbol_node, set()).add(symbol_scope_chain)
+
     def on_undefined_code_symbol_found(self, symbol_node, symbol_scope_chain):
         """Receives a report of use of an undefined symbol node."""
         assert isinstance(symbol_node, SymbolNode)
@@ -345,8 +354,6 @@ class CodeNode(object):
         state = self.current_render_state
         if symbol_node not in state.undefined_code_symbols:
             state.undefined_code_symbols.append(symbol_node)
-        state.undefined_code_symbols_scope_chains.setdefault(
-            symbol_node, set()).add(symbol_scope_chain)
 
 
 class LiteralNode(CodeNode):
@@ -439,7 +446,7 @@ ${node}\\
 {separator}\\
 % endif
 % endfor
-{separator_last}\\
+{separator_last}\
 """,
             element_nodes=element_nodes_gensym,
             separator=separator,
@@ -571,32 +578,48 @@ class SymbolScopeNode(SequenceNode):
             renderer=renderer, last_render_state=last_render_state)
 
     def _insert_symbol_definition(self, symbol_node, last_render_state):
-        def count_by_likeliness(render_state):
-            counts = {
-                Likeliness.UNLIKELY: 0,
-                Likeliness.LIKELY: 0,
-                Likeliness.ALWAYS: 0,
-            }
+        DIRECT_USES = "u"
+        DIRECT_CHILD_SCOPES = "s"
+        ANALYSIS_RESULT_KEYS = (
+            # Number of direct uses in this scope
+            DIRECT_USES,
+            # Number of direct child scopes
+            DIRECT_CHILD_SCOPES,
+            # Number of direct child scopes per likeliness
+            Likeliness.ALWAYS,
+            Likeliness.LIKELY,
+            Likeliness.UNLIKELY,
+        )
 
-            scope_chains = (render_state.undefined_code_symbols_scope_chains.
-                            get(symbol_node))
+        def analyze_symbol_usage(render_state):
+            counts = dict.fromkeys(ANALYSIS_RESULT_KEYS, 0)
+
+            scope_chains = render_state.symbol_to_scope_chains.get(symbol_node)
             if not scope_chains:
                 return counts
 
             self_index = iter(scope_chains).next().index(self)
             scope_chains = map(
                 lambda scope_chain: scope_chain[self_index + 1:], scope_chains)
+            scope_to_likeliness = {}
             for scope_chain in scope_chains:
                 if not scope_chain:
-                    counts[Likeliness.ALWAYS] += 1
+                    counts[DIRECT_USES] += 1
                 else:
                     likeliness = min(
                         map(lambda scope: scope.likeliness, scope_chain))
-                    counts[likeliness] += 1
+                    scope = scope_chain[0]
+                    scope_to_likeliness[scope] = max(
+                        likeliness, scope_to_likeliness.get(scope, likeliness))
+            for likeliness in scope_to_likeliness.itervalues():
+                counts[DIRECT_CHILD_SCOPES] += 1
+                counts[likeliness] += 1
             return counts
 
         def likeliness_at(render_state):
-            counts = count_by_likeliness(render_state)
+            counts = analyze_symbol_usage(render_state)
+            if counts[DIRECT_USES] >= 1:
+                return Likeliness.ALWAYS
             for likeliness in (Likeliness.ALWAYS, Likeliness.LIKELY,
                                Likeliness.UNLIKELY):
                 if counts[likeliness] > 0:
@@ -616,15 +639,17 @@ class SymbolScopeNode(SequenceNode):
                     return True
             return False
 
-        counts = count_by_likeliness(last_render_state)
-        if counts[Likeliness.ALWAYS] >= 1:
+        counts = analyze_symbol_usage(last_render_state)
+        if counts[DIRECT_USES] >= 1:
             did_insert = insert_before_threshold(self, Likeliness.UNLIKELY)
             assert did_insert
+        elif counts[DIRECT_CHILD_SCOPES] == 1:
+            pass  # Let the child SymbolScopeNode do the work.
         elif counts[Likeliness.LIKELY] >= 2:
             did_insert = insert_before_threshold(self, Likeliness.LIKELY)
             assert did_insert
         else:
-            pass  # Do nothing and let descendant SymbolScopeNodes do the work.
+            pass  # Let descendant SymbolScopeNodes do the work.
 
     def is_code_symbol_registered(self, symbol_node):
         if symbol_node in self._registered_code_symbols:
@@ -703,6 +728,9 @@ class SymbolNode(CodeNode):
         symbol_scope_chain = tuple(
             filter(lambda node: isinstance(node, SymbolScopeNode),
                    renderer.callers_from_first_to_last))
+
+        for caller in renderer.callers_from_last_to_first:
+            caller.on_code_symbol_referenced(self, symbol_scope_chain)
 
         for caller in renderer.callers_from_last_to_first:
             if caller.is_code_symbol_defined(self):

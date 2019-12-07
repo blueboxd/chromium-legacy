@@ -13,6 +13,9 @@ std::string Path_GetWorkingDirectory();
 /** Sets the path of the current working directory. Returns true if this was successful. */
 bool Path_SetWorkingDirectory( const std::string & sPath );
 
+/** Gets the path to a temporary directory. */
+std::string Path_GetTemporaryDirectory();
+
 /** returns the path (including filename) of the current shared lib or DLL */
 std::string Path_GetThisModulePath();
 
@@ -35,7 +38,7 @@ std::string Path_GetExtension( const std::string & sPath );
 bool Path_IsAbsolute( const std::string & sPath );
 
 /** Makes an absolute path from a relative path and a base path */
-std::string Path_MakeAbsolute( const std::string & sRelativePath, const std::string & sBasePath, char slash = 0 );
+std::string Path_MakeAbsolute( const std::string & sRelativePath, const std::string & sBasePath );
 
 /** Fixes the directory separators for the current platform.
 * If slash is unspecified the native path separator of the current platform
@@ -64,6 +67,10 @@ std::string Path_Join(
 * will be used. */
 std::string Path_Compact( const std::string & sRawPath, char slash = 0 );
 
+/** Returns true if these two paths are the same without respect for internal . or ..
+* sequences, slash type, or case (on case-insensitive platforms). */
+bool Path_IsSamePath( const std::string & sPath1, const std::string & sPath2 );
+
 //** Removed trailing slashes */
 std::string Path_RemoveTrailingSlash( const std::string & sRawPath, char slash = 0 );
 
@@ -79,6 +86,9 @@ bool Path_Exists( const std::string & sPath );
 /** Helper functions to find parent directories or subdirectories of parent directories */
 std::string Path_FindParentDirectoryRecursively( const std::string &strStartDirectory, const std::string &strDirectoryName );
 std::string Path_FindParentSubDirectoryRecursively( const std::string &strStartDirectory, const std::string &strDirectoryName );
+
+/** Make a text file writable. */
+bool Path_MakeWritable( const std::string &strFilename );
 
 /** Path operations to read or write text/binary files */
 unsigned char * Path_ReadBinaryFile( const std::string &strFilename, int *pSize );
@@ -97,6 +107,9 @@ std::string Path_UrlToFilePath( const std::string & sFileUrl );
 /** Returns the root of the directory the system wants us to store user documents in */
 std::string GetUserDocumentsPath();
 
+/** deletes / unlinks a single file */
+bool Path_UnlinkFile( const std::string &strFilename );
+
 #ifndef MAX_UNICODE_PATH
 	#define MAX_UNICODE_PATH 32767
 #endif
@@ -108,6 +121,7 @@ std::string GetUserDocumentsPath();
 //-----------------------------------------------------------------------------
 #if defined(WIN32)
 #define DYNAMIC_LIB_EXT	".dll"
+#define PROGRAM_EXT ".exe"
 #ifdef _WIN64
 #define PLATSUBDIR	"win64"
 #else
@@ -116,10 +130,16 @@ std::string GetUserDocumentsPath();
 #elif defined(OSX)
 #define DYNAMIC_LIB_EXT	".dylib"
 #define PLATSUBDIR	"osx32"
+#define PROGRAM_EXT ""
 #elif defined(LINUX)
 #define DYNAMIC_LIB_EXT	".so"
+#define PROGRAM_EXT ""
 #if defined( LINUX32 )
 #define PLATSUBDIR	"linux32"
+#elif defined( ANDROIDARM64 )
+#define PLATSUBDIR	"androidarm64" 
+#elif defined( LINUXARM64 )
+#define PLATSUBDIR	"linuxarm64" 
 #else
 #define PLATSUBDIR	"linux64"
 #endif

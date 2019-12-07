@@ -1182,6 +1182,9 @@ void PaintArtifactCompositor::Update(
     bool backface_hidden = property_state.Transform().IsBackfaceHidden();
     layer->SetDoubleSided(!backface_hidden);
     layer->SetShouldCheckBackfaceVisibility(backface_hidden);
+    bool has_will_change_transform =
+        property_state.Transform().RequiresCompositingForWillChangeTransform();
+    layer->SetHasWillChangeTransformHint(has_will_change_transform);
 
     // If the property tree state has changed between the layer and the root,
     // we need to inform the compositor so damage can be calculated. Calling

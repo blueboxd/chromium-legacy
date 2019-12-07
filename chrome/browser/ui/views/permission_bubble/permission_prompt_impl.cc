@@ -60,10 +60,6 @@ void PermissionPromptImpl::UpdateAnchorPosition() {
     prompt_bubble_->UpdateAnchorPosition();
 }
 
-gfx::NativeWindow PermissionPromptImpl::GetNativeWindow() {
-  return prompt_bubble_ ? prompt_bubble_->GetNativeWindow() : nullptr;
-}
-
 PermissionPrompt::TabSwitchingBehavior
 PermissionPromptImpl::GetTabSwitchingBehavior() {
   return PermissionPrompt::TabSwitchingBehavior::

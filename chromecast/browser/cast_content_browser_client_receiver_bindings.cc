@@ -41,6 +41,7 @@
 
 #if defined(OS_ANDROID)
 #include "components/cdm/browser/media_drm_storage_impl.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "url/origin.h"
 #else
 #include "chromecast/browser/memory_pressure_controller_impl.h"
@@ -62,8 +63,9 @@ void AllowEmptyOriginIdCB(base::OnceCallback<void(bool)> callback) {
   std::move(callback).Run(false);
 }
 
-void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
-                           ::media::mojom::MediaDrmStorageRequest request) {
+void CreateMediaDrmStorage(
+    content::RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<::media::mojom::MediaDrmStorage> receiver) {
   DVLOG(1) << __func__;
   PrefService* pref_service = CastBrowserProcess::GetInstance()->pref_service();
   DCHECK(pref_service);
@@ -77,7 +79,7 @@ void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
   // away.
   new cdm::MediaDrmStorageImpl(
       render_frame_host, pref_service, base::BindRepeating(&CreateOriginId),
-      base::BindRepeating(&AllowEmptyOriginIdCB), std::move(request));
+      base::BindRepeating(&AllowEmptyOriginIdCB), std::move(receiver));
 }
 #endif  // defined(OS_ANDROID)
 

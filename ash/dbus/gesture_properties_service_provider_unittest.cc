@@ -4,6 +4,7 @@
 
 #include "ash/dbus/gesture_properties_service_provider.h"
 
+#include "base/test/task_environment.h"
 #include "chromeos/dbus/services/service_provider_test_helper.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -153,6 +154,8 @@ class GesturePropertiesServiceProviderTest : public testing::Test {
     CallWithoutParameters(name, response);
     EXPECT_EQ(dbus::Message::MESSAGE_ERROR, response->GetMessageType());
   }
+
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   base::flat_map<int, std::string> list_devices_response_ = {};
   std::vector<std::string> list_properties_response_ = {};

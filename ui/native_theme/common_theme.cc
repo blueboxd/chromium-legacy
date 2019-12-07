@@ -13,6 +13,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/native_theme/overlay_scrollbar_constants_aura.h"
 
 namespace ui {
 
@@ -281,6 +282,14 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_LinkEnabled:
     case NativeTheme::kColorId_LinkPressed:
       return gfx::kGoogleBlue600;
+
+    // Scrollbar
+    case NativeTheme::kColorId_OverlayScrollbarThumbBackground:
+      return SK_ColorBLACK;
+    case NativeTheme::kColorId_OverlayScrollbarThumbForeground:
+      return SkColorSetA(SK_ColorWHITE, (kOverlayScrollbarStrokeNormalAlpha /
+                                         kOverlayScrollbarThumbNormalAlpha) *
+                                            SK_AlphaOPAQUE);
 
     // Separator
     case NativeTheme::kColorId_SeparatorColor:

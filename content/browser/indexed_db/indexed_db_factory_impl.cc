@@ -781,13 +781,14 @@ std::unique_ptr<IndexedDBBackingStore> IndexedDBFactoryImpl::CreateBackingStore(
     IndexedDBBackingStore::BlobFilesCleanedCallback blob_files_cleaned,
     IndexedDBBackingStore::ReportOutstandingBlobsCallback
         report_outstanding_blobs,
-    base::SequencedTaskRunner* task_runner) {
+    scoped_refptr<base::SequencedTaskRunner> idb_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner) {
   return std::make_unique<IndexedDBBackingStore>(
       backing_store_mode, transactional_leveldb_factory, origin, blob_path,
       std::move(db), std::move(blob_files_cleaned),
-      std::move(report_outstanding_blobs), task_runner);
+      std::move(report_outstanding_blobs), std::move(idb_task_runner),
+      std::move(io_task_runner));
 }
-
 std::tuple<std::unique_ptr<IndexedDBBackingStore>,
            leveldb::Status,
            IndexedDBDataLossInfo,
@@ -881,7 +882,8 @@ IndexedDBFactoryImpl::OpenAndVerifyIndexedDBBackingStore(
   // Create the TransactionalLevelDBDatabase wrapper.
   std::unique_ptr<TransactionalLevelDBDatabase> database =
       class_factory_->transactional_leveldb_factory().CreateLevelDBDatabase(
-          std::move(database_state), std::move(scopes), context_->TaskRunner(),
+          std::move(database_state), std::move(scopes),
+          context_->IDBTaskRunner(),
           TransactionalLevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase);
 
   bool are_schemas_known = false;
@@ -917,7 +919,7 @@ IndexedDBFactoryImpl::OpenAndVerifyIndexedDBBackingStore(
                           weak_factory_.GetWeakPtr(), origin),
       base::BindRepeating(&IndexedDBFactoryImpl::ReportOutstandingBlobs,
                           weak_factory_.GetWeakPtr(), origin),
-      context_->TaskRunner());
+      context_->IDBTaskRunner(), context_->IOTaskRunner());
   status = backing_store->Initialize(
       /*cleanup_active_journal=*/(!is_incognito_and_in_memory &&
                                   first_open_since_startup));

@@ -5,8 +5,7 @@
 #include "services/audio/public/cpp/fake_system_info.h"
 
 #include "base/bind.h"
-#include "services/audio/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/audio/service.h"
 
 namespace audio {
 
@@ -17,16 +16,13 @@ FakeSystemInfo::~FakeSystemInfo() {}
 // static
 void FakeSystemInfo::OverrideGlobalBinderForAudioService(
     FakeSystemInfo* fake_system_info) {
-  service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
-      mojom::kServiceName,
-      base::BindRepeating(&FakeSystemInfo::Bind,
-                          base::Unretained(fake_system_info)));
+  Service::SetSystemInfoBinderForTesting(base::BindRepeating(
+      &FakeSystemInfo::Bind, base::Unretained(fake_system_info)));
 }
 
 // static
 void FakeSystemInfo::ClearGlobalBinderForAudioService() {
-  service_manager::ServiceBinding ::ClearInterfaceBinderOverrideForTesting<
-      mojom::SystemInfo>(mojom::kServiceName);
+  Service::SetSystemInfoBinderForTesting(base::NullCallback());
 }
 
 void FakeSystemInfo::GetInputStreamParameters(

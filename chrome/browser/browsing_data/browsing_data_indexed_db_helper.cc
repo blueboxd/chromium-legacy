@@ -35,7 +35,7 @@ BrowsingDataIndexedDBHelper::~BrowsingDataIndexedDBHelper() {
 void BrowsingDataIndexedDBHelper::StartFetching(FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
-  indexed_db_context_->TaskRunner()->PostTask(
+  indexed_db_context_->IDBTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(
           &BrowsingDataIndexedDBHelper::FetchIndexedDBInfoInIndexedDBThread,
@@ -44,7 +44,7 @@ void BrowsingDataIndexedDBHelper::StartFetching(FetchCallback callback) {
 
 void BrowsingDataIndexedDBHelper::DeleteIndexedDB(const GURL& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  indexed_db_context_->TaskRunner()->PostTask(
+  indexed_db_context_->IDBTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(
           &BrowsingDataIndexedDBHelper::DeleteIndexedDBInIndexedDBThread, this,
@@ -53,7 +53,7 @@ void BrowsingDataIndexedDBHelper::DeleteIndexedDB(const GURL& origin) {
 
 void BrowsingDataIndexedDBHelper::FetchIndexedDBInfoInIndexedDBThread(
     FetchCallback callback) {
-  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(indexed_db_context_->IDBTaskRunner()->RunsTasksInCurrentSequence());
   DCHECK(!callback.is_null());
   std::vector<StorageUsageInfo> origins =
       indexed_db_context_->GetAllOriginsInfo();
@@ -69,7 +69,7 @@ void BrowsingDataIndexedDBHelper::FetchIndexedDBInfoInIndexedDBThread(
 
 void BrowsingDataIndexedDBHelper::DeleteIndexedDBInIndexedDBThread(
     const GURL& origin) {
-  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(indexed_db_context_->IDBTaskRunner()->RunsTasksInCurrentSequence());
   indexed_db_context_->DeleteForOrigin(url::Origin::Create(origin));
 }
 

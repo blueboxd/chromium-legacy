@@ -434,9 +434,11 @@ void OmniboxViewViews::SetFocus(bool is_user_initiated) {
             ->GetRevealedLock(ImmersiveModeController::ANIMATE_REVEAL_YES));
   }
 
-  suppress_on_focus_suggestions_ = !is_user_initiated;
   RequestFocus();
-  suppress_on_focus_suggestions_ = false;
+
+  // |is_user_initiated| is true for focus events from keyboard accelerators.
+  if (is_user_initiated)
+    model()->ShowOnFocusSuggestionsIfAutocompleteIdle();
 
   // Restore caret visibility if focus is explicitly requested. This is
   // necessary because if we already have invisible focus, the RequestFocus()
@@ -1130,6 +1132,12 @@ bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
     saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
   }
 
+  // Show on-focus suggestions if either:
+  //  - The textfield doesn't already have focus.
+  //  - Or if the textfield is empty, to cover the NTP ZeroSuggest case.
+  if (event.IsOnlyLeftMouseButton() && (!HasFocus() || GetText().empty()))
+    model()->ShowOnFocusSuggestionsIfAutocompleteIdle();
+
   bool handled = views::Textfield::OnMousePressed(event);
 
   // This ensures that when the user makes a double-click partial select, we
@@ -1139,13 +1147,6 @@ bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
       UnapplySteadyStateElisions(UnelisionGesture::OTHER)) {
     TextChanged();
     filter_drag_events_for_unelision_ = true;
-  }
-
-  // This is intended to cover the NTP case where the omnibox starts focused.
-  // The user can explicitly request on-focus suggestions by clicking or tapping
-  // the omnibox. Restricted to empty textfield to avoid disrupting selections.
-  if (HasFocus() && GetText().empty() && event.IsOnlyLeftMouseButton()) {
-    model()->ShowOnFocusSuggestionsIfAutocompleteIdle();
   }
 
   return handled;
@@ -1198,6 +1199,12 @@ void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
     saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
   }
 
+  // Show on-focus suggestions if either:
+  //  - The textfield doesn't already have focus.
+  //  - Or if the textfield is empty, to cover the NTP ZeroSuggest case.
+  if (!HasFocus() || GetText().empty())
+    model()->ShowOnFocusSuggestionsIfAutocompleteIdle();
+
   views::Textfield::OnGestureEvent(event);
 
   if (select_all_on_gesture_tap_ && event->type() == ui::ET_GESTURE_TAP) {
@@ -1212,13 +1219,6 @@ void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
       event->type() == ui::ET_GESTURE_LONG_PRESS ||
       event->type() == ui::ET_GESTURE_LONG_TAP) {
     select_all_on_gesture_tap_ = false;
-  }
-
-  // This is intended to cover the NTP case where the omnibox starts focused.
-  // The user can explicitly request on-focus suggestions by clicking or tapping
-  // the omnibox. Restricted to empty textfield to avoid disrupting selections.
-  if (HasFocus() && GetText().empty() && event->type() == ui::ET_GESTURE_TAP) {
-    model()->ShowOnFocusSuggestionsIfAutocompleteIdle();
   }
 }
 
@@ -1342,14 +1342,8 @@ void OmniboxViewViews::OnFocus() {
   // Investigate why it's needed and see if we can remove it.
   model()->ResetDisplayTexts();
 
-  bool suppress = suppress_on_focus_suggestions_;
-  if (GetFocusManager() &&
-      GetFocusManager()->focus_change_reason() !=
-          views::FocusManager::FocusChangeReason::kDirectFocusChange) {
-    suppress = true;
-  }
   // TODO(oshima): Get control key state.
-  model()->OnSetFocus(false, suppress);
+  model()->OnSetFocus(false);
   // Don't call controller()->OnSetFocus, this view has already acquired focus.
 
   // Restore the selection we saved in OnBlur() if it's still valid.

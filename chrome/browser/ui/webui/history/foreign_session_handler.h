@@ -12,6 +12,7 @@
 #include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "content/public/browser/web_ui.h"
@@ -46,9 +47,12 @@ class ForeignSessionHandler : public content::WebUIMessageHandler {
  public:
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
+  void OnJavascriptAllowed() override;
 
   ForeignSessionHandler();
   ~ForeignSessionHandler() override;
+
+  void InitializeForeignSessions();
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -68,6 +72,8 @@ class ForeignSessionHandler : public content::WebUIMessageHandler {
 
  private:
   void OnForeignSessionUpdated();
+
+  base::Value GetForeignSessions();
 
   // Returns a string used to show the user when a session was last modified.
   base::string16 FormatSessionTime(const base::Time& time);
@@ -93,6 +99,8 @@ class ForeignSessionHandler : public content::WebUIMessageHandler {
   // The time at which this WebUI was created. Used to calculate how long
   // the WebUI was present before the sessions data was visible.
   base::TimeTicks load_attempt_time_;
+
+  base::Value initial_session_list_;
 
   std::unique_ptr<base::CallbackList<void()>::Subscription>
       foreign_session_updated_subscription_;

@@ -6,11 +6,13 @@
 
 #include <memory>
 
+#include "ash/public/cpp/app_types.h"
 #include "base/trace_event/trace_event.h"
 #include "components/exo/permission.h"
 #include "components/exo/shell_surface_base.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
@@ -48,6 +50,11 @@ void SetShellApplicationId(aura::Window* window,
 
 const std::string* GetShellApplicationId(const aura::Window* window) {
   return window->GetProperty(kApplicationIdKey);
+}
+
+void SetArcAppType(aura::Window* window) {
+  window->SetProperty(aura::client::kAppType,
+                      static_cast<int>(ash::AppType::ARC_APP));
 }
 
 void SetShellStartupId(aura::Window* window,

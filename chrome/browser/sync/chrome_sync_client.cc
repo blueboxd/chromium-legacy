@@ -132,6 +132,8 @@
 #endif  // defined(OS_CHROMEOS)
 
 using content::BrowserThread;
+using syncer::ForwardingModelTypeControllerDelegate;
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 using browser_sync::ExtensionModelTypeController;
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
@@ -401,6 +403,8 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
   // Temporarily Disable AppListSyncableService for tablet form factor devices.
   // See crbug/1013732 for details.
   if (!chromeos::switches::IsTabletFormFactor()) {
+    // TODO(https://crbug.com/1031549): Make this type run in transport-only
+    // mode for SplitSettingsSync.
     controllers.push_back(
         std::make_unique<syncer::SyncableServiceBasedModelTypeController>(
             syncer::APP_LIST, model_type_store_factory,
@@ -421,38 +425,47 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
 #if defined(OS_CHROMEOS)
   if (arc::IsArcAllowedForProfile(profile_) &&
       !arc::IsArcAppSyncFlowDisabled()) {
-    controllers.push_back(std::make_unique<ArcPackageSyncModelTypeController>(
+    controllers.push_back(ArcPackageSyncModelTypeController::Create(
         model_type_store_factory,
         GetSyncableServiceForType(syncer::ARC_PACKAGE), dump_stack,
         sync_service, profile_));
   }
   if (chromeos::features::IsSplitSettingsSyncEnabled()) {
     if (!disabled_types.Has(syncer::OS_PREFERENCES)) {
-      controllers.push_back(std::make_unique<OsPreferencesModelTypeController>(
+      controllers.push_back(OsPreferencesModelTypeController::Create(
           syncer::OS_PREFERENCES, model_type_store_factory,
           GetSyncableServiceForType(syncer::OS_PREFERENCES), dump_stack,
           profile_->GetPrefs(), sync_service));
     }
     if (!disabled_types.Has(syncer::OS_PRIORITY_PREFERENCES)) {
-      controllers.push_back(std::make_unique<OsPreferencesModelTypeController>(
+      controllers.push_back(OsPreferencesModelTypeController::Create(
           syncer::OS_PRIORITY_PREFERENCES, model_type_store_factory,
           GetSyncableServiceForType(syncer::OS_PRIORITY_PREFERENCES),
           dump_stack, profile_->GetPrefs(), sync_service));
     }
     if (!disabled_types.Has(syncer::PRINTERS)) {
+      // Use the same delegate in full-sync and transport-only modes.
+      syncer::ModelTypeControllerDelegate* delegate =
+          GetControllerDelegateForModelType(syncer::PRINTERS).get();
       controllers.push_back(std::make_unique<OsSyncModelTypeController>(
           syncer::PRINTERS,
-          std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
-              GetControllerDelegateForModelType(syncer::PRINTERS).get()),
+          /*delegate_for_full_sync_mode=*/
+          std::make_unique<ForwardingModelTypeControllerDelegate>(delegate),
+          /*delegate_for_transport_mode=*/
+          std::make_unique<ForwardingModelTypeControllerDelegate>(delegate),
           profile_->GetPrefs(), sync_service));
     }
     if (!disabled_types.Has(syncer::WIFI_CONFIGURATIONS) &&
         base::FeatureList::IsEnabled(switches::kSyncWifiConfigurations)) {
+      // Use the same delegate in full-sync and transport-only modes.
+      syncer::ModelTypeControllerDelegate* delegate =
+          GetControllerDelegateForModelType(syncer::WIFI_CONFIGURATIONS).get();
       controllers.push_back(std::make_unique<OsSyncModelTypeController>(
           syncer::WIFI_CONFIGURATIONS,
-          std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
-              GetControllerDelegateForModelType(syncer::WIFI_CONFIGURATIONS)
-                  .get()),
+          /*delegate_for_full_sync_mode=*/
+          std::make_unique<ForwardingModelTypeControllerDelegate>(delegate),
+          /*delegate_for_transport_mode=*/
+          std::make_unique<ForwardingModelTypeControllerDelegate>(delegate),
           profile_->GetPrefs(), sync_service));
     }
   }

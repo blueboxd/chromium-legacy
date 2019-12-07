@@ -544,10 +544,6 @@ void WebSocketChannelImpl::OnClosingHandshake() {
   client_->DidStartClosingHandshake();
 }
 
-ExecutionContext* WebSocketChannelImpl::GetExecutionContext() {
-  return execution_context_;
-}
-
 void WebSocketChannelImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(blob_loader_);
   visitor->Trace(messages_);

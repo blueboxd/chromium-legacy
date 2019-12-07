@@ -506,10 +506,10 @@ void URLLoaderFactoryManager::WillExecuteCode(content::RenderFrameHost* frame,
 
 // static
 void URLLoaderFactoryManager::OverrideURLLoaderFactoryParams(
-    content::RenderProcessHost* process,
+    content::BrowserContext* browser_context,
     const url::Origin& origin,
+    bool is_for_isolated_world,
     network::mojom::URLLoaderFactoryParams* factory_params) {
-  content::BrowserContext* browser_context = process->GetBrowserContext();
   const ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context);
   DCHECK(registry);  // CreateFactory shouldn't happen during shutdown.
 
@@ -534,14 +534,10 @@ void URLLoaderFactoryManager::OverrideURLLoaderFactoryParams(
     return;
   }
 
-  // Figure out if the factory is needed for content scripts VS extension
-  // renderer.
-  FactoryUser factory_user = FactoryUser::kContentScript;
-  ProcessMap* process_map = ProcessMap::Get(browser_context);
-  if (process_map->Contains(extension->id(), process->GetID()))
-    factory_user = FactoryUser::kExtensionProcess;
-
   // Don't change |factory_params| unless required.
+  FactoryUser factory_user = is_for_isolated_world
+                                 ? FactoryUser::kContentScript
+                                 : FactoryUser::kExtensionProcess;
   if (!IsSpecialURLLoaderFactoryRequired(*extension, factory_user))
     return;
 

@@ -9,6 +9,8 @@ import static org.chromium.chrome.browser.feed.library.common.Validators.checkNo
 import android.content.Context;
 import android.support.annotation.VisibleForTesting;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
@@ -86,7 +88,8 @@ public class StreamDriver
     private boolean mRestoring;
     private boolean mRootFeatureConsumed;
     private boolean mModelFeatureChangeObserverRegistered;
-    /*@Nullable*/ private StreamContentListener mContentListener;
+    @Nullable
+    private StreamContentListener mContentListener;
 
     public StreamDriver(ActionApi actionApi, ActionManager actionManager,
             ActionParserFactory actionParserFactory, ModelProvider modelProvider,
@@ -193,7 +196,8 @@ public class StreamDriver
     private ChildCreationPayload createAndInsertChildrenAtIndex(
             ModelCursor streamCursor, ModelProvider modelProvider, int insertionIndex) {
         Iterable<ModelChild> cursorIterable = () -> new Iterator<ModelChild>() {
-            /*@Nullable*/ private ModelChild mNext;
+            @Nullable
+            private ModelChild mNext;
 
             @Override
             public boolean hasNext() {
@@ -234,7 +238,7 @@ public class StreamDriver
         return new ChildCreationPayload(newChildren, tokenCount, contentCount);
     }
 
-    /*@Nullable*/
+    @Nullable
     private FeatureDriver createChild(ModelChild child, ModelProvider modelProvider, int position) {
         switch (child.getType()) {
             case Type.FEATURE:
@@ -259,8 +263,7 @@ public class StreamDriver
         }
     }
 
-    private /*@Nullable*/ FeatureDriver createFeatureChild(
-            ModelFeature modelFeature, int position) {
+    private @Nullable FeatureDriver createFeatureChild(ModelFeature modelFeature, int position) {
         if (modelFeature.getStreamFeature().hasCard()) {
             return createCardDriver(modelFeature, position);
         } else if (modelFeature.getStreamFeature().hasCluster()) {
@@ -566,7 +569,7 @@ public class StreamDriver
                 /* spinnerShown= */ true);
     }
 
-    public void setStreamContentListener(/*@Nullable*/ StreamContentListener contentListener) {
+    public void setStreamContentListener(@Nullable StreamContentListener contentListener) {
         this.mContentListener = contentListener;
     }
 
@@ -636,7 +639,7 @@ public class StreamDriver
                 Collections.singletonList(leafFeatureDriver));
     }
 
-    /*@Nullable*/
+    @Nullable
     private ModelChild getModelChildForContentId(String contentId) {
         for (ModelChild model : mModelChildFeatureDriverMap.keySet()) {
             if (model.getContentId().equals(contentId)) {

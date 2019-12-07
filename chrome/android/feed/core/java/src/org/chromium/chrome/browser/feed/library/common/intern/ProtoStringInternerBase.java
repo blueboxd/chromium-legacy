@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.feed.library.common.intern;
 
 import android.annotation.SuppressLint;
 
+import androidx.annotation.Nullable;
+
 import com.google.protobuf.GeneratedMessageLite;
 import com.google.protobuf.MessageLite;
 
@@ -36,10 +38,10 @@ public abstract class ProtoStringInternerBase<P extends MessageLite> implements 
 
     @SuppressWarnings("ReferenceEquality") // Intentional reference comparison for interned != orig
     @SuppressLint("StringEquality")
-    /*@Nullable*/
+    @Nullable
     protected <T extends GeneratedMessageLite<T, B>, B extends GeneratedMessageLite.Builder<T, B>> B
-    internSingleStringField(T input,
-            /*@Nullable*/ B builder, SingleStringFieldGetter<T> singleStringFieldGetter,
+    internSingleStringField(T input, @Nullable B builder,
+            SingleStringFieldGetter<T> singleStringFieldGetter,
             SingleStringFieldSetter<B> singleStringFieldSetter) {
         String orig = singleStringFieldGetter.getField(input);
         String interned = mInterner.intern(orig);
@@ -64,10 +66,10 @@ public abstract class ProtoStringInternerBase<P extends MessageLite> implements 
 
     @SuppressWarnings("ReferenceEquality") // Intentional reference comparison for interned != orig
     @SuppressLint("StringEquality")
-    /*@Nullable*/
+    @Nullable
     protected <T extends GeneratedMessageLite<T, B>, B extends GeneratedMessageLite.Builder<T, B>> B
-    internRepeatedStringField(T input,
-            /*@Nullable*/ B builder, RepeatedStringFieldGetter<T> repeatedStringFieldGetter,
+    internRepeatedStringField(T input, @Nullable B builder,
+            RepeatedStringFieldGetter<T> repeatedStringFieldGetter,
             RepeatedStringFieldClearer<B> repeatedStringFieldClearer,
             RepeatedStringFieldAllAdder<B> repeatedStringFieldAllAdder) {
         boolean modified = false;
@@ -88,7 +90,7 @@ public abstract class ProtoStringInternerBase<P extends MessageLite> implements 
     }
 
     protected <T extends GeneratedMessageLite<T, B>, B extends GeneratedMessageLite.Builder<T, B>> B
-    ensureBuilder(T input, /*@Nullable*/ B builder) {
+    ensureBuilder(T input, @Nullable B builder) {
         if (builder == null) {
             builder = input.toBuilder();
         }

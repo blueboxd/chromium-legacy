@@ -4,16 +4,19 @@
 
 package org.chromium.chrome.browser.feed.library.testing.modelprovider;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.ModelProvider.ViewDepthProvider;
 
 /** Fake implementation of {@link ViewDepthProvider}. */
 public final class FakeViewDepthProvider implements ViewDepthProvider {
-    /*@Nullable*/ private String mChildViewDepth;
+    @Nullable
+    private String mChildViewDepth;
 
     public FakeViewDepthProvider() {}
 
     @Override
-    /*@Nullable*/
+    @Nullable
     public String getChildViewDepth() {
         return mChildViewDepth;
     }

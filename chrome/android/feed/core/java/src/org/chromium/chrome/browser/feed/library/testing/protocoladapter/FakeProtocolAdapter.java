@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.testing.protocoladapter;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.internal.common.Model;
 import org.chromium.chrome.browser.feed.library.api.internal.protocoladapter.ProtocolAdapter;
 import org.chromium.chrome.browser.feed.library.common.Result;
@@ -22,7 +24,8 @@ public final class FakeProtocolAdapter implements ProtocolAdapter {
     private static final String UNMAPPED_CONTENT_ID = "unmapped_content_id";
 
     private final Map<String, ContentId> mContentIds = new HashMap<>();
-    /*@Nullable*/ private Response mLastResponse;
+    @Nullable
+    private Response mLastResponse;
 
     @Override
     public Result<Model> createModel(Response response) {
@@ -63,7 +66,7 @@ public final class FakeProtocolAdapter implements ProtocolAdapter {
     }
 
     /** Returns the last response sent into {@link #createModel(Response)}. */
-    /*@Nullable*/
+    @Nullable
     public Response getLastResponse() {
         return mLastResponse;
     }

@@ -89,7 +89,6 @@ class ExtensionInstalledBubble : public BubbleDelegate {
   // BubbleDelegate:
   std::unique_ptr<BubbleUi> BuildBubbleUi() override;
   bool ShouldClose(BubbleCloseReason reason) const override;
-  std::string GetName() const override;
   const content::RenderFrameHost* OwningFrame() const override;
 
   // Returns false if the bubble could not be shown immediately, because of an

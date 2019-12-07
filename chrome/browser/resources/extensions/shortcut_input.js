@@ -9,6 +9,8 @@ import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {KeyboardShortcutDelegate} from './keyboard_shortcut_delegate.js';
@@ -27,6 +29,8 @@ Polymer({
   is: 'extensions-shortcut-input',
 
   _template: html`{__html_template__}`,
+
+  behaviors: [I18nBehavior],
 
   properties: {
     /** @type {!KeyboardShortcutDelegate} */
@@ -203,6 +207,11 @@ Polymer({
     }
 
     this.error_ = ShortcutError.NO_ERROR;
+
+    IronA11yAnnouncer.requestAvailability();
+    this.fire('iron-announce', {
+      text: this.i18n('shortcutSet', this.computeText_()),
+    });
 
     this.commitPending_();
     this.endCapture_();

@@ -20,8 +20,7 @@ namespace content {
 // Blink side code (these are separate classes due to lifecycle considerations;
 // this class is created by ImeAdapterAndroid ctor and destroyed together with
 // WebContents. Mojo code takes ownership of mojom::TextSuggestionHost).
-class TextSuggestionHostAndroid : public RenderWidgetHostConnector,
-                                  public WebContentsObserver {
+class TextSuggestionHostAndroid : public RenderWidgetHostConnector {
  public:
   static void Create(JNIEnv* env, WebContents* web_contents);
   TextSuggestionHostAndroid(JNIEnv* env,

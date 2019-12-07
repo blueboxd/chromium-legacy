@@ -125,7 +125,6 @@ class TestAuthenticatorFactory final
 
   std::unique_ptr<Authenticator> BuildInstance(
       Connection* connection,
-      const std::string& account_id,
       std::unique_ptr<multidevice::SecureMessageDelegate>
           secure_message_delegate) override {
     last_instance_ = new FakeAuthenticator();

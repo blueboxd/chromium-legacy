@@ -8,9 +8,9 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/system_media_controls/mock_system_media_controls.h"
+#include "content/public/test/browser_task_environment.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,13 +31,12 @@ using testing::Expectation;
 
 class SystemMediaControlsNotifierTest : public testing::Test {
  public:
-  SystemMediaControlsNotifierTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
+  SystemMediaControlsNotifierTest() = default;
   ~SystemMediaControlsNotifierTest() override = default;
 
   void SetUp() override {
     notifier_ = std::make_unique<SystemMediaControlsNotifier>(
-        /*connector=*/nullptr, &mock_system_media_controls_);
+        &mock_system_media_controls_);
   }
 
  protected:
@@ -93,7 +92,7 @@ class SystemMediaControlsNotifierTest : public testing::Test {
 #endif  // defined(OS_WIN)
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<SystemMediaControlsNotifier> notifier_;
   system_media_controls::testing::MockSystemMediaControls
       mock_system_media_controls_;

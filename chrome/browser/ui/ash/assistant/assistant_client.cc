@@ -21,15 +21,15 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "components/session_manager/core/session_manager.h"
+#include "content/public/browser/audio_service.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/media_session_service.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/service_process_host.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
-#include "services/audio/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/identity/public/mojom/identity_service.mojom.h"
-#include "services/media_session/public/mojom/constants.mojom.h"
 
 namespace {
 
@@ -183,8 +183,7 @@ void AssistantClient::RequestWakeLockProvider(
 
 void AssistantClient::RequestAudioStreamFactory(
     mojo::PendingReceiver<audio::mojom::StreamFactory> receiver) {
-  content::GetSystemConnector()->Connect(audio::mojom::kServiceName,
-                                         std::move(receiver));
+  content::GetAudioService().BindStreamFactory(std::move(receiver));
 }
 
 void AssistantClient::RequestAudioDecoderFactory(
@@ -207,15 +206,14 @@ void AssistantClient::RequestIdentityAccessor(
 
 void AssistantClient::RequestAudioFocusManager(
     mojo::PendingReceiver<media_session::mojom::AudioFocusManager> receiver) {
-  content::GetSystemConnector()->Connect(media_session::mojom::kServiceName,
-                                         std::move(receiver));
+  content::GetMediaSessionService().BindAudioFocusManager(std::move(receiver));
 }
 
 void AssistantClient::RequestMediaControllerManager(
     mojo::PendingReceiver<media_session::mojom::MediaControllerManager>
         receiver) {
-  content::GetSystemConnector()->Connect(media_session::mojom::kServiceName,
-                                         std::move(receiver));
+  content::GetMediaSessionService().BindMediaControllerManager(
+      std::move(receiver));
 }
 
 void AssistantClient::RequestNetworkConfig(

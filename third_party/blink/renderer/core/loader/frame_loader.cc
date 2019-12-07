@@ -1561,8 +1561,15 @@ void FrameLoader::DispatchDidClearWindowObjectInMainWorld() {
 
 SandboxFlags FrameLoader::EffectiveSandboxFlags() const {
   SandboxFlags flags = forced_sandbox_flags_;
-  if (FrameOwner* frame_owner = frame_->Owner())
-    flags |= frame_owner->GetFramePolicy().sandbox_flags;
+  if (frame_->Owner()) {
+    // Cannot use flags in frame_owner->GetFramePolicy().sandbox_flags, because
+    // frame_owner's frame policy is volatile and can be changed by javascript
+    // before navigation commits. Uses a snapshot
+    // value(frame_owner_sandbox_flags_) which is set in
+    // DocumentInit::WithFramePolicy instead. crbug.com/1026627
+    DCHECK(frame_owner_sandbox_flags_.has_value());
+    flags |= frame_owner_sandbox_flags_.value();
+  }
   // Frames need to inherit the sandbox flags of their parent frame.
   if (Frame* parent_frame = frame_->Tree().Parent())
     flags |= parent_frame->GetSecurityContext()->GetSandboxFlags();

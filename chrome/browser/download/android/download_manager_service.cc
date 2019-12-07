@@ -189,10 +189,10 @@ DownloadManagerService::~DownloadManagerService() {}
 
 void DownloadManagerService::Init(JNIEnv* env,
                                   jobject obj,
-                                  bool is_profile_created) {
+                                  bool is_profile_added) {
   java_ref_.Reset(env, obj);
-  if (is_profile_created) {
-    OnProfileCreated(env, obj);
+  if (is_profile_added) {
+    OnProfileAdded(env, obj);
   } else {
     // In reduced mode, only non-incognito downloads should be loaded.
     DownloadStartupUtils::EnsureDownloadSystemInitialized(
@@ -202,7 +202,7 @@ void DownloadManagerService::Init(JNIEnv* env,
   }
 }
 
-void DownloadManagerService::OnProfileCreated(JNIEnv* env, jobject obj) {
+void DownloadManagerService::OnProfileAdded(JNIEnv* env, jobject obj) {
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
                  content::NotificationService::AllSources());
   // Register coordinator for each available profile.

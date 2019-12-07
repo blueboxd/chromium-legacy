@@ -80,8 +80,6 @@ class CONTENT_EXPORT ServiceWorkerObjectHost
           pending_object,
       blink::mojom::ServiceWorkerState sent_state);
 
-  ServiceWorkerVersion* version() { return version_.get(); }
-
   base::WeakPtr<ServiceWorkerObjectHost> AsWeakPtr();
 
  private:

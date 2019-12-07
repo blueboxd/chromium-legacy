@@ -14,14 +14,13 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "components/webrtc_logging/browser/text_log_list.h"
+#include "content/public/browser/audio_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/system_connector.h"
 #include "media/audio/audio_debug_recording_session.h"
 #include "services/audio/public/cpp/debug_recording_session_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 using content::BrowserThread;
 
@@ -112,8 +111,11 @@ void AudioDebugRecordingsHandler::DoStartAudioDebugRecordings(
       log_directory, ++current_audio_debug_recordings_id_);
   host->EnableAudioDebugRecordings(prefix_path);
 
+  mojo::PendingRemote<audio::mojom::DebugRecording> debug_recording;
+  content::GetAudioService().BindDebugRecording(
+      debug_recording.InitWithNewPipeAndPassReceiver());
   audio_debug_recording_session_ = audio::CreateAudioDebugRecordingSession(
-      prefix_path, content::GetSystemConnector()->Clone());
+      prefix_path, std::move(debug_recording));
 
   if (delay.is_zero()) {
     const bool is_stopped = false, is_manual_stop = false;

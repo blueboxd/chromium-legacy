@@ -654,6 +654,7 @@ component("ash") {
     "shelf/window_preview.cc",
     "shelf/window_preview.h",
     "shell.cc",
+    "shell_delegate.cc",
     "shell_init_params.cc",
     "shell_state.cc",
     "shell_state.h",

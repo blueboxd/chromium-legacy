@@ -94,23 +94,6 @@ base::Optional<DXGI_FORMAT> VizFormatToDXGIFormat(
   }
 }
 
-#if BUILDFLAG(USE_DAWN)
-base::Optional<WGPUTextureFormat> VizResourceFormatToWGPUTextureFormat(
-    viz::ResourceFormat viz_resource_format) {
-  switch (viz_resource_format) {
-    case viz::RGBA_F16:
-      return WGPUTextureFormat_RGBA16Float;
-    case viz::BGRA_8888:
-      return WGPUTextureFormat_BGRA8Unorm;
-    case viz::RGBA_8888:
-      return WGPUTextureFormat_RGBA8Unorm;
-    default:
-      NOTREACHED();
-      return {};
-  }
-}
-#endif  // BUILDFLAG(USE_DAWN)
-
 }  // anonymous namespace
 
 // Representation of a SharedImageBackingD3D as a GL Texture.
@@ -449,9 +432,8 @@ WGPUTexture SharedImageRepresentationDawnD3D::BeginAccess(
 
   const HANDLE shared_handle = d3d_image_backing->GetSharedHandle();
   const viz::ResourceFormat viz_resource_format = d3d_image_backing->format();
-  const base::Optional<WGPUTextureFormat> wgpu_texture_format =
-      VizResourceFormatToWGPUTextureFormat(viz_resource_format);
-  if (!wgpu_texture_format.has_value()) {
+  WGPUTextureFormat wgpu_format = viz::ToWGPUFormat(viz_resource_format);
+  if (wgpu_format == WGPUTextureFormat_Undefined) {
     DLOG(ERROR) << "Unsupported viz format found: " << viz_resource_format;
     return nullptr;
   }
@@ -463,7 +445,7 @@ WGPUTexture SharedImageRepresentationDawnD3D::BeginAccess(
 
   WGPUTextureDescriptor desc;
   desc.nextInChain = nullptr;
-  desc.format = wgpu_texture_format.value();
+  desc.format = wgpu_format;
   desc.usage = usage;
   desc.dimension = WGPUTextureDimension_2D;
   desc.size = {size().width(), size().height(), 1};

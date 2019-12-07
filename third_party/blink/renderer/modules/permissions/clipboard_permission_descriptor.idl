@@ -4,4 +4,7 @@
 
 dictionary ClipboardPermissionDescriptor : PermissionDescriptor {
     boolean allowWithoutGesture = false;
+    // TODO(https://crbug.com/1026088): Update Clipboard Specification to
+    // include allowWithoutSanitization in the PermissionDescriptor.
+    boolean allowWithoutSanitization = false;
 };

@@ -944,30 +944,11 @@ blink_python_runner("make_core_generated_web_origin_trials") {
   ]
 }
 
-action_foreach("make_core_generated_bison") {
-  script = "../build/scripts/rule_bison.py"
-  sources = [
-    "xml/xpath_grammar.y",
-  ]
-  outputs = [
-    "$blink_core_output_dir/{{source_name_part}}.cc",
-    "$blink_core_output_dir/{{source_name_part}}.h",
-  ]
-  args = [
-    "{{source}}",
-    rel_blink_core_gen_dir,
-    bison_exe,
-  ]
-
-  deps = make_core_generated_deps
-}
-
 # Targets from above that generate outputs that need to be compiled.
 # All sources declared as outputs from these targets will be compiled into one
 # target.
 targets_generating_sources = [
   ":make_core_generated_atrule_names",
-  ":make_core_generated_bison",
   ":make_core_generated_css_primitive_value_unit_trie",
   ":make_core_generated_computed_style_initial_values",
   ":make_core_generated_computed_style_base",

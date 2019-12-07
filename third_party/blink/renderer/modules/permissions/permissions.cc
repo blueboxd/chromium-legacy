@@ -131,7 +131,8 @@ PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
             script_state->GetIsolate(), raw_permission.V8Value(),
             exception_state);
     return CreateClipboardPermissionDescriptor(
-        permission_name, clipboard_permission->allowWithoutGesture());
+        permission_name, clipboard_permission->allowWithoutGesture(),
+        clipboard_permission->allowWithoutSanitization());
   }
   if (name == "payment-handler")
     return CreatePermissionDescriptor(PermissionName::PAYMENT_HANDLER);

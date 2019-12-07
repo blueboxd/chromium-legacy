@@ -339,6 +339,40 @@ TEST_F(DisplayLockContextTest,
   EXPECT_FALSE(container->GetDisplayLockContext()->IsLocked());
 }
 
+TEST_F(DisplayLockContextTest,
+       FindInPageWhileLockedContentChangesDoesNotCrash) {
+  ResizeAndFocus();
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+    #container {
+      width: 100px;
+      height: 100px;
+      contain: style layout paint;
+    }
+    </style>
+    <body>testing<div id="container">testing</div></body>
+  )HTML");
+
+  const String search_text = "testing";
+  DisplayLockTestFindInPageClient client;
+  client.SetFrame(LocalMainFrame());
+
+  // Lock the container.
+  auto* container = GetDocument().getElementById("container");
+  LockElement(*container, true /* activatable */);
+  EXPECT_TRUE(container->GetDisplayLockContext()->IsLocked());
+
+  // Find the first "testing", container still locked since the match is outside
+  // the container.
+  Find(search_text, client);
+  EXPECT_EQ(2, client.Count());
+  EXPECT_TRUE(container->GetDisplayLockContext()->IsLocked());
+
+  // Change the inner text, this should not DCHECK.
+  container->SetInnerHTMLFromString("please don't DCHECK");
+  UpdateAllLifecyclePhasesForTest();
+}
+
 TEST_F(DisplayLockContextTest, FindInPageWithChangedContent) {
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())
     return;

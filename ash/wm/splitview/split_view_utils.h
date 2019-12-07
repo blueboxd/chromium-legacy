@@ -97,8 +97,6 @@ ASH_EXPORT bool ShouldAllowSplitView();
 // not compatible.
 ASH_EXPORT void ShowAppCannotSnapToast();
 
-ASH_EXPORT bool IsPhysicalLeftOrTop(SplitViewController::SnapPosition position);
-
 // Returns the desired snap position. To be able to get snapped (meaning the
 // return value is not |SplitViewController::NONE|), |window| must first of all
 // satisfy |SplitViewController::CanSnapWindow| on the split view controller for

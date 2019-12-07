@@ -62,13 +62,14 @@ assert inputName == 'xpath_grammar.y'
 prefix = {'xpath_grammar.y': 'xpathyy'}[inputName]
 
 (inputRoot, inputExt) = os.path.splitext(inputName)
+newInputRoot = inputRoot + '_generated'
 
 # The generated .h will be in a different location depending on the bison
 # version.
 outputHTries = [
-    os.path.join(outputDir, inputRoot + '.cpp.h'),
-    os.path.join(outputDir, inputRoot + '.hpp'),
-    os.path.join(outputDir, inputRoot + '.hh'),
+    os.path.join(outputDir, newInputRoot + '.cpp.h'),
+    os.path.join(outputDir, newInputRoot + '.hpp'),
+    os.path.join(outputDir, newInputRoot + '.hh'),
 ]
 
 for outputHTry in outputHTries:
@@ -78,7 +79,7 @@ for outputHTry in outputHTries:
         if e.errno != errno.ENOENT:
             raise
 
-outputCpp = os.path.join(outputDir, inputRoot + '.cc')
+outputCpp = os.path.join(outputDir, newInputRoot + '.cc')
 
 returnCode = subprocess.call([bisonExe, '-d', '-p', prefix, inputFile, '-o', outputCpp])
 assert returnCode == 0
@@ -96,21 +97,26 @@ for outputHTry in outputHTries:
 
 assert outputHTmp != None
 
-# Read the header file in under the generated name and remove it.
-outputHFile = open(outputHTmp)
-outputHContents = outputHFile.read()
-outputHFile.close()
-os.unlink(outputHTmp)
+
+def modifyFile(path, prefixLines, suffixLines):
+    prefixLines = map(lambda s: s + '\n', prefixLines)
+    suffixLines = map(lambda s: s + '\n', suffixLines)
+    with open(path, 'r') as f:
+        oldLines = f.readlines()
+    newLines = prefixLines + oldLines + suffixLines
+    with open(path, 'w') as f:
+        f.writelines(newLines)
 
 # Rewrite the generated header with #include guards.
-outputH = os.path.join(outputDir, inputRoot + '.h')
+kClangFormatDisableLine = "// clang-format off"
+outputH = os.path.join(outputDir, newInputRoot + '.h')
+headerGuard = NameStyleConverter(outputH).to_header_guard()
+modifyFile(outputHTmp,
+           [kClangFormatDisableLine,
+            '#ifndef %s' % headerGuard,
+            '#define %s' % headerGuard,
+            ], ['#endif  // %s' % headerGuard]
+           )
+os.rename(outputHTmp, outputH)
 
-outputHInGen = outputH.replace('gen/', '')
-headerGuard = NameStyleConverter(outputHInGen).to_header_guard()
-
-outputHFile = open(outputH, 'w')
-print >>outputHFile, '#ifndef %s' % headerGuard
-print >>outputHFile, '#define %s' % headerGuard
-print >>outputHFile, outputHContents
-print >>outputHFile, '#endif  // %s' % headerGuard
-outputHFile.close()
+modifyFile(outputCpp, [kClangFormatDisableLine], [])

@@ -30,11 +30,9 @@ MediaKeysListenerManager* MediaKeysListenerManager::GetInstance() {
   return BrowserMainLoop::GetInstance()->media_keys_listener_manager();
 }
 
-MediaKeysListenerManagerImpl::MediaKeysListenerManagerImpl(
-    service_manager::Connector* connector)
-    : connector_(connector),
-      hardware_key_media_controller_(
-          std::make_unique<HardwareKeyMediaController>(connector_)),
+MediaKeysListenerManagerImpl::MediaKeysListenerManagerImpl()
+    : hardware_key_media_controller_(
+          std::make_unique<HardwareKeyMediaController>()),
       media_key_handling_enabled_(true),
       auxiliary_services_started_(false) {
   DCHECK(!MediaKeysListenerManager::GetInstance());
@@ -161,8 +159,7 @@ void MediaKeysListenerManagerImpl::EnsureAuxiliaryServices() {
       system_media_controls::SystemMediaControls::GetInstance();
   if (system_media_controls) {
     system_media_controls_notifier_ =
-        std::make_unique<SystemMediaControlsNotifier>(connector_,
-                                                      system_media_controls);
+        std::make_unique<SystemMediaControlsNotifier>(system_media_controls);
   }
 
 #if defined(OS_MACOSX)

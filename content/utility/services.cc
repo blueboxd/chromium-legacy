@@ -8,10 +8,12 @@
 
 #include "base/no_destructor.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "content/public/utility/content_utility_client.h"
 #include "content/public/utility/utility_thread.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/service_factory.h"
+#include "services/audio/service_factory.h"
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/network/network_service.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -19,6 +21,13 @@
 #include "services/tracing/tracing_service.h"
 #include "services/video_capture/public/mojom/video_capture_service.mojom.h"
 #include "services/video_capture/video_capture_service_impl.h"
+
+#if defined(OS_MACOSX)
+#include "base/mac/mach_logging.h"
+#include "sandbox/mac/system_services.h"
+#include "services/service_manager/sandbox/features.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
+#endif
 
 namespace content {
 
@@ -31,6 +40,39 @@ auto RunNetworkService(
   return std::make_unique<network::NetworkService>(
       std::move(binders), std::move(receiver),
       /*delay_initialization_until_set_client=*/true);
+}
+
+auto RunAudio(mojo::PendingReceiver<audio::mojom::AudioService> receiver) {
+#if defined(OS_MACOSX)
+  // Don't connect to launch services when running sandboxed
+  // (https://crbug.com/874785).
+  if (service_manager::IsAudioSandboxEnabled()) {
+    sandbox::DisableLaunchServices();
+  }
+
+  // Set the audio process to run with similar scheduling parameters as the
+  // browser process.
+  task_category_policy category;
+  category.role = TASK_FOREGROUND_APPLICATION;
+  kern_return_t result = task_policy_set(
+      mach_task_self(), TASK_CATEGORY_POLICY,
+      reinterpret_cast<task_policy_t>(&category), TASK_CATEGORY_POLICY_COUNT);
+
+  MACH_LOG_IF(ERROR, result != KERN_SUCCESS, result)
+      << "task_policy_set TASK_CATEGORY_POLICY";
+
+  task_qos_policy qos;
+  qos.task_latency_qos_tier = LATENCY_QOS_TIER_0;
+  qos.task_throughput_qos_tier = THROUGHPUT_QOS_TIER_0;
+  result = task_policy_set(mach_task_self(), TASK_BASE_QOS_POLICY,
+                           reinterpret_cast<task_policy_t>(&qos),
+                           TASK_QOS_POLICY_COUNT);
+
+  MACH_LOG_IF(ERROR, result != KERN_SUCCESS, result)
+      << "task_policy_set TASK_QOS_POLICY";
+#endif
+
+  return audio::CreateStandaloneService(std::move(receiver));
 }
 
 auto RunDataDecoder(
@@ -60,6 +102,7 @@ mojo::ServiceFactory& GetIOThreadServiceFactory() {
 
 mojo::ServiceFactory& GetMainThreadServiceFactory() {
   static base::NoDestructor<mojo::ServiceFactory> factory{
+      RunAudio,
       RunDataDecoder,
       RunTracing,
       RunVideoCapture,

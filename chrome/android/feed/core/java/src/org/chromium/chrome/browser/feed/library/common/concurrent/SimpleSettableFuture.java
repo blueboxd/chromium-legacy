@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.common.concurrent;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.common.Validators;
 
 import java.util.concurrent.CancellationException;
@@ -17,8 +19,10 @@ import java.util.concurrent.TimeoutException;
 public final class SimpleSettableFuture<V> implements Future<V> {
     private final CountDownLatch mLatch = new CountDownLatch(1);
     private boolean mCancelled;
-    /*@Nullable*/ private V mValue;
-    /*@Nullable*/ private Exception mException;
+    @Nullable
+    private V mValue;
+    @Nullable
+    private Exception mException;
 
     /** Note that this will not interrupt tasks as tasks aren't running within the future */
     @Override

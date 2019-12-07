@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.feed.library.feedsessionmanager.internal;
 
 import android.support.annotation.VisibleForTesting;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.feed.library.api.host.logging.Task;
 import org.chromium.chrome.browser.feed.library.api.internal.common.PayloadWithId;
@@ -161,7 +163,7 @@ public final class SessionCache implements Dumpable {
      * Return an attached {@link Session} for the sessionId, or {@code null} if the sessionCache
      * doesn't contain the Session or it is no longer attached.
      */
-    /*@Nullable*/
+    @Nullable
     public Session getAttached(String sessionId) {
         mGetCount++;
         synchronized (mLock) {

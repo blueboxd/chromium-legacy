@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.feed.library.feedsessionmanager.internal;
 
 import android.support.annotation.VisibleForTesting;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.common.MutationContext;
 import org.chromium.chrome.browser.feed.library.api.internal.common.ThreadUtils;
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.ModelChild;
@@ -43,8 +45,7 @@ public final class TimeoutSessionImpl extends SessionImpl {
 
     @Override
     public void updateSession(boolean clearHead, List<StreamStructure> streamStructures,
-            int schemaVersion,
-            /*@Nullable*/ MutationContext mutationContext) {
+            int schemaVersion, @Nullable MutationContext mutationContext) {
         String localSessionId = Validators.checkNotNull(mSessionId);
         Logger.i(TAG, "updateSession; clearHead(%b), shouldAppend(%b), sessionId(%s)", clearHead,
                 mLegacyHeadContent, localSessionId);
@@ -104,7 +105,7 @@ public final class TimeoutSessionImpl extends SessionImpl {
      * user can currently see.
      */
     private List<StreamStructure> removeItems(
-            /*@Nullable*/ String lowestChild, List<ModelChild> rootChildren) {
+            @Nullable String lowestChild, List<ModelChild> rootChildren) {
         boolean remove = false;
         List<StreamStructure> removeOperations = new ArrayList<>();
         for (ModelChild child : rootChildren) {
@@ -129,7 +130,7 @@ public final class TimeoutSessionImpl extends SessionImpl {
     }
 
     @VisibleForTesting
-    StreamStructure createRemoveFeature(String contentId, /*@Nullable*/ String parentId) {
+    StreamStructure createRemoveFeature(String contentId, @Nullable String parentId) {
         StreamStructure.Builder builder =
                 StreamStructure.newBuilder().setOperation(Operation.REMOVE).setContentId(contentId);
         if (parentId != null) {

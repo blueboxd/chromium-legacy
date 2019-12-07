@@ -22,7 +22,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_TRAITS_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_TRAITS_H_
 
-#include <string.h>  // For memset.
 #include <limits>
 #include <memory>
 #include <type_traits>
@@ -42,6 +41,27 @@ template <bool is_enum, typename T>
 struct EnumOrGenericHashTraits;
 template <typename T>
 struct HashTraits;
+
+namespace {
+template <typename T, bool use_atomic_writes = IsTraceable<T>::value>
+void ClearMemoryAtomically(T* slot, size_t size) {
+  size_t* address = reinterpret_cast<size_t*>(slot);
+  // This method is called for clearing hash table entires that are removed. In
+  // case Oilpan concurrent marking is tracing the hash table at the same time,
+  // there might be a data race between the marker reading the entry and zeroing
+  // the entry. Using atomic reads here resolves any possible races.
+  // Note that sizeof(T) might not be a multiple of sizeof(size_t). The last
+  // sizeof(T)%sizeof(size_t) bytes don't require atomic write as it cannot hold
+  // a pointer (i.e it will not be traceable).
+  if (use_atomic_writes) {
+    for (; size >= sizeof(size_t); size -= sizeof(size_t), ++address) {
+      WTF::AsAtomicPtr(address)->store(0, std::memory_order_relaxed);
+    }
+  }
+  DCHECK(!use_atomic_writes || (size < sizeof(size_t)));
+  memset(address, 0, size);
+}
+}  // namespace
 
 template <typename T>
 struct GenericHashTraitsBase<false, T> {
@@ -374,8 +394,9 @@ struct PairHashTraits
     // at a later point, the same assumptions around memory zeroing must
     // hold as they did at the initial allocation.  Therefore we zero the
     // value part of the slot here for GC collections.
-    if (zero_value)
-      memset(reinterpret_cast<void*>(&slot.second), 0, sizeof(slot.second));
+    if (zero_value) {
+      ClearMemoryAtomically(&slot.second, sizeof(slot.second));
+    }
   }
   static bool IsDeletedValue(const TraitType& value) {
     return FirstTraits::IsDeletedValue(value.first);
@@ -446,8 +467,9 @@ struct KeyValuePairHashTraits
   static void ConstructDeletedValue(TraitType& slot, bool zero_value) {
     KeyTraits::ConstructDeletedValue(slot.key, zero_value);
     // See similar code in this file for why we need to do this.
-    if (zero_value)
-      memset(reinterpret_cast<void*>(&slot.value), 0, sizeof(slot.value));
+    if (zero_value) {
+      ClearMemoryAtomically(&slot.value, sizeof(slot.value));
+    }
   }
   static bool IsDeletedValue(const TraitType& value) {
     return KeyTraits::IsDeletedValue(value.key);

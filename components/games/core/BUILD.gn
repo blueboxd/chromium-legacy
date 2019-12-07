@@ -4,6 +4,8 @@
 
 static_library("core") {
   sources = [
+    "catalog_store.cc",
+    "catalog_store.h",
     "data_files_parser.cc",
     "data_files_parser.h",
     "games_constants.cc",
@@ -18,6 +20,8 @@ static_library("core") {
     "games_types.h",
     "games_utils.cc",
     "games_utils.h",
+    "highlighted_games_store.cc",
+    "highlighted_games_store.h",
   ]
 
   deps = [
@@ -31,9 +35,11 @@ static_library("core") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "catalog_store_unittest.cc",
     "data_files_parser_unittest.cc",
     "games_prefs_unittest.cc",
     "games_service_impl_unittest.cc",
+    "highlighted_games_store_unittest.cc",
   ]
   deps = [
     ":core",

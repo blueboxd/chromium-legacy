@@ -1616,6 +1616,11 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool InForcedColorsMode() const;
 
+  // Returns true if the subframe document is cross-site to the main frame. If
+  // we can't tell whether the document was ever cross-site or not (e.g. it is
+  // not the active Document in a browsing context), return false.
+  bool IsCrossSiteSubframe() const;
+
   // Capture the toggle event during parsing either by HTML parser or XML
   // parser.
   void SetToggleDuringParsing(bool toggle_during_parsing) {

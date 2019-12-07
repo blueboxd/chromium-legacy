@@ -216,7 +216,7 @@ TEST(DevToolsPermissionOverridesTest, GrantPermissionsSetsSomeBlocksRest) {
             PermissionStatus::DENIED);
   EXPECT_EQ(*overrides.Get(url, PermissionType::MIDI_SYSEX),
             PermissionStatus::DENIED);
-  EXPECT_EQ(*overrides.Get(url, PermissionType::CLIPBOARD_READ),
+  EXPECT_EQ(*overrides.Get(url, PermissionType::CLIPBOARD_READ_WRITE),
             PermissionStatus::DENIED);
   EXPECT_EQ(*overrides.Get(url, PermissionType::WAKE_LOCK_SYSTEM),
             PermissionStatus::DENIED);

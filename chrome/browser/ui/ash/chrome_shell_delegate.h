@@ -26,6 +26,7 @@ class ChromeShellDelegate : public ash::ShellDelegate {
       mojo::PendingReceiver<
           chromeos::multidevice_setup::mojom::MultiDeviceSetup> receiver)
       override;
+  media_session::mojom::MediaSessionService* GetMediaSessionService() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeShellDelegate);

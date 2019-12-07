@@ -116,6 +116,15 @@ bool IsUpdateInfobar(PasswordInfobarType infobar_type) {
 
 using password_manager::PasswordFormManagerForUI;
 
+// static
+IOSChromeSavePasswordInfoBarDelegate*
+IOSChromeSavePasswordInfoBarDelegate::FromInfobarDelegate(
+    infobars::InfoBarDelegate* delegate) {
+  return delegate->GetIdentifier() == SAVE_PASSWORD_INFOBAR_DELEGATE_MOBILE
+             ? static_cast<IOSChromeSavePasswordInfoBarDelegate*>(delegate)
+             : nullptr;
+}
+
 IOSChromeSavePasswordInfoBarDelegate::IOSChromeSavePasswordInfoBarDelegate(
     bool is_sync_user,
     bool password_update,

@@ -74,11 +74,17 @@ bool PermissionDescriptorToPermissionType(
       *permission_type = PermissionType::ACCESSIBILITY_EVENTS;
       return true;
     case PermissionName::CLIPBOARD_READ:
-      *permission_type = PermissionType::CLIPBOARD_READ;
+      *permission_type = PermissionType::CLIPBOARD_READ_WRITE;
       return true;
-    case PermissionName::CLIPBOARD_WRITE:
-      *permission_type = PermissionType::CLIPBOARD_WRITE;
+    case PermissionName::CLIPBOARD_WRITE: {
+      if (descriptor->extension && descriptor->extension->is_clipboard() &&
+          descriptor->extension->get_clipboard()->allowWithoutSanitization) {
+        *permission_type = PermissionType::CLIPBOARD_READ_WRITE;
+      } else {
+        *permission_type = PermissionType::CLIPBOARD_SANITIZED_WRITE;
+      }
       return true;
+    }
     case PermissionName::PAYMENT_HANDLER:
       *permission_type = PermissionType::PAYMENT_HANDLER;
       return true;

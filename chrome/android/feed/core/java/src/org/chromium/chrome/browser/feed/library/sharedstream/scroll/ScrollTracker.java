@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 package org.chromium.chrome.browser.feed.library.sharedstream.scroll;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.common.concurrent.CancelableTask;
 import org.chromium.chrome.browser.feed.library.common.concurrent.MainThreadRunner;
 import org.chromium.chrome.browser.feed.library.common.time.Clock;
@@ -19,8 +21,10 @@ public abstract class ScrollTracker {
     private final MainThreadRunner mMainThreadRunner;
     private final Clock mClock;
 
-    /*@Nullable*/ protected ScrollNotifier mScrollNotifier;
-    /*@Nullable*/ protected CancelableTask mTask;
+    @Nullable
+    protected ScrollNotifier mScrollNotifier;
+    @Nullable
+    protected CancelableTask mTask;
 
     public ScrollTracker(MainThreadRunner mainThreadRunner, Clock clock) {
         this.mMainThreadRunner = mainThreadRunner;

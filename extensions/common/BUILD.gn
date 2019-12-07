@@ -12,10 +12,6 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 # TODO(crbug.com/731689): Assert that extensions are enabled.
 
 source_set("common_constants") {
-  if (is_chromecast) {
-    defines = [ "IS_CHROMECAST" ]
-  }
-
   sources = [
     "constants.cc",
     "constants.h",
@@ -23,6 +19,7 @@ source_set("common_constants") {
 
   deps = [
     "//base",
+    "//build:chromecast_buildflags",
     "//components/services/app_service/public/mojom",
     "//components/version_info:channel",
     "//ui/base",

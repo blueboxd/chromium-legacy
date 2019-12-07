@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "base/optional.h"
-#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_receiver_platform.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/webrtc/api/rtp_transceiver_interface.h"
 
 namespace blink {
@@ -51,8 +51,8 @@ class PLATFORM_EXPORT RTCRtpTransceiverPlatform {
   // Identifies the webrtc-layer transceiver. Multiple RTCRtpTransceiverPlatform
   // can exist for the same webrtc-layer transceiver.
   virtual uintptr_t Id() const = 0;
-  virtual WebString Mid() const = 0;
-  virtual void SetMid(base::Optional<WebString>) {}
+  virtual String Mid() const = 0;
+  virtual void SetMid(base::Optional<String>) {}
   virtual std::unique_ptr<RTCRtpSenderPlatform> Sender() const = 0;
   virtual std::unique_ptr<RTCRtpReceiverPlatform> Receiver() const = 0;
   virtual bool Stopped() const = 0;

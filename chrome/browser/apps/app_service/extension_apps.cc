@@ -19,6 +19,7 @@
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_interface.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -30,7 +31,6 @@
 #include "chrome/browser/ui/app_list/extension_uninstaller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
@@ -218,18 +218,6 @@ void ExtensionApps::RecordUninstallCanceledAction(Profile* profile,
         extensions::ExtensionUninstallDialog::CLOSE_ACTION_CANCELED,
         extensions::ExtensionUninstallDialog::CLOSE_ACTION_LAST);
   }
-}
-
-bool ExtensionApps::ShowPauseAppDialog(const std::string& app_id) {
-  for (auto* browser : *BrowserList::GetInstance()) {
-    if (!browser->is_type_app()) {
-      continue;
-    }
-    if (web_app::GetAppIdFromApplicationName(browser->app_name()) == app_id) {
-      return true;
-    }
-  }
-  return false;
 }
 
 ExtensionApps::ExtensionApps(
@@ -594,7 +582,10 @@ void ExtensionApps::PauseApp(const std::string& app_id) {
   paused_apps_.insert(app_id);
   SetIconEffect(app_id);
 
-  // TODO(crbug.com/1011235): If the app is running, Stop the app.
+  chromeos::app_time::WebTimeLimitInterface* web_limit =
+      chromeos::app_time::WebTimeLimitInterface::Get(profile_);
+  DCHECK(web_limit);
+  web_limit->PauseWebActivity(app_id);
 }
 
 void ExtensionApps::UnpauseApps(const std::string& app_id) {
@@ -604,6 +595,11 @@ void ExtensionApps::UnpauseApps(const std::string& app_id) {
 
   paused_apps_.erase(app_id);
   SetIconEffect(app_id);
+
+  chromeos::app_time::WebTimeLimitInterface* web_limit =
+      chromeos::app_time::WebTimeLimitInterface::Get(profile_);
+  DCHECK(web_limit);
+  web_limit->ResumeWebActivity(app_id);
 }
 
 void ExtensionApps::OpenNativeSettings(const std::string& app_id) {

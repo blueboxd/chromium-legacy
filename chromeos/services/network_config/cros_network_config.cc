@@ -1459,13 +1459,23 @@ base::Value GetEAPProperties(const mojom::EAPConfigProperties& eap) {
 }
 
 std::unique_ptr<base::DictionaryValue> GetOncFromConfigProperties(
-    const mojom::ConfigProperties* properties) {
+    const mojom::ConfigProperties* properties,
+    base::Optional<std::string> guid) {
   auto onc = std::make_unique<base::DictionaryValue>();
 
   // Process |properties->network_type| and set |type|. Configurations have only
   // one type dictionary.
   mojom::NetworkType type = mojom::NetworkType::kAll;  // Invalid type
   base::Value type_dict(base::Value::Type::DICTIONARY);
+
+  if (properties->guid && !properties->guid->empty()) {
+    if (guid && *guid != *properties->guid) {
+      NET_LOG(ERROR) << "GUID does not match: " << *guid
+                     << " != " << *properties->guid;
+      return nullptr;
+    }
+    SetString(::onc::network_config::kGUID, *properties->guid, onc.get());
+  }
 
   if (properties->type_config->is_cellular()) {
     type = mojom::NetworkType::kCellular;
@@ -1969,7 +1979,7 @@ void CrosNetworkConfig::SetProperties(const std::string& guid,
   }
 
   std::unique_ptr<base::DictionaryValue> onc =
-      GetOncFromConfigProperties(properties.get());
+      GetOncFromConfigProperties(properties.get(), guid);
   if (!onc) {
     NET_LOG(ERROR) << "Bad ONC Configuration for " << guid;
     std::move(callback).Run(false, kErrorInvalidONCConfiguration);
@@ -2052,7 +2062,7 @@ void CrosNetworkConfig::ConfigureNetwork(mojom::ConfigPropertiesPtr properties,
   }
 
   std::unique_ptr<base::DictionaryValue> onc =
-      GetOncFromConfigProperties(properties.get());
+      GetOncFromConfigProperties(properties.get(), /*guid=*/base::nullopt);
   if (!onc) {
     std::move(callback).Run(/*guid=*/base::nullopt,
                             kErrorInvalidONCConfiguration);

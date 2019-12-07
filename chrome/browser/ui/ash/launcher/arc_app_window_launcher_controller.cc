@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
-#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
@@ -27,7 +26,6 @@
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/user_manager/user_manager.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/base/base_window.h"
 #include "ui/base/ui_base_features.h"
@@ -234,10 +232,6 @@ void ArcAppWindowLauncherController::AttachControllerToWindowIfNeeded(
   const int task_id = arc::GetWindowTaskId(window);
   if (task_id == arc::kNoTaskId)
     return;
-
-  // System windows are also arc apps.
-  window->SetProperty(aura::client::kAppType,
-                      static_cast<int>(ash::AppType::ARC_APP));
 
   if (task_id == arc::kSystemWindowTaskId)
     return;

@@ -20,6 +20,8 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.client.stream.Header;
 import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
@@ -66,7 +68,8 @@ public class StreamRecyclerViewAdapter
     private boolean mStreamContentVisible;
     private boolean mShown;
 
-    /*@Nullable*/ private StreamDriver mStreamDriver;
+    @Nullable
+    private StreamDriver mStreamDriver;
     private final ScrollObservable mScrollObservable;
 
     // Suppress initialization warnings for calling setHasStableIds on RecyclerView.Adapter
@@ -394,7 +397,7 @@ public class StreamRecyclerViewAdapter
         }
 
         @Override
-        public void onChanged(int i, int i1, /*@Nullable*/ Object o) {
+        public void onChanged(int i, int i1, @Nullable Object o) {
             notifyItemRangeChanged(i, i1, o);
         }
     }

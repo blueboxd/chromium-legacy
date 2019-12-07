@@ -43,21 +43,16 @@ using autofill::mojom::FocusedFieldType;
 using password_manager::CredentialCache;
 using password_manager::UiCredential;
 using FillingSource = ManualFillingController::FillingSource;
+using IsPslMatch = autofill::UserInfo::IsPslMatch;
 
 namespace {
 
 autofill::UserInfo TranslateCredentials(bool current_field_is_password,
-                                        const GURL& origin_url,
+                                        const url::Origin& frame_origin,
                                         const UiCredential& credential) {
-  std::string user_info_origin;
-  // Use the origin only when it differs from the site origin. Android
-  // credentials are always first party credentials and thus are not public
-  // suffix matches.
-  if (credential.is_public_suffix_match()) {
-    DCHECK(!credential.origin().opaque());
-    user_info_origin = credential.origin().Serialize();
-  }
-  UserInfo user_info(user_info_origin);
+  DCHECK(!credential.origin().opaque());
+  UserInfo user_info(credential.origin().Serialize(),
+                     credential.is_public_suffix_match());
 
   base::string16 username = GetDisplayUsername(credential);
   user_info.add_field(
@@ -237,7 +232,7 @@ void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
         continue;  // PSL origins have no representation in V1. Don't show them!
       }
       info_to_add.push_back(
-          TranslateCredentials(is_password_field, origin.GetURL(), credential));
+          TranslateCredentials(is_password_field, origin, credential));
     }
   }
 

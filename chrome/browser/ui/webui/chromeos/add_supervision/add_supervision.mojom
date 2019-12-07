@@ -28,4 +28,7 @@ interface AddSupervisionHandler {
   // Indicates to the system that Supervision has been enabled for the primary
   // user.
   NotifySupervisionEnabled();
+
+  // Configures whether we should close the dialog when pressing Escape.
+  SetCloseOnEscape(bool enabled);
 };

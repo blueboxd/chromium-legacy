@@ -13,6 +13,10 @@
 #include "media/audio/audio_io.h"
 #include "media/base/audio_parameters.h"
 
+namespace media {
+class AudioManagerBase;
+}  // namespace media
+
 namespace chromecast {
 namespace media {
 
@@ -21,7 +25,8 @@ class CastAudioManager;
 
 class CastAudioInputStream : public ::media::AudioInputStream {
  public:
-  CastAudioInputStream(const ::media::AudioParameters& audio_params,
+  CastAudioInputStream(::media::AudioManagerBase* audio_manager,
+                       const ::media::AudioParameters& audio_params,
                        const std::string& device_id);
   ~CastAudioInputStream() override;
 
@@ -39,6 +44,9 @@ class CastAudioInputStream : public ::media::AudioInputStream {
   void SetOutputDeviceForAec(const std::string& output_device_id) override;
 
  private:
+  // Hold a raw pointer to audio manager to inform releasing |this|. The pointer
+  // may be null, if |this| is not created by audio manager, e.g., in unit test.
+  ::media::AudioManagerBase* const audio_manager_;
   const ::media::AudioParameters audio_params_;
   std::unique_ptr<CaptureServiceReceiver> capture_service_receiver_;
 

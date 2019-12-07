@@ -61,6 +61,7 @@ class CC_EXPORT FrameSequenceMetrics {
     static std::unique_ptr<base::trace_event::TracedValue> ToTracedValue(
         const ThroughputData& impl,
         const ThroughputData& main);
+
     // Returns the throughput in percent, a return value of base::nullopt
     // indicates that no throughput metric is reported.
     static base::Optional<int> ReportHistogram(
@@ -68,6 +69,12 @@ class CC_EXPORT FrameSequenceMetrics {
         const char* thread_name,
         int metric_index,
         const ThroughputData& data);
+
+    void Merge(const ThroughputData& data) {
+      frames_expected += data.frames_expected;
+      frames_produced += data.frames_produced;
+    }
+
     // Tracks the number of frames that were expected to be shown during this
     // frame-sequence.
     uint32_t frames_expected = 0;
@@ -77,6 +84,9 @@ class CC_EXPORT FrameSequenceMetrics {
     uint32_t frames_produced = 0;
   };
 
+  void Merge(std::unique_ptr<FrameSequenceMetrics> metrics);
+  bool HasEnoughDataForReporting() const;
+  bool HasDataLeftForReporting() const;
   void ReportMetrics();
 
   ThroughputData& impl_throughput() { return impl_throughput_; }
@@ -178,6 +188,10 @@ class CC_EXPORT FrameSequenceTrackerCollection {
   // LayerTreeHostImpl::ukm_manager_ lives as long as the LayerTreeHostImpl, so
   // this pointer should never be null as long as LayerTreeHostImpl is alive.
   UkmManager* ukm_manager_ = nullptr;
+
+  base::flat_map<FrameSequenceTrackerType,
+                 std::unique_ptr<FrameSequenceMetrics>>
+      accumulated_metrics_;
 };
 
 // Tracks a sequence of frames to determine the throughput. It tracks this by
@@ -250,6 +264,11 @@ class CC_EXPORT FrameSequenceTracker {
   // Returns true if we should ask this tracker to report its throughput data.
   bool ShouldReportMetricsNow(const viz::BeginFrameArgs& args) const;
 
+  FrameSequenceMetrics* metrics() { return metrics_.get(); }
+  FrameSequenceTrackerType type() const { return type_; }
+
+  std::unique_ptr<FrameSequenceMetrics> TakeMetrics();
+
  private:
   friend class FrameSequenceTrackerCollection;
   friend class FrameSequenceTrackerTest;
@@ -259,10 +278,10 @@ class CC_EXPORT FrameSequenceTracker {
                        ThroughputUkmReporter* throughput_ukm_reporter);
 
   FrameSequenceMetrics::ThroughputData& impl_throughput() {
-    return metrics_.impl_throughput();
+    return metrics_->impl_throughput();
   }
   FrameSequenceMetrics::ThroughputData& main_throughput() {
-    return metrics_.main_throughput();
+    return metrics_->main_throughput();
   }
 
   void ScheduleTerminate() {
@@ -313,7 +332,7 @@ class CC_EXPORT FrameSequenceTracker {
   TrackedFrameData begin_impl_frame_data_;
   TrackedFrameData begin_main_frame_data_;
 
-  FrameSequenceMetrics metrics_;
+  std::unique_ptr<FrameSequenceMetrics> metrics_;
 
   CheckerboardingData checkerboarding_;
 

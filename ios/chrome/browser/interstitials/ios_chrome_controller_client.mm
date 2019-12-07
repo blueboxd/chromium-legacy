@@ -48,6 +48,11 @@ bool IOSChromeControllerClient::CanGoBack() {
   return web_state_->GetNavigationManager()->CanGoBack();
 }
 
+bool IOSChromeControllerClient::CanGoBackBeforeNavigation() {
+  NOTREACHED();
+  return false;
+}
+
 void IOSChromeControllerClient::GoBackAfterNavigationCommitted() {
   NOTREACHED();
 }

@@ -16,8 +16,6 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "services/audio/traced_service_ref.h"
-#include "services/service_manager/public/cpp/service_keepalive.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -78,47 +76,32 @@ class MockAudioLogFactory : public media::mojom::AudioLogFactory {
 
 }  // namespace
 
-class LogFactoryManagerTest
-    : public ::testing::Test,
-      public service_manager::ServiceKeepalive::Observer {
+class LogFactoryManagerTest : public ::testing::Test {
  public:
-  LogFactoryManagerTest() : service_keepalive_(nullptr, base::TimeDelta()) {
-    service_keepalive_.AddObserver(this);
-  }
+  LogFactoryManagerTest() = default;
 
  protected:
-  MOCK_METHOD0(OnNoServiceRefs, void());
-
   void CreateLogFactoryManager() {
     log_factory_manager_ = std::make_unique<LogFactoryManager>();
     log_factory_manager_->Bind(
-        remote_log_factory_manager_.BindNewPipeAndPassReceiver(),
-        TracedServiceRef(service_keepalive_.CreateRef(),
-                         "audio::LogFactoryManager Binding"));
-    EXPECT_FALSE(service_keepalive_.HasNoRefs());
+        remote_log_factory_manager_.BindNewPipeAndPassReceiver());
   }
 
   void DestroyLogFactoryManager() {
     remote_log_factory_manager_.reset();
     task_environment_.RunUntilIdle();
-    EXPECT_TRUE(service_keepalive_.HasNoRefs());
   }
-
-  // service_manager::ServiceKeepalive::Observer:
-  void OnIdleTimeout() override { OnNoServiceRefs(); }
 
   base::test::TaskEnvironment task_environment_;
   mojo::Remote<mojom::LogFactoryManager> remote_log_factory_manager_;
   std::unique_ptr<LogFactoryManager> log_factory_manager_;
 
  private:
-  service_manager::ServiceKeepalive service_keepalive_;
 
   DISALLOW_COPY_AND_ASSIGN(LogFactoryManagerTest);
 };
 
 TEST_F(LogFactoryManagerTest, LogFactoryManagerQueuesRequestsAndSetsFactory) {
-  EXPECT_CALL(*this, OnNoServiceRefs());
   CreateLogFactoryManager();
 
   // Create a log before setting the log factory.

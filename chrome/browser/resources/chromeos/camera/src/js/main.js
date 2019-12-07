@@ -15,16 +15,24 @@ var cca = cca || {};
 var {assert, assertInstanceof} = {assert, assertInstanceof};
 
 /**
+ * import {Mode} from './type.js';
+ */
+var Mode = Mode || {};
+
+/**
  * Creates the Camera App main object.
+ * @implements {cca.bg.ForegroundOps}
  */
 cca.App = class {
   /**
-   * @public
+   * @param {!cca.bg.BackgroundOps} backgroundOps
    */
-  constructor() {
-    const shouldHandleIntentResult =
-        window.intent !== null && window.intent.shouldHandleResult;
-    cca.state.set('should-handle-intent-result', shouldHandleIntentResult);
+  constructor(backgroundOps) {
+    /**
+     * @type {!cca.bg.BackgroundOps}
+     * @private
+     */
+    this.backgroundOps_ = backgroundOps;
 
     /**
      * @type {!cca.models.Gallery}
@@ -63,13 +71,19 @@ cca.App = class {
      * @type {!cca.views.Camera}
      * @private
      */
-    this.cameraView_ = window.intent !== null && shouldHandleIntentResult ?
-        new cca.views.CameraIntent(
-            window.intent, this.infoUpdater_, this.photoPreferrer_,
-            this.videoPreferrer_) :
-        new cca.views.Camera(
-            this.gallery_, this.infoUpdater_, this.photoPreferrer_,
+    this.cameraView_ = (() => {
+      const intent = this.backgroundOps_.getIntent();
+      if (intent !== null && intent.shouldHandleResult) {
+        cca.state.set('should-handle-intent-result', true);
+        return new cca.views.CameraIntent(
+            intent, this.infoUpdater_, this.photoPreferrer_,
             this.videoPreferrer_);
+      } else {
+        return new cca.views.Camera(
+            this.gallery_, this.infoUpdater_, this.photoPreferrer_,
+            this.videoPreferrer_, intent !== null ? intent.mode : Mode.PHOTO);
+      }
+    })();
 
     document.body.addEventListener('keydown', this.onKeyPressed_.bind(this));
 
@@ -91,6 +105,8 @@ cca.App = class {
       new cca.views.Warning(),
       new cca.views.Dialog('#message-dialog'),
     ]);
+
+    this.backgroundOps_.bindForegroundOps(this);
   }
 
   /**
@@ -173,6 +189,8 @@ cca.App = class {
         .finally(() => {
           cca.metrics.log(cca.metrics.Type.LAUNCH, ackMigrate);
         });
+    chrome.app.window.current().show();
+    this.backgroundOps_.notifyActivation();
   }
 
   /**
@@ -193,6 +211,7 @@ cca.App = class {
     cca.state.set('suspend', true);
     await this.cameraView_.restart();
     chrome.app.window.current().hide();
+    this.backgroundOps_.notifySuspension();
   }
 
   /**
@@ -201,6 +220,7 @@ cca.App = class {
   resume() {
     cca.state.set('suspend', false);
     chrome.app.window.current().show();
+    this.backgroundOps_.notifyActivation();
   }
 };
 
@@ -212,29 +232,14 @@ cca.App = class {
 cca.App.instance_ = null;
 
 /**
- * Intent associated with current app window.
- * @type {?cca.intent.Intent}
- */
-window.intent = window.intent || null;
-
-/**
  * Creates the App object and starts camera stream.
  */
 document.addEventListener('DOMContentLoaded', async () => {
-  if (!cca.App.instance_) {
-    cca.App.instance_ = new cca.App();
+  if (cca.App.instance_ !== null) {
+    return;
   }
+  assert(window['backgroundOps'] !== undefined);
+  cca.App.instance_ = new cca.App(
+      /** @type {!cca.bg.BackgroundOps} */ (window['backgroundOps']));
   cca.App.instance_.start();
-  // Register methods called from background.
-  window.ops = {
-    suspend: () => {
-      cca.App.instance_.suspend().then(window.onSuspended);
-    },
-    resume: () => {
-      cca.App.instance_.resume();
-      window.onActive();
-    },
-  };
-  chrome.app.window.current().show();
-  window.onActive();
 });

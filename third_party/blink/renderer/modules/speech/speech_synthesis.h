@@ -43,6 +43,7 @@ class MODULES_EXPORT SpeechSynthesis final
       public ContextClient,
       public mojom::blink::SpeechSynthesisVoiceListObserver {
   DEFINE_WRAPPERTYPEINFO();
+  USING_PRE_FINALIZER(SpeechSynthesis, Dispose);
   USING_GARBAGE_COLLECTED_MIXIN(SpeechSynthesis);
 
  public:
@@ -70,6 +71,7 @@ class MODULES_EXPORT SpeechSynthesis final
     return ContextClient::GetExecutionContext();
   }
 
+  // GarbageCollected
   void Trace(blink::Visitor*) override;
 
   // mojom::blink::SpeechSynthesisVoiceListObserver
@@ -94,6 +96,10 @@ class MODULES_EXPORT SpeechSynthesis final
   }
 
  private:
+  // USING_PRE_FINALIZER interface.
+  // Called before the object gets garbage collected.
+  void Dispose();
+
   void VoicesDidChange();
   void StartSpeakingImmediately();
   void HandleSpeakingCompleted(SpeechSynthesisUtterance*, bool error_occurred);

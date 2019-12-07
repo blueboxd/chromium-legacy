@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "services/audio/public/mojom/debug_recording.mojom.h"
+
 namespace base {
 class FilePath;
 }
@@ -15,16 +17,12 @@ namespace media {
 class AudioDebugRecordingSession;
 }
 
-namespace service_manager {
-class Connector;
-}
-
 namespace audio {
 
 std::unique_ptr<media::AudioDebugRecordingSession>
 CreateAudioDebugRecordingSession(
     const base::FilePath& debug_recording_file_path,
-    std::unique_ptr<service_manager::Connector> connector);
+    mojo::PendingRemote<mojom::DebugRecording> debug_recording);
 
 }  // namespace audio
 

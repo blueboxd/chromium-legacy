@@ -228,8 +228,10 @@ bool IsUrlWithinScope(const GURL& url, const GURL& scope) {
 //
 // The manifest parser accumulates metrics data in an instance of this class by
 // calling the Record*() methods. When the manifest is successfully parsed, the
-// accumuated metrics are logged by calling RecordParseSuccess(). Metrics for
-// manifests that don't parse are discarded.
+// accumuated metrics are logged by calling RecordParseSuccess() or
+// RecordParseWithInvalidManifestUrl(). Metrics for manifests that don't parse
+// in the success case are discarded.  Failure metrics are used to log
+// early-exit conditions like invalid manifest URLs.
 class ParseMetricsRecorder {
  public:
   ParseMetricsRecorder() = default;
@@ -238,7 +240,7 @@ class ParseMetricsRecorder {
   // Manifest starts with Chrome-specific header, not standard header.
   void RecordChromeHeader() {
 #if DCHECK_IS_ON()
-    DCHECK(!finalized_) << "RecordParseSucccess() already called";
+    DCHECK(!finalized_) << "Metrics already recorded";
 #endif  // DCHECK_IS_ON()
     has_chrome_header_ = true;
   }
@@ -249,7 +251,7 @@ class ParseMetricsRecorder {
   // Chrome-specific isPattern used in a valid NETWORK: entry.
   void RecordNetworkPattern() {
 #if DCHECK_IS_ON()
-    DCHECK(!finalized_) << "RecordParseSucccess() already called";
+    DCHECK(!finalized_) << "Metrics already recorded";
 #endif  // DCHECK_IS_ON()
     has_network_pattern_ = true;
   }
@@ -257,7 +259,7 @@ class ParseMetricsRecorder {
   // Chrome-specific isPattern used in a valid CHROMIUM-INTERCEPT: entry.
   void RecordInterceptPattern() {
 #if DCHECK_IS_ON()
-    DCHECK(!finalized_) << "RecordParseSucccess() already called";
+    DCHECK(!finalized_) << "Metrics already recorded";
 #endif  // DCHECK_IS_ON()
     has_intercept_pattern_ = true;
   }
@@ -265,7 +267,7 @@ class ParseMetricsRecorder {
   // Chrome-specific isPattern used in a valid FALLBACK: entry.
   void RecordFallbackPattern() {
 #if DCHECK_IS_ON()
-    DCHECK(!finalized_) << "RecordParseSucccess() already called";
+    DCHECK(!finalized_) << "Metrics already recorded";
 #endif  // DCHECK_IS_ON()
     has_fallback_pattern_ = true;
   }
@@ -273,9 +275,25 @@ class ParseMetricsRecorder {
   // Manifest contains a valid Chrome-specific CHROMIUM-INTERCEPT: entry.
   void RecordInterceptEntry() {
 #if DCHECK_IS_ON()
-    DCHECK(!finalized_) << "RecordParseSucccess() already called";
+    DCHECK(!finalized_) << "Metrics already recorded";
 #endif  // DCHECK_IS_ON()
     has_intercept_entry_ = true;
+  }
+
+  // Manifest URL is valid and parsing the manifest can proceed.
+  void RecordValidManifestUrl() {
+#if DCHECK_IS_ON()
+    DCHECK(!finalized_) << "Metrics already recorded";
+#endif  // DCHECK_IS_ON()
+    has_valid_manifest_url_ = true;
+  }
+
+  // Manifest URL is invalid and parsing the manifest must early-exit.
+  void RecordInvalidManifestUrl() {
+#if DCHECK_IS_ON()
+    DCHECK(!finalized_) << "Metrics already recorded";
+#endif  // DCHECK_IS_ON()
+    has_valid_manifest_url_ = false;
   }
 
   // Called after the parser has successfully consumed the entire manifest.
@@ -284,7 +302,7 @@ class ParseMetricsRecorder {
   // this method is called.
   void RecordParseSuccess() {
 #if DCHECK_IS_ON()
-    DCHECK(!finalized_) << "RecordParseSucccess() already called";
+    DCHECK(!finalized_) << "Metrics already recorded";
     finalized_ = true;
 #endif  // DCHECK_IS_ON()
 
@@ -301,6 +319,22 @@ class ParseMetricsRecorder {
     base::UmaHistogramBoolean("appcache.Manifest.Pattern",
                               has_network_pattern_ || has_intercept_pattern_ ||
                                   has_fallback_pattern_);
+    base::UmaHistogramBoolean("appcache.Manifest.ValidManifestURL",
+                              has_valid_manifest_url_);
+  }
+
+  // Called if the parser has early exited due to an invalid manifest URL.
+  //
+  // Must be called exactly once. No other Record*() method may be called after
+  // this method is called.
+  void RecordParseWithInvalidManifestUrl() {
+#if DCHECK_IS_ON()
+    DCHECK(!finalized_) << "Metrics already recorded";
+    finalized_ = true;
+#endif  // DCHECK_IS_ON()
+
+    base::UmaHistogramBoolean("appcache.Manifest.ValidManifestURL",
+                              has_valid_manifest_url_);
   }
 
  private:
@@ -334,9 +368,11 @@ class ParseMetricsRecorder {
   bool has_intercept_pattern_ = false;
   bool has_fallback_pattern_ = false;
   bool has_intercept_entry_ = false;
+  bool has_valid_manifest_url_ = false;
 
 #if DCHECK_IS_ON()
-  // True after RecordParseSuccess() was called.
+  // True after RecordParseSuccess() or RecordParseWithInvalidManifestUrl() was
+  // called.
   bool finalized_ = false;
 #endif  // DCHECK_IS_ON()
 };
@@ -411,8 +447,13 @@ bool ParseManifest(const GURL& manifest_url,
   if (!data.empty() && !IsWhiteSpace(data[0]))
     return false;
 
-  if (!manifest_url.is_valid())
+  if (!manifest_url.is_valid()) {
+    parse_metrics.RecordInvalidManifestUrl();
+    parse_metrics.RecordParseWithInvalidManifestUrl();
     return false;
+  } else {
+    parse_metrics.RecordValidManifestUrl();
+  }
 
   if (!AppCache::CheckValidManifestScope(manifest_url, manifest_scope))
     return false;

@@ -30,14 +30,19 @@ void UiDevToolsClient::Disconnect() {
   DisableAllAgents();
 }
 
-void UiDevToolsClient::Dispatch(const std::string& data) {
+void UiDevToolsClient::Dispatch(const std::string& json) {
+  std::string cbor;
+  crdtp::Status status =
+      crdtp::json::ConvertJSONToCBOR(crdtp::SpanFrom(json), &cbor);
+  LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
+
   int call_id;
   std::string method;
   std::unique_ptr<protocol::Value> protocolCommand =
-      protocol::StringUtil::parseMessage(data, false);
+      protocol::StringUtil::parseMessage(cbor, true);
   if (dispatcher_.parseCommand(protocolCommand.get(), &call_id, &method)) {
     dispatcher_.dispatch(call_id, method, std::move(protocolCommand),
-                         crdtp::SpanFrom(data));
+                         crdtp::SpanFrom(cbor));
   }
 }
 
@@ -58,32 +63,28 @@ void UiDevToolsClient::DisableAllAgents() {
     agent->Disable();
 }
 
-namespace {
-std::string SerializeToJSON(std::unique_ptr<protocol::Serializable> message) {
+void UiDevToolsClient::MaybeSendProtocolResponseOrNotification(
+    std::unique_ptr<protocol::Serializable> message) {
+  if (!connected())
+    return;
+
   std::vector<uint8_t> cbor = std::move(*message).TakeSerialized();
   std::string json;
   crdtp::Status status =
       crdtp::json::ConvertCBORToJSON(crdtp::SpanFrom(cbor), &json);
   LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
-  return json;
+  server_->SendOverWebSocket(connection_id_, base::StringPiece(json));
 }
-}  // namespace
 
 void UiDevToolsClient::sendProtocolResponse(
     int callId,
     std::unique_ptr<protocol::Serializable> message) {
-  if (connected()) {
-    server_->SendOverWebSocket(
-        connection_id_, base::StringPiece(SerializeToJSON(std::move(message))));
-  }
+  MaybeSendProtocolResponseOrNotification(std::move(message));
 }
 
 void UiDevToolsClient::sendProtocolNotification(
     std::unique_ptr<protocol::Serializable> message) {
-  if (connected()) {
-    server_->SendOverWebSocket(
-        connection_id_, base::StringPiece(SerializeToJSON(std::move(message))));
-  }
+  MaybeSendProtocolResponseOrNotification(std::move(message));
 }
 
 void UiDevToolsClient::flushProtocolNotifications() {

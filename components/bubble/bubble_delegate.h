@@ -42,9 +42,6 @@ class BubbleDelegate {
   // Return true to indicate the UI was updated.
   virtual bool UpdateBubbleUi(BubbleUi* bubble_ui);
 
-  // Used to identify a bubble for collecting metrics.
-  virtual std::string GetName() const = 0;
-
   // If this returns non-null, the bubble will be closed when the returned frame
   // is destroyed.
   virtual const content::RenderFrameHost* OwningFrame() const = 0;

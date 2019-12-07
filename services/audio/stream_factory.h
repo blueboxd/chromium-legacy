@@ -22,7 +22,6 @@
 #include "services/audio/loopback_coordinator.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
 #include "services/audio/stream_monitor_coordinator.h"
-#include "services/audio/traced_service_ref.h"
 
 namespace base {
 class UnguessableToken;
@@ -49,8 +48,7 @@ class StreamFactory final : public mojom::StreamFactory {
   explicit StreamFactory(media::AudioManager* audio_manager);
   ~StreamFactory() final;
 
-  void Bind(mojo::PendingReceiver<mojom::StreamFactory> receiver,
-            TracedServiceRef context_ref);
+  void Bind(mojo::PendingReceiver<mojom::StreamFactory> receiver);
 
   // StreamFactory implementation.
   void CreateInputStream(
@@ -109,7 +107,7 @@ class StreamFactory final : public mojom::StreamFactory {
 
   media::AudioManager* const audio_manager_;
 
-  mojo::ReceiverSet<mojom::StreamFactory, TracedServiceRef> receivers_;
+  mojo::ReceiverSet<mojom::StreamFactory> receivers_;
 
   // Order of the following members is important for a clean shutdown.
   LoopbackCoordinator coordinator_;

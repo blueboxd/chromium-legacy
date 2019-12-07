@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.feed.library.feedsessionmanager.internal;
 import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.KnownContent;
 import org.chromium.chrome.browser.feed.library.api.common.MutationContext;
@@ -75,7 +77,7 @@ public final class SessionManagerMutation implements Dumpable {
 
     /** Listens for errors which need to be reported to a ModelProvider. */
     public interface ModelErrorObserver {
-        void onError(/*@Nullable*/ Session session, ModelError error);
+        void onError(@Nullable Session session, ModelError error);
     }
 
     public SessionManagerMutation(Store store, SessionCache sessionCache, ContentCache contentCache,
@@ -100,7 +102,7 @@ public final class SessionManagerMutation implements Dumpable {
      */
     public Consumer<Result<Model>> createCommitter(String task, MutationContext mutationContext,
             ModelErrorObserver modelErrorObserver,
-            KnownContent./*@Nullable*/ Listener knownContentListener) {
+            @Nullable KnownContent.Listener knownContentListener) {
         mCreateCount++;
         return new MutationCommitter(task, mutationContext, modelErrorObserver,
                 knownContentListener, mMainThreadRunner, mBasicLoggingApi);
@@ -148,7 +150,7 @@ public final class SessionManagerMutation implements Dumpable {
          * This runs as a task on the executor thread and also as part of a SessionMutation commit.
          */
         @VisibleForTesting
-        void resetHead(/*@Nullable*/ String mutationSessionId) {
+        void resetHead(@Nullable String mutationSessionId) {
             mThreadUtils.checkNotMainThread();
             ElapsedTimeTracker timeTracker = mTimingUtils.getElapsedTimeTracker(TAG);
             Collection<Session> attachedSessions = mSessionCache.getAttachedSessions();
@@ -179,7 +181,7 @@ public final class SessionManagerMutation implements Dumpable {
          */
         @VisibleForTesting
         boolean shouldInvalidateSession(
-                /*@Nullable*/ String mutationSessionId, ModelProvider modelProvider) {
+                @Nullable String mutationSessionId, ModelProvider modelProvider) {
             // if the model provider isn't READY, don't invalidate the session
             if (modelProvider.getCurrentState() != State.READY) {
                 return false;
@@ -206,7 +208,7 @@ public final class SessionManagerMutation implements Dumpable {
         private final String mTask;
         private final MutationContext mMutationContext;
         private final ModelErrorObserver mModelErrorObserver;
-        private final KnownContent./*@Nullable*/ Listener mKnownContentListener;
+        private final KnownContent.Listener mKnownContentListener;
 
         private final List<StreamStructure> mStreamStructures = new ArrayList<>();
         private final MainThreadRunner mMainThreadRunner;
@@ -217,8 +219,7 @@ public final class SessionManagerMutation implements Dumpable {
         private Model mModel;
 
         private MutationCommitter(String task, MutationContext mutationContext,
-                ModelErrorObserver modelErrorObserver,
-                KnownContent./*@Nullable*/ Listener knownContentListener,
+                ModelErrorObserver modelErrorObserver, KnownContent.Listener knownContentListener,
                 MainThreadRunner mainThreadRunner, BasicLoggingApi basicLoggingApi) {
             this.mTask = task;
             this.mMutationContext = mutationContext;
@@ -406,7 +407,7 @@ public final class SessionManagerMutation implements Dumpable {
             timeTracker.stop("", "sessionUpdate", "sessions", updates.size());
         }
 
-        /*@Nullable*/
+        @Nullable
         private StreamStructure addTokenRemoveOperation(StreamToken token) {
             return StreamStructure.newBuilder()
                     .setContentId(token.getContentId())

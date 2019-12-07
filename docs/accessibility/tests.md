@@ -62,7 +62,7 @@ To run all tests:
 
 ```
 autoninja -C out/release content_browsertests && \
-  out/release/content_browsertests --gtest_filter="DumpAccessibilityTree*"
+  out/release/content_browsertests --gtest_filter="All/DumpAccessibilityTree*"
 ```
 
 ## Other content_browsertests

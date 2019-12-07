@@ -29,7 +29,6 @@
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "ui/display/win/dpi.h"
-#include "ui/gfx/platform_font_win.h"
 #include "ui/gfx/system_fonts_win.h"
 #endif
 
@@ -161,11 +160,7 @@ TEST_F(LayoutProviderTest, MAYBE_LegacyFontSizeConstants) {
 #endif
 
 #if defined(OS_WIN)
-  if (base::FeatureList::IsEnabled(gfx::kPlatformFontSkiaOnWindows)) {
-    EXPECT_EQ(7, title_font.GetExpectedTextWidth(1));
-  } else {
-    EXPECT_EQ(8, title_font.GetExpectedTextWidth(1));
-  }
+  EXPECT_EQ(7, title_font.GetExpectedTextWidth(1));
 #else
   EXPECT_EQ(8, title_font.GetExpectedTextWidth(1));
 #endif

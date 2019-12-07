@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.feedsessionmanager.internal;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.common.MutationContext;
 import org.chromium.chrome.browser.feed.library.api.host.logging.Task;
 import org.chromium.chrome.browser.feed.library.api.internal.common.ThreadUtils;
@@ -41,8 +43,10 @@ public class SessionImpl implements InitializableSession, Dumpable {
             new SessionContentTracker(/* supportsClearAll= */ false);
 
     // Allow creation of the session without a model provider, this becomes an unbound session
-    /*@Nullable*/ protected ModelProvider mModelProvider;
-    /*@Nullable*/ protected ViewDepthProvider mViewDepthProvider;
+    @Nullable
+    protected ModelProvider mModelProvider;
+    @Nullable
+    protected ViewDepthProvider mViewDepthProvider;
     protected boolean mLegacyHeadContent;
 
     protected String mSessionId;
@@ -61,8 +65,7 @@ public class SessionImpl implements InitializableSession, Dumpable {
 
     @Override
     public void bindModelProvider(
-            /*@Nullable*/ ModelProvider modelProvider,
-            /*@Nullable*/ ViewDepthProvider viewDepthProvider) {
+            @Nullable ModelProvider modelProvider, @Nullable ViewDepthProvider viewDepthProvider) {
         this.mModelProvider = modelProvider;
         this.mViewDepthProvider = viewDepthProvider;
     }
@@ -73,7 +76,7 @@ public class SessionImpl implements InitializableSession, Dumpable {
     }
 
     @Override
-    /*@Nullable*/
+    @Nullable
     public ModelProvider getModelProvider() {
         return mModelProvider;
     }
@@ -125,8 +128,7 @@ public class SessionImpl implements InitializableSession, Dumpable {
 
     @Override
     public void updateSession(boolean clearHead, List<StreamStructure> streamStructures,
-            int schemaVersion,
-            /*@Nullable*/ MutationContext mutationContext) {
+            int schemaVersion, @Nullable MutationContext mutationContext) {
         String localSessionId = Validators.checkNotNull(mSessionId);
         if (clearHead) {
             if (shouldInvalidateModelProvider(mutationContext, localSessionId)) {
@@ -145,7 +147,7 @@ public class SessionImpl implements InitializableSession, Dumpable {
     }
 
     protected boolean shouldInvalidateModelProvider(
-            /*@Nullable*/ MutationContext mutationContext, String sessionId) {
+            @Nullable MutationContext mutationContext, String sessionId) {
         if (mModelProvider != null && mutationContext != null
                 && mutationContext.getContinuationToken() != null) {
             return sessionId.equals(mutationContext.getRequestingSessionId());
@@ -159,7 +161,7 @@ public class SessionImpl implements InitializableSession, Dumpable {
     }
 
     void updateSessionInternal(
-            List<StreamStructure> streamStructures, /*@Nullable*/ MutationContext mutationContext) {
+            List<StreamStructure> streamStructures, @Nullable MutationContext mutationContext) {
         ElapsedTimeTracker timeTracker = mTimingUtils.getElapsedTimeTracker(TAG);
         StreamToken mutationSourceToken =
                 mutationContext != null ? mutationContext.getContinuationToken() : null;

@@ -1524,7 +1524,7 @@ static LayoutUnit ComputeContentSize(
     void AddFloat(const ComputedStyle& float_style,
                   const ComputedStyle& style,
                   LayoutUnit float_inline_max_size_with_margin) {
-      floating_objects_.push_back(FloatingObject{
+      floating_objects_.push_back(NGInlineNode::FloatingObject{
           float_style, style, float_inline_max_size_with_margin});
     }
 
@@ -1566,12 +1566,7 @@ static LayoutUnit ComputeContentSize(
 
    private:
     LayoutUnit floats_inline_size_;
-    struct FloatingObject {
-      const ComputedStyle& float_style;
-      const ComputedStyle& style;
-      LayoutUnit float_inline_max_size_with_margin;
-    };
-    Vector<FloatingObject, 4> floating_objects_;
+    HeapVector<NGInlineNode::FloatingObject, 4> floating_objects_;
   };
 
   // This struct computes the max size from the line break results for the min

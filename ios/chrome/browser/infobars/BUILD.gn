@@ -40,6 +40,8 @@ source_set("overlays") {
     "infobar_banner_overlay_request_factory.h",
     "infobar_banner_overlay_request_factory_impl.h",
     "infobar_banner_overlay_request_factory_impl.mm",
+    "infobar_overlay_request_cancel_handler.h",
+    "infobar_overlay_request_cancel_handler.mm",
     "infobar_overlay_tab_helper.h",
     "infobar_overlay_tab_helper.mm",
   ]
@@ -48,6 +50,8 @@ source_set("overlays") {
     "//base",
     "//components/infobars/core",
     "//ios/chrome/browser/overlays",
+    "//ios/chrome/browser/overlays/public/infobar_banner",
+    "//ios/chrome/browser/passwords:infobar_delegates",
     "//ios/web/public",
   ]
 }
@@ -103,6 +107,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "infobar_badge_tab_helper_unittest.mm",
+    "infobar_overlay_request_cancel_handler_unittest.mm",
     "infobar_overlay_tab_helper_unittest.mm",
   ]
   deps = [

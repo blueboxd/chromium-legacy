@@ -7785,6 +7785,203 @@ TEST_F(AutofillManagerTest, DontImportVPAWhenIncognito) {
   EXPECT_EQ(0, personal_data_.num_times_save_vpa_called());
 }
 
+// Desktop only tests.
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+class AutofillManagerTestForVirtualCardOption : public AutofillManagerTest {
+ protected:
+  AutofillManagerTestForVirtualCardOption() = default;
+  ~AutofillManagerTestForVirtualCardOption() override = default;
+
+  void SetUp() override {
+    AutofillManagerTest::SetUp();
+
+    // The URL should always matche the form URL in
+    // CreateTestCreditCardFormData() to have the whitelist work correctly.
+    autofill_client_.set_merchant_whitelist({"https://myform.com/form.html"});
+
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kAutofillEnableVirtualCard);
+
+    // Add only one local card so the second suggestion (if any) must be the
+    // "Use a virtual card number" option.
+    personal_data_.ClearCreditCards();
+    CreditCard credit_card;
+    // TODO(crbug.com/1020740): Replace all the hard-coded expiration year in
+    // this file with NextYear().
+    test::SetCreditCardInfo(&credit_card, "Elvis Presley",
+                            "4234567890123456",  // Visa
+                            "04", "2999", "1");
+    credit_card.set_guid("00000000-0000-0000-0000-000000000007");
+    personal_data_.AddCreditCard(credit_card);
+  }
+
+  void CreateCompleteFormAndGetSuggestions() {
+    FormData form;
+    CreateTestCreditCardFormData(&form, /*is_https=*/true,
+                                 /*use_month_type=*/false);
+    std::vector<FormData> forms(1, form);
+    FormsSeen(forms);
+    const FormFieldData& field = form.fields[1];  // card number field.
+    GetAutofillSuggestions(form, field);
+  }
+
+  void VerifyNoVirtualCardSuggestions() {
+    external_delegate_->CheckSuggestionCount(kDefaultPageID, 1);
+    // Suggestion details need to match the credit card added in the SetUp()
+    // above.
+    CheckSuggestions(kDefaultPageID,
+                     Suggestion(std::string("Visa  ") +
+                                    test::ObfuscatedCardDigitsAsUTF8("3456"),
+                                "Expires on 04/99", kVisaCard,
+                                autofill_manager_->GetPackedCreditCardID(7)));
+  }
+};
+
+// Ensures the "Use a virtual card number" option should not be shown when
+// experiment is disabled.
+TEST_F(AutofillManagerTestForVirtualCardOption,
+       ShouldNotShowDueToExperimentDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kAutofillEnableVirtualCard);
+  CreateCompleteFormAndGetSuggestions();
+
+  VerifyNoVirtualCardSuggestions();
+}
+
+// Ensures the "Use a virtual card number" option should not be shown when the
+// preference for credit card upload is set to disabled.
+TEST_F(AutofillManagerTestForVirtualCardOption,
+       ShouldNotShowDueToCreditCardUploadPrefDisabled) {
+  autofill_manager_->SetAutofillCreditCardEnabled(false);
+  CreateCompleteFormAndGetSuggestions();
+
+  external_delegate_->CheckSuggestionCount(kDefaultPageID, 0);
+}
+
+// Ensures the "Use a virtual card number" option should not be shown when
+// merchant is not whitelisted.
+TEST_F(AutofillManagerTestForVirtualCardOption,
+       ShouldNotShowDueToMerchantNotWhitelisted) {
+  // Adds a different URL in the whitelist.
+  autofill_client_.set_merchant_whitelist(
+      {"https://myform.anotherwhitelist.com/form.html"});
+  CreateCompleteFormAndGetSuggestions();
+
+  VerifyNoVirtualCardSuggestions();
+}
+
+// Ensures the "Use a virtual card number" option should not be shown when card
+// number field is not detected.
+TEST_F(AutofillManagerTestForVirtualCardOption,
+       ShouldNotShowDueToFormNotHavingCardNumberField) {
+  // Creates an incomplete form without card number field.
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.url = GURL("https://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+  form.main_frame_origin =
+      url::Origin::Create(GURL("https://myform_root.com/form.html"));
+  FormFieldData field;
+  test::CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Expiration Date", "ccmonth", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("", "ccyear", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("CVC", "cvc", "", "text", &field);
+  form.fields.push_back(field);
+
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+  field = form.fields[0];  // cardholder name field.
+  GetAutofillSuggestions(form, field);
+
+  external_delegate_->CheckSuggestionCount(kDefaultPageID, 1);
+  const std::string visa_label =
+      base::JoinString({"Visa  ", test::ObfuscatedCardDigitsAsUTF8("3456"),
+                        ", expires on 04/99"},
+                       "");
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion("Elvis Presley", visa_label, kVisaCard,
+                              autofill_manager_->GetPackedCreditCardID(7)));
+}
+
+// Ensures the "Use a virtual card number" option should not be shown when card
+// expiration date field is not detected.
+TEST_F(AutofillManagerTestForVirtualCardOption,
+       ShouldNotShowDueToFormNotHavingExpirationDateField) {
+  // Creates an incomplete form without expiration date field.
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.url = GURL("https://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+  form.main_frame_origin =
+      url::Origin::Create(GURL("https://myform_root.com/form.html"));
+  FormFieldData field;
+  test::CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("CVC", "cvc", "", "text", &field);
+  form.fields.push_back(field);
+
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+  field = form.fields[1];  // card number field.
+  GetAutofillSuggestions(form, field);
+
+  VerifyNoVirtualCardSuggestions();
+}
+
+// Ensures the "Use a virtual card number" option should not be shown when card
+// cvc field is not detected.
+TEST_F(AutofillManagerTestForVirtualCardOption,
+       ShouldNotShowDueToFormNotHavingCvcField) {
+  // Creates an incomplete form without cvc field.
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.url = GURL("https://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+  form.main_frame_origin =
+      url::Origin::Create(GURL("https://myform_root.com/form.html"));
+  FormFieldData field;
+  test::CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Expiration Date", "ccmonth", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("", "ccyear", "", "text", &field);
+  form.fields.push_back(field);
+
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+  field = form.fields[1];  // card number field.
+  GetAutofillSuggestions(form, field);
+
+  VerifyNoVirtualCardSuggestions();
+}
+
+// Ensures the "Use a virtual card number" option should be shown when all
+// requirements are met.
+TEST_F(AutofillManagerTestForVirtualCardOption, ShouldShowVirtualCardOption) {
+  CreateCompleteFormAndGetSuggestions();
+
+  // Ensures the card suggestion and the virtual card suggestion are shown.
+  external_delegate_->CheckSuggestionCount(kDefaultPageID, 2);
+  CheckSuggestions(
+      kDefaultPageID,
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          "Expires on 04/99", kVisaCard,
+          autofill_manager_->GetPackedCreditCardID(7)),
+      Suggestion(l10n_util::GetStringUTF8(
+                     IDS_AUTOFILL_CLOUD_TOKEN_DROPDOWN_OPTION_LABEL),
+                 "", "", PopupItemId::POPUP_ITEM_ID_USE_VIRTUAL_CARD));
+}
+#endif
+
 // Test param indicates if there is an active screen reader.
 class OnFocusOnFormFieldTest : public AutofillManagerTest,
                                public testing::WithParamInterface<bool> {

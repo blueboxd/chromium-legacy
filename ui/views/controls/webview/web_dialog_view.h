@@ -153,6 +153,7 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
       const GURL& target_url) override;
 
  private:
+  friend class WebDialogViewUnitTest;
   FRIEND_TEST_ALL_PREFIXES(WebDialogBrowserTest, WebContentRendered);
 
   // Initializes the contents of the dialog.
@@ -189,6 +190,8 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
 
   // Whether to use dialog frame view for non client frame view.
   bool use_dialog_frame_ = false;
+
+  bool disable_url_load_for_test_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebDialogView);
 };

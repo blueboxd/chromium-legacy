@@ -424,22 +424,33 @@ class MetaBuildWrapper(object):
       self.Print("Missing issue data. Upload your CL to Gerrit and try again.")
       return 1
 
+    class LedException(Exception):
+      pass
+
     def run_cmd(previous_res, cmd):
-      res, out, err = self.Run(cmd, force_verbose=False, stdin=previous_res)
+      if self.args.verbose:
+        self.Print(('| ' if previous_res else '') + ' '.join(cmd))
+
+      res, out, err = self.Call(cmd, stdin=previous_res)
       if res != 0:
-        self.Print("Err while running", cmd)
-        self.Print("Output", out)
-        raise Exception(err)
+        self.Print("Err while running '%s'. Output:\n%s\nstderr:\n%s" % (
+          ' '.join(cmd), out, err))
+        raise LedException()
       return out
 
-    result = LedResult(None, run_cmd).then(
-      # TODO(martiniss): maybe don't always assume the bucket?
-      'led', 'get-builder', 'luci.chromium.try:%s' % self.args.builder).then(
-      'led', 'edit', '-r', 'chromium_trybot_experimental',
-        '-p', 'tests=["%s"]' % ninja_target).then(
-      'led', 'edit-system', '--tag=purpose:user-debug-mb-try').then(
-      'led', 'edit-cr-cl', issue_data['issue_url']).then(
-      'led', 'launch').result
+    try:
+      result = LedResult(None, run_cmd).then(
+        # TODO(martiniss): maybe don't always assume the bucket?
+        'led', 'get-builder', 'luci.chromium.try:%s' % self.args.builder).then(
+        'led', 'edit', '-r', 'chromium_trybot_experimental',
+          '-p', 'tests=["%s"]' % ninja_target).then(
+        'led', 'edit-system', '--tag=purpose:user-debug-mb-try').then(
+        'led', 'edit-cr-cl', issue_data['issue_url']).then(
+        'led', 'launch').result
+    except LedException:
+      self.Print("If this is an unexpected error message, please file a bug"
+                 " with https://goto.google.com/mb-try-bug")
+      raise
 
     swarming_data = json.loads(result)['swarming']
     self.Print("Launched task at https://%s/task?id=%s" % (
@@ -1220,6 +1231,7 @@ class MetaBuildWrapper(object):
               'Google Chrome Helper (Renderer).app/',
               'Google Chrome Helper.app/',
               'Google Chrome.app/',
+              'GoogleUpdate.app/',
               'blink_deprecated_test_plugin.plugin/',
               'blink_test_plugin.plugin/',
               'corb_test_plugin.plugin/',
@@ -1730,16 +1742,14 @@ class MetaBuildWrapper(object):
     ret, _, _ = self.Run(ninja_cmd, buffer_output=False)
     return ret
 
-  def Run(self, cmd, env=None, force_verbose=True, buffer_output=True,
-          stdin=None):
+  def Run(self, cmd, env=None, force_verbose=True, buffer_output=True):
     # This function largely exists so it can be overridden for testing.
     if self.args.dryrun or self.args.verbose or force_verbose:
       self.PrintCmd(cmd, env)
     if self.args.dryrun:
       return 0, '', ''
 
-    ret, out, err = self.Call(cmd, env=env, buffer_output=buffer_output,
-                              stdin=stdin)
+    ret, out, err = self.Call(cmd, env=env, buffer_output=buffer_output)
     if self.args.verbose or force_verbose:
       if ret:
         self.Print('  -> returned %d' % ret)

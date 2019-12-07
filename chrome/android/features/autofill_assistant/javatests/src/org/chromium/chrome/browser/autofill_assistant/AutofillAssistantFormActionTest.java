@@ -13,6 +13,7 @@ import static android.support.test.espresso.intent.Intents.intending;
 import static android.support.test.espresso.intent.matcher.IntentMatchers.anyIntent;
 import static android.support.test.espresso.intent.matcher.IntentMatchers.hasAction;
 import static android.support.test.espresso.intent.matcher.IntentMatchers.hasData;
+import static android.support.test.espresso.matcher.ViewMatchers.assertThat;
 import static android.support.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static android.support.test.espresso.matcher.ViewMatchers.hasSibling;
 import static android.support.test.espresso.matcher.ViewMatchers.hasTextColor;
@@ -23,6 +24,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.hasTintColor;
@@ -56,6 +58,8 @@ import org.chromium.chrome.browser.autofill_assistant.proto.FormProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.InfoPopupProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.InfoPopupProto.DialogButton;
 import org.chromium.chrome.browser.autofill_assistant.proto.InfoPopupProto.DialogButton.OpenUrlInCCT;
+import org.chromium.chrome.browser.autofill_assistant.proto.ProcessedActionProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ProcessedActionStatusProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto.Choice;
 import org.chromium.chrome.browser.autofill_assistant.proto.SelectionInputProto;
@@ -68,6 +72,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Tests autofill assistant bottomsheet.
@@ -90,6 +95,10 @@ public class AutofillAssistantFormActionTest {
         mTestRule.getActivity().getScrim().disableAnimationForTesting(true);
     }
 
+    /**
+     * Creates a close-to-real example of a form action with multiple counters and choices,
+     * interacts with those widgets, and then checks the response to the server.
+     */
     @Test
     @MediumTest
     @DisableIf.Build(sdk_is_less_than = 21)
@@ -143,16 +152,6 @@ public class AutofillAssistantFormActionTest {
                                               .setForm(formProto))
                          .build());
 
-        // Prompt.
-        list.add((ActionProto) ActionProto.newBuilder()
-                         .setPrompt(PromptProto.newBuilder()
-                                            .setMessage("Finished")
-                                            .addChoices(Choice.newBuilder().setChip(
-                                                    ChipProto.newBuilder()
-                                                            .setType(ChipType.DONE_ACTION)
-                                                            .setText("End"))))
-                         .build());
-
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
                 (SupportedScriptProto) SupportedScriptProto.newBuilder()
                         .setPath("autofill_assistant_target_website.html")
@@ -176,6 +175,7 @@ public class AutofillAssistantFormActionTest {
         onView(allOf(isDisplayed(), withId(R.id.decrease_button),
                        hasSibling(hasDescendant(withText("Counter 1")))))
                 .check(matches(hasTintColor(R.color.modern_grey_800_alpha_38)));
+        // Click on Counter 1 +, increase from 0 to 1.
         onView(allOf(isDisplayed(), withId(R.id.increase_button),
                        hasSibling(hasDescendant(withText("Counter 1")))))
                 .perform(click());
@@ -187,23 +187,69 @@ public class AutofillAssistantFormActionTest {
                 .check(matches(hasTintColor(R.color.modern_grey_800_alpha_38)));
         // Decrease button is still disabled due to the minCountersSum requirement.
 
+        // Click expand label to make Counter 2 visible.
         onView(allOf(isDisplayed(), withId(R.id.expand_label))).perform(click());
+        // Click on Counter 3 +, increase from 0 to 1.
         onView(allOf(isDisplayed(), withId(R.id.increase_button),
                        hasSibling(hasDescendant(withText("Counter 3")))))
                 .perform(click());
 
+        // Click on Choice 1, toggle to 'checked'.
         onView(allOf(isDisplayed(), withId(R.id.checkbox),
                        hasSibling(hasDescendant(withText("Choice 1")))))
                 .perform(click());
+        // Click on Counter 2 +, increase from 0 to 1.
         onView(allOf(isDisplayed(), withId(R.id.increase_button),
                        hasSibling(hasDescendant(withText("Counter 2")))))
                 .perform(click());
 
+        // Finish form action, wait for response and prepare next set of actions.
+        List<ActionProto> nextActions = new ArrayList<>();
+        nextActions.add((ActionProto) ActionProto.newBuilder()
+                                .setPrompt(PromptProto.newBuilder()
+                                                   .setMessage("Finished")
+                                                   .addChoices(Choice.newBuilder().setChip(
+                                                           ChipProto.newBuilder()
+                                                                   .setType(ChipType.DONE_ACTION)
+                                                                   .setText("End"))))
+                                .build());
+        testService.setNextActions(nextActions);
         waitUntilViewMatchesCondition(withText("Continue"), isEnabled());
+        int numNextActionsCalled = testService.getNextActionsCounter();
         onView(withText("Continue")).perform(click());
+        testService.waitUntilGetNextActions(numNextActionsCalled + 1);
+
+        List<ProcessedActionProto> processedActions = testService.getProcessedActions();
+        assertThat(processedActions.size(), is(1));
+        assertThat(
+                processedActions.get(0).getStatus(), is(ProcessedActionStatusProto.ACTION_APPLIED));
+        assertThat(processedActions.get(0).getResultDataCase(),
+                is(ProcessedActionProto.ResultDataCase.FORM_RESULT));
+
+        List<FormInputProto.Result> formResult =
+                processedActions.get(0).getFormResult().getInputResultsList();
+        assertThat(formResult.size(), is(3));
+        assertThat(formResult.get(0).getInputTypeCase(),
+                is(FormInputProto.Result.InputTypeCase.COUNTER));
+        assertThat(formResult.get(0).getCounter().getValuesCount(), is(2));
+        // Counter 1
+        assertThat(formResult.get(0).getCounter().getValues(0), is(1));
+        // Counter 2
+        assertThat(formResult.get(0).getCounter().getValues(1), is(1));
+
+        // Choice 1
+        assertThat(formResult.get(1).getInputTypeCase(),
+                is(FormInputProto.Result.InputTypeCase.SELECTION));
+        assertThat(formResult.get(1).getSelection().getSelectedCount(), is(1));
+        assertThat(formResult.get(1).getSelection().getSelected(0), is(true));
+
+        // Counter 3
+        assertThat(formResult.get(2).getInputTypeCase(),
+                is(FormInputProto.Result.InputTypeCase.COUNTER));
+        assertThat(formResult.get(2).getCounter().getValuesCount(), is(1));
+        assertThat(formResult.get(2).getCounter().getValues(0), is(1));
 
         waitUntilViewMatchesCondition(withText("End"), isCompletelyDisplayed());
-        // TODO(b/144978160): check that the values were correctly written to the action response.
     }
 
     @Test

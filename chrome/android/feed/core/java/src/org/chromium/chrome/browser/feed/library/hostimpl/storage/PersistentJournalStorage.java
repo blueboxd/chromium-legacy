@@ -11,6 +11,8 @@ import static org.chromium.chrome.browser.feed.library.api.host.storage.JournalO
 import android.content.Context;
 import android.support.annotation.VisibleForTesting;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.host.storage.CommitResult;
 import org.chromium.chrome.browser.feed.library.api.host.storage.JournalMutation;
@@ -64,7 +66,8 @@ public final class PersistentJournalStorage implements JournalStorage, JournalSt
     private final Context mContext;
     private final ThreadUtils mThreadUtils;
     private final Executor mExecutor;
-    /*@Nullable*/ private final String mPersistenceDir;
+    @Nullable
+    private final String mPersistenceDir;
     private File mJournalDir;
 
     /**
@@ -75,8 +78,7 @@ public final class PersistentJournalStorage implements JournalStorage, JournalSt
     private int mExistingSchema;
 
     public PersistentJournalStorage(Context context, Executor executorService,
-            ThreadUtils threadUtils,
-            /*@Nullable*/ String persistenceDir) {
+            ThreadUtils threadUtils, @Nullable String persistenceDir) {
         this.mContext = context;
         this.mExecutor = executorService;
         this.mThreadUtils = threadUtils;

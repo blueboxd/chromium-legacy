@@ -160,7 +160,7 @@ public class PermissionInfo implements Serializable {
             case Type.CAMERA:
                 return ContentSettingsType.MEDIASTREAM_CAMERA;
             case Type.CLIPBOARD:
-                return ContentSettingsType.CLIPBOARD_READ;
+                return ContentSettingsType.CLIPBOARD_READ_WRITE;
             case Type.GEOLOCATION:
                 return ContentSettingsType.GEOLOCATION;
             case Type.MICROPHONE:

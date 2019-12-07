@@ -466,6 +466,9 @@ bool XWindow::Hide() {
   if (!window_mapped_in_client_)
     return false;
 
+  // Make sure no resize task will run after the window is unmapped.
+  CancelResize();
+
   XWithdrawWindow(xdisplay_, xwindow_, 0);
   window_mapped_in_client_ = false;
   return true;

@@ -90,15 +90,11 @@ resource_load_priority_service_worker_test(
   'Parser-blocking scripts passing through a Service Worker should be loaded ' +
   'with kHigh priority');
 
-// TODO(domfarolino): This fails because low-priority requests going through a
-// Service Worker get upgraded to kHigh priority. This is described in
-// https://crbug.com/882344.
 resource_load_priority_service_worker_test(
   'resources/service-worker/off-screen-image.html', kLow,
   'Off-screen images passing through a Service Worker should be loaded with ' +
   'kLow priority');
 
-// Fails for the same reason as above.
 resource_load_priority_service_worker_test(
   'resources/service-worker/prefetch.html', kVeryLow,
   'Prefetches passing through a Service Worker should be loaded with kLowest ' +

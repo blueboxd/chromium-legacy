@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #import "ios/chrome/browser/infobars/infobar_banner_overlay_request_factory.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/infobars/infobar_overlay_request_cancel_handler.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 
@@ -50,7 +51,6 @@ InfobarOverlayTabHelper::OverlayRequestScheduler::OverlayRequestScheduler(
                                             OverlayModality::kInfobarBanner)),
       request_factory_(std::move(request_factory)),
       scoped_observer_(this) {
-  DCHECK(web_state);
   DCHECK(queue_);
   DCHECK(request_factory_);
   InfoBarManager* manager = InfoBarManagerImpl::FromWebState(web_state);
@@ -66,7 +66,10 @@ void InfobarOverlayTabHelper::OverlayRequestScheduler::OnInfoBarAdded(
   std::unique_ptr<OverlayRequest> request =
       request_factory_->CreateBannerRequest(infobar);
   DCHECK(request);
-  queue_->AddRequest(std::move(request));
+  std::unique_ptr<OverlayRequestCancelHandler> cancel_handler =
+      std::make_unique<InfobarOverlayRequestCancelHandler>(request.get(),
+                                                           queue_, infobar);
+  queue_->AddRequest(std::move(request), std::move(cancel_handler));
 }
 
 void InfobarOverlayTabHelper::OverlayRequestScheduler::OnManagerShuttingDown(

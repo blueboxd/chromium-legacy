@@ -76,6 +76,7 @@ class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
       scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       base::Clock* clock,
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       scoped_refptr<base::SequencedTaskRunner> custom_task_runner);
 
   IndexedDBFactoryImpl* GetIDBFactory();
@@ -87,7 +88,8 @@ class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
   int64_t GetOriginDiskUsage(const url::Origin& origin);
 
   // IndexedDBContext implementation:
-  base::SequencedTaskRunner* TaskRunner() override;
+  base::SequencedTaskRunner* IDBTaskRunner() override;
+  base::SequencedTaskRunner* IOTaskRunner() override;
   std::vector<StorageUsageInfo> GetAllOriginsInfo() override;
   void DeleteForOrigin(const url::Origin& origin) override;
   void CopyOriginData(const url::Origin& origin,
@@ -187,7 +189,8 @@ class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
   bool force_keep_session_state_;
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> idb_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
   std::unique_ptr<std::set<url::Origin>> origin_set_;
   std::map<url::Origin, int64_t> origin_size_map_;
   base::ObserverList<Observer>::Unchecked observers_;

@@ -1,0 +1,154 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "ui/views/controls/webview/web_dialog_view.h"
+
+#include <gtest/gtest.h>
+#include <memory>
+
+#include "base/run_loop.h"
+#include "content/public/common/content_client.h"
+#include "content/public/test/browser_task_environment.h"
+#include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_browser_context.h"
+#include "content/test/test_content_browser_client.h"
+#include "content/test/test_web_contents.h"
+#include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/views/test/widget_test.h"
+#include "ui/views/window/dialog_delegate.h"
+#include "ui/web_dialogs/test/test_web_contents_handler.h"
+#include "ui/web_dialogs/test/test_web_dialog_delegate.h"
+#include "ui/web_dialogs/web_dialog_web_contents_delegate.h"
+#include "url/gurl.h"
+
+namespace views {
+
+// Testing delegate configured for use in this test.
+class TestWebDialogViewWebDialogDelegate
+    : public ui::test::TestWebDialogDelegate {
+ public:
+  TestWebDialogViewWebDialogDelegate()
+      : ui::test::TestWebDialogDelegate(GURL()) {}
+  void set_close_on_escape(bool close_on_escape) {
+    close_on_escape_ = close_on_escape;
+  }
+
+  // ui::WebDialogDelegate
+  bool CanCloseDialog() const override { return true; }
+  bool ShouldCloseDialogOnEscape() const override { return close_on_escape_; }
+  ui::ModalType GetDialogModalType() const override {
+    return ui::MODAL_TYPE_WINDOW;
+  }
+
+ private:
+  bool close_on_escape_ = true;
+};
+
+// Provides functionality to test a WebDialogView.
+class WebDialogViewUnitTest : public views::test::WidgetTest {
+ public:
+  template <typename... TaskEnvironmentTraits>
+  NOINLINE explicit WebDialogViewUnitTest(TaskEnvironmentTraits&&... traits)
+      : views::test::WidgetTest(
+            views::test::WidgetTest::SubclassManagesTaskEnvironment()),
+        task_environment_(std::forward<TaskEnvironmentTraits>(traits)...) {}
+  ~WebDialogViewUnitTest() override = default;
+
+  // testing::Test
+  void SetUp() override {
+    views::test::WidgetTest::SetUp();
+
+    browser_context_ = std::make_unique<content::TestBrowserContext>();
+
+    // Set the test content browser client to avoid pulling in needless
+    // dependencies from content.
+    SetBrowserClientForTesting(&test_browser_client_);
+
+    web_contents_ = CreateWebContents();
+    web_dialog_view_ = new WebDialogView(
+        web_contents_->GetBrowserContext(), &web_dialog_delegate_,
+        std::make_unique<ui::test::TestWebContentsHandler>());
+
+    // This prevents the initialization of the dialog from navigating
+    // to the URL in the WebUI.  This is needed because the WebUI
+    // loading code that would otherwise attempt to use our TestBrowserContext,
+    // but will fail because TestBrowserContext not an instance of
+    // Profile (i.e. TestingProfile).  We cannot, however, create an instance of
+    // TestingProfile in this test due to dependency restrictions between the
+    // views code and the location of TestingProfile.
+    web_dialog_view_->disable_url_load_for_test_ = true;
+
+    widget_ = views::DialogDelegate::CreateDialogWidget(web_dialog_view_,
+                                                        GetContext(), nullptr);
+    widget_->Show();
+    EXPECT_FALSE(widget_is_closed());
+  }
+
+  void TearDown() override {
+    widget_->CloseNow();
+    views::test::WidgetTest::TearDown();
+  }
+
+  bool widget_is_closed() { return widget_->IsClosed(); }
+
+  WebDialogView* web_dialog_view() { return web_dialog_view_; }
+
+  TestWebDialogViewWebDialogDelegate* web_dialog_delegate() {
+    return &web_dialog_delegate_;
+  }
+
+ protected:
+  std::unique_ptr<content::TestWebContents> CreateWebContents() const {
+    return base::WrapUnique<content::TestWebContents>(
+        content::TestWebContents::Create(
+            content::WebContents::CreateParams(browser_context_.get())));
+  }
+
+  void SimulateKeyEvent(const ui::KeyEvent& event) {
+    ASSERT_TRUE(web_dialog_view_->GetFocusManager() != nullptr);
+    ASSERT_TRUE(widget_ != nullptr);
+    ui::KeyEvent event_copy = event;
+    if (web_dialog_view_->GetFocusManager()->OnKeyEvent(event_copy))
+      widget_->OnKeyEvent(&event_copy);
+  }
+
+  // TaskEnvironment must be created first
+  content::BrowserTaskEnvironment task_environment_;
+
+ private:
+  content::TestContentBrowserClient test_browser_client_;
+  std::unique_ptr<content::TestBrowserContext> browser_context_;
+  // These are raw pointers (vs unique pointers) because the views
+  // system does its own internal memory management.
+  views::Widget* widget_ = nullptr;
+  WebDialogView* web_dialog_view_ = nullptr;
+  base::RepeatingClosure quit_closure_;
+
+  TestWebDialogViewWebDialogDelegate web_dialog_delegate_;
+  std::unique_ptr<content::TestWebContents> web_contents_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebDialogViewUnitTest);
+};
+
+TEST_F(WebDialogViewUnitTest, WebDialogViewClosedOnEscape) {
+  web_dialog_delegate()->set_close_on_escape(true);
+  const ui::KeyEvent escape_event(ui::ET_KEY_PRESSED, ui::VKEY_ESCAPE,
+                                  ui::EF_NONE);
+  SimulateKeyEvent(escape_event);
+
+  // The Dialog Widget should be closed when escape is pressed.
+  EXPECT_TRUE(widget_is_closed());
+}
+
+TEST_F(WebDialogViewUnitTest, WebDialogViewNotClosedOnEscape) {
+  web_dialog_delegate()->set_close_on_escape(false);
+  const ui::KeyEvent escape_event(ui::ET_KEY_PRESSED, ui::VKEY_ESCAPE,
+                                  ui::EF_NONE);
+  SimulateKeyEvent(escape_event);
+
+  // The Dialog Widget should not be closed when escape is pressed.
+  EXPECT_FALSE(widget_is_closed());
+}
+
+}  // namespace views

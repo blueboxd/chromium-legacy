@@ -39,6 +39,11 @@ const char kAccessibilityInternalsPageImprovementsName[] =
 const char kAccessibilityInternalsPageImprovementsDescription[] =
     "Improvements to the chrome://accessibility page.";
 
+const char kAccountIdMigrationName[] = "Account ID migration";
+const char kAccountIdMigrationDescription[] =
+    "Migrate to use Gaia ID instead of the email as the account identifer for "
+    "the Identity Manager.";
+
 const char kAllowInsecureLocalhostName[] =
     "Allow invalid certificates for resources loaded from localhost.";
 const char kAllowInsecureLocalhostDescription[] =
@@ -2362,10 +2367,6 @@ const char kAndroidSetupSearchEngineName[] = "Android setup search engine";
 const char kAndroidSetupSearchEngineDescription[] =
     "Enables search engine selection at Android setup.";
 
-const char kAndroidSurfaceControl[] = "Use Android SurfaceControl";
-const char kAndroidSurfaceControlDescription[] =
-    "Use the SurfaceControl API for supporting overlays on Android";
-
 const char kAppNotificationStatusMessagingName[] =
     "App notification status messaging";
 const char kAppNotificationStatusMessagingDescription[] =
@@ -3365,10 +3366,6 @@ const char kCryptAuthV2DeviceSyncDescription[] =
 const char kCryptAuthV2EnrollmentName[] = "CryptAuth v2 Enrollment";
 const char kCryptAuthV2EnrollmentDescription[] =
     "Use the CryptAuth v2 Enrollment protocol.";
-
-const char kCupsPrintersUiOverhaulName[] = "Cups Printers UI overhaul";
-const char kCupsPrintersUiOverhaulDescription[] =
-    "Enables the new native printing UI in settings.";
 
 const char kDisableCancelAllTouchesName[] = "Disable CancelAllTouches()";
 const char kDisableCancelAllTouchesDescription[] =

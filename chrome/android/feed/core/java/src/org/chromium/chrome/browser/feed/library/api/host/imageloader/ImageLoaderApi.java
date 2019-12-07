@@ -37,6 +37,5 @@ public interface ImageLoaderApi {
      *     {@literal null} if no Drawable is found (or could not be loaded) after trying all
      * possible urls.
      */
-    void loadDrawable(List<String> urls, int widthPx, int heightPx,
-            Consumer</*@Nullable*/ Drawable> consumer);
+    void loadDrawable(List<String> urls, int widthPx, int heightPx, Consumer<Drawable> consumer);
 }

@@ -43,6 +43,8 @@
 #include "extensions/renderer/renderer_extension_registry.h"
 #include "extensions/renderer/script_context.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "services/metrics/public/cpp/mojo_ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -265,6 +267,7 @@ void ChromeExtensionsRendererClient::WillSendRequest(
     GURL* new_url,
     bool* attach_same_site_cookies) {
   std::string extension_id;
+  GURL request_url(url);
   if (initiator_origin &&
       initiator_origin->scheme() == extensions::kExtensionScheme) {
     extension_id = initiator_origin->host();
@@ -284,7 +287,6 @@ void ChromeExtensionsRendererClient::WillSendRequest(
       int tab_id = extensions::ExtensionFrameHelper::Get(
                        content::RenderFrame::FromWebFrame(frame))
                        ->tab_id();
-      GURL request_url(url);
       bool extension_has_access_to_request_url =
           ExtensionHasAccessToUrl(extension, tab_id, request_url);
 
@@ -327,6 +329,23 @@ void ChromeExtensionsRendererClient::WillSendRequest(
       !resource_request_policy_->CanRequestResource(GURL(url), frame,
                                                     transition_type)) {
     *new_url = GURL(chrome::kExtensionInvalidRequestURL);
+  }
+
+  // TODO(https://crbug.com/588766): Remove UKM after bug is fixed.
+  if (url.ProtocolIs(extensions::kExtensionScheme) &&
+      request_url.host_piece() == extension_misc::kDocsOfflineExtensionId) {
+    if (!ukm_recorder_) {
+      mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> recorder;
+      content::RenderThread::Get()->BindHostReceiver(
+          recorder.InitWithNewPipeAndPassReceiver());
+      ukm_recorder_ =
+          std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder));
+    }
+
+    const ukm::SourceId source_id = frame->GetDocument().GetUkmSourceId();
+    ukm::builders::GoogleDocsOfflineExtension(source_id)
+        .SetResourceRequested(true)
+        .Record(ukm_recorder_.get());
   }
 }
 

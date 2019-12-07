@@ -265,7 +265,10 @@ inline NGBoxFragmentPainter::NGBoxFragmentPainter(
     // If no children, there maybe or may not be NGPaintFragment.
     // TODO(kojii): To be investigated if this correct or should be fixed.
     if (!box.Children().empty()) {
-      DCHECK(paint_fragment || box.HasItems());
+      if (!box.GetLayoutObject()->PaintBlockedByDisplayLock(
+              DisplayLockLifecycleTarget::kChildren)) {
+        DCHECK(paint_fragment || box.HasItems());
+      }
       if (paint_fragment)
         DCHECK_EQ(&paint_fragment->PhysicalFragment(), &box);
     }

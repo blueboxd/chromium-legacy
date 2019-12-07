@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.api.internal.actionmanager;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.Consumer;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamDataOperation;
 import org.chromium.components.feed.core.proto.wire.ActionPayloadProto.ActionPayload;
@@ -24,7 +26,7 @@ public interface ActionManager {
      * @param sessionId The current session id
      */
     void dismissLocal(List<String> contentIds, List<StreamDataOperation> streamDataOperations,
-            /*@Nullable*/ String sessionId);
+            @Nullable String sessionId);
 
     /**
      * Executes the provided stream data operations on the session.
@@ -34,7 +36,7 @@ public interface ActionManager {
      *     (e.g. removing a cluster when the content is removed)
      * @param sessionId The current session id
      */
-    void dismiss(List<StreamDataOperation> streamDataOperations, /*@Nullable*/ String sessionId);
+    void dismiss(List<StreamDataOperation> streamDataOperations, @Nullable String sessionId);
 
     /**
      * Issues a request to record a set of actions, with the consumer being called back with the

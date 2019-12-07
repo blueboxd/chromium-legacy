@@ -109,10 +109,9 @@ if (is_win || is_mac) {
     }
 
     if (is_mac) {
-      deps += [ "//chrome/updater/mac:updater_tests" ]
-
-      data_deps = [
-        "//chrome/updater/mac:updater",
+      deps += [
+        "//chrome/updater/mac:updater_bundle",
+        "//chrome/updater/mac:updater_tests",
       ]
     }
   }

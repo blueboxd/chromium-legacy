@@ -10,7 +10,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/public/web/web_script_source.h"
@@ -25,7 +24,7 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
-#include "third_party/blink/renderer/modules/peerconnection/mock_web_rtc_peer_connection_handler.h"
+#include "third_party/blink/renderer/modules/peerconnection/mock_rtc_peer_connection_handler_platform.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_answer_options.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_configuration.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_server.h"
@@ -33,6 +32,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_session_description_init.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_peer_connection_handler_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_receiver_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_sender_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_platform.h"
@@ -399,9 +399,9 @@ class RTCPeerConnectionTestWithPlatformTestingPlatformType
                                      Dictionary(), scope.GetExceptionState());
   }
 
-  virtual std::unique_ptr<WebRTCPeerConnectionHandler>
+  virtual std::unique_ptr<RTCPeerConnectionHandlerPlatform>
   CreateRTCPeerConnectionHandler() {
-    return std::make_unique<MockWebRTCPeerConnectionHandler>();
+    return std::make_unique<MockRTCPeerConnectionHandlerPlatform>();
   }
 
   MediaStreamTrack* CreateTrack(V8TestingScope& scope,
@@ -701,7 +701,8 @@ void PostToCompleteRequest(AsyncOperationAction action, RequestType* request) {
   }
 }
 
-class FakeWebRTCPeerConnectionHandler : public MockWebRTCPeerConnectionHandler {
+class FakeRTCPeerConnectionHandlerPlatform
+    : public MockRTCPeerConnectionHandlerPlatform {
  public:
   WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
       RTCSessionDescriptionRequest* request,
@@ -765,9 +766,9 @@ class RTCPeerConnectionCallSetupStateTest
     : public RTCPeerConnectionTestWithPlatformTestingPlatformType<
           TestingPlatformSupport> {
  public:
-  std::unique_ptr<WebRTCPeerConnectionHandler> CreateRTCPeerConnectionHandler()
-      override {
-    auto handler = std::make_unique<FakeWebRTCPeerConnectionHandler>();
+  std::unique_ptr<RTCPeerConnectionHandlerPlatform>
+  CreateRTCPeerConnectionHandler() override {
+    auto handler = std::make_unique<FakeRTCPeerConnectionHandlerPlatform>();
     handler_ = handler.get();
     return handler;
   }
@@ -817,7 +818,7 @@ class RTCPeerConnectionCallSetupStateTest
 
  protected:
   const CallSetupStateTracker* tracker_ = nullptr;
-  FakeWebRTCPeerConnectionHandler* handler_ = nullptr;
+  FakeRTCPeerConnectionHandlerPlatform* handler_ = nullptr;
 };
 
 TEST_F(RTCPeerConnectionCallSetupStateTest, InitialState) {
@@ -1153,9 +1154,9 @@ class SchedulingAffectingWebRTCFeaturesTest : public SimTest {
     return result;
   }
 
-  std::unique_ptr<WebRTCPeerConnectionHandler>
+  std::unique_ptr<RTCPeerConnectionHandlerPlatform>
   CreateRTCPeerConnectionHandler() {
-    return std::make_unique<MockWebRTCPeerConnectionHandler>();
+    return std::make_unique<MockRTCPeerConnectionHandlerPlatform>();
   }
 };
 

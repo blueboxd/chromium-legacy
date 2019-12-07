@@ -48,6 +48,10 @@ class TestAutofillClient : public AutofillClient {
   ukm::SourceId GetUkmSourceId() override;
   AddressNormalizer* GetAddressNormalizer() override;
   security_state::SecurityLevel GetSecurityLevelForUmaHistograms() override;
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  std::vector<std::string> GetMerchantWhitelistForVirtualCards() override;
+  std::vector<std::string> GetBinRangeWhitelistForVirtualCards() override;
+#endif
   void ShowAutofillSettings(bool show_credit_card_settings) override;
   void ShowUnmaskPrompt(const CreditCard& card,
                         UnmaskCardReason reason,
@@ -161,6 +165,18 @@ class TestAutofillClient : public AutofillClient {
     security_level_ = security_level;
   }
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  void set_merchant_whitelist(
+      const std::vector<std::string>& merchant_whitelist) {
+    merchant_whitelist_ = merchant_whitelist;
+  }
+
+  void set_bin_range_whitelist(
+      const std::vector<std::string>& bin_range_whitelist) {
+    bin_range_whitelist_ = bin_range_whitelist;
+  }
+#endif
+
   bool ConfirmSaveCardLocallyWasCalled() {
     return confirm_save_credit_card_locally_called_;
   }
@@ -218,6 +234,11 @@ class TestAutofillClient : public AutofillClient {
   base::Optional<SaveCreditCardOptions> save_credit_card_options_;
 
   std::vector<std::string> migration_card_selection_;
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  std::vector<std::string> merchant_whitelist_;
+  std::vector<std::string> bin_range_whitelist_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillClient);
 };

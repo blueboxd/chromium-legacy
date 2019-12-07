@@ -158,12 +158,6 @@ void PermissionRequestManager::UpdateAnchorPosition() {
     view_->UpdateAnchorPosition();
 }
 
-gfx::NativeWindow PermissionRequestManager::GetBubbleWindow() {
-  if (view_)
-    return view_->GetNativeWindow();
-  return nullptr;
-}
-
 void PermissionRequestManager::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() ||

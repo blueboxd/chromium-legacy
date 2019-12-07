@@ -12,10 +12,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/audio/in_process_audio_manager_accessor.h"
-#include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/system_info.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/mojom/connector.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,18 +38,10 @@ class AudioSystemToServiceAdapterTestBase : public testing::Test {
         std::make_unique<audio::SystemInfo>(audio_manager_.get());
     system_info_receiver_ = std::make_unique<mojo::Receiver<mojom::SystemInfo>>(
         system_info_impl_.get());
-
-    mojo::PendingReceiver<service_manager::mojom::Connector> ignored_receiver;
-    auto connector = service_manager::Connector::Create(&ignored_receiver);
-    connector->OverrideBinderForTesting(
-        service_manager::ServiceFilter::ByName(mojom::kServiceName),
-        mojom::SystemInfo::Name_,
-        base::BindRepeating(
+    audio_system_ =
+        std::make_unique<AudioSystemToServiceAdapter>(base::BindRepeating(
             &AudioSystemToServiceAdapterTestBase::BindSystemInfoReceiver,
             base::Unretained(this)));
-
-    audio_system_ =
-        std::make_unique<AudioSystemToServiceAdapter>(std::move(connector));
   }
 
   void TearDown() override {
@@ -77,14 +66,14 @@ class AudioSystemToServiceAdapterTestBase : public testing::Test {
   std::unique_ptr<media::AudioSystem> audio_system_;
 
  private:
-  void BindSystemInfoReceiver(mojo::ScopedMessagePipeHandle handle) {
+  void BindSystemInfoReceiver(
+      mojo::PendingReceiver<mojom::SystemInfo> receiver) {
     EXPECT_TRUE(system_info_receiver_) << "AudioSystemToServiceAdapter should "
                                           "not request AudioSysteInfo during "
                                           "construction";
-    EXPECT_FALSE(system_info_receiver_->is_bound());
+    ASSERT_FALSE(system_info_receiver_->is_bound());
     system_info_bind_requested_.Call();
-    system_info_receiver_->Bind(
-        mojo::PendingReceiver<mojom::SystemInfo>(std::move(handle)));
+    system_info_receiver_->Bind(std::move(receiver));
   }
 
   DISALLOW_COPY_AND_ASSIGN(AudioSystemToServiceAdapterTestBase);
@@ -405,22 +394,16 @@ class AudioSystemToServiceAdapterDisconnectTest : public testing::Test {
     }
   };  // class MockSystemInfo
 
-  std::unique_ptr<service_manager::Connector> GetConnector() {
-    mojo::PendingReceiver<service_manager::mojom::Connector> ignored_receiver;
-    auto connector = service_manager::Connector::Create(&ignored_receiver);
-    connector->OverrideBinderForTesting(
-        service_manager::ServiceFilter::ByName(mojom::kServiceName),
-        mojom::SystemInfo::Name_,
-        base::BindRepeating(
-            &AudioSystemToServiceAdapterDisconnectTest::BindSystemInfoReceiver,
-            base::Unretained(this)));
-    return connector;
+  AudioSystemToServiceAdapter::SystemInfoBinder GetSystemInfoBinder() {
+    return base::BindRepeating(
+        &AudioSystemToServiceAdapterDisconnectTest::BindSystemInfoReceiver,
+        base::Unretained(this));
   }
 
-  void BindSystemInfoReceiver(mojo::ScopedMessagePipeHandle handle) {
+  void BindSystemInfoReceiver(
+      mojo::PendingReceiver<mojom::SystemInfo> receiver) {
     ClientConnected();
-    system_info_receiver_.Bind(
-        mojo::PendingReceiver<mojom::SystemInfo>(std::move(handle)));
+    system_info_receiver_.Bind(std::move(receiver));
     system_info_receiver_.set_disconnect_handler(base::BindOnce(
         &AudioSystemToServiceAdapterDisconnectTest::OnConnectionError,
         base::Unretained(this)));
@@ -447,7 +430,8 @@ class AudioSystemToServiceAdapterDisconnectTest : public testing::Test {
 TEST_F(AudioSystemToServiceAdapterDisconnectTest,
        ResponseDelayIsShorterThanDisconnectTimeout) {
   const base::TimeDelta kDisconnectTimeout = kResponseDelay * 2;
-  AudioSystemToServiceAdapter audio_system(GetConnector(), kDisconnectTimeout);
+  AudioSystemToServiceAdapter audio_system(GetSystemInfoBinder(),
+                                           kDisconnectTimeout);
   {
     EXPECT_CALL(*this, ClientConnected());
     EXPECT_CALL(*this, ClientDisconnected()).Times(0);
@@ -463,7 +447,8 @@ TEST_F(AudioSystemToServiceAdapterDisconnectTest,
 TEST_F(AudioSystemToServiceAdapterDisconnectTest,
        ResponseDelayIsLongerThanDisconnectTimeout) {
   const base::TimeDelta kDisconnectTimeout = kResponseDelay / 2;
-  AudioSystemToServiceAdapter audio_system(GetConnector(), kDisconnectTimeout);
+  AudioSystemToServiceAdapter audio_system(GetSystemInfoBinder(),
+                                           kDisconnectTimeout);
   {
     EXPECT_CALL(*this, ClientConnected());
     EXPECT_CALL(*this, ClientDisconnected()).Times(0);
@@ -479,7 +464,8 @@ TEST_F(AudioSystemToServiceAdapterDisconnectTest,
 TEST_F(AudioSystemToServiceAdapterDisconnectTest,
        DisconnectTimeoutIsResetOnSecondRequest) {
   const base::TimeDelta kDisconnectTimeout = kResponseDelay * 1.5;
-  AudioSystemToServiceAdapter audio_system(GetConnector(), kDisconnectTimeout);
+  AudioSystemToServiceAdapter audio_system(GetSystemInfoBinder(),
+                                           kDisconnectTimeout);
   {
     EXPECT_CALL(*this, ClientConnected());
     EXPECT_CALL(*this, ClientDisconnected()).Times(0);
@@ -502,7 +488,8 @@ TEST_F(AudioSystemToServiceAdapterDisconnectTest,
 
 TEST_F(AudioSystemToServiceAdapterDisconnectTest,
        DoesNotDisconnectIfNoTimeout) {
-  AudioSystemToServiceAdapter audio_system(GetConnector(), base::TimeDelta());
+  AudioSystemToServiceAdapter audio_system(GetSystemInfoBinder(),
+                                           base::TimeDelta());
   EXPECT_CALL(*this, ClientConnected());
   EXPECT_CALL(*this, ClientDisconnected()).Times(0);
   EXPECT_CALL(response_received_, Run(valid_reply_));

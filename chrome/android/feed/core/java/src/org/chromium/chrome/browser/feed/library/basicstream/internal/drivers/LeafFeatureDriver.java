@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.basicstream.internal.drivers;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.FeedViewHolder;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.ViewHolderType;
 
@@ -46,7 +48,7 @@ public abstract class LeafFeatureDriver implements FeatureDriver {
     public abstract void maybeRebind();
 
     /** Returns the contentId of the {@link LeafFeatureDriver} if it has one. */
-    /*@Nullable*/
+    @Nullable
     public String getContentId() {
         return null;
     }

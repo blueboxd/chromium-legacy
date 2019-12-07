@@ -16,17 +16,15 @@
 #include "build/build_config.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/media/media_internals.h"
-#include "content/browser/service_manager/service_manager_context.h"
 #include "content/browser/speech/audio_buffer.h"
+#include "content/public/browser/audio_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "media/audio/audio_system.h"
 #include "media/base/audio_converter.h"
 #include "media/mojo/mojom/audio_logging.mojom.h"
-#include "services/audio/public/cpp/audio_system_factory.h"
 #include "services/audio/public/cpp/device_factory.h"
-#include "services/service_manager/public/mojom/connector.mojom.h"
 
 #if defined(OS_WIN)
 #include "media/audio/win/core_audio_util_win.h"
@@ -874,15 +872,14 @@ media::AudioSystem* SpeechRecognizerImpl::GetAudioSystem() {
 }
 
 void SpeechRecognizerImpl::CreateAudioCapturerSource() {
-  service_manager::Connector* connector =
-      ServiceManagerContext::GetConnectorForIOThread();
-  if (connector) {
-    audio_capturer_source_ = audio::CreateInputDevice(
-        connector->Clone(), device_id_,
-        MediaInternals::GetInstance()->CreateMojoAudioLog(
-            media::AudioLogFactory::AUDIO_INPUT_CONTROLLER,
-            0 /* component_id */));
-  }
+  mojo::PendingRemote<audio::mojom::StreamFactory> stream_factory;
+  GetAudioServiceStreamFactoryBinder().Run(
+      stream_factory.InitWithNewPipeAndPassReceiver());
+  audio_capturer_source_ = audio::CreateInputDevice(
+      std::move(stream_factory), device_id_,
+      MediaInternals::GetInstance()->CreateMojoAudioLog(
+          media::AudioLogFactory::AUDIO_INPUT_CONTROLLER,
+          0 /* component_id */));
 }
 
 media::AudioCapturerSource* SpeechRecognizerImpl::GetAudioCapturerSource() {

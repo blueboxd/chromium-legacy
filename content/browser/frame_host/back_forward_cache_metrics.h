@@ -166,8 +166,12 @@ class BackForwardCacheMetrics
   void CollectFeatureUsageFromSubtree(RenderFrameHostImpl* rfh,
                                       const url::Origin& main_frame_origin);
 
+  // Dumps the current recorded information.
+  // |back_forward_cache_allowed| indicates whether back-forward cache is
+  // allowed for the URL of |navigation_request|.
   void RecordMetricsForHistoryNavigationCommit(
-      NavigationRequest* navigation) const;
+      NavigationRequest* navigation,
+      bool back_forward_cache_allowed) const;
 
   // Record additional reason why navigation was not served from bfcache which
   // are known only at the commit time.

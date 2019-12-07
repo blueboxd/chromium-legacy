@@ -8,6 +8,8 @@ import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.text.Html;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 import org.chromium.chrome.browser.feed.library.common.time.Clock;
 import org.chromium.chrome.browser.feed.library.piet.host.AssetProvider;
@@ -83,7 +85,7 @@ public class ParameterizedTextEvaluator {
         }
     }
 
-    /*@Nullable*/
+    @Nullable
     private String evaluateParam(AssetProvider assetProvider, ParameterizedText.Parameter param) {
         if (param.hasTimestampSeconds()) {
             long elapsedTimeMillis = mClock.currentTimeMillis()

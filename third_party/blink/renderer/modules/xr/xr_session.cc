@@ -1524,7 +1524,7 @@ void XRSession::LogGetPose() const {
   }
 }
 
-bool XRSession::CanReportPoses() {
+bool XRSession::CanReportPoses() const {
   // The spec has a few requirements for if poses can be reported.
   // If we have a session, then user intent is understood. Therefore, (due to
   // the way visibility state is updatd), the rest of the steps really just
@@ -1532,21 +1532,21 @@ bool XRSession::CanReportPoses() {
   return visibility_state_ == XRVisibilityState::VISIBLE;
 }
 
+base::Optional<TransformationMatrix> XRSession::MojoFromViewer() const {
+  if (!CanReportPoses())
+    return base::nullopt;
+
+  if (!mojo_from_viewer_)
+    return base::nullopt;
+
+  return *mojo_from_viewer_.get();
+}
+
 XRFrame* XRSession::CreatePresentationFrame() {
   DVLOG(2) << __func__;
 
   XRFrame* presentation_frame =
       MakeGarbageCollected<XRFrame>(this, world_information_);
-
-  // TODO(https://crbug.com/1004201): Determine if world_information_ should be
-  // treated similarly to mojo_from_viewer_.
-  if (mojo_from_viewer_ && visibility_state_ != XRVisibilityState::HIDDEN) {
-    DVLOG(2) << __func__ << " : mojo_from_viewer_ is set and not hidden,"
-             << " updating presentation frame";
-
-    presentation_frame->SetMojoFromViewer(*mojo_from_viewer_,
-                                          EmulatedPosition());
-  }
   return presentation_frame;
 }
 

@@ -26,6 +26,7 @@ Local changes:
 * Apply https://github.com/xiph/opus/commit/cdaf661e8d3e85770bf06db8cff12ae6be7fa2a6
 * Apply https://git.xiph.org/?p=opus.git;a=commitdiff;h=693098f
 * Apply https://git.xiph.org/?p=opus.git;a=commit;h=93b373e884915e802188cec844a7dda2fa184ebc
+* Apply https://git.xiph.org/?p=opus.git;a=commit;h=8493bf5
 
 Opus' own unit tests are located in ./src/tests
 Additional chromium tests are located in ./tests

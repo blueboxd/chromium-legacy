@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
+#include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -172,7 +173,7 @@ void LoginDisplayHostMojo::OnFinalize() {
 }
 
 void LoginDisplayHostMojo::SetStatusAreaVisible(bool visible) {
-  NOTIMPLEMENTED();
+  SystemTrayClient::Get()->SetPrimaryTrayVisible(visible);
 }
 
 void LoginDisplayHostMojo::StartWizard(OobeScreenId first_screen) {

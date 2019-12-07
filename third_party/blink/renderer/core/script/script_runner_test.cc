@@ -327,8 +327,10 @@ TEST_F(ScriptRunnerTest, ResumeAndSuspend_InOrder) {
   NotifyScriptReady(pending_script3);
 
   platform_->RunSingleTask();
-  script_runner_->Suspend();
-  script_runner_->Resume();
+  script_runner_->ContextLifecycleStateChanged(
+      mojom::FrameLifecycleState::kPaused);
+  script_runner_->ContextLifecycleStateChanged(
+      mojom::FrameLifecycleState::kRunning);
   platform_->RunUntilIdle();
 
   // Make sure elements are correct and in right order.
@@ -356,8 +358,10 @@ TEST_F(ScriptRunnerTest, ResumeAndSuspend_Async) {
       .WillOnce(InvokeWithoutArgs([this] { order_.push_back(3); }));
 
   platform_->RunSingleTask();
-  script_runner_->Suspend();
-  script_runner_->Resume();
+  script_runner_->ContextLifecycleStateChanged(
+      mojom::FrameLifecycleState::kPaused);
+  script_runner_->ContextLifecycleStateChanged(
+      mojom::FrameLifecycleState::kRunning);
   platform_->RunUntilIdle();
 
   // Make sure elements are correct.
@@ -400,12 +404,14 @@ TEST_F(ScriptRunnerTest, SetForceDeferredAndResumeAndSuspend) {
   platform_->RunSingleTask();
   ASSERT_EQ(0u, order_.size());
 
-  script_runner_->Suspend();
+  script_runner_->ContextLifecycleStateChanged(
+      mojom::FrameLifecycleState::kPaused);
   platform_->RunSingleTask();
   ASSERT_EQ(0u, order_.size());
 
-  // Resume will not execute script while still in ForceDeferred state.
-  script_runner_->Resume();
+  // Resuming will not execute script while still in ForceDeferred state.
+  script_runner_->ContextLifecycleStateChanged(
+      mojom::FrameLifecycleState::kRunning);
   platform_->RunUntilIdle();
   ASSERT_EQ(0u, order_.size());
 

@@ -265,6 +265,9 @@ public class StatusBarColorController
         // Return status bar color in standard NewTabPage. If location bar is not shown in NTP, we
         // use the tab theme color regardless of the URL expansion percentage.
         if (isLocationBarShownInNTP()) {
+            boolean supportsDarkStatusIcons = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
+            if (!supportsDarkStatusIcons) return Color.BLACK;
+
             return ColorUtils.getColorWithOverlay(
                     TabThemeColorHelper.getBackgroundColor(mCurrentTab),
                     TabThemeColorHelper.getColor(mCurrentTab), mToolbarUrlExpansionPercentage);

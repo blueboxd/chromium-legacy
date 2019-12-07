@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.feed.library.feedmodelprovider.internal;
 
 import android.text.TextUtils;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.ModelChild;
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.ModelFeature;
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.ModelToken;
@@ -17,13 +19,14 @@ public final class UpdatableModelChild implements ModelChild {
     private static final String TAG = "UpdatableModelChild";
 
     private final String mContentId;
-    /*@Nullable*/ private final String mParentContentId;
+    @Nullable
+    private final String mParentContentId;
 
     private @Type int mType = Type.UNBOUND;
     private UpdatableModelFeature mModelFeature;
     private UpdatableModelToken mModelToken;
 
-    public UpdatableModelChild(String contentId, /*@Nullable*/ String parentContentId) {
+    public UpdatableModelChild(String contentId, @Nullable String parentContentId) {
         this.mContentId = contentId;
         this.mParentContentId = parentContentId;
     }
@@ -88,7 +91,7 @@ public final class UpdatableModelChild implements ModelChild {
         return mContentId;
     }
 
-    /*@Nullable*/
+    @Nullable
     @Override
     public String getParentId() {
         return mParentContentId;

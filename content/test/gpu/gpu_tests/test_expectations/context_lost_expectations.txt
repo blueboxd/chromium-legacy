@@ -42,3 +42,8 @@ crbug.com/611906 [ android qualcomm-adreno-(tm)-420 ] ContextLost_WebGLContextLo
 crbug.com/609629 [ android qualcomm-adreno-(tm)-420 ] GpuCrash_GPUProcessCrashesExactlyOncePerVisitToAboutGpuCrash [ Skip ]
 crbug.com/609629 [ android qualcomm-adreno-(tm)-420 ] ContextLost_WebGLContextLostFromGPUProcessExit [ Skip ]
 crbug.com/609629 [ android qualcomm-adreno-(tm)-420 ] ContextLost_WebGLContextLostInHiddenTab [ Skip ]
+
+# RetryOnFailure flaky mac test until root cause can be investigated.
+crbug.com/965268 [ mac ] ContextLost_WebGLUnblockedAfterUserInitiatedReload [ RetryOnFailure ]
+crbug.com/1031095 [ mac ] GpuCrash_GPUProcessCrashesExactlyOncePerVisitToAboutGpuCrash [ RetryOnFailure ]
+crbug.com/1031567 [ mac ] ContextLost_WebGLContextLostFromGPUProcessExit [ RetryOnFailure ]

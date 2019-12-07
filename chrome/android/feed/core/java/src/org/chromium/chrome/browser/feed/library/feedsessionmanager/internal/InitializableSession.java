@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.feedsessionmanager.internal;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.ModelProvider;
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.ModelProvider.ViewDepthProvider;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamStructure;
@@ -18,8 +20,7 @@ public interface InitializableSession extends Session {
      * unbind the Session, removing all references to the ModelProvider.
      */
     void bindModelProvider(
-            /*@Nullable*/ ModelProvider modelProvider,
-            /*@Nullable*/ ViewDepthProvider viewDepthProvider);
+            @Nullable ModelProvider modelProvider, @Nullable ViewDepthProvider viewDepthProvider);
 
     /** Set the session id. */
     void setSessionId(String sessionId);

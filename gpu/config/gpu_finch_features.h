@@ -18,7 +18,7 @@ namespace features {
 // alongside the definition of their values in the .cc file.
 #if defined(OS_ANDROID)
 GPU_EXPORT extern const base::Feature kAImageReaderMediaPlayer;
-GPU_EXPORT extern const base::Feature kAndroidSurfaceControl;
+GPU_EXPORT extern const base::Feature kDisableSurfaceControlForWebview;
 #endif  // defined(OS_ANDROID)
 
 GPU_EXPORT extern const base::Feature kDefaultEnableGpuRasterization;

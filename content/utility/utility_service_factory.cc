@@ -22,9 +22,6 @@
 #include "content/public/utility/utility_thread.h"
 #include "content/utility/utility_thread_impl.h"
 #include "media/media_buildflags.h"
-#include "services/audio/public/mojom/constants.mojom.h"
-#include "services/audio/service_factory.h"
-#include "services/network/network_service.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -36,13 +33,6 @@
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 #include "media/cdm/cdm_host_file.h"
 #endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
-#endif
-
-#if defined(OS_MACOSX)
-#include "base/mac/mach_logging.h"
-#include "sandbox/mac/system_services.h"
-#include "services/service_manager/sandbox/features.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
 #endif
 
 #if defined(OS_WIN)
@@ -94,13 +84,9 @@ class ContentCdmServiceClient final : public media::CdmService::Client {
 
 }  // namespace
 
-UtilityServiceFactory::UtilityServiceFactory()
-    : network_registry_(std::make_unique<service_manager::BinderRegistry>()),
-      audio_binders_(std::make_unique<service_manager::BinderMap>()) {
-  GetContentClient()->utility()->RegisterAudioBinders(audio_binders_.get());
-}
+UtilityServiceFactory::UtilityServiceFactory() = default;
 
-UtilityServiceFactory::~UtilityServiceFactory() {}
+UtilityServiceFactory::~UtilityServiceFactory() = default;
 
 void UtilityServiceFactory::RunService(
     const std::string& service_name,
@@ -115,11 +101,8 @@ void UtilityServiceFactory::RunService(
   base::debug::SetCrashKeyString(service_name_crash_key, service_name);
 
   std::unique_ptr<service_manager::Service> service;
-  if (service_name == audio::mojom::kServiceName) {
-    service = CreateAudioService(std::move(request));
-  }
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  else if (service_name == media::mojom::kCdmServiceName) {
+  if (service_name == media::mojom::kCdmServiceName) {
     service = std::make_unique<media::CdmService>(
         std::make_unique<ContentCdmServiceClient>(), std::move(request));
   }
@@ -144,43 +127,6 @@ void UtilityServiceFactory::RunService(
       static_cast<UtilityThreadImpl*>(UtilityThread::Get());
   utility_thread->Shutdown();
   utility_thread->ReleaseProcess();
-}
-
-std::unique_ptr<service_manager::Service>
-UtilityServiceFactory::CreateAudioService(
-    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
-#if defined(OS_MACOSX)
-  // Don't connect to launch services when running sandboxed
-  // (https://crbug.com/874785).
-  if (service_manager::IsAudioSandboxEnabled()) {
-    sandbox::DisableLaunchServices();
-  }
-
-  // Set the audio process to run with similar scheduling parameters as the
-  // browser process.
-  task_category_policy category;
-  category.role = TASK_FOREGROUND_APPLICATION;
-  kern_return_t result = task_policy_set(
-      mach_task_self(), TASK_CATEGORY_POLICY,
-      reinterpret_cast<task_policy_t>(&category), TASK_CATEGORY_POLICY_COUNT);
-
-  MACH_LOG_IF(ERROR, result != KERN_SUCCESS, result)
-      << "task_policy_set TASK_CATEGORY_POLICY";
-
-  task_qos_policy qos;
-  qos.task_latency_qos_tier = LATENCY_QOS_TIER_0;
-  qos.task_throughput_qos_tier = THROUGHPUT_QOS_TIER_0;
-  result = task_policy_set(mach_task_self(), TASK_BASE_QOS_POLICY,
-                           reinterpret_cast<task_policy_t>(&qos),
-                           TASK_QOS_POLICY_COUNT);
-
-  MACH_LOG_IF(ERROR, result != KERN_SUCCESS, result)
-      << "task_policy_set TASK_QOS_POLICY";
-
-#endif
-
-  return audio::CreateStandaloneService(std::move(audio_binders_),
-                                        std::move(receiver));
 }
 
 }  // namespace content

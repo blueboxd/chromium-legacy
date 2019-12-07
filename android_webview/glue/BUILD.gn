@@ -43,6 +43,7 @@ android_library("glue") {
     "java/src/com/android/webview/chromium/GlueApiHelperForO.java",
     "java/src/com/android/webview/chromium/GlueApiHelperForOMR1.java",
     "java/src/com/android/webview/chromium/GlueApiHelperForP.java",
+    "java/src/com/android/webview/chromium/GlueApiHelperForQ.java",
     "java/src/com/android/webview/chromium/GraphicsUtils.java",
     "java/src/com/android/webview/chromium/MonochromeLibraryPreloader.java",
     "java/src/com/android/webview/chromium/SafeBrowsingResponseAdapter.java",
@@ -73,6 +74,8 @@ android_library("glue") {
     "java/src/com/android/webview/chromium/WebViewContentsClientAdapter.java",
     "java/src/com/android/webview/chromium/WebViewDatabaseAdapter.java",
     "java/src/com/android/webview/chromium/WebViewDelegateFactory.java",
+    "java/src/com/android/webview/chromium/WebViewRenderProcessAdapter.java",
+    "java/src/com/android/webview/chromium/WebViewRenderProcessClientAdapter.java",
     "java/src/com/android/webview/chromium/WebkitToSharedGlueConverter.java",
   ]
 

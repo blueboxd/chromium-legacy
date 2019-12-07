@@ -41,3 +41,16 @@ rootWebArea name='Action verbs'
 ++++++menuItem name='Menu item 1' defaultActionVerb=select
 ++++++menuItemCheckBox name='Menu item 2' defaultActionVerb=uncheck checkedState=true
 ++++++menuItemRadio name='Menu item 3' defaultActionVerb=check checkedState=false
+++++button name='ARIA Button' defaultActionVerb=click
+++++++staticText name='ARIA Button'
+++++++++inlineTextBox name='ARIA Button'
+++++button name='ARIA button with tab index' defaultActionVerb=press
+++++++staticText name='ARIA button with tab index'
+++++++++inlineTextBox name='ARIA button with tab index'
+++++button name='ARIA button with negative tab index' defaultActionVerb=press
+++++++staticText name='ARIA button with negative tab index'
+++++++++inlineTextBox name='ARIA button with negative tab index'
+++++genericContainer activedescendantId=button
+++++++button name='ARIA button that is an active descendant' defaultActionVerb=press
+++++++++staticText name='ARIA button that is an active descendant'
+++++++++++inlineTextBox name='ARIA button that is an active descendant'

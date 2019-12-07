@@ -493,15 +493,15 @@ bool FindGreatestKeyLessThanOrEqual(
   return true;
 }
 
-bool GetBlobKeyGeneratorCurrentNumber(
+bool GetBlobNumberGeneratorCurrentNumber(
     LevelDBDirectTransaction* leveldb_transaction,
     int64_t database_id,
-    int64_t* blob_key_generator_current_number) {
+    int64_t* blob_number_generator_current_number) {
   const std::string key_gen_key = DatabaseMetaDataKey::Encode(
       database_id, DatabaseMetaDataKey::BLOB_KEY_GENERATOR_CURRENT_NUMBER);
 
   // Default to initial number if not found.
-  int64_t cur_number = DatabaseMetaDataKey::kBlobKeyGeneratorInitialNumber;
+  int64_t cur_number = DatabaseMetaDataKey::kBlobNumberGeneratorInitialNumber;
   std::string data;
 
   bool found = false;
@@ -513,33 +513,33 @@ bool GetBlobKeyGeneratorCurrentNumber(
   if (found) {
     StringPiece slice(data);
     if (!DecodeVarInt(&slice, &cur_number) || !slice.empty() ||
-        !DatabaseMetaDataKey::IsValidBlobKey(cur_number)) {
+        !DatabaseMetaDataKey::IsValidBlobNumber(cur_number)) {
       INTERNAL_READ_ERROR_UNTESTED(GET_BLOB_KEY_GENERATOR_CURRENT_NUMBER);
       return false;
     }
   }
-  *blob_key_generator_current_number = cur_number;
+  *blob_number_generator_current_number = cur_number;
   return true;
 }
 
-bool UpdateBlobKeyGeneratorCurrentNumber(
+bool UpdateBlobNumberGeneratorCurrentNumber(
     LevelDBDirectTransaction* leveldb_transaction,
     int64_t database_id,
-    int64_t blob_key_generator_current_number) {
+    int64_t blob_number_generator_current_number) {
 #if DCHECK_IS_ON()
   int64_t old_number;
-  if (!GetBlobKeyGeneratorCurrentNumber(leveldb_transaction, database_id,
-                                        &old_number))
+  if (!GetBlobNumberGeneratorCurrentNumber(leveldb_transaction, database_id,
+                                           &old_number))
     return false;
-  DCHECK_LT(old_number, blob_key_generator_current_number);
+  DCHECK_LT(old_number, blob_number_generator_current_number);
 #endif
-  DCHECK(
-      DatabaseMetaDataKey::IsValidBlobKey(blob_key_generator_current_number));
+  DCHECK(DatabaseMetaDataKey::IsValidBlobNumber(
+      blob_number_generator_current_number));
   const std::string key = DatabaseMetaDataKey::Encode(
       database_id, DatabaseMetaDataKey::BLOB_KEY_GENERATOR_CURRENT_NUMBER);
 
   leveldb::Status s =
-      PutVarInt(leveldb_transaction, key, blob_key_generator_current_number);
+      PutVarInt(leveldb_transaction, key, blob_number_generator_current_number);
   return s.ok();
 }
 

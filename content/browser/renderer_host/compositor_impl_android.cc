@@ -77,6 +77,7 @@
 #include "third_party/skia/include/core/SkMallocPixelRef.h"
 #include "ui/android/window_android.h"
 #include "ui/display/display.h"
+#include "ui/display/display_transform.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/ca_layer_params.h"
 #include "ui/gfx/swap_result.h"
@@ -92,33 +93,6 @@ static const char* kBrowser = "Browser";
 // NOINLINE to make sure crashes use this for magic signature.
 NOINLINE void FatalSurfaceFailure() {
   LOG(FATAL) << "Fatal surface initialization failure";
-}
-
-gfx::OverlayTransform RotationToDisplayTransform(
-    display::Display::Rotation rotation) {
-  // Note that the angle provided by |rotation| here is the opposite direction
-  // of the physical rotation of the device, which is the space in which the UI
-  // prepares the scene (see
-  // https://developer.android.com/reference/android/view/Display#getRotation()
-  // for details).
-  //
-  // The rotation which needs to be applied by the display compositor to allow
-  // the buffers produced by it to be used directly by the system compositor
-  // needs to be the inverse of this rotation. Since display::Rotation is in
-  // clockwise direction while gfx::OverlayTransform is anti-clockwise, directly
-  // mapping them below performs this inversion.
-  switch (rotation) {
-    case display::Display::ROTATE_0:
-      return gfx::OVERLAY_TRANSFORM_NONE;
-    case display::Display::ROTATE_90:
-      return gfx::OVERLAY_TRANSFORM_ROTATE_90;
-    case display::Display::ROTATE_180:
-      return gfx::OVERLAY_TRANSFORM_ROTATE_180;
-    case display::Display::ROTATE_270:
-      return gfx::OVERLAY_TRANSFORM_ROTATE_270;
-  }
-  NOTREACHED();
-  return gfx::OVERLAY_TRANSFORM_NONE;
 }
 
 gpu::SharedMemoryLimits GetCompositorContextSharedMemoryLimits(
@@ -449,7 +423,7 @@ void CompositorImpl::CreateLayerTreeHost() {
   const auto& display_props =
       display::Screen::GetScreen()->GetDisplayNearestWindow(root_window_);
   host_->set_display_transform_hint(
-      RotationToDisplayTransform(display_props.rotation()));
+      display::DisplayRotationToOverlayTransform(display_props.rotation()));
 
   if (needs_animate_)
     host_->SetNeedsAnimate();
@@ -777,7 +751,7 @@ void CompositorImpl::OnDisplayMetricsChanged(const display::Display& display,
   if (changed_metrics &
       display::DisplayObserver::DisplayMetric::DISPLAY_METRIC_ROTATION) {
     host_->set_display_transform_hint(
-        RotationToDisplayTransform(display.rotation()));
+        display::DisplayRotationToOverlayTransform(display.rotation()));
   }
 }
 

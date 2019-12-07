@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.feed.library.testing.modelprovider;
 import static org.chromium.chrome.browser.feed.library.common.Validators.checkNotNull;
 import static org.chromium.chrome.browser.feed.library.common.Validators.checkState;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.ModelChild;
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.ModelFeature;
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.ModelToken;
@@ -17,18 +19,16 @@ import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.Model
 public class FakeModelChild implements ModelChild {
     private final String mContentId;
 
-    private final /*@Nullable*/ ModelFeature mModelFeature;
-    private final /*@Nullable*/ ModelToken mModelToken;
-    private final /*@Nullable*/ String mParentId;
+    private final @Nullable ModelFeature mModelFeature;
+    private final @Nullable ModelToken mModelToken;
+    private final @Nullable String mParentId;
 
     public static Builder newBuilder() {
         return new Builder();
     }
 
-    private FakeModelChild(String contentId,
-            /*@Nullable*/ ModelFeature modelFeature,
-            /*@Nullable*/ ModelToken modelToken,
-            /*@Nullable*/ String parentId) {
+    private FakeModelChild(String contentId, @Nullable ModelFeature modelFeature,
+            @Nullable ModelToken modelToken, @Nullable String parentId) {
         // A ModelChild can't represent both a ModelFeature and a ModelToken.
         checkState(modelFeature == null || modelToken == null);
         this.mContentId = contentId;
@@ -61,7 +61,7 @@ public class FakeModelChild implements ModelChild {
     }
 
     @Override
-    public /*@Nullable*/ String getParentId() {
+    public @Nullable String getParentId() {
         return mParentId;
     }
 
@@ -85,9 +85,9 @@ public class FakeModelChild implements ModelChild {
 
     public static class Builder {
         private String mContentId = "";
-        private /*@Nullable*/ ModelFeature mModelFeature;
-        private /*@Nullable*/ ModelToken mModelToken;
-        private /*@Nullable*/ String mParentId;
+        private @Nullable ModelFeature mModelFeature;
+        private @Nullable ModelToken mModelToken;
+        private @Nullable String mParentId;
 
         private Builder() {}
 
@@ -96,7 +96,7 @@ public class FakeModelChild implements ModelChild {
             return this;
         }
 
-        public Builder setParentId(/*@Nullable*/ String parentId) {
+        public Builder setParentId(@Nullable String parentId) {
             this.mParentId = parentId;
             return this;
         }

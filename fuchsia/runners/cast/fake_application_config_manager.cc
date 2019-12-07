@@ -9,6 +9,11 @@
 
 #include "base/logging.h"
 
+namespace {
+const char kAgentComponentUrl[] =
+    "fuchsia-pkg://fuchsia.com/cast_agent#meta/cast_agent.cmx";
+}  // namespace
+
 FakeApplicationConfigManager::FakeApplicationConfigManager() = default;
 
 FakeApplicationConfigManager::~FakeApplicationConfigManager() = default;
@@ -28,11 +33,20 @@ void FakeApplicationConfigManager::GetConfig(std::string id,
 void FakeApplicationConfigManager::AddAppMapping(const std::string& id,
                                                  const GURL& url,
                                                  bool enable_remote_debugging) {
+  AddAppMappingWithAgent(id, url, enable_remote_debugging, kAgentComponentUrl);
+}
+
+void FakeApplicationConfigManager::AddAppMappingWithAgent(
+    const std::string& id,
+    const GURL& url,
+    bool enable_remote_debugging,
+    const std::string& agent_url) {
   chromium::cast::ApplicationConfig app_config;
   app_config.set_id(id);
   app_config.set_display_name("Dummy test app");
   app_config.set_web_url(url.spec());
   app_config.set_enable_remote_debugging(enable_remote_debugging);
+  app_config.set_agent_url(agent_url);
   id_to_config_[id] = std::move(app_config);
 }
 
@@ -44,6 +58,7 @@ void FakeApplicationConfigManager::AddAppMappingWithContentDirectories(
   app_config.set_id(id);
   app_config.set_display_name("Dummy test app");
   app_config.set_web_url(url.spec());
+  app_config.set_agent_url(kAgentComponentUrl);
   if (!directories.empty()) {
     app_config.set_content_directories_for_isolated_application(
         std::move(directories));

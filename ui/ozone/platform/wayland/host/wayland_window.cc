@@ -9,103 +9,26 @@
 
 #include "base/bind.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
-#include "ui/base/dragdrop/drag_drop_types.h"
-#include "ui/base/dragdrop/os_exchange_data.h"
-#include "ui/base/hit_test.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/ozone/platform/wayland/common/wayland_util.h"
+#include "ui/ozone/platform/wayland/host/shell_object_factory.h"
 #include "ui/ozone/platform/wayland/host/shell_popup_wrapper.h"
-#include "ui/ozone/platform/wayland/host/shell_surface_wrapper.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_cursor_position.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_pointer.h"
-#include "ui/ozone/platform/wayland/host/xdg_popup_wrapper_impl.h"
-#include "ui/ozone/platform/wayland/host/xdg_surface_wrapper_impl.h"
-#include "ui/platform_window/platform_window_handler/wm_drop_handler.h"
 
 namespace ui {
 
-namespace {
-
-// Factory, which decides which version type of xdg object to build.
-class XDGShellObjectFactory {
- public:
-  XDGShellObjectFactory() = default;
-  ~XDGShellObjectFactory() = default;
-
-  std::unique_ptr<ShellPopupWrapper> CreateXDGPopup(
-      WaylandConnection* connection,
-      WaylandWindow* wayland_window,
-      const gfx::Rect& bounds) {
-    std::unique_ptr<XDGSurfaceWrapperImpl> surface =
-        std::make_unique<XDGSurfaceWrapperImpl>(wayland_window);
-    if (connection->shell()) {
-      surface->InitializeStable(connection, wayland_window->surface(), false);
-      std::unique_ptr<XDGPopupWrapperImpl> popup =
-          std::make_unique<XDGPopupWrapperImpl>(std::move(surface),
-                                                wayland_window);
-      popup->InitializeStable(connection, wayland_window->surface(),
-                              wayland_window->parent_window(), bounds);
-      return popup;
-    }
-    DCHECK(connection->shell_v6());
-
-    surface->InitializeV6(connection, wayland_window->surface(), false);
-    std::unique_ptr<XDGPopupWrapperImpl> popup =
-        std::make_unique<XDGPopupWrapperImpl>(std::move(surface),
-                                              wayland_window);
-    popup->InitializeV6(connection, wayland_window->surface(),
-                        wayland_window->parent_window(), bounds);
-    return popup;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(XDGShellObjectFactory);
-};
-
-// Translates bounds relative to top level window to specified parent.
-gfx::Rect TranslateBoundsToParentCoordinates(const gfx::Rect& child_bounds,
-                                             const gfx::Rect& parent_bounds) {
-  return gfx::Rect(gfx::Point(child_bounds.x() - parent_bounds.x(),
-                              child_bounds.y() - parent_bounds.y()),
-                   child_bounds.size());
-}
-
-// Translates bounds relative to parent window to top level window.
-gfx::Rect TranslateBoundsToTopLevelCoordinates(const gfx::Rect& child_bounds,
-                                               const gfx::Rect& parent_bounds) {
-  return gfx::Rect(gfx::Point(child_bounds.x() + parent_bounds.x(),
-                              child_bounds.y() + parent_bounds.y()),
-                   child_bounds.size());
-}
-
-}  // namespace
-
 WaylandWindow::WaylandWindow(PlatformWindowDelegate* delegate,
                              WaylandConnection* connection)
-    : delegate_(delegate),
-      connection_(connection),
-      xdg_shell_objects_factory_(new XDGShellObjectFactory()),
-      state_(PlatformWindowState::kNormal),
-      pending_state_(PlatformWindowState::kUnknown) {
-  // Set a class property key, which allows |this| to be used for interactive
-  // events, e.g. move or resize.
-  SetWmMoveResizeHandler(this, AsWmMoveResizeHandler());
-
-  // Set a class property key, which allows |this| to be used for drag action.
-  SetWmDragHandler(this, this);
-}
+    : delegate_(delegate), connection_(connection) {}
 
 WaylandWindow::~WaylandWindow() {
-  if (drag_closed_callback_) {
-    std::move(drag_closed_callback_)
-        .Run(DragDropTypes::DragOperation::DRAG_NONE);
-  }
-
   PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
   if (surface_)
     connection_->wayland_window_manager()->RemoveWindow(GetWidget());
@@ -121,74 +44,6 @@ WaylandWindow::~WaylandWindow() {
 WaylandWindow* WaylandWindow::FromSurface(wl_surface* surface) {
   return static_cast<WaylandWindow*>(
       wl_proxy_get_user_data(reinterpret_cast<wl_proxy*>(surface)));
-}
-
-bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
-  DCHECK(xdg_shell_objects_factory_);
-
-  // Properties contain DIP bounds but the buffer scale is initially 1 so it's
-  // OK to assign.  The bounds will be recalculated when the buffer scale
-  // changes.
-  DCHECK_EQ(buffer_scale_, 1);
-  bounds_px_ = properties.bounds;
-  opacity_ = properties.opacity;
-
-  surface_.reset(wl_compositor_create_surface(connection_->compositor()));
-  if (!surface_) {
-    LOG(ERROR) << "Failed to create wl_surface";
-    return false;
-  }
-  wl_surface_set_user_data(surface_.get(), this);
-  AddSurfaceListener();
-
-  connection_->wayland_window_manager()->AddWindow(GetWidget(), this);
-
-  ui::PlatformWindowType ui_window_type = properties.type;
-  switch (ui_window_type) {
-    case ui::PlatformWindowType::kMenu:
-    case ui::PlatformWindowType::kPopup:
-      parent_window_ = GetParentWindow(properties.parent_widget);
-
-      // Popups need to know their scale earlier to position themselves.
-      if (!parent_window_) {
-        LOG(ERROR) << "Failed to get a parent window for this popup";
-        return false;
-      }
-
-      SetBufferScale(parent_window_->buffer_scale_, false);
-      ui_scale_ = parent_window_->ui_scale_;
-
-      // TODO(msisov, jkim): Handle notification windows, which are marked
-      // as popup windows as well. Those are the windows that do not have
-      // parents and pop up when the browser receives a notification.
-      CreateShellPopup();
-      break;
-    case ui::PlatformWindowType::kTooltip:
-      // Tooltips subsurfaces are created on demand, upon ::Show calls.
-      is_tooltip_ = true;
-      break;
-    case ui::PlatformWindowType::kWindow:
-    case ui::PlatformWindowType::kBubble:
-    case ui::PlatformWindowType::kDrag:
-      // TODO(msisov): Figure out what kind of surface we need to create for
-      // bubble and drag windows.
-      CreateShellSurface();
-      break;
-  }
-
-  if (shell_surface_ && !properties.wm_class_class.empty())
-    shell_surface_->SetAppId(properties.wm_class_class);
-
-  connection_->ScheduleFlush();
-
-  PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
-  delegate_->OnAcceleratedWidgetAvailable(GetWidget());
-
-  // Will do nothing for popups because they have got their scale above.
-  UpdateBufferScale(false);
-
-  MaybeUpdateOpaqueRegion();
-  return true;
 }
 
 void WaylandWindow::UpdateBufferScale(bool update_bounds) {
@@ -244,35 +99,12 @@ void WaylandWindow::CreateShellPopup() {
 
   auto bounds_px = AdjustPopupWindowPosition();
 
-  shell_popup_ =
-      xdg_shell_objects_factory_->CreateXDGPopup(connection_, this, bounds_px);
-
-  if (!shell_popup_) {
+  ShellObjectFactory factory;
+  shell_popup_ = factory.CreateShellPopupWrapper(connection_, this, bounds_px);
+  if (!shell_popup_)
     CHECK(false) << "Failed to create Wayland shell popup";
-  }
 
   parent_window_->set_child_window(this);
-}
-
-void WaylandWindow::CreateShellSurface() {
-  std::unique_ptr<XDGSurfaceWrapperImpl> xdg_surface =
-      std::make_unique<XDGSurfaceWrapperImpl>(this);
-  if (!xdg_surface) {
-    CHECK(false) << "Failed to create Wayland shell surface";
-    return;
-  }
-
-  if (connection_->shell()) {
-    if (!xdg_surface->InitializeStable(connection_, surface_.get())) {
-      CHECK(false) << "Failed to initialize Wayland shell surface";
-    }
-  } else {
-    DCHECK(connection_->shell_v6());
-    if (!xdg_surface->InitializeV6(connection_, surface_.get())) {
-      CHECK(false) << "Failed to initialize Wayland shell surface";
-    }
-  }
-  shell_surface_ = std::move(xdg_surface);
 }
 
 void WaylandWindow::CreateAndShowTooltipSubSurface() {
@@ -299,7 +131,7 @@ void WaylandWindow::CreateAndShowTooltipSubSurface() {
   const auto parent_bounds_dip =
       gfx::ScaleToRoundedRect(parent_window->GetBounds(), 1.0 / ui_scale_);
   auto new_bounds_dip =
-      TranslateBoundsToParentCoordinates(bounds_px_, parent_bounds_dip);
+      wl::TranslateBoundsToParentCoordinates(bounds_px_, parent_bounds_dip);
   auto bounds_px =
       gfx::ScaleToRoundedRect(new_bounds_dip, ui_scale_ / buffer_scale_);
 
@@ -313,21 +145,6 @@ void WaylandWindow::CreateAndShowTooltipSubSurface() {
   connection_->ScheduleFlush();
 }
 
-void WaylandWindow::ApplyPendingBounds() {
-  if (pending_bounds_dip_.IsEmpty())
-    return;
-  DCHECK(shell_surface_);
-
-  SetBoundsDip(pending_bounds_dip_);
-  shell_surface_->SetWindowGeometry(pending_bounds_dip_);
-  pending_bounds_dip_ = gfx::Rect();
-  connection_->ScheduleFlush();
-
-  // Opaque region is based on the size of the window. Thus, update the region
-  // on each update.
-  MaybeUpdateOpaqueRegion();
-}
-
 void WaylandWindow::SetPointerFocus(bool focus) {
   has_pointer_focus_ = focus;
 
@@ -338,35 +155,9 @@ void WaylandWindow::SetPointerFocus(bool focus) {
     connection_->SetCursorBitmap(bitmap_->bitmaps(), bitmap_->hotspot());
 }
 
-void WaylandWindow::DispatchHostWindowDragMovement(
-    int hittest,
-    const gfx::Point& pointer_location_in_px) {
-  DCHECK(shell_surface_);
-
-  connection_->ResetPointerFlags();
-  if (hittest == HTCAPTION)
-    shell_surface_->SurfaceMove(connection_);
-  else
-    shell_surface_->SurfaceResize(connection_, hittest);
-
-  connection_->ScheduleFlush();
-}
-
-void WaylandWindow::StartDrag(const ui::OSExchangeData& data,
-                              int operation,
-                              gfx::NativeCursor cursor,
-                              base::OnceCallback<void(int)> callback) {
-  DCHECK(!drag_closed_callback_);
-  drag_closed_callback_ = std::move(callback);
-  connection_->StartDrag(data, operation);
-}
-
 void WaylandWindow::Show(bool inactive) {
   if (!is_tooltip_)  // Tooltip windows should not get keyboard focus
     set_keyboard_focus(true);
-
-  if (shell_surface_)
-    return;
 
   if (is_tooltip_) {
     CreateAndShowTooltipSubSurface();
@@ -388,7 +179,7 @@ void WaylandWindow::Show(bool inactive) {
 }
 
 void WaylandWindow::Hide() {
-  if (!is_tooltip_) {
+  if (is_tooltip_) {
     tooltip_subsurface_.reset();
   } else {
     if (child_window_)
@@ -401,8 +192,7 @@ void WaylandWindow::Hide() {
 
   // Detach buffer from surface in order to completely shutdown popups and
   // tooltips, and release resources.
-  if (!shell_surface())
-    connection_->buffer_manager_host()->ResetSurfaceContents(GetWidget());
+  connection_->buffer_manager_host()->ResetSurfaceContents(GetWidget());
 }
 
 void WaylandWindow::Close() {
@@ -410,9 +200,7 @@ void WaylandWindow::Close() {
 }
 
 bool WaylandWindow::IsVisible() const {
-  // X and Windows return true if the window is minimized. For consistency, do
-  // the same.
-  return (!!shell_surface_ || !!shell_popup_) || IsMinimized();
+  return !!shell_popup_;
 }
 
 void WaylandWindow::PrepareForShutdown() {}
@@ -422,6 +210,10 @@ void WaylandWindow::SetBounds(const gfx::Rect& bounds_px) {
     return;
   bounds_px_ = bounds_px;
 
+  // Opaque region is based on the size of the window. Thus, update the region
+  // on each update.
+  MaybeUpdateOpaqueRegion();
+
   delegate_->OnBoundsChanged(bounds_px_);
 }
 
@@ -429,11 +221,7 @@ gfx::Rect WaylandWindow::GetBounds() {
   return bounds_px_;
 }
 
-void WaylandWindow::SetTitle(const base::string16& title) {
-  DCHECK(shell_surface_);
-  shell_surface_->SetTitle(title);
-  connection_->ScheduleFlush();
-}
+void WaylandWindow::SetTitle(const base::string16& title) {}
 
 void WaylandWindow::SetCapture() {
   // Wayland does implicit grabs, and doesn't allow for explicit grabs. The
@@ -450,79 +238,18 @@ bool WaylandWindow::HasCapture() const {
   return shell_popup() ? true : has_implicit_grab_;
 }
 
-void WaylandWindow::ToggleFullscreen() {
-  DCHECK(shell_surface_);
+void WaylandWindow::ToggleFullscreen() {}
 
-  // There are some cases, when Chromium triggers a fullscreen state change
-  // before the surface is activated. In such cases, Wayland may ignore state
-  // changes and such flags as --kiosk or --start-fullscreen will be ignored.
-  // To overcome this, set a pending state, and once the surface is activated,
-  // trigger the change.
-  if (!is_active_) {
-    DCHECK(!IsFullscreen());
-    pending_state_ = PlatformWindowState::kFullScreen;
-    return;
-  }
+void WaylandWindow::Maximize() {}
 
-  // TODO(msisov, tonikitoo): add multiscreen support. As the documentation says
-  // if shell_surface_set_fullscreen() is not provided with wl_output, it's up
-  // to the compositor to choose which display will be used to map this surface.
-  if (!IsFullscreen()) {
-    // Fullscreen state changes have to be handled manually and then checked
-    // against configuration events, which come from a compositor. The reason
-    // of manually changing the |state_| is that the compositor answers about
-    // state changes asynchronously, which leads to a wrong return value in
-    // DesktopWindowTreeHostPlatform::IsFullscreen, for example, and media
-    // files can never be set to fullscreen.
-    state_ = PlatformWindowState::kFullScreen;
-    shell_surface_->SetFullscreen();
-  } else {
-    // Check the comment above. If it's not handled synchronously, media files
-    // may not leave the fullscreen mode.
-    state_ = PlatformWindowState::kUnknown;
-    shell_surface_->UnSetFullscreen();
-  }
+void WaylandWindow::Minimize() {}
 
-  connection_->ScheduleFlush();
-}
-
-void WaylandWindow::Maximize() {
-  DCHECK(shell_surface_);
-
-  if (IsFullscreen())
-    ToggleFullscreen();
-
-  shell_surface_->SetMaximized();
-  connection_->ScheduleFlush();
-}
-
-void WaylandWindow::Minimize() {
-  DCHECK(shell_surface_);
-  DCHECK(!is_minimizing_);
-  // Wayland doesn't explicitly say if a window is minimized. Instead, it
-  // notifies that the window is not activated. But there are many cases, when
-  // the window is not minimized and deactivated. In order to properly record
-  // the minimized state, mark this window as being minimized. And as soon as a
-  // configuration event comes, check if the window has been deactivated and has
-  // |is_minimizing_| set.
-  is_minimizing_ = true;
-  shell_surface_->SetMinimized();
-  connection_->ScheduleFlush();
-}
-
-void WaylandWindow::Restore() {
-  DCHECK(shell_surface_);
-
-  // Unfullscreen the window if it is fullscreen.
-  if (IsFullscreen())
-    ToggleFullscreen();
-
-  shell_surface_->UnSetMaximized();
-  connection_->ScheduleFlush();
-}
+void WaylandWindow::Restore() {}
 
 PlatformWindowState WaylandWindow::GetPlatformWindowState() const {
-  return state_;
+  // Remove normal state for all the other types of windows as it's only the
+  // WaylandSurface that supports state changes.
+  return PlatformWindowState::kNormal;
 }
 
 void WaylandWindow::Activate() {
@@ -589,22 +316,7 @@ void WaylandWindow::SetWindowIcons(const gfx::ImageSkia& window_icon,
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void WaylandWindow::SizeConstraintsChanged() {
-  // Size constraints only make sense for normal windows.
-  if (!shell_surface_)
-    return;
-
-  DCHECK(delegate_);
-  auto min_size = delegate_->GetMinimumSizeForWindow();
-  auto max_size = delegate_->GetMaximumSizeForWindow();
-
-  if (min_size.has_value())
-    shell_surface_->SetMinSize(min_size->width(), min_size->height());
-  if (max_size.has_value())
-    shell_surface_->SetMaxSize(max_size->width(), max_size->height());
-
-  connection_->ScheduleFlush();
-}
+void WaylandWindow::SizeConstraintsChanged() {}
 
 bool WaylandWindow::CanDispatchEvent(const PlatformEvent& event) {
   // This window is a nested popup window, all the events must be forwarded
@@ -649,7 +361,7 @@ uint32_t WaylandWindow::DispatchEvent(const PlatformEvent& native_event) {
   if (event->IsLocatedEvent() && shell_popup()) {
     // Parent window of the main menu window is not a popup, but rather an
     // xdg surface.
-    DCHECK(!parent_window_->shell_popup() && parent_window_->shell_surface());
+    DCHECK(!parent_window_->shell_popup() || !parent_window_->is_tooltip_);
     auto* window =
         connection_->wayland_window_manager()->GetCurrentFocusedWindow();
     if (window) {
@@ -665,92 +377,13 @@ uint32_t WaylandWindow::DispatchEvent(const PlatformEvent& native_event) {
   return POST_DISPATCH_STOP_PROPAGATION;
 }
 
-void WaylandWindow::HandleSurfaceConfigure(int32_t width,
+void WaylandWindow::HandleSurfaceConfigure(int32_t widht,
                                            int32_t height,
                                            bool is_maximized,
                                            bool is_fullscreen,
                                            bool is_activated) {
-  DCHECK(!shell_popup());
-
-  // Propagate the window state information to the client.
-  PlatformWindowState old_state = state_;
-
-  // Ensure that manually handled state changes to fullscreen correspond to the
-  // configuration events from a compositor.
-  DCHECK_EQ(is_fullscreen, IsFullscreen());
-
-  // There are two cases, which must be handled for the minimized state.
-  // The first one is the case, when the surface goes into the minimized state
-  // (check comment in WaylandWindow::Minimize), and the second case is when the
-  // surface still has been minimized, but another cofiguration event with
-  // !is_activated comes. For this, check if the WaylandWindow has been
-  // minimized before and !is_activated is sent.
-  if ((is_minimizing_ || IsMinimized()) && !is_activated) {
-    is_minimizing_ = false;
-    state_ = PlatformWindowState::kMinimized;
-  } else if (is_fullscreen) {
-    // To ensure the |delegate_| is notified about state changes to fullscreen,
-    // assume the old_state is UNKNOWN (check comment in ToggleFullscreen).
-    old_state = PlatformWindowState::kUnknown;
-    DCHECK(state_ == PlatformWindowState::kFullScreen);
-  } else if (is_maximized) {
-    state_ = PlatformWindowState::kMaximized;
-  } else {
-    state_ = PlatformWindowState::kNormal;
-  }
-  const bool state_changed = old_state != state_;
-  const bool is_normal = !IsFullscreen() && !IsMaximized();
-
-  // Update state before notifying delegate.
-  const bool did_active_change = is_active_ != is_activated;
-  is_active_ = is_activated;
-
-  // Rather than call SetBounds here for every configure event, just save the
-  // most recent bounds, and have WaylandConnection call ApplyPendingBounds
-  // when it has finished processing events. We may get many configure events
-  // in a row during an interactive resize, and only the last one matters.
-  //
-  // Width or height set to 0 means that we should decide on width and height by
-  // ourselves, but we don't want to set them to anything else. Use restored
-  // bounds size or the current bounds iff the current state is normal (neither
-  // maximized nor fullscreen).
-  //
-  // Note: if the browser was started with --start-fullscreen and a user exits
-  // the fullscreen mode, wayland may set the width and height to be 1. Instead,
-  // explicitly set the bounds to the current desired ones or the previous
-  // bounds.
-  if (width > 1 && height > 1) {
-    pending_bounds_dip_ = gfx::Rect(0, 0, width, height);
-  } else if (is_normal) {
-    pending_bounds_dip_.set_size(gfx::ScaleToRoundedSize(
-        restored_bounds_px_.IsEmpty() ? GetBounds().size()
-                                      : restored_bounds_px_.size(),
-
-        1.0 / buffer_scale_));
-  }
-
-  if (state_changed) {
-    // The |restored_bounds_| are used when the window gets back to normal
-    // state after it went maximized or fullscreen.  So we reset these if the
-    // window has just become normal and store the current bounds if it is
-    // either going out of normal state or simply changes the state and we don't
-    // have any meaningful value stored.
-    if (is_normal) {
-      SetRestoredBoundsInPixels({});
-    } else if (old_state == PlatformWindowState::kNormal ||
-               restored_bounds_px_.IsEmpty()) {
-      SetRestoredBoundsInPixels(bounds_px_);
-    }
-
-    delegate_->OnWindowStateChanged(state_);
-  }
-
-  ApplyPendingBounds();
-
-  if (did_active_change)
-    delegate_->OnActivationChanged(is_active_);
-
-  MaybeTriggerPendingStateChange();
+  NOTREACHED()
+      << "Only shell surfaces must receive HandleSurfaceConfigure calls.";
 }
 
 void WaylandWindow::HandlePopupConfigure(const gfx::Rect& bounds_dip) {
@@ -793,7 +426,7 @@ void WaylandWindow::HandlePopupConfigure(const gfx::Rect& bounds_dip) {
     // window, which automatically becomes the same as relative to an origin of
     // a display.
     new_bounds_dip = gfx::ScaleToRoundedRect(
-        TranslateBoundsToTopLevelCoordinates(
+        wl::TranslateBoundsToTopLevelCoordinates(
             gfx::ScaleToRoundedRect(new_bounds_dip, buffer_scale_),
             parent_window_->GetBounds()),
         1.0 / buffer_scale_);
@@ -812,44 +445,84 @@ void WaylandWindow::OnCloseRequest() {
 
 void WaylandWindow::OnDragEnter(const gfx::PointF& point,
                                 std::unique_ptr<OSExchangeData> data,
-                                int operation) {
-  WmDropHandler* drop_handler = GetWmDropHandler(*this);
-  if (!drop_handler)
-    return;
-  drop_handler->OnDragEnter(point, std::move(data), operation);
-}
+                                int operation) {}
 
 int WaylandWindow::OnDragMotion(const gfx::PointF& point,
                                 uint32_t time,
                                 int operation) {
-  WmDropHandler* drop_handler = GetWmDropHandler(*this);
-  if (!drop_handler)
-    return 0;
-
-  return drop_handler->OnDragMotion(point, operation);
+  return -1;
 }
 
-void WaylandWindow::OnDragDrop(std::unique_ptr<OSExchangeData> data) {
-  WmDropHandler* drop_handler = GetWmDropHandler(*this);
-  if (!drop_handler)
-    return;
-  drop_handler->OnDragDrop(std::move(data));
-}
+void WaylandWindow::OnDragDrop(std::unique_ptr<OSExchangeData> data) {}
 
-void WaylandWindow::OnDragLeave() {
-  WmDropHandler* drop_handler = GetWmDropHandler(*this);
-  if (!drop_handler)
-    return;
-  drop_handler->OnDragLeave();
-}
+void WaylandWindow::OnDragLeave() {}
 
-void WaylandWindow::OnDragSessionClose(uint32_t dnd_action) {
-  std::move(drag_closed_callback_).Run(dnd_action);
-  connection_->ResetPointerFlags();
-}
+void WaylandWindow::OnDragSessionClose(uint32_t dnd_action) {}
 
 void WaylandWindow::SetBoundsDip(const gfx::Rect& bounds_dip) {
   SetBounds(gfx::ScaleToRoundedRect(bounds_dip, buffer_scale_));
+}
+
+bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
+  // Properties contain DIP bounds but the buffer scale is initially 1 so it's
+  // OK to assign.  The bounds will be recalculated when the buffer scale
+  // changes.
+  DCHECK_EQ(buffer_scale_, 1);
+  bounds_px_ = properties.bounds;
+  opacity_ = properties.opacity;
+
+  surface_.reset(wl_compositor_create_surface(connection_->compositor()));
+  if (!surface_) {
+    LOG(ERROR) << "Failed to create wl_surface";
+    return false;
+  }
+  wl_surface_set_user_data(surface_.get(), this);
+  AddSurfaceListener();
+
+  connection_->wayland_window_manager()->AddWindow(GetWidget(), this);
+
+  ui::PlatformWindowType ui_window_type = properties.type;
+  switch (ui_window_type) {
+    case ui::PlatformWindowType::kMenu:
+    case ui::PlatformWindowType::kPopup:
+      parent_window_ = GetParentWindow(properties.parent_widget);
+
+      // Popups need to know their scale earlier to position themselves.
+      if (!parent_window_) {
+        LOG(ERROR) << "Failed to get a parent window for this popup";
+        return false;
+      }
+
+      SetBufferScale(parent_window_->buffer_scale_, false);
+      ui_scale_ = parent_window_->ui_scale_;
+
+      // TODO(msisov, jkim): Handle notification windows, which are marked
+      // as popup windows as well. Those are the windows that do not have
+      // parents and pop up when the browser receives a notification.
+      CreateShellPopup();
+      break;
+    case ui::PlatformWindowType::kTooltip:
+      // Tooltips subsurfaces are created on demand, upon ::Show calls.
+      is_tooltip_ = true;
+      break;
+    case ui::PlatformWindowType::kWindow:
+    case ui::PlatformWindowType::kBubble:
+    case ui::PlatformWindowType::kDrag:
+      if (!OnInitialize(std::move(properties)))
+        return false;
+      break;
+  }
+
+  connection_->ScheduleFlush();
+
+  PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
+  delegate_->OnAcceleratedWidgetAvailable(GetWidget());
+
+  // Will do nothing for popups because they have got their scale above.
+  UpdateBufferScale(false);
+
+  MaybeUpdateOpaqueRegion();
+  return true;
 }
 
 void WaylandWindow::SetBufferScale(int32_t new_scale, bool update_bounds) {
@@ -866,26 +539,6 @@ void WaylandWindow::SetBufferScale(int32_t new_scale, bool update_bounds) {
   DCHECK(surface());
   wl_surface_set_buffer_scale(surface(), buffer_scale_);
   connection_->ScheduleFlush();
-}
-
-bool WaylandWindow::IsMinimized() const {
-  return state_ == PlatformWindowState::kMinimized;
-}
-
-bool WaylandWindow::IsMaximized() const {
-  return state_ == PlatformWindowState::kMaximized;
-}
-
-bool WaylandWindow::IsFullscreen() const {
-  return state_ == PlatformWindowState::kFullScreen;
-}
-
-void WaylandWindow::MaybeTriggerPendingStateChange() {
-  if (pending_state_ == PlatformWindowState::kUnknown || !is_active_)
-    return;
-  DCHECK_EQ(pending_state_, PlatformWindowState::kFullScreen);
-  pending_state_ = PlatformWindowState::kUnknown;
-  ToggleFullscreen();
 }
 
 WaylandWindow* WaylandWindow::GetParentWindow(
@@ -911,10 +564,6 @@ WaylandWindow* WaylandWindow::GetParentWindow(
 
 WaylandWindow* WaylandWindow::GetRootParentWindow() {
   return parent_window_ ? parent_window_->GetRootParentWindow() : this;
-}
-
-WmMoveResizeHandler* WaylandWindow::AsWmMoveResizeHandler() {
-  return static_cast<WmMoveResizeHandler*>(this);
 }
 
 void WaylandWindow::AddSurfaceListener() {
@@ -1018,7 +667,7 @@ gfx::Rect WaylandWindow::AdjustPopupWindowPosition() const {
   const gfx::Rect parent_bounds_dip =
       gfx::ScaleToRoundedRect(parent_window_->GetBounds(), 1.0 / ui_scale_);
   gfx::Rect new_bounds_dip =
-      TranslateBoundsToParentCoordinates(bounds_px_, parent_bounds_dip);
+      wl::TranslateBoundsToParentCoordinates(bounds_px_, parent_bounds_dip);
 
   // Chromium may decide to position nested menu windows on the left side
   // instead of the right side of parent menu windows when the size of the
@@ -1035,10 +684,12 @@ gfx::Rect WaylandWindow::AdjustPopupWindowPosition() const {
   // the parent menu window, which results in showing it on a second display if
   // more than one display is used.
   if (parent_window_->shell_popup() && parent_window_->parent_window_ &&
-      !parent_window_->parent_window_->IsMaximized()) {
+      (parent_window_->parent_window()->GetPlatformWindowState() !=
+       PlatformWindowState::kMaximized)) {
     auto* top_level_window = parent_window_->parent_window_;
     DCHECK(top_level_window && !top_level_window->shell_popup());
-    if (new_bounds_dip.x() <= 0 && !top_level_window->IsMaximized()) {
+    if (new_bounds_dip.x() <= 0 && top_level_window->GetPlatformWindowState() !=
+                                       PlatformWindowState::kMaximized) {
       // Position the child menu window on the right side of the parent window
       // and let the Wayland compositor decide how to do constraint
       // adjustements.
@@ -1068,6 +719,10 @@ void WaylandWindow::MaybeUpdateOpaqueRegion() {
 
 bool WaylandWindow::IsOpaqueWindow() const {
   return opacity_ == ui::PlatformWindowOpacity::kOpaqueWindow;
+}
+
+bool WaylandWindow::OnInitialize(PlatformWindowInitProperties properties) {
+  return true;
 }
 
 // static

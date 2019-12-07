@@ -15,6 +15,8 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.FrameLayout;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 import org.chromium.chrome.browser.feed.library.piet.DebugLogger.MessageType;
 import org.chromium.chrome.browser.feed.library.piet.host.LogDataCallback;
@@ -48,11 +50,14 @@ abstract class ElementAdapter<V extends View, M> {
     private final Context mContext;
     private final AdapterParameters mParameters;
     private final V mView;
-    /*@Nullable*/ private M mModel;
+    @Nullable
+    private M mModel;
     private Element mBaseElement = Element.getDefaultInstance();
-    /*@Nullable*/ private RecyclerKey mKey;
+    @Nullable
+    private RecyclerKey mKey;
     private StyleProvider mElementStyle;
-    /*@Nullable*/ private LogData mLogData;
+    @Nullable
+    private LogData mLogData;
 
     /**
      * Set to {@code true} when {@link #createAdapter} has completed successfully; unset at the end
@@ -67,7 +72,8 @@ abstract class ElementAdapter<V extends View, M> {
      */
     private boolean mCheckBoundVisibility;
 
-    /*@Nullable*/ private FrameLayout mWrapperView;
+    @Nullable
+    private FrameLayout mWrapperView;
 
     Actions mActions = Actions.getDefaultInstance();
     /** Set of actions that are currently active / triggered so they only get called once. */
@@ -435,7 +441,7 @@ abstract class ElementAdapter<V extends View, M> {
     }
 
     /** Returns a {@link RecyclerKey} which represents an instance of a Model based upon a type. */
-    /*@Nullable*/
+    @Nullable
     public RecyclerKey getKey() {
         // There are Adapters which don't hold on to their views.  How do we want to mark them?
         return mKey;
@@ -495,7 +501,7 @@ abstract class ElementAdapter<V extends View, M> {
     }
 
     /** Returns the {@code model}, or null if the adapter is not bound. */
-    /*@Nullable*/
+    @Nullable
     M getRawModel() {
         return mModel;
     }
@@ -532,7 +538,7 @@ abstract class ElementAdapter<V extends View, M> {
     Visibility getVisibilityForElement(Element element, FrameContext frameContext) {
         VisibilityState visibilityState = element.getVisibilityState();
         if (mCheckBoundVisibility && visibilityState.hasOverridingBoundVisibility()) {
-            /*@Nullable*/
+            @Nullable
             Visibility overridingVisibility = frameContext.getVisibilityFromBinding(
                     visibilityState.getOverridingBoundVisibility());
             if (overridingVisibility != null) {

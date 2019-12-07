@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
+#include "content/public/browser/media_session_service.h"
 #include "ui/aura/window.h"
 #include "url/gurl.h"
 
@@ -82,6 +83,11 @@ void ChromeShellDelegate::BindMultiDeviceSetup(
           GetForProfile(ProfileManager::GetPrimaryUserProfile());
   if (service)
     service->BindMultiDeviceSetup(std::move(receiver));
+}
+
+media_session::mojom::MediaSessionService*
+ChromeShellDelegate::GetMediaSessionService() {
+  return &content::GetMediaSessionService();
 }
 
 ash::AccessibilityDelegate* ChromeShellDelegate::CreateAccessibilityDelegate() {

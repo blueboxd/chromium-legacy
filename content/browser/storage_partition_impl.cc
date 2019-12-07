@@ -1218,7 +1218,9 @@ void StoragePartitionImpl::Initialize() {
   base::FilePath path = is_in_memory_ ? base::FilePath() : partition_path_;
   indexed_db_context_ = new IndexedDBContextImpl(
       path, browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy,
-      base::DefaultClock::GetInstance(), /*task_runner=*/nullptr);
+      base::DefaultClock::GetInstance(),
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
+      /*task_runner=*/nullptr);
 
   cache_storage_context_ = new CacheStorageContextImpl(browser_context_);
   cache_storage_context_->Init(

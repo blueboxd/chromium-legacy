@@ -130,7 +130,8 @@ class SharedImageSubMemoryTracker : public gpu::MemoryTracker {
   ~SharedImageSubMemoryTracker() override { DCHECK(!size_); }
 
   // MemoryTracker implementation:
-  void TrackMemoryAllocatedChange(uint64_t delta) override {
+  void TrackMemoryAllocatedChange(int64_t delta) override {
+    DCHECK(delta >= 0 || size_ >= static_cast<uint64_t>(-delta));
     uint64_t old_size = size_;
     size_ += delta;
     DCHECK(observer_);
@@ -231,15 +232,11 @@ class SkiaOutputSurfaceImplOnGpu::ScopedPromiseImageAccess {
     begin_semaphores_.reserve(image_contexts_.size());
     // We may need one more space for the swap buffer semaphore.
     end_semaphores_.reserve(image_contexts_.size() + 1);
-    // TODO(penghuang): gather begin read access semaphores from shared images.
-    // https://crbug.com/944194
     impl_on_gpu_->BeginAccessImages(image_contexts_, &begin_semaphores_,
                                     &end_semaphores_);
   }
 
   ~ScopedPromiseImageAccess() {
-    // TODO(penghuang): end shared image access with meaningful semaphores.
-    // https://crbug.com/944194
     impl_on_gpu_->EndAccessImages(image_contexts_);
   }
 
@@ -324,7 +321,6 @@ scoped_refptr<gpu::SyncPointClientState> CreateSyncPointClientState(
 std::unique_ptr<gpu::SharedImageRepresentationFactory>
 CreateSharedImageRepresentationFactory(SkiaOutputSurfaceDependency* deps,
                                        gpu::MemoryTracker* memory_tracker) {
-  // TODO(https://crbug.com/899905): Use a real MemoryTracker, not nullptr.
   return std::make_unique<gpu::SharedImageRepresentationFactory>(
       deps->GetSharedImageManager(), memory_tracker);
 }
@@ -629,35 +625,43 @@ class DirectContextProviderDelegateImpl : public DirectContextProviderDelegate,
 
 }  // namespace
 
-SkiaOutputSurfaceImplOnGpu::OffscreenSurface::OffscreenSurface() = default;
+// Offscreen surfaces for render passes. It can only be accessed on GPU
+// thread.
+class SkiaOutputSurfaceImplOnGpu::OffscreenSurface {
+ public:
+  OffscreenSurface() = default;
+  OffscreenSurface(const OffscreenSurface& offscreen_surface) = delete;
+  OffscreenSurface(OffscreenSurface&& offscreen_surface) = default;
+  OffscreenSurface& operator=(const OffscreenSurface& offscreen_surface) =
+      delete;
+  OffscreenSurface& operator=(OffscreenSurface&& offscreen_surface) = default;
+  ~OffscreenSurface() = default;
 
-SkiaOutputSurfaceImplOnGpu::OffscreenSurface::~OffscreenSurface() = default;
-
-SkiaOutputSurfaceImplOnGpu::OffscreenSurface::OffscreenSurface(
-    OffscreenSurface&& offscreen_surface) = default;
-
-SkiaOutputSurfaceImplOnGpu::OffscreenSurface&
-SkiaOutputSurfaceImplOnGpu::OffscreenSurface::operator=(
-    OffscreenSurface&& offscreen_surface) = default;
-
-SkSurface* SkiaOutputSurfaceImplOnGpu::OffscreenSurface::surface() const {
-  return surface_.get();
-}
-
-SkPromiseImageTexture* SkiaOutputSurfaceImplOnGpu::OffscreenSurface::fulfill() {
-  DCHECK(surface_);
-  if (!promise_texture_) {
-    promise_texture_ = SkPromiseImageTexture::Make(
-        surface_->getBackendTexture(SkSurface::kFlushRead_BackendHandleAccess));
+  SkSurface* surface() { return surface_.get(); }
+  void set_surface(sk_sp<SkSurface> surface) {
+    surface_ = std::move(surface);
+    promise_texture_ = {};
   }
-  return promise_texture_.get();
-}
 
-void SkiaOutputSurfaceImplOnGpu::OffscreenSurface::set_surface(
-    sk_sp<SkSurface> surface) {
-  surface_ = std::move(surface);
-  promise_texture_ = {};
-}
+  SkPromiseImageTexture* fulfill() {
+    DCHECK(surface_);
+    if (!promise_texture_) {
+      promise_texture_ =
+          SkPromiseImageTexture::Make(surface_->getBackendTexture(
+              SkSurface::kFlushRead_BackendHandleAccess));
+    }
+    return promise_texture_.get();
+  }
+
+  sk_sp<SkSurface> TakeSurface() {
+    promise_texture_ = {};
+    return std::move(surface_);
+  }
+
+ private:
+  sk_sp<SkSurface> surface_;
+  sk_sp<SkPromiseImageTexture> promise_texture_;
+};
 
 // static
 std::unique_ptr<SkiaOutputSurfaceImplOnGpu> SkiaOutputSurfaceImplOnGpu::Create(
@@ -1031,7 +1035,11 @@ void SkiaOutputSurfaceImplOnGpu::RemoveRenderPassResource(
   for (auto& image_context : image_contexts) {
     // It's possible that |offscreen_surfaces_| won't contain an entry for the
     // render pass if draw failed early.
-    offscreen_surfaces_.erase(image_context->render_pass_id());
+    auto it = offscreen_surfaces_.find(image_context->render_pass_id());
+    if (it == offscreen_surfaces_.end())
+      continue;
+    DeleteSkSurface(context_state_.get(), it->second.TakeSurface());
+    offscreen_surfaces_.erase(it);
   }
 }
 

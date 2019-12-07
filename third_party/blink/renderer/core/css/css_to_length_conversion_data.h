@@ -46,7 +46,7 @@ class LayoutView;
 class Font;
 
 class CORE_EXPORT CSSToLengthConversionData {
-  DISALLOW_NEW();
+  STACK_ALLOCATED();
 
  public:
   class CORE_EXPORT FontSizes {

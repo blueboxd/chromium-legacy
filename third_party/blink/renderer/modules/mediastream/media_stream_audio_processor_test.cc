@@ -17,6 +17,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromecast_buildflags.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -241,10 +242,10 @@ TEST_F(MediaStreamAudioProcessorTest, MAYBE_TestAllSampleRates) {
     32000,
     44100,
     48000
-#if defined(IS_CHROMECAST)
+#if BUILDFLAG(IS_CHROMECAST)
     ,
     96000
-#endif  // defined(IS_CHROMECAST)
+#endif  // BUILDFLAG(IS_CHROMECAST)
   };
   for (size_t i = 0; i < base::size(kSupportedSampleRates); ++i) {
     int buffer_size = kSupportedSampleRates[i] / 100;
@@ -255,11 +256,11 @@ TEST_F(MediaStreamAudioProcessorTest, MAYBE_TestAllSampleRates) {
     VerifyDefaultComponents(audio_processor.get());
 
     int expected_sample_rate =
-#if defined(IS_CHROMECAST)
+#if BUILDFLAG(IS_CHROMECAST)
         std::min(kSupportedSampleRates[i], blink::kAudioProcessingSampleRate);
 #else
         blink::kAudioProcessingSampleRate;
-#endif  // defined(IS_CHROMECAST)
+#endif  // BUILDFLAG(IS_CHROMECAST)
     ProcessDataAndVerifyFormat(audio_processor.get(), expected_sample_rate,
                                kAudioProcessingNumberOfChannel,
                                expected_sample_rate / 100);

@@ -26,7 +26,7 @@ import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
 import org.chromium.chrome.browser.password_manager.PasswordManagerLauncher;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
-import org.chromium.chrome.browser.settings.autofill_assistant.AutofillAssistantPreferences;
+import org.chromium.chrome.browser.settings.autofill_assistant.AutofillAssistantSettings;
 import org.chromium.chrome.browser.settings.datareduction.DataReductionPreferenceFragment;
 import org.chromium.chrome.browser.settings.developer.DeveloperSettings;
 import org.chromium.chrome.browser.settings.sync.SignInPreference;
@@ -175,7 +175,7 @@ public class MainPreferences extends PreferenceFragmentCompat
         // will the AA switch be assigned a value).
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT)
                 || !ContextUtils.getAppSharedPreferences().contains(
-                        AutofillAssistantPreferences.PREF_AUTOFILL_ASSISTANT_SWITCH)) {
+                        AutofillAssistantSettings.PREF_AUTOFILL_ASSISTANT_SWITCH)) {
             getPreferenceScreen().removePreference(findPreference(PREF_AUTOFILL_ASSISTANT));
         }
     }

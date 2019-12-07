@@ -75,6 +75,9 @@ class GlsRunnerTestBase : public ::testing::Test {
   FakeInternetAvailabilityChecker* fake_internet_checker() {
     return &fake_internet_checker_;
   }
+  FakeChromeAvailabilityChecker* fake_chrome_checker() {
+    return &fake_chrome_checker_;
+  }
 
   const Microsoft::WRL::ComPtr<ICredentialProvider>& created_provider() const {
     return gaia_provider_;
@@ -200,6 +203,7 @@ class GlsRunnerTestBase : public ::testing::Test {
   FakeCredentialProviderCredentialEvents
       fake_credential_provider_credential_events_;
   FakeCredentialProviderUserArray fake_user_array_;
+  FakeChromeAvailabilityChecker fake_chrome_checker_;
 
   // SID of the user that is considered to be locking the workstation. This is
   // only relevant for CPUS_UNLOCK_WORKSTATION usage.

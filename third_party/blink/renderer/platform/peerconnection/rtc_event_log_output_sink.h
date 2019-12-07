@@ -5,11 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_EVENT_LOG_OUTPUT_SINK_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_EVENT_LOG_OUTPUT_SINK_H_
 
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 
-class PLATFORM_EXPORT RtcEventLogOutputSink {
+class PLATFORM_EXPORT RtcEventLogOutputSink : public GarbageCollectedMixin {
  public:
   virtual ~RtcEventLogOutputSink() = default;
 

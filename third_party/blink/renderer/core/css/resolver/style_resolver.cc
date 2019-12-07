@@ -1536,6 +1536,7 @@ static inline bool IsValidMarkerStyleProperty(CSSPropertyID id) {
     case CSSPropertyID::kFontWeight:
     case CSSPropertyID::kTextCombineUpright:
     case CSSPropertyID::kUnicodeBidi:
+    case CSSPropertyID::kWhiteSpace:
       return true;
 
     // Not directly specified in spec, but variables should be supported nearly

@@ -1,0 +1,36 @@
+[document web] name='Action verbs'
+++[section]
+++++[static] name='Generic div'
+++[heading] name='Heading'
+++++[static] name='Heading'
+++[push button] name='Button' actions=(press)
+++[link] name='Link' actions=(jump)
+++++[static] name='Link' actions=(click-ancestor)
+++[entry] selectable-text actions=(activate)
+++[entry] selectable-text actions=(activate)
+++[entry] selectable-text actions=(activate)
+++[entry] selectable-text actions=(activate)
+++[check box] actions=(check) checkable:true
+++[check box] checked actions=(uncheck) checkable:true
+++[radio button] actions=(check) checkable:true
+++[toggle button] name='ARIA Switch' actions=(check) checkable:true
+++[panel]
+++++[toggle button] name='Summary' actions=(press)
+++++++[static] name='Summary'
+++[combo box] actions=(open)
+++++[menu]
+++++++[menu item] name='Pop-up button' selectable selected actions=(select)
+++[section] actions=(click)
+++++[static] name='Div with click handler' actions=(click-ancestor)
+++[panel] actions=(click)
+++++[paragraph] actions=(click-ancestor)
+++++++[static] name='Paragraph with click handler on parent' actions=(click-ancestor)
+++[menu]
+++++[menu item] name='Menu item 1' actions=(select)
+++++[check menu item] name='Menu item 2' checked actions=(uncheck) checkable:true
+++++[radio menu item] name='Menu item 3' actions=(check) checkable:true
+++[push button] name='ARIA Button' actions=(click)
+++[push button] name='ARIA button with tab index' actions=(press)
+++[push button] name='ARIA button with negative tab index' actions=(press)
+++[section]
+++++[push button] name='ARIA button that is an active descendant' actions=(press)

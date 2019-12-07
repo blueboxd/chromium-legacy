@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.FrameLayout;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.client.stream.Header;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 
@@ -16,8 +18,10 @@ public class HeaderViewHolder extends FeedViewHolder implements SwipeableViewHol
     private static final String TAG = "HeaderViewHolder";
     private final FrameLayout mFrameLayout;
 
-    /*@Nullable*/ private Header mHeader;
-    /*@Nullable*/ private SwipeNotifier mSwipeNotifier;
+    @Nullable
+    private Header mHeader;
+    @Nullable
+    private SwipeNotifier mSwipeNotifier;
 
     public HeaderViewHolder(FrameLayout itemView) {
         super(itemView);

@@ -29,9 +29,6 @@ class PermissionPromptBubbleView : public views::BubbleDialogDelegateView {
   // the UI.
   void CloseWithoutNotifyingDelegate();
 
-  // Returns the gfx::NativeWindow for the bubble's widget.
-  gfx::NativeWindow GetNativeWindow();
-
   // views::BubbleDialogDelegateView:
   void AddedToWidget() override;
   bool ShouldShowCloseButton() const override;

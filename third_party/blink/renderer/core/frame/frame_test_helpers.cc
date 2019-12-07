@@ -398,6 +398,16 @@ WebViewImpl* WebViewHelper::InitializeAndLoad(
 }
 
 WebViewImpl* WebViewHelper::InitializeRemote(
+    TestWebRemoteFrameClient* client,
+    scoped_refptr<SecurityOrigin> security_origin,
+    TestWebViewClient* web_view_client,
+    TestWebWidgetClient* web_widget_client) {
+  return InitializeRemoteWithOpener(nullptr, client, security_origin,
+                                    web_view_client, web_widget_client);
+}
+
+WebViewImpl* WebViewHelper::InitializeRemoteWithOpener(
+    WebFrame* opener,
     TestWebRemoteFrameClient* web_remote_frame_client,
     scoped_refptr<SecurityOrigin> security_origin,
     TestWebViewClient* web_view_client,
@@ -412,7 +422,7 @@ WebViewImpl* WebViewHelper::InitializeRemote(
   WebRemoteFrameImpl* frame = WebRemoteFrameImpl::CreateMainFrame(
       web_view_, web_remote_frame_client,
       InterfaceRegistry::GetEmptyInterfaceRegistry(),
-      web_remote_frame_client->GetAssociatedInterfaceProvider(), nullptr);
+      web_remote_frame_client->GetAssociatedInterfaceProvider(), opener);
   web_remote_frame_client->Bind(frame,
                                 std::move(owned_web_remote_frame_client));
   if (!security_origin)

@@ -258,9 +258,6 @@ QUIC_FLAG(bool,
 // If true, support HTTP/3 priority in v99.
 QUIC_FLAG(bool, FLAGS_quic_allow_http3_priority, false)
 
-// If true, enable QUIC version 50.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_50, true)
-
 // If the bandwidth during ack aggregation is smaller than (estimated
 // bandwidth * this flag), consider the current aggregation completed
 // and starts a new one.
@@ -358,10 +355,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_delete_send_rst_stream_inner,
           false)
 
-// If true, QUIC crypto handshaker uses handshaker delegate to notify session
-// about handshake events.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_handshaker_delegate, false)
-
 // If true, for QUIC BBRv2 flows, exit PROBE_BW_DOWN phase after one round trip
 // time.
 QUIC_FLAG(bool,
@@ -379,3 +372,7 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_send_max_push_id_with_settings,
           true)
+
+// If true, QUIC crypto handshaker uses handshaker delegate to notify session
+// about handshake events.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_handshaker_delegate2, false)

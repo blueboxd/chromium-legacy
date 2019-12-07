@@ -3823,9 +3823,6 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
 
   browser_controls_offset_manager_->ScrollBegin();
 
-  TRACE_EVENT_INSTANT1("cc", "SetCurrentlyScrollingNode ScrollBeginImpl",
-                       TRACE_EVENT_SCOPE_THREAD, "isNull",
-                       scrolling_node ? false : true);
   // TODO(majidvp): get rid of touch_scrolling_ and set is_direct_manipulation
   // in input_handler_proxy instead.
   touch_scrolling_ = type == InputHandler::TOUCHSCREEN;
@@ -4582,7 +4579,8 @@ void LayerTreeHostImpl::ScrollLatchedScroller(ScrollState* scroll_state) {
       std::abs(delta_applied_to_content.y()) > kEpsilon);
   scroll_state->ConsumeDelta(applied_delta.x(), applied_delta.y());
 
-  scroll_state->set_current_native_scrolling_node(scroll_node);
+  scroll_state->data()->set_current_native_scrolling_element(
+      scroll_node->element_id);
 }
 
 void LayerTreeHostImpl::LatchToScroller(ScrollState* scroll_state,
@@ -4735,12 +4733,14 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
       browser_controls_offset_manager_->ControlsTopOffset();
 
   scroll_state->set_is_direct_manipulation(touch_scrolling_);
-  scroll_state->set_current_native_scrolling_node(scroll_node);
 
+  scroll_state->data()->set_current_native_scrolling_element(
+      scroll_node->element_id);
   ScrollLatchedScroller(scroll_state);
 
-  ScrollNode* current_scrolling_node =
-      scroll_state->current_native_scrolling_node();
+  ScrollNode* current_scrolling_node = scroll_tree.FindNodeFromElementId(
+      scroll_state->data()->current_native_scrolling_element());
+
   TRACE_EVENT_INSTANT1("cc", "SetCurrentlyScrollingNode ApplyDelta",
                        TRACE_EVENT_SCOPE_THREAD, "isNull",
                        current_scrolling_node ? false : true);

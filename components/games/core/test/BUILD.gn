@@ -5,10 +5,15 @@
 static_library("test_support") {
   testonly = true
   sources = [
+    "mocks.cc",
+    "mocks.h",
     "test_utils.cc",
     "test_utils.h",
   ]
   deps = [
+    "//base",
+    "//components/games/core",
     "//components/games/core/proto",
+    "//testing/gmock",
   ]
 }

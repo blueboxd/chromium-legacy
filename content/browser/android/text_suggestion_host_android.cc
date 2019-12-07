@@ -43,7 +43,6 @@ void TextSuggestionHostAndroid::Create(JNIEnv* env, WebContents* web_contents) {
 TextSuggestionHostAndroid::TextSuggestionHostAndroid(JNIEnv* env,
                                                      WebContents* web_contents)
     : RenderWidgetHostConnector(web_contents),
-      WebContentsObserver(web_contents),
       rwhva_(nullptr),
       suggestion_menu_timeout_(base::BindRepeating(
           &TextSuggestionHostAndroid::OnSuggestionMenuTimeout,
@@ -139,7 +138,7 @@ TextSuggestionHostAndroid::GetJavaTextSuggestionHost() {
   ScopedJavaLocalRef<jobject> obj = java_text_suggestion_host_.get(env);
   if (obj.is_null()) {
     obj = Java_TextSuggestionHost_create(
-        env, WebContentsObserver::web_contents()->GetJavaWebContents(),
+        env, RenderWidgetHostConnector::web_contents()->GetJavaWebContents(),
         reinterpret_cast<intptr_t>(this));
     java_text_suggestion_host_ = JavaObjectWeakGlobalRef(env, obj);
   }

@@ -17,7 +17,12 @@ cr.define('history.history_routing_test', function() {
       }
 
       setup(function() {
-        app = replaceApp();
+        window.history.replaceState({}, '', '/');
+        PolymerTest.clearBody();
+        history.BrowserService.instance_ = new TestBrowserService();
+        app = document.createElement('history-app');
+        document.body.appendChild(app);
+
         assertEquals('chrome://history/', window.location.href);
         sidebar = app.$['content-side-bar'];
         toolbar = app.$['toolbar'];

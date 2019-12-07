@@ -321,8 +321,8 @@ TEST_F(PreviewsResourceLoadingHintsTestBlockImages,
   };
 
   for (const auto& test : tests) {
-    // By default, resource blocking hints do not apply to fonts.
-    EXPECT_TRUE(hints->AllowLoad(ResourceType::kFont, test.url,
+    // By default, resource blocking hints do not apply to SVG documents.
+    EXPECT_TRUE(hints->AllowLoad(ResourceType::kSVGDocument, test.url,
                                  ResourceLoadPriority::kHighest));
     // Feature override should cause resource blocking hints to apply to images.
     EXPECT_EQ(test.allow_load_expected,
@@ -378,15 +378,16 @@ TEST_F(PreviewsResourceLoadingHintsTestAllowCSS,
 
   for (const auto& test : tests) {
     // Feature override should cause resource blocking hints to apply to only
-    // scripts.
-    EXPECT_TRUE(hints->AllowLoad(ResourceType::kFont, test.url,
-                                 ResourceLoadPriority::kHighest));
+    // scripts and fonts.
     EXPECT_TRUE(hints->AllowLoad(ResourceType::kImage, test.url,
                                  ResourceLoadPriority::kHighest));
     EXPECT_TRUE(hints->AllowLoad(ResourceType::kCSSStyleSheet, test.url,
                                  ResourceLoadPriority::kHighest));
     EXPECT_EQ(test.allow_load_expected,
               hints->AllowLoad(ResourceType::kScript, test.url,
+                               ResourceLoadPriority::kHighest));
+    EXPECT_EQ(test.allow_load_expected,
+              hints->AllowLoad(ResourceType::kFont, test.url,
                                ResourceLoadPriority::kHighest));
   }
 }

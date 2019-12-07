@@ -50,6 +50,11 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
     @VisibleForTesting
     public static final String INSTANT_APP_HOLDBACK_ID_STRING = "instantapp:holdback";
 
+    // The maximum number of related apps declared in the Web Manifest taken into account when
+    // determining whether the related app is installed and mutually related.
+    @VisibleForTesting
+    static final int MAX_ALLOWED_RELATED_APPS = 3;
+
     private static final String TAG = "InstalledAppProvider";
 
     private final FrameUrlDelegate mFrameUrlDelegate;
@@ -85,7 +90,6 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
     public void filterInstalledApps(
             final RelatedApplication[] relatedApps, final FilterInstalledAppsResponse callback) {
         final URI frameUrl = mFrameUrlDelegate.getUrl();
-
         // Use an AsyncTask to execute the installed/related checks on a background thread (so as
         // not to block the UI thread).
         new AsyncTask<Pair<RelatedApplication[], Integer>>() {
@@ -133,7 +137,8 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
         ArrayList<RelatedApplication> installedApps = new ArrayList<RelatedApplication>();
         int delayMillis = 0;
         PackageManager pm = mContext.getPackageManager();
-        for (RelatedApplication app : relatedApps) {
+        for (int i = 0; i < Math.min(relatedApps.length, MAX_ALLOWED_RELATED_APPS); i++) {
+            RelatedApplication app = relatedApps[i];
             // If the package is of type "play", it is installed, and the origin is associated with
             // package, add the package to the list of valid packages.
             // NOTE: For security, it must not be possible to distinguish (from the response)

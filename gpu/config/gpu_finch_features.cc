@@ -11,33 +11,15 @@
 #endif
 
 namespace features {
-namespace {
-
-#if defined(OS_ANDROID)
-bool FieldIsInBlacklist(const char* current_value, std::string blacklist_str) {
-  std::vector<std::string> blacklist = base::SplitString(
-      blacklist_str, ",", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  for (const std::string& value : blacklist) {
-    if (value == current_value)
-      return true;
-  }
-
-  return false;
-}
-#endif
-
-}  // namespace
 
 #if defined(OS_ANDROID)
 // Use android AImageReader when playing videos with MediaPlayer.
 const base::Feature kAImageReaderMediaPlayer{"AImageReaderMediaPlayer",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Use android SurfaceControl API for managing display compositor's buffer queue
-// and using overlays on Android.
-// Note that the feature only works with VizDisplayCompositor enabled.
-const base::Feature kAndroidSurfaceControl{"AndroidSurfaceControl",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
+// Used only by webview to disable SurfaceControl.
+const base::Feature kDisableSurfaceControlForWebview{
+    "DisableSurfaceControlForWebview", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Enable GPU Rasterization by default. This can still be overridden by
@@ -131,26 +113,10 @@ const base::Feature kVulkan{"Vulkan", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
 bool IsAndroidSurfaceControlEnabled() {
-  if (!gl::SurfaceControl::IsSupported())
+  if (base::FeatureList::IsEnabled(kDisableSurfaceControlForWebview))
     return false;
 
-  if (!base::FeatureList::IsEnabled(kAndroidSurfaceControl))
-    return false;
-
-  if (FieldIsInBlacklist(base::android::BuildInfo::GetInstance()->model(),
-                         base::GetFieldTrialParamValueByFeature(
-                             kAndroidSurfaceControl, "blacklisted_models"))) {
-    return false;
-  }
-
-  if (FieldIsInBlacklist(
-          base::android::BuildInfo::GetInstance()->android_build_id(),
-          base::GetFieldTrialParamValueByFeature(kAndroidSurfaceControl,
-                                                 "blacklisted_build_ids"))) {
-    return false;
-  }
-
-  return true;
+  return gl::SurfaceControl::IsSupported();
 }
 #endif
 

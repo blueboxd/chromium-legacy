@@ -62,6 +62,9 @@ extern const char kAccessibilityExposeDisplayNoneDescription[];
 extern const char kAccessibilityInternalsPageImprovementsName[];
 extern const char kAccessibilityInternalsPageImprovementsDescription[];
 
+extern const char kAccountIdMigrationName[];
+extern const char kAccountIdMigrationDescription[];
+
 extern const char kAllowInsecureLocalhostName[];
 extern const char kAllowInsecureLocalhostDescription[];
 
@@ -1394,9 +1397,6 @@ extern const char kAndroidAutofillAccessibilityDescription[];
 extern const char kAndroidSetupSearchEngineName[];
 extern const char kAndroidSetupSearchEngineDescription[];
 
-extern const char kAndroidSurfaceControl[];
-extern const char kAndroidSurfaceControlDescription[];
-
 extern const char kAppNotificationStatusMessagingName[];
 extern const char kAppNotificationStatusMessagingDescription[];
 
@@ -1993,9 +1993,6 @@ extern const char kCryptAuthV2DeviceSyncDescription[];
 
 extern const char kCryptAuthV2EnrollmentName[];
 extern const char kCryptAuthV2EnrollmentDescription[];
-
-extern const char kCupsPrintersUiOverhaulName[];
-extern const char kCupsPrintersUiOverhaulDescription[];
 
 extern const char kDisableCancelAllTouchesName[];
 extern const char kDisableCancelAllTouchesDescription[];

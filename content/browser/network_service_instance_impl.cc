@@ -251,9 +251,9 @@ network::mojom::NetworkService* GetNetworkService() {
     if (GetContentClient()->browser()->IsShuttingDown()) {
       // This happens at system shutdown, since in other scenarios the network
       // process would only be torn down once the message loop stopped running.
-      // We don't want to want to start the network service again so just create
-      // message pipe that's not bound to stop consumers from requesting
-      // creation of the service.
+      // We don't want to start the network service again so just create message
+      // pipe that's not bound to stop consumers from requesting creation of the
+      // service.
       auto receiver = g_network_service_remote->BindNewPipeAndPassReceiver();
       auto leaked_pipe = receiver.PassPipe().release();
     } else {

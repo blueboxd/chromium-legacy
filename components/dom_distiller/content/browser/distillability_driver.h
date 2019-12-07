@@ -13,7 +13,6 @@
 #include "base/optional.h"
 #include "components/dom_distiller/content/browser/distillable_page_utils.h"
 #include "components/dom_distiller/content/common/mojom/distillability_service.mojom.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 
@@ -21,8 +20,7 @@ namespace dom_distiller {
 
 // This is an IPC helper for determining whether a page should be distilled.
 class DistillabilityDriver
-    : public content::WebContentsObserver,
-      public content::WebContentsUserData<DistillabilityDriver> {
+    : public content::WebContentsUserData<DistillabilityDriver> {
  public:
   ~DistillabilityDriver() override;
   void CreateDistillabilityService(

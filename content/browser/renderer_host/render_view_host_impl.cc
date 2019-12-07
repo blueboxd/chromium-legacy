@@ -46,7 +46,6 @@
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/scoped_active_url.h"
-#include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
@@ -405,6 +404,7 @@ void RenderViewHostImpl::SetMainFrameRoutingId(int routing_id) {
 }
 
 void RenderViewHostImpl::EnterBackForwardCache() {
+  TRACE_EVENT0("navigation", "RenderViewHostImpl::EnterBackForwardCache");
   FrameTree* frame_tree = GetDelegate()->GetFrameTree();
   frame_tree->UnregisterRenderViewHost(this);
   is_in_back_forward_cache_ = true;
@@ -414,6 +414,7 @@ void RenderViewHostImpl::EnterBackForwardCache() {
 
 void RenderViewHostImpl::LeaveBackForwardCache(
     base::TimeTicks navigation_start) {
+  TRACE_EVENT0("navigation", "RenderViewHostImpl::LeaveBackForwardCache");
   FrameTree* frame_tree = GetDelegate()->GetFrameTree();
   // At this point, the frames |this| RenderViewHostImpl belongs to are
   // guaranteed to be committed, so it should be reused going forward.

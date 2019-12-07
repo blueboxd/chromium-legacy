@@ -8,6 +8,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/autoplay/autoplay.mojom-blink.h"
+#include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/media/html_audio_element.h"
@@ -38,6 +39,8 @@ class MockWebMediaPlayer : public EmptyWebMediaPlayer {
   MOCK_CONST_METHOD0(HasVideo, bool());
   MOCK_CONST_METHOD0(Duration, double());
   MOCK_CONST_METHOD0(CurrentTime, double());
+  MOCK_CONST_METHOD0(GetNetworkState, NetworkState());
+  MOCK_CONST_METHOD0(WouldTaintOrigin, bool());
   MOCK_METHOD1(SetLatencyHint, void(double));
   MOCK_METHOD1(EnabledAudioTracksChanged, void(const WebVector<TrackId>&));
   MOCK_METHOD1(SelectedVideoTrackChanged, void(TrackId*));
@@ -79,19 +82,19 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
 
     // Most tests do not care about this call, nor its return value. Those that
     // do will clear this expectation and set custom expectations/returns.
-    EXPECT_CALL(*mock_media_player, HasAudio())
-        .WillRepeatedly(testing::Return(true));
-    EXPECT_CALL(*mock_media_player, HasVideo())
-        .WillRepeatedly(testing::Return(true));
-    EXPECT_CALL(*mock_media_player, Duration())
-        .WillRepeatedly(testing::Return(1.0));
-    EXPECT_CALL(*mock_media_player, CurrentTime())
-        .WillRepeatedly(testing::Return(0));
+    EXPECT_CALL(*mock_media_player, HasAudio()).WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_media_player, HasVideo()).WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_media_player, Duration()).WillRepeatedly(Return(1.0));
+    EXPECT_CALL(*mock_media_player, CurrentTime()).WillRepeatedly(Return(0));
     EXPECT_CALL(*mock_media_player, Load(_, _, _))
         .Times(AnyNumber())
         .WillRepeatedly(Return(WebMediaPlayer::LoadTiming::kImmediate));
-    EXPECT_CALL(*mock_media_player, DidLazyLoad)
-        .WillRepeatedly(testing::Return(false));
+    EXPECT_CALL(*mock_media_player, DidLazyLoad).WillRepeatedly(Return(false));
+    EXPECT_CALL(*mock_media_player, WouldTaintOrigin)
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_media_player, GetNetworkState)
+        .WillRepeatedly(Return(WebMediaPlayer::kNetworkStateIdle));
+    EXPECT_CALL(*mock_media_player, SetLatencyHint(_)).Times(AnyNumber());
 
     dummy_page_holder_ = std::make_unique<DummyPageHolder>(
         IntSize(), nullptr,
@@ -124,6 +127,12 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
   void SetReadyState(HTMLMediaElement::ReadyState state) {
     Media()->SetReadyState(state);
   }
+
+  void SetNetworkState(WebMediaPlayer::NetworkState state) {
+    Media()->SetNetworkState(state);
+  }
+
+  bool MediaShouldBeOpaque() const { return Media()->MediaShouldBeOpaque(); }
 
   void SetError(MediaError* err) { Media()->MediaEngineError(err); }
 
@@ -274,7 +283,7 @@ TEST_P(HTMLMediaElementTest, CouldPlayIfEnoughDataRespondsToEnded) {
   // Now advance current time to duration and verify ended state.
   testing::Mock::VerifyAndClearExpectations(mock_wmpi);
   EXPECT_CALL(*mock_wmpi, CurrentTime())
-      .WillRepeatedly(testing::Return(Media()->duration()));
+      .WillRepeatedly(Return(Media()->duration()));
   EXPECT_FALSE(CouldPlayIfEnoughData());
   EXPECT_TRUE(Media()->ended());
 }
@@ -328,9 +337,9 @@ TEST_P(HTMLMediaElementTest, CouldPlayIfEnoughDataInfiniteStreamNeverEnds) {
   test::RunPendingTasks();
 
   EXPECT_CALL(*MockMediaPlayer(), Duration())
-      .WillRepeatedly(testing::Return(std::numeric_limits<double>::infinity()));
+      .WillRepeatedly(Return(std::numeric_limits<double>::infinity()));
   EXPECT_CALL(*MockMediaPlayer(), CurrentTime())
-      .WillRepeatedly(testing::Return(std::numeric_limits<double>::infinity()));
+      .WillRepeatedly(Return(std::numeric_limits<double>::infinity()));
 
   SetReadyState(HTMLMediaElement::kHaveMetadata);
   EXPECT_FALSE(Media()->paused());
@@ -571,6 +580,22 @@ TEST_P(HTMLMediaElementTest, EmptyRedirectedSrcUsesOriginal) {
   EXPECT_EQ(Media()->downloadURL(), Media()->currentSrc());
   SetReadyState(HTMLMediaElement::kHaveFutureData);
   EXPECT_EQ(Media()->downloadURL(), Media()->currentSrc());
+}
+
+TEST_P(HTMLMediaElementTest, NoPendingActivityEvenIfBeforeMetadata) {
+  Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
+  test::RunPendingTasks();
+
+  MockWebMediaPlayer* mock_wmpi =
+      reinterpret_cast<MockWebMediaPlayer*>(Media()->GetWebMediaPlayer());
+  EXPECT_CALL(*mock_wmpi, WouldTaintOrigin()).WillRepeatedly(Return(true));
+  EXPECT_NE(mock_wmpi, nullptr);
+
+  EXPECT_TRUE(MediaShouldBeOpaque());
+  EXPECT_TRUE(Media()->HasPendingActivity());
+  SetNetworkState(WebMediaPlayer::kNetworkStateIdle);
+  EXPECT_FALSE(Media()->HasPendingActivity());
+  EXPECT_TRUE(MediaShouldBeOpaque());
 }
 
 }  // namespace blink

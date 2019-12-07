@@ -285,34 +285,6 @@ int Display::PanelRotationAsDegree() const {
   return RotationToDegrees(panel_rotation_);
 }
 
-// static
-gfx::Transform Display::GetRotationTransform(Rotation rotation,
-                                             const gfx::SizeF& size) {
-  // NB: Using gfx::Transform::Rotate() introduces very small errors here
-  // which are later exacerbated by use of gfx::EnclosingRect() in
-  // WindowTreeHost::GetTransformedRootWindowBoundsInPixels().
-  const gfx::Transform rotate_90(0.f, -1.f, 0.f, 0.f,  //
-                                 1.f, 0.f, 0.f, 0.f,   //
-                                 0.f, 0.f, 1.f, 0.f,   //
-                                 0.f, 0.f, 0.f, 1.f);
-  const gfx::Transform rotate_180 = rotate_90 * rotate_90;
-  const gfx::Transform rotate_270 = rotate_180 * rotate_90;
-  gfx::Transform translation;
-  switch (rotation) {
-    case display::Display::ROTATE_0:
-      return translation;
-    case display::Display::ROTATE_90:
-      translation.Translate(size.height(), 0);
-      return translation * rotate_90;
-    case display::Display::ROTATE_180:
-      translation.Translate(size.width(), size.height());
-      return translation * rotate_180;
-    case display::Display::ROTATE_270:
-      translation.Translate(0, size.width());
-      return translation * rotate_270;
-  }
-}
-
 gfx::Insets Display::GetWorkAreaInsets() const {
   return gfx::Insets(work_area_.y() - bounds_.y(), work_area_.x() - bounds_.x(),
                      bounds_.bottom() - work_area_.bottom(),

@@ -14,6 +14,8 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.piet.AdapterFactory.SingletonKeySupplier;
 import org.chromium.chrome.browser.feed.library.piet.DebugLogger.MessageType;
 import org.chromium.components.feed.core.proto.ui.piet.ElementsProto.Content;
@@ -28,8 +30,10 @@ class ElementListAdapter extends ElementContainerAdapter<LinearLayout, ElementLi
     private static final String TAG = "ElementListAdapter";
 
     // Only needed for reporting errors during updateChildLayoutParams.
-    /*@Nullable*/ private FrameContext mFrameContextForDebugLogsFromCreate;
-    /*@Nullable*/ private FrameContext mFrameContextForDebugLogsFromBind;
+    @Nullable
+    private FrameContext mFrameContextForDebugLogsFromCreate;
+    @Nullable
+    private FrameContext mFrameContextForDebugLogsFromBind;
 
     private ElementListAdapter(Context context, AdapterParameters parameters) {
         super(context, parameters, createView(context), KeySupplier.SINGLETON_KEY);
@@ -84,7 +88,7 @@ class ElementListAdapter extends ElementContainerAdapter<LinearLayout, ElementLi
         }
     }
 
-    /*@Nullable*/
+    @Nullable
     private FrameContext getLoggingFrameContext() {
         return mFrameContextForDebugLogsFromBind != null ? mFrameContextForDebugLogsFromBind
                                                          : mFrameContextForDebugLogsFromCreate;

@@ -9,10 +9,14 @@ source_set("quick_answers") {
     "quick_answers_model.h",
     "search_result_loader.cc",
     "search_result_loader.h",
+    "search_result_parsers/definition_result_parser.cc",
+    "search_result_parsers/definition_result_parser.h",
     "search_result_parsers/result_parser.cc",
     "search_result_parsers/result_parser.h",
     "search_result_parsers/search_response_parser.cc",
     "search_result_parsers/search_response_parser.h",
+    "search_result_parsers/translation_result_parser.cc",
+    "search_result_parsers/translation_result_parser.h",
     "search_result_parsers/unit_conversion_result_parser.cc",
     "search_result_parsers/unit_conversion_result_parser.h",
   ]
@@ -29,8 +33,10 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "search_result_parsers/definition_result_parser_unittest.cc",
     "search_result_parsers/result_parser_unittest.cc",
     "search_result_parsers/search_response_parser_unittest.cc",
+    "search_result_parsers/translation_result_parser_unittest.cc",
     "search_result_parsers/unit_conversion_result_parser_unittest.cc",
   ]
 

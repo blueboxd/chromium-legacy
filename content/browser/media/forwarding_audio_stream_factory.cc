@@ -9,10 +9,12 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/audio_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -20,26 +22,44 @@
 #include "content/public/browser/web_contents.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/user_input_monitor.h"
-#include "services/audio/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace content {
 
+namespace {
+
+ForwardingAudioStreamFactory::StreamFactoryBinder&
+GetStreamFactoryBinderOverride() {
+  static base::NoDestructor<ForwardingAudioStreamFactory::StreamFactoryBinder>
+      binder;
+  return *binder;
+}
+
+void BindStreamFactoryFromUIThread(
+    mojo::PendingReceiver<audio::mojom::StreamFactory> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  const auto& binder_override = GetStreamFactoryBinderOverride();
+  if (binder_override) {
+    binder_override.Run(std::move(receiver));
+    return;
+  }
+
+  GetAudioService().BindStreamFactory(std::move(receiver));
+}
+
+}  // namespace
+
 ForwardingAudioStreamFactory::Core::Core(
     base::WeakPtr<ForwardingAudioStreamFactory> owner,
     media::UserInputMonitorBase* user_input_monitor,
-    std::unique_ptr<service_manager::Connector> connector,
     std::unique_ptr<AudioStreamBrokerFactory> broker_factory)
     : user_input_monitor_(user_input_monitor),
       owner_(std::move(owner)),
       broker_factory_(std::move(broker_factory)),
-      group_id_(base::UnguessableToken::Create()),
-      connector_(std::move(connector)) {
+      group_id_(base::UnguessableToken::Create()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(owner_);
   DCHECK(broker_factory_);
-  DCHECK(connector_);
 }
 
 ForwardingAudioStreamFactory::Core::~Core() {
@@ -206,13 +226,11 @@ ForwardingAudioStreamFactory::Core* ForwardingAudioStreamFactory::CoreForFrame(
 ForwardingAudioStreamFactory::ForwardingAudioStreamFactory(
     WebContents* web_contents,
     media::UserInputMonitorBase* user_input_monitor,
-    std::unique_ptr<service_manager::Connector> connector,
     std::unique_ptr<AudioStreamBrokerFactory> broker_factory)
     : WebContentsObserver(web_contents), core_() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  core_ =
-      std::make_unique<Core>(weak_ptr_factory_.GetWeakPtr(), user_input_monitor,
-                             std::move(connector), std::move(broker_factory));
+  core_ = std::make_unique<Core>(weak_ptr_factory_.GetWeakPtr(),
+                                 user_input_monitor, std::move(broker_factory));
 }
 
 ForwardingAudioStreamFactory::~ForwardingAudioStreamFactory() {
@@ -268,6 +286,11 @@ void ForwardingAudioStreamFactory::FrameDeleted(
                                 render_frame_host->GetRoutingID()));
 }
 
+void ForwardingAudioStreamFactory::OverrideStreamFactoryBinderForTesting(
+    StreamFactoryBinder binder) {
+  GetStreamFactoryBinderOverride() = std::move(binder);
+}
+
 void ForwardingAudioStreamFactory::Core::CleanupStreamsBelongingTo(
     int render_process_id,
     int render_frame_id) {
@@ -317,8 +340,10 @@ audio::mojom::StreamFactory* ForwardingAudioStreamFactory::Core::GetFactory() {
     TRACE_EVENT_INSTANT1(
         "audio", "ForwardingAudioStreamFactory: Binding new factory",
         TRACE_EVENT_SCOPE_THREAD, "group", group_id_.GetLowForSerialization());
-    connector_->Connect(audio::mojom::kServiceName,
-                        remote_factory_.BindNewPipeAndPassReceiver());
+    base::PostTask(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&BindStreamFactoryFromUIThread,
+                       remote_factory_.BindNewPipeAndPassReceiver()));
     // Unretained is safe because |this| owns |remote_factory_|.
     remote_factory_.set_disconnect_handler(base::BindOnce(
         &ForwardingAudioStreamFactory::Core::ResetRemoteFactoryPtr,

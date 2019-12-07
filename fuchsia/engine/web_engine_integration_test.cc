@@ -7,6 +7,7 @@
 #include <lib/fdio/directory.h>
 #include <lib/fidl/cpp/binding.h>
 #include <lib/sys/cpp/component_context.h>
+#include <zircon/processargs.h>
 
 #include "base/command_line.h"
 #include "base/fuchsia/default_context.h"
@@ -52,6 +53,15 @@ class WebEngineIntegrationTest : public testing::Test {
     fuchsia::sys::LaunchInfo launch_info;
     launch_info.url = "fuchsia-pkg://fuchsia.com/chromium#meta/chromium.cmx";
     launch_info.arguments = command_line.argv();
+
+    // Clone stderr from the current process to WebEngine and ask it to
+    // redirects all logs to stderr.
+    launch_info.err = fuchsia::sys::FileDescriptor::New();
+    launch_info.err->type0 = PA_FD;
+    zx_status_t status = fdio_fd_clone(
+        STDERR_FILENO, launch_info.err->handle0.reset_and_get_address());
+    ZX_CHECK(status == ZX_OK, status);
+    launch_info.arguments->push_back("--enable-logging=stderr");
 
     fidl::InterfaceHandle<fuchsia::io::Directory> web_engine_services_dir;
     launch_info.directory_request =

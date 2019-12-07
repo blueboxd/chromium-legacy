@@ -116,6 +116,10 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   virtual void OnCloseContents(content::WebContents* source,
                                bool* out_close_dialog) = 0;
 
+  // Returns true if escape should immediately close the dialog. Default is
+  // true.
+  virtual bool ShouldCloseDialogOnEscape() const;
+
   // A callback to allow the delegate to dictate that the window should not
   // have a title bar.  This is useful when presenting branded interfaces.
   virtual bool ShouldShowDialogTitle() const = 0;

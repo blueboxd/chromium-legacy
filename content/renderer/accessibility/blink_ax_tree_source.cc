@@ -20,7 +20,6 @@
 #include "content/renderer/accessibility/ax_image_annotator.h"
 #include "content/renderer/accessibility/blink_ax_enum_conversion.h"
 #include "content/renderer/accessibility/render_accessibility_impl.h"
-#include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_view_impl.h"
@@ -1116,14 +1115,6 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       if (!role.empty())
         TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kRole,
                                       role);
-    }
-
-    // Browser plugin (used in a <webview>).
-    BrowserPlugin* browser_plugin = BrowserPlugin::GetFromNode(element);
-    if (browser_plugin) {
-      dst->AddContentIntAttribute(
-          AX_CONTENT_ATTR_CHILD_BROWSER_PLUGIN_INSTANCE_ID,
-          browser_plugin->browser_plugin_instance_id());
     }
 
     // Frames and iframes.

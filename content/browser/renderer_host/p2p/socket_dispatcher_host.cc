@@ -63,8 +63,8 @@ void P2PSocketDispatcherHost::StopRtpDump(bool incoming, bool outgoing) {
   }
 }
 
-void P2PSocketDispatcherHost::BindRequest(
-    network::mojom::P2PSocketManagerRequest request) {
+void P2PSocketDispatcherHost::BindReceiver(
+    mojo::PendingReceiver<network::mojom::P2PSocketManager> receiver) {
   auto* rph = RenderProcessHostImpl::FromID(render_process_id_);
   if (!rph)
     return;
@@ -77,7 +77,8 @@ void P2PSocketDispatcherHost::BindRequest(
   trusted_socket_manager_.reset();
   rph->GetStoragePartition()->GetNetworkContext()->CreateP2PSocketManager(
       std::move(trusted_socket_manager_client),
-      trusted_socket_manager_.BindNewPipeAndPassReceiver(), std::move(request));
+      trusted_socket_manager_.BindNewPipeAndPassReceiver(),
+      std::move(receiver));
   if (dump_incoming_rtp_packet_ || dump_outgoing_rtp_packet_) {
     trusted_socket_manager_->StartRtpDump(dump_incoming_rtp_packet_,
                                           dump_outgoing_rtp_packet_);

@@ -38,7 +38,7 @@ CONTENT_EXPORT extern const unsigned char kMinimumIndexId;
 CONTENT_EXPORT std::string MaxIDBKey();
 CONTENT_EXPORT std::string MinIDBKey();
 
-// DatabaseId, BlobKey
+// DatabaseId, BlobNumber
 typedef std::pair<int64_t, int64_t> BlobJournalEntryType;
 typedef std::vector<BlobJournalEntryType> BlobJournalType;
 
@@ -292,11 +292,11 @@ class DatabaseMetaDataKey {
   };
 
   CONTENT_EXPORT static const int64_t kAllBlobsKey;
-  static const int64_t kBlobKeyGeneratorInitialNumber;
+  static const int64_t kBlobNumberGeneratorInitialNumber;
   // All keys <= 0 are invalid.  This one's just a convenient example.
-  static const int64_t kInvalidBlobKey;
+  static const int64_t kInvalidBlobNumber;
 
-  static bool IsValidBlobKey(int64_t blob_key);
+  static bool IsValidBlobNumber(int64_t blob_number);
   CONTENT_EXPORT static std::string Encode(int64_t database_id,
                                            MetaDataType type);
 };

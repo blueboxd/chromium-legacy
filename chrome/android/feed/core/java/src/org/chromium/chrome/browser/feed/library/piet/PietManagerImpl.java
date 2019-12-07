@@ -8,6 +8,8 @@ import android.content.Context;
 import android.support.annotation.VisibleForTesting;
 import android.view.ViewGroup;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.feed.library.api.host.config.DebugBehavior;
 import org.chromium.chrome.browser.feed.library.common.time.Clock;
@@ -28,7 +30,9 @@ class PietManagerImpl implements PietManager {
     private final Clock mClock;
     private final boolean mAllowLegacyRoundedCornerImpl;
     private final boolean mAllowOutlineRoundedCornerImpl;
-    @VisibleForTesting /*@Nullable*/ AdapterParameters mAdapterParameters;
+    @VisibleForTesting
+    @Nullable
+    AdapterParameters mAdapterParameters;
 
     PietManagerImpl(DebugBehavior debugBehavior, AssetProvider assetProvider,
             CustomElementProvider customElementProvider, HostBindingProvider hostBindingProvider,
@@ -44,15 +48,15 @@ class PietManagerImpl implements PietManager {
     }
 
     @Override
-    public FrameAdapter createPietFrameAdapter(Supplier</*@Nullable*/ ViewGroup> cardViewProducer,
+    public FrameAdapter createPietFrameAdapter(Supplier<ViewGroup> cardViewProducer,
             ActionHandler actionHandler, EventLogger eventLogger, Context context) {
         return createPietFrameAdapter(cardViewProducer, actionHandler, eventLogger, context, null);
     }
 
     @Override
-    public FrameAdapter createPietFrameAdapter(Supplier</*@Nullable*/ ViewGroup> cardViewProducer,
+    public FrameAdapter createPietFrameAdapter(Supplier<ViewGroup> cardViewProducer,
             ActionHandler actionHandler, EventLogger eventLogger, Context context,
-            /*@Nullable*/ LogDataCallback logDataCallback) {
+            @Nullable LogDataCallback logDataCallback) {
         AdapterParameters parameters =
                 getAdapterParameters(context, cardViewProducer, logDataCallback);
 
@@ -66,9 +70,8 @@ class PietManagerImpl implements PietManager {
      * {@code AdapterParameters} is scoped to the {@code Context}.
      */
     @VisibleForTesting
-    AdapterParameters getAdapterParameters(Context context,
-            Supplier</*@Nullable*/ ViewGroup> cardViewProducer,
-            /*@Nullable*/ LogDataCallback logDataCallback) {
+    AdapterParameters getAdapterParameters(Context context, Supplier<ViewGroup> cardViewProducer,
+            @Nullable LogDataCallback logDataCallback) {
         if (mAdapterParameters == null || mAdapterParameters.mContext != context) {
             mAdapterParameters = new AdapterParameters(context, cardViewProducer,
                     new HostProviders(mAssetProvider, mCustomElementProvider, mHostBindingProvider,

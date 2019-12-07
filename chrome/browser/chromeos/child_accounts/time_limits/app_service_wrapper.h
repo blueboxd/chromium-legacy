@@ -23,16 +23,19 @@ namespace app_time {
 class AppId;
 
 // Wrapper around AppService.
-// Provides abstraction layer for Per-App Time Limits. Takes care of types
-// conversions and data filetering, so those operations are not spread around
-// the per-app time limits code.
+// Provides abstraction layer for Per-App Time Limits (PATL). Takes care of
+// types conversions and data filetering, so those operations are not spread
+// around the PATL code.
 class AppServiceWrapper : public apps::AppRegistryCache::Observer {
  public:
   // Notifies listeners about app state changes.
+  // Listener only get updates about apps that are relevant for PATL feature.
   class EventListener : public base::CheckedObserver {
    public:
     virtual void OnAppInstalled(const AppId& app_id) {}
     virtual void OnAppUninstalled(const AppId& app_id) {}
+    virtual void OnAppAvailable(const AppId& app_id) {}
+    virtual void OnAppBlocked(const AppId& app_id) {}
   };
 
   explicit AppServiceWrapper(Profile* profile);

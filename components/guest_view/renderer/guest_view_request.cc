@@ -66,14 +66,12 @@ void GuestViewAttachRequest::PerformRequest() {
   if (!container()->render_frame())
     return;
 
+  // TODO(wjmaclean): Can this next chunk be removed?
   // Step 1, send the attach params to guest_view/.
   container()->render_frame()->Send(
       new GuestViewHostMsg_AttachGuest(container()->element_instance_id(),
                                        guest_instance_id_,
                                        *params_));
-
-  // Step 2, attach plugin through content/.
-  container()->render_frame()->AttachGuest(container()->element_instance_id());
 }
 
 void GuestViewAttachRequest::HandleResponse(const IPC::Message& message) {
@@ -114,10 +112,7 @@ GuestViewDetachRequest::~GuestViewDetachRequest() {
 }
 
 void GuestViewDetachRequest::PerformRequest() {
-  if (!container()->render_frame())
-    return;
-
-  container()->render_frame()->DetachGuest(container()->element_instance_id());
+  // TODO(wjmaclean): Remove this function.
 }
 
 void GuestViewDetachRequest::HandleResponse(const IPC::Message& message) {

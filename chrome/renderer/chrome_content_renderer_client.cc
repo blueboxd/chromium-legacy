@@ -84,6 +84,7 @@
 #include "components/error_page/common/localized_error.h"
 #include "components/network_hints/renderer/web_prescient_networking_impl.h"
 #include "components/page_load_metrics/renderer/metrics_render_frame_observer.h"
+#include "components/paint_preview/buildflags/buildflags.h"
 #include "components/pdf/renderer/pepper_pdf_host.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/renderer/threat_dom_details.h"
@@ -193,6 +194,10 @@
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/renderer/pepper/chrome_pdf_print_client.h"
+#endif
+
+#if BUILDFLAG(ENABLE_PAINT_PREVIEW)
+#include "components/paint_preview/renderer/paint_preview_recorder_impl.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
@@ -507,6 +512,10 @@ void ChromeContentRendererClient::RenderFrameCreated(
 #if BUILDFLAG(ENABLE_PRINTING)
   new printing::PrintRenderFrameHelper(
       render_frame, std::make_unique<ChromePrintRenderFrameHelperDelegate>());
+#endif
+
+#if BUILDFLAG(ENABLE_PAINT_PREVIEW)
+  new paint_preview::PaintPreviewRecorderImpl(render_frame);
 #endif
 
 #if defined(OS_ANDROID)

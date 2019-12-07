@@ -92,6 +92,7 @@ void OverlayPresenterImpl::SetPresentationContext(
   // Reset |presenting| since it was tracking the status for the previous
   // delegate's presentation context.
   presenting_ = false;
+  presented_request_ = nullptr;
 
   if (presentation_context_) {
     presentation_context_->AddObserver(this);
@@ -198,6 +199,7 @@ void OverlayPresenterImpl::PresentOverlayForActiveRequest() {
     return;
 
   presenting_ = true;
+  presented_request_ = request;
 
   // Notify the observers that the overlay UI is about to be shown.
   for (auto& observer : observers_) {
@@ -220,7 +222,7 @@ void OverlayPresenterImpl::OverlayWasPresented(
     OverlayPresentationContext* presentation_context,
     OverlayRequest* request) {
   DCHECK_EQ(presentation_context_, presentation_context);
-  DCHECK_EQ(GetActiveRequest(), request);
+  DCHECK_EQ(presented_request_, request);
   for (auto& observer : observers_) {
     observer.DidShowOverlay(this, request);
   }
@@ -249,7 +251,14 @@ void OverlayPresenterImpl::OverlayWasDismissed(
     popped_request = queue->PopFrontRequest();
   }
 
+  // The dismissed overlay UI should be for |presented_request_|.  If
+  // |presented_request_| is reset to nullptr before the completion of its UI's
+  // dismissal, this means that the UI was cancelled.
+  DCHECK(presented_request_ ? presented_request_ == request
+                            : reason == OverlayDismissalReason::kCancellation);
+
   presenting_ = false;
+  presented_request_ = nullptr;
 
   // Notify the observers that the overlay UI was hidden.
   for (auto& observer : observers_) {
@@ -263,7 +272,7 @@ void OverlayPresenterImpl::OverlayWasDismissed(
     PresentOverlayForActiveRequest();
 }
 
-#pragma mark Cancellation helpers
+#pragma mark UI Cancellation helpers
 
 void OverlayPresenterImpl::CancelOverlayUIForRequest(OverlayRequest* request) {
   if (!presentation_context_ || !request)
@@ -297,18 +306,45 @@ void OverlayPresenterImpl::BrowserDestroyed(Browser* browser) {
 #pragma mark OverlayRequestQueueImpl::Observer
 
 void OverlayPresenterImpl::RequestAddedToQueue(OverlayRequestQueueImpl* queue,
-                                               OverlayRequest* request) {
-  // If |queue| is active, the added request is frontmost, and an overlay is not
-  // currently being presented, trigger the UI presentation for that request.
-  if (queue == GetActiveQueue() && request == queue->front_request() &&
-      !presenting_) {
+                                               OverlayRequest* request,
+                                               size_t index) {
+  // If |request| is not active, there is no need to trigger any presentation.
+  if (request != GetActiveRequest())
+    return;
+
+  // If the added request is active and there is no presentation occurring,
+  // present the overlay UI immediately.
+  if (!presenting_) {
     PresentOverlayForActiveRequest();
+    return;
   }
+
+  // |request| is the new active request, but overlay UI is already
+  // presented.  This occurs when:
+  // 1. |request| is added after |presented_request_| is cancelled, but
+  //    before its UI is finished being dismissed,
+  // 2. |request| is added immediately after a WebState activation, but
+  //    before the overlay UI from the previously active WebState's front
+  //    request is finished being dismissed, or
+  // 3. |request| is inserted to the front of the active WebState's request
+  //    queue.
+  //
+  // For scenarios (1) and (2), the UI is already in the process of being
+  // dismissed, and |request|'s UI will be presented when that dismissal
+  // finishes.  For scenario (3), the UI for the presented request needs to
+  // be hidden so that the UI for |request| can be presented.
+  bool should_dismiss_for_inserted_request =
+      presented_request_ && queue->size() > 1 &&
+      queue->GetRequest(/*index=*/1) == presented_request_;
+  if (should_dismiss_for_inserted_request)
+    presentation_context_->HideOverlayUI(this, presented_request_);
 }
 
 void OverlayPresenterImpl::QueuedRequestCancelled(
     OverlayRequestQueueImpl* queue,
     OverlayRequest* request) {
+  if (request == presented_request_)
+    presented_request_ = nullptr;
   CancelOverlayUIForRequest(request);
 }
 

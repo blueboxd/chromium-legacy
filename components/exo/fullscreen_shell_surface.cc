@@ -247,6 +247,7 @@ void FullscreenShellSurface::CreateFullscreenShellSurfaceWidget(
   SetShellApplicationId(window, application_id_);
   SetShellStartupId(window, startup_id_);
   SetShellMainSurface(window, root_surface());
+  SetArcAppType(window);
 
   window->AddObserver(this);
 }

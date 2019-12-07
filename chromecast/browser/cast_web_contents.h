@@ -188,7 +188,7 @@ class CastWebContents {
     // is destroyed before CastWebContents, the WeakPtr will be invalidated on
     // the main UI thread.
     base::WeakPtr<Delegate> delegate = nullptr;
-    // Enable development mode for this CastWebCastWebContents. Whitelists
+    // Enable development mode for this CastWebContents. Whitelists
     // certain functionality for the WebContents, like remote debugging and
     // debugging interfaces.
     bool enabled_for_dev = false;
@@ -206,6 +206,10 @@ class CastWebContents {
     // Background color for the WebContents view. If not provided, the color
     // will fall back to the platform default.
     BackgroundColor background_color = BackgroundColor::NONE;
+    // Enable WebSQL database for this CastWebContents.
+    bool enable_websql = false;
+    // Enable mixer audio support for this CastWebContents.
+    bool enable_mixer_audio = false;
 
     InitParams();
     InitParams(const InitParams& other);
@@ -223,6 +227,10 @@ class CastWebContents {
   };
 
   static std::vector<CastWebContents*>& GetAll();
+
+  // Returns the CastWebContents that wraps the content::WebContents, or nullptr
+  // if the CastWebContents does not exist.
+  static CastWebContents* FromWebContents(content::WebContents* web_contents);
 
   CastWebContents() = default;
   virtual ~CastWebContents() = default;
@@ -340,6 +348,13 @@ class CastWebContents {
   virtual void RegisterInterfaceProvider(
       const InterfaceSet& interface_set,
       service_manager::InterfaceProvider* interface_provider) = 0;
+
+  // Returns true if WebSQL database is configured enabled for this
+  // CastWebContents.
+  virtual bool is_websql_enabled() = 0;
+
+  // Returns true if mixer audio is enabled.
+  virtual bool is_mixer_audio_enabled() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastWebContents);

@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -67,9 +68,31 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   }
 
  private:
+  // For CookieRequestScheme histogram enum.
+  FRIEND_TEST_ALL_PREFIXES(URLRequestHttpJobTest,
+                           CookieSchemeRequestSchemeHistogram);
+
   enum CompletionCause {
     ABORTED,
     FINISHED
+  };
+
+  // Used to indicate which kind of cookies are sent on which kind of requests,
+  // for use in histograms. A (non)secure set cookie means that the cookie was
+  // originally set by a (non)secure url. A (non)secure request means that the
+  // request url is (non)secure. An unset cookie scheme means that the cookie's
+  // source scheme was marked as "Unset" and thus cannot be compared  with the
+  // request.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class CookieRequestScheme {
+    kUnsetCookieScheme = 0,
+    kNonsecureSetNonsecureRequest,
+    kSecureSetSecureRequest,
+    kNonsecureSetSecureRequest,
+    kSecureSetNonsecureRequest,
+
+    kMaxValue = kSecureSetNonsecureRequest  // Keep as the last value.
   };
 
   typedef base::RefCountedData<bool> SharedBoolean;

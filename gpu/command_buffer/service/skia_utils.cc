@@ -39,6 +39,22 @@ void CleanupAfterSkiaFlush(void* context) {
   delete flush_context;
 }
 
+template <class T>
+void DeleteSkObject(SharedContextState* context_state, sk_sp<T> sk_object) {
+  DCHECK(sk_object && sk_object->unique());
+  if (!context_state->GrContextIsVulkan())
+    return;
+
+#if BUILDFLAG(ENABLE_VULKAN)
+  auto* fence_helper =
+      context_state->vk_context_provider()->GetDeviceQueue()->GetFenceHelper();
+  fence_helper->EnqueueCleanupTaskForSubmittedWork(base::BindOnce(
+      [](const sk_sp<GrContext>& gr_context, sk_sp<T> sk_object,
+         gpu::VulkanDeviceQueue* device_queue, bool is_lost) {},
+      sk_ref_sp(context_state->gr_context()), std::move(sk_object)));
+#endif
+}
+
 }  // namespace
 
 GLuint GetGrGLBackendTextureFormat(const gles2::FeatureInfo* feature_info,
@@ -132,6 +148,15 @@ void DeleteGrBackendTexture(SharedContextState* context_state,
 #endif
 }
 
+void DeleteSkImage(SharedContextState* context_state, sk_sp<SkImage> sk_image) {
+  DeleteSkObject(context_state, std::move(sk_image));
+}
+
+void DeleteSkSurface(SharedContextState* context_state,
+                     sk_sp<SkSurface> sk_surface) {
+  DeleteSkObject(context_state, std::move(sk_surface));
+}
+
 #if BUILDFLAG(ENABLE_VULKAN)
 
 GrVkYcbcrConversionInfo CreateGrVkYcbcrConversionInfo(
@@ -160,6 +185,17 @@ GrVkYcbcrConversionInfo CreateGrVkYcbcrConversionInfo(
                           : format_props.optimalTilingFeatures;
   }
 
+  // As per the spec here [1], if the format does not support
+  // VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT,
+  // chromaFilter must be VK_FILTER_NEAREST.
+  // [1] -
+  // https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkSamplerYcbcrConversionCreateInfo.html.
+  VkFilter chroma_filter =
+      (format_features &
+       VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT)
+          ? VK_FILTER_LINEAR
+          : VK_FILTER_NEAREST;
+
   return GrVkYcbcrConversionInfo(
       vk_format, ycbcr_info->external_format,
       static_cast<VkSamplerYcbcrModelConversion>(
@@ -167,7 +203,7 @@ GrVkYcbcrConversionInfo CreateGrVkYcbcrConversionInfo(
       static_cast<VkSamplerYcbcrRange>(ycbcr_info->suggested_ycbcr_range),
       static_cast<VkChromaLocation>(ycbcr_info->suggested_xchroma_offset),
       static_cast<VkChromaLocation>(ycbcr_info->suggested_ychroma_offset),
-      static_cast<VkFilter>(VK_FILTER_LINEAR),
+      chroma_filter,
       /*forceExplicitReconstruction=*/false, format_features);
 }
 

@@ -489,7 +489,6 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
     socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
     socket_data1.AddSocketDataToFactory(socket_factory_.get());
 
-    client_maker_.set_coalesce_http_frames(true);
     // Set up second socket data provider that is used after
     // migration.
     MockQuicData socket_data2(version_);
@@ -1615,7 +1614,6 @@ TEST_P(QuicStreamFactoryTest, PoolingWithServerMigration) {
                                quic::ConnectionCloseBehavior::SILENT_CLOSE);
 
   client_maker_.Reset();
-  client_maker_.set_coalesce_http_frames(false);
   // Set up server IP, socket, proof, and config for new session.
   HostPortPair server2(kServer2HostName, kDefaultServerPort);
   host_resolver_->rules()->AddIPLiteralRule(server2.host(), "192.168.0.1", "");
@@ -5567,7 +5565,6 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionOnAysncWriteError) {
       ConstructGetRequestPacket(packet_num++,
                                 GetNthClientInitiatedBidirectionalStreamId(0),
                                 true, true));
-  client_maker_.set_coalesce_http_frames(true);
   socket_data1.AddWrite(
       SYNCHRONOUS,
       ConstructGetRequestPacket(
@@ -9038,7 +9035,6 @@ TEST_P(QuicStreamFactoryTest,
       ConstructGetRequestPacket(packet_num++,
                                 GetNthClientInitiatedBidirectionalStreamId(0),
                                 true, true));
-  client_maker_.set_coalesce_http_frames(true);
   socket_data1.AddRead(
       ASYNC,
       ConstructOkResponsePacket(
@@ -9205,7 +9201,6 @@ void QuicStreamFactoryTestBase::
       ConstructGetRequestPacket(packet_num++,
                                 GetNthClientInitiatedBidirectionalStreamId(0),
                                 true, true));
-  client_maker_.set_coalesce_http_frames(true);
   socket_data1.AddRead(
       ASYNC,
       ConstructOkResponsePacket(

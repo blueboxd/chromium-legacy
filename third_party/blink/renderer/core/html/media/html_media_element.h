@@ -382,6 +382,8 @@ class CORE_EXPORT HTMLMediaElement
   friend class VideoWakeLockTest;
   friend class PictureInPictureControllerTest;
 
+  bool HasPendingActivityInternal() const;
+
   void ResetMediaPlayerAndMediaSource();
 
   bool AlwaysCreateUserAgentShadowRoot() const final { return true; }

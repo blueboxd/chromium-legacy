@@ -2316,14 +2316,45 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     # parameters['descriptor']['sysex'] = True should be denied.
 
   def testClipboardPermissions(self):
-    """ Assures both clipboard permissions are set simultaneously. """
+    """ Tests clipboard permission requirements.
+
+    clipboard-read with allowWithoutSanitization: true or false, and
+    clipboard-write with allowWithoutSanitization: true are bundled together
+    into one CLIPBOARD_READ_WRITE permission.
+
+    clipboard write with allowWithoutSanitization: false is an auto-granted
+    permission.
+    """
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     parameters = {
-      'descriptor': { 'name': 'clipboard-read' },
+      'descriptor': {
+        'name': 'clipboard-read' ,
+        'allowWithoutSanitization': False
+      },
       'state': 'granted'
     }
+    raw_write_parameters = {
+      'descriptor': {
+        'name': 'clipboard-write',
+        'allowWithoutSanitization': True
+      }
+    }
+
+    self.CheckPermission(self.GetPermissionWithQuery(parameters['descriptor']),
+                        'prompt')
+    self.CheckPermission(self.GetPermissionWithQuery(
+                          raw_write_parameters['descriptor']), 'prompt')
+
     self._driver.SetPermission(parameters)
-    self.CheckPermission(self.GetPermission('clipboard-read'), 'granted')
+    self.CheckPermission(self.GetPermissionWithQuery(parameters['descriptor']),
+                        'granted')
+    parameters['descriptor']['allowWithoutSanitization'] = True
+    self.CheckPermission(self.GetPermissionWithQuery(parameters['descriptor']),
+                        'granted')
+    parameters['descriptor']['name'] = 'clipboard-write'
+    self.CheckPermission(self.GetPermissionWithQuery(parameters['descriptor']),
+                        'granted')
+
     parameters = {
       'descriptor': { 'name': 'clipboard-write' },
       'state': 'prompt'

@@ -175,6 +175,13 @@ class ScopedTempDirNoWow64 : protected base::ScopedTempDir {
 // privileges. Returns false if the privileges could not be made correct.
 bool CheckTestPrivileges();
 
+// On Windows, sometimes the copied files don't have correct ACLs.
+// So we reset ACL before running the test.
+// For debug, it will reset ucrtbased.dll. For release, it will reset
+// ucrtbase.dll.
+// See crbug.com/956016.
+bool ResetAclForUcrtbase();
+
 // Accepts PUPData::PUP parameters with id equals to |expected_id|.
 MATCHER_P(PupHasId, expected_id, "") {
   return arg->signature().id == expected_id;

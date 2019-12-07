@@ -23,6 +23,9 @@ const int64_t kTestRemoteDeviceInstanceId = 0L;
 const char kTestRemoteDevicePiiFreeName[] = "no-pii device";
 const char kTestRemoteDevicePSK[] = "remote device psk";
 const int64_t kTestRemoteDeviceLastUpdateTimeMillis = 0L;
+const char kBeaconSeedData[] = "beacon seed data";
+const int64_t kBeaconSeedStartTimeMillis = 100L;
+const int64_t kBeaconSeedEndTimeMillis = 200L;
 
 // Create an Instance ID, which is a base64 URL-safe encoding of an 8-byte
 // integer. This seems like overkill for tests, but some places in code might
@@ -131,12 +134,14 @@ RemoteDevice CreateRemoteDeviceForTest() {
   software_features[SoftwareFeature::kInstantTetheringHost] =
       SoftwareFeatureState::kSupported;
 
-  return RemoteDevice(kTestRemoteDeviceUserId,
-                      InstanceIdFromInt64(kTestRemoteDeviceInstanceId),
-                      kTestRemoteDeviceName, kTestRemoteDevicePiiFreeName,
-                      kTestRemoteDevicePublicKey, kTestRemoteDevicePSK,
-                      kTestRemoteDeviceLastUpdateTimeMillis, software_features,
-                      {} /* beacon_seeds */);
+  return RemoteDevice(
+      kTestRemoteDeviceUserId, InstanceIdFromInt64(kTestRemoteDeviceInstanceId),
+      kTestRemoteDeviceName, kTestRemoteDevicePiiFreeName,
+      kTestRemoteDevicePublicKey, kTestRemoteDevicePSK,
+      kTestRemoteDeviceLastUpdateTimeMillis, software_features,
+      {multidevice::BeaconSeed(
+          kBeaconSeedData, base::Time::FromJavaTime(kBeaconSeedStartTimeMillis),
+          base::Time::FromJavaTime(kBeaconSeedEndTimeMillis))});
 }
 
 RemoteDeviceRef CreateRemoteDeviceRefForTest() {

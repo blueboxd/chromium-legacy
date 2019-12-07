@@ -1363,9 +1363,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void SendPpapiBrokerPermissionResult(int process_id,
                                        int ppb_broker_route_id,
                                        bool result);
-
-  void OnBrowserPluginMessage(RenderFrameHost* render_frame_host,
-                              const IPC::Message& message);
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
   void OnUpdateFaviconURL(RenderFrameHostImpl* source,
                           const std::vector<FaviconURL>& candidates);

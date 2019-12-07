@@ -61,6 +61,14 @@ Polymer({
     pageVisibility: Object,
 
     /** @private */
+    passwordsLeakDetectionEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('passwordsLeakDetectionEnabled');
+      },
+    },
+
+    /** @private */
     isGuest_: {
       type: Boolean,
       value: function() {
@@ -75,14 +83,6 @@ Polymer({
     showDoNotTrackDialog_: {
       type: Boolean,
       value: false,
-    },
-
-    /** @private */
-    privacySettingsRedesignEnabled_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('privacySettingsRedesignEnabled');
-      },
     },
 
     /**
@@ -102,6 +102,25 @@ Polymer({
       value: function() {
         return loadTimeData.getBoolean('enableSafeBrowsingSubresourceFilter');
       }
+    },
+
+    /** @private */
+    privacySettingsRedesignEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('privacySettingsRedesignEnabled');
+      },
+    },
+
+    /**
+     * Whether the more settings list is opened.
+     * @private
+     */
+    moreOpened_: {
+      type: Boolean,
+      value: function() {
+        return !loadTimeData.getBoolean('privacySettingsRedesignEnabled');
+      },
     },
 
     /** @private */
@@ -472,6 +491,22 @@ Polymer({
   onRestartTap_: function(e) {
     e.stopPropagation();
     settings.LifetimeBrowserProxyImpl.getInstance().restart();
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getIronCollapseCssClass_: function() {
+    return this.privacySettingsRedesignEnabled_ ? 'iron-collapse-indented' : '';
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getTopBarCssClass_: function() {
+    return this.privacySettingsRedesignEnabled_ ? 'settings-box first' : '';
   },
 });
 })();

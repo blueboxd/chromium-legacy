@@ -11,11 +11,17 @@
 
 <dom-module id="settings-crostini-arc-adb">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      cr-policy-indicator {
+        padding: 0 var(--cr-controlled-by-spacing);
+      }
+    </style>
     <div class="settings-box first">
-      <span>$i18n{crostiniArcAdbDescription}</span>
+      <div class="settings-box-text">
+        $i18n{crostiniArcAdbDescription}
+      </div>
     </div>
-    <div class="settings-box">
+    <div class="settings-box continuation">
       <div id="enableArcAdbLabel" class="start">
         $i18n{crostiniArcAdbLabel}
         <div class="secondary" hidden="[[!arcAdbNeedPowerwash_]]"

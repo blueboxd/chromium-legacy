@@ -146,6 +146,13 @@ class CORE_EXPORT FrameLoader final {
   void ForceSandboxFlags(WebSandboxFlags flags) {
     forced_sandbox_flags_ |= flags;
   }
+
+  // Set frame_owner's effective sandbox flags, which are sandbox flags value
+  // at the beginning of navigation.
+  void SetFrameOwnerSandboxFlags(WebSandboxFlags flags) {
+    frame_owner_sandbox_flags_ = flags;
+  }
+
   // Includes the collection of forced, inherited, and FrameOwner's sandbox
   // flags. Note: with FeaturePolicyForSandbox the frame owner's sandbox flags
   // only includes the flags which are *not* implemented as feature policies
@@ -302,6 +309,13 @@ class CORE_EXPORT FrameLoader final {
   bool in_restore_scroll_;
 
   WebSandboxFlags forced_sandbox_flags_;
+  // A snapshot value of frame_owner's sandbox flags states at the beginning of
+  // navigation. For main frame which does not have a frame owner, the value is
+  // base::nullopt.
+  // The snapshot value is needed because of potential racing conditions on
+  // sandbox attribute on iframe element.
+  // crbug.com/1026627
+  base::Optional<WebSandboxFlags> frame_owner_sandbox_flags_ = base::nullopt;
 
   bool dispatching_did_clear_window_object_in_main_world_;
   bool detached_;

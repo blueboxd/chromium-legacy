@@ -4,6 +4,8 @@
 @WIN-ALLOW:action_name*
 @WIN-ALLOW:default_action*
 @WIN-ALLOW:haspopup*
+@AURALINUX-ALLOW:actions*
+@AURALINUX-DENY:checkable
 -->
 <!doctype html>
 <html>
@@ -33,6 +35,12 @@
     <div role="menuitem">Menu item 1</div>
     <div role="menuitemcheckbox" aria-checked="true">Menu item 2</div>
     <div role="menuitemradio">Menu item 3</div>
+  </div>
+  <div role="button">ARIA Button</div>
+  <div role="button" tabindex="1">ARIA button with tab index</div>
+  <div role="button" tabindex="-1">ARIA button with negative tab index</div>
+  <div aria-activedescendant="active-descendant-button">
+    <div role="button" id="active-descendant-button">ARIA button that is an active descendant</div>
   </div>
 </body>
 </html>

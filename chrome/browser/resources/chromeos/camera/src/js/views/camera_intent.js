@@ -59,7 +59,8 @@ cca.views.CameraIntent = class extends cca.views.Camera {
         this.videoResultFile_ = await video.endWrite();
       },
     });
-    super(resultSaver, infoUpdater, photoPreferrer, videoPreferrer);
+    super(
+        resultSaver, infoUpdater, photoPreferrer, videoPreferrer, intent.mode);
 
     /**
      * @type {!cca.intent.Intent}

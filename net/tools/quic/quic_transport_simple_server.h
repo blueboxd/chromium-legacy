@@ -25,7 +25,6 @@ namespace net {
 class QuicTransportSimpleServer {
  public:
   QuicTransportSimpleServer(int port,
-                            quic::QuicTransportSimpleServerSession::Mode mode,
                             std::vector<url::Origin> accepted_origins);
   ~QuicTransportSimpleServer();
 

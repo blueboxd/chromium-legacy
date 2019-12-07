@@ -9,7 +9,12 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "base/util/type_safety/strong_alias.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_enums.h"
+
+namespace password_manager {
+class IsPublicSuffixMatchTag;
+}  // namespace password_manager
 
 namespace autofill {
 
@@ -58,8 +63,12 @@ class UserInfo {
     bool selectable_;
   };
 
+  using IsPslMatch =
+      util::StrongAlias<password_manager::IsPublicSuffixMatchTag, bool>;
+
   UserInfo();
   explicit UserInfo(std::string origin);
+  UserInfo(std::string origin, IsPslMatch is_psl_match);
   UserInfo(const UserInfo& user_info);
   UserInfo(UserInfo&& field);
 
@@ -72,11 +81,13 @@ class UserInfo {
 
   const std::vector<Field>& fields() const { return fields_; }
   const std::string& origin() const { return origin_; }
+  IsPslMatch is_psl_match() const { return is_psl_match_; }
 
   bool operator==(const UserInfo& user_info) const;
 
  private:
   std::string origin_;
+  IsPslMatch is_psl_match_{false};
   std::vector<Field> fields_;
 };
 
@@ -189,8 +200,12 @@ class AccessorySheetData::Builder {
   Builder& SetWarning(base::string16 warning) &;
 
   // Adds a new UserInfo object to |accessory_sheet_data_|.
-  Builder&& AddUserInfo(std::string origin = std::string()) &&;
-  Builder& AddUserInfo(std::string origin = std::string()) &;
+  Builder&& AddUserInfo(
+      std::string origin = std::string(),
+      UserInfo::IsPslMatch is_psl_match = UserInfo::IsPslMatch(false)) &&;
+  Builder& AddUserInfo(
+      std::string origin = std::string(),
+      UserInfo::IsPslMatch is_psl_match = UserInfo::IsPslMatch(false)) &;
 
   // Appends a selectable, non-obfuscated field to the last UserInfo object.
   Builder&& AppendSimpleField(base::string16 text) &&;

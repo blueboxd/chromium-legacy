@@ -170,26 +170,6 @@ struct SameSizeAsNode : EventTarget {
   void* pointer_;
 };
 
-NodeRenderingData::NodeRenderingData(
-    LayoutObject* layout_object,
-    scoped_refptr<const ComputedStyle> computed_style)
-    : layout_object_(layout_object), computed_style_(computed_style) {}
-
-NodeRenderingData::~NodeRenderingData() {
-  CHECK(!layout_object_);
-}
-
-void NodeRenderingData::SetComputedStyle(
-    scoped_refptr<const ComputedStyle> computed_style) {
-  DCHECK_NE(&SharedEmptyData(), this);
-  computed_style_ = computed_style;
-}
-
-NodeRenderingData& NodeRenderingData::SharedEmptyData() {
-  DEFINE_STATIC_LOCAL(NodeRenderingData, shared_empty_data, (nullptr, nullptr));
-  return shared_empty_data;
-}
-
 static_assert(sizeof(Node) <= sizeof(SameSizeAsNode), "Node should stay small");
 
 #if DUMP_NODE_STATISTICS
@@ -352,8 +332,6 @@ Node::Node(TreeScope* tree_scope, ConstructionType type)
 }
 
 Node::~Node() {
-  if (!HasRareData() && !data_.node_layout_data_->IsSharedEmptyData())
-    delete data_.node_layout_data_;
   InstanceCounters::DecrementCounter(InstanceCounters::kNodeCounter);
 }
 
@@ -1034,11 +1012,15 @@ void Node::SetLayoutObject(LayoutObject* layout_object) {
   // Swap the NodeRenderingData to point to a new NodeRenderingData instead of
   // the static SharedEmptyData instance.
   DCHECK(!node_layout_data->GetComputedStyle());
-  node_layout_data = new NodeRenderingData(layout_object, nullptr);
-  if (HasRareData())
+  node_layout_data =
+      MakeGarbageCollected<NodeRenderingData>(layout_object, nullptr);
+  if (HasRareData()) {
     data_.rare_data_->SetNodeRenderingData(node_layout_data);
-  else
+  } else {
     data_.node_layout_data_ = node_layout_data;
+    // We need the following line since data_.node_layout_data_ is not a Member.
+    MarkingVisitor::WriteBarrier(data_.node_layout_data_);
+  }
 }
 
 void Node::SetComputedStyle(scoped_refptr<const ComputedStyle> computed_style) {
@@ -1067,11 +1049,15 @@ void Node::SetComputedStyle(scoped_refptr<const ComputedStyle> computed_style) {
   // Swap the NodeRenderingData to point to a new NodeRenderingData instead of
   // the static SharedEmptyData instance.
   DCHECK(!node_layout_data->GetLayoutObject());
-  node_layout_data = new NodeRenderingData(nullptr, computed_style);
-  if (HasRareData())
+  node_layout_data =
+      MakeGarbageCollected<NodeRenderingData>(nullptr, computed_style);
+  if (HasRareData()) {
     data_.rare_data_->SetNodeRenderingData(node_layout_data);
-  else
+  } else {
     data_.node_layout_data_ = node_layout_data;
+    // We need the following line since data_.node_layout_data_ is not a Member.
+    MarkingVisitor::WriteBarrier(data_.node_layout_data_);
+  }
 }
 
 LayoutBoxModelObject* Node::GetLayoutBoxModelObject() const {
@@ -3316,10 +3302,10 @@ void Node::Trace(Visitor* visitor) {
   visitor->Trace(parent_or_shadow_host_node_);
   visitor->Trace(previous_);
   visitor->Trace(next_);
-  // rareData() and data_.node_layout_data_ share their storage. We have to
-  // trace only one of them.
   if (HasRareData())
     visitor->Trace(RareData());
+  else
+    visitor->Trace(data_.node_layout_data_);
   visitor->Trace(tree_scope_);
   EventTarget::Trace(visitor);
 }

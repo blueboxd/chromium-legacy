@@ -30,6 +30,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 import org.chromium.chrome.browser.feed.library.common.ui.LayoutUtils;
@@ -410,15 +412,16 @@ class ChunkedTextElementAdapter extends TextElementAdapter {
     }
 
     @VisibleForTesting
-    class ImageSpanDrawableCallback implements Consumer</*@Nullable*/ Drawable> {
+    class ImageSpanDrawableCallback implements Consumer<Drawable> {
         private final LayerDrawable mWrapper;
         private final StyleProvider mImageStyle;
-        /*@Nullable*/ private final Integer mOverlayColor;
+        @Nullable
+        private final Integer mOverlayColor;
         private final TextView mTextView;
         private boolean mCancelled;
 
         ImageSpanDrawableCallback(LayerDrawable wrapper, StyleProvider imageStyle,
-                /*@Nullable*/ Integer overlayColor, TextView textView) {
+                @Nullable Integer overlayColor, TextView textView) {
             this.mWrapper = wrapper;
             this.mImageStyle = imageStyle;
             this.mOverlayColor = overlayColor;
@@ -426,7 +429,7 @@ class ChunkedTextElementAdapter extends TextElementAdapter {
         }
 
         @Override
-        public void accept(/*@Nullable*/ Drawable imageDrawable) {
+        public void accept(@Nullable Drawable imageDrawable) {
             if (mCancelled || imageDrawable == null) {
                 return;
             }

@@ -6,18 +6,38 @@
 #include "sharedlibtools_public.h"
 #include "envvartools_public.h"
 #include "hmderrors_public.h"
+#include "strtools_public.h"
 #include "vrpathregistry_public.h"
+#include <mutex>
 
 using vr::EVRInitError;
 using vr::IVRSystem;
 using vr::IVRClientCore;
 using vr::VRInitError_None;
 
+// figure out how to import from the VR API dll
+#if defined(_WIN32)
+
+#if !defined(OPENVR_BUILD_STATIC)
+#define VR_EXPORT_INTERFACE extern "C" __declspec( dllexport )
+#else
+#define VR_EXPORT_INTERFACE extern "C"
+#endif
+
+#elif defined(__GNUC__) || defined(COMPILER_GCC) || defined(__APPLE__)
+
+#define VR_EXPORT_INTERFACE extern "C" __attribute__((visibility("default")))
+
+#else
+#error "Unsupported Platform."
+#endif
+
 namespace vr
 {
 
 static void *g_pVRModule = NULL;
 static IVRClientCore *g_pHmdSystem = NULL;
+static std::recursive_mutex g_mutexSystem;
 
 
 typedef void* (*VRClientCoreFactoryFn)(const char *pInterfaceName, int *pReturnCode);
@@ -33,50 +53,50 @@ EVRInitError VR_LoadHmdSystemInternal();
 void CleanupInternalInterfaces();
 
 
-uint32_t VR_InitInternal( EVRInitError *peError, vr::EVRApplicationType eApplicationType )
+uint32_t VR_InitInternal2( EVRInitError *peError, vr::EVRApplicationType eApplicationType, const char *pStartupInfo )
 {
+	std::lock_guard<std::recursive_mutex> lock( g_mutexSystem );
+
 	EVRInitError err = VR_LoadHmdSystemInternal();
-	if (err != vr::VRInitError_None)
+	if ( err == vr::VRInitError_None )
 	{
-		SharedLib_Unload(g_pVRModule);
+		err = g_pHmdSystem->Init( eApplicationType, pStartupInfo );
+	}
+
+	if ( peError )
+		*peError = err;
+
+	if ( err != VRInitError_None )
+	{
+		SharedLib_Unload( g_pVRModule );
 		g_pHmdSystem = NULL;
 		g_pVRModule = NULL;
 
-		if (peError)
-			*peError = err;
-
 		return 0;
 	}
-
-	err = g_pHmdSystem->Init(eApplicationType);
-	if (err != VRInitError_None)
-	{
-		SharedLib_Unload(g_pVRModule);
-		g_pHmdSystem = NULL;
-		g_pVRModule = NULL;
-
-		if (peError)
-			*peError = err;
-
-		return 0;
-	}
-
-	if (peError)
-		*peError = VRInitError_None;
 
 	return ++g_nVRToken;
 }
 
+VR_INTERFACE uint32_t VR_CALLTYPE VR_InitInternal( EVRInitError *peError, EVRApplicationType eApplicationType );
+
+uint32_t VR_InitInternal( EVRInitError *peError, vr::EVRApplicationType eApplicationType )
+{
+	return VR_InitInternal2( peError, eApplicationType, nullptr );
+}
+
 void VR_ShutdownInternal()
 {
-	if (g_pHmdSystem)
+	std::lock_guard<std::recursive_mutex> lock( g_mutexSystem );
+	
+	if ( g_pHmdSystem )
 	{
 		g_pHmdSystem->Cleanup();
 		g_pHmdSystem = NULL;
 	}
-	if (g_pVRModule)
+	if ( g_pVRModule )
 	{
-		SharedLib_Unload(g_pVRModule);
+		SharedLib_Unload( g_pVRModule );
 		g_pVRModule = NULL;
 	}
 
@@ -106,7 +126,7 @@ EVRInitError VR_LoadHmdSystemInternal()
 
 	// Because we don't have a way to select debug vs. release yet we'll just
 	// use debug if it's there
-#if defined( LINUX64 )
+#if defined( LINUX64 ) || defined( LINUXARM64 )
 	std::string sTestPath = Path_Join( sRuntimePath, "bin", PLATSUBDIR );
 #else
 	std::string sTestPath = Path_Join( sRuntimePath, "bin" );
@@ -152,6 +172,8 @@ EVRInitError VR_LoadHmdSystemInternal()
 
 void *VR_GetGenericInterface(const char *pchInterfaceVersion, EVRInitError *peError)
 {
+	std::lock_guard<std::recursive_mutex> lock( g_mutexSystem );
+
 	if (!g_pHmdSystem)
 	{
 		if (peError)
@@ -164,6 +186,8 @@ void *VR_GetGenericInterface(const char *pchInterfaceVersion, EVRInitError *peEr
 
 bool VR_IsInterfaceVersionValid(const char *pchInterfaceVersion)
 {
+	std::lock_guard<std::recursive_mutex> lock( g_mutexSystem );
+
 	if (!g_pHmdSystem)
 	{
 		return false;
@@ -174,6 +198,8 @@ bool VR_IsInterfaceVersionValid(const char *pchInterfaceVersion)
 
 bool VR_IsHmdPresent()
 {
+	std::lock_guard<std::recursive_mutex> lock( g_mutexSystem );
+
 	if( g_pHmdSystem )
 	{
 		// if we're already initialized, just call through
@@ -199,6 +225,8 @@ bool VR_IsHmdPresent()
 /** Returns true if the OpenVR runtime is installed. */
 bool VR_IsRuntimeInstalled()
 {
+	std::lock_guard<std::recursive_mutex> lock( g_mutexSystem );
+
 	if( g_pHmdSystem )
 	{
 		// if we're already initialized, OpenVR is obviously installed
@@ -228,33 +256,71 @@ bool VR_IsRuntimeInstalled()
 }
 
 
+// -------------------------------------------------------------------------------
+// Purpose: This is the old Runtime Path interface that is no longer exported in the
+//			latest header. We still want to export it from the DLL, though, so updating
+//			to a new DLL doesn't break old compiled code. This version was not thread 
+//			safe and could change the buffer pointer to by a previous result on a 
+//			subsequent call
+// -------------------------------------------------------------------------------
+VR_EXPORT_INTERFACE const char *VR_CALLTYPE VR_RuntimePath();
+
 /** Returns where OpenVR runtime is installed. */
 const char *VR_RuntimePath()
 {
-	// otherwise we need to do a bit more work
-	static std::string sRuntimePath;
-	std::string sConfigPath, sLogPath;
-
-	bool bReadPathRegistry = CVRPathRegistry_Public::GetPaths( &sRuntimePath, &sConfigPath, &sLogPath, NULL, NULL );
-	if ( !bReadPathRegistry )
+	static char rchBuffer[1024];
+	uint32_t unRequiredSize;
+	if ( VR_GetRuntimePath( rchBuffer, sizeof( rchBuffer ), &unRequiredSize ) && unRequiredSize < sizeof( rchBuffer ) )
+	{
+		return rchBuffer;
+	}
+	else
 	{
 		return nullptr;
+	}
+}
+
+
+/** Returns where OpenVR runtime is installed. */
+bool VR_GetRuntimePath( char *pchPathBuffer, uint32_t unBufferSize, uint32_t *punRequiredBufferSize )
+{
+	// otherwise we need to do a bit more work
+	std::string sRuntimePath;
+
+	*punRequiredBufferSize = 0;
+
+	bool bReadPathRegistry = CVRPathRegistry_Public::GetPaths( &sRuntimePath, nullptr, nullptr, nullptr, nullptr );
+	if ( !bReadPathRegistry )
+	{
+		return false;
 	}
 
 	// figure out where we're going to look for vrclient.dll
 	// see if the specified path actually exists.
 	if ( !Path_IsDirectory( sRuntimePath ) )
 	{
-		return nullptr;
+		return false;
 	}
 
-	return sRuntimePath.c_str();
+	*punRequiredBufferSize = (uint32_t)sRuntimePath.size() + 1;
+	if ( sRuntimePath.size() >= unBufferSize )
+	{
+		*pchPathBuffer = '\0';
+	}
+	else
+	{
+		strcpy_safe( pchPathBuffer, unBufferSize, sRuntimePath.c_str() );
+	}
+
+	return true;
 }
 
 
 /** Returns the symbol version of an HMD error. */
 const char *VR_GetVRInitErrorAsSymbol( EVRInitError error )
 {
+	std::lock_guard<std::recursive_mutex> lock( g_mutexSystem );
+
 	if( g_pHmdSystem )
 		return g_pHmdSystem->GetIDForVRInitError( error );
 	else
@@ -265,6 +331,8 @@ const char *VR_GetVRInitErrorAsSymbol( EVRInitError error )
 /** Returns the english string version of an HMD error. */
 const char *VR_GetVRInitErrorAsEnglishDescription( EVRInitError error )
 {
+	std::lock_guard<std::recursive_mutex> lock( g_mutexSystem );
+
 	if ( g_pHmdSystem )
 		return g_pHmdSystem->GetEnglishStringForHmdError( error );
 	else

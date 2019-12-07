@@ -17,7 +17,6 @@
 <link rel="import" href="cups_edit_printer_dialog.html">
 <link rel="import" href="cups_printer_shared_css.html">
 <link rel="import" href="cups_printers_entry_manager.html">
-<link rel="import" href="cups_printers_list.html">
 <link rel="import" href="cups_saved_printers.html">
 <link rel="import" href="cups_nearby_printers.html">
 <link rel="import" href="../route.html">
@@ -109,10 +108,6 @@
           $i18n{addCupsPrinter}
         </cr-button>
       </div>
-      <settings-cups-printers-list printers="{{printers}}"
-          active-printer="{{activePrinter}}"
-          search-term="[[searchTerm]]">
-      </settings-cups-printers-list>
 
       <div id="noSearchResultsMessage"
           hidden="[[!showNoSearchResultsMessage_(searchTerm)]]">

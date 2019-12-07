@@ -435,14 +435,14 @@ Status ReadMetadataForDatabaseNameInternal(
     INTERNAL_READ_ERROR_UNTESTED(GET_IDBDATABASE_METADATA);
 
   // We don't cache this, we just check it if it's there.
-  int64_t blob_key_generator_current_number =
-      DatabaseMetaDataKey::kInvalidBlobKey;
+  int64_t blob_number_generator_current_number =
+      DatabaseMetaDataKey::kInvalidBlobNumber;
 
   s = GetVarInt(
       db_or_transaction,
       DatabaseMetaDataKey::Encode(
           metadata->id, DatabaseMetaDataKey::BLOB_KEY_GENERATOR_CURRENT_NUMBER),
-      &blob_key_generator_current_number, found);
+      &blob_number_generator_current_number, found);
   if (!s.ok()) {
     INTERNAL_READ_ERROR_UNTESTED(GET_IDBDATABASE_METADATA);
     return s;
@@ -450,8 +450,8 @@ Status ReadMetadataForDatabaseNameInternal(
   if (!*found) {
     // This database predates blob support.
     *found = true;
-  } else if (!DatabaseMetaDataKey::IsValidBlobKey(
-                 blob_key_generator_current_number)) {
+  } else if (!DatabaseMetaDataKey::IsValidBlobNumber(
+                 blob_number_generator_current_number)) {
     INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_IDBDATABASE_METADATA);
     return InternalInconsistencyStatus();
   }
@@ -557,7 +557,7 @@ Status IndexedDBMetadataCoding::CreateDatabase(
       transaction.get(),
       DatabaseMetaDataKey::Encode(
           row_id, DatabaseMetaDataKey::BLOB_KEY_GENERATOR_CURRENT_NUMBER),
-      DatabaseMetaDataKey::kBlobKeyGeneratorInitialNumber);
+      DatabaseMetaDataKey::kBlobNumberGeneratorInitialNumber);
   if (!s.ok()) {
     INTERNAL_READ_ERROR_UNTESTED(CREATE_IDBDATABASE_METADATA);
     return s;

@@ -73,64 +73,88 @@ void RecordProactiveSuggestionsRequestResult(
 
 void RecordProactiveSuggestionsShowAttempt(
     int category,
-    ProactiveSuggestionsShowAttempt attempt) {
-  constexpr char kShowAttemptHistogram[] =
-      "Assistant.ProactiveSuggestions.ShowAttempt";
+    ProactiveSuggestionsShowAttempt attempt,
+    bool has_seen_before) {
+  constexpr char kFirstShowAttemptHistogram[] =
+      "Assistant.ProactiveSuggestions.FirstShowAttempt";
+  constexpr char kReshowAttemptHistogram[] =
+      "Assistant.ProactiveSuggestions.ReshowAttempt";
+
+  // We use a different set of histograms depending on whether or not the set
+  // of proactive suggestions has already been seen. This allows us to measure
+  // user engagement the first time the entry point is presented in comparison
+  // to follow up presentations of the same content.
+  const std::string histogram =
+      has_seen_before ? kReshowAttemptHistogram : kFirstShowAttemptHistogram;
 
   // We record an aggregate histogram for easily reporting cumulative show
   // attempts across all content categories.
-  base::UmaHistogramEnumeration(kShowAttemptHistogram, attempt);
+  base::UmaHistogramEnumeration(histogram, attempt);
 
   // We record sparse histograms for easily comparing show attempts between
   // content categories.
   switch (attempt) {
     case ProactiveSuggestionsShowAttempt::kSuccess:
       base::UmaHistogramSparse(
-          base::StringPrintf("%s.Success", kShowAttemptHistogram), category);
+          base::StringPrintf("%s.Success.ByCategory", histogram.c_str()),
+          category);
       break;
     case ProactiveSuggestionsShowAttempt::kAbortedByDuplicateSuppression:
       base::UmaHistogramSparse(
-          base::StringPrintf("%s.AbortedByDuplicateSuppression",
-                             kShowAttemptHistogram),
+          base::StringPrintf("%s.AbortedByDuplicateSuppression.ByCategory",
+                             histogram.c_str()),
           category);
       break;
   }
 }
 
-void RecordProactiveSuggestionsShowResult(
-    int category,
-    ProactiveSuggestionsShowResult result) {
-  constexpr char kShowResultHistogram[] =
-      "Assistant.ProactiveSuggestions.ShowResult";
+void RecordProactiveSuggestionsShowResult(int category,
+                                          ProactiveSuggestionsShowResult result,
+                                          bool has_seen_before) {
+  constexpr char kFirstShowResultHistogram[] =
+      "Assistant.ProactiveSuggestions.FirstShowResult";
+  constexpr char kReshowResultHistogram[] =
+      "Assistant.ProactiveSuggestions.ReshowResult";
+
+  // We use a different set of histograms depending on whether or not the set
+  // of proactive suggestions has already been seen. This allows us to measure
+  // user engagement the first time the entry point is presented in comparison
+  // to follow up presentations of the same content.
+  const std::string histogram =
+      has_seen_before ? kReshowResultHistogram : kFirstShowResultHistogram;
 
   // We record an aggregate histogram for easily reporting cumulative show
   // results across all content categories.
-  base::UmaHistogramEnumeration(kShowResultHistogram, result);
+  base::UmaHistogramEnumeration(histogram, result);
 
   // We record sparse histograms for easily comparing show results between
   // content categories.
   switch (result) {
     case ProactiveSuggestionsShowResult::kClick:
       base::UmaHistogramSparse(
-          base::StringPrintf("%s.Click", kShowResultHistogram), category);
+          base::StringPrintf("%s.Click.ByCategory", histogram.c_str()),
+          category);
       break;
     case ProactiveSuggestionsShowResult::kCloseByContextChange:
       base::UmaHistogramSparse(
-          base::StringPrintf("%s.CloseByContextChange", kShowResultHistogram),
+          base::StringPrintf("%s.CloseByContextChange.ByCategory",
+                             histogram.c_str()),
           category);
       break;
     case ProactiveSuggestionsShowResult::kCloseByTimeout:
       base::UmaHistogramSparse(
-          base::StringPrintf("%s.CloseByTimeout", kShowResultHistogram),
+          base::StringPrintf("%s.CloseByTimeout.ByCategory", histogram.c_str()),
           category);
       break;
     case ProactiveSuggestionsShowResult::kCloseByUser:
       base::UmaHistogramSparse(
-          base::StringPrintf("%s.CloseByUser", kShowResultHistogram), category);
+          base::StringPrintf("%s.CloseByUser.ByCategory", histogram.c_str()),
+          category);
       break;
     case ProactiveSuggestionsShowResult::kTeleport:
       base::UmaHistogramSparse(
-          base::StringPrintf("%s.Teleport", kShowResultHistogram), category);
+          base::StringPrintf("%s.Teleport.ByCategory", histogram.c_str()),
+          category);
       break;
   }
 }

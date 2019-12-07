@@ -20,5 +20,5 @@ public interface ActionParserFactory {
      * on memory and startup time. The {@link Supplier} will not be accessed until an action is
      * taken that requires it.
      */
-    ActionParser build(Supplier</*@Nullable*/ ContentMetadata> contentMetadata);
+    ActionParser build(Supplier<ContentMetadata> contentMetadata);
 }

@@ -16,12 +16,17 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/model/model_type_controller_delegate.h"
 
+using syncer::ModelTypeControllerDelegate;
+
 OsSyncModelTypeController::OsSyncModelTypeController(
     syncer::ModelType type,
-    std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate,
+    std::unique_ptr<ModelTypeControllerDelegate> delegate_for_full_sync_mode,
+    std::unique_ptr<ModelTypeControllerDelegate> delegate_for_transport_mode,
     PrefService* pref_service,
     syncer::SyncService* sync_service)
-    : syncer::ModelTypeController(type, std::move(delegate)),
+    : syncer::ModelTypeController(type,
+                                  std::move(delegate_for_full_sync_mode),
+                                  std::move(delegate_for_transport_mode)),
       pref_service_(pref_service),
       sync_service_(sync_service) {
   DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());

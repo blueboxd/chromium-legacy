@@ -47,6 +47,7 @@ class SecurityInterstitialControllerClient
   const std::string& GetApplicationLocale() const override;
   bool CanLaunchDateAndTimeSettings() override;
   void LaunchDateAndTimeSettings() override;
+  bool CanGoBackBeforeNavigation() override;
 
  protected:
   // security_interstitials::ControllerClient overrides.

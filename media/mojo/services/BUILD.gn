@@ -171,13 +171,13 @@ source_set("media_manifest") {
   ]
   deps = [
     "//base",
+    "//build:chromecast_buildflags",
     "//media/mojo:buildflags",
     "//media/mojo/mojom",
     "//media/mojo/mojom:constants",
     "//services/service_manager/public/cpp",
   ]
   if (is_chromecast) {
-    defines = [ "IS_CHROMECAST" ]
     deps += [ "//chromecast/common/mojom" ]
   }
 }

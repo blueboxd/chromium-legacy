@@ -52,7 +52,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents_media_capture_id.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -581,11 +580,7 @@ MediaStreamManager::MediaStreamManager(
   }
   InitializeMaybeAsync(std::move(video_capture_provider));
 
-  // May be null in tests.
-  if (GetSystemConnector()) {
-    audio_service_listener_ =
-        std::make_unique<AudioServiceListener>(GetSystemConnector()->Clone());
-  }
+  audio_service_listener_ = std::make_unique<AudioServiceListener>();
 
   base::PowerMonitor::AddObserver(this);
 }

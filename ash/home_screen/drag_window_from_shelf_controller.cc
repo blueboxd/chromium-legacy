@@ -57,6 +57,12 @@ constexpr base::TimeDelta kShowOverviewTimeWhenDragSuspend =
 constexpr float kReturnToMaximizedDenseThreshold = 152.f;
 constexpr float kReturnToMaximizedStandardThreshold = 164.f;
 
+// The scroll update threshold to restart the show overview timer.
+constexpr float kScrollUpdateOverviewThreshold = 2.f;
+
+// The scroll update threshold to update the dragged window's transform.
+constexpr float kScrollUpdateWindowThreshold = 0.6f;
+
 }  // namespace
 
 // Hide all visible windows expect the dragged windows or the window showing in
@@ -145,11 +151,17 @@ void DragWindowFromShelfController::Drag(const gfx::Point& location_in_screen,
   if (!window_)
     return;
 
-  // TODO(xdai): clean up |drag_started_| variable.
   if (!drag_started_)
     return;
 
-  UpdateDraggedWindow(location_in_screen);
+  // We can still get scroll update event with very small |scroll_x| and
+  // |scroll_y| even if the finger is still. To avoid the jittering effort,
+  // only update the window's transform when scroll update distance is larger
+  // than kScrollUpdateWindowThreshold.
+  if (std::abs(scroll_x) > kScrollUpdateWindowThreshold ||
+      std::abs(scroll_y) > kScrollUpdateWindowThreshold) {
+    UpdateDraggedWindow(location_in_screen);
+  }
 
   // Open overview if the window has been dragged far enough and the scroll
   // delta has decreased to kOpenOverviewThreshold or less.
@@ -187,9 +199,13 @@ void DragWindowFromShelfController::Drag(const gfx::Point& location_in_screen,
       // If the dragging velocity is large enough, hide overview windows.
       show_overview_timer_.Stop();
       HideOverviewDuringDrag();
-    } else {
-      // Otherwise start the |show_overview_timer_| to show and update overview
-      // when the dragging slows down or stops.
+    } else if (!show_overview_timer_.IsRunning() ||
+               std::abs(scroll_x) > kScrollUpdateOverviewThreshold ||
+               std::abs(scroll_y) > kScrollUpdateOverviewThreshold) {
+      // Otherwise start the |show_overview_timer_| to show and update
+      // overview when the dragging slows down or stops. Note if the window is
+      // still being dragged with scroll rate more than kScrollUpdateThreshold,
+      // we restart the show overview timer.
       show_overview_timer_.Start(
           FROM_HERE, kShowOverviewTimeWhenDragSuspend, this,
           &DragWindowFromShelfController::ShowOverviewDuringOrAfterDrag);
@@ -469,9 +485,9 @@ DragWindowFromShelfController::GetSnapPosition(
       const int min_drag_distance = started_in_snap_region
                                         ? kMinDragDistanceInSnapRegion
                                         : kMinDragDistanceOutsideSnapRegion;
-      if ((IsPhysicalLeftOrTop(snap_position) &&
+      if ((SplitViewController::IsPhysicalLeftOrTop(snap_position) &&
            distance > -min_drag_distance) ||
-          (!IsPhysicalLeftOrTop(snap_position) &&
+          (!SplitViewController::IsPhysicalLeftOrTop(snap_position) &&
            distance < min_drag_distance)) {
         snap_position = SplitViewController::NONE;
       }

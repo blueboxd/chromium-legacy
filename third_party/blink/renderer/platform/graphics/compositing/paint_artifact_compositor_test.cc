@@ -251,7 +251,7 @@ class PaintArtifactCompositorTest : public testing::Test,
   }
 
   void AddSimpleRectChunk(TestPaintArtifact& artifact) {
-    artifact.Chunk().RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack);
+    artifact.Chunk().RectDrawing(IntRect(100, 100, 200, 100), Color::kBlack);
   }
 
   void UpdateWithArtifactWithOpacity(float opacity,
@@ -262,7 +262,7 @@ class PaintArtifactCompositorTest : public testing::Test,
       AddSimpleRectChunk(artifact);
     auto effect = CreateOpacityEffect(e0(), opacity);
     artifact.Chunk(t0(), c0(), *effect)
-        .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+        .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
     if (include_subsequent_chunk)
       AddSimpleRectChunk(artifact);
     Update(artifact.Build());
@@ -297,7 +297,7 @@ TEST_P(PaintArtifactCompositorTest, EmptyPaintArtifact) {
 
 TEST_P(PaintArtifactCompositorTest, OneChunkWithAnOffset) {
   TestPaintArtifact artifact;
-  artifact.Chunk().RectDrawing(FloatRect(50, -50, 100, 100), Color::kWhite);
+  artifact.Chunk().RectDrawing(IntRect(50, -50, 100, 100), Color::kWhite);
   Update(artifact.Build());
 
   ASSERT_EQ(1u, ContentLayerCount());
@@ -318,10 +318,10 @@ TEST_P(PaintArtifactCompositorTest, OneTransform) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(*transform, c0(), e0())
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
-  artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kGray);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kWhite);
+  artifact.Chunk().RectDrawing(IntRect(0, 0, 100, 100), Color::kGray);
   artifact.Chunk(*transform, c0(), e0())
-      .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack);
+      .RectDrawing(IntRect(100, 100, 200, 100), Color::kBlack);
   Update(artifact.Build());
 
   ASSERT_EQ(2u, ContentLayerCount());
@@ -360,10 +360,10 @@ TEST_P(PaintArtifactCompositorTest, OneTransformWithAlias) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(*transform, c0(), e0())
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
-  artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kGray);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kWhite);
+  artifact.Chunk().RectDrawing(IntRect(0, 0, 100, 100), Color::kGray);
   artifact.Chunk(*transform, c0(), e0())
-      .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack);
+      .RectDrawing(IntRect(100, 100, 200, 100), Color::kBlack);
   Update(artifact.Build());
 
   ASSERT_EQ(2u, ContentLayerCount());
@@ -404,9 +404,9 @@ TEST_P(PaintArtifactCompositorTest, TransformCombining) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(*transform1, c0(), e0())
-      .RectDrawing(FloatRect(0, 0, 300, 200), Color::kWhite);
+      .RectDrawing(IntRect(0, 0, 300, 200), Color::kWhite);
   artifact.Chunk(*transform2, c0(), e0())
-      .RectDrawing(FloatRect(0, 0, 300, 200), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 300, 200), Color::kBlack);
   Update(artifact.Build());
 
   ASSERT_EQ(2u, ContentLayerCount());
@@ -452,11 +452,11 @@ TEST_P(PaintArtifactCompositorTest, BackfaceVisibility) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(*backface_hidden_transform, c0(), e0())
-      .RectDrawing(FloatRect(0, 0, 300, 200), Color::kWhite);
+      .RectDrawing(IntRect(0, 0, 300, 200), Color::kWhite);
   artifact.Chunk(*backface_inherited_transform, c0(), e0())
-      .RectDrawing(FloatRect(100, 100, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(100, 100, 100, 100), Color::kBlack);
   artifact.Chunk(*backface_visible_transform, c0(), e0())
-      .RectDrawing(FloatRect(0, 0, 300, 200), Color::kDarkGray);
+      .RectDrawing(IntRect(0, 0, 300, 200), Color::kDarkGray);
   Update(artifact.Build());
 
   ASSERT_EQ(2u, ContentLayerCount());
@@ -490,7 +490,7 @@ TEST_P(PaintArtifactCompositorTest, FlattensInheritedTransform) {
 
     TestPaintArtifact artifact;
     artifact.Chunk(*transform3, c0(), e0())
-        .RectDrawing(FloatRect(0, 0, 300, 200), Color::kWhite);
+        .RectDrawing(IntRect(0, 0, 300, 200), Color::kWhite);
     Update(artifact.Build());
 
     ASSERT_EQ(1u, ContentLayerCount());
@@ -545,7 +545,7 @@ TEST_P(PaintArtifactCompositorTest, FlattensInheritedTransformWithAlias) {
 
     TestPaintArtifact artifact;
     artifact.Chunk(*transform3, c0(), e0())
-        .RectDrawing(FloatRect(0, 0, 300, 200), Color::kWhite);
+        .RectDrawing(IntRect(0, 0, 300, 200), Color::kWhite);
     Update(artifact.Build());
 
     ASSERT_EQ(1u, ContentLayerCount());
@@ -599,13 +599,13 @@ TEST_P(PaintArtifactCompositorTest, SortingContextID) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(*transform1, c0(), e0())
-      .RectDrawing(FloatRect(0, 0, 300, 200), Color::kWhite);
+      .RectDrawing(IntRect(0, 0, 300, 200), Color::kWhite);
   artifact.Chunk(*transform2, c0(), e0())
-      .RectDrawing(FloatRect(0, 0, 300, 200), Color::kLightGray);
+      .RectDrawing(IntRect(0, 0, 300, 200), Color::kLightGray);
   artifact.Chunk(*transform3, c0(), e0())
-      .RectDrawing(FloatRect(0, 0, 300, 200), Color::kDarkGray);
+      .RectDrawing(IntRect(0, 0, 300, 200), Color::kDarkGray);
   artifact.Chunk(*transform4, c0(), e0())
-      .RectDrawing(FloatRect(0, 0, 300, 200), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 300, 200), Color::kBlack);
   Update(artifact.Build());
 
   ASSERT_EQ(4u, ContentLayerCount());
@@ -657,7 +657,7 @@ TEST_P(PaintArtifactCompositorTest, OneClip) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), *clip, e0())
-      .RectDrawing(FloatRect(220, 80, 300, 200), Color::kBlack);
+      .RectDrawing(IntRect(220, 80, 300, 200), Color::kBlack);
   Update(artifact.Build());
 
   ASSERT_EQ(1u, ContentLayerCount());
@@ -682,7 +682,7 @@ TEST_P(PaintArtifactCompositorTest, OneClipWithAlias) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), *clip, e0())
-      .RectDrawing(FloatRect(220, 80, 300, 200), Color::kBlack);
+      .RectDrawing(IntRect(220, 80, 300, 200), Color::kBlack);
   Update(artifact.Build());
 
   ASSERT_EQ(1u, ContentLayerCount());
@@ -716,13 +716,13 @@ TEST_P(PaintArtifactCompositorTest, NestedClips) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(*transform1, *clip1, e0())
-      .RectDrawing(FloatRect(300, 350, 100, 100), Color::kWhite);
+      .RectDrawing(IntRect(300, 350, 100, 100), Color::kWhite);
   artifact.Chunk(*transform2, *clip2, e0())
-      .RectDrawing(FloatRect(300, 350, 100, 100), Color::kLightGray);
+      .RectDrawing(IntRect(300, 350, 100, 100), Color::kLightGray);
   artifact.Chunk(*transform1, *clip1, e0())
-      .RectDrawing(FloatRect(300, 350, 100, 100), Color::kDarkGray);
+      .RectDrawing(IntRect(300, 350, 100, 100), Color::kDarkGray);
   artifact.Chunk(*transform2, *clip2, e0())
-      .RectDrawing(FloatRect(300, 350, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(300, 350, 100, 100), Color::kBlack);
   Update(artifact.Build());
 
   ASSERT_EQ(4u, ContentLayerCount());
@@ -782,13 +782,13 @@ TEST_P(PaintArtifactCompositorTest, NestedClipsWithAlias) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(*transform1, *clip1, e0())
-      .RectDrawing(FloatRect(300, 350, 100, 100), Color::kWhite);
+      .RectDrawing(IntRect(300, 350, 100, 100), Color::kWhite);
   artifact.Chunk(*transform2, *clip2, e0())
-      .RectDrawing(FloatRect(300, 350, 100, 100), Color::kLightGray);
+      .RectDrawing(IntRect(300, 350, 100, 100), Color::kLightGray);
   artifact.Chunk(*transform1, *clip1, e0())
-      .RectDrawing(FloatRect(300, 350, 100, 100), Color::kDarkGray);
+      .RectDrawing(IntRect(300, 350, 100, 100), Color::kDarkGray);
   artifact.Chunk(*transform2, *clip2, e0())
-      .RectDrawing(FloatRect(300, 350, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(300, 350, 100, 100), Color::kBlack);
   Update(artifact.Build());
 
   ASSERT_EQ(4u, ContentLayerCount());
@@ -841,7 +841,7 @@ TEST_P(PaintArtifactCompositorTest, DeeplyNestedClips) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), *clips.back(), e0())
-      .RectDrawing(FloatRect(0, 0, 200, 200), Color::kWhite);
+      .RectDrawing(IntRect(0, 0, 200, 200), Color::kWhite);
   Update(artifact.Build());
 
   // Check the drawing layer. It's clipped.
@@ -878,9 +878,9 @@ TEST_P(PaintArtifactCompositorTest, SiblingClipsWithAlias) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), *clip1, e0())
-      .RectDrawing(FloatRect(0, 0, 111, 222), Color::kWhite);
+      .RectDrawing(IntRect(0, 0, 111, 222), Color::kWhite);
   artifact.Chunk(t0(), *clip2, e0())
-      .RectDrawing(FloatRect(333, 444, 555, 666), Color::kBlack);
+      .RectDrawing(IntRect(333, 444, 555, 666), Color::kBlack);
   Update(artifact.Build());
 
   // The two chunks are merged together.
@@ -909,9 +909,9 @@ TEST_P(PaintArtifactCompositorTest, SiblingClipsWithCompositedTransform) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), *c1, e0())
-      .RectDrawing(FloatRect(0, 0, 640, 480), Color::kWhite);
+      .RectDrawing(IntRect(0, 0, 640, 480), Color::kWhite);
   artifact.Chunk(t0(), *c2, e0())
-      .RectDrawing(FloatRect(0, 0, 640, 480), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 640, 480), Color::kBlack);
   Update(artifact.Build());
 
   // We can't merge the two chunks because their clips have unmergeable
@@ -933,9 +933,9 @@ TEST_P(PaintArtifactCompositorTest, SiblingTransformsWithAlias) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(*transform1, c0(), e0())
-      .RectDrawing(FloatRect(0, 0, 111, 222), Color::kWhite);
+      .RectDrawing(IntRect(0, 0, 111, 222), Color::kWhite);
   artifact.Chunk(*transform2, c0(), e0())
-      .RectDrawing(FloatRect(0, 0, 333, 444), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 333, 444), Color::kBlack);
   Update(artifact.Build());
 
   // The two chunks are merged together.
@@ -958,9 +958,9 @@ TEST_P(PaintArtifactCompositorTest, SiblingTransformsWithComposited) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(*t2, c0(), e0())
-      .RectDrawing(FloatRect(0, 0, 640, 480), Color::kWhite);
+      .RectDrawing(IntRect(0, 0, 640, 480), Color::kWhite);
   artifact.Chunk(*t3, c0(), e0())
-      .RectDrawing(FloatRect(0, 0, 640, 480), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 640, 480), Color::kBlack);
   Update(artifact.Build());
 
   // We can't merge the two chunks because their transforms are not mergeable.
@@ -973,9 +973,9 @@ TEST_P(PaintArtifactCompositorTest, ForeignLayerPassesThrough) {
   layer->SetBounds(gfx::Size(400, 300));
 
   TestPaintArtifact test_artifact;
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 100, 100), Color::kWhite);
   test_artifact.Chunk().ForeignLayer(layer, FloatPoint(50, 60));
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kGray);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 100, 100), Color::kGray);
 
   auto artifact = test_artifact.Build();
   ASSERT_EQ(3u, artifact->PaintChunks().size());
@@ -990,7 +990,7 @@ TEST_P(PaintArtifactCompositorTest, ForeignLayerPassesThrough) {
 TEST_P(PaintArtifactCompositorTest, EffectTreeConversionWithAlias) {
   Update(TestPaintArtifact()
              .Chunk()
-             .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite)
+             .RectDrawing(IntRect(0, 0, 100, 100), Color::kWhite)
              .Build());
   auto root_stable_id = GetPropertyTrees().effect_tree.Node(1)->stable_id;
 
@@ -1005,11 +1005,11 @@ TEST_P(PaintArtifactCompositorTest, EffectTreeConversionWithAlias) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c0(), *effect2)
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kWhite);
   artifact.Chunk(t0(), c0(), *effect1)
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kWhite);
   artifact.Chunk(t0(), c0(), *effect3)
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kWhite);
   Update(artifact.Build());
 
   ASSERT_EQ(3u, ContentLayerCount());
@@ -1096,7 +1096,7 @@ TEST_P(PaintArtifactCompositorTest, OneScrollNode) {
   TestPaintArtifact artifact;
   CreateScrollableChunk(artifact, *scroll_translation, c0(), e0());
   artifact.Chunk(*scroll_translation, c0(), e0())
-      .RectDrawing(FloatRect(-110, 12, 170, 19), Color::kWhite);
+      .RectDrawing(IntRect(-110, 12, 170, 19), Color::kWhite);
 
   // Scroll node ElementIds are referenced by scroll animations.
   Update(artifact.Build());
@@ -1160,9 +1160,9 @@ TEST_P(PaintArtifactCompositorTest, TransformUnderScrollNode) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(*scroll_translation, c0(), e0())
-      .RectDrawing(FloatRect(-20, 4, 60, 8), Color::kBlack)
+      .RectDrawing(IntRect(-20, 4, 60, 8), Color::kBlack)
       .Chunk(*transform, c0(), e0())
-      .RectDrawing(FloatRect(1, -30, 5, 70), Color::kWhite);
+      .RectDrawing(IntRect(1, -30, 5, 70), Color::kWhite);
   Update(artifact.Build());
 
   const cc::ScrollTree& scroll_tree = GetPropertyTrees().scroll_tree;
@@ -1214,10 +1214,10 @@ TEST_P(PaintArtifactCompositorTest, NestedScrollNodes) {
       CreateScrollTranslation(*scroll_translation_a, 37, 41, *scroll_b);
   TestPaintArtifact artifact;
   artifact.Chunk(*scroll_translation_a, c0(), *effect)
-      .RectDrawing(FloatRect(7, 11, 13, 17), Color::kWhite);
+      .RectDrawing(IntRect(7, 11, 13, 17), Color::kWhite);
   CreateScrollableChunk(artifact, *scroll_translation_a, c0(), *effect);
   artifact.Chunk(*scroll_translation_b, c0(), *effect)
-      .RectDrawing(FloatRect(1, 2, 3, 5), Color::kWhite);
+      .RectDrawing(IntRect(1, 2, 3, 5), Color::kWhite);
   CreateScrollableChunk(artifact, *scroll_translation_b, c0(), *effect);
   Update(artifact.Build());
 
@@ -1263,10 +1263,10 @@ TEST_P(PaintArtifactCompositorTest, ScrollHitTestLayerOrder) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(*scroll_translation, *clip, e0())
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kWhite);
   CreateScrollableChunk(artifact, *scroll_translation, *clip, e0());
   artifact.Chunk(*transform, *clip, e0())
-      .RectDrawing(FloatRect(0, 0, 50, 50), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 50, 50), Color::kBlack);
   Update(artifact.Build());
 
   // The first content layer (background) should not have the scrolling element
@@ -1310,7 +1310,7 @@ TEST_P(PaintArtifactCompositorTest, NestedScrollableLayerOrder) {
   CreateScrollableChunk(artifact, *scroll_translation_2, *clip_2->Parent(),
                         e0());
   artifact.Chunk(*scroll_translation_2, *clip_2, e0())
-      .RectDrawing(FloatRect(0, 0, 50, 50), Color::kWhite);
+      .RectDrawing(IntRect(0, 0, 50, 50), Color::kWhite);
   Update(artifact.Build());
 
   // Two scroll layers should be created for each scroll translation node.
@@ -1394,8 +1394,8 @@ TEST_P(PaintArtifactCompositorTest, AncestorScrollNodes) {
 
 TEST_P(PaintArtifactCompositorTest, MergeSimpleChunks) {
   TestPaintArtifact test_artifact;
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 200, 300), Color::kGray);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 100, 100), Color::kWhite);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 200, 300), Color::kGray);
 
   auto artifact = test_artifact.Build();
   ASSERT_EQ(2u, artifact->PaintChunks().size());
@@ -1419,10 +1419,10 @@ TEST_P(PaintArtifactCompositorTest, MergeClip) {
   auto clip = CreateClip(c0(), t0(), FloatRoundedRect(10, 20, 50, 60));
 
   TestPaintArtifact test_artifact;
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 100, 100), Color::kWhite);
   test_artifact.Chunk(t0(), *clip, e0())
-      .RectDrawing(FloatRect(0, 0, 200, 300), Color::kBlack);
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 300, 400), Color::kGray);
+      .RectDrawing(IntRect(0, 0, 200, 300), Color::kBlack);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 300, 400), Color::kGray);
 
   auto artifact = test_artifact.Build();
 
@@ -1451,10 +1451,10 @@ TEST_P(PaintArtifactCompositorTest, Merge2DTransform) {
                       FloatPoint3D(100, 100, 0));
 
   TestPaintArtifact test_artifact;
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 100, 100), Color::kWhite);
   test_artifact.Chunk(*transform, c0(), e0())
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 200, 300), Color::kGray);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 200, 300), Color::kGray);
 
   auto artifact = test_artifact.Build();
   ASSERT_EQ(3u, artifact->PaintChunks().size());
@@ -1486,11 +1486,11 @@ TEST_P(PaintArtifactCompositorTest, Merge2DTransformDirectAncestor) {
 
   TestPaintArtifact test_artifact;
   test_artifact.Chunk(*transform, c0(), e0())
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kWhite);
   // The second chunk can merge into the first because it has a descendant
   // state of the first's transform and no direct compositing reason.
   test_artifact.Chunk(*transform2, c0(), e0())
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
 
   auto artifact = test_artifact.Build();
   ASSERT_EQ(2u, artifact->PaintChunks().size());
@@ -1515,10 +1515,10 @@ TEST_P(PaintArtifactCompositorTest, MergeTransformOrigin) {
                                    FloatPoint3D(100, 100, 0));
 
   TestPaintArtifact test_artifact;
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 100, 100), Color::kWhite);
   test_artifact.Chunk(*transform, c0(), e0())
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 200, 300), Color::kGray);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 200, 300), Color::kGray);
 
   auto artifact = test_artifact.Build();
   ASSERT_EQ(3u, artifact->PaintChunks().size());
@@ -1545,10 +1545,10 @@ TEST_P(PaintArtifactCompositorTest, MergeOpacity) {
   auto effect = CreateOpacityEffect(e0(), opacity);
 
   TestPaintArtifact test_artifact;
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 100, 100), Color::kWhite);
   test_artifact.Chunk(t0(), c0(), *effect)
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 200, 300), Color::kGray);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 200, 300), Color::kGray);
 
   auto artifact = test_artifact.Build();
   ASSERT_EQ(3u, artifact->PaintChunks().size());
@@ -1577,10 +1577,10 @@ TEST_P(PaintArtifactCompositorTest, MergeOpacityWithAlias) {
   auto effect = EffectPaintPropertyNode::CreateAlias(*real_effect);
 
   TestPaintArtifact test_artifact;
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 100, 100), Color::kWhite);
   test_artifact.Chunk(t0(), c0(), *effect)
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 200, 300), Color::kGray);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 200, 300), Color::kGray);
 
   auto artifact = test_artifact.Build();
   ASSERT_EQ(3u, artifact->PaintChunks().size());
@@ -1618,10 +1618,10 @@ TEST_P(PaintArtifactCompositorTest, MergeNestedWithAlias) {
   auto effect = EffectPaintPropertyNode::CreateAlias(*real_effect);
 
   TestPaintArtifact test_artifact;
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 100, 100), Color::kWhite);
   test_artifact.Chunk(*transform, *clip, *effect)
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 200, 300), Color::kGray);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 200, 300), Color::kGray);
 
   auto artifact = test_artifact.Build();
   ASSERT_EQ(3u, artifact->PaintChunks().size());
@@ -1657,10 +1657,10 @@ TEST_P(PaintArtifactCompositorTest, ClipPushedUp) {
   auto clip = CreateClip(c0(), *transform2, FloatRoundedRect(10, 20, 50, 60));
 
   TestPaintArtifact test_artifact;
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 100, 100), Color::kWhite);
   test_artifact.Chunk(t0(), *clip, e0())
-      .RectDrawing(FloatRect(0, 0, 300, 400), Color::kBlack);
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 200, 300), Color::kGray);
+      .RectDrawing(IntRect(0, 0, 300, 400), Color::kBlack);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 200, 300), Color::kGray);
 
   auto artifact = test_artifact.Build();
   ASSERT_EQ(3u, artifact->PaintChunks().size());
@@ -1703,10 +1703,10 @@ TEST_P(PaintArtifactCompositorTest, DISABLED_EffectPushedUp) {
   auto effect = CreateOpacityEffect(e0(), *transform2, &c0(), opacity);
 
   TestPaintArtifact test_artifact;
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 100, 100), Color::kWhite);
   test_artifact.Chunk(t0(), c0(), *effect)
-      .RectDrawing(FloatRect(0, 0, 300, 400), Color::kBlack);
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 200, 300), Color::kGray);
+      .RectDrawing(IntRect(0, 0, 300, 400), Color::kBlack);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 200, 300), Color::kGray);
 
   auto artifact = test_artifact.Build();
   ASSERT_EQ(3u, artifact->PaintChunks().size());
@@ -1747,10 +1747,10 @@ TEST_P(PaintArtifactCompositorTest, DISABLED_EffectAndClipPushedUp) {
   auto effect = CreateOpacityEffect(e0(), *transform2, clip.get(), opacity);
 
   TestPaintArtifact test_artifact;
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 100, 100), Color::kWhite);
   test_artifact.Chunk(t0(), *clip, *effect)
-      .RectDrawing(FloatRect(0, 0, 300, 400), Color::kBlack);
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 200, 300), Color::kGray);
+      .RectDrawing(IntRect(0, 0, 300, 400), Color::kBlack);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 200, 300), Color::kGray);
 
   auto artifact = test_artifact.Build();
   ASSERT_EQ(3u, artifact->PaintChunks().size());
@@ -1782,10 +1782,10 @@ TEST_P(PaintArtifactCompositorTest, ClipAndEffectNoTransform) {
   auto effect = CreateOpacityEffect(e0(), t0(), clip.get(), opacity);
 
   TestPaintArtifact test_artifact;
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 100, 100), Color::kWhite);
   test_artifact.Chunk(t0(), *clip, *effect)
-      .RectDrawing(FloatRect(0, 0, 300, 400), Color::kBlack);
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 200, 300), Color::kGray);
+      .RectDrawing(IntRect(0, 0, 300, 400), Color::kBlack);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 200, 300), Color::kGray);
 
   auto artifact = test_artifact.Build();
   ASSERT_EQ(3u, artifact->PaintChunks().size());
@@ -1814,10 +1814,10 @@ TEST_P(PaintArtifactCompositorTest, TwoClips) {
   auto clip2 = CreateClip(*clip, t0(), FloatRoundedRect(10, 20, 50, 60));
 
   TestPaintArtifact test_artifact;
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 100, 100), Color::kWhite);
   test_artifact.Chunk(t0(), *clip2, e0())
-      .RectDrawing(FloatRect(0, 0, 300, 400), Color::kBlack);
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 200, 300), Color::kGray);
+      .RectDrawing(IntRect(0, 0, 300, 400), Color::kBlack);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 200, 300), Color::kGray);
 
   auto artifact = test_artifact.Build();
   ASSERT_EQ(3u, artifact->PaintChunks().size());
@@ -1848,10 +1848,10 @@ TEST_P(PaintArtifactCompositorTest, TwoTransformsClipBetween) {
       CreateTransform(*transform, TransformationMatrix().Translate(20, 25),
                       FloatPoint3D(100, 100, 0));
   TestPaintArtifact test_artifact;
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 100, 100), Color::kWhite);
   test_artifact.Chunk(*transform2, *clip, e0())
-      .RectDrawing(FloatRect(0, 0, 300, 400), Color::kBlack);
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 200, 300), Color::kGray);
+      .RectDrawing(IntRect(0, 0, 300, 400), Color::kBlack);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 200, 300), Color::kGray);
 
   auto artifact = test_artifact.Build();
   ASSERT_EQ(3u, artifact->PaintChunks().size());
@@ -1877,10 +1877,10 @@ TEST_P(PaintArtifactCompositorTest, OverlapTransform) {
       CompositingReason::k3DTransform);
 
   TestPaintArtifact test_artifact;
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 100, 100), Color::kWhite);
   test_artifact.Chunk(*transform, c0(), e0())
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 200, 300), Color::kGray);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 200, 300), Color::kGray);
 
   auto artifact = test_artifact.Build();
   ASSERT_EQ(3u, artifact->PaintChunks().size());
@@ -2039,7 +2039,7 @@ TEST_P(PaintArtifactCompositorTest, TransformWithElementId) {
   auto transform = CreateSampleTransformNodeWithElementId();
   TestPaintArtifact artifact;
   artifact.Chunk(*transform, c0(), e0())
-      .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack);
+      .RectDrawing(IntRect(100, 100, 200, 100), Color::kBlack);
   Update(artifact.Build());
 
   EXPECT_EQ(2,
@@ -2050,7 +2050,7 @@ TEST_P(PaintArtifactCompositorTest, EffectWithElementId) {
   auto effect = CreateSampleEffectNodeWithElementId();
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c0(), *effect)
-      .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack);
+      .RectDrawing(IntRect(100, 100, 200, 100), Color::kBlack);
   Update(artifact.Build());
 
   EXPECT_EQ(2, ElementIdToEffectNodeIndex(effect->GetCompositorElementId()));
@@ -2061,7 +2061,7 @@ TEST_P(PaintArtifactCompositorTest, EffectWithElementIdWithAlias) {
   auto effect = EffectPaintPropertyNode::CreateAlias(*real_effect);
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c0(), *effect)
-      .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack);
+      .RectDrawing(IntRect(100, 100, 200, 100), Color::kBlack);
   Update(artifact.Build());
 
   EXPECT_EQ(2,
@@ -2081,9 +2081,9 @@ TEST_P(PaintArtifactCompositorTest, NonCompositedSimpleLuminanceMask) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c0(), *masked)
-      .RectDrawing(FloatRect(100, 100, 200, 200), Color::kGray);
+      .RectDrawing(IntRect(100, 100, 200, 200), Color::kGray);
   artifact.Chunk(t0(), c0(), *masking)
-      .RectDrawing(FloatRect(150, 150, 100, 100), Color::kWhite);
+      .RectDrawing(IntRect(150, 150, 100, 100), Color::kWhite);
   Update(artifact.Build());
   ASSERT_EQ(1u, ContentLayerCount());
 
@@ -2115,11 +2115,11 @@ TEST_P(PaintArtifactCompositorTest, CompositedLuminanceMaskTwoChildren) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c0(), *masked)
-      .RectDrawing(FloatRect(100, 100, 200, 200), Color::kGray);
+      .RectDrawing(IntRect(100, 100, 200, 200), Color::kGray);
   artifact.Chunk(t0(), c0(), *child_of_masked)
-      .RectDrawing(FloatRect(100, 100, 200, 200), Color::kGray);
+      .RectDrawing(IntRect(100, 100, 200, 200), Color::kGray);
   artifact.Chunk(t0(), c0(), *masking)
-      .RectDrawing(FloatRect(150, 150, 100, 100), Color::kWhite);
+      .RectDrawing(IntRect(150, 150, 100, 100), Color::kWhite);
   Update(artifact.Build());
   ASSERT_EQ(3u, ContentLayerCount());
 
@@ -2146,9 +2146,9 @@ TEST_P(PaintArtifactCompositorTest, NonCompositedSimpleExoticBlendMode) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c0(), *masked)
-      .RectDrawing(FloatRect(100, 100, 200, 200), Color::kGray);
+      .RectDrawing(IntRect(100, 100, 200, 200), Color::kGray);
   artifact.Chunk(t0(), c0(), *masking)
-      .RectDrawing(FloatRect(150, 150, 100, 100), Color::kWhite);
+      .RectDrawing(IntRect(150, 150, 100, 100), Color::kWhite);
   Update(artifact.Build());
   ASSERT_EQ(1u, ContentLayerCount());
 
@@ -2172,9 +2172,9 @@ TEST_P(PaintArtifactCompositorTest, ForcedCompositedExoticBlendMode) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c0(), *masked)
-      .RectDrawing(FloatRect(100, 100, 200, 200), Color::kGray);
+      .RectDrawing(IntRect(100, 100, 200, 200), Color::kGray);
   artifact.Chunk(t0(), c0(), *masking)
-      .RectDrawing(FloatRect(150, 150, 100, 100), Color::kWhite);
+      .RectDrawing(IntRect(150, 150, 100, 100), Color::kWhite);
   Update(artifact.Build());
   ASSERT_EQ(2u, ContentLayerCount());
 
@@ -2204,11 +2204,11 @@ TEST_P(PaintArtifactCompositorTest,
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c0(), *masked_child1)
-      .RectDrawing(FloatRect(100, 100, 200, 200), Color::kGray);
+      .RectDrawing(IntRect(100, 100, 200, 200), Color::kGray);
   artifact.Chunk(t0(), c0(), *masked_child2)
-      .RectDrawing(FloatRect(100, 100, 200, 200), Color::kBlack);
+      .RectDrawing(IntRect(100, 100, 200, 200), Color::kBlack);
   artifact.Chunk(t0(), c0(), *masking)
-      .RectDrawing(FloatRect(150, 150, 100, 100), Color::kWhite);
+      .RectDrawing(IntRect(150, 150, 100, 100), Color::kWhite);
   Update(artifact.Build());
   ASSERT_EQ(3u, ContentLayerCount());
 
@@ -2240,11 +2240,11 @@ TEST_P(PaintArtifactCompositorTest,
 
   TestPaintArtifact artifact;
   artifact.Chunk(*transform1, c0(), *masked)
-      .RectDrawing(FloatRect(100, 100, 200, 200), Color::kGray);
+      .RectDrawing(IntRect(100, 100, 200, 200), Color::kGray);
   artifact.Chunk(*transform2, c0(), *masked)
-      .RectDrawing(FloatRect(100, 100, 200, 200), Color::kBlack);
+      .RectDrawing(IntRect(100, 100, 200, 200), Color::kBlack);
   artifact.Chunk(t0(), c0(), *masking)
-      .RectDrawing(FloatRect(150, 150, 100, 100), Color::kWhite);
+      .RectDrawing(IntRect(150, 150, 100, 100), Color::kWhite);
   Update(artifact.Build());
   ASSERT_EQ(3u, ContentLayerCount());
 
@@ -2267,8 +2267,8 @@ TEST_P(PaintArtifactCompositorTest, UpdateProducesNewSequenceNumber) {
 
   TestPaintArtifact test_artifact;
   test_artifact.Chunk(*transform, *clip, *effect)
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
-  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kGray);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kWhite);
+  test_artifact.Chunk().RectDrawing(IntRect(0, 0, 100, 100), Color::kGray);
   auto artifact = test_artifact.Build();
 
   Update(artifact);
@@ -2307,9 +2307,9 @@ TEST_P(PaintArtifactCompositorTest, DecompositeClip) {
   auto clip = CreateClip(c0(), t0(), FloatRoundedRect(75, 75, 100, 100));
 
   TestPaintArtifact artifact;
-  artifact.Chunk().RectDrawing(FloatRect(50, 50, 100, 100), Color::kGray);
+  artifact.Chunk().RectDrawing(IntRect(50, 50, 100, 100), Color::kGray);
   artifact.Chunk(t0(), *clip, e0())
-      .RectDrawing(FloatRect(100, 100, 100, 100), Color::kGray);
+      .RectDrawing(IntRect(100, 100, 100, 100), Color::kGray);
   Update(artifact.Build());
   ASSERT_EQ(1u, ContentLayerCount());
 
@@ -2326,10 +2326,10 @@ TEST_P(PaintArtifactCompositorTest, DecompositeEffect) {
   auto effect = CreateOpacityEffect(e0(), 0.5);
 
   TestPaintArtifact artifact;
-  artifact.Chunk().RectDrawing(FloatRect(50, 25, 100, 100), Color::kGray);
+  artifact.Chunk().RectDrawing(IntRect(50, 25, 100, 100), Color::kGray);
   artifact.Chunk(t0(), c0(), *effect)
-      .RectDrawing(FloatRect(25, 75, 100, 100), Color::kGray);
-  artifact.Chunk().RectDrawing(FloatRect(75, 75, 100, 100), Color::kGray);
+      .RectDrawing(IntRect(25, 75, 100, 100), Color::kGray);
+  artifact.Chunk().RectDrawing(IntRect(75, 75, 100, 100), Color::kGray);
   Update(artifact.Build());
   ASSERT_EQ(1u, ContentLayerCount());
 
@@ -2344,10 +2344,10 @@ TEST_P(PaintArtifactCompositorTest, DirectlyCompositedEffect) {
   auto effect = CreateOpacityEffect(e0(), 0.5f, CompositingReason::kAll);
 
   TestPaintArtifact artifact;
-  artifact.Chunk().RectDrawing(FloatRect(50, 25, 100, 100), Color::kGray);
+  artifact.Chunk().RectDrawing(IntRect(50, 25, 100, 100), Color::kGray);
   artifact.Chunk(t0(), c0(), *effect)
-      .RectDrawing(FloatRect(25, 75, 100, 100), Color::kGray);
-  artifact.Chunk().RectDrawing(FloatRect(75, 75, 100, 100), Color::kGray);
+      .RectDrawing(IntRect(25, 75, 100, 100), Color::kGray);
+  artifact.Chunk().RectDrawing(IntRect(75, 75, 100, 100), Color::kGray);
   Update(artifact.Build());
   ASSERT_EQ(3u, ContentLayerCount());
 
@@ -2379,10 +2379,10 @@ TEST_P(PaintArtifactCompositorTest, DecompositeDeepEffect) {
   auto effect3 = CreateOpacityEffect(*effect2, 0.3f);
 
   TestPaintArtifact artifact;
-  artifact.Chunk().RectDrawing(FloatRect(50, 25, 100, 100), Color::kGray);
+  artifact.Chunk().RectDrawing(IntRect(50, 25, 100, 100), Color::kGray);
   artifact.Chunk(t0(), c0(), *effect3)
-      .RectDrawing(FloatRect(25, 75, 100, 100), Color::kGray);
-  artifact.Chunk().RectDrawing(FloatRect(75, 75, 100, 100), Color::kGray);
+      .RectDrawing(IntRect(25, 75, 100, 100), Color::kGray);
+  artifact.Chunk().RectDrawing(IntRect(75, 75, 100, 100), Color::kGray);
   Update(artifact.Build());
   ASSERT_EQ(3u, ContentLayerCount());
 
@@ -2416,11 +2416,11 @@ TEST_P(PaintArtifactCompositorTest, IndirectlyCompositedEffect) {
                                    CompositingReason::k3DTransform);
 
   TestPaintArtifact artifact;
-  artifact.Chunk().RectDrawing(FloatRect(50, 25, 100, 100), Color::kGray);
+  artifact.Chunk().RectDrawing(IntRect(50, 25, 100, 100), Color::kGray);
   artifact.Chunk(t0(), c0(), *effect)
-      .RectDrawing(FloatRect(25, 75, 100, 100), Color::kGray);
+      .RectDrawing(IntRect(25, 75, 100, 100), Color::kGray);
   artifact.Chunk(*transform, c0(), *effect)
-      .RectDrawing(FloatRect(75, 75, 100, 100), Color::kGray);
+      .RectDrawing(IntRect(75, 75, 100, 100), Color::kGray);
   Update(artifact.Build());
   ASSERT_EQ(3u, ContentLayerCount());
 
@@ -2451,20 +2451,20 @@ TEST_P(PaintArtifactCompositorTest, DecompositedEffectNotMergingDueToOverlap) {
   auto transform = CreateTransform(t0(), TransformationMatrix(), FloatPoint3D(),
                                    CompositingReason::k3DTransform);
   TestPaintArtifact artifact;
-  artifact.Chunk().RectDrawing(FloatRect(0, 0, 50, 50), Color::kGray);
+  artifact.Chunk().RectDrawing(IntRect(0, 0, 50, 50), Color::kGray);
   artifact.Chunk(t0(), c0(), *effect1)
-      .RectDrawing(FloatRect(100, 0, 50, 50), Color::kGray);
+      .RectDrawing(IntRect(100, 0, 50, 50), Color::kGray);
   // This chunk has a transform that must be composited, thus causing effect1
   // to be composited too.
   artifact.Chunk(*transform, c0(), *effect1)
-      .RectDrawing(FloatRect(200, 0, 50, 50), Color::kGray);
+      .RectDrawing(IntRect(200, 0, 50, 50), Color::kGray);
   artifact.Chunk(t0(), c0(), *effect2)
-      .RectDrawing(FloatRect(200, 100, 50, 50), Color::kGray);
+      .RectDrawing(IntRect(200, 100, 50, 50), Color::kGray);
   // This chunk overlaps with the 2nd chunk, but is seemingly safe to merge.
   // However because effect1 gets composited due to a composited transform,
   // we can't merge with effect1 nor skip it to merge with the first chunk.
   artifact.Chunk(t0(), c0(), *effect2)
-      .RectDrawing(FloatRect(100, 0, 50, 50), Color::kGray);
+      .RectDrawing(IntRect(100, 0, 50, 50), Color::kGray);
 
   Update(artifact.Build());
   ASSERT_EQ(4u, ContentLayerCount());
@@ -2594,7 +2594,7 @@ TEST_P(PaintArtifactCompositorTest,
   auto effect = CreateOpacityEffect(e0(), 0.0001f, CompositingReason::kCanvas);
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c0(), *effect)
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
   Update(artifact.Build());
   ASSERT_EQ(1u, ContentLayerCount());
 }
@@ -2607,7 +2607,7 @@ TEST_P(PaintArtifactCompositorTest,
       CreateOpacityEffect(*tiny_effect, 0.5f, CompositingReason::kNone);
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c0(), *visible_effect)
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
   Update(artifact.Build());
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     EXPECT_EQ(0u, ContentLayerCount());
@@ -2623,7 +2623,7 @@ TEST_P(
   auto visible_effect = CreateOpacityEffect(*tiny_effect, 0.5f);
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c0(), *visible_effect)
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
   Update(artifact.Build());
   ASSERT_EQ(1u, ContentLayerCount());
 }
@@ -2635,7 +2635,7 @@ TEST_P(PaintArtifactCompositorTest,
       CreateOpacityEffect(*tiny_effect, 0.5f, CompositingReason::kCanvas);
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c0(), *visible_effect)
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
   Update(artifact.Build());
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     EXPECT_EQ(0u, ContentLayerCount());
@@ -2650,7 +2650,7 @@ TEST_P(PaintArtifactCompositorTest, UpdateManagesLayerElementIds) {
   {
     TestPaintArtifact artifact;
     artifact.Chunk(*transform, c0(), e0())
-        .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+        .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
 
     Update(artifact.Build());
     ASSERT_EQ(1u, ContentLayerCount());
@@ -2679,7 +2679,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipSimple) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), *c1, e0())
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
   Update(artifact.Build());
 
   if (RuntimeEnabledFeatures::FastBorderRadiusEnabled()) {
@@ -2772,7 +2772,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipRotatedNotSupported) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(*transform, *c1, e0())
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
   Update(artifact.Build());
 
   // Expectation in effect stack diagram:
@@ -2827,7 +2827,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClip90DegRotationSupported) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(*transform, *c1, e0())
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
   Update(artifact.Build());
 
   if (RuntimeEnabledFeatures::FastBorderRadiusEnabled()) {
@@ -2914,7 +2914,7 @@ TEST_P(PaintArtifactCompositorTest,
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), *c1, e0())
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
   Update(artifact.Build());
 
   // Expectation in effect stack diagram:
@@ -2970,7 +2970,7 @@ TEST_P(PaintArtifactCompositorTest,
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), *c1, e0())
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
   Update(artifact.Build());
 
 #if defined(OS_MACOSX)
@@ -3003,9 +3003,9 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipNested) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), *c1, *filter)
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
   artifact.Chunk(*t1, *c3, *filter)
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
   Update(artifact.Build());
 
   // Expectation in effect stack diagram:
@@ -3098,7 +3098,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipIsNotDrawable) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), *c1, e0())
-      .RectDrawing(FloatRect(0, 0, 0, 0), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 0, 0), Color::kBlack);
   Update(artifact.Build());
 
   // Expectation in effect stack diagram:
@@ -3140,7 +3140,7 @@ TEST_P(PaintArtifactCompositorTest, ReuseSyntheticClip) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), *c1, e0())
-      .RectDrawing(FloatRect(0, 0, 0, 0), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 0, 0), Color::kBlack);
   Update(artifact.Build());
 
   const cc::Layer* content0 = RootLayer()->children()[0].get();
@@ -3151,7 +3151,7 @@ TEST_P(PaintArtifactCompositorTest, ReuseSyntheticClip) {
 
   TestPaintArtifact repeated_artifact;
   repeated_artifact.Chunk(t0(), *c1, e0())
-      .RectDrawing(FloatRect(0, 0, 0, 0), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 0, 0), Color::kBlack);
   Update(repeated_artifact.Build());
   const cc::Layer* content1 = RootLayer()->children()[0].get();
 
@@ -3163,7 +3163,7 @@ TEST_P(PaintArtifactCompositorTest, ReuseSyntheticClip) {
 
   TestPaintArtifact changed_artifact;
   changed_artifact.Chunk(t0(), *c2, e0())
-      .RectDrawing(FloatRect(0, 0, 0, 0), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 0, 0), Color::kBlack);
   Update(changed_artifact.Build());
   const cc::Layer* content2 = RootLayer()->children()[0].get();
 
@@ -3185,7 +3185,7 @@ TEST_P(PaintArtifactCompositorTest,
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), *c1, *e1)
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
   Update(artifact.Build());
 
   // Expectation in effect stack diagram:
@@ -3243,9 +3243,9 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipContiguous) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), *c1, e0())
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
   artifact.Chunk(*t1, *c1, e0())
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
   Update(artifact.Build());
 
   if (RuntimeEnabledFeatures::FastBorderRadiusEnabled()) {
@@ -3358,11 +3358,11 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipDiscontiguous) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), *c1, e0())
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
   artifact.Chunk(*t1, c0(), e0())
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
   artifact.Chunk(t0(), *c1, e0())
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
   Update(artifact.Build());
 
   if (RuntimeEnabledFeatures::FastBorderRadiusEnabled()) {
@@ -3512,11 +3512,11 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipAcrossChildEffect) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), *c1, e0())
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
   artifact.Chunk(t0(), *c1, *e1)
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
   artifact.Chunk(t0(), *c1, e0())
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
   Update(artifact.Build());
 
   if (RuntimeEnabledFeatures::FastBorderRadiusEnabled()) {
@@ -3635,11 +3635,11 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipRespectOutputClip) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), *c1, e0())
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
   artifact.Chunk(t0(), *c1, *e1)
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
   artifact.Chunk(t0(), *c1, e0())
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
   Update(artifact.Build());
 
   if (RuntimeEnabledFeatures::FastBorderRadiusEnabled()) {
@@ -3810,11 +3810,11 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipDelegateBlending) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), *c1, e0())
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
   artifact.Chunk(t0(), *c1, *e1)
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
   artifact.Chunk(t0(), *c1, e0())
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
   Update(artifact.Build());
 
   if (RuntimeEnabledFeatures::FastBorderRadiusEnabled()) {
@@ -3969,7 +3969,7 @@ TEST_P(PaintArtifactCompositorTest, WillBeRemovedFromFrame) {
   auto effect = CreateSampleEffectNodeWithElementId();
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c0(), *effect)
-      .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack);
+      .RectDrawing(IntRect(100, 100, 200, 100), Color::kBlack);
   Update(artifact.Build());
 
   ASSERT_EQ(1u, ContentLayerCount());
@@ -3981,7 +3981,7 @@ TEST_P(PaintArtifactCompositorTest, WillBeRemovedFromFrame) {
 
 TEST_P(PaintArtifactCompositorTest, ContentsNonOpaque) {
   TestPaintArtifact artifact;
-  artifact.Chunk().RectDrawing(FloatRect(100, 100, 200, 200), Color::kBlack);
+  artifact.Chunk().RectDrawing(IntRect(100, 100, 200, 200), Color::kBlack);
   Update(artifact.Build());
   ASSERT_EQ(1u, ContentLayerCount());
   EXPECT_FALSE(ContentLayerAt(0)->contents_opaque());
@@ -3990,7 +3990,7 @@ TEST_P(PaintArtifactCompositorTest, ContentsNonOpaque) {
 TEST_P(PaintArtifactCompositorTest, ContentsOpaque) {
   TestPaintArtifact artifact;
   artifact.Chunk()
-      .RectDrawing(FloatRect(100, 100, 200, 200), Color::kBlack)
+      .RectDrawing(IntRect(100, 100, 200, 200), Color::kBlack)
       .KnownToBeOpaque();
   Update(artifact.Build());
   ASSERT_EQ(1u, ContentLayerCount());
@@ -4000,10 +4000,10 @@ TEST_P(PaintArtifactCompositorTest, ContentsOpaque) {
 TEST_P(PaintArtifactCompositorTest, ContentsOpaqueUnitedNonOpaque) {
   TestPaintArtifact artifact;
   artifact.Chunk()
-      .RectDrawing(FloatRect(100, 100, 200, 200), Color::kBlack)
+      .RectDrawing(IntRect(100, 100, 200, 200), Color::kBlack)
       .KnownToBeOpaque()
       .Chunk()
-      .RectDrawing(FloatRect(200, 200, 200, 200), Color::kBlack)
+      .RectDrawing(IntRect(200, 200, 200, 200), Color::kBlack)
       .KnownToBeOpaque();
   Update(artifact.Build());
   ASSERT_EQ(1u, ContentLayerCount());
@@ -4014,10 +4014,10 @@ TEST_P(PaintArtifactCompositorTest, ContentsOpaqueUnitedNonOpaque) {
 TEST_P(PaintArtifactCompositorTest, ContentsOpaqueUnitedOpaque1) {
   TestPaintArtifact artifact;
   artifact.Chunk()
-      .RectDrawing(FloatRect(100, 100, 300, 300), Color::kBlack)
+      .RectDrawing(IntRect(100, 100, 300, 300), Color::kBlack)
       .KnownToBeOpaque()
       .Chunk()
-      .RectDrawing(FloatRect(200, 200, 200, 200), Color::kBlack)
+      .RectDrawing(IntRect(200, 200, 200, 200), Color::kBlack)
       .KnownToBeOpaque();
   Update(artifact.Build());
   ASSERT_EQ(1u, ContentLayerCount());
@@ -4028,10 +4028,10 @@ TEST_P(PaintArtifactCompositorTest, ContentsOpaqueUnitedOpaque1) {
 TEST_P(PaintArtifactCompositorTest, ContentsOpaqueUnitedOpaque2) {
   TestPaintArtifact artifact;
   artifact.Chunk()
-      .RectDrawing(FloatRect(100, 100, 200, 200), Color::kBlack)
+      .RectDrawing(IntRect(100, 100, 200, 200), Color::kBlack)
       .KnownToBeOpaque()
       .Chunk()
-      .RectDrawing(FloatRect(100, 100, 300, 300), Color::kBlack)
+      .RectDrawing(IntRect(100, 100, 300, 300), Color::kBlack)
       .KnownToBeOpaque();
   Update(artifact.Build());
   ASSERT_EQ(1u, ContentLayerCount());
@@ -4048,9 +4048,9 @@ TEST_P(PaintArtifactCompositorTest, DecompositeEffectWithNoOutputClip) {
   auto effect1 = CreateOpacityEffect(e0(), t0(), nullptr, 0.5);
 
   TestPaintArtifact artifact;
-  artifact.Chunk().RectDrawing(FloatRect(50, 50, 100, 100), Color::kGray);
+  artifact.Chunk().RectDrawing(IntRect(50, 50, 100, 100), Color::kGray);
   artifact.Chunk(t0(), *clip1, *effect1)
-      .RectDrawing(FloatRect(100, 100, 100, 100), Color::kGray);
+      .RectDrawing(IntRect(100, 100, 100, 100), Color::kGray);
   Update(artifact.Build());
   ASSERT_EQ(1u, ContentLayerCount());
 
@@ -4070,9 +4070,9 @@ TEST_P(PaintArtifactCompositorTest, CompositedEffectWithNoOutputClip) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c0(), *effect1)
-      .RectDrawing(FloatRect(50, 50, 100, 100), Color::kGray);
+      .RectDrawing(IntRect(50, 50, 100, 100), Color::kGray);
   artifact.Chunk(t0(), *clip1, *effect1)
-      .RectDrawing(FloatRect(100, 100, 100, 100), Color::kGray);
+      .RectDrawing(IntRect(100, 100, 100, 100), Color::kGray);
   Update(artifact.Build());
   ASSERT_EQ(1u, ContentLayerCount());
 
@@ -4093,7 +4093,7 @@ TEST_P(PaintArtifactCompositorTest, LayerRasterInvalidationWithClip) {
   auto clip = CreateClip(c0(), t0(), FloatRoundedRect(10, 20, 300, 400));
   TestPaintArtifact artifact1;
   artifact1.Chunk(t0(), *clip, e0())
-      .RectDrawing(FloatRect(50, 50, 200, 200), Color::kBlack);
+      .RectDrawing(IntRect(50, 50, 200, 200), Color::kBlack);
   artifact1.Client(0).Validate();
   artifact1.Client(1).Validate();
   Update(artifact1.Build());
@@ -4111,7 +4111,7 @@ TEST_P(PaintArtifactCompositorTest, LayerRasterInvalidationWithClip) {
                        .Chunk(artifact1.Client(0))
                        .Properties(t0(), *clip, e0())
                        .RectDrawing(artifact1.Client(1),
-                                    FloatRect(0, 0, 400, 200), Color::kBlack)
+                                    IntRect(0, 0, 400, 200), Color::kBlack)
                        .Build();
   // Simluate commit to the compositor thread.
   layer->PushPropertiesTo(
@@ -4133,7 +4133,7 @@ TEST_P(PaintArtifactCompositorTest, LayerRasterInvalidationWithClip) {
       TestPaintArtifact()
           .Chunk(artifact1.Client(0))
           .Properties(t0(), *clip, e0())
-          .RectDrawing(artifact1.Client(1), FloatRect(-100, -200, 500, 800),
+          .RectDrawing(artifact1.Client(1), IntRect(-100, -200, 500, 800),
                        Color::kBlack)
           .Build();
   // Simluate commit to the compositor thread.
@@ -4206,7 +4206,7 @@ TEST_P(PaintArtifactCompositorTest, InSubtreeOfPageScale) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(*descendant_transform, c0(), e0())
-      .RectDrawing(FloatRect(0, 0, 10, 10), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 10, 10), Color::kBlack);
   ViewportProperties viewport_properties;
   viewport_properties.page_scale = page_scale_transform.get();
   Update(artifact.Build(), viewport_properties);
@@ -4260,7 +4260,7 @@ TEST_P(PaintArtifactCompositorTest, ViewportPageScale) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(*scroll_translation, c0(), e0())
-      .RectDrawing(FloatRect(0, 0, 10, 10), Color::kBlack);
+      .RectDrawing(IntRect(0, 0, 10, 10), Color::kBlack);
   ViewportProperties viewport_properties;
   viewport_properties.page_scale = scale_transform_node.get();
   Update(artifact.Build(), viewport_properties);
@@ -4310,7 +4310,7 @@ TEST_P(PaintArtifactCompositorTest, OpacityRenderSurfaces) {
                            FloatPoint3D(), CompositingReason::k3DTransform);
 
   TestPaintArtifact artifact;
-  FloatRect r(150, 150, 100, 100);
+  IntRect r(150, 150, 100, 100);
   artifact.Chunk(t0(), c0(), *aa).RectDrawing(r, Color::kWhite);
   artifact.Chunk(t0(), c0(), *ab).RectDrawing(r, Color::kWhite);
   artifact.Chunk(t0(), c0(), *b).RectDrawing(r, Color::kWhite);
@@ -4359,7 +4359,7 @@ TEST_P(PaintArtifactCompositorTest, OpacityRenderSurfacesWithFilterChildren) {
   auto filter2 = CreateFilterEffect(*opacity, filter, FloatPoint(),
                                     CompositingReason::kActiveFilterAnimation);
 
-  FloatRect r(150, 150, 100, 100);
+  IntRect r(150, 150, 100, 100);
   Update(TestPaintArtifact()
              .Chunk(t0(), c0(), *filter1)
              .RectDrawing(r, Color::kWhite)
@@ -4397,7 +4397,7 @@ TEST_P(PaintArtifactCompositorTest, OpacityAnimationRenderSurfaces) {
                            FloatPoint3D(), CompositingReason::k3DTransform);
 
   TestPaintArtifact artifact;
-  FloatRect r(150, 150, 100, 100);
+  IntRect r(150, 150, 100, 100);
   artifact.Chunk(t0(), c0(), *aa).RectDrawing(r, Color::kWhite);
   artifact.Chunk(t0(), c0(), *ab).RectDrawing(r, Color::kWhite);
   artifact.Chunk(t0(), c0(), *b).RectDrawing(r, Color::kWhite);
@@ -4453,7 +4453,7 @@ TEST_P(PaintArtifactCompositorTest, OpacityRenderSurfacesWithBackdropChildren) {
       CompositingReason::kActiveBackdropFilterAnimation);
 
   TestPaintArtifact artifact;
-  FloatRect r(150, 150, 100, 100);
+  IntRect r(150, 150, 100, 100);
   artifact.Chunk(t0(), c0(), *a).RectDrawing(r, Color::kWhite);
   artifact.Chunk(t0(), c0(), *bd).RectDrawing(r, Color::kWhite);
   Update(artifact.Build());
@@ -4474,7 +4474,7 @@ TEST_P(PaintArtifactCompositorTest,
   auto e1 = CreateOpacityEffect(e0(), *t1, nullptr, 1.f);
   auto c1 = CreateClip(c0(), t0(), FloatRoundedRect(50, 50, 50, 50));
   TestPaintArtifact artifact;
-  FloatRect r(150, 150, 100, 100);
+  IntRect r(150, 150, 100, 100);
   artifact.Chunk(t0(), c0(), e0()).RectDrawing(r, Color::kWhite);
   artifact.Chunk(t0(), *c1, *e1).RectDrawing(r, Color::kWhite);
   Update(artifact.Build());
@@ -4495,7 +4495,7 @@ TEST_P(PaintArtifactCompositorTest,
   auto e1 = CreateOpacityEffect(e0(), *t2, nullptr, 1.f);
   auto c1 = CreateClip(c0(), t0(), FloatRoundedRect(50, 50, 50, 50));
   TestPaintArtifact artifact;
-  FloatRect r(150, 150, 100, 100);
+  IntRect r(150, 150, 100, 100);
   artifact.Chunk(t0(), c0(), e0()).RectDrawing(r, Color::kWhite);
   artifact.Chunk(t0(), *c1, *e1).RectDrawing(r, Color::kWhite);
   Update(artifact.Build());
@@ -4515,9 +4515,9 @@ TEST_P(PaintArtifactCompositorTest, OpacityIndirectlyAffectingTwoLayers) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c0(), *child_composited_effect)
-      .RectDrawing(FloatRect(150, 150, 100, 100), Color::kWhite);
+      .RectDrawing(IntRect(150, 150, 100, 100), Color::kWhite);
   artifact.Chunk(t0(), c0(), *grandchild_composited_effect)
-      .RectDrawing(FloatRect(150, 150, 100, 100), Color::kGray);
+      .RectDrawing(IntRect(150, 150, 100, 100), Color::kGray);
   Update(artifact.Build());
   ASSERT_EQ(2u, ContentLayerCount());
 
@@ -4541,9 +4541,9 @@ TEST_P(PaintArtifactCompositorTest,
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c0(), *child_composited_effect)
-      .RectDrawing(FloatRect(150, 150, 100, 100), Color::kWhite);
+      .RectDrawing(IntRect(150, 150, 100, 100), Color::kWhite);
   artifact.Chunk(t0(), c0(), *grandchild_composited_effect)
-      .RectDrawing(FloatRect(150, 150, 100, 100), Color::kGray);
+      .RectDrawing(IntRect(150, 150, 100, 100), Color::kGray);
   Update(artifact.Build());
   ASSERT_EQ(2u, ContentLayerCount());
 
@@ -4576,7 +4576,7 @@ TEST_P(PaintArtifactCompositorTest,
 
   Update(TestPaintArtifact()
              .Chunk(t0(), c0(), *e1)
-             .RectDrawing(FloatRect(150, 150, 100, 100), Color::kWhite)
+             .RectDrawing(IntRect(150, 150, 100, 100), Color::kWhite)
              .Build());
   ASSERT_EQ(1u, ContentLayerCount());
   EXPECT_OPACITY(ContentLayerAt(0)->effect_tree_index(), 1.f, kNoRenderSurface);
@@ -4589,7 +4589,7 @@ TEST_P(PaintArtifactCompositorTest, FilterCreatesRenderSurface) {
                                CompositingReason::kActiveFilterAnimation);
   Update(TestPaintArtifact()
              .Chunk(t0(), c0(), *e1)
-             .RectDrawing(FloatRect(150, 150, 100, 100), Color::kWhite)
+             .RectDrawing(IntRect(150, 150, 100, 100), Color::kWhite)
              .Build());
   ASSERT_EQ(1u, ContentLayerCount());
   EXPECT_OPACITY(ContentLayerAt(0)->effect_tree_index(), 1.f,
@@ -4600,7 +4600,7 @@ TEST_P(PaintArtifactCompositorTest, FilterAnimationCreatesRenderSurface) {
   auto e1 = CreateAnimatingFilterEffect(e0());
   Update(TestPaintArtifact()
              .Chunk(t0(), c0(), *e1)
-             .RectDrawing(FloatRect(150, 150, 100, 100), Color::kWhite)
+             .RectDrawing(IntRect(150, 150, 100, 100), Color::kWhite)
              .Build());
   ASSERT_EQ(1u, ContentLayerCount());
   EXPECT_OPACITY(ContentLayerAt(0)->effect_tree_index(), 1.f,
@@ -4614,7 +4614,7 @@ TEST_P(PaintArtifactCompositorTest, BackdropFilterCreatesRenderSurface) {
                                        CompositingReason::kBackdropFilter);
   Update(TestPaintArtifact()
              .Chunk(t0(), c0(), *e1)
-             .RectDrawing(FloatRect(150, 150, 100, 100), Color::kWhite)
+             .RectDrawing(IntRect(150, 150, 100, 100), Color::kWhite)
              .Build());
   ASSERT_EQ(1u, ContentLayerCount());
   EXPECT_OPACITY(ContentLayerAt(0)->effect_tree_index(), 1.f,
@@ -4626,7 +4626,7 @@ TEST_P(PaintArtifactCompositorTest,
   auto e1 = CreateAnimatingBackdropFilterEffect(e0());
   Update(TestPaintArtifact()
              .Chunk(t0(), c0(), *e1)
-             .RectDrawing(FloatRect(150, 150, 100, 100), Color::kWhite)
+             .RectDrawing(IntRect(150, 150, 100, 100), Color::kWhite)
              .Build());
   ASSERT_EQ(1u, ContentLayerCount());
   EXPECT_OPACITY(ContentLayerAt(0)->effect_tree_index(), 1.f,
@@ -4641,7 +4641,7 @@ TEST_P(PaintArtifactCompositorTest, Non2dAxisAlignedClip) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), *clip, *opacity)
-      .RectDrawing(FloatRect(50, 50, 50, 50), Color::kWhite);
+      .RectDrawing(IntRect(50, 50, 50, 50), Color::kWhite);
   Update(artifact.Build());
   ASSERT_EQ(1u, ContentLayerCount());
 
@@ -4666,7 +4666,7 @@ TEST_P(PaintArtifactCompositorTest, Non2dAxisAlignedRoundedRectClip) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), *clip, *opacity)
-      .RectDrawing(FloatRect(50, 50, 50, 50), Color::kWhite);
+      .RectDrawing(IntRect(50, 50, 50, 50), Color::kWhite);
   Update(artifact.Build());
   ASSERT_EQ(1u, ContentLayerCount());
 
@@ -4701,11 +4701,11 @@ TEST_P(PaintArtifactCompositorTest,
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c0(), *opacity)
-      .RectDrawing(FloatRect(50, 50, 50, 50), Color::kWhite);
+      .RectDrawing(IntRect(50, 50, 50, 50), Color::kWhite);
   artifact.Chunk(*rotate1, c0(), *opacity)
-      .RectDrawing(FloatRect(50, 50, 50, 50), Color::kWhite);
+      .RectDrawing(IntRect(50, 50, 50, 50), Color::kWhite);
   artifact.Chunk(*rotate2, *clip, *opacity)
-      .RectDrawing(FloatRect(50, 50, 50, 50), Color::kWhite);
+      .RectDrawing(IntRect(50, 50, 50, 50), Color::kWhite);
   Update(artifact.Build());
   ASSERT_EQ(3u, ContentLayerCount());
 
@@ -4730,7 +4730,7 @@ TEST_P(PaintArtifactCompositorTest, TransformChange) {
   Update(TestPaintArtifact()
              .Chunk(1)
              .Properties(*t2, c0(), e0())
-             .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack)
+             .RectDrawing(IntRect(100, 100, 200, 100), Color::kBlack)
              .Build());
   ASSERT_EQ(1u, ContentLayerCount());
   cc::Layer* layer = ContentLayerAt(0);
@@ -4745,7 +4745,7 @@ TEST_P(PaintArtifactCompositorTest, TransformChange) {
   Update(TestPaintArtifact()
              .Chunk(1)
              .Properties(*t2, c0(), e0())
-             .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack)
+             .RectDrawing(IntRect(100, 100, 200, 100), Color::kBlack)
              .Build());
 
   ASSERT_EQ(1u, ContentLayerCount());
@@ -4770,7 +4770,7 @@ TEST_P(PaintArtifactCompositorTest, TransformChange) {
   Update(TestPaintArtifact()
              .Chunk(1)
              .Properties(*t2, c0(), e0())
-             .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack)
+             .RectDrawing(IntRect(100, 100, 200, 100), Color::kBlack)
              .Build());
 
   ASSERT_EQ(1u, ContentLayerCount());
@@ -4792,7 +4792,7 @@ TEST_P(PaintArtifactCompositorTest, TransformChange) {
   Update(TestPaintArtifact()
              .Chunk(1)
              .Properties(*t2, c0(), e0())
-             .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack)
+             .RectDrawing(IntRect(100, 100, 200, 100), Color::kBlack)
              .Build());
 
   ASSERT_EQ(1u, ContentLayerCount());
@@ -4812,7 +4812,7 @@ TEST_P(PaintArtifactCompositorTest, EffectChange) {
   Update(TestPaintArtifact()
              .Chunk(1)
              .Properties(t0(), c0(), *e2)
-             .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack)
+             .RectDrawing(IntRect(100, 100, 200, 100), Color::kBlack)
              .Build());
   ASSERT_EQ(1u, ContentLayerCount());
   cc::Layer* layer = ContentLayerAt(0);
@@ -4831,7 +4831,7 @@ TEST_P(PaintArtifactCompositorTest, EffectChange) {
   Update(TestPaintArtifact()
              .Chunk(1)
              .Properties(t0(), c0(), *e2)
-             .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack)
+             .RectDrawing(IntRect(100, 100, 200, 100), Color::kBlack)
              .Build());
 
   ASSERT_EQ(1u, ContentLayerCount());
@@ -4859,7 +4859,7 @@ TEST_P(PaintArtifactCompositorTest, EffectChange) {
   Update(TestPaintArtifact()
              .Chunk(1)
              .Properties(t0(), c0(), *e2)
-             .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack)
+             .RectDrawing(IntRect(100, 100, 200, 100), Color::kBlack)
              .Build());
 
   ASSERT_EQ(1u, ContentLayerCount());

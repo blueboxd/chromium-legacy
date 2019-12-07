@@ -7,8 +7,7 @@
 namespace contextual_search {
 
 UnhandledTapWebContentsObserver::UnhandledTapWebContentsObserver(
-    content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {}
+    content::WebContents* web_contents) {}
 
 UnhandledTapWebContentsObserver::~UnhandledTapWebContentsObserver() {}
 

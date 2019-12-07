@@ -28,8 +28,9 @@ class NGLineBreakerTest : public NGLayoutTest {
   }
 
   // Break lines using the specified available width.
-  Vector<NGLineInfo> BreakToLineInfo(NGInlineNode node,
-                                     LayoutUnit available_width) {
+  Vector<NGInlineItemResults> BreakLines(NGInlineNode node,
+                                         LayoutUnit available_width,
+                                         bool fill_first_space_ = false) {
     DCHECK(node);
 
     node.PrepareLayoutIfNeeded();
@@ -42,13 +43,13 @@ class NGLineBreakerTest : public NGLayoutTest {
 
     scoped_refptr<NGInlineBreakToken> break_token;
 
-    Vector<NGLineInfo> line_infos;
+    Vector<NGInlineItemResults> lines;
     trailing_whitespaces_.resize(0);
     NGExclusionSpace exclusion_space;
     NGPositionedFloatVector leading_floats;
     NGLineLayoutOpportunity line_opportunity(available_width);
     while (!break_token || !break_token->IsFinished()) {
-      NGLineInfo& line_info = line_infos.emplace_back();
+      NGLineInfo line_info;
       NGLineBreaker line_breaker(node, NGLineBreakerMode::kContent, space,
                                  line_opportunity, leading_floats, 0u,
                                  break_token.get(), &exclusion_space);
@@ -60,21 +61,20 @@ class NGLineBreakerTest : public NGLayoutTest {
         break;
 
       break_token = line_breaker.CreateBreakToken(line_info);
+      if (fill_first_space_ && lines.IsEmpty()) {
+        first_should_hang_trailing_space_ =
+            line_info.ShouldHangTrailingSpaces();
+        first_hang_width_ = line_info.HangWidth();
+      }
+      lines.push_back(std::move(line_info.Results()));
     }
 
-    return line_infos;
-  }
-
-  Vector<NGInlineItemResults> BreakLines(NGInlineNode node,
-                                         LayoutUnit available_width) {
-    Vector<NGLineInfo> line_infos = BreakToLineInfo(node, available_width);
-    Vector<NGInlineItemResults> lines;
-    for (NGLineInfo& line_info : line_infos)
-      lines.push_back(std::move(line_info.Results()));
     return lines;
   }
 
   Vector<NGLineBreaker::WhitespaceState> trailing_whitespaces_;
+  bool first_should_hang_trailing_space_;
+  LayoutUnit first_hang_width_;
 };
 
 namespace {
@@ -451,7 +451,7 @@ TEST_P(NGWhitespaceStateTest, WhitespaceState) {
                                        R"HTML(</div>
   )HTML");
 
-  Vector<NGLineInfo> line_infos = BreakToLineInfo(node, LayoutUnit(50));
+  BreakLines(node, LayoutUnit(50));
   EXPECT_EQ(trailing_whitespaces_[0], data.expected);
 }
 
@@ -512,13 +512,11 @@ TEST_P(NGTrailingSpaceWidthTest, TrailingSpaceWidth) {
                                        R"HTML(</div>
   )HTML");
 
-  Vector<NGLineInfo> line_infos = BreakToLineInfo(node, LayoutUnit(50));
-  const NGLineInfo& line_info = line_infos[0];
-  if (line_info.ShouldHangTrailingSpaces()) {
-    EXPECT_EQ(line_info.HangWidth(),
-              LayoutUnit(10) * data.trailing_space_width);
+  BreakLines(node, LayoutUnit(50), true);
+  if (first_should_hang_trailing_space_) {
+    EXPECT_EQ(first_hang_width_, LayoutUnit(10) * data.trailing_space_width);
   } else {
-    EXPECT_EQ(line_info.HangWidth(), LayoutUnit());
+    EXPECT_EQ(first_hang_width_, LayoutUnit());
   }
 }
 

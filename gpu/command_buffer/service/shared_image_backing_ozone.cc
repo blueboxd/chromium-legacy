@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/resources/resource_format.h"
@@ -31,8 +32,13 @@
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gl/buildflags.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
+
+#if BUILDFLAG(USE_DAWN)
+#include "gpu/command_buffer/service/shared_image_representation_dawn_ozone.h"
+#endif  // BUILDFLAG(USE_DAWN)
 
 namespace gpu {
 namespace {
@@ -57,6 +63,7 @@ gfx::BufferUsage GetBufferUsage(uint32_t usage) {
 }  // namespace
 
 std::unique_ptr<SharedImageBackingOzone> SharedImageBackingOzone::Create(
+    scoped_refptr<base::RefCountedData<DawnProcTable>> dawn_procs,
     SharedContextState* context_state,
     const Mailbox& mailbox,
     viz::ResourceFormat format,
@@ -81,9 +88,9 @@ std::unique_ptr<SharedImageBackingOzone> SharedImageBackingOzone::Create(
     return nullptr;
   }
 
-  return base::WrapUnique(
-      new SharedImageBackingOzone(mailbox, format, size, color_space, usage,
-                                  context_state, std::move(pixmap)));
+  return base::WrapUnique(new SharedImageBackingOzone(
+      mailbox, format, size, color_space, usage, context_state,
+      std::move(pixmap), std::move(dawn_procs)));
 }
 
 SharedImageBackingOzone::~SharedImageBackingOzone() = default;
@@ -114,8 +121,16 @@ std::unique_ptr<SharedImageRepresentationDawn>
 SharedImageBackingOzone::ProduceDawn(SharedImageManager* manager,
                                      MemoryTypeTracker* tracker,
                                      WGPUDevice device) {
-  NOTIMPLEMENTED_LOG_ONCE();
+#if BUILDFLAG(USE_DAWN)
+  WGPUTextureFormat webgpu_format = viz::ToWGPUFormat(format());
+  if (webgpu_format == WGPUTextureFormat_Undefined) {
+    return nullptr;
+  }
+  return std::make_unique<SharedImageRepresentationDawnOzone>(
+      manager, this, tracker, device, webgpu_format, pixmap_, dawn_procs_);
+#else  // !BUILDFLAG(USE_DAWN)
   return nullptr;
+#endif
 }
 
 std::unique_ptr<SharedImageRepresentationGLTexture>
@@ -156,7 +171,8 @@ SharedImageBackingOzone::SharedImageBackingOzone(
     const gfx::ColorSpace& color_space,
     uint32_t usage,
     SharedContextState* context_state,
-    scoped_refptr<gfx::NativePixmap> pixmap)
+    scoped_refptr<gfx::NativePixmap> pixmap,
+    scoped_refptr<base::RefCountedData<DawnProcTable>> dawn_procs)
     : SharedImageBacking(mailbox,
                          format,
                          size,
@@ -164,6 +180,7 @@ SharedImageBackingOzone::SharedImageBackingOzone(
                          usage,
                          GetPixmapSizeInBytes(*pixmap),
                          false),
-      pixmap_(std::move(pixmap)) {}
+      pixmap_(std::move(pixmap)),
+      dawn_procs_(std::move(dawn_procs)) {}
 
 }  // namespace gpu

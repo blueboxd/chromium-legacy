@@ -109,6 +109,7 @@ copy("chrome_camera_app_images") {
 copy("chrome_camera_app_js") {
   sources = [
     "src/js/background.js",
+    "src/js/background_ops.js",
     "src/js/chrome_util.js",
     "src/js/gallerybutton.js",
     "src/js/google-analytics-bundle.js",

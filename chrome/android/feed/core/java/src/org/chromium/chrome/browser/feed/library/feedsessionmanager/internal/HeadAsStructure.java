@@ -118,8 +118,7 @@ public final class HeadAsStructure {
      */
     // The Nullness checker requires specifying the Nullable vs. NonNull state explicitly since it
     // can't be inferred from T.  This is done here and in the methods called below.
-    public <T> Result<List</*@NonNull*/ T>> filter(
-            Function<TreeNode, /*@Nullable*/ T> filterPredicate) {
+    public <T> Result<List<T>> filter(Function<TreeNode, T> filterPredicate) {
         Logger.i(TAG, "filterHead");
         synchronized (mLock) {
             if (!mInitalized) {
@@ -129,21 +128,20 @@ public final class HeadAsStructure {
         }
 
         ElapsedTimeTracker timeTracker = mTimingUtils.getElapsedTimeTracker(TAG);
-        List</*@NonNull*/ T> filteredList = new ArrayList<>();
+        List<T> filteredList = new ArrayList<>();
         traverseHead(filterPredicate, filteredList);
         Logger.i(TAG, "filterList size %s", filteredList.size());
         timeTracker.stop("task", "HeadFilter.filterHead");
         return Result.success(filteredList);
     }
 
-    private <T> void traverseHead(
-            Function<TreeNode, /*@Nullable*/ T> filterPredicate, List</*@NonNull*/ T> results) {
+    private <T> void traverseHead(Function<TreeNode, T> filterPredicate, List<T> results) {
         TreeNode r = Validators.checkNotNull(mRoot);
         traverseNode(r, filterPredicate, results);
     }
 
-    private <T> void traverseNode(TreeNode node,
-            Function<TreeNode, /*@Nullable*/ T> filterPredicate, List</*@NonNull*/ T> results) {
+    private <T> void traverseNode(
+            TreeNode node, Function<TreeNode, T> filterPredicate, List<T> results) {
         if (node.mStreamPayload == null) {
             Logger.w(TAG, "Found unbound node %s", node.mStreamStructure.getContentId());
             return;

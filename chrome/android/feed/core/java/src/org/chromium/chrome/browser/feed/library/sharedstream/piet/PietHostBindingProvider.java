@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.sharedstream.piet;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 import org.chromium.chrome.browser.feed.library.piet.host.HostBindingProvider;
 import org.chromium.chrome.browser.feed.library.sharedstream.offlinemonitor.StreamOfflineMonitor;
@@ -19,10 +21,10 @@ public class PietHostBindingProvider extends HostBindingProvider {
     private static final String TAG = "PietHostBindingProvider";
 
     private final StreamOfflineMonitor mOfflineMonitor;
-    /*@Nullable*/ private final HostBindingProvider mHostBindingProvider;
+    @Nullable
+    private final HostBindingProvider mHostBindingProvider;
 
-    public PietHostBindingProvider(
-            /*@Nullable*/ HostBindingProvider hostHostBindingProvider,
+    public PietHostBindingProvider(@Nullable HostBindingProvider hostHostBindingProvider,
             StreamOfflineMonitor offlineMonitor) {
         this.mHostBindingProvider = hostHostBindingProvider;
         this.mOfflineMonitor = offlineMonitor;
@@ -173,7 +175,7 @@ public class PietHostBindingProvider extends HostBindingProvider {
      * Gets a {@link BindingValue} that supports multiple separate types. IE, Visibility or Style
      * bindings. Returns {@literal null} if no generic binding can be found.
      */
-    /*@Nullable*/
+    @Nullable
     private BindingValue getGenericBindingForValue(BindingValue bindingValue) {
         HostBindingData hostBindingData = bindingValue.getHostBindingData();
 
@@ -188,7 +190,7 @@ public class PietHostBindingProvider extends HostBindingProvider {
         return null;
     }
 
-    /*@Nullable*/
+    @Nullable
     private BindingValue getBindingForOfflineExtension(OfflineExtension offlineExtension) {
         if (!offlineExtension.hasUrl()) {
             Logger.e(TAG, "No URL for OfflineExtension, return clear.");

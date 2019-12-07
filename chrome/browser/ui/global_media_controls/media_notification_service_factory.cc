@@ -11,7 +11,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "content/public/browser/system_connector.h"
 
 MediaNotificationServiceFactory::MediaNotificationServiceFactory()
     : BrowserContextKeyedServiceFactory(
@@ -35,8 +34,7 @@ MediaNotificationService* MediaNotificationServiceFactory::GetForProfile(
 
 KeyedService* MediaNotificationServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new MediaNotificationService(Profile::FromBrowserContext(context),
-                                      content::GetSystemConnector());
+  return new MediaNotificationService(Profile::FromBrowserContext(context));
 }
 
 content::BrowserContext*

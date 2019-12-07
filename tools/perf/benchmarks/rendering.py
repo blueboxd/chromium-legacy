@@ -34,6 +34,7 @@ RENDERING_BENCHMARK_UMA = [
     'Graphics.Smoothness.Throughput.CompositorThread.TouchScroll',
     'Graphics.Smoothness.Throughput.CompositorThread.WheelScroll',
     'Memory.GPU.PeakMemoryUsage.Scroll',
+    'Memory.GPU.PeakMemoryUsage.PageLoad',
 ]
 
 

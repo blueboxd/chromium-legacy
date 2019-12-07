@@ -2243,6 +2243,7 @@ component("i18n") {
   deps = [
     ":base",
     "//base/third_party/dynamic_annotations",
+    "//build:chromecast_buildflags",
   ]
 
   if (!is_debug) {

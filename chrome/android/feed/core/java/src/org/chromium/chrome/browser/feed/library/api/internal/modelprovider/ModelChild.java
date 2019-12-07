@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.feed.library.api.internal.modelprovider;
 
 import android.support.annotation.IntDef;
 
+import androidx.annotation.Nullable;
+
 /**
  * Abstract Interface defining a Child of a feature which may be returned by a {@link ModelCursor}.
  * A ModelChild must be bound to either a feature or token.
@@ -41,7 +43,7 @@ public interface ModelChild {
      * Returns the parent contentId of the child, this may return {@code Null} if the child is a
      * root.
      */
-    /*@Nullable*/
+    @Nullable
     String getParentId();
 
     /**

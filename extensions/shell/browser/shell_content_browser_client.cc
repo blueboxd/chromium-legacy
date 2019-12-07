@@ -349,11 +349,12 @@ bool ShellContentBrowserClient::HandleExternalProtocol(
 }
 
 void ShellContentBrowserClient::OverrideURLLoaderFactoryParams(
-    content::RenderProcessHost* process,
+    content::BrowserContext* browser_context,
     const url::Origin& origin,
+    bool is_for_isolated_world,
     network::mojom::URLLoaderFactoryParams* factory_params) {
-  URLLoaderFactoryManager::OverrideURLLoaderFactoryParams(process, origin,
-                                                          factory_params);
+  URLLoaderFactoryManager::OverrideURLLoaderFactoryParams(
+      browser_context, origin, is_for_isolated_world, factory_params);
 }
 
 std::string ShellContentBrowserClient::GetUserAgent() {

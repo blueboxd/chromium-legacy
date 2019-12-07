@@ -11,7 +11,6 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/audio/log_factory_adapter.h"
 #include "services/audio/public/mojom/log_factory_manager.mojom.h"
-#include "services/audio/traced_service_ref.h"
 
 namespace media {
 class AudioLogFactory;
@@ -27,8 +26,7 @@ class LogFactoryManager final : public mojom::LogFactoryManager {
   LogFactoryManager();
   ~LogFactoryManager() final;
 
-  void Bind(mojo::PendingReceiver<mojom::LogFactoryManager> receiver,
-            TracedServiceRef context_ref);
+  void Bind(mojo::PendingReceiver<mojom::LogFactoryManager> receiver);
 
   // LogFactoryManager implementation.
   void SetLogFactory(
@@ -36,7 +34,7 @@ class LogFactoryManager final : public mojom::LogFactoryManager {
   media::AudioLogFactory* GetLogFactory();
 
  private:
-  mojo::ReceiverSet<mojom::LogFactoryManager, TracedServiceRef> receivers_;
+  mojo::ReceiverSet<mojom::LogFactoryManager> receivers_;
   LogFactoryAdapter log_factory_adapter_;
   SEQUENCE_CHECKER(owning_sequence_);
 

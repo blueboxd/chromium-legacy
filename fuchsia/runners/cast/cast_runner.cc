@@ -101,38 +101,9 @@ void CastRunner::StartComponent(
       pending_component->startup_context->component_context()->svc().get());
   pending_component->controller_request = std::move(controller_request);
 
-  // Get binding details from the Agent.
-  fidl::InterfaceHandle<chromium::cast::ApiBindings> api_bindings_client;
-  pending_component->agent_manager->ConnectToAgentService(
-      kAgentComponentUrl, api_bindings_client.NewRequest());
-  pending_component->api_bindings_client = std::make_unique<ApiBindingsClient>(
-      std::move(api_bindings_client),
-      base::BindOnce(&CastRunner::MaybeStartComponent, base::Unretained(this),
-                     base::Unretained(pending_component.get())),
-      base::BindOnce(&CastRunner::CancelComponentLaunch, base::Unretained(this),
-                     base::Unretained(pending_component.get())));
-
-  // Get UrlRequestRewriteRulesProvider from the Agent.
-  fidl::InterfaceHandle<chromium::cast::UrlRequestRewriteRulesProvider>
-      url_request_rules_provider;
-  pending_component->agent_manager->ConnectToAgentService(
-      kAgentComponentUrl, url_request_rules_provider.NewRequest());
-  pending_component->rewrite_rules_provider = url_request_rules_provider.Bind();
-  pending_component->rewrite_rules_provider.set_error_handler(
-      [this, pending_component = pending_component.get()](zx_status_t status) {
-        ZX_LOG(ERROR, status) << "UrlRequestRewriteRulesProvider disconnected.";
-        CancelComponentLaunch(pending_component);
-      });
-  pending_component->rewrite_rules_provider->GetUrlRequestRewriteRules(
-      [this, pending_component = pending_component.get()](
-          std::vector<fuchsia::web::UrlRequestRewriteRule> rewrite_rules) {
-        pending_component->rewrite_rules =
-            base::Optional<std::vector<fuchsia::web::UrlRequestRewriteRule>>(
-                std::move(rewrite_rules));
-        MaybeStartComponent(pending_component);
-      });
-
-  // Request the configuration for the specified application.
+  // Request the configuration for this application from the app_config_manager.
+  // This will return the configuration for the application, as well as the
+  // agent that should handle this application.
   pending_component->agent_manager->ConnectToAgentService(
       kAgentComponentUrl, pending_component->app_config_manager.NewRequest());
   pending_component->app_config_manager.set_error_handler(
@@ -199,9 +170,43 @@ void CastRunner::GetConfigCallback(
     return;
   }
 
+  if (!app_config.has_agent_url()) {
+    pending_components_.erase(it);
+    DLOG(WARNING) << "No agent has been associated with this app.";
+    return;
+  }
+
   pending_component->app_config = std::move(app_config);
 
-  MaybeStartComponent(pending_component);
+  // Request binding details from the Agent.
+  fidl::InterfaceHandle<chromium::cast::ApiBindings> api_bindings_client;
+  pending_component->agent_manager->ConnectToAgentService(
+      pending_component->app_config.agent_url(),
+      api_bindings_client.NewRequest());
+  pending_component->api_bindings_client = std::make_unique<ApiBindingsClient>(
+      std::move(api_bindings_client),
+      base::BindOnce(&CastRunner::MaybeStartComponent, base::Unretained(this),
+                     base::Unretained(pending_component)),
+      base::BindOnce(&CastRunner::CancelComponentLaunch, base::Unretained(this),
+                     base::Unretained(pending_component)));
+
+  // Request UrlRequestRewriteRulesProvider from the Agent.
+  pending_component->agent_manager->ConnectToAgentService(
+      kAgentComponentUrl,
+      pending_component->rewrite_rules_provider.NewRequest());
+  pending_component->rewrite_rules_provider.set_error_handler(
+      [this, pending_component = pending_component](zx_status_t status) {
+        ZX_LOG(ERROR, status) << "UrlRequestRewriteRulesProvider disconnected.";
+        CancelComponentLaunch(pending_component);
+      });
+  pending_component->rewrite_rules_provider->GetUrlRequestRewriteRules(
+      [this, pending_component = pending_component](
+          std::vector<fuchsia::web::UrlRequestRewriteRule> rewrite_rules) {
+        pending_component->rewrite_rules =
+            base::Optional<std::vector<fuchsia::web::UrlRequestRewriteRule>>(
+                std::move(rewrite_rules));
+        MaybeStartComponent(pending_component);
+      });
 }
 
 void CastRunner::MaybeStartComponent(

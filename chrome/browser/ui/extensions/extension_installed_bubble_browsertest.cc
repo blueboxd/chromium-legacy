@@ -41,11 +41,10 @@ class ExtensionInstalledBubbleBrowserTest
 
   BubbleController* GetExtensionBubbleControllerFromManager(
       BubbleManager* manager) const {
-    for (auto& controller : manager->controllers_) {
-      if (controller->GetName() == "ExtensionInstalled")
-        return controller.get();
-    }
-    return nullptr;
+    // TODO(https://crbug.com/496955): This test class should not be aware of BubbleController
+    // or its internals. Figure out an alternate strategy to find the needed BubbleUi instance.
+    return manager->controllers_.size() ? manager->controllers_[0].get()
+                                        : nullptr;
   }
 
   BubbleUi* GetBubbleUiFromManager(BubbleManager* manager) const {

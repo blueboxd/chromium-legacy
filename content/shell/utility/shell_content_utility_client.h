@@ -25,7 +25,6 @@ class ShellContentUtilityClient : public ContentUtilityClient {
   mojo::ServiceFactory* GetIOThreadServiceFactory() override;
   void RegisterNetworkBinders(
       service_manager::BinderRegistry* registry) override;
-  void RegisterAudioBinders(service_manager::BinderMap* binders) override;
 
  private:
   std::unique_ptr<NetworkServiceTestHelper> network_service_test_helper_;

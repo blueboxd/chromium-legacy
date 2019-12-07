@@ -525,6 +525,17 @@ void MediaRecorderHandler::HandleEncodedVideo(
     recorder_->OnError("Amount of tracks in MediaStream has changed.");
     return;
   }
+
+  if (!last_seen_codec_.has_value())
+    last_seen_codec_ = params.codec;
+  if (*last_seen_codec_ != params.codec) {
+    recorder_->OnError(
+        String::Format("Video codec changed from %s to %s",
+                       media::GetCodecName(*last_seen_codec_).c_str(),
+                       media::GetCodecName(params.codec).c_str()));
+    return;
+  }
+
   if (!webm_muxer_)
     return;
   if (!webm_muxer_->OnEncodedVideo(params, std::move(encoded_data),

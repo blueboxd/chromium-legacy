@@ -1222,7 +1222,7 @@ void RTCPeerConnection::UpdateIceConnectionState() {
   auto new_state = ComputeIceConnectionState();
   if (ice_connection_state_ != new_state) {
     peer_handler_->TrackIceConnectionStateChange(
-        WebRTCPeerConnectionHandler::IceConnectionStateVersion::kDefault,
+        RTCPeerConnectionHandlerPlatform::IceConnectionStateVersion::kDefault,
         new_state);
   }
   ChangeIceConnectionState(new_state);
@@ -1999,10 +1999,10 @@ MediaStreamVector RTCPeerConnection::getRemoteStreams() const {
   return remote_streams;
 }
 
-MediaStream* RTCPeerConnection::getRemoteStreamById(const WebString& id) const {
+MediaStream* RTCPeerConnection::getRemoteStreamById(const String& id) const {
   for (const auto& rtp_receiver : rtp_receivers_) {
     for (const auto& stream : rtp_receiver->streams()) {
-      if (static_cast<WebString>(stream->id()) == id) {
+      if (stream->id() == id) {
         return stream;
       }
     }
@@ -2701,10 +2701,10 @@ void RTCPeerConnection::DidGenerateICECandidate(
       RTCIceCandidate::Create(std::move(platform_candidate));
   ScheduleDispatchEvent(RTCPeerConnectionIceEvent::Create(ice_candidate));
 }
-void RTCPeerConnection::DidFailICECandidate(const WebString& host_candidate,
-                                            const WebString& url,
+void RTCPeerConnection::DidFailICECandidate(const String& host_candidate,
+                                            const String& url,
                                             int error_code,
-                                            const WebString& error_text) {
+                                            const String& error_text) {
   DCHECK(!closed_);
   DCHECK(GetExecutionContext()->IsContextThread());
   ScheduleDispatchEvent(RTCPeerConnectionIceErrorEvent::Create(
@@ -2732,11 +2732,11 @@ void RTCPeerConnection::DidChangeIceConnectionState(
   if (sdp_semantics_ == webrtc::SdpSemantics::kUnifiedPlan) {
     // Unified plan relies on UpdateIceConnectionState() instead.
     peer_handler_->TrackIceConnectionStateChange(
-        WebRTCPeerConnectionHandler::IceConnectionStateVersion::kLegacy,
+        RTCPeerConnectionHandlerPlatform::IceConnectionStateVersion::kLegacy,
         new_state);
   } else {
     peer_handler_->TrackIceConnectionStateChange(
-        WebRTCPeerConnectionHandler::IceConnectionStateVersion::kDefault,
+        RTCPeerConnectionHandlerPlatform::IceConnectionStateVersion::kDefault,
         new_state);
     ChangeIceConnectionState(new_state);
   }
@@ -2995,7 +2995,7 @@ void RTCPeerConnection::DidModifyTransceivers(
 
 void RTCPeerConnection::SetAssociatedMediaStreams(
     RTCRtpReceiver* receiver,
-    const WebVector<WebString>& stream_ids,
+    const WebVector<String>& stream_ids,
     HeapVector<std::pair<Member<MediaStream>, Member<MediaStreamTrack>>>*
         remove_list,
     HeapVector<std::pair<Member<MediaStream>, Member<MediaStreamTrack>>>*
@@ -3006,7 +3006,7 @@ void RTCPeerConnection::SetAssociatedMediaStreams(
   for (const auto& stream_id : stream_ids) {
     MediaStream* curr_stream = nullptr;
     for (const auto& known_stream : known_streams) {
-      if (static_cast<WebString>(known_stream->id()) == stream_id) {
+      if (known_stream->id() == stream_id) {
         curr_stream = known_stream;
         break;
       }

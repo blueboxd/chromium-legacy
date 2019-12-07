@@ -131,7 +131,6 @@ QuicTestPacketMaker::QuicTestPacketMaker(
       max_allowed_push_id_(0),
       spdy_request_framer_(spdy::SpdyFramer::ENABLE_COMPRESSION),
       spdy_response_framer_(spdy::SpdyFramer::ENABLE_COMPRESSION),
-      coalesce_http_frames_(false),
       save_packet_frames_(false),
       qpack_encoder_(&decoder_stream_error_delegate_),
       perspective_(perspective),
@@ -712,23 +711,6 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeDataPacket(
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
-QuicTestPacketMaker::MakeMultipleDataFramesPacket(
-    uint64_t packet_number,
-    quic::QuicStreamId stream_id,
-    bool should_include_version,
-    bool fin,
-    const std::vector<std::string>& data_writes) {
-  InitializeHeader(packet_number, should_include_version);
-  quic::QuicFrames data_frames;
-  for (size_t i = 0; i < data_writes.size(); ++i) {
-    bool is_fin = fin && (i == data_writes.size() - 1);
-    data_frames.push_back(
-        GenerateNextStreamFrame(stream_id, is_fin, data_writes[i]));
-  }
-  return MakeMultipleFramesPacket(header_, data_frames, nullptr);
-}
-
-std::unique_ptr<quic::QuicReceivedPacket>
 QuicTestPacketMaker::MakeAckAndDataPacket(uint64_t packet_number,
                                           bool include_version,
                                           quic::QuicStreamId stream_id,
@@ -755,40 +737,6 @@ QuicTestPacketMaker::MakeAckAndDataPacket(uint64_t packet_number,
 
   frames.push_back(GenerateNextStreamFrame(stream_id, fin, data));
 
-  return MakeMultipleFramesPacket(header_, frames, nullptr);
-}
-
-std::unique_ptr<quic::QuicReceivedPacket>
-QuicTestPacketMaker::MakeAckAndMultipleDataFramesPacket(
-    uint64_t packet_number,
-    bool include_version,
-    quic::QuicStreamId stream_id,
-    uint64_t largest_received,
-    uint64_t smallest_received,
-    uint64_t least_unacked,
-    bool fin,
-    const std::vector<std::string>& data_writes) {
-  InitializeHeader(packet_number, include_version);
-
-  quic::QuicAckFrame ack(MakeAckFrame(largest_received));
-  ack.ack_delay_time = quic::QuicTime::Delta::Zero();
-  for (uint64_t i = smallest_received; i <= largest_received; ++i) {
-    ack.received_packet_times.push_back(
-        std::make_pair(quic::QuicPacketNumber(i), clock_->Now()));
-  }
-  if (largest_received > 0) {
-    ack.packets.AddRange(quic::QuicPacketNumber(1),
-                         quic::QuicPacketNumber(largest_received + 1));
-  }
-  quic::QuicFrames frames;
-  frames.push_back(quic::QuicFrame(&ack));
-  DVLOG(1) << "Adding frame: " << frames.back();
-
-  for (size_t i = 0; i < data_writes.size(); ++i) {
-    bool is_fin = fin && (i == data_writes.size() - 1);
-    frames.push_back(GenerateNextStreamFrame(
-        stream_id, is_fin, quic::QuicStringPiece(data_writes[i])));
-  }
   return MakeMultipleFramesPacket(header_, frames, nullptr);
 }
 

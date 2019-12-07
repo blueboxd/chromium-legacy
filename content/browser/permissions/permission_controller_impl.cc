@@ -50,8 +50,8 @@ PermissionToSchedulingFeature(PermissionType permission_name) {
     case PermissionType::DURABLE_STORAGE:
     case PermissionType::FLASH:
     case PermissionType::ACCESSIBILITY_EVENTS:
-    case PermissionType::CLIPBOARD_READ:
-    case PermissionType::CLIPBOARD_WRITE:
+    case PermissionType::CLIPBOARD_READ_WRITE:
+    case PermissionType::CLIPBOARD_SANITIZED_WRITE:
     case PermissionType::PAYMENT_HANDLER:
     case PermissionType::IDLE_DETECTION:
     case PermissionType::WAKE_LOCK_SCREEN:

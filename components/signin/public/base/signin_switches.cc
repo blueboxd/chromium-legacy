@@ -26,4 +26,9 @@ const char kAccountConsistencyMirror[] = "mirror";
 const char kAccountConsistencyDice[] = "dice";
 #endif
 
+#if defined(OS_CHROMEOS)
+const base::Feature kAccountIdMigration{"AccountIdMigration",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 }  // namespace switches

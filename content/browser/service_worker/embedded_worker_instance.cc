@@ -28,6 +28,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_script_loader_factory.h"
 #include "content/browser/url_loader_factory_getter.h"
+#include "content/browser/url_loader_factory_params_helper.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/url_schemes.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -1053,9 +1054,8 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
   mojo::PendingReceiver<network::mojom::URLLoaderFactory>
       default_factory_receiver = factory_bundle->pending_default_factory()
                                      .InitWithNewPipeAndPassReceiver();
-  mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
-      default_header_client;
-  network::mojom::URLLoaderFactoryOverridePtr factory_override;
+  network::mojom::URLLoaderFactoryParamsPtr factory_params =
+      URLLoaderFactoryParamsHelper::CreateForWorker(rph, origin);
   bool bypass_redirect_checks = false;
 
   DCHECK(factory_type ==
@@ -1067,26 +1067,20 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       rph->GetBrowserContext(), nullptr /* frame_host */, rph->GetID(),
       factory_type, origin, base::nullopt /* navigation_id */,
-      &default_factory_receiver, &default_header_client,
-      &bypass_redirect_checks, &factory_override);
+      &default_factory_receiver, &factory_params->header_client,
+      &bypass_redirect_checks, &factory_params->factory_override);
   devtools_instrumentation::WillCreateURLLoaderFactoryForServiceWorker(
       rph, routing_id, &default_factory_receiver);
 
   // TODO(yhirano): Support COEP.
   if (GetNetworkFactoryCallbackForTest().is_null()) {
-    rph->CreateURLLoaderFactory(
-        origin, origin, network::mojom::CrossOriginEmbedderPolicy::kNone,
-        nullptr /* preferences */, net::NetworkIsolationKey(origin, origin),
-        std::move(default_header_client), base::nullopt /* top_frame_token */,
-        std::move(default_factory_receiver), std::move(factory_override));
+    rph->CreateURLLoaderFactory(std::move(default_factory_receiver),
+                                std::move(factory_params));
   } else {
     mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory;
     rph->CreateURLLoaderFactory(
-        origin, origin, network::mojom::CrossOriginEmbedderPolicy::kNone,
-        nullptr /* preferences */, net::NetworkIsolationKey(origin, origin),
-        std::move(default_header_client), base::nullopt /* top_frame_token */,
         original_factory.InitWithNewPipeAndPassReceiver(),
-        std::move(factory_override));
+        std::move(factory_params));
     GetNetworkFactoryCallbackForTest().Run(std::move(default_factory_receiver),
                                            rph->GetID(),
                                            std::move(original_factory));

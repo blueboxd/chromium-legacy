@@ -8,6 +8,8 @@ import static org.chromium.chrome.browser.feed.library.common.Validators.checkSt
 
 import android.support.annotation.VisibleForTesting;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
@@ -50,7 +52,8 @@ public class CardDriver implements FeatureDriver {
     private final ViewLoggingUpdater mViewLoggingUpdater;
     private final TooltipApi mTooltipApi;
 
-    /*@Nullable*/ private ContentDriver mContentDriver;
+    @Nullable
+    private ContentDriver mContentDriver;
 
     CardDriver(ActionApi actionApi, ActionManager actionManager,
             ActionParserFactory actionParserFactory, BasicLoggingApi basicLoggingApi,
@@ -85,7 +88,7 @@ public class CardDriver implements FeatureDriver {
     }
 
     @Override
-    /*@Nullable*/
+    @Nullable
     public LeafFeatureDriver getLeafFeatureDriver() {
         if (mContentDriver == null) {
             mContentDriver = createContentChild(mCardModel);
@@ -98,7 +101,7 @@ public class CardDriver implements FeatureDriver {
         return null;
     }
 
-    /*@Nullable*/
+    @Nullable
     private ContentDriver createContentChild(ModelFeature modelFeature) {
         ModelCursor cursor = modelFeature.getCursor();
         // TODO: add change listener to ModelFeature.

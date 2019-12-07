@@ -533,7 +533,9 @@ js_library("shortcut_input") {
   deps = [
     ":keyboard_shortcut_delegate",
     ":shortcut_util",
+    "//third_party/polymer/v3_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer",
     "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
   ]
   externs_list = [ "$externs_path/developer_private.js" ]
 }

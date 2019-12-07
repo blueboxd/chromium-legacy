@@ -62,15 +62,14 @@ root_cert() {
 
 # Create a cert with CommonName $CN signed by $CA_ID.
 # Usage:
-#   CA_ID=<id> CN="<cn>" \
+#   CA_ID=<id> CN="<cn>" [SAN="<san>"] \
 #     issue_cert <$1=file_name> <$2=cert_type> [as_pem] [as_der] [as_pk8]
 # and store it at $1.der /$1.pem.
+# For more information about specifying Subject Alternative Name (SAN) please
+# refer to: https://www.openssl.org/docs/man1.1.1/man5/x509v3_config.html
 # $1 / file_name is the name (without extension) of the created files.
 # $2 / cert_type must one of:
-#  (*) "leaf_cert_san_ip" (for a server/user cert that reuses the $CN as
-#      subjectAltName of type IP)
-#  (*) "leaf_cert_san_dns" (for a server/user cert that reuses the $CN as
-#      subjectAltName of type DNS)
+#  (*) "leaf_cert_san" (for a server/user cert that uses subjectAltName $SAN)
 #  (*) "leaf_cert_without_san" (for a server/user cert that does not have a
 #      subjectAltName)
 #  (*) or "ca_cert" (for a intermediate CA).
@@ -84,9 +83,25 @@ root_cert() {
 #      directory.
 # Will write intermediate output to $CA_CERT_UTIL_OUT_DIR. Do not delete
 # $CA_CERT_UTIL_OUT_DIR before all certificates have been issued.
+
+# Examples:
+
+# CN=root_ca_cert \
+#  try root_cert root_ca_cert
+
+# CA_ID=root_ca_cert CN="127.0.0.1" \
+#  try issue_cert ok_cert_without_san leaf_cert_without_san as_pem
+
+# CA_ID=root_ca_cert CN="127.0.0.1" SAN="DNS:example.com" \
+#  try issue_cert ok_cert_with_dns_san leaf_cert_san as_pem
+
+# CA_ID=root_ca_cert CN="127.0.0.1" SAN="email:example@domain.com" \
+#  try issue_cert ok_cert_with_email_san leaf_cert_san as_pem
+
 issue_cert() {
   cert_name="$1"
   cert_type="$2"
+  config="${CA_CERT_UTIL_DIR}/ca.cnf"
 
   if [[ "${cert_type}" == "ca_cert" ]]
   then
@@ -94,18 +109,28 @@ issue_cert() {
     try touch "${CA_CERT_UTIL_OUT_DIR}/${cert_name}-index.txt"
     try openssl genrsa -out "${CA_CERT_UTIL_OUT_DIR}/${cert_name}.key" 2048
   fi
+
+  case "${cert_type}" in
+    "leaf_cert_san")
+      config="${CA_CERT_UTIL_DIR}/cert_with_san.cnf"
+      ;;
+    "leaf_cert_without_san")
+      config="${CA_CERT_UTIL_DIR}/cert_without_san.cnf"
+      ;;
+  esac
+
   try openssl req \
     -new \
     -keyout "${CA_CERT_UTIL_OUT_DIR}/${cert_name}.key" \
     -out "${CA_CERT_UTIL_OUT_DIR}/${cert_name}.req" \
-    -config "${CA_CERT_UTIL_DIR}/ca.cnf"
+    -config $config
 
   try openssl ca \
     -batch \
     -extensions "${cert_type}" \
     -in "${CA_CERT_UTIL_OUT_DIR}/${cert_name}.req" \
     -out "${CA_CERT_UTIL_OUT_DIR}/${cert_name}.pem" \
-    -config "${CA_CERT_UTIL_DIR}/ca.cnf"
+    -config $config
 
   try openssl x509 -in "${CA_CERT_UTIL_OUT_DIR}/${cert_name}.pem" -outform DER \
     -out "${CA_CERT_UTIL_OUT_DIR}/${cert_name}.der"

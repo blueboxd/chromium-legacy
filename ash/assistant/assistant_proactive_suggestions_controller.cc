@@ -334,6 +334,13 @@ void AssistantProactiveSuggestionsController::MaybeShowUi() {
   if (!proactive_suggestions)
     return;
 
+  // For tracking purposes, we record a different histogram the first time we
+  // show a proactive suggestion than we do on subsequent shows. This allows us
+  // to measure user engagement the first time our entry point is presented in
+  // comparison to follow up presentations of the same content.
+  const bool has_shown_before = base::Contains(
+      proactive_suggestions_seen_by_user_, proactive_suggestions->hash());
+
   // If the cached set of proactive suggestions is blacklisted, it should not be
   // shown to the user. A set of proactive suggestions may be blacklisted as a
   // result of duplicate suppression or as a result of the user explicitly
@@ -342,7 +349,8 @@ void AssistantProactiveSuggestionsController::MaybeShowUi() {
                      proactive_suggestions->hash())) {
     RecordProactiveSuggestionsShowAttempt(
         proactive_suggestions->category(),
-        ProactiveSuggestionsShowAttempt::kAbortedByDuplicateSuppression);
+        ProactiveSuggestionsShowAttempt::kAbortedByDuplicateSuppression,
+        has_shown_before);
     return;
   }
 
@@ -364,7 +372,7 @@ void AssistantProactiveSuggestionsController::MaybeShowUi() {
 
   RecordProactiveSuggestionsShowAttempt(
       view_->proactive_suggestions()->category(),
-      ProactiveSuggestionsShowAttempt::kSuccess);
+      ProactiveSuggestionsShowAttempt::kSuccess, has_shown_before);
 
   // If duplicate suppression is enabled, the user should not be presented with
   // this set of proactive suggestions again so we add it to our blacklist.
@@ -393,8 +401,19 @@ void AssistantProactiveSuggestionsController::CloseUi(
   if (!view_)
     return;
 
+  // Cache the fact that this set of proactive suggestions was shown so that
+  // we can later recall that fact for subsequent presentations.
+  const bool has_shown_before =
+      !proactive_suggestions_seen_by_user_
+           .emplace(view_->proactive_suggestions()->hash())
+           .second;
+
+  // For tracking purposes, we record a different histogram the first time a
+  // proactive suggestion is closed than on we do on subsequent closes. This
+  // allows us to measure user engagement the first time our entry point is
+  // presented in comparison to follow up presentations of the same content.
   RecordProactiveSuggestionsShowResult(
-      view_->proactive_suggestions()->category(), result);
+      view_->proactive_suggestions()->category(), result, has_shown_before);
 
   auto_close_timer_.Stop();
 

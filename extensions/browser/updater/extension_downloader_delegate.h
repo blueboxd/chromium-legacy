@@ -38,6 +38,12 @@ class ExtensionDownloaderDelegate {
     // this extension.
     NO_UPDATE_AVAILABLE,
 
+    // The update entry for the extension contained no fetch URL.
+    CRX_FETCH_URL_EMPTY,
+
+    // The update entry for the extension contained invalid fetch URL.
+    CRX_FETCH_URL_INVALID,
+
     // There was an update for this extension but the download of the crx
     // failed.
     CRX_FETCH_FAILED,

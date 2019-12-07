@@ -843,11 +843,18 @@ TEST_P(LayerTreeHostFiltersPixelTest, RotatedFilter) {
   background->AddChild(child);
 
 #if defined(OS_WIN)
+#if defined (ARCH_CPU_ARM64)
+  // Windows ARM64 has some pixels difference: crbug.com/1029728
+  float percentage_pixels_large_error = 0.391112f;
+  float average_error_allowed_in_bad_pixels = 1.1f;
+  int large_error_allowed = 3;
+#else
   // Windows has 1 pixel off by 1: crbug.com/259915
   float percentage_pixels_large_error = 0.00111112f;  // 1px / (300*300)
-  float percentage_pixels_small_error = 0.0f;
   float average_error_allowed_in_bad_pixels = 1.f;
   int large_error_allowed = 1;
+#endif
+  float percentage_pixels_small_error = 0.0f;
   int small_error_allowed = 0;
   pixel_comparator_.reset(new FuzzyPixelComparator(
       true,  // discard_alpha
@@ -889,11 +896,18 @@ TEST_P(LayerTreeHostFiltersPixelTest, RotatedDropShadowFilter) {
   background->AddChild(child);
 
 #if defined(OS_WIN) || defined(ARCH_CPU_ARM64)
+#if defined(OS_WIN) && defined(ARCH_CPU_ARM64)
+  // Windows ARM64 has some pixels difference: crbug.com/1029729
+  float percentage_pixels_large_error = 0.89f;
+  float average_error_allowed_in_bad_pixels = 5.f;
+  int large_error_allowed = 17;
+#else
   // Windows and ARM64 have 3 pixels off by 1: crbug.com/259915
   float percentage_pixels_large_error = 0.00333334f;  // 3px / (300*300)
-  float percentage_pixels_small_error = 0.0f;
   float average_error_allowed_in_bad_pixels = 1.f;
   int large_error_allowed = 1;
+#endif
+  float percentage_pixels_small_error = 0.0f;
   int small_error_allowed = 0;
   pixel_comparator_.reset(new FuzzyPixelComparator(
       true,  // discard_alpha

@@ -538,6 +538,8 @@
     {
       name: "CustomElementsV0",
       origin_trial_feature_name: "WebComponentsV0",
+      origin_trial_type: "deprecation",
+      origin_trial_allows_insecure: true,
       status: "test",
     },
     {
@@ -794,6 +796,8 @@
     {
       name: "HTMLImports",
       origin_trial_feature_name: "WebComponentsV0",
+      origin_trial_type: "deprecation",
+      origin_trial_allows_insecure: true,
       status: "test",
     },
     {
@@ -1544,6 +1548,8 @@
     {
       name: "ShadowDOMV0",
       origin_trial_feature_name: "WebComponentsV0",
+      origin_trial_type: "deprecation",
+      origin_trial_allows_insecure: true,
       status: "test",
     },
     {
@@ -1780,6 +1786,10 @@
     {
       name: "WebBluetoothScanning",
       status: "experimental",
+    },
+    {
+      name: "WebCodecs",
+      status: "test",
     },
     {
       name: "WebGL2ComputeContext",

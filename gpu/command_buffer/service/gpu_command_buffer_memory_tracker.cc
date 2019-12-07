@@ -61,7 +61,8 @@ GpuCommandBufferMemoryTracker::~GpuCommandBufferMemoryTracker() {
   LogMemoryStatsShutdown();
 }
 
-void GpuCommandBufferMemoryTracker::TrackMemoryAllocatedChange(uint64_t delta) {
+void GpuCommandBufferMemoryTracker::TrackMemoryAllocatedChange(int64_t delta) {
+  DCHECK(delta >= 0 || size_ >= static_cast<uint64_t>(-delta));
   uint64_t old_size = size_;
   size_ += delta;
   if (observer_)

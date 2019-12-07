@@ -398,8 +398,7 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
             *frame_entry, request_body, frame_entry->url(),
             blink::mojom::Referrer::New(referrer.url, referrer.policy),
             navigate_type, PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(),
-            base::TimeTicks::Now(),
-            frame_tree_node->current_replication_state().frame_policy);
+            base::TimeTicks::Now());
     mojom::CommitNavigationParamsPtr commit_params =
         entry->ConstructCommitNavigationParams(
             *frame_entry, common_params->url, frame_entry->committed_origin(),
@@ -409,7 +408,8 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
                 -1 /* intended_as_new_entry */,
             controller->GetIndexOfEntry(entry),
             controller->GetLastCommittedEntryIndex(),
-            controller->GetEntryCount());
+            controller->GetEntryCount(),
+            frame_tree_node->current_replication_state().frame_policy);
     commit_params->post_content_type = post_content_type;
 
     std::unique_ptr<NavigationRequest> navigation_request =
@@ -904,7 +904,8 @@ TEST_F(RenderFrameHostManagerTest, Navigate) {
 
   // Commit.
   manager->DidNavigateFrame(host, true /* was_caused_by_user_gesture */,
-                            false /* is_same_document_navigation */);
+                            false /* is_same_document_navigation */,
+                            blink::FramePolicy());
   // Commit to SiteInstance should be delayed until RenderFrame commit.
   EXPECT_TRUE(host == manager->current_frame_host());
   ASSERT_TRUE(host);
@@ -930,7 +931,8 @@ TEST_F(RenderFrameHostManagerTest, Navigate) {
 
   // Commit.
   manager->DidNavigateFrame(host, true /* was_caused_by_user_gesture */,
-                            false /* is_same_document_navigation */);
+                            false /* is_same_document_navigation */,
+                            blink::FramePolicy());
   EXPECT_TRUE(host == manager->current_frame_host());
   ASSERT_TRUE(host);
   EXPECT_TRUE(host->GetSiteInstance()->HasSite());
@@ -955,9 +957,9 @@ TEST_F(RenderFrameHostManagerTest, Navigate) {
   change_observer.Reset();
 
   // Commit.
-  manager->DidNavigateFrame(GetPendingFrameHost(manager),
-                            true /* was_caused_by_user_gesture */,
-                            false /* is_same_document_navigation */);
+  manager->DidNavigateFrame(
+      GetPendingFrameHost(manager), true /* was_caused_by_user_gesture */,
+      false /* is_same_document_navigation */, blink::FramePolicy());
   EXPECT_TRUE(host == manager->current_frame_host());
   ASSERT_TRUE(host);
   EXPECT_TRUE(host->GetSiteInstance()->HasSite());
@@ -1015,7 +1017,8 @@ TEST_F(RenderFrameHostManagerTest, WebUI) {
 
   // Commit.
   manager->DidNavigateFrame(host, true /* was_caused_by_user_gesture */,
-                            false /* is_same_document_navigation */);
+                            false /* is_same_document_navigation */,
+                            blink::FramePolicy());
   EXPECT_TRUE(host->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 }
 
@@ -1054,7 +1057,8 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
 
   // Commit and ensure we still have bindings.
   manager1->DidNavigateFrame(host1, true /* was_caused_by_user_gesture */,
-                             false /* is_same_document_navigation */);
+                             false /* is_same_document_navigation */,
+                             blink::FramePolicy());
   SiteInstance* webui_instance = host1->GetSiteInstance();
   EXPECT_EQ(host1, manager1->current_frame_host());
   EXPECT_TRUE(host1->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
@@ -1087,7 +1091,8 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
   EXPECT_TRUE(host2->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 
   manager2->DidNavigateFrame(host2, true /* was_caused_by_user_gesture */,
-                             false /* is_same_document_navigation */);
+                             false /* is_same_document_navigation */,
+                             blink::FramePolicy());
 }
 
 // Tests that a WebUI is correctly reused between chrome:// pages.
@@ -1466,7 +1471,8 @@ TEST_F(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
 
   // Commit.
   manager->DidNavigateFrame(host, true /* was_caused_by_user_gesture */,
-                            false /* is_same_document_navigation */);
+                            false /* is_same_document_navigation */,
+                            blink::FramePolicy());
   // Commit to SiteInstance should be delayed until RenderFrame commit.
   EXPECT_EQ(host, manager->current_frame_host());
   ASSERT_TRUE(host);
@@ -1490,7 +1496,8 @@ TEST_F(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
 
   // Commit.
   manager->DidNavigateFrame(host, true /* was_caused_by_user_gesture */,
-                            false /* is_same_document_navigation */);
+                            false /* is_same_document_navigation */,
+                            blink::FramePolicy());
   EXPECT_EQ(host, manager->current_frame_host());
   ASSERT_TRUE(host);
   EXPECT_EQ(host->GetSiteInstance(), instance);
@@ -1546,7 +1553,8 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
 
   // Commit.
   manager->DidNavigateFrame(host, true /* was_caused_by_user_gesture */,
-                            false /* is_same_document_navigation */);
+                            false /* is_same_document_navigation */,
+                            blink::FramePolicy());
 
   // Commit to SiteInstance should be delayed until RenderFrame commits.
   EXPECT_EQ(host, manager->current_frame_host());
@@ -1859,7 +1867,8 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
 
   // Commit.
   iframe1->DidNavigateFrame(host1, true /* was_caused_by_user_gesture */,
-                            false /* is_same_document_navigation */);
+                            false /* is_same_document_navigation */,
+                            blink::FramePolicy());
   // Commit to SiteInstance should be delayed until RenderFrame commit.
   EXPECT_TRUE(host1 == iframe1->current_frame_host());
   ASSERT_TRUE(host1);
@@ -1990,7 +1999,8 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
       false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   RenderFrameHostImpl* cross_site = NavigateToEntry(iframe, &entry);
   iframe->DidNavigateFrame(cross_site, true /* was_caused_by_user_gesture */,
-                           false /* is_same_document_navigation */);
+                           false /* is_same_document_navigation */,
+                           blink::FramePolicy());
 
   // A proxy to the iframe should now exist in the SiteInstance of the main
   // frames.
@@ -2331,9 +2341,11 @@ TEST_F(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
   TestRenderFrameHost* host2 =
       static_cast<TestRenderFrameHost*>(NavigateToEntry(child2, &entryB));
   child1->DidNavigateFrame(host1, true /* was_caused_by_user_gesture */,
-                           false /* is_same_document_navigation */);
+                           false /* is_same_document_navigation */,
+                           blink::FramePolicy());
   child2->DidNavigateFrame(host2, true /* was_caused_by_user_gesture */,
-                           false /* is_same_document_navigation */);
+                           false /* is_same_document_navigation */,
+                           blink::FramePolicy());
 
   // Navigate the third subframe to C.
   NavigationEntryImpl entryC(
@@ -2344,7 +2356,8 @@ TEST_F(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
   TestRenderFrameHost* host3 =
       static_cast<TestRenderFrameHost*>(NavigateToEntry(child3, &entryC));
   child3->DidNavigateFrame(host3, true /* was_caused_by_user_gesture */,
-                           false /* is_same_document_navigation */);
+                           false /* is_same_document_navigation */,
+                           blink::FramePolicy());
 
   // Make sure the first two subframes and the third subframe are placed in
   // distinct processes.
@@ -2425,7 +2438,8 @@ TEST_F(RenderFrameHostManagerTest,
   TestRenderFrameHost* hostB =
       static_cast<TestRenderFrameHost*>(NavigateToEntry(child, &entryB));
   child->DidNavigateFrame(hostB, true /* was_caused_by_user_gesture */,
-                          false /* is_same_document_navigation */);
+                          false /* is_same_document_navigation */,
+                          blink::FramePolicy());
 
   // Ensure that the main page is focused.
   main_test_rfh()->GetView()->Focus();
@@ -2440,7 +2454,8 @@ TEST_F(RenderFrameHostManagerTest,
   TestRenderFrameHost* hostC =
       static_cast<TestRenderFrameHost*>(NavigateToEntry(child, &entryC));
   child->DidNavigateFrame(hostC, true /* was_caused_by_user_gesture */,
-                          false /* is_same_document_navigation */);
+                          false /* is_same_document_navigation */,
+                          blink::FramePolicy());
 
   // The main frame should now have a proxy for C.
   RenderFrameProxyHost* proxy =
@@ -2501,7 +2516,8 @@ TEST_F(RenderFrameHostManagerTest, RestoreNavigationToWebUI) {
 
   // The RenderFrameHost committed.
   manager->DidNavigateFrame(current_host, true /* was_caused_by_user_gesture */,
-                            false /* is_same_document_navigation */);
+                            false /* is_same_document_navigation */,
+                            blink::FramePolicy());
   EXPECT_EQ(current_host, manager->current_frame_host());
   EXPECT_TRUE(current_host->web_ui());
 }
@@ -2777,8 +2793,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
           *frame_entry, nullptr, frame_entry->url(),
           blink::mojom::Referrer::New(referrer.url, referrer.policy),
           mojom::NavigationType::DIFFERENT_DOCUMENT, PREVIEWS_UNSPECIFIED,
-          base::TimeTicks::Now(), base::TimeTicks::Now(),
-          frame_tree_node->current_replication_state().frame_policy);
+          base::TimeTicks::Now(), base::TimeTicks::Now());
   mojom::CommitNavigationParamsPtr commit_params =
       entry.ConstructCommitNavigationParams(
           *frame_entry, common_params->url, frame_entry->committed_origin(),
@@ -2787,7 +2802,8 @@ TEST_F(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
           static_cast<NavigationControllerImpl&>(controller())
               .GetIndexOfEntry(&entry),
           controller().GetLastCommittedEntryIndex(),
-          controller().GetEntryCount());
+          controller().GetEntryCount(),
+          frame_tree_node->current_replication_state().frame_policy);
 
   std::unique_ptr<NavigationRequest> navigation_request =
       NavigationRequest::CreateBrowserInitiated(
@@ -2815,7 +2831,8 @@ TEST_F(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
 
   // The RenderFrameHost committed.
   manager->DidNavigateFrame(host, true /* was_caused_by_user_gesture */,
-                            false /* is_same_document_navigation */);
+                            false /* is_same_document_navigation */,
+                            blink::FramePolicy());
   EXPECT_EQ(host, manager->current_frame_host());
   EXPECT_FALSE(GetPendingFrameHost(manager));
   EXPECT_EQ(web_ui, host->web_ui());

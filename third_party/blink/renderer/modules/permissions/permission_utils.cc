@@ -60,10 +60,11 @@ PermissionDescriptorPtr CreateMidiPermissionDescriptor(bool sysex) {
 
 PermissionDescriptorPtr CreateClipboardPermissionDescriptor(
     PermissionName name,
-    bool allow_without_gesture) {
+    bool allow_without_gesture,
+    bool allow_without_sanitization) {
   auto descriptor = CreatePermissionDescriptor(name);
-  auto clipboard_extension =
-      mojom::blink::ClipboardPermissionDescriptor::New(allow_without_gesture);
+  auto clipboard_extension = mojom::blink::ClipboardPermissionDescriptor::New(
+      allow_without_gesture, allow_without_sanitization);
   descriptor->extension = mojom::blink::PermissionDescriptorExtension::New();
   descriptor->extension->set_clipboard(std::move(clipboard_extension));
   return descriptor;

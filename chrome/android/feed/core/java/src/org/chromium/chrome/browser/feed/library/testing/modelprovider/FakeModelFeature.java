@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.testing.modelprovider;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.FeatureChange;
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.FeatureChangeObserver;
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.ModelCursor;
@@ -49,8 +51,8 @@ public class FakeModelFeature implements ModelFeature {
     }
 
     @Override
-    public /*@Nullable*/ ModelCursor getDirectionalCursor(
-            boolean forward, /*@Nullable*/ String startingChild) {
+    public @Nullable ModelCursor getDirectionalCursor(
+            boolean forward, @Nullable String startingChild) {
         return null;
     }
 

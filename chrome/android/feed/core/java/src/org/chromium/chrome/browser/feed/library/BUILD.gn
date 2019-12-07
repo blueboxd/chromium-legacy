@@ -468,6 +468,7 @@ android_library("feed_lib_java") {
     "//base:base_java",
     "//components/feed/core/proto:proto_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:com_android_support_cardview_v7_java",
     "//third_party/android_deps:com_android_support_collections_java",
     "//third_party/android_deps:com_android_support_interpolator_java",

@@ -98,6 +98,7 @@ class IndexedDBTest : public testing::Test {
             /*special_storage_policy=*/special_storage_policy_.get(),
             quota_manager_proxy_.get(),
             base::DefaultClock::GetInstance(),
+            base::SequencedTaskRunnerHandle::Get(),
             base::SequencedTaskRunnerHandle::Get())) {
     special_storage_policy_->AddSessionOnly(kSessionOnlyOrigin.GetURL());
   }
@@ -107,7 +108,7 @@ class IndexedDBTest : public testing::Test {
 
   void RunPostedTasks() {
     base::RunLoop loop;
-    context_->TaskRunner()->PostTask(FROM_HERE, loop.QuitClosure());
+    context_->IDBTaskRunner()->PostTask(FROM_HERE, loop.QuitClosure());
     loop.Run();
   }
 
@@ -209,7 +210,7 @@ class ForceCloseDBCallbacks : public IndexedDBCallbacks {
       : IndexedDBCallbacks(nullptr,
                            origin,
                            mojo::NullAssociatedRemote(),
-                           idb_context->TaskRunner()),
+                           idb_context->IDBTaskRunner()),
         idb_context_(idb_context),
         origin_(origin) {}
 
@@ -301,11 +302,11 @@ TEST_F(IndexedDBTest, DeleteFailsIfDirectoryLocked) {
   ASSERT_TRUE(lock);
 
   base::RunLoop loop;
-  context()->TaskRunner()->PostTask(FROM_HERE,
-                                    base::BindLambdaForTesting([&]() {
-                                      context()->DeleteForOrigin(kTestOrigin);
-                                      loop.Quit();
-                                    }));
+  context()->IDBTaskRunner()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        context()->DeleteForOrigin(kTestOrigin);
+        loop.Quit();
+      }));
   loop.Run();
 
   EXPECT_TRUE(base::DirectoryExists(test_path));

@@ -30,21 +30,23 @@ source_set("printing_export") {
   ]
 }
 
-attributes_path = "backend/tools/ipp-registrations-2.csv"
-ipp_handler_map_path = "$target_gen_dir/backend/ipp_handler_map.cc"
+if (use_cups && is_chromeos) {
+  attributes_path = "backend/tools/ipp-registrations-2.csv"
+  ipp_handler_map_path = "$target_gen_dir/backend/ipp_handler_map.cc"
 
-action("ipp_code_generate") {
-  script = "backend/tools/code_generator.py"
-  inputs = [
-    attributes_path,
-  ]
-  outputs = [
-    ipp_handler_map_path,
-  ]
-  args = [
-    "--attributes-file=" + rebase_path(attributes_path, root_build_dir),
-    "--ipp-handler-map=" + rebase_path(ipp_handler_map_path, root_build_dir),
-  ]
+  action("ipp_code_generate") {
+    script = "backend/tools/code_generator.py"
+    inputs = [
+      attributes_path,
+    ]
+    outputs = [
+      ipp_handler_map_path,
+    ]
+    args = [
+      "--attributes-file=" + rebase_path(attributes_path, root_build_dir),
+      "--ipp-handler-map=" + rebase_path(ipp_handler_map_path, root_build_dir),
+    ]
+  }
 }
 
 component("printing") {
@@ -107,7 +109,6 @@ component("printing") {
     "//printing/buildflags",
   ]
   deps = [
-    ":ipp_code_generate",
     ":printing_export",
     "//base",
     "//base:i18n",
@@ -197,6 +198,8 @@ component("printing") {
     defines += [ "PRINT_BACKEND_AVAILABLE" ]
 
     if (is_chromeos) {
+      deps += [ ":ipp_code_generate" ]
+
       sources += [
         "backend/cups_connection.cc",
         "backend/cups_connection.h",

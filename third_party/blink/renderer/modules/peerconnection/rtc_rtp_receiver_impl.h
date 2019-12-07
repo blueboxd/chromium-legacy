@@ -12,11 +12,11 @@
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_receiver_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_transceiver_platform.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/rtp_receiver_interface.h"
@@ -128,9 +128,9 @@ class MODULES_EXPORT RTCRtpReceiverImpl : public RTCRtpReceiverPlatform {
   webrtc::DtlsTransportInformation DtlsTransportInformation() override;
 
   const blink::WebMediaStreamTrack& Track() const override;
-  blink::WebVector<blink::WebString> StreamIds() const override;
-  blink::WebVector<std::unique_ptr<RTCRtpSource>> GetSources() override;
-  void GetStats(blink::WebRTCStatsReportCallback,
+  WebVector<String> StreamIds() const override;
+  WebVector<std::unique_ptr<RTCRtpSource>> GetSources() override;
+  void GetStats(RTCStatsReportCallback,
                 const blink::WebVector<webrtc::NonStandardGroupId>&) override;
   std::unique_ptr<webrtc::RtpParameters> GetParameters() const override;
   void SetJitterBufferMinimumDelay(
@@ -153,7 +153,7 @@ class MODULES_EXPORT RTCRtpReceiverOnlyTransceiver
   RTCRtpTransceiverPlatformImplementationType ImplementationType()
       const override;
   uintptr_t Id() const override;
-  blink::WebString Mid() const override;
+  String Mid() const override;
   std::unique_ptr<blink::RTCRtpSenderPlatform> Sender() const override;
   std::unique_ptr<RTCRtpReceiverPlatform> Receiver() const override;
   bool Stopped() const override;

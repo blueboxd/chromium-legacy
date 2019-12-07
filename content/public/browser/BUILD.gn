@@ -46,6 +46,7 @@ jumbo_source_set("browser_sources") {
     "appcache_service.h",
     "audio_loopback_stream_creator.cc",
     "audio_loopback_stream_creator.h",
+    "audio_service.h",
     "audio_service_info.cc",
     "audio_service_info.h",
     "authenticator_environment.h",
@@ -204,6 +205,7 @@ jumbo_source_set("browser_sources") {
     "media_player_watch_time.h",
     "media_request_state.h",
     "media_session.h",
+    "media_session_service.h",
     "media_stream_request.cc",
     "media_stream_request.h",
     "message_port_provider.h",
@@ -410,12 +412,14 @@ jumbo_source_set("browser_sources") {
   }
 
   public_deps = [
+    "//build:chromecast_buildflags",
     "//components/download/public/common:public",
     "//content/public/common:common_sources",
     "//ipc",
     "//media/mojo/mojom:remoting",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
+    "//services/audio/public/mojom",
     "//services/content/public/mojom",
     "//services/data_decoder/public/mojom",
     "//services/device/public/mojom:usb",

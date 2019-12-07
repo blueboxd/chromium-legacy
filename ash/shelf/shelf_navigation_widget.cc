@@ -336,6 +336,8 @@ void ShelfNavigationWidget::UpdateLayout() {
   ui::ScopedLayerAnimationSettings settings(
       GetBackButton()->layer()->GetAnimator());
   settings.SetTransitionDuration(animation_duration);
+  settings.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   settings.AddObserver(this);
   GetBackButton()->layer()->SetOpacity(is_back_button_shown ? 1 : 0);
 

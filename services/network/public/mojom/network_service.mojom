@@ -310,13 +310,6 @@ interface NetworkService {
   // Reverts AddCorbExceptionForPlugin.
   RemoveCorbExceptionForPlugin(uint32 process_id);
 
-  // Registers additional MIME types that can be protected by CORB (without any
-  // confirmation sniffing).
-  //
-  // TODO(lukasza): https://crbug.com/944162: Remove the method below once
-  // kMimeHandlerViewInCrossProcessFrame feature ships.
-  AddExtraMimeTypesForCorb(array<string> mime_types);
-
   // Called when the system is low on memory.
   OnMemoryPressure(mojo_base.mojom.MemoryPressureLevel memory_pressure_level);
 

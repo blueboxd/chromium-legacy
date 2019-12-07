@@ -203,6 +203,20 @@ Polymer({
   },
 
   /**
+   * @param {boolean|undefined} visibility
+   * @param {string} location
+   * @return {boolean}
+   * @private
+   */
+  showPrivacyPageAndRedesign_: function(visibility, location) {
+    if (!this.showPage_(visibility)) {
+      return false;
+    }
+    return (location == 'BASIC') ==
+        loadTimeData.getBoolean('privacySettingsRedesignEnabled');
+  },
+
+  /**
    * Queues a task to search the basic sections, then another for the advanced
    * sections.
    * @param {string} query The text to search for.

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.api.internal.scope;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.host.logging.RequestReason;
 import org.chromium.chrome.browser.feed.library.api.host.logging.Task;
 import org.chromium.chrome.browser.feed.library.api.internal.common.ThreadUtils;
@@ -27,14 +29,14 @@ public final class ClearAllListener implements FeedLifecycleListener, Dumpable {
 
     private final TaskQueue mTaskQueue;
     private final FeedSessionManager mFeedSessionManager;
-    private final /*@Nullable*/ Resettable mStore;
+    private final @Nullable Resettable mStore;
     private final ThreadUtils mThreadUtils;
     private int mClearCount;
     private int mRefreshCount;
 
     @SuppressWarnings("argument.type.incompatible") // ok call to registerObserver
     public ClearAllListener(TaskQueue taskQueue, FeedSessionManager feedSessionManager,
-            /*@Nullable*/ Resettable store, ThreadUtils threadUtils,
+            @Nullable Resettable store, ThreadUtils threadUtils,
             FeedObservable<FeedLifecycleListener> lifecycleListenerObservable) {
         this.mTaskQueue = taskQueue;
         this.mFeedSessionManager = feedSessionManager;

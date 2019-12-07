@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.testing.modelprovider;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.ModelProvider;
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.ModelProvider.ViewDepthProvider;
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.ModelProviderFactory;
@@ -18,7 +20,8 @@ import org.chromium.components.feed.core.proto.libraries.api.internal.StreamData
 public class FakeModelProviderFactory implements ModelProviderFactory {
     private FakeModelProvider mModelProvider;
     private String mCreateSessionId;
-    /*@Nullable*/ private ViewDepthProvider mViewDepthProvider;
+    @Nullable
+    private ViewDepthProvider mViewDepthProvider;
 
     @Override
     public ModelProvider create(String sessionId, UiContext uiContext) {
@@ -29,16 +32,15 @@ public class FakeModelProviderFactory implements ModelProviderFactory {
 
     @Override
     public ModelProvider createNew(
-            /*@Nullable*/ ViewDepthProvider viewDepthProvider, UiContext uiContext) {
+            @Nullable ViewDepthProvider viewDepthProvider, UiContext uiContext) {
         this.mViewDepthProvider = viewDepthProvider;
         this.mModelProvider = new FakeModelProvider();
         return mModelProvider;
     }
 
     @Override
-    public ModelProvider createNew(
-            /*@Nullable*/ ViewDepthProvider viewDepthProvider,
-            /*@Nullable*/ Predicate<StreamStructure> filterPredicate, UiContext uiContext) {
+    public ModelProvider createNew(@Nullable ViewDepthProvider viewDepthProvider,
+            @Nullable Predicate<StreamStructure> filterPredicate, UiContext uiContext) {
         this.mViewDepthProvider = viewDepthProvider;
         this.mModelProvider = new FakeModelProvider();
         return mModelProvider;
@@ -52,7 +54,7 @@ public class FakeModelProviderFactory implements ModelProviderFactory {
         return mCreateSessionId;
     }
 
-    /*@Nullable*/
+    @Nullable
     public ViewDepthProvider getViewDepthProvider() {
         return mViewDepthProvider;
     }

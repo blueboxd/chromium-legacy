@@ -81,7 +81,7 @@ WebDialogView::WebDialogView(content::BrowserContext* context,
   AddChildView(web_view_);
   set_contents_view(web_view_);
   SetLayoutManager(std::make_unique<views::FillLayout>());
-  // Pressing the ESC key will close the dialog.
+  // Pressing the Escape key will close the dialog.
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 
   if (delegate_) {
@@ -117,10 +117,16 @@ bool WebDialogView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   if (delegate_ && delegate_->AcceleratorPressed(accelerator))
     return true;
 
-  // Pressing ESC closes the dialog.
   DCHECK_EQ(ui::VKEY_ESCAPE, accelerator.key_code());
-  if (GetWidget())
-    GetWidget()->Close();
+  if (delegate_ && !delegate_->ShouldCloseDialogOnEscape())
+    return false;
+
+  // Pressing Escape closes the dialog.
+  if (GetWidget()) {
+    // Contents must be closed first, or the dialog will not close.
+    CloseContents(web_view_->web_contents());
+    GetWidget()->CloseWithReason(views::Widget::ClosedReason::kEscKeyPressed);
+  }
   return true;
 }
 
@@ -132,7 +138,8 @@ void WebDialogView::ViewHierarchyChanged(
 
 bool WebDialogView::CanClose() {
   // Don't close UI if |delegate_| does not allow users to close it by
-  // clicking on "x" button or pressing Esc shortcut key on hosting dialog.
+  // clicking on "x" button or pressing Escape shortcut key on hosting
+  // dialog.
   if (!delegate_->CanCloseDialog() && !close_contents_called_)
     return false;
 
@@ -421,7 +428,8 @@ void WebDialogView::InitDialog() {
   // the comment above WebDialogUI in its header file for why.
   WebDialogUIBase::SetDelegate(web_contents, this);
 
-  web_view_->LoadInitialURL(GetDialogContentURL());
+  if (!disable_url_load_for_test_)
+    web_view_->LoadInitialURL(GetDialogContentURL());
 }
 
 }  // namespace views

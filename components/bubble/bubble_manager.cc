@@ -10,16 +10,15 @@
 #include "components/bubble/bubble_controller.h"
 #include "components/bubble/bubble_delegate.h"
 
-BubbleManager::BubbleManager() : manager_state_(SHOW_BUBBLES) {}
+BubbleManager::BubbleManager() {}
 
 BubbleManager::~BubbleManager() {
-  FinalizePendingRequests();
+  CloseAllBubbles(BUBBLE_CLOSE_FORCED);
 }
 
 BubbleReference BubbleManager::ShowBubble(
     std::unique_ptr<BubbleDelegate> bubble) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_NE(manager_state_, ITERATING_BUBBLES);
   DCHECK(bubble);
 
   std::unique_ptr<BubbleController> controller(
@@ -27,21 +26,10 @@ BubbleReference BubbleManager::ShowBubble(
 
   BubbleReference bubble_ref = controller->AsWeakPtr();
 
-  switch (manager_state_) {
-    case SHOW_BUBBLES:
-      controller->Show();
-      controllers_.push_back(std::move(controller));
-      for (auto& observer : observers_)
-        observer.OnBubbleShown(bubble_ref);
-      break;
-    case NO_MORE_BUBBLES:
-      for (auto& observer : observers_)
-        observer.OnBubbleNeverShown(controller->AsWeakPtr());
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
+  controller->Show();
+  controllers_.push_back(std::move(controller));
+  for (auto& observer : observers_)
+    observer.OnBubbleShown(bubble_ref);
 
   return bubble_ref;
 }
@@ -49,7 +37,6 @@ BubbleReference BubbleManager::ShowBubble(
 bool BubbleManager::CloseBubble(BubbleReference bubble,
                                 BubbleCloseReason reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_NE(manager_state_, ITERATING_BUBBLES);
   return CloseAllMatchingBubbles(bubble.get(), nullptr, reason);
 }
 
@@ -58,20 +45,14 @@ void BubbleManager::CloseAllBubbles(BubbleCloseReason reason) {
   DCHECK_NE(reason, BUBBLE_CLOSE_ACCEPTED);
   DCHECK_NE(reason, BUBBLE_CLOSE_CANCELED);
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_NE(manager_state_, ITERATING_BUBBLES);
   CloseAllMatchingBubbles(nullptr, nullptr, reason);
 }
 
 void BubbleManager::UpdateAllBubbleAnchors() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_NE(manager_state_, ITERATING_BUBBLES);
 
-  // Guard against bubbles being added or removed while iterating the bubbles.
-  ManagerState original_state = manager_state_;
-  manager_state_ = ITERATING_BUBBLES;
   for (auto& controller : controllers_)
     controller->UpdateAnchorPosition();
-  manager_state_ = original_state;
 }
 
 void BubbleManager::AddBubbleManagerObserver(BubbleManagerObserver* observer) {
@@ -85,15 +66,6 @@ void BubbleManager::RemoveBubbleManagerObserver(
 
 size_t BubbleManager::GetBubbleCountForTesting() const {
   return controllers_.size();
-}
-
-void BubbleManager::FinalizePendingRequests() {
-  // Return if already "Finalized".
-  if (manager_state_ == NO_MORE_BUBBLES)
-    return;
-
-  manager_state_ = NO_MORE_BUBBLES;
-  CloseAllBubbles(BUBBLE_CLOSE_FORCED);
 }
 
 void BubbleManager::CloseBubblesOwnedBy(const content::RenderFrameHost* frame) {
@@ -114,9 +86,6 @@ bool BubbleManager::CloseAllMatchingBubbles(
 
   std::vector<std::unique_ptr<BubbleController>> close_queue;
 
-  // Guard against bubbles being added or removed while iterating the bubbles.
-  ManagerState original_state = manager_state_;
-  manager_state_ = ITERATING_BUBBLES;
   for (auto i = controllers_.begin(); i != controllers_.end();) {
     if ((!bubble || bubble == (*i).get()) &&
         (!owner || (*i)->OwningFrameIs(owner)) && (*i)->ShouldClose(reason)) {
@@ -126,7 +95,6 @@ bool BubbleManager::CloseAllMatchingBubbles(
       ++i;
     }
   }
-  manager_state_ = original_state;
 
   for (auto& controller : close_queue) {
     controller->DoClose(reason);

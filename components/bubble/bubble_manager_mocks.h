@@ -49,10 +49,6 @@ class MockBubbleDelegate : public BubbleDelegate {
     return std::move(bubble_ui_);
   }
 
-  MOCK_METHOD1(UpdateBubbleUi, bool(BubbleUi*));
-
-  std::string GetName() const override { return "MockBubble"; }
-
   // To verify destructor call.
   MOCK_METHOD0(Destroyed, void());
 

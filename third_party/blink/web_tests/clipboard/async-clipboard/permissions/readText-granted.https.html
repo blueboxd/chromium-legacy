@@ -7,7 +7,7 @@
 <script src="../../../http/tests/resources/permissions-helper.js"></script>
 <script>
 promise_test(async () => {
-  await PermissionsHelper.setPermission('clipboard-read', 'granted');
+  await PermissionsHelper.setPermission('clipboard-read-write', 'granted');
   await navigator.clipboard.readText();
 }, 'navigator.clipboard.readText() succeeds when permission granted');
 </script>

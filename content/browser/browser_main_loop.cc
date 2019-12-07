@@ -99,6 +99,7 @@
 #include "content/browser/webui/url_data_manager.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/thread_pool_util.h"
+#include "content/public/browser/audio_service.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -133,8 +134,6 @@
 #include "net/socket/client_socket_factory.h"
 #include "net/ssl/ssl_config_service.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "services/audio/public/cpp/audio_system_factory.h"
-#include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/service.h"
 #include "services/content/public/cpp/navigable_contents_view.h"
 #include "services/data_decoder/public/cpp/service_provider.h"
@@ -1457,7 +1456,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 
   if (MediaKeysListenerManager::IsMediaKeysListenerManagerEnabled()) {
     media_keys_listener_manager_ =
-        std::make_unique<MediaKeysListenerManagerImpl>(GetSystemConnector());
+        std::make_unique<MediaKeysListenerManagerImpl>();
   }
 
 #if defined(OS_MACOSX)
@@ -1599,17 +1598,11 @@ void BrowserMainLoop::InitializeAudio() {
         {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
         base::BindOnce([]() {
           TRACE_EVENT0("audio", "Starting audio service");
-          auto* connector = GetSystemConnector();
-          if (connector) {
-            // The browser is not shutting down: |connection| would be null
-            // otherwise.
-            connector->WarmService(service_manager::ServiceFilter::ByName(
-                audio::mojom::kServiceName));
-          }
+          GetAudioService();
         }));
   }
 
-  audio_system_ = audio::CreateAudioSystem(GetSystemConnector()->Clone());
+  audio_system_ = CreateAudioSystemForAudioService();
   CHECK(audio_system_);
 }
 

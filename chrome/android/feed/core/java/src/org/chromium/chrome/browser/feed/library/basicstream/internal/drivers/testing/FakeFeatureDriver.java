@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.basicstream.internal.drivers.testing;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.ModelFeature;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.drivers.FeatureDriver;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.drivers.LeafFeatureDriver;
@@ -11,11 +13,12 @@ import org.chromium.chrome.browser.feed.library.testing.modelprovider.FakeModelF
 
 /** Fake for {@link FeatureDriver}. */
 public class FakeFeatureDriver implements FeatureDriver {
-    /*@Nullable*/ private final LeafFeatureDriver mLeafFeatureDriver;
+    @Nullable
+    private final LeafFeatureDriver mLeafFeatureDriver;
     private final ModelFeature mModelFeature;
 
     private FakeFeatureDriver(
-            /*@Nullable*/ LeafFeatureDriver leafFeatureDriver, ModelFeature modelFeature) {
+            @Nullable LeafFeatureDriver leafFeatureDriver, ModelFeature modelFeature) {
         this.mLeafFeatureDriver = leafFeatureDriver;
         this.mModelFeature = modelFeature;
     }
@@ -24,7 +27,7 @@ public class FakeFeatureDriver implements FeatureDriver {
     public void onDestroy() {}
 
     @Override
-    /*@Nullable*/
+    @Nullable
     public LeafFeatureDriver getLeafFeatureDriver() {
         return mLeafFeatureDriver;
     }
@@ -34,12 +37,12 @@ public class FakeFeatureDriver implements FeatureDriver {
     }
 
     public static class Builder {
-        /*@Nullable*/
+        @Nullable
         private LeafFeatureDriver mLeafFeatureDriver = new FakeLeafFeatureDriver.Builder().build();
 
         private ModelFeature mModelFeature = FakeModelFeature.newBuilder().build();
 
-        public Builder setLeafFeatureDriver(/*@Nullable*/ LeafFeatureDriver contentModel) {
+        public Builder setLeafFeatureDriver(@Nullable LeafFeatureDriver contentModel) {
             this.mLeafFeatureDriver = contentModel;
             return this;
         }

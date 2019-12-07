@@ -47,37 +47,6 @@ void CloseCrostiniAnsibleSoftwareConfigViewForTesting() {
 
 }  // namespace crostini
 
-int CrostiniAnsibleSoftwareConfigView::GetDialogButtons() const {
-  switch (state_) {
-    case State::CONFIGURING:
-      return ui::DIALOG_BUTTON_NONE;
-    case State::ERROR:
-      return ui::DIALOG_BUTTON_OK;
-    case State::ERROR_OFFLINE:
-      return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-  }
-}
-
-base::string16 CrostiniAnsibleSoftwareConfigView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  switch (state_) {
-    case State::ERROR:
-      DCHECK_EQ(button, ui::DIALOG_BUTTON_OK);
-      return l10n_util::GetStringUTF16(IDS_APP_OK);
-    case State::ERROR_OFFLINE:
-      if (button == ui::DIALOG_BUTTON_OK) {
-        return l10n_util::GetStringUTF16(
-            IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_RETRY_BUTTON);
-      } else {
-        DCHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
-        return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
-      }
-    case State::CONFIGURING:
-      NOTREACHED();
-      return base::string16();
-  }
-}
-
 bool CrostiniAnsibleSoftwareConfigView::Accept() {
   if (state_ == State::ERROR_OFFLINE) {
     state_ = State::CONFIGURING;
@@ -189,6 +158,10 @@ CrostiniAnsibleSoftwareConfigView::CrostiniAnsibleSoftwareConfigView(
 
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::CROSTINI_ANSIBLE_SOFTWARE_CONFIG);
+
+  // In the initial state (CONFIGURING), there are no buttons and hence no set
+  // labels.
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
 }
 
 CrostiniAnsibleSoftwareConfigView::~CrostiniAnsibleSoftwareConfigView() {
@@ -199,6 +172,19 @@ CrostiniAnsibleSoftwareConfigView::~CrostiniAnsibleSoftwareConfigView() {
 void CrostiniAnsibleSoftwareConfigView::OnStateChanged() {
   progress_bar_->SetVisible(state_ == State::CONFIGURING);
   subtext_label_->SetText(GetSubtextLabel());
+  DialogDelegate::set_buttons(
+      state_ == State::CONFIGURING
+          ? ui::DIALOG_BUTTON_NONE
+          : (state_ == State::ERROR
+                 ? ui::DIALOG_BUTTON_OK
+                 : ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL));
+  // The cancel button, even when present, always uses the default text.
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      state_ == State::ERROR
+          ? l10n_util::GetStringUTF16(IDS_APP_OK)
+          : l10n_util::GetStringUTF16(
+                IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_RETRY_BUTTON));
   DialogModelChanged();
   GetWidget()->UpdateWindowTitle();
   GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());

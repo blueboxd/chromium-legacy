@@ -155,12 +155,23 @@ then run the test with the `--generate-accessibility-test-expectations`
 argument, for example:
 ```
   out/Debug/content_browsertests \
-    --generate-accessibility-test-expectations
-    --gtest_filter="DumpAccessibilityTreeTest.AccessibilityAriaAtomic/*"
+    --generate-accessibility-test-expectations \
+    --gtest_filter="All/DumpAccessibilityTreeTest.AccessibilityAriaAtomic/*"
 ```
 This will replace the `-expected-*.txt` file with the current output. It's
 a great way to rebaseline a bunch of tests after making a change. Please
 manually check the diff, of course!
+
+The * is a wildcard and will match any substring, in this case all platforms.
+To run on a single platform, replace the wildcard, e.g.:
+```
+  --gtest_filter="All/DumpAccessibilityTreeTest.AccessibilityAriaAtomic/linux"
+```
+
+For more information, see the detailed help with:
+```
+  out/Debug/content_browsertests --gtest_help
+```
 
 ## Adding a new test:
 

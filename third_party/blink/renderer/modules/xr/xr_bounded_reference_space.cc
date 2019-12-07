@@ -38,12 +38,6 @@ XRBoundedReferenceSpace::XRBoundedReferenceSpace(
 
 XRBoundedReferenceSpace::~XRBoundedReferenceSpace() = default;
 
-// No default pose for bounded reference spaces.
-std::unique_ptr<TransformationMatrix>
-XRBoundedReferenceSpace::DefaultViewerPose() {
-  return nullptr;
-}
-
 void XRBoundedReferenceSpace::EnsureUpdated() {
   // Check first to see if the stage parameters have updated since the last
   // call. We only need to update the transform and bounds if it has.
@@ -91,8 +85,7 @@ void XRBoundedReferenceSpace::EnsureUpdated() {
 // transform from mojo coordinates to reference space coordinates. Ideally in
 // the future this reference space can be used without additional transforms,
 // with the various XR backends returning poses already in the right space.
-std::unique_ptr<TransformationMatrix> XRBoundedReferenceSpace::SpaceFromMojo(
-    const TransformationMatrix& mojo_from_viewer) {
+std::unique_ptr<TransformationMatrix> XRBoundedReferenceSpace::SpaceFromMojo() {
   EnsureUpdated();
 
   // If the reference space has a transform apply it to the base pose and return

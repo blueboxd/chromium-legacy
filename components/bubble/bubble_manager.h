@@ -77,21 +77,12 @@ class BubbleManager {
   size_t GetBubbleCountForTesting() const;
 
  protected:
-  // Will close any open bubbles and prevent new ones from being shown.
-  void FinalizePendingRequests();
-
   // Closes bubbles that declare |frame| as their owner, with
   // a reason of BUBBLE_CLOSE_FRAME_DESTROYED.
   void CloseBubblesOwnedBy(const content::RenderFrameHost* frame);
 
  private:
   friend class ExtensionInstalledBubbleBrowserTest;
-
-  enum ManagerState {
-    SHOW_BUBBLES,
-    NO_MORE_BUBBLES,
-    ITERATING_BUBBLES,
-  };
 
   // All matching bubbles will get a close event for the specified |reason|. Any
   // bubble that is closed will also be deleted. Bubbles match if 1) |bubble| is
@@ -105,9 +96,6 @@ class BubbleManager {
 
   // Verify that functions that affect the UI are done on the same thread.
   base::ThreadChecker thread_checker_;
-
-  // Determines what happens to a bubble when |ShowBubble| is called.
-  ManagerState manager_state_;
 
   // The bubbles that are being managed.
   std::vector<std::unique_ptr<BubbleController>> controllers_;

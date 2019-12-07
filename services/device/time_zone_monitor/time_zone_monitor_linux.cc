@@ -21,6 +21,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromecast_buildflags.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 
 namespace device {
@@ -36,7 +37,7 @@ class TimeZoneMonitorLinux : public TimeZoneMonitor {
   ~TimeZoneMonitorLinux() override;
 
   void NotifyClientsFromImpl() {
-#if defined(IS_CHROMECAST)
+#if BUILDFLAG(IS_CHROMECAST)
     // On Chromecast, ICU's default time zone is already set to a new zone. No
     // need to redetect it with detectHostTimeZone() or to update ICU.
     // See http://b/112498903 and http://b/113344065.

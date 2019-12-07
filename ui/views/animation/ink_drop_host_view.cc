@@ -111,6 +111,17 @@ void InkDropHostView::AnimateInkDrop(InkDropState state,
   GetEventHandler()->AnimateInkDrop(state, event);
 }
 
+InkDrop* InkDropHostView::GetInkDrop() {
+  if (!ink_drop_) {
+    if (ink_drop_mode_ == InkDropMode::OFF)
+      ink_drop_ = std::make_unique<InkDropStub>();
+    else
+      ink_drop_ = CreateInkDrop();
+    OnInkDropCreated();
+  }
+  return ink_drop_.get();
+}
+
 std::unique_ptr<InkDropImpl> InkDropHostView::CreateDefaultInkDropImpl() {
   auto ink_drop = std::make_unique<InkDropImpl>(this, size());
   ink_drop->SetAutoHighlightMode(
@@ -159,17 +170,6 @@ std::unique_ptr<InkDropHighlight> InkDropHostView::CreateSquareInkDropHighlight(
 
 bool InkDropHostView::HasInkDrop() const {
   return !!ink_drop_;
-}
-
-InkDrop* InkDropHostView::GetInkDrop() {
-  if (!ink_drop_) {
-    if (ink_drop_mode_ == InkDropMode::OFF)
-      ink_drop_ = std::make_unique<InkDropStub>();
-    else
-      ink_drop_ = CreateInkDrop();
-    OnInkDropCreated();
-  }
-  return ink_drop_.get();
 }
 
 gfx::Point InkDropHostView::GetInkDropCenterBasedOnLastEvent() const {

@@ -207,17 +207,26 @@ struct Cookie {
          const std::string& value,
          const std::string& domain,
          const std::string& path,
+         const std::string& samesite,
          double expiry,
          bool http_only,
          bool secure,
          bool session)
-      : name(name), value(value), domain(domain), path(path), expiry(expiry),
-        http_only(http_only), secure(secure), session(session) {}
+      : name(name),
+        value(value),
+        domain(domain),
+        path(path),
+        samesite(samesite),
+        expiry(expiry),
+        http_only(http_only),
+        secure(secure),
+        session(session) {}
 
   std::string name;
   std::string value;
   std::string domain;
   std::string path;
+  std::string samesite;
   double expiry;
   bool http_only;
   bool secure;
@@ -237,6 +246,8 @@ std::unique_ptr<base::DictionaryValue> CreateDictionaryFrom(
     dict->SetDouble("expiry", cookie.expiry);
   dict->SetBoolean("httpOnly", cookie.http_only);
   dict->SetBoolean("secure", cookie.secure);
+  if (!cookie.samesite.empty())
+    dict->SetString("sameSite", cookie.samesite);
   return dict;
 }
 
@@ -264,6 +275,8 @@ Status GetVisibleCookies(WebView* web_view,
     cookie_dict->GetString("domain", &domain);
     std::string path;
     cookie_dict->GetString("path", &path);
+    std::string samesite = "";
+    GetOptionalString(cookie_dict, "sameSite", &samesite);
     double expiry = 0;
     cookie_dict->GetDouble("expires", &expiry);
     if (expiry > 1e12)
@@ -275,8 +288,8 @@ Status GetVisibleCookies(WebView* web_view,
     bool secure = false;
     cookie_dict->GetBoolean("secure", &secure);
 
-    cookies_tmp.push_back(
-        Cookie(name, value, domain, path, expiry, http_only, secure, session));
+    cookies_tmp.push_back(Cookie(name, value, domain, path, samesite, expiry,
+                                 http_only, secure, session));
   }
   cookies->swap(cookies_tmp);
   return Status(kOk);
@@ -1875,6 +1888,12 @@ Status ExecuteAddCookie(Session* session,
   std::string path("/");
   if (!GetOptionalString(cookie, "path", &path))
     return Status(kInvalidArgument, "invalid 'path'");
+  std::string samesite("");
+  if (!GetOptionalString(cookie, "sameSite", &samesite))
+    return Status(kInvalidArgument, "invalid 'sameSite'");
+  if (!samesite.empty() && samesite != "Strict" && samesite != "Lax" &&
+      samesite != "None")
+    return Status(kInvalidArgument, "invalid 'sameSite'");
   bool secure = false;
   if (!GetOptionalBool(cookie, "secure", &secure))
     return Status(kInvalidArgument, "invalid 'secure'");
@@ -1901,8 +1920,8 @@ Status ExecuteAddCookie(Session* session,
       expiry = (base::Time::Now() - base::Time::UnixEpoch()).InSeconds() +
                kDefaultCookieExpiryTime;
   }
-  return web_view->AddCookie(name, url, cookie_value, domain, path,
-      secure, httpOnly, expiry);
+  return web_view->AddCookie(name, url, cookie_value, domain, path, samesite,
+                             secure, httpOnly, expiry);
 }
 
 Status ExecuteDeleteCookie(Session* session,

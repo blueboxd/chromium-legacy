@@ -615,6 +615,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, AccessiblePopup) {
   ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &omnibox_view));
   OmniboxViewViews* omnibox_view_views =
       static_cast<OmniboxViewViews*>(omnibox_view);
+  chrome::FocusLocationBar(browser());
 
   base::string16 match_url = base::ASCIIToUTF16("https://google.com");
   AutocompleteMatch match(nullptr, 500, false,
@@ -654,7 +655,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, AccessiblePopup) {
       input, TemplateURLServiceFactory::GetForProfile(browser()->profile()));
 
   // The omnibox popup should open with suggestions displayed.
-  chrome::FocusLocationBar(browser());
   omnibox_view->model()->popup_model()->OnResultChanged();
   EXPECT_TRUE(omnibox_view->model()->popup_model()->IsOpen());
   ui::AXNodeData popup_node_data_2;
@@ -683,6 +683,7 @@ class OmniboxViewViewsUIATest : public OmniboxViewViewsTest {
 IN_PROC_BROWSER_TEST_F(OmniboxViewViewsUIATest, AccessibleOmnibox) {
   OmniboxView* omnibox_view = nullptr;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &omnibox_view));
+  chrome::FocusLocationBar(browser());
 
   base::string16 match_url = base::ASCIIToUTF16("https://example.com");
   AutocompleteMatch match(nullptr, 500, false,
@@ -718,7 +719,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsUIATest, AccessibleOmnibox) {
       input, TemplateURLServiceFactory::GetForProfile(browser()->profile()));
 
   // The omnibox popup should open with suggestions displayed.
-  chrome::FocusLocationBar(browser());
   omnibox_view->model()->popup_model()->OnResultChanged();
 
   // Wait for ControllerFor property changed event.

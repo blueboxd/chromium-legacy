@@ -25,6 +25,7 @@ cr.define('settings_personalization_options', function() {
     suiteSetup(function() {
       loadTimeData.overrideValues({
         driveSuggestAvailable: true,
+        passwordsLeakDetectionEnabled: true,
       });
     });
 
@@ -71,8 +72,8 @@ cr.define('settings_personalization_options', function() {
       // flag remain visible when the flag is in the default state
       assertFalse(loadTimeData.getBoolean('privacySettingsRedesignEnabled'));
       assertVisible(testElement.$$('#safeBrowsingToggle'), true);
+      assertVisible(testElement.$$('#passwordsLeakDetectionToggle'), true);
       assertVisible(testElement.$$('#safeBrowsingReportingToggle'), true);
-
       assertFalse(!!testElement.$$('#signinAllowedToggle'));
     });
   });
@@ -115,6 +116,7 @@ cr.define('settings_personalization_options', function() {
     test('PrivacySettingsRedesignEnabled_True', function() {
       Polymer.dom.flush();
       assertFalse(!!page.$$('#safeBrowsingToggle'));
+      assertFalse(!!page.$$('#passwordsLeakDetectionToggle'));
       assertFalse(!!page.$$('#safeBrowsingReportingToggle'));
     });
 

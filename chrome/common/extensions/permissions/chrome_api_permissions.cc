@@ -42,8 +42,6 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
     {APIPermission::kIdentityEmail, "identity.email"},
     {APIPermission::kExperimental, "experimental",
      APIPermissionInfo::kFlagCannotBeOptional},
-    {APIPermission::kEmbeddedExtensionOptions, "embeddedExtensionOptions",
-     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kGeolocation, "geolocation",
      APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kNotifications, "notifications"},

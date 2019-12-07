@@ -82,9 +82,10 @@ void AddSupervisionDialog::Show(gfx::NativeView parent) {
 }
 
 // static
-SystemWebDialogDelegate* AddSupervisionDialog::GetInstance() {
-  return SystemWebDialogDelegate::FindInstance(
-      chrome::kChromeUIAddSupervisionURL);
+AddSupervisionDialog* AddSupervisionDialog::GetInstance() {
+  return static_cast<AddSupervisionDialog*>(
+      SystemWebDialogDelegate::FindInstance(
+          chrome::kChromeUIAddSupervisionURL));
 }
 
 // static
@@ -92,6 +93,14 @@ void AddSupervisionDialog::Close() {
   SystemWebDialogDelegate* current_instance = GetInstance();
   if (current_instance) {
     current_instance->Close();
+  }
+}
+
+// static
+void AddSupervisionDialog::SetCloseOnEscape(bool enabled) {
+  AddSupervisionDialog* current_instance = GetInstance();
+  if (current_instance) {
+    current_instance->should_close_on_escape_ = enabled;
   }
 }
 
@@ -123,6 +132,10 @@ bool AddSupervisionDialog::OnDialogCloseRequested() {
   return true;
 }
 
+bool AddSupervisionDialog::ShouldCloseDialogOnEscape() const {
+  return should_close_on_escape_;
+}
+
 AddSupervisionDialog::AddSupervisionDialog()
     : SystemWebDialogDelegate(GURL(chrome::kChromeUIAddSupervisionURL),
                               base::string16()) {}
@@ -146,6 +159,7 @@ AddSupervisionUI::AddSupervisionUI(content::WebUI* web_ui)
 
 AddSupervisionUI::~AddSupervisionUI() = default;
 
+// AddSupervisionHandler::Delegate:
 bool AddSupervisionUI::CloseDialog() {
   bool showing_confirm_dialog = MaybeShowConfirmSignoutDialog();
   if (!showing_confirm_dialog) {
@@ -153,6 +167,11 @@ bool AddSupervisionUI::CloseDialog() {
     AddSupervisionDialog::Close();
   }
   return !showing_confirm_dialog;
+}
+
+// AddSupervisionHandler::Delegate:
+void AddSupervisionUI::SetCloseOnEscape(bool enabled) {
+  AddSupervisionDialog::SetCloseOnEscape(enabled);
 }
 
 // static

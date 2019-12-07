@@ -18,6 +18,7 @@
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/browser/webrtc/webrtc_internals_connections_observer.h"
 #include "content/browser/webrtc/webrtc_internals_ui_observer.h"
+#include "content/public/browser/audio_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -567,8 +568,11 @@ void WebRTCInternals::OnRendererExit(int render_process_id) {
 void WebRTCInternals::EnableAudioDebugRecordingsOnAllRenderProcessHosts() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!audio_debug_recording_session_);
+  mojo::PendingRemote<audio::mojom::DebugRecording> debug_recording;
+  content::GetAudioService().BindDebugRecording(
+      debug_recording.InitWithNewPipeAndPassReceiver());
   audio_debug_recording_session_ = audio::CreateAudioDebugRecordingSession(
-      audio_debug_recordings_file_path_, GetSystemConnector()->Clone());
+      audio_debug_recordings_file_path_, std::move(debug_recording));
 
   for (RenderProcessHost::iterator i(
            content::RenderProcessHost::AllHostsIterator());

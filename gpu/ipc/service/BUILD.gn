@@ -53,14 +53,12 @@ jumbo_component("service") {
     "webgpu_command_buffer_stub.h",
   ]
   defines = [ "GPU_IPC_SERVICE_IMPLEMENTATION" ]
-  if (is_chromecast) {
-    defines += [ "IS_CHROMECAST" ]
-  }
   if (subpixel_font_rendering_disabled) {
     defines += [ "SUBPIXEL_FONT_RENDERING_DISABLED" ]
   }
   public_deps = [
     "//base",
+    "//build:chromecast_buildflags",
     "//components/viz/common",
     "//gpu/config",
     "//ipc",

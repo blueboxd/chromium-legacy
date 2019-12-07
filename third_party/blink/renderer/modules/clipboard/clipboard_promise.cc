@@ -129,14 +129,14 @@ void ClipboardPromise::RejectFromReadOrDecodeFailure() {
 
 void ClipboardPromise::HandleRead() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RequestPermission(mojom::blink::PermissionName::CLIPBOARD_READ,
+  RequestPermission(mojom::blink::PermissionName::CLIPBOARD_READ, false,
                     WTF::Bind(&ClipboardPromise::HandleReadWithPermission,
                               WrapPersistent(this)));
 }
 
 void ClipboardPromise::HandleReadText() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RequestPermission(mojom::blink::PermissionName::CLIPBOARD_READ,
+  RequestPermission(mojom::blink::PermissionName::CLIPBOARD_READ, false,
                     WTF::Bind(&ClipboardPromise::HandleReadTextWithPermission,
                               WrapPersistent(this)));
 }
@@ -162,7 +162,7 @@ void ClipboardPromise::HandleWrite(
   ClipboardItem* clipboard_item = (*clipboard_items)[0];
   clipboard_item_data_ = clipboard_item->GetItems();
 
-  RequestPermission(mojom::blink::PermissionName::CLIPBOARD_WRITE,
+  RequestPermission(mojom::blink::PermissionName::CLIPBOARD_WRITE, false,
                     WTF::Bind(&ClipboardPromise::HandleWriteWithPermission,
                               WrapPersistent(this)));
 }
@@ -170,7 +170,7 @@ void ClipboardPromise::HandleWrite(
 void ClipboardPromise::HandleWriteText(const String& data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   plain_text_ = data;
-  RequestPermission(mojom::blink::PermissionName::CLIPBOARD_WRITE,
+  RequestPermission(mojom::blink::PermissionName::CLIPBOARD_WRITE, false,
                     WTF::Bind(&ClipboardPromise::HandleWriteTextWithPermission,
                               WrapPersistent(this)));
 }
@@ -276,6 +276,7 @@ PermissionService* ClipboardPromise::GetPermissionService() {
 
 void ClipboardPromise::RequestPermission(
     mojom::blink::PermissionName permission,
+    bool allow_without_sanitization,
     base::OnceCallback<void(::blink::mojom::PermissionStatus)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(script_promise_resolver_);
@@ -299,9 +300,10 @@ void ClipboardPromise::RequestPermission(
     return;
   }
 
-  auto permission_descriptor =
-      CreateClipboardPermissionDescriptor(permission, false);
-  if (permission == mojom::blink::PermissionName::CLIPBOARD_WRITE) {
+  auto permission_descriptor = CreateClipboardPermissionDescriptor(
+      permission, false, allow_without_sanitization);
+  if (permission == mojom::blink::PermissionName::CLIPBOARD_WRITE &&
+      !allow_without_sanitization) {
     // Check permission (but do not query the user).
     // See crbug.com/795929 for moving this check into the Browser process.
     permission_service_->HasPermission(std::move(permission_descriptor),

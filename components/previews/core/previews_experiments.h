@@ -238,6 +238,10 @@ bool ShouldExcludeMediaSuffix(const GURL& url);
 // preview using a cache is enabled.
 bool DetectDeferRedirectLoopsUsingCache();
 
+// Returns true if the checks to show a preview for the navigation should be
+// overridden.
+bool OverrideShouldShowPreviewCheck();
+
 }  // namespace params
 
 }  // namespace previews

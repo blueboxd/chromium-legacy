@@ -9,13 +9,11 @@
 
 #include "chrome/test/base/web_ui_browser_test.h"
 #include "chrome/test/data/webui/web_ui_test.mojom.h"
-#include "content/public/browser/web_contents_observer.h"
 
 // The runner of Mojo WebUI javascript based tests. The main difference between
 // this and WebUIBrowserTest is that tests subclassing from this class use a
 // mojo pipe to send the test result, so there is no reliance on chrome.send().
-class MojoWebUIBrowserTest : public BaseWebUIBrowserTest,
-                             public content::WebContentsObserver {
+class MojoWebUIBrowserTest : public BaseWebUIBrowserTest {
  public:
   MojoWebUIBrowserTest();
   ~MojoWebUIBrowserTest() override;

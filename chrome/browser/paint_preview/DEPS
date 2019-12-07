@@ -1,3 +1,5 @@
 include_rules = [
+  "+components/paint_preview/browser",
+  "+components/paint_preview/common",
   "+components/services/paint_preview_compositor/public/mojom",
 ]

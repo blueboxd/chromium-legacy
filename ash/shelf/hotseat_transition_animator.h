@@ -49,6 +49,7 @@ class HotseatTransitionAnimator : public TabletModeObserver,
   void OnTabletModeEnded() override;
 
  private:
+  class TransitionAnimationMetricsReporter;
   // Starts the animation between |old_state| and |target_state|.
   void DoAnimation(HotseatState old_state, HotseatState new_state);
 
@@ -70,6 +71,10 @@ class HotseatTransitionAnimator : public TabletModeObserver,
   base::OnceClosure animation_complete_callback_;
 
   base::ObserverList<Observer> observers_;
+
+  // Metric reporter for hotseat transitions.
+  std::unique_ptr<TransitionAnimationMetricsReporter>
+      animation_metrics_reporter_;
 
   base::WeakPtrFactory<HotseatTransitionAnimator> weak_ptr_factory_{this};
 };

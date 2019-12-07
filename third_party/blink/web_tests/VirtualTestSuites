@@ -564,11 +564,6 @@
     "args": ["--enable-features=AudioServiceOutOfProcess,AudioServiceSandbox,WebRtcApmInAudioService"]
   },
   {
-    "prefix": "scheduler",
-    "bases": ["wpt_internal/scheduler"],
-    "args": ["--enable-features=BlinkSchedulerDisableAntiStarvationForPriorities"]
-  },
-  {
     "prefix": "cross-origin-isolation",
     "bases": ["external/wpt/html/cross-origin-embedder-policy"],
     "args": ["--enable-features=CrossOriginIsolation"]
@@ -628,5 +623,23 @@
     "prefix": "not-split-http-cache",
     "bases": ["external/wpt/fetch/http-cache"],
     "args": ["--disable-features=SplitCacheByNetworkIsolationKey"]
+  },
+  {
+    "prefix": "web-components-v0-disabled",
+    "bases": ["external/wpt/dom",
+              "external/wpt/shadow-dom",
+              "external/wpt/html/dom",
+              "external/wpt/html/rendering",
+              "external/wpt/html/semantics",
+              "external/wpt/html/syntax",
+              "dom",
+              "shadow-dom",
+              "html",
+              "fast/dom",
+              "fast/events",
+              "fast/forms",
+              "fast/html",
+              "fast/parser"],
+    "args": ["--disable-blink-features=ShadowDOMV0,CustomElementsV0,HTMLImports"]
   }
 ]

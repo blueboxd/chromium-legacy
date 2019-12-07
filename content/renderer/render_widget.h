@@ -110,7 +110,6 @@ struct DidOverscrollParams;
 }
 
 namespace content {
-class BrowserPlugin;
 class CompositorDependencies;
 class FrameSwapMessageQueue;
 class ImeEventGuard;
@@ -332,11 +331,6 @@ class CONTENT_EXPORT RenderWidget
   // RenderWidget.
   void RegisterRenderFrame(RenderFrameImpl* frame);
   void UnregisterRenderFrame(RenderFrameImpl* frame);
-
-  // BrowserPlugins embedded by this RenderWidget register themselves here.
-  // These plugins need to be notified about changes to ScreenInfo.
-  void RegisterBrowserPlugin(BrowserPlugin* browser_plugin);
-  void UnregisterBrowserPlugin(BrowserPlugin* browser_plugin);
 
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& msg) override;
@@ -1089,8 +1083,6 @@ class CONTENT_EXPORT RenderWidget
   // are sent to each frame in the list for events such as changing
   // visibility state for example.
   base::ObserverList<RenderFrameImpl>::Unchecked render_frames_;
-
-  base::ObserverList<BrowserPlugin>::Unchecked browser_plugins_;
 
   bool has_host_context_menu_location_ = false;
   gfx::Point host_context_menu_location_;

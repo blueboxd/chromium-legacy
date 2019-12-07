@@ -6,6 +6,7 @@
 #define COMPONENTS_GAMES_CORE_DATA_FILES_PARSER_H_
 
 #include "base/files/file_path.h"
+#include "base/optional.h"
 #include "components/games/core/proto/games_catalog.pb.h"
 #include "components/games/core/proto/highlighted_games.pb.h"
 
@@ -16,13 +17,11 @@ class DataFilesParser {
   DataFilesParser();
   virtual ~DataFilesParser();
 
-  virtual bool TryParseCatalog(const base::FilePath& install_dir,
-                               GamesCatalog* out_catalog);
+  virtual base::Optional<GamesCatalog> TryParseCatalog(
+      const base::FilePath& install_dir);
 
-  virtual bool TryParseHighlightedGames(const base::FilePath& install_dir,
-                                        HighlightedGamesResponse* out_response);
-
-  DISALLOW_COPY_AND_ASSIGN(DataFilesParser);
+  virtual base::Optional<HighlightedGamesResponse> TryParseHighlightedGames(
+      const base::FilePath& install_dir);
 };
 
 }  // namespace games

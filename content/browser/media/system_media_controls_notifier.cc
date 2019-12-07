@@ -10,11 +10,10 @@
 #include "build/build_config.h"
 #include "components/system_media_controls/system_media_controls.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/media_session_service.h"
 #include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_WIN)
 #include "base/bind.h"
@@ -39,7 +38,6 @@ constexpr base::TimeDelta kHideSmtcDelay =
 #endif  // defined(OS_WIN)
 
 SystemMediaControlsNotifier::SystemMediaControlsNotifier(
-    service_manager::Connector* connector,
     system_media_controls::SystemMediaControls* system_media_controls)
     : system_media_controls_(system_media_controls) {
   DCHECK(system_media_controls_);
@@ -51,15 +49,11 @@ SystemMediaControlsNotifier::SystemMediaControlsNotifier(
                           base::Unretained(this)));
 #endif  // defined(OS_WIN)
 
-  // |connector| can be null in tests.
-  if (!connector)
-    return;
-
   // Connect to the MediaControllerManager and create a MediaController that
   // controls the active session so we can observe it.
   mojo::Remote<media_session::mojom::MediaControllerManager> controller_manager;
-  connector->Connect(media_session::mojom::kServiceName,
-                     controller_manager.BindNewPipeAndPassReceiver());
+  GetMediaSessionService().BindMediaControllerManager(
+      controller_manager.BindNewPipeAndPassReceiver());
   controller_manager->CreateActiveMediaController(
       media_controller_.BindNewPipeAndPassReceiver());
 

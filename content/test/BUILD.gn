@@ -384,6 +384,7 @@ jumbo_static_library("test_support") {
     "//mojo/core/embedder",
     "//net:test_support",
     "//ppapi/c:c",
+    "//services/audio",
     "//services/audio/public/mojom",
     "//services/data_decoder/public/cpp:test_support",
     "//services/data_decoder/public/mojom",
@@ -1063,10 +1064,6 @@ test("content_browsertests") {
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
-  if (is_chromecast) {
-    defines += [ "IS_CHROMECAST" ]
-  }
-
   configs += [
     "//build/config:precompiled_headers",
     "//build/config/compiler:no_size_t_to_int_warning",
@@ -1079,6 +1076,7 @@ test("content_browsertests") {
     ":web_test_support",
     ":web_ui_test_mojo_bindings",
     "//base/test:test_support",
+    "//build:chromecast_buildflags",
     "//components/discardable_memory/client",
     "//components/discardable_memory/common",
     "//components/discardable_memory/service",
@@ -1928,6 +1926,7 @@ test("content_unittests") {
     "//base/allocator:buildflags",
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations",
+    "//build:chromecast_buildflags",
     "//cc",
     "//cc:test_support",
     "//components/cbor",
@@ -2086,10 +2085,6 @@ test("content_unittests") {
       "../browser/media/cdm_storage_impl_unittest.cc",
       "../browser/media/key_system_support_impl_unittest.cc",
     ]
-  }
-
-  if (is_chromecast) {
-    defines += [ "IS_CHROMECAST" ]
   }
 
   # Screen capture unit tests.

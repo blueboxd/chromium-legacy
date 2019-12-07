@@ -14,6 +14,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_pointer.h"
+#include "ui/ozone/platform/wayland/host/wayland_surface.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/ozone/platform/wayland/host/xdg_surface_wrapper_impl.h"
 
@@ -260,40 +261,47 @@ XDGPopupWrapperImpl::XDGPopupWrapperImpl(
     WaylandWindow* wayland_window)
     : wayland_window_(wayland_window), xdg_surface_(std::move(surface)) {
   DCHECK(xdg_surface_);
+  DCHECK(wayland_window_ && wayland_window_->parent_window());
 }
 
-XDGPopupWrapperImpl::~XDGPopupWrapperImpl() {}
+XDGPopupWrapperImpl::~XDGPopupWrapperImpl() = default;
+
+bool XDGPopupWrapperImpl::Initialize(WaylandConnection* connection,
+                                     const gfx::Rect& bounds) {
+  if (connection->shell())
+    return InitializeStable(connection, bounds);
+  else if (connection->shell_v6())
+    return InitializeV6(connection, bounds);
+  NOTREACHED() << "Wrong shell protocol";
+  return false;
+}
 
 bool XDGPopupWrapperImpl::InitializeStable(WaylandConnection* connection,
-                                           wl_surface* surface,
-                                           WaylandWindow* parent_window,
                                            const gfx::Rect& bounds) {
-  DCHECK(connection && surface && parent_window);
   static const struct xdg_popup_listener xdg_popup_listener = {
       &XDGPopupWrapperImpl::ConfigureStable,
       &XDGPopupWrapperImpl::PopupDoneStable,
   };
 
-  if (!xdg_surface_)
-    return false;
-
   XDGSurfaceWrapperImpl* parent_xdg_surface;
   // If the parent window is a popup, the surface of that popup must be used as
   // a parent.
-  if (parent_window->shell_popup()) {
-    XDGPopupWrapperImpl* popup =
-        reinterpret_cast<XDGPopupWrapperImpl*>(parent_window->shell_popup());
+  if (wayland_window_->parent_window()->shell_popup()) {
+    XDGPopupWrapperImpl* popup = reinterpret_cast<XDGPopupWrapperImpl*>(
+        wayland_window_->parent_window()->shell_popup());
     parent_xdg_surface = popup->xdg_surface();
   } else {
+    WaylandSurface* wayland_surface =
+        static_cast<WaylandSurface*>(wayland_window_->parent_window());
     parent_xdg_surface = reinterpret_cast<XDGSurfaceWrapperImpl*>(
-        parent_window->shell_surface());
+        wayland_surface->shell_surface());
   }
 
   if (!parent_xdg_surface)
     return false;
 
-  struct xdg_positioner* positioner =
-      CreatePositionerStable(connection, parent_window, bounds);
+  struct xdg_positioner* positioner = CreatePositionerStable(
+      connection, wayland_window_->parent_window(), bounds);
   if (!positioner)
     return false;
 
@@ -337,7 +345,7 @@ bool XDGPopupWrapperImpl::InitializeStable(WaylandConnection* connection,
   }
   xdg_popup_add_listener(xdg_popup_.get(), &xdg_popup_listener, this);
 
-  wl_surface_commit(surface);
+  wl_surface_commit(wayland_window_->surface());
   return true;
 }
 
@@ -383,10 +391,7 @@ struct xdg_positioner* XDGPopupWrapperImpl::CreatePositionerStable(
 }
 
 bool XDGPopupWrapperImpl::InitializeV6(WaylandConnection* connection,
-                                       wl_surface* surface,
-                                       WaylandWindow* parent_window,
                                        const gfx::Rect& bounds) {
-  DCHECK(connection && surface && parent_window);
   static const struct zxdg_popup_v6_listener zxdg_popup_v6_listener = {
       &XDGPopupWrapperImpl::ConfigureV6,
       &XDGPopupWrapperImpl::PopupDoneV6,
@@ -398,20 +403,22 @@ bool XDGPopupWrapperImpl::InitializeV6(WaylandConnection* connection,
   XDGSurfaceWrapperImpl* parent_xdg_surface;
   // If the parent window is a popup, the surface of that popup must be used as
   // a parent.
-  if (parent_window->shell_popup()) {
-    XDGPopupWrapperImpl* popup =
-        reinterpret_cast<XDGPopupWrapperImpl*>(parent_window->shell_popup());
+  if (wayland_window_->parent_window()->shell_popup()) {
+    XDGPopupWrapperImpl* popup = reinterpret_cast<XDGPopupWrapperImpl*>(
+        wayland_window_->parent_window()->shell_popup());
     parent_xdg_surface = popup->xdg_surface();
   } else {
+    WaylandSurface* wayland_surface =
+        static_cast<WaylandSurface*>(wayland_window_->parent_window());
     parent_xdg_surface = reinterpret_cast<XDGSurfaceWrapperImpl*>(
-        parent_window->shell_surface());
+        wayland_surface->shell_surface());
   }
 
   if (!parent_xdg_surface)
     return false;
 
   zxdg_positioner_v6* positioner =
-      CreatePositionerV6(connection, parent_window, bounds);
+      CreatePositionerV6(connection, wayland_window_->parent_window(), bounds);
   if (!positioner)
     return false;
 
@@ -457,7 +464,7 @@ bool XDGPopupWrapperImpl::InitializeV6(WaylandConnection* connection,
   zxdg_popup_v6_add_listener(zxdg_popup_v6_.get(), &zxdg_popup_v6_listener,
                              this);
 
-  wl_surface_commit(surface);
+  wl_surface_commit(wayland_window_->surface());
   return true;
 }
 

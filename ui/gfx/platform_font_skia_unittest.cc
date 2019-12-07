@@ -121,6 +121,17 @@ TEST_F(PlatformFontSkiaTest, DefaultFont) {
   EXPECT_EQ(gfx::Font::Weight::BOLD, font2->GetWeight());
 }
 
+TEST(PlatformFontSkiaRenderParamsTest, DefaultFontRenderParams) {
+  scoped_refptr<PlatformFontSkia> default_font(new PlatformFontSkia());
+  scoped_refptr<PlatformFontSkia> named_font(new PlatformFontSkia(
+      default_font->GetFontName(), default_font->GetFontSize()));
+
+  // Ensures that both constructors are producing fonts with the same render
+  // params.
+  EXPECT_EQ(default_font->GetFontRenderParams(),
+            named_font->GetFontRenderParams());
+}
+
 #if defined(OS_WIN)
 TEST(PlatformFontSkiaOnWindowsTest, SystemFont) {
   // Ensures that the font styles are kept while creating the default font.

@@ -41,8 +41,8 @@ bool IsWhitelistedPermissionType(PermissionType permission) {
     case PermissionType::AUDIO_CAPTURE:
     case PermissionType::VIDEO_CAPTURE:
     case PermissionType::FLASH:
-    case PermissionType::CLIPBOARD_READ:
-    case PermissionType::CLIPBOARD_WRITE:
+    case PermissionType::CLIPBOARD_READ_WRITE:
+    case PermissionType::CLIPBOARD_SANITIZED_WRITE:
     case PermissionType::NUM:
     case PermissionType::WAKE_LOCK_SYSTEM:
     case PermissionType::NFC:

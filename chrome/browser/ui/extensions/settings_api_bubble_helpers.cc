@@ -46,11 +46,10 @@ void ShowSettingsApiBubble(SettingsApiOverrideType type,
     return;
 
   settings_api_bubble->SetIsActiveBubble();
-  ToolbarActionsBar* toolbar_actions_bar =
-      browser->window()->GetToolbarActionsBar();
   std::unique_ptr<ToolbarActionsBarBubbleDelegate> bridge(
       new ExtensionMessageBubbleBridge(std::move(settings_api_bubble)));
-  toolbar_actions_bar->ShowToolbarActionBubbleAsync(std::move(bridge));
+  browser->window()->GetExtensionsContainer()->ShowToolbarActionBubbleAsync(
+      std::move(bridge));
 }
 
 }  // namespace
@@ -120,11 +119,10 @@ void MaybeShowExtensionControlledNewTabPage(
     return;
 
   ntp_overridden_bubble->SetIsActiveBubble();
-  ToolbarActionsBar* toolbar_actions_bar =
-      browser->window()->GetToolbarActionsBar();
   std::unique_ptr<ToolbarActionsBarBubbleDelegate> bridge(
       new ExtensionMessageBubbleBridge(std::move(ntp_overridden_bubble)));
-  toolbar_actions_bar->ShowToolbarActionBubbleAsync(std::move(bridge));
+  browser->window()->GetExtensionsContainer()->ShowToolbarActionBubbleAsync(
+      std::move(bridge));
 }
 
 }  // namespace extensions

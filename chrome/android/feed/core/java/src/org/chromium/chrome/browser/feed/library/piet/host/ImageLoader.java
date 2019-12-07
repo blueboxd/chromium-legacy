@@ -29,6 +29,5 @@ public interface ImageLoader {
      *     succeeds. {@literal null} should be passed to this if no source succeeds in loading the
      *     image
      */
-    void getImage(
-            Image image, int widthPx, int heightPx, Consumer</*@Nullable*/ Drawable> consumer);
+    void getImage(Image image, int widthPx, int heightPx, Consumer<Drawable> consumer);
 }

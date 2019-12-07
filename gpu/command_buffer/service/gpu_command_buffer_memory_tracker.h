@@ -30,7 +30,7 @@ class GPU_GLES2_EXPORT GpuCommandBufferMemoryTracker : public MemoryTracker {
   ~GpuCommandBufferMemoryTracker() override;
 
   // MemoryTracker implementation.
-  void TrackMemoryAllocatedChange(uint64_t delta) override;
+  void TrackMemoryAllocatedChange(int64_t delta) override;
   uint64_t GetSize() const override;
   uint64_t ClientTracingId() const override;
   int ClientId() const override;

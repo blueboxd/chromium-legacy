@@ -48,6 +48,7 @@ void AutofillGstaticReader::SetUp() {
 
 AutofillGstaticReader* AutofillGstaticReader::GetInstance() {
   static base::NoDestructor<AutofillGstaticReader> instance;
+  instance->SetUp();
   return instance.get();
 }
 

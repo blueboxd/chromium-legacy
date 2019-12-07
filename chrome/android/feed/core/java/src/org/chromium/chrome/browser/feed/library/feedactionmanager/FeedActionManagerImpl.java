@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.feed.library.feedactionmanager;
 import android.net.Uri;
 import android.util.Base64;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.common.MutationContext;
 import org.chromium.chrome.browser.feed.library.api.host.logging.Task;
@@ -52,8 +54,7 @@ public class FeedActionManagerImpl implements ActionManager {
 
     @Override
     public void dismissLocal(List<String> contentIds,
-            List<StreamDataOperation> streamDataOperations,
-            /*@Nullable*/ String sessionId) {
+            List<StreamDataOperation> streamDataOperations, @Nullable String sessionId) {
         executeStreamDataOperations(streamDataOperations, sessionId);
         // Store the dismissLocal actions
         mTaskQueue.execute(Task.DISMISS_LOCAL, TaskType.BACKGROUND, () -> {
@@ -67,7 +68,7 @@ public class FeedActionManagerImpl implements ActionManager {
 
     @Override
     public void dismiss(
-            List<StreamDataOperation> streamDataOperations, /*@Nullable*/ String sessionId) {
+            List<StreamDataOperation> streamDataOperations, @Nullable String sessionId) {
         executeStreamDataOperations(streamDataOperations, sessionId);
     }
 
@@ -111,7 +112,7 @@ public class FeedActionManagerImpl implements ActionManager {
     }
 
     private void executeStreamDataOperations(
-            List<StreamDataOperation> streamDataOperations, /*@Nullable*/ String sessionId) {
+            List<StreamDataOperation> streamDataOperations, @Nullable String sessionId) {
         mThreadUtils.checkMainThread();
 
         MutationContext.Builder mutationContextBuilder =

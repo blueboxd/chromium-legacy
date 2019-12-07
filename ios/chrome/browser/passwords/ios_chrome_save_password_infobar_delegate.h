@@ -33,6 +33,11 @@ class IOSChromeSavePasswordInfoBarDelegate
 
   ~IOSChromeSavePasswordInfoBarDelegate() override;
 
+  // Returns |delegate| as an IOSChromeSavePasswordInfoBarDelegate, or nullptr
+  // if it is of another type.
+  static IOSChromeSavePasswordInfoBarDelegate* FromInfobarDelegate(
+      infobars::InfoBarDelegate* delegate);
+
   // InfoBarDelegate implementation
   bool ShouldExpire(const NavigationDetails& details) const override;
 

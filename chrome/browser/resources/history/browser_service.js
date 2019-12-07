@@ -13,6 +13,11 @@ cr.define('history', function() {
       chrome.send('historyLoaded');
     }
 
+    /** @return {!Promise<!Array<!ForeignSession>>} */
+    getForeignSessions() {
+      return cr.sendWithPromise('getForeignSessions');
+    }
+
     /**
      * @param {!string} url
      */

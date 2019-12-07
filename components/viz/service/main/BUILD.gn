@@ -51,7 +51,6 @@ source_set("main") {
   }
 
   if (is_chromecast) {
-    defines += [ "IS_CHROMECAST" ]
     deps += [ "//chromecast/media/service/mojom" ]
   }
 }

@@ -22,6 +22,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "build/chromecast_buildflags.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/switches.h"
 
@@ -91,7 +92,7 @@ ClientNativePixmapDmaBuf::PlaneInfo::~PlaneInfo() {
 bool ClientNativePixmapDmaBuf::IsConfigurationSupported(
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
-#if defined(CHROMECAST_BUILD)
+#if BUILDFLAG(IS_CHROMECAST)
   switch (usage) {
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
       // TODO(spang): Fix b/121148905 and turn these back on.

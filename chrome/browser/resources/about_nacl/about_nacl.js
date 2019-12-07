@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
+import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {$} from 'chrome://resources/js/util.m.js';
+
 /**
  * Takes the |moduleListData| input argument which represents data about
  * the currently available modules and populates the html jstemplate
@@ -21,13 +23,12 @@ function renderTemplate(moduleListData) {
  * re-populates the page with the data.
  */
 function requestNaClInfo() {
-  cr.sendWithPromise('requestNaClInfo').then((moduleListData) => {
-    $('loading-message').hidden = 'hidden';
-    $('body-container').hidden = '';
+  sendWithPromise('requestNaClInfo').then((moduleListData) => {
+    $('loading-message').hidden = true;
+    $('body-container').hidden = false;
     renderTemplate(moduleListData);
   });
 }
 
 // Get data and have it displayed upon loading.
 document.addEventListener('DOMContentLoaded', requestNaClInfo);
-})();

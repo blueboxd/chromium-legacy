@@ -8,6 +8,8 @@
 #include "build/branding_buildflags.h"
 #include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/auth_utils.h"
+#include "chrome/credential_provider/gaiacp/chrome_availability_checker.h"
+#include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
 
 namespace credential_provider {
@@ -48,6 +50,24 @@ HRESULT CGaiaCredentialProviderFilter::Filter(
   // Re-enable all users in case internet has been lost or the computer
   // crashed while users were locked out.
   AssociatedUserValidator::Get()->AllowSigninForAllAssociatedUsers(cpus);
+
+  // If a supported version of Chrome is not found, return right away so that
+  // we don't revoke any access to normal credential providers.
+  if (!ChromeAvailabilityChecker::Get()->HasSupportedChromeVersion()) {
+    // Filter out the GaiaCredentialProvider in this case.
+    for (DWORD i = 0; i < providers_count; ++i) {
+      if (providers_clsids[i] == CLSID_GaiaCredentialProvider)
+        providers_allow[i] = FALSE;
+    }
+
+    // Delete the startup sentinel file since if Chrome is not installed/usable
+    // we will repeatedly fail and will hit the maximum number of crashes
+    // after which we stop associating as a credential provider.
+    DeleteStartupSentinel();
+    LOGFN(ERROR) << "Supported Chrome version not found.";
+    return S_OK;
+  }
+
   // Check to see if any users need to have their access to this system
   // using the normal credential providers revoked.
   AssociatedUserValidator::Get()->DenySigninForUsersWithInvalidTokenHandles(
@@ -58,6 +78,10 @@ HRESULT CGaiaCredentialProviderFilter::Filter(
 HRESULT CGaiaCredentialProviderFilter::UpdateRemoteCredential(
     const CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs_in,
     CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs_out) {
+  // Don't do anything if Chrome is not found.
+  if (!ChromeAvailabilityChecker::Get()->HasSupportedChromeVersion())
+    return E_NOTIMPL;
+
   if (!pcpcs_out)
     return E_NOTIMPL;
 

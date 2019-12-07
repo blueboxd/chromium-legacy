@@ -10,8 +10,8 @@
         window.iframe = document.querySelector('iframe').contentDocument;
 
         log('Before Reparenting');
-        shouldBe('internals.contextLifecycleStateObserverObjectCount(document)', 1);
-        shouldBe('internals.contextLifecycleStateObserverObjectCount(iframe)', 4);
+        shouldBe('internals.contextLifecycleStateObserverObjectCount(document)', 2);
+        shouldBe('internals.contextLifecycleStateObserverObjectCount(iframe)', 5);
 
         document.body.appendChild(window.iframe.querySelector('video'));
 
@@ -20,8 +20,8 @@
         // but a new one will be created in |document|, so the count is expected
         // to differ by one.
         log('After Reparenting');
-        shouldBe('internals.contextLifecycleStateObserverObjectCount(document)', 4);
-        shouldBe('internals.contextLifecycleStateObserverObjectCount(iframe)', 2);
+        shouldBe('internals.contextLifecycleStateObserverObjectCount(document)', 5);
+        shouldBe('internals.contextLifecycleStateObserverObjectCount(iframe)', 3);
     }
 </script>
 </body>

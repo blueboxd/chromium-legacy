@@ -772,8 +772,15 @@ NSString* const kVersionKey = @"KSVersion";
 }
 
 - (BOOL)isSystemKeystone {
+  // ksadmin moved from MacOS to Helpers in Keystone 1.2.13.112, 2019-11-12. A
+  // symbolic link from the old location was left in place, but may not remain
+  // indefinitely. Try the new location first, falling back to the old if
+  // needed.
   struct stat statbuf;
   if (stat("/Library/Google/GoogleSoftwareUpdate/GoogleSoftwareUpdate.bundle/"
+           "Contents/Helpers/ksadmin",
+           &statbuf) != 0 &&
+      stat("/Library/Google/GoogleSoftwareUpdate/GoogleSoftwareUpdate.bundle/"
            "Contents/MacOS/ksadmin",
            &statbuf) != 0) {
     return NO;

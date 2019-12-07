@@ -53,18 +53,18 @@ using content::WebContents;
 
 // The image models hierarchy:
 //
-// ContentSettingImageModel                  - base class
-//   ContentSettingSimpleImageModel            - single content setting
-//     ContentSettingBlockedImageModel           - generic blocked setting
-//     ContentSettingGeolocationImageModel       - geolocation
-//     ContentSettingRPHImageModel               - protocol handlers
-//     ContentSettingMIDISysExImageModel         - midi sysex
-//     ContentSettingDownloadsImageModel         - automatic downloads
-//     ContentSettingClipboardReadImageModel     - clipboard read
-//     ContentSettingSensorsImageModel           - sensors
-//     ContentSettingNotificationsImageModel     - notifications
-//   ContentSettingMediaImageModel             - media
-//   ContentSettingFramebustBlockImageModel    - blocked framebust
+// ContentSettingImageModel                   - base class
+//   ContentSettingSimpleImageModel             - single content setting
+//     ContentSettingBlockedImageModel            - generic blocked setting
+//     ContentSettingGeolocationImageModel        - geolocation
+//     ContentSettingRPHImageModel                - protocol handlers
+//     ContentSettingMIDISysExImageModel          - midi sysex
+//     ContentSettingDownloadsImageModel          - automatic downloads
+//     ContentSettingClipboardReadWriteImageModel - clipboard read and write
+//     ContentSettingSensorsImageModel            - sensors
+//     ContentSettingNotificationsImageModel      - notifications
+//   ContentSettingMediaImageModel              - media
+//   ContentSettingFramebustBlockImageModel     - blocked framebust
 
 class ContentSettingBlockedImageModel : public ContentSettingSimpleImageModel {
  public:
@@ -120,15 +120,15 @@ class ContentSettingDownloadsImageModel
   DISALLOW_COPY_AND_ASSIGN(ContentSettingDownloadsImageModel);
 };
 
-class ContentSettingClipboardReadImageModel
+class ContentSettingClipboardReadWriteImageModel
     : public ContentSettingSimpleImageModel {
  public:
-  ContentSettingClipboardReadImageModel();
+  ContentSettingClipboardReadWriteImageModel();
 
   bool UpdateAndGetVisibility(WebContents* web_contents) override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ContentSettingClipboardReadImageModel);
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingClipboardReadWriteImageModel);
 };
 
 // Image model for displaying media icons in the location bar.
@@ -308,8 +308,8 @@ ContentSettingImageModel::CreateForContentType(ImageType image_type) {
           ImageType::SOUND, ContentSettingsType::SOUND);
     case ImageType::FRAMEBUST:
       return std::make_unique<ContentSettingFramebustBlockImageModel>();
-    case ImageType::CLIPBOARD_READ:
-      return std::make_unique<ContentSettingClipboardReadImageModel>();
+    case ImageType::CLIPBOARD_READ_WRITE:
+      return std::make_unique<ContentSettingClipboardReadWriteImageModel>();
     case ImageType::SENSORS:
       return std::make_unique<ContentSettingSensorsImageModel>();
     case ImageType::NOTIFICATIONS_QUIET_PROMPT:
@@ -588,17 +588,19 @@ bool ContentSettingDownloadsImageModel::UpdateAndGetVisibility(
 
 // Clipboard -------------------------------------------------------------------
 
-ContentSettingClipboardReadImageModel::ContentSettingClipboardReadImageModel()
-    : ContentSettingSimpleImageModel(ImageType::CLIPBOARD_READ,
-                                     ContentSettingsType::CLIPBOARD_READ) {}
+ContentSettingClipboardReadWriteImageModel::
+    ContentSettingClipboardReadWriteImageModel()
+    : ContentSettingSimpleImageModel(
+          ImageType::CLIPBOARD_READ_WRITE,
+          ContentSettingsType::CLIPBOARD_READ_WRITE) {}
 
-bool ContentSettingClipboardReadImageModel::UpdateAndGetVisibility(
+bool ContentSettingClipboardReadWriteImageModel::UpdateAndGetVisibility(
     WebContents* web_contents) {
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents);
   if (!content_settings)
     return false;
-  ContentSettingsType content_type = ContentSettingsType::CLIPBOARD_READ;
+  ContentSettingsType content_type = ContentSettingsType::CLIPBOARD_READ_WRITE;
   bool blocked = content_settings->IsContentBlocked(content_type);
   bool allowed = content_settings->IsContentAllowed(content_type);
   if (!blocked && !allowed)
@@ -962,7 +964,7 @@ ContentSettingImageModel::GenerateContentSettingImageModels() {
       ImageType::MIDI_SYSEX,
       ImageType::SOUND,
       ImageType::FRAMEBUST,
-      ImageType::CLIPBOARD_READ,
+      ImageType::CLIPBOARD_READ_WRITE,
       ImageType::NOTIFICATIONS_QUIET_PROMPT,
   };
 

@@ -71,6 +71,18 @@ TestAutofillClient::GetSecurityLevelForUmaHistograms() {
   return security_level_;
 }
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+std::vector<std::string>
+TestAutofillClient::GetMerchantWhitelistForVirtualCards() {
+  return merchant_whitelist_;
+}
+
+std::vector<std::string>
+TestAutofillClient::GetBinRangeWhitelistForVirtualCards() {
+  return bin_range_whitelist_;
+}
+#endif
+
 void TestAutofillClient::ShowAutofillSettings(bool show_credit_card_settings) {}
 
 void TestAutofillClient::ShowUnmaskPrompt(

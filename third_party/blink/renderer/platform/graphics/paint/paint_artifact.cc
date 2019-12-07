@@ -44,10 +44,6 @@ static SkColor DisplayItemBackgroundColor(const DisplayItem& item) {
 
 void ComputeChunkDerivedData(const DisplayItemList& display_items,
                              PaintChunk& chunk) {
-  // This happens in tests testing paint chunks without display items.
-  if (!chunk.size())
-    return;
-
   SkRegion known_to_be_opaque_region;
   auto items = display_items.ItemsInPaintChunk(chunk);
   for (const DisplayItem& item : items) {

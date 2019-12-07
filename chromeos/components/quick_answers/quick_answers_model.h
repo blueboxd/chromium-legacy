@@ -13,7 +13,9 @@ namespace quick_answers {
 // The type of the result. Valid values are map to the search result types.
 // Please see go/1ns-doc for more detail.
 enum class ResultType {
-  kUnitCconverterResult = 13668,
+  kDefinitionResult = 5493,
+  kTranslationResult = 6613,
+  kUnitConvertionResult = 13668,
 };
 
 // Structure to describe a quick answer.

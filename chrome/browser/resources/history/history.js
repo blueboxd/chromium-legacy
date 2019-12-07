@@ -5,7 +5,6 @@
 // Send the history query immediately. This allows the query to process during
 // the initial page startup.
 chrome.send('queryHistory', ['', RESULTS_PER_PAGE]);
-chrome.send('getForeignSessions');
 
 /** @type {Promise} */
 let upgradePromise = null;
@@ -45,19 +44,5 @@ function historyResult(info, results) {
       window.resultsRendered = true;
       app.onFirstRender();
     }
-  });
-}
-
-/**
- * Receives the synced history data. An empty list means that either there are
- * no foreign sessions, or tab sync is disabled for this profile.
- *
- * @param {!Array<!ForeignSession>} sessionList Array of objects describing the
- *     sessions from other devices.
- */
-function setForeignSessions(sessionList) {
-  waitForAppUpgrade().then(function() {
-    /** @type {HistoryAppElement} */ ($('history-app'))
-        .setForeignSessions(sessionList);
   });
 }

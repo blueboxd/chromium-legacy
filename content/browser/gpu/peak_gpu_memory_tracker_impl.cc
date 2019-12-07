@@ -86,4 +86,8 @@ void PeakGpuMemoryTrackerImpl::Cancel() {
   callback_ = PeakMemoryCallback();
 }
 
+void PeakGpuMemoryTrackerImpl::SetCallback(PeakMemoryCallback callback) {
+  callback_ = std::move(callback);
+}
+
 }  // namespace content

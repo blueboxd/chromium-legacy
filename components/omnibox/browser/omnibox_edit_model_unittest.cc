@@ -323,7 +323,7 @@ TEST_F(OmniboxEditModelTest, AlternateNavHasHTTP) {
       AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED);
   const GURL alternate_nav_url("http://abcd/");
 
-  model()->OnSetFocus(false, false);  // Avoids DCHECK in OpenMatch().
+  model()->OnSetFocus(false);  // Avoids DCHECK in OpenMatch().
   model()->SetUserText(base::ASCIIToUTF16("http://abcd"));
   model()->OpenMatch(match, WindowOpenDisposition::CURRENT_TAB,
                      alternate_nav_url, base::string16(), 0);
@@ -457,7 +457,7 @@ TEST_F(OmniboxEditModelTest, IgnoreInvalidSavedFocusStates) {
   ASSERT_EQ(OMNIBOX_FOCUS_NONE, state.focus_state);
 
   // Simulate the tab-switching system focusing the Omnibox.
-  model()->OnSetFocus(false, true);
+  model()->OnSetFocus(false);
 
   // Restoring the old saved state should not clobber the model's focus state.
   model()->RestoreState(&state);
@@ -483,9 +483,9 @@ TEST_F(OmniboxEditModelTest, ConsumeCtrlKey) {
 // Tests ctrl_key_state_ is set consumed if the ctrl key is down on focus.
 TEST_F(OmniboxEditModelTest, ConsumeCtrlKeyOnRequestFocus) {
   model()->control_key_state_ = TestOmniboxEditModel::DOWN;
-  model()->OnSetFocus(false, false);
+  model()->OnSetFocus(false);
   EXPECT_EQ(model()->control_key_state_, TestOmniboxEditModel::UP);
-  model()->OnSetFocus(true, false);
+  model()->OnSetFocus(true);
   EXPECT_EQ(model()->control_key_state_,
             TestOmniboxEditModel::DOWN_AND_CONSUMED);
 }

@@ -31,9 +31,9 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/audio_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_device_id.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -44,8 +44,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "services/audio/public/cpp/audio_system_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
@@ -72,7 +70,7 @@ void GetAudioDeviceDescriptions(bool for_input,
                                 AudioDeviceDescriptions* device_descriptions) {
   base::RunLoop run_loop;
   std::unique_ptr<media::AudioSystem> audio_system =
-      audio::CreateAudioSystem(content::GetSystemConnector()->Clone());
+      content::CreateAudioSystemForAudioService();
   audio_system->GetDeviceDescriptions(
       for_input,
       base::BindOnce(

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/webrtc/api/rtc_event_log_output.h"
 
@@ -29,7 +30,7 @@ class PLATFORM_EXPORT RtcEventLogOutputSinkProxy final
   bool Write(const std::string& output) override;
 
  private:
-  RtcEventLogOutputSink* const sink_;
+  CrossThreadWeakPersistent<RtcEventLogOutputSink> sink_;
 };
 
 }  // namespace blink

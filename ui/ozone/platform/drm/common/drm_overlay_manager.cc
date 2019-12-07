@@ -104,7 +104,8 @@ void DrmOverlayManager::CheckOverlaySupport(
       candidates->at(i).overlay_handled = status[i] == OVERLAY_STATUS_ABLE;
     }
   }
-  UMA_HISTOGRAM_BOOLEAN("DrmOverlayManager.CacheHit", cache_hit);
+  UMA_HISTOGRAM_BOOLEAN("Compositing.Display.DrmOverlayManager.CacheHit",
+                        cache_hit);
 }
 
 bool DrmOverlayManager::CanHandleCandidate(

@@ -17,10 +17,6 @@
 #include "ui/base/accelerators/media_keys_listener.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace content {
 
 // HardwareKeyMediaController controls media sessions via hardware media keys.
@@ -28,7 +24,7 @@ class CONTENT_EXPORT HardwareKeyMediaController
     : public media_session::mojom::MediaControllerObserver,
       public ui::MediaKeysListener::Delegate {
  public:
-  explicit HardwareKeyMediaController(service_manager::Connector* connector);
+  HardwareKeyMediaController();
   ~HardwareKeyMediaController() override;
 
   // media_session::mojom::MediaControllerObserver:

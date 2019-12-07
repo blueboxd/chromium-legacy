@@ -5,6 +5,10 @@
 #include "ash/wm/workspace/workspace_event_handler.h"
 
 #include "ash/public/cpp/touch_uma.h"
+#include "ash/shell.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_session.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -118,12 +122,34 @@ void WorkspaceEventHandler::HandleResizeDoubleClick(WindowState* target_state,
     if (component == HTBOTTOM || component == HTTOP) {
       base::RecordAction(base::UserMetricsAction(
           "WindowBorder_ClickTogglesSingleAxisMaximize"));
+
       const WMEvent wm_event(WM_EVENT_TOGGLE_VERTICAL_MAXIMIZE);
       target_state->OnWMEvent(&wm_event);
       event->StopPropagation();
     } else if (component == HTLEFT || component == HTRIGHT) {
       base::RecordAction(base::UserMetricsAction(
           "WindowBorder_ClickTogglesSingleAxisMaximize"));
+
+      // If overview is in session, meaning that |target| is a clamshell split
+      // view window, then end overview (thereby ending clamshell split view).
+      OverviewController* overview_controller =
+          Shell::Get()->overview_controller();
+      if (overview_controller->InOverviewSession()) {
+        DCHECK(SplitViewController::Get(target)->InClamshellSplitViewMode());
+        DCHECK(SplitViewController::Get(target)->IsWindowInSplitView(target));
+        // For |target| to have a snapped window state (in split view or not),
+        // it must have no maximum size (see |WindowState::CanSnap|). That is
+        // important here because when |target| has a maximum width, the
+        // |WM_EVENT_TOGGLE_HORIZONTAL_MAXIMIZE| event will do nothing, meaning
+        // it would be rather inappropriate to end overview as below, and of
+        // course it would be blatantly inappropriate to make the following call
+        // to |OverviewSession::SetWindowListNotAnimatedWhenExiting|.
+        DCHECK_EQ(gfx::Size(), target->delegate()->GetMaximumSize());
+        overview_controller->overview_session()
+            ->SetWindowListNotAnimatedWhenExiting(target->GetRootWindow());
+        overview_controller->EndOverview();
+      }
+
       const WMEvent wm_event(WM_EVENT_TOGGLE_HORIZONTAL_MAXIMIZE);
       target_state->OnWMEvent(&wm_event);
       event->StopPropagation();

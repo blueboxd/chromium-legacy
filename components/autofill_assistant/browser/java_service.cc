@@ -65,10 +65,21 @@ void JavaService::GetNextActions(
     const std::vector<ProcessedActionProto>& processed_actions,
     ResponseCallback callback) {
   JNIEnv* env = base::android::AttachCurrentThread();
+  auto jprocessed_actions =
+      Java_AutofillAssistantTestService_createProcessedActionsList(env);
+  for (const auto& action : processed_actions) {
+    std::string serialized_proto;
+    bool success = action.SerializeToString(&serialized_proto);
+    DCHECK(success);
+    Java_AutofillAssistantTestService_addProcessedAction(
+        env, jprocessed_actions,
+        base::android::ToJavaByteArray(env, serialized_proto));
+  }
   auto jresponse = Java_AutofillAssistantTestService_getNextActionsNative(
       env, java_service_,
       base::android::ToJavaByteArray(env, previous_global_payload),
-      base::android::ToJavaByteArray(env, previous_script_payload));
+      base::android::ToJavaByteArray(env, previous_script_payload),
+      jprocessed_actions);
   std::string response;
   base::android::JavaByteArrayToString(env, jresponse, &response);
   std::move(callback).Run(true, response);

@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 

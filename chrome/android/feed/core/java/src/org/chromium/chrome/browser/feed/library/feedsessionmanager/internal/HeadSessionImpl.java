@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.feedsessionmanager.internal;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.common.MutationContext;
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.ModelProvider;
 import org.chromium.chrome.browser.feed.library.api.internal.store.SessionMutation;
@@ -68,8 +70,7 @@ public class HeadSessionImpl implements Session, Dumpable {
 
     @Override
     public void updateSession(boolean clearHead, List<StreamStructure> streamStructures,
-            int schemaVersion,
-            /*@Nullable*/ MutationContext mutationContext) {
+            int schemaVersion, @Nullable MutationContext mutationContext) {
         ElapsedTimeTracker timeTracker = mTimingUtils.getElapsedTimeTracker(TAG);
         mUpdateCount++;
 
@@ -153,7 +154,7 @@ public class HeadSessionImpl implements Session, Dumpable {
     }
 
     @Override
-    /*@Nullable*/
+    @Nullable
     public ModelProvider getModelProvider() {
         return null;
     }

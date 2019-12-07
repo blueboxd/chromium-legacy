@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.keyboard_accessory.sheet_tabs;
 
 import static org.chromium.chrome.browser.util.UrlUtilities.stripScheme;
 
+import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
 import android.text.method.PasswordTransformationMethod;
 import android.view.View;
@@ -44,6 +45,8 @@ class PasswordAccessorySheetModernViewBinder {
      */
     static class PasswordInfoViewHolder
             extends ElementViewHolder<KeyboardAccessoryData.UserInfo, PasswordAccessoryInfoView> {
+        String mFaviconRequestOrigin;
+
         PasswordInfoViewHolder(ViewGroup parent) {
             super(parent, R.layout.keyboard_accessory_sheet_tab_password_info);
         }
@@ -53,15 +56,22 @@ class PasswordAccessorySheetModernViewBinder {
             bindChipView(view.getUsername(), info.getFields().get(0));
             bindChipView(view.getPassword(), info.getFields().get(1));
 
-            view.getTitle().setVisibility(info.getOrigin().isEmpty() ? View.GONE : View.VISIBLE);
+            view.getTitle().setVisibility(info.isPslMatch() ? View.VISIBLE : View.GONE);
             // Strip the trailing slash (for aesthetic reasons):
             view.getTitle().setText(stripScheme(info.getOrigin()).replaceFirst("/$", ""));
 
             // Set the default icon, then try to get a better one.
-            FaviconHelper faviconHelper =
-                    new FaviconHelper(view.getContext(), info.getFaviconProvider());
-            view.setIconForBitmap(faviconHelper.getDefaultDrawable());
-            faviconHelper.fetchFavicon(info.getOrigin(), view::setIconForBitmap);
+            mFaviconRequestOrigin = info.getOrigin(); // Save the origin for returning callback.
+            FaviconHelper faviconHelper = new FaviconHelper(view.getContext());
+            view.setIconForBitmap(faviconHelper.getDefaultIcon(info.getOrigin()));
+            faviconHelper.fetchFavicon(info.getOrigin(), d -> setIcon(view, info.getOrigin(), d));
+        }
+
+        private void setIcon(
+                PasswordAccessoryInfoView view, String requestOrigin, Drawable drawable) {
+            // Only set the icon if the origin hasn't changed since this view last requested an
+            // icon. Since the Views are recycled, an old callback can target a new view.
+            if (requestOrigin.equals(mFaviconRequestOrigin)) view.setIconForBitmap(drawable);
         }
 
         void bindChipView(ChipView chip, UserInfoField field) {

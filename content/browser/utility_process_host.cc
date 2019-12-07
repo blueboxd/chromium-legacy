@@ -442,12 +442,6 @@ bool UtilityProcessHost::StartProcess() {
           switches::kUtilityCmdPrefix));
     }
 
-    const bool is_service = service_identity_.has_value();
-    if (is_service) {
-      GetContentClient()->browser()->AdjustUtilityServiceProcessCommandLine(
-          *service_identity_, cmd_line.get());
-    }
-
     for (const auto& extra_switch : extra_switches_)
       cmd_line->AppendSwitch(extra_switch);
 

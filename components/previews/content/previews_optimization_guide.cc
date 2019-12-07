@@ -100,6 +100,10 @@ PreviewsOptimizationGuide::~PreviewsOptimizationGuide() = default;
 
 bool PreviewsOptimizationGuide::ShouldShowPreview(
     content::NavigationHandle* navigation_handle) {
+  // See if we should override the optimization guide and always show a preview.
+  if (params::OverrideShouldShowPreviewCheck())
+    return true;
+
   optimization_guide::OptimizationGuideDecision decision =
       optimization_guide_decider_->ShouldTargetNavigation(
           navigation_handle,

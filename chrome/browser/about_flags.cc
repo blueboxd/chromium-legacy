@@ -1474,9 +1474,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"clear-old-browsing-data", flag_descriptions::kClearOldBrowsingDataName,
      flag_descriptions::kClearOldBrowsingDataDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kClearOldBrowsingData)},
-    {"enable-surfacecontrol", flag_descriptions::kAndroidSurfaceControl,
-     flag_descriptions::kAndroidSurfaceControlDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kAndroidSurfaceControl)},
 #endif  // OS_ANDROID
 #if BUILDFLAG(ENABLE_NACL)
     {"enable-nacl", flag_descriptions::kNaclName,
@@ -4139,11 +4136,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHideArcMediaNotificationsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kHideArcMediaNotifications)},
 
-    {"enable-cups-printers-ui-overhaul",
-     flag_descriptions::kCupsPrintersUiOverhaulName,
-     flag_descriptions::kCupsPrintersUiOverhaulDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kCupsPrintersUiOverhaul)},
-
     {"reduce-display-notifications",
      flag_descriptions::kReduceDisplayNotificationsName,
      flag_descriptions::kReduceDisplayNotificationsDescription, kOsCrOS,
@@ -4768,10 +4760,17 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillEnableVirtualCardDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableVirtualCard)},
 
+#if defined(OS_CHROMEOS)
+    {"account-id-migration", flag_descriptions::kAccountIdMigrationName,
+     flag_descriptions::kAccountIdMigrationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(switches::kAccountIdMigration)},
+#endif  // defined(OS_CHROMEOS)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
     // AboutFlagsHistogramTest unit test to verify this process).
+
 };
 
 class FlagsStateSingleton : public flags_ui::FlagsState::Delegate {

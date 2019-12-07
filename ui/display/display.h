@@ -13,8 +13,6 @@
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/size_f.h"
-#include "ui/gfx/transform.h"
 
 namespace display {
 
@@ -166,11 +164,6 @@ class DISPLAY_EXPORT Display final {
   Rotation panel_rotation() const { return panel_rotation_; }
   void set_panel_rotation(Rotation rotation) { panel_rotation_ = rotation; }
   int PanelRotationAsDegree() const;
-
-  // Returns an exact matrix representation of the transform that corrects for
-  // the display's rotation.
-  static gfx::Transform GetRotationTransform(Rotation rotation,
-                                             const gfx::SizeF& size);
 
   TouchSupport touch_support() const { return touch_support_; }
   void set_touch_support(TouchSupport support) { touch_support_ = support; }

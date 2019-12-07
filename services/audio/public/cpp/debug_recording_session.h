@@ -10,13 +10,10 @@
 #include "media/audio/audio_debug_recording_helper.h"
 #include "media/audio/audio_debug_recording_session.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/audio/public/mojom/debug_recording.mojom.h"
-
-namespace service_manager {
-class Connector;
-}
 
 namespace base {
 class FilePath;
@@ -54,8 +51,9 @@ class DebugRecordingSession : public media::AudioDebugRecordingSession {
     DISALLOW_COPY_AND_ASSIGN(DebugRecordingFileProvider);
   };
 
-  DebugRecordingSession(const base::FilePath& file_name_base,
-                        std::unique_ptr<service_manager::Connector> connector);
+  DebugRecordingSession(
+      const base::FilePath& file_name_base,
+      mojo::PendingRemote<mojom::DebugRecording> debug_recording);
   ~DebugRecordingSession() override;
 
  private:

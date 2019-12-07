@@ -92,13 +92,6 @@
 #endif
 #endif
 
-namespace {
-template <typename T>
-ALWAYS_INLINE std::atomic<T>& AsAtomic(T& t) {
-  return reinterpret_cast<std::atomic<T>&>(t);
-}
-}  // namespace
-
 namespace WTF {
 
 // This is for tracing inside collections that have special support for weak
@@ -1793,7 +1786,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     stats_->numRehashes.fetch_add(1, std::memory_order_relaxed);
 #endif
 
-  AsAtomic<ValueType*>(table_).store(new_table, std::memory_order_relaxed);
+  AsAtomicPtr(&table_)->store(new_table, std::memory_order_relaxed);
   Allocator::template BackingWriteBarrierForHashTable<HashTable>(new_table);
   table_size_ = new_table_size;
 
@@ -1977,8 +1970,8 @@ void HashTable<Key,
   // on the mutator thread, which is also the only one that writes to them, so
   // there is *no* risk of data races when reading.
   Value* tmp_table = other.table_;
-  AsAtomic<Value*>(other.table_).store(table_, std::memory_order_relaxed);
-  AsAtomic<Value*>(table_).store(tmp_table, std::memory_order_relaxed);
+  AsAtomicPtr(&other.table_)->store(table_, std::memory_order_relaxed);
+  AsAtomicPtr(&table_)->store(tmp_table, std::memory_order_relaxed);
   Allocator::template BackingWriteBarrierForHashTable<HashTable>(table_);
   Allocator::template BackingWriteBarrierForHashTable<HashTable>(other.table_);
   std::swap(table_size_, other.table_size_);
@@ -2109,8 +2102,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   static_assert(WTF::IsWeak<ValueType>::value ||
                     IsTraceableInCollectionTrait<Traits>::value,
                 "Value should not be traced");
-  ValueType* table =
-      AsAtomic<ValueType*>(table_).load(std::memory_order_relaxed);
+  ValueType* table = AsAtomicPtr(&table_)->load(std::memory_order_relaxed);
   if (!WTF::IsWeak<ValueType>::value) {
     // Strong HashTable.
     Allocator::template TraceHashTableBackingStrongly<ValueType, HashTable>(

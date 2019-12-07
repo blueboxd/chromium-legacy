@@ -33,10 +33,6 @@ namespace media_message_center {
 class MediaSessionNotificationItem;
 }  // namespace media_message_center
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 class MediaDialogDelegate;
 class MediaNotificationContainerImpl;
 class MediaNotificationServiceObserver;
@@ -47,8 +43,7 @@ class MediaNotificationService
       public media_message_center::MediaNotificationController,
       public MediaNotificationContainerObserver {
  public:
-  MediaNotificationService(Profile* profile,
-                           service_manager::Connector* connector);
+  explicit MediaNotificationService(Profile* profile);
   MediaNotificationService(const MediaNotificationService&) = delete;
   MediaNotificationService& operator=(const MediaNotificationService&) = delete;
   ~MediaNotificationService() override;
@@ -195,7 +190,6 @@ class MediaNotificationService
   base::WeakPtr<media_message_center::MediaNotificationItem>
   GetNotificationItem(const std::string& id);
 
-  service_manager::Connector* const connector_;
   MediaDialogDelegate* dialog_delegate_ = nullptr;
 
   OverlayMediaNotificationsManager overlay_media_notifications_manager_;

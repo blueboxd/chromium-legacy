@@ -17,6 +17,7 @@
 #include "media/base/video_codecs.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
+#include "media/video/supported_video_decoder_config.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -51,6 +52,12 @@ namespace blink {
 // way to synchronize this correctly.
 class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
  public:
+  // Currently, RTCVideoDecoderAdapter only tries one
+  // VideoDecoderImplementation.
+  // Since we use it in multiple places, memorize it here to make it clear that
+  // they must be changed together.
+  static constexpr media::VideoDecoderImplementation kImplementation =
+      media::VideoDecoderImplementation::kDefault;
   // Creates and initializes an RTCVideoDecoderAdapter. Returns nullptr if
   // |format| cannot be supported.
   // Called on the worker thread.

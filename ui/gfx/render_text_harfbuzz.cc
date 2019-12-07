@@ -1030,17 +1030,13 @@ RangeF TextRunHarfBuzz::GetGraphemeBounds(RenderTextHarfBuzz* render_text,
   // of glyphs that should be drawn together. A cluster can contain multiple
   // graphemes. In order to place the cursor at a grapheme boundary inside the
   // cluster, we simply divide the cluster width by the number of graphemes.
-  // Note: The first call to GetGraphemeIterator() can be expensive, so avoid
-  // doing it unless it's actually needed (when |code_point_count| > 1).
   ptrdiff_t code_point_count = UTF16IndexToOffset(render_text->GetDisplayText(),
                                                   chars.start(), chars.end());
-  if (code_point_count > 1 && render_text->GetGraphemeIterator()) {
+  if (code_point_count > 1) {
     int before = 0;
     int total = 0;
-    base::i18n::BreakIterator* grapheme_iterator =
-        render_text->GetGraphemeIterator();
     for (size_t i = chars.start(); i < chars.end(); ++i) {
-      if (grapheme_iterator->IsGraphemeBoundary(i)) {
+      if (render_text->IsGraphemeBoundary(i)) {
         if (i < text_index)
           ++before;
         ++total;
@@ -1586,8 +1582,14 @@ RangeF RenderTextHarfBuzz::GetCursorSpan(const Range& text_range) {
 
   internal::TextRunHarfBuzz* run = run_list->runs()[run_index].get();
 
+  size_t next_grapheme_start = valid_range.end();
+  if (!IsValidCursorIndex(next_grapheme_start)) {
+    next_grapheme_start =
+        IndexOfAdjacentGrapheme(next_grapheme_start, CURSOR_FORWARD);
+  }
+
   Range display_range(TextIndexToDisplayIndex(valid_range.start()),
-                      TextIndexToDisplayIndex(valid_range.end()));
+                      TextIndexToDisplayIndex(next_grapheme_start));
 
   // Although highly likely, there's no guarantee that a single text run is used
   // for the entire cursor span. For example, Unicode Variation Selectors are
@@ -1618,17 +1620,6 @@ size_t RenderTextHarfBuzz::GetLineContainingCaret(const SelectionModel& caret) {
   }
 
   return lines().size() - 1;
-}
-
-base::i18n::BreakIterator* RenderTextHarfBuzz::GetGraphemeIterator() {
-  if (update_grapheme_iterator_) {
-    update_grapheme_iterator_ = false;
-    grapheme_iterator_ = std::make_unique<base::i18n::BreakIterator>(
-        GetDisplayText(), base::i18n::BreakIterator::BREAK_CHARACTER);
-    if (!grapheme_iterator_->Init())
-      grapheme_iterator_.reset();
-  }
-  return grapheme_iterator_.get();
 }
 
 int RenderTextHarfBuzz::GetDisplayTextBaseline() {
@@ -1754,15 +1745,6 @@ SelectionModel RenderTextHarfBuzz::AdjacentLineSelectionModel(
     next = SelectionModel(next.caret_pos() - 1, next.caret_affinity());
 
   return next;
-}
-
-bool RenderTextHarfBuzz::IsValidCursorIndex(size_t index) {
-  if (index == 0 || index == text().length())
-    return true;
-  if (!IsValidLogicalIndex(index))
-    return false;
-  base::i18n::BreakIterator* grapheme_iterator = GetGraphemeIterator();
-  return !grapheme_iterator || grapheme_iterator->IsGraphemeBoundary(index);
 }
 
 void RenderTextHarfBuzz::OnLayoutTextAttributeChanged(bool text_changed) {

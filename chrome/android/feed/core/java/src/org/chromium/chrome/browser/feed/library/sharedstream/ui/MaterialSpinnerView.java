@@ -12,6 +12,8 @@ import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
 
+import androidx.annotation.Nullable;
+
 /** View compatible with KitKat that shows a Material themed spinner. */
 public class MaterialSpinnerView extends AppCompatImageView {
     private final CircularProgressDrawable mSpinner;
@@ -20,14 +22,14 @@ public class MaterialSpinnerView extends AppCompatImageView {
         this(context, null);
     }
 
-    public MaterialSpinnerView(Context context, /*@Nullable*/ AttributeSet attrs) {
+    public MaterialSpinnerView(Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
     // In android everything is initialized properly after the constructor call, so it is fine to do
     // this work after.
     @SuppressWarnings({"nullness:argument.type.incompatible", "nullness:method.invocation.invalid"})
-    public MaterialSpinnerView(Context context, /*@Nullable*/ AttributeSet attrs, int defStyle) {
+    public MaterialSpinnerView(Context context, @Nullable AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         mSpinner = new CircularProgressDrawable(context);
         mSpinner.setStyle(CircularProgressDrawable.DEFAULT);

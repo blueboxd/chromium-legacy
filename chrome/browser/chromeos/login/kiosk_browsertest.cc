@@ -72,10 +72,10 @@
 #include "components/crx_file/crx_verifier.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "content/public/browser/audio_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -98,7 +98,6 @@
 #include "services/audio/public/cpp/fake_system_info.h"
 #include "services/audio/public/cpp/sounds/audio_stream_handler.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
 
@@ -2373,7 +2372,7 @@ class KioskVirtualKeyboardTestSoundsManagerTestImpl
     }
 
     auto handler = std::make_unique<audio::AudioStreamHandler>(
-        content::GetSystemConnector()->Clone(), iter->second);
+        content::GetAudioServiceStreamFactoryBinder(), iter->second);
     if (!handler->IsInitialized()) {
       LOG(WARNING) << "Can't initialize AudioStreamHandler for key = " << key;
       return false;

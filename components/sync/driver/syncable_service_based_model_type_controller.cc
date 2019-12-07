@@ -4,6 +4,7 @@
 
 #include "components/sync/driver/syncable_service_based_model_type_controller.h"
 
+#include <memory>
 #include <utility>
 
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"

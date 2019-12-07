@@ -121,8 +121,8 @@ public class StartupTabPreloader implements ProfileManager.Observer, Destroyable
      * {@link ChromeTabCreator}.
      */
     @Override
-    public void onProfileCreated(Profile profile) {
-        try (TraceEvent e = TraceEvent.scoped("StartupTabPreloader.onProfileCreated")) {
+    public void onProfileAdded(Profile profile) {
+        try (TraceEvent e = TraceEvent.scoped("StartupTabPreloader.onProfileAdded")) {
             // We only care about the first non-incognito profile that's created during startup.
             if (profile.isOffTheRecord()) return;
 

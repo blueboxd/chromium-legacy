@@ -31,6 +31,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/navigation_type.h"
+#include "content/public/browser/peak_gpu_memory_tracker.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/common/previews_state.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -512,6 +513,8 @@ class CONTENT_EXPORT NavigationRequest
   // so this function only posts the actual task to do all the work (see
   // RestartBackForwardCachedNavigationImpl);
   void RestartBackForwardCachedNavigation();
+
+  std::unique_ptr<PeakGpuMemoryTracker> TakePeakGpuMemoryTracker();
 
  private:
   friend class NavigationRequestTest;
@@ -1111,6 +1114,8 @@ class CONTENT_EXPORT NavigationRequest
   // True if we are restarting this navigation request as RenderFrameHost was
   // evicted.
   bool restarting_back_forward_cached_navigation_ = false;
+
+  std::unique_ptr<PeakGpuMemoryTracker> loading_mem_tracker_ = nullptr;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 

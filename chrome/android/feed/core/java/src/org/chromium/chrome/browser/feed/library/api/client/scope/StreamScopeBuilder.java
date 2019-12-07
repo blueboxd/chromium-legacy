@@ -70,12 +70,12 @@ public final class StreamScopeBuilder {
     private boolean mIsBackgroundDark;
 
     // Optional internal components to override the default implementations.
-    /*@MonotonicNonNull*/ private ActionParserFactory mActionParserFactory;
-    /*@MonotonicNonNull*/ private ModelProviderFactory mModelProviderFactory;
-    /*@MonotonicNonNull*/ private Stream mStream;
-    /*@MonotonicNonNull*/ private StreamFactory mStreamFactory;
-    /*@MonotonicNonNull*/ private CustomElementProvider mCustomElementProvider;
-    /*@MonotonicNonNull*/ private HostBindingProvider mHostBindingProvider;
+    private ActionParserFactory mActionParserFactory;
+    private ModelProviderFactory mModelProviderFactory;
+    private Stream mStream;
+    private StreamFactory mStreamFactory;
+    private CustomElementProvider mCustomElementProvider;
+    private HostBindingProvider mHostBindingProvider;
 
     /** Construct this builder using {@link ProcessScope#createStreamScopeBuilder} */
     public StreamScopeBuilder(Context context, ActionApi actionApi, ImageLoaderApi imageLoaderApi,

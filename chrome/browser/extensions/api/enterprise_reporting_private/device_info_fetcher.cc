@@ -5,6 +5,11 @@
 #include "chrome/browser/extensions/api/enterprise_reporting_private/device_info_fetcher.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
+
+#if defined(OS_MACOSX)
+#include "chrome/browser/extensions/api/enterprise_reporting_private/device_info_fetcher_mac.h"
+#endif
 
 namespace extensions {
 namespace enterprise_reporting {
@@ -43,9 +48,11 @@ DeviceInfoFetcher::DeviceInfoFetcher() {}
 DeviceInfoFetcher::~DeviceInfoFetcher() = default;
 
 std::unique_ptr<DeviceInfoFetcher> DeviceInfoFetcher::CreateInstance() {
-  // TODO(996079): Return a stub implementation for now. We will add
-  // platform-specific implementations in follow-up CLs.
+#if defined(OS_MACOSX)
+  return std::make_unique<DeviceInfoFetcherMac>();
+#else
   return std::make_unique<StubDeviceFetcher>();
+#endif
 }
 
 }  // namespace enterprise_reporting

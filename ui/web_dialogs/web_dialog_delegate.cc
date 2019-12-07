@@ -36,6 +36,10 @@ bool WebDialogDelegate::ShouldCenterDialogTitleText() const {
   return false;
 }
 
+bool WebDialogDelegate::ShouldCloseDialogOnEscape() const {
+  return true;
+}
+
 bool WebDialogDelegate::ShouldShowCloseButton() const {
   return true;
 }

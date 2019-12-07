@@ -767,8 +767,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           false,  // is_browser_initiated
           network::mojom::IPAddressSpace::kUnknown,
           GURL() /* web_bundle_physical_url */,
-          GURL() /* base_url_override_for_web_bundle */
-      );
+          GURL() /* base_url_override_for_web_bundle */,
+          frame_tree_node->pending_frame_policy());
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, std::move(common_params), std::move(begin_params),
       std::move(commit_params),
@@ -819,7 +819,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
           std::vector<int>() /* initiator_origin_trial_features */,
           std::string() /* href_translate */,
           false /* is_history_navigation_in_new_child_frame */,
-          base::TimeTicks::Now(), base::nullopt /* frame policy */);
+          base::TimeTicks::Now());
   mojom::CommitNavigationParamsPtr commit_params =
       mojom::CommitNavigationParams::New(
           params.origin, params.is_overriding_user_agent, params.redirects,
@@ -843,7 +843,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
           false,  // is_browser_initiated
           network::mojom::IPAddressSpace::kUnknown,
           GURL() /* web_bundle_physical_url */,
-          GURL() /* base_url_override_for_web_bundle */
+          GURL() /* base_url_override_for_web_bundle */,
+          base::nullopt /* frame policy */
       );
   mojom::BeginNavigationParamsPtr begin_params =
       mojom::BeginNavigationParams::New();
@@ -916,6 +917,10 @@ NavigationRequest::NavigationRequest(
   // Sanitize the referrer.
   common_params_->referrer = Referrer::SanitizeForRequest(
       common_params_->url, *common_params_->referrer);
+
+  if (frame_tree_node_->IsMainFrame()) {
+    loading_mem_tracker_ = PeakGpuMemoryTracker::Create(base::DoNothing());
+  }
 
   if (from_begin_navigation_) {
     // This is needed to have data URLs commit in the same SiteInstance as the
@@ -3892,6 +3897,8 @@ void NavigationRequest::SetSourceSiteInstanceToInitiatorIfNeeded() {
 }
 
 void NavigationRequest::RestartBackForwardCachedNavigation() {
+  TRACE_EVENT0("navigation",
+               "NavigationRequest::RestartBackForwardCachedNavigation");
   CHECK(IsServedFromBackForwardCache());
   restarting_back_forward_cached_navigation_ = true;
   base::PostTask(
@@ -3901,6 +3908,8 @@ void NavigationRequest::RestartBackForwardCachedNavigation() {
 }
 
 void NavigationRequest::RestartBackForwardCachedNavigationImpl() {
+  TRACE_EVENT0("navigation",
+               "NavigationRequest::RestartBackForwardCachedNavigationImpl");
   RenderFrameHostImpl* rfh = rfh_restored_from_back_forward_cache();
   CHECK(rfh);
   CHECK_EQ(rfh->frame_tree_node()->navigation_request(), this);
@@ -3914,6 +3923,11 @@ void NavigationRequest::RestartBackForwardCachedNavigationImpl() {
     return;
 
   controller->GoToIndex(nav_index);
+}
+
+std::unique_ptr<PeakGpuMemoryTracker>
+NavigationRequest::TakePeakGpuMemoryTracker() {
+  return std::move(loading_mem_tracker_);
 }
 
 }  // namespace content

@@ -532,7 +532,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       keyboard_brightness_control_delegate_(
           std::make_unique<KeyboardBrightnessController>()),
       locale_update_controller_(std::make_unique<LocaleUpdateControllerImpl>()),
-      media_controller_(std::make_unique<MediaControllerImpl>(connector)),
       ash_color_provider_(std::make_unique<AshColorProvider>()),
       session_controller_(std::make_unique<SessionControllerImpl>()),
       shell_delegate_(std::move(shell_delegate)),
@@ -880,6 +879,7 @@ void Shell::Init(
   multidevice_notification_presenter_ =
       std::make_unique<MultiDeviceNotificationPresenter>(
           message_center::MessageCenter::Get());
+  media_controller_ = std::make_unique<MediaControllerImpl>();
 
   tablet_mode_controller_ = std::make_unique<TabletModeController>();
 
@@ -1146,7 +1146,7 @@ void Shell::Init(
 
   if (base::FeatureList::IsEnabled(features::kMediaSessionNotification)) {
     media_notification_controller_ =
-        std::make_unique<MediaNotificationControllerImpl>(connector_);
+        std::make_unique<MediaNotificationControllerImpl>();
   }
 
   for (auto& observer : shell_observers_)

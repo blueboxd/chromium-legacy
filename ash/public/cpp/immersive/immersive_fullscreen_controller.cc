@@ -20,8 +20,10 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/gfx/animation/animation_delegate_notifier.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -106,6 +108,10 @@ void ImmersiveFullscreenController::Init(
 
   delegate_ = delegate;
   top_container_ = top_container;
+  animation_notifier_ = std::make_unique<
+      gfx::AnimationDelegateNotifier<views::AnimationDelegateViews>>(
+      this, top_container);
+  animation_ = std::make_unique<gfx::SlideAnimation>(animation_notifier_.get());
   widget_ = widget;
 
   // A widget can have more than one ImmersiveFullscreenController
@@ -300,6 +306,9 @@ void ImmersiveFullscreenController::EnableWindowObservers(bool enable) {
       widget_->GetNativeWindow()->RemoveObserver(this);
       widget_ = nullptr;
     }
+
+    animation_.reset();
+    animation_notifier_.reset();
   }
 }
 
@@ -322,7 +331,7 @@ void ImmersiveFullscreenController::EnableEventObservers(bool enable) {
     env->RemoveEventObserver(this);
     immersive_focus_watcher_.reset();
 
-    animation_.Stop();
+    animation_->Stop();
   }
 }
 
@@ -572,11 +581,11 @@ void ImmersiveFullscreenController::MaybeStartReveal(Animate animate) {
   }
   // Slide in the reveal view.
   if (animate == ANIMATE_NO) {
-    animation_.Reset(1);
+    animation_->Reset(1);
     OnSlideOpenAnimationCompleted();
   } else {
-    animation_.SetSlideDuration(GetAnimationDuration(animate));
-    animation_.Show();
+    animation_->SetSlideDuration(GetAnimationDuration(animate));
+    animation_->Show();
   }
 }
 
@@ -607,10 +616,10 @@ void ImmersiveFullscreenController::MaybeEndReveal(Animate animate) {
   reveal_state_ = SLIDING_CLOSED;
   base::TimeDelta duration = GetAnimationDuration(animate);
   if (duration > base::TimeDelta()) {
-    animation_.SetSlideDuration(duration);
-    animation_.Hide();
+    animation_->SetSlideDuration(duration);
+    animation_->Hide();
   } else {
-    animation_.Reset(0);
+    animation_->Reset(0);
     OnSlideClosedAnimationCompleted();
   }
 }

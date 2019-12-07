@@ -133,7 +133,7 @@ public class CreditCardAccessorySheetControllerTest {
         final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
         final AccessorySheetData testData =
                 new AccessorySheetData(AccessoryTabType.CREDIT_CARDS, "Payments", "");
-        testData.getUserInfoList().add(new UserInfo("", null));
+        testData.getUserInfoList().add(new UserInfo("", false));
         testData.getUserInfoList().get(0).addField(
                 new UserInfoField("Todd", "Todd", "", false, field -> {}));
         testData.getUserInfoList().get(0).addField(
@@ -161,7 +161,7 @@ public class CreditCardAccessorySheetControllerTest {
         assertThat(mSheetDataPieces.get(0).getDataPiece(), is(equalTo("Payments")));
 
         // As soon UserInfo is available, discard the title.
-        testData.getUserInfoList().add(new UserInfo("", null));
+        testData.getUserInfoList().add(new UserInfo("", false));
         testData.getUserInfoList().get(0).addField(
                 new UserInfoField("Todd", "Todd", "", false, field -> {}));
         testData.getUserInfoList().get(0).addField(
@@ -205,7 +205,7 @@ public class CreditCardAccessorySheetControllerTest {
         // Add only two interactive items - the third one should not be recorded.
         AccessorySheetData accessorySheetData =
                 new AccessorySheetData(AccessoryTabType.CREDIT_CARDS, "Payments", "");
-        accessorySheetData.getUserInfoList().add(new UserInfo("", null));
+        accessorySheetData.getUserInfoList().add(new UserInfo("", false));
         accessorySheetData.getUserInfoList().get(0).addField(
                 new UserInfoField("Todd Tester", "Todd Tester", "0", false, result -> {}));
         accessorySheetData.getUserInfoList().get(0).addField(

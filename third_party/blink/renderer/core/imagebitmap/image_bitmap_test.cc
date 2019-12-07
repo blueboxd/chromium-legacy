@@ -42,11 +42,13 @@
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/color_correction_test_utils.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_gles2_interface.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/platform/graphics/test/gpu_test_utils.h"
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -79,14 +81,10 @@ class ImageBitmapTest : public testing::Test {
         ReplaceMemoryCacheForTesting(MakeGarbageCollected<MemoryCache>(
             blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
 
-    auto factory = [](FakeGLES2Interface* gl, bool* gpu_compositing_disabled)
-        -> std::unique_ptr<WebGraphicsContext3DProvider> {
-      *gpu_compositing_disabled = false;
-      return std::make_unique<FakeWebGraphicsContext3DProvider>(gl, nullptr);
-    };
-    SharedGpuContext::SetContextProviderFactoryForTesting(
-        WTF::BindRepeating(factory, WTF::Unretained(&gl_)));
+    test_context_provider_ = viz::TestContextProvider::Create();
+    InitializeSharedGpuContext(test_context_provider_.get());
   }
+
   void TearDown() override {
     // Garbage collection is required prior to switching out the
     // test's memory cache; image resources are released, evicting
@@ -99,7 +97,7 @@ class ImageBitmapTest : public testing::Test {
   }
 
  protected:
-  FakeGLES2Interface gl_;
+  scoped_refptr<viz::TestContextProvider> test_context_provider_;
   sk_sp<SkImage> image_, image2_;
   Persistent<MemoryCache> global_memory_cache_;
 };
@@ -257,16 +255,14 @@ static void TestImageBitmapTextureBacked(
 TEST_F(ImageBitmapTest, AvoidGPUReadback) {
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
       SharedGpuContext::ContextProviderWrapper();
-  GrContext* gr = context_provider_wrapper->ContextProvider()->GetGrContext();
-  SkImageInfo imageInfo = SkImageInfo::MakeN32Premul(100, 100);
-
-  sk_sp<SkSurface> surface =
-      SkSurface::MakeRenderTarget(gr, SkBudgeted::kNo, imageInfo);
-  sk_sp<SkImage> image = surface->makeImageSnapshot();
-
-  scoped_refptr<AcceleratedStaticBitmapImage> bitmap =
-      AcceleratedStaticBitmapImage::CreateFromSkImage(image,
-                                                      context_provider_wrapper);
+  CanvasColorParams color_params;
+  auto resource_provider = CanvasResourceProvider::Create(
+      IntSize(100, 100),
+      CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage,
+      context_provider_wrapper, 0, kLow_SkFilterQuality, color_params,
+      CanvasResourceProvider::kDefaultPresentationMode, nullptr);
+  scoped_refptr<StaticBitmapImage> bitmap = resource_provider->Snapshot();
+  ASSERT_TRUE(bitmap->IsTextureBacked());
 
   ImageBitmap* image_bitmap = ImageBitmap::Create(bitmap);
   EXPECT_TRUE(image_bitmap);

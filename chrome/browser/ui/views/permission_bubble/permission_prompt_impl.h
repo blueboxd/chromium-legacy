@@ -27,8 +27,11 @@ class PermissionPromptImpl : public PermissionPrompt {
 
   // PermissionPrompt:
   void UpdateAnchorPosition() override;
-  gfx::NativeWindow GetNativeWindow() override;
   TabSwitchingBehavior GetTabSwitchingBehavior() override;
+
+  PermissionPromptBubbleView* prompt_bubble_for_testing() {
+    return prompt_bubble_;
+  }
 
  private:
   // The popup bubble. Not owned by this class; it will delete itself when a

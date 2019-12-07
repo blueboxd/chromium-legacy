@@ -4,10 +4,8 @@
 
 package org.chromium.chrome.browser.keyboard_accessory;
 
-import android.graphics.Bitmap;
 import android.util.SparseArray;
 
-import androidx.annotation.Px;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
@@ -18,7 +16,6 @@ import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.FooterCommand;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.UserInfo;
-import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.UserInfo.FaviconProvider;
 import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
 import org.chromium.chrome.browser.keyboard_accessory.data.UserInfoField;
 import org.chromium.content_public.browser.WebContents;
@@ -124,8 +121,9 @@ class ManualFillingComponentBridge {
     }
 
     @CalledByNative
-    private Object addUserInfoToAccessorySheetData(Object objAccessorySheetData, String origin) {
-        UserInfo userInfo = new UserInfo(origin, this::fetchFavicon);
+    private Object addUserInfoToAccessorySheetData(
+            Object objAccessorySheetData, String origin, boolean isPslMatch) {
+        UserInfo userInfo = new UserInfo(origin, isPslMatch);
         ((AccessorySheetData) objAccessorySheetData).getUserInfoList().add(userInfo);
         return userInfo;
     }
@@ -161,18 +159,6 @@ class ManualFillingComponentBridge {
                 }));
     }
 
-    private void fetchFavicon(String origin, @Px int desiredSize,
-            Callback<FaviconProvider.FaviconResult> faviconCallback) {
-        assert mNativeView != 0 : "Favicon was requested after the bridge was destroyed!";
-        ManualFillingComponentBridgeJni.get().onFaviconRequested(mNativeView,
-                ManualFillingComponentBridge.this, origin, desiredSize, faviconCallback);
-    }
-
-    @CalledByNative
-    public static Object createFaviconResult(String origin, Bitmap favicon) {
-        return new FaviconProvider.FaviconResult(origin, favicon);
-    }
-
     @VisibleForTesting
     public static void cachePasswordSheetData(
             WebContents webContents, String[] userNames, String[] passwords) {
@@ -194,9 +180,6 @@ class ManualFillingComponentBridge {
 
     @NativeMethods
     interface Natives {
-        void onFaviconRequested(long nativeManualFillingViewAndroid,
-                ManualFillingComponentBridge caller, String origin, int desiredSizeInPx,
-                Callback<FaviconProvider.FaviconResult> faviconCallback);
         void onFillingTriggered(long nativeManualFillingViewAndroid,
                 ManualFillingComponentBridge caller, int tabType, UserInfoField userInfoField);
         void onOptionSelected(long nativeManualFillingViewAndroid,

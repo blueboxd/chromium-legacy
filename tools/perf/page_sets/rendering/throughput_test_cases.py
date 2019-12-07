@@ -12,7 +12,7 @@ class ThroughputMetricStory(rendering_story.RenderingStory):
   def RunPageInteractions(self, action_runner):
     with action_runner.CreateGestureInteraction('AnimationOnTap'):
       action_runner.PressKey(' ')
-      action_runner.Wait(5)
+      action_runner.Wait(10)
       action_runner.PressKey(' ')
 
 

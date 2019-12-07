@@ -185,6 +185,164 @@ To use `ld.lld`'s `--reproduce` flag, follow these steps:
 TODO: Describe object file bisection, identify obj with symbol that no longer
 has the section.
 
+## ThinLTO Trouble
+
+Sometimes, problems occur in ThinLTO builds that do not occur in non-LTO builds.
+These steps can be used to debug such problems.
+
+Notes:
+
+ - All steps assume they are run from the output directory (the same directory args.gn is in).
+
+ - Commands have been shortened for clarity. In particular, Chromium build commands are
+   generally long, with many parts that you just copy-paste when debugging. These have
+   largely been omitted.
+
+ - The commands below use "clang++", where in practice there would be some path prefix
+   in front of this. Make sure you are invoking the right clang++. In particular, there
+   may be one in the PATH which behaves very differently.
+
+### Get the full command that is used for linking
+
+To get the command that is used to link base_unittests:
+
+```sh
+$ rm base_unittests
+$ ninja -n -d keeprsp -v base_unittests
+```
+
+This will print a command line. It will also write a file called `base_unittests.rsp`, which
+contains additional parameters to be passed.
+
+### Expand Thin Archives on Command Line
+
+Expand thin archives mentioned in the command line to their individual object files.
+The script `tools/clang/scripts/expand_thin_archives.py` can be used for this purpose.
+For example:
+
+```sh
+$ ../../tools/clang/scripts/expand_thin_archives.py -p=-Wl, -- @base_unittests.rsp > base_unittests.expanded.rsp
+```
+
+The `-p` parameter here specifies the prefix for parameters to be passed to the linker.
+If you are invoking the linker directly (as opposed to through clang++), the prefix should
+be empty.
+
+```sh
+$ ../../tools/clang/scripts/expand_thin_archives.py -p='', -- @base_unittests.rsp > base_unittests.expanded.rsp
+```
+
+### Remove -Wl,--start-group and -Wl,--end-group
+
+Edit the link command to use the expanded command line, and remove any mention of `-Wl,--start-group`
+and `-Wl,--end-group` that surround the expanded command line. For example, if the original command was:
+
+    clang++ -fuse-ld=lld -o ./base_unittests -Wl,--start-group @base_unittests.rsp -Wl,--end-group
+
+the new command should be:
+
+    clang++ -fuse-ld=lld -o ./base_unittests @base_unittests.expanded.rsp
+
+The reason for this is that the `-start-lib` and `-end-lib` flags that expanding the command
+line produces cannot be nested inside `--start-group` and `--end-group`.
+
+### Producing ThinLTO Bitcode Files
+
+In a ThinLTO build, what is normally the compile step that produces native object files
+instead produces LLVM bitcode files. A simple example would be:
+
+```sh
+$ clang++ -c -flto=thin foo.cpp -o foo.o
+```
+
+In a Chromium build, these files reside under `obj/`, and you can generate them using ninja.
+For example:
+
+```sh
+$ ninja obj/base/base/lock.o
+```
+
+These can be fed to `llvm-dis` to produce textual LLVM IR:
+   
+```
+$ llvm-dis -o - obj/base/base/lock.o | less
+```
+
+When using split LTO unit (`-fsplit-lto-unit`, which is required for
+some features, CFI among them), this may produce a message like:
+
+    llvm-dis: error: Expected a single module
+
+   In that case, you can use `llvm-modextract`:
+   
+```sh
+$ llvm-modextract -n 0 -o - obj/base/base/lock.o | llvm-dis -o - | less
+```
+
+### Saving Intermediate Bitcode
+
+The ThinLTO linking process proceeds in a number of stages. The bitcode that is
+generated during these stages can be saved by passing `-save-temps` to the linker:
+
+```
+$ clang++ -fuse-ld=lld -Wl,-save-temps -o ./base_unittests @base_unittests.expanded.rsp
+```
+
+This generates files such as:
+ - lock.o.0.preopt.bc
+ - lock.o.3.import.bc
+ - lock.o.5.precodegen.bc
+
+in the directory where lock.o is (obj/base/base).
+
+These can be fed to `llvm-dis` to produce textual LLVM IR. They show
+how the code is transformed as it progresses through ThinLTO stages.
+Of particular interest are:
+ - .3.import.bc, which shows the IR after definitions have been imported from other
+   modules, but before optimizations.
+ - .5.precodegen.bc, which shows the IR just before it is transformed to native code.
+
+The same `-save-temps` command also produces `base_unittests.resolution.txt`, which
+shows symbol resolutions. These look like:
+
+    -r=obj/base/test/run_all_base_unittests/run_all_base_unittests.o,main,plx
+
+In this example, run_all_base_unittests.o contains a symbol named
+main, with flags plx.
+   
+The possible flags are:
+ - p: prevailing: of symbols with this name, this one has been chosen.
+ - l: final definition in this linkage unit.
+ - r: redefined by the linker.
+ - x: visible to regular (that is, non-LTO) objects.
+
+### Code Generation for a Single File
+
+In other cases, it may be interesting to take a closer look at the
+code generation for a single file. This can be done using LLD's
+support for distributed ThinLTO. The linker takes a `-thinlto-index-only`
+option that does whole program analysis and writes index files:
+
+```sh
+$ clang++ -fuse-ld=lld -Wl,-thinlto-index-only -o ./base_unittests @base_unittests.expanded.rsp
+```
+
+This creates `.thinlto.bc` files next to object files used by the link (e.g.
+`obj/base/base/lock.o.thinlto.bc`).
+
+Using the index files, you can perform code generation for individual object files:
+
+```sh
+$ clang++ -c -fthinlto-index=obj/base/base/lock.o.thinlto.bc -x ir obj/base/base/lock.o -o obj/base/base/lock.o.native
+```
+
+The result of individual passes can be seen by adding `-mllvm -print-after-all`:
+   
+```
+$ clang++ -c -mllvm -print-after-all -fthinlto-index=obj/base/base/lock.o.thinlto.bc -x ir obj/base/base/lock.o -o obj/base/base/lock.o.native
+```
+
+
 ## Tips and tricks
 
 Finding what object files differ between two directories:

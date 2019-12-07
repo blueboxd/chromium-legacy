@@ -23,19 +23,16 @@ class XDGPopupWrapperImpl : public ShellPopupWrapper {
   ~XDGPopupWrapperImpl() override;
 
   // XDGPopupWrapper:
-  bool InitializeStable(WaylandConnection* connection,
-                        wl_surface* surface,
-                        WaylandWindow* parent_window,
-                        const gfx::Rect& bounds);
-  bool InitializeV6(WaylandConnection* connection,
-                    wl_surface* surface,
-                    WaylandWindow* parent_window,
-                    const gfx::Rect& bounds);
+  bool Initialize(WaylandConnection* connection,
+                  const gfx::Rect& bounds) override;
 
  private:
+  bool InitializeStable(WaylandConnection* connection, const gfx::Rect& bounds);
   struct xdg_positioner* CreatePositionerStable(WaylandConnection* connection,
                                                 WaylandWindow* parent_window,
                                                 const gfx::Rect& bounds);
+
+  bool InitializeV6(WaylandConnection* connection, const gfx::Rect& bounds);
   struct zxdg_positioner_v6* CreatePositionerV6(WaylandConnection* connection,
                                                 WaylandWindow* parent_window,
                                                 const gfx::Rect& bounds);
@@ -64,9 +61,15 @@ class XDGPopupWrapperImpl : public ShellPopupWrapper {
 
   XDGSurfaceWrapperImpl* xdg_surface();
 
+  // Non-owned WaylandWindow that uses this popup.
   WaylandWindow* const wayland_window_;
+
+  // Ground surface for this popup.
   std::unique_ptr<XDGSurfaceWrapperImpl> xdg_surface_;
+
+  // XDG Shell Stable object.
   wl::Object<xdg_popup> xdg_popup_;
+  // XDG Shell V6 object.
   wl::Object<zxdg_popup_v6> zxdg_popup_v6_;
 
   DISALLOW_COPY_AND_ASSIGN(XDGPopupWrapperImpl);

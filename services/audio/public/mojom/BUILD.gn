@@ -8,6 +8,7 @@ mojom("mojom") {
   sources = [
     "audio_device_description.mojom",
     "audio_processing.mojom",
+    "audio_service.mojom",
     "debug_recording.mojom",
     "device_notifications.mojom",
     "log_factory_manager.mojom",
@@ -17,14 +18,7 @@ mojom("mojom") {
   ]
 
   public_deps = [
-    ":constants",
     "//media/mojo/mojom",
     "//mojo/public/mojom/base",
-  ]
-}
-
-mojom("constants") {
-  sources = [
-    "constants.mojom",
   ]
 }

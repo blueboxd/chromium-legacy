@@ -9,6 +9,8 @@ import static org.chromium.chrome.browser.feed.library.common.Validators.checkSt
 
 import android.view.View;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.components.feed.core.proto.ui.piet.ElementsProto.BindingContext;
 import org.chromium.components.feed.core.proto.ui.piet.PietProto.PietSharedState;
 import org.chromium.components.feed.core.proto.ui.piet.PietProto.Stylesheet;
@@ -104,8 +106,7 @@ class TemplateBinder {
      * lot of collisions.
      */
     @SuppressWarnings({"ReferenceEquality", "EqualsUsingHashCode"})
-    static boolean templateEquals(
-            /*@Nullable*/ Template template1, /*@Nullable*/ Template template2) {
+    static boolean templateEquals(@Nullable Template template1, @Nullable Template template2) {
         if (template1 == template2) {
             return true;
         } else if (template1 == null || template2 == null) {
@@ -117,14 +118,14 @@ class TemplateBinder {
     /** Wrap the Template proto object as the recycler key. */
     static class TemplateKey extends RecyclerKey {
         private final Template mTemplate;
-        /*@Nullable*/ private final List<PietSharedState> mPietSharedStates;
+        @Nullable
+        private final List<PietSharedState> mPietSharedStates;
 
         // If the Template references Stylesheets that have MediaQueryConditions on them, they need
         // to be part of the key.
         private final List<Stylesheet> mMediaQueryBasedStylesheets;
 
-        TemplateKey(Template template,
-                /*@Nullable*/ List<PietSharedState> pietSharedStates,
+        TemplateKey(Template template, @Nullable List<PietSharedState> pietSharedStates,
                 List<Stylesheet> mediaQueryBasedStylesheets) {
             this.mTemplate = template;
             this.mPietSharedStates = pietSharedStates;
@@ -134,7 +135,7 @@ class TemplateBinder {
         /** Equals checks the hashCode of the component fields to avoid expensive proto equals. */
         @SuppressWarnings({"ReferenceEquality", "EqualsUsingHashCode"})
         @Override
-        public boolean equals(/*@Nullable*/ Object o) {
+        public boolean equals(@Nullable Object o) {
             if (this == o) {
                 return true;
             }
@@ -205,7 +206,7 @@ class TemplateBinder {
 
         @SuppressWarnings({"ReferenceEquality", "EqualsUsingHashCode"})
         @Override
-        public boolean equals(/*@Nullable*/ Object o) {
+        public boolean equals(@Nullable Object o) {
             if (this == o) {
                 return true;
             }

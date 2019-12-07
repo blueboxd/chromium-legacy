@@ -29,8 +29,6 @@
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
-#include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/web_heap.h"
@@ -41,12 +39,13 @@
 #include "third_party/blink/renderer/modules/peerconnection/mock_data_channel_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_dependency_factory.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_impl.h"
-#include "third_party/blink/renderer/modules/peerconnection/mock_web_rtc_peer_connection_handler_client.h"
+#include "third_party/blink/renderer/modules/peerconnection/mock_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_tracker.h"
 #include "third_party/blink/renderer/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_ice_candidate_platform.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_peer_connection_handler_client.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_receiver_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
@@ -62,7 +61,6 @@
 static const char kDummySdp[] = "dummy sdp";
 static const char kDummySdpType[] = "dummy type";
 
-using blink::WebRTCPeerConnectionHandlerClient;
 using testing::_;
 using testing::Invoke;
 using testing::NiceMock;
@@ -257,7 +255,7 @@ void ExpectSequenceEquals(const blink::WebVector<T>& sequence, T value) {
 class RTCPeerConnectionHandlerUnderTest : public RTCPeerConnectionHandler {
  public:
   RTCPeerConnectionHandlerUnderTest(
-      WebRTCPeerConnectionHandlerClient* client,
+      RTCPeerConnectionHandlerClient* client,
       blink::PeerConnectionDependencyFactory* dependency_factory)
       : RTCPeerConnectionHandler(
             client,
@@ -279,8 +277,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
   RTCPeerConnectionHandlerTest() : mock_peer_connection_(nullptr) {}
 
   void SetUp() override {
-    mock_client_.reset(
-        new NiceMock<blink::MockWebRTCPeerConnectionHandlerClient>());
+    mock_client_.reset(new NiceMock<MockRTCPeerConnectionHandlerClient>());
     mock_dependency_factory_.reset(
         new blink::MockPeerConnectionDependencyFactory());
 
@@ -575,7 +572,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
  public:
   ScopedTestingPlatformSupport<AudioCapturerSourceTestingPlatformSupport>
       webrtc_audio_device_platform_support_;
-  std::unique_ptr<blink::MockWebRTCPeerConnectionHandlerClient> mock_client_;
+  std::unique_ptr<MockRTCPeerConnectionHandlerClient> mock_client_;
   std::unique_ptr<blink::MockPeerConnectionDependencyFactory>
       mock_dependency_factory_;
   std::unique_ptr<NiceMock<MockPeerConnectionTracker>> mock_tracker_;

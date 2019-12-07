@@ -3211,7 +3211,7 @@
         "value": "24.0.0.0"
       },
       "features": [
-          "disable_nv12_dynamic_textures"
+        "disable_nv12_dynamic_textures"
       ]
     },
     {
@@ -3471,6 +3471,19 @@
       },
       "features": [
         "disable_direct_composition_video_overlays"
+      ]
+    },
+    {
+      "id": 324,
+      "cr_bugs": [1029855],
+      "description": "dynamic textures fail to work on certain AMD GPUs",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "device_id": ["0x9870", "0x9874", "0x98E4", "0x15DD", "0x15D8"],
+      "features": [
+        "disable_nv12_dynamic_textures"
       ]
     }
   ]

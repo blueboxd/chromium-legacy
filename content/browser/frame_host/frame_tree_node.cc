@@ -395,19 +395,20 @@ bool FrameTreeNode::IsLoading() const {
   return current_frame_host->is_loading();
 }
 
-bool FrameTreeNode::CommitPendingFramePolicy() {
-  bool did_change_flags = pending_frame_policy_.sandbox_flags !=
+bool FrameTreeNode::CommitFramePolicy(
+    const blink::FramePolicy& new_frame_policy) {
+  bool did_change_flags = new_frame_policy.sandbox_flags !=
                           replication_state_.frame_policy.sandbox_flags;
   bool did_change_container_policy =
-      pending_frame_policy_.container_policy !=
+      new_frame_policy.container_policy !=
       replication_state_.frame_policy.container_policy;
   if (did_change_flags)
     replication_state_.frame_policy.sandbox_flags =
-        pending_frame_policy_.sandbox_flags;
+        new_frame_policy.sandbox_flags;
   if (did_change_container_policy)
     replication_state_.frame_policy.container_policy =
-        pending_frame_policy_.container_policy;
-  UpdateFramePolicyHeaders(pending_frame_policy_.sandbox_flags,
+        new_frame_policy.container_policy;
+  UpdateFramePolicyHeaders(new_frame_policy.sandbox_flags,
                            replication_state_.feature_policy_header);
   return did_change_flags || did_change_container_policy;
 }

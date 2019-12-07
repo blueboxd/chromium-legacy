@@ -12,6 +12,8 @@ import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.piet.ui.RoundedCornerMaskCache.Corner;
 import org.chromium.chrome.browser.feed.library.piet.ui.RoundedCornerMaskCache.RoundedCornerBitmaps;
 import org.chromium.components.feed.core.proto.ui.piet.RoundedCornersProto.RoundedCorners.Corners;
@@ -32,10 +34,14 @@ class BitmapMaskingRoundedCornerDelegate extends RoundedCornerDelegate {
     private final Canvas mOffscreenCanvas;
 
     // Masks for each of the corners of the view; null if that corner is not rounded.
-    /*@Nullable*/ private Bitmap mCornerTL;
-    /*@Nullable*/ private Bitmap mCornerTR;
-    /*@Nullable*/ private Bitmap mCornerBL;
-    /*@Nullable*/ private Bitmap mCornerBR;
+    @Nullable
+    private Bitmap mCornerTL;
+    @Nullable
+    private Bitmap mCornerTR;
+    @Nullable
+    private Bitmap mCornerBL;
+    @Nullable
+    private Bitmap mCornerBR;
 
     // Keep track of current mask configuration so we can use cached values if nothing has changed.
     private int mLastRadius = -1;

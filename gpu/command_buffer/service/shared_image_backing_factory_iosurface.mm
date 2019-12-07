@@ -88,22 +88,6 @@ void FlushIOSurfaceGLOperations() {
   api->glFlushFn();
 }
 
-base::Optional<WGPUTextureFormat> GetWGPUFormat(viz::ResourceFormat format) {
-  switch (format) {
-    case viz::RED_8:
-    case viz::ALPHA_8:
-    case viz::LUMINANCE_8:
-      return WGPUTextureFormat_R8Unorm;
-    case viz::RG_88:
-      return WGPUTextureFormat_RG8Unorm;
-    case viz::RGBA_8888:
-    case viz::BGRA_8888:
-      return WGPUTextureFormat_BGRA8Unorm;
-    default:
-      return {};
-  }
-}
-
 base::Optional<WGPUTextureFormat> GetWGPUFormat(gfx::BufferFormat format) {
   switch (format) {
     case gfx::BufferFormat::R_8:
@@ -643,9 +627,18 @@ SharedImageBackingFactoryIOSurface::CreateSharedImage(
 
   gfx::IOSurfaceSetColorSpace(io_surface, color_space);
 
+  // OpenGL textures bound to IOSurfaces won't work on macOS unless the internal
+  // format is BGRA, so force a BGRA internal format for viz::RGBA_8888.
+  base::Optional<WGPUTextureFormat> wgpu_format =
+      format == viz::RGBA_8888 ? WGPUTextureFormat_BGRA8Unorm
+                               : viz::ToWGPUFormat(format);
+  if (wgpu_format.value() == WGPUTextureFormat_Undefined) {
+    wgpu_format = base::nullopt;
+  }
+
   return std::make_unique<SharedImageBackingIOSurface>(
       mailbox, format, size, color_space, usage, std::move(io_surface),
-      GetWGPUFormat(format), estimated_size);
+      wgpu_format, estimated_size);
 }
 
 std::unique_ptr<SharedImageBacking>

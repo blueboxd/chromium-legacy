@@ -34,6 +34,9 @@ void SetShellApplicationId(aura::Window* window,
                            const base::Optional<std::string>& id);
 const std::string* GetShellApplicationId(const aura::Window* window);
 
+// Sets ARC app type for the provided |window|.
+void SetArcAppType(aura::Window* window);
+
 // Sets the startup ID for the window. The startup ID identifies the
 // application using startup notification protocol.
 void SetShellStartupId(aura::Window* window,

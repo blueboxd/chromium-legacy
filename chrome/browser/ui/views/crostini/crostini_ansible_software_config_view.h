@@ -21,8 +21,6 @@ class CrostiniAnsibleSoftwareConfigView
       public crostini::AnsibleManagementService::Observer {
  public:
   // views::DialogDelegateView:
-  int GetDialogButtons() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool Accept() override;
   base::string16 GetWindowTitle() const override;
   gfx::Size CalculatePreferredSize() const override;

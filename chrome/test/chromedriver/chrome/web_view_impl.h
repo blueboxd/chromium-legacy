@@ -127,6 +127,7 @@ class WebViewImpl : public WebView {
                    const std::string& value,
                    const std::string& domain,
                    const std::string& path,
+                   const std::string& sameSite,
                    bool secure,
                    bool httpOnly,
                    double expiry) override;

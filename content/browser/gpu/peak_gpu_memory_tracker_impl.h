@@ -33,6 +33,7 @@ class CONTENT_EXPORT PeakGpuMemoryTrackerImpl : public PeakGpuMemoryTracker {
   PeakGpuMemoryTrackerImpl& operator=(const PeakGpuMemoryTrackerImpl&) = delete;
 
   void Cancel() override;
+  void SetCallback(PeakMemoryCallback callback) override;
 
  private:
   // Provides the unique identifier for each PeakGpuMemoryTrackerImpl.

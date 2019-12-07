@@ -55,6 +55,7 @@ class AccessibilityTreeFormatterAuraLinux
       AtspiAccessible* node);
 
   void AddTextProperties(AtkText* atk_text, base::DictionaryValue* dict);
+  void AddActionProperties(AtkObject* atk_object, base::DictionaryValue* dict);
   void AddValueProperties(AtkObject* atk_object, base::DictionaryValue* dict);
   void AddTableProperties(AtkObject* atk_object, base::DictionaryValue* dict);
   void AddTableCellProperties(const ui::AXPlatformNodeAuraLinux* node,
@@ -240,6 +241,23 @@ void AccessibilityTreeFormatterAuraLinux::AddTextProperties(
   }
 
   dict->Set("text", std::move(text_values));
+}
+
+void AccessibilityTreeFormatterAuraLinux::AddActionProperties(
+    AtkObject* atk_object,
+    base::DictionaryValue* dict) {
+  if (!ATK_IS_ACTION(atk_object))
+    return;
+
+  AtkAction* action = ATK_ACTION(atk_object);
+  int action_count = atk_action_get_n_actions(action);
+  if (!action_count)
+    return;
+
+  auto actions = std::make_unique<base::ListValue>();
+  for (int i = 0; i < action_count; i++)
+    actions->AppendString(atk_action_get_name(action, i));
+  dict->Set("actions", std::move(actions));
 }
 
 void AccessibilityTreeFormatterAuraLinux::AddValueProperties(
@@ -448,6 +466,7 @@ void AccessibilityTreeFormatterAuraLinux::AddProperties(
 
   if (ATK_IS_TEXT(atk_object))
     AddTextProperties(ATK_TEXT(atk_object), dict);
+  AddActionProperties(atk_object, dict);
   AddValueProperties(atk_object, dict);
   AddTableProperties(atk_object, dict);
   AddTableCellProperties(ax_platform_node, atk_object, dict);
@@ -580,6 +599,23 @@ base::string16 AccessibilityTreeFormatterAuraLinux::ProcessTreeForOutput(
       std::string state_value;
       if (it->GetAsString(&state_value))
         WriteAttribute(false, state_value, &line);
+    }
+  }
+
+  const base::ListValue* action_names_list;
+  std::vector<std::string> action_names;
+  if (node.GetList("actions", &action_names_list)) {
+    for (auto it = action_names_list->begin(); it != action_names_list->end();
+         ++it) {
+      std::string action_name;
+      if (it->GetAsString(&action_name))
+        action_names.push_back(action_name);
+    }
+    std::string actions_str = base::JoinString(action_names, ", ");
+    if (actions_str.size()) {
+      WriteAttribute(false,
+                     base::StringPrintf("actions=(%s)", actions_str.c_str()),
+                     &line);
     }
   }
 

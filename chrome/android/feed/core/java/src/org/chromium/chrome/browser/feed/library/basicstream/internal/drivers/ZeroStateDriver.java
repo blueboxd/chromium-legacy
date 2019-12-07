@@ -10,6 +10,8 @@ import android.support.annotation.VisibleForTesting;
 import android.view.View;
 import android.view.View.OnClickListener;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
 import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
 import org.chromium.chrome.browser.feed.library.api.host.logging.RequestReason;
@@ -34,7 +36,8 @@ public class ZeroStateDriver extends LeafFeatureDriver implements OnClickListene
 
     private ModelProvider mModelProvider;
     private boolean mSpinnerShown;
-    /*@Nullable*/ private ZeroStateViewHolder mZeroStateViewHolder;
+    @Nullable
+    private ZeroStateViewHolder mZeroStateViewHolder;
 
     ZeroStateDriver(BasicLoggingApi basicLoggingApi, Clock clock, ModelProvider modelProvider,
             ContentChangedListener contentChangedListener, boolean spinnerShown) {
@@ -127,7 +130,7 @@ public class ZeroStateDriver extends LeafFeatureDriver implements OnClickListene
      * stream drivers would result in the zero state flashing.
      */
     void setModelProvider(ModelProvider modelProvider) {
-        this.mModelProvider = modelProvider;
+        mModelProvider = modelProvider;
     }
 
     @VisibleForTesting
@@ -136,9 +139,7 @@ public class ZeroStateDriver extends LeafFeatureDriver implements OnClickListene
     }
 
     @VisibleForTesting
-    SpinnerLogger createSpinnerLogger(
-            /*@UnderInitialization*/ ZeroStateDriver this, BasicLoggingApi basicLoggingApi,
-            Clock clock) {
+    SpinnerLogger createSpinnerLogger(BasicLoggingApi basicLoggingApi, Clock clock) {
         return new SpinnerLogger(basicLoggingApi, clock);
     }
 

@@ -25,12 +25,6 @@ class Lock final : public ScriptWrappable, public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(Lock);
   USING_PRE_FINALIZER(Lock, Dispose);
  public:
-  static Lock* Create(ScriptState*,
-                      const String& name,
-                      mojom::blink::LockMode,
-                      mojo::PendingAssociatedRemote<mojom::blink::LockHandle>,
-                      LockManager*);
-
   Lock(ScriptState*,
        const String& name,
        mojom::blink::LockMode,

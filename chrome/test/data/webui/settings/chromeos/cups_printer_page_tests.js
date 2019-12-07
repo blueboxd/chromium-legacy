@@ -116,6 +116,8 @@ suite('CupsAddPrinterDialogTests', function() {
 
     PolymerTest.clearBody();
     page = document.createElement('settings-cups-printers');
+    // TODO(jimmyxgong): Remove this line when the feature flag is removed.
+    page.enableUpdatedUi_ = false;
     document.body.appendChild(page);
     assertTrue(!!page);
     dialog = page.$$('settings-cups-add-printer-dialog');

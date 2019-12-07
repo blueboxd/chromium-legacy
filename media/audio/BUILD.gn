@@ -32,9 +32,6 @@ if (is_android) {
 
 config("platform_config") {
   defines = []
-  if (is_chromecast) {
-    defines += [ "IS_CHROMECAST" ]
-  }
   if (use_alsa) {
     defines += [ "USE_ALSA" ]
   }
@@ -149,6 +146,7 @@ source_set("audio") {
   ]
   deps = [
     "//base",
+    "//build:chromecast_buildflags",
     "//media/base",
     "//url",
   ]

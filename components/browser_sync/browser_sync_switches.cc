@@ -32,4 +32,11 @@ const base::Feature kSyncErrorInfoBarAndroid{"SyncErrorInfoBarAndroid",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_CHROMEOS)
+// TODO(jamescook): Merge into kSplitSettingsSync after introducing a browser
+// sync consent flow. This exists for manual testing of OS sync consent.
+const base::Feature kSyncManualStartChromeOS{"SyncManualStartChromeOS",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 }  // namespace switches

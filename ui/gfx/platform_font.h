@@ -43,11 +43,9 @@ class GFX_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
 
   // Creates a PlatformFont instance from the provided SkTypeface, ideally by
   // just wrapping it without triggering a new font match. Implemented for
-  // PlatformFontWin and PlatformFontSkia, where only the latter provides true
-  // wrapping of the provided SkTypeface, while PlatformFontWin creates a
-  // PlatformFont object by extracting the family name and falls back to
-  // CreateFromNameAndSize(). The FontRenderParams can be provided or they
-  // will be determined by using gfx::GetFontRenderParams(...) otherwise.
+  // PlatformFontSkia which provides true wrapping of the provided SkTypeface.
+  // The FontRenderParams can be provided or they will be determined by using
+  // gfx::GetFontRenderParams(...) otherwise.
   static PlatformFont* CreateFromSkTypeface(
       sk_sp<SkTypeface> typeface,
       int font_size,

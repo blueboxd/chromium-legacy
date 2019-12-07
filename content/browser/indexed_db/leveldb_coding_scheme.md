@@ -179,7 +179,7 @@ key                    | value
 «database id, 0, 0, 2» | IDB string version data (String) - _obsolete_
 «database id, 0, 0, 3» | maximum allocated object store id (Int)
 «database id, 0, 0, 4» | IDB integer version (VarInt)
-«database id, 0, 0, 5» | blob key generator current number (VarInt)
+«database id, 0, 0, 5» | blob number generator current number (VarInt)
 
 *** aside
 Early versions of the Indexed DB spec used strings for versions

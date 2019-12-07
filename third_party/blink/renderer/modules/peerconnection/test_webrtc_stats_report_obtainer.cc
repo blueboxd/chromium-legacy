@@ -14,7 +14,7 @@ TestWebRTCStatsReportObtainer::TestWebRTCStatsReportObtainer() {}
 
 TestWebRTCStatsReportObtainer::~TestWebRTCStatsReportObtainer() {}
 
-blink::WebRTCStatsReportCallback
+RTCStatsReportCallback
 TestWebRTCStatsReportObtainer::GetStatsCallbackWrapper() {
   return base::BindOnce(&TestWebRTCStatsReportObtainer::OnStatsDelivered, this);
 }

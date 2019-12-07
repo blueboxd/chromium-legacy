@@ -115,6 +115,8 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
                       float* const* channels)
       EXCLUSIVE_LOCKS_REQUIRED(lock_) override;
 
+  bool PrepareDataForFill(int num_frames) EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  bool FillRateShifted(int needed_frames) EXCLUSIVE_LOCKS_REQUIRED(lock_);
   int FillAudio(int num_frames, float* const* channels)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
@@ -189,6 +191,8 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
   std::unique_ptr<::media::AudioRendererAlgorithm> rate_shifter_
       GUARDED_BY(lock_);
   std::unique_ptr<::media::AudioBus> rate_shifter_output_ GUARDED_BY(lock_);
+  int rate_shifted_offset_ GUARDED_BY(lock_) = 0;
+  bool waiting_for_rate_shifter_fill_ GUARDED_BY(lock_) = false;
   int64_t rate_shifter_input_frames_ GUARDED_BY(lock_) = 0;
   int64_t rate_shifter_output_frames_ GUARDED_BY(lock_) = 0;
   bool skip_next_fill_for_rate_change_ GUARDED_BY(lock_) = false;

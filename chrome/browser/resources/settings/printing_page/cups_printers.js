@@ -66,7 +66,7 @@ Polymer({
     enableUpdatedUi_: {
       type: Boolean,
       value: function() {
-        return loadTimeData.getBoolean('updatedCupsPrintersUiEnabled');
+        return true;
       },
     },
 

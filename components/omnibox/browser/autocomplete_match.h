@@ -643,12 +643,13 @@ struct AutocompleteMatch {
 #if DCHECK_IS_ON()
   // Does a data integrity check on this match.
   void Validate() const;
+#endif  // DCHECK_IS_ON()
 
   // Checks one text/classifications pair for valid values.
-  void ValidateClassifications(
+  static void ValidateClassifications(
       const base::string16& text,
-      const ACMatchClassifications& classifications) const;
-#endif  // DCHECK_IS_ON()
+      const ACMatchClassifications& classifications,
+      const std::string& provider_name = "");
 };
 
 typedef AutocompleteMatch::ACMatchClassification ACMatchClassification;

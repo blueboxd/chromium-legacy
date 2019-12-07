@@ -348,13 +348,21 @@ class WebViewHelper : public ScopedMockOverlayScrollbars {
       TestWebWidgetClient* = nullptr,
       void (*update_settings_func)(WebSettings*) = nullptr);
 
-  // Creates and initializes the WebView with a main WebRemoteFrame. Passing
-  // nullptr as the SecurityOrigin results in a frame with a unique security
-  // origin.
+  // Same as InitializeRemoteWithOpener(), but always sets the opener to null.
   WebViewImpl* InitializeRemote(TestWebRemoteFrameClient* = nullptr,
                                 scoped_refptr<SecurityOrigin> = nullptr,
                                 TestWebViewClient* = nullptr,
                                 TestWebWidgetClient* = nullptr);
+
+  // Creates and initializes the WebView with a main WebRemoteFrame. Passing
+  // nullptr as the SecurityOrigin results in a frame with a unique security
+  // origin.
+  WebViewImpl* InitializeRemoteWithOpener(
+      WebFrame* opener,
+      TestWebRemoteFrameClient* = nullptr,
+      scoped_refptr<SecurityOrigin> = nullptr,
+      TestWebViewClient* = nullptr,
+      TestWebWidgetClient* = nullptr);
 
   // Load the 'Ahem' font to this WebView.
   // The 'Ahem' font is the only font whose font metrics is consistent across

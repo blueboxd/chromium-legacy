@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.api.internal.common;
 
+import androidx.annotation.Nullable;
+
 import java.util.Arrays;
 
 /**
@@ -20,7 +22,7 @@ public final class SemanticPropertiesWithId {
     }
 
     @Override
-    public boolean equals(/*@Nullable*/ Object o) {
+    public boolean equals(@Nullable Object o) {
         if (this == o) {
             return true;
         }

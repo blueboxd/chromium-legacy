@@ -285,8 +285,10 @@ class ASH_PUBLIC_EXPORT ImmersiveFullscreenController
   // and when the user does a SWIPE_OPEN edge gesture.
   std::unique_ptr<ImmersiveRevealedLock> located_event_revealed_lock_;
 
+  std::unique_ptr<gfx::AnimationDelegate> animation_notifier_;
+
   // The animation which controls sliding the top-of-window views in and out.
-  gfx::SlideAnimation animation_{this};
+  std::unique_ptr<gfx::SlideAnimation> animation_;
 
   // Whether the animations are disabled for testing.
   bool animations_disabled_for_test_;

@@ -4,12 +4,15 @@
 
 package org.chromium.chrome.browser.feed.library.common;
 
+import androidx.annotation.Nullable;
+
 /** Wrapper that allows callbacks to return a value as well as whether the call was successful. */
 public class Result<T> {
-    /*@Nullable*/ private final T mValue;
+    @Nullable
+    private final T mValue;
     private final boolean mIsSuccessful;
 
-    private Result(/*@Nullable*/ T value, boolean isSuccessful) {
+    private Result(@Nullable T value, boolean isSuccessful) {
         this.mValue = value;
         this.mIsSuccessful = isSuccessful;
     }

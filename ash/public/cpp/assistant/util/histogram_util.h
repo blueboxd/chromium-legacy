@@ -64,18 +64,35 @@ ASH_PUBLIC_EXPORT void RecordProactiveSuggestionsRequestResult(
 // Records an |attempt| to show a proactive suggestion to the user in the
 // specified content |category|. Note that |category| is an opaque int that is
 // provided by the proactive suggestions server to represent the category of the
-// associated content (e.g. news, shopping, etc.).
+// associated content (e.g. news, shopping, etc.). Also note that we record a
+// different set of histograms depending on whether or not the proactive
+// suggestion has been seen before so that we can measure user engagement for
+// the first show attempt in comparison to on subsequent attempts for the same
+// content.
 ASH_PUBLIC_EXPORT void RecordProactiveSuggestionsShowAttempt(
     int category,
-    ProactiveSuggestionsShowAttempt attempt);
+    ProactiveSuggestionsShowAttempt attempt,
+    bool has_seen_before);
 
 // Records a |result| from having shown a proactive suggestion to the user in
 // the specified content |category|. Note that |category| is an opaque int that
 // is provided by the proactive suggestions server to represent the category of
-// the associated content (e.g. news, shopping, etc.).
+// the associated content (e.g. news, shopping, etc.). Also note that we record
+// a different set of histograms depending on whether or not the proactive
+// suggestion has been seen before so that we can measure user engagement for
+// the first show result in comparison to subsequent results for the same
+// content.
 ASH_PUBLIC_EXPORT void RecordProactiveSuggestionsShowResult(
     int category,
-    ProactiveSuggestionsShowResult result);
+    ProactiveSuggestionsShowResult result,
+    bool has_seen_before);
+
+// Records an impression of a proactive suggestions view. If provided, the
+// opaque |category| of the associated content (e.g. news, shopping, etc.) as
+// well as the |veId| associated w/ the type of view are also recorded.
+ASH_PUBLIC_EXPORT void RecordProactiveSuggestionsViewImpression(
+    base::Optional<int> category,
+    base::Optional<int> veId);
 
 // Records an impression of a proactive suggestions view. If provided, the
 // opaque |category| of the associated content (e.g. news, shopping, etc.) as

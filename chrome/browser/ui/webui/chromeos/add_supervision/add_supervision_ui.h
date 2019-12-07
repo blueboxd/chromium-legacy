@@ -28,13 +28,17 @@ class AddSupervisionDialog : public SystemWebDialogDelegate {
   // no-op.
   static void Show(gfx::NativeView parent);
 
-  static SystemWebDialogDelegate* GetInstance();
+  static AddSupervisionDialog* GetInstance();
 
   // Closes the dialog; if the dialog doesn't exist, this function is a
   // no-op.
   // This is only called when the user clicks "Cancel", not the "x" in the top
   // right.
   static void Close();
+
+  // Updates the ShouldCloseDialogOnEscape() state (i.e., whether pressing
+  // Escape closes the main dialog).
+  static void SetCloseOnEscape(bool enabled);
 
   // Deletes this dialog window.
   // Currently only used by AddSupervisionMetricsRecorderTest browser test to
@@ -46,12 +50,15 @@ class AddSupervisionDialog : public SystemWebDialogDelegate {
   void GetDialogSize(gfx::Size* size) const override;
   bool CanCloseDialog() const override;
   bool OnDialogCloseRequested() override;
+  bool ShouldCloseDialogOnEscape() const override;
 
  protected:
   AddSupervisionDialog();
   ~AddSupervisionDialog() override;
 
  private:
+  bool should_close_on_escape_ = true;
+
   DISALLOW_COPY_AND_ASSIGN(AddSupervisionDialog);
 };
 
@@ -64,6 +71,7 @@ class AddSupervisionUI : public ui::MojoWebUIController,
 
   // AddSupervisionHandler::Delegate:
   bool CloseDialog() override;
+  void SetCloseOnEscape(bool) override;
 
   static void SetUpForTest(signin::IdentityManager* identity_manager);
 

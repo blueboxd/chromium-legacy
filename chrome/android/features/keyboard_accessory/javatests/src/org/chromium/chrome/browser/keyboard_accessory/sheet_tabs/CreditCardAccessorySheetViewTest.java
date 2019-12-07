@@ -144,7 +144,7 @@ public class CreditCardAccessorySheetViewTest {
         assertThat(mView.get().getChildCount(), is(0));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            UserInfo infoWithUnclickableField = new UserInfo("", null);
+            UserInfo infoWithUnclickableField = new UserInfo("", false);
             infoWithUnclickableField.addField(
                     new UserInfoField("4111111111111111", "4111111111111111", "", false, null));
             infoWithUnclickableField.addField(new UserInfoField("", "", "month", false, null));
@@ -210,7 +210,7 @@ public class CreditCardAccessorySheetViewTest {
 
     private UserInfo createInfo(
             String number, String month, String year, String name, AtomicBoolean clickRecorder) {
-        UserInfo info = new UserInfo("", null);
+        UserInfo info = new UserInfo("", false);
         info.addField(
                 new UserInfoField(number, number, "", false, item -> clickRecorder.set(true)));
         info.addField(new UserInfoField(month, month, "", false, item -> clickRecorder.set(true)));

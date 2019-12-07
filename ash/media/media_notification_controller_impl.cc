@@ -10,11 +10,11 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "components/media_message_center/media_notification_util.h"
-#include "services/media_session/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "services/media_session/public/mojom/media_session_service.mojom.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification_blocker.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -95,8 +95,7 @@ class MediaNotificationBlocker : public message_center::NotificationBlocker,
 
 }  // namespace
 
-MediaNotificationControllerImpl::MediaNotificationControllerImpl(
-    service_manager::Connector* connector)
+MediaNotificationControllerImpl::MediaNotificationControllerImpl()
     : blocker_(std::make_unique<MediaNotificationBlocker>(
           message_center::MessageCenter::Get(),
           Shell::Get()->session_controller())) {
@@ -107,16 +106,17 @@ MediaNotificationControllerImpl::MediaNotificationControllerImpl(
         base::BindRepeating(&CreateCustomMediaNotificationView));
   }
 
-  // |connector| can be null in tests.
-  if (!connector)
+  // May be null in tests.
+  media_session::mojom::MediaSessionService* service =
+      Shell::Get()->shell_delegate()->GetMediaSessionService();
+  if (!service)
     return;
 
   mojo::Remote<media_session::mojom::AudioFocusManager> audio_focus_remote;
-  connector->Connect(media_session::mojom::kServiceName,
-                     audio_focus_remote.BindNewPipeAndPassReceiver());
-  connector->Connect(media_session::mojom::kServiceName,
-                     controller_manager_remote.BindNewPipeAndPassReceiver());
-
+  service->BindAudioFocusManager(
+      audio_focus_remote.BindNewPipeAndPassReceiver());
+  service->BindMediaControllerManager(
+      controller_manager_remote.BindNewPipeAndPassReceiver());
   audio_focus_remote->AddObserver(
       audio_focus_observer_receiver_.BindNewPipeAndPassRemote());
 }
@@ -135,8 +135,8 @@ void MediaNotificationControllerImpl::OnFocusGained(
 
   mojo::Remote<media_session::mojom::MediaController> controller;
 
-  // |controller_manager_remote| may be null in tests where connector is
-  // unavailable.
+  // |controller_manager_remote| may be null in tests where the Media Session
+  // service is unavailable.
   if (controller_manager_remote) {
     controller_manager_remote->CreateMediaControllerForSession(
         controller.BindNewPipeAndPassReceiver(), *session->request_id);

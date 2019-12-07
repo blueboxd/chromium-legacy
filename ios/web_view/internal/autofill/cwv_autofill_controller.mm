@@ -536,40 +536,47 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
   NSString* nsFieldType = base::SysUTF8ToNSString(params.field_type);
   NSString* nsFrameID = base::SysUTF8ToNSString(GetWebFrameId(frame));
   NSString* nsValue = base::SysUTF8ToNSString(params.value);
+  BOOL userInitiated = params.has_user_gesture;
   if (params.type == "focus") {
     _lastFocusFormActivityWebFrameID = nsFrameID;
     if ([_delegate respondsToSelector:@selector
-                   (autofillController:didFocusOnFieldWithIdentifier:fieldType
-                                         :formName:frameID:value:)]) {
+                   (autofillController:
+                       didFocusOnFieldWithIdentifier:fieldType:formName:frameID
+                                                    :value:userInitiated:)]) {
       [_delegate autofillController:self
           didFocusOnFieldWithIdentifier:nsFieldIdentifier
                               fieldType:nsFieldType
                                formName:nsFormName
                                 frameID:nsFrameID
-                                  value:nsValue];
+                                  value:nsValue
+                          userInitiated:userInitiated];
     }
   } else if (params.type == "input") {
     _lastFocusFormActivityWebFrameID = nsFrameID;
     if ([_delegate respondsToSelector:@selector
-                   (autofillController:didInputInFieldWithIdentifier:fieldType
-                                         :formName:frameID:value:)]) {
+                   (autofillController:
+                       didInputInFieldWithIdentifier:fieldType:formName:frameID
+                                                    :value:userInitiated:)]) {
       [_delegate autofillController:self
           didInputInFieldWithIdentifier:nsFieldIdentifier
                               fieldType:nsFieldType
                                formName:nsFormName
                                 frameID:nsFrameID
-                                  value:nsValue];
+                                  value:nsValue
+                          userInitiated:userInitiated];
     }
   } else if (params.type == "blur") {
     if ([_delegate respondsToSelector:@selector
-                   (autofillController:didBlurOnFieldWithIdentifier:fieldType
-                                         :formName:frameID:value:)]) {
+                   (autofillController:
+                       didBlurOnFieldWithIdentifier:fieldType:formName:frameID
+                                                   :value:userInitiated:)]) {
       [_delegate autofillController:self
           didBlurOnFieldWithIdentifier:nsFieldIdentifier
                              fieldType:nsFieldType
                               formName:nsFormName
                                frameID:nsFrameID
-                                 value:nsValue];
+                                 value:nsValue
+                         userInitiated:userInitiated];
     }
   }
 }
@@ -581,12 +588,12 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
                    formInMainFrame:(BOOL)isMainFrame
                            inFrame:(web::WebFrame*)frame {
   if ([_delegate respondsToSelector:@selector
-                 (autofillController:didSubmitFormWithName:userInitiated
-                                       :isMainFrame:)]) {
+                 (autofillController:
+                     didSubmitFormWithName:frameID:userInitiated:)]) {
     [_delegate autofillController:self
             didSubmitFormWithName:base::SysUTF8ToNSString(formName)
-                    userInitiated:userInitiated
-                      isMainFrame:isMainFrame];
+                          frameID:base::SysUTF8ToNSString(frame->GetFrameId())
+                    userInitiated:userInitiated];
   }
 }
 

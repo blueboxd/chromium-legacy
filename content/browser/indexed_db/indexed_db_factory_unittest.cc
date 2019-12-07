@@ -118,6 +118,7 @@ class IndexedDBFactoryTest : public testing::Test {
         CreateAndReturnTempDir(&temp_dir_),
         /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(),
         base::DefaultClock::GetInstance(),
+        base::SequencedTaskRunnerHandle::Get(),
         base::SequencedTaskRunnerHandle::Get());
   }
 
@@ -126,6 +127,7 @@ class IndexedDBFactoryTest : public testing::Test {
         base::FilePath(),
         /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(),
         base::DefaultClock::GetInstance(),
+        base::SequencedTaskRunnerHandle::Get(),
         base::SequencedTaskRunnerHandle::Get());
   }
 
@@ -133,6 +135,7 @@ class IndexedDBFactoryTest : public testing::Test {
     context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         CreateAndReturnTempDir(&temp_dir_),
         /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(), clock,
+        base::SequencedTaskRunnerHandle::Get(),
         base::SequencedTaskRunnerHandle::Get());
     if (factory)
       IndexedDBClassFactory::Get()->SetLevelDBFactoryForTesting(factory);
@@ -717,7 +720,7 @@ TEST_F(IndexedDBFactoryTest, QuotaErrorOnDiskFull) {
   auto callbacks = base::MakeRefCounted<LookingForQuotaErrorMockCallbacks>();
   auto dummy_database_callbacks =
       base::MakeRefCounted<IndexedDBDatabaseCallbacks>(
-          nullptr, mojo::NullAssociatedRemote(), context()->TaskRunner());
+          nullptr, mojo::NullAssociatedRemote(), context()->IDBTaskRunner());
   const Origin origin = Origin::Create(GURL("http://localhost:81"));
   const base::string16 name(ASCIIToUTF16("name"));
   auto create_transaction_callback =

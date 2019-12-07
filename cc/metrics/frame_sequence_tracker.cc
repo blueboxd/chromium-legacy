@@ -57,9 +57,9 @@ const char* FrameSequenceTracker::GetFrameSequenceTrackerTypeName(
 
 namespace {
 
-// Avoid reporting any throughput metric for sequences that had a small amount
-// of frames.
-constexpr int kMinFramesForThroughputMetric = 4;
+// Avoid reporting any throughput metric for sequences that do not have a
+// sufficient number of frames.
+constexpr int kMinFramesForThroughputMetric = 100;
 
 constexpr int kBuiltinSequenceNum = FrameSequenceTrackerType::kMaxType + 1;
 constexpr int kMaximumHistogramIndex = 3 * kBuiltinSequenceNum;
@@ -110,17 +110,42 @@ FrameSequenceMetrics::FrameSequenceMetrics(FrameSequenceTrackerType type,
 }
 
 FrameSequenceMetrics::~FrameSequenceMetrics() {
+  if (HasDataLeftForReporting())
+    ReportMetrics();
+}
+
+void FrameSequenceMetrics::Merge(
+    std::unique_ptr<FrameSequenceMetrics> metrics) {
+  DCHECK_EQ(type_, metrics->type_);
+  impl_throughput_.Merge(metrics->impl_throughput_);
+  main_throughput_.Merge(metrics->main_throughput_);
+  frames_checkerboarded_ += metrics->frames_checkerboarded_;
+
+  // Reset the state of |metrics| before destroying it, so that it doesn't end
+  // up reporting the metrics.
+  metrics->impl_throughput_ = {};
+  metrics->main_throughput_ = {};
+  metrics->frames_checkerboarded_ = 0;
+}
+
+bool FrameSequenceMetrics::HasEnoughDataForReporting() const {
+  return impl_throughput_.frames_expected >= kMinFramesForThroughputMetric ||
+         main_throughput_.frames_expected >= kMinFramesForThroughputMetric;
+}
+
+bool FrameSequenceMetrics::HasDataLeftForReporting() const {
+  return impl_throughput_.frames_expected > 0 ||
+         main_throughput_.frames_expected > 0;
+}
+
+void FrameSequenceMetrics::ReportMetrics() {
   DCHECK_LE(impl_throughput_.frames_produced, impl_throughput_.frames_expected);
   DCHECK_LE(main_throughput_.frames_produced, main_throughput_.frames_expected);
-  DCHECK_LE(main_throughput_.frames_produced, impl_throughput_.frames_produced);
   TRACE_EVENT_ASYNC_END2(
       "cc,benchmark", "FrameSequenceTracker", this, "args",
       ThroughputData::ToTracedValue(impl_throughput_, main_throughput_),
       "checkerboard", frames_checkerboarded_);
-  ReportMetrics();
-}
 
-void FrameSequenceMetrics::ReportMetrics() {
   // Report the throughput metrics.
   base::Optional<int> impl_throughput_percent = ThroughputData::ReportHistogram(
       type_, "CompositorThread",
@@ -169,7 +194,14 @@ void FrameSequenceMetrics::ReportMetrics() {
         base::LinearHistogram::FactoryGet(
             GetCheckerboardingHistogramName(type_), 1, 100, 101,
             base::HistogramBase::kUmaTargetedHistogramFlag));
+    frames_checkerboarded_ = 0;
   }
+
+  // Reset the metrics that have already been reported.
+  if (impl_throughput_percent.has_value())
+    impl_throughput_ = {};
+  if (main_throughput_percent.has_value())
+    main_throughput_ = {};
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -275,6 +307,26 @@ void FrameSequenceTrackerCollection::NotifyFramePresented(
   for (auto& tracker : removal_trackers_)
     tracker->ReportFramePresented(frame_token, feedback);
 
+  for (auto& tracker : removal_trackers_) {
+    if (tracker->termination_status() ==
+        FrameSequenceTracker::TerminationStatus::kReadyForTermination) {
+      // The tracker is ready to be terminated. Take the metrics from the
+      // tracker, merge with any outstanding metrics from previous trackers of
+      // the same type. If there are enough frames to report the metrics, then
+      // report the metrics and destroy it. Otherwise, retain it to be merged
+      // with follow-up sequences.
+      auto metrics = tracker->TakeMetrics();
+      if (accumulated_metrics_.contains(tracker->type())) {
+        metrics->Merge(std::move(accumulated_metrics_[tracker->type()]));
+        accumulated_metrics_.erase(tracker->type());
+      }
+      if (metrics->HasEnoughDataForReporting())
+        metrics->ReportMetrics();
+      if (metrics->HasDataLeftForReporting())
+        accumulated_metrics_[tracker->type()] = std::move(metrics);
+    }
+  }
+
   // Destroy the trackers that are ready to be terminated.
   base::EraseIf(
       removal_trackers_,
@@ -321,7 +373,11 @@ FrameSequenceTracker::FrameSequenceTracker(
     FrameSequenceTrackerType type,
     UkmManager* manager,
     ThroughputUkmReporter* throughput_ukm_reporter)
-    : type_(type), metrics_(type, manager, throughput_ukm_reporter) {
+    : type_(type),
+      metrics_(
+          std::make_unique<FrameSequenceMetrics>(type,
+                                                 manager,
+                                                 throughput_ukm_reporter)) {
   DCHECK_LT(type_, FrameSequenceTrackerType::kMaxType);
 }
 
@@ -329,7 +385,7 @@ FrameSequenceTracker::~FrameSequenceTracker() {
 }
 
 void FrameSequenceTracker::ReportMetrics() {
-  metrics_.ReportMetrics();
+  metrics_->ReportMetrics();
 }
 
 void FrameSequenceTracker::ReportBeginImplFrame(
@@ -446,7 +502,7 @@ void FrameSequenceTracker::ReportFramePresented(
   TRACKER_TRACE_STREAM << 'P';
 
   TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(
-      "cc,benchmark", "FrameSequenceTracker", this, "FramePresented",
+      "cc,benchmark", "FrameSequenceTracker", metrics_.get(), "FramePresented",
       feedback.timestamp);
   const bool was_presented = !feedback.timestamp.is_null();
   if (was_presented && last_submitted_frame_) {
@@ -490,7 +546,7 @@ void FrameSequenceTracker::ReportFramePresented(
       DCHECK(!interval.is_zero()) << TRACKER_DCHECK_MSG;
       constexpr base::TimeDelta kEpsilon = base::TimeDelta::FromMilliseconds(1);
       int64_t frames = (difference + kEpsilon) / interval;
-      metrics_.add_checkerboarded_frames(frames);
+      metrics_->add_checkerboarded_frames(frames);
     }
 
     const bool frame_had_checkerboarding =
@@ -614,10 +670,13 @@ FrameSequenceMetrics::ThroughputData::ToTracedValue(
 
 bool FrameSequenceTracker::ShouldReportMetricsNow(
     const viz::BeginFrameArgs& args) const {
-  if (!first_frame_timestamp_.is_null() &&
-      args.frame_time - first_frame_timestamp_ >= time_delta_to_report_)
-    return true;
-  return false;
+  return metrics_->HasEnoughDataForReporting() &&
+         !first_frame_timestamp_.is_null() &&
+         args.frame_time - first_frame_timestamp_ >= time_delta_to_report_;
+}
+
+std::unique_ptr<FrameSequenceMetrics> FrameSequenceTracker::TakeMetrics() {
+  return std::move(metrics_);
 }
 
 base::Optional<int> FrameSequenceMetrics::ThroughputData::ReportHistogram(

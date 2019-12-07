@@ -137,6 +137,7 @@ TEST(AppCacheManifestParserTest, DangerousModeMetrics) {
 }
 
 TEST(AppCacheManifestParserTest, NoManifestUrl) {
+  base::HistogramTester tester;
   AppCacheManifest manifest;
   const std::string kData("CACHE MANIFEST\r"
     "relative/tobase.com\r"
@@ -151,9 +152,18 @@ TEST(AppCacheManifestParserTest, NoManifestUrl) {
   EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
   EXPECT_FALSE(manifest.online_whitelist_all);
   EXPECT_EQ(manifest.parser_version, -1);
+
+  // Verify UMA values show the invalid manifest URL.
+  int invalid_count = 1;
+  int valid_count = 0;
+  tester.ExpectBucketCount("appcache.Manifest.ValidManifestURL", 0,
+                           invalid_count);
+  tester.ExpectBucketCount("appcache.Manifest.ValidManifestURL", 1,
+                           valid_count);
 }
 
 TEST(AppCacheManifestParserTest, NoManifestScope) {
+  base::HistogramTester tester;
   AppCacheManifest manifest;
   const std::string kData(
       "CACHE MANIFEST\r"
@@ -169,9 +179,19 @@ TEST(AppCacheManifestParserTest, NoManifestScope) {
   EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
   EXPECT_FALSE(manifest.online_whitelist_all);
   EXPECT_EQ(manifest.parser_version, -1);
+
+  // Verify UMA values show neither a valid nor invalid manifest URL since
+  // metrics weren't recorded.
+  int invalid_count = 0;
+  int valid_count = 0;
+  tester.ExpectBucketCount("appcache.Manifest.ValidManifestURL", 0,
+                           invalid_count);
+  tester.ExpectBucketCount("appcache.Manifest.ValidManifestURL", 1,
+                           valid_count);
 }
 
 TEST(AppCacheManifestParserTest, NoManifestUrlAndScope) {
+  base::HistogramTester tester;
   AppCacheManifest manifest;
   const std::string kData(
       "CACHE MANIFEST\r"
@@ -187,9 +207,18 @@ TEST(AppCacheManifestParserTest, NoManifestUrlAndScope) {
   EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
   EXPECT_FALSE(manifest.online_whitelist_all);
   EXPECT_EQ(manifest.parser_version, -1);
+
+  // Verify UMA values show the invalid manifest URL.
+  int invalid_count = 1;
+  int valid_count = 0;
+  tester.ExpectBucketCount("appcache.Manifest.ValidManifestURL", 0,
+                           invalid_count);
+  tester.ExpectBucketCount("appcache.Manifest.ValidManifestURL", 1,
+                           valid_count);
 }
 
 TEST(AppCacheManifestParserTest, SimpleManifest) {
+  base::HistogramTester tester;
   AppCacheManifest manifest;
   const std::string kData(
       "CACHE MANIFEST\r"
@@ -206,6 +235,15 @@ TEST(AppCacheManifestParserTest, SimpleManifest) {
   EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
   EXPECT_FALSE(manifest.online_whitelist_all);
   EXPECT_EQ(manifest.parser_version, 1);
+
+  // Verify UMA values show neither the valid or invalid manifest URL since
+  // metrics weren't recorded.
+  int invalid_count = 0;
+  int valid_count = 1;
+  tester.ExpectBucketCount("appcache.Manifest.ValidManifestURL", 0,
+                           invalid_count);
+  tester.ExpectBucketCount("appcache.Manifest.ValidManifestURL", 1,
+                           valid_count);
 }
 
 TEST(AppCacheManifestParserTest, ExplicitUrls) {

@@ -128,12 +128,6 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   // The return value is true only when |results_| changed.
   bool UpdateResults(const std::string& json_data);
 
-  // Adds AutocompleteMatches for each of the suggestions in |results| to
-  // |map|.
-  void AddSuggestResultsToMap(
-      const SearchSuggestionParser::SuggestResults& results,
-      MatchMap* map);
-
   // Returns an AutocompleteMatch for a navigational suggestion |navigation|.
   AutocompleteMatch NavigationToMatch(
       const SearchSuggestionParser::NavigationResult& navigation);

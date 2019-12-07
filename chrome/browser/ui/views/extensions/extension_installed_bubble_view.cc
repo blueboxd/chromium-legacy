@@ -58,8 +58,6 @@ using extensions::Extension;
 
 namespace {
 
-const int kExtensionInstalledIconSize = 43;
-
 const int kRightColumnWidth = 285;
 
 views::Label* CreateLabel(const base::string16& text) {
@@ -132,6 +130,19 @@ std::unique_ptr<views::View> CreateSigninPromoView(
 #endif
 }
 
+gfx::ImageSkia MakeIconFromBitmap(const SkBitmap& bitmap) {
+  constexpr int kMaxIconSize = 43;
+
+  // Scale down to 43x43, but allow smaller icons (don't scale up).
+  gfx::Size size(bitmap.width(), bitmap.height());
+  if (size.width() > kMaxIconSize || size.height() > kMaxIconSize)
+    size.SetSize(kMaxIconSize, kMaxIconSize);
+
+  return gfx::ImageSkiaOperations::CreateResizedImage(
+      gfx::ImageSkia::CreateFrom1xBitmap(bitmap),
+      skia::ImageOperations::RESIZE_BEST, size);
+}
+
 }  // namespace
 
 // Provides feedback to the user upon successful installation of an
@@ -148,7 +159,8 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
                                      public views::LinkListener {
  public:
   ExtensionInstalledBubbleView(ExtensionInstalledBubble* bubble,
-                               BubbleReference reference);
+                               BubbleReference reference,
+                               const SkBitmap& icon);
   ~ExtensionInstalledBubbleView() override;
 
   // Recalculate the anchor position for this bubble.
@@ -173,9 +185,6 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
   // views::LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;
 
-  // Gets the size of the icon, capped at kExtensionInstalledIconSize.
-  gfx::Size GetIconSize() const;
-
   ExtensionInstalledBubble* controller_;
 
   BubbleReference bubble_reference_;
@@ -183,12 +192,15 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
   // The shortcut to open the manage shortcuts page.
   views::Link* manage_shortcut_;
 
+  const gfx::ImageSkia icon_;
+
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstalledBubbleView);
 };
 
 ExtensionInstalledBubbleView::ExtensionInstalledBubbleView(
     ExtensionInstalledBubble* controller,
-    BubbleReference bubble_reference)
+    BubbleReference bubble_reference,
+    const SkBitmap& icon)
     : BubbleDialogDelegateView(nullptr,
                                controller->anchor_position() ==
                                        ExtensionInstalledBubble::ANCHOR_OMNIBOX
@@ -196,7 +208,8 @@ ExtensionInstalledBubbleView::ExtensionInstalledBubbleView(
                                    : views::BubbleBorder::TOP_RIGHT),
       controller_(controller),
       bubble_reference_(bubble_reference),
-      manage_shortcut_(nullptr) {
+      manage_shortcut_(nullptr),
+      icon_(MakeIconFromBitmap(icon)) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::EXTENSION_INSTALLED);
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
   DialogDelegate::SetFootnoteView(CreateSigninPromoView(
@@ -237,10 +250,7 @@ base::string16 ExtensionInstalledBubbleView::GetWindowTitle() const {
 }
 
 gfx::ImageSkia ExtensionInstalledBubbleView::GetWindowIcon() {
-  const SkBitmap& bitmap = controller_->icon();
-  return gfx::ImageSkiaOperations::CreateResizedImage(
-      gfx::ImageSkia::CreateFrom1xBitmap(bitmap),
-      skia::ImageOperations::RESIZE_BEST, GetIconSize());
+  return icon_;
 }
 
 bool ExtensionInstalledBubbleView::ShouldShowWindowIcon() const {
@@ -279,7 +289,7 @@ void ExtensionInstalledBubbleView::Init() {
   // Indent by the size of the icon.
   layout->set_inside_border_insets(gfx::Insets(
       0,
-      GetIconSize().width() +
+      icon_.width() +
           provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL),
       0, 0));
   layout->set_cross_axis_alignment(
@@ -324,17 +334,6 @@ void ExtensionInstalledBubbleView::LinkClicked(views::Link* source,
   CloseBubble(BUBBLE_CLOSE_NAVIGATED);
 }
 
-gfx::Size ExtensionInstalledBubbleView::GetIconSize() const {
-  const SkBitmap& bitmap = controller_->icon();
-  // Scale down to 43x43, but allow smaller icons (don't scale up).
-  gfx::Size size(bitmap.width(), bitmap.height());
-  return size.width() > kExtensionInstalledIconSize ||
-                 size.height() > kExtensionInstalledIconSize
-             ? gfx::Size(kExtensionInstalledIconSize,
-                         kExtensionInstalledIconSize)
-             : size;
-}
-
 ExtensionInstalledBubbleUi::ExtensionInstalledBubbleUi(
     ExtensionInstalledBubble* bubble)
     : bubble_(bubble), bubble_view_(nullptr) {
@@ -347,7 +346,8 @@ ExtensionInstalledBubbleUi::~ExtensionInstalledBubbleUi() {
 }
 
 void ExtensionInstalledBubbleUi::Show(BubbleReference bubble_reference) {
-  bubble_view_ = new ExtensionInstalledBubbleView(bubble_, bubble_reference);
+  bubble_view_ = new ExtensionInstalledBubbleView(bubble_, bubble_reference,
+                                                  bubble_->icon());
   bubble_reference_ = bubble_reference;
 
   views::BubbleDialogDelegateView::CreateBubble(bubble_view_)->Show();

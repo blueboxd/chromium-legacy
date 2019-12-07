@@ -138,6 +138,9 @@ class MODULES_EXPORT MediaRecorderHandler final
   base::TimeDelta timeslice_;
   base::TimeTicks slice_origin_timestamp_;
 
+  // The last seen video codec of the last received encoded video frame.
+  base::Optional<media::VideoCodec> last_seen_codec_;
+
   bool recording_;
   // The MediaStream being recorded.
   Member<MediaStreamDescriptor> media_stream_;

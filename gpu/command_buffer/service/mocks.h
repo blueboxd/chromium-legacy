@@ -152,7 +152,7 @@ class MockMemoryTracker : public MemoryTracker {
   MockMemoryTracker();
   ~MockMemoryTracker() override;
 
-  MOCK_METHOD1(TrackMemoryAllocatedChange, void(uint64_t delta));
+  MOCK_METHOD1(TrackMemoryAllocatedChange, void(int64_t delta));
   uint64_t GetSize() const override { return 0; }
   MOCK_CONST_METHOD0(ClientTracingId, uint64_t());
   MOCK_CONST_METHOD0(ClientId, int());

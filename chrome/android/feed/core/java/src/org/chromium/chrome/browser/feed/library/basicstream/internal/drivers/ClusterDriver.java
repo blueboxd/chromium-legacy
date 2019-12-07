@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.feed.library.basicstream.internal.drivers;
 
 import android.support.annotation.VisibleForTesting;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
@@ -48,7 +50,8 @@ public class ClusterDriver implements FeatureDriver, ClusterPendingDismissHelper
     private final ViewLoggingUpdater mViewLoggingUpdater;
     private final TooltipApi mTooltipApi;
 
-    /*@Nullable*/ private CardDriver mCardDriver;
+    @Nullable
+    private CardDriver mCardDriver;
 
     ClusterDriver(ActionApi actionApi, ActionManager actionManager,
             ActionParserFactory actionParserFactory, BasicLoggingApi basicLoggingApi,
@@ -82,7 +85,7 @@ public class ClusterDriver implements FeatureDriver, ClusterPendingDismissHelper
     }
 
     @Override
-    /*@Nullable*/
+    @Nullable
     public LeafFeatureDriver getLeafFeatureDriver() {
         if (mCardDriver == null) {
             mCardDriver = createCardChild(mClusterModel);
@@ -95,7 +98,7 @@ public class ClusterDriver implements FeatureDriver, ClusterPendingDismissHelper
         return null;
     }
 
-    /*@Nullable*/
+    @Nullable
     private CardDriver createCardChild(ModelFeature clusterFeature) {
         ModelCursor cursor = clusterFeature.getCursor();
         // TODO: add change listener to clusterCursor.

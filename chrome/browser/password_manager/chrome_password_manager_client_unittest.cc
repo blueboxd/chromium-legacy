@@ -766,7 +766,6 @@ class ChromePasswordManagerClientAndroidTest
 
  private:
   autofill::TestAutofillClient test_autofill_client_;
-  std::unique_ptr<StrictMock<favicon::MockFaviconService>> favicon_service_;
   NiceMock<MockPasswordAccessoryController> mock_pwd_controller_;
   NiceMock<MockAddressAccessoryController> mock_address_controller_;
   NiceMock<MockCreditCardAccessoryController> mock_cc_controller_;
@@ -782,7 +781,7 @@ ChromePasswordManagerClientAndroidTest::CreateContentPasswordManagerDriver(
 void ChromePasswordManagerClientAndroidTest::CreateManualFillingController(
     content::WebContents* web_contents) {
   ManualFillingControllerImpl::CreateForWebContentsForTesting(
-      web_contents, favicon_service_.get(), mock_pwd_controller_.AsWeakPtr(),
+      web_contents, mock_pwd_controller_.AsWeakPtr(),
       mock_address_controller_.AsWeakPtr(), mock_cc_controller_.AsWeakPtr(),
       std::make_unique<NiceMock<MockManualFillingView>>());
 }

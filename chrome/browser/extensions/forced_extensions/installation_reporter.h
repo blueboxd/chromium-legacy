@@ -161,9 +161,15 @@ class InstallationReporter : public KeyedService {
     // extension in required time.
     IN_PROGRESS = 24,
 
+    // The download of the crx failed.
+    CRX_FETCH_URL_EMPTY = 25,
+
+    // The download of the crx failed.
+    CRX_FETCH_URL_INVALID = 26,
+
     // Magic constant used by the histogram macros.
     // Always update it to the max value.
-    kMaxValue = IN_PROGRESS,
+    kMaxValue = CRX_FETCH_URL_INVALID,
   };
 
   // Contains information about extension installation: failure reason, if any

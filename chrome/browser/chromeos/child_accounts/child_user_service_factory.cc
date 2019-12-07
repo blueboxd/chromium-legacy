@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/child_accounts/child_user_service_factory.h"
 
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/child_accounts/child_user_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
@@ -25,7 +26,9 @@ ChildUserServiceFactory* ChildUserServiceFactory::GetInstance() {
 ChildUserServiceFactory::ChildUserServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "ChildUserServiceFactory",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(apps::AppServiceProxyFactory::GetInstance());
+}
 
 ChildUserServiceFactory::~ChildUserServiceFactory() = default;
 

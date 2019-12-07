@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.feedstore.internal;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.host.storage.CommitResult;
 import org.chromium.chrome.browser.feed.library.api.internal.store.UploadableActionMutation;
 import org.chromium.chrome.browser.feed.library.common.functional.Committer;
@@ -29,7 +31,8 @@ public final class FeedUploadableActionMutation implements UploadableActionMutat
 
     @Override
     public UploadableActionMutation upsert(StreamUploadableAction action, String contentId) {
-        /*@Nullable*/ FeedUploadableActionChanges actionsForId = mActions.get(contentId);
+        @Nullable
+        FeedUploadableActionChanges actionsForId = mActions.get(contentId);
         if (actionsForId == null) {
             actionsForId = new FeedUploadableActionChanges();
         }
@@ -41,7 +44,8 @@ public final class FeedUploadableActionMutation implements UploadableActionMutat
 
     @Override
     public UploadableActionMutation remove(StreamUploadableAction action, String contentId) {
-        /*@Nullable*/ FeedUploadableActionChanges actionsForId = mActions.get(contentId);
+        @Nullable
+        FeedUploadableActionChanges actionsForId = mActions.get(contentId);
         if (actionsForId == null) {
             actionsForId = new FeedUploadableActionChanges();
         }

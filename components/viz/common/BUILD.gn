@@ -38,11 +38,8 @@ viz_component("resource_format_utils") {
     "//skia",
     "//ui/gfx:buffer_types",
     "//ui/gfx/geometry:geometry",
+    "//third_party/dawn/src/dawn:dawncpp_headers",
   ]
-
-  if (skia_use_dawn) {
-    deps += [ "//third_party/dawn/src/dawn:dawncpp_headers" ]
-  }
 }
 
 # TODO(sgilhuly): To reduce link times, merge these context provider components

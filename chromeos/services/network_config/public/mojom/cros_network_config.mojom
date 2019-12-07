@@ -775,6 +775,9 @@ union NetworkTypeConfigProperties {
 
 struct ConfigProperties {
   AutoConnectConfig? auto_connect;
+  // An optional guid may be provided when configuring a visible network to
+  // preserve the existing guid.
+  string? guid;
   string? ip_address_config_type;
   // Name is only required for new configurations.
   string? name;
@@ -885,18 +888,21 @@ interface CrosNetworkConfig {
   // available returns null.
   GetManagedProperties(string guid) => (ManagedProperties? result);
 
-  // Sets properties for the network matching |guid|. If |success| is false,
-  // |error_message| provides a string identifying the error. The string may
-  // be a Shill error, or an error token provided by the NetworkHandler layer.
-  // JS localization for a common subset of these is provided by
-  // network_element::AddErrorLocalizedStrings. TODO(1004434): Consider
-  // enumerating these.
+  // Sets properties for the network matching |guid|. |properties.guid| must be
+  // null or match |guid|, otherwise it will fail with an invalid input error.
+  // If |success| is false, |error_message| provides a string identifying the
+  // error. The string may be a Shill error, or an error token provided by the
+  // NetworkHandler layer. JS localization for a common subset of these is
+  // provided by network_element::AddErrorLocalizedStrings.
+  // TODO(1004434): Consider enumerating these.
   SetProperties(string guid, ConfigProperties properties) =>
     (bool success, string error_message);
 
-  // Configures a new network with |properties|. Returns the guid of the new
-  // network configuration on success. A null guid indicates that the properties
-  // were invalid or incomplete. See SetProperties for notes on errorMessage.
+  // Configures a new network with |properties|. If |properties.guid| is
+  // provided, an existing configuration must exist and match the provided
+  // |properties|. Returns the guid of the new network configuration on success.
+  // A null guid indicates that the properties were invalid or incomplete. See
+  // SetProperties for notes on errorMessage.
   ConfigureNetwork(ConfigProperties properties, bool shared) =>
     (string? guid, string error_message);
 

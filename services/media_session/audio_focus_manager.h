@@ -111,9 +111,8 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   // ReceiverContext stores associated metadata for mojo binding.
   struct ReceiverContext {
     // The source name is associated with a binding when a client calls
-    // |SetSourceName|. It is used to provide more granularity than a
-    // service_manager::Identity for metrics and for identifying where an audio
-    // focus request originated from.
+    // |SetSourceName|. It is used to provide extra granularity for metrics and
+    // for identifying where an audio focus request originated from.
     std::string source_name;
 
     // The identity associated with the binding when it was created.

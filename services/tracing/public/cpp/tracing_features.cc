@@ -10,6 +10,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
+#include "build/chromecast_buildflags.h"
 #include "components/tracing/common/tracing_switches.h"
 
 #if defined(OS_ANDROID)
@@ -36,7 +37,7 @@ const base::Feature kPerfettoForceOutOfProcessProducer{
 // Runs the tracing service as an in-process browser service.
 const base::Feature kTracingServiceInProcess {
   "TracingServiceInProcess",
-#if defined(OS_ANDROID) || defined(IS_CHROMECAST)
+#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMECAST)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT

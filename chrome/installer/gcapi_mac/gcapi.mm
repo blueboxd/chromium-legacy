@@ -21,11 +21,19 @@ NSString* const kChromeInstallPath = @"/Applications/Google Chrome.app";
 NSString* const kBrandKey = @"KSBrandID";
 NSString* const kUserBrandPath = @"~~/Library/Google/Google Chrome Brand.plist";
 
+// ksadmin moved from MacOS to Helpers in Keystone 1.2.13.112, 2019-11-12. A
+// symbolic link from the old location was left in place, but may not remain
+// indefinitely. Try the new location first, falling back to the old if needed.
 NSString* const kSystemKsadminPath =
     @"/Library/Google/GoogleSoftwareUpdate/GoogleSoftwareUpdate.bundle/"
+     "Contents/Helpers/ksadmin";
+NSString* const kSystemKsadminPathOld =
+    @"/Library/Google/GoogleSoftwareUpdate/GoogleSoftwareUpdate.bundle/"
      "Contents/MacOS/ksadmin";
-
 NSString* const kUserKsadminPath =
+    @"~~/Library/Google/GoogleSoftwareUpdate/GoogleSoftwareUpdate.bundle/"
+     "Contents/Helpers/ksadmin";
+NSString* const kUserKsadminPathOld =
     @"~~/Library/Google/GoogleSoftwareUpdate/GoogleSoftwareUpdate.bundle/"
      "Contents/MacOS/ksadmin";
 
@@ -104,11 +112,14 @@ BOOL FindChromeTicket(TicketKind kind, const passwd* user,
     *chrome_path = nil;
 
   // Don't use Objective-C 2 loop syntax, in case an installer runs on 10.4.
-  NSMutableArray* keystone_paths =
-      [NSMutableArray arrayWithObject:kSystemKsadminPath];
+  NSMutableArray* keystone_paths = [NSMutableArray
+      arrayWithObjects:kSystemKsadminPath, kSystemKsadminPathOld, nil];
   if (kind == kUserTicket) {
     [keystone_paths insertObject:AdjustHomedir(kUserKsadminPath, user->pw_dir)
                         atIndex:0];
+    [keystone_paths
+        insertObject:AdjustHomedir(kUserKsadminPathOld, user->pw_dir)
+             atIndex:1];
   }
   NSEnumerator* e = [keystone_paths objectEnumerator];
   id ks_path;

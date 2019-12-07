@@ -25,14 +25,12 @@
 #include "chrome/common/url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/audio_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/api/virtual_keyboard.h"
 #include "extensions/common/api/virtual_keyboard_private.h"
 #include "media/audio/audio_system.h"
-#include "services/audio/public/cpp/audio_system_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/event_injector.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/constants.h"
@@ -172,10 +170,8 @@ ChromeVirtualKeyboardDelegate::~ChromeVirtualKeyboardDelegate() {}
 void ChromeVirtualKeyboardDelegate::GetKeyboardConfig(
     OnKeyboardSettingsCallback on_settings_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!audio_system_) {
-    audio_system_ =
-        audio::CreateAudioSystem(content::GetSystemConnector()->Clone());
-  }
+  if (!audio_system_)
+    audio_system_ = content::CreateAudioSystemForAudioService();
   audio_system_->HasInputDevices(
       base::BindOnce(&ChromeVirtualKeyboardDelegate::OnHasInputDevices,
                      weak_this_, std::move(on_settings_callback)));

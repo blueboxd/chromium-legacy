@@ -10,7 +10,6 @@
 
 #include "base/callback.h"
 #include "base/strings/string16.h"
-#include "ui/gfx/native_widget_types.h"
 
 class PermissionRequest;
 
@@ -76,10 +75,6 @@ class PermissionPrompt {
 
   // Updates where the prompt should be anchored. ex: fullscreen toggle.
   virtual void UpdateAnchorPosition() = 0;
-
-  // Returns a reference to this prompt's native window.
-  // TODO(hcarmona): Remove this as part of the bubble API work.
-  virtual gfx::NativeWindow GetNativeWindow() = 0;
 
   // Get the behavior of this prompt when the user switches away from the
   // associated tab.

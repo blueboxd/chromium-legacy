@@ -1,0 +1,17 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[
+    RuntimeEnabled=WebCodecs
+] interface VideoFrame {
+  void release();
+
+  readonly attribute unsigned long long timestamp;  // microseconds
+
+  readonly attribute unsigned long coded_width;
+  readonly attribute unsigned long coded_height;
+
+  readonly attribute unsigned long visible_width;
+  readonly attribute unsigned long visible_height;
+};

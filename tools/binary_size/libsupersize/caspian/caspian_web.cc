@@ -60,7 +60,10 @@ void LoadBeforeSizeFile(const char* compressed, size_t size) {
   ParseSizeInfo(compressed, size, before_info.get());
 }
 
-void BuildTree(bool method_count_mode,
+// Updates |builder| with provided filters and constructs the new tree.
+// Typically called when the front-end form updates, to apply any new filters.
+// Returns: True if the resulting tree is a diff, false if it is a snapshot.
+bool BuildTree(bool method_count_mode,
                const char* group_by,
                const char* include_regex_str,
                const char* exclude_regex_str,
@@ -158,6 +161,8 @@ void BuildTree(bool method_count_mode,
     exit(1);
   }
   builder->Build(std::move(lens), sep, method_count_mode, filters);
+
+  return bool(diff_info);
 }
 
 const char* Open(const char* path) {

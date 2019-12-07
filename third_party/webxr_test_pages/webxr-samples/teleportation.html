@@ -292,7 +292,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         let refSpace = getRefSpace(session, true);
 
         let headPose = ev.frame.getPose(xrViewerSpaces[session.mode], refSpace);
-        if (!headPose) return;
+        if (!headPose) {
+          console.error("No head pose, ignoring select");
+          return;
+        }
 
         // Get the position offset in world space from the tracking space origin
         // to the player's feet. The headPose position is the head position in world space.
@@ -306,6 +309,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         // based on https://github.com/immersive-web/webxr/blob/master/input-explainer.md#targeting-ray-pose
         let inputSourcePose = ev.frame.getPose(ev.inputSource.targetRaySpace, refSpace);
         if (!inputSourcePose) {
+          console.error("No Input source pose, ignoring select");
           return;
         }
 
@@ -342,6 +346,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
              playerInWorldSpaceNew[1] = 0;
              playerInWorldSpaceNew[2] = hitResult.intersection[2];
              console.log('teleport to', playerInWorldSpaceNew);
+          } else {
+            console.error("No hit");
           }
         }
 

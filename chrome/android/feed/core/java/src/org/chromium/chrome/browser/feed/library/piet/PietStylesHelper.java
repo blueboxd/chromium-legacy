@@ -9,6 +9,8 @@ import static org.chromium.chrome.browser.feed.library.common.Validators.checkNo
 import android.support.annotation.VisibleForTesting;
 import android.util.LruCache;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 import org.chromium.chrome.browser.feed.library.piet.DebugLogger.MessageType;
 import org.chromium.components.feed.core.proto.ui.piet.ErrorsProto.ErrorCode;
@@ -62,7 +64,7 @@ public class PietStylesHelper {
         return mMediaQueryHelper.areMediaQueriesMet(conditions);
     }
 
-    /*@Nullable*/
+    @Nullable
     Stylesheet getStylesheet(String stylesheetId) {
         return mStylesheet.get(stylesheetId);
     }
@@ -116,7 +118,7 @@ public class PietStylesHelper {
     }
 
     /** Returns a {@link Template} for the template */
-    /*@Nullable*/
+    @Nullable
     public Template getTemplate(String templateId) {
         return mTemplates.get(templateId);
     }
@@ -125,8 +127,8 @@ public class PietStylesHelper {
         frameTemplates.putAll(mTemplates);
     }
 
-    static Style mergeStyleIdsStack(StyleIdsStack stack, Map<String, Style> styleMap,
-            /*@Nullable*/ FrameContext frameContext) {
+    static Style mergeStyleIdsStack(
+            StyleIdsStack stack, Map<String, Style> styleMap, @Nullable FrameContext frameContext) {
         return mergeStyleIdsStack(Style.getDefaultInstance(), stack, styleMap, frameContext);
     }
 
@@ -136,8 +138,7 @@ public class PietStylesHelper {
      * base.
      */
     static Style mergeStyleIdsStack(Style baseStyle, StyleIdsStack stack,
-            Map<String, Style> styleMap,
-            /*@Nullable*/ FrameContext frameContext) {
+            Map<String, Style> styleMap, @Nullable FrameContext frameContext) {
         Style.Builder mergedStyle = baseStyle.toBuilder();
         for (String style : stack.getStyleIdsList()) {
             if (styleMap.containsKey(style)) {
@@ -194,7 +195,7 @@ public class PietStylesHelper {
 
         @SuppressWarnings({"ReferenceEquality", "EqualsUsingHashCode"})
         @Override
-        public boolean equals(/*@Nullable*/ Object o) {
+        public boolean equals(@Nullable Object o) {
             if (this == o) {
                 return true;
             }

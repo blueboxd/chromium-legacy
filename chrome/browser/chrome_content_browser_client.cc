@@ -349,7 +349,6 @@
 #elif defined(OS_MACOSX)
 #include "chrome/browser/apps/intent_helper/mac_apps_navigation_throttle.h"
 #include "chrome/browser/chrome_browser_main_mac.h"
-#include "services/audio/public/mojom/constants.mojom.h"
 #elif defined(OS_CHROMEOS)
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/mojom/constants.mojom.h"
@@ -1632,12 +1631,13 @@ bool ChromeContentBrowserClient::
 }
 
 void ChromeContentBrowserClient::OverrideURLLoaderFactoryParams(
-    content::RenderProcessHost* process,
+    content::BrowserContext* browser_context,
     const url::Origin& origin,
+    bool is_for_isolated_world,
     network::mojom::URLLoaderFactoryParams* factory_params) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   ChromeContentBrowserClientExtensionsPart::OverrideURLLoaderFactoryParams(
-      process, origin, factory_params);
+      browser_context, origin, is_for_isolated_world, factory_params);
 #endif
 }
 
@@ -2258,17 +2258,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       command_line->HasSwitch(service_manager::switches::kNoSandbox)) {
     command_line->AppendSwitch(switches::kEnableThreadInstructionCount);
   }
-#endif
-}
-
-void ChromeContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
-    const service_manager::Identity& identity,
-    base::CommandLine* command_line) {
-#if defined(OS_MACOSX)
-  // On Mac, the audio service requires a CFRunLoop, provided by a UI message
-  // loop, to run AVFoundation and CoreAudio code. See https://crbug.com/834581.
-  if (identity.name() == audio::mojom::kServiceName)
-    command_line->AppendSwitch(switches::kMessageLoopTypeUi);
 #endif
 }
 

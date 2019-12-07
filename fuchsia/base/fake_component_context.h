@@ -7,6 +7,7 @@
 
 #include <fuchsia/base/agent_impl.h>
 #include <fuchsia/modular/cpp/fidl_test_base.h>
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -31,6 +32,10 @@ class FakeComponentContext
       base::StringPiece component_url);
   ~FakeComponentContext() override;
 
+  void RegisterCreateComponentStateCallback(
+      base::StringPiece agent_url,
+      AgentImpl::CreateComponentStateCallback callback);
+
   // fuchsia::modular::ComponentContext_TestBase implementation.
   void ConnectToAgent(
       std::string agent_url,
@@ -44,9 +49,12 @@ class FakeComponentContext
  private:
   base::fuchsia::ScopedServiceBinding<fuchsia::modular::ComponentContext>
       binding_;
-  AgentImpl agent_impl_;
   const std::string component_url_;
+  sys::OutgoingDirectory* const outgoing_directory_;
   fuchsia::sys::ServiceProviderPtr agent_services_;
+
+  std::map<base::StringPiece, std::unique_ptr<AgentImpl>> agent_impl_map_;
+  AgentImpl default_agent_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeComponentContext);
 };

@@ -34,15 +34,24 @@ DataFilesParser::DataFilesParser() {}
 
 DataFilesParser::~DataFilesParser() = default;
 
-bool DataFilesParser::TryParseCatalog(const base::FilePath& install_dir,
-                                      GamesCatalog* out_catalog) {
-  return ParseProtoFromFile(GetGamesCatalogPath(install_dir), out_catalog);
+base::Optional<GamesCatalog> DataFilesParser::TryParseCatalog(
+    const base::FilePath& install_dir) {
+  base::Optional<GamesCatalog> optional_catalog;
+  GamesCatalog catalog;
+  if (ParseProtoFromFile(GetGamesCatalogPath(install_dir), &catalog)) {
+    optional_catalog = std::move(catalog);
+  }
+  return optional_catalog;
 }
 
-bool DataFilesParser::TryParseHighlightedGames(
-    const base::FilePath& install_dir,
-    HighlightedGamesResponse* out_response) {
-  return ParseProtoFromFile(GetHighlightedGamesPath(install_dir), out_response);
+base::Optional<HighlightedGamesResponse>
+DataFilesParser::TryParseHighlightedGames(const base::FilePath& install_dir) {
+  base::Optional<HighlightedGamesResponse> optional_response;
+  HighlightedGamesResponse response;
+  if (ParseProtoFromFile(GetHighlightedGamesPath(install_dir), &response)) {
+    optional_response = std::move(response);
+  }
+  return optional_response;
 }
 
 }  // namespace games

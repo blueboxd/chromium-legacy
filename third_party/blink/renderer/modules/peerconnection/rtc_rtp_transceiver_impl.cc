@@ -345,13 +345,12 @@ uintptr_t RTCRtpTransceiverImpl::Id() const {
   return GetId(internal_->state().webrtc_transceiver().get());
 }
 
-blink::WebString RTCRtpTransceiverImpl::Mid() const {
+String RTCRtpTransceiverImpl::Mid() const {
   const auto& mid = internal_->state().mid();
-  return mid ? blink::WebString::FromUTF8(*mid)
-             : blink::WebString();  // IsNull()
+  return mid ? String::FromUTF8(*mid) : String();
 }
 
-void RTCRtpTransceiverImpl::SetMid(base::Optional<blink::WebString> mid) {
+void RTCRtpTransceiverImpl::SetMid(base::Optional<String> mid) {
   internal_->set_mid(mid ? base::Optional<std::string>(mid->Utf8())
                          : base::nullopt);
 }

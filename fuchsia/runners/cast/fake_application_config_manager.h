@@ -27,6 +27,13 @@ class FakeApplicationConfigManager
                      const GURL& url,
                      bool enable_remote_debugging);
 
+  // Associates a Cast application |id| with a url and an agent that handles
+  // its bindings, to be served from the EmbeddedTestServer.
+  void AddAppMappingWithAgent(const std::string& id,
+                              const GURL& url,
+                              bool enable_remote_debugging,
+                              const std::string& agent_url);
+
   // Associates a Cast application |id| with a url and a set of content
   // directories, to be served from the EmbeddedTestServer.
   void AddAppMappingWithContentDirectories(

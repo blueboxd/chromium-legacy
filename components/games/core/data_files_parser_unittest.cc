@@ -30,20 +30,14 @@ class DataFilesParserTest : public testing::Test {
 };
 
 TEST_F(DataFilesParserTest, TryParseCatalog_FileDoesNotExist) {
-  GamesCatalog catalog;
-  EXPECT_FALSE(parser_.TryParseCatalog(temp_dir_.GetPath(), &catalog));
-}
-
-TEST_F(DataFilesParserTest, TryParseCatalog_NullOutPtr) {
-  EXPECT_FALSE(parser_.TryParseCatalog(temp_dir_.GetPath(), nullptr));
+  EXPECT_FALSE(parser_.TryParseCatalog(temp_dir_.GetPath()));
 }
 
 TEST_F(DataFilesParserTest, TryParseCatalog_BadProto) {
   WriteStringToFile(GetGamesCatalogPath(temp_dir_.GetPath()),
                     "well something is odd");
 
-  GamesCatalog test_catalog;
-  EXPECT_FALSE(parser_.TryParseCatalog(temp_dir_.GetPath(), &test_catalog));
+  EXPECT_FALSE(parser_.TryParseCatalog(temp_dir_.GetPath()));
 }
 
 TEST_F(DataFilesParserTest, TryParseCatalog_Success) {
@@ -51,29 +45,21 @@ TEST_F(DataFilesParserTest, TryParseCatalog_Success) {
   WriteStringToFile(GetGamesCatalogPath(temp_dir_.GetPath()),
                     expected_catalog.SerializeAsString());
 
-  GamesCatalog test_catalog;
-  EXPECT_TRUE(parser_.TryParseCatalog(temp_dir_.GetPath(), &test_catalog));
-  EXPECT_TRUE(test::AreProtosEqual(expected_catalog, test_catalog));
+  base::Optional<GamesCatalog> test_catalog =
+      parser_.TryParseCatalog(temp_dir_.GetPath());
+  ASSERT_TRUE(test_catalog.has_value());
+  EXPECT_TRUE(test::AreProtosEqual(expected_catalog, test_catalog.value()));
 }
 
 TEST_F(DataFilesParserTest, TryParseHighlightedGames_FileDoesNotExist) {
-  HighlightedGamesResponse highlighted_games;
-  EXPECT_FALSE(parser_.TryParseHighlightedGames(temp_dir_.GetPath(),
-                                                &highlighted_games));
-}
-
-TEST_F(DataFilesParserTest, TryParseHighlightedGames_NullOutPtr) {
-  EXPECT_FALSE(parser_.TryParseHighlightedGames(temp_dir_.GetPath(), nullptr));
+  EXPECT_FALSE(parser_.TryParseHighlightedGames(temp_dir_.GetPath()));
 }
 
 TEST_F(DataFilesParserTest, TryParseHighlightedGames_BadData) {
   GamesCatalog bad_proto = test::CreateGamesCatalogWithOneGame();
   WriteStringToFile(GetHighlightedGamesPath(temp_dir_.GetPath()),
                     "well something is odd");
-
-  HighlightedGamesResponse test_response;
-  EXPECT_FALSE(
-      parser_.TryParseHighlightedGames(temp_dir_.GetPath(), &test_response));
+  EXPECT_FALSE(parser_.TryParseHighlightedGames(temp_dir_.GetPath()));
 }
 
 TEST_F(DataFilesParserTest, TryParseHighlightedGames_Success) {
@@ -82,10 +68,10 @@ TEST_F(DataFilesParserTest, TryParseHighlightedGames_Success) {
   WriteStringToFile(GetHighlightedGamesPath(temp_dir_.GetPath()),
                     expected_response.SerializeAsString());
 
-  HighlightedGamesResponse test_response;
-  EXPECT_TRUE(
-      parser_.TryParseHighlightedGames(temp_dir_.GetPath(), &test_response));
-  EXPECT_TRUE(test::AreProtosEqual(expected_response, test_response));
+  base::Optional<HighlightedGamesResponse> test_response =
+      parser_.TryParseHighlightedGames(temp_dir_.GetPath());
+  ASSERT_TRUE(test_response.has_value());
+  EXPECT_TRUE(test::AreProtosEqual(expected_response, test_response.value()));
 }
 
 }  // namespace games

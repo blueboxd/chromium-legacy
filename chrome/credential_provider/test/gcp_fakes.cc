@@ -689,6 +689,28 @@ FakeAssociatedUserValidator::~FakeAssociatedUserValidator() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+FakeChromeAvailabilityChecker::FakeChromeAvailabilityChecker(
+    HasSupportedChromeCheckType has_supported_chrome /*=kChromeForceYes*/)
+    : original_checker_(*GetInstanceStorage()),
+      has_supported_chrome_(has_supported_chrome) {
+  *GetInstanceStorage() = this;
+}
+
+FakeChromeAvailabilityChecker::~FakeChromeAvailabilityChecker() {
+  *GetInstanceStorage() = original_checker_;
+}
+
+bool FakeChromeAvailabilityChecker::HasSupportedChromeVersion() {
+  return has_supported_chrome_ == kChromeForceYes;
+}
+
+void FakeChromeAvailabilityChecker::SetHasSupportedChrome(
+    HasSupportedChromeCheckType has_supported_chrome) {
+  has_supported_chrome_ = has_supported_chrome;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 FakeInternetAvailabilityChecker::FakeInternetAvailabilityChecker(
     HasInternetConnectionCheckType has_internet_connection /*=kHicForceYes*/)
     : original_checker_(*GetInstanceStorage()),

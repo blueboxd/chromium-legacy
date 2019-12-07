@@ -20,10 +20,6 @@
 #include "storage/common/file_system/file_system_mount_option.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
-namespace storage {
-class FileWriterDelegate;
-}  // namespace storage
-
 namespace content {
 
 // This file contains all of the classes & types used to store blobs in
@@ -118,10 +114,6 @@ typedef std::vector<WriteDescriptor> WriteDescriptorVec;
 // This class facilitates writing multiple blobs to files.
 class ChainedBlobWriter : public base::RefCountedThreadSafe<ChainedBlobWriter> {
  public:
-  // Called on the IO thread.
-  virtual void set_delegate(
-      std::unique_ptr<storage::FileWriterDelegate> delegate) = 0;
-
   // Called on the IDB task runner.
   virtual void ReportWriteCompletion(bool succeeded, int64_t bytes_written) = 0;
 
@@ -129,7 +121,7 @@ class ChainedBlobWriter : public base::RefCountedThreadSafe<ChainedBlobWriter> {
   virtual void Abort() = 0;
 
   // Whether to flush to the file system when writing or not.
-  // Called on the IO thread.
+  // Called on the IDB task runner.
   virtual storage::FlushPolicy GetFlushPolicy() const = 0;
 
  protected:

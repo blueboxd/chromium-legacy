@@ -20,7 +20,7 @@
         "name": "blink_perf.bindings/document-implementation.html"
     },
     {
-        "duration": "12.0",
+        "duration": "11.0",
         "name": "blink_perf.bindings/dom-attribute-on-prototoype.html"
     },
     {
@@ -36,7 +36,7 @@
         "name": "blink_perf.bindings/gc-mini-tree.html"
     },
     {
-        "duration": "22.0",
+        "duration": "21.0",
         "name": "blink_perf.bindings/gc-tree.html"
     },
     {
@@ -56,11 +56,11 @@
         "name": "blink_perf.bindings/get-elements-by-tag-name.html"
     },
     {
-        "duration": "12.0",
+        "duration": "11.0",
         "name": "blink_perf.bindings/id-getter.html"
     },
     {
-        "duration": "12.0",
+        "duration": "11.0",
         "name": "blink_perf.bindings/id-setter.html"
     },
     {
@@ -116,7 +116,7 @@
         "name": "blink_perf.bindings/set-attribute-rare.html"
     },
     {
-        "duration": "12.0",
+        "duration": "11.0",
         "name": "blink_perf.bindings/set-attribute.html"
     },
     {
@@ -180,7 +180,7 @@
         "name": "blink_perf.bindings/worker-structured-clone-workerDOM-Map-from-worker.html"
     },
     {
-        "duration": "17.0",
+        "duration": "16.0",
         "name": "blink_perf.bindings/worker-text-encoded-transferable-from-worker.html"
     },
     {
@@ -220,11 +220,11 @@
         "name": "blink_perf.canvas/docs-paper_RAF.html?RAF"
     },
     {
-        "duration": "24.0",
+        "duration": "21.0",
         "name": "blink_perf.canvas/docs-resume.html"
     },
     {
-        "duration": "7.0",
+        "duration": "8.0",
         "name": "blink_perf.canvas/docs-resume_RAF.html?RAF"
     },
     {
@@ -236,11 +236,11 @@
         "name": "blink_perf.canvas/docs-table_RAF.html?RAF"
     },
     {
-        "duration": "6.0",
+        "duration": "7.0",
         "name": "blink_perf.canvas/draw-dynamic-webgl-to-hw-accelerated-canvas-2d_RAF.html?RAF"
     },
     {
-        "duration": "5.0",
+        "duration": "6.0",
         "name": "blink_perf.canvas/draw-hw-accelerated-canvas-2d-to-sw-canvas-2d.html"
     },
     {
@@ -264,7 +264,7 @@
         "name": "blink_perf.canvas/drawimage-not-pixelaligned_RAF.html?RAF"
     },
     {
-        "duration": "15.0",
+        "duration": "16.0",
         "name": "blink_perf.canvas/drawimage.html"
     },
     {
@@ -280,11 +280,11 @@
         "name": "blink_perf.canvas/getImageDataColorManaged.html"
     },
     {
-        "duration": "11.0",
+        "duration": "12.0",
         "name": "blink_perf.canvas/getImageDataColorManaged_RAF.html?RAF"
     },
     {
-        "duration": "11.0",
+        "duration": "12.0",
         "name": "blink_perf.canvas/getImageData_RAF.html?RAF"
     },
     {
@@ -348,7 +348,7 @@
         "name": "blink_perf.css/CSSPropertySetterGetterMethods.html"
     },
     {
-        "duration": "12.0",
+        "duration": "13.0",
         "name": "blink_perf.css/CSSPropertyUpdateValue.html"
     },
     {
@@ -440,11 +440,11 @@
         "name": "blink_perf.dom/custom-element-default-style-with-shadow.html"
     },
     {
-        "duration": "33.0",
+        "duration": "34.0",
         "name": "blink_perf.dom/custom-element-default-style.html"
     },
     {
-        "duration": "16.0",
+        "duration": "19.0",
         "name": "blink_perf.dom/long-sibling-list.html"
     },
     {
@@ -504,7 +504,7 @@
         "name": "blink_perf.events/is-input-pending-default-events.html"
     },
     {
-        "duration": "50.0",
+        "duration": "51.0",
         "name": "blink_perf.image_decoder/decode-gif.html"
     },
     {
@@ -512,7 +512,7 @@
         "name": "blink_perf.image_decoder/decode-jpeg-h1v1.html"
     },
     {
-        "duration": "21.0",
+        "duration": "19.0",
         "name": "blink_perf.image_decoder/decode-jpeg-h1v2.html"
     },
     {
@@ -520,11 +520,11 @@
         "name": "blink_perf.image_decoder/decode-jpeg-h2v1.html"
     },
     {
-        "duration": "16.0",
+        "duration": "17.0",
         "name": "blink_perf.image_decoder/decode-jpeg-h2v2.html"
     },
     {
-        "duration": "53.0",
+        "duration": "54.0",
         "name": "blink_perf.image_decoder/decode-lossless-webp.html"
     },
     {
@@ -532,7 +532,7 @@
         "name": "blink_perf.image_decoder/decode-lossy-webp.html"
     },
     {
-        "duration": "34.0",
+        "duration": "35.0",
         "name": "blink_perf.image_decoder/decode-png-palette-opaque.html"
     },
     {
@@ -540,11 +540,11 @@
         "name": "blink_perf.image_decoder/decode-png-palette.html"
     },
     {
-        "duration": "65.0",
+        "duration": "62.0",
         "name": "blink_perf.image_decoder/decode-png.html"
     },
     {
-        "duration": "15.0",
+        "duration": "14.0",
         "name": "blink_perf.layout/ArabicLineLayout.html"
     },
     {
@@ -768,7 +768,7 @@
         "name": "blink_perf.layout/line-layout-line-height.html"
     },
     {
-        "duration": "16.0",
+        "duration": "13.0",
         "name": "blink_perf.layout/line-layout-repeat-append-select.html"
     },
     {
@@ -776,7 +776,7 @@
         "name": "blink_perf.layout/line-layout-repeat-append.html"
     },
     {
-        "duration": "12.0",
+        "duration": "11.0",
         "name": "blink_perf.layout/line-layout.html"
     },
     {
@@ -812,11 +812,11 @@
         "name": "blink_perf.layout/multicol/fixed-height-with-spanner-and-nested-tables.html"
     },
     {
-        "duration": "11.0",
+        "duration": "14.0",
         "name": "blink_perf.layout/multicol/lots-of-small-nested-unbreakable-blocks-autofill.html"
     },
     {
-        "duration": "12.0",
+        "duration": "11.0",
         "name": "blink_perf.layout/multicol/lots-of-small-unbreakable-blocks-autofill.html"
     },
     {
@@ -824,7 +824,7 @@
         "name": "blink_perf.layout/multicol/lots-of-text-autofill.html"
     },
     {
-        "duration": "12.0",
+        "duration": "11.0",
         "name": "blink_perf.layout/multicol/lots-of-text-balanced-orphans-widows.html"
     },
     {
@@ -836,7 +836,7 @@
         "name": "blink_perf.layout/multicol/nested-forced-breaks.html"
     },
     {
-        "duration": "12.0",
+        "duration": "11.0",
         "name": "blink_perf.layout/multicol/tall-content-short-columns-realistic.html"
     },
     {
@@ -856,11 +856,11 @@
         "name": "blink_perf.layout/nested-percent-height-tables.html"
     },
     {
-        "duration": "69.0",
+        "duration": "70.0",
         "name": "blink_perf.layout/subtree-detaching.html"
     },
     {
-        "duration": "10.0",
+        "duration": "9.0",
         "name": "blink_perf.layout/vertical-japanese-kokoro-insert.html"
     },
     {
@@ -888,7 +888,7 @@
         "name": "blink_perf.owp_storage/blob-perf-shm.html"
     },
     {
-        "duration": "10.0",
+        "duration": "9.0",
         "name": "blink_perf.owp_storage/blob-perf-tiny.html"
     },
     {
@@ -924,7 +924,7 @@
         "name": "blink_perf.paint/large-table-background-change-with-invisible-collapsed-borders.html"
     },
     {
-        "duration": "15.0",
+        "duration": "14.0",
         "name": "blink_perf.paint/large-table-background-change-with-visible-collapsed-borders.html"
     },
     {
@@ -968,11 +968,11 @@
         "name": "blink_perf.parser/html-parser.html"
     },
     {
-        "duration": "88.0",
+        "duration": "85.0",
         "name": "blink_perf.parser/html5-full-render.html"
     },
     {
-        "duration": "12.0",
+        "duration": "11.0",
         "name": "blink_perf.parser/iframe-append-remove.html"
     },
     {
@@ -984,7 +984,7 @@
         "name": "blink_perf.parser/innerHTML-setter.html"
     },
     {
-        "duration": "12.0",
+        "duration": "11.0",
         "name": "blink_perf.parser/query-selector-all-attribute-complex.html"
     },
     {
@@ -1040,7 +1040,7 @@
         "name": "blink_perf.parser/query-selector-last.html"
     },
     {
-        "duration": "12.0",
+        "duration": "11.0",
         "name": "blink_perf.parser/simple-url.html"
     },
     {
@@ -1048,7 +1048,7 @@
         "name": "blink_perf.parser/textarea-parsing.html"
     },
     {
-        "duration": "14.0",
+        "duration": "13.0",
         "name": "blink_perf.parser/tiny-innerHTML.html"
     },
     {
@@ -1056,27 +1056,27 @@
         "name": "blink_perf.parser/url-parser.html"
     },
     {
-        "duration": "12.0",
+        "duration": "11.0",
         "name": "blink_perf.parser/xml-parser.html"
     },
     {
-        "duration": "10.0",
+        "duration": "9.0",
         "name": "blink_perf.shadow_dom/declarative-api.html"
     },
     {
-        "duration": "6.0",
+        "duration": "5.0",
         "name": "blink_perf.shadow_dom/imperative-api-appendchild.html"
     },
     {
-        "duration": "6.0",
+        "duration": "5.0",
         "name": "blink_perf.shadow_dom/imperative-api-assign.html"
     },
     {
-        "duration": "6.0",
+        "duration": "5.0",
         "name": "blink_perf.shadow_dom/imperative-api-assigned-elements.html"
     },
     {
-        "duration": "6.0",
+        "duration": "5.0",
         "name": "blink_perf.shadow_dom/imperative-api-assigned-slot.html"
     },
     {
@@ -1096,11 +1096,11 @@
         "name": "blink_perf.shadow_dom/imperative-api-detail-summary.html"
     },
     {
-        "duration": "6.0",
+        "duration": "5.0",
         "name": "blink_perf.shadow_dom/imperative-api-insertbefore.html"
     },
     {
-        "duration": "6.0",
+        "duration": "5.0",
         "name": "blink_perf.shadow_dom/imperative-api.html"
     },
     {
@@ -1108,11 +1108,11 @@
         "name": "blink_perf.shadow_dom/shadow-style-share-attr-selectors.html"
     },
     {
-        "duration": "7.0",
+        "duration": "6.0",
         "name": "blink_perf.shadow_dom/shadow-style-share-media-query.html"
     },
     {
-        "duration": "7.0",
+        "duration": "6.0",
         "name": "blink_perf.shadow_dom/shadow-style-share-with-distribution.html"
     },
     {
@@ -1164,7 +1164,7 @@
         "name": "blink_perf.shadow_dom/v1-distribution-disconnected-and-reconnected.html"
     },
     {
-        "duration": "6.0",
+        "duration": "5.0",
         "name": "blink_perf.shadow_dom/v1-distribution.html"
     },
     {
@@ -1200,7 +1200,7 @@
         "name": "blink_perf.shadow_dom/v1-mutate-deep-tree-then-re-layout.html"
     },
     {
-        "duration": "6.0",
+        "duration": "5.0",
         "name": "blink_perf.shadow_dom/v1-mutate-deep-tree-then-slot-assigned-nodes.html"
     },
     {
@@ -1212,15 +1212,15 @@
         "name": "blink_perf.shadow_dom/v1-mutate-shallow-tree-then-re-layout.html"
     },
     {
-        "duration": "6.0",
+        "duration": "5.0",
         "name": "blink_perf.shadow_dom/v1-mutate-shallow-tree-then-slot-assigned-nodes.html"
     },
     {
-        "duration": "6.0",
+        "duration": "8.0",
         "name": "blink_perf.shadow_dom/v1-mutate-shallow-tree-then-slot-flatten.html"
     },
     {
-        "duration": "6.0",
+        "duration": "5.0",
         "name": "blink_perf.shadow_dom/v1-slot-append.html"
     },
     {
@@ -1232,11 +1232,11 @@
         "name": "blink_perf.shadow_dom/v1-small-deep-layout.html"
     },
     {
-        "duration": "6.0",
+        "duration": "5.0",
         "name": "blink_perf.shadow_dom/v1-small-shallow-distribution.html"
     },
     {
-        "duration": "6.0",
+        "duration": "5.0",
         "name": "blink_perf.shadow_dom/v1-small-shallow-layout.html"
     },
     {
@@ -1296,7 +1296,7 @@
         "name": "blink_perf.svg/HereGear.html"
     },
     {
-        "duration": "10.0",
+        "duration": "9.0",
         "name": "blink_perf.svg/MtSaintHelens.html"
     },
     {
@@ -1304,7 +1304,7 @@
         "name": "blink_perf.svg/Samurai.html"
     },
     {
-        "duration": "11.0",
+        "duration": "8.0",
         "name": "blink_perf.svg/SvgCubics.html"
     },
     {
@@ -1328,7 +1328,7 @@
         "name": "blink_perf.svg/Worldcup.html"
     },
     {
-        "duration": "39.0",
+        "duration": "40.0",
         "name": "dromaeo/http://dromaeo.com?dom-attr"
     },
     {
@@ -1360,7 +1360,7 @@
         "name": "loading.mobile/58Pic"
     },
     {
-        "duration": "19.0",
+        "duration": "20.0",
         "name": "loading.mobile/58Pic_3g"
     },
     {
@@ -1372,7 +1372,7 @@
         "name": "loading.mobile/Amazon_3g"
     },
     {
-        "duration": "13.0",
+        "duration": "14.0",
         "name": "loading.mobile/BOLNoticias"
     },
     {
@@ -1380,11 +1380,11 @@
         "name": "loading.mobile/Baidu"
     },
     {
-        "duration": "20.0",
+        "duration": "21.0",
         "name": "loading.mobile/Baidu_3g"
     },
     {
-        "duration": "13.0",
+        "duration": "12.0",
         "name": "loading.mobile/Bradesco"
     },
     {
@@ -1436,23 +1436,23 @@
         "name": "loading.mobile/EnquiryIndianRail_3g"
     },
     {
-        "duration": "10.0",
+        "duration": "9.0",
         "name": "loading.mobile/Facebook"
     },
     {
-        "duration": "11.0",
+        "duration": "12.0",
         "name": "loading.mobile/FlipBoard_cold"
     },
     {
-        "duration": "16.0",
+        "duration": "17.0",
         "name": "loading.mobile/FlipBoard_hot"
     },
     {
-        "duration": "19.0",
+        "duration": "20.0",
         "name": "loading.mobile/FlipBoard_hot_3g"
     },
     {
-        "duration": "13.0",
+        "duration": "14.0",
         "name": "loading.mobile/FlipBoard_warm"
     },
     {
@@ -1460,15 +1460,15 @@
         "name": "loading.mobile/FlipKart_cold"
     },
     {
-        "duration": "18.0",
+        "duration": "19.0",
         "name": "loading.mobile/FlipKart_hot"
     },
     {
-        "duration": "20.0",
+        "duration": "21.0",
         "name": "loading.mobile/FlipKart_hot_3g"
     },
     {
-        "duration": "14.0",
+        "duration": "15.0",
         "name": "loading.mobile/FlipKart_warm"
     },
     {
@@ -1508,19 +1508,15 @@
         "name": "loading.mobile/KapanLagi"
     },
     {
-        "duration": "19.0",
+        "duration": "18.0",
         "name": "loading.mobile/Kaskus"
     },
     {
-        "duration": "11.0",
+        "duration": "12.0",
         "name": "loading.mobile/LocalMoxie"
     },
     {
-        "duration": "0.0",
-        "name": "loading.mobile/LocalMoxie_3g"
-    },
-    {
-        "duration": "9.0",
+        "duration": "10.0",
         "name": "loading.mobile/Locanto"
     },
     {
@@ -1556,7 +1552,7 @@
         "name": "loading.mobile/Suumo_cold_3g"
     },
     {
-        "duration": "14.0",
+        "duration": "16.0",
         "name": "loading.mobile/Suumo_hot"
     },
     {
@@ -1580,7 +1576,7 @@
         "name": "loading.mobile/TheStar"
     },
     {
-        "duration": "13.0",
+        "duration": "14.0",
         "name": "loading.mobile/TribunNews"
     },
     {
@@ -1612,7 +1608,7 @@
         "name": "loading.mobile/Youtube"
     },
     {
-        "duration": "57.0",
+        "duration": "58.0",
         "name": "octane/Octane"
     },
     {
@@ -1624,15 +1620,15 @@
         "name": "rasterize_and_record_micro.top_25/file://static_top_25/amazon.html"
     },
     {
-        "duration": "12.0",
+        "duration": "13.0",
         "name": "rasterize_and_record_micro.top_25/file://static_top_25/blogger.html"
     },
     {
-        "duration": "23.0",
+        "duration": "24.0",
         "name": "rasterize_and_record_micro.top_25/file://static_top_25/booking.html"
     },
     {
-        "duration": "15.0",
+        "duration": "16.0",
         "name": "rasterize_and_record_micro.top_25/file://static_top_25/cnn.html"
     },
     {
@@ -1640,35 +1636,35 @@
         "name": "rasterize_and_record_micro.top_25/file://static_top_25/ebay.html"
     },
     {
-        "duration": "24.0",
+        "duration": "26.0",
         "name": "rasterize_and_record_micro.top_25/file://static_top_25/espn.html"
     },
     {
-        "duration": "22.0",
+        "duration": "23.0",
         "name": "rasterize_and_record_micro.top_25/file://static_top_25/facebook.html"
     },
     {
-        "duration": "38.0",
+        "duration": "41.0",
         "name": "rasterize_and_record_micro.top_25/file://static_top_25/gmail.html"
     },
     {
-        "duration": "30.0",
+        "duration": "31.0",
         "name": "rasterize_and_record_micro.top_25/file://static_top_25/google.html"
     },
     {
-        "duration": "28.0",
+        "duration": "30.0",
         "name": "rasterize_and_record_micro.top_25/file://static_top_25/googlecalendar.html"
     },
     {
-        "duration": "22.0",
+        "duration": "26.0",
         "name": "rasterize_and_record_micro.top_25/file://static_top_25/googledocs.html"
     },
     {
-        "duration": "25.0",
+        "duration": "26.0",
         "name": "rasterize_and_record_micro.top_25/file://static_top_25/googleimagesearch.html"
     },
     {
-        "duration": "23.0",
+        "duration": "26.0",
         "name": "rasterize_and_record_micro.top_25/file://static_top_25/googleplus.html"
     },
     {
@@ -1676,23 +1672,23 @@
         "name": "rasterize_and_record_micro.top_25/file://static_top_25/linkedin.html"
     },
     {
-        "duration": "11.0",
+        "duration": "15.0",
         "name": "rasterize_and_record_micro.top_25/file://static_top_25/pinterest.html"
     },
     {
-        "duration": "17.0",
+        "duration": "19.0",
         "name": "rasterize_and_record_micro.top_25/file://static_top_25/techcrunch.html"
     },
     {
-        "duration": "31.0",
+        "duration": "32.0",
         "name": "rasterize_and_record_micro.top_25/file://static_top_25/twitter.html"
     },
     {
-        "duration": "14.0",
+        "duration": "16.0",
         "name": "rasterize_and_record_micro.top_25/file://static_top_25/weather.html"
     },
     {
-        "duration": "13.0",
+        "duration": "14.0",
         "name": "rasterize_and_record_micro.top_25/file://static_top_25/wordpress.html"
     },
     {
@@ -1700,27 +1696,27 @@
         "name": "rasterize_and_record_micro.top_25/file://static_top_25/yahooanswers.html"
     },
     {
-        "duration": "66.0",
+        "duration": "68.0",
         "name": "rasterize_and_record_micro.top_25/file://static_top_25/yahoogames.html"
     },
     {
-        "duration": "84.0",
+        "duration": "114.0",
         "name": "rasterize_and_record_micro.top_25/file://static_top_25/yahoosports.html"
     },
     {
-        "duration": "34.0",
+        "duration": "38.0",
         "name": "rasterize_and_record_micro.top_25/file://static_top_25/youtube.html"
     },
     {
-        "duration": "25.0",
+        "duration": "26.0",
         "name": "rendering.mobile/accu_weather_2018"
     },
     {
-        "duration": "41.0",
+        "duration": "33.0",
         "name": "rendering.mobile/accu_weather_mobile_pinch_2018"
     },
     {
-        "duration": "21.0",
+        "duration": "22.0",
         "name": "rendering.mobile/amazon_2018"
     },
     {
@@ -1728,11 +1724,11 @@
         "name": "rendering.mobile/amazon_mobile_2018"
     },
     {
-        "duration": "22.0",
+        "duration": "23.0",
         "name": "rendering.mobile/analog_clock_svg"
     },
     {
-        "duration": "25.0",
+        "duration": "26.0",
         "name": "rendering.mobile/androidpolice_mobile_2018"
     },
     {
@@ -1748,7 +1744,7 @@
         "name": "rendering.mobile/animometer_webgl_multi_draw"
     },
     {
-        "duration": "29.0",
+        "duration": "30.0",
         "name": "rendering.mobile/aquarium"
     },
     {
@@ -1756,7 +1752,7 @@
         "name": "rendering.mobile/background_color_animation"
     },
     {
-        "duration": "26.0",
+        "duration": "27.0",
         "name": "rendering.mobile/background_color_animation_with_gradient"
     },
     {
@@ -1784,7 +1780,7 @@
         "name": "rendering.mobile/balls_javascript_canvas"
     },
     {
-        "duration": "19.0",
+        "duration": "20.0",
         "name": "rendering.mobile/balls_javascript_css"
     },
     {
@@ -1816,7 +1812,7 @@
         "name": "rendering.mobile/blur_rotating_background"
     },
     {
-        "duration": "18.0",
+        "duration": "19.0",
         "name": "rendering.mobile/boingboing_mobile_2018"
     },
     {
@@ -1832,7 +1828,7 @@
         "name": "rendering.mobile/bouncing_balls_15"
     },
     {
-        "duration": "20.0",
+        "duration": "19.0",
         "name": "rendering.mobile/bouncing_clipped_rectangles"
     },
     {
@@ -1844,11 +1840,11 @@
         "name": "rendering.mobile/bouncing_png_images"
     },
     {
-        "duration": "25.0",
+        "duration": "26.0",
         "name": "rendering.mobile/bouncing_svg_images"
     },
     {
-        "duration": "28.0",
+        "duration": "29.0",
         "name": "rendering.mobile/camera_to_webgl"
     },
     {
@@ -1856,7 +1852,7 @@
         "name": "rendering.mobile/canvas_05000_pixels_per_second"
     },
     {
-        "duration": "23.0",
+        "duration": "22.0",
         "name": "rendering.mobile/canvas_animation_no_clear"
     },
     {
@@ -1888,11 +1884,11 @@
         "name": "rendering.mobile/card_expansion_animated"
     },
     {
-        "duration": "16.0",
+        "duration": "17.0",
         "name": "rendering.mobile/card_expansion_images_text"
     },
     {
-        "duration": "14.0",
+        "duration": "15.0",
         "name": "rendering.mobile/card_flying"
     },
     {
@@ -1928,11 +1924,11 @@
         "name": "rendering.mobile/cnn_mobile_2018"
     },
     {
-        "duration": "18.0",
+        "duration": "17.0",
         "name": "rendering.mobile/cnn_pathological_2018"
     },
     {
-        "duration": "20.0",
+        "duration": "22.0",
         "name": "rendering.mobile/compositor_heavy_animation"
     },
     {
@@ -1952,7 +1948,7 @@
         "name": "rendering.mobile/css_animations_simultaneous_inline_style"
     },
     {
-        "duration": "20.0",
+        "duration": "21.0",
         "name": "rendering.mobile/css_animations_simultaneous_new_element"
     },
     {
@@ -1964,7 +1960,7 @@
         "name": "rendering.mobile/css_animations_simultaneous_updating_class"
     },
     {
-        "duration": "19.0",
+        "duration": "20.0",
         "name": "rendering.mobile/css_animations_staggered_infinite_iterations"
     },
     {
@@ -1976,7 +1972,7 @@
         "name": "rendering.mobile/css_animations_staggered_new_element"
     },
     {
-        "duration": "22.0",
+        "duration": "23.0",
         "name": "rendering.mobile/css_animations_staggered_style_element"
     },
     {
@@ -1984,11 +1980,11 @@
         "name": "rendering.mobile/css_animations_staggered_updating_class"
     },
     {
-        "duration": "22.0",
+        "duration": "23.0",
         "name": "rendering.mobile/css_animations_triggered_inline_style"
     },
     {
-        "duration": "26.0",
+        "duration": "27.0",
         "name": "rendering.mobile/css_animations_triggered_new_element"
     },
     {
@@ -2000,15 +1996,15 @@
         "name": "rendering.mobile/css_animations_triggered_updating_class"
     },
     {
-        "duration": "23.0",
+        "duration": "24.0",
         "name": "rendering.mobile/css_opacity_plus_n_layers_0"
     },
     {
-        "duration": "23.0",
+        "duration": "24.0",
         "name": "rendering.mobile/css_opacity_plus_n_layers_75"
     },
     {
-        "duration": "23.0",
+        "duration": "24.0",
         "name": "rendering.mobile/css_opacity_plus_n_layers_99"
     },
     {
@@ -2060,7 +2056,7 @@
         "name": "rendering.mobile/css_transitions_updating_class"
     },
     {
-        "duration": "20.0",
+        "duration": "21.0",
         "name": "rendering.mobile/css_value_type_color"
     },
     {
@@ -2080,7 +2076,7 @@
         "name": "rendering.mobile/css_value_type_length_simple"
     },
     {
-        "duration": "21.0",
+        "duration": "22.0",
         "name": "rendering.mobile/css_value_type_path"
     },
     {
@@ -2092,27 +2088,27 @@
         "name": "rendering.mobile/css_value_type_transform_complex"
     },
     {
-        "duration": "23.0",
+        "duration": "21.0",
         "name": "rendering.mobile/css_value_type_transform_simple"
     },
     {
-        "duration": "27.0",
+        "duration": "23.0",
         "name": "rendering.mobile/deviantart_mobile_2018"
     },
     {
-        "duration": "16.0",
+        "duration": "17.0",
         "name": "rendering.mobile/digg_mobile_2018"
     },
     {
-        "duration": "26.0",
+        "duration": "27.0",
         "name": "rendering.mobile/dynamic_cube_map"
     },
     {
-        "duration": "24.0",
+        "duration": "25.0",
         "name": "rendering.mobile/earth"
     },
     {
-        "duration": "17.0",
+        "duration": "18.0",
         "name": "rendering.mobile/ebay_2018"
     },
     {
@@ -2120,7 +2116,7 @@
         "name": "rendering.mobile/ebay_mobile_2018"
     },
     {
-        "duration": "18.0",
+        "duration": "19.0",
         "name": "rendering.mobile/ebay_mobile_pinch_2018"
     },
     {
@@ -2128,7 +2124,7 @@
         "name": "rendering.mobile/ebay_scroll_2018"
     },
     {
-        "duration": "25.0",
+        "duration": "26.0",
         "name": "rendering.mobile/espn_2018"
     },
     {
@@ -2136,7 +2132,7 @@
         "name": "rendering.mobile/espn_mobile_2018"
     },
     {
-        "duration": "16.0",
+        "duration": "15.0",
         "name": "rendering.mobile/espn_pathological_2018"
     },
     {
@@ -2148,7 +2144,7 @@
         "name": "rendering.mobile/facebook_2018"
     },
     {
-        "duration": "22.0",
+        "duration": "23.0",
         "name": "rendering.mobile/facebook_mobile_2018"
     },
     {
@@ -2156,11 +2152,11 @@
         "name": "rendering.mobile/fill_shapes"
     },
     {
-        "duration": "22.0",
+        "duration": "23.0",
         "name": "rendering.mobile/filter_terrain_svg"
     },
     {
-        "duration": "24.0",
+        "duration": "25.0",
         "name": "rendering.mobile/flickr_scroll_2018"
     },
     {
@@ -2176,7 +2172,7 @@
         "name": "rendering.mobile/geo_apis"
     },
     {
-        "duration": "17.0",
+        "duration": "21.0",
         "name": "rendering.mobile/gmail_2018"
     },
     {
@@ -2192,7 +2188,7 @@
         "name": "rendering.mobile/google_image_search_2018"
     },
     {
-        "duration": "20.0",
+        "duration": "21.0",
         "name": "rendering.mobile/google_image_search_mobile_2018"
     },
     {
@@ -2200,11 +2196,11 @@
         "name": "rendering.mobile/google_news_ios"
     },
     {
-        "duration": "22.0",
+        "duration": "21.0",
         "name": "rendering.mobile/google_plus_2018"
     },
     {
-        "duration": "20.0",
+        "duration": "25.0",
         "name": "rendering.mobile/google_plus_mobile_2018"
     },
     {
@@ -2220,11 +2216,11 @@
         "name": "rendering.mobile/google_web_search_mobile_2018"
     },
     {
-        "duration": "21.0",
+        "duration": "22.0",
         "name": "rendering.mobile/gsp.ro_mobile_2018"
     },
     {
-        "duration": "21.0",
+        "duration": "23.0",
         "name": "rendering.mobile/guardian_pathological_2018"
     },
     {
@@ -2236,11 +2232,11 @@
         "name": "rendering.mobile/gws_boogie_expansion"
     },
     {
-        "duration": "17.0",
+        "duration": "16.0",
         "name": "rendering.mobile/gws_google_expansion"
     },
     {
-        "duration": "20.0",
+        "duration": "21.0",
         "name": "rendering.mobile/hakim"
     },
     {
@@ -2260,11 +2256,11 @@
         "name": "rendering.mobile/idle_power_css_animation"
     },
     {
-        "duration": "41.0",
+        "duration": "39.0",
         "name": "rendering.mobile/idle_power_request_animation_frame"
     },
     {
-        "duration": "118.0",
+        "duration": "116.0",
         "name": "rendering.mobile/idle_power_set_timeout_long"
     },
     {
@@ -2280,7 +2276,7 @@
         "name": "rendering.mobile/ie_pirate_mark"
     },
     {
-        "duration": "23.0",
+        "duration": "24.0",
         "name": "rendering.mobile/infinite_scroll_element_n_layers_0"
     },
     {
@@ -2292,7 +2288,7 @@
         "name": "rendering.mobile/infinite_scroll_element_n_layers_99"
     },
     {
-        "duration": "22.0",
+        "duration": "23.0",
         "name": "rendering.mobile/infinite_scroll_root_fixed_n_layers_0"
     },
     {
@@ -2316,15 +2312,15 @@
         "name": "rendering.mobile/infinite_scroll_root_n_layers_99"
     },
     {
-        "duration": "20.0",
+        "duration": "21.0",
         "name": "rendering.mobile/infinite_scrolling"
     },
     {
-        "duration": "25.0",
+        "duration": "24.0",
         "name": "rendering.mobile/jarro_doverson"
     },
     {
-        "duration": "15.0",
+        "duration": "13.0",
         "name": "rendering.mobile/jpeg_decoding_rgb_and_gpu_rasterization"
     },
     {
@@ -2332,7 +2328,7 @@
         "name": "rendering.mobile/jpeg_decoding_yuv_and_gpu_rasterization"
     },
     {
-        "duration": "31.0",
+        "duration": "32.0",
         "name": "rendering.mobile/js_full_screen_invalidation"
     },
     {
@@ -2348,11 +2344,11 @@
         "name": "rendering.mobile/js_opacity_plus_n_layers_99"
     },
     {
-        "duration": "25.0",
+        "duration": "26.0",
         "name": "rendering.mobile/js_paint_plus_n_layers_0"
     },
     {
-        "duration": "25.0",
+        "duration": "26.0",
         "name": "rendering.mobile/js_paint_plus_n_layers_75"
     },
     {
@@ -2364,7 +2360,7 @@
         "name": "rendering.mobile/js_poster_circle"
     },
     {
-        "duration": "14.0",
+        "duration": "13.0",
         "name": "rendering.mobile/js_scroll_text_only"
     },
     {
@@ -2376,7 +2372,7 @@
         "name": "rendering.mobile/large_texture_uploads"
     },
     {
-        "duration": "25.0",
+        "duration": "24.0",
         "name": "rendering.mobile/latimes_pathological_2018"
     },
     {
@@ -2384,7 +2380,7 @@
         "name": "rendering.mobile/linkedin_2018"
     },
     {
-        "duration": "42.0",
+        "duration": "43.0",
         "name": "rendering.mobile/linkedin_mobile_2018"
     },
     {
@@ -2400,7 +2396,7 @@
         "name": "rendering.mobile/list_animation_simple"
     },
     {
-        "duration": "21.0",
+        "duration": "22.0",
         "name": "rendering.mobile/list_recycle_transform"
     },
     {
@@ -2420,7 +2416,7 @@
         "name": "rendering.mobile/main_30fps_impl_60fps"
     },
     {
-        "duration": "15.0",
+        "duration": "14.0",
         "name": "rendering.mobile/main_60fps_impl_0fps"
     },
     {
@@ -2436,7 +2432,7 @@
         "name": "rendering.mobile/many_images"
     },
     {
-        "duration": "24.0",
+        "duration": "25.0",
         "name": "rendering.mobile/many_planets_deep"
     },
     {
@@ -2468,11 +2464,11 @@
         "name": "rendering.mobile/microsoft_performance"
     },
     {
-        "duration": "22.0",
+        "duration": "23.0",
         "name": "rendering.mobile/microsoft_snow"
     },
     {
-        "duration": "21.0",
+        "duration": "23.0",
         "name": "rendering.mobile/microsoft_speed_reading"
     },
     {
@@ -2480,7 +2476,7 @@
         "name": "rendering.mobile/microsoft_tweet_map"
     },
     {
-        "duration": "21.0",
+        "duration": "22.0",
         "name": "rendering.mobile/microsoft_worker_fountains"
     },
     {
@@ -2496,7 +2492,7 @@
         "name": "rendering.mobile/mix_blend_mode_animation_hue"
     },
     {
-        "duration": "22.0",
+        "duration": "24.0",
         "name": "rendering.mobile/mix_blend_mode_animation_propagating_isolation"
     },
     {
@@ -2504,7 +2500,7 @@
         "name": "rendering.mobile/mix_blend_mode_animation_screen"
     },
     {
-        "duration": "30.0",
+        "duration": "26.0",
         "name": "rendering.mobile/mlb_mobile_2018"
     },
     {
@@ -2528,7 +2524,7 @@
         "name": "rendering.mobile/motionmark_anim_focus_25"
     },
     {
-        "duration": "23.0",
+        "duration": "24.0",
         "name": "rendering.mobile/motionmark_anim_images_50"
     },
     {
@@ -2568,7 +2564,7 @@
         "name": "rendering.mobile/motionmark_html_css_bouncing_gradient_circles_250"
     },
     {
-        "duration": "21.0",
+        "duration": "20.0",
         "name": "rendering.mobile/motionmark_html_css_bouncing_svg_images_50"
     },
     {
@@ -2600,19 +2596,19 @@
         "name": "rendering.mobile/motionmark_svg_bouncing_gradient_circles_200"
     },
     {
-        "duration": "20.0",
+        "duration": "21.0",
         "name": "rendering.mobile/motionmark_svg_bouncing_png_images_200"
     },
     {
-        "duration": "27.0",
+        "duration": "29.0",
         "name": "rendering.mobile/motionmark_svg_bouncing_svg_images_50"
     },
     {
-        "duration": "26.0",
+        "duration": "27.0",
         "name": "rendering.mobile/new_tilings"
     },
     {
-        "duration": "19.0",
+        "duration": "18.0",
         "name": "rendering.mobile/no_op_raf"
     },
     {
@@ -2644,7 +2640,7 @@
         "name": "rendering.mobile/nytimes_scroll_2018"
     },
     {
-        "duration": "31.0",
+        "duration": "32.0",
         "name": "rendering.mobile/overlay_background_color_css_transitions_page"
     },
     {
@@ -2656,7 +2652,7 @@
         "name": "rendering.mobile/particles"
     },
     {
-        "duration": "18.0",
+        "duration": "19.0",
         "name": "rendering.mobile/pbs_pathological_2018"
     },
     {
@@ -2664,7 +2660,7 @@
         "name": "rendering.mobile/physical_simulation"
     },
     {
-        "duration": "24.0",
+        "duration": "25.0",
         "name": "rendering.mobile/pinterest_2018"
     },
     {
@@ -2672,7 +2668,7 @@
         "name": "rendering.mobile/pinterest_mobile_2018"
     },
     {
-        "duration": "19.0",
+        "duration": "21.0",
         "name": "rendering.mobile/put_get_image_data"
     },
     {
@@ -2692,7 +2688,7 @@
         "name": "rendering.mobile/raf_touch_animation"
     },
     {
-        "duration": "22.0",
+        "duration": "24.0",
         "name": "rendering.mobile/recode_pathological_2018"
     },
     {
@@ -2700,7 +2696,7 @@
         "name": "rendering.mobile/reddit_mobile_2018"
     },
     {
-        "duration": "23.0",
+        "duration": "22.0",
         "name": "rendering.mobile/runway_2019"
     },
     {
@@ -2728,7 +2724,7 @@
         "name": "rendering.mobile/silk_finance"
     },
     {
-        "duration": "18.0",
+        "duration": "17.0",
         "name": "rendering.mobile/simple_text_page"
     },
     {
@@ -2752,7 +2748,7 @@
         "name": "rendering.mobile/spielzeugz"
     },
     {
-        "duration": "14.0",
+        "duration": "13.0",
         "name": "rendering.mobile/sticky_using_webkit"
     },
     {
@@ -2780,7 +2776,7 @@
         "name": "rendering.mobile/sync_scroll_offset"
     },
     {
-        "duration": "28.0",
+        "duration": "29.0",
         "name": "rendering.mobile/techcrunch_2018"
     },
     {
@@ -2812,7 +2808,7 @@
         "name": "rendering.mobile/text_75000_pixels_per_second"
     },
     {
-        "duration": "10.0",
+        "duration": "9.0",
         "name": "rendering.mobile/text_90000_pixels_per_second"
     },
     {
@@ -2840,23 +2836,23 @@
         "name": "rendering.mobile/text_constant_full_page_raster_75000_pixels_per_second"
     },
     {
-        "duration": "10.0",
+        "duration": "9.0",
         "name": "rendering.mobile/text_constant_full_page_raster_90000_pixels_per_second"
     },
     {
-        "duration": "16.0",
+        "duration": "17.0",
         "name": "rendering.mobile/text_hover_05000_pixels_per_second"
     },
     {
-        "duration": "16.0",
+        "duration": "18.0",
         "name": "rendering.mobile/text_hover_10000_pixels_per_second"
     },
     {
-        "duration": "12.0",
+        "duration": "14.0",
         "name": "rendering.mobile/text_hover_20000_pixels_per_second"
     },
     {
-        "duration": "10.0",
+        "duration": "11.0",
         "name": "rendering.mobile/text_hover_40000_pixels_per_second"
     },
     {
@@ -2872,11 +2868,11 @@
         "name": "rendering.mobile/text_hover_90000_pixels_per_second"
     },
     {
-        "duration": "24.0",
+        "duration": "25.0",
         "name": "rendering.mobile/theverge_article_mobile_2018"
     },
     {
-        "duration": "23.0",
+        "duration": "24.0",
         "name": "rendering.mobile/theverge_mobile_2018"
     },
     {
@@ -2896,23 +2892,23 @@
         "name": "rendering.mobile/transform_transitions_js_block"
     },
     {
-        "duration": "16.0",
+        "duration": "17.0",
         "name": "rendering.mobile/twitch_2018"
     },
     {
-        "duration": "20.0",
+        "duration": "19.0",
         "name": "rendering.mobile/twitch_mobile_pinch_2018"
     },
     {
-        "duration": "25.0",
+        "duration": "23.0",
         "name": "rendering.mobile/twitter_2018"
     },
     {
-        "duration": "17.0",
+        "duration": "12.0",
         "name": "rendering.mobile/twitter_mobile_2018"
     },
     {
-        "duration": "19.0",
+        "duration": "17.0",
         "name": "rendering.mobile/update_history_state"
     },
     {
@@ -2924,11 +2920,11 @@
         "name": "rendering.mobile/vertical_expansion"
     },
     {
-        "duration": "20.0",
+        "duration": "21.0",
         "name": "rendering.mobile/web_animation_value_type_color"
     },
     {
-        "duration": "20.0",
+        "duration": "21.0",
         "name": "rendering.mobile/web_animation_value_type_length_3d"
     },
     {
@@ -2940,19 +2936,19 @@
         "name": "rendering.mobile/web_animation_value_type_length_simple"
     },
     {
-        "duration": "21.0",
+        "duration": "22.0",
         "name": "rendering.mobile/web_animation_value_type_path"
     },
     {
-        "duration": "21.0",
+        "duration": "22.0",
         "name": "rendering.mobile/web_animation_value_type_shadow"
     },
     {
-        "duration": "20.0",
+        "duration": "21.0",
         "name": "rendering.mobile/web_animation_value_type_transform_complex"
     },
     {
-        "duration": "20.0",
+        "duration": "21.0",
         "name": "rendering.mobile/web_animation_value_type_transform_simple"
     },
     {
@@ -2960,23 +2956,23 @@
         "name": "rendering.mobile/web_animations_many_keyframes"
     },
     {
-        "duration": "20.0",
+        "duration": "21.0",
         "name": "rendering.mobile/web_animations_set_current_time"
     },
     {
-        "duration": "20.0",
+        "duration": "21.0",
         "name": "rendering.mobile/web_animations_simultaneous"
     },
     {
-        "duration": "22.0",
+        "duration": "23.0",
         "name": "rendering.mobile/web_animations_staggered_chaining"
     },
     {
-        "duration": "19.0",
+        "duration": "21.0",
         "name": "rendering.mobile/web_animations_staggered_infinite_iterations"
     },
     {
-        "duration": "22.0",
+        "duration": "23.0",
         "name": "rendering.mobile/web_animations_staggered_triggering_page"
     },
     {
@@ -2988,39 +2984,39 @@
         "name": "rendering.mobile/webp_decoding_yuv_and_gpu_rasterization"
     },
     {
-        "duration": "21.0",
+        "duration": "25.0",
         "name": "rendering.mobile/wikipedia_2018"
     },
     {
-        "duration": "19.0",
+        "duration": "20.0",
         "name": "rendering.mobile/wikipedia_delayed_scroll_start_2018"
     },
     {
-        "duration": "19.0",
+        "duration": "20.0",
         "name": "rendering.mobile/wikipedia_mobile_2018"
     },
     {
-        "duration": "21.0",
+        "duration": "22.0",
         "name": "rendering.mobile/wordpress_2018"
     },
     {
-        "duration": "20.0",
+        "duration": "21.0",
         "name": "rendering.mobile/wordpress_mobile_2018"
     },
     {
-        "duration": "21.0",
+        "duration": "22.0",
         "name": "rendering.mobile/worldjournal_mobile_2018"
     },
     {
-        "duration": "25.0",
+        "duration": "26.0",
         "name": "rendering.mobile/wow_wiki_pathological_2018"
     },
     {
-        "duration": "38.0",
+        "duration": "39.0",
         "name": "rendering.mobile/wowwiki_mobile_2018"
     },
     {
-        "duration": "24.0",
+        "duration": "30.0",
         "name": "rendering.mobile/wsj_mobile_2018"
     },
     {
@@ -3028,19 +3024,19 @@
         "name": "rendering.mobile/yahoo_answers_2018"
     },
     {
-        "duration": "16.0",
+        "duration": "17.0",
         "name": "rendering.mobile/yahoo_news_2018"
     },
     {
-        "duration": "21.0",
+        "duration": "22.0",
         "name": "rendering.mobile/yahoo_news_mobile_2018"
     },
     {
-        "duration": "19.0",
+        "duration": "20.0",
         "name": "rendering.mobile/yahoo_sports_2018"
     },
     {
-        "duration": "13.0",
+        "duration": "14.0",
         "name": "rendering.mobile/yahoo_sports_pathological_2018"
     },
     {
@@ -3056,23 +3052,23 @@
         "name": "rendering.mobile/zoom_in_animation"
     },
     {
-        "duration": "30.0",
+        "duration": "31.0",
         "name": "speedometer-future/http://browserbench.org/Speedometer/"
     },
     {
-        "duration": "29.0",
+        "duration": "30.0",
         "name": "speedometer/http://browserbench.org/Speedometer/"
     },
     {
-        "duration": "51.0",
+        "duration": "54.0",
         "name": "speedometer2-future/Speedometer2"
     },
     {
-        "duration": "50.0",
+        "duration": "51.0",
         "name": "speedometer2/Speedometer2"
     },
     {
-        "duration": "18.0",
+        "duration": "19.0",
         "name": "system_health.common_mobile/background:media:imgur"
     },
     {
@@ -3084,7 +3080,7 @@
         "name": "system_health.common_mobile/background:social:facebook"
     },
     {
-        "duration": "75.0",
+        "duration": "76.0",
         "name": "system_health.common_mobile/browse:media:facebook_photos"
     },
     {
@@ -3096,23 +3092,23 @@
         "name": "system_health.common_mobile/browse:media:googleplaystore:2019"
     },
     {
-        "duration": "70.0",
+        "duration": "71.0",
         "name": "system_health.common_mobile/browse:media:imgur"
     },
     {
-        "duration": "90.0",
+        "duration": "92.0",
         "name": "system_health.common_mobile/browse:media:youtube"
     },
     {
-        "duration": "97.0",
+        "duration": "99.0",
         "name": "system_health.common_mobile/browse:media:youtube:2019"
     },
     {
-        "duration": "57.0",
+        "duration": "59.0",
         "name": "system_health.common_mobile/browse:news:cnn:2018"
     },
     {
-        "duration": "46.0",
+        "duration": "47.0",
         "name": "system_health.common_mobile/browse:news:cricbuzz"
     },
     {
@@ -3120,11 +3116,11 @@
         "name": "system_health.common_mobile/browse:news:cricbuzz:2019"
     },
     {
-        "duration": "47.0",
+        "duration": "48.0",
         "name": "system_health.common_mobile/browse:news:globo:2019"
     },
     {
-        "duration": "121.0",
+        "duration": "128.0",
         "name": "system_health.common_mobile/browse:news:nytimes:2019"
     },
     {
@@ -3136,23 +3132,23 @@
         "name": "system_health.common_mobile/browse:news:reddit"
     },
     {
-        "duration": "52.0",
+        "duration": "53.0",
         "name": "system_health.common_mobile/browse:news:reddit:2019"
     },
     {
-        "duration": "100.0",
+        "duration": "104.0",
         "name": "system_health.common_mobile/browse:news:toi"
     },
     {
-        "duration": "48.0",
+        "duration": "49.0",
         "name": "system_health.common_mobile/browse:news:washingtonpost"
     },
     {
-        "duration": "65.0",
+        "duration": "67.0",
         "name": "system_health.common_mobile/browse:news:washingtonpost:2019"
     },
     {
-        "duration": "24.0",
+        "duration": "25.0",
         "name": "system_health.common_mobile/browse:search:amp:2018"
     },
     {
@@ -3160,11 +3156,11 @@
         "name": "system_health.common_mobile/browse:search:amp:sxg:2019"
     },
     {
-        "duration": "58.0",
+        "duration": "59.0",
         "name": "system_health.common_mobile/browse:shopping:amazon"
     },
     {
-        "duration": "56.0",
+        "duration": "57.0",
         "name": "system_health.common_mobile/browse:shopping:amazon:2019"
     },
     {
@@ -3172,39 +3168,39 @@
         "name": "system_health.common_mobile/browse:shopping:lazada"
     },
     {
-        "duration": "61.0",
+        "duration": "60.0",
         "name": "system_health.common_mobile/browse:social:facebook"
     },
     {
-        "duration": "106.0",
+        "duration": "112.0",
         "name": "system_health.common_mobile/browse:social:facebook_infinite_scroll"
     },
     {
-        "duration": "80.0",
+        "duration": "81.0",
         "name": "system_health.common_mobile/browse:social:facebook_infinite_scroll:2018"
     },
     {
-        "duration": "78.0",
+        "duration": "79.0",
         "name": "system_health.common_mobile/browse:social:instagram"
     },
     {
-        "duration": "75.0",
+        "duration": "77.0",
         "name": "system_health.common_mobile/browse:social:pinterest_infinite_scroll"
     },
     {
-        "duration": "47.0",
+        "duration": "48.0",
         "name": "system_health.common_mobile/browse:social:twitter"
     },
     {
-        "duration": "79.0",
+        "duration": "80.0",
         "name": "system_health.common_mobile/browse:social:twitter:2019"
     },
     {
-        "duration": "56.0",
+        "duration": "57.0",
         "name": "system_health.common_mobile/browse:tech:discourse_infinite_scroll"
     },
     {
-        "duration": "74.0",
+        "duration": "75.0",
         "name": "system_health.common_mobile/browse:tech:discourse_infinite_scroll:2018"
     },
     {
@@ -3212,7 +3208,7 @@
         "name": "system_health.common_mobile/browse:tools:maps"
     },
     {
-        "duration": "45.0",
+        "duration": "46.0",
         "name": "system_health.common_mobile/browse:tools:maps:2019"
     },
     {
@@ -3240,7 +3236,7 @@
         "name": "system_health.common_mobile/load:media:dailymotion"
     },
     {
-        "duration": "18.0",
+        "duration": "17.0",
         "name": "system_health.common_mobile/load:media:facebook_photos"
     },
     {
@@ -3256,7 +3252,7 @@
         "name": "system_health.common_mobile/load:media:google_images:2018"
     },
     {
-        "duration": "24.0",
+        "duration": "26.0",
         "name": "system_health.common_mobile/load:media:imgur:2018"
     },
     {
@@ -3264,7 +3260,7 @@
         "name": "system_health.common_mobile/load:media:youtube:2018"
     },
     {
-        "duration": "24.0",
+        "duration": "25.0",
         "name": "system_health.common_mobile/load:news:cnn:2018"
     },
     {
@@ -3272,11 +3268,11 @@
         "name": "system_health.common_mobile/load:news:irctc"
     },
     {
-        "duration": "26.0",
+        "duration": "27.0",
         "name": "system_health.common_mobile/load:news:nytimes:2019"
     },
     {
-        "duration": "17.0",
+        "duration": "18.0",
         "name": "system_health.common_mobile/load:news:qq"
     },
     {
@@ -3316,7 +3312,7 @@
         "name": "system_health.common_mobile/load:search:google:2018"
     },
     {
-        "duration": "20.0",
+        "duration": "21.0",
         "name": "system_health.common_mobile/load:search:taobao"
     },
     {
@@ -3336,7 +3332,7 @@
         "name": "system_health.common_mobile/load:social:twitter"
     },
     {
-        "duration": "18.0",
+        "duration": "19.0",
         "name": "system_health.common_mobile/load:social:twitter:2019"
     },
     {
@@ -3344,7 +3340,7 @@
         "name": "system_health.common_mobile/load:tools:docs"
     },
     {
-        "duration": "18.0",
+        "duration": "19.0",
         "name": "system_health.common_mobile/load:tools:drive"
     },
     {
@@ -3356,7 +3352,7 @@
         "name": "system_health.common_mobile/load:tools:stackoverflow:2018"
     },
     {
-        "duration": "20.0",
+        "duration": "23.0",
         "name": "system_health.common_mobile/load:tools:weather"
     },
     {
@@ -3364,7 +3360,7 @@
         "name": "system_health.memory_mobile/background:media:imgur"
     },
     {
-        "duration": "23.0",
+        "duration": "24.0",
         "name": "system_health.memory_mobile/background:search:google"
     },
     {
@@ -3376,15 +3372,15 @@
         "name": "system_health.memory_mobile/browse:media:facebook_photos"
     },
     {
-        "duration": "43.0",
+        "duration": "44.0",
         "name": "system_health.memory_mobile/browse:media:flickr_infinite_scroll"
     },
     {
-        "duration": "41.0",
+        "duration": "42.0",
         "name": "system_health.memory_mobile/browse:media:googleplaystore:2019"
     },
     {
-        "duration": "69.0",
+        "duration": "68.0",
         "name": "system_health.memory_mobile/browse:media:imgur"
     },
     {
@@ -3412,7 +3408,7 @@
         "name": "system_health.memory_mobile/browse:news:globo:2019"
     },
     {
-        "duration": "103.0",
+        "duration": "102.0",
         "name": "system_health.memory_mobile/browse:news:nytimes:2019"
     },
     {
@@ -3420,11 +3416,11 @@
         "name": "system_health.memory_mobile/browse:news:qq"
     },
     {
-        "duration": "47.0",
+        "duration": "48.0",
         "name": "system_health.memory_mobile/browse:news:reddit"
     },
     {
-        "duration": "49.0",
+        "duration": "50.0",
         "name": "system_health.memory_mobile/browse:news:reddit:2019"
     },
     {
@@ -3448,23 +3444,27 @@
         "name": "system_health.memory_mobile/browse:search:amp:sxg:2019"
     },
     {
-        "duration": "53.0",
+        "duration": "56.0",
         "name": "system_health.memory_mobile/browse:shopping:amazon"
     },
     {
-        "duration": "53.0",
+        "duration": "51.0",
         "name": "system_health.memory_mobile/browse:shopping:amazon:2019"
+    },
+    {
+        "duration": "0.0",
+        "name": "system_health.memory_mobile/browse:shopping:avito"
     },
     {
         "duration": "32.0",
         "name": "system_health.memory_mobile/browse:shopping:lazada"
     },
     {
-        "duration": "57.0",
+        "duration": "58.0",
         "name": "system_health.memory_mobile/browse:social:facebook"
     },
     {
-        "duration": "69.0",
+        "duration": "70.0",
         "name": "system_health.memory_mobile/browse:social:facebook_infinite_scroll:2018"
     },
     {
@@ -3472,7 +3472,7 @@
         "name": "system_health.memory_mobile/browse:social:instagram"
     },
     {
-        "duration": "78.0",
+        "duration": "77.0",
         "name": "system_health.memory_mobile/browse:social:instagram:2019"
     },
     {
@@ -3484,7 +3484,7 @@
         "name": "system_health.memory_mobile/browse:social:twitter"
     },
     {
-        "duration": "77.0",
+        "duration": "78.0",
         "name": "system_health.memory_mobile/browse:social:twitter:2019"
     },
     {
@@ -3512,7 +3512,7 @@
         "name": "system_health.memory_mobile/load:games:bubbles:2019"
     },
     {
-        "duration": "22.0",
+        "duration": "21.0",
         "name": "system_health.memory_mobile/load:games:lazors"
     },
     {
@@ -3524,7 +3524,7 @@
         "name": "system_health.memory_mobile/load:media:dailymotion"
     },
     {
-        "duration": "22.0",
+        "duration": "21.0",
         "name": "system_health.memory_mobile/load:media:facebook_photos"
     },
     {
@@ -3548,7 +3548,7 @@
         "name": "system_health.memory_mobile/load:media:youtube:2018"
     },
     {
-        "duration": "28.0",
+        "duration": "26.0",
         "name": "system_health.memory_mobile/load:news:cnn:2018"
     },
     {
@@ -3556,7 +3556,7 @@
         "name": "system_health.memory_mobile/load:news:irctc"
     },
     {
-        "duration": "26.0",
+        "duration": "27.0",
         "name": "system_health.memory_mobile/load:news:nytimes:2019"
     },
     {
@@ -3568,7 +3568,7 @@
         "name": "system_health.memory_mobile/load:news:qq:2019"
     },
     {
-        "duration": "21.0",
+        "duration": "22.0",
         "name": "system_health.memory_mobile/load:news:reddit"
     },
     {
@@ -3592,7 +3592,7 @@
         "name": "system_health.memory_mobile/load:search:baidu:2018"
     },
     {
-        "duration": "22.0",
+        "duration": "21.0",
         "name": "system_health.memory_mobile/load:search:ebay:2018"
     },
     {
@@ -3600,7 +3600,7 @@
         "name": "system_health.memory_mobile/load:search:google:2018"
     },
     {
-        "duration": "23.0",
+        "duration": "24.0",
         "name": "system_health.memory_mobile/load:search:taobao"
     },
     {
@@ -3628,7 +3628,11 @@
         "name": "system_health.memory_mobile/load:tools:docs"
     },
     {
-        "duration": "21.0",
+        "duration": "0.0",
+        "name": "system_health.memory_mobile/load:tools:drive"
+    },
+    {
+        "duration": "20.0",
         "name": "system_health.memory_mobile/load:tools:dropbox"
     },
     {
@@ -3640,15 +3644,15 @@
         "name": "system_health.memory_mobile/load:tools:weather"
     },
     {
-        "duration": "18.0",
+        "duration": "19.0",
         "name": "system_health.webview_startup/load:chrome:blank"
     },
     {
-        "duration": "7.0",
+        "duration": "8.0",
         "name": "tracing.tracing_with_background_memory_infra/Facebook"
     },
     {
-        "duration": "7.0",
+        "duration": "8.0",
         "name": "tracing.tracing_with_background_memory_infra/Wikipedia"
     },
     {
@@ -3664,11 +3668,11 @@
         "name": "tracing.tracing_with_background_memory_infra/http://www.bing.com/"
     },
     {
-        "duration": "6.0",
+        "duration": "7.0",
         "name": "tracing.tracing_with_background_memory_infra/http://www.yahoo.com/"
     },
     {
-        "duration": "8.0",
+        "duration": "9.0",
         "name": "tracing.tracing_with_background_memory_infra/http://www.youtube.com"
     },
     {
@@ -3676,55 +3680,51 @@
         "name": "tracing.tracing_with_background_memory_infra/https://www.google.com/#hl=en&q=barack+obama"
     },
     {
-        "duration": "8.0",
+        "duration": "9.0",
         "name": "tracing.tracing_with_background_memory_infra/https://www.google.com/calendar/"
     },
     {
         "duration": "0.0",
-        "name": "v8.browsing_mobile-future/browse:social:twitter:2019"
+        "name": "v8.browsing_mobile-future/browse:media:youtube"
     },
     {
-        "duration": "83.0",
+        "duration": "84.0",
         "name": "v8.browsing_mobile/browse:media:facebook_photos"
     },
     {
-        "duration": "52.0",
+        "duration": "53.0",
         "name": "v8.browsing_mobile/browse:media:flickr_infinite_scroll"
     },
     {
-        "duration": "49.0",
+        "duration": "50.0",
         "name": "v8.browsing_mobile/browse:media:googleplaystore:2019"
     },
     {
-        "duration": "78.0",
+        "duration": "79.0",
         "name": "v8.browsing_mobile/browse:media:imgur"
     },
     {
-        "duration": "112.0",
-        "name": "v8.browsing_mobile/browse:media:youtube:2019"
-    },
-    {
-        "duration": "77.0",
+        "duration": "79.0",
         "name": "v8.browsing_mobile/browse:news:cnn:2018"
     },
     {
-        "duration": "52.0",
+        "duration": "53.0",
         "name": "v8.browsing_mobile/browse:news:cricbuzz"
     },
     {
-        "duration": "63.0",
+        "duration": "61.0",
         "name": "v8.browsing_mobile/browse:news:cricbuzz:2019"
     },
     {
-        "duration": "58.0",
+        "duration": "59.0",
         "name": "v8.browsing_mobile/browse:news:globo:2019"
     },
     {
-        "duration": "206.0",
+        "duration": "203.0",
         "name": "v8.browsing_mobile/browse:news:nytimes:2019"
     },
     {
-        "duration": "59.0",
+        "duration": "61.0",
         "name": "v8.browsing_mobile/browse:news:qq"
     },
     {
@@ -3732,23 +3732,23 @@
         "name": "v8.browsing_mobile/browse:news:reddit"
     },
     {
-        "duration": "65.0",
+        "duration": "67.0",
         "name": "v8.browsing_mobile/browse:news:reddit:2019"
     },
     {
-        "duration": "56.0",
+        "duration": "57.0",
         "name": "v8.browsing_mobile/browse:news:washingtonpost"
     },
     {
-        "duration": "85.0",
+        "duration": "87.0",
         "name": "v8.browsing_mobile/browse:news:washingtonpost:2019"
     },
     {
-        "duration": "29.0",
+        "duration": "30.0",
         "name": "v8.browsing_mobile/browse:search:amp:2018"
     },
     {
-        "duration": "26.0",
+        "duration": "25.0",
         "name": "v8.browsing_mobile/browse:search:amp:sxg:2019"
     },
     {
@@ -3756,35 +3756,35 @@
         "name": "v8.browsing_mobile/browse:shopping:amazon"
     },
     {
-        "duration": "68.0",
+        "duration": "69.0",
         "name": "v8.browsing_mobile/browse:shopping:amazon:2019"
-    },
-    {
-        "duration": "0.0",
-        "name": "v8.browsing_mobile/browse:shopping:flipkart"
     },
     {
         "duration": "33.0",
         "name": "v8.browsing_mobile/browse:shopping:lazada"
     },
     {
-        "duration": "71.0",
+        "duration": "73.0",
         "name": "v8.browsing_mobile/browse:social:facebook"
     },
     {
-        "duration": "137.0",
+        "duration": "143.0",
         "name": "v8.browsing_mobile/browse:social:facebook_infinite_scroll"
     },
     {
-        "duration": "107.0",
+        "duration": "110.0",
         "name": "v8.browsing_mobile/browse:social:facebook_infinite_scroll:2018"
     },
     {
-        "duration": "98.0",
+        "duration": "101.0",
         "name": "v8.browsing_mobile/browse:social:instagram"
     },
     {
-        "duration": "101.0",
+        "duration": "0.0",
+        "name": "v8.browsing_mobile/browse:social:instagram:2019"
+    },
+    {
+        "duration": "103.0",
         "name": "v8.browsing_mobile/browse:social:pinterest_infinite_scroll"
     },
     {
@@ -3792,23 +3792,23 @@
         "name": "v8.browsing_mobile/browse:social:twitter"
     },
     {
-        "duration": "90.0",
+        "duration": "91.0",
         "name": "v8.browsing_mobile/browse:social:twitter:2019"
     },
     {
-        "duration": "71.0",
+        "duration": "73.0",
         "name": "v8.browsing_mobile/browse:tech:discourse_infinite_scroll"
     },
     {
-        "duration": "99.0",
+        "duration": "102.0",
         "name": "v8.browsing_mobile/browse:tech:discourse_infinite_scroll:2018"
     },
     {
-        "duration": "44.0",
+        "duration": "45.0",
         "name": "v8.browsing_mobile/browse:tools:maps"
     },
     {
-        "duration": "51.0",
+        "duration": "52.0",
         "name": "v8.browsing_mobile/browse:tools:maps:2019"
     },
     {
@@ -3816,27 +3816,27 @@
         "name": "webrtc/10s_datachannel_transfer"
     },
     {
-        "duration": "17.0",
+        "duration": "18.0",
         "name": "webrtc/canvas_capture_peer_connection"
     },
     {
-        "duration": "27.0",
+        "duration": "28.0",
         "name": "webrtc/codec_constraints_h264"
     },
     {
-        "duration": "27.0",
+        "duration": "28.0",
         "name": "webrtc/codec_constraints_vp8"
     },
     {
-        "duration": "27.0",
+        "duration": "28.0",
         "name": "webrtc/codec_constraints_vp9"
     },
     {
-        "duration": "16.0",
+        "duration": "17.0",
         "name": "webrtc/hd_local_stream_10s"
     },
     {
-        "duration": "31.0",
+        "duration": "32.0",
         "name": "webrtc/multiple_peerconnections"
     },
     {

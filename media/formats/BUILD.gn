@@ -74,6 +74,7 @@ source_set("formats") {
   ]
 
   deps = [
+    "//build:chromecast_buildflags",
     "//media:media_buildflags",
     "//media/base",
     "//third_party/libwebm",

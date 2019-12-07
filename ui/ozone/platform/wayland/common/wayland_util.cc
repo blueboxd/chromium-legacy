@@ -141,4 +141,18 @@ void ReadDataFromFD(base::ScopedFD fd, std::vector<uint8_t>* contents) {
     contents->insert(contents->end(), buffer, buffer + length);
 }
 
+gfx::Rect TranslateBoundsToParentCoordinates(const gfx::Rect& child_bounds,
+                                             const gfx::Rect& parent_bounds) {
+  return gfx::Rect(
+      (child_bounds.origin() - parent_bounds.origin().OffsetFromOrigin()),
+      child_bounds.size());
+}
+
+gfx::Rect TranslateBoundsToTopLevelCoordinates(const gfx::Rect& child_bounds,
+                                               const gfx::Rect& parent_bounds) {
+  return gfx::Rect(
+      (child_bounds.origin() + parent_bounds.origin().OffsetFromOrigin()),
+      child_bounds.size());
+}
+
 }  // namespace wl

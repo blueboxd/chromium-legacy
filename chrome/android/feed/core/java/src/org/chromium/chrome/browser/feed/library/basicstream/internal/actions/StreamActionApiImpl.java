@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.feed.library.basicstream.internal.actions;
 
 import android.view.View;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.ContentMetadata;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
@@ -48,12 +50,13 @@ public class StreamActionApiImpl implements StreamActionApi {
     private final String mContentId;
     private final TooltipApi mTooltipApi;
 
-    /*@Nullable*/ private final String mSessionId;
+    @Nullable
+    private final String mSessionId;
 
     public StreamActionApiImpl(ActionApi actionApi, ActionParser actionParser,
             ActionManager actionManager, BasicLoggingApi basicLoggingApi,
             Supplier<ContentLoggingData> contentLoggingData, ContextMenuManager contextMenuManager,
-            /*@Nullable*/ String sessionId, ClusterPendingDismissHelper clusterPendingDismissHelper,
+            @Nullable String sessionId, ClusterPendingDismissHelper clusterPendingDismissHelper,
             ViewElementActionHandler viewElementActionHandler, String contentId,
             TooltipApi tooltipApi) {
         this.mActionApi = actionApi;

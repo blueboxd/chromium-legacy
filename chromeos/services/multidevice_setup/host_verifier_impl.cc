@@ -132,6 +132,15 @@ bool HostVerifierImpl::IsHostVerified() {
     return false;
   }
 
+  // The host is not considered verified if it does not have the data needed for
+  // secure communication via Bluetooth. These values could be missing if v2
+  // DeviceSync data was not decrypted, for instance.
+  if (current_host->public_key().empty() ||
+      current_host->persistent_symmetric_key().empty() ||
+      current_host->beacon_seeds().empty()) {
+    return false;
+  }
+
   // If one or more potential host sofware features is enabled, the host is
   // considered verified.
   for (const auto& software_feature : kPotentialHostFeatures) {

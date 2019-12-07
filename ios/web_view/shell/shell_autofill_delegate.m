@@ -45,7 +45,8 @@
                         fieldType:(NSString*)fieldType
                          formName:(NSString*)formName
                           frameID:(NSString*)frameID
-                            value:(NSString*)value {
+                            value:(NSString*)value
+                    userInitiated:(BOOL)userInitiated {
   _autofillController = autofillController;
 
   __weak ShellAutofillDelegate* weakSelf = self;
@@ -89,7 +90,9 @@
     didInputInFieldWithIdentifier:(NSString*)fieldIdentifier
                         fieldType:(NSString*)fieldType
                          formName:(NSString*)formName
-                            value:(NSString*)value {
+                          frameID:(NSString*)frameID
+                            value:(NSString*)value
+                    userInitiated:(BOOL)userInitiated {
   // Not implemented.
 }
 
@@ -97,14 +100,16 @@
     didBlurOnFieldWithIdentifier:(NSString*)fieldIdentifier
                        fieldType:(NSString*)fieldType
                         formName:(NSString*)formName
-                           value:(NSString*)value {
+                         frameID:(NSString*)frameID
+                           value:(NSString*)value
+                   userInitiated:(BOOL)userInitiated {
   // Not implemented.
 }
 
 - (void)autofillController:(CWVAutofillController*)autofillController
      didSubmitFormWithName:(NSString*)formName
-             userInitiated:(BOOL)userInitiated
-               isMainFrame:(BOOL)isMainFrame {
+                   frameID:(NSString*)frameID
+             userInitiated:(BOOL)userInitiated {
   // Not implemented.
 }
 

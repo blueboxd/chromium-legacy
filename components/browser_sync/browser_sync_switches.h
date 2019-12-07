@@ -20,6 +20,10 @@ extern const base::Feature kSyncUseSessionsUnregisterDelay;
 extern const base::Feature kSyncErrorInfoBarAndroid;
 #endif
 
+#if defined(OS_CHROMEOS)
+extern const base::Feature kSyncManualStartChromeOS;
+#endif
+
 }  // namespace switches
 
 #endif  // COMPONENTS_BROWSER_SYNC_BROWSER_SYNC_SWITCHES_H_

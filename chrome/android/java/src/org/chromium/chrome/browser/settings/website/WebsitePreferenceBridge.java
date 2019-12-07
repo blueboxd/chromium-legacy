@@ -350,7 +350,7 @@ public class WebsitePreferenceBridge {
             case ContentSettingsType.BACKGROUND_SYNC:
                 WebsitePreferenceBridgeJni.get().setBackgroundSyncEnabled(allow);
                 break;
-            case ContentSettingsType.CLIPBOARD_READ:
+            case ContentSettingsType.CLIPBOARD_READ_WRITE:
                 WebsitePreferenceBridgeJni.get().setClipboardEnabled(allow);
                 break;
             case ContentSettingsType.COOKIES:
@@ -387,7 +387,7 @@ public class WebsitePreferenceBridge {
 
         switch (contentSettingsType) {
             case ContentSettingsType.ADS:
-            case ContentSettingsType.CLIPBOARD_READ:
+            case ContentSettingsType.CLIPBOARD_READ_WRITE:
                 // Returns true if JavaScript is enabled. It may return the temporary value set by
                 // {@link #setJavaScriptEnabled}. The default is true.
             case ContentSettingsType.JAVASCRIPT:

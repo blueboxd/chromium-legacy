@@ -37,10 +37,12 @@ struct PLATFORM_EXPORT PaintChunk {
         id(id),
         properties(props),
         is_cacheable(id.client.IsCacheable()),
-        client_is_just_created(id.client.IsJustCreated()) {}
+        client_is_just_created(id.client.IsJustCreated()) {
+    DCHECK_GT(end_index, begin_index);
+  }
 
   size_t size() const {
-    DCHECK_GE(end_index, begin_index);
+    DCHECK_GT(end_index, begin_index);
     return end_index - begin_index;
   }
 

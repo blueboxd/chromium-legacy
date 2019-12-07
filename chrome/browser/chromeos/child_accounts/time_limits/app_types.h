@@ -36,7 +36,7 @@ enum class AppState {
   kLimitReached,
   // App is uninstalled. Activity might still be preserved and reported for
   // recently uninstalled apps.
-  kUninstall,
+  kUninstalled,
 };
 
 // Identifies an app for app time limits.
@@ -57,6 +57,8 @@ class AppId {
 
   bool operator==(const AppId&) const;
   bool operator!=(const AppId&) const;
+  bool operator<(const AppId&) const;
+  friend std::ostream& operator<<(std::ostream&, const AppId&);
 
  private:
   apps::mojom::AppType app_type_ = apps::mojom::AppType::kUnknown;

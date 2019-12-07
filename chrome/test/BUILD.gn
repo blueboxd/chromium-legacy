@@ -1354,6 +1354,7 @@ if (!is_android) {
       "../browser/ui/webui/policy_ui_browsertest.cc",
       "../browser/ui/webui/prefs_internals_browsertest.cc",
       "../browser/ui/webui/profile_helper_browsertest.cc",
+      "../browser/ui/webui/settings/settings_clear_browsing_data_handler_browsertest.cc",
       "../browser/ui/webui/settings/settings_ui_browsertest.cc",
       "../browser/ui/webui/signin/user_manager_ui_browsertest.cc",
       "../browser/ui/webui/webui_load_timer_browsertest.cc",
@@ -1782,6 +1783,7 @@ if (!is_android) {
         "../browser/extensions/external_install_error_browsertest.cc",
         "../browser/extensions/fetch_apitest.cc",
         "../browser/extensions/file_iframe_apitest.cc",
+        "../browser/extensions/google_docs_offline_ukm_browsertest.cc",
         "../browser/extensions/gpu_browsertest.cc",
         "../browser/extensions/isolated_app_browsertest.cc",
         "../browser/extensions/lazy_background_page_apitest.cc",
@@ -1999,7 +2001,6 @@ if (!is_android) {
         "../browser/ui/views/translate/translate_bubble_test_utils_views.cc",
         "../browser/ui/views/translate/translate_bubble_view_browsertest.cc",
         "../browser/ui/views/translate/translate_language_browsertest.cc",
-        "../browser/ui/views/web_dialog_view_browsertest.cc",
       ]
       if (!is_chromeos) {
         sources += [
@@ -2682,8 +2683,14 @@ if (!is_android) {
       }
     }
     if (enable_paint_preview) {
-      sources +=
-          [ "../browser/paint_preview/paint_preview_compositor_browsertest.cc" ]
+      sources += [
+        "../browser/paint_preview/paint_preview_browsertest.cc",
+        "../browser/paint_preview/paint_preview_compositor_browsertest.cc",
+      ]
+      deps += [
+        "//components/paint_preview/browser",
+        "//components/paint_preview/common",
+      ]
     }
     if (enable_service_discovery && !is_mac) {
       sources += [
@@ -5092,10 +5099,13 @@ test("unit_tests") {
   if (toolkit_views) {
     deps += [
       "//components/web_modal:test_support",
+      "//content/test:test_support",
       "//ui/views",
       "//ui/views:test_support",
+      "//ui/web_dialogs:test_support",
     ]
     sources += [
+      "../../ui/views/controls/webview/web_dialog_view_unittest.cc",
       "../../ui/views/controls/webview/webview_unittest.cc",
       "../browser/ui/views/accelerator_table_unittest.cc",
       "../browser/ui/views/accelerator_table_unittest_mac.mm",
@@ -5310,8 +5320,6 @@ if (!is_android) {
     testonly = true
 
     sources = [
-      "../browser/permissions/permission_request_manager_test_api.cc",
-      "../browser/permissions/permission_request_manager_test_api.h",
       "../browser/ssl/cert_verifier_browser_test.cc",
       "../browser/ssl/cert_verifier_browser_test.h",
       "../browser/ui/search/instant_test_utils.cc",
@@ -5335,6 +5343,8 @@ if (!is_android) {
       "base/ui_test_utils.h",
       "base/web_ui_browser_test.cc",
       "base/web_ui_browser_test.h",
+      "permissions/permission_request_manager_test_api.cc",
+      "permissions/permission_request_manager_test_api.h",
     ]
 
     configs += [ "//build/config:precompiled_headers" ]
@@ -5522,8 +5532,11 @@ if (!is_android) {
       "../browser/ui/startup/startup_browser_creator_interactive_uitest.cc",
       "../browser/ui/translate/translate_bubble_test_utils.h",
       "../browser/ui/views/accessibility/navigation_accessibility_uitest_win.cc",
+      "../browser/ui/views/content_test_utils.cc",
+      "../browser/ui/views/content_test_utils.h",
       "../browser/ui/views/permission_bubble/permission_bubble_views_interactive_uitest_mac.mm",
       "../browser/ui/views/tabs/tab_spinner_interactive_uitest.cc",
+      "../browser/ui/views/web_dialog_view_browsertest.cc",
       "../browser/webauth_interactive_uitest.cc",
       "//ui/base/clipboard/clipboard_unittest.cc",
       "base/always_on_top_window_killer_win.cc",

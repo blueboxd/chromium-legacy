@@ -128,7 +128,9 @@ class FrameSequenceTrackerTest : public testing::Test {
         "Graphics.Smoothness.Throughput.SlowerThread.TouchScroll", 1u);
 
     // Test that both are reported.
-    tracker_->main_throughput().frames_expected = 50u;
+    tracker_->impl_throughput().frames_expected = 100u;
+    tracker_->impl_throughput().frames_produced = 85u;
+    tracker_->main_throughput().frames_expected = 150u;
     tracker_->main_throughput().frames_produced = 25u;
     tracker_->ReportMetrics();
     histogram_tester.ExpectTotalCount(
@@ -152,10 +154,10 @@ class FrameSequenceTrackerTest : public testing::Test {
         "Graphics.Smoothness.Throughput.SlowerThread.TouchScroll", 2u);
 
     // Test the case where compositor and main thread have the same throughput.
-    tracker_->impl_throughput().frames_expected = 20u;
-    tracker_->impl_throughput().frames_produced = 18u;
-    tracker_->main_throughput().frames_expected = 20u;
-    tracker_->main_throughput().frames_produced = 18u;
+    tracker_->impl_throughput().frames_expected = 120u;
+    tracker_->impl_throughput().frames_produced = 118u;
+    tracker_->main_throughput().frames_expected = 120u;
+    tracker_->main_throughput().frames_produced = 118u;
     tracker_->ReportMetrics();
     histogram_tester.ExpectTotalCount(
         "Graphics.Smoothness.Throughput.CompositorThread.TouchScroll", 3u);
@@ -187,16 +189,16 @@ class FrameSequenceTrackerTest : public testing::Test {
     return tracker_->ignored_frame_tokens_;
   }
 
-  FrameSequenceMetrics::ThroughputData ImplThroughput() const {
+  FrameSequenceMetrics::ThroughputData& ImplThroughput() const {
     return tracker_->impl_throughput();
   }
-  FrameSequenceMetrics::ThroughputData MainThroughput() const {
+  FrameSequenceMetrics::ThroughputData& MainThroughput() const {
     return tracker_->main_throughput();
   }
 
  protected:
   uint32_t number_of_frames_checkerboarded() const {
-    return tracker_->metrics_.frames_checkerboarded();
+    return tracker_->metrics_->frames_checkerboarded();
   }
 
   std::unique_ptr<CompositorFrameReportingController>
@@ -374,6 +376,7 @@ TEST_F(FrameSequenceTrackerTest, ReportMetricsAtFixedInterval) {
   EXPECT_EQ(NumberOfTrackers(), 1u);
   EXPECT_EQ(NumberOfRemovalTrackers(), 0u);
 
+  ImplThroughput().frames_expected += 100;
   // Now args.frame_time is 5s since the tracker creation time, so this tracker
   // should be scheduled to report its throughput.
   args = CreateBeginFrameArgs(source, ++sequence,

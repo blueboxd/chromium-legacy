@@ -48,6 +48,11 @@ class TestVRSystem : public IVRSystem {
     return 0;
   }
   void GetDXGIOutputInfo(int32_t* adapter_index) override;
+  void GetOutputDevice(uint64_t* pnDevice,
+                       ETextureType textureType,
+                       VkInstance_T* pInstance = nullptr) override {
+    NOTIMPLEMENTED();
+  }
   bool IsDisplayOnDesktop() override {
     NOTIMPLEMENTED();
     return false;
@@ -127,6 +132,16 @@ class TestVRSystem : public IVRSystem {
     NOTIMPLEMENTED();
     return {};
   }
+  uint32_t GetArrayTrackedDeviceProperty(
+      vr::TrackedDeviceIndex_t unDeviceIndex,
+      ETrackedDeviceProperty prop,
+      PropertyTypeTag_t propType,
+      void* pBuffer,
+      uint32_t unBufferSize,
+      ETrackedPropertyError* pError = 0L) override {
+    NOTIMPLEMENTED();
+    return 0;
+  }
   uint32_t GetStringTrackedDeviceProperty(
       TrackedDeviceIndex_t device_index,
       ETrackedDeviceProperty prop,
@@ -179,21 +194,21 @@ class TestVRSystem : public IVRSystem {
     NOTIMPLEMENTED();
     return nullptr;
   }
-  bool CaptureInputFocus() override {
+  bool IsInputAvailable() override {
     NOTIMPLEMENTED();
     return false;
   }
-  void ReleaseInputFocus() override { NOTIMPLEMENTED(); }
-  bool IsInputFocusCapturedByAnotherProcess() override {
+  bool IsSteamVRDrawingControllers() override {
     NOTIMPLEMENTED();
     return false;
   }
-  uint32_t DriverDebugRequest(TrackedDeviceIndex_t device_index,
-                              const char* request,
-                              char* response_buffer,
-                              uint32_t response_buffer_size) override {
+  bool ShouldApplicationPause() override {
     NOTIMPLEMENTED();
-    return 0;
+    return false;
+  }
+  bool ShouldApplicationReduceRenderingWork() override {
+    NOTIMPLEMENTED();
+    return false;
   }
   EVRFirmwareError PerformFirmwareUpdate(
       TrackedDeviceIndex_t device_index) override {
@@ -201,7 +216,15 @@ class TestVRSystem : public IVRSystem {
     return VRFirmwareError_None;
   }
   void AcknowledgeQuit_Exiting() override { NOTIMPLEMENTED(); }
-  void AcknowledgeQuit_UserPrompt() override { NOTIMPLEMENTED(); }
+  uint32_t GetAppContainerFilePaths(VR_OUT_STRING() char* pchBuffer,
+                                    uint32_t unBufferSize) override {
+    NOTIMPLEMENTED();
+    return 0;
+  }
+  const char* GetRuntimeVersion() override {
+    NOTIMPLEMENTED();
+    return "";
+  }
 };
 
 class TestVRCompositor : public IVRCompositor {
@@ -357,11 +380,31 @@ class TestVRCompositor : public IVRCompositor {
     NOTIMPLEMENTED();
     return 0;
   }
+  void SetExplicitTimingMode(EVRCompositorTimingMode eTimingMode) override {
+    NOTIMPLEMENTED();
+  }
+  EVRCompositorError SubmitExplicitTimingData() override {
+    NOTIMPLEMENTED();
+    return VRCompositorError_None;
+  }
+  bool IsMotionSmoothingEnabled() override {
+    NOTIMPLEMENTED();
+    return false;
+  }
+  bool IsMotionSmoothingSupported() override {
+    NOTIMPLEMENTED();
+    return false;
+  }
+  bool IsCurrentSceneFocusAppLoading() override {
+    NOTIMPLEMENTED();
+    return false;
+  }
 };
 
 class TestVRClientCore : public IVRClientCore {
  public:
-  EVRInitError Init(EVRApplicationType application_type) override;
+  EVRInitError Init(EVRApplicationType application_type,
+                    const char* pStartupInfo) override;
   void Cleanup() override;
   EVRInitError IsInterfaceVersionValid(const char* interface_version) override;
   void* GetGenericInterface(const char* name_and_version,
@@ -382,7 +425,8 @@ TestVRSystem g_system;
 TestVRCompositor g_compositor;
 TestVRClientCore g_loader;
 
-EVRInitError TestVRClientCore::Init(EVRApplicationType application_type) {
+EVRInitError TestVRClientCore::Init(EVRApplicationType application_type,
+                                    const char* pStartupInfo) {
   return VRInitError_None;
 }
 

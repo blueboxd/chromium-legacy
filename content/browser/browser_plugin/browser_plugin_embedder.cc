@@ -9,7 +9,6 @@
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/drag_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
@@ -20,10 +19,9 @@
 namespace content {
 
 BrowserPluginEmbedder::BrowserPluginEmbedder(WebContentsImpl* web_contents)
-    : WebContentsObserver(web_contents), guest_drag_ending_(false) {}
+    : web_contents_(web_contents), guest_drag_ending_(false) {}
 
-BrowserPluginEmbedder::~BrowserPluginEmbedder() {
-}
+BrowserPluginEmbedder::~BrowserPluginEmbedder() = default;
 
 // static
 BrowserPluginEmbedder* BrowserPluginEmbedder::Create(
@@ -58,7 +56,7 @@ void BrowserPluginEmbedder::CancelGuestDialogs() {
     return;
 
   GetBrowserPluginGuestManager()->ForEachGuest(
-      web_contents(),
+      web_contents_,
       base::BindRepeating(&BrowserPluginEmbedder::CancelDialogs));
 }
 
@@ -69,7 +67,7 @@ void BrowserPluginEmbedder::StartDrag(BrowserPluginGuest* guest) {
 
 BrowserPluginGuestManager*
 BrowserPluginEmbedder::GetBrowserPluginGuestManager() const {
-  return web_contents()->GetBrowserContext()->GetGuestManager();
+  return web_contents_->GetBrowserContext()->GetGuestManager();
 }
 
 void BrowserPluginEmbedder::ClearGuestDragStateIfApplicable() {
@@ -84,35 +82,6 @@ void BrowserPluginEmbedder::ClearGuestDragStateIfApplicable() {
   } else {
     guest_drag_ending_ = true;
   }
-}
-
-// static
-bool BrowserPluginEmbedder::DidSendScreenRectsCallback(
-   WebContents* guest_web_contents) {
-  static_cast<WebContentsImpl*>(guest_web_contents)->SendScreenRects();
-  // Not handled => Iterate over all guests.
-  return false;
-}
-
-void BrowserPluginEmbedder::DidSendScreenRects() {
-  if (!GetBrowserPluginGuestManager())
-    return;
-
-  GetBrowserPluginGuestManager()->ForEachGuest(
-      web_contents(),
-      base::BindRepeating(&BrowserPluginEmbedder::DidSendScreenRectsCallback));
-}
-
-bool BrowserPluginEmbedder::OnMessageReceived(
-    const IPC::Message& message,
-    RenderFrameHost* render_frame_host) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(BrowserPluginEmbedder, message,
-                                   render_frame_host)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Attach, OnAttach)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
 }
 
 void BrowserPluginEmbedder::DragSourceEndedAt(
@@ -145,18 +114,6 @@ bool BrowserPluginEmbedder::OnUpdateDragCursor() {
   return !!guest_dragging_over_;
 }
 
-void BrowserPluginEmbedder::OnAttach(
-    RenderFrameHost* render_frame_host,
-    int browser_plugin_instance_id,
-    const BrowserPluginHostMsg_Attach_Params& params) {
-  if (!GetBrowserPluginGuestManager()) {
-    bad_message::ReceivedBadMessage(
-        render_frame_host->GetProcess(),
-        bad_message::BPE_UNEXPECTED_MESSAGE_BEFORE_BPGM_CREATION);
-    return;
-  }
-}
-
 bool BrowserPluginEmbedder::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   if ((event.windows_key_code != ui::VKEY_ESCAPE) ||
@@ -166,17 +123,16 @@ bool BrowserPluginEmbedder::HandleKeyboardEvent(
 
   bool event_consumed = false;
   GetBrowserPluginGuestManager()->ForEachGuest(
-      web_contents(),
-      base::BindRepeating(
-          &BrowserPluginEmbedder::UnlockMouseIfNecessaryCallback,
-          &event_consumed));
+      web_contents_, base::BindRepeating(
+                         &BrowserPluginEmbedder::UnlockMouseIfNecessaryCallback,
+                         &event_consumed));
 
   return event_consumed;
 }
 
 BrowserPluginGuest* BrowserPluginEmbedder::GetFullPageGuest() {
   WebContentsImpl* guest_contents = static_cast<WebContentsImpl*>(
-      GetBrowserPluginGuestManager()->GetFullPageGuest(web_contents()));
+      GetBrowserPluginGuestManager()->GetFullPageGuest(web_contents_));
   if (!guest_contents)
     return nullptr;
   return guest_contents->GetBrowserPluginGuest();
@@ -192,7 +148,7 @@ bool BrowserPluginEmbedder::AreAnyGuestsCurrentlyAudible() {
     return false;
 
   return GetBrowserPluginGuestManager()->ForEachGuest(
-      web_contents(),
+      web_contents_,
       base::BindRepeating(
           &BrowserPluginEmbedder::GuestCurrentlyAudibleCallback));
 }

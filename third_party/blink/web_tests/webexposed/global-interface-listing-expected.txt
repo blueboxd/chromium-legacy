@@ -8576,6 +8576,23 @@ interface ValidityState
     getter valid
     getter valueMissing
     method constructor
+interface VideoDecoder
+    attribute @@toStringTag
+    getter readable
+    getter writable
+    method Close
+    method Flush
+    method Initialize
+    method constructor
+interface VideoFrame
+    attribute @@toStringTag
+    getter coded_height
+    getter coded_width
+    getter timestamp
+    getter visible_height
+    getter visible_width
+    method constructor
+    method release
 interface VideoPlaybackQuality
     attribute @@toStringTag
     getter corruptedVideoFrames

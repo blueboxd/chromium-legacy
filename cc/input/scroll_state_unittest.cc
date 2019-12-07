@@ -51,21 +51,4 @@ TEST_F(ScrollStateTest, ConsumeDeltaNative) {
   scroll_state.ConsumeDelta(scroll_state.delta_x(), scroll_state.delta_y());
   EXPECT_TRUE(scroll_state.delta_consumed_for_scroll_sequence());
 }
-
-TEST_F(ScrollStateTest, CurrentNativeScrollingScrollable) {
-  ScrollStateData scroll_state_data;
-  ScrollState scroll_state(scroll_state_data);
-
-  FakeImplTaskRunnerProvider task_runner_provider;
-  TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
-
-  std::unique_ptr<LayerImpl> layer_impl =
-      LayerImpl::Create(host_impl.active_tree(), 1);
-  ScrollNode* scroll_node =
-      host_impl.active_tree()->property_trees()->scroll_tree.Node(
-          layer_impl->scroll_tree_index());
-  scroll_state.set_current_native_scrolling_node(scroll_node);
-  EXPECT_EQ(scroll_node, scroll_state.current_native_scrolling_node());
-}
 }  // namespace cc

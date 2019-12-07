@@ -38,6 +38,7 @@ class IOSChromeControllerClient
   void LaunchDateAndTimeSettings() override;
   void GoBack() override;
   bool CanGoBack() override;
+  bool CanGoBackBeforeNavigation() override;
   void GoBackAfterNavigationCommitted() override;
   void Proceed() override;
   void Reload() override;

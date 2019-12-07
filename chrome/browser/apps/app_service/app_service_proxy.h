@@ -42,6 +42,7 @@ class UninstallDialog;
 struct PauseData {
   int hours;
   int minutes;
+  bool should_show_pause_dialog;
 };
 
 // Singleton (per Profile) proxy and cache of an App Service's apps.

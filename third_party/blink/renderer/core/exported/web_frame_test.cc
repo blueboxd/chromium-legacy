@@ -9608,10 +9608,9 @@ TEST_F(WebFrameTest, NavigateRemoteToLocalWithOpener) {
 
   // Create a popup with a remote frame and set its opener to the main frame.
   frame_test_helpers::WebViewHelper popup_helper;
-  popup_helper.InitializeRemote(
-      nullptr, SecurityOrigin::CreateFromString("http://foo.com"));
+  popup_helper.InitializeRemoteWithOpener(
+      main_frame, nullptr, SecurityOrigin::CreateFromString("http://foo.com"));
   WebRemoteFrame* popup_remote_frame = popup_helper.RemoteMainFrame();
-  popup_remote_frame->SetOpener(main_frame);
   EXPECT_FALSE(main_frame->GetSecurityOrigin().CanAccess(
       popup_remote_frame->GetSecurityOrigin()));
 

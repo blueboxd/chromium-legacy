@@ -999,12 +999,6 @@
         <structure name="IDR_SETTINGS_CUPS_PRINTERS_ENTRY_MANAGER_JS"
                    file="printing_page/cups_printers_entry_manager.js"
                    type="chrome_html" />
-        <structure name="IDR_SETTINGS_CUPS_PRINTERS_LIST_HTML"
-                   file="printing_page/cups_printers_list.html"
-                   type="chrome_html" />
-        <structure name="IDR_SETTINGS_CUPS_PRINTERS_LIST_JS"
-                   file="printing_page/cups_printers_list.js"
-                   type="chrome_html" />
         <structure name="IDR_SETTINGS_CUPS_SAVED_PRINTERS_HTML"
                    file="printing_page/cups_saved_printers.html"
                    type="chrome_html" />

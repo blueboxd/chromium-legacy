@@ -61,17 +61,6 @@ class Lock::ThenFunction final : public ScriptFunction {
   ResolveType resolve_type_;
 };
 
-// static
-Lock* Lock::Create(
-    ScriptState* script_state,
-    const String& name,
-    mojom::blink::LockMode mode,
-    mojo::PendingAssociatedRemote<mojom::blink::LockHandle> handle,
-    LockManager* manager) {
-  return MakeGarbageCollected<Lock>(script_state, name, mode, std::move(handle),
-                                    manager);
-}
-
 Lock::Lock(ScriptState* script_state,
            const String& name,
            mojom::blink::LockMode mode,

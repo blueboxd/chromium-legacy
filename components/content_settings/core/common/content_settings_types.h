@@ -96,15 +96,6 @@ enum class ContentSettingsType : int32_t {
   // technology.
   ACCESSIBILITY_EVENTS,
 
-  // Content setting which stores whether or not the user has granted the site
-  // full (read/write without a gesture) permission to access the system
-  // clipboard.
-  CLIPBOARD_READ,
-
-  // This is special-cased in the permissions layer to always allow, and as
-  // such doesn't have associated prefs data.
-  CLIPBOARD_WRITE,
-
   // Used to store whether the user has ever changed the Flash permission for
   // a site.
   PLUGINS_DATA,
@@ -181,6 +172,18 @@ enum class ContentSettingsType : int32_t {
   // Website setting to store permissions granted to access particular Bluetooth
   // devices.
   BLUETOOTH_CHOOSER_DATA,
+
+  // Full access to the system clipboard (sanitized read without user gesture,
+  // and unsanitized read and write with user gesture).
+  // TODO(https://crbug.com/1027225): Move CLIPBOARD_READ_WRITE uses to be
+  // ordered in the same order as listed in the enum.
+  CLIPBOARD_READ_WRITE,
+
+  // This is special-cased in the permissions layer to always allow, and as
+  // such doesn't have associated prefs data.
+  // TODO(https://crbug.com/1027225): Move CLIPBOARD_SANITIZED_WRITE uses to be
+  // ordered in the same order as listed in the enum.
+  CLIPBOARD_SANITIZED_WRITE,
 
   NUM_TYPES,
 };

@@ -46,9 +46,10 @@ class ContentSettingImageModel {
     MIDI_SYSEX = 12,
     SOUND = 13,
     FRAMEBUST = 14,
-    CLIPBOARD_READ = 15,
+    // CLIPBOARD_READ = 15, // Replaced by CLIPBOARD_READ_WRITE in M81.
     SENSORS = 16,
     NOTIFICATIONS_QUIET_PROMPT = 17,
+    CLIPBOARD_READ_WRITE = 18,
 
     NUM_IMAGE_TYPES
   };

@@ -30,7 +30,6 @@ include_rules = [
   "+media/media_buildflags.h",
   "+mojo/public/cpp/bindings",
   "+net",
-  "+services/network/network_service.h",
   "+services/network/public/cpp",
   "+services/preferences/tracked",
   "+services/service_manager/public",

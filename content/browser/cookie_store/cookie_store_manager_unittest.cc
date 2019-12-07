@@ -308,6 +308,25 @@ class CookieStoreManagerTest
         net::COOKIE_PRIORITY_DEFAULT));
   }
 
+  bool DeleteCookie(const char* name, const char* domain, const char* path) {
+    return SetCanonicalCookie(net::CanonicalCookie(
+        name, /* value = */ "", domain, path, /* creation = */ base::Time(),
+        /* expiration = */ base::Time::Min(), /* last_access = */ base::Time(),
+        /* secure = */ false, /* httponly = */ false,
+        net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT));
+  }
+
+  // Designates a closure for preparing the cookie store for the current test.
+  //
+  // The closure will be run immediately. If the service worker context is
+  // reset, the closure will be run again after the new CookieManager is set up.
+  void SetCookieStoreInitializer(base::RepeatingClosure initializer) {
+    DCHECK(!cookie_store_initializer_) << __func__ << " already called";
+    DCHECK(initializer);
+    cookie_store_initializer_ = std::move(initializer);
+    cookie_store_initializer_.Run();
+  }
+
   bool reset_context_during_test() const { return GetParam(); }
 
   static constexpr const int64_t kInvalidRegistrationId = -1;
@@ -316,6 +335,7 @@ class CookieStoreManagerTest
   void SetUpServiceWorkerContext() {
     worker_test_helper_ = std::make_unique<CookieStoreWorkerTestHelper>(
         user_data_directory_.GetPath());
+
     cookie_store_context_ = base::MakeRefCounted<CookieStoreContext>();
     cookie_store_context_->Initialize(worker_test_helper_->context_wrapper(),
                                       base::BindOnce([](bool success) {
@@ -328,12 +348,14 @@ class CookieStoreManagerTest
     storage_partition_impl_->Initialize();
     ::network::mojom::NetworkContext* network_context =
         storage_partition_impl_->GetNetworkContext();
+    network_context->GetCookieManager(
+        cookie_manager_.BindNewPipeAndPassReceiver());
+    if (cookie_store_initializer_)
+      cookie_store_initializer_.Run();
     cookie_store_context_->ListenToCookieChanges(
         network_context, base::BindOnce([](bool success) {
           CHECK(success) << "ListenToCookieChanges failed";
         }));
-    network_context->GetCookieManager(
-        cookie_manager_.BindNewPipeAndPassReceiver());
 
     cookie_store_context_->CreateServiceForTesting(
         url::Origin::Create(GURL(kExampleScope)),
@@ -369,9 +391,7 @@ class CookieStoreManagerTest
   void TearDownServiceWorkerContext() {
     // Let the service worker context cleanly shut down, so its storage can be
     // safely opened again if the test will continue.
-    if (worker_test_helper_)
-      worker_test_helper_->ShutdownContext();
-
+    worker_test_helper_->ShutdownContext();
     task_environment_.RunUntilIdle();
 
     // Smart pointers are reset manually in destruction order because this is
@@ -383,7 +403,7 @@ class CookieStoreManagerTest
     google_service_remote_.reset();
     legacy_service_remote_.reset();
     cookie_manager_.reset();
-    cookie_store_context_ = nullptr;
+    cookie_store_context_.reset();
     storage_partition_impl_.reset();
     worker_test_helper_.reset();
   }
@@ -395,6 +415,7 @@ class CookieStoreManagerTest
   std::unique_ptr<StoragePartitionImpl> storage_partition_impl_;
   scoped_refptr<CookieStoreContext> cookie_store_context_;
   mojo::Remote<::network::mojom::CookieManager> cookie_manager_;
+  base::RepeatingClosure cookie_store_initializer_;
 
   mojo::Remote<blink::mojom::CookieStore> example_service_remote_,
       google_service_remote_, legacy_service_remote_;
@@ -1616,6 +1637,84 @@ TEST_P(CookieStoreManagerTest, HttpOnlyCookieChangeLegacy) {
   // legacy.com has a custom Legacy setting.
   EXPECT_EQ(net::CookieAccessSemantics::LEGACY,
             worker_test_helper_->changes()[0].access_semantics);
+}
+
+TEST_P(CookieStoreManagerTest, CookieChangeForDeletion) {
+  SetCookieStoreInitializer(base::BindLambdaForTesting([&]() {
+    EXPECT_TRUE(
+        SetSessionCookie("cookie-name", "cookie-value", "example.com", "/"));
+  }));
+
+  int64_t registration_id =
+      RegisterServiceWorker(kExampleScope, kExampleWorkerScript);
+  ASSERT_NE(registration_id, kInvalidRegistrationId);
+
+  CookieStoreSync::Subscriptions subscriptions;
+  subscriptions.emplace_back(blink::mojom::CookieChangeSubscription::New());
+  subscriptions.back()->name = "";
+  subscriptions.back()->match_type =
+      ::network::mojom::CookieMatchType::STARTS_WITH;
+  subscriptions.back()->url = GURL(kExampleScope);
+  EXPECT_TRUE(example_service_->AddSubscriptions(registration_id,
+                                                 std::move(subscriptions)));
+
+  base::Optional<CookieStoreSync::Subscriptions> all_subscriptions_opt =
+      example_service_->GetSubscriptions(registration_id);
+  ASSERT_TRUE(all_subscriptions_opt.has_value());
+  ASSERT_EQ(1u, all_subscriptions_opt.value().size());
+
+  if (reset_context_during_test())
+    ResetServiceWorkerContext();
+
+  ASSERT_TRUE(DeleteCookie("cookie-name", "example.com", "/"));
+  task_environment_.RunUntilIdle();
+
+  ASSERT_EQ(1u, worker_test_helper_->changes().size());
+  EXPECT_EQ("cookie-name", worker_test_helper_->changes()[0].cookie.Name());
+  EXPECT_EQ("cookie-value", worker_test_helper_->changes()[0].cookie.Value());
+  EXPECT_EQ("example.com", worker_test_helper_->changes()[0].cookie.Domain());
+  EXPECT_EQ("/", worker_test_helper_->changes()[0].cookie.Path());
+  EXPECT_EQ(net::CookieChangeCause::EXPIRED_OVERWRITE,
+            worker_test_helper_->changes()[0].cause);
+}
+
+TEST_P(CookieStoreManagerTest, CookieChangeForOverwrite) {
+  SetCookieStoreInitializer(base::BindLambdaForTesting([&]() {
+    EXPECT_TRUE(
+        SetSessionCookie("cookie-name", "cookie-value", "example.com", "/"));
+  }));
+
+  int64_t registration_id =
+      RegisterServiceWorker(kExampleScope, kExampleWorkerScript);
+  ASSERT_NE(registration_id, kInvalidRegistrationId);
+
+  CookieStoreSync::Subscriptions subscriptions;
+  subscriptions.emplace_back(blink::mojom::CookieChangeSubscription::New());
+  subscriptions.back()->name = "";
+  subscriptions.back()->match_type =
+      ::network::mojom::CookieMatchType::STARTS_WITH;
+  subscriptions.back()->url = GURL(kExampleScope);
+  EXPECT_TRUE(example_service_->AddSubscriptions(registration_id,
+                                                 std::move(subscriptions)));
+
+  base::Optional<CookieStoreSync::Subscriptions> all_subscriptions_opt =
+      example_service_->GetSubscriptions(registration_id);
+  ASSERT_TRUE(all_subscriptions_opt.has_value());
+  ASSERT_EQ(1u, all_subscriptions_opt.value().size());
+
+  if (reset_context_during_test())
+    ResetServiceWorkerContext();
+
+  ASSERT_TRUE(SetSessionCookie("cookie-name", "new-value", "example.com", "/"));
+  task_environment_.RunUntilIdle();
+
+  ASSERT_EQ(1u, worker_test_helper_->changes().size());
+  EXPECT_EQ("cookie-name", worker_test_helper_->changes()[0].cookie.Name());
+  EXPECT_EQ("new-value", worker_test_helper_->changes()[0].cookie.Value());
+  EXPECT_EQ("example.com", worker_test_helper_->changes()[0].cookie.Domain());
+  EXPECT_EQ("/", worker_test_helper_->changes()[0].cookie.Path());
+  EXPECT_EQ(net::CookieChangeCause::INSERTED,
+            worker_test_helper_->changes()[0].cause);
 }
 
 TEST_P(CookieStoreManagerTest, GetSubscriptionsFromWrongOrigin) {

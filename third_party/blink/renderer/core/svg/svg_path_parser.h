@@ -60,7 +60,7 @@ class SVGPathNormalizer {
 
   void EmitSegment(const PathSegmentData&);
 
- private:
+ protected:
   bool DecomposeArcToCubic(const FloatPoint& current_point,
                            const PathSegmentData&);
 

@@ -75,7 +75,6 @@
 #include "content/public/renderer/render_thread_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/renderer/browser_exposed_renderer_interfaces.h"
-#include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/categorized_worker_pool.h"
 #include "content/renderer/effective_connection_type_helper.h"
 #include "content/renderer/frame_swap_message_queue.h"
@@ -605,9 +604,6 @@ void RenderThreadImpl::Init() {
   InitializeWebKit(&binders);
 
   vc_manager_.reset(new blink::WebVideoCaptureImplManager());
-
-  browser_plugin_manager_.reset(new BrowserPluginManager());
-  AddObserver(browser_plugin_manager_.get());
 
   unfreezable_message_filter_ = new UnfreezableMessageFilter(this);
   AddFilter(unfreezable_message_filter_.get());

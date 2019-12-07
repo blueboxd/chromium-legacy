@@ -2489,7 +2489,13 @@ void LayoutObject::PropagateStyleToAnonymousChildren() {
     child->SetStyle(std::move(new_style));
   }
 
-  if (StyleRef().StyleType() == kPseudoIdNone)
+  PseudoId pseudo_id = StyleRef().StyleType();
+  if (pseudo_id == kPseudoIdNone)
+    return;
+
+  // Don't propagate style from markers with 'content: normal' because it's not
+  // needed and it would be slow.
+  if (pseudo_id == kPseudoIdMarker && !StyleRef().GetContentData())
     return;
 
   // Propagate style from pseudo elements to generated content. We skip children

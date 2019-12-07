@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/message_loop/message_loop.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
 #include "dbus/mock_exported_object.h"
 #include "dbus/mock_object_proxy.h"
@@ -94,7 +93,6 @@ class ServiceProviderTestHelper {
   scoped_refptr<dbus::MockObjectProxy> mock_object_proxy_;
   dbus::ExportedObject::MethodCallCallback method_callback_;
   dbus::ObjectProxy::SignalCallback on_signal_callback_;
-  std::unique_ptr<base::MessageLoop> message_loop_;
   std::string exported_method_name_;
 };
 

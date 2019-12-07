@@ -440,7 +440,8 @@ void SharedImageStub::OnError() {
   channel_->OnChannelError();
 }
 
-void SharedImageStub::TrackMemoryAllocatedChange(uint64_t delta) {
+void SharedImageStub::TrackMemoryAllocatedChange(int64_t delta) {
+  DCHECK(delta >= 0 || size_ >= static_cast<uint64_t>(-delta));
   uint64_t old_size = size_;
   size_ += delta;
   channel_->gpu_channel_manager()

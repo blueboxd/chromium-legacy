@@ -29,9 +29,7 @@ class SoundsManagerTest : public testing::Test {
   ~SoundsManagerTest() override = default;
 
   void SetUp() override {
-    mojo::PendingReceiver<service_manager::mojom::Connector> connector_receiver;
-    connector_ = service_manager::Connector::Create(&connector_receiver);
-    SoundsManager::Create(connector_->Clone());
+    SoundsManager::Create(base::DoNothing());
     base::RunLoop().RunUntilIdle();
   }
 
@@ -43,8 +41,6 @@ class SoundsManagerTest : public testing::Test {
   void SetObserverForTesting(AudioStreamHandler::TestObserver* observer) {
     AudioStreamHandler::SetObserverForTesting(observer);
   }
-
-  std::unique_ptr<service_manager::Connector> connector_;
 
  private:
   base::TestMessageLoop message_loop_;

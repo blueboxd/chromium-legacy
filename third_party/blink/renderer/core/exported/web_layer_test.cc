@@ -239,6 +239,23 @@ TEST_P(WebLayerListTest, FrameViewScroll) {
   EXPECT_EQ(ScrollOffset(0, 1), scrollable_area->GetScrollOffset());
 }
 
+TEST_P(WebLayerListTest, WillChangeTransformHint) {
+  InitializeWithHTML(*WebView()->MainFrameImpl()->GetFrame(), R"HTML(
+    <style>
+      #willChange {
+        width: 100px;
+        height: 100px;
+        will-change: transform;
+        background: blue;
+      }
+    </style>
+    <div id="willChange"></div>
+  )HTML");
+  UpdateAllLifecyclePhases();
+  auto* layer = ContentLayerAt(ContentLayerCount() - 1);
+  EXPECT_TRUE(layer->has_will_change_transform_hint());
+}
+
 class WebLayerListSimTest : public PaintTestConfigurations, public SimTest {
  public:
   void InitializeWithHTML(const String& html) {

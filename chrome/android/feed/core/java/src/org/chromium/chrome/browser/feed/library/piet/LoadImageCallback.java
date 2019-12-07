@@ -11,29 +11,32 @@ import android.graphics.drawable.TransitionDrawable;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.Consumer;
 
 /**
  * Handles loading images from the host. In particular, handles the resizing of images as well as
  * the fading animation.
  */
-public class LoadImageCallback implements Consumer</*@Nullable*/ Drawable> {
+public class LoadImageCallback implements Consumer<Drawable> {
     static final int FADE_IN_ANIMATION_TIME_MS = 300;
 
     private final ImageView mImageView;
     private final ScaleType mScaleType;
     private final long mInitialTime;
-    /*@Nullable*/ private final Integer mOverlayColor;
+    @Nullable
+    private final Integer mOverlayColor;
     private final boolean mFadeImage;
     private final AdapterParameters mParameters;
 
     private boolean mCancelled;
 
-    /*@Nullable*/ private Drawable mFinalDrawable;
+    @Nullable
+    private Drawable mFinalDrawable;
 
-    LoadImageCallback(ImageView imageView, ScaleType scaleType,
-            /*@Nullable*/ Integer overlayColor, boolean fadeImage, AdapterParameters parameters,
-            FrameContext frameContext) {
+    LoadImageCallback(ImageView imageView, ScaleType scaleType, @Nullable Integer overlayColor,
+            boolean fadeImage, AdapterParameters parameters, FrameContext frameContext) {
         this.mImageView = imageView;
         this.mScaleType = scaleType;
         this.mOverlayColor = overlayColor;
@@ -43,7 +46,7 @@ public class LoadImageCallback implements Consumer</*@Nullable*/ Drawable> {
     }
 
     @Override
-    public void accept(/*@Nullable*/ Drawable drawable) {
+    public void accept(@Nullable Drawable drawable) {
         if (mCancelled || drawable == null) {
             return;
         }

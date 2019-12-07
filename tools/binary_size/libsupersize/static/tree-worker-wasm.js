@@ -128,10 +128,10 @@ async function buildTree(
     }
 
     const BuildTree = Module.cwrap(
-        'BuildTree', 'void',
+        'BuildTree', 'bool',
         ['bool', 'string', 'string', 'string', 'string', 'number', 'number']);
     const start_time = Date.now();
-    BuildTree(
+    const diffMode = BuildTree(
         methodCountMode, groupBy, includeRegex, excludeRegex,
         includeSections, minSymbolSize, flagToFilter);
     console.log(
@@ -141,9 +141,9 @@ async function buildTree(
 
     const root = await Open('');
     return {
-      root: root,
+      root,
       percent: 1.0,
-      diffMode: beforeFetcher !== null,  // diff mode
+      diffMode,
     };
   });
 }

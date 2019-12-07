@@ -220,6 +220,12 @@ public class OverlayPanelContent {
             }
 
             @Override
+            public boolean shouldCreateWebContents(String targetUrl) {
+                mContentDelegate.onOpenNewTabRequested(targetUrl);
+                return false;
+            }
+
+            @Override
             public int getTopControlsHeight() {
                 return (int) (mBarHeightPx
                         / mActivity.getWindowAndroid().getDisplay().getDipScale());

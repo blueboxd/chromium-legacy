@@ -8,6 +8,8 @@ import static org.chromium.chrome.browser.feed.library.common.Validators.checkNo
 
 import android.view.View;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.sharedstream.contextmenumanager.ContextMenuManager;
 
 import java.util.List;
@@ -15,8 +17,10 @@ import java.util.List;
 /** Fake to be used to test {@link ContextMenuManager}. */
 public class FakeContextMenuManager implements ContextMenuManager {
     private boolean mIsMenuOpened;
-    /*@Nullable*/ private List<String> mItems;
-    /*@Nullable*/ private ContextMenuClickHandler mHandler;
+    @Nullable
+    private List<String> mItems;
+    @Nullable
+    private ContextMenuClickHandler mHandler;
 
     @Override
     public boolean openContextMenu(

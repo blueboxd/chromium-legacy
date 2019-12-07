@@ -16,6 +16,8 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.host.config.DebugBehavior;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 import org.chromium.chrome.browser.feed.library.piet.DebugLogger.MessageType;
@@ -58,8 +60,10 @@ public class FrameAdapterImpl implements FrameAdapter {
     private final EventLogger mEventLogger;
     private final DebugBehavior mDebugBehavior;
     private final Set<VisibilityAction> mActiveActions = new HashSet<>();
-    /*@Nullable*/ private LinearLayout mView;
-    /*@Nullable*/ private FrameContext mFrameContext;
+    @Nullable
+    private LinearLayout mView;
+    @Nullable
+    private FrameContext mFrameContext;
 
     FrameAdapterImpl(Context context, AdapterParameters parameters, ActionHandler actionHandler,
             EventLogger eventLogger, DebugBehavior debugBehavior) {
@@ -73,8 +77,8 @@ public class FrameAdapterImpl implements FrameAdapter {
 
     // TODO: Need to implement support for sharding
     @Override
-    public void bindModel(Frame frame, int frameWidthPx,
-            /*@Nullable*/ ShardingControl shardingControl, List<PietSharedState> pietSharedStates) {
+    public void bindModel(Frame frame, int frameWidthPx, @Nullable ShardingControl shardingControl,
+            List<PietSharedState> pietSharedStates) {
         long startTime = System.nanoTime();
         initialBind(mParameters.mParentViewSupplier.get());
         FrameContext localFrameContext =
@@ -263,19 +267,19 @@ public class FrameAdapterImpl implements FrameAdapter {
     }
 
     @VisibleForTesting
-    /*@Nullable*/
+    @Nullable
     LinearLayout getView() {
         return this.mView;
     }
 
-    private void initialBind(/*@Nullable*/ ViewGroup parent) {
+    private void initialBind(@Nullable ViewGroup parent) {
         if (mView != null) {
             return;
         }
         this.mView = createView(parent);
     }
 
-    private LinearLayout createView(/*@Nullable*/ ViewGroup parent) {
+    private LinearLayout createView(@Nullable ViewGroup parent) {
         LinearLayout linearLayout = new LinearLayout(mContext);
         linearLayout.setOrientation(LinearLayout.VERTICAL);
         ViewGroup.LayoutParams layoutParams;

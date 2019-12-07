@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -32,6 +33,7 @@ namespace gpu {
 class SharedImageBackingOzone final : public SharedImageBacking {
  public:
   static std::unique_ptr<SharedImageBackingOzone> Create(
+      scoped_refptr<base::RefCountedData<DawnProcTable>> dawn_procs,
       SharedContextState* context_state,
       const Mailbox& mailbox,
       viz::ResourceFormat format,
@@ -67,15 +69,18 @@ class SharedImageBackingOzone final : public SharedImageBacking {
       MemoryTypeTracker* tracker) override;
 
  private:
-  SharedImageBackingOzone(const Mailbox& mailbox,
-                          viz::ResourceFormat format,
-                          const gfx::Size& size,
-                          const gfx::ColorSpace& color_space,
-                          uint32_t usage,
-                          SharedContextState* context_state,
-                          scoped_refptr<gfx::NativePixmap> pixmap);
+  SharedImageBackingOzone(
+      const Mailbox& mailbox,
+      viz::ResourceFormat format,
+      const gfx::Size& size,
+      const gfx::ColorSpace& color_space,
+      uint32_t usage,
+      SharedContextState* context_state,
+      scoped_refptr<gfx::NativePixmap> pixmap,
+      scoped_refptr<base::RefCountedData<DawnProcTable>> dawn_procs);
 
   scoped_refptr<gfx::NativePixmap> pixmap_;
+  scoped_refptr<base::RefCountedData<DawnProcTable>> dawn_procs_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedImageBackingOzone);
 };

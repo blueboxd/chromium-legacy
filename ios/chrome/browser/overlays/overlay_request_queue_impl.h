@@ -46,7 +46,8 @@ class OverlayRequestQueueImpl : public OverlayRequestQueue {
    public:
     // Called after |request| has been added to |queue|.
     virtual void RequestAddedToQueue(OverlayRequestQueueImpl* queue,
-                                     OverlayRequest* request) {}
+                                     OverlayRequest* request,
+                                     size_t index) {}
 
     // Called when |request| is cancelled before it is removed from |queue|.
     // All requests in a queue are cancelled before the queue is destroyed.
@@ -61,22 +62,22 @@ class OverlayRequestQueueImpl : public OverlayRequestQueue {
   // Returns a weak pointer to the queue.
   base::WeakPtr<OverlayRequestQueueImpl> GetWeakPtr();
 
-  // Whether the queue is empty.
-  bool empty() const { return request_storages_.empty(); }
-  // The number of requests in the queue.
-  size_t size() const { return request_storages_.size(); }
-
   // Removes the front or back request from the queue, transferring ownership of
   // the request to the caller.  Must be called on a non-empty queue.
   std::unique_ptr<OverlayRequest> PopFrontRequest();
   std::unique_ptr<OverlayRequest> PopBackRequest();
 
   // OverlayRequestQueue:
-  void AddRequest(
-      std::unique_ptr<OverlayRequest> request,
-      std::unique_ptr<OverlayRequestCancelHandler> cancel_handler) override;
-  void AddRequest(std::unique_ptr<OverlayRequest> request) override;
+  size_t size() const override;
   OverlayRequest* front_request() const override;
+  OverlayRequest* GetRequest(size_t index) const override;
+  void AddRequest(std::unique_ptr<OverlayRequest> request,
+                  std::unique_ptr<OverlayRequestCancelHandler> cancel_handler =
+                      nullptr) override;
+  void InsertRequest(size_t index,
+                     std::unique_ptr<OverlayRequest> request,
+                     std::unique_ptr<OverlayRequestCancelHandler>
+                         cancel_handler = nullptr) override;
   void CancelAllRequests() override;
   void CancelRequest(OverlayRequest* request) override;
 
@@ -90,6 +91,7 @@ class OverlayRequestQueueImpl : public OverlayRequestQueue {
     OverlayRequestStorage(
         std::unique_ptr<OverlayRequest> request,
         std::unique_ptr<OverlayRequestCancelHandler> cancel_handler);
+    OverlayRequestStorage(OverlayRequestStorage&& storage);
     ~OverlayRequestStorage();
 
     std::unique_ptr<OverlayRequest> request;
@@ -100,8 +102,7 @@ class OverlayRequestQueueImpl : public OverlayRequestQueue {
   base::ObserverList<Observer, /* check_empty= */ true> observers_;
   // The queue used to hold the received requests.  Stored as a circular dequeue
   // to allow performant pop events from the front of the queue.
-  base::circular_deque<std::unique_ptr<OverlayRequestStorage>>
-      request_storages_;
+  base::circular_deque<OverlayRequestStorage> request_storages_;
   base::WeakPtrFactory<OverlayRequestQueueImpl> weak_factory_;
 };
 

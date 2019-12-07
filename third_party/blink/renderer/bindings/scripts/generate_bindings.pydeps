@@ -33,6 +33,7 @@ bind_gen/__init__.py
 bind_gen/blink_v8_bridge.py
 bind_gen/clang_format.py
 bind_gen/code_node.py
+bind_gen/code_node_cxx.py
 bind_gen/codegen_accumulator.py
 bind_gen/codegen_context.py
 bind_gen/codegen_expr.py

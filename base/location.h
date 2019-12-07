@@ -133,7 +133,7 @@ template <>
 struct hash<::base::Location> {
   std::size_t operator()(const ::base::Location& loc) const {
     const void* program_counter = loc.program_counter();
-    return base::Hash(&program_counter, sizeof(void*));
+    return base::FastHash(base::as_bytes(base::make_span(&program_counter, 1)));
   }
 };
 

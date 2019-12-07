@@ -18,9 +18,6 @@ enum AXContentIntAttribute {
   // The routing ID of this node's child tree.
   AX_CONTENT_ATTR_CHILD_ROUTING_ID,
 
-  // The browser plugin instance ID of this node's child tree.
-  AX_CONTENT_ATTR_CHILD_BROWSER_PLUGIN_INSTANCE_ID,
-
   AX_CONTENT_INT_ATTRIBUTE_LAST
 };
 

@@ -230,14 +230,6 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // Returns true if this frame is a FTP directory listing.
   virtual bool IsFTPDirectoryListing() = 0;
 
-  // Attaches the browser plugin identified by |element_instance_id| to guest
-  // content created by the embedder.
-  virtual void AttachGuest(int element_instance_id) = 0;
-
-  // Detaches the browser plugin identified by |element_instance_id| from guest
-  // content created by the embedder.
-  virtual void DetachGuest(int element_instance_id) = 0;
-
   // Notifies the browser of text selection changes made.
   virtual void SetSelectedText(const base::string16& selection_text,
                                size_t offset,

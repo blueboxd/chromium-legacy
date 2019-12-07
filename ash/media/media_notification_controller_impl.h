@@ -17,10 +17,6 @@
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace message_center {
 class Notification;
 }  // namespace message_center
@@ -40,8 +36,7 @@ class ASH_EXPORT MediaNotificationControllerImpl
     : public media_session::mojom::AudioFocusObserver,
       public media_message_center::MediaNotificationController {
  public:
-  explicit MediaNotificationControllerImpl(
-      service_manager::Connector* connector);
+  MediaNotificationControllerImpl();
   ~MediaNotificationControllerImpl() override;
 
   // media_session::mojom::AudioFocusObserver:

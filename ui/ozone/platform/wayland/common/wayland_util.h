@@ -13,6 +13,7 @@
 #include "base/containers/flat_map.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 
 class SkBitmap;
@@ -49,6 +50,13 @@ bool DrawBitmap(const SkBitmap& bitmap, ui::WaylandShmBuffer* out_buffer);
 
 // Helper function to read data from a file.
 void ReadDataFromFD(base::ScopedFD fd, std::vector<uint8_t>* contents);
+
+// Translates bounds relative to top level window to specified parent.
+gfx::Rect TranslateBoundsToParentCoordinates(const gfx::Rect& child_bounds,
+                                             const gfx::Rect& parent_bounds);
+// Translates bounds relative to parent window to top level window.
+gfx::Rect TranslateBoundsToTopLevelCoordinates(const gfx::Rect& child_bounds,
+                                               const gfx::Rect& parent_bounds);
 
 }  // namespace wl
 

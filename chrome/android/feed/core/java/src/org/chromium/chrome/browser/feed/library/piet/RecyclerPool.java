@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.piet;
 
+import androidx.annotation.Nullable;
+
 /**
  * Interface defining a simple Pool of Adapters.
  *
@@ -13,7 +15,7 @@ interface RecyclerPool<A extends ElementAdapter<?, ?>> {
     /**
      * Return an {@link ElementAdapter} matching the {@link RecyclerKey} or null if one isn't found.
      */
-    /*@Nullable*/
+    @Nullable
     A get(RecyclerKey key);
 
     /** Put a {@link ElementAdapter} with a {@link RecyclerKey} into the pool. */

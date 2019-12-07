@@ -11,8 +11,7 @@ import org.chromium.base.Consumer;
 /** Typeface provider that does not provide any typefaces; for use as a default implementation. */
 public class NullTypefaceProvider implements TypefaceProvider {
     @Override
-    public void getTypeface(
-            String typeface, boolean isItalic, Consumer</*@Nullable*/ Typeface> consumer) {
+    public void getTypeface(String typeface, boolean isItalic, Consumer<Typeface> consumer) {
         consumer.accept(null);
     }
 }

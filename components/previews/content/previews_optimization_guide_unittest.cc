@@ -363,6 +363,46 @@ TEST_F(PreviewsOptimizationGuideTest,
 }
 
 TEST_F(PreviewsOptimizationGuideTest,
+       ShouldShowPreviewWithOverrideFeatureEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeaturesAndParameters(
+      {{previews::features::kPreviews,
+        {{"override_should_show_preview_check", "true"}}}},
+      {});
+
+  // Set ECT to 4G so that if feature wasn't on then we would return false.
+  optimization_guide_decider()->ReportEffectiveConnectionType(
+      net::EFFECTIVE_CONNECTION_TYPE_4G);
+
+  PreviewsOptimizationGuide guide(optimization_guide_decider());
+
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(GURL("doesntmatter"));
+
+  EXPECT_TRUE(guide.ShouldShowPreview(&navigation_handle));
+}
+
+TEST_F(PreviewsOptimizationGuideTest,
+       ShouldShowPreviewWithOverrideFeatureDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeaturesAndParameters(
+      {{previews::features::kPreviews,
+        {{"override_should_show_preview_check", "false"}}}},
+      {});
+
+  // Set ECT to 4G so that if feature wasn't on then we would return false.
+  optimization_guide_decider()->ReportEffectiveConnectionType(
+      net::EFFECTIVE_CONNECTION_TYPE_4G);
+
+  PreviewsOptimizationGuide guide(optimization_guide_decider());
+
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(GURL("doesntmatter"));
+
+  EXPECT_FALSE(guide.ShouldShowPreview(&navigation_handle));
+}
+
+TEST_F(PreviewsOptimizationGuideTest,
        ShouldShowPreviewWithTrueDecisionReturnsTrue) {
   optimization_guide_decider()->ReportEffectiveConnectionType(
       net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);

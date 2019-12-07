@@ -22,9 +22,19 @@ namespace blink {
 
 class ClipPaintPropertyNode;
 class EffectPaintPropertyNode;
-class FloatRect;
 class PaintArtifact;
 class TransformPaintPropertyNode;
+
+class DummyRectClient : public FakeDisplayItemClient {
+ public:
+  IntRect VisualRect() const final { return rect_; }
+  void SetVisualRect(const IntRect& rect) { rect_ = rect; }
+
+  sk_sp<PaintRecord> MakeRecord(const IntRect& rect, Color color);
+
+ private:
+  IntRect rect_;
+};
 
 // Useful for quickly making a paint artifact in unit tests.
 //
@@ -58,7 +68,7 @@ class TestPaintArtifact {
   TestPaintArtifact& Chunk() { return Chunk(NewClient()); }
 
   // Add a chunk with the specified client.
-  TestPaintArtifact& Chunk(FakeDisplayItemClient&,
+  TestPaintArtifact& Chunk(DummyRectClient&,
                            DisplayItem::Type = DisplayItem::kDrawingFirst);
 
   // This is for RasterInvalidatorTest, to create a chunk with specific id and
@@ -92,7 +102,7 @@ class TestPaintArtifact {
 
   // Add display item in the chunk. Each display item will have a different
   // automatically created client.
-  TestPaintArtifact& RectDrawing(const FloatRect& bounds, Color color);
+  TestPaintArtifact& RectDrawing(const IntRect& bounds, Color color);
   TestPaintArtifact& ScrollHitTest(
       const TransformPaintPropertyNode* scroll_offset,
       const IntRect& scroll_container_bounds);
@@ -101,11 +111,11 @@ class TestPaintArtifact {
                                   const FloatPoint& offset);
 
   // Add display item with the specified client in the chunk.
-  TestPaintArtifact& RectDrawing(FakeDisplayItemClient&,
-                                 const FloatRect& bounds,
-                                 Color);
+  TestPaintArtifact& RectDrawing(DummyRectClient&,
+                                 const IntRect& bounds,
+                                 Color color);
   TestPaintArtifact& ScrollHitTest(
-      FakeDisplayItemClient&,
+      DummyRectClient&,
       const TransformPaintPropertyNode* scroll_offset,
       const IntRect& scroll_container_bounds);
 
@@ -124,12 +134,13 @@ class TestPaintArtifact {
   scoped_refptr<PaintArtifact> Build();
 
   // Create a new display item client which is owned by this TestPaintArtifact.
-  FakeDisplayItemClient& NewClient();
+  DummyRectClient& NewClient();
 
-  FakeDisplayItemClient& Client(wtf_size_t) const;
+  DummyRectClient& Client(wtf_size_t) const;
 
  private:
-  class DummyRectClient;
+  void FinishLastChunk();
+
   Vector<std::unique_ptr<DummyRectClient>> dummy_clients_;
 
   DisplayItemList display_item_list_;

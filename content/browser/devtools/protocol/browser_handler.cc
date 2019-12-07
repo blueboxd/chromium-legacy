@@ -149,9 +149,12 @@ Response PermissionDescriptorToPermissionType(
   } else if (name == "accessibility-events") {
     *permission_type = PermissionType::ACCESSIBILITY_EVENTS;
   } else if (name == "clipboard-read") {
-    *permission_type = PermissionType::CLIPBOARD_READ;
+    *permission_type = PermissionType::CLIPBOARD_READ_WRITE;
   } else if (name == "clipboard-write") {
-    *permission_type = PermissionType::CLIPBOARD_WRITE;
+    if (descriptor->GetAllowWithoutSanitization(false))
+      *permission_type = PermissionType::CLIPBOARD_READ_WRITE;
+    else
+      *permission_type = PermissionType::CLIPBOARD_SANITIZED_WRITE;
   } else if (name == "payment-handler") {
     *permission_type = PermissionType::PAYMENT_HANDLER;
   } else if (name == "background-fetch") {
@@ -212,10 +215,12 @@ Response FromProtocolPermissionType(
   } else if (type ==
              protocol::Browser::PermissionTypeEnum::AccessibilityEvents) {
     *out_type = PermissionType::ACCESSIBILITY_EVENTS;
-  } else if (type == protocol::Browser::PermissionTypeEnum::ClipboardRead) {
-    *out_type = PermissionType::CLIPBOARD_READ;
-  } else if (type == protocol::Browser::PermissionTypeEnum::ClipboardWrite) {
-    *out_type = PermissionType::CLIPBOARD_WRITE;
+  } else if (type ==
+             protocol::Browser::PermissionTypeEnum::ClipboardReadWrite) {
+    *out_type = PermissionType::CLIPBOARD_READ_WRITE;
+  } else if (type ==
+             protocol::Browser::PermissionTypeEnum::ClipboardSanitizedWrite) {
+    *out_type = PermissionType::CLIPBOARD_SANITIZED_WRITE;
   } else if (type == protocol::Browser::PermissionTypeEnum::PaymentHandler) {
     *out_type = PermissionType::PAYMENT_HANDLER;
   } else if (type == protocol::Browser::PermissionTypeEnum::BackgroundFetch) {

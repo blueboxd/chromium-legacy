@@ -43,6 +43,7 @@
 #include "components/signin/public/webdata/token_web_data.h"
 #include "components/user_manager/user.h"
 #include "components/webdata/common/web_data_service_consumer.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 
 namespace chromeos {
 
@@ -229,10 +230,17 @@ class DeviceAccountMigration : public AccountMigrationBaseStep,
 
     bool is_success = false;
     for (auto it = token_map.begin(); it != token_map.end(); ++it) {
-      const std::string account_id = RemoveAccountIdPrefix(it->first);
-      if (identity_manager()->GetPrimaryAccountId().ToString() != account_id) {
+      const std::string token_account_id = RemoveAccountIdPrefix(it->first);
+      if (token_account_id.empty()) {
+        LOG(ERROR) << "Empty account id loaded from token DB.";
         continue;
       }
+      DCHECK(token_account_id.find('@') != std::string::npos)
+          << "Expecting an email as the account ID of a token [actual = "
+          << token_account_id << "]";
+
+      if (!gaia::AreEmailsSame(device_account_raw_email_, token_account_id))
+        continue;
 
       account_manager()->UpsertAccount(
           device_account_, device_account_raw_email_ /* raw_email */,

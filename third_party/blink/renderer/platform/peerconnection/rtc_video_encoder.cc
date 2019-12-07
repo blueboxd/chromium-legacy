@@ -221,7 +221,9 @@ class RTCVideoEncoder::Impl
   // input mode.  The input frame must be backed with GpuMemoryBuffer buffers.
   void EncodeOneFrameWithNativeInput();
 
-  void CreateBlackGpuMemoryBufferFrame(const gfx::Size& natural_size);
+  // Creates a GpuMemoryBuffer frame filled with black pixels. Returns true if
+  // the frame is successfully created; false otherwise.
+  bool CreateBlackGpuMemoryBufferFrame(const gfx::Size& natural_size);
 
   // Notify that an input frame is finished for encoding.  |index| is the index
   // of the completed frame in |input_buffers_|.
@@ -848,7 +850,11 @@ void RTCVideoEncoder::Impl::EncodeOneFrameWithNativeInput() {
     // WebRTC VideoBroadcaster replaces the camera frame with a black YUV frame.
     if (!black_gmb_frame_) {
       gfx::Size natural_size(next_frame->width(), next_frame->height());
-      CreateBlackGpuMemoryBufferFrame(natural_size);
+      if (!CreateBlackGpuMemoryBufferFrame(natural_size)) {
+        DVLOG(2) << "Failed to allocate native buffer for black frame";
+        SignalAsyncWaiter(WEBRTC_VIDEO_CODEC_ERROR);
+        return;
+      }
     }
     frame = media::VideoFrame::WrapVideoFrame(
         black_gmb_frame_, black_gmb_frame_->format(),
@@ -884,7 +890,7 @@ void RTCVideoEncoder::Impl::EncodeOneFrameWithNativeInput() {
   SignalAsyncWaiter(WEBRTC_VIDEO_CODEC_OK);
 }
 
-void RTCVideoEncoder::Impl::CreateBlackGpuMemoryBufferFrame(
+bool RTCVideoEncoder::Impl::CreateBlackGpuMemoryBufferFrame(
     const gfx::Size& natural_size) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -892,19 +898,23 @@ void RTCVideoEncoder::Impl::CreateBlackGpuMemoryBufferFrame(
       natural_size, gfx::BufferFormat::YUV_420_BIPLANAR,
       gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE);
 
+  if (!gmb || !gmb->Map()) {
+    black_gmb_frame_ = nullptr;
+    return false;
+  }
   // Fills the NV12 frame with YUV black (0x00, 0x80, 0x80).
   const auto gmb_size = gmb->GetSize();
-  gmb->Map();
   memset(static_cast<uint8_t*>(gmb->memory(0)), 0x0,
          gmb->stride(0) * gmb_size.height());
   memset(static_cast<uint8_t*>(gmb->memory(1)), 0x80,
-         gmb->stride(1) * gmb_size.height());
+         gmb->stride(1) * gmb_size.height() / 2);
   gmb->Unmap();
 
   gpu::MailboxHolder empty_mailboxes[media::VideoFrame::kMaxPlanes];
   black_gmb_frame_ = media::VideoFrame::WrapExternalGpuMemoryBuffer(
       gfx::Rect(gmb_size), natural_size, std::move(gmb), empty_mailboxes,
       base::NullCallback(), base::TimeDelta());
+  return true;
 }
 
 void RTCVideoEncoder::Impl::EncodeFrameFinished(int index) {

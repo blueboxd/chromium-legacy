@@ -79,7 +79,9 @@ class ServiceProcessTracker {
   }
 
   void RemoveObserver(ServiceProcessHost::Observer* observer) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    // NOTE: Some tests may remove observers after BrowserThreads are shut down.
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+           !BrowserThread::IsThreadInitialized(BrowserThread::UI));
     observers_.RemoveObserver(observer);
   }
 

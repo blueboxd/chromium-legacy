@@ -645,6 +645,7 @@ cc_test("cc_unittests") {
     "metrics/compositor_frame_reporter_unittest.cc",
     "metrics/compositor_frame_reporting_controller_unittest.cc",
     "metrics/compositor_timing_history_unittest.cc",
+    "metrics/frame_sequence_metrics_unittest.cc",
     "metrics/frame_sequence_tracker_unittest.cc",
     "mojo_embedder/async_layer_tree_frame_sink_unittest.cc",
     "paint/discardable_image_map_unittest.cc",

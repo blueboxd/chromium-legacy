@@ -35,8 +35,6 @@
 #include <utility>
 
 #include "third_party/blink/public/platform/web_media_constraints.h"
-#include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
-#include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -50,6 +48,8 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_transceiver.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_session_description_enums.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_peer_connection_handler_client.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_peer_connection_handler_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_request.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
@@ -110,7 +110,7 @@ DeduceSdpUsageCategory(const String& sdp_type,
 
 class MODULES_EXPORT RTCPeerConnection final
     : public EventTargetWithInlineData,
-      public WebRTCPeerConnectionHandlerClient,
+      public RTCPeerConnectionHandlerClient,
       public ActiveScriptWrappable<RTCPeerConnection>,
       public ContextLifecycleObserver,
       public MediaStreamObserver {
@@ -200,7 +200,7 @@ class MODULES_EXPORT RTCPeerConnection final
   MediaStreamVector getLocalStreams() const;
   // A remote stream is any stream associated with a receiver.
   MediaStreamVector getRemoteStreams() const;
-  MediaStream* getRemoteStreamById(const WebString&) const;
+  MediaStream* getRemoteStreamById(const String&) const;
   bool IsRemoteStream(MediaStream* stream) const;
 
   void addStream(ScriptState*,
@@ -284,13 +284,13 @@ class MODULES_EXPORT RTCPeerConnection final
   void OnStreamAddTrack(MediaStream*, MediaStreamTrack*) override;
   void OnStreamRemoveTrack(MediaStream*, MediaStreamTrack*) override;
 
-  // WebRTCPeerConnectionHandlerClient
+  // RTCPeerConnectionHandlerClient
   void NegotiationNeeded() override;
   void DidGenerateICECandidate(scoped_refptr<RTCIceCandidatePlatform>) override;
-  void DidFailICECandidate(const WebString& host_candidate,
-                           const WebString& url,
+  void DidFailICECandidate(const String& host_candidate,
+                           const String& url,
                            int error_code,
-                           const WebString& error_text) override;
+                           const String& error_text) override;
   void DidChangeSignalingState(
       webrtc::PeerConnectionInterface::SignalingState) override;
   void DidChangeIceGatheringState(
@@ -364,8 +364,8 @@ class MODULES_EXPORT RTCPeerConnection final
   base::TimeTicks WebRtcTimestampToBlinkTimestamp(
       base::TimeTicks webrtc_monotonic_time) const;
 
-  using RtcPeerConnectionHandlerFactoryCallback =
-      base::RepeatingCallback<std::unique_ptr<WebRTCPeerConnectionHandler>()>;
+  using RtcPeerConnectionHandlerFactoryCallback = base::RepeatingCallback<
+      std::unique_ptr<RTCPeerConnectionHandlerPlatform>()>;
   static void SetRtcPeerConnectionHandlerFactoryForTesting(
       RtcPeerConnectionHandlerFactoryCallback);
 
@@ -454,7 +454,7 @@ class MODULES_EXPORT RTCPeerConnection final
   // https://w3c.github.io/webrtc-pc/#set-associated-remote-streams
   void SetAssociatedMediaStreams(
       RTCRtpReceiver* receiver,
-      const WebVector<WebString>& stream_ids,
+      const WebVector<String>& stream_ids,
       HeapVector<std::pair<Member<MediaStream>, Member<MediaStreamTrack>>>*
           remove_list,
       HeapVector<std::pair<Member<MediaStream>, Member<MediaStreamTrack>>>*
@@ -546,7 +546,7 @@ class MODULES_EXPORT RTCPeerConnection final
       ice_transports_by_native_transport_;
 
   // TODO(crbug.com/787254): Use RTCPeerConnectionHandler.
-  std::unique_ptr<WebRTCPeerConnectionHandler> peer_handler_;
+  std::unique_ptr<RTCPeerConnectionHandlerPlatform> peer_handler_;
 
   TaskHandle dispatch_scheduled_events_task_handle_;
   HeapVector<Member<EventWrapper>> scheduled_events_;

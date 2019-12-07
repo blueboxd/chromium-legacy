@@ -20,7 +20,7 @@ public class ProfileManager {
          * Called whenever a profile is created.
          * @param profile The profile that has just been created.
          */
-        public void onProfileCreated(Profile profile);
+        public void onProfileAdded(Profile profile);
     }
 
     /**
@@ -49,7 +49,7 @@ public class ProfileManager {
         // If a profile has been added, we know the ProfileManager has been initialized.
         sInitialized = true;
         for (Observer observer : sObservers) {
-            observer.onProfileCreated(profile);
+            observer.onProfileAdded(profile);
         }
     }
 }

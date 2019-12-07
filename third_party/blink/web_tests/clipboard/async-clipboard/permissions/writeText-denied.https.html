@@ -7,7 +7,7 @@
 <script src="../../../http/tests/resources/permissions-helper.js"></script>
 <script>
 promise_test(async t => {
-  await PermissionsHelper.setPermission('clipboard-write', 'denied');
+  await PermissionsHelper.setPermission('clipboard-sanitized-write', 'denied');
   await promise_rejects(t, 'NotAllowedError', navigator.clipboard.writeText('xyz'));
 }, 'navigator.clipboard.writeText() fails when permission denied');
 </script>

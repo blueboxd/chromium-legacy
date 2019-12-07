@@ -4,7 +4,6 @@
 
 #include <memory>
 
-#include "chrome/browser/permissions/permission_request_manager_test_api.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands_mac.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -15,6 +14,7 @@
 #include "chrome/browser/ui/permission_bubble/permission_bubble_browser_test_util.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/permission_bubble/permission_prompt_impl.h"
+#include "chrome/test/permissions/permission_request_manager_test_api.h"
 #import "testing/gtest_mac.h"
 #include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 

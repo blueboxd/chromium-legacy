@@ -3,19 +3,23 @@
 #include "pathtools_public.h"
 
 #if defined( _WIN32)
-#include <Windows.h>
+#include <windows.h>
 #include <direct.h>
-#include <Shobjidl.h>
-#include <KnownFolders.h>
-#include <Shlobj.h>
+#include <shobjidl.h>
+#include <knownfolders.h>
+#include <shlobj.h>
+#include <share.h>
 
 #undef GetEnvironmentVariable
+#define alloca _alloca
 #else
 #include <dlfcn.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <alloca.h>
 #endif
+
 #if defined OSX
 #include <Foundation/Foundation.h>
 #include <AppKit/AppKit.h>
@@ -96,6 +100,24 @@ bool Path_SetWorkingDirectory( const std::string & sPath )
 	return bSuccess;
 }
 
+/** Gets the path to a temporary directory. */
+std::string Path_GetTemporaryDirectory()
+{
+#if defined( _WIN32 )
+	wchar_t buf[MAX_UNICODE_PATH];
+	if ( GetTempPathW( MAX_UNICODE_PATH, buf ) == 0 )
+		return Path_GetWorkingDirectory();
+	return UTF16to8( buf );
+#else
+	const char *pchTmpDir = getenv( "TMPDIR" );
+	if ( pchTmpDir == NULL )
+	{
+		return "";
+	}
+	return pchTmpDir;
+#endif
+}
+
 /** Returns the specified path without its filename */
 std::string Path_StripFilename( const std::string & sPath, char slash )
 {
@@ -122,7 +144,7 @@ std::string Path_StripDirectory( const std::string & sPath, char slash )
 		return std::string( sPath.begin() + n + 1, sPath.end() );
 }
 
-/** returns just the filename with no extension of the provided filename. 
+/** returns just the filename with no extension of the provided filename.
 * If there is a path the path is left intact. */
 std::string Path_StripExtension( const std::string & sPath )
 {
@@ -187,19 +209,16 @@ bool Path_IsAbsolute( const std::string & sPath )
 
 
 /** Makes an absolute path from a relative path and a base path */
-std::string Path_MakeAbsolute( const std::string & sRelativePath, const std::string & sBasePath, char slash )
+std::string Path_MakeAbsolute( const std::string & sRelativePath, const std::string & sBasePath )
 {
-	if( slash == 0 )
-		slash = Path_GetSlash();
-
 	if( Path_IsAbsolute( sRelativePath ) )
-		return sRelativePath;
+		return Path_Compact( sRelativePath );
 	else
 	{
 		if( !Path_IsAbsolute( sBasePath ) )
 			return "";
 
-		std::string sCompacted = Path_Compact( Path_Join( sBasePath, sRelativePath, slash ), slash );
+		std::string sCompacted = Path_Compact( Path_Join( sBasePath, sRelativePath ) );
 		if( Path_IsAbsolute( sCompacted ) )
 			return sCompacted;
 		else
@@ -267,12 +286,12 @@ std::string Path_Join( const std::string & first, const std::string & second, co
 	return Path_Join( Path_Join( Path_Join( first, second, slash ), third, slash ), fourth, slash );
 }
 
-std::string Path_Join( 
-	const std::string & first, 
-	const std::string & second, 
-	const std::string & third, 
-	const std::string & fourth, 
-	const std::string & fifth, 
+std::string Path_Join(
+	const std::string & first,
+	const std::string & second,
+	const std::string & third,
+	const std::string & fourth,
+	const std::string & fifth,
 	char slash )
 {
 	return Path_Join( Path_Join( Path_Join( Path_Join( first, second, slash ), third, slash ), fourth, slash ), fifth, slash );
@@ -303,17 +322,17 @@ std::string Path_RemoveTrailingSlash( const std::string & sRawPath, char slash )
 			break;
 		}
 	}
-		
+
 	if ( nLastFound >= 0 )
 	{
 		sPath.erase( nLastFound, std::string::npos );
 	}
-	
+
 	return sPath;
 }
 
 
-/** Removes redundant <dir>/.. elements in the path. Returns an empty path if the 
+/** Removes redundant <dir>/.. elements in the path. Returns an empty path if the
 * specified path has a broken number of directories for its number of ..s */
 std::string Path_Compact( const std::string & sRawPath, char slash )
 {
@@ -348,7 +367,7 @@ std::string Path_Compact( const std::string & sRawPath, char slash )
 		}
 	}
 
-	// get rid of leading ./ 
+	// get rid of leading ./
 	if( sPath.length() > 2 )
 	{
 		if( sPath[ 0 ] == '.'  && sPath[ 1 ] == slash )
@@ -362,7 +381,7 @@ std::string Path_Compact( const std::string & sRawPath, char slash )
 	std::string::size_type i = 0;
 	while( i < sPath.length() )
 	{
-		if( i > 0 && sPath.length() - i >= 2 
+		if( i > 0 && sPath.length() - i >= 2
 			&& sPath[i] == '.'
 			&& sPath[i+1] == '.'
 			&& ( i + 2 == sPath.length() || sPath[ i+2 ] == slash )
@@ -371,7 +390,7 @@ std::string Path_Compact( const std::string & sRawPath, char slash )
 			// check if we've hit the start of the string and have a bogus path
 			if( i == 1 )
 				return "";
-			
+
 			// find the separator before i-1
 			std::string::size_type iDirStart = i-2;
 			while( iDirStart > 0 && sPath[ iDirStart - 1 ] != slash )
@@ -390,6 +409,20 @@ std::string Path_Compact( const std::string & sRawPath, char slash )
 	}
 
 	return sPath;
+}
+
+
+/** Returns true if these two paths are the same without respect for internal . or ..
+* sequences, slash type, or case (on case-insensitive platforms). */
+bool Path_IsSamePath( const std::string & sPath1, const std::string & sPath2 )
+{
+	std::string sCompact1 = Path_Compact( sPath1 );
+	std::string sCompact2 = Path_Compact( sPath2 );
+#if defined(WIN32)
+	return !stricmp( sCompact1.c_str(), sCompact2.c_str() );
+#else
+	return !strcmp( sCompact1.c_str(), sCompact2.c_str() );
+#endif
 }
 
 
@@ -463,10 +496,11 @@ bool Path_IsDirectory( const std::string & sPath )
 bool Path_IsAppBundle( const std::string & sPath )
 {
 #if defined(OSX)
-	NSBundle *bundle = [ NSBundle bundleWithPath: [ NSString stringWithUTF8String:sPath.c_str() ] ];
-	bool bisAppBundle = ( nullptr != bundle );
-	[ bundle release ];
-	return bisAppBundle;
+	@autoreleasepool {
+		NSBundle *bundle = [ NSBundle bundleWithPath: [ NSString stringWithUTF8String:sPath.c_str() ] ];
+		bool bisAppBundle = ( nullptr != bundle );
+		return bisAppBundle;
+	}
 #else
 	return false;
 #endif
@@ -567,7 +601,7 @@ unsigned char * Path_ReadBinaryFile( const std::string &strFilename, int *pSize 
 	// the open operation needs to be sharable, therefore use of _wfsopen instead of _wfopen_s
 	f = _wfsopen( wstrFilename.c_str(), L"rb", _SH_DENYNO );
 #endif
-	
+
 	unsigned char* buf = NULL;
 
 	if ( f != NULL )
@@ -654,7 +688,7 @@ bool Path_WriteBinaryFile(const std::string &strFilename, unsigned char *pData, 
 		fclose(f);
 	}
 
-	return written = nSize ? true : false;
+	return written == nSize ? true : false;
 }
 
 std::string Path_ReadTextFile( const std::string &strFilename )
@@ -683,6 +717,28 @@ std::string Path_ReadTextFile( const std::string &strFilename )
 }
 
 
+bool Path_MakeWritable( const std::string &strFilename )
+{
+#if defined ( _WIN32 )
+	std::wstring wstrFilename = UTF8to16( strFilename.c_str() );
+
+	DWORD dwAttrs = GetFileAttributesW( wstrFilename.c_str() );
+	if ( dwAttrs != INVALID_FILE_ATTRIBUTES && ( dwAttrs & FILE_ATTRIBUTE_READONLY ) )
+	{
+		return SetFileAttributesW( wstrFilename.c_str(), dwAttrs & ~FILE_ATTRIBUTE_READONLY );
+	}
+#else
+	struct stat sb;
+
+	if ( stat( strFilename.c_str(), &sb ) == 0 && !( sb.st_mode & S_IWUSR ) )
+	{
+		return ( chmod( strFilename.c_str(), sb.st_mode | S_IWUSR ) == 0 );
+	}
+#endif
+
+	return true;
+}
+
 bool Path_WriteStringToTextFile( const std::string &strFilename, const char *pchData )
 {
 	FILE *f;
@@ -696,7 +752,7 @@ bool Path_WriteStringToTextFile( const std::string &strFilename, const char *pch
 		f = NULL;
 	}
 #endif
-	
+
 	bool ok = false;
 
 	if ( f != NULL )
@@ -747,9 +803,11 @@ bool Path_WriteStringToTextFileAtomic( const std::string &strFilename, const cha
 // ----------------------------------------------------------------------------------------------------------------------------
 std::string Path_FilePathToUrl( const std::string & sRelativePath, const std::string & sBasePath )
 {
-	if ( !strnicmp( sRelativePath.c_str(), "http://", 7 )
-		|| !strnicmp( sRelativePath.c_str(), "https://", 8 )
-		|| !strnicmp( sRelativePath.c_str(), "file://", 7 ) )
+	if ( StringHasPrefix( sRelativePath, "http://" )
+		|| StringHasPrefix( sRelativePath, "https://" )
+		|| StringHasPrefix( sRelativePath, "vr-input-workshop://" )
+		|| StringHasPrefix( sRelativePath, "file://" )
+	   )
 	{
 		return sRelativePath;
 	}
@@ -758,7 +816,13 @@ std::string Path_FilePathToUrl( const std::string & sRelativePath, const std::st
 		std::string sAbsolute = Path_MakeAbsolute( sRelativePath, sBasePath );
 		if ( sAbsolute.empty() )
 			return sAbsolute;
-		return std::string( FILE_URL_PREFIX ) + sAbsolute;
+		sAbsolute = Path_FixSlashes( sAbsolute, '/' );
+
+		size_t unBufferSize = sAbsolute.length() * 3;
+		char *pchBuffer = (char *)alloca( unBufferSize );
+		V_URLEncodeNoPlusForSpace( pchBuffer, (int)unBufferSize, sAbsolute.c_str(), (int)sAbsolute.length() );
+
+		return std::string( FILE_URL_PREFIX ) + pchBuffer;
 	}
 }
 
@@ -769,7 +833,11 @@ std::string Path_UrlToFilePath( const std::string & sFileUrl )
 {
 	if ( !strnicmp( sFileUrl.c_str(), FILE_URL_PREFIX, strlen( FILE_URL_PREFIX ) ) )
 	{
-		return sFileUrl.c_str() + strlen( FILE_URL_PREFIX );
+		char *pchBuffer = (char *)alloca( sFileUrl.length() );
+		V_URLDecodeNoPlusForSpace( pchBuffer, (int)sFileUrl.length(),
+			sFileUrl.c_str() + strlen( FILE_URL_PREFIX ), (int)( sFileUrl.length() - strlen( FILE_URL_PREFIX ) ) );
+
+		return Path_FixSlashes( pchBuffer );
 	}
 	else
 	{
@@ -802,7 +870,7 @@ std::string GetUserDocumentsPath()
 		{
 			return "";
 		}
-		
+
 		return [[paths objectAtIndex:0] UTF8String];
 	}
 #elif defined( LINUX )
@@ -816,3 +884,16 @@ std::string GetUserDocumentsPath()
 #endif
 }
 
+
+// -----------------------------------------------------------------------------------------------------
+// Purpose: deletes / unlinks a single file
+// -----------------------------------------------------------------------------------------------------
+bool Path_UnlinkFile( const std::string &strFilename )
+{
+#if defined( WIN32 )
+	std::wstring wsFilename = UTF8to16( strFilename.c_str() );
+	return ( 0 != DeleteFileW( wsFilename.c_str() ) );
+#else
+	return ( 0 == unlink( strFilename.c_str() ) );
+#endif
+}

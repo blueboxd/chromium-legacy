@@ -36,6 +36,12 @@ class AddSupervisionHandler
     // the request to close the Add Supervision dialog and return
     // a boolean to indicate whether the dialog is closing.
     virtual bool CloseDialog() = 0;
+
+    // Allows controlling the behavior of the Add Supervision dialog when
+    // the user presses Escape (if enabled, Escape closes the dialog).
+    // Disabling the Escape key allows using it for actions inside the
+    // webview itself (e.g., as an accessibility shortcut).
+    virtual void SetCloseOnEscape(bool) = 0;
   };
 
   // |delegate| is owned by the caller and its lifetime must outlive |this|.
@@ -53,6 +59,7 @@ class AddSupervisionHandler
   void GetOAuthToken(GetOAuthTokenCallback callback) override;
   void LogOut() override;
   void NotifySupervisionEnabled() override;
+  void SetCloseOnEscape(bool enabled) override;
 
  private:
   void OnAccessTokenFetchComplete(GetOAuthTokenCallback callback,

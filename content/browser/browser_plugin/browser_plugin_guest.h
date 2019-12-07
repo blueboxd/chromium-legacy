@@ -47,9 +47,6 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/rect.h"
 
-struct BrowserPluginHostMsg_Attach_Params;
-struct BrowserPluginHostMsg_SetComposition_Params;
-
 #if defined(OS_MACOSX)
 struct FrameHostMsg_ShowPopup_Params;
 #endif
@@ -57,10 +54,6 @@ struct FrameHostMsg_ShowPopup_Params;
 namespace gfx {
 class Range;
 }  // namespace gfx
-
-namespace cc {
-class RenderFrameMetadata;
-}  // namespace cc
 
 namespace viz {
 class LocalSurfaceIdAllocation;
@@ -76,7 +69,6 @@ class RenderWidgetHostImpl;
 class RenderWidgetHostView;
 class RenderWidgetHostViewBase;
 class SiteInstance;
-struct DropData;
 struct FrameVisualProperties;
 struct ScreenInfo;
 struct TextInputState;
@@ -94,6 +86,8 @@ struct TextInputState;
 //
 // Note: in --site-per-process, all IPCs sent out from this class will be
 // dropped on the floor since we don't have a BrowserPlugin.
+// TODO(wjmaclean): Get rid of "BrowserPlugin" in the name of this class.
+// Perhaps "InnerWebContentsGuestConnector"?
 class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
                                           public WebContentsObserver {
  public:
@@ -164,8 +158,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // Returns the current rect used by the guest to render.
   const gfx::Rect& frame_rect() const { return frame_rect_; }
 
-  bool OnMessageReceivedFromEmbedder(const IPC::Message& message);
-
   WebContentsImpl* embedder_web_contents() const {
     return attached_ ? owner_web_contents_ : nullptr;
   }
@@ -191,10 +183,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void UpdateVisibility();
 
   BrowserPluginGuestManager* GetBrowserPluginGuestManager() const;
-
-  void EnableAutoResize(const gfx::Size& min_size, const gfx::Size& max_size);
-  void DisableAutoResize();
-  void DidUpdateVisualProperties(const cc::RenderFrameMetadata& metadata);
 
   // Methods to handle events from InputEventShim.
   void DidSetHasTouchEventHandlers(bool accept);
@@ -222,16 +210,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
 
   gfx::Point GetScreenCoordinates(const gfx::Point& relative_position) const;
 
-  // Helper to send messages to embedder. If this guest is not yet attached,
-  // then IPCs will be queued until attachment.
-  void SendMessageToEmbedder(std::unique_ptr<IPC::Message> msg);
-
   // Returns whether the guest is attached to an embedder.
   bool attached() const { return attached_; }
-
-  // Returns whether BrowserPluginGuest is interested in receiving the given
-  // |message|.
-  static bool ShouldForwardToBrowserPluginGuest(const IPC::Message& message);
 
   void DragSourceEndedAt(float client_x,
                          float client_y,
@@ -246,8 +226,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void RespondToPermissionRequest(int request_id,
                                   bool should_allow,
                                   const std::string& user_input);
-
-  void PointerLockPermissionResponse(bool allow);
 
   gfx::Point GetCoordinatesInEmbedderWebContents(
       const gfx::Point& relative_point);
@@ -286,11 +264,11 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // The RenderWidgetHostImpl corresponding to the owner frame of BrowserPlugin.
   RenderWidgetHostImpl* GetOwnerRenderWidgetHost() const;
 
-  void InitInternal(const BrowserPluginHostMsg_Attach_Params& params,
-                    WebContentsImpl* owner_web_contents);
+  void InitInternal(WebContentsImpl* owner_web_contents);
 
   // Message handlers for messages from embedder.
   void OnDetach(int instance_id);
+
   // Handles drag events from the embedder.
   // When dragging, the drag events go to the embedder first, and if the drag
   // happens on the browser plugin, then the plugin sends a corresponding
@@ -301,6 +279,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
                           const DropData& drop_data,
                           blink::WebDragOperationsMask drag_mask,
                           const gfx::PointF& location);
+
   // Instructs the guest to execute an edit command decoded in the embedder.
   void OnExecuteEditCommand(int instance_id,
                             const std::string& command);
@@ -339,9 +318,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
       int instance_id,
       const FrameVisualProperties& visual_properties);
 
-  void OnImeSetComposition(
-      int instance_id,
-      const BrowserPluginHostMsg_SetComposition_Params& params);
   void OnImeCommitText(int instance_id,
                        const base::string16& text,
                        const std::vector<blink::WebImeTextSpan>& ime_text_spans,
@@ -361,20 +337,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
                    const FrameHostMsg_ShowPopup_Params& params);
 #endif
   void OnShowWidget(int widget_route_id, const gfx::Rect& initial_rect);
-  void OnTakeFocus(bool reverse);
   void OnUpdateFrameName(int frame_id,
                          bool is_top_level,
                          const std::string& name);
-
-  // Returns identical message with current browser_plugin_instance_id() if
-  // the input was created with browser_plugin::kInstanceIdNone, else it returns
-  // the input message unmodified. If no current browser_plugin_instance_id()
-  // is set, or anything goes wrong, the input message is returned.
-  std::unique_ptr<IPC::Message> UpdateInstanceIdIfNecessary(
-      std::unique_ptr<IPC::Message> msg) const;
-
-  // Forwards all messages from the |pending_messages_| queue to the embedder.
-  void SendQueuedMessages();
 
   void SendTextInputTypeChangedToView(RenderWidgetHostViewBase* guest_rwhv);
 

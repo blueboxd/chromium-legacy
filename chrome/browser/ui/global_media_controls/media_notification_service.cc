@@ -19,10 +19,9 @@
 #include "components/media_message_center/media_notification_util.h"
 #include "components/media_message_center/media_session_notification_item.h"
 #include "content/public/browser/media_session.h"
+#include "content/public/browser/media_session_service.h"
 #include "media/base/media_switches.h"
-#include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace {
 
@@ -164,10 +163,8 @@ void MediaNotificationService::Session::RecordInteractionDelayAfterPause() {
       base::TimeDelta::FromDays(1), 100);
 }
 
-MediaNotificationService::MediaNotificationService(
-    Profile* profile,
-    service_manager::Connector* connector)
-    : connector_(connector), overlay_media_notifications_manager_(this) {
+MediaNotificationService::MediaNotificationService(Profile* profile)
+    : overlay_media_notifications_manager_(this) {
   if (base::FeatureList::IsEnabled(media::kGlobalMediaControlsForCast) &&
       media_router::MediaRouterEnabled(profile)) {
     cast_notification_provider_ =
@@ -178,21 +175,17 @@ MediaNotificationService::MediaNotificationService(
                 base::Unretained(this)));
   }
 
-  // |connector_| can be null in tests.
-  if (!connector_)
-    return;
-
   const base::UnguessableToken& source_id =
       content::MediaSession::GetSourceId(profile);
 
   // Connect to the controller manager so we can create media controllers for
   // media sessions.
-  connector_->Connect(media_session::mojom::kServiceName,
-                      controller_manager_remote_.BindNewPipeAndPassReceiver());
+  content::GetMediaSessionService().BindMediaControllerManager(
+      controller_manager_remote_.BindNewPipeAndPassReceiver());
 
   // Connect to receive audio focus events.
-  connector_->Connect(media_session::mojom::kServiceName,
-                      audio_focus_remote_.BindNewPipeAndPassReceiver());
+  content::GetMediaSessionService().BindAudioFocusManager(
+      audio_focus_remote_.BindNewPipeAndPassReceiver());
   audio_focus_remote_->AddSourceObserver(
       source_id, audio_focus_observer_receiver_.BindNewPipeAndPassRemote());
 
@@ -230,14 +223,10 @@ void MediaNotificationService::OnFocusGained(
   mojo::Remote<media_session::mojom::MediaController> item_controller;
   mojo::Remote<media_session::mojom::MediaController> session_controller;
 
-  // |controller_manager_remote_| may be null in tests where connector is
-  // unavailable.
-  if (controller_manager_remote_) {
-    controller_manager_remote_->CreateMediaControllerForSession(
-        item_controller.BindNewPipeAndPassReceiver(), *session->request_id);
-    controller_manager_remote_->CreateMediaControllerForSession(
-        session_controller.BindNewPipeAndPassReceiver(), *session->request_id);
-  }
+  controller_manager_remote_->CreateMediaControllerForSession(
+      item_controller.BindNewPipeAndPassReceiver(), *session->request_id);
+  controller_manager_remote_->CreateMediaControllerForSession(
+      session_controller.BindNewPipeAndPassReceiver(), *session->request_id);
 
   if (it != sessions_.end()) {
     // If the notification was previously frozen then we should reset the

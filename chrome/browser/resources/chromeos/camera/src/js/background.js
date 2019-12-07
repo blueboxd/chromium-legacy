@@ -15,6 +15,11 @@ var cca = cca || {};
 cca.bg = {};
 
 /**
+ * import {assert} from './chrome_util.js';
+ */
+var assert = assert || {};
+
+/**
  * Fixed minimum width of the window inner-bounds in pixels.
  * @type {number}
  * @const
@@ -63,20 +68,9 @@ cca.bg.WindowState = {
   CLOSED: 'closed',
 };
 
-/* eslint-disable no-unused-vars */
-
-/**
- * @typedef {{
- *   suspend: !function(),
- *   resume: !function(),
- * }}
- */
-cca.bg.WindowOperations;
-
-/* eslint-enable no-unused-vars */
-
 /**
  * Wrapper of AppWindow for tracking its state.
+ * @implements {cca.bg.BackgroundOps}
  */
 cca.bg.Window = class {
   /**
@@ -119,6 +113,12 @@ cca.bg.Window = class {
      * @private
      */
     this.appWindow_ = null;
+
+    /**
+     * @type {?cca.bg.ForegroundOps}
+     * @private
+     */
+    this.foregroundOps_ = null;
 
     /**
      * @type {!cca.bg.WindowState}
@@ -175,22 +175,7 @@ cca.bg.Window = class {
             }
             this.onClosed_(this);
           });
-          const wnd = appWindow.contentWindow;
-          wnd.intent = this.intent_;
-          wnd.onActive = () => {
-            this.state_ = cca.bg.WindowState.ACTIVE;
-            // For intent only requiring open camera with specific mode without
-            // returning the capture result, called onIntentHandled() right
-            // after app successfully launched.
-            if (this.intent_ !== null && !this.intent_.shouldHandleResult) {
-              this.intent_.finish();
-            }
-            this.onActive_(this);
-          };
-          wnd.onSuspended = () => {
-            this.state_ = cca.bg.WindowState.SUSPENDED;
-            this.onSuspended_(this);
-          };
+          appWindow.contentWindow.backgroundOps = this;
           if (cca.bg.onAppWindowCreatedForTesting !== null) {
             cca.bg.onAppWindowCreatedForTesting(windowUrl);
           }
@@ -198,20 +183,39 @@ cca.bg.Window = class {
   }
 
   /**
-   * Gets WindowOperations associated with this window.
-   * @return {!cca.bg.WindowOperations}
-   * @throws {Error} Throws when no WindowOperations is associated with the
-   *     window.
-   * @private
+   * @override
    */
-  getWindowOps_() {
-    const ops =
-        /** @type {(!cca.bg.WindowOperations|undefined)} */ (
-            this.appWindow_.contentWindow['ops']);
-    if (ops === undefined) {
-      throw new Error('WindowOperations not found on target window.');
+  bindForegroundOps(ops) {
+    this.foregroundOps_ = ops;
+  }
+
+  /**
+   * @override
+   */
+  getIntent() {
+    return this.intent_;
+  }
+
+  /**
+   * @override
+   */
+  notifyActivation() {
+    this.state_ = cca.bg.WindowState.ACTIVE;
+    // For intent only requiring open camera with specific mode without
+    // returning the capture result, called onIntentHandled() right
+    // after app successfully launched.
+    if (this.intent_ !== null && !this.intent_.shouldHandleResult) {
+      this.intent_.finish();
     }
-    return ops;
+    this.onActive_(this);
+  }
+
+  /**
+   * @override
+   */
+  notifySuspension() {
+    this.state_ = cca.bg.WindowState.SUSPENDED;
+    this.onSuspended_(this);
   }
 
   /**
@@ -223,7 +227,7 @@ cca.bg.Window = class {
       return;
     }
     this.state_ = cca.bg.WindowState.SUSPENDING;
-    this.getWindowOps_().suspend();
+    this.foregroundOps_.suspend();
   }
 
   /**
@@ -231,7 +235,7 @@ cca.bg.Window = class {
    */
   resume() {
     this.state_ = cca.bg.WindowState.RESUMING;
-    this.getWindowOps_().resume();
+    this.foregroundOps_.resume();
   }
 
   /**

@@ -254,7 +254,7 @@ android_builder(
 android_builder(
     name = 'android-arm64-proguard-rel',
     goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
-    execution_timeout = 4 * time.hour,
+    execution_timeout = 6 * time.hour,
 )
 
 android_builder(

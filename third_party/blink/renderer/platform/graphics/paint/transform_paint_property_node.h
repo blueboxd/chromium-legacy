@@ -381,6 +381,11 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     return state_.direct_compositing_reasons & CompositingReason::kRootScroller;
   }
 
+  bool RequiresCompositingForWillChangeTransform() const {
+    return state_.direct_compositing_reasons &
+           CompositingReason::kWillChangeTransform;
+  }
+
   const CompositorElementId& GetCompositorElementId() const {
     return state_.compositor_element_id;
   }

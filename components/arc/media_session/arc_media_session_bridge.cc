@@ -12,12 +12,10 @@
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/session/arc_bridge_service.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/media_session_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/cpp/features.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
-#include "services/media_session/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace arc {
 namespace {
@@ -89,8 +87,7 @@ void ArcMediaSessionBridge::SetupAudioFocus() {
   }
 
   mojo::Remote<media_session::mojom::AudioFocusManager> audio_focus;
-  content::GetSystemConnector()->Connect(
-      media_session::mojom::kServiceName,
+  content::GetMediaSessionService().BindAudioFocusManager(
       audio_focus.BindNewPipeAndPassReceiver());
 
   audio_focus->SetSource(base::UnguessableToken::Create(),

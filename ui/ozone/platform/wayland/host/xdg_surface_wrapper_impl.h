@@ -7,10 +7,9 @@
 
 #include "ui/ozone/platform/wayland/host/shell_surface_wrapper.h"
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
-
-#include "base/macros.h"
 
 namespace gfx {
 class Rect;
@@ -24,15 +23,12 @@ class WaylandWindow;
 // Surface wrapper for xdg-shell stable and xdg-shell-unstable-v6
 class XDGSurfaceWrapperImpl : public ShellSurfaceWrapper {
  public:
-  XDGSurfaceWrapperImpl(WaylandWindow* wayland_window);
+  XDGSurfaceWrapperImpl(WaylandWindow* wayland_window,
+                        WaylandConnection* connection);
   ~XDGSurfaceWrapperImpl() override;
 
-  bool InitializeV6(WaylandConnection* connection,
-                    wl_surface* surface,
-                    bool with_toplevel = true);
-  bool InitializeStable(WaylandConnection* connection,
-                        wl_surface* surface,
-                        bool with_toplevel = true);
+  // ShellSurfaceWrapper overrides:
+  bool Initialize(bool with_toplevel) override;
   void SetMaximized() override;
   void UnSetMaximized() override;
   void SetFullscreen() override;
@@ -76,8 +72,17 @@ class XDGSurfaceWrapperImpl : public ShellSurfaceWrapper {
   zxdg_surface_v6* zxdg_surface() const;
 
  private:
-  WaylandWindow* wayland_window_;
-  uint32_t pending_configure_serial_;
+  // Initializes using XDG Shell Stable protocol.
+  bool InitializeStable(bool with_toplevel);
+  // Initializes using XDG Shell V6 protocol.
+  bool InitializeV6(bool with_toplevel);
+
+  // Non-owing WaylandWindow that uses this surface wrapper.
+  WaylandWindow* const wayland_window_;
+  WaylandConnection* const connection_;
+
+  uint32_t pending_configure_serial_ = 0;
+
   wl::Object<zxdg_surface_v6> zxdg_surface_v6_;
   wl::Object<zxdg_toplevel_v6> zxdg_toplevel_v6_;
   wl::Object<struct xdg_surface> xdg_surface_;

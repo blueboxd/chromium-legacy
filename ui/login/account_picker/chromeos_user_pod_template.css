@@ -29,23 +29,6 @@ cr-icon-button {
 pin-keyboard {
   --pin-keyboard-backspace-opacity: 1;
   --pin-keyboard-backspace-color: #FFF;
-  --pin-keyboard-backspace-paper-ripple-offset: 9px;
-  --pin-keyboard-digit-button: {
-    margin: 15px;
-    opacity: 1;
-    width: 48px;
-  };
-
   --pin-keyboard-letter-color: rgba(255, 255, 255, .34);
   --pin-keyboard-number-color: #FFF;
-
-  --pin-keyboard-paper-ripple: {
-    border-radius: 50%;
-    color: rgba(0, 0, 0, .34);
-    height: 60px;
-    left: -6px;
-    position: absolute;
-    top: -6px;
-    width: 60px;
-  };
 }

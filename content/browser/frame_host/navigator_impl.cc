@@ -167,6 +167,12 @@ void NavigatorImpl::DidNavigate(
     }
   }
 
+  // For browser initiated navigation and same document navigation, frame policy
+  // in commit_params is nullopt and should use fallback value instead.
+  const blink::FramePolicy pending_frame_policy =
+      navigation_request->commit_params().frame_policy.value_or(
+          frame_tree_node->pending_frame_policy());
+
   // DidNavigateFrame() must be called before replicating the new origin and
   // other properties to proxies.  This is because it destroys the subframes of
   // the frame we're navigating from, which might trigger those subframes to
@@ -174,7 +180,7 @@ void NavigatorImpl::DidNavigate(
   // frame's origin.  See https://crbug.com/825283.
   frame_tree_node->render_manager()->DidNavigateFrame(
       render_frame_host, params.gesture == NavigationGestureUser,
-      is_same_document_navigation);
+      is_same_document_navigation, pending_frame_policy);
 
   // Save the new page's origin and other properties, and replicate them to
   // proxies, including the proxy created in DidNavigateFrame() to replace the

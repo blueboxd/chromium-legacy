@@ -60,7 +60,8 @@ gfx::Size OverlayScrollBar::Thumb::CalculatePreferredSize() const {
 void OverlayScrollBar::Thumb::OnPaint(gfx::Canvas* canvas) {
   cc::PaintFlags fill_flags;
   fill_flags.setStyle(cc::PaintFlags::kFill_Style);
-  fill_flags.setColor(SK_ColorBLACK);
+  fill_flags.setColor(GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_OverlayScrollbarThumbBackground));
   gfx::RectF fill_bounds(GetLocalBounds());
   fill_bounds.Inset(gfx::InsetsF(IsHorizontal() ? kThumbHoverOffset : 0,
                                  IsHorizontal() ? 0 : kThumbHoverOffset, 0, 0));
@@ -71,10 +72,8 @@ void OverlayScrollBar::Thumb::OnPaint(gfx::Canvas* canvas) {
 
   cc::PaintFlags stroke_flags;
   stroke_flags.setStyle(cc::PaintFlags::kStroke_Style);
-  stroke_flags.setColor(
-      SkColorSetA(SK_ColorWHITE, (ui::kOverlayScrollbarStrokeNormalAlpha /
-                                  ui::kOverlayScrollbarThumbNormalAlpha) *
-                                     SK_AlphaOPAQUE));
+  stroke_flags.setColor(GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_OverlayScrollbarThumbForeground));
   stroke_flags.setStrokeWidth(kThumbStrokeVisualSize);
   stroke_flags.setStrokeCap(cc::PaintFlags::kSquare_Cap);
 

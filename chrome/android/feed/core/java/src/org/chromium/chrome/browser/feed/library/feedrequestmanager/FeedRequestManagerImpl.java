@@ -386,7 +386,7 @@ public final class FeedRequestManagerImpl implements FeedRequestManager {
             for (DismissActionWithSemanticProperties action :
                     mDismissActionWithSemanticProperties) {
                 ContentId contentId = action.getContentId();
-                byte /*@Nullable*/[] semanticPropertiesBytes = action.getSemanticProperties();
+                byte[] semanticPropertiesBytes = action.getSemanticProperties();
 
                 FeedActionQueryDataItem.Builder actionDataItemBuilder =
                         FeedActionQueryDataItem.newBuilder();

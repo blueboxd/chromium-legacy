@@ -174,6 +174,12 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
       return SkColorSetRGB(0x00, 0x00, 0xEE);
     }
 
+    // Scrollbar
+    case ui::NativeTheme::kColorId_OverlayScrollbarThumbBackground:
+      return GetBgColor("#GtkScrollbar#scrollbar #trough");
+    case ui::NativeTheme::kColorId_OverlayScrollbarThumbForeground:
+      return GetBgColor("#GtkScrollbar#scrollbar #slider");
+
     // Separator
     case ui::NativeTheme::kColorId_SeparatorColor:
       return GetSeparatorColor("GtkSeparator#separator.horizontal");

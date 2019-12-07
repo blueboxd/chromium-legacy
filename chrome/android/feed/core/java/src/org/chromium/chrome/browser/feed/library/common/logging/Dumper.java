@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.feed.library.common.logging;
 import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
 
+import androidx.annotation.Nullable;
+
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -28,7 +30,8 @@ public final class Dumper {
     // ensure none are currently dumping a given dumpable, to prevent cycles. The WeakReference
     // itself is always non-null, but the Dumpable may be null.
     private final WeakReference<Dumpable> mCurrentDumpable;
-    /*@Nullable*/ private final Dumper mParent;
+    @Nullable
+    private final Dumper mParent;
     private final boolean mRedacted;
 
     // The root Dumper will create the values used by all children Dumper instances.  This flattens
@@ -47,9 +50,8 @@ public final class Dumper {
     }
 
     // Private constructor, these are created through the static newDefaultDumper} method.
-    private Dumper(int indentLevel,
-            /*@Nullable*/ Dumper parent, WeakReference<Dumpable> currentDumpable,
-            List<DumperValue> values, boolean redacted) {
+    private Dumper(int indentLevel, @Nullable Dumper parent,
+            WeakReference<Dumpable> currentDumpable, List<DumperValue> values, boolean redacted) {
         this.mIndentLevel = indentLevel;
         this.mParent = parent;
         this.mCurrentDumpable = currentDumpable;
@@ -67,7 +69,7 @@ public final class Dumper {
         return getChildDumper(null);
     }
 
-    private Dumper getChildDumper(/*@Nullable*/ Dumpable dumpable) {
+    private Dumper getChildDumper(@Nullable Dumpable dumpable) {
         return new Dumper(
                 mIndentLevel + 1, this, new WeakReference<>(dumpable), mValues, mRedacted);
     }
@@ -93,7 +95,7 @@ public final class Dumper {
     }
 
     /** Dump a Dumpable as a child of the current Dumper */
-    public void dump(/*@Nullable*/ Dumpable dumpable) {
+    public void dump(@Nullable Dumpable dumpable) {
         if (dumpable == null) {
             return;
         }

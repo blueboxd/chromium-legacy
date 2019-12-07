@@ -210,14 +210,14 @@ void ContentSettingSimpleBubbleModel::SetTitle() {
        IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT_TITLE},
       {ContentSettingsType::PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_TITLE},
       {ContentSettingsType::SOUND, IDS_BLOCKED_SOUND_TITLE},
-      {ContentSettingsType::CLIPBOARD_READ, IDS_BLOCKED_CLIPBOARD_TITLE},
+      {ContentSettingsType::CLIPBOARD_READ_WRITE, IDS_BLOCKED_CLIPBOARD_TITLE},
       {ContentSettingsType::SENSORS, IDS_BLOCKED_SENSORS_TITLE},
   };
   // Fields as for kBlockedTitleIDs, above.
   static const ContentSettingsTypeIdEntry kAccessedTitleIDs[] = {
       {ContentSettingsType::COOKIES, IDS_ACCESSED_COOKIES_TITLE},
       {ContentSettingsType::PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_TITLE},
-      {ContentSettingsType::CLIPBOARD_READ, IDS_ALLOWED_CLIPBOARD_TITLE},
+      {ContentSettingsType::CLIPBOARD_READ_WRITE, IDS_ALLOWED_CLIPBOARD_TITLE},
       {ContentSettingsType::SENSORS, IDS_ALLOWED_SENSORS_TITLE},
   };
   const ContentSettingsTypeIdEntry* title_ids = kBlockedTitleIDs;
@@ -246,7 +246,8 @@ void ContentSettingSimpleBubbleModel::SetMessage() {
       {ContentSettingsType::MIXEDSCRIPT,
        IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT},
       {ContentSettingsType::PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_MESSAGE},
-      {ContentSettingsType::CLIPBOARD_READ, IDS_BLOCKED_CLIPBOARD_MESSAGE},
+      {ContentSettingsType::CLIPBOARD_READ_WRITE,
+       IDS_BLOCKED_CLIPBOARD_MESSAGE},
       {ContentSettingsType::SENSORS,
        base::FeatureList::IsEnabled(features::kGenericSensorExtraClasses)
            ? IDS_BLOCKED_SENSORS_MESSAGE
@@ -256,7 +257,8 @@ void ContentSettingSimpleBubbleModel::SetMessage() {
   const ContentSettingsTypeIdEntry kAccessedMessageIDs[] = {
       {ContentSettingsType::COOKIES, IDS_ACCESSED_COOKIES_MESSAGE},
       {ContentSettingsType::PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_MESSAGE},
-      {ContentSettingsType::CLIPBOARD_READ, IDS_ALLOWED_CLIPBOARD_MESSAGE},
+      {ContentSettingsType::CLIPBOARD_READ_WRITE,
+       IDS_ALLOWED_CLIPBOARD_MESSAGE},
       {ContentSettingsType::SENSORS,
        base::FeatureList::IsEnabled(features::kGenericSensorExtraClasses)
            ? IDS_ALLOWED_SENSORS_MESSAGE
@@ -800,14 +802,16 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
       {ContentSettingsType::POPUPS, IDS_BLOCKED_POPUPS_REDIRECTS_UNBLOCK},
       {ContentSettingsType::PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_UNBLOCK},
       {ContentSettingsType::SOUND, IDS_BLOCKED_SOUND_UNBLOCK},
-      {ContentSettingsType::CLIPBOARD_READ, IDS_BLOCKED_CLIPBOARD_UNBLOCK},
+      {ContentSettingsType::CLIPBOARD_READ_WRITE,
+       IDS_BLOCKED_CLIPBOARD_UNBLOCK},
       {ContentSettingsType::SENSORS, IDS_BLOCKED_SENSORS_UNBLOCK},
   };
   // Fields as for kBlockedAllowIDs, above.
   static const ContentSettingsTypeIdEntry kAllowedAllowIDs[] = {
       {ContentSettingsType::COOKIES, IDS_ALLOWED_COOKIES_NO_ACTION},
       {ContentSettingsType::PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_NO_ACTION},
-      {ContentSettingsType::CLIPBOARD_READ, IDS_ALLOWED_CLIPBOARD_NO_ACTION},
+      {ContentSettingsType::CLIPBOARD_READ_WRITE,
+       IDS_ALLOWED_CLIPBOARD_NO_ACTION},
       {ContentSettingsType::SENSORS, IDS_ALLOWED_SENSORS_NO_ACTION},
   };
 
@@ -830,13 +834,14 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
       {ContentSettingsType::POPUPS, IDS_BLOCKED_POPUPS_REDIRECTS_NO_ACTION},
       {ContentSettingsType::PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_NO_ACTION},
       {ContentSettingsType::SOUND, IDS_BLOCKED_SOUND_NO_ACTION},
-      {ContentSettingsType::CLIPBOARD_READ, IDS_BLOCKED_CLIPBOARD_NO_ACTION},
+      {ContentSettingsType::CLIPBOARD_READ_WRITE,
+       IDS_BLOCKED_CLIPBOARD_NO_ACTION},
       {ContentSettingsType::SENSORS, IDS_BLOCKED_SENSORS_NO_ACTION},
   };
   static const ContentSettingsTypeIdEntry kAllowedBlockIDs[] = {
       {ContentSettingsType::COOKIES, IDS_ALLOWED_COOKIES_BLOCK},
       {ContentSettingsType::PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_BLOCK},
-      {ContentSettingsType::CLIPBOARD_READ, IDS_ALLOWED_CLIPBOARD_BLOCK},
+      {ContentSettingsType::CLIPBOARD_READ_WRITE, IDS_ALLOWED_CLIPBOARD_BLOCK},
       {ContentSettingsType::SENSORS, IDS_ALLOWED_SENSORS_BLOCK},
   };
 
@@ -1726,7 +1731,7 @@ ContentSettingBubbleModel::CreateContentSettingBubbleModel(
       content_type == ContentSettingsType::JAVASCRIPT ||
       content_type == ContentSettingsType::PPAPI_BROKER ||
       content_type == ContentSettingsType::SOUND ||
-      content_type == ContentSettingsType::CLIPBOARD_READ ||
+      content_type == ContentSettingsType::CLIPBOARD_READ_WRITE ||
       content_type == ContentSettingsType::SENSORS) {
     return std::make_unique<ContentSettingSingleRadioGroup>(
         delegate, web_contents, content_type);

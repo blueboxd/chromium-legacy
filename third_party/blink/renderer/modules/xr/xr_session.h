@@ -262,7 +262,8 @@ class XRSession final
   // ScriptWrappable
   bool HasPendingActivity() const override;
 
-  bool CanReportPoses();
+  bool CanReportPoses() const;
+  base::Optional<TransformationMatrix> MojoFromViewer() const;
 
   // Creates presentation frame based on current state of the session.
   // State currently used in XRFrame creation is mojo_from_viewer_ and

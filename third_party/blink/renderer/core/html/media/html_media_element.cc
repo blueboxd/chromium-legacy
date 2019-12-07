@@ -1757,6 +1757,10 @@ void HTMLMediaElement::ChangeNetworkStateFromLoadingToIdle() {
       ScheduleEvent(event_type_names::kProgress);
     ScheduleEvent(event_type_names::kSuspend);
     SetNetworkState(kNetworkIdle);
+  } else {
+    // TODO(dalecurtis): Replace c-style casts in follow up patch.
+    DVLOG(1) << __func__ << "(" << (void*)this
+             << ") - Deferred network state change to idle for opaque media";
   }
 }
 
@@ -1799,6 +1803,10 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
       web_media_player_) {
     current_src_after_redirects_ =
         KURL(web_media_player_->GetSrcAfterRedirects());
+
+    // Prior to kHaveMetadata |network_state_| may be inaccurate to avoid side
+    // channel leaks. This be a no-op if nothing has changed.
+    NetworkStateChanged();
   }
 
   if (new_state > ready_state_maximum_)
@@ -3606,6 +3614,13 @@ void HTMLMediaElement::ContextDestroyed(ExecutionContext*) {
 }
 
 bool HTMLMediaElement::HasPendingActivity() const {
+  const auto result = HasPendingActivityInternal();
+  // TODO(dalecurtis): Replace c-style casts in followup patch.
+  DVLOG(3) << "HasPendingActivity(" << (void*)this << ") = " << result;
+  return result;
+}
+
+bool HTMLMediaElement::HasPendingActivityInternal() const {
   // The delaying-the-load-event flag is set by resource selection algorithm
   // when looking for a resource to load, before networkState has reached to
   // kNetworkLoading.
@@ -3622,8 +3637,18 @@ bool HTMLMediaElement::HasPendingActivity() const {
   // MediaSource API objects. This lets the group of objects be garbage
   // collected if there is no pending activity nor reachability from a GC root,
   // even while in kNetworkLoading.
-  if (!media_source_ && network_state_ == kNetworkLoading)
-    return true;
+  //
+  // We use the WebMediaPlayer's network state instead of |network_state_| since
+  // it's value is unreliable prior to ready state kHaveMetadata.
+  if (!media_source_) {
+    const auto* wmp = GetWebMediaPlayer();
+    if (!wmp) {
+      if (network_state_ == kNetworkLoading)
+        return true;
+    } else if (wmp->GetNetworkState() == WebMediaPlayer::kNetworkStateLoading) {
+      return true;
+    }
+  }
 
   {
     // Disable potential updating of playback position, as that will
@@ -4243,7 +4268,6 @@ void HTMLMediaElement::RequestMuted(bool muted) {
 
 bool HTMLMediaElement::MediaShouldBeOpaque() const {
   return !IsMediaDataCorsSameOrigin() && ready_state_ < kHaveMetadata &&
-         !FastGetAttribute(html_names::kSrcAttr).IsEmpty() &&
          EffectivePreloadType() != WebMediaPlayer::kPreloadNone;
 }
 

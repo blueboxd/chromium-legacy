@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.common.intern;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.common.Validators;
 
 import java.util.Collection;
@@ -33,25 +35,25 @@ public class InternedMap<K, V> implements Map<K, V> {
     }
 
     @Override
-    public boolean containsKey(/*@Nullable*/ Object key) {
+    public boolean containsKey(@Nullable Object key) {
         return mDelegate.containsKey(key);
     }
 
     @Override
-    public boolean containsValue(/*@Nullable*/ Object value) {
+    public boolean containsValue(@Nullable Object value) {
         return mDelegate.containsValue(value);
     }
 
     @Override
-    /*@Nullable*/
-    public V get(/*@Nullable*/ Object key) {
+    @Nullable
+    public V get(@Nullable Object key) {
         synchronized (mDelegate) {
             return mDelegate.get(key);
         }
     }
 
     @Override
-    /*@Nullable*/
+    @Nullable
     public V put(K key, V value) {
         synchronized (mDelegate) {
             return mDelegate.put(key, mInterner.intern(value));
@@ -59,8 +61,8 @@ public class InternedMap<K, V> implements Map<K, V> {
     }
 
     @Override
-    /*@Nullable*/
-    public V remove(/*@Nullable*/ Object key) {
+    @Nullable
+    public V remove(@Nullable Object key) {
         return mDelegate.remove(key);
     }
 

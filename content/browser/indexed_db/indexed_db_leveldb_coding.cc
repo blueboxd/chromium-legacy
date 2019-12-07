@@ -468,18 +468,18 @@ bool DecodeBlobJournal(StringPiece* slice, BlobJournalType* journal) {
   BlobJournalType output;
   while (!slice->empty()) {
     int64_t database_id = -1;
-    int64_t blob_key = -1;
+    int64_t blob_number = -1;
     if (!DecodeVarInt(slice, &database_id))
       return false;
     if (!KeyPrefix::IsValidDatabaseId(database_id))
       return false;
-    if (!DecodeVarInt(slice, &blob_key))
+    if (!DecodeVarInt(slice, &blob_number))
       return false;
-    if (!DatabaseMetaDataKey::IsValidBlobKey(blob_key) &&
-        (blob_key != DatabaseMetaDataKey::kAllBlobsKey)) {
+    if (!DatabaseMetaDataKey::IsValidBlobNumber(blob_number) &&
+        (blob_number != DatabaseMetaDataKey::kAllBlobsKey)) {
       return false;
     }
-    output.push_back({database_id, blob_key});
+    output.push_back({database_id, blob_number});
   }
   journal->swap(output);
   return true;
@@ -1566,13 +1566,13 @@ std::string DatabaseNameKey::DebugString() const {
   return result.str();
 }
 
-bool DatabaseMetaDataKey::IsValidBlobKey(int64_t blob_key) {
-  return blob_key >= kBlobKeyGeneratorInitialNumber;
+bool DatabaseMetaDataKey::IsValidBlobNumber(int64_t blob_number) {
+  return blob_number >= kBlobNumberGeneratorInitialNumber;
 }
 
 const int64_t DatabaseMetaDataKey::kAllBlobsKey = 1;
-const int64_t DatabaseMetaDataKey::kBlobKeyGeneratorInitialNumber = 2;
-const int64_t DatabaseMetaDataKey::kInvalidBlobKey = -1;
+const int64_t DatabaseMetaDataKey::kBlobNumberGeneratorInitialNumber = 2;
+const int64_t DatabaseMetaDataKey::kInvalidBlobNumber = -1;
 
 std::string DatabaseMetaDataKey::Encode(int64_t database_id,
                                         MetaDataType meta_data_type) {

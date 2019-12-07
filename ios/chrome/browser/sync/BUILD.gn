@@ -82,6 +82,7 @@ source_set("sync") {
     "//ios/chrome/browser/webdata_services",
     "//ios/chrome/common",
     "//ios/web",
+    "//ios/web/public/session",
     "//net",
     "//ui/base",
     "//url",

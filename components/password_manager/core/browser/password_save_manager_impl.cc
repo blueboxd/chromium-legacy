@@ -351,12 +351,7 @@ bool PasswordSaveManagerImpl::HasGeneratedPassword() const {
 
 std::unique_ptr<PasswordSaveManager> PasswordSaveManagerImpl::Clone() {
   auto result = std::make_unique<PasswordSaveManagerImpl>(form_saver_->Clone());
-
-  if (generation_manager_)
-    result->generation_manager_ = generation_manager_->Clone();
-
-  result->pending_credentials_ = pending_credentials_;
-  result->pending_credentials_state_ = pending_credentials_state_;
+  CloneInto(result.get());
   return result;
 }
 
@@ -457,6 +452,15 @@ void PasswordSaveManagerImpl::UpdateInternal(
     const std::vector<const PasswordForm*>& matches,
     const base::string16& old_password) {
   form_saver_->Update(pending_credentials_, matches, old_password);
+}
+
+void PasswordSaveManagerImpl::CloneInto(PasswordSaveManagerImpl* clone) {
+  DCHECK(clone);
+  if (generation_manager_)
+    clone->generation_manager_ = generation_manager_->Clone();
+
+  clone->pending_credentials_ = pending_credentials_;
+  clone->pending_credentials_state_ = pending_credentials_state_;
 }
 
 }  // namespace password_manager

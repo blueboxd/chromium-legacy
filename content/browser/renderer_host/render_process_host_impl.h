@@ -101,7 +101,6 @@ class GpuClient;
 
 namespace content {
 class AgentMetricsCollectorHost;
-class BrowserPluginMessageFilter;
 class CodeCacheHostImpl;
 class FileSystemManagerImpl;
 class IndexedDBDispatcherHost;
@@ -238,16 +237,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void Resume() override;
   mojom::Renderer* GetRendererInterface() override;
   void CreateURLLoaderFactory(
-      const url::Origin& origin,
-      const url::Origin& main_world_origin,
-      network::mojom::CrossOriginEmbedderPolicy embedder_policy,
-      const WebPreferences* preferences,
-      const net::NetworkIsolationKey& network_isolation_key,
-      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
-          header_client,
-      const base::Optional<base::UnguessableToken>& top_frame_token,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-      network::mojom::URLLoaderFactoryOverridePtr factory_override) override;
+      network::mojom::URLLoaderFactoryParamsPtr params) override;
 
   bool MayReuseHost() override;
   bool IsUnused() override;
@@ -283,19 +274,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // ChildProcessLauncher::Client implementation.
   void OnProcessLaunched() override;
   void OnProcessLaunchFailed(int error_code) override;
-
-  // Similar to the CreateURLLoaderFactory RenderProcessHost override, but this
-  // creates a trusted URLLoaderFactory with no default NetworkIsolationKey.
-  void CreateTrustedURLLoaderFactory(
-      const url::Origin& origin,
-      const url::Origin& main_world_origin,
-      network::mojom::CrossOriginEmbedderPolicy embedder_policy,
-      const WebPreferences* preferences,
-      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
-          header_client,
-      const base::Optional<base::UnguessableToken>& top_frame_token,
-      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-      network::mojom::URLLoaderFactoryOverridePtr factory_override);
 
   // Update the total and low priority count as indicated by the previous and
   // new priorities of the underlying document.  The nullopt option is used when
@@ -891,26 +869,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void CreateURLLoaderFactoryForRendererProcess(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver);
 
-  // Creates a URLLoaderFactory whose NetworkIsolationKey is set if
-  // |network_isolation_key| has a value, and whose trust is given by
-  // |is_trusted|. Only called by CreateURLLoaderFactory,
-  // CreateTrustedURLLoaderFactory and CreateURLLoaderFactoryForRendererProcess.
-  void CreateURLLoaderFactoryInternal(
-      const url::Origin& origin,
-      // TODO(kinuko, lukasza): https://crbug.com/891872: Make
-      // |main_world_origin| non-optional, once
-      // CreateURLLoaderFactoryForRendererProcess is removed.
-      const base::Optional<url::Origin>& main_world_origin,
-      network::mojom::CrossOriginEmbedderPolicy embedder_policy,
-      const WebPreferences* preferences,
-      const base::Optional<net::NetworkIsolationKey>& network_isolation_key,
-      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
-          header_client,
-      const base::Optional<base::UnguessableToken>& top_frame_token,
-      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-      bool is_trusted,
-      network::mojom::URLLoaderFactoryOverridePtr factory_override);
-
   // Binds a TracedProcess interface in the renderer process. This is used to
   // communicate with the Tracing service.
   void BindTracedProcess(
@@ -989,9 +947,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   scoped_refptr<RenderWidgetHelper> widget_helper_;
 
   scoped_refptr<RenderFrameMessageFilter> render_frame_message_filter_;
-
-  // The filter for messages coming from the browser plugin.
-  scoped_refptr<BrowserPluginMessageFilter> bp_message_filter_;
 
   // Used in single-process mode.
   std::unique_ptr<base::Thread> in_process_renderer_;

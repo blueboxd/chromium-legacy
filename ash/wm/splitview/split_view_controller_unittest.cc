@@ -2187,6 +2187,59 @@ TEST_P(SplitViewControllerTest, DividerClosestRatioOnWorkArea) {
   EXPECT_EQ(divider_closest_ratio(), 0.33f);
 }
 
+// Tests that the divider closest position ratio is properly updated for display
+// rotation after a clamshell/tablet transition that does not trigger a call to
+// |SplitViewController::OnDisplayMetricsChanged|. The point here is that if
+// |SplitViewController::is_previous_layout_right_side_up_| is only ever updated
+// in |SplitViewController::OnDisplayMetricsChanged|, then a clamshell/tablet
+// transition can leave it with a stale value which can cause broken behavior.
+TEST_P(SplitViewControllerTest,
+       DividerClosestRatioUpdatedForClamshellTabletTransition) {
+  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager,
+                                                         display_id);
+  // Set the display orientation to landscape secondary (upside down).
+  ScreenOrientationControllerTestApi test_api(
+      Shell::Get()->screen_orientation_controller());
+  test_api.SetDisplayRotation(display::Display::ROTATE_180,
+                              display::Display::RotationSource::ACTIVE);
+  // Switch to clamshell mode.
+  TabletModeController* tablet_mode_controller =
+      Shell::Get()->tablet_mode_controller();
+  tablet_mode_controller->SetEnabledForTest(false);
+  // Set the display orientation to landscape secondary (upside down).
+  Shell::Get()->display_manager()->SetDisplayRotation(
+      display_id, display::Display::ROTATE_180,
+      display::Display::RotationSource::ACTIVE);
+  // Switch to tablet mode.
+  tablet_mode_controller->SetEnabledForTest(true);
+  // Enter split view.
+  const gfx::Rect bounds(0, 0, 200, 200);
+  std::unique_ptr<aura::Window> window(CreateWindow(bounds));
+  split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
+  // Drag the divider so that the snapped window spans only one third of the way
+  // across the work area.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  const gfx::Rect divider_bounds =
+      split_view_divider()->GetDividerBoundsInScreen(false);
+  generator->set_current_screen_location(divider_bounds.CenterPoint());
+  const gfx::Rect workarea_bounds =
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+          window.get());
+  generator->DragMouseTo(
+      gfx::Point(workarea_bounds.width() * 0.33f, workarea_bounds.y()));
+  SkipDividerSnapAnimation();
+  // Expect that the divider closest position ratio is two thirds with the
+  // display upside down.
+  EXPECT_EQ(divider_closest_ratio(), 0.67f);
+  // Set the display orientation to landscape primary (right side up).
+  test_api.SetDisplayRotation(display::Display::ROTATE_0,
+                              display::Display::RotationSource::ACTIVE);
+  // Expect that the divider closest position ratio is updated to one third.
+  EXPECT_EQ(divider_closest_ratio(), 0.33f);
+}
+
 // Test that if we snap an always on top window in splitscreen, there should be
 // no crash and the window should stay always on top.
 TEST_P(SplitViewControllerTest, AlwaysOnTopWindow) {

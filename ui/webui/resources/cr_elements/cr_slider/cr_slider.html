@@ -15,13 +15,13 @@
         --cr-slider-container-disabled-color:
             rgba(var(--google-grey-600-rgb), .24);
         --cr-slider-disabled-color: var(--google-grey-600);
-        --cr-slider-knob-color: var(--google-blue-600);
+        --cr-slider-knob-color-rgb: var(--google-blue-600-rgb);
         --cr-slider-knob-disabled-color: white;
-        --cr-slider-marker-active-color: rgba(255, 255, 255, 0.54);
-        --cr-slider-marker-color: rgba(26, 115, 232, 0.54);
-        --cr-slider-marker-disabled-color: rgba(128, 134, 139, 0.54);
+        --cr-slider-marker-active-color: rgba(255, 255, 255, .54);
+        --cr-slider-marker-color: rgba(26, 115, 232, .54);
+        --cr-slider-marker-disabled-color: rgba(128, 134, 139, .54);
         --cr-slider-position-transition: 80ms ease;
-        /* --cr-slider-ripple-opacity is left at default in light mode. */
+        --cr-slider-ripple-color: rgba(var(--cr-slider-knob-color-rgb), .25);
 
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
         cursor: default;
@@ -39,13 +39,13 @@
           --cr-slider-container-disabled-color:
               rgba(var(--google-grey-600-rgb), .48);
           /* --cr-slider-disabled-color is the same in dark mode (GG600). */
-          --cr-slider-knob-color: var(--google-blue-refresh-300);
+          --cr-slider-knob-color-rgb: var(--google-blue-refresh-300-rgb);
           --cr-slider-knob-disabled-color:
               var(--google-grey-900-white-4-percent);
           --cr-slider-marker-active-color: var(--google-blue-refresh-300);
           --cr-slider-marker-color: var(--google-blue-refresh-300);
           --cr-slider-marker-disabled-color: rgba(255, 255, 255, .54);
-          --cr-slider-ripple-opacity: .4;
+          --cr-slider-ripple-color: rgba(var(--cr-slider-knob-color-rgb), .4);
         }
       }
 
@@ -129,9 +129,9 @@
       }
 
       #knob {
-        background-color: var(--cr-slider-knob-color);
+        background-color: rgb(var(--cr-slider-knob-color-rgb));
         border-radius: 50%;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .4);
         height: 10px;
         outline: none;
         transform: translate(-50%, -50%);
@@ -143,7 +143,7 @@
       }
 
       #label {
-        background: var(--cr-slider-knob-color);
+        background: rgb(var(--cr-slider-knob-color-rgb));
         border-radius: .75em;
         bottom: 22px;
         color: white;  /* Same for dark and light mode. */
@@ -170,8 +170,8 @@
       }
 
       paper-ripple {
-        --paper-ripple-opacity: var(--cr-slider-ripple-opacity);
-        color: var(--cr-slider-knob-color);
+        --paper-ripple-opacity: 1;  /* Opacity in each color's alpha. */
+        color: var(--cr-slider-ripple-color);
         height: 32px;
         left: -11px;
         pointer-events: none;

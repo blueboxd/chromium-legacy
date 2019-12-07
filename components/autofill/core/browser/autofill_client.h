@@ -270,6 +270,12 @@ class AutofillClient : public RiskDataLoader {
   // Returns the current best guess as to the page's display language.
   virtual std::string GetPageLanguage() const;
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // Returns the whitelists for virtual cards. Used on desktop platforms only.
+  virtual std::vector<std::string> GetMerchantWhitelistForVirtualCards() = 0;
+  virtual std::vector<std::string> GetBinRangeWhitelistForVirtualCards() = 0;
+#endif
+
   // Causes the Autofill settings UI to be shown. If |show_credit_card_settings|
   // is true, will show the credit card specific subpage.
   virtual void ShowAutofillSettings(bool show_credit_card_settings) = 0;

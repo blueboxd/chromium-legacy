@@ -21,8 +21,20 @@
 TEST(UpdaterTest, UpdaterExitCode) {
   base::FilePath this_executable_path;
   ASSERT_TRUE(base::PathService::Get(base::FILE_EXE, &this_executable_path));
-  const base::FilePath updater = this_executable_path.DirName().Append(
-      FILE_PATH_LITERAL("updater" EXECUTABLE_EXTENSION));
+  const base::FilePath executableFolder = this_executable_path.DirName();
+  const base::FilePath updater =
+#if defined(OS_WIN)
+      this_executable_path.DirName().Append(
+          FILE_PATH_LITERAL("updater" EXECUTABLE_EXTENSION));
+#elif defined(OS_MACOSX)
+      this_executable_path.DirName()
+          .Append(FILE_PATH_LITERAL("GoogleUpdate.app"))
+          .Append(FILE_PATH_LITERAL("Contents"))
+          .Append(FILE_PATH_LITERAL("MacOS"))
+          .Append(FILE_PATH_LITERAL("GoogleUpdate"));
+#else
+      "";
+#endif
   base::LaunchOptions options;
 #if defined(OS_WIN)
   options.start_hidden = true;

@@ -51,7 +51,7 @@ base::Optional<ViewID> GetViewID(
     case ImageType::MIDI_SYSEX:
     case ImageType::SOUND:
     case ImageType::FRAMEBUST:
-    case ImageType::CLIPBOARD_READ:
+    case ImageType::CLIPBOARD_READ_WRITE:
     case ImageType::SENSORS:
     case ImageType::NOTIFICATIONS_QUIET_PROMPT:
       return base::nullopt;

@@ -89,14 +89,14 @@ std::string GetPermissionRequestString(PermissionRequestType type) {
       return "AudioCapture";
     case PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA:
       return "VideoCapture";
-    case PermissionRequestType::PERMISSION_CLIPBOARD_READ:
-      return "ClipboardRead";
     case PermissionRequestType::PERMISSION_SECURITY_KEY_ATTESTATION:
       return "SecurityKeyAttestation";
     case PermissionRequestType::PERMISSION_PAYMENT_HANDLER:
       return "PaymentHandler";
     case PermissionRequestType::PERMISSION_NFC:
       return "Nfc";
+    case PermissionRequestType::PERMISSION_CLIPBOARD_READ_WRITE:
+      return "ClipboardReadWrite";
     default:
       NOTREACHED();
       return "";
@@ -460,9 +460,9 @@ void PermissionUmaUtil::RecordPermissionAction(
                             "Permissions.Action.SecureOrigin.Flash",
                             "Permissions.Action.InsecureOrigin.Flash", action);
       break;
-    case ContentSettingsType::CLIPBOARD_READ:
-      base::UmaHistogramEnumeration("Permissions.Action.ClipboardRead", action,
-                                    PermissionAction::NUM);
+    case ContentSettingsType::CLIPBOARD_READ_WRITE:
+      base::UmaHistogramEnumeration("Permissions.Action.ClipboardReadWrite",
+                                    action, PermissionAction::NUM);
       break;
     case ContentSettingsType::PAYMENT_HANDLER:
       base::UmaHistogramEnumeration("Permissions.Action.PaymentHandler", action,

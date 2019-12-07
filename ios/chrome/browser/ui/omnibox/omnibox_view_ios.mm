@@ -288,8 +288,8 @@ void OmniboxViewIOS::OnDidBeginEditing() {
       model()->set_focus_source(OmniboxFocusSource::OMNIBOX);
     }
 
-    model()->OnSetFocus(/*control_down=*/false,
-                        /*suppress_on_focus_suggestions=*/false);
+    model()->ShowOnFocusSuggestionsIfAutocompleteIdle();
+    model()->OnSetFocus(/*control_down=*/false);
   }
 
   // If the omnibox is displaying a URL and the popup is not showing, set the

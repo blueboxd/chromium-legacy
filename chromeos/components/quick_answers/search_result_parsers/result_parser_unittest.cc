@@ -27,7 +27,7 @@ class ResultParserFactoryTest : public testing::Test {
 
 TEST_F(ResultParserFactoryTest, SupportedType) {
   EXPECT_NE(nullptr, parser_factory_->Create(
-                         static_cast<int>(ResultType::kUnitCconverterResult)));
+                         static_cast<int>(ResultType::kUnitConvertionResult)));
 }
 
 TEST_F(ResultParserFactoryTest, UnsupportedType) {

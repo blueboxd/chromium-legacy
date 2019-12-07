@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.testing.modelprovider;
 
+import androidx.annotation.Nullable;
+
 import com.google.common.collect.ImmutableList;
 
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.ModelChild;
@@ -42,7 +44,7 @@ public class FakeModelCursor implements ModelCursor {
     }
 
     @Override
-    /*@Nullable*/
+    @Nullable
     public ModelChild getNextItem() {
         if (isAtEnd()) {
             return null;

@@ -505,7 +505,7 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
   scoped_refptr<IndexedDBContext> indexed_db_context =
       storage_partition->GetIndexedDBContext();
   IndexedDBContext* const indexed_db_context_ptr = indexed_db_context.get();
-  indexed_db_context_ptr->TaskRunner()->PostTask(
+  indexed_db_context_ptr->IDBTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&SaveSessionStateOnIndexedDBThread,
                                 std::move(indexed_db_context)));
 }

@@ -905,9 +905,15 @@ void ExtensionDownloader::FetchUpdatedExtension(
                   << "' for extension " << fetch_data->id;
     delegate_->OnExtensionDownloadStageChanged(
         fetch_data->id, ExtensionDownloaderDelegate::Stage::FINISHED);
-    NotifyExtensionsDownloadFailed(
-        {fetch_data->id}, fetch_data->request_ids,
-        ExtensionDownloaderDelegate::Error::CRX_FETCH_FAILED);
+    if (fetch_data->url.is_empty()) {
+      NotifyExtensionsDownloadFailed(
+          {fetch_data->id}, fetch_data->request_ids,
+          ExtensionDownloaderDelegate::Error::CRX_FETCH_URL_EMPTY);
+    } else {
+      NotifyExtensionsDownloadFailed(
+          {fetch_data->id}, fetch_data->request_ids,
+          ExtensionDownloaderDelegate::Error::CRX_FETCH_URL_INVALID);
+    }
     return;
   }
 

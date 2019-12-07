@@ -122,6 +122,9 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
     return mailbox_texture_holder_ ? mailbox_texture_holder_->GetSyncToken()
                                    : sync_token;
   }
+  bool IsOriginTopLeft() const final {
+    return texture_holder()->IsOriginTopLeft();
+  }
 
   PaintImage PaintImageForCurrentFrame() override;
 

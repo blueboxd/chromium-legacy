@@ -19,6 +19,9 @@
 
 #include "third_party/blink/renderer/core/layout/svg/svg_marker_data.h"
 
+#include "base/auto_reset.h"
+#include "third_party/blink/renderer/core/svg/svg_path_byte_stream_source.h"
+#include "third_party/blink/renderer/core/svg/svg_path_parser.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -32,17 +35,115 @@ static double BisectingAngle(double in_angle, double out_angle) {
 
 void SVGMarkerDataBuilder::Build(const Path& path) {
   path.Apply(this, SVGMarkerDataBuilder::UpdateFromPathElement);
-  if (positions_.IsEmpty())
-    return;
-  const bool kEndsSubpath = true;
-  UpdateAngle(kEndsSubpath);
-  // Mark the last marker as 'end'.
-  positions_.back().type = kEndMarker;
+  Flush();
 }
 
 void SVGMarkerDataBuilder::UpdateFromPathElement(void* info,
                                                  const PathElement* element) {
   static_cast<SVGMarkerDataBuilder*>(info)->UpdateFromPathElement(*element);
+}
+
+namespace {
+
+// Path processor that converts an arc segment to a cubic segment with
+// equivalent start/end tangents.
+class MarkerPathSegmentProcessor : public SVGPathNormalizer {
+  STACK_ALLOCATED();
+
+ public:
+  MarkerPathSegmentProcessor(SVGPathConsumer* consumer)
+      : SVGPathNormalizer(consumer) {}
+
+  void EmitSegment(const PathSegmentData&);
+
+ private:
+  Vector<PathSegmentData> DecomposeArc(const PathSegmentData&);
+};
+
+Vector<PathSegmentData> MarkerPathSegmentProcessor::DecomposeArc(
+    const PathSegmentData& segment) {
+  class SegmentCollector : public SVGPathConsumer {
+    STACK_ALLOCATED();
+
+   public:
+    void EmitSegment(const PathSegmentData& segment) override {
+      DCHECK_EQ(segment.command, kPathSegCurveToCubicAbs);
+      segments_.push_back(segment);
+    }
+    Vector<PathSegmentData> ReturnSegments() { return std::move(segments_); }
+
+   private:
+    Vector<PathSegmentData> segments_;
+  } collector;
+  // Temporarily switch to our "collector" to collect the curve segments
+  // emitted by DecomposeArcToCubic(), and then switch back to the actual
+  // consumer.
+  base::AutoReset<SVGPathConsumer*> consumer_scope(&consumer_, &collector);
+  DecomposeArcToCubic(current_point_, segment);
+  return collector.ReturnSegments();
+}
+
+void MarkerPathSegmentProcessor::EmitSegment(
+    const PathSegmentData& original_segment) {
+  PathSegmentData segment = original_segment;
+  // Convert a relative arc to absolute.
+  if (segment.command == kPathSegArcRel) {
+    segment.command = kPathSegArcAbs;
+    segment.target_point += current_point_;
+  }
+  if (segment.command == kPathSegArcAbs) {
+    // Decompose and then pass/emit a synthesized cubic with matching tangents.
+    Vector<PathSegmentData> decomposed_arc_curves = DecomposeArc(segment);
+    if (decomposed_arc_curves.IsEmpty()) {
+      segment.command = kPathSegLineToAbs;
+    } else {
+      // Use the first control point from the first curve and the second and
+      // last control points from the last curve. (If the decomposition only
+      // has one curve then the second line just copies the same point again.)
+      segment = decomposed_arc_curves.back();
+      segment.point1 = decomposed_arc_curves[0].point1;
+    }
+  }
+  // Invoke the base class to normalize and emit to the consumer
+  // (SVGMarkerDataBuilder).
+  SVGPathNormalizer::EmitSegment(segment);
+}
+
+}  // namespace
+
+void SVGMarkerDataBuilder::Build(const SVGPathByteStream& stream) {
+  SVGPathByteStreamSource source(stream);
+  MarkerPathSegmentProcessor processor(this);
+  svg_path_parser::ParsePath(source, processor);
+  Flush();
+}
+
+void SVGMarkerDataBuilder::EmitSegment(const PathSegmentData& segment) {
+  PathElement element;
+  FloatPoint points[3];
+  element.points = points;
+  switch (segment.command) {
+    case kPathSegClosePath:
+      element.type = kPathElementCloseSubpath;
+      break;
+    case kPathSegMoveToAbs:
+      element.type = kPathElementMoveToPoint;
+      element.points[0] = segment.target_point;
+      break;
+    case kPathSegLineToAbs:
+      element.type = kPathElementAddLineToPoint;
+      element.points[0] = segment.target_point;
+      break;
+    case kPathSegCurveToCubicAbs:
+      element.type = kPathElementAddCurveToPoint;
+      element.points[0] = segment.point1;
+      element.points[1] = segment.point2;
+      element.points[2] = segment.target_point;
+      break;
+    default:
+      NOTREACHED();
+  }
+  UpdateFromPathElement(element);
 }
 
 double SVGMarkerDataBuilder::CurrentAngle(AngleType type) const {
@@ -174,6 +275,15 @@ void SVGMarkerDataBuilder::UpdateFromPathElement(const PathElement& element) {
   // later stage.
   SVGMarkerType marker_type = positions_.IsEmpty() ? kStartMarker : kMidMarker;
   positions_.push_back(MarkerPosition(marker_type, origin_, 0));
+}
+
+void SVGMarkerDataBuilder::Flush() {
+  if (positions_.IsEmpty())
+    return;
+  const bool kEndsSubpath = true;
+  UpdateAngle(kEndsSubpath);
+  // Mark the last marker as 'end'.
+  positions_.back().type = kEndMarker;
 }
 
 }  // namespace blink

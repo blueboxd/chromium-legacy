@@ -34,6 +34,8 @@ static_library("core") {
 
   if (is_ios) {
     sources -= [
+      "blocked_interception_ui.cc",
+      "blocked_interception_ui.h",
       "mitm_software_ui.cc",
       "mitm_software_ui.h",
     ]

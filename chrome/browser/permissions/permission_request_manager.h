@@ -74,10 +74,6 @@ class PermissionRequestManager
   // Will reposition the bubble (may change parent if necessary).
   void UpdateAnchorPosition();
 
-  // Get the native window of the bubble.
-  // TODO(hcarmona): Remove this as part of the bubble API work.
-  gfx::NativeWindow GetBubbleWindow();
-
   // For observing the status of the permission bubble manager.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

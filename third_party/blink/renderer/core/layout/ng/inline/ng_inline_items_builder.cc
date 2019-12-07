@@ -197,8 +197,8 @@ NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::BoxInfo::BoxInfo(
     const NGInlineItem& item)
     : item_index(item_index),
       should_create_box_fragment(item.ShouldCreateBoxFragment()),
-      style(*item.Style()),
-      text_metrics(NGLineHeightMetrics(style)) {
+      may_have_margin_(item.Style()->MayHaveMargin()),
+      text_metrics(NGLineHeightMetrics(*item.Style())) {
   DCHECK(item.Style());
 }
 
@@ -208,7 +208,7 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::BoxInfo::
     ShouldCreateBoxFragmentForChild(const BoxInfo& child) const {
   // When a child inline box has margins, the parent has different width/height
   // from the union of children.
-  if (child.style.MayHaveMargin())
+  if (child.may_have_margin_)
     return true;
 
   // Returns true when parent and child boxes have different font metrics, since

@@ -28,6 +28,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/history/core/browser/history_service.h"
@@ -111,16 +112,27 @@ mojom::SiteEngagementDetails GetDetailsImpl(base::Clock* clock,
 }
 
 std::vector<mojom::SiteEngagementDetails> GetAllDetailsImpl(
+    browsing_data::TimePeriod time_period,
     base::Clock* clock,
     HostContentSettingsMap* map) {
   std::set<GURL> origins = GetEngagementOriginsFromContentSettings(map);
 
   std::vector<mojom::SiteEngagementDetails> details;
   details.reserve(origins.size());
+
+  auto begin_time = browsing_data::CalculateBeginDeleteTime(time_period);
+  auto end_time = browsing_data::CalculateEndDeleteTime(time_period);
+
   for (const GURL& origin : origins) {
     if (!origin.is_valid())
       continue;
-    details.push_back(GetDetailsImpl(clock, origin, map));
+
+    auto score = CreateEngagementScoreImpl(clock, origin, map);
+    auto last_engagement_time = score.last_engagement_time();
+    if (begin_time > last_engagement_time || end_time < last_engagement_time)
+      continue;
+
+    details.push_back(score.GetDetails());
   }
 
   return details;
@@ -183,7 +195,8 @@ SiteEngagementService::GetAllDetailsInBackground(
     base::Time now,
     scoped_refptr<HostContentSettingsMap> map) {
   StoppedClock clock(now);
-  return GetAllDetailsImpl(&clock, map.get());
+  return GetAllDetailsImpl(browsing_data::TimePeriod::ALL_TIME, &clock,
+                           map.get());
 }
 
 SiteEngagementService::SiteEngagementService(Profile* profile)
@@ -226,7 +239,19 @@ std::vector<mojom::SiteEngagementDetails> SiteEngagementService::GetAllDetails()
     CleanupEngagementScores(true);
 
   return GetAllDetailsImpl(
-      clock_, HostContentSettingsMapFactory::GetForProfile(profile_));
+      browsing_data::TimePeriod::ALL_TIME, clock_,
+      HostContentSettingsMapFactory::GetForProfile(profile_));
+}
+
+std::vector<mojom::SiteEngagementDetails>
+SiteEngagementService::GetAllDetailsEngagedInTimePeriod(
+    browsing_data::TimePeriod time_period) const {
+  if (IsLastEngagementStale())
+    CleanupEngagementScores(true);
+
+  return GetAllDetailsImpl(
+      time_period, clock_,
+      HostContentSettingsMapFactory::GetForProfile(profile_));
 }
 
 void SiteEngagementService::HandleNotificationInteraction(const GURL& url) {

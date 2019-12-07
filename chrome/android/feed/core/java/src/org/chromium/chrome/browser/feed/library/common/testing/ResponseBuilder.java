@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.common.testing;
 
+import androidx.annotation.Nullable;
+
 import com.google.protobuf.ByteString;
 
 import org.chromium.components.feed.core.proto.ui.piet.PietProto.PietSharedState;
@@ -53,7 +55,8 @@ public class ResponseBuilder {
     private final List<ContentId> mPietSharedStateContentIds = new ArrayList<>();
 
     private int mTokenId;
-    /*@Nullable*/ private ByteString mToken;
+    @Nullable
+    private ByteString mToken;
 
     /** Add a CLEAR_ALL data operation to the response */
     public ResponseBuilder addClearOperation() {

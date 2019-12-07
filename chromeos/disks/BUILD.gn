@@ -20,6 +20,8 @@ component("disks") {
     "disk.h",
     "disk_mount_manager.cc",
     "disk_mount_manager.h",
+    "mount_point.cc",
+    "mount_point.h",
     "suspend_unmount_manager.cc",
     "suspend_unmount_manager.h",
   ]
@@ -60,6 +62,7 @@ source_set("unit_tests") {
   sources = [
     "disk_mount_manager_unittest.cc",
     "disk_unittest.cc",
+    "mount_point_unittest.cc",
     "suspend_unmount_manager_unittest.cc",
   ]
 }

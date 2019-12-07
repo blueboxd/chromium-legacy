@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.feed.library.api.internal.modelprovider;
 
 import android.support.annotation.IntDef;
 
+import androidx.annotation.Nullable;
+
 import com.google.protobuf.ByteString;
 
 /**
@@ -30,9 +32,10 @@ public final class ModelError {
     }
 
     private final @ErrorType int mErrorType;
-    /*@Nullable*/ private final ByteString mContinuationToken;
+    @Nullable
+    private final ByteString mContinuationToken;
 
-    public ModelError(@ErrorType int errorType, /*@Nullable*/ ByteString continuationToken) {
+    public ModelError(@ErrorType int errorType, @Nullable ByteString continuationToken) {
         this.mErrorType = errorType;
         this.mContinuationToken = continuationToken;
     }
@@ -43,7 +46,7 @@ public final class ModelError {
     }
 
     /** This should be non-null if the ErrorType is PAGINATION_ERROR. */
-    /*@Nullable*/
+    @Nullable
     public ByteString getContinuationToken() {
         return mContinuationToken;
     }

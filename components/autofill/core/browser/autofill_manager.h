@@ -521,6 +521,11 @@ class AutofillManager : public AutofillHandler,
                                std::vector<Suggestion>* suggestions,
                                SuggestionsContext* context);
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // Whether to show the option to use virtual card in the autofill popup.
+  bool ShouldShowVirtualCardOption(FormStructure* form_structure);
+#endif
+
   // Returns an appropriate EventFormLogger for the given |field_type_group|.
   // May return nullptr.
   FormEventLoggerBase* GetEventFormLogger(

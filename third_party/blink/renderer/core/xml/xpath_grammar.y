@@ -25,6 +25,21 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/* === NOTA BENE ===
+ * If you modify this file, you must run bison to regenerate the corresponding
+ * .cc and .h files. From chromium's root directory, run the following command
+ * on a system with a modern version of bison (>= 3.4.1):
+ *
+ *   $ third_party/blink/renderer/build/scripts/rule_bison.py \
+ *       third_party/blink/renderer/core/xml/xpath_grammar.y \
+ *       third_party/blink/renderer/core/xml/ \
+ *       bison
+ *
+ * This process is not automated because newer bison releases have diverged from
+ * (1) the version included with Xcode and (2) the Windows binary checked into
+ * //third_party/bison. See https://crbug.com/1028421.
+ */
+
 %{
 
 #include "third_party/blink/renderer/core/xml/xpath_functions.h"
@@ -51,7 +66,7 @@
 using blink::xpath::Step;
 %}
 
-%pure-parser
+%define api.pure full
 %parse-param { blink::xpath::Parser* parser }
 
 %union

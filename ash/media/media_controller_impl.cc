@@ -9,15 +9,15 @@
 #include "ash/public/cpp/media_client.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "media/base/media_switches.h"
-#include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "services/media_session/public/mojom/media_session_service.mojom.h"
 #include "ui/base/accelerators/media_keys_util.h"
 
 namespace ash {
@@ -34,8 +34,7 @@ bool IsMediaSessionActionEligibleForKeyControl(
 
 }  // namespace
 
-MediaControllerImpl::MediaControllerImpl(service_manager::Connector* connector)
-    : connector_(connector) {
+MediaControllerImpl::MediaControllerImpl() {
   // If media session media key handling is enabled this will setup a connection
   // and bind an observer to the media session service.
   if (base::FeatureList::IsEnabled(media::kHardwareMediaKeyHandling))
@@ -218,25 +217,34 @@ void MediaControllerImpl::FlushForTesting() {
 
 media_session::mojom::MediaController*
 MediaControllerImpl::GetMediaSessionController() {
-  // |connector_| can be null in tests.
-  if (connector_ && !media_session_controller_remote_.is_bound()) {
-    mojo::Remote<media_session::mojom::MediaControllerManager>
-        controller_manager_remote;
-    connector_->Connect(media_session::mojom::kServiceName,
-                        controller_manager_remote.BindNewPipeAndPassReceiver());
-    controller_manager_remote->CreateActiveMediaController(
-        media_session_controller_remote_.BindNewPipeAndPassReceiver());
+  // NOTE: |media_session_controller_remote_| may be overridden by tests and
+  // therefore non-null even if the real Media Session Service is unavailable.
+  if (media_session_controller_remote_)
+    return media_session_controller_remote_.get();
 
-    media_session_controller_remote_.set_disconnect_handler(
-        base::BindRepeating(&MediaControllerImpl::OnMediaSessionControllerError,
-                            base::Unretained(this)));
+  // The service may be unavailable in some test environments.
+  if (!Shell::HasInstance())
+    return nullptr;
 
-    BindMediaControllerObserver();
-  }
+  media_session::mojom::MediaSessionService* service =
+      Shell::Get()->shell_delegate()->GetMediaSessionService();
+  if (!service)
+    return nullptr;
 
-  return media_session_controller_remote_.is_bound()
-             ? media_session_controller_remote_.get()
-             : nullptr;
+  mojo::Remote<media_session::mojom::MediaControllerManager>
+      controller_manager_remote;
+  service->BindMediaControllerManager(
+      controller_manager_remote.BindNewPipeAndPassReceiver());
+  controller_manager_remote->CreateActiveMediaController(
+      media_session_controller_remote_.BindNewPipeAndPassReceiver());
+
+  media_session_controller_remote_.set_disconnect_handler(
+      base::BindRepeating(&MediaControllerImpl::OnMediaSessionControllerError,
+                          base::Unretained(this)));
+
+  BindMediaControllerObserver();
+
+  return media_session_controller_remote_.get();
 }
 
 void MediaControllerImpl::OnMediaSessionControllerError() {

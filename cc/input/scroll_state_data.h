@@ -65,20 +65,10 @@ class CC_EXPORT ScrollStateData {
   // resolved. crbug.com/755164.
   bool is_scroll_chain_cut;
 
-  ScrollNode* current_native_scrolling_node() const;
-  void set_current_native_scrolling_node(
-      ScrollNode* current_native_scrolling_node);
   ElementId current_native_scrolling_element() const;
   void set_current_native_scrolling_element(ElementId element_id);
 
  private:
-  // Only one of current_native_scrolling_node_ and
-  // current_native_scrolling_element_ may be non-null at a time. Whenever
-  // possible, we should store the scroll node.
-
-  // The last scroll node to respond to a scroll, or null if none exists.
-  // TODO(bokan): This is redundant with the member below.
-  ScrollNode* current_native_scrolling_node_;
   // The id of the last native element to respond to a scroll, or 0 if none
   // exists.
   // TODO(bokan): In the compositor, this is now only used as an override to

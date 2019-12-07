@@ -40,7 +40,7 @@ class GPU_IPC_SERVICE_EXPORT SharedImageStub
   bool OnMessageReceived(const IPC::Message& msg) override;
 
   // MemoryTracker implementation:
-  void TrackMemoryAllocatedChange(uint64_t delta) override;
+  void TrackMemoryAllocatedChange(int64_t delta) override;
   uint64_t GetSize() const override;
   uint64_t ClientTracingId() const override;
   int ClientId() const override;

@@ -16,6 +16,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/modules/mediarecorder/fake_encoded_video_frame.h"
 #include "third_party/blink/renderer/modules/mediarecorder/media_recorder.h"
@@ -33,6 +34,7 @@ using ::testing::AtLeast;
 using ::testing::Ge;
 using ::testing::Gt;
 using ::testing::InSequence;
+using ::testing::Invoke;
 using ::testing::Lt;
 using ::testing::Mock;
 using ::testing::Return;
@@ -542,7 +544,8 @@ class MediaRecorderHandlerPassthroughTest
 
   ~MediaRecorderHandlerPassthroughTest() {
     registry_.reset();
-    ThreadState::Current()->CollectAllGarbageForTesting();
+    media_recorder_handler_ = nullptr;
+    WebHeap::CollectAllGarbageForTesting();
   }
 
   void OnVideoFrameForTesting(scoped_refptr<EncodedVideoFrame> frame) {
@@ -552,7 +555,7 @@ class MediaRecorderHandlerPassthroughTest
 
   ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
   MockMediaStreamRegistry registry_;
-  MockMediaStreamVideoSource* video_source_ = 0;
+  MockMediaStreamVideoSource* video_source_ = nullptr;
   Persistent<MediaRecorderHandler> media_recorder_handler_;
 
  private:
@@ -594,6 +597,46 @@ TEST_P(MediaRecorderHandlerPassthroughTest, PassesThrough) {
   // Expect a last call on destruction.
   EXPECT_CALL(*recorder, WriteData(_, _, true, _)).Times(1);
   media_recorder_handler_ = nullptr;
+}
+
+TEST_F(MediaRecorderHandlerPassthroughTest, ErrorsOutOnCodecSwitch) {
+  V8TestingScope scope;
+  auto* recorder = MakeGarbageCollected<MockMediaRecorder>(scope);
+  EXPECT_TRUE(media_recorder_handler_->Initialize(
+      recorder, registry_.test_stream(), "", "", 0, 0));
+  EXPECT_TRUE(media_recorder_handler_->Start(0));
+
+  // NOTE, Asan: the prototype of WriteData which has a const char* as data
+  // ptr plays badly with gmock which tries to interpret it as a null-terminated
+  // string. However, it points to binary data which causes gmock to overrun the
+  // bounds of buffers and this manifests as an ASAN crash.
+  // The expectation here works around this issue.
+  EXPECT_CALL(*recorder, WriteData).Times(AtLeast(1));
+
+  EXPECT_CALL(*recorder, OnError).WillOnce(Invoke([&](const String&) {
+    // Simulate MediaRecorder behavior which is to Stop() the handler on error.
+    media_recorder_handler_->Stop();
+  }));
+  OnVideoFrameForTesting(FakeEncodedVideoFrame::Builder()
+                             .WithKeyFrame(true)
+                             .WithCodec(media::kCodecVP8)
+                             .WithData(std::string("vp8 frame"))
+                             .BuildRefPtr());
+  // Switch to VP9 frames. This is expected to cause the call to OnError
+  // above.
+  OnVideoFrameForTesting(FakeEncodedVideoFrame::Builder()
+                             .WithKeyFrame(true)
+                             .WithCodec(media::kCodecVP9)
+                             .WithData(std::string("vp9 frame"))
+                             .BuildRefPtr());
+  // Send one more frame to verify that continued frame of different codec
+  // transfer doesn't crash the media recorder.
+  OnVideoFrameForTesting(FakeEncodedVideoFrame::Builder()
+                             .WithKeyFrame(true)
+                             .WithCodec(media::kCodecVP9)
+                             .WithData(std::string("vp9 frame"))
+                             .BuildRefPtr());
+  platform_->RunUntilIdle();
 }
 
 INSTANTIATE_TEST_SUITE_P(,

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.api.internal.modelprovider;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.common.feedobservable.Observable;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamFeature;
 
@@ -33,6 +35,6 @@ public interface ModelFeature extends Observable<FeatureChangeObserver> {
      * null}. If {@code startingChild} is {@code null}, the cursor starts at the start (beginning or
      * end) of the child list.
      */
-    /*@Nullable*/
-    ModelCursor getDirectionalCursor(boolean forward, /*@Nullable*/ String startingChild);
+    @Nullable
+    ModelCursor getDirectionalCursor(boolean forward, @Nullable String startingChild);
 }

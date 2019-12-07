@@ -297,8 +297,8 @@ class ArcFileSystemWatcherService::FileSystemWatcher {
 
   FileSystemWatcher(content::BrowserContext* context,
                     const Callback& callback,
-                    base::FilePath cros_dir,
-                    base::FilePath android_dir);
+                    const base::FilePath& cros_dir,
+                    const base::FilePath& android_dir);
   ~FileSystemWatcher();
 
   // Starts watching directory.
@@ -320,8 +320,8 @@ class ArcFileSystemWatcherService::FileSystemWatcher {
       std::pair<base::TimeTicks, TimestampMap> timestamp_and_map);
 
   Callback callback_;
-  base::FilePath cros_dir_;
-  base::FilePath android_dir_;
+  const base::FilePath cros_dir_;
+  const base::FilePath android_dir_;
   std::unique_ptr<base::FilePathWatcher> watcher_;
   TimestampMap last_timestamp_map_;
   // The timestamp of the last OnFilePathChanged callback received.
@@ -341,8 +341,8 @@ class ArcFileSystemWatcherService::FileSystemWatcher {
 ArcFileSystemWatcherService::FileSystemWatcher::FileSystemWatcher(
     content::BrowserContext* context,
     const Callback& callback,
-    base::FilePath cros_dir,
-    base::FilePath android_dir)
+    const base::FilePath& cros_dir,
+    const base::FilePath& android_dir)
     : callback_(callback),
       cros_dir_(cros_dir),
       android_dir_(android_dir),
@@ -503,7 +503,7 @@ ArcFileSystemWatcherService::CreateAndStartFileSystemWatcher(
       context_,
       base::BindRepeating(&ArcFileSystemWatcherService::OnFileSystemChanged,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::FilePath(cros_path), base::FilePath(android_path));
+      cros_path, android_path);
   file_task_runner_->PostTask(FROM_HERE,
                               base::BindOnce(&FileSystemWatcher::Start,
                                              base::Unretained(watcher.get())));

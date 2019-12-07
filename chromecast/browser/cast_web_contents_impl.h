@@ -68,6 +68,8 @@ class CastWebContentsImpl : public CastWebContents,
       std::vector<mojo::ScopedMessagePipeHandle> channels) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
+  bool is_websql_enabled() override;
+  bool is_mixer_audio_enabled() override;
 
   // content::WebContentsObserver implementation:
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
@@ -152,6 +154,8 @@ class CastWebContentsImpl : public CastWebContents,
   std::vector<RendererFeature> renderer_features_;
 
   const int tab_id_;
+  bool is_websql_enabled_;
+  bool is_mixer_audio_enabled_;
   base::TimeTicks start_loading_ticks_;
   bool main_frame_loaded_;
   bool closing_;

@@ -60,6 +60,8 @@ HistoryItemTest.prototype = {
   __proto__: HistoryBrowserTest.prototype,
 
   extraLibraries: HistoryBrowserTest.prototype.extraLibraries.concat([
+    '../test_browser_proxy.js',
+    'test_browser_service.js',
     'history_item_test.js',
   ]),
 };
@@ -74,6 +76,8 @@ HistoryLinkClickTest.prototype = {
   __proto__: HistoryBrowserTest.prototype,
 
   extraLibraries: HistoryBrowserTest.prototype.extraLibraries.concat([
+    '../test_browser_proxy.js',
+    'test_browser_service.js',
     'link_click_test.js',
   ]),
 };

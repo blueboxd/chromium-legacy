@@ -91,7 +91,7 @@
 
 .time-volume-controls > cr-slider {
   --cr-slider-active-color: rgb(66, 133, 244);
-  --cr-slider-knob-color: rgb(64, 138, 241);
+  --cr-slider-knob-color-rgb: 64, 138, 241;
 }
 
 cr-slider {

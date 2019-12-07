@@ -10,12 +10,6 @@
 
 DEFINE_QUIC_COMMAND_LINE_FLAG(int, port, 20557, "The port to listen on.");
 
-DEFINE_QUIC_COMMAND_LINE_FLAG(
-    std::string,
-    mode,
-    "discard",
-    "The mode used by the SimpleServer.  Can be \"echo\" or \"discard\".");
-
 DEFINE_QUIC_COMMAND_LINE_FLAG(std::string,
                               accepted_origins,
                               "",
@@ -31,17 +25,6 @@ int main(int argc, char** argv) {
     return 0;
   }
 
-  std::string mode_text = GetQuicFlag(FLAGS_mode);
-  quic::QuicTransportSimpleServerSession::Mode mode;
-  if (mode_text == "discard") {
-    mode = quic::QuicTransportSimpleServerSession::DISCARD;
-  } else if (mode_text == "echo") {
-    mode = quic::QuicTransportSimpleServerSession::ECHO;
-  } else {
-    LOG(ERROR) << "Invalid mode specified: " << mode_text;
-    return 1;
-  }
-
   std::string accepted_origins_text = GetQuicFlag(FLAGS_accepted_origins);
   std::vector<url::Origin> accepted_origins;
   for (const base::StringPiece& origin :
@@ -55,7 +38,7 @@ int main(int argc, char** argv) {
     accepted_origins.push_back(url::Origin::Create(url));
   }
 
-  net::QuicTransportSimpleServer server(GetQuicFlag(FLAGS_port), mode,
+  net::QuicTransportSimpleServer server(GetQuicFlag(FLAGS_port),
                                         accepted_origins);
   return server.Run();
 }

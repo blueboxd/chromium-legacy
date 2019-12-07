@@ -184,10 +184,14 @@ _ANDROID_GO_BENCHMARK_CONFIGS = frozenset([
 _ANDROID_GO_WEBVIEW_BENCHMARK_CONFIGS = _ANDROID_GO_BENCHMARK_CONFIGS
 _ANDROID_NEXUS_5_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING_JETSTREAM2
 _ANDROID_NEXUS_5X_BENCHMARK_CONFIGS = (
-    _OFFICIAL_EXCEPT_JETSTREAM2 -
+    _OFFICIAL_EXCEPT_JETSTREAM2
     # Remove unabridged rendering benchmark and replace with abridged benchmark.
-    frozenset([_GetBenchmarkConfig('rendering.mobile')]) |
-    frozenset([_GetBenchmarkConfig('rendering.mobile', True)]))
+    - frozenset([_GetBenchmarkConfig('rendering.mobile')])
+    | frozenset([_GetBenchmarkConfig('rendering.mobile', True)])
+    # Remove unabridged system health memory benchmark and replace with abridged
+    # benchmark: crbug.com/1030788
+    - frozenset([_GetBenchmarkConfig('system_health.memory_mobile')])
+    | frozenset([_GetBenchmarkConfig('system_health.memory_mobile', True)]))
 _ANDROID_NEXUS_5X_WEBVIEW_BENCHMARK_CONFIGS = (
     _OFFICIAL_EXCEPT_DISPLAY_LOCKING_JETSTREAM2)
 _ANDROID_NEXUS_6_WEBVIEW_BENCHMARK_CONFIGS = (

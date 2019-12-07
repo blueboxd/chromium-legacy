@@ -52,7 +52,6 @@ class QuicTransportSimpleServerSessionHelper
 
 QuicTransportSimpleServer::QuicTransportSimpleServer(
     int port,
-    QuicTransportSimpleServerSession::Mode mode,
     std::vector<url::Origin> accepted_origins)
     : port_(port),
       version_manager_({ParsedQuicVersion{PROTOCOL_TLS1_3, QUIC_VERSION_99}}),
@@ -72,7 +71,6 @@ QuicTransportSimpleServer::QuicTransportSimpleServer(
                       base::ThreadTaskRunnerHandle::Get().get(),
                       clock_),
                   quic::kQuicDefaultConnectionIdLength,
-                  mode,
                   accepted_origins),
       read_buffer_(base::MakeRefCounted<IOBufferWithSize>(kReadBufferSize)) {}
 

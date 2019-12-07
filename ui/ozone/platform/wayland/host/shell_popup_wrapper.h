@@ -10,6 +10,8 @@
 
 namespace ui {
 
+class WaylandConnection;
+
 enum class MenuType {
   TYPE_RIGHT_CLICK,
   TYPE_3DOT_PARENT_MENU,
@@ -67,6 +69,10 @@ inline WlConstraintAdjustment operator&(WlConstraintAdjustment a,
 class ShellPopupWrapper {
  public:
   virtual ~ShellPopupWrapper() {}
+
+  // Initializes the popup surface.
+  virtual bool Initialize(WaylandConnection* connection,
+                          const gfx::Rect& bounds) = 0;
 };
 
 gfx::Rect GetAnchorRect(MenuType menu_type,

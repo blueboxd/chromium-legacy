@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.view.View;
 
+import androidx.annotation.Nullable;
+
 import java.util.List;
 
 /** Interface used for interacting with the Stream library in order to render a stream of cards. */
@@ -24,7 +26,7 @@ public interface Stream {
      * @param savedInstanceState state to restore to.
      * @throws IllegalStateException if method is called multiple times.
      */
-    void onCreate(/*@Nullable*/ Bundle savedInstanceState);
+    void onCreate(@Nullable Bundle savedInstanceState);
 
     /**
      * Called when the Stream is being created. This method functions identically to {@link
@@ -36,7 +38,7 @@ public interface Stream {
      * @param savedInstanceState state to restore to.
      * @throws IllegalStateException if method is called multiple times.
      */
-    void onCreate(/*@Nullable*/ String savedInstanceState);
+    void onCreate(@Nullable String savedInstanceState);
 
     /**
      * Called when the Stream is visible on the screen, may be partially obscured or about to be

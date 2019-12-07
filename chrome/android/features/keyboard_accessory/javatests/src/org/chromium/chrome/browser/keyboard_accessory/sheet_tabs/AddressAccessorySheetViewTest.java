@@ -163,7 +163,7 @@ public class AddressAccessorySheetViewTest {
             String addressHomeLine2, String addressHomeZip, String addressHomeCity,
             String addressHomeState, String addressHomeCountry, String phoneHomeWholeNumber,
             String emailAddress, AtomicBoolean clickRecorder) {
-        UserInfo info = new UserInfo("", null);
+        UserInfo info = new UserInfo("", false);
         info.addField(
                 new UserInfoField(nameFull, nameFull, "", false, item -> clickRecorder.set(true)));
         info.addField(new UserInfoField(

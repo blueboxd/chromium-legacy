@@ -41,6 +41,7 @@ struct MidiPermissionDescriptor {
 
 struct ClipboardPermissionDescriptor {
   bool allowWithoutGesture;
+  bool allowWithoutSanitization;
 };
 
 struct WakeLockPermissionDescriptor {

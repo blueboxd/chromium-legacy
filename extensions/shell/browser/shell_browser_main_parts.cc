@@ -22,6 +22,7 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/context_factory.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/media_session_service.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
@@ -197,8 +198,12 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
                                                      user_pref_service_.get());
 
 #if defined(OS_CHROMEOS)
+  mojo::PendingRemote<media_session::mojom::MediaControllerManager>
+      media_controller_manager;
+  content::GetMediaSessionService().BindMediaControllerManager(
+      media_controller_manager.InitWithNewPipeAndPassReceiver());
   chromeos::CrasAudioHandler::Initialize(
-      content::GetSystemConnector(),
+      std::move(media_controller_manager),
       base::MakeRefCounted<chromeos::AudioDevicesPrefHandlerImpl>(
           local_state_.get()));
   audio_controller_.reset(new ShellAudioController());

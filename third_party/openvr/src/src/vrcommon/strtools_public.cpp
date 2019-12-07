@@ -3,6 +3,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sstream>
+#include <iostream>
 
 //-----------------------------------------------------------------------------
 // Purpose:
@@ -142,8 +144,8 @@ std::wstring UTF8to16(const char * in)
 
 void strcpy_safe( char *pchBuffer, size_t unBufferSizeBytes, const char *pchSource )
 {
-	pchBuffer[ unBufferSizeBytes - 1 ] = '\0';
 	strncpy( pchBuffer, pchSource, unBufferSizeBytes - 1 );
+	pchBuffer[unBufferSizeBytes - 1] = '\0';
 }
 
 
@@ -197,12 +199,6 @@ uint32_t ReturnStdString( const std::string & sValue, char *pchBuffer, uint32_t 
 	return unLen;
 }
 
-void BufferToStdString( std::string & sDest, const char *pchBuffer, uint32_t unBufferLen )
-{
-	sDest.resize( unBufferLen + 1 );
-	memcpy( const_cast< char* >( sDest.c_str() ), pchBuffer, unBufferLen );
-	const_cast< char* >( sDest.c_str() )[ unBufferLen ] = '\0';
-}
 
 /** Returns a std::string from a uint64_t */
 std::string Uint64ToString( uint64_t ulValue )
@@ -405,6 +401,12 @@ void V_URLEncode( char *pchDest, int nDestLen, const char *pchSource, int nSourc
 }
 
 
+void V_URLEncodeNoPlusForSpace( char *pchDest, int nDestLen, const char *pchSource, int nSourceLen )
+{
+	return V_URLEncodeInternal( pchDest, nDestLen, pchSource, nSourceLen, false );
+}
+
+
 //-----------------------------------------------------------------------------
 // Purpose: Decodes a string (or binary data) from URL encoding format, see rfc1738 section 2.2.  
 //          This version of the call isn't a strict RFC implementation, but uses + for space as is
@@ -416,6 +418,11 @@ void V_URLEncode( char *pchDest, int nDestLen, const char *pchSource, int nSourc
 size_t V_URLDecode( char *pchDecodeDest, int nDecodeDestLen, const char *pchEncodedSource, int nEncodedSourceLen )
 {
 	return V_URLDecodeInternal( pchDecodeDest, nDecodeDestLen, pchEncodedSource, nEncodedSourceLen, true );
+}
+
+size_t V_URLDecodeNoPlusForSpace( char *pchDecodeDest, int nDecodeDestLen, const char *pchEncodedSource, int nEncodedSourceLen )
+{
+	return V_URLDecodeInternal( pchDecodeDest, nDecodeDestLen, pchEncodedSource, nEncodedSourceLen, false );
 }
 
 //-----------------------------------------------------------------------------
@@ -433,5 +440,21 @@ void V_StripExtension( std::string &in )
 			in.resize( test );
 		}
 	}
+}
+
+
+//-----------------------------------------------------------------------------
+// Purpose: Tokenizes a string into a vector of strings
+//-----------------------------------------------------------------------------
+std::vector<std::string> TokenizeString( const std::string & sString, char cToken )
+{
+	std::vector<std::string> vecStrings;
+	std::istringstream stream( sString );
+	std::string s;
+	while ( std::getline( stream, s, cToken ) )
+	{
+		vecStrings.push_back( s );
+	}
+	return vecStrings;
 }
 

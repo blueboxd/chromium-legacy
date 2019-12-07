@@ -119,7 +119,7 @@ public class ContentSettingsResources {
                             R.string.website_settings_bluetooth_scanning, ContentSettingValues.ASK,
                             ContentSettingValues.BLOCK,
                             R.string.website_settings_category_bluetooth_scanning_ask, 0));
-            localMap.put(ContentSettingsType.CLIPBOARD_READ,
+            localMap.put(ContentSettingsType.CLIPBOARD_READ_WRITE,
                     new ResourceItem(R.drawable.ic_content_paste_grey600_24dp,
                             R.string.clipboard_permission_title,
                             R.string.clipboard_permission_title, ContentSettingValues.ASK,

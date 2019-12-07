@@ -194,15 +194,15 @@ WARN_UNUSED_RESULT bool FindGreatestKeyLessThanOrEqual(
     std::string* found_key,
     leveldb::Status* s);
 
-WARN_UNUSED_RESULT bool GetBlobKeyGeneratorCurrentNumber(
+WARN_UNUSED_RESULT bool GetBlobNumberGeneratorCurrentNumber(
     LevelDBDirectTransaction* leveldb_transaction,
     int64_t database_id,
-    int64_t* blob_key_generator_current_number);
+    int64_t* blob_number_generator_current_number);
 
-WARN_UNUSED_RESULT bool UpdateBlobKeyGeneratorCurrentNumber(
+WARN_UNUSED_RESULT bool UpdateBlobNumberGeneratorCurrentNumber(
     LevelDBDirectTransaction* leveldb_transaction,
     int64_t database_id,
-    int64_t blob_key_generator_current_number);
+    int64_t blob_number_generator_current_number);
 
 WARN_UNUSED_RESULT leveldb::Status GetEarliestSweepTime(
     TransactionalLevelDBDatabase* db,

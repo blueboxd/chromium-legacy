@@ -61,12 +61,16 @@
       <canvas id="canvas" height="240" width="460"></canvas>
     </div>
     <div id="imageDiv">
-      <img id="scanningAnimation" src="chrome://theme/IDR_FINGERPRINT_ICON_ANIMATION">
+      <img id="scanningAnimation"
+          src="chrome://theme/IDR_FINGERPRINT_ICON_ANIMATION"
+          aria-hidden="true">
       <iron-icon id="enrollmentDone" icon="cr-fingerprint-icon:enrollment-done" hidden>
       </iron-icon>
     </div>
     <div id="checkmarkDiv" hidden>
-      <img id="checkmarkAnimation" src="chrome://theme/IDR_FINGERPRINT_COMPLETE_TICK">
+      <img id="checkmarkAnimation"
+          src="chrome://theme/IDR_FINGERPRINT_COMPLETE_TICK"
+          aria-hidden="true">
     </div>
   </template>
   <script src="cr_fingerprint_progress_arc.js"></script>

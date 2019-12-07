@@ -46,15 +46,12 @@ class DistillabilityServiceImpl : public mojom::DistillabilityService {
 };
 
 DistillabilityDriver::DistillabilityDriver(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      latest_result_(base::nullopt) {
+    : latest_result_(base::nullopt) {
   if (!web_contents)
     return;
 }
 
-DistillabilityDriver::~DistillabilityDriver() {
-  content::WebContentsObserver::Observe(nullptr);
-}
+DistillabilityDriver::~DistillabilityDriver() = default;
 
 void DistillabilityDriver::CreateDistillabilityService(
     mojo::PendingReceiver<mojom::DistillabilityService> receiver) {

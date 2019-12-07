@@ -8,6 +8,8 @@ import static org.chromium.chrome.browser.feed.library.common.Validators.checkSt
 
 import android.support.annotation.VisibleForTesting;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.client.stream.Header;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.FeedViewHolder;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.HeaderViewHolder;
@@ -21,7 +23,8 @@ public class HeaderDriver extends LeafFeatureDriver {
 
     private final Header mHeader;
     private final SwipeNotifier mSwipeNotifier;
-    /*@Nullable*/ private HeaderViewHolder mHeaderViewHolder;
+    @Nullable
+    private HeaderViewHolder mHeaderViewHolder;
 
     public HeaderDriver(Header header, SwipeNotifier swipeNotifier) {
         this.mHeader = header;

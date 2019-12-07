@@ -403,16 +403,8 @@ mojom::Renderer* MockRenderProcessHost::GetRendererInterface() {
 }
 
 void MockRenderProcessHost::CreateURLLoaderFactory(
-    const url::Origin& origin,
-    const url::Origin& main_world_origin,
-    network::mojom::CrossOriginEmbedderPolicy embedder_policy,
-    const WebPreferences* preferences,
-    const net::NetworkIsolationKey& network_isolation_key,
-    mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
-        header_client,
-    const base::Optional<base::UnguessableToken>& top_frame_token,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-    network::mojom::URLLoaderFactoryOverridePtr factory_override) {
+    network::mojom::URLLoaderFactoryParamsPtr params) {
   if (GetNetworkFactoryCallback().is_null()) {
     url_loader_factory_->Clone(std::move(receiver));
     return;

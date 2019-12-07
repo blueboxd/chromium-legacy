@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.feed.library.feedsessionmanager;
 
 import android.support.annotation.VisibleForTesting;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.KnownContent;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.KnownContent.Listener;
@@ -118,7 +120,8 @@ public final class FeedSessionManagerImpl
 
     // This captures the NO_CARDS_ERROR when a request fails. The request fails in one task and this
     // is sent to the ModelProvider in the populateSessionTask.
-    /*@Nullable*/ private ModelError mNoCardsError;
+    @Nullable
+    private ModelError mNoCardsError;
 
     private final SessionFactory mSessionFactory;
     private final SessionManagerMutation mSessionManagerMutation;
@@ -235,7 +238,7 @@ public final class FeedSessionManagerImpl
 
     @Override
     public void getNewSession(ModelProvider modelProvider,
-            /*@Nullable*/ ViewDepthProvider viewDepthProvider, UiContext uiContext) {
+            @Nullable ViewDepthProvider viewDepthProvider, UiContext uiContext) {
         mThreadUtils.checkMainThread();
         if (!mInitialized.get()) {
             Logger.i(TAG, "Lazy initialization triggered, getNewSession");
@@ -376,7 +379,7 @@ public final class FeedSessionManagerImpl
     }
 
     @VisibleForTesting
-    void modelErrorObserver(/*@Nullable*/ Session session, ModelError error) {
+    void modelErrorObserver(@Nullable Session session, ModelError error) {
         if (session == null && error.getErrorType() == ErrorType.NO_CARDS_ERROR) {
             Logger.e(TAG, "No Cards Found on TriggerRefresh, setting noCardsError");
             mNoCardsError = error;
@@ -489,13 +492,13 @@ public final class FeedSessionManagerImpl
     }
 
     @Override
-    public void triggerRefresh(/*@Nullable*/ String sessionId) {
+    public void triggerRefresh(@Nullable String sessionId) {
         triggerRefresh(sessionId, RequestReason.HOST_REQUESTED, UiContext.getDefaultInstance());
     }
 
     @Override
     public void triggerRefresh(
-            /*@Nullable*/ String sessionId, @RequestReason int requestReason, UiContext uiContext) {
+            @Nullable String sessionId, @RequestReason int requestReason, UiContext uiContext) {
         if (!mInitialized.get()) {
             Logger.i(TAG, "Lazy initialization triggered, triggerRefresh");
             initialize();
@@ -529,7 +532,7 @@ public final class FeedSessionManagerImpl
     }
 
     private void triggerRefreshTask(
-            /*@Nullable*/ String sessionId, @RequestReason int requestReason, UiContext uiContext) {
+            @Nullable String sessionId, @RequestReason int requestReason, UiContext uiContext) {
         mThreadUtils.checkNotMainThread();
 
         fetchActionsAndUpload(getConsistencyToken(), result -> {
@@ -630,7 +633,7 @@ public final class FeedSessionManagerImpl
     }
 
     @Override
-    /*@Nullable*/
+    @Nullable
     public StreamSharedState getSharedState(ContentId contentId) {
         mThreadUtils.checkMainThread();
         String sharedStateId = mProtocolAdapter.getStreamContentId(contentId);
@@ -681,20 +684,18 @@ public final class FeedSessionManagerImpl
 
     @Override
     public <T> void getStreamFeaturesFromHead(
-            Function<StreamPayload, /*@Nullable*/ T> filterPredicate,
-            Consumer<Result<List</*@NonNull*/ T>>> consumer) {
+            Function<StreamPayload, T> filterPredicate, Consumer<Result<List<T>>> consumer) {
         mTaskQueue.execute(Task.GET_STREAM_FEATURES_FROM_HEAD, TaskType.BACKGROUND, () -> {
             HeadAsStructure headAsStructure =
                     new HeadAsStructure(mStore, mTimingUtils, mThreadUtils);
-            Function<TreeNode, /*@Nullable*/ T> toStreamPayload =
+            Function<TreeNode, T> toStreamPayload =
                     treeNode -> filterPredicate.apply(treeNode.getStreamPayload());
             headAsStructure.initialize(result -> {
                 if (!result.isSuccessful()) {
                     consumer.accept(Result.failure());
                     return;
                 }
-                Result<List</*@NonNull*/ T>> filterResults =
-                        headAsStructure.filter(toStreamPayload);
+                Result<List<T>> filterResults = headAsStructure.filter(toStreamPayload);
                 consumer.accept(filterResults.isSuccessful()
                                 ? Result.success(filterResults.getValue())
                                 : Result.failure());

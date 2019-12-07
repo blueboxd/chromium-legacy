@@ -1321,7 +1321,8 @@ class SizeOnlyMemoryTracker : public MemoryTracker {
   }
   ~SizeOnlyMemoryTracker() override = default;
 
-  void TrackMemoryAllocatedChange(uint64_t delta) override {
+  void TrackMemoryAllocatedChange(int64_t delta) override {
+    DCHECK(delta >= 0 || pool_info_.size >= static_cast<uint64_t>(-delta));
     pool_info_.size += delta;
   }
 

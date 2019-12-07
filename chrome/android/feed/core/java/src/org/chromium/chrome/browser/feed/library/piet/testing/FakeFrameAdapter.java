@@ -11,6 +11,8 @@ import android.content.Context;
 import android.view.View;
 import android.widget.LinearLayout;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.piet.FrameAdapter;
 import org.chromium.chrome.browser.feed.library.piet.host.ActionHandler;
 import org.chromium.chrome.browser.feed.library.piet.host.ActionHandler.ActionType;
@@ -32,7 +34,8 @@ public class FakeFrameAdapter implements FrameAdapter {
 
     public boolean mIsBound;
     private boolean mViewActionsTriggered;
-    /*@Nullable*/ private Frame mFrame;
+    @Nullable
+    private Frame mFrame;
 
     private FakeFrameAdapter(Context context, List<Action> viewActions, List<Action> hideActions,
             ActionHandler actionHandler) {
@@ -44,7 +47,7 @@ public class FakeFrameAdapter implements FrameAdapter {
 
     @Override
     public void bindModel(Frame frame, int frameWidthPx,
-            PietAndroidSupport./*@Nullable*/ ShardingControl shardingControl,
+            @Nullable PietAndroidSupport.ShardingControl shardingControl,
             List<PietSharedState> pietSharedStates) {
         checkState(!mIsBound);
         this.mFrame = frame;

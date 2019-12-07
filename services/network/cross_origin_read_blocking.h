@@ -323,14 +323,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
   // Reverts AddExceptionForPlugin.
   static void RemoveExceptionForPlugin(int process_id);
 
-  // Registers additional MIME types that can be protected by CORB (without any
-  // confirmation sniffing).
-  //
-  // TODO(lukasza): https://crbug.com/944162: Remove the method below once
-  // kMimeHandlerViewInCrossProcessFrame feature ships.
-  static void AddExtraMimeTypesForCorb(
-      const std::vector<std::string>& mime_types);
-
  private:
   CrossOriginReadBlocking();  // Not instantiable.
 

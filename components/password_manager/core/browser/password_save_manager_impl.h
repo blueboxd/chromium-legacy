@@ -86,6 +86,9 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
       const std::vector<const autofill::PasswordForm*>& matches,
       const base::string16& old_password);
 
+  // Clones the current object into |clone|. |clone| must not be null.
+  void CloneInto(PasswordSaveManagerImpl* clone);
+
   // FormSaver instance used by |this| to all tasks related to storing
   // credentials.
   const std::unique_ptr<FormSaver> form_saver_;

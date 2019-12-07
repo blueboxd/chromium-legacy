@@ -139,7 +139,7 @@ using NGInlineItemResults = Vector<NGInlineItemResult, 32>;
 //
 // NGLineBreaker produces, and NGInlineLayoutAlgorithm consumes.
 class CORE_EXPORT NGLineInfo {
-  DISALLOW_NEW();
+  STACK_ALLOCATED();
 
  public:
   const NGInlineItemsData& ItemsData() const {

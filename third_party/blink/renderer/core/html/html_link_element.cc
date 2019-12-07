@@ -35,6 +35,8 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/frame_console.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/html/cross_origin_attribute.h"
 #include "third_party/blink/renderer/core/html/imports/link_import.h"
@@ -68,9 +70,26 @@ void HTMLLinkElement::ParseAttribute(
   const AtomicString& value = params.new_value;
   if (name == html_names::kRelAttr) {
     rel_attribute_ = LinkRelAttribute(value);
-    if (rel_attribute_.IsImport() &&
-        RuntimeEnabledFeatures::HTMLImportsEnabled(&GetDocument())) {
-      Deprecation::CountDeprecation(&GetDocument(), WebFeature::kHTMLImports);
+    if (rel_attribute_.IsImport()) {
+      if (RuntimeEnabledFeatures::HTMLImportsEnabled(&GetDocument())) {
+        Deprecation::CountDeprecation(&GetDocument(), WebFeature::kHTMLImports);
+      } else {
+        // Show a warning that HTML Imports (<link rel=import>) were detected,
+        // but HTML Imports have been disabled. Without this, the failure would
+        // be silent.
+        if (LocalDOMWindow* window = GetDocument().ExecutingWindow()) {
+          if (LocalFrame* frame = window->GetFrame()) {
+            frame->Console().AddMessage(ConsoleMessage::Create(
+                mojom::ConsoleMessageSource::kRendering,
+                mojom::ConsoleMessageLevel::kWarning,
+                "HTML Imports is deprecated and has now been removed as of "
+                "M80. See "
+                "https://www.chromestatus.com/features/5144752345317376 "
+                "and https://developers.google.com/web/updates/2019/07/"
+                "web-components-time-to-upgrade for more details."));
+          }
+        }
+      }
     }
     rel_list_->DidUpdateAttributeValue(params.old_value, value);
     Process();

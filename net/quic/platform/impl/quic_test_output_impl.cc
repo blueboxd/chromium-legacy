@@ -36,8 +36,7 @@ void QuicRecordTestOutputToFile(QuicStringPiece filename,
   QUIC_LOG(INFO) << "Recorded test output into " << path;
 }
 
-void QuicRecordTestOutputImpl(QuicStringPiece identifier,
-                              QuicStringPiece data) {
+void QuicRecordTraceImpl(QuicStringPiece identifier, QuicStringPiece data) {
   const testing::TestInfo* test_info =
       testing::UnitTest::GetInstance()->current_test_info();
 

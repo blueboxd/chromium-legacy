@@ -523,17 +523,6 @@ class QuicNetworkTransactionTest
                                         should_include_version, fin, data);
   }
 
-  std::unique_ptr<quic::QuicEncryptedPacket>
-  ConstructClientMultipleDataFramesPacket(
-      uint64_t packet_number,
-      quic::QuicStreamId stream_id,
-      bool should_include_version,
-      bool fin,
-      const std::vector<std::string> data_writes) {
-    return client_maker_.MakeMultipleDataFramesPacket(
-        packet_number, stream_id, should_include_version, fin, data_writes);
-  }
-
   std::unique_ptr<quic::QuicEncryptedPacket> ConstructClientAckAndDataPacket(
       uint64_t packet_number,
       bool include_version,
@@ -546,21 +535,6 @@ class QuicNetworkTransactionTest
     return client_maker_.MakeAckAndDataPacket(
         packet_number, include_version, stream_id, largest_received,
         smallest_received, least_unacked, fin, data);
-  }
-
-  std::unique_ptr<quic::QuicEncryptedPacket>
-  ConstructClientAckAndMultipleDataFramesPacket(
-      uint64_t packet_number,
-      bool include_version,
-      quic::QuicStreamId stream_id,
-      uint64_t largest_received,
-      uint64_t smallest_received,
-      uint64_t least_unacked,
-      bool fin,
-      const std::vector<std::string> data_writes) {
-    return client_maker_.MakeAckAndMultipleDataFramesPacket(
-        packet_number, include_version, stream_id, largest_received,
-        smallest_received, least_unacked, fin, data_writes);
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket> ConstructClientForceHolDataPacket(

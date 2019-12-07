@@ -5,14 +5,25 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_STATS_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_STATS_H_
 
-#include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
-#include "third_party/blink/public/platform/web_rtc_stats.h"
+#include "base/callback.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/webrtc/api/scoped_refptr.h"
 #include "third_party/webrtc/api/stats/rtc_stats.h"
 #include "third_party/webrtc/api/stats/rtc_stats_collector_callback.h"
 #include "third_party/webrtc/api/stats/rtc_stats_report.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
+
+namespace webrtc {
+class RTCStatsCollectorCallback;
+enum class NonStandardGroupId;
+}  // namespace webrtc
 
 namespace blink {
 
@@ -114,6 +125,16 @@ class PLATFORM_EXPORT RTCStatsMember {
   const webrtc::RTCStatsMemberInterface* const member_;
 };
 
+using RTCStatsReportCallback =
+    base::OnceCallback<void(std::unique_ptr<RTCStatsReportPlatform>)>;
+
+PLATFORM_EXPORT
+rtc::scoped_refptr<webrtc::RTCStatsCollectorCallback>
+CreateRTCStatsCollectorCallback(
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+    RTCStatsReportCallback callback,
+    const WebVector<webrtc::NonStandardGroupId>& exposed_group_ids);
+
 // A stats collector callback.
 // It is invoked on the WebRTC signaling thread and will post a task to invoke
 // |callback| on the thread given in the |main_thread| argument.
@@ -127,7 +148,7 @@ class PLATFORM_EXPORT RTCStatsCollectorCallbackImpl
  protected:
   RTCStatsCollectorCallbackImpl(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread,
-      blink::WebRTCStatsReportCallback callback2,
+      RTCStatsReportCallback callback,
       const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids);
   ~RTCStatsCollectorCallbackImpl() override;
 
@@ -135,9 +156,11 @@ class PLATFORM_EXPORT RTCStatsCollectorCallbackImpl
       rtc::scoped_refptr<const webrtc::RTCStatsReport> report);
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
-  blink::WebRTCStatsReportCallback callback_;
+  RTCStatsReportCallback callback_;
   blink::WebVector<webrtc::NonStandardGroupId> exposed_group_ids_;
 };
+
+PLATFORM_EXPORT void WhitelistStatsForTesting(const char* type);
 
 }  // namespace blink
 

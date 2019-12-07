@@ -20,7 +20,6 @@
 #include "content/browser/indexed_db/indexed_db_blob_info.h"
 #include "content/browser/indexed_db/indexed_db_execution_context_connection_tracker.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
@@ -115,7 +114,6 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
  private:
   class IDBSequenceHelper;
   // Friends to enable OnDestruct() delegation.
-  friend class BrowserThread;
   friend class IndexedDBDispatcherHostTest;
   friend class base::DeleteHelper<IndexedDBDispatcherHost>;
 

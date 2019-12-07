@@ -54,7 +54,7 @@ class WrappedSkImage : public SharedImageBacking {
 
   void Destroy() override {
     promise_texture_.reset();
-    image_.reset();
+    gpu::DeleteSkImage(context_state_, std::move(image_));
   }
 
   bool IsCleared() const override { return cleared_; }
@@ -221,6 +221,7 @@ class WrappedSkImage : public SharedImageBacking {
   SharedContextState* const context_state_;
 
   sk_sp<SkPromiseImageTexture> promise_texture_;
+  // TODO(penghuang): manage texture directly with GrBackendTexture,
   sk_sp<SkImage> image_;
 
   bool cleared_ = false;

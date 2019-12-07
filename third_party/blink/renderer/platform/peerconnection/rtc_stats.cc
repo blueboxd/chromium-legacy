@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
@@ -310,7 +311,7 @@ blink::WebVector<String> RTCStatsMember::ValueSequenceString() const {
 rtc::scoped_refptr<webrtc::RTCStatsCollectorCallback>
 CreateRTCStatsCollectorCallback(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread,
-    blink::WebRTCStatsReportCallback callback,
+    RTCStatsReportCallback callback,
     const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids) {
   return rtc::scoped_refptr<RTCStatsCollectorCallbackImpl>(
       new rtc::RefCountedObject<RTCStatsCollectorCallbackImpl>(
@@ -319,7 +320,7 @@ CreateRTCStatsCollectorCallback(
 
 RTCStatsCollectorCallbackImpl::RTCStatsCollectorCallbackImpl(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread,
-    blink::WebRTCStatsReportCallback callback,
+    RTCStatsReportCallback callback,
     const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids)
     : main_thread_(std::move(main_thread)),
       callback_(std::move(callback)),

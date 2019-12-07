@@ -15,12 +15,14 @@
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/sys_byteorder.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/speech/proto/google_streaming_api.pb.h"
 #include "content/browser/speech/speech_recognition_engine.h"
 #include "content/browser/speech/speech_recognizer_impl.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_task_environment.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_system_impl.h"
@@ -83,6 +85,11 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
         sound_ended_(false),
         error_(blink::mojom::SpeechRecognitionErrorCode::kNone),
         volume_(-1.0f) {
+    // This test environment is not set up to support out-of-process services.
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{},
+        /*disabled_features=*/{features::kAudioServiceOutOfProcess});
+
     // SpeechRecognizer takes ownership of sr_engine.
     SpeechRecognitionEngine* sr_engine = new SpeechRecognitionEngine(
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
@@ -276,6 +283,7 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
   }
 
  protected:
+  base::test::ScopedFeatureList feature_list_;
   BrowserTaskEnvironment task_environment_;
   network::TestURLLoaderFactory url_loader_factory_;
   scoped_refptr<SpeechRecognizerImpl> recognizer_;

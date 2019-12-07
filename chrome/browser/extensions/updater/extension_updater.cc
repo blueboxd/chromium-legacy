@@ -429,6 +429,22 @@ void ExtensionUpdater::OnExtensionDownloadFailed(
       installation_reporter->ReportFailure(
           id, InstallationReporter::FailureReason::CRX_FETCH_FAILED);
       break;
+    case Error::CRX_FETCH_URL_EMPTY:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Extensions.ExtensionUpdaterUpdateResults",
+          ExtensionUpdaterUpdateResult::UPDATE_DOWNLOAD_ERROR,
+          ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
+      installation_reporter->ReportFailure(
+          id, InstallationReporter::FailureReason::CRX_FETCH_URL_EMPTY);
+      break;
+    case Error::CRX_FETCH_URL_INVALID:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Extensions.ExtensionUpdaterUpdateResults",
+          ExtensionUpdaterUpdateResult::UPDATE_DOWNLOAD_ERROR,
+          ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
+      installation_reporter->ReportFailure(
+          id, InstallationReporter::FailureReason::CRX_FETCH_URL_INVALID);
+      break;
     case Error::MANIFEST_FETCH_FAILED:
       installation_reporter->ReportFailure(
           id, InstallationReporter::FailureReason::MANIFEST_FETCH_FAILED);

@@ -319,7 +319,8 @@ class CONTENT_EXPORT IndexedDBBackingStore {
       std::unique_ptr<TransactionalLevelDBDatabase> db,
       BlobFilesCleanedCallback blob_files_cleaned,
       ReportOutstandingBlobsCallback report_outstanding_blobs,
-      base::SequencedTaskRunner* task_runner);
+      scoped_refptr<base::SequencedTaskRunner> idb_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
   virtual ~IndexedDBBackingStore();
 
   // Initializes the backing store. This must be called before doing any
@@ -327,12 +328,12 @@ class CONTENT_EXPORT IndexedDBBackingStore {
   leveldb::Status Initialize(bool clean_active_blob_journal);
 
   const url::Origin& origin() const { return origin_; }
-  base::SequencedTaskRunner* task_runner() const { return task_runner_.get(); }
+  base::SequencedTaskRunner* idb_task_runner() const {
+    return idb_task_runner_.get();
+  }
   IndexedDBActiveBlobRegistry* active_blob_registry() {
     return active_blob_registry_.get();
   }
-
-  void GrantChildProcessPermissions(int child_process_id);
 
   // Compact is public for testing.
   virtual void Compact();
@@ -419,7 +420,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
       bool* exists) WARN_UNUSED_RESULT;
 
   // Public for IndexedDBActiveBlobRegistry::MarkBlobInactive.
-  virtual void ReportBlobUnused(int64_t database_id, int64_t blob_key);
+  virtual void ReportBlobUnused(int64_t database_id, int64_t blob_number);
 
   base::FilePath GetBlobFileName(int64_t database_id, int64_t key) const;
 
@@ -567,7 +568,8 @@ class CONTENT_EXPORT IndexedDBBackingStore {
   // provides for future flexibility.
   const std::string origin_identifier_;
 
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> idb_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
   std::set<int> child_process_ids_granted_;
   std::map<std::string, std::unique_ptr<BlobChangeRecord>> incognito_blob_map_;
 

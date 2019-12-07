@@ -1866,6 +1866,17 @@ ax::mojom::DefaultActionVerb AXObject::Action() const {
                : ax::mojom::DefaultActionVerb::kUncheck;
   }
 
+  // If this object cannot receive focus and has a button role, use click as
+  // the default action. On the AuraLinux platform, the press action is a
+  // signal to users that they can trigger the action using the keyboard, while
+  // a click action means the user should trigger the action via a simulated
+  // click. If this object cannot receive focus, it's impossible to trigger it
+  // with a key press.
+  if (RoleValue() == ax::mojom::Role::kButton &&
+      !CanReceiveAccessibilityFocus()) {
+    return ax::mojom::DefaultActionVerb::kClick;
+  }
+
   switch (RoleValue()) {
     case ax::mojom::Role::kButton:
     case ax::mojom::Role::kDisclosureTriangle:

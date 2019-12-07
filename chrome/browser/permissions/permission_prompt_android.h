@@ -32,7 +32,6 @@ class PermissionPromptAndroid : public PermissionPrompt,
 
   // PermissionPrompt:
   void UpdateAnchorPosition() override;
-  gfx::NativeWindow GetNativeWindow() override;
   TabSwitchingBehavior GetTabSwitchingBehavior() override;
 
   void Closing();

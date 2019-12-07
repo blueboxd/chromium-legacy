@@ -13,6 +13,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/display/display_transform.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/native_widget_types.h"
@@ -117,8 +118,8 @@ void TestScreen::SetWorkAreaInsets(const gfx::Insets& insets) {
 
 gfx::Transform TestScreen::GetRotationTransform() const {
   display::Display display = GetPrimaryDisplay();
-  return display::Display::GetRotationTransform(display.rotation(),
-                                                gfx::SizeF(display.size()));
+  return display::CreateRotationTransform(display.rotation(),
+                                          gfx::SizeF(display.size()));
 }
 
 gfx::Transform TestScreen::GetUIScaleTransform() const {

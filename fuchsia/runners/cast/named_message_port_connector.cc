@@ -94,9 +94,11 @@ void NamedMessagePortConnector::OnConnectRequest(
     return;
   }
 
-  if (message.incoming_transfer().size() != 1) {
-    LOG(ERROR) << "Expected one Transferable, got "
-               << message.incoming_transfer().size() << " instead.";
+  size_t num_transfers = message.has_incoming_transfer() ?
+    message.incoming_transfer().size() : 0U;
+  if (num_transfers != 1) {
+    LOG(ERROR) << "Expected one Transferable, got " << num_transfers
+               << " instead.";
     control_port_.Unbind();
     return;
   }

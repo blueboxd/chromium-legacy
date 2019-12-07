@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_APPS_APP_SERVICE_ARC_APPS_H_
 #define CHROME_BROWSER_APPS_APP_SERVICE_ARC_APPS_H_
 
+#include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -49,6 +51,9 @@ class ArcApps : public KeyedService,
   ~ArcApps() override;
 
  private:
+  using AppIdToTaskIds = std::map<std::string, std::set<int>>;
+  using TaskIdToAppId = std::map<int, std::string>;
+
   ArcApps(Profile* profile, apps::AppServiceProxy* proxy);
 
   // KeyedService overrides.
@@ -100,6 +105,11 @@ class ArcApps : public KeyedService,
   void OnPackageModified(
       const arc::mojom::ArcPackageInfo& package_info) override;
   void OnPackageListInitialRefreshed() override;
+  void OnTaskCreated(int task_id,
+                     const std::string& package_name,
+                     const std::string& activity,
+                     const std::string& intent) override;
+  void OnTaskDestroyed(int task_id) override;
 
   // arc::ArcIntentHelperObserver overrides.
   void OnIntentFiltersUpdated(
@@ -120,6 +130,7 @@ class ArcApps : public KeyedService,
       const arc::mojom::ArcPackageInfo& package_info,
       bool update_icon = true);
   void SetIconEffect(const std::string& app_id);
+  void CloseTasks(const std::string& app_id);
   void UpdateAppIntentFilters(
       std::string package_name,
       arc::ArcIntentHelperBridge* intent_helper_bridge,
@@ -134,6 +145,9 @@ class ArcApps : public KeyedService,
   apps_util::IncrementingIconKeyFactory icon_key_factory_;
 
   std::set<std::string> paused_apps_;
+
+  AppIdToTaskIds app_id_to_task_ids_;
+  TaskIdToAppId task_id_to_app_id_;
 
   ScopedObserver<arc::ArcIntentHelperBridge, arc::ArcIntentHelperObserver>
       arc_intent_helper_observer_{this};

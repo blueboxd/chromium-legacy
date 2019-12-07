@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -29,8 +28,6 @@
 #include "components/password_manager/core/browser/credential_cache.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
-#include "ui/gfx/android/java_bitmap.h"
-#include "ui/gfx/image/image.h"
 
 using autofill::AccessorySheetData;
 using autofill::FooterCommand;
@@ -100,20 +97,6 @@ void ManualFillingViewAndroid::OnAutomaticGenerationStatusChanged(
       env, java_object_, available);
 }
 
-void ManualFillingViewAndroid::OnFaviconRequested(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    const base::android::JavaParamRef<jstring>& j_origin,
-    jint desired_size_in_px,
-    const base::android::JavaParamRef<jobject>& j_callback) {
-  controller_->GetFavicon(
-      desired_size_in_px, ConvertJavaStringToUTF8(env, j_origin),
-      base::BindOnce(&ManualFillingViewAndroid::OnImageFetched,
-                     base::Unretained(this),  // Outlives or cancels request.
-                     base::android::ScopedJavaGlobalRef<jstring>(j_origin),
-                     base::android::ScopedJavaGlobalRef<jobject>(j_callback)));
-}
-
 void ManualFillingViewAndroid::OnFillingTriggered(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
@@ -132,20 +115,6 @@ void ManualFillingViewAndroid::OnOptionSelected(
       static_cast<autofill::AccessoryAction>(selected_action));
 }
 
-void ManualFillingViewAndroid::OnImageFetched(
-    base::android::ScopedJavaGlobalRef<jstring> j_origin,
-    base::android::ScopedJavaGlobalRef<jobject> j_callback,
-    const gfx::Image& image) {
-  base::android::ScopedJavaLocalRef<jobject> j_bitmap;
-  if (!image.IsEmpty())
-    j_bitmap = gfx::ConvertToJavaBitmap(image.ToSkBitmap());
-
-  RunObjectCallbackAndroid(
-      j_callback,
-      Java_ManualFillingComponentBridge_createFaviconResult(
-          base::android::AttachCurrentThread(), j_origin, j_bitmap));
-}
-
 ScopedJavaLocalRef<jobject>
 ManualFillingViewAndroid::ConvertAccessorySheetDataToJavaObject(
     JNIEnv* env,
@@ -160,7 +129,8 @@ ManualFillingViewAndroid::ConvertAccessorySheetDataToJavaObject(
     ScopedJavaLocalRef<jobject> j_user_info =
         Java_ManualFillingComponentBridge_addUserInfoToAccessorySheetData(
             env, java_object_, j_tab_data,
-            ConvertUTF8ToJavaString(env, user_info.origin()));
+            ConvertUTF8ToJavaString(env, user_info.origin()),
+            user_info.is_psl_match().value());
     for (const UserInfo::Field& field : user_info.fields()) {
       Java_ManualFillingComponentBridge_addFieldToUserInfo(
           env, java_object_, j_user_info,

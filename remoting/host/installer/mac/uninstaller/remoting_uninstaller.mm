@@ -5,6 +5,7 @@
 #include "remoting/host/installer/mac/uninstaller/remoting_uninstaller.h"
 
 #import <Cocoa/Cocoa.h>
+#include <sys/stat.h>
 
 #include "base/mac/authorization_util.h"
 #include "base/mac/scoped_authorizationref.h"
@@ -33,12 +34,6 @@ NSArray* convertToNSArray(const char** array) {
 }
 
 @implementation RemotingUninstaller
-
-// Keystone
-const char kKeystoneAdmin[] = "/Library/Google/GoogleSoftwareUpdate/"
-                              "GoogleSoftwareUpdate.bundle/Contents/MacOS/"
-                              "ksadmin";
-const char kKeystonePID[] = "com.google.chrome_remote_desktop";
 
 - (void)runCommand:(const char*)cmd
      withArguments:(const char**)args {
@@ -122,8 +117,29 @@ const char kKeystonePID[] = "com.google.chrome_remote_desktop";
 }
 
 - (void)keystoneUnregisterUsingAuth:(AuthorizationRef)authRef {
-  const char* args[] = {"--delete", "--productid", kKeystonePID, "-S", nullptr};
-  [self sudoCommand:kKeystoneAdmin withArguments:args usingAuth:authRef];
+  // ksadmin moved from MacOS to Helpers in Keystone 1.2.13.112, 2019-11-12. A
+  // symbolic link from the old location was left in place, but may not remain
+  // indefinitely. Try the new location first, falling back to the old if
+  // needed.
+  static const char kKSAdminPath[] =
+      "/Library/Google/GoogleSoftwareUpdate/"
+      "GoogleSoftwareUpdate.bundle/Contents/Helpers/"
+      "ksadmin";
+  static const char kKSAdminOldPath[] =
+      "/Library/Google/GoogleSoftwareUpdate/"
+      "GoogleSoftwareUpdate.bundle/Contents/MacOS/"
+      "ksadmin";
+
+  struct stat statbuf;
+  const char* ksadminPath =
+      (stat(kKSAdminPath, &statbuf) == 0 && (statbuf.st_mode & S_IXUSR))
+          ? kKSAdminPath
+          : kKSAdminOldPath;
+
+  static const char kKSProductID[] = "com.google.chrome_remote_desktop";
+
+  const char* args[] = {"--delete", "--productid", kKSProductID, "-S", nullptr};
+  [self sudoCommand:ksadminPath withArguments:args usingAuth:authRef];
 }
 
 - (void)remotingUninstallUsingAuth:(AuthorizationRef)authRef {

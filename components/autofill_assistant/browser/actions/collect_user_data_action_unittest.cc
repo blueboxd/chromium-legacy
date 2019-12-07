@@ -914,6 +914,62 @@ TEST_F(CollectUserDataActionTest, InvalidBasicCardNetworks) {
   action.ProcessAction(callback_.Get());
 }
 
+TEST_F(CollectUserDataActionTest, OverwriteExistingUserData) {
+  // set previous user data state.
+  user_data_.terms_and_conditions = ACCEPTED;
+  user_data_.additional_values_to_store["key1"] = "val1";
+  user_data_.additional_values_to_store["key2"] = "val2";
+  user_data_.additional_values_to_store["key3"] = "val3";
+  user_data_.billing_address = std::make_unique<autofill::AutofillProfile>(
+      base::GenerateGUID(), kFakeUrl);
+  autofill::test::SetProfileInfo(user_data_.billing_address.get(), "Charlie",
+                                 "Mitchell", "Morrison", "charlie@me.xyz",
+                                 "Fox", "123 Zoo St.", "unit 5", "Hollywood",
+                                 "CA", "96043", "US", "16505678910");
+
+  // set options
+  ActionProto action_proto;
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  SetRequiredTermsFields(collect_user_data_proto);
+  collect_user_data_proto->set_request_terms_and_conditions(false);
+  auto* prepended_section =
+      collect_user_data_proto->add_additional_prepended_sections();
+  prepended_section->set_title("Text input section");
+
+  auto* input_field_1 =
+      prepended_section->mutable_text_input_section()->add_input_fields();
+  input_field_1->set_value("initial");
+  input_field_1->set_input_type(TextInputProto::INPUT_ALPHANUMERIC);
+  input_field_1->set_client_memory_key("key1");
+
+  auto* appended_section =
+      collect_user_data_proto->add_additional_appended_sections();
+  appended_section->set_title("Text input section 2");
+  auto* input_field_2 =
+      appended_section->mutable_text_input_section()->add_input_fields();
+  input_field_2->set_value("initial");
+  input_field_2->set_input_type(TextInputProto::INPUT_ALPHANUMERIC);
+  input_field_2->set_client_memory_key("key2");
+
+  ON_CALL(mock_action_delegate_, CollectUserData(_))
+      .WillByDefault(
+          Invoke([](CollectUserDataOptions* collect_user_data_options) {
+            // do not call confirm_callback since we are only looking to test
+            // OnShowToUser.
+            // calling confirm_callback then calls OnGetUserData which changes
+            // the user_data_.
+          }));
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+
+  EXPECT_EQ(user_data_.terms_and_conditions, NOT_SELECTED);
+  EXPECT_EQ(user_data_.additional_values_to_store["key1"], "initial");
+  EXPECT_EQ(user_data_.additional_values_to_store["key2"], "initial");
+  EXPECT_EQ(user_data_.additional_values_to_store["key3"], "val3");
+
+  EXPECT_TRUE(user_data_.billing_address != nullptr);
+}
+
 TEST_F(CollectUserDataActionTest, AttachesCreditCardsWithAddress) {
   ON_CALL(mock_personal_data_manager_, IsAutofillCreditCardEnabled)
       .WillByDefault(Return(true));

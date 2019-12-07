@@ -194,7 +194,8 @@ TEST_F(WebViewAutofillTest, TestDelegateCallbacks) {
                               fieldType:kTestFieldType
                                formName:kTestFormName
                                 frameID:[OCMArg any]
-                                  value:kTestAddressFieldValue];
+                                  value:kTestAddressFieldValue
+                          userInitiated:YES];
   NSString* focus_script =
       [NSString stringWithFormat:@"document.getElementById('%@').focus();",
                                  kTestAddressFieldID];
@@ -208,7 +209,8 @@ TEST_F(WebViewAutofillTest, TestDelegateCallbacks) {
                               fieldType:kTestFieldType
                                formName:kTestFormName
                                 frameID:[OCMArg any]
-                                  value:kTestAddressFieldValue];
+                                  value:kTestAddressFieldValue
+                          userInitiated:NO];
   NSString* blur_script =
       [NSString stringWithFormat:
                     @"var event = new Event('blur', {bubbles:true});"
@@ -224,7 +226,8 @@ TEST_F(WebViewAutofillTest, TestDelegateCallbacks) {
                               fieldType:kTestFieldType
                                formName:kTestFormName
                                 frameID:[OCMArg any]
-                                  value:kTestAddressFieldValue];
+                                  value:kTestAddressFieldValue
+                          userInitiated:NO];
   // The 'input' event listener defined in form.js is only called during the
   // bubbling phase.
   NSString* input_script =
@@ -239,8 +242,8 @@ TEST_F(WebViewAutofillTest, TestDelegateCallbacks) {
 
   [[delegate expect] autofillController:autofill_controller_
                   didSubmitFormWithName:kTestFormName
-                          userInitiated:NO
-                            isMainFrame:YES];
+                                frameID:[OCMArg any]
+                          userInitiated:NO];
   // The 'submit' event listener defined in form.js is only called during the
   // bubbling phase.
   NSString* submit_script =

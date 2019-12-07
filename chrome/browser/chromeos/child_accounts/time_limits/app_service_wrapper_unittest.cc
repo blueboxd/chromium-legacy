@@ -71,6 +71,8 @@ class AppServiceWrapperTest : public testing::Test {
 
     MOCK_METHOD1(OnAppInstalled, void(const AppId& app_id));
     MOCK_METHOD1(OnAppUninstalled, void(const AppId& app_id));
+    MOCK_METHOD1(OnAppAvailable, void(const AppId& app_id));
+    MOCK_METHOD1(OnAppBlocked, void(const AppId& app_id));
   };
 
  protected:
@@ -115,6 +117,17 @@ class AppServiceWrapperTest : public testing::Test {
   void SimulateAppUninstalled(const AppId& app_id) {
     const std::string& package_name = app_id.app_id();
     arc_test_.app_instance()->UninstallPackage(package_name);
+
+    task_environment_.RunUntilIdle();
+  }
+
+  void SimulateAppDisabled(const AppId& app_id,
+                           const std::string& app_name,
+                           bool disabled) {
+    const std::string& package_name = app_id.app_id();
+    arc::mojom::AppInfo app = CreateArcAppInfo(package_name, app_name);
+    app.suspended = disabled;
+    arc_test_.app_instance()->SendPackageAppListRefreshed(package_name, {app});
 
     task_environment_.RunUntilIdle();
   }
@@ -179,6 +192,21 @@ TEST_F(AppServiceWrapperTest, ArcAppInstallation) {
   installed_apps = tested_wrapper().GetInstalledApps();
   ASSERT_EQ(1u, installed_apps.size());
   EXPECT_EQ(app2, installed_apps[0]);
+}
+
+TEST_F(AppServiceWrapperTest, ArcAppDisabled) {
+  // Install ARC app.
+  const AppId app(apps::mojom::AppType::kArc, kArcPackage1);
+  EXPECT_CALL(test_listener(), OnAppInstalled(app)).Times(1);
+  SimulateAppInstalled(app, kArcApp1);
+
+  // Make app disabled.
+  EXPECT_CALL(test_listener(), OnAppBlocked(app)).Times(1);
+  SimulateAppDisabled(app, kArcApp1, true);
+
+  // Re-enable app.
+  EXPECT_CALL(test_listener(), OnAppAvailable(app)).Times(1);
+  SimulateAppDisabled(app, kArcApp1, false);
 }
 
 }  // namespace app_time

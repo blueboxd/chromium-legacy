@@ -18,7 +18,7 @@
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/media_export.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "services/audio/public/cpp/sounds/sounds_manager.h"
 
 namespace audio {
 
@@ -45,7 +45,7 @@ class AudioStreamHandler {
   // C-tor for AudioStreamHandler. |wav_data| should be a raw
   // uncompressed WAVE data which will be sent to the audio output device.
   explicit AudioStreamHandler(
-      std::unique_ptr<service_manager::Connector> connector,
+      SoundsManager::StreamFactoryBinder stream_factory_binder,
       const base::StringPiece& wav_data);
   virtual ~AudioStreamHandler();
 

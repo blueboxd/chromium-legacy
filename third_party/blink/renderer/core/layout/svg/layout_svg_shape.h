@@ -101,6 +101,7 @@ class LayoutSVGShape : public LayoutSVGModelObject {
   }
 
   float StrokeWidth() const;
+  float StrokeWidthForMarkerUnits() const;
 
   virtual ShapeGeometryCodePath GeometryCodePath() const {
     return kPathGeometry;

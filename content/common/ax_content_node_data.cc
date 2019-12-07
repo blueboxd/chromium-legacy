@@ -81,9 +81,6 @@ std::string AXContentNodeData::ToString() const {
       case AX_CONTENT_ATTR_CHILD_ROUTING_ID:
         result += " child_routing_id=" + value;
         break;
-      case AX_CONTENT_ATTR_CHILD_BROWSER_PLUGIN_INSTANCE_ID:
-        result += " child_browser_plugin_instance_id=" + value;
-        break;
       case AX_CONTENT_INT_ATTRIBUTE_LAST:
         NOTREACHED();
         break;

@@ -69,7 +69,7 @@ void MigrateOnFileSystemThread(FileSystemContext* old_fs_context,
 void MigrateOnIndexedDBThread(IndexedDBContext* old_indexed_db_context,
                               IndexedDBContext* indexed_db_context,
                               const extensions::Extension* extension) {
-  DCHECK(old_indexed_db_context->TaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(old_indexed_db_context->IDBTaskRunner()->RunsTasksInCurrentSequence());
 
   url::Origin extension_origin = url::Origin::Create(
       extensions::Extension::GetBaseURLFromExtensionId(extension->id()));
@@ -125,7 +125,7 @@ void MigrateLegacyPartition(WeakPtr<extensions::AppDataMigrator> migrator,
 
   // Perform the IndexedDB migration on the old context's sequenced task
   // runner. After completion, it should call MigrateFileSystem.
-  old_indexed_db_context->TaskRunner()->PostTaskAndReply(
+  old_indexed_db_context->IDBTaskRunner()->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(
           &MigrateOnIndexedDBThread, base::RetainedRef(old_indexed_db_context),

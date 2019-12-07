@@ -815,6 +815,9 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
         grouping_flags);
     i = last + 1;
   }
+
+  if (needs_update_accessibility_focus_)
+    UpdateAccessibilityFocus();
 }
 
 void TableView::OnFocus() {
@@ -1179,13 +1182,8 @@ GroupRange TableView::GetGroupRange(int model_index) const {
 
 void TableView::UpdateVirtualAccessibilityChildren() {
   GetViewAccessibility().RemoveAllVirtualChildViews();
-  if (!GetRowCount() || visible_columns_.empty()) {
-    NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged, true);
-
-    if (needs_update_accessibility_focus_)
-      UpdateAccessibilityFocus();
+  if (!GetRowCount() || visible_columns_.empty())
     return;
-  }
 
   const base::Optional<int> primary_sorted_column_id =
       sort_descriptors().empty()
@@ -1339,11 +1337,6 @@ void TableView::UpdateVirtualAccessibilityChildren() {
 
     GetViewAccessibility().AddVirtualChildView(std::move(ax_row));
   }
-
-  NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged, true);
-
-  if (needs_update_accessibility_focus_)
-    UpdateAccessibilityFocus();
 }
 
 void TableView::UpdateAccessibilityFocus() {

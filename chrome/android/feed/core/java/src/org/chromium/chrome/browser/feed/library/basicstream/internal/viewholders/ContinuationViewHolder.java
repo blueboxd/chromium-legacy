@@ -86,9 +86,7 @@ public class ContinuationViewHolder extends FeedViewHolder {
     }
 
     @VisibleForTesting
-    VisibilityMonitor createVisibilityMonitor(
-            /*@UnderInitialization*/ ContinuationViewHolder this, View view,
-            Configuration configuration) {
+    VisibilityMonitor createVisibilityMonitor(View view, Configuration configuration) {
         return new VisibilityMonitor(view, configuration);
     }
 }

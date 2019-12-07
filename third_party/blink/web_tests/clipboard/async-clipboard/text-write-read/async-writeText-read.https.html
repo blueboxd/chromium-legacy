@@ -10,8 +10,8 @@
 <script>
 async function readWriteTest(textInput) {
   promise_test(async t => {
-    await PermissionsHelper.setPermission('clipboard-read', 'granted');
-    await PermissionsHelper.setPermission('clipboard-write', 'granted');
+    await PermissionsHelper.setPermission('clipboard-read-write', 'granted');
+    await PermissionsHelper.setPermission('clipboard-sanitized-write', 'granted');
 
     await navigator.clipboard.writeText(textInput);
     const clipboardItems = await navigator.clipboard.read();

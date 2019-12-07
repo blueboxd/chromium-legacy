@@ -110,10 +110,6 @@ jumbo_component("cpp") {
   ]
 
   defines = [ "IS_NETWORK_CPP_IMPL" ]
-
-  if (is_chromecast) {
-    defines += [ "IS_CHROMECAST" ]
-  }
 }
 
 jumbo_component("cpp_base") {

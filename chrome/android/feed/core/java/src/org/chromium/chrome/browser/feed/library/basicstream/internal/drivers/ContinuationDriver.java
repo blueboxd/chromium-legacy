@@ -12,6 +12,8 @@ import android.support.annotation.VisibleForTesting;
 import android.view.View;
 import android.view.View.OnClickListener;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration.ConfigKey;
 import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
@@ -63,7 +65,8 @@ public class ContinuationDriver extends LeafFeatureDriver
     private int mFailureCount;
     @SpinnerType
     private int mSpinnerType = SpinnerType.INFINITE_FEED;
-    /*@Nullable*/ private ContinuationViewHolder mContinuationViewHolder;
+    @Nullable
+    private ContinuationViewHolder mContinuationViewHolder;
 
     ContinuationDriver(BasicLoggingApi basicLoggingApi, Clock clock, Configuration configuration,
             Context context, CursorChangedListener cursorChangedListener, ModelChild modelChild,
@@ -301,9 +304,7 @@ public class ContinuationDriver extends LeafFeatureDriver
     }
 
     @VisibleForTesting
-    SpinnerLogger createSpinnerLogger(
-            /*@UnderInitialization*/ ContinuationDriver this, BasicLoggingApi basicLoggingApi,
-            Clock clock) {
+    SpinnerLogger createSpinnerLogger(BasicLoggingApi basicLoggingApi, Clock clock) {
         return new SpinnerLogger(basicLoggingApi, clock);
     }
 

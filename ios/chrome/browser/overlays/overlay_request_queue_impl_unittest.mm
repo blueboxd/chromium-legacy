@@ -23,8 +23,8 @@ class MockOverlayRequestQueueImplObserver
   MockOverlayRequestQueueImplObserver() {}
   ~MockOverlayRequestQueueImplObserver() {}
 
-  MOCK_METHOD2(RequestAddedToQueue,
-               void(OverlayRequestQueueImpl*, OverlayRequest*));
+  MOCK_METHOD3(RequestAddedToQueue,
+               void(OverlayRequestQueueImpl*, OverlayRequest*, size_t));
   MOCK_METHOD2(QueuedRequestCancelled,
                void(OverlayRequestQueueImpl*, OverlayRequest*));
 };
@@ -62,7 +62,8 @@ class OverlayRequestQueueImplTest : public PlatformTest {
     std::unique_ptr<OverlayRequest> passed_request =
         OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
     OverlayRequest* request = passed_request.get();
-    EXPECT_CALL(observer(), RequestAddedToQueue(queue(), request));
+    EXPECT_CALL(observer(),
+                RequestAddedToQueue(queue(), request, queue()->size()));
     queue()->AddRequest(std::move(passed_request));
     return request;
   }
@@ -80,6 +81,45 @@ TEST_F(OverlayRequestQueueImplTest, AddRequest) {
 
   EXPECT_EQ(first_request, queue()->front_request());
   EXPECT_EQ(2U, queue()->size());
+}
+
+// Tests that GetRequest() returns the expected values.
+TEST_F(OverlayRequestQueueImplTest, GetRequest) {
+  OverlayRequest* first_request = AddRequest();
+  OverlayRequest* second_request = AddRequest();
+  OverlayRequest* third_request = AddRequest();
+
+  // Verify GetRequest() results.
+  EXPECT_EQ(first_request, queue()->GetRequest(/*index=*/0));
+  EXPECT_EQ(second_request, queue()->GetRequest(/*index=*/1));
+  EXPECT_EQ(third_request, queue()->GetRequest(/*index=*/2));
+
+  // Verify array-syntax accessor results.
+  EXPECT_EQ(first_request, (*queue())[0]);
+  EXPECT_EQ(second_request, (*queue())[1]);
+  EXPECT_EQ(third_request, (*queue())[2]);
+}
+
+// Tests that state is updated correctly and observer callbacks are received
+// when inserting requests into the middle of the queue.
+TEST_F(OverlayRequestQueueImplTest, InsertRequest) {
+  AddRequest();
+  AddRequest();
+  ASSERT_EQ(2U, queue()->size());
+
+  // Insert a request into the middle of the queue.
+  void* kInsertedRequestConfigValue = &kInsertedRequestConfigValue;
+  std::unique_ptr<OverlayRequest> inserted_request =
+      OverlayRequest::CreateWithConfig<FakeOverlayUserData>(
+          kInsertedRequestConfigValue);
+  OverlayRequest* request = inserted_request.get();
+  EXPECT_CALL(observer(), RequestAddedToQueue(queue(), request, 1));
+  queue()->InsertRequest(1, std::move(inserted_request));
+
+  // Verify that the request is inserted correctly.
+  EXPECT_EQ(3U, queue()->size());
+  EXPECT_EQ(kInsertedRequestConfigValue,
+            queue()->GetRequest(1)->GetConfig<FakeOverlayUserData>()->value());
 }
 
 // Tests that state is updated correctly and observer callbacks are received
@@ -119,7 +159,6 @@ TEST_F(OverlayRequestQueueImplTest, CancelAllRequests) {
   queue()->CancelAllRequests();
 
   EXPECT_EQ(0U, queue()->size());
-  EXPECT_TRUE(queue()->empty());
 }
 
 // Tests that state is updated correctly and observer callbacks are received
@@ -131,7 +170,8 @@ TEST_F(OverlayRequestQueueImplTest, CustomCancelHandler) {
   std::unique_ptr<FakeCancelHandler> passed_cancel_handler =
       std::make_unique<FakeCancelHandler>(request, queue());
   FakeCancelHandler* cancel_handler = passed_cancel_handler.get();
-  EXPECT_CALL(observer(), RequestAddedToQueue(queue(), request));
+  EXPECT_CALL(observer(),
+              RequestAddedToQueue(queue(), request, queue()->size()));
   queue()->AddRequest(std::move(passed_request),
                       std::move(passed_cancel_handler));
 
@@ -141,5 +181,4 @@ TEST_F(OverlayRequestQueueImplTest, CustomCancelHandler) {
   cancel_handler->TriggerCancellation();
 
   EXPECT_EQ(0U, queue()->size());
-  EXPECT_TRUE(queue()->empty());
 }

@@ -229,9 +229,9 @@ class CONTENT_EXPORT FrameTreeNode {
     return replication_state_.frame_policy;
   }
 
-  // Set any pending sandbox flags and container policy as active, and return
-  // true if either was changed.
-  bool CommitPendingFramePolicy();
+  // Set the frame_policy provided in function parameter as active frame policy,
+  // while leaving pending_frame_policy_ untouched.
+  bool CommitFramePolicy(const blink::FramePolicy& frame_policy);
 
   const FrameOwnerProperties& frame_owner_properties() {
     return frame_owner_properties_;

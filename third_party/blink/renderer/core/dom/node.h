@@ -1009,7 +1009,7 @@ class CORE_EXPORT Node : public EventTarget {
 
   NodeRareData* RareData() const {
     SECURITY_DCHECK(HasRareData());
-    return static_cast<NodeRareData*>(data_.rare_data_);
+    return data_.rare_data_;
   }
   NodeRareData& EnsureRareData() {
     if (HasRareData())
@@ -1077,7 +1077,7 @@ class CORE_EXPORT Node : public EventTarget {
     // LayoutObjects are fully owned by their DOM node. See LayoutObject's
     // LIFETIME documentation section.
     NodeRenderingData* node_layout_data_;
-    NodeRareDataBase* rare_data_;
+    NodeRareData* rare_data_;
   } data_;
 };
 

@@ -12,8 +12,7 @@ import org.chromium.components.feed.core.proto.ui.piet.ImagesProto.Image;
 /** {@link ImageLoader} that always returns {@link null}. For image-less clients. */
 public class NullImageLoader implements ImageLoader {
     @Override
-    public void getImage(
-            Image image, int widthPx, int heightPx, Consumer</*@Nullable*/ Drawable> consumer) {
+    public void getImage(Image image, int widthPx, int heightPx, Consumer<Drawable> consumer) {
         consumer.accept(null);
     }
 }

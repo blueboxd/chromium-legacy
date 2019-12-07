@@ -2877,6 +2877,52 @@ TEST_F(RenderTextTest, MoveCursorLeftRight_MeiryoUILigatures) {
   EXPECT_EQ(6U, render_text->cursor_position());
 }
 
+TEST_F(RenderTextTest, GraphemeBoundaries) {
+  static const wchar_t text[] =
+      L"\u0065\u0301"        // Letter 'e' U+0065 and acute accent U+0301
+      L"\u0036\uFE0F\u20E3"  // Emoji 'keycap letter 6'
+      L"\U0001F468\u200D\u2708\uFE0F";  // Emoji 'pilot'.
+
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(WideToUTF16(text));
+
+  EXPECT_TRUE(render_text->IsGraphemeBoundary(0));
+  EXPECT_FALSE(render_text->IsGraphemeBoundary(1));
+  EXPECT_TRUE(render_text->IsGraphemeBoundary(2));
+  EXPECT_FALSE(render_text->IsGraphemeBoundary(3));
+  EXPECT_FALSE(render_text->IsGraphemeBoundary(4));
+  EXPECT_TRUE(render_text->IsGraphemeBoundary(5));
+  EXPECT_FALSE(render_text->IsGraphemeBoundary(6));
+  EXPECT_FALSE(render_text->IsGraphemeBoundary(7));
+  EXPECT_FALSE(render_text->IsGraphemeBoundary(8));
+  EXPECT_FALSE(render_text->IsGraphemeBoundary(9));
+  EXPECT_TRUE(render_text->IsGraphemeBoundary(10));
+
+  EXPECT_EQ(2U, render_text->IndexOfAdjacentGrapheme(0, CURSOR_FORWARD));
+  EXPECT_EQ(2U, render_text->IndexOfAdjacentGrapheme(1, CURSOR_FORWARD));
+  EXPECT_EQ(5U, render_text->IndexOfAdjacentGrapheme(2, CURSOR_FORWARD));
+  EXPECT_EQ(5U, render_text->IndexOfAdjacentGrapheme(3, CURSOR_FORWARD));
+  EXPECT_EQ(5U, render_text->IndexOfAdjacentGrapheme(4, CURSOR_FORWARD));
+  EXPECT_EQ(10U, render_text->IndexOfAdjacentGrapheme(5, CURSOR_FORWARD));
+  EXPECT_EQ(10U, render_text->IndexOfAdjacentGrapheme(6, CURSOR_FORWARD));
+  EXPECT_EQ(10U, render_text->IndexOfAdjacentGrapheme(7, CURSOR_FORWARD));
+  EXPECT_EQ(10U, render_text->IndexOfAdjacentGrapheme(8, CURSOR_FORWARD));
+  EXPECT_EQ(10U, render_text->IndexOfAdjacentGrapheme(9, CURSOR_FORWARD));
+  EXPECT_EQ(10U, render_text->IndexOfAdjacentGrapheme(10, CURSOR_FORWARD));
+
+  EXPECT_EQ(0U, render_text->IndexOfAdjacentGrapheme(0, CURSOR_BACKWARD));
+  EXPECT_EQ(0U, render_text->IndexOfAdjacentGrapheme(1, CURSOR_BACKWARD));
+  EXPECT_EQ(0U, render_text->IndexOfAdjacentGrapheme(2, CURSOR_BACKWARD));
+  EXPECT_EQ(2U, render_text->IndexOfAdjacentGrapheme(3, CURSOR_BACKWARD));
+  EXPECT_EQ(2U, render_text->IndexOfAdjacentGrapheme(4, CURSOR_BACKWARD));
+  EXPECT_EQ(2U, render_text->IndexOfAdjacentGrapheme(5, CURSOR_BACKWARD));
+  EXPECT_EQ(5U, render_text->IndexOfAdjacentGrapheme(6, CURSOR_BACKWARD));
+  EXPECT_EQ(5U, render_text->IndexOfAdjacentGrapheme(7, CURSOR_BACKWARD));
+  EXPECT_EQ(5U, render_text->IndexOfAdjacentGrapheme(8, CURSOR_BACKWARD));
+  EXPECT_EQ(5U, render_text->IndexOfAdjacentGrapheme(9, CURSOR_BACKWARD));
+  EXPECT_EQ(5U, render_text->IndexOfAdjacentGrapheme(10, CURSOR_BACKWARD));
+}
+
 TEST_F(RenderTextTest, GraphemePositions) {
   // LTR कि (DEVANAGARI KA with VOWEL I) (2-char grapheme), LTR abc, and LTR कि.
   const base::string16 kText1 = WideToUTF16(L"\u0915\u093fabc\u0915\u093f");

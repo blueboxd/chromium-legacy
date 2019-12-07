@@ -88,8 +88,9 @@ class ChromeContentBrowserClientExtensionsPart
       content::BrowserContext* browser_context);
 
   static void OverrideURLLoaderFactoryParams(
-      content::RenderProcessHost* process,
+      content::BrowserContext* browser_context,
       const url::Origin& origin,
+      bool is_for_isolated_world,
       network::mojom::URLLoaderFactoryParams* factory_params);
 
   static bool IsBuiltinComponent(content::BrowserContext* browser_context,

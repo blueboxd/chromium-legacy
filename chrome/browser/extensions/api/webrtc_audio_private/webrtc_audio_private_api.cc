@@ -16,18 +16,16 @@
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/audio_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_device_id.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "media/audio/audio_system.h"
-#include "services/audio/public/cpp/audio_system_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -134,10 +132,8 @@ std::string WebrtcAudioPrivateFunction::device_id_salt() const {
 
 media::AudioSystem* WebrtcAudioPrivateFunction::GetAudioSystem() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!audio_system_) {
-    audio_system_ =
-        audio::CreateAudioSystem(content::GetSystemConnector()->Clone());
-  }
+  if (!audio_system_)
+    audio_system_ = content::CreateAudioSystemForAudioService();
   return audio_system_.get();
 }
 

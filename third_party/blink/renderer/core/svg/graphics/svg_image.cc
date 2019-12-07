@@ -107,6 +107,11 @@ SVGImage::~SVGImage() {
     frame_client_->ClearImage();
 
   if (page_) {
+    // It is safe to allow UA events within this scope, because event
+    // dispatching inside the SVG image's document doesn't trigger JavaScript
+    // execution. All script execution is forbidden when an SVG is loaded as an
+    // image subresource - see SetScriptEnabled in SVGImage::DataChanged().
+    EventDispatchForbiddenScope::AllowUserAgentEvents allow_events;
     // Store m_page in a local variable, clearing m_page, so that
     // SVGImageChromeClient knows we're destructed.
     Page* current_page = page_.Release();

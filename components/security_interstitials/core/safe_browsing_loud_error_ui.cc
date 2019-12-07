@@ -43,14 +43,16 @@ SafeBrowsingLoudErrorUI::SafeBrowsingLoudErrorUI(
     const SBErrorDisplayOptions& display_options,
     const std::string& app_locale,
     const base::Time& time_triggered,
-    ControllerClient* controller)
+    ControllerClient* controller,
+    bool created_prior_to_navigation)
     : BaseSafeBrowsingErrorUI(request_url,
                               main_frame_url,
                               reason,
                               display_options,
                               app_locale,
                               time_triggered,
-                              controller) {
+                              controller),
+      created_prior_to_navigation_(created_prior_to_navigation) {
   controller->metrics_helper()->RecordUserDecision(MetricsHelper::SHOW);
   controller->metrics_helper()->RecordUserInteraction(
       MetricsHelper::TOTAL_VISITS);
@@ -82,9 +84,14 @@ void SafeBrowsingLoudErrorUI::PopulateStringsForHtml(
       l10n_util::GetStringUTF16(IDS_SAFEBROWSING_OVERRIDABLE_SAFETY_BUTTON));
   load_time_data->SetBoolean("overridable", !is_proceed_anyway_disabled());
 
-  load_time_data->SetBoolean(
-      "hide_primary_button",
-      always_show_back_to_safety() ? false : !controller()->CanGoBack());
+  if (always_show_back_to_safety()) {
+    load_time_data->SetBoolean("hide_primary_button", false);
+  } else {
+    load_time_data->SetBoolean("hide_primary_button",
+                               created_prior_to_navigation_
+                                   ? !controller()->CanGoBackBeforeNavigation()
+                                   : !controller()->CanGoBack());
+  }
 
   load_time_data->SetBoolean(
       "billing",

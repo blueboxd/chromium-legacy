@@ -95,9 +95,6 @@ cca.views.camera.Options = class {
      */
     this.audioTrack_ = null;
 
-    // End of properties, seal the object.
-    Object.seal(this);
-
     [['#switch-device', () => this.switchDevice_()],
      ['#toggle-grid', () => this.animatePreviewGrid_()],
      ['#open-settings', () => cca.nav.open('settings')],

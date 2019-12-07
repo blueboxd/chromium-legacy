@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/run_loop.h"
-#include "third_party/blink/public/platform/web_rtc_stats.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 namespace blink {
@@ -25,7 +25,7 @@ class TestWebRTCStatsReportObtainer
  public:
   TestWebRTCStatsReportObtainer();
 
-  blink::WebRTCStatsReportCallback GetStatsCallbackWrapper();
+  RTCStatsReportCallback GetStatsCallbackWrapper();
 
   RTCStatsReportPlatform* report() const;
   RTCStatsReportPlatform* WaitForReport();

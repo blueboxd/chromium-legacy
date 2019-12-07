@@ -297,10 +297,6 @@ bool ExtensionInstalledBubble::ShouldClose(BubbleCloseReason reason) const {
   return reason != BUBBLE_CLOSE_NAVIGATED;
 }
 
-std::string ExtensionInstalledBubble::GetName() const {
-  return "ExtensionInstalled";
-}
-
 const content::RenderFrameHost* ExtensionInstalledBubble::OwningFrame() const {
   return nullptr;
 }

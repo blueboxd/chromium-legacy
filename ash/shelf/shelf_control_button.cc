@@ -8,7 +8,10 @@
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shelf/shelf_button_delegate.h"
+#include "ash/shell.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -21,6 +24,9 @@
 namespace ash {
 
 namespace {
+
+// The height inset on the ink drop when in-app shelf is shown.
+constexpr int kInAppInkDropHeightInset = 4;
 
 class ShelfControlButtonHighlightPathGenerator
     : public views::HighlightPathGenerator {
@@ -70,18 +76,21 @@ gfx::Point ShelfControlButton::GetCenterPoint() const {
 
 std::unique_ptr<views::InkDropRipple> ShelfControlButton::CreateInkDropRipple()
     const {
-  const int button_radius = ShelfConfig::Get()->control_border_radius();
-  gfx::Point center = GetCenterPoint();
-  gfx::Rect bounds(center.x() - button_radius, center.y() - button_radius,
-                   2 * button_radius, 2 * button_radius);
   return std::make_unique<views::FloodFillInkDropRipple>(
-      size(), GetLocalBounds().InsetsFrom(bounds),
-      GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
+      size(), GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
       ink_drop_visible_opacity());
 }
 
 std::unique_ptr<views::InkDropMask> ShelfControlButton::CreateInkDropMask()
     const {
+  if (chromeos::switches::ShouldShowShelfHotseat() &&
+      Shell::Get()->tablet_mode_controller()->InTabletMode() &&
+      ShelfConfig::Get()->is_in_app()) {
+    return std::make_unique<views::RoundRectInkDropMask>(
+        size(), gfx::Insets(kInAppInkDropHeightInset, 0),
+        (size().height() / 2) - kInAppInkDropHeightInset);
+  }
+
   return std::make_unique<views::CircleInkDropMask>(
       size(), GetCenterPoint(), ShelfConfig::Get()->control_border_radius());
 }

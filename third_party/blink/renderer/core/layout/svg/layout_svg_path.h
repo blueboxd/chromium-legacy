@@ -47,6 +47,7 @@ class LayoutSVGPath final : public LayoutSVGShape {
 
   void UpdateShapeFromElement() override;
 
+  const StylePath* GetStylePath() const;
   void UpdateMarkers();
 
   Vector<MarkerPosition> marker_positions_;

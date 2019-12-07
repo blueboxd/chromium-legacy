@@ -79,6 +79,9 @@ class ControllerClient {
   virtual void GoBack() = 0;
   // Whether it is possible to go 'Back to safety'.
   virtual bool CanGoBack() = 0;
+  // Alternate method to check if the user can go "back to safety", meant to
+  // be called before navigating to the interstitial.
+  virtual bool CanGoBackBeforeNavigation() = 0;
 
   // If the offending entry has committed, go back or to a safe page without
   // closing the error page. This error page will be closed when the new page

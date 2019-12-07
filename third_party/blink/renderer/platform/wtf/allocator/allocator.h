@@ -147,6 +147,11 @@ class __thisIsHereToForceASemicolonAfterThisMacro;
 #define USING_FAST_MALLOC_WITH_TYPE_NAME(type) \
   USING_FAST_MALLOC_INTERNAL(type, #type)
 
+template <typename T>
+ALWAYS_INLINE std::atomic<T>* AsAtomicPtr(T* t) {
+  return reinterpret_cast<std::atomic<T>*>(t);
+}
+
 }  // namespace WTF
 
 // This version of placement new omits a 0 check.

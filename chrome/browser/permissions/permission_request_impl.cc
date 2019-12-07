@@ -54,7 +54,7 @@ PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
       return IDR_ANDROID_INFOBAR_MEDIA_STREAM_CAMERA;
     case ContentSettingsType::ACCESSIBILITY_EVENTS:
       return IDR_ANDROID_INFOBAR_ACCESSIBILITY_EVENTS;
-    case ContentSettingsType::CLIPBOARD_READ:
+    case ContentSettingsType::CLIPBOARD_READ_WRITE:
       return IDR_ANDROID_INFOBAR_CLIPBOARD;
     case ContentSettingsType::NFC:
       return IDR_ANDROID_INFOBAR_NFC;
@@ -83,7 +83,7 @@ PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
       return vector_icons::kVideocamIcon;
     case ContentSettingsType::ACCESSIBILITY_EVENTS:
       return vector_icons::kAccessibilityIcon;
-    case ContentSettingsType::CLIPBOARD_READ:
+    case ContentSettingsType::CLIPBOARD_READ_WRITE:
       return kContentPasteIcon;
     default:
       NOTREACHED();
@@ -117,7 +117,7 @@ base::string16 PermissionRequestImpl::GetTitleText() const {
     case ContentSettingsType::ACCESSIBILITY_EVENTS:
       message_id = IDS_ACCESSIBILITY_EVENTS_PERMISSION_TITLE;
       break;
-    case ContentSettingsType::CLIPBOARD_READ:
+    case ContentSettingsType::CLIPBOARD_READ_WRITE:
       message_id = IDS_CLIPBOARD_PERMISSION_TITLE;
       break;
     case ContentSettingsType::NFC:
@@ -157,7 +157,7 @@ base::string16 PermissionRequestImpl::GetMessageText() const {
     case ContentSettingsType::ACCESSIBILITY_EVENTS:
       message_id = IDS_ACCESSIBILITY_EVENTS_INFOBAR_TEXT;
       break;
-    case ContentSettingsType::CLIPBOARD_READ:
+    case ContentSettingsType::CLIPBOARD_READ_WRITE:
       message_id = IDS_CLIPBOARD_INFOBAR_TEXT;
       break;
     case ContentSettingsType::NFC:
@@ -225,7 +225,7 @@ base::string16 PermissionRequestImpl::GetMessageTextFragment() const {
     case ContentSettingsType::ACCESSIBILITY_EVENTS:
       message_id = IDS_ACCESSIBILITY_EVENTS_PERMISSION_FRAGMENT;
       break;
-    case ContentSettingsType::CLIPBOARD_READ:
+    case ContentSettingsType::CLIPBOARD_READ_WRITE:
       message_id = IDS_CLIPBOARD_PERMISSION_FRAGMENT;
       break;
     default:

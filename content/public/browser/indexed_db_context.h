@@ -27,14 +27,14 @@ namespace content {
 struct StorageUsageInfo;
 
 // Represents the per-BrowserContext IndexedDB data.
-// Call these methods only via the exposed TaskRunner.
+// Call these methods only via the exposed IDBTaskRunner.
 // Refcounted because this class is used throughout the codebase on different
 // threads.
 class IndexedDBContext
     : public base::RefCountedDeleteOnSequence<IndexedDBContext> {
  public:
-  // Only call the below methods by posting to this TaskRunner.
-  virtual base::SequencedTaskRunner* TaskRunner() = 0;
+  // Only call the below methods by posting to this IDBTaskRunner.
+  virtual base::SequencedTaskRunner* IDBTaskRunner() = 0;
 
   // Methods used in response to QuotaManager requests.
   virtual std::vector<StorageUsageInfo> GetAllOriginsInfo() = 0;
@@ -55,6 +55,9 @@ class IndexedDBContext
 
   // Disables the exit-time deletion of session-only data.
   virtual void SetForceKeepSessionState() = 0;
+
+  // Helper function for posting IO tasks to.
+  virtual base::SequencedTaskRunner* IOTaskRunner() = 0;
 
  protected:
   friend class base::RefCountedDeleteOnSequence<IndexedDBContext>;

@@ -43,6 +43,8 @@ var HistoryToolbarFocusTest = class extends HistoryFocusTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
+      '../test_browser_proxy.js',
+      'test_browser_service.js',
       'history_toolbar_focus_test.js',
     ]);
   }
@@ -57,6 +59,8 @@ var HistoryListFocusTest = class extends HistoryFocusTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
+      '../test_browser_proxy.js',
+      'test_browser_service.js',
       'history_list_focus_test.js',
     ]);
   }

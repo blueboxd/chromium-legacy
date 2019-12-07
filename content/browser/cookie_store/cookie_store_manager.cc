@@ -537,6 +537,14 @@ void CookieStoreManager::OnCookieChange(const net::CookieChangeInfo& change) {
     return;
   }
 
+  if (change.cause == net::CookieChangeCause::OVERWRITE) {
+    // Cookie overwrites generate an OVERWRITE event with the old cookie data
+    // and an INSERTED event with the new cookie data. The Cookie Store API
+    // only reports new cookie information, so OVERWRITE events doesn't need to
+    // be dispatched to service workers.
+    return;
+  }
+
   // Compute the list of service workers interested in this change. A worker
   // might have multiple subscriptions that cover this change, but should still
   // receive a single change event.

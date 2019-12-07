@@ -60,6 +60,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
         browser_context_->GetPath(),
         browser_context_->GetSpecialStoragePolicy(), quota_manager->proxy(),
         base::DefaultClock::GetInstance(),
+        base::SequencedTaskRunnerHandle::Get(),
         base::SequencedTaskRunnerHandle::Get());
     base::RunLoop().RunUntilIdle();
     setup_temp_dir();

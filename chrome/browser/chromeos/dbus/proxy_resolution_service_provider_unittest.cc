@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/test/task_environment.h"
 #include "chromeos/dbus/services/service_provider_test_helper.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -107,6 +108,8 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
     EXPECT_TRUE(reader.PopString(&result->proxy_info));
     EXPECT_TRUE(reader.PopString(&result->error));
   }
+
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   MockNetworkContext mock_network_context_;
 

@@ -105,9 +105,10 @@ void BackForwardCacheMetrics::DidCommitNavigation(
   bool is_history_navigation =
       navigation->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK;
   if (navigation->IsInMainFrame() && !navigation->IsSameDocument()) {
-    if (is_history_navigation && back_forward_cache_allowed) {
+    if (is_history_navigation) {
       UpdateNotRestoredReasonsForNavigation(navigation);
-      RecordMetricsForHistoryNavigationCommit(navigation);
+      RecordMetricsForHistoryNavigationCommit(navigation,
+                                              back_forward_cache_allowed);
     }
     not_restored_reasons_.reset();
     blocklisted_features_ = 0;
@@ -249,31 +250,47 @@ void BackForwardCacheMetrics::UpdateNotRestoredReasonsForNavigation(
 }
 
 void BackForwardCacheMetrics::RecordMetricsForHistoryNavigationCommit(
-    NavigationRequest* navigation) const {
+    NavigationRequest* navigation,
+    bool back_forward_cache_allowed) const {
   DCHECK(!navigation->IsServedFromBackForwardCache() ||
          not_restored_reasons_.none())
       << "If the navigation is served from bfcache, no not restored reasons "
          "should be recorded";
-
   HistoryNavigationOutcome outcome = HistoryNavigationOutcome::kNotRestored;
   if (navigation->IsServedFromBackForwardCache()) {
     outcome = HistoryNavigationOutcome::kRestored;
 
+    if (back_forward_cache_allowed) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "BackForwardCache.EvictedAfterDocumentRestoredReason",
+          BackForwardCacheMetrics::EvictedAfterDocumentRestoredReason::
+              kRestored);
+    }
     UMA_HISTOGRAM_ENUMERATION(
-        "BackForwardCache.EvictedAfterDocumentRestoredReason",
+        "BackForwardCache.AllSites.EvictedAfterDocumentRestoredReason",
         BackForwardCacheMetrics::EvictedAfterDocumentRestoredReason::kRestored);
   }
 
-  UMA_HISTOGRAM_ENUMERATION("BackForwardCache.HistoryNavigationOutcome",
-                            outcome);
+  if (back_forward_cache_allowed) {
+    UMA_HISTOGRAM_ENUMERATION("BackForwardCache.HistoryNavigationOutcome",
+                              outcome);
+  }
+  UMA_HISTOGRAM_ENUMERATION(
+      "BackForwardCache.AllSites.HistoryNavigationOutcome", outcome);
 
   for (int i = 0; i <= static_cast<int>(NotRestoredReason::kMaxValue); i++) {
     if (!not_restored_reasons_.test(static_cast<size_t>(i)))
       continue;
     DCHECK(!navigation->IsServedFromBackForwardCache());
     NotRestoredReason reason = static_cast<NotRestoredReason>(i);
+    if (back_forward_cache_allowed) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "BackForwardCache.HistoryNavigationOutcome.NotRestoredReason",
+          reason);
+    }
     UMA_HISTOGRAM_ENUMERATION(
-        "BackForwardCache.HistoryNavigationOutcome.NotRestoredReason", reason);
+        "BackForwardCache.AllSites.HistoryNavigationOutcome.NotRestoredReason",
+        reason);
   }
 
   for (int i = 0;
@@ -283,8 +300,14 @@ void BackForwardCacheMetrics::RecordMetricsForHistoryNavigationCommit(
     blink::scheduler::WebSchedulerTrackedFeature feature =
         static_cast<blink::scheduler::WebSchedulerTrackedFeature>(i);
     if (blocklisted_features_ & blink::scheduler::FeatureToBit(feature)) {
+      if (back_forward_cache_allowed) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "BackForwardCache.HistoryNavigationOutcome.BlocklistedFeature",
+            feature);
+      }
       UMA_HISTOGRAM_ENUMERATION(
-          "BackForwardCache.HistoryNavigationOutcome.BlocklistedFeature",
+          "BackForwardCache.AllSites.HistoryNavigationOutcome."
+          "BlocklistedFeature",
           feature);
     }
   }
@@ -305,8 +328,14 @@ void BackForwardCacheMetrics::RecordMetricsForHistoryNavigationCommit(
 
   if (ShouldRecordBrowsingInstanceNotSwappedReason() &&
       browsing_instance_not_swapped_reason_) {
+    if (back_forward_cache_allowed) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "BackForwardCache.HistoryNavigationOutcome."
+          "BrowsingInstanceNotSwappedReason",
+          browsing_instance_not_swapped_reason_.value());
+    }
     UMA_HISTOGRAM_ENUMERATION(
-        "BackForwardCache.HistoryNavigationOutcome."
+        "BackForwardCache.AllSites.HistoryNavigationOutcome."
         "BrowsingInstanceNotSwappedReason",
         browsing_instance_not_swapped_reason_.value());
   }
@@ -316,6 +345,8 @@ void BackForwardCacheMetrics::RecordEvictedAfterDocumentRestored(
     EvictedAfterDocumentRestoredReason reason) {
   UMA_HISTOGRAM_ENUMERATION(
       "BackForwardCache.EvictedAfterDocumentRestoredReason", reason);
+  UMA_HISTOGRAM_ENUMERATION(
+      "BackForwardCache.AllSites.EvictedAfterDocumentRestoredReason", reason);
 }
 
 bool BackForwardCacheMetrics::ShouldRecordBrowsingInstanceNotSwappedReason()

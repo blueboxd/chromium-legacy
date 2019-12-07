@@ -219,6 +219,7 @@ jumbo_component("network_service") {
 
   deps = [
     "//base",
+    "//build:chromecast_buildflags",
     "//components/content_settings/core/common",
     "//components/cookie_config",
     "//components/domain_reliability",
@@ -273,10 +274,6 @@ jumbo_component("network_service") {
   }
 
   defines = [ "IS_NETWORK_SERVICE_IMPL" ]
-
-  if (is_chromecast) {
-    defines += [ "IS_CHROMECAST" ]
-  }
 
   if (trial_comparison_cert_verifier_supported) {
     sources += [

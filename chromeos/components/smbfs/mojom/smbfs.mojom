@@ -1,0 +1,68 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module smbfs.mojom;
+
+// This file is shared between Chrome and Chrome OS.
+// In Chrome, this file is located at:
+// //chromeos/components/smbfs/mojom/smbfs.mojom
+// In Chrome OS, this file is located at:
+// //platform2/smbfs/mojom/smbfs.mojom
+
+// Implemented by SmbFs, used from Chrome.
+interface SmbFsBootstrap {
+  // Connect to an SMB share. This method must only be called once.
+  MountShare(MountOptions options, pending_remote<SmbFsDelegate> delegate) =>
+      (MountError error, pending_remote<SmbFs>? smbfs);
+};
+
+// Implemented by SmbFs, used from Chrome.
+interface SmbFs {
+};
+
+// Implemented by Chrome, used from SmbFs.
+interface SmbFsDelegate {
+};
+
+enum MountError {
+  // Success.
+  kOk = 0,
+
+  // Generic code for uncategorized errors.
+  kUnknown = 1,
+
+  // Mount timeout.
+  kTimeout = 2,
+
+  // Share URL is invalid.
+  kInvalidUrl = 3,
+
+  // An invalid combination of mount options was specified, or required
+  // options were missing.
+  kInvalidOptions = 4,
+
+  // Share not found.
+  kNotFound = 5,
+
+  // Share access denied (i.e. username/password error).
+  kAccessDenied = 6,
+
+  // Invalid protocol (i.e. SMB1).
+  kInvalidProtocol = 7,
+};
+
+struct MountOptions {
+  // Full share path. Must be in the form "smb://hostname/sharename", and must
+  // have the hostname as entered by the user and NOT resolved to an IP address
+  // (unless the user entered an IP address as the hostname).
+  string share_path;
+
+  // Authentication parameters.
+  string username;
+  string workgroup;
+  string password;
+
+  // Allow NTLM authentication.
+  bool allow_ntlm = false;
+};

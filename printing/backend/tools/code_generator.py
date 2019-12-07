@@ -18,6 +18,8 @@ def get_handler(syntax, name):
       # IPP enums always use positive numbers so we can use 0 in other cases.
       default = 3 if name.endswith('finishings') else 0
       return 'MultivalueEnumHandler, %d' % default
+
+    # TODO(crbug.com/964919): Add other multivalue handlers
     return ''
 
   if syntax == 'collection':

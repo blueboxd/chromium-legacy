@@ -300,8 +300,11 @@ void WidgetInputHandlerManager::AttachSynchronousCompositor(
         compositor_request) {
 #if defined(OS_ANDROID)
   DCHECK(synchronous_compositor_registry_);
-  synchronous_compositor_registry_->proxy()->BindChannel(
-      std::move(control_host), std::move(host), std::move(compositor_request));
+  if (synchronous_compositor_registry_->proxy()) {
+    synchronous_compositor_registry_->proxy()->BindChannel(
+        std::move(control_host), std::move(host),
+        std::move(compositor_request));
+  }
 #endif
 }
 

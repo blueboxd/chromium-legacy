@@ -7,8 +7,13 @@ suite('<history-toolbar>', function() {
   let toolbar;
 
   setup(function() {
-    window.resultsRendered = false;
-    app = replaceApp();
+    PolymerTest.clearBody();
+    window.history.replaceState({}, '', '/');
+    testService = new TestBrowserService();
+    history.BrowserService.instance_ = testService;
+
+    app = document.createElement('history-app');
+    document.body.appendChild(app);
 
     toolbar = app.$['toolbar'];
   });
@@ -16,7 +21,7 @@ suite('<history-toolbar>', function() {
   test('search bar is focused on load in wide mode', async () => {
     toolbar.$['main-toolbar'].narrow = false;
 
-    historyResult(createHistoryInfo(), []);
+    app.historyResult(createHistoryInfo(), []);
     await test_util.flushTasks();
 
     // Ensure the search bar is focused on load.
@@ -27,13 +32,10 @@ suite('<history-toolbar>', function() {
   test('search bar is not focused on load in narrow mode', async () => {
     toolbar.$['main-toolbar'].narrow = true;
 
-    historyResult(createHistoryInfo(), []);
+    app.historyResult(createHistoryInfo(), []);
     await test_util.flushTasks();
     // Ensure the search bar is focused on load.
-    assertFalse($('history-app')
-                    .$.toolbar.$['main-toolbar']
-                    .getSearchField()
-                    .isSearchFocused());
+    assertFalse(toolbar.$['main-toolbar'].getSearchField().isSearchFocused());
   });
 
   test('shortcuts to open search field', function() {

@@ -30,6 +30,9 @@ class TestWebDialogDelegate : public WebDialogDelegate {
   // to a bool, which will be set to true when the destructor is called.
   void SetDeleteOnClosedAndObserve(bool* destroy_observer);
 
+  // Sets whether the dialog should close when we press Escape.
+  void SetCloseOnEscape(bool enabled);
+
   // WebDialogDelegate implementation:
   ModalType GetDialogModalType() const override;
   base::string16 GetDialogTitle() const override;
@@ -42,11 +45,13 @@ class TestWebDialogDelegate : public WebDialogDelegate {
   void OnCloseContents(content::WebContents* source,
                        bool* out_close_dialog) override;
   bool ShouldShowDialogTitle() const override;
+  bool ShouldCloseDialogOnEscape() const override;
 
  protected:
   const GURL url_;
   gfx::Size size_;
   bool* did_delete_;
+  bool close_on_escape_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebDialogDelegate);
 };

@@ -23,8 +23,8 @@ bool g_initialized_for_testing = false;
 
 class SoundsManagerImpl : public SoundsManager {
  public:
-  SoundsManagerImpl(std::unique_ptr<service_manager::Connector> connector)
-      : connector_(std::move(connector)) {}
+  SoundsManagerImpl(StreamFactoryBinder stream_factory_binder)
+      : stream_factory_binder_(std::move(stream_factory_binder)) {}
   ~SoundsManagerImpl() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   }
@@ -44,7 +44,7 @@ class SoundsManagerImpl : public SoundsManager {
     std::unique_ptr<AudioStreamHandler> handler;
   };
   std::vector<StreamEntry> handlers_;
-  std::unique_ptr<service_manager::Connector> connector_;
+  StreamFactoryBinder stream_factory_binder_;
 
   DISALLOW_COPY_AND_ASSIGN(SoundsManagerImpl);
 };
@@ -57,7 +57,7 @@ bool SoundsManagerImpl::Initialize(SoundKey key,
   }
 
   std::unique_ptr<AudioStreamHandler> handler(
-      new AudioStreamHandler(connector_->Clone(), data));
+      new AudioStreamHandler(stream_factory_binder_, data));
   if (!handler->IsInitialized()) {
     LOG(WARNING) << "Can't initialize AudioStreamHandler for key=" << key;
     return false;
@@ -105,13 +105,12 @@ SoundsManager::~SoundsManager() {
 }
 
 // static
-void SoundsManager::Create(
-    std::unique_ptr<service_manager::Connector> connector) {
+void SoundsManager::Create(StreamFactoryBinder stream_factory_binder) {
   CHECK(!g_instance || g_initialized_for_testing)
       << "SoundsManager::Create() is called twice";
   if (g_initialized_for_testing)
     return;
-  g_instance = new SoundsManagerImpl(std::move(connector));
+  g_instance = new SoundsManagerImpl(std::move(stream_factory_binder));
 }
 
 // static

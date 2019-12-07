@@ -18,11 +18,13 @@
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
+#include "ui/base/test/ui_controls.h"
 #include "ui/views/controls/webview/web_dialog_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/web_dialogs/test/test_web_dialog_delegate.h"
@@ -91,9 +93,12 @@ class WebDialogBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override;
 
  protected:
+  void SimulateEscapeKey();
+
   TestWebDialogView* view_ = nullptr;
   bool web_dialog_delegate_destroyed_ = false;
   bool web_dialog_view_destroyed_ = false;
+  ui::test::TestWebDialogDelegate* delegate_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebDialogBrowserTest);
@@ -105,12 +110,24 @@ void WebDialogBrowserTest::SetUpOnMainThread() {
   delegate->set_size(kInitialWidth, kInitialHeight);
   delegate->SetDeleteOnClosedAndObserve(&web_dialog_delegate_destroyed_);
 
+  // Store the delegate so that we can update ShouldCloseDialogOnEscape().
+  delegate_ = delegate;
+
   view_ = new TestWebDialogView(browser()->profile(), delegate,
                                 &web_dialog_view_destroyed_);
   gfx::NativeView parent_view =
       browser()->tab_strip_model()->GetActiveWebContents()->GetNativeView();
   views::Widget::CreateWindowWithParent(view_, parent_view);
   view_->GetWidget()->Show();
+}
+
+void WebDialogBrowserTest::SimulateEscapeKey() {
+  ui::KeyEvent escape_event(ui::ET_KEY_PRESSED, ui::VKEY_ESCAPE, ui::EF_NONE);
+  if (view_->GetFocusManager()->OnKeyEvent(escape_event)) {
+    ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+        view_->GetWidget()->GetNativeWindow(), ui::VKEY_ESCAPE, false, false,
+        false, false));
+  }
 }
 
 }  // namespace
@@ -137,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, MAYBE_SizeWindow) {
   // SetContentsBounds. We could pass view_->web_contents(), but it's not
   // relevant for the test.
   view_->SetContentsBounds(nullptr, set_bounds);
-  content::RunMessageLoop();  // TestWebDialogView will quit.
+  base::RunLoop().Run();  // TestWebDialogView will quit.
   actual_bounds = view_->GetWidget()->GetClientAreaBoundsInScreen();
   EXPECT_EQ(set_bounds, actual_bounds);
 
@@ -153,7 +170,7 @@ IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, MAYBE_SizeWindow) {
   set_bounds.set_height(250);
 
   view_->SetContentsBounds(nullptr, set_bounds);
-  content::RunMessageLoop();  // TestWebDialogView will quit.
+  base::RunLoop().Run();  // TestWebDialogView will quit.
   actual_bounds = view_->GetWidget()->GetClientAreaBoundsInScreen();
   EXPECT_EQ(set_bounds, actual_bounds);
 
@@ -172,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, MAYBE_SizeWindow) {
   set_bounds.set_size(min_size);
 
   view_->SetContentsBounds(nullptr, set_bounds);
-  content::RunMessageLoop();  // TestWebDialogView will quit.
+  base::RunLoop().Run();  // TestWebDialogView will quit.
   actual_bounds = view_->GetWidget()->GetClientAreaBoundsInScreen();
   EXPECT_EQ(set_bounds, actual_bounds);
 
@@ -187,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, MAYBE_SizeWindow) {
   // size that was set above so that TestWebDialogView has a change to pick up.
   set_bounds.set_height(250);
   view_->SetContentsBounds(nullptr, set_bounds);
-  content::RunMessageLoop();  // TestWebDialogView will quit.
+  base::RunLoop().Run();  // TestWebDialogView will quit.
   actual_bounds = view_->GetWidget()->GetClientAreaBoundsInScreen();
   EXPECT_EQ(set_bounds, actual_bounds);
 
@@ -196,7 +213,7 @@ IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, MAYBE_SizeWindow) {
   set_bounds.set_height(0);
 
   view_->SetContentsBounds(nullptr, set_bounds);
-  content::RunMessageLoop();  // TestWebDialogView will quit.
+  base::RunLoop().Run();  // TestWebDialogView will quit.
   actual_bounds = view_->GetWidget()->GetClientAreaBoundsInScreen();
   EXPECT_EQ(min_size, actual_bounds.size());
 
@@ -216,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, MAYBE_SizeWindow) {
 
   // The close of the actual widget should happen asynchronously.
   EXPECT_FALSE(web_dialog_view_destroyed_);
-  content::RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(web_dialog_view_destroyed_);
 }
 
@@ -237,9 +254,44 @@ IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, CloseParentWindow) {
   EXPECT_FALSE(web_dialog_delegate_destroyed_);
   EXPECT_FALSE(web_dialog_view_destroyed_);
   browser()->window()->Close();
-  content::RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(web_dialog_delegate_destroyed_);
   EXPECT_TRUE(web_dialog_view_destroyed_);
+}
+
+// Tests the Escape key behavior when ShouldCloseDialogOnEscape() is enabled.
+IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, CloseDialogOnEscapeEnabled) {
+  ui_controls::EnableUIControls();
+
+  // Open a second browser window so we don't trigger shutdown.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(url::kAboutBlankURL), WindowOpenDisposition::NEW_WINDOW,
+      ui_test_utils::BROWSER_TEST_NONE);
+
+  // If ShouldCloseDialogOnEscape() is true, pressing Escape should close the
+  // dialog.
+  delegate_->SetCloseOnEscape(true);
+  SimulateEscapeKey();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(web_dialog_delegate_destroyed_);
+  EXPECT_TRUE(web_dialog_view_destroyed_);
+}
+
+// Tests the Escape key behavior when ShouldCloseDialogOnEscape() is disabled.
+IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, CloseDialogOnEscapeDisabled) {
+  ui_controls::EnableUIControls();
+
+  // Open a second browser window so we don't trigger shutdown.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(url::kAboutBlankURL), WindowOpenDisposition::NEW_WINDOW,
+      ui_test_utils::BROWSER_TEST_NONE);
+
+  // If ShouldCloseDialogOnEscape() is false, pressing Escape does nothing.
+  delegate_->SetCloseOnEscape(false);
+  SimulateEscapeKey();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(web_dialog_delegate_destroyed_);
+  EXPECT_FALSE(web_dialog_view_destroyed_);
 }
 
 // Test that key event is translated to a text input properly.

@@ -21,6 +21,7 @@
 #include "base/task/post_task.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
+#include "build/chromecast_buildflags.h"
 #include "components/network_session_configurator/common/network_features.h"
 #include "components/os_crypt/os_crypt.h"
 #include "mojo/core/embedder/embedder.h"
@@ -61,7 +62,7 @@
 #include "third_party/boringssl/src/include/openssl/cpu.h"
 #endif
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(IS_CHROMECAST)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !BUILDFLAG(IS_CHROMECAST)
 #include "components/os_crypt/key_storage_config_linux.h"
 #endif
 
@@ -615,7 +616,7 @@ void NetworkService::OnCertDBChanged() {
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 void NetworkService::SetCryptConfig(mojom::CryptConfigPtr crypt_config) {
-#if !defined(IS_CHROMECAST)
+#if !BUILDFLAG(IS_CHROMECAST)
   DCHECK(!os_crypt_config_set_);
   auto config = std::make_unique<os_crypt::Config>();
   config->store = crypt_config->store;
@@ -643,11 +644,6 @@ void NetworkService::AddCorbExceptionForPlugin(uint32_t process_id) {
 void NetworkService::RemoveCorbExceptionForPlugin(uint32_t process_id) {
   DCHECK_NE(mojom::kBrowserProcessId, process_id);
   CrossOriginReadBlocking::RemoveExceptionForPlugin(process_id);
-}
-
-void NetworkService::AddExtraMimeTypesForCorb(
-    const std::vector<std::string>& mime_types) {
-  CrossOriginReadBlocking::AddExtraMimeTypesForCorb(mime_types);
 }
 
 void NetworkService::OnMemoryPressure(

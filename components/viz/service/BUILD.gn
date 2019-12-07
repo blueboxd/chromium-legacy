@@ -190,6 +190,7 @@ viz_component("service") {
   allow_circular_includes_from = [ ":gpu_service_dependencies" ]
 
   deps = [
+    "//build:chromecast_buildflags",
     "//cc/base",
     "//cc/paint",
     "//components/crash/core/common:crash_key",
@@ -241,7 +242,6 @@ viz_component("service") {
   }
 
   if (is_chromecast) {
-    defines += [ "IS_CHROMECAST" ]
     deps += [ "//chromecast/media/service/mojom" ]
   }
 

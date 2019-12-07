@@ -177,25 +177,25 @@ class StorageHandler::IndexedDBObserver : IndexedDBContextImpl::Observer {
   IndexedDBObserver(base::WeakPtr<StorageHandler> owner_storage_handler,
                     IndexedDBContextImpl* indexed_db_context)
       : owner_(owner_storage_handler), context_(indexed_db_context) {
-    context_->TaskRunner()->PostTask(
+    TaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&IndexedDBObserver::AddObserverOnIDBThread,
                                   base::Unretained(this)));
   }
 
   ~IndexedDBObserver() override {
-    DCHECK(context_->TaskRunner()->RunsTasksInCurrentSequence());
+    DCHECK(TaskRunner()->RunsTasksInCurrentSequence());
     context_->RemoveObserver(this);
   }
 
   void TrackOriginOnIDBThread(const url::Origin& origin) {
-    DCHECK(context_->TaskRunner()->RunsTasksInCurrentSequence());
+    DCHECK(TaskRunner()->RunsTasksInCurrentSequence());
     if (origins_.find(origin) != origins_.end())
       return;
     origins_.insert(origin);
   }
 
   void UntrackOriginOnIDBThread(const url::Origin& origin) {
-    DCHECK(context_->TaskRunner()->RunsTasksInCurrentSequence());
+    DCHECK(TaskRunner()->RunsTasksInCurrentSequence());
     origins_.erase(origin);
   }
 
@@ -222,12 +222,12 @@ class StorageHandler::IndexedDBObserver : IndexedDBContextImpl::Observer {
   }
 
   base::SequencedTaskRunner* TaskRunner() const {
-    return context_->TaskRunner();
+    return context_->IDBTaskRunner();
   }
 
  private:
   void AddObserverOnIDBThread() {
-    DCHECK(context_->TaskRunner()->RunsTasksInCurrentSequence());
+    DCHECK(TaskRunner()->RunsTasksInCurrentSequence());
     context_->AddObserver(this);
   }
 

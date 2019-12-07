@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/app_service_app_window_crostini_tracker.h"
+#include "chrome/browser/ui/ash/launcher/app_service_app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/app_window_base.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -304,7 +305,7 @@ void AppServiceAppWindowLauncherController::AddToShelf(
       owner()->shelf_model()->GetAppWindowLauncherItemController(shelf_id);
   if (item_controller == nullptr) {
     auto controller =
-        std::make_unique<AppWindowLauncherItemController>(shelf_id);
+        std::make_unique<AppServiceAppWindowLauncherItemController>(shelf_id);
     item_controller = controller.get();
     if (!owner()->GetItem(shelf_id)) {
       owner()->CreateAppLauncherItem(std::move(controller),

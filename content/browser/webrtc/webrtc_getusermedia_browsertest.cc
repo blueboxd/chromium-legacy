@@ -17,7 +17,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/webrtc/webrtc_content_browsertest_base.h"
 #include "content/browser/webrtc/webrtc_internals.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/audio_service.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -28,7 +28,6 @@
 #include "media/audio/fake_audio_input_stream.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/public/mojom/testing_api.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -803,8 +802,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 
   // Crash the audio service process.
   mojo::Remote<audio::mojom::TestingApi> service_testing_api;
-  GetSystemConnector()->Connect(
-      audio::mojom::kServiceName,
+  GetAudioService().BindTestingApi(
       service_testing_api.BindNewPipeAndPassReceiver());
   service_testing_api->Crash();
 

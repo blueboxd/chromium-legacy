@@ -192,6 +192,11 @@ void SpeechSynthesis::SentenceBoundaryEventOccurred(
             sentence_boundary_string);
 }
 
+void SpeechSynthesis::Dispose() {
+  receiver_.reset();
+  mojom_synthesis_.reset();
+}
+
 void SpeechSynthesis::VoicesDidChange() {
   if (GetExecutionContext())
     DispatchEvent(*Event::Create(event_type_names::kVoiceschanged));

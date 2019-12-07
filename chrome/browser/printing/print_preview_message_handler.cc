@@ -247,8 +247,7 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
     auto callback = base::BindOnce(
         &PrintPreviewMessageHandler::OnCompositeOrCompleteDocumentToPdfDone,
         weak_ptr_factory_.GetWeakPtr(),
-        composite_document_using_individual_pages, params.expected_pages_count,
-        params.document_cookie, ids);
+        composite_document_using_individual_pages, params.document_cookie, ids);
     if (composite_document_using_individual_pages) {
       // Page metafile is used to composite into the document at same time.
       // Need to provide particulars of how many pages are required before
@@ -269,7 +268,7 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
     }
   } else {
     NotifyUIPreviewDocumentReady(
-        print_preview_ui, params.expected_pages_count, ids,
+        print_preview_ui, ids,
         base::RefCountedSharedMemoryMapping::CreateFromWholeRegion(
             content.metafile_data_region));
   }
@@ -350,7 +349,6 @@ void PrintPreviewMessageHandler::NotifyUIPreviewPageReady(
 
 void PrintPreviewMessageHandler::NotifyUIPreviewDocumentReady(
     PrintPreviewUI* print_preview_ui,
-    int page_count,
     const PrintHostMsg_PreviewIds& ids,
     scoped_refptr<base::RefCountedMemory> data_bytes) {
   if (!data_bytes || !data_bytes->size())
@@ -360,7 +358,7 @@ void PrintPreviewMessageHandler::NotifyUIPreviewDocumentReady(
   if (PrintPreviewUI::ShouldCancelRequest(ids))
     return;
 
-  print_preview_ui->OnPreviewDataIsAvailable(page_count, std::move(data_bytes),
+  print_preview_ui->OnPreviewDataIsAvailable(std::move(data_bytes),
                                              ids.request_id);
 }
 
@@ -445,7 +443,6 @@ void PrintPreviewMessageHandler::OnNupPdfConvertDone(
 
 void PrintPreviewMessageHandler::OnCompositeOrCompleteDocumentToPdfDone(
     bool composite_document_using_individual_pages,
-    int page_count,
     int document_cookie,
     const PrintHostMsg_PreviewIds& ids,
     mojom::PdfCompositor::Status status,
@@ -467,7 +464,7 @@ void PrintPreviewMessageHandler::OnCompositeOrCompleteDocumentToPdfDone(
   int pages_per_sheet = print_preview_ui->pages_per_sheet();
   if (pages_per_sheet == 1) {
     NotifyUIPreviewDocumentReady(
-        print_preview_ui, page_count, ids,
+        print_preview_ui, ids,
         base::RefCountedSharedMemoryMapping::CreateFromWholeRegion(region));
   } else {
     auto* client = PdfNupConverterClient::FromWebContents(web_contents());
@@ -484,8 +481,7 @@ void PrintPreviewMessageHandler::OnCompositeOrCompleteDocumentToPdfDone(
         mojo::WrapCallbackWithDefaultInvokeIfNotRun(
             base::BindOnce(
                 &PrintPreviewMessageHandler::OnNupPdfDocumentConvertDone,
-                weak_ptr_factory_.GetWeakPtr(),
-                (page_count + pages_per_sheet - 1) / pages_per_sheet, ids),
+                weak_ptr_factory_.GetWeakPtr(), ids),
             mojom::PdfNupConverter::Status::CONVERSION_FAILURE,
             base::ReadOnlySharedMemoryRegion()));
   }
@@ -503,7 +499,6 @@ void PrintPreviewMessageHandler::OnPrepareForDocumentToPdfDone(
 }
 
 void PrintPreviewMessageHandler::OnNupPdfDocumentConvertDone(
-    int page_count,
     const PrintHostMsg_PreviewIds& ids,
     mojom::PdfNupConverter::Status status,
     base::ReadOnlySharedMemoryRegion region) {
@@ -520,7 +515,7 @@ void PrintPreviewMessageHandler::OnNupPdfDocumentConvertDone(
     return;
 
   NotifyUIPreviewDocumentReady(
-      print_preview_ui, page_count, ids,
+      print_preview_ui, ids,
       base::RefCountedSharedMemoryMapping::CreateFromWholeRegion(region));
 }
 

@@ -10,6 +10,8 @@
 
 namespace games {
 
+// Keyed service to be used by user-facing surfaces to retrieve metadata about
+// Web games to be displayed to the user.
 class GamesService : public KeyedService {
  public:
   ~GamesService() override = default;

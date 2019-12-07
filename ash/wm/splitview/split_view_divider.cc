@@ -16,6 +16,7 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider_handler_view.h"
 #include "ash/wm/splitview/split_view_utils.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
@@ -122,6 +123,12 @@ class DividerView : public views::View, public views::ViewTargeterDelegate {
 
   // views::View:
   void Layout() override {
+    // There is no divider in clamshell split view. If we are in clamshell mode,
+    // then we must be transitioning from tablet mode, and the divider will be
+    // destroyed, meaning there is no need to update it.
+    if (!Shell::Get()->tablet_mode_controller()->InTabletMode())
+      return;
+
     divider_view_->SetBoundsRect(GetLocalBounds());
     divider_handler_view_->Refresh(controller_->is_resizing());
   }

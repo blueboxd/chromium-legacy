@@ -84,7 +84,6 @@
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/browser_main.h"
 #include "content/browser/browser_main_loop.h"
-#include "content/browser/browser_plugin/browser_plugin_message_filter.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/code_cache/generated_code_cache.h"
@@ -140,6 +139,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/theme_helper.h"
 #include "content/browser/tracing/background_tracing_manager_impl.h"
+#include "content/browser/url_loader_factory_params_helper.h"
 #include "content/browser/v8_snapshot_files.h"
 #include "content/browser/websockets/websocket_connector_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
@@ -1478,7 +1478,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
               storage_partition_impl_->GetIndexedDBContext(),
               ChromeBlobStorageContext::GetRemoteFor(browser_context)),
           base::OnTaskRunnerDeleter(
-              storage_partition_impl_->GetIndexedDBContext()->TaskRunner())),
+              storage_partition_impl_->GetIndexedDBContext()->IDBTaskRunner())),
       channel_connected_(false),
       sent_render_process_ready_(false),
       push_messaging_manager_(
@@ -1833,10 +1833,6 @@ void RenderProcessHostImpl::ResetChannelProxy() {
 void RenderProcessHostImpl::CreateMessageFilters() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   MediaInternals* media_internals = MediaInternals::GetInstance();
-  // Add BrowserPluginMessageFilter to ensure it gets the first stab at messages
-  // from guests.
-  bp_message_filter_ = new BrowserPluginMessageFilter(GetID());
-  AddFilter(bp_message_filter_.get());
 
   scoped_refptr<RenderMessageFilter> render_message_filter =
       base::MakeRefCounted<RenderMessageFilter>(
@@ -1899,7 +1895,7 @@ void RenderProcessHostImpl::BindIndexedDB(
   // the IDB task runner deleter's task will be run after the next call,
   // guaranteeing that the usage of base::Unretained(indexed_db_factory_.get())
   // here is safe.
-  indexed_db_factory_->context()->TaskRunner()->PostTask(
+  indexed_db_factory_->context()->IDBTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&IndexedDBDispatcherHost::AddReceiver,
                      base::Unretained(indexed_db_factory_.get()), GetID(),
@@ -2259,7 +2255,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   AddUIThreadInterface(
       registry.get(),
-      base::BindRepeating(&P2PSocketDispatcherHost::BindRequest,
+      base::BindRepeating(&P2PSocketDispatcherHost::BindReceiver,
                           base::Unretained(p2p_socket_dispatcher_host_.get())));
 
 #if BUILDFLAG(ENABLE_MDNS)
@@ -2535,120 +2531,17 @@ mojom::Renderer* RenderProcessHostImpl::GetRendererInterface() {
 void RenderProcessHostImpl::CreateURLLoaderFactoryForRendererProcess(
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  base::Optional<url::Origin> request_initiator_site_lock;
-  GURL process_lock =
-      ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(GetID());
-  if (process_lock.is_valid()) {
-    request_initiator_site_lock =
-        SiteInstanceImpl::GetRequestInitiatorSiteLock(process_lock);
-  }
-
-  // Since this function is about to get deprecated (crbug.com/891872), it
-  // should be fine to not add support for network isolation thus sending empty
-  // key.
-  //
-  // We may not be able to allow powerful APIs such as memory measurement APIs
-  // (see https://crbug.com/887967) without removing this call.
-  CreateURLLoaderFactoryInternal(
-      request_initiator_site_lock.value_or(url::Origin()),
-      request_initiator_site_lock,
-      network::mojom::CrossOriginEmbedderPolicy::kNone,
-      nullptr /* preferences */, net::NetworkIsolationKey(),
-      mojo::NullRemote() /* header_client */,
-      base::nullopt /* top_frame_token */, std::move(receiver),
-      false /* is_trusted */, network::mojom::URLLoaderFactoryOverridePtr());
+  CreateURLLoaderFactory(
+      std::move(receiver),
+      URLLoaderFactoryParamsHelper::CreateForRendererProcess(this));
 }
 
 void RenderProcessHostImpl::CreateURLLoaderFactory(
-    const url::Origin& origin,
-    const url::Origin& main_world_origin,
-    network::mojom::CrossOriginEmbedderPolicy embedder_policy,
-    const WebPreferences* preferences,
-    const net::NetworkIsolationKey& network_isolation_key,
-    mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
-        header_client,
-    const base::Optional<base::UnguessableToken>& top_frame_token,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-    network::mojom::URLLoaderFactoryOverridePtr factory_override) {
-  CreateURLLoaderFactoryInternal(
-      origin, main_world_origin, embedder_policy, preferences,
-      network_isolation_key, std::move(header_client), top_frame_token,
-      std::move(receiver), false /* is_trusted */, std::move(factory_override));
-}
-
-void RenderProcessHostImpl::CreateTrustedURLLoaderFactory(
-    const url::Origin& origin,
-    const url::Origin& main_world_origin,
-    network::mojom::CrossOriginEmbedderPolicy embedder_policy,
-    const WebPreferences* preferences,
-    mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
-        header_client,
-    const base::Optional<base::UnguessableToken>& top_frame_token,
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-    network::mojom::URLLoaderFactoryOverridePtr factory_override) {
-  CreateURLLoaderFactoryInternal(
-      origin, main_world_origin, embedder_policy, preferences, base::nullopt,
-      std::move(header_client), top_frame_token, std::move(receiver),
-      true /* is_trusted */, std::move(factory_override));
-}
-
-void RenderProcessHostImpl::CreateURLLoaderFactoryInternal(
-    const url::Origin& origin,
-    const base::Optional<url::Origin>& main_world_origin,
-    network::mojom::CrossOriginEmbedderPolicy embedder_policy,
-    const WebPreferences* preferences,
-    const base::Optional<net::NetworkIsolationKey>& network_isolation_key,
-    mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
-        header_client,
-    const base::Optional<base::UnguessableToken>& top_frame_token,
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-    bool is_trusted,
-    network::mojom::URLLoaderFactoryOverridePtr factory_override) {
+    network::mojom::URLLoaderFactoryParamsPtr params) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // "chrome-guest://..." is never used as a main or isolated world origin.
-  DCHECK(origin.scheme() != kGuestScheme);
-  DCHECK(!main_world_origin.has_value() ||
-         main_world_origin->scheme() != kGuestScheme);
-
-  network::mojom::URLLoaderFactoryParamsPtr params =
-      network::mojom::URLLoaderFactoryParams::New();
-  params->process_id = GetID();
-  params->request_initiator_site_lock = main_world_origin;
-  params->disable_web_security =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableWebSecurity);
-  // If |network_isolation_key| does not have a value, we do not initialize
-  // the URLLoaderFactory with a NetworkIsolationKey.
-  if (network_isolation_key)
-    params->network_isolation_key = network_isolation_key.value();
-
-  params->top_frame_id = top_frame_token;
-  params->is_trusted = is_trusted;
-
-  params->header_client = std::move(header_client);
-  params->cross_origin_embedder_policy = embedder_policy;
-
-  if (params->disable_web_security) {
-    // --disable-web-security also disables Cross-Origin Read Blocking (CORB).
-    params->is_corb_enabled = false;
-  } else if (preferences &&
-             preferences->allow_universal_access_from_file_urls &&
-             main_world_origin.has_value() &&
-             main_world_origin->scheme() == url::kFileScheme) {
-    // allow_universal_access_from_file_urls disables CORB (via
-    // |is_corb_enabled|) and CORS (via |disable_web_security|) for requests
-    // made from a file: |origin|.
-    params->is_corb_enabled = false;
-    params->disable_web_security = true;
-  } else {
-    params->is_corb_enabled = true;
-  }
-  params->factory_override = std::move(factory_override);
-
-  GetContentClient()->browser()->OverrideURLLoaderFactoryParams(this, origin,
-                                                                params.get());
+  DCHECK(params);
+  DCHECK_EQ(GetID(), static_cast<int>(params->process_id));
 
   storage_partition_impl_->GetNetworkContext()->CreateURLLoaderFactory(
       std::move(receiver), std::move(params));

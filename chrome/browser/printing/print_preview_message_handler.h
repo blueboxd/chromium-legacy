@@ -98,7 +98,6 @@ class PrintPreviewMessageHandler
       scoped_refptr<base::RefCountedMemory> data_bytes);
   void NotifyUIPreviewDocumentReady(
       PrintPreviewUI* print_preview_ui,
-      int page_count,
       const PrintHostMsg_PreviewIds& ids,
       scoped_refptr<base::RefCountedMemory> data_bytes);
 
@@ -110,7 +109,6 @@ class PrintPreviewMessageHandler
                               base::ReadOnlySharedMemoryRegion region);
   void OnCompositeOrCompleteDocumentToPdfDone(
       bool composite_document_using_individual_pages,
-      int page_count,
       int document_cookie,
       const PrintHostMsg_PreviewIds& ids,
       mojom::PdfCompositor::Status status,
@@ -122,8 +120,7 @@ class PrintPreviewMessageHandler
                            const PrintHostMsg_PreviewIds& ids,
                            mojom::PdfNupConverter::Status status,
                            base::ReadOnlySharedMemoryRegion region);
-  void OnNupPdfDocumentConvertDone(int page_count,
-                                   const PrintHostMsg_PreviewIds& ids,
+  void OnNupPdfDocumentConvertDone(const PrintHostMsg_PreviewIds& ids,
                                    mojom::PdfNupConverter::Status status,
                                    base::ReadOnlySharedMemoryRegion region);
 

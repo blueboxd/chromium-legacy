@@ -37,6 +37,7 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/events/event_constants.h"
 #include "ui/message_center/message_center.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
@@ -930,6 +931,72 @@ TEST_F(ScreenOrientationControllerTest, GetCurrentAppRequestedOrientationLock) {
   EXPECT_EQ(
       OrientationLockType::kAny,
       screen_orientation_controller->GetCurrentAppRequestedOrientationLock());
+}
+
+TEST_F(ScreenOrientationControllerTest,
+       MoveWindowWithOrientationLockBetweenDisplays) {
+  UpdateDisplay("400x300,500x400");
+  // Enter tablet mode and expect nothing will change until we activate win0.
+  TabletModeControllerTestApi().DetachAllMice();
+  EnableTabletMode(true);
+  // Run a loop for mirror mode to kick in which is triggered asynchronously.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(display_manager()->IsInSoftwareMirrorMode());
+  // Now switch mirror mode off so that we can have two displays in tablet mode.
+  display_manager()->SetMirrorMode(display::MirrorMode::kOff, base::nullopt);
+  base::RunLoop().RunUntilIdle();
+  auto roots = Shell::GetAllRootWindows();
+  ASSERT_EQ(2u, roots.size());
+
+  // Create a window that locks the orientation to portriat-primary.
+  auto win0 = CreateAppWindow(gfx::Rect{100, 200});
+  EXPECT_EQ(win0->GetRootWindow(), roots[0]);
+  EXPECT_EQ(win0.get(), window_util::GetActiveWindow());
+  auto* screen_orientation_controller =
+      Shell::Get()->screen_orientation_controller();
+  EXPECT_EQ(OrientationLockType::kLandscape,
+            screen_orientation_controller->natural_orientation());
+  screen_orientation_controller->LockOrientationForWindow(
+      win0.get(), OrientationLockType::kPortraitPrimary);
+
+  // Even with an accelerometer update that would trigger a 0 degree rotation,
+  // the rotation of the internal display is locked to 270.
+  TriggerLidUpdate(gfx::Vector3dF(0.0f, kMeanGravityFloat, 0.0f));
+  EXPECT_EQ(
+      OrientationLockType::kPortraitPrimary,
+      screen_orientation_controller->GetCurrentAppRequestedOrientationLock());
+  EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(OrientationLockType::kAny, UserLockedOrientation());
+
+  // Triggers the move-active-window-between-displays shortcut.
+  auto* event_generator = GetEventGenerator();
+  auto trigger_shortcut = [event_generator]() {
+    constexpr int kFlags = ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN;
+    event_generator->PressKey(ui::VKEY_M, kFlags);
+    event_generator->ReleaseKey(ui::VKEY_M, kFlags);
+  };
+
+  // Move the window to the external display, and expect that the internal
+  // display's orientation is no longer locked.
+  trigger_shortcut();
+  TriggerLidUpdate(gfx::Vector3dF(0.0f, kMeanGravityFloat, 0.0f));
+  EXPECT_EQ(win0->GetRootWindow(), roots[1]);
+  EXPECT_EQ(
+      OrientationLockType::kAny,
+      screen_orientation_controller->GetCurrentAppRequestedOrientationLock());
+  EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(OrientationLockType::kAny, UserLockedOrientation());
+
+  // Move the window back to the internal display, and expect that its
+  // orientation is locked again by that window.
+  trigger_shortcut();
+  TriggerLidUpdate(gfx::Vector3dF(0.0f, kMeanGravityFloat, 0.0f));
+  EXPECT_EQ(win0->GetRootWindow(), roots[0]);
+  EXPECT_EQ(
+      OrientationLockType::kPortraitPrimary,
+      screen_orientation_controller->GetCurrentAppRequestedOrientationLock());
+  EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(OrientationLockType::kAny, UserLockedOrientation());
 }
 
 }  // namespace ash

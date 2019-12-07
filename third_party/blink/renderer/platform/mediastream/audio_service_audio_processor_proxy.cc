@@ -12,7 +12,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/timer/timer.h"
@@ -20,6 +19,7 @@
 #include "third_party/blink/renderer/platform/mediastream/aec_dump_agent_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -119,16 +119,16 @@ void AudioServiceAudioProcessorProxy::RescheduleStatsUpdateTimer(
   // Unretained is safe since |this| owns |stats_update_timer_|.
   stats_update_timer_.Start(
       FROM_HERE, new_interval,
-      base::BindRepeating(&AudioServiceAudioProcessorProxy::RequestStats,
-                          base::Unretained(this)));
+      WTF::BindRepeating(&AudioServiceAudioProcessorProxy::RequestStats,
+                         WTF::Unretained(this)));
 }
 
 void AudioServiceAudioProcessorProxy::RequestStats() {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
   if (processor_controls_) {
     processor_controls_->GetStats(
-        base::BindOnce(&AudioServiceAudioProcessorProxy::UpdateStats,
-                       weak_ptr_factory_.GetWeakPtr()));
+        WTF::Bind(&AudioServiceAudioProcessorProxy::UpdateStats,
+                  weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

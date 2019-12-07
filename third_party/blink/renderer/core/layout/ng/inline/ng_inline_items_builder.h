@@ -160,9 +160,11 @@ class NGInlineItemsBuilderTemplate {
 
   // Keep track of inline boxes to compute ShouldCreateBoxFragment.
   struct BoxInfo {
+    DISALLOW_NEW();
+
     unsigned item_index;
     bool should_create_box_fragment;
-    const ComputedStyle& style;
+    bool may_have_margin_;
     NGLineHeightMetrics text_metrics;
 
     BoxInfo(unsigned item_index, const NGInlineItem& item);

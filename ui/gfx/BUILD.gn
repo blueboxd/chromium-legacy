@@ -196,8 +196,6 @@ jumbo_component("gfx") {
       "font_render_params_win.cc",
       "path_win.cc",
       "path_win.h",
-      "platform_font_win.cc",
-      "platform_font_win.h",
       "system_fonts_win.cc",
       "system_fonts_win.h",
       "win/crash_id_helper.cc",
@@ -581,6 +579,7 @@ jumbo_source_set("memory_buffer_sources") {
     ":gfx_switches",
     ":native_widget_types",
     "//base",
+    "//build:chromecast_buildflags",
     "//ui/gfx/geometry",
   ]
 
@@ -787,10 +786,7 @@ test("gfx_unittests") {
   }
 
   if (is_win) {
-    sources += [
-      "platform_font_win_unittest.cc",
-      "system_fonts_win_unittest.cc",
-    ]
+    sources += [ "system_fonts_win_unittest.cc" ]
   }
 
   if (is_linux || is_android || is_fuchsia || is_win) {

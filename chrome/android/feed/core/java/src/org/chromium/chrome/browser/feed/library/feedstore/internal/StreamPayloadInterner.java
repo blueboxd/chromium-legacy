@@ -47,7 +47,7 @@ public class StreamPayloadInterner extends ProtoStringInternerBase<StreamPayload
         return input;
     }
 
-    private StreamFeature./*@Nullable*/ Builder internStreamFeature(StreamFeature input) {
+    private StreamFeature.Builder internStreamFeature(StreamFeature input) {
         StreamFeature.Builder builder = null;
         builder = internSingleStringField(
                 input, builder, StreamFeature::getContentId, StreamFeature.Builder::setContentId);
@@ -56,15 +56,14 @@ public class StreamPayloadInterner extends ProtoStringInternerBase<StreamPayload
         return builder;
     }
 
-    private StreamSharedState./*@Nullable*/ Builder internStreamSharedState(
-            StreamSharedState input) {
+    private StreamSharedState.Builder internStreamSharedState(StreamSharedState input) {
         StreamSharedState.Builder builder = null;
         builder = internSingleStringField(input, builder, StreamSharedState::getContentId,
                 StreamSharedState.Builder::setContentId);
         return builder;
     }
 
-    private StreamToken./*@Nullable*/ Builder internStreamToken(StreamToken input) {
+    private StreamToken.Builder internStreamToken(StreamToken input) {
         StreamToken.Builder builder = null;
         builder = internSingleStringField(
                 input, builder, StreamToken::getContentId, StreamToken.Builder::setContentId);

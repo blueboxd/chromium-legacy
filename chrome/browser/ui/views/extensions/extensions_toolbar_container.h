@@ -11,6 +11,7 @@
 
 #include "base/optional.h"
 #include "chrome/browser/ui/extensions/extensions_container.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_icon_container_view.h"
@@ -30,6 +31,7 @@ class ToolbarActionsBarBubbleViews;
 // up after the experiment.
 class ExtensionsToolbarContainer : public ToolbarIconContainerView,
                                    public ExtensionsContainer,
+                                   public TabStripModelObserver,
                                    public ToolbarActionsModel::Observer,
                                    public ToolbarActionView::Delegate,
                                    public views::WidgetObserver {
@@ -128,6 +130,12 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   // Sets a pinned extension button's image to be shown/hidden.
   void SetExtensionIconVisibility(ToolbarActionsModel::ActionId id,
                                   bool visible);
+
+  // TabStripModelObserver:
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
 
   // ToolbarActionsModel::Observer:
   void OnToolbarActionAdded(const ToolbarActionsModel::ActionId& action_id,

@@ -221,6 +221,8 @@ _CONFIG = [
             # cc painting types.
             'cc::PaintCanvas',
             'cc::PaintFlags',
+            'cc::PaintImage',
+            'cc::PaintImageBuilder',
             'cc::PaintShader',
             'cc::PaintWorkletInput',
             'cc::NodeId',
@@ -635,6 +637,14 @@ _CONFIG = [
     },
     {
         'paths': [
+            'third_party/blink/renderer/modules/webcodecs/',
+        ],
+        'allowed': [
+            'media::.+',
+        ]
+    },
+    {
+        'paths': [
             'third_party/blink/renderer/modules/encryptedmedia/',
             'third_party/blink/renderer/modules/media/',
             'third_party/blink/renderer/modules/media_capabilities/',
@@ -934,6 +944,12 @@ _CONFIG = [
     {
         'paths': ['third_party/blink/renderer/modules/webaudio/audio_worklet_thread.cc'],
         'allowed': ['base::ThreadPriority'],
+    },
+    {
+        'paths': ['third_party/blink/renderer/core/dom/document.cc'],
+        'allowed': [
+            'net::registry_controlled_domains::.+',
+        ],
     },
 ]
 

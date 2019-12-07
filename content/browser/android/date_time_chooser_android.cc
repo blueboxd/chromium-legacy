@@ -45,8 +45,7 @@ namespace content {
 
 // DateTimeChooserAndroid implementation
 DateTimeChooserAndroid::DateTimeChooserAndroid(WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      date_time_chooser_receiver_(this) {}
+    : web_contents_(web_contents), date_time_chooser_receiver_(this) {}
 
 DateTimeChooserAndroid::~DateTimeChooserAndroid() {
 }
@@ -86,7 +85,7 @@ void DateTimeChooserAndroid::OpenDateTimeDialog(
     }
   }
 
-  gfx::NativeWindow native_window = web_contents()->GetTopLevelNativeWindow();
+  gfx::NativeWindow native_window = web_contents_->GetTopLevelNativeWindow();
 
   if (native_window && !(native_window->GetJavaObject()).is_null()) {
     j_date_time_chooser_.Reset(

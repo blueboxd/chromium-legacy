@@ -21,6 +21,10 @@ class ShellSurfaceWrapper {
  public:
   virtual ~ShellSurfaceWrapper() {}
 
+  // Initializes the ShellSurface. Some protocols may require to create shell
+  // surface without toplevel role and assign a popup role to it later.
+  virtual bool Initialize(bool with_toplevel) = 0;
+
   // Sets a native window to maximized state.
   virtual void SetMaximized() = 0;
 

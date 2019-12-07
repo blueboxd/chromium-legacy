@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/chromecast_buildflags.h"
 #include "cc/base/switches.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
@@ -127,7 +128,7 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
           renderer_settings);
     }
     if (!output_surface) {
-#if defined(OS_CHROMEOS) || defined(IS_CHROMECAST)
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_CHROMECAST)
       // GPU compositing is expected to always work on Chrome OS so we should
       // never encounter fatal context error. This could be an unrecoverable
       // hardware error or a bug.
@@ -165,7 +166,7 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
 #endif
 
       if (IsFatalOrSurfaceFailure(context_result)) {
-#if defined(OS_CHROMEOS) || defined(IS_CHROMECAST)
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_CHROMECAST)
         // GL compositing is expected to always work on Chrome OS so we should
         // never encounter fatal context error. This could be an unrecoverable
         // hardware error or a bug.

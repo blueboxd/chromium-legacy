@@ -72,16 +72,16 @@ public final class ProcessScopeBuilder {
     private final ApplicationInfo mApplicationInfo;
 
     // Optional fields - if they are not provided, we will use default implementations.
-    /*@MonotonicNonNull*/ private ProtoExtensionProvider mProtoExtensionProvider;
-    /*@MonotonicNonNull*/ private Clock mClock;
+    private ProtoExtensionProvider mProtoExtensionProvider;
+    private Clock mClock;
 
     // Either contentStorage or rawContentStorage must be provided.
-    /*@MonotonicNonNull*/ ContentStorageDirect mContentStorage;
-    /*@MonotonicNonNull*/ private ContentStorage mRawContentStorage;
+    ContentStorageDirect mContentStorage;
+    private ContentStorage mRawContentStorage;
 
     // Either journalStorage or rawJournalStorage must be provided.
-    /*@MonotonicNonNull*/ JournalStorageDirect mJournalStorage;
-    /*@MonotonicNonNull*/ private JournalStorage mRawJournalStorage;
+    JournalStorageDirect mJournalStorage;
+    private JournalStorage mRawJournalStorage;
 
     /** The APIs are all required to construct the scope. */
     public ProcessScopeBuilder(Configuration configuration, Executor sequencedExecutor,

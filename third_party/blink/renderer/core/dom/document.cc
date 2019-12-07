@@ -41,6 +41,7 @@
 #include "components/performance_manager/public/mojom/coordination_unit.mojom-blink.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -882,19 +883,9 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
     ParsedFeaturePolicy container_policy;
 
     if (frame && frame->Owner()) {
-      // TODO(chenleihu): Due to the data replication mechanism in
-      // multi-process site-per-process environment, the container_policy
-      // value in remote frame owner gets lazily updated only when the next
-      // navigation is initiated on the remote frame. We need a more robust way
-      // to enforce the validity of container_policy value.
-      // https://crbug.com/972089
-      if (frame->Owner()->IsRemote()) {
-        container_policy = frame->Owner()->GetFramePolicy().container_policy;
-      } else {
         container_policy = initializer.GetFramePolicy()
                                .value_or(FramePolicy())
                                .container_policy;
-      }
     }
 
     // TODO(icelland): This is problematic querying sandbox flags before
@@ -7303,15 +7294,11 @@ void Document::AddConsoleMessageImpl(ConsoleMessage* console_message,
 }
 
 void Document::TasksWerePaused() {
-  GetScriptRunner()->Suspend();
-
   if (scripted_animation_controller_)
     scripted_animation_controller_->Pause();
 }
 
 void Document::TasksWereUnpaused() {
-  GetScriptRunner()->Resume();
-
   if (scripted_animation_controller_)
     scripted_animation_controller_->Unpause();
 }
@@ -8676,6 +8663,18 @@ bool Document::InForcedColorsMode() const {
          Platform::Current()->ThemeEngine() &&
          Platform::Current()->ThemeEngine()->GetForcedColors() !=
              ForcedColors::kNone;
+}
+
+bool Document::IsCrossSiteSubframe() const {
+  // It'd be nice to avoid the url::Origin temporaries, but that would require
+  // exposing the net internal helper.
+  // TODO: If the helper gets exposed, we could do this without any new
+  // allocations using StringUTF8Adaptor.
+  return TopFrameOrigin() &&
+         !net::registry_controlled_domains::SameDomainOrHost(
+             TopFrameOrigin()->ToUrlOrigin(),
+             GetSecurityOrigin()->ToUrlOrigin(),
+             net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 }
 
 void Document::CountUse(mojom::WebFeature feature) const {

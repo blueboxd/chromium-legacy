@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/vr/sounds_manager_audio_delegate.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/audio_service.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
 
 namespace vr {
@@ -30,7 +30,7 @@ bool SoundsManagerAudioDelegate::RegisterSound(
   DCHECK(sounds_.find(id) == sounds_.end());
 
   if (sounds_.empty())
-    audio::SoundsManager::Create(content::GetSystemConnector()->Clone());
+    audio::SoundsManager::Create(content::GetAudioServiceStreamFactoryBinder());
 
   sounds_[id] = std::move(data);
   return audio::SoundsManager::Get()->Initialize(id, *sounds_[id]);

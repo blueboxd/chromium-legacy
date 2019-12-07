@@ -17,7 +17,6 @@
 #include "services/audio/public/cpp/device_factory.h"
 #include "services/audio/public/cpp/fake_stream_factory.h"
 #include "services/audio/public/mojom/audio_processing.mojom.h"
-#include "services/audio/public/mojom/constants.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -142,4 +142,8 @@ void AddSupervisionHandler::OnAccessTokenFetchComplete(
   }
 }
 
+void AddSupervisionHandler::SetCloseOnEscape(bool enabled) {
+  delegate_->SetCloseOnEscape(enabled);
+}
+
 }  // namespace chromeos

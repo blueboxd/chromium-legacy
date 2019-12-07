@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.feed.library.piet;
 import android.view.View;
 import android.widget.LinearLayout;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.components.feed.core.proto.ui.piet.PietAndroidSupport.ShardingControl;
 import org.chromium.components.feed.core.proto.ui.piet.PietProto.Frame;
 import org.chromium.components.feed.core.proto.ui.piet.PietProto.PietSharedState;
@@ -26,8 +28,8 @@ public interface FrameAdapter {
      * the frame to be rendered. When sharding is used, a frame is one or more LinearLayout
      * containing a subset of the full set of slices defined for the frame.
      */
-    void bindModel(Frame frame, int frameWidthPx,
-            /*@Nullable*/ ShardingControl shardingControl, List<PietSharedState> pietSharedStates);
+    void bindModel(Frame frame, int frameWidthPx, @Nullable ShardingControl shardingControl,
+            List<PietSharedState> pietSharedStates);
 
     void unbindModel();
 

@@ -8,7 +8,6 @@
 #include <functional>
 #include <utility>
 
-#include "ash/display/screen_orientation_controller.h"
 #include "ash/metrics/histogram_macros.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/fps_counter.h"
@@ -249,26 +248,26 @@ gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
   if (!divider_changed)
     return bounds;
 
-  const bool landscape = IsCurrentScreenOrientationLandscape();
+  const bool horizontal = SplitViewController::IsLayoutHorizontal();
   const int min_length =
-      (landscape ? work_area.width() : work_area.height()) / 3;
-  const int current_length = landscape ? bounds.width() : bounds.height();
+      (horizontal ? work_area.width() : work_area.height()) / 3;
+  const int current_length = horizontal ? bounds.width() : bounds.height();
 
   if (current_length > min_length)
     return bounds;
 
   // Clamp bounds' length to the minimum length.
-  if (landscape)
+  if (horizontal)
     bounds.set_width(min_length);
   else
     bounds.set_height(min_length);
 
-  if (IsPhysicalLeftOrTop(opposite_position)) {
+  if (SplitViewController::IsPhysicalLeftOrTop(opposite_position)) {
     // If we are shifting to the left or top we need to update the origin as
     // well.
     const int offset = min_length - current_length;
-    bounds.Offset(landscape ? gfx::Vector2d(-offset, 0)
-                            : gfx::Vector2d(0, -offset));
+    bounds.Offset(horizontal ? gfx::Vector2d(-offset, 0)
+                             : gfx::Vector2d(0, -offset));
   }
 
   return bounds;
@@ -1924,12 +1923,11 @@ gfx::Rect OverviewGrid::GetDesksWidgetBounds() const {
   desks_widget_root_bounds.set_height(DesksBarView::GetBarHeightForWidth(
       desks_bar_view_, desks_widget_root_bounds.width()));
   // Shift the widget down to make room for the splitview indicator guidance
-  // when it's shown at the top of the screen when in portrait mode and no other
-  // windows are snapped.
+  // when it's shown at the top of the screen and no other windows are snapped.
   if (split_view_drag_indicators_ &&
       split_view_drag_indicators_->current_window_dragging_state() ==
           SplitViewDragIndicators::WindowDraggingState::kFromOverview &&
-      !IsCurrentScreenOrientationLandscape() &&
+      !SplitViewController::IsLayoutHorizontal() &&
       !SplitViewController::Get(root_window_)->InSplitViewMode()) {
     desks_widget_root_bounds.Offset(
         0, bounds_.height() * kHighlightScreenPrimaryAxisRatio +

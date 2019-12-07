@@ -21,22 +21,6 @@ policy           = policy_anything
 unique_subject   = no
 copy_extensions  = copy
 
-[leaf_cert_san_ip]
-# Extensions to add when signing a request for an leaf cert
-basicConstraints       = critical, CA:false
-subjectKeyIdentifier   = hash
-authorityKeyIdentifier = keyid:always
-extendedKeyUsage       = serverAuth, clientAuth
-subjectAltName         = IP:${ENV::CN}
-
-[leaf_cert_san_dns]
-# Extensions to add when signing a request for an leaf cert
-basicConstraints       = critical, CA:false
-subjectKeyIdentifier   = hash
-authorityKeyIdentifier = keyid:always
-extendedKeyUsage       = serverAuth, clientAuth
-subjectAltName         = DNS:${ENV::CN}
-
 [leaf_cert_without_san]
 # Extensions to add when signing a request for an leaf cert
 basicConstraints       = critical, CA:false

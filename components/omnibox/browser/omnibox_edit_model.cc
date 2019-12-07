@@ -1054,8 +1054,7 @@ void OmniboxEditModel::ClearKeyword() {
   }
 }
 
-void OmniboxEditModel::OnSetFocus(bool control_down,
-                                  bool suppress_on_focus_suggestions) {
+void OmniboxEditModel::OnSetFocus(bool control_down) {
   last_omnibox_focus_ = base::TimeTicks::Now();
   user_input_since_focus_ = false;
 
@@ -1068,9 +1067,6 @@ void OmniboxEditModel::OnSetFocus(bool control_down,
   // trigger ctrl-enter behavior unless it is released and re-pressed. For
   // example, if the user presses ctrl-l to focus the omnibox.
   control_key_state_ = control_down ? DOWN_AND_CONSUMED : UP;
-
-  if (!suppress_on_focus_suggestions)
-    ShowOnFocusSuggestionsIfAutocompleteIdle();
 
   if (user_input_in_progress_ || !in_revert_)
     client_->OnInputStateChanged();

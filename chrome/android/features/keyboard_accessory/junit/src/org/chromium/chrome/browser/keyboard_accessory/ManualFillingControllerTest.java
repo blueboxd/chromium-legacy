@@ -202,7 +202,7 @@ public class ManualFillingControllerTest {
         void providePasswordSheet(String passwordString) {
             AccessorySheetData sheetData =
                     new AccessorySheetData(AccessoryTabType.PASSWORDS, "Passwords", "");
-            UserInfo userInfo = new UserInfo("", null);
+            UserInfo userInfo = new UserInfo("", false);
             userInfo.addField(
                     new UserInfoField("(No username)", "No username", /*id=*/"", false, null));
             userInfo.addField(new UserInfoField(passwordString, "Password", /*id=*/"", true, null));

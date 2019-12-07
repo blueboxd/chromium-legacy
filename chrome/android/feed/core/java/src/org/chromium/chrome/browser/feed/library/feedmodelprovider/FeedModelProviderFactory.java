@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.feedmodelprovider;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
 import org.chromium.chrome.browser.feed.library.api.internal.common.ThreadUtils;
@@ -53,14 +55,13 @@ public final class FeedModelProviderFactory implements ModelProviderFactory {
 
     @Override
     public ModelProvider createNew(
-            /*@Nullable*/ ViewDepthProvider viewDepthProvider, UiContext uiContext) {
+            @Nullable ViewDepthProvider viewDepthProvider, UiContext uiContext) {
         return createNew(viewDepthProvider, null, uiContext);
     }
 
     @Override
-    public ModelProvider createNew(
-            /*@Nullable*/ ViewDepthProvider viewDepthProvider,
-            /*@Nullable*/ Predicate<StreamStructure> filterPredicate, UiContext uiContext) {
+    public ModelProvider createNew(@Nullable ViewDepthProvider viewDepthProvider,
+            @Nullable Predicate<StreamStructure> filterPredicate, UiContext uiContext) {
         FeedModelProvider modelProvider =
                 new FeedModelProvider(mFeedSessionManager, mThreadUtils, mTimingUtils, mTaskQueue,
                         mMainThreadRunner, filterPredicate, mConfig, mBasicLoggingApi);

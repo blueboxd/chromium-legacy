@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.feed.library.sharedstream.piet;
 import android.content.Context;
 import android.view.View;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 import org.chromium.chrome.browser.feed.library.piet.host.CustomElementProvider;
 import org.chromium.components.feed.core.proto.ui.piet.ElementsProto.CustomElementData;
@@ -19,10 +21,11 @@ public class PietCustomElementProvider implements CustomElementProvider {
     private static final String TAG = "PietCustomElementPro";
 
     private final Context mContext;
-    /*@Nullable*/ private final CustomElementProvider mHostCustomElementProvider;
+    @Nullable
+    private final CustomElementProvider mHostCustomElementProvider;
 
     public PietCustomElementProvider(
-            Context context, /*@Nullable*/ CustomElementProvider hostCustomElementProvider) {
+            Context context, @Nullable CustomElementProvider hostCustomElementProvider) {
         this.mContext = context;
         this.mHostCustomElementProvider = hostCustomElementProvider;
     }

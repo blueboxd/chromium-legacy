@@ -158,14 +158,14 @@ try openssl rsautl \
 CN=root \
   try root_cert root
 
-CA_ID=root CN=l1_leaf \
-  try issue_cert l1_leaf leaf_cert_san_dns as_der
+CA_ID=root CN=l1_leaf SAN="DNS:${CN}"\
+  try issue_cert l1_leaf leaf_cert_san as_der
 
 CA_ID=root CN=l1_interm \
   try issue_cert l1_interm ca_cert as_der
 
-CA_ID=l1_interm CN=l2_leaf \
-  try issue_cert l2_leaf leaf_cert_san_dns as_der
+CA_ID=l1_interm CN=l2_leaf SAN="DNS:${CN}"\
+  try issue_cert l2_leaf leaf_cert_san as_der
 
 
 try rm -rf out

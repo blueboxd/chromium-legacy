@@ -153,7 +153,11 @@ class MemoryTrackerStub : public gpu::MemoryTracker {
   ~MemoryTrackerStub() override { DCHECK(!size_); }
 
   // MemoryTracker implementation:
-  void TrackMemoryAllocatedChange(uint64_t delta) override { size_ += delta; }
+  void TrackMemoryAllocatedChange(int64_t delta) override {
+    DCHECK(delta >= 0 || size_ >= static_cast<uint64_t>(-delta));
+    size_ += delta;
+  }
+
   uint64_t GetSize() const override { return size_; }
   uint64_t ClientTracingId() const override { return client_tracing_id_; }
   int ClientId() const override {

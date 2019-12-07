@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.common.intern;
 
+import androidx.annotation.Nullable;
+
 import java.lang.ref.WeakReference;
 import java.util.WeakHashMap;
 
@@ -26,7 +28,7 @@ public class WeakPoolInterner<T> extends PoolInternerBase<T> {
         private final WeakHashMap<T, WeakReference<T>> mPool = new WeakHashMap<>();
 
         @Override
-        /*@Nullable*/
+        @Nullable
         public T get(T input) {
             WeakReference<T> weakRef = mPool.get(input);
             return weakRef != null ? weakRef.get() : null;

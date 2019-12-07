@@ -18,6 +18,4 @@ cast_source_set("gpu") {
     "//content/public/child",
     "//content/public/gpu",
   ]
-
-  defines = [ "IS_CHROMECAST" ]
 }

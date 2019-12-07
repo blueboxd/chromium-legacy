@@ -10,13 +10,11 @@
 #include "build/build_config.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/media_session_service.h"
 #include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/cpp/features.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
-#include "services/media_session/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
 
@@ -183,8 +181,8 @@ void AudioFocusDelegateDefault::EnsureServiceConnection() {
   audio_focus_.reset();
 
   // Connect to the Media Session service and bind |audio_focus_| to it.
-  GetSystemConnector()->Connect(media_session::mojom::kServiceName,
-                                audio_focus_.BindNewPipeAndPassReceiver());
+  GetMediaSessionService().BindAudioFocusManager(
+      audio_focus_.BindNewPipeAndPassReceiver());
 
   // We associate all media sessions with the browser context so we can filter
   // by browser context in the UI.

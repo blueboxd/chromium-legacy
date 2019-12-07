@@ -381,14 +381,6 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
                                         !kIncludeVersion, !kFin, data);
   }
 
-  std::unique_ptr<quic::QuicReceivedPacket> ConstructMultipleDataFramesPacket(
-      uint64_t packet_number,
-      const std::vector<std::string> data_writes) {
-    return client_maker_.MakeMultipleDataFramesPacket(
-        packet_number, client_data_stream_id1_, !kIncludeVersion, !kFin,
-        data_writes);
-  }
-
   std::unique_ptr<quic::QuicReceivedPacket> ConstructAckAndDataPacket(
       uint64_t packet_number,
       uint64_t largest_received,
@@ -398,18 +390,6 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
     return client_maker_.MakeAckAndDataPacket(
         packet_number, !kIncludeVersion, client_data_stream_id1_,
         largest_received, smallest_received, least_unacked, !kFin, data);
-  }
-
-  std::unique_ptr<quic::QuicReceivedPacket>
-  ConstructAckAndMultipleDataFramesPacket(
-      uint64_t packet_number,
-      uint64_t largest_received,
-      uint64_t smallest_received,
-      uint64_t least_unacked,
-      const std::vector<std::string> data_writes) {
-    return client_maker_.MakeAckAndMultipleDataFramesPacket(
-        packet_number, !kIncludeVersion, client_data_stream_id1_,
-        largest_received, smallest_received, least_unacked, !kFin, data_writes);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructAckPacket(

@@ -268,7 +268,8 @@ AutofillField* FindFirstFieldWithValue(const FormStructure& form_structure,
 }
 
 // Heuristically identifies all possible credit card verification fields.
-AutofillField* HeuristicallyFindCVCField(const FormStructure& form_structure) {
+AutofillField* HeuristicallyFindCVCFieldForUpload(
+    const FormStructure& form_structure) {
   // Stores a pointer to the explicitly found expiration year.
   bool found_explicit_expiration_year_field = false;
 
@@ -333,7 +334,7 @@ AutofillField* HeuristicallyFindCVCField(const FormStructure& form_structure) {
 // Iff the CVC of the credit card is known, find the first field with this
 // value (also set |properties_mask| to |KNOWN_VALUE|). Otherwise, heuristically
 // search for the CVC field if any.
-AutofillField* GetBestPossibleCVCField(
+AutofillField* GetBestPossibleCVCFieldForUpload(
     const FormStructure& form_structure,
     base::string16 last_unlocked_credit_card_cvc) {
   if (!last_unlocked_credit_card_cvc.empty()) {
@@ -344,7 +345,7 @@ AutofillField* GetBestPossibleCVCField(
     return result;
   }
 
-  return HeuristicallyFindCVCField(form_structure);
+  return HeuristicallyFindCVCFieldForUpload(form_structure);
 }
 
 // Some autofill types are detected based on values and not based on form
@@ -2034,8 +2035,8 @@ void AutofillManager::DeterminePossibleFieldTypesForUpload(
   }
 
   // As CVCs are not stored, run special heuristics to detect CVC-like values.
-  AutofillField* cvc_field =
-      GetBestPossibleCVCField(*submitted_form, last_unlocked_credit_card_cvc);
+  AutofillField* cvc_field = GetBestPossibleCVCFieldForUpload(
+      *submitted_form, last_unlocked_credit_card_cvc);
   if (cvc_field) {
     ServerFieldTypeSet possible_types = cvc_field->possible_types();
     possible_types.erase(UNKNOWN_TYPE);
@@ -2359,11 +2360,25 @@ void AutofillManager::GetAvailableSuggestions(
                                          *context->focused_field);
   }
 
+  // Returns early if no suggestion is available or suggestions are not for
+  // cards.
+  if (suggestions->empty() || !context->is_filling_credit_card)
+    return;
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // This section adds the "Use a virtual card number" option in the autofill
+  // dropdown menu, if applicable.
+  if (ShouldShowVirtualCardOption(context->form_structure)) {
+    suggestions->emplace_back(l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_CLOUD_TOKEN_DROPDOWN_OPTION_LABEL));
+    suggestions->back().frontend_id = POPUP_ITEM_ID_USE_VIRTUAL_CARD;
+  }
+#endif
+
   // Don't provide credit card suggestions for non-secure pages, but do provide
   // them for secure pages with passive mixed content (see implementation of
   // IsContextSecure).
-  if (!suggestions->empty() && context->is_filling_credit_card &&
-      !context->is_context_secure) {
+  if (!context->is_context_secure) {
     // Replace the suggestion content with a warning message explaining why
     // Autofill is disabled for a website. The string is different if the
     // credit card autofill HTTP warning experiment is enabled.
@@ -2374,6 +2389,46 @@ void AutofillManager::GetAvailableSuggestions(
     suggestions->assign(1, warning_suggestion);
   }
 }
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+// TODO(crbug.com/1020740): Add metrics logging.
+bool AutofillManager::ShouldShowVirtualCardOption(
+    FormStructure* form_structure) {
+  // If experiment is disabled, return false.
+  if (!base::FeatureList::IsEnabled(features::kAutofillEnableVirtualCard))
+    return false;
+
+  // If credit card upload is disabled, return false.
+  if (!IsAutofillCreditCardEnabled())
+    return false;
+
+  // If merchant is not whitelisted, return false.
+  std::vector<std::string> whitelist =
+      client_->GetMerchantWhitelistForVirtualCards();
+  if (std::find(whitelist.begin(), whitelist.end(),
+                form_structure->source_url().spec()) == whitelist.end()) {
+    return false;
+  }
+
+  // If no credit card cloud token data is available, return false.
+  // TODO(crbug.com/1020740): Wait for the changes on the AutofillTable is
+  // landed, and then add that check here (and also unit test in
+  // autofill_manager_unittest.cc).
+
+  // If card number field or expiration date field is not detected, return
+  // false.
+  if (!form_structure->IsCompleteCreditCardForm())
+    return false;
+
+  // If CVC field is detected, then all requirements are met, otherwise return
+  // false.
+  for (auto& field : *form_structure) {
+    if (field->Type().GetStorableType() == CREDIT_CARD_VERIFICATION_CODE)
+      return true;
+  }
+  return false;
+}
+#endif
 
 FormEventLoggerBase* AutofillManager::GetEventFormLogger(
     FieldTypeGroup field_type_group) const {

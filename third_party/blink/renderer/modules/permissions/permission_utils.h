@@ -27,7 +27,8 @@ mojom::blink::PermissionDescriptorPtr CreateMidiPermissionDescriptor(
 
 mojom::blink::PermissionDescriptorPtr CreateClipboardPermissionDescriptor(
     mojom::blink::PermissionName,
-    bool allow_without_gesture);
+    bool allow_without_gesture,
+    bool allow_without_sanitization);
 
 mojom::blink::PermissionDescriptorPtr CreateWakeLockPermissionDescriptor(
     mojom::blink::WakeLockType type);

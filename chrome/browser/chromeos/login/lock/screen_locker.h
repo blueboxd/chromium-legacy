@@ -27,6 +27,7 @@
 #include "chromeos/login/auth/challenge_response_key.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/fingerprint.mojom.h"
@@ -43,8 +44,10 @@ class ViewsScreenLocker;
 // ScreenLocker displays the lock UI and takes care of authenticating the user
 // and managing a global instance of itself which will be deleted when the
 // system is unlocked.
-class ScreenLocker : public AuthStatusConsumer,
-                     public device::mojom::FingerprintObserver {
+class ScreenLocker
+    : public AuthStatusConsumer,
+      public device::mojom::FingerprintObserver,
+      public user_manager::UserManager::UserSessionStateObserver {
  public:
   // Delegate used to send internal state changes back to the UI.
   class Delegate {
@@ -172,6 +175,9 @@ class ScreenLocker : public AuthStatusConsumer,
       override;
   void OnSessionFailed() override;
 
+  // user_manager::UserManager::UserSessionStateObserver:
+  void ActiveUserChanged(user_manager::User* active_user) override;
+
  private:
   friend class base::DeleteHelper<ScreenLocker>;
   friend class ViewsScreenLocker;
@@ -261,6 +267,11 @@ class ScreenLocker : public AuthStatusConsumer,
   // from false to true, but will never change from true to
   // false. Instead, ScreenLocker object gets deleted when unlocked.
   bool locked_ = false;
+
+  // True if the unlock process has started, or false otherwise.  This changes
+  // from false to true, but will never change from true to false. Instead,
+  // ScreenLocker object gets deleted when unlocked.
+  bool unlock_started_ = false;
 
   // Reference to the single instance of the screen locker object.
   // This is used to make sure there is only one screen locker instance.

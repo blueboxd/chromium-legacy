@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.feedstore.internal;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.host.storage.CommitResult;
 import org.chromium.chrome.browser.feed.library.api.internal.store.LocalActionMutation;
 import org.chromium.chrome.browser.feed.library.common.functional.Committer;
@@ -27,7 +29,8 @@ public final class FeedLocalActionMutation implements LocalActionMutation {
 
     @Override
     public LocalActionMutation add(int action, String contentId) {
-        /*@Nullable*/ List<String> actionsForType = mActions.get(action);
+        @Nullable
+        List<String> actionsForType = mActions.get(action);
         if (actionsForType == null) {
             actionsForType = new ArrayList<>();
         }

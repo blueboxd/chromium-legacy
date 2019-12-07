@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.sharedstream.logging;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
 import org.chromium.chrome.browser.feed.library.api.host.logging.SessionEvent;
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.ModelError;
@@ -19,7 +21,8 @@ public class UiSessionRequestLogger implements ModelProviderObserver {
     private final Clock mClock;
     private final BasicLoggingApi mBasicLoggingApi;
     private int mSessionCount;
-    /*@Nullable*/ private SessionRequestState mSessionRequestState;
+    @Nullable
+    private SessionRequestState mSessionRequestState;
 
     public UiSessionRequestLogger(Clock clock, BasicLoggingApi basicLoggingApi) {
         this.mClock = clock;

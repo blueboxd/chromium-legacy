@@ -17,11 +17,13 @@
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/browser/url_loader_factory_params_helper.h"
 #include "content/browser/websockets/websocket_connector_impl.h"
 #include "content/browser/webtransport/quic_transport_connector_impl.h"
 #include "content/browser/worker_host/worker_script_fetch_initiator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/network_service_util.h"
@@ -285,34 +287,32 @@ DedicatedWorkerHost::CreateNetworkFactoryForSubresources(
   DCHECK(ancestor_render_frame_host);
   DCHECK(bypass_redirect_checks);
 
-  auto* storage_partition_impl = static_cast<StoragePartitionImpl*>(
-      worker_process_host->GetStoragePartition());
-
   mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_default_factory;
   mojo::PendingReceiver<network::mojom::URLLoaderFactory>
       default_factory_receiver =
           pending_default_factory.InitWithNewPipeAndPassReceiver();
 
-  mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
-      default_header_client;
-  network::mojom::URLLoaderFactoryOverridePtr factory_override;
+  network::mojom::URLLoaderFactoryParamsPtr factory_params =
+      URLLoaderFactoryParamsHelper::Create(
+          worker_process_host, origin_,
+          ancestor_render_frame_host->GetTopFrameToken(),
+          network_isolation_key_,
+          ancestor_render_frame_host->cross_origin_embedder_policy(),
+          ancestor_render_frame_host->GetRenderViewHost()
+              ->GetWebkitPreferences());
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
-      storage_partition_impl->browser_context(),
+      worker_process_host->GetBrowserContext(),
       /*frame=*/nullptr, worker_process_id_,
       ContentBrowserClient::URLLoaderFactoryType::kWorkerSubResource, origin_,
       /*navigation_id=*/base::nullopt, &default_factory_receiver,
-      &default_header_client, bypass_redirect_checks, &factory_override);
+      &factory_params->header_client, bypass_redirect_checks,
+      &factory_params->factory_override);
 
   // TODO(nhiroki): Call devtools_instrumentation::WillCreateURLLoaderFactory()
   // here.
 
   worker_process_host->CreateURLLoaderFactory(
-      origin_, origin_,
-      ancestor_render_frame_host->cross_origin_embedder_policy(),
-      /*preferences=*/nullptr, network_isolation_key_,
-      std::move(default_header_client),
-      ancestor_render_frame_host->GetTopFrameToken(),
-      std::move(default_factory_receiver), std::move(factory_override));
+      std::move(default_factory_receiver), std::move(factory_params));
 
   return pending_default_factory;
 }

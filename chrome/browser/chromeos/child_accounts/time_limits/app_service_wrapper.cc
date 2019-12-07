@@ -75,11 +75,24 @@ void AppServiceWrapper::OnAppUpdate(const apps::AppUpdate& update) {
   switch (update.Readiness()) {
     case apps::mojom::Readiness::kReady:
       for (auto& listener : listeners_)
-        listener.OnAppInstalled(app_id);
+        if (update.StateIsNull()) {
+          // It is the first update about this app.
+          // Note that AppService does not store info between sessions and this
+          // will be called at the beginning of every session.
+          listener.OnAppInstalled(app_id);
+        } else {
+          listener.OnAppAvailable(app_id);
+        }
       break;
     case apps::mojom::Readiness::kUninstalledByUser:
       for (auto& listener : listeners_)
         listener.OnAppUninstalled(app_id);
+      break;
+    case apps::mojom::Readiness::kDisabledByUser:
+    case apps::mojom::Readiness::kDisabledByPolicy:
+    case apps::mojom::Readiness::kDisabledByBlacklist:
+      for (auto& listener : listeners_)
+        listener.OnAppBlocked(app_id);
       break;
     default:
       break;

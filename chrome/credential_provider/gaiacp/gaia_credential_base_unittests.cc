@@ -758,6 +758,53 @@ TEST_F(GcpGaiaCredentialBaseTest, InvalidUserUnlockedAfterSignin) {
   EXPECT_EQ(2ul, fake_os_user_manager()->GetUserCount());
 }
 
+TEST_F(GcpGaiaCredentialBaseTest, SigninNotBlockedWhenValidChromeNotFound) {
+  // Enforce token handle verification with user locking when the token handle
+  // is not valid.
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmAllowConsumerAccounts, 1));
+  GoogleMdmEnrollmentStatusForTesting force_success(true);
+
+  // Simulate a valid Chrome installation not being found.
+  fake_chrome_checker()->SetHasSupportedChrome(
+      FakeChromeAvailabilityChecker::kChromeForceNo);
+
+  USES_CONVERSION;
+  // Create a fake user that has the same gaia id as the test gaia id.
+  CComBSTR sid;
+  base::string16 username(L"foo");
+  ASSERT_EQ(S_OK,
+            fake_os_user_manager()->CreateTestOSUser(
+                username, L"password", L"name", L"comment",
+                base::UTF8ToUTF16(kDefaultGaiaId), base::string16(), &sid));
+  ASSERT_EQ(2ul, fake_os_user_manager()->GetUserCount());
+
+  // Create provider and start logon.
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
+
+  // Create with invalid token handle response.
+  SetDefaultTokenHandleResponse(kDefaultInvalidTokenHandleResponse);
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
+
+  // User should have invalid token handle but sign-in should not be blocked
+  // just because Chrome was not found and GCPW cannot load.
+  EXPECT_FALSE(
+      fake_associated_user_validator()->IsTokenHandleValidForUser(OLE2W(sid)));
+  EXPECT_FALSE(fake_associated_user_validator()->IsUserAccessBlockedForTesting(
+      OLE2W(sid)));
+
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+  // Logon process should not raise an error message.
+  ASSERT_EQ(S_OK, FinishLogonProcess(true, true, 0));
+
+  EXPECT_FALSE(fake_associated_user_validator()->IsUserAccessBlockedForTesting(
+      OLE2W(sid)));
+}
+
 TEST_F(GcpGaiaCredentialBaseTest, DenySigninBlockedDuringSignin) {
   USES_CONVERSION;
 

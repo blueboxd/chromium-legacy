@@ -329,8 +329,8 @@ int AwPermissionManager::RequestPermissions(
       case PermissionType::BACKGROUND_SYNC:
       case PermissionType::FLASH:
       case PermissionType::ACCESSIBILITY_EVENTS:
-      case PermissionType::CLIPBOARD_READ:
-      case PermissionType::CLIPBOARD_WRITE:
+      case PermissionType::CLIPBOARD_READ_WRITE:
+      case PermissionType::CLIPBOARD_SANITIZED_WRITE:
       case PermissionType::PAYMENT_HANDLER:
       case PermissionType::BACKGROUND_FETCH:
       case PermissionType::IDLE_DETECTION:
@@ -531,8 +531,8 @@ void AwPermissionManager::CancelPermissionRequest(int request_id) {
       case PermissionType::BACKGROUND_SYNC:
       case PermissionType::FLASH:
       case PermissionType::ACCESSIBILITY_EVENTS:
-      case PermissionType::CLIPBOARD_READ:
-      case PermissionType::CLIPBOARD_WRITE:
+      case PermissionType::CLIPBOARD_READ_WRITE:
+      case PermissionType::CLIPBOARD_SANITIZED_WRITE:
       case PermissionType::PAYMENT_HANDLER:
       case PermissionType::BACKGROUND_FETCH:
       case PermissionType::IDLE_DETECTION:

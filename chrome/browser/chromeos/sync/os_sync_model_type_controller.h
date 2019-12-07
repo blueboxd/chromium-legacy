@@ -17,15 +17,17 @@ class ModelTypeControllerDelegate;
 class SyncService;
 }  // namespace syncer
 
-// Controls sync of Chrome OS ModelTypes that depend on the system-wide
-// kOsSyncFeatureEnabled preference.
+// Controls sync of Chrome OS ModelTypes that can run in transport-mode and
+// depend on the system-wide kOsSyncFeatureEnabled preference.
 class OsSyncModelTypeController : public syncer::ModelTypeController {
  public:
-  OsSyncModelTypeController(
-      syncer::ModelType type,
-      std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate,
-      PrefService* pref_service,
-      syncer::SyncService* sync_service);
+  OsSyncModelTypeController(syncer::ModelType type,
+                            std::unique_ptr<syncer::ModelTypeControllerDelegate>
+                                delegate_for_full_sync_mode,
+                            std::unique_ptr<syncer::ModelTypeControllerDelegate>
+                                delegate_for_transport_mode,
+                            PrefService* pref_service,
+                            syncer::SyncService* sync_service);
   ~OsSyncModelTypeController() override;
 
   OsSyncModelTypeController(const OsSyncModelTypeController&) = delete;

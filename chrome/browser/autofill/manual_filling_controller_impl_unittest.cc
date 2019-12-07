@@ -25,7 +25,6 @@
 #include "chrome/browser/password_manager/touch_to_fill_controller.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_web_contents_factory.h"
@@ -43,9 +42,6 @@ using testing::NiceMock;
 using testing::StrictMock;
 using testing::WithArgs;
 using FillingSource = ManualFillingController::FillingSource;
-
-constexpr char kExampleSite[] = "https://example.com";
-constexpr int kIconSize = 75;  // An example size for favicons (=> 3.5*20px).
 
 AccessorySheetData empty_passwords_sheet() {
   constexpr char kTitle[] = "Example title";
@@ -68,7 +64,7 @@ class ManualFillingControllerTest : public testing::Test {
 
   void SetUp() override {
     ManualFillingControllerImpl::CreateForWebContentsForTesting(
-        web_contents(), favicon_service(), mock_pwd_controller_.AsWeakPtr(),
+        web_contents(), mock_pwd_controller_.AsWeakPtr(),
         mock_address_controller_.AsWeakPtr(), mock_cc_controller_.AsWeakPtr(),
         std::make_unique<NiceMock<MockManualFillingView>>());
   }
@@ -91,10 +87,6 @@ class ManualFillingControllerTest : public testing::Test {
     return ManualFillingControllerImpl::FromWebContents(web_contents());
   }
 
-  favicon::MockFaviconService* favicon_service() {
-    return mock_favicon_service_.get();
-  }
-
   content::WebContents* web_contents() { return web_contents_; }
 
   MockManualFillingView* view() {
@@ -111,10 +103,6 @@ class ManualFillingControllerTest : public testing::Test {
   NiceMock<MockPasswordAccessoryController> mock_pwd_controller_;
   NiceMock<MockAddressAccessoryController> mock_address_controller_;
   NiceMock<MockCreditCardAccessoryController> mock_cc_controller_;
-
-  std::unique_ptr<StrictMock<favicon::MockFaviconService>>
-      mock_favicon_service_ =
-          std::make_unique<StrictMock<favicon::MockFaviconService>>();
 };
 
 TEST_F(ManualFillingControllerTest, IsNotRecreatedForSameWebContents) {
@@ -321,23 +309,4 @@ TEST_F(ManualFillingControllerTest, OnManualGenerationRequested) {
   EXPECT_CALL(mock_pwd_controller_,
               OnOptionSelected(AccessoryAction::GENERATE_PASSWORD_MANUAL));
   controller()->OnOptionSelected(AccessoryAction::GENERATE_PASSWORD_MANUAL);
-}
-
-TEST_F(ManualFillingControllerTest, RequestsFaviconForOrigin) {
-  base::MockCallback<ManualFillingController::IconCallback> mock_callback;
-
-  EXPECT_CALL(*favicon_service(), GetRawFaviconForPageURL(GURL(kExampleSite), _,
-                                                          kIconSize, _, _, _))
-      .WillOnce(
-          WithArgs<4, 5>([](favicon_base::FaviconRawBitmapCallback callback,
-                            base::CancelableTaskTracker* tracker) {
-            return tracker->PostTask(
-                base::ThreadTaskRunnerHandle::Get().get(), FROM_HERE,
-                base::BindOnce(std::move(callback),
-                               favicon_base::FaviconRawBitmapResult()));
-          }));
-  EXPECT_CALL(mock_callback, Run);
-  controller()->GetFavicon(kIconSize, kExampleSite, mock_callback.Get());
-
-  base::RunLoop().RunUntilIdle();
 }

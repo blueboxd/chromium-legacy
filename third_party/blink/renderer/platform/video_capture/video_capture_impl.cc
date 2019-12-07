@@ -187,6 +187,8 @@ struct VideoCaptureImpl::BufferContext
       gpu::SyncToken release_sync_token) {
     if (!mailbox.IsZero()) {
       auto* sii = gpu_factories->SharedImageInterface();
+      if (!sii)
+        return;
       sii->DestroySharedImage(release_sync_token, mailbox);
     }
   }

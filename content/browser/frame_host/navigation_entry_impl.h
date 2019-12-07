@@ -182,8 +182,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
       mojom::NavigationType navigation_type,
       PreviewsState previews_state,
       base::TimeTicks navigation_start,
-      base::TimeTicks input_start,
-      const blink::FramePolicy& frame_policy);
+      base::TimeTicks input_start);
   mojom::CommitNavigationParamsPtr ConstructCommitNavigationParams(
       const FrameNavigationEntry& frame_entry,
       const GURL& original_url,
@@ -193,7 +192,8 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
       bool intended_as_new_entry,
       int pending_offset_to_send,
       int current_offset_to_send,
-      int current_length_to_send);
+      int current_length_to_send,
+      const blink::FramePolicy& frame_policy);
 
   // Once a navigation entry is committed, we should no longer track several
   // pieces of non-persisted state, as documented on the members below.

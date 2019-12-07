@@ -40,6 +40,10 @@ namespace url {
 class Origin;
 }
 
+namespace ukm {
+class MojoUkmRecorder;
+}
+
 namespace v8 {
 class Isolate;
 template <typename T>
@@ -117,6 +121,7 @@ class ChromeExtensionsRendererClient
   }
 
  private:
+  std::unique_ptr<ukm::MojoUkmRecorder> ukm_recorder_;
   std::unique_ptr<extensions::Dispatcher> extension_dispatcher_;
   std::unique_ptr<extensions::RendererPermissionsPolicyDelegate>
       permissions_policy_delegate_;

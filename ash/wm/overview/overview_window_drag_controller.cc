@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "ash/display/mouse_cursor_event_filter.h"
-#include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/screen_util.h"
@@ -617,14 +616,14 @@ gfx::Rect OverviewWindowDragController::GetWorkAreaOfDisplayBeingDraggedIn()
 bool OverviewWindowDragController::ShouldUpdateDragIndicatorsOrSnap(
     const gfx::PointF& event_location) {
   // Snap the window if it is less than |kDistanceFromEdgeDp| from the edge.
-  const bool landscape = IsCurrentScreenOrientationLandscape();
+  const bool horizontal = SplitViewController::IsLayoutHorizontal();
   gfx::Rect area = GetWorkAreaOfDisplayBeingDraggedIn();
   area.Inset(kDistanceFromEdgeDp, kDistanceFromEdgeDp);
   const gfx::Point event_location_i = gfx::ToRoundedPoint(event_location);
-  if (landscape ? event_location_i.x() < area.x() ||
-                      event_location_i.x() > area.right()
-                : event_location_i.y() < area.y() ||
-                      event_location_i.y() > area.bottom()) {
+  if (horizontal ? event_location_i.x() < area.x() ||
+                       event_location_i.x() > area.right()
+                 : event_location_i.y() < area.y() ||
+                       event_location_i.y() > area.bottom()) {
     return true;
   }
 
@@ -632,8 +631,7 @@ bool OverviewWindowDragController::ShouldUpdateDragIndicatorsOrSnap(
   // are in the snap region, if the event has travelled past the threshold in
   // the direction of the attempted snap region.
   const gfx::Vector2dF distance = event_location - initial_event_location_;
-  // Check the x-axis distance for landscape, y-axis distance for portrait.
-  const float distance_scalar = landscape ? distance.x() : distance.y();
+  const float distance_scalar = horizontal ? distance.x() : distance.y();
 
   // If not started in a snap region, snap if the item has been dragged
   // |kMinimumDragDistanceDp|. This prevents accidental snaps.
@@ -658,7 +656,7 @@ bool OverviewWindowDragController::ShouldUpdateDragIndicatorsOrSnap(
   // physically on the right/bottom side of the device, check that
   // |distance_scalar| is greater than
   // |kMinimumDragDistanceAlreadyInSnapRegionDp|.
-  return IsPhysicalLeftOrTop(snap_position)
+  return SplitViewController::IsPhysicalLeftOrTop(snap_position)
              ? distance_scalar <= -kMinimumDragDistanceAlreadyInSnapRegionDp
              : distance_scalar >= kMinimumDragDistanceAlreadyInSnapRegionDp;
 }
@@ -677,14 +675,14 @@ SplitViewController::SnapPosition OverviewWindowDragController::GetSnapPosition(
       SplitViewController::Get(GetRootWindowBeingDraggedIn());
   if (split_view_controller->InSplitViewMode()) {
     const int position =
-        gfx::ToRoundedInt(IsCurrentScreenOrientationLandscape()
+        gfx::ToRoundedInt(SplitViewController::IsLayoutHorizontal()
                               ? location_in_screen.x() - area.x()
                               : location_in_screen.y() - area.y());
     SplitViewController::SnapPosition default_snap_position =
         split_view_controller->default_snap_position();
     // If we're trying to snap to a position that already has a snapped window:
     const bool is_default_snap_position_left_or_top =
-        IsPhysicalLeftOrTop(default_snap_position);
+        SplitViewController::IsPhysicalLeftOrTop(default_snap_position);
     const bool is_drag_position_left_or_top =
         position < split_view_controller->divider_position();
     if (is_default_snap_position_left_or_top == is_drag_position_left_or_top)

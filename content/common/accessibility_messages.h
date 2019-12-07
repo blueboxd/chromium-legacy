@@ -10,6 +10,7 @@
 #include "content/common/ax_content_node_data.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
+#include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_param_traits.h"

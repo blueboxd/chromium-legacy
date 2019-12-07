@@ -48,7 +48,8 @@ public class PaymentHandlerToolbarCoordinator {
         mToolbarView = new PaymentHandlerToolbarView(context, observer);
         PropertyModel model = new PropertyModel.Builder(PaymentHandlerToolbarProperties.ALL_KEYS)
                                       .with(PaymentHandlerToolbarProperties.PROGRESS_VISIBLE, true)
-                                      .with(PaymentHandlerToolbarProperties.LOAD_PROGRESS, 0)
+                                      .with(PaymentHandlerToolbarProperties.LOAD_PROGRESS,
+                                              PaymentHandlerToolbarMediator.MINIMUM_LOAD_PROGRESS)
                                       .with(PaymentHandlerToolbarProperties.SECURITY_ICON,
                                               ConnectionSecurityLevel.NONE)
                                       .build();

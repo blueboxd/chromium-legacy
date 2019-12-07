@@ -9,7 +9,7 @@
 
 namespace quic {
 
-void QuicRecordTestOutputImpl(QuicStringPiece identifier, QuicStringPiece data);
+void QuicRecordTraceImpl(QuicStringPiece identifier, QuicStringPiece data);
 
 }  // namespace quic
 

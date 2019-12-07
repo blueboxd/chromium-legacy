@@ -131,8 +131,6 @@ class MODULES_EXPORT WebSocketChannelImpl final
                      const String& reason) override;
   void OnClosingHandshake() override;
 
-  ExecutionContext* GetExecutionContext();
-
   void Trace(blink::Visitor*) override;
 
  private:

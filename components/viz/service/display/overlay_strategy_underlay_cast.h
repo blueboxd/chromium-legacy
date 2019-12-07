@@ -9,11 +9,12 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "build/chromecast_buildflags.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
 #include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/overlay_transform.h"
 
-#if defined(IS_CHROMECAST)
+#if BUILDFLAG(IS_CHROMECAST)
 #include "chromecast/media/service/mojom/video_geometry_setter.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #endif
@@ -46,7 +47,7 @@ class VIZ_SERVICE_EXPORT OverlayStrategyUnderlayCast
       base::RepeatingCallback<void(const gfx::RectF&, gfx::OverlayTransform)>;
   static void SetOverlayCompositedCallback(const OverlayCompositedCallback& cb);
 
-#if defined(IS_CHROMECAST)
+#if BUILDFLAG(IS_CHROMECAST)
   // In Chromecast build, OverlayStrategyUnderlayCast needs a valid mojo
   // interface to VideoGeometrySetter Service (shared by all instances of
   // OverlaystrategyUnderlayCast). This must be called before compositor starts.

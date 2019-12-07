@@ -59,11 +59,6 @@ void PermissionPromptAndroid::UpdateAnchorPosition() {
   NOTREACHED() << "UpdateAnchorPosition is not implemented";
 }
 
-gfx::NativeWindow PermissionPromptAndroid::GetNativeWindow() {
-  NOTREACHED() << "GetNativeWindow is not implemented";
-  return nullptr;
-}
-
 PermissionPrompt::TabSwitchingBehavior
 PermissionPromptAndroid::GetTabSwitchingBehavior() {
   if (permission_request_notification_)

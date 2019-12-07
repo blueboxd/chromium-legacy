@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.common.intern;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.common.Validators;
 
 import javax.annotation.concurrent.ThreadSafe;
@@ -50,7 +52,7 @@ public abstract class PoolInternerBase<T> implements Interner<T> {
     /** Interface for a pool used by the PoolInternerBase. */
     protected interface Pool<T> {
         /** Retrieves the give object from the pool if it is found, or null otherwise. */
-        /*@Nullable*/
+        @Nullable
         T get(T input);
 
         /** Stores the given object into the pool. */

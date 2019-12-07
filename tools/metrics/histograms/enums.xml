@@ -6035,8 +6035,8 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="BooleanAutofillFillAfterSuggestion">
-  <int value="0" label="User chose to fill"/>
-  <int value="1" label="User did not choose to fill"/>
+  <int value="0" label="User did not choose to fill"/>
+  <int value="1" label="User chose to fill"/>
 </enum>
 
 <enum name="BooleanAutofillFillingAcceptance">
@@ -10206,6 +10206,7 @@ Called by update_net_error_codes.py.-->
   <int value="13" label="SOUND"/>
   <int value="14" label="FRAMEBUST"/>
   <int value="16" label="SENSORS"/>
+  <int value="18" label="CLIPBOARD_READ_WRITE"/>
 </enum>
 
 <enum name="ContentSettingMixedScriptAction">
@@ -10387,8 +10388,8 @@ Called by update_net_error_codes.py.-->
   <int value="37" label="Client hints setting"/>
   <int value="38" label="Sensors setting"/>
   <int value="39" label="Accessibility events setting"/>
-  <int value="40" label="Clipboard read"/>
-  <int value="41" label="Clipboard write"/>
+  <int value="40" label="Clipboard read [removed in M81]"/>
+  <int value="41" label="Clipboard write [removed in M81]"/>
   <int value="42" label="Plugins data"/>
   <int value="43" label="Payment handler"/>
   <int value="44" label="USB guard"/>
@@ -10406,6 +10407,8 @@ Called by update_net_error_codes.py.-->
   <int value="57" label="Native file system write guard"/>
   <int value="58" label="Installed web app metadata"/>
   <int value="59" label="NFC"/>
+  <int value="60" label="Clipboard read and write"/>
+  <int value="61" label="Clipboard sanitized write"/>
 </enum>
 
 <enum name="ContentTypeParseableResult">
@@ -11130,6 +11133,14 @@ Called by update_net_error_codes.py.-->
   <int value="0" label="No special prefix"/>
   <int value="1" label="Secure prefix"/>
   <int value="2" label="Host prefix"/>
+</enum>
+
+<enum name="CookieRequestScheme">
+  <int value="0" label="Unset Cookie Scheme"/>
+  <int value="1" label="Nonsecurely Set Cookie Nonsecure Request"/>
+  <int value="2" label="Securely Set Cookie Secure Request"/>
+  <int value="3" label="Nonsecurely Set Cookie Secure Request"/>
+  <int value="4" label="Securely Set Cookie Nonsecure Request"/>
 </enum>
 
 <enum name="CookieSameSiteString">
@@ -21572,6 +21583,8 @@ Called by update_net_error_codes.py.-->
   <int value="22" label="PENDING_ADD_FAILED"/>
   <int value="23" label="DOWNLOADER_ADD_FAILED"/>
   <int value="24" label="IN_PROGRESS"/>
+  <int value="25" label="CRX_FETCH_URL_EMPTY"/>
+  <int value="26" label="CRX_FETCH_URL_INVALID"/>
 </enum>
 
 <enum name="ExtensionInstallationStage">
@@ -21871,7 +21884,7 @@ Called by update_net_error_codes.py.-->
   <int value="54" label="kDownloadsShelf"/>
   <int value="55" label="kDeleted_EasyUnlockPrivate"/>
   <int value="56" label="kEchoPrivate"/>
-  <int value="57" label="kEmbeddedExtensionOptions"/>
+  <int value="57" label="kDeleted_EmbeddedExtensionOptions"/>
   <int value="58" label="kEnterprisePlatformKeys"/>
   <int value="59" label="kEnterprisePlatformKeysPrivate"/>
   <int value="60" label="kDeleted_ExperienceSamplingPrivate"/>
@@ -37040,6 +37053,7 @@ from previous Chrome versions.
   <int value="-762738927" label="LogJsConsoleMessages:enabled"/>
   <int value="-762687134" label="ExperimentalCrostiniUI:enabled"/>
   <int value="-759830869" label="enable-tab-discarding"/>
+  <int value="-758917191" label="AccountIdMigration:enabled"/>
   <int value="-758048639" label="InfiniteSessionRestore:enabled"/>
   <int value="-757946835"
       label="OmniboxUIExperimentShowSuggestionFavicons:enabled"/>
@@ -37696,6 +37710,7 @@ from previous Chrome versions.
   <int value="79503461" label="disable-account-consistency"/>
   <int value="79595680" label="OmniboxTabSwitchSuggestions:enabled"/>
   <int value="79729295" label="WebBundles:enabled"/>
+  <int value="82303171" label="AccountIdMigration:disabled"/>
   <int value="83422372"
       label="ChromeHomePersonalizedOmniboxSuggestions:enabled"/>
   <int value="84911198" label="ScanCardsInWebPayments:disabled"/>
@@ -42183,6 +42198,25 @@ Called by update_use_counter_css.py.-->
 <enum name="MobileMessagesPasswordsModalPresent">
   <int value="0" label="PresentedAfterSaveBanner"/>
   <int value="1" label="PresentedAfterUpdateBanner"/>
+</enum>
+
+<enum name="MobileMessagesTranslateBannerEvent">
+  <int value="0" label="Translate"/>
+  <int value="1" label="ShowOriginal"/>
+</enum>
+
+<enum name="MobileMessagesTranslateModalEvent">
+  <int value="0" label="ChangeSourceLanguage"/>
+  <int value="1" label="ChangeTargetLanguage"/>
+  <int value="2" label="ShowOriginal"/>
+  <int value="3" label="TappedAlwaysTranslate"/>
+  <int value="4" label="TappedNeverForSourceLanguage"/>
+  <int value="5" label="TappedNeverForThisSite"/>
+</enum>
+
+<enum name="MobileMessagesTranslateModalPresent">
+  <int value="0" label="PresentedAfterTranslatePromptBanner"/>
+  <int value="1" label="PresentedAfterTranslateFinishedBanner"/>
 </enum>
 
 <enum name="MobileSessionCallerApp">
@@ -49627,10 +49661,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="13" label="PERMISSION_MEDIASTREAM_MIC"/>
   <int value="14" label="PERMISSION_MEDIASTREAM_CAMERA"/>
   <int value="15" label="PERMISSION_ACCESSIBILITY_EVENTS"/>
-  <int value="16" label="PERMISSION_CLIPBOARD_READ"/>
+  <int value="16" label="PERMISSION_CLIPBOARD_READ__REMOVED_IN_M81"/>
   <int value="17" label="PERMISSION_SECURITY_KEY_ATTESTATION"/>
   <int value="18" label="PERMISSION_PAYMENT_HANDLER"/>
   <int value="19" label="PERMISSION_NFC"/>
+  <int value="20" label="PERMISSION_CLIPBOARD_READ_WRITE"/>
 </enum>
 
 <enum name="PermissionStatus">
@@ -49654,8 +49689,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="11" label="PERMISSION_FLASH"/>
   <int value="12" label="PERMISSION_SENSORS"/>
   <int value="13" label="PERMISSION_ACCESSIBILITY_EVENTS"/>
-  <int value="14" label="PERMISSION_CLIPBOARD_READ"/>
-  <int value="15" label="PERMISSION_CLIPBOARD_WRITE"/>
+  <int value="14" label="PERMISSION_CLIPBOARD_READ__REMOVED_IN_M81"/>
+  <int value="15" label="PERMISSION_CLIPBOARD_WRITE__REMOVED_IN_M81"/>
   <int value="16" label="PERMISSION_PAYMENT_HANDLER"/>
   <int value="17" label="PERMISSION_BACKGROUND_FETCH"/>
   <int value="18" label="PERMISSION_IDLE_DETECTION"/>
@@ -49663,6 +49698,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="20" label="PERMISSION_WAKE_LOCK_SCREEN"/>
   <int value="21" label="PERMISSION_WAKE_LOCK_SYSTEM"/>
   <int value="22" label="PERMISSION_NFC"/>
+  <int value="23" label="PERMISSION_CLIPBOARD_READ_WRITE"/>
+  <int value="24" label="PERMISSION_CLIPBOARD_SANITIZED_WRITE"/>
 </enum>
 
 <enum name="PersistedLogsLogReadStatus">

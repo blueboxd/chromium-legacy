@@ -23,10 +23,6 @@ namespace system_media_controls {
 class SystemMediaControls;
 }  // namespace system_media_controls
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace content {
 
 // The SystemMediaControlsNotifier connects to the SystemMediaControls API and
@@ -37,8 +33,7 @@ class CONTENT_EXPORT SystemMediaControlsNotifier
     : public media_session::mojom::MediaControllerObserver,
       public media_session::mojom::MediaControllerImageObserver {
  public:
-  SystemMediaControlsNotifier(
-      service_manager::Connector* connector,
+  explicit SystemMediaControlsNotifier(
       system_media_controls::SystemMediaControls* system_media_controls);
   ~SystemMediaControlsNotifier() override;
 

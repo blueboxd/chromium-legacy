@@ -27,6 +27,7 @@
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/browser/service_manager/service_manager_context.h"
+#include "content/public/browser/audio_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
@@ -35,11 +36,7 @@
 #include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/public/mojom/device_notifications.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/identity.h"
-#include "services/service_manager/public/mojom/connector.mojom-shared.h"
 
 #if defined(OS_MACOSX)
 #include "base/bind_helpers.h"
@@ -150,6 +147,12 @@ void ReplaceInvalidFrameRatesWithFallback(media::VideoCaptureFormats* formats) {
     if (format.frame_rate <= 0)
       format.frame_rate = kFallbackVideoFrameRates[0];
   }
+}
+
+void BindDeviceNotifierFromUIThread(
+    mojo::PendingReceiver<audio::mojom::DeviceNotifier> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  GetAudioService().BindDeviceNotifier(std::move(receiver));
 }
 
 }  // namespace
@@ -314,9 +317,7 @@ MediaDevicesManager::SubscriptionRequest::operator=(SubscriptionRequest&&) =
 class MediaDevicesManager::AudioServiceDeviceListener
     : public audio::mojom::DeviceListener {
  public:
-  explicit AudioServiceDeviceListener(service_manager::Connector* connector) {
-    TryConnectToService(connector);
-  }
+  AudioServiceDeviceListener() { ConnectToService(); }
   ~AudioServiceDeviceListener() override = default;
 
   void DevicesChanged() override {
@@ -326,43 +327,23 @@ class MediaDevicesManager::AudioServiceDeviceListener
   }
 
  private:
-  void TryConnectToService(service_manager::Connector* connector) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    // Check if the service manager is managing the audio service.
-    //
-    // TODO: Is this necessary? We should know at build how this will respond.
-    connector->QueryService(
-        audio::mojom::kServiceName,
-        base::BindOnce(&AudioServiceDeviceListener::ServiceQueried,
-                       weak_factory_.GetWeakPtr(), connector));
-  }
-
-  void ServiceQueried(service_manager::Connector* connector,
-                      service_manager::mojom::ServiceInfoPtr info) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    // Do not connect if the service manager is not managing the audio service.
-    if (!info) {
-      LOG(WARNING) << "Audio service not available.";
-      return;
-    }
-    DoConnectToService(connector);
-  }
-
-  void DoConnectToService(service_manager::Connector* connector) {
+  void ConnectToService() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(!mojo_audio_device_notifier_);
     DCHECK(!receiver_.is_bound());
-    connector->Connect(
-        audio::mojom::kServiceName,
-        mojo_audio_device_notifier_.BindNewPipeAndPassReceiver());
+    base::PostTask(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(
+            &BindDeviceNotifierFromUIThread,
+            mojo_audio_device_notifier_.BindNewPipeAndPassReceiver()));
     mojo_audio_device_notifier_.set_disconnect_handler(base::BindOnce(
         &MediaDevicesManager::AudioServiceDeviceListener::OnConnectionError,
-        weak_factory_.GetWeakPtr(), connector));
+        weak_factory_.GetWeakPtr()));
     mojo_audio_device_notifier_->RegisterListener(
         receiver_.BindNewPipeAndPassRemote());
   }
 
-  void OnConnectionError(service_manager::Connector* connector) {
+  void OnConnectionError() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     mojo_audio_device_notifier_.reset();
     receiver_.reset();
@@ -370,9 +351,8 @@ class MediaDevicesManager::AudioServiceDeviceListener
     // Resetting the error handler in a posted task since doing it synchronously
     // results in a browser crash. See https://crbug.com/845142.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&AudioServiceDeviceListener::TryConnectToService,
-                       weak_factory_.GetWeakPtr(), connector));
+        FROM_HERE, base::BindOnce(&AudioServiceDeviceListener::ConnectToService,
+                                  weak_factory_.GetWeakPtr()));
   }
 
   mojo::Receiver<audio::mojom::DeviceListener> receiver_{this};
@@ -518,17 +498,8 @@ void MediaDevicesManager::StartMonitoring() {
 #if defined(OS_WIN) || defined(OS_MACOSX)
   if (base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess)) {
     DCHECK(!audio_service_device_listener_);
-    if (!connector_) {
-      auto* connector = ServiceManagerContext::GetConnectorForIOThread();
-      // |connector| can be null on unit tests.
-      if (!connector)
-        return;
-
-      connector_ = connector->Clone();
-    }
-
     audio_service_device_listener_ =
-        std::make_unique<AudioServiceDeviceListener>(connector_.get());
+        std::make_unique<AudioServiceDeviceListener>();
   }
 #endif
   monitoring_started_ = true;

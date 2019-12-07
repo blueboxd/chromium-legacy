@@ -553,6 +553,11 @@ bool DetectDeferRedirectLoopsUsingCache() {
                                            true);
 }
 
+bool OverrideShouldShowPreviewCheck() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kPreviews, "override_should_show_preview_check", false);
+}
+
 }  // namespace params
 
 std::string GetStringNameForType(PreviewsType type) {

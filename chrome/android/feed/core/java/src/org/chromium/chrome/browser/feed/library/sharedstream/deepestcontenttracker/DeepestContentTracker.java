@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.feed.library.sharedstream.deepestcontenttrac
 
 import android.support.annotation.VisibleForTesting;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.ModelProvider.ViewDepthProvider;
 
 import java.util.ArrayList;
@@ -15,9 +17,9 @@ import java.util.List;
 public class DeepestContentTracker implements ViewDepthProvider {
     private static final String TAG = "DeepestContentTracker";
 
-    private final List</*@Nullable*/ String> mContentIds = new ArrayList<>();
+    private final List<String> mContentIds = new ArrayList<>();
 
-    public void updateDeepestContentTracker(int contentPosition, /*@Nullable*/ String contentId) {
+    public void updateDeepestContentTracker(int contentPosition, @Nullable String contentId) {
         // Fill content ids to size of content position. This is needed in-case we programmatically
         // set scroll position of the recycler view. Add one to contentPosition size in order to
         // more easily perform a set below.
@@ -38,7 +40,7 @@ public class DeepestContentTracker implements ViewDepthProvider {
     }
 
     @VisibleForTesting
-    /*@Nullable*/
+    @Nullable
     String getContentItAtPosition(int position) {
         if (position >= mContentIds.size() || position < 0) {
             return null;
@@ -52,7 +54,7 @@ public class DeepestContentTracker implements ViewDepthProvider {
     }
 
     @Override
-    /*@Nullable*/
+    @Nullable
     public String getChildViewDepth() {
         if (mContentIds.isEmpty()) {
             return null;

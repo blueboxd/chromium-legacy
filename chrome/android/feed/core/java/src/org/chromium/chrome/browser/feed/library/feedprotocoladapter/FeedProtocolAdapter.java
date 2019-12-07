@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.feedprotocoladapter;
 
+import androidx.annotation.Nullable;
+
 import com.google.protobuf.ByteString;
 
 import org.chromium.chrome.browser.feed.library.api.internal.common.Model;
@@ -237,8 +239,7 @@ public final class FeedProtocolAdapter implements ProtocolAdapter, Dumpable {
         return streamDataOperation;
     }
 
-    private StreamFeature.Builder createStreamFeature(
-            String contentId, /*@Nullable*/ String parentId) {
+    private StreamFeature.Builder createStreamFeature(String contentId, @Nullable String parentId) {
         StreamFeature.Builder builder = StreamFeature.newBuilder();
         builder.setContentId(contentId);
 
@@ -248,9 +249,9 @@ public final class FeedProtocolAdapter implements ProtocolAdapter, Dumpable {
         return builder;
     }
 
-    /*@Nullable*/
+    @Nullable
     private StreamToken createStreamToken(
-            String tokenId, /*@Nullable*/ String parentId, ByteString continuationToken) {
+            String tokenId, @Nullable String parentId, ByteString continuationToken) {
         if (continuationToken.isEmpty()) {
             return null;
         }
@@ -264,7 +265,7 @@ public final class FeedProtocolAdapter implements ProtocolAdapter, Dumpable {
     }
 
     private StreamDataOperation.Builder createSharedStateDataOperation(
-            Operation operation, /*@Nullable*/ String contentId, StreamSharedState sharedState) {
+            Operation operation, @Nullable String contentId, StreamSharedState sharedState) {
         StreamDataOperation.Builder dataOperation = createDataOperation(operation, contentId, null);
         dataOperation.setStreamPayload(
                 StreamPayload.newBuilder().setStreamSharedState(sharedState));
@@ -272,8 +273,7 @@ public final class FeedProtocolAdapter implements ProtocolAdapter, Dumpable {
     }
 
     private StreamDataOperation.Builder createTokenDataOperation(
-            /*@Nullable*/ String contentId, /*@Nullable*/ String parentId,
-            StreamToken streamToken) {
+            @Nullable String contentId, @Nullable String parentId, StreamToken streamToken) {
         StreamDataOperation.Builder dataOperation =
                 createDataOperation(Operation.UPDATE_OR_APPEND, contentId, parentId);
         dataOperation.setStreamPayload(StreamPayload.newBuilder().setStreamToken(streamToken));
@@ -281,15 +281,14 @@ public final class FeedProtocolAdapter implements ProtocolAdapter, Dumpable {
     }
 
     private StreamDataOperation.Builder createDataOperation(
-            Operation operation, /*@Nullable*/ String contentId, /*@Nullable*/ String parentId) {
+            Operation operation, @Nullable String contentId, @Nullable String parentId) {
         return createDataOperation(
                 StreamDataOperation.newBuilder(), operation, contentId, parentId);
     }
 
     private StreamDataOperation.Builder createDataOperation(
             StreamDataOperation.Builder streamDataOperation, Operation operation,
-            /*@Nullable*/ String contentId,
-            /*@Nullable*/ String parentId) {
+            @Nullable String contentId, @Nullable String parentId) {
         StreamStructure.Builder streamStructure = StreamStructure.newBuilder();
         streamStructure.setOperation(operation);
         if (contentId != null) {

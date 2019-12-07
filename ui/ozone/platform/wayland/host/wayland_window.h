@@ -19,8 +19,6 @@
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
-#include "ui/platform_window/platform_window_handler/wm_drag_handler.h"
-#include "ui/platform_window/platform_window_handler/wm_move_resize_handler.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
 namespace gfx {
@@ -33,24 +31,19 @@ class BitmapCursorOzone;
 class OSExchangeData;
 class WaylandConnection;
 class ShellPopupWrapper;
-class ShellSurfaceWrapper;
 
-namespace {
-class XDGShellObjectFactory;
-}  // namespace
-
-class WaylandWindow : public PlatformWindow,
-                      public PlatformEventDispatcher,
-                      public WmMoveResizeHandler,
-                      public WmDragHandler {
+class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
  public:
-  WaylandWindow(PlatformWindowDelegate* delegate,
-                WaylandConnection* connection);
   ~WaylandWindow() override;
 
-  static WaylandWindow* FromSurface(wl_surface* surface);
+  // A factory method that can create any of the derived types of WaylandWindow
+  // (WaylandSurface, WaylandPopup and WaylandSubsurface).
+  static std::unique_ptr<WaylandWindow> Create(
+      PlatformWindowDelegate* delegate,
+      WaylandConnection* connection,
+      PlatformWindowInitProperties properties);
 
-  bool Initialize(PlatformWindowInitProperties properties);
+  static WaylandWindow* FromSurface(wl_surface* surface);
 
   // Updates the surface buffer scale of the window.  Top level windows take
   // scale from the output attached to either their current display or the
@@ -60,16 +53,11 @@ class WaylandWindow : public PlatformWindow,
   void UpdateBufferScale(bool update_bounds);
 
   wl_surface* surface() const { return surface_.get(); }
-  ShellSurfaceWrapper* shell_surface() const { return shell_surface_.get(); }
   ShellPopupWrapper* shell_popup() const { return shell_popup_.get(); }
 
   WaylandWindow* parent_window() const { return parent_window_; }
 
   gfx::AcceleratedWidget GetWidget() const;
-
-  // Apply the bounds specified in the most recent configure event. This should
-  // be called after processing all pending events in the wayland connection.
-  void ApplyPendingBounds();
 
   // Set whether this window has pointer focus and should dispatch mouse events.
   void SetPointerFocus(bool focus);
@@ -95,22 +83,9 @@ class WaylandWindow : public PlatformWindow,
 
   int32_t buffer_scale() const { return buffer_scale_; }
 
-  bool is_active() const { return is_active_; }
-
   const base::flat_set<uint32_t>& entered_outputs_ids() const {
     return entered_outputs_ids_;
   }
-
-  // WmMoveResizeHandler
-  void DispatchHostWindowDragMovement(
-      int hittest,
-      const gfx::Point& pointer_location_in_px) override;
-
-  // WmDragHandler
-  void StartDrag(const ui::OSExchangeData& data,
-                 int operation,
-                 gfx::NativeCursor cursor,
-                 base::OnceCallback<void(int)> callback) override;
 
   // PlatformWindow
   void Show(bool inactive) override;
@@ -148,43 +123,49 @@ class WaylandWindow : public PlatformWindow,
   bool CanDispatchEvent(const PlatformEvent& event) override;
   uint32_t DispatchEvent(const PlatformEvent& event) override;
 
-  // Handles the configuration events coming from the surface (see
-  // |XDGSurfaceWrapperStable::ConfigureTopLevel| and
-  // |XDGSurfaceWrapperV6::ConfigureTopLevel|.  The width and height come in
-  // DIP of the output that the surface is currently bound to.
-  void HandleSurfaceConfigure(int32_t widht,
-                              int32_t height,
-                              bool is_maximized,
-                              bool is_fullscreen,
-                              bool is_activated);
+  // Handles the configuration events coming from the shell objects.
+  // The width and height come in DIP of the output that the surface is
+  // currently bound to.
+  virtual void HandleSurfaceConfigure(int32_t widht,
+                                      int32_t height,
+                                      bool is_maximized,
+                                      bool is_fullscreen,
+                                      bool is_activated);
   void HandlePopupConfigure(const gfx::Rect& bounds);
 
   void OnCloseRequest();
 
-  void OnDragEnter(const gfx::PointF& point,
-                   std::unique_ptr<OSExchangeData> data,
-                   int operation);
-  int OnDragMotion(const gfx::PointF& point, uint32_t time, int operation);
-  void OnDragDrop(std::unique_ptr<OSExchangeData> data);
-  void OnDragLeave();
-  void OnDragSessionClose(uint32_t dnd_action);
+  // Notifies about drag/drop session events.
+  virtual void OnDragEnter(const gfx::PointF& point,
+                           std::unique_ptr<OSExchangeData> data,
+                           int operation);
+  virtual int OnDragMotion(const gfx::PointF& point,
+                           uint32_t time,
+                           int operation);
+  virtual void OnDragDrop(std::unique_ptr<OSExchangeData> data);
+  virtual void OnDragLeave();
+  virtual void OnDragSessionClose(uint32_t dnd_action);
+
+ protected:
+  WaylandWindow(PlatformWindowDelegate* delegate,
+                WaylandConnection* connection);
+
+  WaylandConnection* connection() { return connection_; }
+  PlatformWindowDelegate* delegate() { return delegate_; }
+
+  // Sets bounds in dip.
+  void SetBoundsDip(const gfx::Rect& bounds_dip);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WaylandScreenTest, SetBufferScale);
 
-  void SetBoundsDip(const gfx::Rect& bounds_dip);
+  // Initializes the WaylandWindow with supplied properties.
+  bool Initialize(PlatformWindowInitProperties properties);
+
   void SetBufferScale(int32_t scale, bool update_bounds);
-
-  bool IsMinimized() const;
-  bool IsMaximized() const;
-  bool IsFullscreen() const;
-
-  void MaybeTriggerPendingStateChange();
 
   // Creates a popup window, which is visible as a menu window.
   void CreateShellPopup();
-  // Creates a surface window, which is visible as a main window.
-  void CreateShellSurface();
   // Creates (if necessary) and show subsurface window, to host
   // tooltip's content.
   void CreateAndShowTooltipSubSurface();
@@ -194,8 +175,6 @@ class WaylandWindow : public PlatformWindow,
 
   // Returns a root parent window.
   WaylandWindow* GetRootParentWindow();
-
-  WmMoveResizeHandler* AsWmMoveResizeHandler();
 
   // Install a surface listener and start getting wl_output enter/leave events.
   void AddSurfaceListener();
@@ -216,6 +195,9 @@ class WaylandWindow : public PlatformWindow,
 
   bool IsOpaqueWindow() const;
 
+  // Additional initialization of derived classes.
+  virtual bool OnInitialize(PlatformWindowInitProperties properties);
+
   // wl_surface_listener
   static void Enter(void* data,
                     struct wl_surface* wl_surface,
@@ -229,33 +211,16 @@ class WaylandWindow : public PlatformWindow,
   WaylandWindow* parent_window_ = nullptr;
   WaylandWindow* child_window_ = nullptr;
 
-  // Creates xdg objects based on xdg shell version.
-  std::unique_ptr<XDGShellObjectFactory> xdg_shell_objects_factory_;
-
   wl::Object<wl_surface> surface_;
   wl::Object<wl_subsurface> tooltip_subsurface_;
 
   // Wrappers around xdg v5 and xdg v6 objects. WaylandWindow doesn't
   // know anything about the version.
-  std::unique_ptr<ShellSurfaceWrapper> shell_surface_;
   std::unique_ptr<ShellPopupWrapper> shell_popup_;
 
   // The current cursor bitmap (immutable).
   scoped_refptr<BitmapCursorOzone> bitmap_;
 
-  base::OnceCallback<void(int)> drag_closed_callback_;
-
-  // These bounds attributes below have suffices that indicate units used.
-  // Wayland operates in DIP but the platform operates in physical pixels so
-  // our WaylandWindow is the link that has to translate the units.  See also
-  // comments in the implementation.
-  //
-  // Bounds that will be applied when the window state is finalized.  The window
-  // may get several configuration events that update the pending bounds, and
-  // only upon finalizing the state is the latest value stored as the current
-  // bounds via |ApplyPendingBounds|.  Measured in DIP because updated in the
-  // handler that receives DIP from Wayland.
-  gfx::Rect pending_bounds_dip_;
   // Current bounds of the platform window.
   gfx::Rect bounds_px_;
   // The bounds of the platform window before it went maximized or fullscreen.
@@ -273,17 +238,8 @@ class WaylandWindow : public PlatformWindow,
   // We need it to place and size the menus properly.
   float ui_scale_ = 1.0;
 
-  // Stores current states of the window.
-  PlatformWindowState state_;
-  // Stores a pending state of the window, which is used before the surface is
-  // activated.
-  PlatformWindowState pending_state_;
-
   // Stores current opacity of the window. Set on ::Initialize call.
   ui::PlatformWindowOpacity opacity_;
-
-  bool is_active_ = false;
-  bool is_minimizing_ = false;
 
   bool is_tooltip_ = false;
 

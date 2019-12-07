@@ -29,3 +29,8 @@ document Name='Action verbs'
 ++++menuitem Name='Menu item 1'
 ++++menuitemcheckbox Name='Menu item 2' Toggle.ToggleState='On'
 ++++menuitemradio Name='Menu item 3' SelectionItem.IsSelected=false
+++button Name='ARIA Button'
+++button Name='ARIA button with tab index'
+++button Name='ARIA button with negative tab index'
+++group
+++++button Name='ARIA button that is an active descendant'

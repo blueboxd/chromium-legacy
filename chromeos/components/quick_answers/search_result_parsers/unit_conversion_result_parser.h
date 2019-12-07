@@ -16,6 +16,7 @@ namespace quick_answers {
 
 class UnitConversionResultParser : public ResultParser {
  public:
+  // ResultParser:
   bool Parse(const base::Value* result, QuickAnswer* quick_answer) override;
 };
 

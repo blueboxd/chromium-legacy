@@ -13,12 +13,12 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
-#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/engagement/site_engagement_details.mojom.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -352,6 +352,23 @@ void PopulateInfoMapWithBookmarks(
   }
 }
 
+void PopulateInfoMapWithInstalled(
+    browsing_data::TimePeriod time_period,
+    Profile* profile,
+    std::map<std::string, ImportantDomainInfo>* output) {
+  SiteEngagementService* service = SiteEngagementService::Get(profile);
+  std::vector<mojom::SiteEngagementDetails> engagement_details =
+      service->GetAllDetailsEngagedInTimePeriod(time_period);
+  std::set<GURL> content_origins;
+
+  for (const auto& detail : engagement_details) {
+    if (detail.installed_bonus > 0) {
+      MaybePopulateImportantInfoForReason(detail.origin, &content_origins,
+                                          ImportantReason::HOME_SCREEN, output);
+    }
+  }
+}
+
 }  // namespace
 
 std::string ImportantSitesUtil::GetRegisterableDomainOrIP(const GURL& url) {
@@ -423,6 +440,32 @@ ImportantSitesUtil::GetImportantRegisterableDomains(Profile* profile,
   }
 
   return final_list;
+}
+
+std::vector<ImportantDomainInfo>
+ImportantSitesUtil::GetInstalledRegisterableDomains(
+    browsing_data::TimePeriod time_period,
+    Profile* profile,
+    size_t max_results) {
+  std::vector<ImportantDomainInfo> installed_domains;
+  std::map<std::string, ImportantDomainInfo> important_info;
+  PopulateInfoMapWithInstalled(time_period, profile, &important_info);
+
+  std::unordered_set<std::string> excluded_domains =
+      GetBlacklistedImportantDomains(profile);
+
+  std::vector<std::pair<std::string, ImportantDomainInfo>> items(
+      important_info.begin(), important_info.end());
+  std::sort(items.begin(), items.end(), &CompareDescendingImportantInfo);
+
+  for (std::pair<std::string, ImportantDomainInfo>& domain_info : items) {
+    if (installed_domains.size() >= max_results)
+      break;
+    if (excluded_domains.find(domain_info.first) != excluded_domains.end())
+      continue;
+    installed_domains.push_back(domain_info.second);
+  }
+  return installed_domains;
 }
 
 void ImportantSitesUtil::RecordBlacklistedAndIgnoredImportantSites(

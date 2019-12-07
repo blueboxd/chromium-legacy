@@ -480,7 +480,9 @@ TEST_F(ShelfContextMenuTest, ArcContextMenuOptions) {
 
 // Tests that the context menu of internal app  is correct.
 TEST_F(ShelfContextMenuTest, InternalAppShelfContextMenu) {
-  for (const auto& internal_app : app_list::GetInternalAppList(profile())) {
+  const std::vector<app_list::InternalApp> internal_apps(
+      app_list::GetInternalAppList(profile()));
+  for (const auto& internal_app : internal_apps) {
     if (!internal_app.show_in_launcher)
       continue;
 
@@ -510,7 +512,9 @@ TEST_F(ShelfContextMenuTest, InternalAppShelfContextMenu) {
 
 // Tests that the number of context menu options of internal app is correct.
 TEST_F(ShelfContextMenuTest, InternalAppShelfContextMenuOptionsNumber) {
-  for (const auto& internal_app : app_list::GetInternalAppList(profile())) {
+  const std::vector<app_list::InternalApp> internal_apps(
+      app_list::GetInternalAppList(profile()));
+  for (const auto& internal_app : internal_apps) {
     const std::string app_id = internal_app.app_id;
     const ash::ShelfID shelf_id(app_id);
     // Pin internal app.

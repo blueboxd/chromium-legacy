@@ -7,6 +7,7 @@
 #include "base/numerics/ranges.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/settings_api_bubble_helpers.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
@@ -42,6 +43,11 @@ ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser)
   extensions_button_->EnableCanvasFlippingForRTLUI(false);
   AddMainButton(extensions_button_);
   CreateActions();
+
+  // TODO(pbos): Consider splitting out tab-strip observing into another class.
+  // Triggers for Extensions-related bubbles should preferably be separate from
+  // the container where they are shown.
+  browser_->tab_strip_model()->AddObserver(this);
 }
 
 ExtensionsToolbarContainer::~ExtensionsToolbarContainer() {
@@ -168,6 +174,17 @@ void ExtensionsToolbarContainer::ShowToolbarActionBubbleAsync(
       FROM_HERE,
       base::BindOnce(&ExtensionsToolbarContainer::ShowToolbarActionBubble,
                      weak_ptr_factory_.GetWeakPtr(), std::move(bubble)));
+}
+
+void ExtensionsToolbarContainer::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  if (tab_strip_model->empty() || !selection.active_tab_changed())
+    return;
+
+  extensions::MaybeShowExtensionControlledNewTabPage(browser_,
+                                                     selection.new_contents);
 }
 
 void ExtensionsToolbarContainer::OnToolbarActionAdded(

@@ -89,13 +89,12 @@ class WaylandScreenTest : public WaylandTest {
       PlatformWindowType window_type,
       gfx::AcceleratedWidget parent_widget,
       MockPlatformWindowDelegate* delegate) {
-    auto window = std::make_unique<WaylandWindow>(delegate, connection_.get());
     PlatformWindowInitProperties properties;
     properties.bounds = bounds;
     properties.type = window_type;
     properties.parent_widget = parent_widget;
-    EXPECT_TRUE(window->Initialize(std::move(properties)));
-    return window;
+    return WaylandWindow::Create(delegate, connection_.get(),
+                                 std::move(properties));
   }
 
   void UpdateOutputGeometry(wl_resource* output_resource,

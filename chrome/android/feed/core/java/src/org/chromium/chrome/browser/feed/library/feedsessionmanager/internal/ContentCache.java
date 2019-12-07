@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.feedsessionmanager.internal;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.common.logging.Dumpable;
 import org.chromium.chrome.browser.feed.library.common.logging.Dumper;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
@@ -60,7 +62,7 @@ public final class ContentCache implements Dumpable {
     }
 
     /** Return the {@link StreamPayload} or {@code null} if it is not found in the cache. */
-    /*@Nullable*/
+    @Nullable
     public StreamPayload get(String key) {
         StreamPayload value = mMutationCache.get(key);
         mLookupCount++;
@@ -74,7 +76,7 @@ public final class ContentCache implements Dumpable {
     }
 
     /** Add a new value to the cache, returning the previous version or {@code null}. */
-    /*@Nullable*/
+    @Nullable
     public StreamPayload put(String key, StreamPayload payload) {
         return mMutationCache.put(key, payload);
     }

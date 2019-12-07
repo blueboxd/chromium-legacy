@@ -1434,8 +1434,8 @@ void LockContentsView::CreateLowDensityLayout(
   media_controls_callbacks.show_media_controls = base::BindRepeating(
       &LockContentsView::CreateMediaControlsLayout, base::Unretained(this));
 
-  media_controls_view_ = std::make_unique<LockScreenMediaControlsView>(
-      Shell::Get()->connector(), media_controls_callbacks);
+  media_controls_view_ =
+      std::make_unique<LockScreenMediaControlsView>(media_controls_callbacks);
   media_controls_view_->set_owned_by_client();
 
   if (users.size() > 1) {

@@ -19,7 +19,7 @@
 #include "components/update_client/update_client.h"
 #include "url/gurl.h"
 
-class ComponentsUI;
+class ComponentsHandler;
 class PluginObserver;
 
 namespace policy {
@@ -143,7 +143,7 @@ class ComponentUpdateService {
   virtual bool GetComponentDetails(const std::string& id,
                                    CrxUpdateItem* item) const = 0;
 
-  friend class ::ComponentsUI;
+  friend class ::ComponentsHandler;
   FRIEND_TEST_ALL_PREFIXES(ComponentInstallerTest, RegisterComponent);
 };
 
@@ -162,7 +162,7 @@ class OnDemandUpdater {
   friend class OnDemandTester;
   friend class policy::ComponentUpdaterPolicyTest;
   friend class SupervisedUserWhitelistInstaller;
-  friend class ::ComponentsUI;
+  friend class ::ComponentsHandler;
   friend class ::PluginObserver;
   friend class SwReporterOnDemandFetcher;
 #if defined(OS_CHROMEOS)

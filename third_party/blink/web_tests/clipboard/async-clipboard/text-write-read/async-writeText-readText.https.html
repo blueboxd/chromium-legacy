@@ -7,8 +7,8 @@
 <script src="../../../http/tests/resources/permissions-helper.js"></script>
 <script>
 async function readWriteTest(textInput) {
-  await PermissionsHelper.setPermission('clipboard-read', 'granted');
-  await PermissionsHelper.setPermission('clipboard-write', 'granted');
+  await PermissionsHelper.setPermission('clipboard-read-write', 'granted');
+  await PermissionsHelper.setPermission('clipboard-sanitized-write', 'granted');
 
   promise_test(async t => {
     await navigator.clipboard.writeText(textInput);

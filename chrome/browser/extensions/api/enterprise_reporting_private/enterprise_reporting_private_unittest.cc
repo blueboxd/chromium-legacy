@@ -304,6 +304,10 @@ TEST_F(EnterpriseReportingPrivateGetDeviceInfoTest, GetDeviceInfoStub) {
   ASSERT_TRUE(enterprise_reporting_private::DeviceInfo::Populate(
       *device_info_value, &info));
 
+#if defined(OS_MACOSX)
+  EXPECT_EQ("macOS", info.os_name);
+#else
+  // Verify a stub implementation.
   EXPECT_EQ("stubOS", info.os_name);
   EXPECT_EQ("0.0.0.0", info.os_version);
   EXPECT_EQ("midnightshift", info.device_host_name);
@@ -313,6 +317,7 @@ TEST_F(EnterpriseReportingPrivateGetDeviceInfoTest, GetDeviceInfoStub) {
             info.screen_lock_secured);
   EXPECT_EQ(enterprise_reporting_private::SETTING_VALUE_DISABLED,
             info.disk_encrypted);
+#endif
 }
 
 }  // namespace extensions

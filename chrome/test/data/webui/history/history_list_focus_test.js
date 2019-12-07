@@ -14,7 +14,13 @@ suite('<history-list>', function() {
   TEST_HISTORY_RESULTS[2].starred = true;
 
   setup(function() {
-    app = replaceApp();
+    window.history.replaceState({}, '', '/');
+    PolymerTest.clearBody();
+    testService = new TestBrowserService();
+    history.BrowserService.instance_ = testService;
+
+    app = document.createElement('history-app');
+    document.body.appendChild(app);
     element = app.$.history;
     return test_util.flushTasks();
   });

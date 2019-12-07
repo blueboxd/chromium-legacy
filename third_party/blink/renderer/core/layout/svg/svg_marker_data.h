@@ -20,6 +20,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_SVG_MARKER_DATA_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_SVG_MARKER_DATA_H_
 
+#include "third_party/blink/renderer/core/svg/svg_path_consumer.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -29,6 +30,7 @@ namespace blink {
 enum SVGMarkerType { kStartMarker, kMidMarker, kEndMarker };
 
 class LayoutSVGResourceMarker;
+class SVGPathByteStream;
 
 struct MarkerPosition {
   DISALLOW_NEW();
@@ -58,7 +60,7 @@ struct MarkerPosition {
   float angle;
 };
 
-class SVGMarkerDataBuilder {
+class SVGMarkerDataBuilder : private SVGPathConsumer {
   STACK_ALLOCATED();
 
  public:
@@ -67,9 +69,21 @@ class SVGMarkerDataBuilder {
         last_moveto_index_(0),
         last_element_type_(kPathElementMoveToPoint) {}
 
+  // Build marker data for a Path.
   void Build(const Path&);
 
+  // Build marker data for a SVGPathByteStream.
+  //
+  // A SVGPathByteStream is semantically higher-level than a Path, and thus
+  // this allows those higher-level constructs (for example arcs) to be handled
+  // correctly. This should be used in cases where the original path data can
+  // contain such higher-level constructs.
+  void Build(const SVGPathByteStream&);
+
  private:
+  // SVGPathConsumer
+  void EmitSegment(const PathSegmentData&) override;
+
   static void UpdateFromPathElement(void* info, const PathElement*);
 
   enum AngleType {
@@ -95,6 +109,7 @@ class SVGMarkerDataBuilder {
                                   const FloatPoint& end);
   SegmentData ExtractPathElementFeatures(const PathElement&) const;
   void UpdateFromPathElement(const PathElement&);
+  void Flush();
 
   Vector<MarkerPosition>& positions_;
   unsigned last_moveto_index_;

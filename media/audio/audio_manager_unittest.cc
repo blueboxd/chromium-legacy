@@ -268,8 +268,8 @@ class AudioManagerTest : public ::testing::Test {
     chromeos::CrasAudioClient::InitializeFake();
     chromeos::FakeCrasAudioClient::Get()->SetAudioNodesForTesting(audio_nodes);
     audio_pref_handler_ = new chromeos::AudioDevicesPrefHandlerStub();
-    chromeos::CrasAudioHandler::Initialize(/*connector=*/nullptr,
-                                           audio_pref_handler_);
+    chromeos::CrasAudioHandler::Initialize(
+        /*media_controller_manager*/ mojo::NullRemote(), audio_pref_handler_);
     cras_audio_handler_ = chromeos::CrasAudioHandler::Get();
     base::RunLoop().RunUntilIdle();
   }

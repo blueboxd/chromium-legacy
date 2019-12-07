@@ -443,7 +443,6 @@ void PlatformFontSkia::ComputeMetricsIfNecessary() {
 ////////////////////////////////////////////////////////////////////////////////
 // PlatformFont, public:
 
-#if !defined(OS_WIN)
 // static
 PlatformFont* PlatformFont::CreateDefault() {
   return new PlatformFontSkia;
@@ -464,6 +463,5 @@ PlatformFont* PlatformFont::CreateFromSkTypeface(
   TRACE_EVENT0("fonts", "PlatformFont::CreateFromSkTypeface");
   return new PlatformFontSkia(typeface, font_size_pixels, params);
 }
-#endif  // !defined(OS_WIN)
 
 }  // namespace gfx

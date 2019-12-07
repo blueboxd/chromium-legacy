@@ -306,7 +306,8 @@ void OnTransactionCompletedOnAnyThread(void* context,
 bool SurfaceControl::IsSupported() {
   if (!base::android::BuildInfo::GetInstance()->is_at_least_q())
     return false;
-  return SurfaceControlMethods::Get().supported;
+  CHECK(SurfaceControlMethods::Get().supported);
+  return true;
 }
 
 bool SurfaceControl::SupportsColorSpace(const gfx::ColorSpace& color_space) {

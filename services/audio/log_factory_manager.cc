@@ -6,8 +6,6 @@
 
 #include <utility>
 
-#include "services/service_manager/public/cpp/service_context_ref.h"
-
 namespace audio {
 
 LogFactoryManager::LogFactoryManager() = default;
@@ -17,10 +15,9 @@ LogFactoryManager::~LogFactoryManager() {
 }
 
 void LogFactoryManager::Bind(
-    mojo::PendingReceiver<mojom::LogFactoryManager> receiver,
-    TracedServiceRef context_ref) {
+    mojo::PendingReceiver<mojom::LogFactoryManager> receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
-  receivers_.Add(this, std::move(receiver), std::move(context_ref));
+  receivers_.Add(this, std::move(receiver));
 }
 
 void LogFactoryManager::SetLogFactory(

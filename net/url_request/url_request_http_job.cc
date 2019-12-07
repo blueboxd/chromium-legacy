@@ -589,6 +589,37 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
 
     // Disable privacy mode as we are sending cookies anyway.
     request_info_.privacy_mode = PRIVACY_MODE_DISABLED;
+
+    // TODO(crbug.com/1031664): Reduce the number of times the cookie list is
+    // iterated over. Get metrics for every cookie which is included.
+    for (const auto& c : cookies_with_status_list) {
+      bool request_is_secure = request_->url().SchemeIsCryptographic();
+      net::CookieSourceScheme cookie_scheme = c.cookie.SourceScheme();
+      CookieRequestScheme cookie_request_schemes;
+
+      switch (cookie_scheme) {
+        case net::CookieSourceScheme::kSecure:
+          cookie_request_schemes =
+              request_is_secure
+                  ? CookieRequestScheme::kSecureSetSecureRequest
+                  : CookieRequestScheme::kSecureSetNonsecureRequest;
+          break;
+
+        case net::CookieSourceScheme::kNonSecure:
+          cookie_request_schemes =
+              request_is_secure
+                  ? CookieRequestScheme::kNonsecureSetSecureRequest
+                  : CookieRequestScheme::kNonsecureSetNonsecureRequest;
+          break;
+
+        case net::CookieSourceScheme::kUnset:
+          cookie_request_schemes = CookieRequestScheme::kUnsetCookieScheme;
+          break;
+      }
+
+      UMA_HISTOGRAM_ENUMERATION("Cookie.CookieSchemeRequestScheme",
+                                cookie_request_schemes);
+    }
   }
 
   // Report status for things in |excluded_list| and |cookies_with_status_list|

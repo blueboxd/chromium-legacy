@@ -465,7 +465,7 @@ class GFX_EXPORT RenderText {
 
   // Returns true if the position is a valid logical index into text(), and is
   // also a valid grapheme boundary, which may be used as a cursor position.
-  virtual bool IsValidCursorIndex(size_t index) = 0;
+  bool IsValidCursorIndex(size_t index);
 
   // Returns true if the position is a valid logical index into text(). Indices
   // amid multi-character graphemes are allowed here, unlike IsValidCursorIndex.
@@ -488,6 +488,9 @@ class GFX_EXPORT RenderText {
   // the display rect if necessary. These bounds are in local coordinates.
   // Subsequent text, cursor, or bounds changes may invalidate returned values.
   const Rect& GetUpdatedCursorBounds();
+
+  // Returns true of the current index is at the start of a grapheme.
+  bool IsGraphemeBoundary(size_t index);
 
   // Given an |index| in text(), return the next or previous grapheme boundary
   // in logical order (i.e. the nearest cursorable index). The return value is
@@ -671,8 +674,7 @@ class GFX_EXPORT RenderText {
 
   // Convert between indices into |text_| and indices into
   // GetDisplayText(), which differ when the text is obscured,
-  // truncated or elided. Regardless of whether or not the text is
-  // obscured, the character (code point) offsets always match.
+  // truncated or elided.
   size_t TextIndexToDisplayIndex(size_t index);
   size_t DisplayIndexToTextIndex(size_t index);
 
@@ -719,18 +721,6 @@ class GFX_EXPORT RenderText {
   // Get the text direction for the current directionality mode and given
   // |text|.
   base::i18n::TextDirection GetTextDirection(const base::string16& text);
-
-  // Convert an index in |text_| to the index in |given_text|. The
-  // |given_text| should be either |display_text_| or |layout_text_|
-  // depending on the elide state.
-  size_t TextIndexToGivenTextIndex(const base::string16& given_text,
-                                   size_t index) const;
-
-  // Convert an index in |given_text_| to the index in |text|. The
-  // |given_text| should be either |display_text_| or |layout_text_|
-  // depending on the elide state.
-  size_t GivenTextIndexToTextIndex(const base::string16& given_text,
-                                   size_t index) const;
 
   // Adjust ranged styles to accommodate a new text length.
   void UpdateStyleLengths();
@@ -887,6 +877,15 @@ class GFX_EXPORT RenderText {
   BreakList<int> layout_font_size_overrides_;
   BreakList<Font::Weight> layout_weights_;
   std::vector<BreakList<bool>> layout_styles_;
+
+  // A mapping from text to display text indices for each grapheme. The vector
+  // contains an ordered sequence of indice pairs. Both sequence |text_index|
+  // and |display_index| are sorted.
+  struct TextToDisplayIndex {
+    size_t text_index = 0;
+    size_t display_index = 0;
+  };
+  std::vector<TextToDisplayIndex> text_to_display_indices_;
 
   // A flag to obscure actual text with asterisks for password fields.
   bool obscured_;

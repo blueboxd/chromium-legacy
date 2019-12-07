@@ -9,7 +9,9 @@
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/games/core/catalog_store.h"
 #include "components/games/core/games_service_impl.h"
+#include "components/games/core/highlighted_games_store.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace games {
@@ -36,7 +38,10 @@ GamesService* GamesServiceFactory::GetForBrowserContext(
 KeyedService* GamesServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
-  return new GamesServiceImpl(profile->GetPrefs());
+
+  return new GamesServiceImpl(std::make_unique<CatalogStore>(),
+                              std::make_unique<HighlightedGamesStore>(),
+                              profile->GetPrefs());
 }
 
 }  // namespace games

@@ -21,10 +21,7 @@ JsChannelBindings::JsChannelBindings(
     : content::RenderFrameObserver(render_frame),
       receiver_(this, std::move(receiver)) {}
 
-JsChannelBindings::~JsChannelBindings() {
-  while (!channels_.empty())
-    RemoveChannel(channels_.back().first);
-}
+JsChannelBindings::~JsChannelBindings() = default;
 
 void JsChannelBindings::Create(content::RenderFrame* render_frame) {
   content::RenderThread* render_thread = content::RenderThread::Get();

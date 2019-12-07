@@ -5,7 +5,10 @@
 package org.chromium.chrome.browser.autofill_assistant;
 
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionsResponseProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ProcessedActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportsScriptResponseProto;
+
+import java.util.List;
 
 /**
  * Interface for a Java-side autofill assistant service.
@@ -28,5 +31,6 @@ public interface AutofillAssistantService {
      * Get next sequence of actions according to server payloads in previous response.
      * @return the response proto of the service.
      */
-    ActionsResponseProto getNextActions(byte[] globalPayload, byte[] scriptPayload);
+    ActionsResponseProto getNextActions(byte[] globalPayload, byte[] scriptPayload,
+            List<ProcessedActionProto> processedActions);
 }

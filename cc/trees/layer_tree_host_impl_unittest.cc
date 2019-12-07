@@ -13107,8 +13107,6 @@ TEST_F(LayerTreeHostImplTest, ScrollByScrollingNode) {
   // still the same. |scroll_state|'s scrolling node should match
   // it.
   EXPECT_EQ(scroll_node, scroll_tree.CurrentlyScrollingNode());
-  EXPECT_EQ(scroll_state->data()->current_native_scrolling_node(),
-            scroll_tree.CurrentlyScrollingNode());
   EXPECT_EQ(scroll_state->data()->current_native_scrolling_element(),
             scroll_tree.CurrentlyScrollingNode()->element_id);
 
@@ -13120,8 +13118,6 @@ TEST_F(LayerTreeHostImplTest, ScrollByScrollingNode) {
   host_impl_->ScrollBy(scroll_state.get());
 
   EXPECT_EQ(scroll_node, scroll_tree.CurrentlyScrollingNode());
-  EXPECT_EQ(scroll_state->data()->current_native_scrolling_node(),
-            scroll_tree.CurrentlyScrollingNode());
   EXPECT_EQ(scroll_state->data()->current_native_scrolling_element(),
             scroll_tree.CurrentlyScrollingNode()->element_id);
 }

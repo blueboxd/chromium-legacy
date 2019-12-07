@@ -12,9 +12,8 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/media/media_keys_listener_manager_impl.h"
 #include "content/public/browser/media_keys_listener_manager.h"
-#include "services/media_session/public/mojom/constants.mojom.h"
+#include "content/public/browser/media_session_service.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/media_keys_util.h"
 
@@ -22,18 +21,13 @@ namespace content {
 
 using media_session::mojom::MediaSessionAction;
 
-HardwareKeyMediaController::HardwareKeyMediaController(
-    service_manager::Connector* connector) {
-  // |connector| can be null in tests.
-  if (!connector)
-    return;
-
+HardwareKeyMediaController::HardwareKeyMediaController() {
   // Connect to the MediaControllerManager and create a MediaController that
   // controls the active session.
   mojo::Remote<media_session::mojom::MediaControllerManager>
       controller_manager_remote;
-  connector->Connect(media_session::mojom::kServiceName,
-                     controller_manager_remote.BindNewPipeAndPassReceiver());
+  GetMediaSessionService().BindMediaControllerManager(
+      controller_manager_remote.BindNewPipeAndPassReceiver());
   controller_manager_remote->CreateActiveMediaController(
       media_controller_remote_.BindNewPipeAndPassReceiver());
 

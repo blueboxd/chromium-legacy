@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
@@ -119,22 +118,22 @@ int CalculateCarryOverDividerPostion(
   gfx::Rect right_window_bounds =
       right_window ? right_window->GetBoundsInScreen() : gfx::Rect();
 
-  switch (GetCurrentScreenOrientation()) {
-    case OrientationLockType::kLandscapePrimary:
+  if (SplitViewController::IsLayoutHorizontal()) {
+    if (SplitViewController::IsLayoutRightSideUp()) {
       return left_window ? left_window_bounds.width()
                          : work_area.width() - right_window_bounds.width();
-    case OrientationLockType::kPortraitPrimary:
-      return left_window ? left_window_bounds.height()
-                         : work_area.height() - right_window_bounds.height();
-    case OrientationLockType::kLandscapeSecondary:
+    } else {
       return left_window ? work_area.width() - left_window_bounds.width()
                          : right_window_bounds.width();
-    case OrientationLockType::kPortraitSecondary:
+    }
+  } else {
+    if (SplitViewController::IsLayoutRightSideUp()) {
+      return left_window ? left_window_bounds.height()
+                         : work_area.height() - right_window_bounds.height();
+    } else {
       return left_window ? work_area.height() - left_window_bounds.height()
                          : right_window_bounds.height();
-    default:
-      return SplitViewController::Get(Shell::GetPrimaryRootWindow())
-          ->GetDefaultDividerPosition();
+    }
   }
 }
 

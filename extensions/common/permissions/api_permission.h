@@ -98,7 +98,7 @@ class APIPermission {
     kDownloadsShelf = 54,
     kDeleted_EasyUnlockPrivate = 55,
     kEchoPrivate = 56,
-    kEmbeddedExtensionOptions = 57,
+    kDeleted_EmbeddedExtensionOptions = 57,
     kEnterprisePlatformKeys = 58,
     kEnterprisePlatformKeysPrivate = 59,
     kDeleted_ExperienceSamplingPrivate = 60,

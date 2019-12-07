@@ -49,8 +49,13 @@ namespace chrome_cleaner {
 
 namespace {
 
-class ServiceUtilCleanerTest : public testing::Test {
+class ServiceUtilCleanerRunningServiceTest : public testing::Test {
  public:
+  static void SetUpTestCase() {
+    // Tests calling StartService() need this.
+    ASSERT_TRUE(chrome_cleaner::ResetAclForUcrtbase());
+  }
+
   void SetUp() override {
     // Cleanup previous run. This may happen when previous execution of unittest
     // crashed, leaving background processes/services.
@@ -74,7 +79,7 @@ TEST(SystemUtilCleanerTests, OpenRegistryKeyWithInvalidParameter) {
   EXPECT_FALSE(key_path.Open(KEY_READ, &key));
 }
 
-TEST_F(ServiceUtilCleanerTest, DeleteService) {
+TEST_F(ServiceUtilCleanerRunningServiceTest, DeleteService) {
   TestScopedServiceHandle service_handle;
   ASSERT_TRUE(service_handle.InstallService());
   service_handle.Close();
@@ -85,8 +90,7 @@ TEST_F(ServiceUtilCleanerTest, DeleteService) {
   EXPECT_FALSE(DoesServiceExist(service_handle.service_name()));
 }
 
-// Disabled: https://crbug.com/956016
-TEST_F(ServiceUtilCleanerTest, DISABLED_StopAndDeleteRunningService) {
+TEST_F(ServiceUtilCleanerRunningServiceTest, StopAndDeleteRunningService) {
   // Install and launch the service.
   TestScopedServiceHandle service_handle;
   ASSERT_TRUE(service_handle.InstallService());
@@ -109,8 +113,7 @@ TEST_F(ServiceUtilCleanerTest, DISABLED_StopAndDeleteRunningService) {
   EXPECT_FALSE(IsProcessRunning(kTestServiceExecutableName));
 }
 
-// Disabled: https://crbug.com/956016
-TEST_F(ServiceUtilCleanerTest, DISABLED_DeleteRunningService) {
+TEST_F(ServiceUtilCleanerRunningServiceTest, DeleteRunningService) {
   // Install and launch the service.
   TestScopedServiceHandle service_handle;
   ASSERT_TRUE(service_handle.InstallService());
@@ -128,7 +131,7 @@ TEST_F(ServiceUtilCleanerTest, DISABLED_DeleteRunningService) {
   EXPECT_FALSE(IsProcessRunning(kTestServiceExecutableName));
 }
 
-TEST_F(ServiceUtilCleanerTest, QuarantineFolderPermission) {
+TEST_F(ServiceUtilCleanerRunningServiceTest, QuarantineFolderPermission) {
   base::ScopedPathOverride local_app_data_override(
       CsidlToPathServiceKey(CSIDL_LOCAL_APPDATA));
 
@@ -174,7 +177,7 @@ TEST_F(ServiceUtilCleanerTest, QuarantineFolderPermission) {
   ::LocalFree(security_descriptor);
 }
 
-TEST_F(ServiceUtilCleanerTest, DefaultQuarantineFolderPath) {
+TEST_F(ServiceUtilCleanerRunningServiceTest, DefaultQuarantineFolderPath) {
   base::ScopedPathOverride local_app_data_override(
       CsidlToPathServiceKey(CSIDL_LOCAL_APPDATA));
 
@@ -187,7 +190,7 @@ TEST_F(ServiceUtilCleanerTest, DefaultQuarantineFolderPath) {
   EXPECT_EQ(quarantine_path, default_path);
 }
 
-TEST_F(ServiceUtilCleanerTest, SpecifiedQuarantineFolderPath) {
+TEST_F(ServiceUtilCleanerRunningServiceTest, SpecifiedQuarantineFolderPath) {
   // Override the default path of local appdata, so if we fail to redirect the
   // quarantine folder, the test won't drop any file in the real directory.
   base::ScopedPathOverride local_app_data_override(

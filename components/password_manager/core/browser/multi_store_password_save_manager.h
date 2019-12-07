@@ -41,6 +41,8 @@ class MultiStorePasswordSaveManager : public PasswordSaveManagerImpl {
       const PasswordStore::FormDigest& form_digest) override;
   void Unblacklist(const PasswordStore::FormDigest& form_digest) override;
 
+  std::unique_ptr<PasswordSaveManager> Clone() override;
+
  protected:
   FormSaver* GetFormSaverForGeneration() override;
 

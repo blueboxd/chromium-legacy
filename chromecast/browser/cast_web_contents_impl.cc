@@ -84,6 +84,21 @@ std::vector<CastWebContents*>& CastWebContents::GetAll() {
   return *instance;
 }
 
+// static
+CastWebContents* CastWebContents::FromWebContents(
+    content::WebContents* web_contents) {
+  auto& all_cast_web_contents = CastWebContents::GetAll();
+  auto it =
+      std::find_if(all_cast_web_contents.begin(), all_cast_web_contents.end(),
+                   [&web_contents](const auto* cast_web_contents) {
+                     return cast_web_contents->web_contents() == web_contents;
+                   });
+  if (it == all_cast_web_contents.end()) {
+    return nullptr;
+  }
+  return *it;
+}
+
 CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
                                          const InitParams& init_params)
     : web_contents_(web_contents),
@@ -100,6 +115,8 @@ CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
                          ? std::make_unique<CastMediaBlocker>(web_contents_)
                          : nullptr),
       tab_id_(init_params.is_root_window ? 0 : next_tab_id++),
+      is_websql_enabled_(init_params.enable_websql),
+      is_mixer_audio_enabled_(init_params.enable_mixer_audio),
       main_frame_loaded_(false),
       closing_(false),
       stopped_(false),
@@ -333,6 +350,14 @@ void CastWebContentsImpl::RegisterInterfaceProvider(
     service_manager::InterfaceProvider* interface_provider) {
   DCHECK(interface_provider);
   interface_providers_map_.emplace(interface_set, interface_provider);
+}
+
+bool CastWebContentsImpl::is_websql_enabled() {
+  return is_websql_enabled_;
+}
+
+bool CastWebContentsImpl::is_mixer_audio_enabled() {
+  return is_mixer_audio_enabled_;
 }
 
 void CastWebContentsImpl::OnClosePageTimeout() {

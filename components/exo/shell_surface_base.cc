@@ -919,6 +919,7 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   SetShellApplicationId(window, application_id_);
   SetShellStartupId(window, startup_id_);
   SetShellMainSurface(window, root_surface());
+  SetArcAppType(window);
 
   // Start tracking changes to window bounds and window state.
   window->AddObserver(this);

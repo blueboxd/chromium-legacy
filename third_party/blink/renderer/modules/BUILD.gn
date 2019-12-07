@@ -143,6 +143,7 @@ jumbo_component("modules") {
     "//third_party/blink/renderer/modules/video_raf",
     "//third_party/blink/renderer/modules/wake_lock",
     "//third_party/blink/renderer/modules/webaudio",
+    "//third_party/blink/renderer/modules/webcodecs",
     "//third_party/blink/renderer/modules/webdatabase",
     "//third_party/blink/renderer/modules/webgl",
     "//third_party/blink/renderer/modules/webgpu",
@@ -447,6 +448,7 @@ jumbo_source_set("unit_tests") {
   deps = [
     ":modules",
     ":modules_testing",
+    "//build:chromecast_buildflags",
     "//media:test_support",
     "//net:quic_test_tools",
     "//services/device/public/cpp:test_support",

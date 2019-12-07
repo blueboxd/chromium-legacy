@@ -69,7 +69,10 @@ BaseBlockingPage::BaseBlockingPage(
           display_options,
           ui_manager->app_locale(),
           base::Time::NowFromSystemTime(),
-          controller())) {}
+          controller(),
+          /* created_prior_to_navigation */
+          IsMainPageLoadBlocked(unsafe_resources) &&
+              base::FeatureList::IsEnabled(kCommittedSBInterstitials))) {}
 
 BaseBlockingPage::~BaseBlockingPage() {}
 

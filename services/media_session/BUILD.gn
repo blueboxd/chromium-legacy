@@ -30,7 +30,6 @@ source_set("lib") {
 
   public_deps = [
     "//base",
-    "//services/service_manager/public/cpp",
   ]
 }
 
@@ -49,7 +48,6 @@ source_set("tests") {
     "//services/media_session/public/cpp",
     "//services/media_session/public/cpp/test:test_support",
     "//services/media_session/public/mojom",
-    "//services/service_manager/public/cpp/test:test_support",
     "//testing/gtest",
   ]
 }

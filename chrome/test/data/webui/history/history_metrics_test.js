@@ -13,7 +13,6 @@ suite('Metrics', function() {
   });
 
   setup(async () => {
-    window.setForeignSessions = function() {};
     PolymerTest.clearBody();
 
     history.BrowserService.instance_ = new TestBrowserService();
@@ -23,14 +22,19 @@ suite('Metrics', function() {
     histogramMap = testService.histogramMap;
 
     app = document.createElement('history-app');
-    document.body.appendChild(app);
-    await testService.whenCalled('historyLoaded');
-
-    cr.webUIListenerCallback('sign-in-state-changed', false);
-    await test_util.flushTasks();
   });
 
+  /** @return {!Promise} Promise that resolves when setup is complete. */
+  function finishSetup() {
+    document.body.appendChild(app);
+    return testService.whenCalled('historyLoaded').then(() => {
+      cr.webUIListenerCallback('sign-in-state-changed', false);
+      return test_util.flushTasks();
+    });
+  }
+
   test('History.HistoryPageView', async () => {
+    await finishSetup();
     app.grouped_ = true;
 
     const histogram = histogramMap['History.HistoryPageView'];
@@ -50,6 +54,8 @@ suite('Metrics', function() {
   });
 
   test('history-list', async () => {
+    await finishSetup();
+
     // Create a history entry that is between 7 and 8 days in the past. For the
     // purposes of the tested functionality, we consider a day to be a 24 hour
     // period, with no regard to DST shifts.
@@ -128,12 +134,6 @@ suite('Metrics', function() {
   });
 
   test('synced-device-manager', async () => {
-    app.selectedPage_ = 'syncedTabs';
-    await test_util.flushTasks();
-
-    const histogram = histogramMap[SYNCED_TABS_HISTOGRAM_NAME];
-    assertEquals(1, histogram[SyncedTabsHistogram.INITIALIZED]);
-
     const sessionList = [
       createSession(
           'Nexus 5',
@@ -145,7 +145,16 @@ suite('Metrics', function() {
             createWindow(['http://www.gmail.com', 'http://badssl.com'])
           ]),
     ];
-    app.setForeignSessions(sessionList);
+    testService.setForeignSessions(sessionList);
+    await finishSetup();
+
+    app.selectedPage_ = 'syncedTabs';
+    await test_util.flushTasks();
+
+    const histogram = histogramMap[SYNCED_TABS_HISTOGRAM_NAME];
+    assertEquals(1, histogram[SyncedTabsHistogram.INITIALIZED]);
+
+    await testService.whenCalled('getForeignSessions');
     await test_util.flushTasks();
 
     assertEquals(1, histogram[SyncedTabsHistogram.HAS_FOREIGN_DATA]);

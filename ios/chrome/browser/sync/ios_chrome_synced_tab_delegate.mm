@@ -15,6 +15,9 @@
 #include "ios/web/public/favicon/favicon_status.h"
 #include "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
+#include "ios/web/public/session/crw_navigation_item_storage.h"
+#import "ios/web/public/session/crw_session_storage.h"
+#import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state.h"
 #include "ui/base/page_transition_types.h"
 
@@ -39,7 +42,9 @@ NavigationItem* GetPossiblyPendingItemAtIndex(web::WebState* web_state, int i) {
 }  // namespace
 
 IOSChromeSyncedTabDelegate::IOSChromeSyncedTabDelegate(web::WebState* web_state)
-    : web_state_(web_state) {}
+    : web_state_(web_state) {
+  DCHECK(web_state);
+}
 
 IOSChromeSyncedTabDelegate::~IOSChromeSyncedTabDelegate() {}
 
@@ -60,30 +65,52 @@ std::string IOSChromeSyncedTabDelegate::GetExtensionAppId() const {
 }
 
 bool IOSChromeSyncedTabDelegate::IsInitialBlankNavigation() const {
+  if (GetSessionStorageIfNeeded()) {
+    return session_storage_.itemStorages.count == 0;
+  }
   return web_state_->GetNavigationManager()->GetItemCount() == 0;
 }
 
 int IOSChromeSyncedTabDelegate::GetCurrentEntryIndex() const {
+  if (GetSessionStorageIfNeeded()) {
+    return session_storage_.lastCommittedItemIndex;
+  }
   return web_state_->GetNavigationManager()->GetLastCommittedItemIndex();
 }
 
 int IOSChromeSyncedTabDelegate::GetEntryCount() const {
+  if (GetSessionStorageIfNeeded()) {
+    return session_storage_.itemStorages.count;
+  }
   return web_state_->GetNavigationManager()->GetItemCount();
 }
 
 GURL IOSChromeSyncedTabDelegate::GetVirtualURLAtIndex(int i) const {
+  DCHECK_GE(i, 0);
+  if (GetSessionStorageIfNeeded()) {
+    NSArray* item_storages = session_storage_.itemStorages;
+    CRWNavigationItemStorage* item = item_storages[i];
+    return item.virtualURL;
+  }
   NavigationItem* item = GetPossiblyPendingItemAtIndex(web_state_, i);
   return item ? item->GetVirtualURL() : GURL();
 }
 
 GURL IOSChromeSyncedTabDelegate::GetFaviconURLAtIndex(int i) const {
   DCHECK_GE(i, 0);
+  if (GetSessionStorageIfNeeded()) {
+    return GURL();
+  }
   NavigationItem* item = GetPossiblyPendingItemAtIndex(web_state_, i);
   return (item && item->GetFavicon().valid ? item->GetFavicon().url : GURL());
 }
 
 ui::PageTransition IOSChromeSyncedTabDelegate::GetTransitionAtIndex(
     int i) const {
+  DCHECK_GE(i, 0);
+  if (GetSessionStorageIfNeeded()) {
+    return ui::PAGE_TRANSITION_LINK;
+  }
   NavigationItem* item = GetPossiblyPendingItemAtIndex(web_state_, i);
   // If no item exists, there's no coherent PageTransition to be supplied.
   // There's also no ui::PAGE_TRANSITION_UNKNOWN, so let's use the default,
@@ -99,6 +126,14 @@ std::string IOSChromeSyncedTabDelegate::GetPageLanguageAtIndex(int i) const {
 void IOSChromeSyncedTabDelegate::GetSerializedNavigationAtIndex(
     int i,
     sessions::SerializedNavigationEntry* serialized_entry) const {
+  if (GetSessionStorageIfNeeded()) {
+    NSArray* item_storages = session_storage_.itemStorages;
+    CRWNavigationItemStorage* item = item_storages[i];
+    *serialized_entry =
+        sessions::IOSSerializedNavigationBuilder::FromNavigationStorageItem(
+            i, item);
+    return;
+  }
   NavigationItem* item = GetPossiblyPendingItemAtIndex(web_state_, i);
   if (item) {
     *serialized_entry =
@@ -117,6 +152,8 @@ IOSChromeSyncedTabDelegate::GetBlockedNavigations() const {
 }
 
 bool IOSChromeSyncedTabDelegate::IsPlaceholderTab() const {
+  // GetSessionId is not restored so the tab get a new session ID.
+  // Placeholder tabs cannot be used.
   return false;
 }
 
@@ -176,6 +213,18 @@ const IOSTaskTabHelper* IOSChromeSyncedTabDelegate::ios_task_tab_helper()
   if (web_state_ == nullptr)
     return nullptr;
   return IOSTaskTabHelper::FromWebState(web_state_);
+}
+
+bool IOSChromeSyncedTabDelegate::GetSessionStorageIfNeeded() const {
+  // With slim navigation, the navigation manager is only restored when the tab
+  // is displayed. Before restoration, the session storage must be used.
+  bool should_use_storage =
+      web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+      web_state_->GetNavigationManager()->IsRestoreSessionInProgress();
+  if (should_use_storage && !session_storage_) {
+    session_storage_ = web_state_->BuildSessionStorage();
+  }
+  return should_use_storage;
 }
 
 WEB_STATE_USER_DATA_KEY_IMPL(IOSChromeSyncedTabDelegate)

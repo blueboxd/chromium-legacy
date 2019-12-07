@@ -5541,6 +5541,24 @@ TEST_P(SplitViewOverviewSessionInClamshellTest, ResizeWindowTest) {
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 }
 
+// Test that overview and clamshell split view end if you double click the edge
+// of the split view window where it meets the overview grid.
+TEST_P(SplitViewOverviewSessionInClamshellTest, HorizontalMaximizeTest) {
+  const gfx::Rect bounds(400, 400);
+  std::unique_ptr<aura::Window> snapped_window(
+      CreateWindowWithHitTestComponent(HTRIGHT, bounds));
+  std::unique_ptr<aura::Window> overview_window = CreateTestWindow(bounds);
+  ToggleOverview();
+  split_view_controller()->SnapWindow(snapped_window.get(),
+                                      SplitViewController::LEFT);
+  EXPECT_TRUE(overview_controller()->InOverviewSession());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
+  ui::test::EventGenerator(Shell::GetPrimaryRootWindow(), snapped_window.get())
+      .DoubleClickLeftButton();
+  EXPECT_FALSE(overview_controller()->InOverviewSession());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
+}
+
 // Test that when laptop splitview mode is active, moving the snapped window
 // will end splitview and overview at the same time.
 TEST_P(SplitViewOverviewSessionInClamshellTest, MoveWindowTest) {
@@ -5648,6 +5666,47 @@ TEST_P(SplitViewOverviewSessionInClamshellTest,
                 ->GetSnappedWindowBoundsInScreen(SplitViewController::RIGHT,
                                                  window2.get())
                 .width());
+}
+
+// Tests that on a display in portrait orientation, clamshell split view still
+// uses snap positions on the left and right.
+TEST_P(SplitViewOverviewSessionInClamshellTest,
+       PortraitClamshellSplitViewSnapPositionsTest) {
+  UpdateDisplay("800x600/l");
+  const int height = 800 - ShelfConfig::Get()->shelf_size();
+  ASSERT_EQ(gfx::Rect(0, 0, 600, height),
+            screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+                Shell::GetPrimaryRootWindow()));
+  // Check that snapped window bounds represent snapping on the left and right.
+  const gfx::Rect left_snapped_bounds(0, 0, 300, height);
+  EXPECT_EQ(
+      left_snapped_bounds,
+      split_view_controller()->GetSnappedWindowBoundsInScreen(
+          SplitViewController::LEFT, /*window_for_minimum_size=*/nullptr));
+  const gfx::Rect right_snapped_bounds(300, 0, 300, height);
+  EXPECT_EQ(
+      right_snapped_bounds,
+      split_view_controller()->GetSnappedWindowBoundsInScreen(
+          SplitViewController::RIGHT, /*window_for_minimum_size=*/nullptr));
+  // Switch from clamshell mode to tablet mode and then back to clamshell mode.
+  display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
+      .SetFirstDisplayAsInternalDisplay();
+  TabletModeControllerTestApi tablet_mode_controller_test_api;
+  tablet_mode_controller_test_api.DetachAllMice();
+  EXPECT_FALSE(tablet_mode_controller_test_api.IsTabletModeStarted());
+  tablet_mode_controller_test_api.OpenLidToAngle(315.0f);
+  EXPECT_TRUE(tablet_mode_controller_test_api.IsTabletModeStarted());
+  tablet_mode_controller_test_api.OpenLidToAngle(90.0f);
+  EXPECT_FALSE(tablet_mode_controller_test_api.IsTabletModeStarted());
+  // Check the snapped window bounds again. They should be the same as before.
+  EXPECT_EQ(
+      left_snapped_bounds,
+      split_view_controller()->GetSnappedWindowBoundsInScreen(
+          SplitViewController::LEFT, /*window_for_minimum_size=*/nullptr));
+  EXPECT_EQ(
+      right_snapped_bounds,
+      split_view_controller()->GetSnappedWindowBoundsInScreen(
+          SplitViewController::RIGHT, /*window_for_minimum_size=*/nullptr));
 }
 
 // Tests that the ratio between the divider position and the work area width is

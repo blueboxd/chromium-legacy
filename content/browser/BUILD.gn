@@ -143,9 +143,8 @@ jumbo_source_set("browser") {
     "//net/server:http_server",
     "//ppapi/buildflags",
     "//printing/buildflags",
-    "//services/audio:lib",
+    "//services/audio",
     "//services/audio/public/cpp",
-    "//services/audio/public/cpp:manifest",
     "//services/audio/public/mojom",
     "//services/content:impl",
     "//services/content/public/cpp",
@@ -160,7 +159,6 @@ jumbo_source_set("browser") {
     "//services/device/public/mojom:generic_sensor",
     "//services/media_session:lib",
     "//services/media_session/public/cpp",
-    "//services/media_session/public/cpp:manifest",
     "//services/media_session/public/mojom",
     "//services/metrics",
     "//services/metrics/public/cpp:metrics_cpp",
@@ -433,6 +431,7 @@ jumbo_source_set("browser") {
     "appcache/appcache_working_set.h",
     "appcache/chrome_appcache_service.cc",
     "appcache/chrome_appcache_service.h",
+    "audio/audio_service.cc",
     "background_fetch/background_fetch_context.cc",
     "background_fetch/background_fetch_context.h",
     "background_fetch/background_fetch_cross_origin_filter.cc",
@@ -561,8 +560,6 @@ jumbo_source_set("browser") {
     "browser_plugin/browser_plugin_embedder.h",
     "browser_plugin/browser_plugin_guest.cc",
     "browser_plugin/browser_plugin_guest.h",
-    "browser_plugin/browser_plugin_message_filter.cc",
-    "browser_plugin/browser_plugin_message_filter.h",
     "browser_plugin/browser_plugin_popup_menu_helper_mac.h",
     "browser_plugin/browser_plugin_popup_menu_helper_mac.mm",
     "browser_process_sub_thread.cc",
@@ -1196,6 +1193,7 @@ jumbo_source_set("browser") {
     "media/video_decoder_proxy.h",
     "media/webaudio/audio_context_manager_impl.cc",
     "media/webaudio/audio_context_manager_impl.h",
+    "media_session/media_session_service.cc",
     "memory/swap_metrics_driver_impl.cc",
     "memory/swap_metrics_driver_impl.h",
     "memory/swap_metrics_driver_impl_linux.cc",
@@ -1799,6 +1797,8 @@ jumbo_source_set("browser") {
     "tracing/tracing_ui.h",
     "url_loader_factory_getter.cc",
     "url_loader_factory_getter.h",
+    "url_loader_factory_params_helper.cc",
+    "url_loader_factory_params_helper.h",
     "utility_process_host.cc",
     "utility_process_host.h",
     "utility_process_host_receiver_bindings.cc",
@@ -1981,10 +1981,6 @@ jumbo_source_set("browser") {
 
   if (is_chromeos || is_android || is_chromecast || is_fuchsia) {
     defines += [ "ENABLE_PROTECTED_MEDIA_IDENTIFIER_PERMISSION" ]
-  }
-
-  if (is_chromecast) {
-    defines += [ "IS_CHROMECAST" ]
   }
 
   if (is_chromecast && is_linux) {

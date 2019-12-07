@@ -7,13 +7,14 @@
 #include "base/containers/adapters.h"
 #include "base/lazy_instance.h"
 #include "base/unguessable_token.h"
+#include "build/chromecast_buildflags.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/video_hole_draw_quad.h"
 #include "components/viz/service/display/overlay_candidate_list.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
-#if defined(IS_CHROMECAST)
+#if BUILDFLAG(IS_CHROMECAST)
 #include "base/no_destructor.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #endif
@@ -24,7 +25,7 @@ namespace {
 base::LazyInstance<OverlayStrategyUnderlayCast::OverlayCompositedCallback>::
     DestructorAtExit g_overlay_composited_callback = LAZY_INSTANCE_INITIALIZER;
 
-#if defined(IS_CHROMECAST)
+#if BUILDFLAG(IS_CHROMECAST)
 // This persistent mojo::Remote is bound then used by all the instances
 // of OverlayStrategyUnderlayCast.
 mojo::Remote<chromecast::media::mojom::VideoGeometrySetter>&
@@ -113,7 +114,7 @@ bool OverlayStrategyUnderlayCast::Attempt(
 
       // TODO(guohuideng): when migration to GPU process complete, remove
       // the code that's for the browser process compositor.
-#if defined(IS_CHROMECAST)
+#if BUILDFLAG(IS_CHROMECAST)
       if (g_overlay_composited_callback.Get().is_null()) {
         DCHECK(GetVideoGeometrySetter());
         GetVideoGeometrySetter()->SetVideoGeometry(
@@ -149,7 +150,7 @@ void OverlayStrategyUnderlayCast::SetOverlayCompositedCallback(
   g_overlay_composited_callback.Get() = cb;
 }
 
-#if defined(IS_CHROMECAST)
+#if BUILDFLAG(IS_CHROMECAST)
 // static
 void OverlayStrategyUnderlayCast::ConnectVideoGeometrySetter(
     mojo::PendingRemote<chromecast::media::mojom::VideoGeometrySetter>

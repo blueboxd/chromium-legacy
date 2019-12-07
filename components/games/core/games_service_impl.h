@@ -7,45 +7,66 @@
 
 #include <memory>
 
-#include "base/memory/scoped_refptr.h"
+#include "base/barrier_closure.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
-#include "components/games/core/data_files_parser.h"
+#include "base/sequence_checker.h"
+#include "components/games/core/catalog_store.h"
 #include "components/games/core/games_service.h"
 #include "components/games/core/games_types.h"
-#include "components/games/core/proto/game.pb.h"
+#include "components/games/core/highlighted_games_store.h"
 #include "components/prefs/pref_service.h"
 
 namespace games {
 
 class GamesServiceImpl : public GamesService {
  public:
-  explicit GamesServiceImpl(PrefService* prefs);
-
-  // Constructor to be used by unit tests.
-  explicit GamesServiceImpl(std::unique_ptr<DataFilesParser> files_parser,
-                            PrefService* prefs);
+  explicit GamesServiceImpl(
+      std::unique_ptr<CatalogStore> catalog_store,
+      std::unique_ptr<HighlightedGamesStore> highlighted_games_store,
+      PrefService* prefs);
   ~GamesServiceImpl() override;
 
+  // Will retrieve the currently highlighted game. The given callback may be
+  // invoked asynchronously.
   void GetHighlightedGame(HighlightedGameCallback callback) override;
 
- private:
-  void GetHighlightedGameFromCatalog(HighlightedGameCallback callback,
-                                     std::unique_ptr<GamesCatalog> catalog);
+  bool is_updating() { return is_updating_; }
 
-  std::unique_ptr<GamesCatalog> GetCatalog();
+ private:
+  // This function starts a flow where we'll parse the catalog from disk and get
+  // every feature store to update themselves. This is done to reduce the amount
+  // of times that we need to read the catalog from disk; while we have the
+  // catalog in memory, we're making the most of it. Stores are in charge of
+  // decided whether they need to update or not.
+  void UpdateStores();
+
+  void OnCatalogReceived(ResponseCode code);
+
+  void DoneUpdating();
 
   bool IsComponentInstalled();
 
-  std::unique_ptr<DataFilesParser> files_parser_;
+  // In charge of parsing and temporarily caching the GamesCatalog that we have
+  // on disk. Its cache will be cleared when other stores are done updating.
+  std::unique_ptr<CatalogStore> catalog_store_;
+
+  // In charge of calculating and caching the highlighted game.
+  std::unique_ptr<HighlightedGamesStore> highlighted_games_store_;
 
   // Will outlive the current instance.
   PrefService* prefs_;
 
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
-  std::unique_ptr<const Game> cached_highlighted_game_;
+  // Cached data files installation directory. Will be used by the stores to
+  // find their data files.
   std::unique_ptr<const base::FilePath> cached_data_files_dir_;
+
+  // Reset on every run, this barrier closure will be used to ensure that the
+  // service knows when all the feature stores are done updating themselves.
+  base::RepeatingClosure barrier_closure_;
+
+  bool is_updating_ = false;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<GamesServiceImpl> weak_ptr_factory_{this};
 

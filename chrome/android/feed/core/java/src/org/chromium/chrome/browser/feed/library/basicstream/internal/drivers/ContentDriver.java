@@ -9,6 +9,8 @@ import static org.chromium.chrome.browser.feed.library.common.Validators.checkSt
 import android.support.annotation.VisibleForTesting;
 import android.support.v7.widget.RecyclerView;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.Consumer;
 import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.ContentMetadata;
@@ -80,7 +82,8 @@ public class ContentDriver
 
     private StreamContentLoggingData mContentLoggingData;
     private boolean mAvailableOffline;
-    /*@Nullable*/ private PietViewHolder mViewHolder;
+    @Nullable
+    private PietViewHolder mViewHolder;
 
     // TODO: Remove these suppressions when drivers have a proper lifecycle.
     @SuppressWarnings(
@@ -140,8 +143,7 @@ public class ContentDriver
         return this;
     }
 
-    private PietContent getPietContent(
-            /*@UnderInitialization*/ ContentDriver this, Content content) {
+    private PietContent getPietContent(Content content) {
         checkState(content.getType() == StreamStructureProto.Content.Type.PIET,
                 "Expected Piet type for feature");
 
@@ -152,8 +154,7 @@ public class ContentDriver
     }
 
     private List<PietSharedState> getPietSharedStates(
-            /*@UnderInitialization*/ ContentDriver this, PietContent pietContent,
-            ModelProvider modelProvider, BasicLoggingApi basicLoggingApi) {
+            PietContent pietContent, ModelProvider modelProvider, BasicLoggingApi basicLoggingApi) {
         List<PietSharedState> sharedStates = new ArrayList<>();
         for (ContentId contentId : pietContent.getPietSharedStatesList()) {
             PietSharedState pietSharedState =
@@ -167,9 +168,8 @@ public class ContentDriver
         return sharedStates;
     }
 
-    /*@Nullable*/
-    private PietSharedState extractPietSharedState(
-            /*@UnderInitialization*/ ContentDriver this, ContentId pietSharedStateId,
+    @Nullable
+    private PietSharedState extractPietSharedState(ContentId pietSharedStateId,
             ModelProvider modelProvider, BasicLoggingApi basicLoggingApi) {
         StreamSharedState sharedState = modelProvider.getSharedState(pietSharedStateId);
         if (sharedState != null) {
@@ -277,11 +277,10 @@ public class ContentDriver
     }
 
     @VisibleForTesting
-    StreamActionApi createStreamActionApi(
-            /*@UnknownInitialization*/ ContentDriver this, ActionApi actionApi,
-            ActionParser actionParser, ActionManager actionManager, BasicLoggingApi basicLoggingApi,
-            Supplier<ContentLoggingData> contentLoggingData,
-            /*@Nullable*/ String sessionId, ContextMenuManager contextMenuManager,
+    StreamActionApi createStreamActionApi(ActionApi actionApi, ActionParser actionParser,
+            ActionManager actionManager, BasicLoggingApi basicLoggingApi,
+            Supplier<ContentLoggingData> contentLoggingData, @Nullable String sessionId,
+            ContextMenuManager contextMenuManager,
             ClusterPendingDismissHelper clusterPendingDismissHelper,
             ViewElementActionHandler handler, String contentId, TooltipApi tooltipApi) {
         return new StreamActionApiImpl(actionApi, actionParser, actionManager, basicLoggingApi,

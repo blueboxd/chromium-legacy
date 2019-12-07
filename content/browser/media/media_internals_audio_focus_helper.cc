@@ -14,11 +14,9 @@
 #include "content/browser/media/media_internals.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/media_session_service.h"
 #include "content/public/browser/web_ui.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/media_session/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
 
@@ -105,23 +103,18 @@ bool MediaInternalsAudioFocusHelper::EnsureServiceConnection() {
   if (!enabled_)
     return false;
 
-  // |connector| may be nullptr in some tests.
-  service_manager::Connector* connector = GetSystemConnector();
-  if (!connector)
-    return false;
-
   // Connect to the media session service.
   if (!audio_focus_.is_bound()) {
-    connector->Connect(media_session::mojom::kServiceName,
-                       audio_focus_.BindNewPipeAndPassReceiver());
+    GetMediaSessionService().BindAudioFocusManager(
+        audio_focus_.BindNewPipeAndPassReceiver());
     audio_focus_.set_disconnect_handler(base::BindRepeating(
         &MediaInternalsAudioFocusHelper::OnMojoError, base::Unretained(this)));
   }
 
   // Connect to the media session service debug interface.
   if (!audio_focus_debug_.is_bound()) {
-    connector->Connect(media_session::mojom::kServiceName,
-                       audio_focus_debug_.BindNewPipeAndPassReceiver());
+    GetMediaSessionService().BindAudioFocusManagerDebug(
+        audio_focus_debug_.BindNewPipeAndPassReceiver());
     audio_focus_debug_.set_disconnect_handler(
         base::BindRepeating(&MediaInternalsAudioFocusHelper::OnDebugMojoError,
                             base::Unretained(this)));

@@ -32,7 +32,7 @@ enum ThreadAffinity {
 // Remove them.
 class Node;
 class NodeList;
-class NodeRareDataBase;
+class NodeRareData;
 
 template <
     typename T,
@@ -40,7 +40,7 @@ template <
         WTF::IsSubclass<typename std::remove_const<T>::type, Node>::value ||
         WTF::IsSubclass<typename std::remove_const<T>::type, NodeList>::value ||
         WTF::IsSubclass<typename std::remove_const<T>::type,
-                        NodeRareDataBase>::value>
+                        NodeRareData>::value>
 struct DefaultThreadingTrait;
 
 template <typename T>

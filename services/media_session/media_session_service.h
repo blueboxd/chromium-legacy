@@ -9,34 +9,34 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "services/media_session/public/mojom/media_session_service.mojom.h"
 
 namespace media_session {
 
 class AudioFocusManager;
 
-class MediaSessionService : public service_manager::Service {
+class MediaSessionService : public mojom::MediaSessionService {
  public:
-  explicit MediaSessionService(service_manager::mojom::ServiceRequest request);
+  explicit MediaSessionService(
+      mojo::PendingReceiver<mojom::MediaSessionService> receiver);
   ~MediaSessionService() override;
-
-  // service_manager::Service:
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override;
 
   const AudioFocusManager& audio_focus_manager_for_testing() const {
     return *audio_focus_manager_.get();
   }
 
  private:
-  service_manager::ServiceBinding service_binding_;
-  service_manager::BinderRegistry registry_;
+  // mojom::MediaSessionService implementation:
+  void BindAudioFocusManager(
+      mojo::PendingReceiver<mojom::AudioFocusManager> receiver) override;
+  void BindAudioFocusManagerDebug(
+      mojo::PendingReceiver<mojom::AudioFocusManagerDebug> receiver) override;
+  void BindMediaControllerManager(
+      mojo::PendingReceiver<mojom::MediaControllerManager> receiver) override;
 
+  mojo::Receiver<mojom::MediaSessionService> receiver_;
   std::unique_ptr<AudioFocusManager> audio_focus_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSessionService);

@@ -51,6 +51,9 @@ device::mojom::XRHandedness ConvertToMojoHandedness(
     case vr::TrackedControllerRole_RightHand:
       return device::mojom::XRHandedness::RIGHT;
     case vr::TrackedControllerRole_Invalid:
+    case vr::TrackedControllerRole_OptOut:
+    case vr::TrackedControllerRole_Treadmill:
+    case vr::TrackedControllerRole_Max:
       return device::mojom::XRHandedness::NONE;
   }
 

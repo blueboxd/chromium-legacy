@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.piet;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.components.feed.core.proto.ui.piet.ErrorsProto.ErrorCode;
 
 import java.util.HashMap;
@@ -21,7 +23,7 @@ public class NoKeyOverwriteHashMap<K, V> extends HashMap<K, V> {
     }
 
     @Override
-    /*@Nullable*/
+    @Nullable
     public V put(K key, V value) {
         if (containsKey(key)) {
             throw new PietFatalException(mErrorCodeForDuplicate,

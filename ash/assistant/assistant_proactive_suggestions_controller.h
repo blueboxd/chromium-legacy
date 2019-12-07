@@ -96,6 +96,12 @@ class AssistantProactiveSuggestionsController
   // of the user explicitly closing the proactive suggestions view.
   std::set<size_t> proactive_suggestions_blacklist_;
 
+  // We record different histograms the first time that a set of proactive
+  // suggestions are shown than we do on subsequent shows. This allows us to
+  // measure user engagement the first time the entry point is presented in
+  // comparison to follow up presentations of the same content.
+  std::set<size_t> proactive_suggestions_seen_by_user_;
+
   base::WeakPtrFactory<AssistantProactiveSuggestionsController> weak_factory_{
       this};
 

@@ -41,14 +41,9 @@ GetThreadSpecificProvider() {
 BroadcastChannel* BroadcastChannel::Create(ExecutionContext* execution_context,
                                            const String& name,
                                            ExceptionState& exception_state) {
-  // Record BroadcastChannel usage in third party context. Don't record if the
-  // frame is same-origin to the top frame, or if we can't tell whether the
-  // frame was ever cross-origin or not.
   Document* document = DynamicTo<Document>(execution_context);
-  if (document && document->TopFrameOrigin() &&
-      !document->TopFrameOrigin()->CanAccess(document->GetSecurityOrigin())) {
+  if (document && document->IsCrossSiteSubframe())
     UseCounter::Count(document, WebFeature::kThirdPartyBroadcastChannel);
-  }
 
   if (execution_context->GetSecurityOrigin()->IsOpaque()) {
     // TODO(mek): Decide what to do here depending on

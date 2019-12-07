@@ -13,11 +13,13 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread.h"
+#include "base/time/time.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -25,6 +27,7 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/sync/base/bind_to_task_runner.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/base/stop_source.h"
 #include "components/sync/base/sync_base_switches.h"
@@ -47,6 +50,10 @@
 #include "components/version_info/version_info_values.h"
 #include "crypto/ec_private_key.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/constants/chromeos_features.h"
+#endif
 
 namespace syncer {
 
@@ -133,6 +140,12 @@ std::unique_ptr<HttpPostProviderFactory> CreateHttpBridgeFactory(
   return std::make_unique<HttpBridgeFactory>(
       user_agent, std::move(pending_url_loader_factory),
       network_time_update_callback);
+}
+
+void EmitUmaMetricWithEmitTimeMinutes(const std::string& histogram_name) {
+  base::Time::Exploded now_exploded;
+  base::Time::Now().UTCExplode(&now_exploded);
+  base::UmaHistogramExactLinear(histogram_name, now_exploded.minute, 60);
 }
 
 }  // namespace
@@ -254,6 +267,9 @@ void ProfileSyncService::Initialize() {
   if (HasDisableReason(DISABLE_REASON_ENTERPRISE_POLICY) ||
       (HasDisableReason(DISABLE_REASON_NOT_SIGNED_IN) &&
        auth_manager_->IsActiveAccountInfoFullyLoaded())) {
+    // TODO(crbug/1031162): Remove once traffic investigation is closed.
+    EmitUmaMetricWithEmitTimeMinutes(
+        "Sync.PeakAnalysis.StopOnSyncPermanentlyDisabled");
     StopImpl(CLEAR_DATA);
   }
 
@@ -312,6 +328,9 @@ void ProfileSyncService::AccountStateChanged() {
   if (!IsSignedIn()) {
     // The account was signed out, so shut down.
     sync_disabled_by_admin_ = false;
+    // TODO(crbug/1031162): Remove once traffic investigation is closed.
+    EmitUmaMetricWithEmitTimeMinutes(
+        "Sync.PeakAnalysis.StopAfterAccountStateChanged");
     StopImpl(CLEAR_DATA);
     DCHECK(!engine_);
   } else {
@@ -339,6 +358,9 @@ void ProfileSyncService::CredentialsChanged() {
   // then shut down. This happens when the user signs out on the web, i.e. we're
   // in the "Sync paused" state.
   if (!IsEngineAllowedToStart()) {
+    // TODO(crbug/1031162): Remove once traffic investigation is closed.
+    EmitUmaMetricWithEmitTimeMinutes(
+        "Sync.PeakAnalysis.StopAfterCredentialsChanged");
     // This will notify observers if appropriate.
     StopImpl(KEEP_DATA);
     return;
@@ -1314,30 +1336,7 @@ void ProfileSyncService::ConfigureDataTypeManager(ConfigureReason reason) {
   ModelTypeSet types = GetPreferredDataTypes();
   // In transport-only mode, only a subset of data types is supported.
   if (use_transport_only_mode) {
-    ModelTypeSet allowed_types = {USER_CONSENTS, SECURITY_EVENTS};
-
-    if (autofill_enable_account_wallet_storage_) {
-      if (!GetUserSettings()->IsUsingSecondaryPassphrase() ||
-          base::FeatureList::IsEnabled(
-              switches::
-                  kSyncAllowWalletDataInTransportModeWithCustomPassphrase)) {
-        allowed_types.Put(AUTOFILL_WALLET_DATA);
-      }
-    }
-
-    if (enable_passwords_account_storage_ &&
-        base::FeatureList::IsEnabled(switches::kSyncUSSPasswords)) {
-      if (!GetUserSettings()->IsUsingSecondaryPassphrase()) {
-        allowed_types.Put(PASSWORDS);
-      }
-    }
-
-    if (base::FeatureList::IsEnabled(
-            switches::kSyncDeviceInfoInTransportMode)) {
-      allowed_types.Put(DEVICE_INFO);
-    }
-
-    types = Intersection(types, allowed_types);
+    types = Intersection(types, GetModelTypesForTransportOnlyMode());
     configure_context.sync_mode = SyncMode::kTransportOnly;
   }
   data_type_manager_->Configure(types, configure_context);
@@ -1368,6 +1367,45 @@ void ProfileSyncService::ConfigureDataTypeManager(ConfigureReason reason) {
       }
     }
   }
+}
+
+ModelTypeSet ProfileSyncService::GetModelTypesForTransportOnlyMode() const {
+  ModelTypeSet allowed_types = {USER_CONSENTS, SECURITY_EVENTS};
+
+  if (autofill_enable_account_wallet_storage_) {
+    if (!GetUserSettings()->IsUsingSecondaryPassphrase() ||
+        base::FeatureList::IsEnabled(
+            switches::
+                kSyncAllowWalletDataInTransportModeWithCustomPassphrase)) {
+      allowed_types.Put(AUTOFILL_WALLET_DATA);
+    }
+  }
+
+  if (enable_passwords_account_storage_ &&
+      base::FeatureList::IsEnabled(switches::kSyncUSSPasswords)) {
+    if (!GetUserSettings()->IsUsingSecondaryPassphrase()) {
+      allowed_types.Put(PASSWORDS);
+    }
+  }
+
+  if (base::FeatureList::IsEnabled(switches::kSyncDeviceInfoInTransportMode)) {
+    allowed_types.Put(DEVICE_INFO);
+  }
+
+  // Outside the #if so non-Chrome OS developers will hit it before uploading.
+  static_assert(40 == ModelType::NUM_ENTRIES,
+                "If a new ModelType is Chrome OS-only and uses OS sync "
+                "consent, add it below.");
+#if defined(OS_CHROMEOS)
+  // Chrome OS system types are not tied to browser sync-the-feature.
+  if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+    // TODO(jamescook): APP_LIST.
+    allowed_types.PutAll({ARC_PACKAGE, OS_PREFERENCES, OS_PRIORITY_PREFERENCES,
+                          PRINTERS, WIFI_CONFIGURATIONS});
+  }
+#endif  // defined(OS_CHROMEOS)
+
+  return allowed_types;
 }
 
 UserShare* ProfileSyncService::GetUserShare() const {
@@ -1487,6 +1525,9 @@ bool ProfileSyncService::IsEncryptionPendingForTest() const {
 void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (is_sync_managed) {
+    // TODO(crbug/1031162): Remove once traffic investigation is closed.
+    EmitUmaMetricWithEmitTimeMinutes(
+        "Sync.PeakAnalysis.StopOnSyncManagedPrefChange");
     StopImpl(CLEAR_DATA);
   } else {
     // Sync is no longer disabled by policy. Try starting it up if appropriate.

@@ -1443,6 +1443,7 @@ jumbo_source_set("unit_tests") {
     "page/scrolling/scroll_metrics_test.cc",
     "page/scrolling/scroll_state_test.cc",
     "page/scrolling/scrolling_coordinator_test.cc",
+    "page/scrolling/scrolling_test.cc",
     "page/scrolling/snap_coordinator_test.cc",
     "page/scrolling/text_fragment_anchor_metrics_test.cc",
     "page/scrolling/text_fragment_anchor_test.cc",
@@ -1609,7 +1610,7 @@ jumbo_source_set("unit_tests") {
   if (!is_mac) {
     sources += [
       "scroll/scroll_animator_test.cc",
-      "scroll/scrolling_test.cc",
+      "scroll/scroll_test.cc",
     ]
   }
 

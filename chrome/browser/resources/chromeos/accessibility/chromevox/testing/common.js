@@ -37,8 +37,9 @@ var TestUtils = function() {};
 TestUtils.extractHtmlFromCommentEncodedString = function(html, opt_args) {
   var stringified = html.toString();
   if (opt_args) {
-    for (var i = 0; i < opt_args.length; i++)
+    for (var i = 0; i < opt_args.length; i++) {
       stringified = stringified.replace('$' + i, opt_args[i]);
+    }
   }
   return stringified.replace(/^[^\/]+\/\*!?/, '').replace(/\*\/[^\/]+$/, '');
 };

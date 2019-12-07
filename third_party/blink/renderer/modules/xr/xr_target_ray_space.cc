@@ -15,7 +15,7 @@ namespace blink {
 XRTargetRaySpace::XRTargetRaySpace(XRSession* session, XRInputSource* source)
     : XRSpace(session), input_source_(source) {}
 
-std::unique_ptr<TransformationMatrix> XRTargetRaySpace::MojoFromSpace() {
+std::unique_ptr<TransformationMatrix> XRTargetRaySpace::MojoFromNative() {
   auto mojo_from_viewer = session()->MojoFromViewer();
   switch (input_source_->TargetRayMode()) {
     case device::mojom::XRTargetRayMode::TAPPING: {
@@ -49,8 +49,8 @@ std::unique_ptr<TransformationMatrix> XRTargetRaySpace::MojoFromSpace() {
   }
 }
 
-std::unique_ptr<TransformationMatrix> XRTargetRaySpace::SpaceFromMojo() {
-  return TryInvert(MojoFromSpace());
+std::unique_ptr<TransformationMatrix> XRTargetRaySpace::NativeFromMojo() {
+  return TryInvert(MojoFromNative());
 }
 
 bool XRTargetRaySpace::EmulatedPosition() const {

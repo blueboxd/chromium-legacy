@@ -15,8 +15,8 @@
 #include "ipc/ipc_sender.h"
 #include "ipc/ipc_sync_message.h"
 #include "ipc/message_filter.h"
-#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
-#include "mojo/public/cpp/bindings/associated_interface_request.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 namespace base {
@@ -52,9 +52,10 @@ class COMPONENT_EXPORT(IPC) SyncMessageFilter : public MessageFilter,
   // OnFilterAdded.
   template <typename Interface>
   void GetRemoteAssociatedInterface(
-      mojo::AssociatedInterfacePtr<Interface>* proxy) {
-    auto request = mojo::MakeRequest(proxy);
-    GetGenericRemoteAssociatedInterface(Interface::Name_, request.PassHandle());
+      mojo::PendingAssociatedRemote<Interface>* proxy) {
+    auto receiver = proxy->InitWithNewEndpointAndPassReceiver();
+    GetGenericRemoteAssociatedInterface(Interface::Name_,
+                                        receiver.PassHandle());
   }
 
  protected:

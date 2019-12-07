@@ -267,8 +267,9 @@ KbExplorer.maybeClose_ = function() {
     if (focusedWindow && focusedWindow.focused &&
         focusedWindow.tabs.find((tab) => {
           return tab.url == location.href;
-        }))
+        })) {
       return;
+    }
 
     KbExplorer.close_();
   });

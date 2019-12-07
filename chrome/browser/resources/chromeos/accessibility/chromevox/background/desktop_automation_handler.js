@@ -130,8 +130,9 @@ DesktopAutomationHandler.prototype = {
     // Decide whether to announce and sync this event.
     if (!DesktopAutomationHandler.announceActions &&
         evt.eventFrom == 'action' &&
-        EventSourceState.get() != EventSourceType.TOUCH_GESTURE)
+        EventSourceState.get() != EventSourceType.TOUCH_GESTURE) {
       return;
+    }
 
     var prevRange = ChromeVoxState.instance.getCurrentRangeWithoutRecovery();
 
@@ -141,8 +142,9 @@ DesktopAutomationHandler.prototype = {
     // when interacting via touch. Touch never sets focus without a double tap.
     if (prevRange && evt.type == 'focus' &&
         ChromeVoxState.instance.currentRange.equalsWithoutRecovery(prevRange) &&
-        EventSourceState.get() != EventSourceType.TOUCH_GESTURE)
+        EventSourceState.get() != EventSourceType.TOUCH_GESTURE) {
       return;
+    }
 
     var output = new Output();
     output.withRichSpeechAndBraille(
@@ -174,8 +176,9 @@ DesktopAutomationHandler.prototype = {
       var cur = ChromeVoxState.instance.currentRange.start.node;
       if (cur.role != RoleType.ROOT_WEB_AREA &&
           AutomationUtil.getTopLevelRoot(node) ==
-              AutomationUtil.getTopLevelRoot(cur))
+              AutomationUtil.getTopLevelRoot(cur)) {
         return;
+      }
     }
 
     chrome.automation.getFocus(function(focus) {
@@ -228,8 +231,9 @@ DesktopAutomationHandler.prototype = {
     }
 
     if (ChromeVoxState.instance.currentRange &&
-        target == ChromeVoxState.instance.currentRange.start.node)
+        target == ChromeVoxState.instance.currentRange.start.node) {
       return;
+    }
 
     if (!this.createTextEditHandlerIfNeeded_(target)) {
       this.textEditHandler_ = null;
@@ -276,8 +280,9 @@ DesktopAutomationHandler.prototype = {
 
     // A caller requested this event be ignored.
     if (this.shouldIgnoreDocumentSelectionFromAction_ &&
-        evt.eventFrom == 'action')
+        evt.eventFrom == 'action') {
       return;
+    }
 
     // Editable selection.
     if (selectionStart.state[StateType.EDITABLE]) {
@@ -411,8 +416,9 @@ DesktopAutomationHandler.prototype = {
     // Document selections only apply to rich editables, text selections to
     // non-rich editables.
     if (evt.type != EventType.DOCUMENT_SELECTION_CHANGED &&
-        evt.target.state[StateType.RICHLY_EDITABLE])
+        evt.target.state[StateType.RICHLY_EDITABLE]) {
       return;
+    }
 
     if (!this.createTextEditHandlerIfNeeded_(evt.target)) {
       return;
@@ -456,8 +462,9 @@ DesktopAutomationHandler.prototype = {
 
     // Skip all unfocused text fields.
     if (!evt.target.state[StateType.FOCUSED] &&
-        evt.target.state[StateType.EDITABLE])
+        evt.target.state[StateType.EDITABLE]) {
       return;
+    }
 
     // Delegate to the edit text handler if this is an editable, with the
     // exception of spin buttons.
@@ -473,8 +480,9 @@ DesktopAutomationHandler.prototype = {
         AutomationUtil.isDescendantOf(
             ChromeVoxState.instance.currentRange.start.node, t)) {
       if (new Date() - this.lastValueChanged_ <=
-          DesktopAutomationHandler.VMIN_VALUE_CHANGE_DELAY_MS)
+          DesktopAutomationHandler.VMIN_VALUE_CHANGE_DELAY_MS) {
         return;
+      }
 
       this.lastValueChanged_ = new Date();
 
@@ -519,8 +527,9 @@ DesktopAutomationHandler.prototype = {
       // Desktop tabs get "selection" when there's a focused webview during tab
       // switching. Ignore it.
       if (evt.target.role == RoleType.TAB &&
-          evt.target.root.role == RoleType.DESKTOP)
+          evt.target.root.role == RoleType.DESKTOP) {
         return;
+      }
 
       // Some cases (e.g. in overview mode), require overriding the assumption
       // that focus is an ancestor of a selection target.
@@ -573,13 +582,15 @@ DesktopAutomationHandler.prototype = {
 
     if (!ChromeVoxState.instance.currentRange ||
         !ChromeVoxState.instance.currentRange.start ||
-        !ChromeVoxState.instance.currentRange.start.node)
+        !ChromeVoxState.instance.currentRange.start.node) {
       return false;
+    }
 
     var topRoot = AutomationUtil.getTopLevelRoot(node);
     if (!node.state.focused ||
-        (topRoot && topRoot.parent && !topRoot.parent.state.focused))
+        (topRoot && topRoot.parent && !topRoot.parent.state.focused)) {
       return false;
+    }
 
     // Re-target the node to the root of the editable.
     var target = node;
@@ -596,8 +607,9 @@ DesktopAutomationHandler.prototype = {
          voxTarget.root.role != RoleType.DESKTOP &&
          !AutomationUtil.isDescendantOf(target, voxTarget) &&
          !AutomationUtil.getAncestors(voxTarget.root)
-              .find((n) => n.role == RoleType.KEYBOARD)))
+              .find((n) => n.role == RoleType.KEYBOARD))) {
       return false;
+    }
 
     if (!this.textEditHandler_ || this.textEditHandler_.node !== target) {
       this.textEditHandler_ = editing.TextEditHandler.createForNode(target);
@@ -626,8 +638,9 @@ DesktopAutomationHandler.prototype = {
     // starts tabbing before load complete), then don't move ChromeVox's
     // position on the page.
     if (curRoot && focusedRoot == curRoot &&
-        this.lastRootUrl_ == focusedRoot.docUrl)
+        this.lastRootUrl_ == focusedRoot.docUrl) {
       return;
+    }
 
     this.lastRootUrl_ = focusedRoot.docUrl || '';
     var o = new Output();

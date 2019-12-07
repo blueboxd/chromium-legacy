@@ -342,8 +342,9 @@ PanStrategy.prototype = {
   maybeSetWrappedCursor_: function(unwrappedIndex, wrappedIndex) {
     // We only care about the bounds of the index start/end.
     if (this.cursor_.start != unwrappedIndex &&
-        this.cursor_.end != unwrappedIndex)
+        this.cursor_.end != unwrappedIndex) {
       return;
+    }
     if (this.cursor_.start == unwrappedIndex) {
       this.wrappedCursor_.start = wrappedIndex;
     } else if (this.cursor_.end == unwrappedIndex) {

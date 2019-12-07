@@ -16,7 +16,6 @@
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
-#include "ios/chrome/browser/reading_list/features.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
@@ -370,10 +369,6 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
     loadURL = offlineURL;
     // Offline URLs should always be opened in new tabs.
     newTab = YES;
-    // Record the offline load and update the model.
-    if (!reading_list::IsOfflinePageWithoutNativeContentEnabled()) {
-      UMA_HISTOGRAM_BOOLEAN("ReadingList.OfflineVersionDisplayed", true);
-    }
     const GURL updateURL = entryURL;
     [self.mediator markEntryRead:updateURL];
   }

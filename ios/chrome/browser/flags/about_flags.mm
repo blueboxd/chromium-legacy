@@ -56,7 +56,6 @@
 #include "ios/chrome/browser/find_in_page/features.h"
 #include "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
 #include "ios/chrome/browser/passwords/password_manager_features.h"
-#include "ios/chrome/browser/reading_list/features.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/dialogs/dialog_features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
@@ -442,11 +441,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableSyncUSSPasswordsName,
      flag_descriptions::kEnableSyncUSSPasswordsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(switches::kSyncUSSPasswords)},
-    {"offline-page-without-native-content",
-     flag_descriptions::kOfflineVersionWithoutNativeContentName,
-     flag_descriptions::kOfflineVersionWithoutNativeContentDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(reading_list::kOfflineVersionWithoutNativeContent)},
     {"autofill-no-local-save-on-upload-success",
      flag_descriptions::kAutofillNoLocalSaveOnUploadSuccessName,
      flag_descriptions::kAutofillNoLocalSaveOnUploadSuccessDescription,

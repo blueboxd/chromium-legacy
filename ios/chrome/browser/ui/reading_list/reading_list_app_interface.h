@@ -15,10 +15,6 @@
 // the app binary and can be called from either app or test code.
 @interface ReadingListAppInterface : NSObject
 
-// Whether offline pages are displayed in a native content (NO) or the main
-// WKWebView (YES).
-+ (BOOL)isOfflinePageWithoutNativeContentEnabled;
-
 // Removes all entries in the ReadingListModel.
 + (NSError*)clearEntries WARN_UNUSED_RESULT;
 
@@ -32,10 +28,6 @@
 
 // The number of unread entries in the ReadingListModel.
 + (NSInteger)unreadEntriesCount;
-
-// Checks whether the current webState has a StaticHTML view contaning |text|.
-// This is only used when |isOfflinePageWithoutNativeContentEnabled| is NO.
-+ (BOOL)staticHTMLViewContainingText:(NSString*)text;
 
 // Simulate that the current connection is WiFI.
 + (void)forceConnectionToWifi;

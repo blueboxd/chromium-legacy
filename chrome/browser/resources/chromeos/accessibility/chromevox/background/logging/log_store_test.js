@@ -20,22 +20,26 @@ ChromeVoxLogStoreTest.prototype = {
 
 SYNC_TEST_F('ChromeVoxLogStoreTest', 'ShortLogs', function() {
   var logStore = new LogStore();
-  for (var i = 0; i < 100; i++)
+  for (var i = 0; i < 100; i++) {
     logStore.writeTextLog('test' + i, 'speech');
+  }
 
   var logs = logStore.getLogs();
   assertEquals(logs.length, 100);
-  for (var i = 0; i < logs.length; i++)
+  for (var i = 0; i < logs.length; i++) {
     assertEquals(logs[i].toString(), 'test' + i);
+  }
 });
 
 SYNC_TEST_F('ChromeVoxLogStoreTest', 'LongLogs', function() {
   var logStore = new LogStore();
-  for (var i = 0; i < LogStore.LOG_LIMIT + 500; i++)
+  for (var i = 0; i < LogStore.LOG_LIMIT + 500; i++) {
     logStore.writeTextLog('test' + i, 'speech');
+  }
 
   var logs = logStore.getLogs();
   assertEquals(logs.length, LogStore.LOG_LIMIT);
-  for (var i = 0; i < logs.length; i++)
+  for (var i = 0; i < logs.length; i++) {
     assertEquals(logs[i].toString(), 'test' + (i + 500));
+  }
 });

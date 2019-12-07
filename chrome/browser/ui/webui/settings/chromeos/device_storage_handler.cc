@@ -84,7 +84,7 @@ StorageHandler::StorageHandler(Profile* profile,
       has_browser_cache_size_(false),
       browser_site_data_size_(-1),
       has_browser_site_data_size_(false),
-      updating_downloads_size_(false),
+      updating_my_files_size_(false),
       updating_browsing_data_size_(false),
       updating_android_size_(false),
       updating_crostini_size_(false),
@@ -120,8 +120,8 @@ void StorageHandler::RegisterMessages() {
       base::BindRepeating(&StorageHandler::HandleUpdateStorageInfo,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "openDownloads", base::BindRepeating(&StorageHandler::HandleOpenDownloads,
-                                           base::Unretained(this)));
+      "openMyFiles", base::BindRepeating(&StorageHandler::HandleOpenMyFiles,
+                                         base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "openArcStorage",
       base::BindRepeating(&StorageHandler::HandleOpenArcStorage,
@@ -177,7 +177,7 @@ void StorageHandler::HandleUpdateStorageInfo(const base::ListValue* args) {
   AllowJavascript();
 
   UpdateSizeStat();
-  UpdateDownloadsSize();
+  UpdateMyFilesSize();
   UpdateBrowsingDataSize();
   UpdateAndroidRunning();
   UpdateAndroidSize();
@@ -185,11 +185,10 @@ void StorageHandler::HandleUpdateStorageInfo(const base::ListValue* args) {
   UpdateOtherUsersSize();
 }
 
-void StorageHandler::HandleOpenDownloads(
-    const base::ListValue* unused_args) {
-  const base::FilePath downloads_path =
-      file_manager::util::GetDownloadsFolderForProfile(profile_);
-  platform_util::OpenItem(profile_, downloads_path, platform_util::OPEN_FOLDER,
+void StorageHandler::HandleOpenMyFiles(const base::ListValue* unused_args) {
+  const base::FilePath my_files_path =
+      file_manager::util::GetMyFilesFolderForProfile(profile_);
+  platform_util::OpenItem(profile_, my_files_path, platform_util::OPEN_FOLDER,
                           platform_util::OpenOperationCallback());
 }
 
@@ -240,25 +239,45 @@ void StorageHandler::OnGetSizeStat(int64_t* total_size,
   FireWebUIListener("storage-size-stat-changed", size_stat);
 }
 
-void StorageHandler::UpdateDownloadsSize() {
-  if (updating_downloads_size_)
+void StorageHandler::UpdateMyFilesSize() {
+  if (updating_my_files_size_)
     return;
-  updating_downloads_size_ = true;
-
-  const base::FilePath downloads_path =
-      file_manager::util::GetDownloadsFolderForProfile(profile_);
+  updating_my_files_size_ = true;
 
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&base::ComputeDirectorySize, downloads_path),
-      base::Bind(&StorageHandler::OnGetDownloadsSize,
+      base::Bind(&StorageHandler::ComputeLocalFilesSize,
+                 base::Unretained(this)),
+      base::Bind(&StorageHandler::OnGetMyFilesSize,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void StorageHandler::OnGetDownloadsSize(int64_t size) {
-  updating_downloads_size_ = false;
-  FireWebUIListener("storage-downloads-size-changed",
+int64_t StorageHandler::ComputeLocalFilesSize() {
+  int64_t size = 0;
+  // Compute directory size of My Files
+  const base::FilePath my_files_path =
+      file_manager::util::GetMyFilesFolderForProfile(profile_);
+  size += base::ComputeDirectorySize(my_files_path);
+
+  // Compute directory size of Play Files
+  const base::FilePath android_files_path =
+      base::FilePath(file_manager::util::kAndroidFilesPath);
+  size += base::ComputeDirectorySize(android_files_path);
+
+  // Remove size of Download. If Android is enabled, the size of the Download
+  // folder is counted in both My Files and Play files. If Android is disabled,
+  // the Download folder doesn't exist and the returned size is 0.
+  const base::FilePath download_files_path =
+      base::FilePath(file_manager::util::kAndroidFilesPath)
+          .AppendASCII("Download");
+  size -= base::ComputeDirectorySize(download_files_path);
+  return size;
+}
+
+void StorageHandler::OnGetMyFilesSize(int64_t size) {
+  updating_my_files_size_ = false;
+  FireWebUIListener("storage-my-files-size-changed",
                     base::Value(ui::FormatBytes(size)));
 }
 

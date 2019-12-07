@@ -124,8 +124,9 @@ BrailleCommandHandler.onRoutingCommand_ = function(text, position) {
   actionNode.doDefault();
 
   if (actionNode.role != RoleType.STATIC_TEXT &&
-      !actionNode.state[StateType.EDITABLE])
+      !actionNode.state[StateType.EDITABLE]) {
     return;
+  }
 
   if (!selectionSpan) {
     selectionSpan = actionNodeSpan;
@@ -157,8 +158,9 @@ BrailleCommandHandler.onRoutingCommand_ = function(text, position) {
 BrailleCommandHandler.onEditCommand_ = function(command) {
   var current = ChromeVoxState.instance.currentRange;
   if (ChromeVox.isStickyModeOn() || !current || !current.start ||
-      !current.start.node || !current.start.node.state[StateType.EDITABLE])
+      !current.start.node || !current.start.node.state[StateType.EDITABLE]) {
     return true;
+  }
 
   var textEditHandler = DesktopAutomationHandler.instance.textEditHandler;
   if (!textEditHandler) {

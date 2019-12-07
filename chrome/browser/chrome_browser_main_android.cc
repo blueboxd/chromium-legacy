@@ -75,6 +75,7 @@ void ChromeBrowserMainPartsAndroid::PostEarlyInitialization() {
   profile_manager_android_.reset(new ProfileManagerAndroid());
   g_browser_process->profile_manager()->AddObserver(
       profile_manager_android_.get());
+  ChromeBrowserMainParts::PostEarlyInitialization();
 }
 
 void ChromeBrowserMainPartsAndroid::PostBrowserStart() {

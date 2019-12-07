@@ -14,7 +14,7 @@ namespace blink {
 XRGripSpace::XRGripSpace(XRSession* session, XRInputSource* source)
     : XRSpace(session), input_source_(source) {}
 
-std::unique_ptr<TransformationMatrix> XRGripSpace::MojoFromSpace() {
+std::unique_ptr<TransformationMatrix> XRGripSpace::MojoFromNative() {
   // Grip is only available when using tracked pointer for input.
   if (input_source_->TargetRayMode() !=
       device::mojom::XRTargetRayMode::POINTING) {
@@ -28,8 +28,8 @@ std::unique_ptr<TransformationMatrix> XRGripSpace::MojoFromSpace() {
       *(input_source_->MojoFromInput()));
 }
 
-std::unique_ptr<TransformationMatrix> XRGripSpace::SpaceFromMojo() {
-  return TryInvert(MojoFromSpace());
+std::unique_ptr<TransformationMatrix> XRGripSpace::NativeFromMojo() {
+  return TryInvert(MojoFromNative());
 }
 
 bool XRGripSpace::EmulatedPosition() const {

@@ -179,8 +179,9 @@ NodeUtils.findAllMatching = function(node, rect, nodes) {
   // Closure needs node.location check here to allow the next few
   // lines to compile.
   if (NodeUtils.shouldIgnoreNode(node, /* don't include offscreen */ false) ||
-      node.location === undefined)
+      node.location === undefined) {
     return false;
+  }
 
   if (RectUtils.overlaps(node.location, rect)) {
     if (!node.children || node.children.length == 0 ||

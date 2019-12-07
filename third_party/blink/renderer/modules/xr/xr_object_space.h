@@ -21,7 +21,7 @@ class XRObjectSpace : public XRSpace {
   explicit XRObjectSpace(XRSession* session, const T* object)
       : XRSpace(session), object_(object) {}
 
-  std::unique_ptr<TransformationMatrix> MojoFromSpace() override {
+  std::unique_ptr<TransformationMatrix> MojoFromNative() override {
     auto object_from_mojo = object_->poseMatrix();
 
     if (!object_from_mojo.IsInvertible()) {
@@ -31,8 +31,8 @@ class XRObjectSpace : public XRSpace {
     return std::make_unique<TransformationMatrix>(object_from_mojo.Inverse());
   }
 
-  std::unique_ptr<TransformationMatrix> SpaceFromMojo() final {
-    return TryInvert(MojoFromSpace());
+  std::unique_ptr<TransformationMatrix> NativeFromMojo() final {
+    return TryInvert(MojoFromNative());
   }
 
   base::Optional<XRNativeOriginInformation> NativeOrigin() const override {

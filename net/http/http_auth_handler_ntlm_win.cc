@@ -57,8 +57,7 @@ int HttpAuthHandlerNTLM::GenerateAuthTokenImpl(
                                       std::move(callback));
 }
 
-HttpAuthHandlerNTLM::~HttpAuthHandlerNTLM() {
-}
+HttpAuthHandlerNTLM::~HttpAuthHandlerNTLM() {}
 
 // Require identity on first pass instead of second.
 bool HttpAuthHandlerNTLM::NeedsIdentity() {
@@ -74,9 +73,7 @@ bool HttpAuthHandlerNTLM::AllowsDefaultCredentials() {
 }
 
 HttpAuth::AuthorizationResult HttpAuthHandlerNTLM::ParseChallenge(
-    HttpAuthChallengeTokenizer* tok,
-    bool initial_challenge) {
-  // mechanism_ contains state for whether or not this is the initial challenge.
+    HttpAuthChallengeTokenizer* tok) {
   return mechanism_.ParseChallenge(tok);
 }
 

@@ -186,8 +186,9 @@ AutomationEditableText.prototype = {
   /** @override */
   getLineIndex: function(charIndex) {
     var lineIndex = 0;
-    while (charIndex > this.lineBreaks_[lineIndex])
+    while (charIndex > this.lineBreaks_[lineIndex]) {
       lineIndex++;
+    }
     return lineIndex;
   },
 
@@ -325,8 +326,9 @@ AutomationRichEditableText.prototype = {
   /** @override */
   isSelectionOnFirstLine: function() {
     var deep = this.line_.end_.node;
-    while (deep.previousOnLine)
+    while (deep.previousOnLine) {
       deep = deep.previousOnLine;
+    }
     var next = AutomationUtil.findNextNode(
         deep, Dir.BACKWARD, AutomationPredicate.inlineTextBox);
     if (!next) {
@@ -341,8 +343,9 @@ AutomationRichEditableText.prototype = {
   /** @override */
   isSelectionOnLastLine: function() {
     var deep = this.line_.end_.node;
-    while (deep.nextOnLine)
+    while (deep.nextOnLine) {
       deep = deep.nextOnLine;
+    }
     var next = AutomationUtil.findNextNode(
         deep, Dir.FORWARD, AutomationPredicate.inlineTextBox);
     if (!next) {
@@ -1301,8 +1304,9 @@ editing.EditableLine.prototype = {
    */
   isBeforeLine: function(otherLine) {
     if (this.isSameLine(otherLine) || !this.lineStartContainer_ ||
-        !otherLine.lineStartContainer_)
+        !otherLine.lineStartContainer_) {
       return false;
+    }
     return AutomationUtil.getDirection(
                this.lineStartContainer_, otherLine.lineStartContainer_) ==
         Dir.FORWARD;

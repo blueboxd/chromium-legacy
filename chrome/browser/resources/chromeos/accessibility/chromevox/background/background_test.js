@@ -1158,8 +1158,9 @@ TEST_F('ChromeVoxBackgroundTest', 'HeadingLevels', function() {
               .call(doCmd('previousHeading' + level))
               .expectEarcon('wrap');
         };
-        for (var i = 1; i <= 6; i++)
+        for (var i = 1; i <= 6; i++) {
           makeLevelAssertions(i);
+        }
         mockFeedback.replay();
       });
 });

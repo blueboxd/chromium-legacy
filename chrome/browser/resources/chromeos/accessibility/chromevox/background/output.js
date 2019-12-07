@@ -842,11 +842,13 @@ Output.prototype = {
         AutomationPredicate.contextualBraille(range.start.node) &&
         range.start.node.parent) {
       var start = range.start.node.parent;
-      while (start.firstChild)
+      while (start.firstChild) {
         start = start.firstChild;
+      }
       var end = range.start.node.parent;
-      while (end.lastChild)
+      while (end.lastChild) {
         end = end.lastChild;
+      }
       prevRange = cursors.Range.fromNode(range.start.node.parent);
       range = new cursors.Range(
           cursors.Cursor.fromNode(start), cursors.Cursor.fromNode(end));
@@ -1149,8 +1151,9 @@ Output.prototype = {
    */
   equals: function(rhs) {
     if (this.speechBuffer_.length != rhs.speechBuffer_.length ||
-        this.brailleBuffer_.length != rhs.brailleBuffer_.length)
+        this.brailleBuffer_.length != rhs.brailleBuffer_.length) {
       return false;
+    }
 
     for (var i = 0; i < this.speechBuffer_.length; i++) {
       if (this.speechBuffer_[i].toString() != rhs.speechBuffer_[i].toString()) {
@@ -1605,8 +1608,9 @@ Output.prototype = {
           if (node.htmlAttributes['aria-coltext']) {
             var value = node.htmlAttributes['aria-coltext'];
             var row = node;
-            while (row && row.role != RoleType.ROW)
+            while (row && row.role != RoleType.ROW) {
               row = row.parent;
+            }
             if (!row || !row.htmlAttributes['aria-rowtext']) {
               return;
             }
@@ -1935,8 +1939,9 @@ Output.prototype = {
   createRoles_: function(tree) {
     var roles = new Set();
     var currentNode = tree.firstChild;
-    for (; currentNode; currentNode = currentNode.nextSibling)
+    for (; currentNode; currentNode = currentNode.nextSibling) {
       roles.add(currentNode.value);
+    }
     return roles;
   },
 
@@ -2063,16 +2068,18 @@ Output.prototype = {
     // Hash the roles we've entered.
     var enteredRoleSet = {};
     for (var j = uniqueAncestors.length - 1, hashNode;
-         (hashNode = uniqueAncestors[j]); j--)
+         (hashNode = uniqueAncestors[j]); j--) {
       enteredRoleSet[hashNode.role] = true;
+    }
 
     for (var i = 0, formatPrevNode; (formatPrevNode = prevUniqueAncestors[i]);
          i++) {
       // This prevents very repetitive announcements.
       if (enteredRoleSet[formatPrevNode.role] ||
           node.role == formatPrevNode.role ||
-          localStorage['useVerboseMode'] == 'false')
+          localStorage['useVerboseMode'] == 'false') {
         continue;
+      }
 
       var parentRole = (Output.ROLE_INFO_[formatPrevNode.role] || {}).inherits;
       rule.role = (eventBlock[formatPrevNode.role] || {}).leave !== undefined ?
@@ -2390,7 +2397,7 @@ Output.prototype = {
     if (node.state[StateType.EDITABLE] && node.state[StateType.FOCUSED] &&
         !this.formatOptions_.braille) {
       if (node.state[StateType.MULTILINE] ||
-          node.state[StateType.RICHLY_EDITABLE])
+          node.state[StateType.RICHLY_EDITABLE]) {
         this.format_({
           node: node,
           outputFormat: '@hint_search_within_text_field',
@@ -2398,6 +2405,7 @@ Output.prototype = {
           outputRuleString: ruleStr,
           opt_speechProps: hintProperties
         });
+      }
     }
 
     if (node.placeholder) {
@@ -2502,8 +2510,9 @@ Output.prototype = {
         opt_options.annotation.every(function(a) {
           return !(a instanceof Output.Action) &&
               !(a instanceof Output.SelectionSpan);
-        }))
+        })) {
       return;
+    }
 
     var spannableToAdd = new Spannable(value);
     opt_options.annotation.forEach(function(a) {

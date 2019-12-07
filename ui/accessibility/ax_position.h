@@ -2374,6 +2374,19 @@ class AXPosition {
                                other_tree_position_ancestor->child_index());
   }
 
+  // Returns the length of the text that is present inside the anchor node,
+  // including any text found in descendant text nodes. This is based on the
+  // platform's text representation. Some platforms use an embedded object
+  // character that replaces the text coming from each child node.
+  //
+  // Similar to "text_offset_", the length of the text is in UTF16 code units,
+  // not in grapheme clusters.
+  int MaxTextOffset() const {
+    if (IsNullPosition())
+      return INVALID_OFFSET;
+    return int{GetText().length()};
+  }
+
   void swap(AXPosition& other) {
     std::swap(kind_, other.kind_);
     std::swap(tree_id_, other.tree_id_);
@@ -2405,19 +2418,6 @@ class AXPosition {
   // only whitespace characters; <br> objects span a single '\n' character, so
   // positions inside line breaks are also considered "in whitespace".
   virtual bool IsInWhiteSpace() const = 0;
-
-  // Returns the length of the text that is present inside the anchor node,
-  // including any text found in descendant text nodes. This is based on the
-  // platform's text representation. Some platforms use an embedded object
-  // character that replaces the text coming from each child node.
-  //
-  // Similar to "text_offset_", the length of the text is in UTF16 code units,
-  // not in grapheme clusters.
-  virtual int MaxTextOffset() const {
-    if (IsNullPosition())
-      return INVALID_OFFSET;
-    return int{GetText().length()};
-  }
 
  protected:
   AXPosition()

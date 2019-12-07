@@ -14,7 +14,7 @@ ClipboardReadWritePermissionContext::ClipboardReadWritePermissionContext(
     Profile* profile)
     : PermissionContextBase(profile,
                             ContentSettingsType::CLIPBOARD_READ_WRITE,
-                            blink::mojom::FeaturePolicyFeature::kNotFound) {}
+                            blink::mojom::FeaturePolicyFeature::kClipboard) {}
 
 ClipboardReadWritePermissionContext::~ClipboardReadWritePermissionContext() {}
 

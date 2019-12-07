@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/components_handler.h"
+#include "chrome/browser/ui/webui/components/components_handler.h"
 
 #include "base/bind.h"
 #include "base/values.h"

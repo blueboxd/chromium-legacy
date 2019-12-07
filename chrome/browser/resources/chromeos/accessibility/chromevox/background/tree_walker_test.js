@@ -70,8 +70,9 @@ TEST_F('ChromeVoxAutomationTreeWalkerTest', 'MAYBE_Forward', function() {
     var resultList = [];
     this.flattenTree(d, resultList);
     var it = new AutomationTreeWalker(d, 'forward');
-    for (var i = 1; i < resultList.length; i++)
+    for (var i = 1; i < resultList.length; i++) {
       assertEquals(resultList[i], it.next().node);
+    }
     assertEquals(null, it.next().node);
 
     for (var j = 0; j < resultList.length; j++) {
@@ -99,8 +100,9 @@ TEST_F('ChromeVoxAutomationTreeWalkerTest', 'MAYBE_Backward', function() {
     this.flattenTree(d, resultList);
     var it =
         new AutomationTreeWalker(resultList[resultList.length - 1], 'backward');
-    for (var i = resultList.length - 2; i >= 0; i--)
+    for (var i = resultList.length - 2; i >= 0; i--) {
       assertEquals(resultList[i], it.next().node);
+    }
 
     for (var j = resultList.length - 1; j >= 0; j--) {
       it = new AutomationTreeWalker(resultList[j], 'backward');

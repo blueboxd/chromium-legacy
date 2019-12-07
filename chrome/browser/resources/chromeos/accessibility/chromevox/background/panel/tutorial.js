@@ -151,8 +151,9 @@ Tutorial.prototype = {
   onKeyDown: function(evt) {
     if (document.activeElement &&
         (document.activeElement.id == 'tutorial_previous' ||
-         document.activeElement.id == 'tutorial_next'))
+         document.activeElement.id == 'tutorial_next')) {
       return true;
+    }
 
     if (evt.key == 'Enter') {
       this.nextPage();

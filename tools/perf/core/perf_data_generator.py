@@ -132,6 +132,28 @@ FYI_BUILDERS = {
       'device_os_flavor': 'google',
     },
   },
+  'android-pixel2-perf-aab-fyi': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+        'extra_args': [
+          # TODO(crbug.com/612455): Enable ref builds once can pass both
+          # --browser=exact (used by this bot to have it run Monochrome6432)
+          # and --browser=reference together.
+          #'--run-ref-build',
+        ],
+      }
+    ],
+    'platform': 'android-chrome',
+    'browser': 'bin/monochrome_bundle',
+    'dimension': {
+      'pool': 'chrome.tests.perf-fyi',
+      'os': 'Android',
+      'device_type': 'walleye',
+      'device_os': 'O',
+      'device_os_flavor': 'google',
+    },
+  },
   'linux-perf-fyi': {
     'tests': [
       {

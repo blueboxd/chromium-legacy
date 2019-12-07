@@ -72,15 +72,16 @@ XRViewerPose* XRFrame::getViewerPose(XRReferenceSpace* reference_space,
 
   session_->LogGetPose();
 
-  std::unique_ptr<TransformationMatrix> pose =
-      reference_space->OffsetSpaceFromViewer();
+  std::unique_ptr<TransformationMatrix> offset_space_from_viewer =
+      reference_space->OffsetFromViewer();
 
   // Can only update an XRViewerPose's views with an invertible matrix.
-  if (!(pose && pose->IsInvertible())) {
+  if (!(offset_space_from_viewer && offset_space_from_viewer->IsInvertible())) {
     return nullptr;
   }
 
-  return MakeGarbageCollected<XRViewerPose>(session(), *pose);
+  return MakeGarbageCollected<XRViewerPose>(session(),
+                                            *offset_space_from_viewer);
 }
 
 XRAnchorSet* XRFrame::trackedAnchors() const {

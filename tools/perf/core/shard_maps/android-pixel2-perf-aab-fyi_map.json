@@ -1,0 +1,17 @@
+{
+    "0": {
+        "benchmarks": {
+            "rendering.mobile": {
+                "abridged": true
+            }
+        }
+    },
+    "extra_infos": {
+        "num_stories": 16,
+        "predicted_min_shard_time": 320,
+        "predicted_min_shard_index": 0,
+        "predicted_max_shard_time": 320,
+        "predicted_max_shard_index": 0,
+        "shard #0": 320
+    }
+}

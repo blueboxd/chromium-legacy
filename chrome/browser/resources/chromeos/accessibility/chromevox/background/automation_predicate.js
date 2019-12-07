@@ -31,8 +31,9 @@ var hasActionableDescendant = function(node) {
   }
 
   var result = false;
-  for (var i = 0; i < node.children.length; i++)
+  for (var i = 0; i < node.children.length; i++) {
     result = hasActionableDescendant(node.children[i]);
+  }
 
   return result;
 };
@@ -267,8 +268,9 @@ AutomationPredicate.object = function(node) {
   // performing object navigation. Users should use line, word, or character
   // navigation. Only navigate to the top level node.
   if (node.parent && node.parent.state.editable &&
-      !node.parent.state[State.RICHLY_EDITABLE])
+      !node.parent.state[State.RICHLY_EDITABLE]) {
     return false;
+  }
 
   // Descend into large nodes.
   if (node.name && node.name.length > constants.OBJECT_MAX_CHARCOUNT) {
@@ -279,8 +281,9 @@ AutomationPredicate.object = function(node) {
   // (e.g. tabindex=0) nodes only when it has a name or is a control.
   if (node.state.focusable &&
       (node.name || node.state[State.EDITABLE] ||
-       AutomationPredicate.formField(node)))
+       AutomationPredicate.formField(node))) {
     return true;
+  }
 
   // Containers who have name from contents should be treated like objects if
   // the contents is all static text and not large.
@@ -296,8 +299,9 @@ AutomationPredicate.object = function(node) {
     }
 
     if (onlyStaticText && textLength > 0 &&
-        textLength < constants.OBJECT_MAX_CHARCOUNT)
+        textLength < constants.OBJECT_MAX_CHARCOUNT) {
       return true;
+    }
   }
 
   // Otherwise, leaf or static text nodes that don't contain only whitespace
@@ -446,8 +450,9 @@ AutomationPredicate.rootOrEditableRoot = function(node) {
 AutomationPredicate.shouldIgnoreNode = function(node) {
   // Ignore invisible nodes.
   if (node.state.invisible ||
-      (node.location.height == 0 && node.location.width == 0))
+      (node.location.height == 0 && node.location.width == 0)) {
     return true;
+  }
 
   // Ignore structural containres.
   if (AutomationPredicate.structuralContainer(node)) {
@@ -457,13 +462,15 @@ AutomationPredicate.shouldIgnoreNode = function(node) {
   // Ignore nodes acting as labels for another control, that don't
   // have actionable descendants.
   if (node.labelFor && node.labelFor.length > 0 &&
-      !hasActionableDescendant(node))
+      !hasActionableDescendant(node)) {
     return true;
+  }
 
   // Similarly, ignore nodes acting as descriptions.
   if (node.descriptionFor && node.descriptionFor.length > 0 &&
-      !hasActionableDescendant(node))
+      !hasActionableDescendant(node)) {
     return true;
+  }
 
   // Don't ignore nodes with names or name-like attribute.
   if (node.name || node.value || node.description || node.url) {

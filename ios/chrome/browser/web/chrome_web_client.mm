@@ -20,7 +20,6 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/ios_chrome_main_parts.h"
 #include "ios/chrome/browser/passwords/password_manager_features.h"
-#include "ios/chrome/browser/reading_list/features.h"
 #import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
 #include "ios/chrome/browser/ssl/ios_ssl_error_handler.h"
 #import "ios/chrome/browser/ui/elements/windowed_container_view.h"
@@ -215,24 +214,22 @@ void ChromeWebClient::PrepareErrorPage(
     const base::Optional<net::SSLInfo>& info,
     int64_t navigation_id,
     base::OnceCallback<void(NSString*)> callback) {
-  if (reading_list::IsOfflinePageWithoutNativeContentEnabled()) {
-    OfflinePageTabHelper* offline_page_tab_helper =
-        OfflinePageTabHelper::FromWebState(web_state);
-    // WebState that are not attached to a tab may not have an
-    // OfflinePageTabHelper.
-    if (offline_page_tab_helper &&
-        offline_page_tab_helper->HasDistilledVersionForOnlineUrl(url)) {
-      // An offline version of the page will be displayed to replace this error
-      // page. Loading an error page here can cause a race between the
-      // navigation to load the error page and the navigation to display the
-      // offline version of the page. If the latter navigation interrupts the
-      // former and causes it to fail, this can incorrectly appear to be a
-      // navigation back to the previous committed URL. To avoid this race,
-      // return a nil error page here to avoid an error page load. See
-      // crbug.com/980912.
-      std::move(callback).Run(nil);
-      return;
-    }
+  OfflinePageTabHelper* offline_page_tab_helper =
+      OfflinePageTabHelper::FromWebState(web_state);
+  // WebState that are not attached to a tab may not have an
+  // OfflinePageTabHelper.
+  if (offline_page_tab_helper &&
+      offline_page_tab_helper->HasDistilledVersionForOnlineUrl(url)) {
+    // An offline version of the page will be displayed to replace this error
+    // page. Loading an error page here can cause a race between the
+    // navigation to load the error page and the navigation to display the
+    // offline version of the page. If the latter navigation interrupts the
+    // former and causes it to fail, this can incorrectly appear to be a
+    // navigation back to the previous committed URL. To avoid this race,
+    // return a nil error page here to avoid an error page load. See
+    // crbug.com/980912.
+    std::move(callback).Run(nil);
+    return;
   }
   DCHECK(error);
   __block NSString* error_html = nil;

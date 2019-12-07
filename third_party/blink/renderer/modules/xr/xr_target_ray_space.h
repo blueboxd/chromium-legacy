@@ -15,8 +15,8 @@ class XRTargetRaySpace : public XRSpace {
  public:
   XRTargetRaySpace(XRSession* session, XRInputSource* input_space);
 
-  std::unique_ptr<TransformationMatrix> MojoFromSpace() override;
-  std::unique_ptr<TransformationMatrix> SpaceFromMojo() override;
+  std::unique_ptr<TransformationMatrix> MojoFromNative() override;
+  std::unique_ptr<TransformationMatrix> NativeFromMojo() override;
   bool EmulatedPosition() const override;
 
   base::Optional<XRNativeOriginInformation> NativeOrigin() const override;

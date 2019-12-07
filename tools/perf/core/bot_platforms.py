@@ -207,6 +207,8 @@ _ANDROID_NEXUS5X_FYI_BENCHMARK_CONFIGS = frozenset([
      # Running a sample benchmark to help testing out the work on
      # trace_processor_shell: crbug.com/1028612
     _GetBenchmarkConfig('tracing.tracing_with_background_memory_infra')])
+_ANDROID_PIXEL2_AAB_FYI_BENCHMARK_CONFIGS = frozenset([
+    _GetBenchmarkConfig('rendering.mobile', True)])
 _ANDROID_PIXEL2_FYI_BENCHMARK_CONFIGS = frozenset([
     _GetBenchmarkConfig('v8.browsing_mobile'),
     _GetBenchmarkConfig('system_health.memory_mobile'),
@@ -290,6 +292,10 @@ ANDROID_NEXUS5X_PERF_FYI =  PerfPlatform(
     'android-nexus5x-perf-fyi', 'Android MMB29Q',
     _ANDROID_NEXUS5X_FYI_BENCHMARK_CONFIGS,
     3, 'android', is_fyi=True)
+ANDROID_PIXEL2_PERF_AAB_FYI = PerfPlatform(
+    'android-pixel2-perf-aab-fyi', 'Android OPM1.171019.021',
+    _ANDROID_PIXEL2_AAB_FYI_BENCHMARK_CONFIGS,
+    1, 'android', is_fyi=True)
 ANDROID_PIXEL2_PERF_FYI = PerfPlatform(
     'android-pixel2-perf-fyi', 'Android OPM1.171019.021',
     _ANDROID_PIXEL2_FYI_BENCHMARK_CONFIGS,

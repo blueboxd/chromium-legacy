@@ -78,10 +78,12 @@ TEST_F('ChromeVoxAutomationUtilE2ETest', 'GetAncestors', function() {
 TEST_F('ChromeVoxAutomationUtilE2ETest', 'GetUniqueAncestors', function() {
   this.runWithLoadedTree(this.basicDoc, function(root) {
     var leftmost = root, rightmost = root;
-    while (leftmost.firstChild)
+    while (leftmost.firstChild) {
       leftmost = leftmost.firstChild;
-    while (rightmost.lastChild)
+    }
+    while (rightmost.lastChild) {
       rightmost = rightmost.lastChild;
+    }
 
     var leftAncestors = getNonDesktopAncestors(leftmost);
     var rightAncestors = getNonDesktopAncestors(rightmost);

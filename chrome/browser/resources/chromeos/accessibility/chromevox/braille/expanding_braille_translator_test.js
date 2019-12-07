@@ -319,8 +319,9 @@ TEST_F(
         runTranslationTestVariants(testCase, true, expType.SELECTION, false);
         runTranslationTestVariants(testCase, true, expType.ALL, false);
       }
-      for (var i = 0, testCase; testCase = TESTDATA_WITH_SELECTION[i]; ++i)
+      for (var i = 0, testCase; testCase = TESTDATA_WITH_SELECTION[i]; ++i) {
         runTranslationTestVariants(testCase, true, expType.SELECTION, true);
+      }
 
       // Make sure that the logic above runs the tests, adjust when adding more
       // test variants.

@@ -52,7 +52,6 @@
 #import "ios/chrome/browser/prerender/preload_controller_delegate.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
-#include "ios/chrome/browser/reading_list/features.h"
 #import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
@@ -116,14 +115,12 @@
 #import "ios/chrome/browser/ui/payments/payment_request_manager.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_coordinator.h"
 #import "ios/chrome/browser/ui/presenters/vertical_animation_container.h"
-#import "ios/chrome/browser/ui/reading_list/offline_page_native_content.h"
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_coordinator.h"
 #import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_coordinator.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
 #import "ios/chrome/browser/ui/side_swipe/swipe_view.h"
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
-#import "ios/chrome/browser/ui/static_content/static_html_native_content.h"
 #import "ios/chrome/browser/ui/tabs/background_tab_animation_view.h"
 #import "ios/chrome/browser/ui/tabs/foreground_tab_animation_view.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_presentation.h"
@@ -436,9 +433,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // button.
   BookmarkInteractionController* _bookmarkInteractionController;
 
-  // Native controller vended to tab before Tab is added to the tab model.
-  __weak id _temporaryNativeController;
-
   // Coordinator for the share menu (Activity Services).
   ActivityServiceLegacyCoordinator* _activityServiceCoordinator;
 
@@ -644,10 +638,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)displayWebState:(web::WebState*)webState;
 // Initializes the bookmark interaction controller if not already initialized.
 - (void)initializeBookmarkInteractionController;
-// Installs the BVC as overscroll actions controller of |nativeContent| if
-// needed. Sets the style of the overscroll actions toolbar.
-- (void)setOverScrollActionControllerToStaticNativeContent:
-    (StaticHtmlNativeContent*)nativeContent;
 
 // UI Configuration, update and Layout
 // -----------------------------------
@@ -2454,21 +2444,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
               webStateList:self.tabModel.webStateList];
 }
 
-- (void)setOverScrollActionControllerToStaticNativeContent:
-    (StaticHtmlNativeContent*)nativeContent {
-  if (!IsIPadIdiom()) {
-    OverscrollActionsController* controller =
-        [[OverscrollActionsController alloc]
-            initWithScrollView:[nativeContent scrollView]];
-    [controller setDelegate:self];
-    OverscrollStyle style = _isOffTheRecord
-                                ? OverscrollStyle::REGULAR_PAGE_INCOGNITO
-                                : OverscrollStyle::REGULAR_PAGE_NON_INCOGNITO;
-    controller.style = style;
-    nativeContent.overscrollActionsController = controller;
-  }
-}
-
 #pragma mark - Private Methods: UI Configuration, update and Layout
 
 // Update the state of back and forward buttons, hiding the forward button if
@@ -2722,11 +2697,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   NetExportTabHelper::CreateForWebState(webState, self);
   CaptivePortalDetectorTabHelper::CreateForWebState(webState, self);
 
-  if (reading_list::IsOfflinePageWithoutNativeContentEnabled()) {
-    OfflinePageTabHelper::CreateForWebState(
-        webState,
-        ReadingListModelFactory::GetForBrowserState(self.browserState));
-  }
+  OfflinePageTabHelper::CreateForWebState(
+      webState, ReadingListModelFactory::GetForBrowserState(self.browserState));
 
   // TODO(crbug.com/1024288): Remove these lines along the legacy code removal.
   if (!IsDownloadInfobarMessagesUIEnabled()) {
@@ -2811,7 +2783,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (id)nativeControllerForWebState:(web::WebState*)webState {
   id nativeController = web_deprecated::GetNativeController(webState);
-  return nativeController ? nativeController : _temporaryNativeController;
+  return nativeController ? nativeController : nil;
 }
 
 #pragma mark - Private Methods: Voice Search
@@ -3647,61 +3619,15 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 #pragma mark - CRWNativeContentProvider methods
 
 - (BOOL)hasControllerForURL:(const GURL&)url {
-  base::StringPiece host = url.host_piece();
-  if (host == kChromeUIOfflineHost &&
-      !reading_list::IsOfflinePageWithoutNativeContentEnabled()) {
-    // Only allow offline URL that are fully specified.
-    return reading_list::IsOfflineURLValid(
-        url, ReadingListModelFactory::GetForBrowserState(self.browserState));
-  }
   return NO;
 }
 
 - (id<CRWNativeContent>)controllerForURL:(const GURL&)url
                                 webState:(web::WebState*)webState {
   DCHECK(url.SchemeIs(kChromeUIScheme));
-
-  id<CRWNativeContent> nativeController = nil;
   base::StringPiece url_host = url.host_piece();
-  if (!reading_list::IsOfflinePageWithoutNativeContentEnabled() &&
-      url_host == kChromeUIOfflineHost && [self hasControllerForURL:url]) {
-    StaticHtmlNativeContent* staticNativeController =
-        [[OfflinePageNativeContent alloc] initWithBrowserState:self.browserState
-                                                      webState:webState
-                                                           URL:url];
-    [self setOverScrollActionControllerToStaticNativeContent:
-              staticNativeController];
-    nativeController = staticNativeController;
-  } else if (url_host == kChromeUINewTabHost ||
-             url_host == kChromeUICrashHost) {
-    // There are no native controller for kChromeUINewTabHost or
-    // kChromeUICrashHost, they are instead handled by TabHelpers.
-    nativeController = nil;
-  } else {
-    NOTREACHED();
-  }
-  // If a native controller is vended before its tab is added to the tab model,
-  // use the temporary key. This happens:
-  // - when there is no current tab (occurs when vending the NTP controller for
-  //   the first tab that is opened),
-  // - when the current tab's url doesn't match |url| (occurs when a native
-  //   controller is opened in a new tab)
-  // - when the current tab's url matches |url| and there is already a native
-  //   controller of the appropriate type vended to it (occurs when a native
-  //   controller is opened in a new tab from a tab with a matching URL, e.g.
-  //   opening an NTP when an NTP is already displayed in the current tab).
-  // For normal page loads, history navigations, tab restorations, and crash
-  // recoveries, the tab will already exist in the tab model and the tabId can
-  // be used as the native controller key.
-  // TODO(crbug.com/498568): To reduce complexity here, refactor the flow so
-  // that native controllers vended here always correspond to the current tab.
-  if (!self.currentWebState ||
-      self.currentWebState->GetLastCommittedURL() != url ||
-      [web_deprecated::GetNativeController(self.currentWebState)
-          isKindOfClass:[nativeController class]]) {
-    _temporaryNativeController = nativeController;
-  }
-  return nativeController;
+  DCHECK(url_host == kChromeUINewTabHost || url_host == kChromeUICrashHost);
+  return nil;
 }
 
 - (UIEdgeInsets)nativeContentInsetForWebState:(web::WebState*)webState {
@@ -4498,8 +4424,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // (see crbug.com/763964).
   if ([self.tabModel isRestoringSession])
     return;
-
-  _temporaryNativeController = nil;
 
   // When adding new tabs, check what kind of reminder infobar should
   // be added to the new tab. Try to add only one of them.

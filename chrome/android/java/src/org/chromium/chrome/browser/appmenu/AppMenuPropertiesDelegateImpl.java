@@ -17,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
@@ -74,6 +75,15 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
     private @Nullable Callback<OverviewModeBehavior> mOverviewModeSupplierCallback;
     private Callback<BookmarkBridge> mBookmarkBridgeSupplierCallback;
     private boolean mUpdateMenuItemVisible;
+    @IntDef({MenuGroup.INVALID, MenuGroup.PAGE_MENU, MenuGroup.OVERVIEW_MODE_MENU,
+            MenuGroup.START_SURFACE_MODE_MENU, MenuGroup.TABLET_EMPTY_MODE_MENU})
+    private @interface MenuGroup {
+        int INVALID = -1;
+        int PAGE_MENU = 0;
+        int OVERVIEW_MODE_MENU = 1;
+        int START_SURFACE_MODE_MENU = 2;
+        int TABLET_EMPTY_MODE_MENU = 3;
+    }
 
     protected @Nullable OverviewModeBehavior mOverviewModeBehavior;
     protected BookmarkBridge mBookmarkBridge;
@@ -157,34 +167,36 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
 
     @Override
     public void prepareMenu(Menu menu, AppMenuHandler handler) {
-        // Exactly one of these will be true, depending on the type of menu showing.
-        boolean isPageMenu = shouldShowPageMenu();
-        boolean isOverviewMenu;
-        boolean isTabletEmptyModeMenu;
+        // Determine which menu to show.
+        @MenuGroup
+        int menuGroup = MenuGroup.INVALID;
+        if (shouldShowPageMenu()) menuGroup = MenuGroup.PAGE_MENU;
 
         boolean isOverview =
                 mOverviewModeBehavior != null && mOverviewModeBehavior.overviewVisible();
-        boolean isIncognito = mTabModelSelector.getCurrentModel().isIncognito();
-        Tab currentTab = mActivityTabProvider.get();
-
-        // Determine which menu to show.
         if (mIsTablet) {
             boolean hasTabs = mTabModelSelector.getCurrentModel().getCount() != 0;
-            isOverviewMenu = hasTabs && isOverview;
-            isTabletEmptyModeMenu = !hasTabs;
-        } else {
-            isOverviewMenu = isOverview;
-            isTabletEmptyModeMenu = false;
+            if (hasTabs && isOverview) {
+                menuGroup = MenuGroup.OVERVIEW_MODE_MENU;
+            } else if (!hasTabs) {
+                menuGroup = MenuGroup.TABLET_EMPTY_MODE_MENU;
+            }
+        } else if (isOverview) {
+            menuGroup = FeatureUtilities.isStartSurfaceEnabled() ? MenuGroup.START_SURFACE_MODE_MENU
+                                                                 : MenuGroup.OVERVIEW_MODE_MENU;
         }
-        int visibleMenus =
-                (isPageMenu ? 1 : 0) + (isOverviewMenu ? 1 : 0) + (isTabletEmptyModeMenu ? 1 : 0);
-        assert visibleMenus == 1;
+        assert menuGroup != MenuGroup.INVALID;
 
-        menu.setGroupVisible(R.id.PAGE_MENU, isPageMenu);
-        menu.setGroupVisible(R.id.OVERVIEW_MODE_MENU, isOverviewMenu);
-        menu.setGroupVisible(R.id.TABLET_EMPTY_MODE_MENU, isTabletEmptyModeMenu);
+        menu.setGroupVisible(R.id.PAGE_MENU, menuGroup == MenuGroup.PAGE_MENU);
+        menu.setGroupVisible(R.id.OVERVIEW_MODE_MENU, menuGroup == MenuGroup.OVERVIEW_MODE_MENU);
+        menu.setGroupVisible(
+                R.id.START_SURFACE_MODE_MENU, menuGroup == MenuGroup.START_SURFACE_MODE_MENU);
+        menu.setGroupVisible(
+                R.id.TABLET_EMPTY_MODE_MENU, menuGroup == MenuGroup.TABLET_EMPTY_MODE_MENU);
 
-        if (isPageMenu && currentTab != null) {
+        boolean isIncognito = mTabModelSelector.getCurrentModel().isIncognito();
+        Tab currentTab = mActivityTabProvider.get();
+        if (menuGroup == MenuGroup.PAGE_MENU && currentTab != null) {
             String url = currentTab.getUrl();
             boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_URL_PREFIX)
                     || url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX);
@@ -235,13 +247,6 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                     .setVisible(mMultiWindowModeStateDispatcher.isOpenInOtherWindowSupported()
                             && hasMoreThanOneTab);
 
-            MenuItem recentTabsMenuItem = menu.findItem(R.id.recent_tabs_menu_id);
-            recentTabsMenuItem.setVisible(!isIncognito);
-            recentTabsMenuItem.setTitle(R.string.menu_recent_tabs);
-
-            MenuItem allBookmarksMenuItem = menu.findItem(R.id.all_bookmarks_menu_id);
-            allBookmarksMenuItem.setTitle(mContext.getString(R.string.menu_bookmarks));
-
             // Don't allow either "chrome://" pages or interstitial pages to be shared.
             menu.findItem(R.id.share_row_menu_id)
                     .setVisible(
@@ -284,7 +289,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                             ChromeSwitches.ENABLE_VR_SHELL_DEV));
         }
 
-        if (isOverviewMenu) {
+        if (menuGroup == MenuGroup.OVERVIEW_MODE_MENU) {
             if (isIncognito) {
                 // Hide normal close all tabs item.
                 menu.findItem(R.id.close_all_tabs_menu_id).setVisible(false);
@@ -314,10 +319,13 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         // than one menu items.
         for (int i = 0; i < menu.size(); ++i) {
             MenuItem item = menu.getItem(i);
-            if (item.getItemId() == R.id.new_incognito_tab_menu_id) {
-                item.setTitle(R.string.menu_new_incognito_tab);
-            } else if (item.getItemId() == R.id.close_all_incognito_tabs_menu_id) {
-                item.setTitle(R.string.menu_close_all_incognito_tabs);
+            if (item.getItemId() == R.id.recent_tabs_menu_id) {
+                if ((menuGroup == MenuGroup.START_SURFACE_MODE_MENU
+                            && item.getGroupId() == R.id.START_SURFACE_MODE_MENU)
+                        || (menuGroup == MenuGroup.PAGE_MENU
+                                && item.getGroupId() == R.id.PAGE_MENU)) {
+                    item.setVisible(!isIncognito);
+                }
             }
         }
 

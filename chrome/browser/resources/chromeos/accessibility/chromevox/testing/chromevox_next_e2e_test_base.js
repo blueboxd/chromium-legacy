@@ -96,16 +96,18 @@ ChromeVoxNextE2ETest.prototype = {
    * rebaselining when changing context ordering for a specific role.
    */
   forceContextualLastOutput: function() {
-    for (var role in Output.ROLE_INFO_)
+    for (var role in Output.ROLE_INFO_) {
       Output.ROLE_INFO_[role]['outputContextFirst'] = undefined;
+    }
   },
 
   /**
    * Forces output to place context utterances at the beginning of output.
    */
   forceContextualFirstOutput: function() {
-    for (var role in Output.ROLE_INFO_)
+    for (var role in Output.ROLE_INFO_) {
       Output.ROLE_INFO_[role]['outputContextFirst'] = true;
+    }
   },
 
   /** Resets contextual output values to their defaults. */

@@ -14,11 +14,11 @@ XRHitTestResult::XRHitTestResult(const TransformationMatrix& pose)
     : pose_(std::make_unique<TransformationMatrix>(pose)) {}
 
 XRPose* XRHitTestResult::getPose(XRSpace* relative_to) {
-  DCHECK(relative_to->MojoFromSpace());
+  DCHECK(relative_to->MojoFromNative());
 
   auto mojo_from_this = *pose_;
 
-  auto mojo_from_other = *relative_to->MojoFromSpace();
+  auto mojo_from_other = *relative_to->MojoFromNative();
   DCHECK(mojo_from_other.IsInvertible());
 
   auto other_from_mojo = mojo_from_other.Inverse();

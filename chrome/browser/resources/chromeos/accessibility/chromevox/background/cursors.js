@@ -137,12 +137,14 @@ cursors.Cursor.prototype = {
     var rNode = rhs.node;
     while (lNode &&
            (lNode.role == RoleType.INLINE_TEXT_BOX ||
-            lNode.role == RoleType.STATIC_TEXT))
+            lNode.role == RoleType.STATIC_TEXT)) {
       lNode = lNode.parent;
+    }
     while (rNode &&
            (rNode.role == RoleType.INLINE_TEXT_BOX ||
-            rNode.role == RoleType.STATIC_TEXT))
+            rNode.role == RoleType.STATIC_TEXT)) {
       rNode = rNode.parent;
+    }
 
     // Ignore indicies for now.
 
@@ -200,8 +202,9 @@ cursors.Cursor.prototype = {
 
     // Make no adjustments if we're within non-rich editable content.
     if (adjustedNode.state[StateType.EDITABLE] &&
-        !adjustedNode.state[StateType.RICHLY_EDITABLE])
+        !adjustedNode.state[StateType.RICHLY_EDITABLE]) {
       return adjustedNode;
+    }
 
     // Selections over line break nodes are broken.
     var parent = adjustedNode.parent;
@@ -472,8 +475,9 @@ cursors.Cursor.prototype = {
           // Either |newIndex| falls between target's text or |newIndex| is the
           // total length of all sibling text content.
           if ((length <= newIndex && newIndex < newLength) ||
-              (newIndex == newLength && !target.nextSibling))
+              (newIndex == newLength && !target.nextSibling)) {
             break;
+          }
           length = newLength;
           target = target.nextSibling;
         }
@@ -575,8 +579,9 @@ cursors.Cursor.prototype = {
       return ret;
     }
 
-    for (var i = 0; i < node.children.length; i++)
+    for (var i = 0; i < node.children.length; i++) {
       ret = ret.concat(this.getAllLeaves_(node.children[i]));
+    }
 
     return ret;
   }
@@ -617,8 +622,9 @@ cursors.WrappingCursor.prototype = {
 
     // Regular movement.
     if (!AutomationPredicate.root(this.node) || dir == Dir.FORWARD ||
-        movement == Movement.BOUND)
+        movement == Movement.BOUND) {
       result = cursors.Cursor.prototype.move.call(this, unit, movement, dir);
+    }
 
     // Moving to the bounds of a unit never wraps.
     if (movement == Movement.BOUND) {
@@ -721,13 +727,15 @@ cursors.Range.getDirection = function(rangeA, rangeB) {
   }
 
   if (!rangeA.start.node || !rangeA.end.node || !rangeB.start.node ||
-      !rangeB.end.node)
+      !rangeB.end.node) {
     return Dir.FORWARD;
+  }
 
   // They are the same range.
   if (rangeA.start.node === rangeB.start.node &&
-      rangeB.end.node === rangeA.end.node)
+      rangeB.end.node === rangeA.end.node) {
     return Dir.FORWARD;
+  }
 
   var testDirA =
       AutomationUtil.getDirection(rangeA.start.node, rangeB.end.node);
@@ -887,8 +895,9 @@ cursors.Range.prototype = {
       // it possible to navigate through content editables using ChromeVox keys
       // and not hear selections as you go.
       if (startNode.state[StateType.RICHLY_EDITABLE] ||
-          endNode.state[StateType.RICHLY_EDITABLE])
+          endNode.state[StateType.RICHLY_EDITABLE]) {
         endIndex = startIndex;
+      }
 
       chrome.automation.setDocumentSelection({
         anchorObject: startNode,

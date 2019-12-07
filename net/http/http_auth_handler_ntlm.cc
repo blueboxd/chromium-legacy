@@ -4,8 +4,6 @@
 
 #include "net/http/http_auth_handler_ntlm.h"
 
-#include <utility>
-
 #include "net/base/url_util.h"
 #include "net/cert/x509_util.h"
 #include "net/http/http_auth_scheme.h"
@@ -27,12 +25,12 @@ bool HttpAuthHandlerNTLM::Init(HttpAuthChallengeTokenizer* tok,
     x509_util::GetTLSServerEndPointChannelBinding(*ssl_info.cert,
                                                   &channel_bindings_);
 
-  return ParseChallenge(tok, true) == HttpAuth::AUTHORIZATION_RESULT_ACCEPT;
+  return ParseChallenge(tok) == HttpAuth::AUTHORIZATION_RESULT_ACCEPT;
 }
 
 HttpAuth::AuthorizationResult HttpAuthHandlerNTLM::HandleAnotherChallengeImpl(
     HttpAuthChallengeTokenizer* challenge) {
-  return ParseChallenge(challenge, false);
+  return ParseChallenge(challenge);
 }
 
 // static

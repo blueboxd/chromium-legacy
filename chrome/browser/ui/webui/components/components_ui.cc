@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/components_ui.h"
+#include "chrome/browser/ui/webui/components/components_ui.h"
 
 #include <stddef.h>
 
@@ -18,7 +18,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/components_handler.h"
+#include "chrome/browser/ui/webui/components/components_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
@@ -84,14 +84,11 @@ ComponentsUI::ComponentsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   content::WebUIDataSource::Add(profile, CreateComponentsUIHTMLSource(profile));
 }
 
-ComponentsUI::~ComponentsUI() {
-}
-
+ComponentsUI::~ComponentsUI() {}
 
 // static
 base::RefCountedMemory* ComponentsUI::GetFaviconResourceBytes(
-      ui::ScaleFactor scale_factor) {
+    ui::ScaleFactor scale_factor) {
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
       IDR_PLUGINS_FAVICON, scale_factor);
 }
-

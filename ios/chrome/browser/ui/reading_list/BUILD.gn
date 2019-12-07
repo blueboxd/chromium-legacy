@@ -4,8 +4,6 @@
 
 source_set("reading_list") {
   sources = [
-    "offline_page_native_content.h",
-    "offline_page_native_content.mm",
     "reading_list_coordinator.h",
     "reading_list_coordinator.mm",
     "reading_list_list_item.h",
@@ -49,7 +47,6 @@ source_set("reading_list") {
     "//ios/chrome/browser/ui/reading_list/context_menu",
     "//ios/chrome/browser/ui/reading_list/resources:distillation_fail_new",
     "//ios/chrome/browser/ui/side_swipe",
-    "//ios/chrome/browser/ui/static_content",
     "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/table_view:feature_flags",
     "//ios/chrome/browser/ui/table_view:presentation",
@@ -132,7 +129,6 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "offline_page_native_content_unittest.mm",
     "reading_list_list_item_factory_unittest.mm",
     "reading_list_mediator_unittest.mm",
     "text_badge_view_unittest.mm",
@@ -154,7 +150,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/feature_engagement",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/tabs",
-    "//ios/chrome/browser/ui/static_content",
     "//ios/chrome/test/fakes",
     "//ios/web",
     "//ios/web/public/test",

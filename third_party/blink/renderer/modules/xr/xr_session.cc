@@ -576,28 +576,28 @@ ScriptPromise XRSession::CreateAnchor(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
 
   // Transformation from passed in |space| to mojo space.
-  std::unique_ptr<TransformationMatrix> mojo_from_space =
-      space->MojoFromSpace();
+  std::unique_ptr<TransformationMatrix> mojo_from_native =
+      space->MojoFromNative();
 
   DVLOG(3) << __func__
-           << ": mojo_from_space = " << mojo_from_space->ToString(true);
+           << ": mojo_from_native = " << mojo_from_native->ToString(true);
 
   // Matrix will be null if transformation from object space to mojo space is
   // not invertible, log & bail out in that case.
-  if (!mojo_from_space || !mojo_from_space->IsInvertible()) {
+  if (!mojo_from_native || !mojo_from_native->IsInvertible()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kNonInvertibleMatrix);
     return ScriptPromise();
   }
 
-  auto space_from_mojo = mojo_from_space->Inverse();
+  auto native_from_mojo = mojo_from_native->Inverse();
 
   DVLOG(3) << __func__
-           << ": space_from_mojo = " << space_from_mojo.ToString(true);
+           << ": native_from_mojo = " << native_from_mojo.ToString(true);
 
   // Transformation from passed in pose to |space|.
   auto mojo_from_initial_pose = initial_pose->TransformMatrix();
-  auto space_from_initial_pose = space_from_mojo * mojo_from_initial_pose;
+  auto space_from_initial_pose = native_from_mojo * mojo_from_initial_pose;
 
   DVLOG(3) << __func__ << ": mojo_from_initial_pose = "
            << mojo_from_initial_pose.ToString(true);
@@ -741,11 +741,10 @@ ScriptPromise XRSession::requestHitTestSource(
   // 2. Convert the XRRay to be expressed in terms of passed in XRSpace. This
   // should only matter for spaces whose transforms are not fully known on the
   // device (for example any space containing origin-offset).
-  TransformationMatrix origin_from_space =
-      options_init->space()
-          ->OriginOffsetMatrix();  // Null checks not needed since native origin
-                                   // wouldn't be set if options_init or space()
-                                   // were null.
+  // Null checks not needed since native origin wouldn't be set if options_init
+  // or space() were null.
+  TransformationMatrix native_from_offset =
+      options_init->space()->NativeFromOffsetMatrix();
 
   if (options_init->hasEntityTypes() && options_init->entityTypes().IsEmpty()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
@@ -756,7 +755,7 @@ ScriptPromise XRSession::requestHitTestSource(
   auto entity_types = GetEntityTypesForHitTest(options_init);
 
   DVLOG(3) << __func__
-           << ": origin_from_space = " << origin_from_space.ToString(true);
+           << ": native_from_offset = " << native_from_offset.ToString(true);
 
   // Transformation from passed in pose to |space|.
 
@@ -764,7 +763,7 @@ ScriptPromise XRSession::requestHitTestSource(
                          ? options_init->offsetRay()
                          : MakeGarbageCollected<XRRay>();
   auto space_from_ray = offsetRay->RawMatrix();
-  auto origin_from_ray = origin_from_space * space_from_ray;
+  auto origin_from_ray = native_from_offset * space_from_ray;
 
   DVLOG(3) << __func__
            << ": space_from_ray = " << space_from_ray.ToString(true);

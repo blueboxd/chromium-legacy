@@ -28,8 +28,10 @@
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/lib/message_quota_checker.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
-#include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
+#include "mojo/public/cpp/bindings/shared_associated_remote.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -179,8 +181,8 @@ class COMPONENT_EXPORT(IPC) ChannelProxy : public Sender {
       const GenericAssociatedInterfaceFactory& factory);
 
   template <typename Interface>
-  using AssociatedInterfaceFactory = base::RepeatingCallback<void(
-      mojo::AssociatedInterfaceRequest<Interface>)>;
+  using AssociatedInterfaceFactory =
+      base::RepeatingCallback<void(mojo::PendingAssociatedReceiver<Interface>)>;
 
   // Helper to bind an IO-thread associated interface factory, inferring the
   // interface name from the callback argument's type. MUST be called before
@@ -191,7 +193,7 @@ class COMPONENT_EXPORT(IPC) ChannelProxy : public Sender {
     AddGenericAssociatedInterfaceForIOThread(
         Interface::Name_,
         base::BindRepeating(
-            &ChannelProxy::BindAssociatedInterfaceRequest<Interface>, factory));
+            &ChannelProxy::BindPendingAssociatedReceiver<Interface>, factory));
   }
 
   // Requests an associated interface from the remote endpoint.
@@ -200,6 +202,8 @@ class COMPONENT_EXPORT(IPC) ChannelProxy : public Sender {
       mojo::ScopedInterfaceEndpointHandle handle);
 
   // Template helper to request associated interfaces from the remote endpoint.
+  // Remove this after done with migrating all AsscoiatedInterfacePtr to
+  // AsscoiatedRemote.
   template <typename Interface>
   void GetRemoteAssociatedInterface(
       mojo::AssociatedInterfacePtr<Interface>* proxy) {
@@ -220,20 +224,19 @@ class COMPONENT_EXPORT(IPC) ChannelProxy : public Sender {
   }
 #endif
 
-  // Creates a ThreadSafeAssociatedInterfacePtr for |Interface|. This object
-  // may be used to send messages on the interface from any thread and those
-  // messages will remain ordered with respect to other messages sent on the
-  // same thread over other ThreadSafeAssociatedInterfacePtrs associated with
-  // the same Channel.
+  // Creates a SharedAssociatedRemote for |Interface|. This object may be used
+  // to send messages on the interface from any thread and those messages will
+  // remain ordered with respect to other messages sent on the same thread over
+  // other SharedAssociatedRemotes associated with the same Channel.
   template <typename Interface>
   void GetThreadSafeRemoteAssociatedInterface(
-      scoped_refptr<mojo::ThreadSafeAssociatedInterfacePtr<Interface>>*
-          out_ptr) {
-    mojo::AssociatedInterfacePtrInfo<Interface> ptr_info;
-    auto request = mojo::MakeRequest(&ptr_info);
-    GetGenericRemoteAssociatedInterface(Interface::Name_, request.PassHandle());
-    *out_ptr = mojo::ThreadSafeAssociatedInterfacePtr<Interface>::Create(
-        std::move(ptr_info), ipc_task_runner());
+      scoped_refptr<mojo::SharedAssociatedRemote<Interface>>* out_remote) {
+    mojo::PendingAssociatedRemote<Interface> pending_remote;
+    auto receiver = pending_remote.InitWithNewEndpointAndPassReceiver();
+    GetGenericRemoteAssociatedInterface(Interface::Name_,
+                                        receiver.PassHandle());
+    *out_remote = mojo::SharedAssociatedRemote<Interface>::Create(
+        std::move(pending_remote), ipc_task_runner());
   }
 
   base::SingleThreadTaskRunner* ipc_task_runner() const {
@@ -429,10 +432,10 @@ class COMPONENT_EXPORT(IPC) ChannelProxy : public Sender {
   friend class IpcSecurityTestUtil;
 
   template <typename Interface>
-  static void BindAssociatedInterfaceRequest(
+  static void BindPendingAssociatedReceiver(
       const AssociatedInterfaceFactory<Interface>& factory,
       mojo::ScopedInterfaceEndpointHandle handle) {
-    factory.Run(mojo::AssociatedInterfaceRequest<Interface>(std::move(handle)));
+    factory.Run(mojo::PendingAssociatedReceiver<Interface>(std::move(handle)));
   }
 
   // Always called once immediately after Init.

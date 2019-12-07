@@ -29,12 +29,12 @@ import common
 import run_performance_tests
 
 # AVG_ERROR_MARGIN determines how much more the value of frame times can be
-# compared to the recorded value
-AVG_ERROR_MARGIN = 2.0
+# compared to the recorded value (multiplier of upper limit).
+AVG_ERROR_MARGIN = 1.1
 # CI stands for confidence intervals. "ci_095"s recorded in the data is the
 # recorded range between upper and lower CIs. CI_ERROR_MARGIN is the maximum
 # acceptable ratio of calculated ci_095 to the recorded ones.
-CI_ERROR_MARGIN = 2.0
+CI_ERROR_MARGIN = 1.5
 
 class ResultRecorder(object):
   def __init__(self):
@@ -146,7 +146,7 @@ def interpret_run_benchmark_results(upper_limit_data,
         'compared to upper limit ({:.3f})').format(
           benchmark, story_name, measured_ci,upper_limit_ci))
       result_recorder.add_failure(story_name, benchmark)
-    elif (measured_avg > upper_limit_avg + AVG_ERROR_MARGIN):
+    elif (measured_avg > upper_limit_avg * AVG_ERROR_MARGIN):
       print(('[  FAILED  ] {}/{} higher average frame_times({:.3f}) compared' +
         ' to upper limit ({:.3f})').format(
           benchmark, story_name, measured_avg, upper_limit_avg))
@@ -201,8 +201,8 @@ def main():
   # The values used as the upper limit are the 99th percentile of the
   # avg and ci_095 frame_times recorded by dashboard in the past 200 revisions.
   # If the value measured here would be higher than this value at least by
-  # 2ms [AVG_ERROR_MARGIN], that would be considered a failure.
-  # crbug.com/953895
+  # 10 [AVG_ERROR_MARGIN] percent of upper limit, that would be considered a
+  # failure. crbug.com/953895
   with open(
     os.path.join(os.path.dirname(__file__),
     'representative_perf_test_data',

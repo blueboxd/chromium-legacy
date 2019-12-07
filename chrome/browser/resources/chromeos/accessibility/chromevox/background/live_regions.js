@@ -166,8 +166,9 @@ LiveRegions.prototype = {
       return;
     }
 
-    while (node.containerLiveAtomic && !node.liveAtomic && node.parent)
+    while (node.containerLiveAtomic && !node.liveAtomic && node.parent) {
       node = node.parent;
+    }
 
     if (this.liveRegionNodeSet_.has(node)) {
       this.lastLiveRegionTime_ = new Date();
@@ -234,8 +235,9 @@ LiveRegions.prototype = {
    */
   addNodeToNodeSetRecursive_: function(root) {
     this.liveRegionNodeSet_.add(root);
-    for (var child = root.firstChild; child; child = child.nextSibling)
+    for (var child = root.firstChild; child; child = child.nextSibling) {
       this.addNodeToNodeSetRecursive_(child);
+    }
   },
 };
 });  // goog.scope

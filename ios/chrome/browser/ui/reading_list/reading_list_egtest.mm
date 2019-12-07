@@ -62,7 +62,6 @@ const CFTimeInterval kSnackbarAppearanceTimeout = 5;
 // kSnackbarDisappearanceTimeout = MDCSnackbarMessageDurationMax + 1
 const CFTimeInterval kSnackbarDisappearanceTimeout = 10 + 1;
 const CFTimeInterval kDelayForSlowWebServer = 4;
-const CFTimeInterval kLoadOfflineTimeout = kDelayForSlowWebServer + 1;
 const CFTimeInterval kLongPressDuration = 1.0;
 const CFTimeInterval kDistillationTimeout = 5;
 const CFTimeInterval kServerOperationDelay = 1;
@@ -368,37 +367,8 @@ void OpenPageSecurityInfoBubble() {
       tapToolsMenuButton:grey_accessibilityID(kToolsMenuSiteInformation)];
 }
 
-// Waits for a static html view containing |text|. If the condition is not met
-// within a timeout, a GREYAssert is induced.
-void WaitForStaticHtmlViewContainingText(NSString* text) {
-  bool has_static_view =
-      base::test::ios::WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
-        return [ReadingListAppInterface staticHTMLViewContainingText:text];
-      });
-
-  NSString* error_description = [NSString
-      stringWithFormat:@"Failed to find static html view containing %@", text];
-  GREYAssert(has_static_view, error_description);
-}
-
-// Waits for there to be no static html view, or a static html view that does
-// not contain |text|. If the condition is not met within a timeout, a
-// GREYAssert is induced.
-void WaitForStaticHtmlViewNotContainingText(NSString* text) {
-  bool no_static_view =
-      base::test::ios::WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
-        return ![ReadingListAppInterface staticHTMLViewContainingText:text];
-      });
-
-  NSString* error_description = [NSString
-      stringWithFormat:@"Failed, there was a static html view containing %@",
-                       text];
-  GREYAssert(no_static_view, error_description);
-}
-
-void AssertIsShowingDistillablePageNoNativeContent(
-    bool online,
-    const GURL& distillable_url) {
+// Tests that the correct version of kDistillableURL is displayed.
+void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   [ChromeEarlGrey waitForWebStateContainingText:kContentToKeep];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
@@ -421,57 +391,6 @@ void AssertIsShowingDistillablePageNoNativeContent(
                                 @"location_bar_offline"),
                             nil)]
       assertWithMatcher:online ? grey_nil() : grey_notNil()];
-}
-
-void AssertIsShowingDistillablePageNativeContent(bool online,
-                                                 const GURL& distillable_url) {
-  NSString* contentToKeep = base::SysUTF8ToNSString(kContentToKeep);
-  // There will be multiple reloads, wait for the page to be displayed.
-  if (online) {
-    // Due to the reloads, a timeout longer than what is provided in
-    // [ChromeEarlGrey waitForWebStateContainingText] is required, so call
-    // WebViewContainingText directly.
-    GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
-                   kLoadOfflineTimeout,
-                   ^bool {
-                     return [ChromeEarlGreyAppInterface
-                         webStateContainsText:@(kContentToKeep)];
-                   }),
-               @"Waiting for online page.");
-  } else {
-    WaitForStaticHtmlViewContainingText(contentToKeep);
-  }
-
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          distillable_url.GetContent())]
-      assertWithMatcher:grey_notNil()];
-
-  // Test that the offline and online pages are properly displayed.
-  if (online) {
-    [ChromeEarlGrey
-        waitForWebStateContainingText:base::SysNSStringToUTF8(contentToKeep)];
-    WaitForStaticHtmlViewNotContainingText(contentToKeep);
-  } else {
-    [ChromeEarlGrey waitForWebStateNotContainingText:kContentToKeep];
-    WaitForStaticHtmlViewContainingText(contentToKeep);
-  }
-
-  // Test the presence of the omnibox offline chip.
-  [[EarlGrey selectElementWithMatcher:
-                 grey_allOf(chrome_test_util::PageSecurityInfoIndicator(),
-                            chrome_test_util::ImageViewWithImageNamed(
-                                @"location_bar_offline"),
-                            nil)]
-      assertWithMatcher:online ? grey_nil() : grey_notNil()];
-}
-
-// Tests that the correct version of kDistillableURL is displayed.
-void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
-  if ([ReadingListAppInterface isOfflinePageWithoutNativeContentEnabled]) {
-    return AssertIsShowingDistillablePageNoNativeContent(online,
-                                                         distillable_url);
-  }
-  return AssertIsShowingDistillablePageNativeContent(online, distillable_url);
 }
 
 }  // namespace

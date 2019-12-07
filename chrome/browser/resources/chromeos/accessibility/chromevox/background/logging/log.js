@@ -78,8 +78,9 @@ LogPage.init = function() {
     LogPage.setFilterTypeEnabled(target.id, String(target.checked));
     location.search = LogPage.createUrlParams();
   };
-  for (var i = 0; i < checkboxes.length; i++)
+  for (var i = 0; i < checkboxes.length; i++) {
     checkboxes[i].onclick = filterEventListener;
+  }
 
   LogPage.update();
 };

@@ -23,8 +23,9 @@ SimpleAutomationNode = function(node) {
   /** Object Rect must be copied in the different pointer. */
   this.location = Object.assign({}, node.location);
   this.children = [];
-  for (var i = 0; i < node.children.length; i++)
+  for (var i = 0; i < node.children.length; i++) {
     this.children.push(new SimpleAutomationNode(node.children[i]));
+  }
 
   /** @type {string} */
   this.logStr = '';

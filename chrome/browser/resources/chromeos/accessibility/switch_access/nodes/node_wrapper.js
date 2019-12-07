@@ -155,8 +155,9 @@ class NodeWrapper extends SAChildNode {
    */
   getScrollableAncestor_() {
     let ancestor = this.baseNode_;
-    while (!ancestor.scrollable && ancestor.parent)
+    while (!ancestor.scrollable && ancestor.parent) {
       ancestor = ancestor.parent;
+    }
     return ancestor;
   }
 }

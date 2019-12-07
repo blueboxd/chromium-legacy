@@ -122,9 +122,6 @@ crbug.com/751849 [ win7 debug nvidia d3d11 passthrough ] conformance/extensions/
 # Win failures     #
 ####################
 
-# Failed issues
-crbug.com/1023747 [ win d3d11 passthrough ] WebglExtension_OES_fbo_render_mipmap [ Failure ]
-
 # Intel flaky issues
 crbug.com/825338 [ win intel d3d11 ] conformance/extensions/oes-texture-float-with-video.html [ RetryOnFailure ]
 crbug.com/929009 [ win intel ] conformance/glsl/misc/shader-with-non-reserved-words.html [ RetryOnFailure ]

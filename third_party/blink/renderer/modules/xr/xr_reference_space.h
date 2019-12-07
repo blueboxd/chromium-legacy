@@ -36,17 +36,17 @@ class XRReferenceSpace : public XRSpace {
                    Type type);
   ~XRReferenceSpace() override;
 
-  std::unique_ptr<TransformationMatrix> SpaceFromMojo() override;
-  std::unique_ptr<TransformationMatrix> SpaceFromViewer(
+  std::unique_ptr<TransformationMatrix> NativeFromMojo() override;
+  std::unique_ptr<TransformationMatrix> NativeFromViewer(
       const TransformationMatrix* mojo_from_viewer) override;
 
-  // MojoFromSpace is final to enforce that children should be returning
-  // SpaceFromMojo, since this is simply written to always provide the inverse
-  // of SpaceFromMojo
-  std::unique_ptr<TransformationMatrix> MojoFromSpace() final;
+  // MojoFromNative is final to enforce that children should be returning
+  // NativeFromMojo, since this is simply written to always provide the inverse
+  // of NativeFromMojo
+  std::unique_ptr<TransformationMatrix> MojoFromNative() final;
 
-  TransformationMatrix OriginOffsetMatrix() override;
-  TransformationMatrix InverseOriginOffsetMatrix() override;
+  TransformationMatrix NativeFromOffsetMatrix() override;
+  TransformationMatrix OffsetFromNativeMatrix() override;
 
   // We override getPose to ensure that the viewer pose in viewer space returns
   // the identity pose instead of the result of multiplying inverse matrices.

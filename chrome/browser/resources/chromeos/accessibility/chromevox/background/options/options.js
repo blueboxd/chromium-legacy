@@ -393,8 +393,9 @@ OptionsPage.setValue = function(element, value) {
  */
 OptionsPage.disableEventStreamFilterCheckBoxes = function(disable) {
   var filters = document.querySelectorAll('.option-eventstream > input');
-  for (var i = 0; i < filters.length; i++)
+  for (var i = 0; i < filters.length; i++) {
     filters[i].disabled = disable;
+  }
 };
 
 /**

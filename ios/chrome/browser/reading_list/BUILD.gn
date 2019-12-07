@@ -54,23 +54,9 @@ source_set("reading_list") {
     "//url",
   ]
   public_deps = [
-    ":features",
     "//ios/chrome/browser/dom_distiller",
   ]
   allow_circular_includes_from = [ ":reading_list_remover" ]
-}
-
-source_set("features") {
-  sources = [
-    "features.cc",
-    "features.h",
-  ]
-  deps = [
-    "//base",
-    "//ios/chrome/browser/web:feature_flags",
-    "//ios/web/common",
-    "//ios/web/public",
-  ]
 }
 
 source_set("reading_list_remover") {

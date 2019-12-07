@@ -14,6 +14,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_auth_handler_ntlm.h"
+#include "net/http/http_auth_ntlm_mechanism.h"
 #include "net/http/http_request_info.h"
 #include "net/http/mock_allow_http_auth_preferences.h"
 #include "net/log/net_log_with_source.h"
@@ -216,8 +217,8 @@ TEST_F(HttpAuthHandlerNtlmPortableTest, CantChangeSchemeMidway) {
 }
 
 TEST_F(HttpAuthHandlerNtlmPortableTest, NtlmV1AuthenticationSuccess) {
-  HttpAuthHandlerNTLM::ScopedProcSetter proc_setter(MockGetMSTime, MockRandom,
-                                                    MockGetHostName);
+  HttpAuthNtlmMechanism::ScopedProcSetter proc_setter(MockGetMSTime, MockRandom,
+                                                      MockGetHostName);
   ASSERT_EQ(OK, CreateHandler());
   ASSERT_EQ(OK, GetGenerateAuthTokenResult());
 

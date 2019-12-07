@@ -238,8 +238,9 @@ BrailleIme.prototype = {
    */
   onKeyEvent_: function(engineID, event) {
     var result = this.processKey_(event);
-    if (result !== undefined)
+    if (result !== undefined) {
       this.keyEventHandled_(event.requestId, event.type, result);
+    }
   },
 
   /**
@@ -498,8 +499,9 @@ BrailleIme.prototype = {
    * @param {number} contextID
    */
   commitUncommitted_: function(contextID) {
-    if (this.uncommitted_ && contextID === this.uncommitted_.contextID)
+    if (this.uncommitted_ && contextID === this.uncommitted_.contextID) {
       chrome.input.ime.commitText(this.uncommitted_);
+    }
     this.uncommitted_ = null;
   },
 

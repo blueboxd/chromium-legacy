@@ -132,8 +132,9 @@ RangeAutomationHandler.prototype = {
     // Only report attribute changes on some *Option roles if it is selected.
     if ((evt.target.role == RoleType.MENU_LIST_OPTION ||
          evt.target.role == RoleType.LIST_BOX_OPTION) &&
-        !evt.target.selected)
+        !evt.target.selected) {
       return;
+    }
 
     this.onEventIfInRange(evt);
   },

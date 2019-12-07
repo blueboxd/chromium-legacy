@@ -1295,11 +1295,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
             TabModel tabModel = getCurrentTabModel();
             switch (tabOpenType) {
                 case TabOpenType.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB:
-                    // Used by the bookmarks application.
-                    if (tabModel.getCount() > 0 && mUIWithNativeInitialized
-                            && mOverviewModeController.overviewVisible()) {
-                        mOverviewModeController.hideOverview(true);
-                    }
                     mTabModelSelectorImpl.tryToRestoreTabStateForUrl(url);
                     int tabToBeClobberedIndex = TabModelUtils.getTabIndexByUrl(tabModel, url);
                     Tab tabToBeClobbered = tabModel.getTabAt(tabToBeClobberedIndex);
@@ -1331,11 +1326,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
                         }
                     } else {
                         TabModelUtils.setIndex(tabModel, tabIndex);
-                    }
-
-                    if (tabModel.getCount() > 0 && mUIWithNativeInitialized
-                            && mOverviewModeController.overviewVisible()) {
-                        mOverviewModeController.hideOverview(true);
                     }
 
                     logMobileReceivedExternalIntent(externalAppId, intent);
@@ -1448,9 +1438,14 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
                     assert false : "Unknown TabOpenType: " + tabOpenType;
                     break;
             }
+
             getToolbarManager().setUrlBarFocusOnceNativeInitialized(focus,
                     focus ? LocationBar.OmniboxFocusReason.LAUNCH_NEW_INCOGNITO_TAB
                           : LocationBar.OmniboxFocusReason.UNFOCUS);
+
+            if (tabModel.getCount() > 0 && isInOverviewMode() && !isTablet()) {
+                mOverviewModeController.hideOverview(true);
+            }
         }
 
         @Override
@@ -1708,26 +1703,33 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
                 getTabCreator(true).launchNTP();
             }
         } else if (id == R.id.all_bookmarks_menu_id) {
-            if (currentTab != null) {
-                getCompositorViewHolder().hideKeyboard(() -> {
-                    BookmarkUtils.showBookmarkManager(ChromeTabbedActivity.this);
-                });
-                if (currentTabIsNtp) {
-                    NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_BOOKMARKS_MANAGER);
-                }
-                RecordUserAction.record("MobileMenuAllBookmarks");
+            // Note that 'currentTab' could be null in overview mode when start surface is
+            // enabled.
+            getCompositorViewHolder().hideKeyboard(
+                    () -> { BookmarkUtils.showBookmarkManager(ChromeTabbedActivity.this); });
+            if (currentTabIsNtp) {
+                NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_BOOKMARKS_MANAGER);
             }
+            RecordUserAction.record("MobileMenuAllBookmarks");
         } else if (id == R.id.recent_tabs_menu_id) {
+            LoadUrlParams params =
+                    new LoadUrlParams(UrlConstants.RECENT_TABS_URL, PageTransition.AUTO_BOOKMARK);
             if (currentTab != null) {
-                LoadUrlParams params = new LoadUrlParams(
-                        UrlConstants.RECENT_TABS_URL, PageTransition.AUTO_BOOKMARK);
                 currentTab.loadUrl(params);
-                if (currentTabIsNtp) {
-                    NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_RECENT_TABS_MANAGER);
-                }
-
-                RecordUserAction.record("MobileMenuRecentTabs");
+            } else {
+                // Note that 'currentTab' could be null in overview mode when start surface is
+                // enabled.
+                getTabCreator(getCurrentTabModel().isIncognito())
+                        .createNewTab(params, TabLaunchType.FROM_CHROME_UI, null);
             }
+            if (isInOverviewMode() && !isTablet()) {
+                mOverviewModeController.hideOverview(true);
+            }
+
+            if (currentTabIsNtp) {
+                NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_RECENT_TABS_MANAGER);
+            }
+            RecordUserAction.record("MobileMenuRecentTabs");
         } else if (id == R.id.close_tab) {
             getCurrentTabModel().closeTab(currentTab, true, false, true);
             RecordUserAction.record("MobileTabClosed");

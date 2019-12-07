@@ -86,8 +86,8 @@ Polymer({
     this.addWebUIListener(
         'storage-size-stat-changed', this.handleSizeStatChanged_.bind(this));
     this.addWebUIListener(
-        'storage-downloads-size-changed',
-        this.handleDownloadsSizeChanged_.bind(this));
+        'storage-my-files-size-changed',
+        this.handleMyFilesSizeChanged_.bind(this));
     this.addWebUIListener(
         'storage-browsing-data-size-changed',
         this.handleBrowsingDataSizeChanged_.bind(this));
@@ -141,11 +141,11 @@ Polymer({
   },
 
   /**
-   * Handler for tapping the "Downloads" item.
+   * Handler for tapping the "My files" item.
    * @private
    */
-  onDownloadsTap_: function() {
-    chrome.send('openDownloads');
+  onMyFilesTap_: function() {
+    chrome.send('openMyFiles');
   },
 
   /**
@@ -204,11 +204,11 @@ Polymer({
   },
 
   /**
-   * @param {string} size Formatted string representing the size of Downloads.
+   * @param {string} size Formatted string representing the size of My files.
    * @private
    */
-  handleDownloadsSizeChanged_: function(size) {
-    this.$.downloadsSize.subLabel = size;
+  handleMyFilesSizeChanged_: function(size) {
+    this.$.myFilesSize.subLabel = size;
   },
 
   /**

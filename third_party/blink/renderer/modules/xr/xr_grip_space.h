@@ -15,8 +15,8 @@ class XRGripSpace : public XRSpace {
  public:
   XRGripSpace(XRSession* session, XRInputSource* input_source);
 
-  std::unique_ptr<TransformationMatrix> MojoFromSpace() override;
-  std::unique_ptr<TransformationMatrix> SpaceFromMojo() override;
+  std::unique_ptr<TransformationMatrix> MojoFromNative() override;
+  std::unique_ptr<TransformationMatrix> NativeFromMojo() override;
   bool EmulatedPosition() const override;
 
   base::Optional<XRNativeOriginInformation> NativeOrigin() const override;

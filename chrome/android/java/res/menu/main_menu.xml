@@ -42,7 +42,7 @@
         <item android:id="@+id/new_incognito_tab_menu_id"
             android:title="@string/menu_new_incognito_tab" />
         <item android:id="@+id/all_bookmarks_menu_id"
-            android:title="@null" />
+            android:title="@string/menu_bookmarks" />
         <item android:id="@+id/recent_tabs_menu_id"
             android:title="@string/menu_recent_tabs" />
         <item android:id="@+id/open_history_menu_id"
@@ -90,18 +90,43 @@
     <!-- Items shown only in the tab switcher -->
     <group android:id="@+id/OVERVIEW_MODE_MENU"
         android:visible="false">
-         <item android:id="@id/new_tab_menu_id"
-             android:title="@string/menu_new_tab" />
-         <item android:id="@id/new_incognito_tab_menu_id"
-             android:title="@string/menu_new_incognito_tab" />
-         <item android:id="@+id/close_all_tabs_menu_id"
-             android:title="@string/menu_close_all_tabs" />
-         <item android:id="@+id/close_all_incognito_tabs_menu_id"
-             android:title="@string/menu_close_all_incognito_tabs" />
-         <item android:id="@+id/menu_group_tabs"
-             android:title="@string/menu_group_tabs" />
-         <item android:id="@id/preferences_id"
-             android:title="@string/menu_preferences" />
+        <item android:id="@id/new_tab_menu_id"
+            android:title="@string/menu_new_tab" />
+        <item android:id="@id/new_incognito_tab_menu_id"
+            android:title="@string/menu_new_incognito_tab" />
+        <item android:id="@+id/close_all_tabs_menu_id"
+            android:title="@string/menu_close_all_tabs" />
+        <item android:id="@+id/close_all_incognito_tabs_menu_id"
+            android:title="@string/menu_close_all_incognito_tabs" />
+        <item android:id="@+id/menu_group_tabs"
+            android:title="@string/menu_group_tabs" />
+        <item android:id="@id/preferences_id"
+            android:title="@string/menu_preferences" />
+    </group>
+
+    <!-- Items shown only in the tab switcher when start surface is enabled -->
+    <group android:id="@+id/START_SURFACE_MODE_MENU"
+        android:visible="false">
+        <item android:id="@id/new_tab_menu_id"
+            android:title="@string/menu_new_tab" />
+        <item android:id="@id/new_incognito_tab_menu_id"
+            android:title="@string/menu_new_incognito_tab" />
+        <item android:id="@+id/all_bookmarks_menu_id"
+            android:title="@string/menu_bookmarks" />
+        <item android:id="@+id/recent_tabs_menu_id"
+            android:title="@string/menu_recent_tabs" />
+        <item android:id="@+id/open_history_menu_id"
+            android:title="@string/menu_history" />
+        <item android:id="@+id/downloads_menu_id"
+            android:title="@string/menu_downloads" />
+        <item android:id="@+id/close_all_tabs_menu_id"
+            android:title="@string/menu_close_all_tabs" />
+        <item android:id="@+id/close_all_incognito_tabs_menu_id"
+            android:title="@string/menu_close_all_incognito_tabs" />
+        <item android:id="@+id/menu_group_tabs"
+            android:title="@string/menu_group_tabs" />
+        <item android:id="@id/preferences_id"
+            android:title="@string/menu_preferences" />
     </group>
 
     <!-- Items shown only when the tablet has no visible tabs -->

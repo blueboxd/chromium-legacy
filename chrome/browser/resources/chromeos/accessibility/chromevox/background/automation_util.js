@@ -262,8 +262,9 @@ AutomationUtil.isInSameTree = function(a, b) {
  */
 AutomationUtil.isDescendantOf = function(node, ancestor) {
   var testNode = node;
-  while (testNode && testNode !== ancestor)
+  while (testNode && testNode !== ancestor) {
     testNode = testNode.parent;
+  }
   return testNode === ancestor;
 };
 
@@ -294,8 +295,9 @@ AutomationUtil.hitTest = function(node, point) {
   }
 
   if (point.x <= (loc.left + loc.width) && point.x >= loc.left &&
-      point.y <= (loc.top + loc.height) && point.y >= loc.top)
+      point.y <= (loc.top + loc.height) && point.y >= loc.top) {
     return node;
+  }
   return null;
 };
 
@@ -387,8 +389,9 @@ AutomationUtil.getEditableRoot = function(node) {
  */
 AutomationUtil.findLastNode = function(root, pred) {
   var node = root;
-  while (node.lastChild)
+  while (node.lastChild) {
     node = node.lastChild;
+  }
 
   do {
     if (AutomationPredicate.shouldIgnoreNode(node)) {
@@ -404,8 +407,9 @@ AutomationUtil.findLastNode = function(root, pred) {
       }
 
       if (pred(walker) && !AutomationPredicate.shouldIgnoreNode(walker) &&
-          (!shallowest || !AutomationPredicate.container(walker)))
+          (!shallowest || !AutomationPredicate.container(walker))) {
         shallowest = walker;
+      }
 
       walker = walker.parent;
     }

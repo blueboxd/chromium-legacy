@@ -14,7 +14,6 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/pref_names.h"
-#include "ios/chrome/browser/reading_list/features.h"
 #import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/navigation/navigation_item.h"
@@ -110,16 +109,8 @@ bool LocationBarModelDelegateIOS::IsOfflinePage() const {
   web::WebState* web_state = GetActiveWebState();
   if (!web_state)
     return false;
-  if (reading_list::IsOfflinePageWithoutNativeContentEnabled()) {
-    return OfflinePageTabHelper::FromWebState(web_state)
-        ->presenting_offline_page();
-  }
-  auto* navigationManager = web_state->GetNavigationManager();
-  auto* visibleItem = navigationManager->GetVisibleItem();
-  if (!visibleItem)
-    return false;
-  const GURL& url = visibleItem->GetURL();
-  return url.SchemeIs(kChromeUIScheme) && url.host() == kChromeUIOfflineHost;
+  return OfflinePageTabHelper::FromWebState(web_state)
+      ->presenting_offline_page();
 }
 
 bool LocationBarModelDelegateIOS::IsInstantNTP() const {

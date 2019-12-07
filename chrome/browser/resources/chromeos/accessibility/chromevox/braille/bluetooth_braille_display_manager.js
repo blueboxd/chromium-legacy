@@ -216,9 +216,10 @@ BluetoothBrailleDisplayManager.prototype = {
    */
   handlePairing: function(pairingEvent) {
     if (pairingEvent.pairing ==
-        chrome.bluetoothPrivate.PairingEventType.REQUEST_PINCODE)
+        chrome.bluetoothPrivate.PairingEventType.REQUEST_PINCODE) {
       this.listeners_.forEach(
           (listener) => listener.onPincodeRequested(pairingEvent.device));
+    }
   },
 
   /**

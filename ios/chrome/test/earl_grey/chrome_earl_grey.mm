@@ -19,7 +19,6 @@
 #if defined(CHROME_EARL_GREY_1)
 #import <WebKit/WebKit.h>
 
-#import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"  // nogncheck
 #import "ios/chrome/test/app/browsing_data_test_util.h"          // nogncheck
 #import "ios/chrome/test/app/chrome_test_util.h"                 // nogncheck
 #include "ios/chrome/test/app/navigation_test_util.h"            // nogncheck

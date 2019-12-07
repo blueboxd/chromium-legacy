@@ -293,6 +293,19 @@ void ClipboardPromise::RequestPermission(
         DOMExceptionCode::kNotAllowedError, "Document is not focused."));
     return;
   }
+
+  if (!document.IsFeatureEnabled(
+          mojom::FeaturePolicyFeature::kClipboard,
+          ReportOptions::kReportOnFailure,
+          "The Clipboard API has been blocked because of a Feature Policy "
+          "applied to the current document. See https://goo.gl/EuHzyv for more "
+          "details.")) {
+    script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotAllowedError,
+        "Disabled in this document by Feature Policy."));
+    return;
+  }
+
   if (!GetPermissionService()) {
     script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotAllowedError,

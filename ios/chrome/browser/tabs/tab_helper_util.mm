@@ -35,7 +35,6 @@
 #import "ios/chrome/browser/open_in/open_in_tab_helper.h"
 #import "ios/chrome/browser/overscroll_actions/overscroll_actions_tab_helper.h"
 #import "ios/chrome/browser/passwords/password_tab_helper.h"
-#include "ios/chrome/browser/reading_list/features.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/reading_list/reading_list_web_state_observer.h"
 #import "ios/chrome/browser/search_engines/search_engine_tab_helper.h"
@@ -107,12 +106,6 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   }
 
   ImageFetchTabHelper::CreateForWebState(web_state);
-
-  if (!reading_list::IsOfflinePageWithoutNativeContentEnabled()) {
-    ReadingListModel* model =
-        ReadingListModelFactory::GetForBrowserState(browser_state);
-    ReadingListWebStateObserver::CreateForWebState(web_state, model);
-  }
 
   OpenInTabHelper::CreateForWebState(web_state);
   ios::ChromeBrowserState* original_browser_state =

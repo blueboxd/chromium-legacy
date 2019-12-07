@@ -207,8 +207,9 @@ InputHandler.prototype = {
     // If the user hasn't clicked 'search', or if they are currently
     // trying to highlight a selection, don't track the mouse.
     if (this.callbacks_.canStartSelecting() &&
-        (!this.isSearchKeyDown_ || this.isSelectionKeyDown_))
+        (!this.isSearchKeyDown_ || this.isSelectionKeyDown_)) {
       return false;
+    }
 
     this.callbacks_.onSelectingStateChanged(
         true /* is selecting */, evt.screenX, evt.screenY);

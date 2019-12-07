@@ -1970,6 +1970,8 @@ component("net") {
     if (!is_win) {
       sources += [
         "http/http_auth_handler_ntlm_portable.cc",
+        "http/http_auth_ntlm_mechanism.cc",
+        "http/http_auth_ntlm_mechanism.h",
         "ntlm/ntlm.cc",
         "ntlm/ntlm.h",
         "ntlm/ntlm_buffer_reader.cc",

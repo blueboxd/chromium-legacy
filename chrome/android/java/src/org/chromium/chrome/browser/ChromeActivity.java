@@ -2154,6 +2154,17 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             return true;
         }
 
+        if (id == R.id.open_history_menu_id) {
+            // 'currentTab' could only be null when opening history from start surface, which is
+            // not available on tablet.
+            assert (isTablet() && currentTab != null) || !isTablet();
+            if (currentTab != null && NewTabPage.isNTPUrl(currentTab.getUrl())) {
+                NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_HISTORY_MANAGER);
+            }
+            RecordUserAction.record("MobileMenuHistory");
+            HistoryManagerUtils.showHistoryManager(this, currentTab);
+        }
+
         // All the code below assumes currentTab is not null, so return early if it is null.
         if (currentTab == null) {
             return false;
@@ -2179,12 +2190,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         } else if (id == R.id.info_menu_id) {
             PageInfoController.show(
                     this, currentTab, null, PageInfoController.OpenedFromSource.MENU);
-        } else if (id == R.id.open_history_menu_id) {
-            if (NewTabPage.isNTPUrl(currentTab.getUrl())) {
-                NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_HISTORY_MANAGER);
-            }
-            RecordUserAction.record("MobileMenuHistory");
-            HistoryManagerUtils.showHistoryManager(this, currentTab);
         } else if (id == R.id.translate_id) {
             RecordUserAction.record("MobileMenuTranslate");
             Tracker tracker =

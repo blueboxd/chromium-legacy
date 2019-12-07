@@ -302,8 +302,9 @@ Background.prototype = {
             prevRange.start.node, range.start.node);
       }
       if (!lca || lca.state[StateType.EDITABLE] ||
-          !range.start.node.state[StateType.EDITABLE])
+          !range.start.node.state[StateType.EDITABLE]) {
         range.select();
+      }
     }
 
     o.withRichSpeechAndBraille(

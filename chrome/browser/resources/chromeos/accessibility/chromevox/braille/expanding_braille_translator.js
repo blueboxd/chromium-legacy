@@ -100,8 +100,9 @@ ExpandingBrailleTranslator.prototype.translate = function(
   text.getSpansInstanceOf(BrailleTextStyleSpan).forEach(function(span) {
     var start = text.getSpanStart(span);
     var end = text.getSpanEnd(span);
-    for (var i = start; i < end; i++)
+    for (var i = start; i < end; i++) {
       formTypeMap[i] |= span.formType;
+    }
   });
 
   if (expandRanges.length == 0 && extraCellsSpans.length == 0) {
@@ -127,8 +128,9 @@ ExpandingBrailleTranslator.prototype.translate = function(
       textToBraille: [],
       brailleToText: new Array(cells.byteLength)
     };
-    for (var i = 0; i < cells.byteLength; ++i)
+    for (var i = 0; i < cells.byteLength; ++i) {
       chunk.brailleToText[i] = 0;
+    }
     chunks.push(chunk);
   }
   function addChunk(translator, start, end) {

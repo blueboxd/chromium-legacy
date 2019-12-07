@@ -8,10 +8,8 @@
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/reading_list/core/reading_list_model.h"
-#include "ios/chrome/browser/reading_list/features.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/static_html_view_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/testing/nserror_util.h"
 #include "net/base/mac/url_conversions.h"
@@ -124,15 +122,6 @@ class ConnectionTypeOverrider {
     return -1;
   }
   return model->unread_size();
-}
-
-+ (BOOL)staticHTMLViewContainingText:(NSString*)text {
-  return chrome_test_util::StaticHtmlViewContainingText(
-      chrome_test_util::GetCurrentWebState(), base::SysNSStringToUTF8(text));
-}
-
-+ (BOOL)isOfflinePageWithoutNativeContentEnabled {
-  return reading_list::IsOfflinePageWithoutNativeContentEnabled();
 }
 
 + (void)forceConnectionToWifi {

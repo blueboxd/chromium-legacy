@@ -243,11 +243,6 @@ extern const char kNewOmniboxPopupLayoutDescription[];
 extern const char kNonModalDialogsName[];
 extern const char kNonModalDialogsDescription[];
 
-// Title and description for the flag to display offline pages directly in the
-// web view.
-extern const char kOfflineVersionWithoutNativeContentName[];
-extern const char kOfflineVersionWithoutNativeContentDescription[];
-
 // Title and description for the flag to show most visited sites and collection
 // shortcuts in the omnibox popup instead of ZeroSuggest.
 extern const char kOmniboxPopupShortcutIconsInZeroStateName[];

@@ -48,18 +48,18 @@ XRReferenceSpace::~XRReferenceSpace() = default;
 
 XRPose* XRReferenceSpace::getPose(XRSpace* other_space) {
   if (type_ == Type::kTypeViewer) {
-    std::unique_ptr<TransformationMatrix> other_offsetspace_from_viewer =
-        other_space->OffsetSpaceFromViewer();
-    if (!other_offsetspace_from_viewer) {
+    std::unique_ptr<TransformationMatrix> other_offset_from_viewer =
+        other_space->OffsetFromViewer();
+    if (!other_offset_from_viewer) {
       return nullptr;
     }
 
-    auto viewer_from_offset = OriginOffsetMatrix();
+    auto viewer_from_offset = NativeFromOffsetMatrix();
 
-    auto other_offsetspace_from_offset =
-        *other_offsetspace_from_viewer * viewer_from_offset;
+    auto other_offset_from_offset =
+        *other_offset_from_viewer * viewer_from_offset;
 
-    return MakeGarbageCollected<XRPose>(other_offsetspace_from_offset,
+    return MakeGarbageCollected<XRPose>(other_offset_from_offset,
                                         session()->EmulatedPosition());
   } else {
     return XRSpace::getPose(other_space);
@@ -83,7 +83,7 @@ void XRReferenceSpace::SetFloorFromMojo() {
   display_info_id_ = session()->DisplayInfoPtrId();
 }
 
-std::unique_ptr<TransformationMatrix> XRReferenceSpace::SpaceFromMojo() {
+std::unique_ptr<TransformationMatrix> XRReferenceSpace::NativeFromMojo() {
   auto mojo_from_viewer = session()->MojoFromViewer();
   switch (type_) {
     case Type::kTypeLocal:
@@ -121,15 +121,12 @@ std::unique_ptr<TransformationMatrix> XRReferenceSpace::SpaceFromMojo() {
   return nullptr;
 }
 
-// Returns the refspace-from-viewerspace transform, corresponding to the pose of
-// the viewer in this space. This takes the mojo_from_viewer transform (viewer
-// pose in mojo space) as input, and left-multiplies space_from_mojo onto that.
-std::unique_ptr<TransformationMatrix> XRReferenceSpace::SpaceFromViewer(
+std::unique_ptr<TransformationMatrix> XRReferenceSpace::NativeFromViewer(
     const TransformationMatrix* mojo_from_viewer) {
   if (type_ == Type::kTypeViewer) {
     // Special case for viewer space, always return an identity matrix
-    // explicitly. In theory the default behavior of multiplying SpaceFromMojo *
-    // MojoFromViewer would be equivalent, but that would likely return an
+    // explicitly. In theory the default behavior of multiplying NativeFromMojo
+    // onto MojoFromViewer would be equivalent, but that would likely return an
     // almost-identity due to rounding errors.
     return std::make_unique<TransformationMatrix>();
   }
@@ -137,23 +134,23 @@ std::unique_ptr<TransformationMatrix> XRReferenceSpace::SpaceFromViewer(
   if (!mojo_from_viewer)
     return nullptr;
 
-  // Return space_from_viewer = space_from_mojo * mojo_from_viewer
-  auto space_from_viewer = SpaceFromMojo();
-  if (!space_from_viewer)
+  // Return native_from_viewer = native_from_mojo * mojo_from_viewer
+  auto native_from_viewer = NativeFromMojo();
+  if (!native_from_viewer)
     return nullptr;
-  space_from_viewer->Multiply(*mojo_from_viewer);
-  return space_from_viewer;
+  native_from_viewer->Multiply(*mojo_from_viewer);
+  return native_from_viewer;
 }
 
-std::unique_ptr<TransformationMatrix> XRReferenceSpace::MojoFromSpace() {
-  return TryInvert(SpaceFromMojo());
+std::unique_ptr<TransformationMatrix> XRReferenceSpace::MojoFromNative() {
+  return TryInvert(NativeFromMojo());
 }
 
-TransformationMatrix XRReferenceSpace::OriginOffsetMatrix() {
+TransformationMatrix XRReferenceSpace::NativeFromOffsetMatrix() {
   return origin_offset_->TransformMatrix();
 }
 
-TransformationMatrix XRReferenceSpace::InverseOriginOffsetMatrix() {
+TransformationMatrix XRReferenceSpace::OffsetFromNativeMatrix() {
   return origin_offset_->InverseTransformMatrix();
 }
 
@@ -164,7 +161,7 @@ XRReferenceSpace::Type XRReferenceSpace::GetType() const {
 XRReferenceSpace* XRReferenceSpace::getOffsetReferenceSpace(
     XRRigidTransform* additional_offset) {
   auto matrix =
-      OriginOffsetMatrix().Multiply(additional_offset->TransformMatrix());
+      NativeFromOffsetMatrix().Multiply(additional_offset->TransformMatrix());
 
   auto* result_transform = MakeGarbageCollected<XRRigidTransform>(matrix);
   return cloneWithOriginOffset(result_transform);

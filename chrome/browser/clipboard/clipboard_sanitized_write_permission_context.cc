@@ -13,7 +13,7 @@ ClipboardSanitizedWritePermissionContext::
     ClipboardSanitizedWritePermissionContext(Profile* profile)
     : PermissionContextBase(profile,
                             ContentSettingsType::CLIPBOARD_SANITIZED_WRITE,
-                            blink::mojom::FeaturePolicyFeature::kNotFound) {}
+                            blink::mojom::FeaturePolicyFeature::kClipboard) {}
 
 ClipboardSanitizedWritePermissionContext::
     ~ClipboardSanitizedWritePermissionContext() {}

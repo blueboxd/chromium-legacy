@@ -104,8 +104,8 @@ void GetDeviceNameAndType(const syncer::DeviceInfoTracker* tracker,
 // Formats |entry|'s URL and title and adds them to |result|.
 void SetHistoryEntryUrlAndTitle(
     const BrowsingHistoryService::HistoryEntry& entry,
-    base::DictionaryValue* result) {
-  result->SetString("url", entry.url.spec());
+    base::Value* result) {
+  result->SetStringKey("url", entry.url.spec());
 
   bool using_url_as_the_title = false;
   base::string16 title_to_set(entry.title);
@@ -130,7 +130,7 @@ void SetHistoryEntryUrlAndTitle(
   if (title_to_set.size() > kShortTitleLength)
     title_to_set.resize(kShortTitleLength);
 
-  result->SetString("title", title_to_set);
+  result->SetStringKey("title", title_to_set);
 }
 
 // Helper function to check if entry is present in user remote data (server-side
@@ -149,15 +149,15 @@ bool IsEntryInRemoteUserData(
   return false;
 }
 
-// Converts |entry| to a DictionaryValue to be owned by the caller.
-std::unique_ptr<base::DictionaryValue> HistoryEntryToValue(
+// Converts |entry| to a base::Value to be owned by the caller.
+base::Value HistoryEntryToValue(
     const BrowsingHistoryService::HistoryEntry& entry,
     BookmarkModel* bookmark_model,
     Profile* profile,
     const syncer::DeviceInfoTracker* tracker,
     base::Clock* clock) {
-  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-  SetHistoryEntryUrlAndTitle(entry, result.get());
+  base::Value result(base::Value::Type::DICTIONARY);
+  SetHistoryEntryUrlAndTitle(entry, &result);
 
   base::string16 domain = url_formatter::IDNToUnicode(entry.url.host());
   // When the domain is empty, use the scheme instead. This allows for a
@@ -169,25 +169,25 @@ std::unique_ptr<base::DictionaryValue> HistoryEntryToValue(
   // chrome/browser/resources/history/history.js in @typedef for
   // HistoryEntry. Please update it whenever you add or remove
   // any keys in result.
-  result->SetString("domain", domain);
+  result.SetStringKey("domain", domain);
 
-  result->SetString(
+  result.SetStringKey(
       "fallbackFaviconText",
       base::UTF16ToASCII(favicon::GetFallbackIconText(entry.url)));
 
-  result->SetDouble("time", entry.time.ToJsTime());
+  result.SetDoubleKey("time", entry.time.ToJsTime());
 
   // Pass the timestamps in a list.
-  std::unique_ptr<base::ListValue> timestamps(new base::ListValue);
+  base::Value timestamps(base::Value::Type::LIST);
   for (int64_t timestamp : entry.all_timestamps) {
-    timestamps->AppendDouble(
-        base::Time::FromInternalValue(timestamp).ToJsTime());
+    timestamps.GetList().push_back(
+        base::Value(base::Time::FromInternalValue(timestamp).ToJsTime()));
   }
-  result->Set("allTimestamps", std::move(timestamps));
+  result.SetKey("allTimestamps", std::move(timestamps));
 
   // Always pass the short date since it is needed both in the search and in
   // the monthly view.
-  result->SetString("dateShort", base::TimeFormatShortDate(entry.time));
+  result.SetStringKey("dateShort", base::TimeFormatShortDate(entry.time));
 
   base::string16 snippet_string;
   base::string16 date_relative_day;
@@ -219,8 +219,8 @@ std::unique_ptr<base::DictionaryValue> HistoryEntryToValue(
   std::string device_type;
   if (!entry.client_id.empty())
     GetDeviceNameAndType(tracker, entry.client_id, &device_name, &device_type);
-  result->SetString("deviceName", device_name);
-  result->SetString("deviceType", device_type);
+  result.SetStringKey("deviceName", device_name);
+  result.SetStringKey("deviceType", device_type);
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   SupervisedUserService* supervised_user_service = nullptr;
@@ -238,15 +238,15 @@ std::unique_ptr<base::DictionaryValue> HistoryEntryToValue(
   }
 #endif
 
-  result->SetString("dateTimeOfDay", date_time_of_day);
-  result->SetString("dateRelativeDay", date_relative_day);
-  result->SetString("snippet", snippet_string);
-  result->SetBoolean("starred", bookmark_model->IsBookmarked(entry.url));
-  result->SetInteger("hostFilteringBehavior", host_filtering_behavior);
-  result->SetBoolean("blockedVisit", is_blocked_visit);
-  result->SetBoolean("isUrlInRemoteUserData", IsEntryInRemoteUserData(entry));
-  result->SetString("remoteIconUrlForUma",
-                    entry.remote_icon_url_for_uma.spec());
+  result.SetStringKey("dateTimeOfDay", date_time_of_day);
+  result.SetStringKey("dateRelativeDay", date_relative_day);
+  result.SetStringKey("snippet", snippet_string);
+  result.SetBoolKey("starred", bookmark_model->IsBookmarked(entry.url));
+  result.SetIntKey("hostFilteringBehavior", host_filtering_behavior);
+  result.SetBoolKey("blockedVisit", is_blocked_visit);
+  result.SetBoolKey("isUrlInRemoteUserData", IsEntryInRemoteUserData(entry));
+  result.SetStringKey("remoteIconUrlForUma",
+                      entry.remote_icon_url_for_uma.spec());
 
   return result;
 }
@@ -311,16 +311,19 @@ void BrowsingHistoryHandler::HandleQueryHistory(const base::ListValue* args) {
   // - the text to search for (may be empty)
   // - the maximum number of results to return (may be 0, meaning that there
   //   is no maximum).
-  base::string16 search_text = ExtractStringValue(args);
+  const base::Value& search_text = args->GetList()[0];
 
   history::QueryOptions options;
-  if (!args->GetInteger(1, &options.max_count)) {
+  const base::Value& count = args->GetList()[1];
+  if (!count.is_int()) {
     NOTREACHED() << "Failed to convert argument 2.";
     return;
   }
 
+  options.max_count = count.GetInt();
   options.duplicate_policy = history::QueryOptions::REMOVE_DUPLICATES_PER_DAY;
-  browsing_history_service_->QueryHistory(search_text, options);
+  browsing_history_service_->QueryHistory(
+      base::UTF8ToUTF16(search_text.GetString()), options);
 }
 
 void BrowsingHistoryHandler::HandleQueryHistoryContinuation(
@@ -407,20 +410,19 @@ void BrowsingHistoryHandler::OnQueryComplete(
 
   // Convert the result vector into a ListValue.
   DCHECK(tracker);
-  base::ListValue results_value;
+  base::Value results_value(base::Value::Type::LIST);
   for (const BrowsingHistoryService::HistoryEntry& entry : results) {
-    std::unique_ptr<base::Value> value(
+    results_value.GetList().push_back(
         HistoryEntryToValue(entry, bookmark_model, profile, tracker, clock_));
-    results_value.Append(std::move(value));
   }
 
-  base::DictionaryValue results_info;
+  base::Value results_info(base::Value::Type::DICTIONARY);
   // The items which are to be written into results_info_value_ are also
   // described in chrome/browser/resources/history/history.js in @typedef for
   // HistoryQuery. Please update it whenever you add or remove any keys in
   // results_info_value_.
-  results_info.SetString("term", query_results_info.search_text);
-  results_info.SetBoolean("finished", query_results_info.reached_beginning);
+  results_info.SetStringKey("term", query_results_info.search_text);
+  results_info.SetBoolKey("finished", query_results_info.reached_beginning);
 
   web_ui()->CallJavascriptFunctionUnsafe("historyResult", results_info,
                                          results_value);

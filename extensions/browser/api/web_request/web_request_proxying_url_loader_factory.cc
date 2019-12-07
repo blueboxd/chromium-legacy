@@ -25,6 +25,7 @@
 #include "net/base/completion_repeating_callback.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "url/origin.h"
 
@@ -92,10 +93,10 @@ WebRequestProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
       &WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError,
       weak_factory_.GetWeakPtr(),
       network::URLLoaderCompletionStatus(net::ERR_ABORTED)));
-  proxied_loader_receiver_.set_disconnect_handler(base::BindOnce(
-      &WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError,
-      weak_factory_.GetWeakPtr(),
-      network::URLLoaderCompletionStatus(net::ERR_ABORTED)));
+  proxied_loader_receiver_.set_disconnect_with_reason_handler(
+      base::BindOnce(&WebRequestProxyingURLLoaderFactory::InProgressRequest::
+                         OnLoaderDisconnected,
+                     weak_factory_.GetWeakPtr()));
 }
 
 WebRequestProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
@@ -912,6 +913,21 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError(
   factory_->RemoveRequest(network_service_request_id_, request_id_);
 }
 
+void WebRequestProxyingURLLoaderFactory::InProgressRequest::
+    OnLoaderDisconnected(uint32_t custom_reason,
+                         const std::string& description) {
+  if (custom_reason == network::mojom::URLLoader::kClientDisconnectReason &&
+      description == blink::ThrottlingURLLoader::kFollowRedirectReason) {
+    // Save the ID here because this request will be restarted with a new
+    // URLLoader instead of continuing with FollowRedirect(). The saved ID will
+    // be retrieved in the restarted request, which will call
+    // RequestIDGenerator::Generate() with the same ID pair.
+    factory_->request_id_generator_->SaveID(
+        routing_id_, network_service_request_id_, request_id_);
+  }
+  OnRequestError(network::URLLoaderCompletionStatus(net::ERR_ABORTED));
+}
+
 // Determines whether it is safe to redirect from |from_url| to |to_url|.
 bool WebRequestProxyingURLLoaderFactory::InProgressRequest::IsRedirectSafe(
     const GURL& from_url,
@@ -935,7 +951,7 @@ bool WebRequestProxyingURLLoaderFactory::InProgressRequest::IsRedirectSafe(
 WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
     content::BrowserContext* browser_context,
     int render_process_id,
-    scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
+    WebRequestAPI::RequestIDGenerator* request_id_generator,
     std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
     base::Optional<int64_t> navigation_id,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
@@ -946,7 +962,7 @@ WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
     content::ContentBrowserClient::URLLoaderFactoryType loader_factory_type)
     : browser_context_(browser_context),
       render_process_id_(render_process_id),
-      request_id_generator_(std::move(request_id_generator)),
+      request_id_generator_(request_id_generator),
       navigation_ui_data_(std::move(navigation_ui_data)),
       navigation_id_(std::move(navigation_id)),
       proxies_(proxies),
@@ -976,7 +992,7 @@ WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
 void WebRequestProxyingURLLoaderFactory::StartProxying(
     content::BrowserContext* browser_context,
     int render_process_id,
-    scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
+    WebRequestAPI::RequestIDGenerator* request_id_generator,
     std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
     base::Optional<int64_t> navigation_id,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
@@ -988,7 +1004,7 @@ void WebRequestProxyingURLLoaderFactory::StartProxying(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   auto proxy = std::make_unique<WebRequestProxyingURLLoaderFactory>(
-      browser_context, render_process_id, std::move(request_id_generator),
+      browser_context, render_process_id, request_id_generator,
       std::move(navigation_ui_data), std::move(navigation_id),
       std::move(loader_receiver), std::move(target_factory_remote),
       std::move(header_client_receiver), proxies, loader_factory_type);
@@ -1011,11 +1027,14 @@ void WebRequestProxyingURLLoaderFactory::CreateLoaderAndStart(
   DCHECK(render_process_id_ != -1 || navigation_ui_data_ ||
          IsForServiceWorkerScript());
 
-  // The request ID doesn't really matter. It just needs to be unique
+  // The |web_request_id| doesn't really matter. It just needs to be unique
   // per-BrowserContext so extensions can make sense of it.  Note that
   // |network_service_request_id_| by contrast is not necessarily unique, so we
-  // don't use it for identity here.
-  const uint64_t web_request_id = request_id_generator_->Generate();
+  // don't use it for identity here. This request ID may be the same as a
+  // previous request if the previous request was redirected to a URL that
+  // required a different loader.
+  const uint64_t web_request_id =
+      request_id_generator_->Generate(routing_id, request_id);
 
   if (request_id) {
     // Only requests with a non-zero request ID can have their proxy associated
@@ -1064,7 +1083,8 @@ void WebRequestProxyingURLLoaderFactory::OnLoaderForCorsPreflightCreated(
   // a connection to the same URL (i.e., the actual request), and distinguishing
   // two connections for the actual request and the preflight request before
   // sending request headers is very difficult.
-  const uint64_t web_request_id = request_id_generator_->Generate();
+  const uint64_t web_request_id =
+      request_id_generator_->Generate(MSG_ROUTING_NONE, 0);
 
   auto result = requests_.insert(std::make_pair(
       web_request_id,

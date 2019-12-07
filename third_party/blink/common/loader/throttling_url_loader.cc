@@ -29,6 +29,8 @@ void MergeRemovedHeaders(std::vector<std::string>* removed_headers_A,
 
 }  // namespace
 
+const char ThrottlingURLLoader::kFollowRedirectReason[] = "FollowRedirect";
+
 class ThrottlingURLLoader::ForwardingThrottleDelegate
     : public URLLoaderThrottle::Delegate {
  public:
@@ -235,7 +237,7 @@ ThrottlingURLLoader::~ThrottlingURLLoader() {
 }
 
 void ThrottlingURLLoader::FollowRedirectForcingRestart() {
-  url_loader_.reset();
+  ResetForFollowRedirect();
   client_receiver_.reset();
   CHECK(throttle_will_redirect_redirect_url_.is_empty());
 
@@ -247,6 +249,12 @@ void ThrottlingURLLoader::FollowRedirectForcingRestart() {
   modified_headers_.Clear();
 
   StartNow();
+}
+
+void ThrottlingURLLoader::ResetForFollowRedirect() {
+  url_loader_.ResetWithReason(
+      network::mojom::URLLoader::kClientDisconnectReason,
+      kFollowRedirectReason);
 }
 
 void ThrottlingURLLoader::RestartWithFactory(

@@ -29,8 +29,8 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
 import org.chromium.chrome.browser.settings.SettingsActivity;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.sync.SyncAndServicesPreferences;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
@@ -278,7 +278,7 @@ public class SyncAndServicesPreferencesTest {
         String fragmentName = SyncAndServicesPreferences.class.getName();
         final Bundle arguments = SyncAndServicesPreferences.createArguments(true);
         Intent intent =
-                PreferencesLauncher.createIntentForSettingsPage(context, fragmentName, arguments);
+                SettingsLauncher.createIntentForSettingsPage(context, fragmentName, arguments);
         Activity activity = InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
         Assert.assertTrue(activity instanceof SettingsActivity);
         ApplicationTestUtils.finishActivity(activity);

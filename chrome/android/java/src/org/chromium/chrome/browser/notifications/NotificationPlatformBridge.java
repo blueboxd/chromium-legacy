@@ -40,7 +40,7 @@ import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.permissions.PermissionFieldTrial;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.website.SingleCategoryPreferences;
 import org.chromium.chrome.browser.settings.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.settings.website.SiteSettingsCategory;
@@ -281,7 +281,7 @@ public class NotificationPlatformBridge {
         Class<? extends PreferenceFragmentCompat> fragment = launchSingleWebsitePreferences
                 ? SingleWebsitePreferences.class
                 : SingleCategoryPreferences.class;
-        PreferencesLauncher.launchSettingsPage(applicationContext, fragment, fragmentArguments);
+        SettingsLauncher.launchSettingsPage(applicationContext, fragment, fragmentArguments);
     }
 
     /**
@@ -664,7 +664,7 @@ public class NotificationPlatformBridge {
                     SiteSettingsCategory.preferenceKey(SiteSettingsCategory.Type.NOTIFICATIONS));
         }
         // Set up a pending intent for going to the settings screen for |origin|.
-        Intent settingsIntent = PreferencesLauncher.createIntentForSettingsPage(
+        Intent settingsIntent = SettingsLauncher.createIntentForSettingsPage(
                 context, fragmentName, fragmentArguments);
         settingsIntent.setData(makeIntentData(notificationId, origin, -1 /* actionIndex */));
         PendingIntent pendingSettingsIntent = PendingIntent.getActivity(context,

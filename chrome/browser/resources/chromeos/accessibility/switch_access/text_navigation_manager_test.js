@@ -12,18 +12,16 @@ function SwitchAccessTextNavigationManagerTest() {
   SwitchAccessE2ETest.call(this);
 }
 
-SwitchAccessTextNavigationManagerTest.prototype =
-    {
-      __proto__: SwitchAccessE2ETest.prototype,
+SwitchAccessTextNavigationManagerTest.prototype = {
+  __proto__: SwitchAccessE2ETest.prototype,
 
-      /** @override */
-      setUp: function() {
-        this.textNavigationManager =
-            switchAccess.navigationManager_.menuManager_.textNavigationManager_;
-        this.navigationManager =
-            switchAccess.navigationManager_;
-      }
-    }
+  /** @override */
+  setUp: function() {
+    this.textNavigationManager =
+        switchAccess.navigationManager_.menuManager_.textNavigationManager_;
+    this.navigationManager = switchAccess.navigationManager_;
+  }
+};
 
 
 /**
@@ -85,10 +83,10 @@ function runTextNavigationTest(testHelper, textParams) {
  *  -initialIndex: index of the text caret before the navigation action.
  *  -targetStartIndex: start index of the selection after the selection action.
  *  -targetEndIndex: end index of the selection after the navigation action.
- *  -navigationAction: function executing a text navigation action or selection action.
- *  -id: id of the text area element (optional).
- *  -cols: number of columns in the text area (optional).
- *  -wrap: the wrap attribute ("hard" or "soft") of the text area (optional).
+ *  -navigationAction: function executing a text navigation action or selection
+ * action. -id: id of the text area element (optional). -cols: number of columns
+ * in the text area (optional). -wrap: the wrap attribute ("hard" or "soft") of
+ * the text area (optional).
  *
  * @param {!SwitchAccessE2ETest} testHelper
  * @param {selectionTextParams} textParams,
@@ -111,7 +109,7 @@ function runTextSelectionTest(testHelper, textParams) {
       textId, textContent, initialTextIndex, textCols, textWrap);
 
   let navigationTargetIndex = targetTextEndIndex;
-  if(selectionIsBackward){
+  if (selectionIsBackward) {
     navigationTargetIndex = targetTextStartIndex;
   }
 
@@ -120,8 +118,9 @@ function runTextSelectionTest(testHelper, textParams) {
     assertNotEquals(inputNode, null);
     checkNodeIsFocused(inputNode);
     let callback = testHelper.newCallback(function() {
-      setUpCursorChangeListener(testHelper, inputNode, targetTextEndIndex,
-                                targetTextStartIndex, targetTextEndIndex);
+      setUpCursorChangeListener(
+          testHelper, inputNode, targetTextEndIndex, targetTextStartIndex,
+          targetTextEndIndex);
       testHelper.textNavigationManager.saveSelectEnd();
     });
 
@@ -185,8 +184,8 @@ function findNodeById(desktop, id) {
  */
 function checkNodeIsFocused(inputNode) {
   chrome.automation.getFocus((focusedNode) => {
-      assertEquals(focusedNode.role, inputNode.role);
-    });
+    assertEquals(focusedNode.role, inputNode.role);
+  });
 }
 
 /**
@@ -205,14 +204,15 @@ function checkNodeIsFocused(inputNode) {
  * @param {number} targetTextEndIndex
  * @param {function() || undefined} callback
  */
-function setUpCursorChangeListener( testHelper, inputNode, initialTextIndex,
-  targetTextStartIndex, targetTextEndIndex, callback) {
+function setUpCursorChangeListener(
+    testHelper, inputNode, initialTextIndex, targetTextStartIndex,
+    targetTextEndIndex, callback) {
   // Ensures that the text index has changed before checking the new index.
   const checkActionFinished = function(tab) {
     if (inputNode.textSelStart != initialTextIndex ||
         inputNode.textSelEnd != initialTextIndex) {
       checkTextIndex();
-      if(callback) {
+      if (callback) {
         callback();
       }
     }
@@ -222,11 +222,13 @@ function setUpCursorChangeListener( testHelper, inputNode, initialTextIndex,
   const checkTextIndex = testHelper.newCallback(function() {
     assertEquals(inputNode.textSelStart, targetTextStartIndex);
     assertEquals(inputNode.textSelEnd, targetTextEndIndex);
-    // If there's a callback then this is the navigation listener for a selection
-    // test, thus remove it when fired to make way for the selection listener.
-    if (callback){
+    // If there's a callback then this is the navigation listener for a
+    // selection test, thus remove it when fired to make way for the selection
+    // listener.
+    if (callback) {
       inputNode.removeEventListener(
-        chrome.automation.EventType.TEXT_SELECTION_CHANGED, checkActionFinished);
+          chrome.automation.EventType.TEXT_SELECTION_CHANGED,
+          checkActionFinished);
     }
   });
 
@@ -240,7 +242,7 @@ TEST_F('SwitchAccessTextNavigationManagerTest', 'JumpToBeginning', function() {
     initialIndex: 6,
     targetIndex: 0,
     navigationAction: () => {
-      this.textNavigationManager.jumpToBeginning()
+      this.textNavigationManager.jumpToBeginning();
     }
   });
 });
@@ -251,7 +253,7 @@ TEST_F('SwitchAccessTextNavigationManagerTest', 'JumpToEnd', function() {
     initialIndex: 3,
     targetIndex: 8,
     navigationAction: () => {
-      this.textNavigationManager.jumpToEnd()
+      this.textNavigationManager.jumpToEnd();
     }
   });
 });
@@ -263,7 +265,7 @@ TEST_F(
         initialIndex: 7,
         targetIndex: 6,
         navigationAction: () => {
-          this.textNavigationManager.moveBackwardOneChar()
+          this.textNavigationManager.moveBackwardOneChar();
         }
       });
     });
@@ -275,7 +277,7 @@ TEST_F(
         initialIndex: 5,
         targetIndex: 0,
         navigationAction: () => {
-          this.textNavigationManager.moveBackwardOneWord()
+          this.textNavigationManager.moveBackwardOneWord();
         }
       });
     });
@@ -287,7 +289,7 @@ TEST_F(
         initialIndex: 0,
         targetIndex: 1,
         navigationAction: () => {
-          this.textNavigationManager.moveForwardOneChar()
+          this.textNavigationManager.moveForwardOneChar();
         }
       });
     });
@@ -299,7 +301,7 @@ TEST_F(
         initialIndex: 4,
         targetIndex: 12,
         navigationAction: () => {
-          this.textNavigationManager.moveForwardOneWord()
+          this.textNavigationManager.moveForwardOneWord();
         }
       });
     });
@@ -325,91 +327,98 @@ TEST_F('SwitchAccessTextNavigationManagerTest', 'MoveDownOneLine', function() {
     cols: 8,
     wrap: 'hard',
     navigationAction: () => {
-      this.textNavigationManager.moveDownOneLine()
+      this.textNavigationManager.moveDownOneLine();
     }
   });
 });
 
 
 /**
-* Test the setSelectStart function by checking correct index is stored as the
-* selection start index.
-*/
-TEST_F('SwitchAccessTextNavigationManagerTest', 'DISABLED_SelectStart', function(){
-  const website = generateWebsiteWithTextArea(
-      'test', 'test123', 3, 20, 'hard');
+ * Test the setSelectStart function by checking correct index is stored as the
+ * selection start index.
+ */
+TEST_F(
+    'SwitchAccessTextNavigationManagerTest', 'DISABLED_SelectStart',
+    function() {
+      const website =
+          generateWebsiteWithTextArea('test', 'test123', 3, 20, 'hard');
 
-  this.runWithLoadedTree(website, function(desktop) {
-    const inputNode = findNodeById(desktop, 'test', this);
-    assertNotEquals(inputNode, null);
-    checkNodeIsFocused(inputNode);
+      this.runWithLoadedTree(website, function(desktop) {
+        const inputNode = findNodeById(desktop, 'test', this);
+        assertNotEquals(inputNode, null);
+        checkNodeIsFocused(inputNode);
 
-    this.textNavigationManager.saveSelectStart();
-    let startIndex = this.textNavigationManager.getSelStartIndex();
-    assertEquals(startIndex, 3)
-  });
-});
-
-/**
-* Test the setSelectEnd function by manually setting the selection start index
-* and node then calling setSelectEnd and checking for the correct selection
-* bounds
-*/
-TEST_F('SwitchAccessTextNavigationManagerTest', 'DISABLED_SelectEnd', function(){
-
-  const website = generateWebsiteWithTextArea(
-      'test', 'test 123', 6, 20, 'hard');
-
-  this.runWithLoadedTree(website, function(desktop) {
-    const inputNode = findNodeById(desktop, 'test', this);
-    assertNotEquals(inputNode, null);
-    checkNodeIsFocused(inputNode)
-
-
-    let startIndex = 3;
-    this.textNavigationManager.setSelStartIndexAndNode(startIndex, inputNode);
-    this.textNavigationManager.saveSelectEnd();
-    let endIndex = inputNode.textSelEnd;
-    assertEquals(6, endIndex);
-
-  });
-});
+        this.textNavigationManager.saveSelectStart();
+        let startIndex = this.textNavigationManager.getSelStartIndex();
+        assertEquals(startIndex, 3);
+      });
+    });
 
 /**
-* Test use of setSelectStart and setSelectEnd with the moveForwardOneChar function.
-*/
-TEST_F('SwitchAccessTextNavigationManagerTest', 'DISABLED_SelectCharacter', function() {
-  runTextSelectionTest(this, {
-    content: 'hello world!',
-    initialIndex: 0,
-    targetStartIndex: 0,
-    targetEndIndex: 1,
-    cols: 8,
-    wrap: 'hard',
-    navigationAction: () => {
-      this.textNavigationManager.moveForwardOneChar();
-    }
-  });
-});
+ * Test the setSelectEnd function by manually setting the selection start index
+ * and node then calling setSelectEnd and checking for the correct selection
+ * bounds
+ */
+TEST_F(
+    'SwitchAccessTextNavigationManagerTest', 'DISABLED_SelectEnd', function() {
+      const website =
+          generateWebsiteWithTextArea('test', 'test 123', 6, 20, 'hard');
+
+      this.runWithLoadedTree(website, function(desktop) {
+        const inputNode = findNodeById(desktop, 'test', this);
+        assertNotEquals(inputNode, null);
+        checkNodeIsFocused(inputNode);
+
+
+        let startIndex = 3;
+        this.textNavigationManager.setSelStartIndexAndNode(
+            startIndex, inputNode);
+        this.textNavigationManager.saveSelectEnd();
+        let endIndex = inputNode.textSelEnd;
+        assertEquals(6, endIndex);
+      });
+    });
 
 /**
-* Test use of setSelectStart and setSelectEnd with a backward selection using
-* the moveBackwardOneWord function.
-*/
-TEST_F('SwitchAccessTextNavigationManagerTest', 'DISABLED_SelectWordBackward', function() {
-  runTextSelectionTest(this, {
-    content: 'hello world!',
-    initialIndex: 5,
-    targetStartIndex: 0,
-    targetEndIndex: 5,
-    cols: 8,
-    wrap: 'hard',
-    navigationAction: () => {
-      this.textNavigationManager.moveBackwardOneWord();
-    },
-    backward: true
-  });
-});
+ * Test use of setSelectStart and setSelectEnd with the moveForwardOneChar
+ * function.
+ */
+TEST_F(
+    'SwitchAccessTextNavigationManagerTest', 'DISABLED_SelectCharacter',
+    function() {
+      runTextSelectionTest(this, {
+        content: 'hello world!',
+        initialIndex: 0,
+        targetStartIndex: 0,
+        targetEndIndex: 1,
+        cols: 8,
+        wrap: 'hard',
+        navigationAction: () => {
+          this.textNavigationManager.moveForwardOneChar();
+        }
+      });
+    });
+
+/**
+ * Test use of setSelectStart and setSelectEnd with a backward selection using
+ * the moveBackwardOneWord function.
+ */
+TEST_F(
+    'SwitchAccessTextNavigationManagerTest', 'DISABLED_SelectWordBackward',
+    function() {
+      runTextSelectionTest(this, {
+        content: 'hello world!',
+        initialIndex: 5,
+        targetStartIndex: 0,
+        targetEndIndex: 5,
+        cols: 8,
+        wrap: 'hard',
+        navigationAction: () => {
+          this.textNavigationManager.moveBackwardOneWord();
+        },
+        backward: true
+      });
+    });
 
 /**
  * selectionTextParams should specify parameters

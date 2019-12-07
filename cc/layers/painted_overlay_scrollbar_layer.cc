@@ -26,7 +26,7 @@ namespace cc {
 std::unique_ptr<LayerImpl> PaintedOverlayScrollbarLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return PaintedOverlayScrollbarLayerImpl::Create(
-      tree_impl, id(), orientation_, is_left_side_vertical_scrollbar_);
+      tree_impl, id(), orientation(), is_left_side_vertical_scrollbar());
 }
 
 scoped_refptr<PaintedOverlayScrollbarLayer>
@@ -37,10 +37,9 @@ PaintedOverlayScrollbarLayer::Create(scoped_refptr<Scrollbar> scrollbar) {
 
 PaintedOverlayScrollbarLayer::PaintedOverlayScrollbarLayer(
     scoped_refptr<Scrollbar> scrollbar)
-    : scrollbar_(std::move(scrollbar)),
-      orientation_(scrollbar_->Orientation()),
-      is_left_side_vertical_scrollbar_(
-          scrollbar_->IsLeftSideVerticalScrollbar()) {
+    : ScrollbarLayerBase(scrollbar->Orientation(),
+                         scrollbar->IsLeftSideVerticalScrollbar()),
+      scrollbar_(std::move(scrollbar)) {
   DCHECK(scrollbar_->HasThumb());
   DCHECK(scrollbar_->IsOverlay());
   DCHECK(scrollbar_->UsesNinePatchThumbResource());
@@ -58,7 +57,7 @@ void PaintedOverlayScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
   PaintedOverlayScrollbarLayerImpl* scrollbar_layer =
       static_cast<PaintedOverlayScrollbarLayerImpl*>(layer);
 
-  if (orientation_ == HORIZONTAL) {
+  if (orientation() == HORIZONTAL) {
     scrollbar_layer->SetThumbThickness(thumb_size_.height());
     scrollbar_layer->SetThumbLength(thumb_size_.width());
     scrollbar_layer->SetTrackStart(track_rect_.x());
@@ -101,8 +100,8 @@ void PaintedOverlayScrollbarLayer::SetLayerTreeHost(LayerTreeHost* host) {
 
 bool PaintedOverlayScrollbarLayer::Update() {
   // These properties should never change.
-  DCHECK_EQ(orientation_, scrollbar_->Orientation());
-  DCHECK_EQ(is_left_side_vertical_scrollbar_,
+  DCHECK_EQ(orientation(), scrollbar_->Orientation());
+  DCHECK_EQ(is_left_side_vertical_scrollbar(),
             scrollbar_->IsLeftSideVerticalScrollbar());
   DCHECK(scrollbar_->HasThumb());
   DCHECK(scrollbar_->IsOverlay());

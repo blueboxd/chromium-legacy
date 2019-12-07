@@ -80,9 +80,7 @@ BrailleImeUnitTest.prototype = {
   __proto__: testing.Test.prototype,
 
   /** @Override */
-  extraLibraries: [
-    'braille_ime.js'
-  ],
+  extraLibraries: ['braille_ime.js'],
 
   /** @Override */
   setUp: function() {
@@ -102,12 +100,12 @@ BrailleImeUnitTest.prototype = {
   },
 
   createIme: function() {
-    var IME_EVENTS = [ 'onActivate', 'onDeactivated', 'onFocus', 'onBlur',
-                       'onInputContextUpdate', 'onKeyEvent', 'onReset',
-                       'onMenuItemActivated' ];
+    var IME_EVENTS = [
+      'onActivate', 'onDeactivated', 'onFocus', 'onBlur',
+      'onInputContextUpdate', 'onKeyEvent', 'onReset', 'onMenuItemActivated'
+    ];
     for (var i = 0, name; name = IME_EVENTS[i]; ++i) {
       this[name] = chrome.input.ime[name] = new MockEvent();
-
     }
     chrome.input.ime.setMenuItems = function(parameters) {
       this.menuItems = parameters.items;
@@ -124,15 +122,17 @@ BrailleImeUnitTest.prototype = {
 
   activateIme: function() {
     this.onActivate.dispatch(ENGINE_ID);
-    assertThat(this.port.messages,
-               eqJSON([{type: 'activeState', active: true}]));
+    assertThat(
+        this.port.messages, eqJSON([{type: 'activeState', active: true}]));
     this.port.messages.length = 0;
   },
 
   sendKeyEvent_: function(type, code, extra) {
-    var event = {type: type,
-                 code: code,
-                 requestId: (++this.lastSentKeyRequestId_) + ''};
+    var event = {
+      type: type,
+      code: code,
+      requestId: (++this.lastSentKeyRequestId_) + ''
+    };
     for (var key in extra) {
       event[key] = extra[key];
     }
@@ -180,7 +180,7 @@ TEST_F('BrailleImeUnitTest', 'KeysWhenStandardKeysEnabled', function() {
   expectFalse(this.sendKeyDown('KeyX'));
   expectFalse(this.sendKeyUp('KeyX'));
 
-  expectTrue(this.sendKeyDown('KeyS'));  // Dot 3
+  expectTrue(this.sendKeyDown('KeyS'));   // Dot 3
   expectFalse(this.sendKeyDown('KeyG'));  // To the right of dot 1.
   expectTrue(this.sendKeyUp('KeyS'));
   expectFalse(this.sendKeyUp('KeyG'));
@@ -190,7 +190,7 @@ TEST_F('BrailleImeUnitTest', 'KeysWhenStandardKeysEnabled', function() {
   expectFalse(this.sendKeyDown('ControlLeft', ctrlFlag));
   expectFalse(this.sendKeyDown('KeyL', ctrlFlag));
   expectFalse(this.sendKeyUp('KeyL', ctrlFlag));
-  expectFalse(this.sendKeyUp('ControlLeft', ctrlFlag))
+  expectFalse(this.sendKeyUp('ControlLeft', ctrlFlag));
 
   // Space key by itself should send a blank cell.
   expectTrue(this.sendKeyDown('Space'));
@@ -207,10 +207,10 @@ TEST_F('BrailleImeUnitTest', 'KeysWhenStandardKeysEnabled', function() {
   expectTrue(this.sendKeyUp('Space'));
   expectTrue(this.sendKeyUp('KeyF'));
 
-  assertThat(this.port.messages,
-             eqJSON([{type: 'brailleDots', dots: 0x03},
-                     {type: 'brailleDots', dots: 0x09},
-                     {type: 'brailleDots', dots: 0}]));
+  assertThat(this.port.messages, eqJSON([
+               {type: 'brailleDots', dots: 0x03},
+               {type: 'brailleDots', dots: 0x09}, {type: 'brailleDots', dots: 0}
+             ]));
 });
 
 TEST_F('BrailleImeUnitTest', 'TestBackspaceKey', function() {
@@ -221,13 +221,14 @@ TEST_F('BrailleImeUnitTest', 'TestBackspaceKey', function() {
   assertTrue(this.menuItems[0].checked);
 
   expectEquals(undefined, this.sendKeyDown('Backspace'));
-  assertThat(this.port.messages,
-             eqJSON([{type: 'backspace',
-                      requestId: this.lastSentKeyRequestId_ + ''}]));
-  this.port.onMessage.dispatch(
-      {type: 'keyEventHandled',
-       requestId: this.lastSentKeyRequestId_ + '',
-       result: true});
+  assertThat(this.port.messages, eqJSON([
+               {type: 'backspace', requestId: this.lastSentKeyRequestId_ + ''}
+             ]));
+  this.port.onMessage.dispatch({
+    type: 'keyEventHandled',
+    requestId: this.lastSentKeyRequestId_ + '',
+    result: true
+  });
   expectEquals(this.lastSentKeyRequestId_, this.lastHandledKeyRequestId_);
   expectTrue(this.lastHandledKeyResult_);
 });
@@ -264,9 +265,12 @@ TEST_F('BrailleImeUnitTest', 'ReplaceText', function() {
     callback();
   };
   var sendReplaceText = function(deleteBefore, newText) {
-    this.port.onMessage.dispatch(
-        {type: 'replaceText', contextID: CONTEXT_ID,
-       deleteBefore: deleteBefore, newText: newText});
+    this.port.onMessage.dispatch({
+      type: 'replaceText',
+      contextID: CONTEXT_ID,
+      deleteBefore: deleteBefore,
+      newText: newText
+    });
   }.bind(this);
   this.activateIme();
   sendReplaceText(0, 'hello!');

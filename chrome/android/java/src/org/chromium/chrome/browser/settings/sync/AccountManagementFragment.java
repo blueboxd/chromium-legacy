@@ -35,7 +35,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
 import org.chromium.chrome.browser.settings.ChromeBasePreference;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.chrome.browser.signin.SignOutDialogFragment;
@@ -424,7 +424,7 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
     public static void openAccountManagementScreen(@GAIAServiceType int serviceType) {
         Bundle arguments = new Bundle();
         arguments.putInt(SHOW_GAIA_SERVICE_TYPE_EXTRA, serviceType);
-        PreferencesLauncher.launchSettingsPage(
+        SettingsLauncher.launchSettingsPage(
                 ContextUtils.getApplicationContext(), AccountManagementFragment.class, arguments);
     }
 

@@ -548,6 +548,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         (url_chain_.size() > 1 &&
          IsURLHandledByNetworkService(url_chain_[url_chain_.size() - 1]) !=
              IsURLHandledByNetworkService(url_chain_[url_chain_.size() - 2]))) {
+      if (url_loader_)
+        url_loader_->ResetForFollowRedirect();
       url_loader_.reset();
     }
     interceptor_index_ = 0;

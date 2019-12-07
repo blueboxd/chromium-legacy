@@ -15,7 +15,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.sync.SyncAndServicesPreferences;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
@@ -115,7 +115,7 @@ public final class FirstRunSignInProcessor {
     private static void openSignInSettings(Activity activity) {
         final Class<? extends Fragment> fragment = SyncAndServicesPreferences.class;
         final Bundle arguments = SyncAndServicesPreferences.createArguments(true);
-        PreferencesLauncher.launchSettingsPage(activity, fragment, arguments);
+        SettingsLauncher.launchSettingsPage(activity, fragment, arguments);
     }
 
     /**

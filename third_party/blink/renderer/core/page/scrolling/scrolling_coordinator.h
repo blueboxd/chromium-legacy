@@ -84,17 +84,9 @@ class CORE_EXPORT ScrollingCoordinator final
   // Called when any frame has done its layout or compositing has changed.
   void NotifyGeometryChanged(LocalFrameView*);
 
-  // Update non-fast scrollable regions, touch event target rects, main thread
-  // scrolling reasons, and whether the visual viewport is user scrollable.
+  // Update non-fast scrollable regions and touch event target rects.
   // TODO(pdr): Refactor this out of ScrollingCoordinator.
   void UpdateAfterPaint(LocalFrameView*);
-
-  // Should be called whenever the slow repaint objects counter changes between
-  // zero and one.
-  void FrameViewHasBackgroundAttachmentFixedObjectsDidChange(LocalFrameView*);
-
-  // Should be called whenever the set of fixed objects changes.
-  void FrameViewFixedObjectsDidChange(LocalFrameView*);
 
   // Should be called whenever the root layer for the given frame view changes.
   void FrameViewRootLayerDidChange(LocalFrameView*);
@@ -171,8 +163,6 @@ class CORE_EXPORT ScrollingCoordinator final
   cc::ScrollbarLayerBase* GetScrollbarLayer(ScrollableArea*,
                                             ScrollbarOrientation);
   void RemoveScrollbarLayer(ScrollableArea*, ScrollbarOrientation);
-
-  bool FrameScrollerIsDirty(LocalFrameView*) const;
 
   cc::AnimationHost* animation_host_ = nullptr;
   std::unique_ptr<CompositorAnimationTimeline>

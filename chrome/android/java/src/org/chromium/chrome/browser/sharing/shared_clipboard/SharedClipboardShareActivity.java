@@ -21,7 +21,7 @@ import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.sharing.SharingAdapter;
 import org.chromium.chrome.browser.sharing.SharingServiceProxy;
 import org.chromium.chrome.browser.sharing.SharingServiceProxy.DeviceInfo;
@@ -78,7 +78,7 @@ public class SharedClipboardShareActivity
         if (!AndroidSyncSettings.get().isChromeSyncEnabled()) {
             chromeSettingsButton.setVisibility(View.VISIBLE);
             chromeSettingsButton.setOnClickListener(view -> {
-                PreferencesLauncher.launchSettingsPage(ContextUtils.getApplicationContext(), null);
+                SettingsLauncher.launchSettingsPage(ContextUtils.getApplicationContext(), null);
             });
         }
 

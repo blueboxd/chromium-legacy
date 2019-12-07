@@ -563,14 +563,6 @@ bool PaintLayerCompositor::AllocateOrClearCompositedLayerMapping(
 
   layer->ClearClipRects(kPaintingClipRects);
 
-  // If a fixed position layer gained/lost a compositedLayerMapping or the
-  // reason not compositing it changed, the scrolling coordinator needs to
-  // recalculate whether it can do fast scrolling.
-  if (ScrollingCoordinator* scrolling_coordinator = GetScrollingCoordinator()) {
-    scrolling_coordinator->FrameViewFixedObjectsDidChange(
-        layout_view_.GetFrameView());
-  }
-
   // Compositing state affects whether to create paint offset translation of
   // this layer, and amount of paint offset translation of descendants.
   layer->GetLayoutObject().SetNeedsPaintPropertyUpdate();

@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
+#include "third_party/blink/renderer/platform/testing/find_cc_layer.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
@@ -56,25 +57,13 @@ class FrameThrottlingTest : public PaintTestConfigurations, public SimTest {
 
   // Number of rectangles that make up the root layer's touch handler region.
   size_t TouchHandlerRegionSize() {
-    size_t result = 0;
-    PaintLayer* layer =
-        WebView().MainFrameImpl()->GetFrame()->ContentLayoutObject()->Layer();
-    GraphicsLayer* own_graphics_layer =
-        layer->GraphicsLayerBacking(&layer->GetLayoutObject());
-    if (own_graphics_layer) {
-      result += own_graphics_layer->CcLayer()
-                    ->touch_action_region()
-                    .GetAllRegions()
-                    .GetRegionComplexity();
-    }
-    GraphicsLayer* child_graphics_layer = layer->GraphicsLayerBacking();
-    if (child_graphics_layer && child_graphics_layer != own_graphics_layer) {
-      result += child_graphics_layer->CcLayer()
-                    ->touch_action_region()
-                    .GetAllRegions()
-                    .GetRegionComplexity();
-    }
-    return result;
+    const auto* frame_view = WebView().MainFrameImpl()->GetFrameView();
+    return CcLayerByScrollElementId(
+               frame_view->RootCcLayer(),
+               frame_view->LayoutViewport()->GetScrollElementId())
+        ->touch_action_region()
+        .GetAllRegions()
+        .GetRegionComplexity();
   }
 
   void UpdateAllLifecyclePhases() {
@@ -577,10 +566,6 @@ TEST_P(FrameThrottlingTest, ThrottledFrameWithFocus) {
 }
 
 TEST_P(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledFrame) {
-  // TODO(crbug.com/809638): Make this test pass for CAP.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   // Create a hidden frame which is throttled.
   SimRequest main_resource("https://example.com/", "text/html");
   SimRequest frame_resource("https://example.com/iframe.html", "text/html");
@@ -687,10 +672,6 @@ TEST_P(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledLayer) {
 
 TEST_P(FrameThrottlingTest,
        ScrollingCoordinatorShouldSkipCompositedThrottledFrame) {
-  // TODO(crbug.com/922419): The test is broken for LayoutNG.
-  if (RuntimeEnabledFeatures::LayoutNGEnabled())
-    return;
-
   WebView().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
 
   // Create a hidden frame which is throttled.
@@ -736,18 +717,10 @@ TEST_P(FrameThrottlingTest,
 
   EXPECT_FALSE(
       frame_element->contentDocument()->View()->ShouldThrottleRendering());
-  CompositeFrame();  // Handle the pending visual update of the unthrottled
-                     // frame.
+  // Handle the pending visual update of the unthrottled frame.
+  CompositeFrame();
   EXPECT_EQ(DocumentLifecycle::kPaintClean,
             frame_element->contentDocument()->Lifecycle().GetState());
-  // TODO(szager): Re-enable this check for CAP when it properly sets the
-  // bits for composited scrolling.
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_TRUE(frame_element->contentDocument()
-                    ->View()
-                    ->LayoutViewport()
-                    ->UsesCompositedScrolling());
-  }
 }
 
 TEST_P(FrameThrottlingTest, UnthrottleByTransformingWithoutLayout) {
@@ -777,10 +750,6 @@ TEST_P(FrameThrottlingTest, UnthrottleByTransformingWithoutLayout) {
 }
 
 TEST_P(FrameThrottlingTest, ThrottledTopLevelEventHandlerIgnored) {
-  // TODO(crbug.com/809638): Make this test pass for CAP.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   WebView().GetSettings()->SetJavaScriptEnabled(true);
   EXPECT_EQ(0u, TouchHandlerRegionSize());
 
@@ -828,10 +797,6 @@ TEST_P(FrameThrottlingTest, ThrottledTopLevelEventHandlerIgnored) {
 }
 
 TEST_P(FrameThrottlingTest, ThrottledEventHandlerIgnored) {
-  // TODO(crbug.com/809638): Make this test pass for CAP.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   WebView().GetSettings()->SetJavaScriptEnabled(true);
   EXPECT_EQ(0u, TouchHandlerRegionSize());
 
@@ -908,6 +873,7 @@ TEST_P(FrameThrottlingTest, DumpThrottledFrame) {
 }
 
 TEST_P(FrameThrottlingTest, PaintingViaGraphicsLayerIsThrottled) {
+  // GraphicsLayers are not created with CompositeAfterPaint.
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
@@ -944,9 +910,6 @@ TEST_P(FrameThrottlingTest, PaintingViaGraphicsLayerIsThrottled) {
 }
 
 TEST_P(FrameThrottlingTest, ThrottleInnerCompositedLayer) {
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   WebView().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
 
   // Create a hidden frame which is throttled.
@@ -961,13 +924,13 @@ TEST_P(FrameThrottlingTest, ThrottleInnerCompositedLayer) {
 
   auto* frame_element =
       To<HTMLIFrameElement>(GetDocument().getElementById("frame"));
+  auto* root_layer = WebView().MainFrameImpl()->GetFrameView()->RootCcLayer();
   // The inner div is composited.
-  auto* inner_div = frame_element->contentDocument()->getElementById("div");
-  EXPECT_NE(nullptr,
-            inner_div->GetLayoutBox()->Layer()->GraphicsLayerBacking());
+  EXPECT_EQ(1u, CcLayersByDOMElementId(root_layer, "div").size());
 
   // Before the iframe is throttled, we should create all drawing commands.
-  EXPECT_EQ(7u, commands_not_throttled.DrawCount());
+  unsigned full_draw_count = 7u;
+  EXPECT_EQ(full_draw_count, commands_not_throttled.DrawCount());
 
   // Move the frame offscreen to throttle it.
   frame_element->setAttribute(kStyleAttr, "transform: translateY(480px)");
@@ -976,15 +939,15 @@ TEST_P(FrameThrottlingTest, ThrottleInnerCompositedLayer) {
   CompositeFrame();
   EXPECT_TRUE(frame_element->contentDocument()->View()->CanThrottleRendering());
   // The inner div should still be composited.
-  EXPECT_NE(nullptr,
-            inner_div->GetLayoutBox()->Layer()->GraphicsLayerBacking());
+  EXPECT_EQ(1u, CcLayersByDOMElementId(root_layer, "div").size());
 
   // If painting of the iframe is throttled, we should only receive drawing
   // commands for the main frame.
   auto commands_throttled = Compositor().PaintFrame();
-  EXPECT_EQ(5u, commands_throttled.DrawCount());
+  EXPECT_LT(commands_throttled.DrawCount(), full_draw_count);
 
   // Remove compositing trigger of inner_div.
+  auto* inner_div = frame_element->contentDocument()->getElementById("div");
   inner_div->setAttribute(kStyleAttr, "background: yellow; overflow: hidden");
   // Do an unthrottled style and layout update, simulating the situation
   // triggered by script style/layout access.
@@ -995,17 +958,11 @@ TEST_P(FrameThrottlingTest, ThrottleInnerCompositedLayer) {
         GetDocument().Lifecycle());
     UpdateAllLifecyclePhases();
   }
-  // The inner div should still be composited because compositing update is
-  // throttled, though the inner_div's self-painting status has been updated.
-  EXPECT_FALSE(inner_div->GetLayoutBox()->Layer()->IsSelfPaintingLayer());
-  {
-    DisableCompositingQueryAsserts disabler;
-    EXPECT_NE(nullptr,
-              inner_div->GetLayoutBox()->Layer()->GraphicsLayerBacking());
-  }
+  // The inner div is no longer composited.
+  EXPECT_EQ(0u, CcLayersByDOMElementId(root_layer, "div").size());
 
   auto commands_throttled1 = CompositeFrame();
-  EXPECT_EQ(5u, commands_throttled1.DrawCount());
+  EXPECT_LT(commands_throttled1.DrawCount(), full_draw_count);
 
   // Move the frame back on screen.
   frame_element->setAttribute(kStyleAttr, "");
@@ -1013,19 +970,14 @@ TEST_P(FrameThrottlingTest, ThrottleInnerCompositedLayer) {
   EXPECT_FALSE(
       frame_element->contentDocument()->View()->CanThrottleRendering());
   auto commands_not_throttled1 = CompositeFrame();
-  // The inner div is no longer composited.
-  EXPECT_EQ(nullptr,
-            inner_div->GetLayoutBox()->Layer()->GraphicsLayerBacking());
+  // The inner div is still not composited.
+  EXPECT_EQ(0u, CcLayersByDOMElementId(root_layer, "div").size());
 
   // After the iframe is unthrottled, we should create all drawing items.
-  EXPECT_EQ(7u, commands_not_throttled1.DrawCount());
+  EXPECT_EQ(commands_not_throttled1.DrawCount(), full_draw_count);
 }
 
 TEST_P(FrameThrottlingTest, ThrottleSubtreeAtomically) {
-  // TODO(crbug.com/922419): The test is broken for LayoutNG.
-  if (RuntimeEnabledFeatures::LayoutNGEnabled())
-    return;
-
   // Create two nested frames which are throttled.
   SimRequest main_resource("https://example.com/", "text/html");
   SimRequest frame_resource("https://example.com/iframe.html", "text/html");

@@ -25,27 +25,33 @@ class CORE_EXPORT ScrollingCoordinatorContext final {
   ScrollingCoordinatorContext() {}
   virtual ~ScrollingCoordinatorContext() {}
 
-  void SetAnimationTimeline(std::unique_ptr<CompositorAnimationTimeline>);
-  void SetAnimationHost(cc::AnimationHost*);
+  void SetAnimationTimeline(
+      std::unique_ptr<CompositorAnimationTimeline> timeline) {
+    animation_timeline_ = std::move(timeline);
+  }
+  void SetAnimationHost(cc::AnimationHost* host) { animation_host_ = host; }
 
-  CompositorAnimationTimeline* GetCompositorAnimationTimeline();
-  cc::AnimationHost* GetCompositorAnimationHost();
+  CompositorAnimationTimeline* GetCompositorAnimationTimeline() {
+    return animation_timeline_.get();
+  }
+  cc::AnimationHost* GetCompositorAnimationHost() { return animation_host_; }
 
   // Non-fast scrollable regions need updating by ScrollingCoordinator.
-  bool ScrollGestureRegionIsDirty() const;
+  bool ScrollGestureRegionIsDirty() const {
+    return scroll_gesture_region_is_dirty_;
+  }
   // Touch event target rects need updating by ScrollingCoordinator.
-  bool TouchEventTargetRectsAreDirty() const;
-  // ScrollingCoordinator should update whether or not scrolling for this
-  // subtree has to happen on the main thread.
-  bool ShouldScrollOnMainThreadIsDirty() const;
-  bool WasScrollable() const;
+  bool TouchEventTargetRectsAreDirty() const {
+    return touch_event_target_rects_are_dirty_;
+  }
 
   // Only ScrollingCoordinator should ever set |dirty| to |false|.
-  void SetScrollGestureRegionIsDirty(bool dirty);
-  void SetTouchEventTargetRectsAreDirty(bool dirty);
-  void SetShouldScrollOnMainThreadIsDirty(bool dirty);
-
-  void SetWasScrollable(bool was_scrollable);
+  void SetScrollGestureRegionIsDirty(bool dirty) {
+    scroll_gesture_region_is_dirty_ = dirty;
+  }
+  void SetTouchEventTargetRectsAreDirty(bool dirty) {
+    touch_event_target_rects_are_dirty_ = dirty;
+  }
 
  private:
   std::unique_ptr<CompositorAnimationTimeline> animation_timeline_;
@@ -53,8 +59,6 @@ class CORE_EXPORT ScrollingCoordinatorContext final {
 
   bool scroll_gesture_region_is_dirty_ = false;
   bool touch_event_target_rects_are_dirty_ = false;
-  bool should_scroll_on_main_thread_is_dirty_ = false;
-  bool was_scrollable_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollingCoordinatorContext);
 };

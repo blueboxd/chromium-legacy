@@ -24,7 +24,7 @@
           <div id="bluetoothDevices" class="settings-box two-line no-padding">
             <div class="link-wrapper" actionable on-click="onTap_">
               <iron-icon icon="[[getIcon_(bluetoothToggleState_)]]"></iron-icon>
-              <div class="middle settings-box-text">
+              <div class="middle settings-box-text" aria-hidden="true">
                 $i18n{bluetoothPageTitle}
                 <div class="secondary" id="bluetoothSecondary">
                   [[getOnOffString_(bluetoothToggleState_,

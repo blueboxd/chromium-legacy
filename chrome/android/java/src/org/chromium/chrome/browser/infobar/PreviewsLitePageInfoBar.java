@@ -9,7 +9,7 @@ import android.os.Bundle;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.datareduction.DataReductionPreferenceFragment;
 
 /**
@@ -35,7 +35,7 @@ public class PreviewsLitePageInfoBar extends ConfirmInfoBar {
 
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putBoolean(FROM_INFOBAR, true);
-        PreferencesLauncher.launchSettingsPage(
+        SettingsLauncher.launchSettingsPage(
                 getContext(), DataReductionPreferenceFragment.class, fragmentArgs);
     }
 }

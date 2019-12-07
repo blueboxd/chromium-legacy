@@ -17,7 +17,7 @@ import org.chromium.chrome.browser.util.IntentUtils;
 /**
  * A utility class for launching Chrome Settings.
  */
-public class PreferencesLauncher {
+public class SettingsLauncher {
     /**
      * Launches settings, either on the top-level page or on a subpage.
      *

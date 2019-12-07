@@ -13,9 +13,9 @@ namespace cc {
 
 std::unique_ptr<LayerImpl> SolidColorScrollbarLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return SolidColorScrollbarLayerImpl::Create(tree_impl, id(), orientation_,
-                                              thumb_thickness_, track_start_,
-                                              is_left_side_vertical_scrollbar_);
+  return SolidColorScrollbarLayerImpl::Create(
+      tree_impl, id(), orientation(), thumb_thickness_, track_start_,
+      is_left_side_vertical_scrollbar());
 }
 
 scoped_refptr<SolidColorScrollbarLayer> SolidColorScrollbarLayer::Create(
@@ -33,10 +33,9 @@ SolidColorScrollbarLayer::SolidColorScrollbarLayer(
     int thumb_thickness,
     int track_start,
     bool is_left_side_vertical_scrollbar)
-    : orientation_(orientation),
+    : ScrollbarLayerBase(orientation, is_left_side_vertical_scrollbar),
       thumb_thickness_(thumb_thickness),
-      track_start_(track_start),
-      is_left_side_vertical_scrollbar_(is_left_side_vertical_scrollbar) {
+      track_start_(track_start) {
   Layer::SetOpacity(0.f);
 }
 

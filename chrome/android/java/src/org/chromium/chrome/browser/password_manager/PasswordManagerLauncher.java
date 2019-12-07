@@ -15,7 +15,7 @@ import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.password.SavePasswordsPreferences;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.signin.ChromeSigninController;
@@ -61,7 +61,7 @@ public class PasswordManagerLauncher {
             }
         }
 
-        PreferencesLauncher.launchSettingsPage(activity, SavePasswordsPreferences.class);
+        SettingsLauncher.launchSettingsPage(activity, SavePasswordsPreferences.class);
     }
 
     @CalledByNative

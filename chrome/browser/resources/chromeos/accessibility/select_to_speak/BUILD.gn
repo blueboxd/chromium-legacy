@@ -129,9 +129,9 @@ source_set("browser_tests") {
 js2gtest("select_to_speak_extjs_tests") {
   test_type = "extension"
   sources = [
-    "select_to_speak_keystroke_selection_test.extjs",
-    "select_to_speak_mouse_selection_test.extjs",
-    "select_to_speak_prefs_test.extjs",
+    "select_to_speak_keystroke_selection_test.js",
+    "select_to_speak_mouse_selection_test.js",
+    "select_to_speak_prefs_test.js",
   ]
   gen_include_files = [
     "../chromevox/testing/callback_helper.js",

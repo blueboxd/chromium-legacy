@@ -640,12 +640,6 @@ class CORE_EXPORT LocalFrameView final
 
   const cc::Layer* RootCcLayer() const;
 
-  // Keeps track of whether the scrollable state for the LocalRoot has changed
-  // since ScrollingCoordinator last checked. Only ScrollingCoordinator should
-  // ever call the clearing function.
-  bool FrameIsScrollableDidChange();
-  void ClearFrameIsScrollableDidChange();
-
   // Should be called whenever this LocalFrameView adds or removes a
   // scrollable area, or gains/loses a composited layer.
   void ScrollableAreasDidChange();

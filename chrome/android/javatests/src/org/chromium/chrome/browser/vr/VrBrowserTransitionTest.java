@@ -36,8 +36,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
 import org.chromium.chrome.browser.settings.SettingsActivity;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.vr.mock.MockVrDaydreamApi;
@@ -372,7 +372,7 @@ public class VrBrowserTransitionTest {
         NativeUiUtils.enableMockedInput();
         NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
             TestThreadUtils.runOnUiThreadBlocking(() -> {
-                PreferencesLauncher.launchSettingsPage(context, SingleWebsitePreferences.class);
+                SettingsLauncher.launchSettingsPage(context, SingleWebsitePreferences.class);
             });
         });
         TestThreadUtils.runOnUiThreadBlocking(
@@ -389,7 +389,7 @@ public class VrBrowserTransitionTest {
         VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApiWithDoff);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PreferencesLauncher.launchSettingsPage(context, null);
+            SettingsLauncher.launchSettingsPage(context, null);
             VrShellDelegateUtils.getDelegateInstance().acceptDoffPromptForTesting();
         });
         CriteriaHelper.pollUiThread(() -> {
@@ -416,7 +416,7 @@ public class VrBrowserTransitionTest {
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Intent preferencesIntent = PreferencesLauncher.createIntentForSettingsPage(
+            Intent preferencesIntent = SettingsLauncher.createIntentForSettingsPage(
                     context, SingleWebsitePreferences.class.getName());
             Assert.assertFalse("Starting an activity did not trigger DOFF",
                     context.startActivityIfNeeded(preferencesIntent, 0));

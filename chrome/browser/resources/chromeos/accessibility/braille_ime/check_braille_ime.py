@@ -28,6 +28,9 @@ def CheckBrailleIme():
   externs = [
       os.path.join(
           _CHROME_SOURCE_DIR,
+          'third_party/closure_compiler/externs/chrome.js'),
+      os.path.join(
+          _CHROME_SOURCE_DIR,
           'third_party/closure_compiler/externs/chrome_extensions.js'),
       os.path.join(_SCRIPT_DIR, 'externs.js')]
   return RunCompiler(js_files, externs)

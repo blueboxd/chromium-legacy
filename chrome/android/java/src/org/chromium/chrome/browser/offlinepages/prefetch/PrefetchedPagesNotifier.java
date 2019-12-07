@@ -26,7 +26,7 @@ import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.notifications.NotificationsSettings;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.BrowserStartupController.StartupCallback;
@@ -83,7 +83,7 @@ public class PrefetchedPagesNotifier {
         @Override
         public void onReceive(final Context context, Intent intent) {
             recordNotificationActionWhenChromeLoadsNative(NOTIFICATION_ACTION_SETTINGS_CLICKED);
-            Intent settingsIntent = PreferencesLauncher.createIntentForSettingsPage(
+            Intent settingsIntent = SettingsLauncher.createIntentForSettingsPage(
                     context, NotificationsSettings.class.getName());
             settingsIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
             context.startActivity(settingsIntent);

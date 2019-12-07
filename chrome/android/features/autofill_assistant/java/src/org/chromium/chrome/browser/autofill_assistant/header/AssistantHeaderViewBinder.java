@@ -16,7 +16,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChipViewHolder;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.autofill_assistant.AutofillAssistantSettings;
 import org.chromium.chrome.browser.ui.widget.textbubble.TextBubble;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -138,7 +138,7 @@ class AssistantHeaderViewBinder
         view.mProfileIconMenu.setOnMenuItemClickListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.settings) {
-                PreferencesLauncher.launchSettingsPage(
+                SettingsLauncher.launchSettingsPage(
                         view.mHeader.getContext(), AutofillAssistantSettings.class);
                 return true;
             } else if (itemId == R.id.send_feedback) {

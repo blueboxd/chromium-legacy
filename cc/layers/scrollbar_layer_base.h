@@ -13,14 +13,23 @@ namespace cc {
 class CC_EXPORT ScrollbarLayerBase : public Layer {
  public:
   void SetScrollElementId(ElementId element_id);
+  ElementId scroll_element_id() const { return scroll_element_id_; }
+
+  ScrollbarOrientation orientation() const { return orientation_; }
+  bool is_left_side_vertical_scrollbar() const {
+    return is_left_side_vertical_scrollbar_;
+  }
 
   void PushPropertiesTo(LayerImpl* layer) override;
 
  protected:
-  ScrollbarLayerBase();
+  ScrollbarLayerBase(ScrollbarOrientation orientation,
+                     bool is_left_side_vertical_scrollbar);
   ~ScrollbarLayerBase() override;
 
  private:
+  const ScrollbarOrientation orientation_;
+  const bool is_left_side_vertical_scrollbar_;
   ElementId scroll_element_id_;
 };
 

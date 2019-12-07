@@ -35,8 +35,8 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.settings.ChromeBasePreference;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
 import org.chromium.chrome.browser.settings.SearchUtils;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.TextMessagePreference;
 import org.chromium.ui.text.SpanApplier;
 
@@ -389,7 +389,7 @@ public class SavePasswordsPreferences
             Bundle fragmentAgs = new Bundle(preference.getExtras());
             fragmentAgs.putBoolean(
                     SavePasswordsPreferences.EXTRA_FOUND_VIA_SEARCH, mSearchQuery != null);
-            PreferencesLauncher.launchSettingsPage(
+            SettingsLauncher.launchSettingsPage(
                     getActivity(), PasswordEntryViewer.class, fragmentAgs);
         }
         return true;

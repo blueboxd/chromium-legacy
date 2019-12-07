@@ -98,10 +98,12 @@ TEST_P(RasterInvalidatorTest, ImplicitFullLayerInvalidation) {
   invalidator_.SetTracksRasterInvalidations(true);
   invalidator_.Generate(artifact, kDefaultLayerBounds,
                         DefaultPropertyTreeState());
-  const auto& invalidations = TrackedRasterInvalidations();
-  EXPECT_EQ(IntRect(IntPoint(), kDefaultLayerBounds.Size()),
-            invalidations[0].rect);
-  EXPECT_EQ(PaintInvalidationReason::kFullLayer, invalidations[0].reason);
+  const auto& client = artifact->PaintChunks()[0].id.client;
+  EXPECT_THAT(TrackedRasterInvalidations(),
+              ElementsAre(RasterInvalidationInfo{
+                  &client, client.DebugName(),
+                  IntRect(IntPoint(), kDefaultLayerBounds.Size()),
+                  PaintInvalidationReason::kFullLayer}));
   FinishCycle(*artifact);
   invalidator_.SetTracksRasterInvalidations(false);
 }

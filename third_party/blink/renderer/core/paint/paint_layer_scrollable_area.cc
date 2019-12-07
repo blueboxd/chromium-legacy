@@ -2349,18 +2349,19 @@ bool PaintLayerScrollableArea::ShouldScrollOnMainThread() const {
   if (HasNonCompositedStickyDescendants())
     return true;
 
-  if (GraphicsLayer* layer = GraphicsLayerForScrolling()) {
-    // Property tree state is not available until the PrePaint lifecycle stage.
-    DCHECK_GE(GetDocument()->Lifecycle().GetState(),
-              DocumentLifecycle::kPrePaintClean);
-    const auto* scroll = layer->GetPropertyTreeState()
-                             .Transform()
-                             .NearestScrollTranslationNode()
-                             .ScrollNode();
-    DCHECK(scroll);
-    return scroll->GetMainThreadScrollingReasons() != 0;
-  }
-  return true;
+  // Property tree state is not available until the PrePaint lifecycle stage.
+  DCHECK_GE(GetDocument()->Lifecycle().GetState(),
+            DocumentLifecycle::kPrePaintClean);
+  const auto* properties = GetLayoutBox()->FirstFragment().PaintProperties();
+  if (!properties || !properties->Scroll() ||
+      properties->Scroll()->GetMainThreadScrollingReasons())
+    return true;
+
+  DCHECK(properties->ScrollTranslation());
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return !properties->ScrollTranslation()->HasDirectCompositingReasons();
+
+  return !GraphicsLayerForScrolling();
 }
 
 static bool LayerNodeMayNeedCompositedScrolling(const PaintLayer* layer) {

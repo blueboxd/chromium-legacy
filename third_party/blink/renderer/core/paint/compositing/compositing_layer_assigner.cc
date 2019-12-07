@@ -292,15 +292,6 @@ void CompositingLayerAssigner::AssignLayersToBackingsInternal(
             layer, composited_layer_update)) {
       layers_needing_paint_invalidation.push_back(layer);
       layers_changed_ = true;
-      if (ScrollingCoordinator* scrolling_coordinator =
-              layer->GetScrollingCoordinator()) {
-        if (layer->GetLayoutObject()
-                .StyleRef()
-                .HasViewportConstrainedPosition()) {
-          scrolling_coordinator->FrameViewFixedObjectsDidChange(
-              layer->GetLayoutObject().View()->GetFrameView());
-        }
-      }
     }
 
     if (composited_layer_update != kNoCompositingStateChange) {

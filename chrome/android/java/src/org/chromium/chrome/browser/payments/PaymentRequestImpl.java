@@ -41,7 +41,7 @@ import org.chromium.chrome.browser.payments.ui.SectionInformation;
 import org.chromium.chrome.browser.payments.ui.ShoppingCart;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.MainPreferences;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabSelectionType;
@@ -2392,7 +2392,7 @@ public class PaymentRequestImpl
             return;
         }
 
-        PreferencesLauncher.launchSettingsPage(context, MainPreferences.class);
+        SettingsLauncher.launchSettingsPage(context, MainPreferences.class);
     }
 
     @Override

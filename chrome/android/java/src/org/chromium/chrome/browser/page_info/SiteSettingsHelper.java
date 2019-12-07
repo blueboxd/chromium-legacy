@@ -10,7 +10,7 @@ import android.content.Intent;
 import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
@@ -39,7 +39,7 @@ public class SiteSettingsHelper {
      * Shows the site settings activity for a given url.
      */
     public static void showSiteSettings(Context context, String fullUrl) {
-        Intent preferencesIntent = PreferencesLauncher.createIntentForSettingsPage(context,
+        Intent preferencesIntent = SettingsLauncher.createIntentForSettingsPage(context,
                 SingleWebsitePreferences.class.getName(),
                 SingleWebsitePreferences.createFragmentArgsForSite(fullUrl));
         // Disabling StrictMode to avoid violations (https://crbug.com/819410).

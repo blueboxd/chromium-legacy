@@ -112,11 +112,11 @@ source_set("browser_tests") {
 js2gtest("switch_access_extjs_tests") {
   test_type = "extension"
   sources = [
-    "auto_scan_manager_test.extjs",
-    "navigation_manager_test.extjs",
-    "nodes/node_wrapper_test.extjs",
-    "switch_access_predicate_test.extjs",
-    "text_navigation_manager_test.extjs",
+    "auto_scan_manager_test.js",
+    "navigation_manager_test.js",
+    "nodes/node_wrapper_test.js",
+    "switch_access_predicate_test.js",
+    "text_navigation_manager_test.js",
   ]
   gen_include_files = [
     "../chromevox/testing/callback_helper.js",

@@ -22,7 +22,7 @@ import org.chromium.chrome.browser.download.home.toolbar.ToolbarCoordinator;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.download.DownloadPreferences;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
@@ -164,7 +164,7 @@ class DownloadManagerCoordinatorImpl
     @Override
     public void openSettings() {
         RecordUserAction.record("Android.DownloadManager.Settings");
-        PreferencesLauncher.launchSettingsPage(mActivity, DownloadPreferences.class);
+        SettingsLauncher.launchSettingsPage(mActivity, DownloadPreferences.class);
     }
 
     private void notifyFilterChanged(@FilterType int filter) {

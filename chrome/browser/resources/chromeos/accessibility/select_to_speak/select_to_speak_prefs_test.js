@@ -5,7 +5,8 @@
 GEN_INCLUDE(['select_to_speak_e2e_test_base.js']);
 GEN_INCLUDE(['../../../../../../ui/webui/resources/js/cr.js']);
 GEN_INCLUDE(['../../../../../test/data/webui/fake_chrome_event.js']);
-GEN_INCLUDE(['../../../../../test/data/webui/settings/fake_settings_private.js']);
+GEN_INCLUDE(
+    ['../../../../../test/data/webui/settings/fake_settings_private.js']);
 GEN_INCLUDE(['mock_storage.js']);
 
 /**
@@ -34,7 +35,7 @@ function SelectToSpeakPrefsTest() {
   };
 
   this.resetStorage();
-};
+}
 
 SelectToSpeakPrefsTest.prototype = {
   __proto__: SelectToSpeakE2ETest.prototype,
@@ -48,10 +49,10 @@ SelectToSpeakPrefsTest.prototype = {
   // properly.
   setGlobalRateAndPitch: function(rate, pitch) {
     let unused = () => {};
-    this.mockSettingsPrivate_.setPref('settings.tts.speech_rate', rate, '',
-        unused);
-    this.mockSettingsPrivate_.setPref('settings.tts.speech_pitch', pitch, '',
-        unused);
+    this.mockSettingsPrivate_.setPref(
+        'settings.tts.speech_rate', rate, '', unused);
+    this.mockSettingsPrivate_.setPref(
+        'settings.tts.speech_pitch', pitch, '', unused);
   },
 
   setStsRateAndPitch: function(rate, pitch) {
@@ -63,12 +64,12 @@ SelectToSpeakPrefsTest.prototype = {
     let onPrefsRemovedFromStorage = this.newCallback(() => {
       // Once prefs are removed from storage, make sure the global prefs are
       // updated to the appropriate values.
-      this.mockSettingsPrivate_.getPref('settings.tts.speech_rate',
-          this.newCallback((pref) => {
+      this.mockSettingsPrivate_.getPref(
+          'settings.tts.speech_rate', this.newCallback((pref) => {
             assertEquals(rate, pref.value);
           }));
-      this.mockSettingsPrivate_.getPref('settings.tts.speech_pitch',
-          this.newCallback((pref) => {
+      this.mockSettingsPrivate_.getPref(
+          'settings.tts.speech_pitch', this.newCallback((pref) => {
             assertEquals(pitch, pref.value);
           }));
     });
@@ -82,27 +83,27 @@ SelectToSpeakPrefsTest.prototype = {
 };
 
 // TODO(katie): Test no alert -- this is hard because it happens last.
-TEST_F('SelectToSpeakPrefsTest', 'RemovesPrefsWithNoAlertIfAllDefault',
+TEST_F(
+    'SelectToSpeakPrefsTest', 'RemovesPrefsWithNoAlertIfAllDefault',
     function() {
-  this.setGlobalRateAndPitch(1.0, 1.0);
-  this.setStsRateAndPitch(1.0, 1.0);
-  this.mockStorage_.updatePrefs();
+      this.setGlobalRateAndPitch(1.0, 1.0);
+      this.setStsRateAndPitch(1.0, 1.0);
+      this.mockStorage_.updatePrefs();
 
-  this.ensurePrefsRemovedAndGlobalSetTo(1.0, 1.0);
-});
+      this.ensurePrefsRemovedAndGlobalSetTo(1.0, 1.0);
+    });
 
 // TODO(katie): Test no alert -- this is hard because it happens last.
-TEST_F('SelectToSpeakPrefsTest', 'RemovesPrefsWithNoAlertIfAllEqual',
-    function() {
-  this.setGlobalRateAndPitch(1.5, 1.8);
-  this.setStsRateAndPitch(1.5, 1.8);
-  this.mockStorage_.updatePrefs();
+TEST_F(
+    'SelectToSpeakPrefsTest', 'RemovesPrefsWithNoAlertIfAllEqual', function() {
+      this.setGlobalRateAndPitch(1.5, 1.8);
+      this.setStsRateAndPitch(1.5, 1.8);
+      this.mockStorage_.updatePrefs();
 
-  this.ensurePrefsRemovedAndGlobalSetTo(1.5, 1.8);
-});
+      this.ensurePrefsRemovedAndGlobalSetTo(1.5, 1.8);
+    });
 
-TEST_F('SelectToSpeakPrefsTest', 'SavesNonDefaultStsPrefsToGlobal',
-    function() {
+TEST_F('SelectToSpeakPrefsTest', 'SavesNonDefaultStsPrefsToGlobal', function() {
   this.setGlobalRateAndPitch(1.0, 1.0);
   this.setStsRateAndPitch(2.0, 2.5);
   this.mockStorage_.updatePrefs();
@@ -110,20 +111,22 @@ TEST_F('SelectToSpeakPrefsTest', 'SavesNonDefaultStsPrefsToGlobal',
   this.ensurePrefsRemovedAndGlobalSetTo(2.0, 2.5);
 });
 
-TEST_F('SelectToSpeakPrefsTest',
+TEST_F(
+    'SelectToSpeakPrefsTest',
     'DoesNotSaveNonDefaultStsPrefsToGlobalIfGlobalChanged', function() {
-  this.setGlobalRateAndPitch(1.0, 1.5);
-  this.setStsRateAndPitch(1.0, 2.5);
-  this.mockStorage_.updatePrefs();
+      this.setGlobalRateAndPitch(1.0, 1.5);
+      this.setStsRateAndPitch(1.0, 2.5);
+      this.mockStorage_.updatePrefs();
 
-  this.ensurePrefsRemovedAndGlobalSetTo(1.0, 1.5);
-});
+      this.ensurePrefsRemovedAndGlobalSetTo(1.0, 1.5);
+    });
 
-TEST_F('SelectToSpeakPrefsTest', 'DoesNotSaveStsPrefsToGlobalIfGlobalChanged',
+TEST_F(
+    'SelectToSpeakPrefsTest', 'DoesNotSaveStsPrefsToGlobalIfGlobalChanged',
     function() {
-  this.setGlobalRateAndPitch(2.0, 1.0);
-  this.setStsRateAndPitch(1.0, 1.0);
-  this.mockStorage_.updatePrefs();
+      this.setGlobalRateAndPitch(2.0, 1.0);
+      this.setStsRateAndPitch(1.0, 1.0);
+      this.mockStorage_.updatePrefs();
 
-  this.ensurePrefsRemovedAndGlobalSetTo(2.0, 1.0);
-});
+      this.ensurePrefsRemovedAndGlobalSetTo(2.0, 1.0);
+    });

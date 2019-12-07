@@ -29,6 +29,8 @@
 
 namespace chromecast {
 
+class QueryableDataHost;
+
 namespace shell {
 class RemoteDebuggingServer;
 }  // namespace shell
@@ -42,6 +44,8 @@ class CastWebContentsImpl : public CastWebContents,
 
   content::WebContents* web_contents() const override;
   PageState page_state() const override;
+
+  QueryableDataHost* queryable_data_host() const override;
 
   // CastWebContents implementation:
   int tab_id() const override;
@@ -176,6 +180,8 @@ class CastWebContentsImpl : public CastWebContents,
   // Map of InterfaceSet -> InterfaceProvider pointer.
   base::flat_map<InterfaceSet, service_manager::InterfaceProvider*>
       interface_providers_map_;
+
+  std::unique_ptr<QueryableDataHost> queryable_data_host_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<CastWebContentsImpl> weak_factory_;

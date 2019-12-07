@@ -7,7 +7,7 @@
  * @constructor
  * @extends {testing.Test}
  */
-function SelectToSpeakUnitTest () {
+function SelectToSpeakUnitTest() {
   testing.Test.call(this);
 }
 
@@ -15,10 +15,7 @@ SelectToSpeakUnitTest.prototype = {
   __proto__: testing.Test.prototype,
 
   /** @override */
-  extraLibraries: [
-    'test_support.js',
-    'select_to_speak.js'
-  ]
+  extraLibraries: ['test_support.js', 'select_to_speak.js']
 };
 
 TEST_F('SelectToSpeakUnitTest', 'getGSuiteAppRoot', function() {
@@ -43,7 +40,7 @@ TEST_F('SelectToSpeakUnitTest', 'getGSuiteAppRoot', function() {
   assertEquals(getGSuiteAppRoot(div2), root);
 
   // Not in GSuite app
-  root.url = 'https://www.not_a_doc.com'
+  root.url = 'https://www.not_a_doc.com';
   assertEquals(getGSuiteAppRoot(focus), null);
   assertEquals(getGSuiteAppRoot(div2), null);
 });

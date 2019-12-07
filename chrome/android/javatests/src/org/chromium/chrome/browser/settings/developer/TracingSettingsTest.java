@@ -34,8 +34,8 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.settings.ButtonPreference;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
 import org.chromium.chrome.browser.settings.SettingsActivity;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.TextMessagePreference;
 import org.chromium.chrome.browser.tracing.TracingController;
 import org.chromium.chrome.browser.tracing.TracingNotificationManager;
@@ -296,7 +296,7 @@ public class TracingSettingsTest {
             Context context = InstrumentationRegistry.getTargetContext();
             Assert.assertNotNull(categoriesPref.getExtras());
             Assert.assertFalse(categoriesPref.getExtras().isEmpty());
-            Intent intent = PreferencesLauncher.createIntentForSettingsPage(
+            Intent intent = SettingsLauncher.createIntentForSettingsPage(
                     context, TracingCategoriesSettings.class.getName(), categoriesPref.getExtras());
             SettingsActivity categoriesActivity =
                     (SettingsActivity) InstrumentationRegistry.getInstrumentation()

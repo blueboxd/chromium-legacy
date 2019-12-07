@@ -37,6 +37,9 @@ namespace blink {
 class BLINK_COMMON_EXPORT ThrottlingURLLoader
     : public network::mojom::URLLoaderClient {
  public:
+  // Reason used when resetting the URLLoader to follow a redirect.
+  static const char kFollowRedirectReason[];
+
   // |client| must stay alive during the lifetime of the returned object. Please
   // note that the request may not start immediately since it could be deferred
   // by throttles.
@@ -56,6 +59,12 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
   // Follows a redirect, calling CreateLoaderAndStart() on the factory. This
   // is useful if the factory uses different loaders for different URLs.
   void FollowRedirectForcingRestart();
+  // This should be called if the loader will be recreated to follow a redirect
+  // instead of calling FollowRedirect(). This can be used if a loader is
+  // implementing similar logic to FollowRedirectForcingRestart(). If this is
+  // called, a future request for the redirect should be guaranteed to be sent
+  // with the same request_id.
+  void ResetForFollowRedirect();
 
   void FollowRedirect(const std::vector<std::string>& removed_headers,
                       const net::HttpRequestHeaders& modified_headers);

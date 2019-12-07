@@ -15,8 +15,8 @@ namespace cc {
 
 std::unique_ptr<LayerImpl> PaintedScrollbarLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return PaintedScrollbarLayerImpl::Create(tree_impl, id(), orientation_,
-                                           is_left_side_vertical_scrollbar_,
+  return PaintedScrollbarLayerImpl::Create(tree_impl, id(), orientation(),
+                                           is_left_side_vertical_scrollbar(),
                                            is_overlay_);
 }
 
@@ -26,15 +26,14 @@ scoped_refptr<PaintedScrollbarLayer> PaintedScrollbarLayer::Create(
 }
 
 PaintedScrollbarLayer::PaintedScrollbarLayer(scoped_refptr<Scrollbar> scrollbar)
-    : scrollbar_(std::move(scrollbar)),
+    : ScrollbarLayerBase(scrollbar->Orientation(),
+                         scrollbar->IsLeftSideVerticalScrollbar()),
+      scrollbar_(std::move(scrollbar)),
       internal_contents_scale_(1.f),
       thumb_opacity_(scrollbar_->ThumbOpacity()),
       has_thumb_(scrollbar_->HasThumb()),
       supports_drag_snap_back_(scrollbar_->SupportsDragSnapBack()),
-      is_left_side_vertical_scrollbar_(
-          scrollbar_->IsLeftSideVerticalScrollbar()),
-      is_overlay_(scrollbar_->IsOverlay()),
-      orientation_(scrollbar_->Orientation()) {}
+      is_overlay_(scrollbar_->IsOverlay()) {}
 
 PaintedScrollbarLayer::~PaintedScrollbarLayer() = default;
 
@@ -55,7 +54,7 @@ void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
   scrollbar_layer->SetBackButtonRect(back_button_rect_);
   scrollbar_layer->SetForwardButtonRect(forward_button_rect_);
   scrollbar_layer->SetTrackRect(track_rect_);
-  if (orientation_ == HORIZONTAL) {
+  if (orientation() == HORIZONTAL) {
     scrollbar_layer->SetThumbThickness(thumb_size_.height());
     scrollbar_layer->SetThumbLength(thumb_size_.width());
   } else {
@@ -100,10 +99,10 @@ gfx::Size PaintedScrollbarLayer::LayerSizeToContentSize(
 void PaintedScrollbarLayer::UpdateThumbAndTrackGeometry() {
   // These properties should never change.
   DCHECK_EQ(supports_drag_snap_back_, scrollbar_->SupportsDragSnapBack());
-  DCHECK_EQ(is_left_side_vertical_scrollbar_,
+  DCHECK_EQ(is_left_side_vertical_scrollbar(),
             scrollbar_->IsLeftSideVerticalScrollbar());
   DCHECK_EQ(is_overlay_, scrollbar_->IsOverlay());
-  DCHECK_EQ(orientation_, scrollbar_->Orientation());
+  DCHECK_EQ(orientation(), scrollbar_->Orientation());
 
   UpdateProperty(scrollbar_->TrackRect(), &track_rect_);
   UpdateProperty(scrollbar_->BackButtonRect(), &back_button_rect_);

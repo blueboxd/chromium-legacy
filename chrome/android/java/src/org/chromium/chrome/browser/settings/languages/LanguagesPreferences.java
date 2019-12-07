@@ -14,7 +14,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsUtils;
 
 /**
@@ -82,7 +82,7 @@ public class LanguagesPreferences
     @Override
     public void launchAddLanguage() {
         // Launch preference activity with AddLanguageFragment.
-        Intent intent = PreferencesLauncher.createIntentForSettingsPage(
+        Intent intent = SettingsLauncher.createIntentForSettingsPage(
                 getActivity(), AddLanguageFragment.class.getName());
         startActivityForResult(intent, REQUEST_CODE_ADD_LANGUAGES);
     }

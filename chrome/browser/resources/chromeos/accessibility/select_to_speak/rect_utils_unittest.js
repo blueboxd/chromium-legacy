@@ -7,7 +7,7 @@
  * @constructor
  * @extends {testing.Test}
  */
-function SelectToSpeakRectUtilsUnitTest () {
+function SelectToSpeakRectUtilsUnitTest() {
   testing.Test.call(this);
 }
 

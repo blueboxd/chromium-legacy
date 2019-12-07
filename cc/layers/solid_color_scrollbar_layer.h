@@ -37,10 +37,8 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerBase {
                            bool is_left_side_vertical_scrollbar);
   ~SolidColorScrollbarLayer() override;
 
-  ScrollbarOrientation orientation_;
   int thumb_thickness_;
   int track_start_;
-  bool is_left_side_vertical_scrollbar_;
 };
 
 }  // namespace cc

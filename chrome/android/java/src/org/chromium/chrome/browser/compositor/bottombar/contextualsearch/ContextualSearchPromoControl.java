@@ -21,7 +21,7 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelAnimation;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelInflater;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.privacy.ContextualSearchPreferenceFragment;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.ui.base.LocalizationUtils;
@@ -386,7 +386,7 @@ public class ContextualSearchPromoControl extends OverlayPanelInflater {
         new Handler().post(new Runnable() {
             @Override
             public void run() {
-                PreferencesLauncher.launchSettingsPage(
+                SettingsLauncher.launchSettingsPage(
                         getContext(), ContextualSearchPreferenceFragment.class);
             }
         });

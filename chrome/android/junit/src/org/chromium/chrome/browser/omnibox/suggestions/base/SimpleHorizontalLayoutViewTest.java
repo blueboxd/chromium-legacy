@@ -368,6 +368,118 @@ public class SimpleHorizontalLayoutViewTest {
     }
 
     /**
+     * Verify that start padding is respected during layout.
+     */
+    @Test
+    public void layout_LtrPaddingLeft() {
+        final int contentWidth = 250;
+        final int contentHeight = 48;
+        final int paddingWidth = 18;
+        final int suggestionWidth = paddingWidth + SMALL_VIEW_WIDTH + contentWidth;
+
+        mView.setPaddingRelative(paddingWidth, 0, 0, 0);
+
+        mView.addView(mSmallView);
+        mView.addView(mDynamicView);
+
+        final int expectedSmallCornerLeft = paddingWidth;
+        final int expectedSmallCornerRight = expectedSmallCornerLeft + SMALL_VIEW_WIDTH;
+        final int expectedDynamicCornerLeft = expectedSmallCornerRight;
+        final int expectedDynamicCornerRight = expectedDynamicCornerLeft + contentWidth;
+
+        executeLayoutTest(suggestionWidth, contentHeight, View.LAYOUT_DIRECTION_LTR);
+
+        verifyViewLayout(
+                mSmallView, expectedSmallCornerLeft, 0, expectedSmallCornerRight, contentHeight);
+        verifyViewLayout(mDynamicView, expectedDynamicCornerLeft, 0, expectedDynamicCornerRight,
+                contentHeight);
+    }
+
+    /**
+     * Verify that end padding is respected during layout.
+     */
+    @Test
+    public void layout_LtrPaddingEnd() {
+        final int contentWidth = 250;
+        final int contentHeight = 48;
+        final int paddingWidth = 18;
+        final int suggestionWidth = paddingWidth + SMALL_VIEW_WIDTH + contentWidth;
+
+        mView.setPaddingRelative(0, 0, paddingWidth, 0);
+
+        mView.addView(mSmallView);
+        mView.addView(mDynamicView);
+
+        final int expectedSmallCornerLeft = 0;
+        final int expectedSmallCornerRight = SMALL_VIEW_WIDTH;
+        final int expectedDynamicCornerLeft = expectedSmallCornerRight;
+        final int expectedDynamicCornerRight = expectedDynamicCornerLeft + contentWidth;
+
+        executeLayoutTest(suggestionWidth, contentHeight, View.LAYOUT_DIRECTION_LTR);
+
+        verifyViewLayout(
+                mSmallView, expectedSmallCornerLeft, 0, expectedSmallCornerRight, contentHeight);
+        verifyViewLayout(mDynamicView, expectedDynamicCornerLeft, 0, expectedDynamicCornerRight,
+                contentHeight);
+    }
+
+    /**
+     * Verify that start padding is respected during layout / RTL.
+     */
+    @Test
+    public void layout_RtlPaddingLeft() {
+        final int contentWidth = 250;
+        final int contentHeight = 48;
+        final int paddingWidth = 18;
+        final int suggestionWidth = paddingWidth + SMALL_VIEW_WIDTH + contentWidth;
+
+        mView.addView(mSmallView);
+        mView.addView(mDynamicView);
+
+        final int expectedDynamicCornerLeft = 0;
+        final int expectedDynamicCornerRight = contentWidth;
+        final int expectedSmallCornerLeft = expectedDynamicCornerRight;
+        final int expectedSmallCornerRight = expectedSmallCornerLeft + SMALL_VIEW_WIDTH;
+
+        mView.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+        mView.setPaddingRelative(paddingWidth, 0, 0, 0);
+        executeLayoutTest(suggestionWidth, contentHeight, View.LAYOUT_DIRECTION_RTL);
+
+        verifyViewLayout(
+                mSmallView, expectedSmallCornerLeft, 0, expectedSmallCornerRight, contentHeight);
+        verifyViewLayout(mDynamicView, expectedDynamicCornerLeft, 0, expectedDynamicCornerRight,
+                contentHeight);
+    }
+
+    /**
+     * Verify that end padding is respected during layout / RTL.
+     */
+    @Test
+    public void layout_RtlPaddingEnd() {
+        final int contentWidth = 250;
+        final int contentHeight = 48;
+        final int paddingWidth = 18;
+        final int suggestionWidth = paddingWidth + SMALL_VIEW_WIDTH + contentWidth;
+
+        mView.addView(mSmallView);
+        mView.addView(mDynamicView);
+
+        final int expectedDynamicCornerLeft = paddingWidth;
+        final int expectedDynamicCornerRight = expectedDynamicCornerLeft + contentWidth;
+        final int expectedSmallCornerLeft = expectedDynamicCornerRight;
+        final int expectedSmallCornerRight = expectedSmallCornerLeft + SMALL_VIEW_WIDTH;
+
+        mView.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+        mView.setPaddingRelative(0, 0, paddingWidth, 0);
+        executeLayoutTest(suggestionWidth, contentHeight, View.LAYOUT_DIRECTION_RTL);
+
+        verifyViewLayout(
+                mSmallView, expectedSmallCornerLeft, 0, expectedSmallCornerRight, contentHeight);
+        verifyViewLayout(mDynamicView, expectedDynamicCornerLeft, 0, expectedDynamicCornerRight,
+                contentHeight);
+    }
+
+    /**
      * Two dynamic views. Expect the layout mechanism to fail.
      */
     @Test(expected = AssertionError.class)

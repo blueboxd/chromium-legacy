@@ -276,5 +276,53 @@ chrome.test.getConfig(function(config) {
         chrome.webRequest.onHeadersReceived.removeListener(listener);
       });
     },
+
+    function redirectHasSameRequestIdOnHeadersReceived() {
+      var url = getServerURL('echo');
+      var requestId;
+      var onHeadersReceivedListener = function(details) {
+        requestId = details.requestId;
+        return {redirectUrl: getURLWebAccessible()};
+      };
+      chrome.webRequest.onHeadersReceived.addListener(onHeadersReceivedListener,
+          {urls: [url]}, onHeadersReceivedExtraInfoSpec);
+
+      var onBeforeRequestListener = chrome.test.callbackPass(function(details) {
+        chrome.test.assertEq(details.requestId, requestId);
+      });
+      chrome.webRequest.onBeforeRequest.addListener(onBeforeRequestListener,
+          {urls: [getURLWebAccessible()]});
+
+      assertRedirectSucceeds(url, getURLWebAccessible(), function() {
+        chrome.webRequest.onHeadersReceived.removeListener(
+            onHeadersReceivedListener);
+        chrome.webRequest.onBeforeRequest.removeListener(
+            onBeforeRequestListener);
+      });
+    },
+
+    function redirectHasSameRequestIdOnBeforeRequest() {
+      var url = getServerURL('echo');
+      var requestId;
+      var onBeforeRequestRedirectListener = function(details) {
+        requestId = details.requestId;
+        return {redirectUrl: getURLWebAccessible()};
+      };
+      chrome.webRequest.onBeforeRequest.addListener(
+          onBeforeRequestRedirectListener, {urls: [url]}, ['blocking']);
+
+      var onBeforeRequestListener = chrome.test.callbackPass(function(details) {
+        chrome.test.assertEq(details.requestId, requestId);
+      });
+      chrome.webRequest.onBeforeRequest.addListener(onBeforeRequestListener,
+          {urls: [getURLWebAccessible()]});
+
+      assertRedirectSucceeds(url, getURLWebAccessible(), function() {
+        chrome.webRequest.onBeforeRequest.removeListener(
+            onBeforeRequestRedirectListener);
+        chrome.webRequest.onBeforeRequest.removeListener(
+            onBeforeRequestListener);
+      });
+    },
   ]);
 });

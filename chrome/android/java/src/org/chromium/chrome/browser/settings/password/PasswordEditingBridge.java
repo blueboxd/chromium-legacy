@@ -9,7 +9,7 @@ import android.os.Bundle;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 
 /**
  * This is a bridge between PasswordEntryEditor and the C++ code. The bridge is in charge of
@@ -51,7 +51,7 @@ public class PasswordEditingBridge implements PasswordEditingDelegate {
         fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_URL, site);
         fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_NAME, username);
         fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_PASSWORD, password);
-        PreferencesLauncher.launchSettingsPage(context, PasswordEntryEditor.class, fragmentArgs);
+        SettingsLauncher.launchSettingsPage(context, PasswordEntryEditor.class, fragmentArgs);
     }
 
     /**

@@ -22,7 +22,7 @@ import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.sync.SyncAndServicesPreferences;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError.State;
 import org.chromium.chrome.browser.sync.ui.PassphraseActivity;
@@ -169,7 +169,7 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
      * @return the intent for opening the settings
      */
     private Intent createSettingsIntent() {
-        return PreferencesLauncher.createIntentForSettingsPage(ContextUtils.getApplicationContext(),
+        return SettingsLauncher.createIntentForSettingsPage(ContextUtils.getApplicationContext(),
                 SyncAndServicesPreferences.class.getName(),
                 SyncAndServicesPreferences.createArguments(false));
     }

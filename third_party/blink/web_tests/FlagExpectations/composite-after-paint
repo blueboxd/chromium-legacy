@@ -56,10 +56,10 @@ crbug.com/1008501 compositing/culling/filter-occlusion-blur.html [ Failure ]
 crbug.com/1008501 compositing/reflections/deeply-nested-reflections.html [ Failure ]
 
 # Wrong contentsOpaque or background color.
-Bug(none) compositing/contents-opaque/control-layer.html [ Failure ]
-Bug(none) compositing/contents-opaque/layer-opacity.html [ Failure ]
+crbug.com/1029620 compositing/contents-opaque/control-layer.html [ Failure ]
+crbug.com/1029620 compositing/contents-opaque/layer-opacity.html [ Failure ]
 # Flaky result of contentsOpqaue.
-Bug(none) paint/invalidation/window-resize/window-resize-child-background-image-fixed-centered.html [ Pass Failure ]
+crbug.com/1029620 paint/invalidation/window-resize/window-resize-child-background-image-fixed-centered.html [ Pass Failure ]
 
 # Needs to implement logic for CompositingReasons::kAssumedOverlap.
 Bug(none) compositing/layer-creation/overlap-animation-clipping.html [ Failure ]

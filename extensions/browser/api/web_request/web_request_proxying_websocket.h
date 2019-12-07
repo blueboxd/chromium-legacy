@@ -51,7 +51,7 @@ class WebRequestProxyingWebSocket
       int process_id,
       int render_frame_id,
       content::BrowserContext* browser_context,
-      scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
+      WebRequestAPI::RequestIDGenerator* request_id_generator,
       WebRequestAPI::ProxySet* proxies);
   ~WebRequestProxyingWebSocket() override;
 
@@ -89,7 +89,7 @@ class WebRequestProxyingWebSocket
       bool has_extra_headers,
       int process_id,
       int render_frame_id,
-      scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
+      WebRequestAPI::RequestIDGenerator* request_id_generator,
       const url::Origin& origin,
       content::BrowserContext* browser_context,
       WebRequestAPI::ProxySet* proxies);

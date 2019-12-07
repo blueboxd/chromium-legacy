@@ -84,8 +84,8 @@ public class PasswordViewingTypeTest {
      */
     private static SettingsActivity startMainPreferences(
             Instrumentation instrumentation, final Context mContext) {
-        Intent intent = PreferencesLauncher.createIntentForSettingsPage(mContext,
-                MainPreferences.class.getName());
+        Intent intent = SettingsLauncher.createIntentForSettingsPage(
+                mContext, MainPreferences.class.getName());
         Activity activity = (SettingsActivity) instrumentation.startActivitySync(intent);
         return (SettingsActivity) activity;
     }

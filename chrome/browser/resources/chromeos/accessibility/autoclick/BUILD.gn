@@ -102,7 +102,7 @@ source_set("browser_tests") {
 js2gtest("autoclick_extjs_tests") {
   test_type = "extension"
   sources = [
-    "autoclick_test.extjs",
+    "autoclick_test.js",
   ]
   gen_include_files = [
     "../chromevox/testing/callback_helper.js",

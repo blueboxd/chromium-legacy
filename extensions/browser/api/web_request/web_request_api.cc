@@ -627,9 +627,36 @@ void WebRequestAPI::ProxySet::MaybeProxyAuthRequest(
                            request_id.request_id, std::move(callback));
 }
 
+WebRequestAPI::RequestIDGenerator::RequestIDGenerator() = default;
+WebRequestAPI::RequestIDGenerator::~RequestIDGenerator() = default;
+
+int64_t WebRequestAPI::RequestIDGenerator::Generate(
+    int32_t routing_id,
+    int32_t network_service_request_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  auto it = saved_id_map_.find({routing_id, network_service_request_id});
+  if (it != saved_id_map_.end()) {
+    int64_t id = it->second;
+    saved_id_map_.erase(it);
+    return id;
+  }
+  return ++id_;
+}
+
+void WebRequestAPI::RequestIDGenerator::SaveID(
+    int32_t routing_id,
+    int32_t network_service_request_id,
+    uint64_t request_id) {
+  // If |network_service_request_id| is 0, we cannot reliably match the
+  // generated ID to a future request, so ignore it.
+  if (network_service_request_id != 0) {
+    saved_id_map_.insert(
+        {{routing_id, network_service_request_id}, request_id});
+  }
+}
+
 WebRequestAPI::WebRequestAPI(content::BrowserContext* context)
     : browser_context_(context),
-      request_id_generator_(base::MakeRefCounted<RequestIDGenerator>()),
       proxies_(std::make_unique<ProxySet>()),
       may_have_proxies_(MayHaveProxies()) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
@@ -756,7 +783,7 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
               browser_context_));
   WebRequestProxyingURLLoaderFactory::StartProxying(
       browser_context, is_navigation ? -1 : render_process_id,
-      request_id_generator_, std::move(navigation_ui_data),
+      &request_id_generator_, std::move(navigation_ui_data),
       std::move(navigation_id), std::move(proxied_receiver),
       std::move(target_factory_remote), std::move(header_client_receiver),
       proxies_.get(), type);
@@ -808,7 +835,7 @@ void WebRequestAPI::ProxyWebSocket(
       std::move(factory), url, site_for_cookies, user_agent,
       std::move(handshake_client), has_extra_headers,
       frame->GetProcess()->GetID(), frame->GetRoutingID(),
-      request_id_generator_, frame->GetLastCommittedOrigin(),
+      &request_id_generator_, frame->GetLastCommittedOrigin(),
       frame->GetProcess()->GetBrowserContext(), proxies_.get());
 }
 

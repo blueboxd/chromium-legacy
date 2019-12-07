@@ -58,7 +58,7 @@ class SimpleHorizontalLayoutView extends ViewGroup {
         final int height = getMeasuredHeight();
         int index = isRtl ? getChildCount() - 1 : 0;
 
-        left = 0;
+        left = getPaddingLeft();
 
         for (; index >= 0 && index < getChildCount(); index += increment) {
             View v = getChildAt(index);
@@ -75,7 +75,7 @@ class SimpleHorizontalLayoutView extends ViewGroup {
     @Override
     protected void onMeasure(int widthSpec, int heightSpec) {
         final int widthPx = MeasureSpec.getSize(widthSpec);
-        int contentViewWidth = widthPx;
+        int contentViewWidth = widthPx - getPaddingLeft() - getPaddingRight();
         View dynamicView = null;
 
         // Compute and apply space we can offer to content view.

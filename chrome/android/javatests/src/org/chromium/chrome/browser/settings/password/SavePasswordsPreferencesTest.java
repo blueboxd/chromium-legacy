@@ -98,9 +98,9 @@ import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsActivityTest;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.util.browser.Features;
@@ -241,8 +241,7 @@ public class SavePasswordsPreferencesTest {
                     getSavedPasswordEntry(index).getUserName());
             fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_PASSWORD,
                     getSavedPasswordEntry(index).getPassword());
-            PreferencesLauncher.launchSettingsPage(
-                    context, PasswordEntryEditor.class, fragmentArgs);
+            SettingsLauncher.launchSettingsPage(context, PasswordEntryEditor.class, fragmentArgs);
         }
     }
 
@@ -780,7 +779,7 @@ public class SavePasswordsPreferencesTest {
         fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_URL, "https://example.com");
         fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_NAME, "test user");
         fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_PASSWORD, "test password");
-        PreferencesLauncher.launchSettingsPage(
+        SettingsLauncher.launchSettingsPage(
                 InstrumentationRegistry.getContext(), PasswordEntryEditor.class, fragmentArgs);
 
         Espresso.onView(withId(R.id.site_edit)).check(matches(withText("https://example.com")));
@@ -867,7 +866,7 @@ public class SavePasswordsPreferencesTest {
         fragmentArgs.putString(SavePasswordsPreferences.PASSWORD_LIST_NAME, "test user");
         fragmentArgs.putString(SavePasswordsPreferences.PASSWORD_LIST_URL, "https://example.com");
         fragmentArgs.putString(SavePasswordsPreferences.PASSWORD_LIST_PASSWORD, "test password");
-        PreferencesLauncher.launchSettingsPage(
+        SettingsLauncher.launchSettingsPage(
                 InstrumentationRegistry.getContext(), PasswordEntryEditor.class, fragmentArgs);
 
         ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);

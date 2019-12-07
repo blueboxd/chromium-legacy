@@ -53,9 +53,6 @@ class CC_EXPORT PaintedOverlayScrollbarLayer : public ScrollbarLayerBase {
   gfx::Rect track_rect_;
   gfx::Rect aperture_;
 
-  const ScrollbarOrientation orientation_;
-  const bool is_left_side_vertical_scrollbar_;
-
   std::unique_ptr<ScopedUIResource> thumb_resource_;
   std::unique_ptr<ScopedUIResource> track_resource_;
 };

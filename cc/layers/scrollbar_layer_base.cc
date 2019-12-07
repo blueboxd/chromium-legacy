@@ -8,7 +8,10 @@
 
 namespace cc {
 
-ScrollbarLayerBase::ScrollbarLayerBase() {
+ScrollbarLayerBase::ScrollbarLayerBase(ScrollbarOrientation orientation,
+                                       bool is_left_side_vertical_scrollbar)
+    : orientation_(orientation),
+      is_left_side_vertical_scrollbar_(is_left_side_vertical_scrollbar) {
   SetIsScrollbar(true);
 }
 
@@ -24,8 +27,12 @@ void ScrollbarLayerBase::SetScrollElementId(ElementId element_id) {
 
 void ScrollbarLayerBase::PushPropertiesTo(LayerImpl* layer) {
   Layer::PushPropertiesTo(layer);
-  static_cast<ScrollbarLayerImplBase*>(layer)->SetScrollElementId(
-      scroll_element_id_);
+
+  auto* scrollbar_layer_impl = static_cast<ScrollbarLayerImplBase*>(layer);
+  DCHECK_EQ(scrollbar_layer_impl->orientation(), orientation_);
+  DCHECK_EQ(scrollbar_layer_impl->is_left_side_vertical_scrollbar(),
+            is_left_side_vertical_scrollbar_);
+  scrollbar_layer_impl->SetScrollElementId(scroll_element_id_);
 }
 
 }  // namespace cc

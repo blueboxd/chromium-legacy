@@ -21,7 +21,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.settings.ManagedPreferenceDelegate;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.chrome.browser.settings.sync.SyncAndServicesPreferences;
 import org.chromium.chrome.browser.usage_stats.UsageStatsConsentDialog;
@@ -64,7 +64,7 @@ public class PrivacyPreferences
 
         Preference syncAndServicesLink = findPreference(PREF_SYNC_AND_SERVICES_LINK);
         NoUnderlineClickableSpan linkSpan = new NoUnderlineClickableSpan(getResources(), view -> {
-            PreferencesLauncher.launchSettingsPage(getActivity(), SyncAndServicesPreferences.class,
+            SettingsLauncher.launchSettingsPage(getActivity(), SyncAndServicesPreferences.class,
                     SyncAndServicesPreferences.createArguments(false));
         });
         syncAndServicesLink.setSummary(

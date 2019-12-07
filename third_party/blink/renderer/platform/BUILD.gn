@@ -1633,6 +1633,8 @@ jumbo_static_library("test_support") {
     "testing/fake_display_item_client.h",
     "testing/fake_graphics_layer.h",
     "testing/fake_graphics_layer_client.h",
+    "testing/find_cc_layer.cc",
+    "testing/find_cc_layer.h",
     "testing/font_test_helpers.cc",
     "testing/font_test_helpers.h",
     "testing/histogram_tester.cc",

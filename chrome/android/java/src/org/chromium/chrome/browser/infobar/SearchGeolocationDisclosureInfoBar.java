@@ -10,7 +10,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.website.SingleWebsitePreferences;
 
 /**
@@ -57,7 +57,7 @@ public class SearchGeolocationDisclosureInfoBar extends InfoBar {
     @CalledByNative
     private static void showSettingsPage(String searchUrl) {
         Context context = ContextUtils.getApplicationContext();
-        PreferencesLauncher.launchSettingsPage(context, SingleWebsitePreferences.class,
+        SettingsLauncher.launchSettingsPage(context, SingleWebsitePreferences.class,
                 SingleWebsitePreferences.createFragmentArgsForSite(searchUrl));
     }
 }

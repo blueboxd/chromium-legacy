@@ -16,7 +16,7 @@ import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.sync.SyncAndServicesPreferences;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
@@ -183,7 +183,7 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
     private void showIdentityDisc(String accountName) {
         mToolbarManager.enableExperimentalButton(view -> {
             recordIdentityDiscUsed();
-            PreferencesLauncher.launchSettingsPage(mContext, SyncAndServicesPreferences.class);
+            SettingsLauncher.launchSettingsPage(mContext, SyncAndServicesPreferences.class);
         }, getProfileImage(accountName), R.string.accessibility_toolbar_btn_identity_disc);
     }
 

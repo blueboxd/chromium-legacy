@@ -37,8 +37,6 @@ class CORE_EXPORT FragmentData {
   }
 
   // The visual rect computed by the latest paint invalidation.
-  // This rect does *not* account for composited scrolling. See LayoutObject::
-  // AdjustVisualRectForCompositedScrolling().
   // It's location may be different from PaintOffset when there is visual (ink)
   // overflow to the top and/or the left.
   IntRect VisualRect() const { return visual_rect_; }

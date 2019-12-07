@@ -1169,11 +1169,6 @@ void LocalFrameView::AddBackgroundAttachmentFixedObject(LayoutObject* object) {
   DCHECK(!background_attachment_fixed_objects_.Contains(object));
 
   background_attachment_fixed_objects_.insert(object);
-  if (ScrollingCoordinator* scrolling_coordinator =
-          this->GetScrollingCoordinator()) {
-    scrolling_coordinator
-        ->FrameViewHasBackgroundAttachmentFixedObjectsDidChange(this);
-  }
 
   // Ensure main thread scrolling reasons are recomputed.
   SetNeedsPaintPropertyUpdate();
@@ -1186,11 +1181,6 @@ void LocalFrameView::RemoveBackgroundAttachmentFixedObject(
   DCHECK(background_attachment_fixed_objects_.Contains(object));
 
   background_attachment_fixed_objects_.erase(object);
-  if (ScrollingCoordinator* scrolling_coordinator =
-          this->GetScrollingCoordinator()) {
-    scrolling_coordinator
-        ->FrameViewHasBackgroundAttachmentFixedObjectsDidChange(this);
-  }
 
   // Ensure main thread scrolling reasons are recomputed.
   SetNeedsPaintPropertyUpdate();
@@ -1221,24 +1211,12 @@ void LocalFrameView::AddViewportConstrainedObject(LayoutObject& object) {
   if (!viewport_constrained_objects_)
     viewport_constrained_objects_ = std::make_unique<ObjectSet>();
 
-  if (!viewport_constrained_objects_->Contains(&object)) {
-    viewport_constrained_objects_->insert(&object);
-
-    if (ScrollingCoordinator* scrolling_coordinator =
-            this->GetScrollingCoordinator())
-      scrolling_coordinator->FrameViewFixedObjectsDidChange(this);
-  }
+  viewport_constrained_objects_->insert(&object);
 }
 
 void LocalFrameView::RemoveViewportConstrainedObject(LayoutObject& object) {
-  if (viewport_constrained_objects_ &&
-      viewport_constrained_objects_->Contains(&object)) {
+  if (viewport_constrained_objects_)
     viewport_constrained_objects_->erase(&object);
-
-    if (ScrollingCoordinator* scrolling_coordinator =
-            this->GetScrollingCoordinator())
-      scrolling_coordinator->FrameViewFixedObjectsDidChange(this);
-  }
 }
 
 void LocalFrameView::ViewportSizeChanged(bool width_changed,
@@ -3383,17 +3361,6 @@ void LocalFrameView::SetTracksRasterInvalidations(
 void LocalFrameView::ScheduleAnimation(base::TimeDelta delay) {
   if (auto* client = GetChromeClient())
     client->ScheduleAnimation(this, delay);
-}
-
-bool LocalFrameView::FrameIsScrollableDidChange() {
-  DCHECK(GetFrame().IsLocalRoot());
-  return GetScrollingContext()->WasScrollable() !=
-         LayoutViewport()->ScrollsOverflow();
-}
-
-void LocalFrameView::ClearFrameIsScrollableDidChange() {
-  GetScrollingContext()->SetWasScrollable(
-      GetFrame().LocalFrameRoot().View()->LayoutViewport()->ScrollsOverflow());
 }
 
 void LocalFrameView::ScrollableAreasDidChange() {

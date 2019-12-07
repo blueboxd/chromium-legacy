@@ -11,7 +11,7 @@ import android.os.Bundle;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.website.SettingsNavigationSource;
 import org.chromium.chrome.browser.settings.website.SingleCategoryPreferences;
 import org.chromium.chrome.browser.settings.website.SingleWebsitePreferences;
@@ -84,7 +84,7 @@ public class TrustedWebActivitySettingsLauncher {
         extras.putInt(SettingsNavigationSource.EXTRA_KEY,
                 SettingsNavigationSource.TWA_CLEAR_DATA_DIALOG);
 
-        PreferencesLauncher.launchSettingsPage(context, SingleCategoryPreferences.class, extras);
+        SettingsLauncher.launchSettingsPage(context, SingleCategoryPreferences.class, extras);
     }
 
     /**
@@ -94,7 +94,7 @@ public class TrustedWebActivitySettingsLauncher {
             Context context, String url, @SettingsNavigationSource int navigationSource) {
         Bundle args = SingleWebsitePreferences.createFragmentArgsForSite(url);
         args.putInt(SettingsNavigationSource.EXTRA_KEY, navigationSource);
-        return PreferencesLauncher.createIntentForSettingsPage(
+        return SettingsLauncher.createIntentForSettingsPage(
                 context, SingleWebsitePreferences.class.getName(), args);
     }
 }

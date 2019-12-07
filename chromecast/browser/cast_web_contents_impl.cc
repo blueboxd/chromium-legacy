@@ -13,10 +13,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
+#include "chromecast/activity/queryable_data_host.h"
+#include "chromecast/base/cast_features.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
+#include "chromecast/browser/queryable_data_host_cast.h"
 #include "chromecast/common/mojom/media_playback_options.mojom.h"
 #include "chromecast/common/mojom/on_load_script_injector.mojom.h"
 #include "chromecast/common/mojom/queryable_data_store.mojom.h"
@@ -139,6 +142,13 @@ CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
   if (GetSwitchValueBoolean(switches::kDisableMojoRenderer, false)) {
     use_cma_renderer_ = false;
   }
+
+  // Provides QueryableDataHostCast if the new QueryableData bindings is not
+  // enabled.
+  if (init_params.enable_queryable_data_host) {
+    queryable_data_host_ =
+        std::make_unique<QueryableDataHostCast>(web_contents_);
+  }
 }
 
 CastWebContentsImpl::~CastWebContentsImpl() {
@@ -165,6 +175,10 @@ content::WebContents* CastWebContentsImpl::web_contents() const {
 CastWebContents::PageState CastWebContentsImpl::page_state() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return page_state_;
+}
+
+QueryableDataHost* CastWebContentsImpl::queryable_data_host() const {
+  return queryable_data_host_.get();
 }
 
 void CastWebContentsImpl::AddRendererFeatures(

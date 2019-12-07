@@ -383,6 +383,7 @@ def DoInline(
     # by DoInline.
     inlined_data_inst=DoInline(filepath, grd_node,
         allow_external_script=allow_external_script,
+        preprocess_only=preprocess_only,
         strip_whitespace=strip_whitespace,
         filename_expansion_function=filename_expansion_function)
 

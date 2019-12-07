@@ -879,5 +879,49 @@ class HtmlInlineUnittest(unittest.TestCase):
 
     tmp_dir.CleanUp()
 
+  def testPreprocessOnlyAppliesRecursively(self):
+    '''Tests that preprocess_only=true propagates to included files. '''
+
+    files = {
+      'index.html': '''
+      <html>
+        <include src="outer_include.html">
+      </html>
+      ''',
+      'outer_include.html': '''
+      <include src="inner_include.html">
+      <link rel="stylesheet" href="not_inlined.css">
+      ''',
+      'inner_include.html': ''' <p>This should be inlined in index.html</p> ''',
+      'not_inlined.css': ''' /* This should not be inlined. */ '''
+    }
+
+    expected_inlined = '''
+      <html>
+        <p>This should be inlined in index.html</p>
+        <link rel="stylesheet" href="not_inlined.css">
+      </html>
+      '''
+
+    source_resources = set()
+    tmp_dir = util.TempDir(files)
+    source_resources.add(tmp_dir.GetPath('index.html'))
+    source_resources.add(tmp_dir.GetPath('outer_include.html'))
+    source_resources.add(tmp_dir.GetPath('inner_include.html'))
+
+    result = html_inline.DoInline(tmp_dir.GetPath('index.html'), None,
+                                  preprocess_only=True)
+    resources = result.inlined_files
+    resources.add(tmp_dir.GetPath('index.html'))
+    self.failUnlessEqual(resources, source_resources)
+
+    # Ignore whitespace
+    expected_inlined = re.sub(r'\s+', ' ', expected_inlined)
+    actually_inlined = re.sub(r'\s+', ' ',
+                              util.FixLineEnd(result.inlined_data, '\n'))
+    self.failUnlessEqual(expected_inlined, actually_inlined)
+
+    tmp_dir.CleanUp()
+
 if __name__ == '__main__':
   unittest.main()

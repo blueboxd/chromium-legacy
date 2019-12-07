@@ -79,9 +79,7 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerBase {
   bool has_thumb_;
 
   const bool supports_drag_snap_back_;
-  const bool is_left_side_vertical_scrollbar_;
   const bool is_overlay_;
-  const ScrollbarOrientation orientation_;
 
   std::unique_ptr<ScopedUIResource> track_resource_;
   std::unique_ptr<ScopedUIResource> thumb_resource_;

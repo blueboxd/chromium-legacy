@@ -16,7 +16,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.sync.SyncAndServicesPreferences;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.signin.AccountManagerFacade;
@@ -143,7 +143,7 @@ public class SigninFragment extends SigninFragmentBase {
                         UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(
                                 true);
                         if (settingsClicked) {
-                            PreferencesLauncher.launchSettingsPage(getActivity(),
+                            SettingsLauncher.launchSettingsPage(getActivity(),
                                     SyncAndServicesPreferences.class,
                                     SyncAndServicesPreferences.createArguments(true));
                         } else if (ChromeFeatureList.isEnabled(

@@ -120,8 +120,7 @@
       },
       {
         "args": [
-          "--use-gpu-in-tests",
-          "--use-cmd-decoder=validating"
+          "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
@@ -336,8 +335,7 @@
       },
       {
         "args": [
-          "--use-gpu-in-tests",
-          "--use-cmd-decoder=validating"
+          "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
@@ -847,8 +845,7 @@
       },
       {
         "args": [
-          "--use-gpu-in-tests",
-          "--use-cmd-decoder=validating"
+          "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
@@ -1059,8 +1056,7 @@
       },
       {
         "args": [
-          "--use-gpu-in-tests",
-          "--use-cmd-decoder=validating"
+          "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
@@ -1558,8 +1554,7 @@
       },
       {
         "args": [
-          "--use-gpu-in-tests",
-          "--use-cmd-decoder=validating"
+          "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
@@ -1772,8 +1767,7 @@
       },
       {
         "args": [
-          "--use-gpu-in-tests",
-          "--use-cmd-decoder=validating"
+          "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
@@ -2276,8 +2270,7 @@
       },
       {
         "args": [
-          "--use-gpu-in-tests",
-          "--use-cmd-decoder=validating"
+          "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
@@ -2489,8 +2482,7 @@
       },
       {
         "args": [
-          "--use-gpu-in-tests",
-          "--use-cmd-decoder=validating"
+          "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],

@@ -25,10 +25,8 @@ String PointerAsString(const void* ptr) {
 }  // namespace
 
 // Create a JSON version of the specified |layer|.
-std::unique_ptr<JSONObject> CCLayerAsJSON(
-    const cc::Layer* layer,
-    LayerTreeFlags flags,
-    const FloatPoint& offset_from_transform_node) {
+std::unique_ptr<JSONObject> CCLayerAsJSON(const cc::Layer* layer,
+                                          LayerTreeFlags flags) {
   auto json = std::make_unique<JSONObject>();
 
   if (flags & kLayerTreeIncludesDebugInfo) {
@@ -38,8 +36,11 @@ std::unique_ptr<JSONObject> CCLayerAsJSON(
 
   json->SetString("name", String(layer->DebugName().c_str()));
 
-  if (offset_from_transform_node != FloatPoint())
-    json->SetArray("position", PointAsJSONArray(offset_from_transform_node));
+  if (layer->offset_to_transform_parent() != gfx::Vector2dF()) {
+    json->SetArray(
+        "position",
+        PointAsJSONArray(FloatPoint(layer->offset_to_transform_parent())));
+  }
 
   // This is testing against gfx::Size(), *not* whether the size is empty.
   if (layer->bounds() != gfx::Size())
@@ -127,13 +128,12 @@ int LayersAsJSON::AddTransformJSON(
 }
 
 void LayersAsJSON::AddLayer(const cc::Layer& layer,
-                            const FloatPoint& offset,
                             const TransformPaintPropertyNode& transform,
                             const LayerAsJSONClient* json_client) {
   if (!(flags_ & kLayerTreeIncludesAllLayers) && !layer.DrawsContent())
     return;
 
-  auto layer_json = CCLayerAsJSON(&layer, flags_, offset);
+  auto layer_json = CCLayerAsJSON(&layer, flags_);
   if (json_client) {
     json_client->AppendAdditionalInfoAsJSON(flags_, layer, *(layer_json.get()));
   }

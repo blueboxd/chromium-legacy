@@ -522,7 +522,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   LRESULT OnWindowSizingFinished(UINT message, WPARAM w_param, LPARAM l_param);
 
   // Receives Windows Session Change notifications.
-  void OnSessionChange(WPARAM status_code);
+  void OnSessionChange(WPARAM status_code, const bool* is_current_session);
 
   using TouchEvents = std::vector<ui::TouchEvent>;
   // Helper to handle the list of touch events passed in. We need this because

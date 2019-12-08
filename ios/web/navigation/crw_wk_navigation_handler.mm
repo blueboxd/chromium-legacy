@@ -14,7 +14,6 @@
 #import "ios/web/js_messaging/crw_js_injector.h"
 #import "ios/web/js_messaging/web_frames_manager_impl.h"
 #import "ios/web/navigation/crw_pending_navigation_info.h"
-#import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/crw_wk_navigation_states.h"
 #include "ios/web/navigation/error_retry_state_machine.h"
 #import "ios/web/navigation/navigation_context_impl.h"
@@ -31,7 +30,6 @@
 #import "ios/web/security/crw_cert_verification_controller.h"
 #import "ios/web/security/wk_web_view_security_util.h"
 #import "ios/web/session/session_certificate_policy_cache_impl.h"
-#import "ios/web/web_state/ui/controller/crw_legacy_native_content_controller.h"
 #import "ios/web/web_state/user_interaction_state.h"
 #import "ios/web/web_state/web_state_impl.h"
 #include "ios/web/web_view/content_type_util.h"
@@ -108,12 +106,8 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     CRWCertVerificationController* certVerificationController;
 // Returns the docuemnt URL from self.delegate.
 @property(nonatomic, readonly, assign) GURL documentURL;
-// Returns the session controller from self.navigationManagerImpl.
-@property(nonatomic, readonly, weak) CRWSessionController* sessionController;
 // Returns the js injector from self.delegate.
 @property(nonatomic, readonly, weak) CRWJSInjector* JSInjector;
-@property(nonatomic, readonly, weak)
-    CRWLegacyNativeContentController* legacyNativeContentController;
 
 // Set to YES when [self close] is called.
 @property(nonatomic, assign) BOOL beingDestroyed;
@@ -353,11 +347,10 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
       [self.pendingNavigationInfo setCancelled:YES];
       if (self.navigationManagerImpl->GetPendingItemIndex() == -1) {
         // Discard the new pending item to ensure that the current URL is not
-        // different from what is displayed on the view. Discard only happens
-        // if the last item was not a native view, to avoid ugly animation of
-        // inserting the webview. There is no need to reset pending item index
-        // for a different pending back-forward navigation.
-        [self discardNonCommittedItemsIfLastCommittedWasNotNativeView];
+        // different from what is displayed on the view. There is no need to
+        // reset pending item index for a different pending back-forward
+        // navigation.
+        self.navigationManagerImpl->DiscardNonCommittedItems();
       }
 
       web::NavigationContextImpl* context =
@@ -485,7 +478,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     }
     // Discard the pending item to ensure that the current URL is not different
     // from what is displayed on the view.
-    [self discardNonCommittedItemsIfLastCommittedWasNotNativeView];
+    self.navigationManagerImpl->DiscardNonCommittedItems();
   } else {
     shouldRenderResponse = self.webStateImpl->ShouldAllowResponse(
         WKResponse.response, WKResponse.forMainFrame);
@@ -785,8 +778,8 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   if (self.pendingNavigationInfo.HTTPHeaders)
     context->SetResponseHeaders(self.pendingNavigationInfo.HTTPHeaders);
 
-  // Don't show webview for placeholder navigation to avoid covering the native
-  // content, which may have already been shown.
+  // Don't show webview for placeholder navigation to avoid covering existing
+  // content.
   if (!IsPlaceholderUrl(webViewURL))
     [self.delegate navigationHandlerDisplayWebView:self];
 
@@ -844,9 +837,9 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 
   // This point should closely approximate the document object change, so reset
   // the list of injected scripts to those that are automatically injected.
-  // Do not inject window ID if this is a placeholder URL: window ID is not
-  // needed for native view. For WebUI, let the window ID be injected when the
-  // |loadHTMLString:baseURL| navigation is committed.
+  // Do not inject window ID if this is a placeholder URL. For WebUI, let the
+  // window ID be injected when the |loadHTMLString:baseURL| navigation is
+  // committed.
   if (!web::GetWebClient()->IsSlimNavigationManagerEnabled() ||
       !IsPlaceholderUrl(webViewURL)) {
     [self.JSInjector resetInjectedScriptSet];
@@ -869,19 +862,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     // didFailProvisionalNavigation. As a result web::NavigationContext for this
     // navigation does not exist anymore. Find correct navigation item and make
     // it committed.
-    if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-      bool found_correct_navigation_item = false;
-      for (size_t i = 0; i < self.sessionController.items.size(); i++) {
-        web::NavigationItem* item = self.sessionController.items[i].get();
-        found_correct_navigation_item = item->GetURL() == webViewURL;
-        if (found_correct_navigation_item) {
-          [self.sessionController goToItemAtIndex:i
-                         discardNonCommittedItems:NO];
-          break;
-        }
-      }
-      DCHECK(found_correct_navigation_item);
-    }
     [self resetDocumentSpecificState];
     [self.delegate navigationHandlerDidStartLoading:self];
   } else if (context) {
@@ -893,16 +873,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     if (isLastNavigation ||
         self.navigationManagerImpl->GetPendingItemIndex() == -1) {
       [self webPageChangedWithContext:context webView:webView];
-    } else if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-      // WKWebView has more than one in progress navigation, and committed
-      // navigation was not the latest. Change last committed item to one that
-      // corresponds to committed navigation.
-      int itemIndex = web::GetCommittedItemIndexWithUniqueID(
-          self.navigationManagerImpl, context->GetNavigationItemUniqueID());
-      // Do not discard pending entry, because another pending navigation is
-      // still in progress and will commit or fail soon.
-      [self.sessionController goToItemAtIndex:itemIndex
-                     discardNonCommittedItems:NO];
     }
   }
 
@@ -920,16 +890,15 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     self.webStateImpl->OnNavigationFinished(context);
   }
 
-  // Do not update the HTML5 history state or states of the last committed item
-  // for placeholder page because the actual navigation item will not be
-  // committed until the native content or WebUI is shown.
+  // Do not update the states of the last committed item for placeholder page
+  // because the actual navigation item will not be committed until the native
+  // content or WebUI is shown.
   if (context && !context->IsPlaceholderNavigation() &&
       !context->IsLoadingErrorPage() &&
       !context->GetUrl().SchemeIs(url::kAboutScheme) &&
       !IsRestoreSessionUrl(context->GetUrl())) {
     [self.delegate
         navigationHandlerUpdateSSLStatusForCurrentNavigationItem:self];
-    [self.delegate navigationHandlerUpdateHTML5HistoryState:self];
     if (!context->IsLoadingErrorPage() && !IsRestoreSessionUrl(webViewURL)) {
       [self setLastCommittedNavigationItemTitle:webView.title];
     }
@@ -1029,14 +998,9 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
         item->SetURL(ExtractUrlFromPlaceholderUrl(webViewURL));
       }
 
-      if ([self.legacyNativeContentController
-              shouldLoadURLInNativeView:item->GetURL()]) {
-        [self.legacyNativeContentController
-            webViewDidFinishNavigationWithContext:context
-                                          andItem:item];
-      } else if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-                 item->error_retry_state_machine().state() ==
-                     web::ErrorRetryState::kNoNavigationError) {
+      if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+          item->error_retry_state_machine().state() ==
+              web::ErrorRetryState::kNoNavigationError) {
         // Offline pages can leave the WKBackForwardList current item as a
         // placeholder with no saved content.  In this case, trigger a retry
         // on that navigation with an update |item| url and |context| error.
@@ -1170,10 +1134,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   return [self.delegate certVerificationControllerForNavigationHandler:self];
 }
 
-- (CRWLegacyNativeContentController*)legacyNativeContentController {
-  return [self.delegate legacyNativeContentControllerForNavigationHandler:self];
-}
-
 - (GURL)documentURL {
   return [self.delegate navigationHandlerDocumentURL:self];
 }
@@ -1182,12 +1142,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   return self.navigationManagerImpl
              ? self.navigationManagerImpl->GetCurrentItemImpl()
              : nullptr;
-}
-
-- (CRWSessionController*)sessionController {
-  return self.navigationManagerImpl
-             ? self.navigationManagerImpl->GetSessionController()
-             : nil;
 }
 
 // This method should be called on receiving WKNavigationDelegate callbacks. It
@@ -1350,18 +1304,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
       item->RemoveHttpRequestHeaderForKey([cookieKeys anyObject]);
     }
   }
-}
-
-// Discards non committed items, only if the last committed URL was not loaded
-// in native view. But if it was a native view, no discard will happen to avoid
-// an ugly animation where the web view is inserted and quickly removed.
-- (void)discardNonCommittedItemsIfLastCommittedWasNotNativeView {
-  GURL lastCommittedURL = self.webStateImpl->GetLastCommittedURL();
-  BOOL previousItemWasLoadedInNativeView =
-      [self.delegate navigationHandler:self
-             shouldLoadURLInNativeView:lastCommittedURL];
-  if (!previousItemWasLoadedInNativeView)
-    self.navigationManagerImpl->DiscardNonCommittedItems();
 }
 
 // If YES, the page should be closed if it successfully redirects to a native
@@ -1645,8 +1587,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
           // the browser allows to proceed with the load.
           [self.delegate navigationHandler:self
               loadCurrentURLWithRendererInitiatedNavigation:NO];
-        } else {
-          [self.legacyNativeContentController handleSSLError];
         }
       }));
 
@@ -1848,9 +1788,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     if (self.navigationManagerImpl->GetPendingItem() == item) {
       self.navigationManagerImpl->DiscardNonCommittedItems();
     }
-
-    [self.legacyNativeContentController
-        handleCancelledErrorForContext:navigationContext.get()];
 
     if (provisionalLoad) {
       if (!navigationContext &&
@@ -2306,11 +2243,8 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
                         forContext:(std::unique_ptr<web::NavigationContextImpl>)
                                        originalContext {
   GURL placeholderURL = CreatePlaceholderUrlForUrl(originalURL);
-  // TODO(crbug.com/956511): Remove this code when NativeContent support is
-  // removed.
   WKWebView* webView =
       [self.delegate navigationHandlerEnsureWebViewCreated:self];
-
   NSURLRequest* request =
       [NSURLRequest requestWithURL:net::NSURLWithGURL(placeholderURL)];
   WKNavigation* navigation = [webView loadRequest:request];
@@ -2369,7 +2303,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 
   [self.delegate navigationHandlerDidStartLoading:self];
   // Do not commit pending item in the middle of loading a placeholder URL. The
-  // item will be committed when the native content or webUI is displayed.
+  // item will be committed when webUI is displayed.
   if (!context->IsPlaceholderNavigation()) {
     self.navigationManagerImpl->CommitPendingItem(context->ReleaseItem());
     if (context->IsLoadingHtmlString()) {

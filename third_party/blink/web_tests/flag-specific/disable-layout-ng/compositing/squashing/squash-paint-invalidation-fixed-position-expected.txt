@@ -15,13 +15,14 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV",
+      "position": [8, 25],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#D3D3D3",
-      "transform": 2
+      "backgroundColor": "#D3D3D3"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='foo'",
+      "position": [8, 50],
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#FF0000",
@@ -31,8 +32,7 @@
           "rect": [0, 0, 100, 100],
           "reason": "background"
         }
-      ],
-      "transform": 3
+      ]
     }
   ],
   "transforms": [
@@ -43,24 +43,6 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [8, 8, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 25, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 50, 0, 1]
       ]
     }
   ]
@@ -82,13 +64,14 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV",
+      "position": [8, 25],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#D3D3D3",
-      "transform": 2
+      "backgroundColor": "#D3D3D3"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='foo'",
+      "position": [8, 50],
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
@@ -98,8 +81,7 @@
           "rect": [0, 0, 100, 100],
           "reason": "background"
         }
-      ],
-      "transform": 3
+      ]
     }
   ],
   "transforms": [
@@ -110,24 +92,6 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [8, 8, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 25, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 50, 0, 1]
       ]
     }
   ]

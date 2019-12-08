@@ -15,8 +15,7 @@ class BrowserState;
 
 // Some special browser-level URLs (like "about:version") are handled before
 // actually being loaded by the web view, allowing the embedder to optionally
-// convert them to app-specific URLs that to be handled using
-// CRWNativeContentProviders.
+// convert them to app-specific URLs.
 class BrowserURLRewriter {
  public:
   // The type of functions that can process a URL.  URLRewriters return true if

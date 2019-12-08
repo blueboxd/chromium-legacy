@@ -850,7 +850,6 @@ void CompositedLayerMapping::UpdateOverflowControlsHostLayerGeometry(
       owning_layer_.GetLayoutBox()->PixelSnappedBorderBoxRect(
           owning_layer_.SubpixelAccumulation());
   overflow_controls_host_layer_->SetSize(gfx::Size(border_box.Size()));
-  overflow_controls_host_layer_->SetMasksToBounds(true);
 }
 
 void CompositedLayerMapping::UpdateMaskLayerGeometry() {
@@ -1393,7 +1392,6 @@ bool CompositedLayerMapping::UpdateScrollingLayers(
           CreateGraphicsLayer(CompositingReason::kLayerForScrollingContainer);
       scrolling_layer_->SetDrawsContent(false);
       scrolling_layer_->SetHitTestable(false);
-      scrolling_layer_->SetMasksToBounds(true);
 
       // Inner layer which renders the content that scrolls.
       scrolling_contents_layer_ =

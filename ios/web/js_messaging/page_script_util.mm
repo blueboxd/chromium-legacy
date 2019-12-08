@@ -78,13 +78,7 @@ NSString* GetDocumentStartScriptForMainFrame(BrowserState* browser_state) {
   DCHECK(embedder_page_script);
 
   NSString* web_bundle = GetPageScript(@"main_frame_web_bundle");
-
-  // The WKBackForwardList based navigation manager doesn't need to inject
-  // JavaScript to intercept navigation calls.
-  if (!GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    web_bundle = [NSString
-        stringWithFormat:@"%@; %@", web_bundle, GetPageScript(@"nav_bundle")];
-  }
+  DCHECK(web_bundle);
 
   NSString* script =
       [NSString stringWithFormat:@"%@; %@", web_bundle, embedder_page_script];

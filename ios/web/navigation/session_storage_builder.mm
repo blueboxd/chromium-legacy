@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#import "ios/web/navigation/legacy_navigation_manager_impl.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_item_storage_builder.h"
 #include "ios/web/navigation/navigation_manager_impl.h"

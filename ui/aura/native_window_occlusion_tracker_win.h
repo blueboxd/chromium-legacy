@@ -228,9 +228,9 @@ class AURA_EXPORT NativeWindowOcclusionTrackerWin : public WindowObserver {
   void UpdateOcclusionState(const base::flat_map<HWND, Window::OcclusionState>&
                                 root_window_hwnds_occlusion_state);
 
-  // This is called with session changed notifications. If the screen is locked,
-  // it marks app windows as occluded.
-  void OnSessionChange(WPARAM status_code);
+  // This is called with session changed notifications. If the screen is locked
+  // by the current session, it marks app windows as occluded.
+  void OnSessionChange(WPARAM status_code, const bool* is_current_session);
 
   // Task runner to call ComputeNativeWindowOcclusionStatus, and to handle
   // Windows event notifications, off of the UI thread.

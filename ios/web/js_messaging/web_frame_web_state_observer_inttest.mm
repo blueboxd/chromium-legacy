@@ -5,8 +5,6 @@
 #import "ios/web/public/test/web_test_with_web_state.h"
 
 #include "base/ios/ios_util.h"
-#include "base/test/scoped_feature_list.h"
-#include "ios/web/common/features.h"
 #import "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/web_state.h"
@@ -20,13 +18,6 @@
 using testing::Truly;
 
 namespace {
-
-// WebFrameWebStateObserverInttest is parameterized on this enum to test both
-// LegacyNavigationManager and WKBasedNavigationManager.
-enum class NavigationManagerChoice {
-  LEGACY,
-  WK_BASED,
-};
 
 // Mocks WebStateObserver navigation callbacks.
 class WebStateObserverMock : public web::WebStateObserver {
@@ -67,28 +58,10 @@ ACTION_P(VerifyChildWebFrame, web_state) {
 
 namespace web {
 
-class WebFrameWebStateObserverInttest
-    : public WebTestWithWebState,
-      public ::testing::WithParamInterface<NavigationManagerChoice> {
- protected:
-  void SetUp() override {
-    if (GetParam() == NavigationManagerChoice::LEGACY) {
-      scoped_feature_list_.InitAndDisableFeature(
-          web::features::kSlimNavigationManager);
-    } else {
-      scoped_feature_list_.InitAndEnableFeature(
-          web::features::kSlimNavigationManager);
-    }
-
-    WebTestWithWebState::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
+using WebFrameWebStateObserverInttest = WebTestWithWebState;
 
 // Web frame events should be registered on HTTP navigation.
-TEST_P(WebFrameWebStateObserverInttest, SingleWebFrameHTTP) {
+TEST_F(WebFrameWebStateObserverInttest, SingleWebFrameHTTP) {
   testing::StrictMock<WebStateObserverMock> observer;
   web_state()->AddObserver(&observer);
   EXPECT_CALL(observer, WebFrameDidBecomeAvailable(web_state(), testing::_))
@@ -103,7 +76,7 @@ TEST_P(WebFrameWebStateObserverInttest, SingleWebFrameHTTP) {
 }
 
 // Web frame events should be registered on HTTPS navigation.
-TEST_P(WebFrameWebStateObserverInttest, SingleWebFrameHTTPS) {
+TEST_F(WebFrameWebStateObserverInttest, SingleWebFrameHTTPS) {
   testing::StrictMock<WebStateObserverMock> observer;
   web_state()->AddObserver(&observer);
   EXPECT_CALL(observer, WebFrameDidBecomeAvailable(web_state(), testing::_))
@@ -118,7 +91,7 @@ TEST_P(WebFrameWebStateObserverInttest, SingleWebFrameHTTPS) {
 }
 
 // Web frame event should be registered on HTTPS navigation with iframe.
-TEST_P(WebFrameWebStateObserverInttest, TwoWebFrameHTTPS) {
+TEST_F(WebFrameWebStateObserverInttest, TwoWebFrameHTTPS) {
   testing::StrictMock<WebStateObserverMock> observer;
   web_state()->AddObserver(&observer);
 
@@ -150,10 +123,5 @@ TEST_P(WebFrameWebStateObserverInttest, TwoWebFrameHTTPS) {
 
   web_state()->RemoveObserver(&observer);
 }
-
-INSTANTIATE_TEST_SUITE_P(ProgrammaticWebFrameWebStateObserverInttest,
-                         WebFrameWebStateObserverInttest,
-                         ::testing::Values(NavigationManagerChoice::LEGACY,
-                                           NavigationManagerChoice::WK_BASED));
 
 }  // namespace web

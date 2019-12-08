@@ -25,8 +25,8 @@
     },
     {
       "name": "LayoutIFrame (positioned) IFRAME id='overlap'",
-      "bounds": [304, 304],
-      "transform": 3
+      "position": [250, 0],
+      "bounds": [304, 304]
     }
   ],
   "transforms": [
@@ -47,15 +47,6 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [18, 10, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [250, 0, 0, 1]
       ]
     }
   ]

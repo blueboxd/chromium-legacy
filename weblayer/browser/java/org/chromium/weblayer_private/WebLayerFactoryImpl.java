@@ -10,7 +10,6 @@ import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.components.version_info.VersionConstants;
 import org.chromium.weblayer_private.interfaces.IWebLayer;
 import org.chromium.weblayer_private.interfaces.IWebLayerFactory;
-import org.chromium.weblayer_private.interfaces.WebLayerVersion;
 
 /**
  * Factory used to create WebLayer as well as verify compatibility.
@@ -20,7 +19,6 @@ import org.chromium.weblayer_private.interfaces.WebLayerVersion;
 public final class WebLayerFactoryImpl extends IWebLayerFactory.Stub {
     private final int mClientMajorVersion;
     private final String mClientVersion;
-    private final int mClientWeblayerVersion;
 
     /**
      * This function is called by the client using reflection.
@@ -34,14 +32,12 @@ public final class WebLayerFactoryImpl extends IWebLayerFactory.Stub {
     @UsedByReflection("WebLayer")
     public static IBinder create(
             String clientVersion, int clientMajorVersion, int clientWebLayerVersion) {
-        return new WebLayerFactoryImpl(clientVersion, clientMajorVersion, clientWebLayerVersion);
+        return new WebLayerFactoryImpl(clientVersion, clientMajorVersion);
     }
 
-    private WebLayerFactoryImpl(
-            String clientVersion, int clientMajorVersion, int clientWeblayerVersion) {
+    private WebLayerFactoryImpl(String clientVersion, int clientMajorVersion) {
         mClientMajorVersion = clientMajorVersion;
         mClientVersion = clientVersion;
-        mClientWeblayerVersion = clientWeblayerVersion;
     }
 
     /**
@@ -50,7 +46,7 @@ public final class WebLayerFactoryImpl extends IWebLayerFactory.Stub {
      */
     @Override
     public boolean isClientSupported() {
-        return mClientWeblayerVersion == WebLayerVersion.sVersionNumber;
+        return Math.abs(mClientMajorVersion - getImplementationMajorVersion()) <= 3;
     }
 
     /**

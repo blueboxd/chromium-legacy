@@ -29,10 +29,10 @@ Should be composited
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='box'",
+      "position": [18, 230],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#0000FF",
-      "transform": 4
+      "backgroundColor": "#0000FF"
     }
   ],
   "transforms": [
@@ -63,15 +63,6 @@ Should be composited
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [6, 6, 0, 1]
-      ]
-    },
-    {
-      "id": 4,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [18, 230, 0, 1]
       ]
     }
   ]

@@ -7,8 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/web/public/deprecated/crw_native_content.h"
-
 class UrlLoadingService;
 
 @protocol NewTabPageControllerDelegate;

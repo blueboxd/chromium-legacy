@@ -8,9 +8,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "ios/testing/embedded_test_server_handlers.h"
-#include "ios/web/common/features.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/navigation/reload_type.h"
@@ -53,19 +51,10 @@ bool WaitForErrorText(WebState* web_state, const GURL& url) {
 }
 }  // namespace
 
-// ErrorPageTest is parameterized on this enum to test both
-// LegacyNavigationManagerImpl and WKBasedNavigationManagerImpl.
-enum class NavigationManagerChoice {
-  LEGACY,
-  WK_BASED,
-};
-
 // Test fixture for error page testing. Error page simply renders the arguments
 // passed to WebClient::PrepareErrorPage, so the test also acts as integration
 // test for PrepareErrorPage WebClient method.
-class ErrorPageTest
-    : public WebTestWithWebState,
-      public ::testing::WithParamInterface<NavigationManagerChoice> {
+class ErrorPageTest : public WebTestWithWebState {
  protected:
   ErrorPageTest() : WebTestWithWebState(std::make_unique<TestWebClient>()) {
     RegisterDefaultHandlers(&server_);
@@ -79,14 +68,6 @@ class ErrorPageTest
     server_.RegisterRequestHandler(
         base::BindRepeating(&net::test_server::HandlePrefixedRequest, "/form",
                             base::BindRepeating(::testing::HandleForm)));
-
-    if (GetParam() == NavigationManagerChoice::LEGACY) {
-      scoped_feature_list_.InitAndDisableFeature(
-          web::features::kSlimNavigationManager);
-    } else {
-      scoped_feature_list_.InitAndEnableFeature(
-          web::features::kSlimNavigationManager);
-    }
   }
 
   void SetUp() override {
@@ -105,7 +86,6 @@ class ErrorPageTest
 
  private:
   std::unique_ptr<TestWebStateObserver> web_state_observer_;
-  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(ErrorPageTest);
 };
 
@@ -117,7 +97,7 @@ class ErrorPageTest
 #else
 #define MAYBE_BackForwardErrorPage FLAKY_BackForwardErrorPage
 #endif
-TEST_P(ErrorPageTest, MAYBE_BackForwardErrorPage) {
+TEST_F(ErrorPageTest, MAYBE_BackForwardErrorPage) {
   test::LoadUrl(web_state(), server_.GetURL("/close-socket"));
   ASSERT_TRUE(WaitForErrorText(web_state(), server_.GetURL("/close-socket")));
 
@@ -140,7 +120,7 @@ TEST_P(ErrorPageTest, MAYBE_BackForwardErrorPage) {
 
 // Tests that reloading a page that is no longer accessible doesn't destroy
 // forward history.
-TEST_P(ErrorPageTest, ReloadOfflinePage) {
+TEST_F(ErrorPageTest, ReloadOfflinePage) {
   server_responds_with_content_ = true;
 
   test::LoadUrl(web_state(), server_.GetURL("/echo-query?foo"));
@@ -166,7 +146,7 @@ TEST_P(ErrorPageTest, ReloadOfflinePage) {
 }
 
 // Loads the URL which fails to load, then sucessfully reloads the page.
-TEST_P(ErrorPageTest, ReloadErrorPage) {
+TEST_F(ErrorPageTest, ReloadErrorPage) {
   // No response leads to -1005 error code (NSURLErrorNetworkConnectionLost).
   server_responds_with_content_ = false;
   test::LoadUrl(web_state(), server_.GetURL("/echo-query?foo"));
@@ -181,7 +161,7 @@ TEST_P(ErrorPageTest, ReloadErrorPage) {
 }
 
 // Sucessfully loads the page, stops the server and reloads the page.
-TEST_P(ErrorPageTest, ReloadPageAfterServerIsDown) {
+TEST_F(ErrorPageTest, ReloadPageAfterServerIsDown) {
   // Sucessfully load the page.
   server_responds_with_content_ = true;
   test::LoadUrl(web_state(), server_.GetURL("/echo-query?foo"));
@@ -201,7 +181,7 @@ TEST_P(ErrorPageTest, ReloadPageAfterServerIsDown) {
 
 // Sucessfully loads the page, goes back, stops the server, goes forward and
 // reloads.
-TEST_P(ErrorPageTest, GoForwardAfterServerIsDownAndReload) {
+TEST_F(ErrorPageTest, GoForwardAfterServerIsDownAndReload) {
   // First page loads sucessfully.
   test::LoadUrl(web_state(), server_.GetURL("/echo"));
   ASSERT_TRUE(test::WaitForWebViewContainingText(web_state(), "Echo"));
@@ -237,7 +217,7 @@ TEST_P(ErrorPageTest, GoForwardAfterServerIsDownAndReload) {
 // Sucessfully loads the page, then loads the URL which fails to load, then
 // sucessfully goes back to the first page and goes forward to error page.
 // Back-forward navigations are browser-initiated.
-TEST_P(ErrorPageTest, GoBackFromErrorPageAndForwardToErrorPage) {
+TEST_F(ErrorPageTest, GoBackFromErrorPageAndForwardToErrorPage) {
   // First page loads sucessfully.
   test::LoadUrl(web_state(), server_.GetURL("/echo"));
   ASSERT_TRUE(test::WaitForWebViewContainingText(web_state(), "Echo"));
@@ -262,13 +242,9 @@ TEST_P(ErrorPageTest, GoBackFromErrorPageAndForwardToErrorPage) {
 // Sucessfully loads the page, then loads the URL which fails to load, then
 // sucessfully goes back to the first page and goes forward to error page.
 // Back-forward navigations are renderer-initiated.
-TEST_P(ErrorPageTest,
-       RendererInitiatedGoBackFromErrorPageAndForwardToErrorPage) {
-  if (GetParam() == NavigationManagerChoice::WK_BASED) {
-    // TODO(crbug.com/867927): Re-enable this test.
-    return;
-  }
-
+// TODO(crbug.com/867927): Re-enable this test.
+TEST_F(ErrorPageTest,
+       DISABLED_RendererInitiatedGoBackFromErrorPageAndForwardToErrorPage) {
   // First page loads sucessfully.
   test::LoadUrl(web_state(), server_.GetURL("/echo"));
   ASSERT_TRUE(test::WaitForWebViewContainingText(web_state(), "Echo"));
@@ -291,7 +267,7 @@ TEST_P(ErrorPageTest,
 }
 
 // Loads the URL which redirects to unresponsive server.
-TEST_P(ErrorPageTest, RedirectToFailingURL) {
+TEST_F(ErrorPageTest, RedirectToFailingURL) {
   // No response leads to -1005 error code (NSURLErrorNetworkConnectionLost).
   server_responds_with_content_ = false;
   test::LoadUrl(web_state(), server_.GetURL("/server-redirect?echo-query"));
@@ -301,7 +277,7 @@ TEST_P(ErrorPageTest, RedirectToFailingURL) {
 
 // Loads the page with iframe, and that iframe fails to load. There should be no
 // error page if the main frame has sucessfully loaded.
-TEST_P(ErrorPageTest, ErrorPageInIFrame) {
+TEST_F(ErrorPageTest, ErrorPageInIFrame) {
   test::LoadUrl(web_state(), server_.GetURL("/iframe?echo-query"));
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return test::IsWebViewContainingElement(
@@ -311,7 +287,7 @@ TEST_P(ErrorPageTest, ErrorPageInIFrame) {
 }
 
 // Loads the URL with off the record browser state.
-TEST_P(ErrorPageTest, OtrError) {
+TEST_F(ErrorPageTest, OtrError) {
   TestBrowserState browser_state;
   browser_state.SetOffTheRecord(true);
   WebState::CreateParams params(&browser_state);
@@ -333,7 +309,7 @@ TEST_P(ErrorPageTest, OtrError) {
 }
 
 // Loads the URL with form which fails to submit.
-TEST_P(ErrorPageTest, FormSubmissionError) {
+TEST_F(ErrorPageTest, FormSubmissionError) {
   test::LoadUrl(web_state(), server_.GetURL("/form?close-socket"));
   ASSERT_TRUE(test::WaitForWebViewContainingText(web_state(),
                                                  ::testing::kTestFormPage));
@@ -352,7 +328,7 @@ TEST_P(ErrorPageTest, FormSubmissionError) {
 
 // Loads an item and checks that virtualURL and URL after displaying the error
 // are correct.
-TEST_P(ErrorPageTest, URLAndVirtualURLAfterError) {
+TEST_F(ErrorPageTest, URLAndVirtualURLAfterError) {
   GURL url(server_.GetURL("/close-socket"));
   GURL virtual_url("http://virual_url.test");
   web::NavigationManager::WebLoadParams params(url);
@@ -366,8 +342,4 @@ TEST_P(ErrorPageTest, URLAndVirtualURLAfterError) {
   EXPECT_EQ(virtual_url, manager->GetLastCommittedItem()->GetVirtualURL());
 }
 
-INSTANTIATE_TEST_SUITE_P(ProgrammaticErrorPageTest,
-                         ErrorPageTest,
-                         ::testing::Values(NavigationManagerChoice::LEGACY,
-                                           NavigationManagerChoice::WK_BASED));
 }  // namespace web

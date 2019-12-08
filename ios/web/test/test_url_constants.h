@@ -10,9 +10,6 @@ namespace web {
 // URL scheme for testing WebUI.
 extern const char kTestWebUIScheme[];
 
-// URL scheme for testing Native Content.
-extern const char kTestNativeContentScheme[];
-
 // App specific URL scheme which is neither WebUI nor Native Content.
 extern const char kTestAppSpecificScheme[];
 

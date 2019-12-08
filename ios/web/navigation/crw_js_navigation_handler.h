@@ -47,10 +47,6 @@ class NavigationContextImpl;
 - (void)JSNavigationHandler:(CRWJSNavigationHandler*)navigationHandler
         didFinishNavigation:(web::NavigationContextImpl*)context;
 
-// Instructs the delegate to reload a rendered initiated reload.
-- (void)JSNavigationHandlerReloadWithRendererInitiatedNavigation:
-    (CRWJSNavigationHandler*)navigationHandler;
-
 @end
 
 // Handles JS messages related to navigation(e.g. window.history.forward).
@@ -70,12 +66,6 @@ class NavigationContextImpl;
 
 // Instructs this handler to stop handling js navigation messages.
 - (void)close;
-
-// Generates the JavaScript string used to update the UIWebView's URL so that it
-// matches the URL displayed in the omnibox and sets window.history.state to
-// stateObject. Needed for history.pushState() and history.replaceState().
-- (NSString*)javaScriptToReplaceWebViewURL:(const GURL&)URL
-                           stateObjectJSON:(NSString*)stateObject;
 
 @end
 

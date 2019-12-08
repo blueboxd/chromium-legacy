@@ -56,8 +56,6 @@ class IOSChromeLocalSessionEventRouter
       ios::ChromeBrowserState* browser_state) override;
 
   // web::WebStateObserver:
-  void NavigationItemsPruned(web::WebState* web_state,
-                             size_t pruned_item_count) override;
   void TitleWasSet(web::WebState* web_state) override;
   void DidFinishNavigation(web::WebState* web_state,
                            web::NavigationContext* navigation_context) override;

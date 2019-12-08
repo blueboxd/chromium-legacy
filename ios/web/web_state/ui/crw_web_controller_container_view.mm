@@ -8,8 +8,6 @@
 #import "ios/web/common/crw_content_view.h"
 #import "ios/web/common/crw_web_view_content_view.h"
 #include "ios/web/common/features.h"
-#import "ios/web/public/deprecated/crw_native_content.h"
-#import "ios/web/public/deprecated/crw_native_content_holder.h"
 #import "ios/web/web_state/ui/crw_web_view_proxy_impl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -25,9 +23,6 @@
 
 // Convenience getter for the proxy object.
 @property(nonatomic, weak, readonly) CRWWebViewProxyImpl* contentViewProxy;
-
-// The native controller whose content is being displayed.
-@property(nonatomic, strong, readonly) id<CRWNativeContent> nativeController;
 
 @end
 
@@ -64,11 +59,6 @@
 }
 
 #pragma mark Accessors
-
-- (id<CRWNativeContent>)nativeController {
-  return
-      [[self.delegate containerViewNativeContentHolder:self] nativeController];
-}
 
 - (void)setWebViewContentView:(CRWWebViewContentView*)webViewContentView {
   if (![_webViewContentView isEqual:webViewContentView]) {
@@ -111,18 +101,6 @@
 
   // TODO(crbug.com/570114): Move adding of the following subviews to another
   // place.
-
-  // nativeController layout.
-  if (self.nativeController) {
-    UIView* nativeView = [self.nativeController view];
-    if (!nativeView.superview) {
-      [self addSubview:nativeView];
-      [nativeView setNeedsUpdateConstraints];
-    }
-    nativeView.frame = UIEdgeInsetsInsetRect(
-        self.bounds, [self.delegate nativeContentInsetsForContainerView:self]);
-  }
-
   // transientContentView layout.
   if (self.transientContentView) {
     if (!self.transientContentView.superview)
@@ -133,8 +111,7 @@
 }
 
 - (BOOL)isViewAlive {
-  return self.webViewContentView || self.transientContentView ||
-         [self.nativeController isViewAlive];
+  return self.webViewContentView || self.transientContentView;
 }
 
 - (void)willMoveToWindow:(UIWindow*)newWindow {
@@ -168,21 +145,8 @@
 
 #pragma mark Content Setters
 
-- (void)resetNativeContent:(id<CRWNativeContent>)nativeControllerToReset {
-  __weak id oldController = nativeControllerToReset;
-  if ([oldController respondsToSelector:@selector(willBeDismissed)]) {
-    [oldController willBeDismissed];
-  }
-  [[oldController view] removeFromSuperview];
-  // TODO(crbug.com/503297): Re-enable this DCHECK once native controller
-  // leaks are fixed.
-  //    DCHECK(!oldController);
-}
-
 - (void)resetContent {
   self.webViewContentView = nil;
-  [self resetNativeContent:self.nativeController];
-  [self.delegate containerViewResetNativeController:self];
   self.transientContentView = nil;
   self.contentViewProxy.contentView = nil;
 }
@@ -190,22 +154,9 @@
 - (void)displayWebViewContentView:(CRWWebViewContentView*)webViewContentView {
   DCHECK(webViewContentView);
   self.webViewContentView = webViewContentView;
-  [self resetNativeContent:self.nativeController];
-  [self.delegate containerViewResetNativeController:self];
   self.transientContentView = nil;
   self.contentViewProxy.contentView = self.webViewContentView;
   [self updateWebViewContentViewForContainerWindow:self.window];
-  [self setNeedsLayout];
-}
-
-- (void)nativeContentDidChange:(id<CRWNativeContent>)previousNativeController {
-  DCHECK(self.nativeController);
-  self.webViewContentView = nil;
-  if (![self.nativeController isEqual:previousNativeController]) {
-    [self resetNativeContent:previousNativeController];
-  }
-  self.transientContentView = nil;
-  self.contentViewProxy.contentView = nil;
   [self setNeedsLayout];
 }
 

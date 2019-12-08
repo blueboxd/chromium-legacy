@@ -26,7 +26,7 @@ class TestWebClient : public web::WebClient {
   // WebClient implementation.
   void AddAdditionalSchemes(Schemes* schemes) const override;
 
-  // Returns true for kTestWebUIScheme and kTestNativeContentScheme URL schemes.
+  // Returns true for kTestWebUIScheme URL.
   bool IsAppSpecificURL(const GURL& url) const override;
 
   bool ShouldBlockUrlDuringRestore(const GURL& url,

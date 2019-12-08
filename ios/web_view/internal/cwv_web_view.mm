@@ -322,11 +322,6 @@ static NSString* gUserAgentProduct = nil;
 }
 
 - (void)webState:(web::WebState*)webState
-    navigationItemsPruned:(size_t)pruned_item_count {
-  [self updateCurrentURLs];
-}
-
-- (void)webState:(web::WebState*)webState
     didStartNavigation:(web::NavigationContext*)navigation {
   [self updateNavigationAvailability];
   SEL selector = @selector(webViewDidStartProvisionalNavigation:);

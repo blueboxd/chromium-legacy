@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/ios/ios_util.h"
-#include "base/test/scoped_feature_list.h"
-#include "ios/web/common/features.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/navigation/navigation_manager.h"
@@ -20,13 +18,6 @@
 #endif
 
 namespace {
-
-// WebFramesManagerTest is parameterized on this enum to test both
-// LegacyNavigationManager and WKBasedNavigationManager.
-enum class NavigationManagerChoice {
-  LEGACY,
-  WK_BASED,
-};
 
 // URL of a page with test links.
 const char kLinksPageURL[] = "/links.html";
@@ -54,21 +45,9 @@ namespace web {
 
 // Test fixture for integration tests involving html5 window.history state
 // operations.
-class WebFramesManagerTest
-    : public WebIntTest,
-      public ::testing::WithParamInterface<NavigationManagerChoice> {
+class WebFramesManagerTest : public WebIntTest {
  protected:
   void SetUp() override {
-    // Set feature flag before calling SetUp (which relies on those feature
-    // flags).
-    if (GetParam() == NavigationManagerChoice::LEGACY) {
-      scoped_feature_list_.InitAndDisableFeature(
-          web::features::kSlimNavigationManager);
-    } else {
-      scoped_feature_list_.InitAndEnableFeature(
-          web::features::kSlimNavigationManager);
-    }
-
     WebIntTest::SetUp();
 
     test_server_ = std::make_unique<net::test_server::EmbeddedTestServer>();
@@ -81,13 +60,10 @@ class WebFramesManagerTest
  protected:
   // Embedded test server which hosts sample pages.
   std::unique_ptr<net::EmbeddedTestServer> test_server_;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Tests that the WebFramesManager correctly adds a WebFrame for a webpage.
-TEST_P(WebFramesManagerTest, SingleWebFrame) {
+TEST_F(WebFramesManagerTest, SingleWebFrame) {
   WebFramesManager* frames_manager = web_state()->GetWebFramesManager();
 
   GURL url = test_server_->GetURL("/echo");
@@ -104,7 +80,7 @@ TEST_P(WebFramesManagerTest, SingleWebFrame) {
 
 // Tests that the WebFramesManager correctly adds a unique WebFrame after a
 // webpage navigates back.
-TEST_P(WebFramesManagerTest, SingleWebFrameBack) {
+TEST_F(WebFramesManagerTest, SingleWebFrameBack) {
   WebFramesManager* frames_manager = web_state()->GetWebFramesManager();
 
   // Load first page.
@@ -140,7 +116,7 @@ TEST_P(WebFramesManagerTest, SingleWebFrameBack) {
 
 // Tests that the WebFramesManager correctly adds a unique WebFrame after a
 // webpage navigates back from a clicked link.
-TEST_P(WebFramesManagerTest, SingleWebFrameLinkNavigationBackForward) {
+TEST_F(WebFramesManagerTest, SingleWebFrameLinkNavigationBackForward) {
   WebFramesManager* frames_manager = web_state()->GetWebFramesManager();
 
   // Load page with links.
@@ -189,7 +165,7 @@ TEST_P(WebFramesManagerTest, SingleWebFrameLinkNavigationBackForward) {
 
 // Tests that the WebFramesManager correctly adds a unique WebFrame after a
 // webpage navigates back from a clicked same page link.
-TEST_P(WebFramesManagerTest, SingleWebFrameSamePageNavigationBackForward) {
+TEST_F(WebFramesManagerTest, SingleWebFrameSamePageNavigationBackForward) {
   WebFramesManager* frames_manager = web_state()->GetWebFramesManager();
 
   GURL url = test_server_->GetURL(kLinksPageURL);
@@ -222,10 +198,5 @@ TEST_P(WebFramesManagerTest, SingleWebFrameSamePageNavigationBackForward) {
   EXPECT_FALSE(frames_manager->GetMainWebFrame()->GetFrameId().empty());
   EXPECT_EQ(main_web_frame, frames_manager->GetMainWebFrame());
 }
-
-INSTANTIATE_TEST_SUITE_P(ProgrammaticWebFramesManagerTest,
-                         WebFramesManagerTest,
-                         ::testing::Values(NavigationManagerChoice::LEGACY,
-                                           NavigationManagerChoice::WK_BASED));
 
 }  // namespace web

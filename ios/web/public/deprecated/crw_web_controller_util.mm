@@ -6,9 +6,6 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/web/public/deprecated/crw_native_content.h"
-#import "ios/web/public/deprecated/crw_native_content_holder.h"
-#import "ios/web/public/deprecated/crw_native_content_provider.h"
 #import "ios/web/web_state/ui/crw_swipe_recognizer_provider.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/web_state_impl.h"
@@ -26,18 +23,9 @@ CRWWebController* GetWebController(web::WebState* web_state) {
 
 namespace web_deprecated {
 
-void SetNativeProvider(web::WebState* web_state,
-                       id<CRWNativeContentProvider> delegate) {
-  GetWebController(web_state).nativeContentHolder.nativeProvider = delegate;
-}
-
 void SetSwipeRecognizerProvider(web::WebState* web_state,
                                 id<CRWSwipeRecognizerProvider> delegate) {
   GetWebController(web_state).swipeRecognizerProvider = delegate;
-}
-
-id<CRWNativeContent> GetNativeController(web::WebState* web_state) {
-  return GetWebController(web_state).nativeContentHolder.nativeController;
 }
 
 }  // namespace web_deprecated

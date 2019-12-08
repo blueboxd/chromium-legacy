@@ -64,15 +64,6 @@ void TestWebStateObserver::LoadProgressChanged(WebState* web_state,
   change_loading_progress_info_->progress = progress;
 }
 
-void TestWebStateObserver::NavigationItemsPruned(WebState* web_state,
-                                                 size_t pruned_item_count) {
-  ASSERT_EQ(web_state_, web_state);
-  navigation_items_pruned_info_ =
-      std::make_unique<web::TestNavigationItemsPrunedInfo>();
-  navigation_items_pruned_info_->web_state = web_state;
-  navigation_items_pruned_info_->count = pruned_item_count;
-}
-
 void TestWebStateObserver::DidStartNavigation(WebState* web_state,
                                               NavigationContext* navigation) {
   ASSERT_EQ(web_state_, web_state);

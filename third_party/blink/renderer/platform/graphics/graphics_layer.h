@@ -127,9 +127,6 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
 
   void SetRenderingContext(int id);
 
-  bool MasksToBounds() const;
-  void SetMasksToBounds(bool);
-
   bool DrawsContent() const { return draws_content_; }
   void SetDrawsContent(bool);
 

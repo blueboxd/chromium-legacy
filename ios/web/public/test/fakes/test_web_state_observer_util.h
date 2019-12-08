@@ -55,12 +55,6 @@ struct TestChangeLoadingProgressInfo {
   double progress;
 };
 
-// Arguments passed to |NavigationItemsPruned|.
-struct TestNavigationItemsPrunedInfo {
-  WebState* web_state = nullptr;
-  int count;
-};
-
 // Arguments passed to |TitleWasSet|.
 struct TestTitleWasSetInfo {
   WebState* web_state = nullptr;

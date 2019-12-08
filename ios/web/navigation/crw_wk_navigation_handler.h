@@ -17,7 +17,6 @@
 @class CRWPendingNavigationInfo;
 @class CRWWKNavigationStates;
 @class CRWJSInjector;
-@class CRWLegacyNativeContentController;
 @class CRWCertVerificationController;
 class GURL;
 namespace web {
@@ -50,11 +49,6 @@ class WKBackForwardListItemHolder;
 - (CRWJSInjector*)JSInjectorForNavigationHandler:
     (CRWWKNavigationHandler*)navigationHandler;
 
-// Returns the associated legacy native content controller.
-- (CRWLegacyNativeContentController*)
-    legacyNativeContentControllerForNavigationHandler:
-        (CRWWKNavigationHandler*)navigationHandler;
-
 // Returns the actual URL of the document object (i.e., the last committed URL
 // of the main frame).
 - (GURL)navigationHandlerDocumentURL:(CRWWKNavigationHandler*)navigationHandler;
@@ -67,10 +61,6 @@ class WKBackForwardListItemHolder;
 // Sets up WebUI for URL.
 - (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
         createWebUIForURL:(const GURL&)URL;
-
-// Returns YES if |url| should be loaded in a native view.
-- (BOOL)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
-    shouldLoadURLInNativeView:(const GURL&)url;
 
 // Requires that the next load rebuild the web view. This is expensive, and
 // should be used only in the case where something has changed that the web view
@@ -97,11 +87,6 @@ class WKBackForwardListItemHolder;
 // Instructs the delegate to update the SSL status for the current navigation
 // item.
 - (void)navigationHandlerUpdateSSLStatusForCurrentNavigationItem:
-    (CRWWKNavigationHandler*)navigationHandler;
-
-// Instructs the delegate to update the HTML5 history state of the page using
-// the current NavigationItem.
-- (void)navigationHandlerUpdateHTML5HistoryState:
     (CRWWKNavigationHandler*)navigationHandler;
 
 // Notifies the delegate that navigation has finished.

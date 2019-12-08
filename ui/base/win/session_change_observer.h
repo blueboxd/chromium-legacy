@@ -14,19 +14,23 @@
 namespace ui {
 
 // Calls the provided callback on WM_WTSSESSION_CHANGE messages along with
-// managing the tricky business of observing a singleton object.
+// managing the tricky business of observing a singleton object. Only
+// WTS_SESSION_LOCK and WTS_SESSION_UNLOCK events trigger the callback
+// because those are the only events existing observers handle.
 class UI_BASE_EXPORT SessionChangeObserver {
  public:
   // WPARAM is the wparam passed to the OnWndProc when message is
-  // WM_WTSSESSION_CHANGE.
-  typedef base::RepeatingCallback<void(WPARAM)> WtsCallback;
+  // WM_WTSSESSION_CHANGE. The bool indicates whether the session
+  // change is for the current session or not. If we couldn't get the current
+  // session id, it will be nullptr.
+  using WtsCallback = base::RepeatingCallback<void(WPARAM, const bool*)>;
   explicit SessionChangeObserver(const WtsCallback& callback);
   ~SessionChangeObserver();
 
  private:
   class WtsRegistrationNotificationManager;
 
-  void OnSessionChange(WPARAM wparam);
+  void OnSessionChange(WPARAM wparam, const bool* is_current_session);
   void ClearCallback();
 
   WtsCallback callback_;

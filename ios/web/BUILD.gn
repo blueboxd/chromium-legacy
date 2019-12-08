@@ -286,7 +286,6 @@ source_set("ios_web_navigation_unittests") {
   sources = [
     "navigation/crw_navigation_item_holder_unittest.mm",
     "navigation/crw_navigation_item_storage_unittest.mm",
-    "navigation/crw_session_controller_unittest.mm",
     "navigation/crw_session_storage_unittest.mm",
     "navigation/crw_wk_navigation_states_unittest.mm",
     "navigation/error_retry_state_machine_unittest.mm",
@@ -640,22 +639,12 @@ js_compile_bundle("main_frame_document_end_web_bundle") {
   ]
 }
 
-js_compile_bundle("nav_bundle") {
-  visibility = [ ":js_resources" ]
-  closure_entry_point = "__crWeb.legacynavigation"
-
-  sources = [
-    "web_state/js/resources/legacy_navigation.js",
-  ]
-}
-
 js_compile_checked("js_resources") {
   public_deps = [
     ":all_frames_document_end_web_bundle",
     ":all_frames_web_bundle",
     ":main_frame_document_end_web_bundle",
     ":main_frame_web_bundle",
-    ":nav_bundle",
   ]
 
   sources = [

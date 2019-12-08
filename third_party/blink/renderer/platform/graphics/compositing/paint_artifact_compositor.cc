@@ -104,9 +104,7 @@ std::unique_ptr<JSONObject> PaintArtifactCompositor::GetLayersAsJSON(
         }
       }
       DCHECK(transform);
-      layers_as_json.AddLayer(*layer,
-                              FloatPoint(layer->offset_to_transform_parent()),
-                              *transform, json_client);
+      layers_as_json.AddLayer(*layer, *transform, json_client);
     }
   } else {
     for (const auto& paint_chunk : paint_artifact->PaintChunks()) {
@@ -116,9 +114,22 @@ std::unique_ptr<JSONObject> PaintArtifactCompositor::GetLayersAsJSON(
       const auto& foreign_layer_display_item =
           static_cast<const ForeignLayerDisplayItem&>(display_item);
       cc::Layer* layer = foreign_layer_display_item.GetLayer();
+      // Need to retrieve the transform from |pending_layers_| so that
+      // any decomposition is not double-reported via |layer|'s
+      // offset_from_transform_parent and |paint_chunk|'s transform inside
+      // AddLayer.
+      const TransformPaintPropertyNode* transform = nullptr;
+      for (const auto& pending_layer : pending_layers_) {
+        if (pending_layer.property_tree_state.Transform().CcNodeId(
+                layer->property_tree_sequence_number()) ==
+            layer->transform_tree_index()) {
+          transform = &pending_layer.property_tree_state.Transform();
+          break;
+        }
+      }
+      DCHECK(transform);
       layers_as_json.AddLayer(
-          *layer, foreign_layer_display_item.Offset(),
-          paint_chunk.properties.Transform(),
+          *layer, *transform,
           foreign_layer_display_item.GetLayerAsJSONClient());
     }
   }

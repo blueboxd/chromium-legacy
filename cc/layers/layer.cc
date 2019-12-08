@@ -357,7 +357,7 @@ void Layer::SetBounds(const gfx::Size& size) {
   // Rounded corner clipping, bounds clipping and mask clipping can result in
   // new areas of subtrees being exposed on a bounds change. Ensure the damaged
   // areas are updated.
-  if (masks_to_bounds() || IsMaskedByChild() || HasRoundedCorner()) {
+  if (masks_to_bounds() || mask_layer() || HasRoundedCorner()) {
     SetSubtreePropertyChanged();
     SetPropertyTreesNeedRebuild();
   }
@@ -515,6 +515,7 @@ SkColor Layer::SafeOpaqueBackgroundColor() const {
 
 void Layer::SetMasksToBounds(bool masks_to_bounds) {
   DCHECK(IsPropertyChangeAllowed());
+  DCHECK(!layer_tree_host_ || !layer_tree_host_->IsUsingLayerLists());
   if (inputs_.masks_to_bounds == masks_to_bounds)
     return;
   inputs_.masks_to_bounds = masks_to_bounds;
@@ -568,8 +569,7 @@ gfx::RectF Layer::EffectiveClipRect() {
 
   // Layer needs to clip to its bounds as well apply a clip rect. Intersect the
   // two to get the effective clip.
-  if (masks_to_bounds() || IsMaskedByChild() ||
-      filters().HasFilterThatMovesPixels())
+  if (masks_to_bounds() || mask_layer() || filters().HasFilterThatMovesPixels())
     return gfx::IntersectRects(layer_bounds, clip_rect_f);
 
   // Clip rect is the only clip effecting the layer.
@@ -595,6 +595,8 @@ void Layer::SetMaskLayer(scoped_refptr<PictureLayer> mask_layer) {
     mask_layer->inputs_.position = gfx::PointF();
     mask_layer->SetIsDrawable(true);
     mask_layer->SetBlendMode(SkBlendMode::kDstIn);
+    // This flag will be updated in PropertyTreeBuilder.
+    mask_layer->SetIsBackdropFilterMask(false);
     AddChild(mask_layer);
   }
   inputs_.mask_layer = mask_layer.get();
@@ -883,6 +885,7 @@ void Layer::SetTransform(const gfx::Transform& transform) {
 
 void Layer::SetTransformOrigin(const gfx::Point3F& transform_origin) {
   DCHECK(IsPropertyChangeAllowed());
+  DCHECK(!layer_tree_host_ || !layer_tree_host_->IsUsingLayerLists());
   if (inputs_.transform_origin == transform_origin)
     return;
   inputs_.transform_origin = transform_origin;
@@ -892,19 +895,17 @@ void Layer::SetTransformOrigin(const gfx::Point3F& transform_origin) {
 
   SetSubtreePropertyChanged();
 
-  if (!layer_tree_host_->IsUsingLayerLists()) {
-    if (has_transform_node_) {
-      TransformNode* transform_node =
-          layer_tree_host_->property_trees()->transform_tree.Node(
-              transform_tree_index_);
-      DCHECK_EQ(transform_tree_index(), transform_node->id);
-      transform_node->origin = transform_origin;
-      transform_node->needs_local_transform_update = true;
-      transform_node->transform_changed = true;
-      layer_tree_host_->property_trees()->transform_tree.set_needs_update(true);
-    } else {
-      SetPropertyTreesNeedRebuild();
-    }
+  if (has_transform_node_) {
+    TransformNode* transform_node =
+        layer_tree_host_->property_trees()->transform_tree.Node(
+            transform_tree_index_);
+    DCHECK_EQ(transform_tree_index(), transform_node->id);
+    transform_node->origin = transform_origin;
+    transform_node->needs_local_transform_update = true;
+    transform_node->transform_changed = true;
+    layer_tree_host_->property_trees()->transform_tree.set_needs_update(true);
+  } else {
+    SetPropertyTreesNeedRebuild();
   }
 
   SetNeedsCommit();

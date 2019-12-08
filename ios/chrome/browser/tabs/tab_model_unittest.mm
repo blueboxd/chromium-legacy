@@ -4,11 +4,9 @@
 
 #import <objc/runtime.h>
 
-#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -55,16 +53,7 @@ namespace {
 const char kURL1[] = "https://www.some.url.com";
 const char kURL2[] = "https://www.some.url2.com";
 
-// TabModelTest is parameterized on this enum to test both
-// LegacyNavigationManager and WKBasedNavigationManager.
-enum class NavigationManagerChoice {
-  LEGACY,
-  WK_BASED,
-};
-
-class TabModelTest
-    : public PlatformTest,
-      public ::testing::WithParamInterface<NavigationManagerChoice> {
+class TabModelTest : public PlatformTest {
  public:
   TabModelTest()
       : scoped_browser_state_manager_(
@@ -75,14 +64,6 @@ class TabModelTest
         web_state_list_(
             std::make_unique<WebStateList>(web_state_list_delegate_.get())) {
     DCHECK_CURRENTLY_ON(web::WebThread::UI);
-
-    if (GetParam() == NavigationManagerChoice::LEGACY) {
-      scoped_feature_list_.InitAndDisableFeature(
-          web::features::kSlimNavigationManager);
-    } else {
-      scoped_feature_list_.InitAndEnableFeature(
-          web::features::kSlimNavigationManager);
-    }
 
     TestChromeBrowserState::Builder test_cbs_builder;
     chrome_browser_state_ = test_cbs_builder.Build();
@@ -154,10 +135,9 @@ class TabModelTest
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   WebStateListWebUsageEnabler* web_usage_enabler_;
   TabModel* tab_model_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-TEST_P(TabModelTest, IsEmpty) {
+TEST_F(TabModelTest, IsEmpty) {
   EXPECT_EQ([tab_model_ count], 0U);
   EXPECT_TRUE([tab_model_ isEmpty]);
   [tab_model_ insertWebStateWithURL:GURL(kURL1)
@@ -171,7 +151,7 @@ TEST_P(TabModelTest, IsEmpty) {
   EXPECT_FALSE([tab_model_ isEmpty]);
 }
 
-TEST_P(TabModelTest, InsertUrlSingle) {
+TEST_F(TabModelTest, InsertUrlSingle) {
   web::WebState* web_state =
       [tab_model_ insertWebStateWithURL:GURL(kURL1)
                                referrer:web::Referrer()
@@ -184,7 +164,7 @@ TEST_P(TabModelTest, InsertUrlSingle) {
   EXPECT_EQ(web_state, tab_model_.webStateList->GetWebStateAt(0));
 }
 
-TEST_P(TabModelTest, BrowserStateDestroyedMultiple) {
+TEST_F(TabModelTest, BrowserStateDestroyedMultiple) {
   [tab_model_ insertWebStateWithURL:GURL(kURL1)
                            referrer:web::Referrer()
                          transition:ui::PAGE_TRANSITION_TYPED
@@ -196,7 +176,7 @@ TEST_P(TabModelTest, BrowserStateDestroyedMultiple) {
   [tab_model_ disconnect];
 }
 
-TEST_P(TabModelTest, InsertUrlMultiple) {
+TEST_F(TabModelTest, InsertUrlMultiple) {
   web::WebState* web_state0 =
       [tab_model_ insertWebStateWithURL:GURL(kURL1)
                                referrer:web::Referrer()
@@ -228,7 +208,7 @@ TEST_P(TabModelTest, InsertUrlMultiple) {
   EXPECT_EQ(web_state0, tab_model_.webStateList->GetWebStateAt(2));
 }
 
-TEST_P(TabModelTest, AppendUrlSingle) {
+TEST_F(TabModelTest, AppendUrlSingle) {
   web::WebState* web_state =
       [tab_model_ insertWebStateWithURL:GURL(kURL1)
                                referrer:web::Referrer()
@@ -241,7 +221,7 @@ TEST_P(TabModelTest, AppendUrlSingle) {
   EXPECT_EQ(web_state, tab_model_.webStateList->GetWebStateAt(0));
 }
 
-TEST_P(TabModelTest, AppendUrlMultiple) {
+TEST_F(TabModelTest, AppendUrlMultiple) {
   web::WebState* web_state0 =
       [tab_model_ insertWebStateWithURL:GURL(kURL1)
                                referrer:web::Referrer()
@@ -273,7 +253,7 @@ TEST_P(TabModelTest, AppendUrlMultiple) {
   EXPECT_EQ(web_state2, tab_model_.webStateList->GetWebStateAt(2));
 }
 
-TEST_P(TabModelTest, CloseTabAtIndexBeginning) {
+TEST_F(TabModelTest, CloseTabAtIndexBeginning) {
   [tab_model_ insertWebStateWithURL:GURL(kURL1)
                            referrer:web::Referrer()
                          transition:ui::PAGE_TRANSITION_TYPED
@@ -305,7 +285,7 @@ TEST_P(TabModelTest, CloseTabAtIndexBeginning) {
   EXPECT_EQ(web_state2, tab_model_.webStateList->GetWebStateAt(1));
 }
 
-TEST_P(TabModelTest, CloseTabAtIndexMiddle) {
+TEST_F(TabModelTest, CloseTabAtIndexMiddle) {
   web::WebState* web_state0 =
       [tab_model_ insertWebStateWithURL:GURL(kURL1)
                                referrer:web::Referrer()
@@ -337,7 +317,7 @@ TEST_P(TabModelTest, CloseTabAtIndexMiddle) {
   EXPECT_EQ(web_state2, tab_model_.webStateList->GetWebStateAt(1));
 }
 
-TEST_P(TabModelTest, CloseTabAtIndexLast) {
+TEST_F(TabModelTest, CloseTabAtIndexLast) {
   web::WebState* web_state0 =
       [tab_model_ insertWebStateWithURL:GURL(kURL1)
                                referrer:web::Referrer()
@@ -369,7 +349,7 @@ TEST_P(TabModelTest, CloseTabAtIndexLast) {
   EXPECT_EQ(web_state1, tab_model_.webStateList->GetWebStateAt(1));
 }
 
-TEST_P(TabModelTest, CloseTabAtIndexOnlyOne) {
+TEST_F(TabModelTest, CloseTabAtIndexOnlyOne) {
   [tab_model_ insertWebStateWithURL:GURL(kURL1)
                            referrer:web::Referrer()
                          transition:ui::PAGE_TRANSITION_TYPED
@@ -383,12 +363,9 @@ TEST_P(TabModelTest, CloseTabAtIndexOnlyOne) {
   EXPECT_EQ(0U, [tab_model_ count]);
 }
 
-TEST_P(TabModelTest, RestoreSessionOnNTPTest) {
-  // TODO(crbug.com/888674): migrate this to EG test so it can be tested with
-  // WKBasedNavigationManager.
-  if (web_client_.Get()->IsSlimNavigationManagerEnabled())
-    return;
-
+// TODO(crbug.com/888674): migrate this to EG test so it can be tested with
+// WKBasedNavigationManager.
+TEST_F(TabModelTest, DISABLED_RestoreSessionOnNTPTest) {
   web::WebState* web_state =
       [tab_model_ insertWebStateWithURL:GURL(kChromeUINewTabURL)
                                referrer:web::Referrer()
@@ -416,12 +393,9 @@ TEST_P(TabModelTest, RestoreSessionOnNTPTest) {
   EXPECT_NE(web_state, tab_model_.webStateList->GetWebStateAt(2));
 }
 
-TEST_P(TabModelTest, RestoreSessionOn2NtpTest) {
-  // TODO(crbug.com/888674): migrate this to EG test so it can be tested with
-  // WKBasedNavigationManager.
-  if (web_client_.Get()->IsSlimNavigationManagerEnabled())
-    return;
-
+// TODO(crbug.com/888674): migrate this to EG test so it can be tested with
+// WKBasedNavigationManager.
+TEST_F(TabModelTest, DISABLED_RestoreSessionOn2NtpTest) {
   web::WebState* web_state0 =
       [tab_model_ insertWebStateWithURL:GURL(kChromeUINewTabURL)
                                referrer:web::Referrer()
@@ -460,12 +434,9 @@ TEST_P(TabModelTest, RestoreSessionOn2NtpTest) {
   EXPECT_NE(web_state1, tab_model_.webStateList->GetWebStateAt(4));
 }
 
-TEST_P(TabModelTest, RestoreSessionOnAnyTest) {
-  // TODO(crbug.com/888674): migrate this to EG test so it can be tested with
-  // WKBasedNavigationManager.
-  if (web_client_.Get()->IsSlimNavigationManagerEnabled())
-    return;
-
+// TODO(crbug.com/888674): migrate this to EG test so it can be tested with
+// WKBasedNavigationManager.
+TEST_F(TabModelTest, DISABLED_RestoreSessionOnAnyTest) {
   web::WebState* web_state =
       [tab_model_ insertWebStateWithURL:GURL(kURL1)
                                referrer:web::Referrer()
@@ -490,7 +461,7 @@ TEST_P(TabModelTest, RestoreSessionOnAnyTest) {
   EXPECT_NE(web_state, tab_model_.webStateList->GetWebStateAt(3));
 }
 
-TEST_P(TabModelTest, CloseAllTabs) {
+TEST_F(TabModelTest, CloseAllTabs) {
   [tab_model_ insertWebStateWithURL:GURL(kURL1)
                            referrer:web::Referrer()
                          transition:ui::PAGE_TRANSITION_TYPED
@@ -518,13 +489,13 @@ TEST_P(TabModelTest, CloseAllTabs) {
   EXPECT_EQ(0U, [tab_model_ count]);
 }
 
-TEST_P(TabModelTest, CloseAllTabsWithNoTabs) {
+TEST_F(TabModelTest, CloseAllTabsWithNoTabs) {
   [tab_model_ closeAllTabs];
 
   EXPECT_EQ(0U, [tab_model_ count]);
 }
 
-TEST_P(TabModelTest, InsertWithSessionController) {
+TEST_F(TabModelTest, InsertWithSessionController) {
   EXPECT_EQ([tab_model_ count], 0U);
   EXPECT_TRUE([tab_model_ isEmpty]);
 
@@ -545,7 +516,7 @@ TEST_P(TabModelTest, InsertWithSessionController) {
   EXPECT_TRUE(current_web_state);
 }
 
-TEST_P(TabModelTest, AddWithOrderController) {
+TEST_F(TabModelTest, AddWithOrderController) {
   // Create a few tabs with the controller at the front.
   web::WebState* parent =
       [tab_model_ insertWebStateWithURL:GURL(kURL1)
@@ -633,7 +604,7 @@ TEST_P(TabModelTest, AddWithOrderController) {
 
 // Test that saving a non-empty session, then saving an empty session, then
 // restoring, restores zero tabs, and not the non-empty session.
-TEST_P(TabModelTest, RestorePersistedSessionAfterEmpty) {
+TEST_F(TabModelTest, RestorePersistedSessionAfterEmpty) {
   // Reset the TabModel with a custom SessionServiceIOS (to control whether
   // data is saved to disk).
   TestSessionService* test_session_service = [[TestSessionService alloc] init];
@@ -668,7 +639,7 @@ TEST_P(TabModelTest, RestorePersistedSessionAfterEmpty) {
   EXPECT_EQ(0U, [tab_model_ count]);
 }
 
-TEST_P(TabModelTest, DISABLED_PersistSelectionChange) {
+TEST_F(TabModelTest, DISABLED_PersistSelectionChange) {
   // Reset the TabModel with a custom SessionServiceIOS (to control whether
   // data is saved to disk).
   TestSessionService* test_session_service = [[TestSessionService alloc] init];
@@ -719,10 +690,5 @@ TEST_P(TabModelTest, DISABLED_PersistSelectionChange) {
   EXPECT_EQ(tab_model_.webStateList->GetWebStateAt(1),
             tab_model_.webStateList->GetActiveWebState());
 }
-
-INSTANTIATE_TEST_SUITE_P(ProgrammaticTabModelTest,
-                         TabModelTest,
-                         ::testing::Values(NavigationManagerChoice::LEGACY,
-                                           NavigationManagerChoice::WK_BASED));
 
 }  // anonymous namespace

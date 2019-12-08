@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/web/navigation/crw_session_controller.h"
 #include "ios/web/public/deprecated/url_verification_constants.h"
 #import "ios/web/web_state/ui/crw_touch_tracking_recognizer.h"
 #import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"
@@ -20,7 +19,6 @@ enum class WKNavigationState;
 }  // namespace web
 
 @class CRWJSInjector;
-@protocol CRWNativeContentHolder;
 @protocol CRWScrollableContent;
 @protocol CRWSwipeRecognizerProvider;
 @class CRWWebViewContentView;
@@ -30,19 +28,18 @@ class GURL;
 
 namespace web {
 class NavigationItem;
+class NavigationItemImpl;
 class WebState;
 class WebStateImpl;
 }
 
 // Manages a view that can be used either for rendering web content in a web
-// view, or native content in a view provided by a NativeContentProvider.
-// CRWWebController also transparently evicts and restores the internal web
-// view based on memory pressure, and manages access to interact with the
+// view. CRWWebController also transparently evicts and restores the internal
+// web view based on memory pressure, and manages access to interact with the
 // web view.
 // This is an abstract class which must not be instantiated directly.
 // TODO(stuartmorgan): Move all of the navigation APIs out of this class.
-@interface CRWWebController
-    : NSObject <CRWSessionControllerDelegate, CRWTouchTrackingDelegate>
+@interface CRWWebController : NSObject <CRWTouchTrackingDelegate>
 
 // Whether or not a UIWebView is allowed to exist in this CRWWebController.
 // Defaults to NO; this should be enabled before attempting to access the view.
@@ -163,10 +160,6 @@ class WebStateImpl;
 
 // Notifies the CRWWebController that it has been hidden.
 - (void)wasHidden;
-
-// Returns the object holding the native controller (if any) currently managing
-// the content.
-- (id<CRWNativeContentHolder>)nativeContentHolder;
 
 // Called when NavigationManager has completed go to index same-document
 // navigation. Updates HTML5 history state, current document URL and sends

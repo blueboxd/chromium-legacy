@@ -526,10 +526,10 @@ class CircleContentLayerClient : public ContentLayerClient {
   gfx::Size bounds_;
 };
 
-class LayerTreeHostMasksForBackdropFiltersPixelTest
+class LayerTreeHostMasksForBackdropFiltersPixelTestWithLayerList
     : public ParameterizedPixelResourceTest {
  protected:
-  LayerTreeHostMasksForBackdropFiltersPixelTest()
+  LayerTreeHostMasksForBackdropFiltersPixelTestWithLayerList()
       : bounds_(100, 100),
         picture_client_(bounds_, SK_ColorGREEN, true),
         mask_client_(bounds_) {
@@ -574,11 +574,12 @@ class LayerTreeHostMasksForBackdropFiltersPixelTest
   CircleContentLayerClient mask_client_;
 };
 
-INSTANTIATE_TEST_SUITE_P(PixelResourceTest,
-                         LayerTreeHostMasksForBackdropFiltersPixelTest,
-                         ::testing::ValuesIn(kTestCases));
+INSTANTIATE_TEST_SUITE_P(
+    PixelResourceTest,
+    LayerTreeHostMasksForBackdropFiltersPixelTestWithLayerList,
+    ::testing::ValuesIn(kTestCases));
 
-TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest, Test) {
+TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTestWithLayerList, Test) {
   base::FilePath image_name =
       (raster_type() == GPU)
           ? base::FilePath(FILE_PATH_LITERAL("mask_of_backdrop_filter_gpu.png"))
@@ -599,6 +600,65 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest, Test) {
   }
 
   RunPixelResourceTestWithLayerList(image_name);
+}
+
+using LayerTreeHostMasksForBackdropFiltersPixelTestWithLayerTree =
+    ParameterizedPixelResourceTest;
+
+INSTANTIATE_TEST_SUITE_P(
+    PixelResourceTest,
+    LayerTreeHostMasksForBackdropFiltersPixelTestWithLayerTree,
+    ::testing::ValuesIn(kTestCases));
+
+TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTestWithLayerTree, Test) {
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(100, 100), SK_ColorWHITE);
+
+  gfx::Size picture_bounds(100, 100);
+  CheckerContentLayerClient picture_client(picture_bounds, SK_ColorGREEN, true);
+  scoped_refptr<PictureLayer> picture = PictureLayer::Create(&picture_client);
+  picture->SetBounds(picture_bounds);
+  picture->SetIsDrawable(true);
+
+  scoped_refptr<SolidColorLayer> blur =
+      CreateSolidColorLayer(gfx::Rect(100, 100), SK_ColorTRANSPARENT);
+  background->AddChild(picture);
+  background->AddChild(blur);
+
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateGrayscaleFilter(1.0));
+  blur->SetBackdropFilters(filters);
+  blur->ClearBackdropFilterBounds();
+
+  gfx::Size mask_bounds(100, 100);
+  CircleContentLayerClient mask_client(mask_bounds);
+  scoped_refptr<PictureLayer> mask = PictureLayer::Create(&mask_client);
+  mask->SetBounds(mask_bounds);
+  mask->SetIsDrawable(true);
+  mask->SetElementId(LayerIdToElementIdForTesting(mask->id()));
+
+  blur->SetMaskLayer(mask);
+
+  base::FilePath image_name =
+      (raster_type() == GPU)
+          ? base::FilePath(FILE_PATH_LITERAL("mask_of_backdrop_filter_gpu.png"))
+          : base::FilePath(FILE_PATH_LITERAL("mask_of_backdrop_filter.png"));
+
+  if (renderer_type() == RENDERER_SKIA_VK && raster_type() == GPU) {
+    // Vulkan with GPU raster has 4 pixels errors (the circle mask shape is
+    // slight different).
+    float percentage_pixels_large_error = 0.04f;  // 4px / (100*100)
+    float percentage_pixels_small_error = 0.0f;
+    float average_error_allowed_in_bad_pixels = 182.f;
+    int large_error_allowed = 182;
+    int small_error_allowed = 0;
+    pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
+        true /* discard_alpha */, percentage_pixels_large_error,
+        percentage_pixels_small_error, average_error_allowed_in_bad_pixels,
+        large_error_allowed, small_error_allowed);
+  }
+
+  RunPixelResourceTest(background, image_name);
 }
 
 TEST_P(LayerTreeHostMasksPixelTest, MaskOfLayerWithBlend) {

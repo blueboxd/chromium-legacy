@@ -28,14 +28,11 @@ TestWebClient::~TestWebClient() = default;
 
 void TestWebClient::AddAdditionalSchemes(Schemes* schemes) const {
   schemes->standard_schemes.push_back(kTestWebUIScheme);
-  schemes->standard_schemes.push_back(kTestNativeContentScheme);
   schemes->standard_schemes.push_back(kTestAppSpecificScheme);
 }
 
 bool TestWebClient::IsAppSpecificURL(const GURL& url) const {
-  return url.SchemeIs(kTestWebUIScheme) ||
-         url.SchemeIs(kTestNativeContentScheme) ||
-         url.SchemeIs(kTestAppSpecificScheme);
+  return url.SchemeIs(kTestWebUIScheme) || url.SchemeIs(kTestAppSpecificScheme);
 }
 
 bool TestWebClient::ShouldBlockUrlDuringRestore(const GURL& url,

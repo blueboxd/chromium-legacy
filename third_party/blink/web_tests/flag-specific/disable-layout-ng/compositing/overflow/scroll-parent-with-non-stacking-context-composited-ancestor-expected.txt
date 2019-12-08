@@ -22,25 +22,26 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='fixed'",
+      "position": [60, 60],
       "bounds": [80, 80],
       "contentsOpaque": true,
-      "backgroundColor": "#008000",
-      "transform": 2
+      "backgroundColor": "#008000"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='scrolled'",
+      "position": [5, 5],
       "bounds": [60, 40],
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
       "backgroundColor": "#0000FF",
-      "transform": 3
+      "transform": 1
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='scrolled')",
-      "position": [0, 44],
+      "position": [5, 49],
       "bounds": [60, 128],
       "backfaceVisibility": "hidden",
-      "transform": 3
+      "transform": 1
     },
     {
       "name": "ContentsLayer for Vertical Scrollbar Layer",
@@ -58,25 +59,6 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [98, 90, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [60, 60, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
-      "parent": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [5, 5, 0, 1]
       ]
     }
   ]

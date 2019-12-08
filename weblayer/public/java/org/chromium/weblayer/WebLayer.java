@@ -28,7 +28,6 @@ import org.chromium.weblayer_private.interfaces.IRemoteFragmentClient;
 import org.chromium.weblayer_private.interfaces.IWebLayer;
 import org.chromium.weblayer_private.interfaces.IWebLayerFactory;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
-import org.chromium.weblayer_private.interfaces.WebLayerVersion;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -172,12 +171,14 @@ public final class WebLayer {
                 remoteClassLoader = getOrCreateRemoteClassLoader(appContext);
                 Class factoryClass = remoteClassLoader.loadClass(
                         "org.chromium.weblayer_private.WebLayerFactoryImpl");
+                // NOTE: the 20 comes from the previous scheme of incrementing versioning. It must
+                // remain at 20 for Chrome version 79.
+                // TODO(https://crbug.com/1031830): change 20 to -1 when tip of tree is at 83.
                 mFactory = IWebLayerFactory.Stub.asInterface(
                         (IBinder) factoryClass
                                 .getMethod("create", String.class, int.class, int.class)
                                 .invoke(null, WebLayerClientVersionConstants.PRODUCT_VERSION,
-                                        WebLayerClientVersionConstants.PRODUCT_MAJOR_VERSION,
-                                        WebLayerVersion.sVersionNumber));
+                                        WebLayerClientVersionConstants.PRODUCT_MAJOR_VERSION, 20));
                 available = mFactory.isClientSupported();
                 majorVersion = mFactory.getImplementationMajorVersion();
                 version = mFactory.getImplementationVersion();

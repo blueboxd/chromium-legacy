@@ -22,10 +22,10 @@
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='indicator'",
+      "position": [75, 75],
       "bounds": [56, 56],
       "contentsOpaque": true,
-      "backgroundColor": "#0000FF",
-      "transform": 3
+      "backgroundColor": "#0000FF"
     }
   ],
   "transforms": [
@@ -46,15 +46,6 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [50, 50, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [75, 75, 0, 1]
       ]
     }
   ]

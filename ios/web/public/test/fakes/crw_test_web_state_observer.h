@@ -15,9 +15,6 @@
 @property(nonatomic, readonly) web::TestWasShownInfo* wasShownInfo;
 // Arguments passed to |webStateWasHidden:|.
 @property(nonatomic, readonly) web::TestWasHiddenInfo* wasHiddenInfo;
-// Arguments passed to |webState:didPruneNavigationItemsWithCount:|.
-@property(nonatomic, readonly)
-    web::TestNavigationItemsPrunedInfo* navigationItemsPrunedInfo;
 // Arguments passed to |webState:didStartNavigation:|.
 @property(nonatomic, readonly)
     web::TestDidStartNavigationInfo* didStartNavigationInfo;

@@ -25,7 +25,6 @@
 #import "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state.h"
-#import "ios/web/web_state/ui/controller/crw_legacy_native_content_controller.h"
 #import "ios/web/web_state/user_interaction_state.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "net/base/mac/url_conversions.h"
@@ -70,10 +69,6 @@ enum class BackForwardNavigationType {
 // Set to YES when [self close] is called.
 @property(nonatomic, assign) BOOL beingDestroyed;
 
-// Returns The CRWLegacyNativeContentController handler class from delegate.
-@property(nonatomic, readonly)
-    CRWLegacyNativeContentController* legacyNativeController;
-
 @end
 
 @implementation CRWWebRequestController
@@ -110,8 +105,7 @@ enum class BackForwardNavigationType {
   const bool isCurrentURLAppSpecific =
       web::GetWebClient()->IsAppSpecificURL(currentURL);
   // If it's a chrome URL, but not a native one, create the WebUI instance.
-  if (isCurrentURLAppSpecific &&
-      ![self.legacyNativeController shouldLoadURLInNativeView:currentURL]) {
+  if (isCurrentURLAppSpecific) {
     if (!(item->GetTransitionType() & ui::PAGE_TRANSITION_TYPED ||
           item->GetTransitionType() & ui::PAGE_TRANSITION_AUTO_BOOKMARK) &&
         self.hasOpener) {
@@ -126,13 +120,8 @@ enum class BackForwardNavigationType {
   }
 
   // Loading a new url, must check here if it's a native chrome URL and
-  // replace the appropriate view if so, or transition back to a web view from
-  // a native view.
-  if ([self.legacyNativeController shouldLoadURLInNativeView:currentURL]) {
-    [self.legacyNativeController
-        loadCurrentURLInNativeViewWithRendererInitiatedNavigation:
-            rendererInitiated];
-  } else if ([self maybeLoadRequestForCurrentNavigationItem]) {
+  // replace the appropriate view if so.
+  if ([self maybeLoadRequestForCurrentNavigationItem]) {
     [_delegate webRequestControllerEnsureWebViewCreated:self];
     [self loadRequestForCurrentNavigationItem];
   }
@@ -232,64 +221,42 @@ enum class BackForwardNavigationType {
 
 - (void)reloadWithRendererInitiatedNavigation:(BOOL)rendererInitiated {
   GURL URL = self.currentNavItem->GetURL();
-  if ([self.legacyNativeController shouldLoadURLInNativeView:URL]) {
-    std::unique_ptr<web::NavigationContextImpl> navigationContext = [self
-        registerLoadRequestForURL:URL
-                         referrer:self.currentNavItemReferrer
-                       transition:ui::PageTransition::PAGE_TRANSITION_RELOAD
-           sameDocumentNavigation:NO
-                   hasUserGesture:YES
-                rendererInitiated:rendererInitiated
-            placeholderNavigation:NO];
-    self.webState->OnNavigationStarted(navigationContext.get());
-    [_delegate webRequestControllerDidStartLoading:self];
-    self.navigationManagerImpl->CommitPendingItem(
-        navigationContext->ReleaseItem());
-    [self.legacyNativeController reload];
-    navigationContext->SetHasCommitted(true);
-    self.webState->OnNavigationFinished(navigationContext.get());
-    [_delegate webRequestController:self
-         didCompleteLoadWithSuccess:(BOOL)YES
-                         forContext:nullptr];
+
+  web::NavigationItem* transientItem =
+      self.navigationManagerImpl->GetTransientItem();
+  if (transientItem) {
+    // If there's a transient item, a reload is considered a new navigation to
+    // the transient item's URL (as on other platforms).
+    web::NavigationManager::WebLoadParams reloadParams(transientItem->GetURL());
+    reloadParams.transition_type = ui::PAGE_TRANSITION_RELOAD;
+    reloadParams.extra_headers = [transientItem->GetHttpRequestHeaders() copy];
+    self.webState->GetNavigationManager()->LoadURLWithParams(reloadParams);
   } else {
-    web::NavigationItem* transientItem =
-        self.navigationManagerImpl->GetTransientItem();
-    if (transientItem) {
-      // If there's a transient item, a reload is considered a new navigation to
-      // the transient item's URL (as on other platforms).
-      web::NavigationManager::WebLoadParams reloadParams(
-          transientItem->GetURL());
-      reloadParams.transition_type = ui::PAGE_TRANSITION_RELOAD;
-      reloadParams.extra_headers =
-          [transientItem->GetHttpRequestHeaders() copy];
-      self.webState->GetNavigationManager()->LoadURLWithParams(reloadParams);
+    self.currentNavItem->SetTransitionType(
+        ui::PageTransition::PAGE_TRANSITION_RELOAD);
+    if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+        !web::GetWebClient()->IsAppSpecificURL(
+            net::GURLWithNSURL(self.webView.URL))) {
+      // New navigation manager can delegate directly to WKWebView to reload
+      // for non-app-specific URLs. The necessary navigation states will be
+      // updated in WKNavigationDelegate callbacks.
+      WKNavigation* navigation = [self.webView reload];
+      [self.navigationHandler.navigationStates
+               setState:web::WKNavigationState::REQUESTED
+          forNavigation:navigation];
+      std::unique_ptr<web::NavigationContextImpl> navigationContext = [self
+          registerLoadRequestForURL:URL
+                           referrer:self.currentNavItemReferrer
+                         transition:ui::PageTransition::PAGE_TRANSITION_RELOAD
+             sameDocumentNavigation:NO
+                     hasUserGesture:YES
+                  rendererInitiated:rendererInitiated
+              placeholderNavigation:NO];
+      [self.navigationHandler.navigationStates
+             setContext:std::move(navigationContext)
+          forNavigation:navigation];
     } else {
-      self.currentNavItem->SetTransitionType(
-          ui::PageTransition::PAGE_TRANSITION_RELOAD);
-      if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-          !web::GetWebClient()->IsAppSpecificURL(
-              net::GURLWithNSURL(self.webView.URL))) {
-        // New navigation manager can delegate directly to WKWebView to reload
-        // for non-app-specific URLs. The necessary navigation states will be
-        // updated in WKNavigationDelegate callbacks.
-        WKNavigation* navigation = [self.webView reload];
-        [self.navigationHandler.navigationStates
-                 setState:web::WKNavigationState::REQUESTED
-            forNavigation:navigation];
-        std::unique_ptr<web::NavigationContextImpl> navigationContext = [self
-            registerLoadRequestForURL:URL
-                             referrer:self.currentNavItemReferrer
-                           transition:ui::PageTransition::PAGE_TRANSITION_RELOAD
-               sameDocumentNavigation:NO
-                       hasUserGesture:YES
-                    rendererInitiated:rendererInitiated
-                placeholderNavigation:NO];
-        [self.navigationHandler.navigationStates
-               setContext:std::move(navigationContext)
-            forNavigation:navigation];
-      } else {
-        [self loadCurrentURLWithRendererInitiatedNavigation:rendererInitiated];
-      }
+      [self loadCurrentURLWithRendererInitiatedNavigation:rendererInitiated];
     }
   }
 }
@@ -396,15 +363,12 @@ enum class BackForwardNavigationType {
 
   self.navigationHandler.navigationState = web::WKNavigationState::REQUESTED;
 
-  // Record the state of outgoing web view. Do nothing if native controller
-  // exists, because in that case recordStateInHistory will record the state
-  // of incoming page as native controller is already inserted.
+  // Record the state of outgoing web view.
   // TODO(crbug.com/811770) Don't record state under WKBasedNavigationManager
   // because it may incorrectly clobber the incoming page if this is a
   // back/forward navigation. WKWebView restores page scroll state for web view
   // pages anyways so this only impacts user if WKWebView is deleted.
-  if (!redirect && ![self.legacyNativeController hasController] &&
-      !web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+  if (!redirect && !web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
     [_delegate webRequestControllerRecordStateInHistory:self];
   }
 
@@ -436,16 +400,11 @@ enum class BackForwardNavigationType {
 
   // WKWebView may have multiple pending items. Move pending item ownership from
   // NavigationManager to NavigationContext. NavigationManager owns pending item
-  // after navigation was requested and until NavigationContext is created.
-  // No need to transfer the ownership for NativeContent URLs, because the
-  // load of NativeContent is synchronous. No need to transfer the ownership
-  // for WebUI navigations, because those navigation do not have access to
-  // NavigationContext.
-  if (![self.legacyNativeController
-          shouldLoadURLInNativeView:context->GetUrl()]) {
-    if (self.navigationManagerImpl->GetPendingItemIndex() == -1) {
-      context->SetItem(self.navigationManagerImpl->ReleasePendingItem());
-    }
+  // after navigation was requested and until NavigationContext is created. No
+  // need to transfer the ownership for WebUI navigations, because those
+  // navigation do not have access to NavigationContext.
+  if (self.navigationManagerImpl->GetPendingItemIndex() == -1) {
+    context->SetItem(self.navigationManagerImpl->ReleasePendingItem());
   }
 
   return context;
@@ -867,10 +826,6 @@ enum class BackForwardNavigationType {
 
 - (CRWWKNavigationHandler*)navigationHandler {
   return [_delegate webRequestControllerNavigationHandler:self];
-}
-
-- (CRWLegacyNativeContentController*)legacyNativeController {
-  return [_delegate webRequestControllerLegacyNativeContentController:self];
 }
 
 // Whether the associated WebState has an opener.

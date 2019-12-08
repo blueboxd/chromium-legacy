@@ -15,9 +15,7 @@ namespace {
 
 std::unique_ptr<JSONObject> GraphicsLayerAsJSON(const GraphicsLayer* layer,
                                                 LayerTreeFlags flags) {
-  // Intentionally passing through 0, 0 for the offset from the transform node
-  // as this dump implementation doesn't support transform/position information.
-  auto json = CCLayerAsJSON(layer->CcLayer(), flags, FloatPoint());
+  auto json = CCLayerAsJSON(layer->CcLayer(), flags);
 
   // Content dumped after this point, down to AppendAdditionalInfoAsJSON, is
   // specific to GraphicsLayer tree dumping when called from one of the methods

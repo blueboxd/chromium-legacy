@@ -11,8 +11,6 @@
 #include "base/strings/string16.h"
 #include "url/gurl.h"
 
-class ReadingListModel;
-
 namespace reading_list {
 
 // The distilled URL chrome://offline/... that will load the file at |path|.
@@ -43,12 +41,6 @@ GURL FileURLForDistilledURL(const GURL& distilled_url,
 
 // Returns whether the URL points to a chrome offline URL.
 bool IsOfflineURL(const GURL& url);
-
-// Returns whether the URL points to a valid chrome offline URL that can be
-// displayed by a |OfflinePageNativeContent|.
-// Returns false if |model| is null, not loaded or does not contain entry
-// pointed by |url|.
-bool IsOfflineURLValid(const GURL& url, ReadingListModel* model);
 
 }  // namespace reading_list
 

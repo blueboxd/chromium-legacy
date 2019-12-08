@@ -84,8 +84,6 @@ source_set("util") {
     "error_test_util.mm",
     "js_test_util.h",
     "js_test_util.mm",
-    "native_controller_test_util.h",
-    "native_controller_test_util.mm",
     "navigation_test_util.h",
     "navigation_test_util.mm",
     "url_test_util.h",

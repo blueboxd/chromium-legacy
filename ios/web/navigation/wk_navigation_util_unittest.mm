@@ -348,7 +348,7 @@ TEST_F(WKNavigationUtilTest, URLNeedsUserAgentType) {
   // Not app specific or non-placeholder about urls.
   GURL non_user_agent_urls("http://newtab");
   GURL::Replacements scheme_replacements;
-  scheme_replacements.SetSchemeStr(kTestNativeContentScheme);
+  scheme_replacements.SetSchemeStr(kTestAppSpecificScheme);
   EXPECT_FALSE(URLNeedsUserAgentType(
       non_user_agent_urls.ReplaceComponents(scheme_replacements)));
   scheme_replacements.SetSchemeStr(url::kAboutScheme);

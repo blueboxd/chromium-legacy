@@ -323,8 +323,10 @@ TEST_F(NativeWindowOcclusionTrackerTest, LockScreenVisibleOcclusion) {
   // Unfortunately, this relies on knowing that NativeWindowOcclusionTracker
   // uses SessionChangeObserver to listen for WM_WTSSESSION_CHANGE messages, but
   // actually locking the screen isn't feasible.
+  DWORD current_session_id = 0;
+  ProcessIdToSessionId(::GetCurrentProcessId(), &current_session_id);
   PostMessage(gfx::SingletonHwnd::GetInstance()->hwnd(), WM_WTSSESSION_CHANGE,
-              WTS_SESSION_LOCK, 0);
+              WTS_SESSION_LOCK, current_session_id);
   run_loop2.Run();
   EXPECT_FALSE(observer.is_expecting_call());
 }
@@ -353,8 +355,42 @@ TEST_F(NativeWindowOcclusionTrackerTest, LockScreenHiddenOcclusion) {
   // Unfortunately, this relies on knowing that NativeWindowOcclusionTracker
   // uses SessionChangeObserver to listen for WM_WTSSESSION_CHANGE messages, but
   // actually locking the screen isn't feasible.
+  DWORD current_session_id = 0;
+  ProcessIdToSessionId(::GetCurrentProcessId(), &current_session_id);
   PostMessage(gfx::SingletonHwnd::GetInstance()->hwnd(), WM_WTSSESSION_CHANGE,
-              WTS_SESSION_LOCK, 0);
+              WTS_SESSION_LOCK, current_session_id);
+  run_loop2.Run();
+  EXPECT_FALSE(observer.is_expecting_call());
+}
+
+// Test that locking the screen from a different session doesn't mark window
+// as occluded.
+TEST_F(NativeWindowOcclusionTrackerTest, LockScreenDifferentSession) {
+  base::RunLoop run_loop;
+
+  MockWindowTreeHostObserver observer(run_loop.QuitClosure());
+  CreateTrackedAuraWindowWithBounds(&observer, gfx::Rect(0, 0, 100, 100));
+  observer.set_expectation(Window::OcclusionState::VISIBLE);
+  run_loop.Run();
+  EXPECT_FALSE(observer.is_expecting_call());
+
+  // Observer only gets notified on occlusion state changes, so force the
+  // state to OCCLUDED so that setting the state to VISIBLE will trigger
+  // a notification.
+  host()->SetNativeWindowOcclusionState(Window::OcclusionState::OCCLUDED);
+
+  // Generate a session change lock screen with a session id that's not
+  // |current_session_id|.
+  DWORD current_session_id = 0;
+  ProcessIdToSessionId(::GetCurrentProcessId(), &current_session_id);
+  PostMessage(gfx::SingletonHwnd::GetInstance()->hwnd(), WM_WTSSESSION_CHANGE,
+              WTS_SESSION_LOCK, current_session_id + 1);
+
+  observer.set_expectation(Window::OcclusionState::VISIBLE);
+  base::RunLoop run_loop2;
+  observer.set_quit_closure(run_loop2.QuitClosure());
+  // Create a native window to trigger occlusion calculation.
+  CreateNativeWindowWithBounds(gfx::Rect(0, 0, 50, 50));
   run_loop2.Run();
   EXPECT_FALSE(observer.is_expecting_call());
 }

@@ -19,8 +19,6 @@
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
-@class CRWSessionController;
-
 namespace web {
 class BrowserState;
 class NavigationItem;
@@ -74,24 +72,12 @@ class NavigationManagerImpl : public NavigationManager {
   virtual void SetDelegate(NavigationManagerDelegate* delegate);
   virtual void SetBrowserState(BrowserState* browser_state);
 
-  // Sets the CRWSessionController that backs this object.
-  // Keeps a strong reference to |session_controller|.
-  // This method should only be called when deserializing |session_controller|
-  // and joining it with its NavigationManager. Other cases should call
-  // InitializeSession() or Restore().
-  // TODO(stuartmorgan): Also move deserialization of CRWSessionControllers
-  // under the control of this class, and move the bulk of CRWSessionController
-  // logic into it.
-  virtual void SetSessionController(
-      CRWSessionController* session_controller) = 0;
-
   // Initializes a new session history.
   virtual void InitializeSession() = 0;
 
   // Helper functions for notifying WebStateObservers of changes.
   // TODO(stuartmorgan): Make these private once the logic triggering them moves
   // into this layer.
-  virtual void OnNavigationItemsPruned(size_t pruned_item_count) = 0;
   virtual void OnNavigationItemCommitted() = 0;
 
   // Called when a navigation has started.
@@ -99,11 +85,6 @@ class NavigationManagerImpl : public NavigationManager {
 
   // Prepares for the deletion of WKWebView such as caching necessary data.
   virtual void DetachFromWebView();
-
-  // Temporary accessors and content/ class pass-throughs.
-  // TODO(stuartmorgan): Re-evaluate this list once the refactorings have
-  // settled down.
-  virtual CRWSessionController* GetSessionController() const = 0;
 
   // Adds a transient item with the given URL. A transient item will be
   // discarded on any navigation.
@@ -179,16 +160,6 @@ class NavigationManagerImpl : public NavigationManager {
 
   // Resets the transient url rewriter list.
   void RemoveTransientURLRewriters();
-
-  // Creates a NavigationItem using the given properties. Calling this method
-  // resets the transient URLRewriters cached in this instance.
-  // TODO(crbug.com/738020): This method is only used by CRWSessionController.
-  // Remove it after switching to WKBasedNavigationManagerImpl.
-  std::unique_ptr<NavigationItemImpl> CreateNavigationItem(
-      const GURL& url,
-      const Referrer& referrer,
-      ui::PageTransition transition,
-      NavigationInitiationType initiation_type);
 
   // Updates the URL of the yet to be committed pending item. Useful for page
   // redirects. Does nothing if there is no pending item.

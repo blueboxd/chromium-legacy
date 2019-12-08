@@ -12,45 +12,6 @@ goog.provide('__crWeb.navigation');
 (function() {
 
 /**
- * A popstate event needs to be fired anytime the active history entry
- * changes without an associated document change. Either via back, forward, go
- * navigation or by loading the URL, clicking on a link, etc.
- */
-__gCrWeb['dispatchPopstateEvent'] = function(stateObject) {
-  var popstateEvent = window.document.createEvent('HTMLEvents');
-  popstateEvent.initEvent('popstate', true, false);
-  if (stateObject)
-    popstateEvent.state = JSON.parse(stateObject);
-
-  // setTimeout() is used in order to return immediately. Otherwise the
-  // dispatchEvent call waits for all event handlers to return, which could
-  // cause a ReentryGuard failure.
-  window.setTimeout(function() {
-    window.dispatchEvent(popstateEvent);
-  }, 0);
-};
-
-/**
- * A hashchange event needs to be fired after a same-document history
- * navigation between two URLs that are equivalent except for their fragments.
- */
-__gCrWeb['dispatchHashchangeEvent'] = function(oldURL, newURL) {
-  var hashchangeEvent = window.document.createEvent('HTMLEvents');
-  hashchangeEvent.initEvent('hashchange', true, false);
-  if (oldURL)
-    hashchangeEvent.oldURL = oldURL;
-  if (newURL)
-    hashchangeEvent.newURL = newURL;
-
-  // setTimeout() is used in order to return immediately. Otherwise the
-  // dispatchEvent call waits for all event handlers to return, which could
-  // cause a ReentryGuard failure.
-  window.setTimeout(function() {
-    window.dispatchEvent(hashchangeEvent);
-  }, 0);
-};
-
-/**
  * Keep the original pushState() and replaceState() methods. It's needed to
  * update the web view's URL and window.history.state property during history
  * navigations that don't cause a page load.
@@ -58,10 +19,6 @@ __gCrWeb['dispatchHashchangeEvent'] = function(oldURL, newURL) {
  */
 var originalWindowHistoryPushState = window.history.pushState;
 var originalWindowHistoryReplaceState = window.history.replaceState;
-
-__gCrWeb['replaceWebViewURL'] = function(url, stateObject) {
-  originalWindowHistoryReplaceState.call(history, stateObject, '', url);
-};
 
 function DataCloneError() {
   // The name and code for this error are defined by the WebIDL spec. See

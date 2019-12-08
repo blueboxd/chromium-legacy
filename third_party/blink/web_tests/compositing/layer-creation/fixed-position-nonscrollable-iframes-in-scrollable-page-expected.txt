@@ -21,8 +21,8 @@ In all iframes, the green fixed-position element should not be composited.
     },
     {
       "name": "LayoutIFrame (positioned) IFRAME id='iframe3'",
-      "bounds": [154, 154],
-      "transform": 3
+      "position": [10, 380],
+      "bounds": [154, 154]
     },
     {
       "name": "ContentsLayer for Vertical Scrollbar Layer",
@@ -48,15 +48,6 @@ In all iframes, the green fixed-position element should not be composited.
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [10, 200, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [10, 380, 0, 1]
       ]
     }
   ]

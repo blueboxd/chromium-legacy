@@ -209,7 +209,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // for each matching pixel.
   // This is for layer tree mode only.
   void SetMaskLayer(scoped_refptr<PictureLayer> mask_layer);
-  bool IsMaskedByChild() const { return !!inputs_.mask_layer; }
+  const PictureLayer* mask_layer() const { return inputs_.mask_layer; }
+  PictureLayer* mask_layer() { return inputs_.mask_layer; }
 
   // Marks the |dirty_rect| as being changed, which will cause a commit and
   // the compositor to submit a new frame with a damage rect that includes the
@@ -781,7 +782,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
     // If not null, points to one of child layers which is set as mask layer
     // by SetMaskLayer().
-    Layer* mask_layer;
+    PictureLayer* mask_layer;
 
     int layer_id;
 

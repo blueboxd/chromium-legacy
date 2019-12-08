@@ -30,16 +30,17 @@
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='grey'",
+      "position": [2, 2],
       "bounds": [100, 800],
       "contentsOpaque": true,
       "backgroundColor": "#808080",
-      "transform": 4
+      "transform": 3
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV id='spacer')",
-      "position": [0, 2000],
+      "position": [2, 2002],
       "bounds": [5000, 1000],
-      "transform": 4
+      "transform": 3
     },
     {
       "name": "ContentsLayer for Horizontal Scrollbar Layer",
@@ -94,16 +95,6 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [2, 502, 0, 1]
-      ]
-    },
-    {
-      "id": 4,
-      "parent": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [2, 2, 0, 1]
       ]
     }
   ]

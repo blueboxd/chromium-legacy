@@ -20,10 +20,11 @@
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='box'",
+      "position": [11, 121],
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
-      "transform": 4
+      "transform": 1
     }
   ],
   "transforms": [
@@ -56,16 +57,6 @@
         [...]
       ],
       "origin": [50, 50]
-    },
-    {
-      "id": 4,
-      "parent": 1,
-      "transform": [
-        [...],
-        [...],
-        [...],
-        [...]
-      ]
     }
   ]
 }

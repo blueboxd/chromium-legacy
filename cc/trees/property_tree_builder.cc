@@ -157,7 +157,7 @@ bool HasAnyAnimationTargetingProperty(const MutatorHost& host,
 // -------------------------------------------------------------------
 
 bool LayerClipsSubtreeToItsBounds(Layer* layer) {
-  return layer->masks_to_bounds() || layer->IsMaskedByChild();
+  return layer->masks_to_bounds() || layer->mask_layer();
 }
 
 bool LayerClipsSubtree(Layer* layer) {
@@ -312,7 +312,7 @@ RenderSurfaceReason ComputeRenderSurfaceReason(const MutatorHost& mutator_host,
   if (is_root)
     return RenderSurfaceReason::kRoot;
 
-  if (layer->IsMaskedByChild()) {
+  if (layer->mask_layer()) {
     return RenderSurfaceReason::kMask;
   }
 
@@ -462,6 +462,11 @@ bool PropertyTreeBuilderContext::AddEffectNodeIfNeeded(
   node->backdrop_filters = layer->backdrop_filters();
   node->backdrop_filter_bounds = layer->backdrop_filter_bounds();
   node->backdrop_filter_quality = layer->backdrop_filter_quality();
+  if (!node->backdrop_filters.IsEmpty() && layer->mask_layer()) {
+    DCHECK(layer->mask_layer()->element_id());
+    node->backdrop_mask_element_id = layer->mask_layer()->element_id();
+    layer->mask_layer()->SetIsBackdropFilterMask(true);
+  }
   node->filters_origin = layer->filters_origin();
   node->trilinear_filtering = layer->trilinear_filtering();
   node->has_potential_opacity_animation = has_potential_opacity_animation;

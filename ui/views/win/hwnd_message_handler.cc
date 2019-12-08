@@ -2880,7 +2880,8 @@ LRESULT HWNDMessageHandler::OnWindowSizingFinished(UINT message,
   return 0;
 }
 
-void HWNDMessageHandler::OnSessionChange(WPARAM status_code) {
+void HWNDMessageHandler::OnSessionChange(WPARAM status_code,
+                                         const bool* is_current_session) {
   // Direct3D presents are ignored while the screen is locked, so force the
   // window to be redrawn on unlock.
   if (status_code == WTS_SESSION_UNLOCK)

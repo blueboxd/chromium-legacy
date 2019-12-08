@@ -17,10 +17,7 @@ The public API should follow the Android API guidelines
 differences between the C++ and Java code. For example, NewTabDelegate in C++
 vs NewTabCallback in Java.
 
-In the long term WebLayer will support some amount of version skew. In the
-short term, we have a simple version check. See
-"//weblayer/browser/java/org/chromium/weblayer_private/interfaces/WebLayerVersion.java"
-for more information.
+WebLayer currently supports version skew of three versions.
 
 One of the design constraints of WebLayer's Java implementation is that we do
 not want embedders to ship their own copy of "//content". Instead, the

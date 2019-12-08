@@ -31,16 +31,6 @@ class WebStateObserver {
   virtual void WasShown(WebState* web_state) {}
   virtual void WasHidden(WebState* web_state) {}
 
-  // This method is invoked when committed navigation items have been pruned.
-  // DEPRECATED. DidChangeBackForwardState is a superset of this callback and
-  // should be used instead of NavigationItemsPruned in the future.
-  // NavigationItemsPruned is not called when slim-navigation-manager is enabled
-  // and DidChangeBackForwardState is not called when slim-navigation-manager is
-  // disabled. So for now the clients should implement both callbacks.
-  // TODO(crbug.com/910894): Remove this method.
-  virtual void NavigationItemsPruned(WebState* web_state,
-                                     size_t pruned_item_count) {}
-
   // Called when a navigation started in the WebState for the main frame.
   // |navigation_context| is unique to a specific navigation. The same
   // NavigationContext will be provided on subsequent call to

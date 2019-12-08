@@ -247,15 +247,15 @@ After:
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='box top left'",
+      "position": [8, 8],
       "bounds": [100, 150],
       "contentsOpaque": true,
-      "backgroundColor": "#808080",
-      "transform": 16
+      "backgroundColor": "#808080"
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box top right')",
-      "bounds": [300, 300],
-      "transform": 16
+      "position": [8, 8],
+      "bounds": [300, 300]
     }
   ],
   "transforms": [
@@ -404,15 +404,6 @@ After:
       "origin": [50, 50],
       "flattenInheritedTransform": false,
       "renderingContext": 1
-    },
-    {
-      "id": 16,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 8, 0, 1]
-      ]
     }
   ]
 }

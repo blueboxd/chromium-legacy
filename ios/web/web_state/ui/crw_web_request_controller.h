@@ -14,7 +14,6 @@
 @class WKWebView;
 @class CRWWebRequestController;
 @class CRWWKNavigationHandler;
-@class CRWLegacyNativeContentController;
 
 namespace web {
 class NavigationContextImpl;
@@ -32,8 +31,7 @@ class UserInteractionState;
 - (void)webRequestControllerEnsureWebViewCreated:
     (CRWWebRequestController*)requestController;
 
-// The delegate is called when a page (native or web) has actually started
-// loading.
+// The delegate is called when a page has actually started loading.
 - (void)webRequestControllerDidStartLoading:
     (CRWWebRequestController*)requestController;
 
@@ -52,11 +50,6 @@ class UserInteractionState;
 // Asks the delegate for the associated |UserInteractionState|.
 - (web::UserInteractionState*)webRequestControllerUserInteractionState:
     (CRWWebRequestController*)requestController;
-
-// Asks the delegate for the associated |CRWLegacyNativeContentController|.
-- (CRWLegacyNativeContentController*)
-    webRequestControllerLegacyNativeContentController:
-        (CRWWebRequestController*)requestController;
 
 // Tells the delegate to record the state (scroll position, form values,
 // whatever can be harvested) from the current page into the current session

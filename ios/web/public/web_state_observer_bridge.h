@@ -23,10 +23,6 @@
 // Invoked by WebStateObserverBridge::WasHidden.
 - (void)webStateWasHidden:(web::WebState*)webState;
 
-// Invoked by WebStateObserverBridge::NavigationItemsPruned.
-- (void)webState:(web::WebState*)webState
-    didPruneNavigationItemsWithCount:(size_t)pruned_item_count;
-
 // Invoked by WebStateObserverBridge::DidStartNavigation.
 - (void)webState:(web::WebState*)webState
     didStartNavigation:(web::NavigationContext*)navigation;
@@ -92,8 +88,6 @@ class WebStateObserverBridge : public web::WebStateObserver {
   // web::WebStateObserver methods.
   void WasShown(web::WebState* web_state) override;
   void WasHidden(web::WebState* web_state) override;
-  void NavigationItemsPruned(web::WebState* web_state,
-                             size_t pruned_item_count) override;
   void DidStartNavigation(web::WebState* web_state,
                           NavigationContext* navigation_context) override;
   void DidFinishNavigation(web::WebState* web_state,

@@ -112,12 +112,6 @@ void IOSChromeLocalSessionEventRouter::WebStateDetachedAt(
   web_state->RemoveObserver(this);
 }
 
-void IOSChromeLocalSessionEventRouter::NavigationItemsPruned(
-    web::WebState* web_state,
-    size_t pruned_item_count) {
-  OnWebStateChange(web_state);
-}
-
 void IOSChromeLocalSessionEventRouter::TitleWasSet(web::WebState* web_state) {
   OnWebStateChange(web_state);
 }

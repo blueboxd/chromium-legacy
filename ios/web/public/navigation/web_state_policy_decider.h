@@ -45,7 +45,6 @@ class WebStatePolicyDecider {
   // Called before WebStateObserver::DidStartNavigation.
   // Never called in the following cases:
   //  - same-document back-forward and state change navigations
-  //  - CRWNativeContent navigations
   virtual bool ShouldAllowRequest(NSURLRequest* request,
                                   const RequestInfo& request_info);
 
@@ -55,7 +54,6 @@ class WebStatePolicyDecider {
   // frame. Called before WebStateObserver::DidFinishNavigation.
   // Never called in the following cases:
   //  - same-document navigations (unless ititiated via LoadURLWithParams)
-  //  - CRWNativeContent navigations
   //  - going back after form submission navigation
   //  - user-initiated POST navigation on iOS 10
   virtual bool ShouldAllowResponse(NSURLResponse* response,

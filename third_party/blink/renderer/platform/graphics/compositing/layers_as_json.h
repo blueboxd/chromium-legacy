@@ -16,7 +16,6 @@ class Layer;
 
 namespace blink {
 
-class FloatPoint;
 class JSONArray;
 class JSONObject;
 class TransformPaintPropertyNode;
@@ -50,7 +49,6 @@ class PLATFORM_EXPORT LayersAsJSON {
   LayersAsJSON(LayerTreeFlags);
 
   void AddLayer(const cc::Layer& layer,
-                const FloatPoint& offset,
                 const TransformPaintPropertyNode& transform,
                 const LayerAsJSONClient* json_client);
 
@@ -69,8 +67,7 @@ class PLATFORM_EXPORT LayersAsJSON {
 
 PLATFORM_EXPORT std::unique_ptr<JSONObject> CCLayerAsJSON(
     const cc::Layer* layer,
-    LayerTreeFlags flags,
-    const FloatPoint& position);
+    LayerTreeFlags flags);
 
 }  // namespace blink
 

@@ -1026,7 +1026,7 @@ void LayerTreeHostImpl::FrameData::AsValueInto(
 }
 
 std::string LayerTreeHostImpl::FrameData::ToString() const {
-  base::trace_event::TracedValue value;
+  base::trace_event::TracedValue value(0, /*force_json=*/true);
   AsValueInto(&value);
   std::string str;
   base::JSONWriter::WriteWithOptions(

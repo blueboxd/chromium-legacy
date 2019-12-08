@@ -29,7 +29,6 @@
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/test/fakes/test_web_state_observer.h"
-#import "ios/web/public/test/native_controller_test_util.h"
 #import "third_party/breakpad/breakpad/src/client/ios/BreakpadController.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

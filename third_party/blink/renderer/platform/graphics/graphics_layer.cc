@@ -494,7 +494,6 @@ void GraphicsLayer::SetupContentsLayer(cc::Layer* contents_layer) {
   DCHECK(contents_layer);
   SetContentsLayer(contents_layer);
 
-  contents_layer_->SetTransformOrigin(FloatPoint3D());
   contents_layer_->SetUseParentBackfaceVisibility(true);
 
   // It is necessary to call SetDrawsContent() as soon as we receive the new
@@ -599,15 +598,6 @@ void GraphicsLayer::SetSize(const gfx::Size& size) {
 
   CcLayer()->SetBounds(size);
   // Note that we don't resize m_contentsLayer. It's up the caller to do that.
-}
-
-
-bool GraphicsLayer::MasksToBounds() const {
-  return CcLayer()->masks_to_bounds();
-}
-
-void GraphicsLayer::SetMasksToBounds(bool masks_to_bounds) {
-  CcLayer()->SetMasksToBounds(masks_to_bounds);
 }
 
 void GraphicsLayer::SetDrawsContent(bool draws_content) {

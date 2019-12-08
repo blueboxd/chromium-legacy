@@ -85,11 +85,6 @@ class NavigationContextImpl : public NavigationContext {
   bool IsLoadingHtmlString() const;
   void SetLoadingHtmlString(bool is_loading_html);
 
-  // true if this navigation context is a placeholder navigation associated with
-  // a native view URL and the native content is already presented.
-  bool IsNativeContentPresented() const;
-  void SetIsNativeContentPresented(bool is_native_content_presented);
-
   // true if this navigation context is a placeholder navigation.
   bool IsPlaceholderNavigation() const;
   void SetPlaceholderNavigation(bool flag);
@@ -134,7 +129,6 @@ class NavigationContextImpl : public NavigationContext {
   WKNavigationType wk_navigation_type_ = WKNavigationTypeOther;
   bool is_loading_error_page_ = false;
   bool is_loading_html_string_ = false;
-  bool is_native_content_presented_ = false;
   bool is_placeholder_navigation_ = false;
   NSString* mime_type_ = nil;
   base::ElapsedTimer elapsed_timer_;

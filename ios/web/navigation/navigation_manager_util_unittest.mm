@@ -7,9 +7,6 @@
 #import <WebKit/WebKit.h>
 
 #include "base/memory/ptr_util.h"
-#import "ios/web/navigation/crw_session_controller+private_constructors.h"
-#import "ios/web/navigation/crw_session_controller.h"
-#import "ios/web/navigation/legacy_navigation_manager_impl.h"
 #import "ios/web/navigation/navigation_context_impl.h"
 #import "ios/web/navigation/wk_based_navigation_manager_impl.h"
 #import "ios/web/public/navigation/navigation_item.h"
@@ -25,35 +22,21 @@
 
 namespace web {
 
-// Parameterized fixture testing navigation_manager_util.h functions.
-// GetParam() chooses whether to run the tests on LegacyNavigationManagerImpl
-// or (the soon-to-be-added) WKBasedNavigationManagerImpl.
-// TODO(crbug.com/734150): cleanup LegacyNavigationManagerImpl use case.
-class NavigationManagerUtilTest : public PlatformTest,
-                                  public ::testing::WithParamInterface<bool> {
+// Testing fixture for navigation_manager_util.h functions.
+class NavigationManagerUtilTest : public PlatformTest {
  protected:
   NavigationManagerUtilTest() {
-    bool test_legacy_navigation_manager = GetParam();
-    if (test_legacy_navigation_manager) {
-      controller_ =
-          [[CRWSessionController alloc] initWithBrowserState:&browser_state_];
-      manager_ = std::make_unique<LegacyNavigationManagerImpl>();
-      manager_->SetBrowserState(&browser_state_);
-      manager_->SetSessionController(controller_);
-    } else {
-      manager_ = std::make_unique<WKBasedNavigationManagerImpl>();
-      manager_->SetBrowserState(&browser_state_);
-      WKWebView* mock_web_view = OCMClassMock([WKWebView class]);
-      mock_wk_list_ = [[CRWFakeBackForwardList alloc] init];
-      OCMStub([mock_web_view backForwardList]).andReturn(mock_wk_list_);
-      delegate_.SetWebViewNavigationProxy(mock_web_view);
-    }
+    manager_ = std::make_unique<WKBasedNavigationManagerImpl>();
+    manager_->SetBrowserState(&browser_state_);
+    WKWebView* mock_web_view = OCMClassMock([WKWebView class]);
+    mock_wk_list_ = [[CRWFakeBackForwardList alloc] init];
+    OCMStub([mock_web_view backForwardList]).andReturn(mock_wk_list_);
+    delegate_.SetWebViewNavigationProxy(mock_web_view);
     manager_->SetDelegate(&delegate_);
   }
 
   std::unique_ptr<NavigationManagerImpl> manager_;
   web::FakeNavigationManagerDelegate delegate_;
-  CRWSessionController* controller_ = nil;
   CRWFakeBackForwardList* mock_wk_list_ = nil;
 
  private:
@@ -62,7 +45,7 @@ class NavigationManagerUtilTest : public PlatformTest,
 
 // Tests GetCommittedItemWithUniqueID, GetCommittedItemIndexWithUniqueID and
 // GetItemWithUniqueID functions.
-TEST_P(NavigationManagerUtilTest, GetCommittedItemWithUniqueID) {
+TEST_F(NavigationManagerUtilTest, GetCommittedItemWithUniqueID) {
   // Start with NavigationManager that only has a pending item.
   std::unique_ptr<NavigationContextImpl> context =
       NavigationContextImpl::CreateNavigationContext(
@@ -115,11 +98,5 @@ TEST_P(NavigationManagerUtilTest, GetCommittedItemWithUniqueID) {
   EXPECT_EQ(context->GetItem(),
             GetItemWithUniqueID(manager_.get(), context.get()));
 }
-
-INSTANTIATE_TEST_SUITE_P(
-    ProgrammaticNavigationManagerUtilTest,
-    NavigationManagerUtilTest,
-    ::testing::Values(/*test_legacy_navigation_manager=*/true,
-                      /*test_legacy_navigation_manager=*/false));
 
 }  // namespace web

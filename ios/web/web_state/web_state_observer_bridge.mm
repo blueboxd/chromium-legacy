@@ -27,15 +27,6 @@ void WebStateObserverBridge::WasHidden(web::WebState* web_state) {
   }
 }
 
-void WebStateObserverBridge::NavigationItemsPruned(web::WebState* web_state,
-                                                   size_t pruned_item_count) {
-  SEL selector = @selector(webState:didPruneNavigationItemsWithCount:);
-  if ([observer_ respondsToSelector:selector]) {
-    [observer_ webState:web_state
-        didPruneNavigationItemsWithCount:pruned_item_count];
-  }
-}
-
 void WebStateObserverBridge::DidStartNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {

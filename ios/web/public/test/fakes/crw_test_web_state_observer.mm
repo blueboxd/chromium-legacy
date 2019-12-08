@@ -26,9 +26,6 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
   std::unique_ptr<web::TestWasShownInfo> _wasShownInfo;
   // Arguments passed to |webStateWasHidden:|.
   std::unique_ptr<web::TestWasHiddenInfo> _wasHiddenInfo;
-  // Arguments passed to |webState:didPruneNavigationItemsWithCount:|.
-  std::unique_ptr<web::TestNavigationItemsPrunedInfo>
-      _navigationItemsPrunedInfo;
   // Arguments passed to |webState:didStartNavigation:|.
   std::unique_ptr<web::TestDidStartNavigationInfo> _didStartNavigationInfo;
   // Arguments passed to |webState:didFinishNavigationForURL:|.
@@ -62,10 +59,6 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
 
 - (web::TestWasHiddenInfo*)wasHiddenInfo {
   return _wasHiddenInfo.get();
-}
-
-- (web::TestNavigationItemsPrunedInfo*)navigationItemsPrunedInfo {
-  return _navigationItemsPrunedInfo.get();
 }
 
 - (web::TestDidStartNavigationInfo*)didStartNavigationInfo {
@@ -123,14 +116,6 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
 - (void)webStateWasHidden:(web::WebState*)webState {
   _wasHiddenInfo = std::make_unique<web::TestWasHiddenInfo>();
   _wasHiddenInfo->web_state = webState;
-}
-
-- (void)webState:(web::WebState*)webState
-    didPruneNavigationItemsWithCount:(size_t)pruned_item_count {
-  _navigationItemsPrunedInfo =
-      std::make_unique<web::TestNavigationItemsPrunedInfo>();
-  _navigationItemsPrunedInfo->web_state = webState;
-  _navigationItemsPrunedInfo->count = pruned_item_count;
 }
 
 - (void)webState:(web::WebState*)webState

@@ -20,17 +20,18 @@
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV",
+      "position": [20, 0],
       "bounds": [400, 100],
       "contentsOpaque": true,
       "backgroundColor": "#00FFFF",
-      "transform": 4
+      "transform": 2
     },
     {
       "name": "LayoutNGBlockFlow (relative positioned) DIV",
       "bounds": [100, 400],
       "contentsOpaque": true,
       "backgroundColor": "#FF00FF",
-      "transform": 5
+      "transform": 4
     }
   ],
   "transforms": [
@@ -66,16 +67,6 @@
     },
     {
       "id": 4,
-      "parent": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [20, 0, 0, 1]
-      ]
-    },
-    {
-      "id": 5,
       "parent": 2,
       "transform": [
         [1, 0, 0, 0],

@@ -6,9 +6,10 @@
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='neg-z'",
+      "position": [1, 11],
       "bounds": [100, 410],
       "backfaceVisibility": "hidden",
-      "transform": 3
+      "transform": 2
     },
     {
       "name": "LayoutBlockFlow HTML (foreground) Layer",
@@ -53,16 +54,6 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [0, -100, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
-      "parent": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [1, 11, 0, 1]
       ]
     }
   ]

@@ -29,11 +29,12 @@
     },
     {
       "name": "LayoutNGBlockFlow DIV class='composited child'",
+      "position": [0, 50],
       "bounds": [50, 50],
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
       "backgroundColor": "#008000",
-      "transform": 2
+      "transform": 1
     }
   ],
   "transforms": [
@@ -44,16 +45,6 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [8, 8, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
-      "parent": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, 50, 0, 1]
       ]
     }
   ]

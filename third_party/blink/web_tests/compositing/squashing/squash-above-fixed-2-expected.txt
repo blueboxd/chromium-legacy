@@ -25,27 +25,16 @@ CASE 1, original layer tree:
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='container'",
+      "position": [100, 50],
       "bounds": [200, 4000],
       "contentsOpaque": true,
-      "backgroundColor": "#00FFFF",
-      "transform": 1
+      "backgroundColor": "#00FFFF"
     },
     {
       "name": "ContentsLayer for Vertical Scrollbar Layer",
       "position": [785, 0],
       "bounds": [15, 600],
       "contentsOpaque": true
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [100, 50, 0, 1]
-      ]
     }
   ]
 }
@@ -76,10 +65,11 @@ CASE 2, scrolling y to 80, the "container" element should remain positioned with
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='container'",
+      "position": [100, 50],
       "bounds": [200, 4000],
       "contentsOpaque": true,
       "backgroundColor": "#00FFFF",
-      "transform": 2
+      "transform": 1
     },
     {
       "name": "ContentsLayer for Vertical Scrollbar Layer",
@@ -96,16 +86,6 @@ CASE 2, scrolling y to 80, the "container" element should remain positioned with
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [0, -80, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
-      "parent": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [100, 50, 0, 1]
       ]
     }
   ]

@@ -16,16 +16,12 @@
 #import "ios/web/common/crw_content_view.h"
 #include "ios/web/common/url_util.h"
 #import "ios/web/js_messaging/crw_js_injector.h"
-#import "ios/web/navigation/crw_session_controller.h"
-#import "ios/web/navigation/legacy_navigation_manager_impl.h"
 #import "ios/web/navigation/navigation_context_impl.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/session_storage_builder.h"
 #import "ios/web/navigation/wk_based_navigation_manager_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
 #include "ios/web/public/browser_state.h"
-#import "ios/web/public/deprecated/crw_native_content.h"
-#import "ios/web/public/deprecated/crw_native_content_holder.h"
 #include "ios/web/public/favicon/favicon_url.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/web_state_policy_decider.h"
@@ -63,8 +59,6 @@ std::unique_ptr<WebState> WebState::Create(const CreateParams& params) {
 
   // Initialize the new session.
   web_state->GetNavigationManagerImpl().InitializeSession();
-  web_state->GetNavigationManagerImpl().GetSessionController().delegate =
-      web_state->GetWebController();
 
   return web_state;
 }
@@ -90,11 +84,7 @@ WebStateImpl::WebStateImpl(const CreateParams& params,
       interstitial_(nullptr),
       created_with_opener_(params.created_with_opener),
       weak_factory_(this) {
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    navigation_manager_ = std::make_unique<WKBasedNavigationManagerImpl>();
-  } else {
-    navigation_manager_ = std::make_unique<LegacyNavigationManagerImpl>();
-  }
+  navigation_manager_ = std::make_unique<WKBasedNavigationManagerImpl>();
 
   navigation_manager_->SetDelegate(this);
   navigation_manager_->SetBrowserState(params.browser_state);
@@ -259,8 +249,7 @@ bool WebStateImpl::IsBeingDestroyed() const {
 
 void WebStateImpl::OnPageLoaded(const GURL& url, bool load_success) {
   // Navigation manager loads internal URLs to restore session history and
-  // create back-forward entries for Native View and WebUI. Do not trigger
-  // external callbacks.
+  // create back-forward entries for WebUI. Do not trigger external callbacks.
   if (wk_navigation_util::IsWKInternalUrl(url))
     return;
 
@@ -675,13 +664,11 @@ GURL WebStateImpl::GetCurrentURL(URLVerificationTrustLevel* trust_level) const {
       navigation_manager_->GetLastCommittedItemImpl();
   GURL lastCommittedURL;
   if (item) {
-    if ([[web_controller_ nativeContentHolder].nativeController
-            respondsToSelector:@selector(virtualURL)] ||
-        wk_navigation_util::IsPlaceholderUrl(item->GetURL()) ||
+    if (wk_navigation_util::IsPlaceholderUrl(item->GetURL()) ||
         item->error_retry_state_machine().state() ==
             ErrorRetryState::kReadyToDisplayError) {
-      // For native content, or when webView.URL is a placeholder URL,
-      // |currentURLWithTrustLevel:| returns virtual URL if one is available.
+      // When webView.URL is a placeholder URL, |currentURLWithTrustLevel:|
+      // returns virtual URL if one is available.
       lastCommittedURL = item->GetVirtualURL();
     } else {
       // Otherwise document URL is returned.
@@ -752,8 +739,7 @@ void WebStateImpl::TakeSnapshot(const gfx::RectF& rect,
 
 void WebStateImpl::OnNavigationStarted(web::NavigationContextImpl* context) {
   // Navigation manager loads internal URLs to restore session history and
-  // create back-forward entries for Native View and WebUI. Do not trigger
-  // external callbacks.
+  // create back-forward entries for WebUI. Do not trigger external callbacks.
   if (context->IsPlaceholderNavigation() ||
       wk_navigation_util::IsRestoreSessionUrl(context->GetUrl())) {
     return;
@@ -765,8 +751,7 @@ void WebStateImpl::OnNavigationStarted(web::NavigationContextImpl* context) {
 
 void WebStateImpl::OnNavigationFinished(web::NavigationContextImpl* context) {
   // Navigation manager loads internal URLs to restore session history and
-  // create back-forward entries for Native View and WebUI. Do not trigger
-  // external callbacks.
+  // create back-forward entries for WebUI. Do not trigger external callbacks.
   if (context->IsPlaceholderNavigation() ||
       wk_navigation_util::IsRestoreSessionUrl(context->GetUrl())) {
     return;
@@ -851,11 +836,6 @@ void WebStateImpl::Reload() {
   [web_controller_ reloadWithRendererInitiatedNavigation:NO];
 }
 
-void WebStateImpl::OnNavigationItemsPruned(size_t pruned_item_count) {
-  for (auto& observer : observers_)
-    observer.NavigationItemsPruned(this, pruned_item_count);
-}
-
 void WebStateImpl::OnNavigationItemCommitted(NavigationItem* item) {
   if (wk_navigation_util::IsWKInternalUrl(item->GetURL()))
     return;
@@ -905,8 +885,6 @@ void WebStateImpl::RestoreSessionStorage(CRWSessionStorage* session_storage) {
     restored_session_storage_ = session_storage;
   SessionStorageBuilder session_storage_builder;
   session_storage_builder.ExtractSessionState(this, session_storage);
-  GetNavigationManagerImpl().GetSessionController().delegate =
-      GetWebController();
 }
 
 }  // namespace web

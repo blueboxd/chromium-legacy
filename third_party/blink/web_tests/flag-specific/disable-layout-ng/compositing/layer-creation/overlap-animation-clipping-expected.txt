@@ -36,17 +36,18 @@
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='box yellow'",
+      "position": [11, 341],
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#FFFF00",
-      "transform": 8
+      "transform": 3
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='box yellow'",
+      "position": [18, 702],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFF00",
-      "transform": 9
+      "backgroundColor": "#FFFF00"
     },
     {
       "name": "ContentsLayer for Vertical Scrollbar Layer",
@@ -117,25 +118,6 @@
     {
       "id": 7,
       "parent": 6,
-      "transform": [
-        [...],
-        [...],
-        [...],
-        [...]
-      ]
-    },
-    {
-      "id": 8,
-      "parent": 3,
-      "transform": [
-        [...],
-        [...],
-        [...],
-        [...]
-      ]
-    },
-    {
-      "id": 9,
       "transform": [
         [...],
         [...],

@@ -24,9 +24,6 @@
 #include "ios/chrome/browser/prerender/preload_controller_delegate.h"
 #import "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
-#import "ios/web/public/deprecated/crw_native_content.h"
-#import "ios/web/public/deprecated/crw_native_content_holder.h"
-#import "ios/web/public/deprecated/crw_web_controller_util.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/navigation/web_state_policy_decider_bridge.h"
@@ -340,7 +337,6 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
   std::unique_ptr<web::WebState> webState = std::move(_webState);
   DCHECK(![self isWebStatePrerendered:webState.get()]);
 
-  web_deprecated::SetNativeProvider(webState.get(), nil);
   webState->RemoveObserver(_webStateObserver.get());
   breakpad::StopMonitoringURLsForWebState(webState.get());
   webState->SetDelegate(nullptr);
@@ -534,8 +530,6 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
       std::make_unique<web::WebStatePolicyDeciderBridge>(_webState.get(), self);
   AttachTabHelpers(_webState.get(), /*for_prerender=*/true);
 
-  web_deprecated::SetNativeProvider(_webState.get(), nil);
-
   _webState->SetDelegate(_webStateDelegate.get());
   _webState->AddObserver(_webStateObserver.get());
   breakpad::MonitorURLsForWebState(_webState.get());
@@ -580,7 +574,6 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
   UMA_HISTOGRAM_ENUMERATION(kPrerenderFinalStatusHistogramName, reason,
                             PRERENDER_FINAL_STATUS_MAX);
 
-  web_deprecated::SetNativeProvider(_webState.get(), nil);
   _webState->RemoveObserver(_webStateObserver.get());
   breakpad::StopMonitoringURLsForWebState(_webState.get());
   _webState->SetDelegate(nullptr);

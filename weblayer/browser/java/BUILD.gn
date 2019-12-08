@@ -115,7 +115,6 @@ android_library("interfaces_java") {
     "org/chromium/weblayer_private/interfaces/NewTabType.java",
     "org/chromium/weblayer_private/interfaces/ObjectWrapper.java",
     "org/chromium/weblayer_private/interfaces/StrictModeWorkaround.java",
-    "org/chromium/weblayer_private/interfaces/WebLayerVersion.java",
   ]
 
   deps = [

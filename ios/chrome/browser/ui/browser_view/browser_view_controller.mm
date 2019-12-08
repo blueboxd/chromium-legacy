@@ -182,8 +182,6 @@
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ios/web/common/url_scheme_util.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
-#import "ios/web/public/deprecated/crw_native_content_holder.h"
-#import "ios/web/public/deprecated/crw_native_content_provider.h"
 #import "ios/web/public/deprecated/crw_web_controller_util.h"
 #include "ios/web/public/navigation/navigation_item.h"
 #include "ios/web/public/thread/web_thread.h"
@@ -340,7 +338,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 @interface BrowserViewController () <ActivityServicePresentation,
                                      BubblePresenterDelegate,
                                      CaptivePortalDetectorTabHelperDelegate,
-                                     CRWNativeContentProvider,
                                      CRWWebStateDelegate,
                                      CRWWebStateObserver,
                                      DialogPresenterDelegate,
@@ -542,8 +539,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 @property(nonatomic, strong) BrowserViewControllerHelper* helper;
 
 // The user agent type used to load the currently visible page. User agent
-// type is NONE if there is no visible page or visible page is a native
-// page.
+// type is NONE if there is no visible page.
 @property(nonatomic, assign, readonly) web::UserAgentType userAgentType;
 
 // Returns the header views, all the chrome on top of the page, including the
@@ -708,8 +704,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // is notified that the webState has changed.
 - (void)webStateSelected:(web::WebState*)webState
            notifyToolbar:(BOOL)notifyToolbar;
-// Returns the native controller being used by |web_state|'s web controller.
-- (id)nativeControllerForWebState:(web::WebState*)webState;
 
 // Voice Search
 // ------------
@@ -2689,7 +2683,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 
   // Install the proper CRWWebController delegates.
-  web_deprecated::SetNativeProvider(webState, self);
   web_deprecated::SetSwipeRecognizerProvider(webState,
                                              self.sideSwipeController);
   webState->SetDelegate(_webStateDelegate.get());
@@ -2743,7 +2736,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     OverscrollActionsTabHelper::FromWebState(webState)->SetDelegate(nil);
   }
 
-  web_deprecated::SetNativeProvider(webState, nil);
   web_deprecated::SetSwipeRecognizerProvider(webState, nil);
   webState->SetDelegate(nullptr);
   if (AccountConsistencyService* accountConsistencyService =
@@ -2779,11 +2771,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
           ->CancelPlaceholderForNextNavigation();
     }
   }
-}
-
-- (id)nativeControllerForWebState:(web::WebState*)webState {
-  id nativeController = web_deprecated::GetNativeController(webState);
-  return nativeController ? nativeController : nil;
 }
 
 #pragma mark - Private Methods: Voice Search
@@ -2852,7 +2839,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (BOOL)isTabScrolledToTopForBubblePresenter:(BubblePresenter*)bubblePresenter {
   DCHECK(bubblePresenter == self.bubblePresenter);
 
-  // If there is a native controller, use the native controller's scroll offset.
+  // If NTP exists, use NTP coordinator's scroll offset.
   if (self.isNTPActiveForCurrentWebState) {
     NewTabPageCoordinator* coordinator =
         _ntpCoordinatorsForWebStates[self.currentWebState];
@@ -2959,10 +2946,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
     willUpdateSnapshotForWebState:(web::WebState*)webState {
   DCHECK(webState);
-  id nativeController = [self nativeControllerForWebState:webState];
-  if ([nativeController respondsToSelector:@selector(willUpdateSnapshot)]) {
-    [nativeController willUpdateSnapshot];
-  }
   if (self.isNTPActiveForCurrentWebState) {
     [_ntpCoordinatorsForWebStates[self.currentWebState] willUpdateSnapshot];
   }
@@ -3614,24 +3597,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (CGFloat)overscrollHeaderHeight {
   return self.headerHeight;
-}
-
-#pragma mark - CRWNativeContentProvider methods
-
-- (BOOL)hasControllerForURL:(const GURL&)url {
-  return NO;
-}
-
-- (id<CRWNativeContent>)controllerForURL:(const GURL&)url
-                                webState:(web::WebState*)webState {
-  DCHECK(url.SchemeIs(kChromeUIScheme));
-  base::StringPiece url_host = url.host_piece();
-  DCHECK(url_host == kChromeUINewTabHost || url_host == kChromeUICrashHost);
-  return nil;
-}
-
-- (UIEdgeInsets)nativeContentInsetForWebState:(web::WebState*)webState {
-  return [self viewportInsetsForView:webState->GetView()];
 }
 
 #pragma mark - DialogPresenterDelegate methods
@@ -4748,8 +4713,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     NewTabPageCoordinator* coordinator =
         _ntpCoordinatorsForWebStates[self.currentWebState];
     if ([coordinator logoAnimationControllerOwner]) {
-      // If the current native controller is showing a GLIF view (e.g. the NTP
-      // when there is no doodle), use that GLIFControllerOwner.
+      // If NTP coordinator is showing a GLIF view (e.g. the NTP when there is
+      // no doodle), use that GLIFControllerOwner.
       return [coordinator logoAnimationControllerOwner];
     }
   }

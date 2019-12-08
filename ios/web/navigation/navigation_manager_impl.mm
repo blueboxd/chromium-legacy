@@ -144,20 +144,6 @@ void NavigationManagerImpl::RemoveTransientURLRewriters() {
   transient_url_rewriters_.clear();
 }
 
-std::unique_ptr<NavigationItemImpl> NavigationManagerImpl::CreateNavigationItem(
-    const GURL& url,
-    const Referrer& referrer,
-    ui::PageTransition transition,
-    NavigationInitiationType initiation_type) {
-  NavigationItem* last_committed_item = GetLastCommittedItem();
-  auto item = CreateNavigationItemWithRewriters(
-      url, referrer, transition, initiation_type,
-      last_committed_item ? last_committed_item->GetURL() : GURL::EmptyGURL(),
-      &transient_url_rewriters_);
-  RemoveTransientURLRewriters();
-  return item;
-}
-
 void NavigationManagerImpl::UpdatePendingItemUrl(const GURL& url) const {
   // If there is no pending item, navigation is probably happening within the
   // back forward history. Don't modify the item list.
@@ -253,11 +239,9 @@ void NavigationManagerImpl::GoToIndex(int index) {
   // Silently return if still on a restore URL.  This state should only last a
   // few moments, but may be triggered when a user mashes the back or forward
   // button quickly.
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    NavigationItemImpl* item = GetLastCommittedItemInCurrentOrRestoredSession();
-    if (item && wk_navigation_util::IsRestoreSessionUrl(item->GetURL())) {
-      return;
-    }
+  NavigationItemImpl* item = GetLastCommittedItemInCurrentOrRestoredSession();
+  if (item && wk_navigation_util::IsRestoreSessionUrl(item->GetURL())) {
+    return;
   }
   GoToIndex(index, NavigationInitiationType::BROWSER_INITIATED,
             /*has_user_gesture=*/true);
@@ -422,18 +406,16 @@ void NavigationManagerImpl::ReloadWithUserAgentType(
   // Reload using a client-side redirect URL to create a new entry in
   // WKBackForwardList for the new user agent type. This hack is not needed for
   // LegacyNavigationManagerImpl which manages its own history entries.
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    GURL target_url;
-    // If current entry is a redirect URL, reload the original target URL. This
-    // can happen on a slow connection when user taps on Request Desktop Site
-    // before the previous redirect has finished (https://crbug.com/833958).
-    if (wk_navigation_util::IsRestoreSessionUrl(reload_url) &&
-        wk_navigation_util::ExtractTargetURL(reload_url, &target_url)) {
-      reload_url = target_url;
-    }
+  GURL target_url;
+  // If current entry is a redirect URL, reload the original target URL. This
+  // can happen on a slow connection when user taps on Request Desktop Site
+  // before the previous redirect has finished (https://crbug.com/833958).
+  if (wk_navigation_util::IsRestoreSessionUrl(reload_url) &&
+      wk_navigation_util::ExtractTargetURL(reload_url, &target_url)) {
+    reload_url = target_url;
+  }
     DCHECK(!wk_navigation_util::IsRestoreSessionUrl(reload_url));
     reload_url = wk_navigation_util::CreateRedirectUrl(reload_url);
-  }
 
   WebLoadParams params(reload_url);
   if (last_non_redirect_item->GetVirtualURL() != reload_url)

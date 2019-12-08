@@ -142,7 +142,6 @@ void LinkHighlightImpl::ReleaseResources() {
 
 LinkHighlightImpl::LinkHighlightFragment::LinkHighlightFragment() {
   layer_ = cc::PictureLayer::Create(this);
-  layer_->SetTransformOrigin(FloatPoint3D());
   layer_->SetIsDrawable(true);
   layer_->SetOpacity(kStartOpacity);
 }

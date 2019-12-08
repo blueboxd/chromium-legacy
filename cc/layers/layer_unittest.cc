@@ -267,6 +267,7 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   scoped_refptr<Layer> grand_child = Layer::Create();
   FakeContentLayerClient client;
   scoped_refptr<PictureLayer> mask_layer1 = PictureLayer::Create(&client);
+  mask_layer1->SetElementId(LayerIdToElementIdForTesting(mask_layer1->id()));
 
   layer_tree_host_->SetRootLayer(root);
   root->AddChild(top);
@@ -404,7 +405,7 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
       child2->PushPropertiesTo(child2_impl.get());
       grand_child->PushPropertiesTo(grand_child_impl.get()));
 
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(2);
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
       top->SetBackdropFilters(arbitrary_filters));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
@@ -491,7 +492,7 @@ TEST_F(LayerTest, SetMaskLayer) {
   ASSERT_EQ(1u, parent->children().size());
   EXPECT_EQ(parent.get(), mask->parent());
   EXPECT_EQ(mask.get(), parent->children()[0]);
-  EXPECT_TRUE(parent->IsMaskedByChild());
+  EXPECT_TRUE(parent->mask_layer());
 
   // Should ignore mask layer's position.
   EXPECT_TRUE(mask->position().IsOrigin());
@@ -502,7 +503,7 @@ TEST_F(LayerTest, SetMaskLayer) {
   ASSERT_EQ(1u, parent->children().size());
   EXPECT_EQ(parent.get(), mask->parent());
   EXPECT_EQ(mask.get(), parent->children()[0]);
-  EXPECT_TRUE(parent->IsMaskedByChild());
+  EXPECT_TRUE(parent->mask_layer());
 
   scoped_refptr<PictureLayer> mask2 = PictureLayer::Create(&client);
   parent->SetMaskLayer(mask2);
@@ -510,12 +511,12 @@ TEST_F(LayerTest, SetMaskLayer) {
   ASSERT_EQ(1u, parent->children().size());
   EXPECT_EQ(parent.get(), mask2->parent());
   EXPECT_EQ(mask2.get(), parent->children()[0]);
-  EXPECT_TRUE(parent->IsMaskedByChild());
+  EXPECT_TRUE(parent->mask_layer());
 
   parent->SetMaskLayer(nullptr);
   EXPECT_EQ(0u, parent->children().size());
   EXPECT_FALSE(mask2->parent());
-  EXPECT_FALSE(parent->IsMaskedByChild());
+  EXPECT_FALSE(parent->mask_layer());
 }
 
 TEST_F(LayerTest, RemoveMaskLayerFromParent) {
@@ -527,11 +528,11 @@ TEST_F(LayerTest, RemoveMaskLayerFromParent) {
   mask->RemoveFromParent();
   EXPECT_EQ(0u, parent->children().size());
   EXPECT_FALSE(mask->parent());
-  EXPECT_FALSE(parent->IsMaskedByChild());
+  EXPECT_FALSE(parent->mask_layer());
 
   scoped_refptr<PictureLayer> mask2 = PictureLayer::Create(&client);
   parent->SetMaskLayer(mask2);
-  EXPECT_TRUE(parent->IsMaskedByChild());
+  EXPECT_TRUE(parent->mask_layer());
 }
 
 TEST_F(LayerTest, AddChildAfterSetMaskLayer) {
@@ -539,15 +540,15 @@ TEST_F(LayerTest, AddChildAfterSetMaskLayer) {
   FakeContentLayerClient client;
   scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
   parent->SetMaskLayer(mask);
-  EXPECT_TRUE(parent->IsMaskedByChild());
+  EXPECT_TRUE(parent->mask_layer());
 
   parent->AddChild(Layer::Create());
   EXPECT_EQ(mask.get(), parent->children().back().get());
-  EXPECT_TRUE(parent->IsMaskedByChild());
+  EXPECT_TRUE(parent->mask_layer());
 
   parent->InsertChild(Layer::Create(), parent->children().size());
   EXPECT_EQ(mask.get(), parent->children().back().get());
-  EXPECT_TRUE(parent->IsMaskedByChild());
+  EXPECT_TRUE(parent->mask_layer());
 }
 
 TEST_F(LayerTest, AddSameChildTwice) {

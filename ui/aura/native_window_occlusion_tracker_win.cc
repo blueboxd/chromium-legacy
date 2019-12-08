@@ -221,8 +221,16 @@ void NativeWindowOcclusionTrackerWin::UpdateOcclusionState(
   }
 }
 
-void NativeWindowOcclusionTrackerWin::OnSessionChange(WPARAM status_code) {
-  if (status_code == WTS_SESSION_LOCK) {
+void NativeWindowOcclusionTrackerWin::OnSessionChange(
+    WPARAM status_code,
+    const bool* is_current_session) {
+  if (is_current_session && !*is_current_session)
+    return;
+  if (status_code == WTS_SESSION_UNLOCK) {
+    // UNLOCK will cause a foreground window change, which will
+    // trigger an occlusion calculation on its own.
+    screen_locked_ = false;
+  } else if (status_code == WTS_SESSION_LOCK && is_current_session) {
     screen_locked_ = true;
     // Set all visible root windows as occluded. If not visible,
     // set them as hidden.
@@ -232,12 +240,7 @@ void NativeWindowOcclusionTrackerWin::OnSessionChange(WPARAM status_code) {
               ? Window::OcclusionState::HIDDEN
               : Window::OcclusionState::OCCLUDED);
     }
-  } else if (status_code == WTS_SESSION_UNLOCK) {
-    screen_locked_ = false;
   }
-  // Other session changes don't need to trigger occlusion calculation. In
-  // particular, UNLOCK will cause a foreground window change, which will
-  // trigger an occlusion calculation on its own.
 }
 
 NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::

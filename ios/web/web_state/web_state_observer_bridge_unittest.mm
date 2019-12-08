@@ -62,17 +62,6 @@ TEST_F(WebStateObserverBridgeTest, WasHidden) {
   EXPECT_EQ(&test_web_state_, [observer_ wasHiddenInfo]->web_state);
 }
 
-// Tests |webState:didPruneNavigationItemsWithCount:| forwarding.
-TEST_F(WebStateObserverBridgeTest, NavigationItemsPruned) {
-  ASSERT_FALSE([observer_ navigationItemsPrunedInfo]);
-
-  observer_bridge_.NavigationItemsPruned(&test_web_state_, 1);
-
-  ASSERT_TRUE([observer_ navigationItemsPrunedInfo]);
-  EXPECT_EQ(&test_web_state_, [observer_ navigationItemsPrunedInfo]->web_state);
-  EXPECT_EQ(1, [observer_ navigationItemsPrunedInfo]->count);
-}
-
 // Tests |webState:didStartNavigation:| forwarding.
 TEST_F(WebStateObserverBridgeTest, DidStartNavigation) {
   ASSERT_FALSE([observer_ didStartNavigationInfo]);

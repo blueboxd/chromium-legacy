@@ -1927,32 +1927,36 @@ void PropertyTrees::ResetAllChangeTracking() {
 std::unique_ptr<base::trace_event::TracedValue> PropertyTrees::AsTracedValue()
     const {
   auto value = base::WrapUnique(new base::trace_event::TracedValue);
-
-  value->SetInteger("sequence_number", sequence_number);
-
-  value->BeginDictionary("transform_tree");
-  transform_tree.AsValueInto(value.get());
-  value->EndDictionary();
-
-  value->BeginDictionary("effect_tree");
-  effect_tree.AsValueInto(value.get());
-  value->EndDictionary();
-
-  value->BeginDictionary("clip_tree");
-  clip_tree.AsValueInto(value.get());
-  value->EndDictionary();
-
-  value->BeginDictionary("scroll_tree");
-  scroll_tree.AsValueInto(value.get());
-  value->EndDictionary();
-
+  AsValueInto(value.get());
   return value;
 }
 
+void PropertyTrees::AsValueInto(base::trace_event::TracedValue* value) const {
+  value->SetInteger("sequence_number", sequence_number);
+
+  value->BeginDictionary("transform_tree");
+  transform_tree.AsValueInto(value);
+  value->EndDictionary();
+
+  value->BeginDictionary("effect_tree");
+  effect_tree.AsValueInto(value);
+  value->EndDictionary();
+
+  value->BeginDictionary("clip_tree");
+  clip_tree.AsValueInto(value);
+  value->EndDictionary();
+
+  value->BeginDictionary("scroll_tree");
+  scroll_tree.AsValueInto(value);
+  value->EndDictionary();
+}
+
 std::string PropertyTrees::ToString() const {
+  base::trace_event::TracedValue value(0, /*force_json=*/true);
+  AsValueInto(&value);
   std::string str;
   base::JSONWriter::WriteWithOptions(
-      *AsTracedValue()->ToBaseValue(),
+      *value.ToBaseValue(),
       base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION |
           base::JSONWriter::OPTIONS_PRETTY_PRINT,
       &str);

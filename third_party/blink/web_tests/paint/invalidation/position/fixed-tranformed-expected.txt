@@ -9,6 +9,7 @@
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='test'",
+      "position": [50, 50],
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
@@ -19,7 +20,7 @@
           "reason": "background"
         }
       ],
-      "transform": 3
+      "transform": 2
     },
     {
       "name": "ContentsLayer for Vertical Scrollbar Layer",
@@ -45,16 +46,6 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [10, 10, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
-      "parent": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [50, 50, 0, 1]
       ]
     }
   ]

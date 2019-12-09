@@ -105,8 +105,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   void ScheduleEvent(const AtomicString& event_type);
   void ScheduleRepeatEvents();
 
-  virtual bool IsSVGDiscardElement() const { return false; }
-
   void Trace(blink::Visitor*) override;
 
  protected:
@@ -120,9 +118,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   virtual void WillChangeAnimationTarget();
   virtual void DidChangeAnimationTarget();
 
-  virtual void StartedActiveInterval();
-  void QueueDiscard();
-
   struct ProgressState {
     float progress;
     unsigned repeat;
@@ -134,6 +129,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   void ClearResourceAndEventBaseReferences();
   void ClearConditions();
 
+  void StartedActiveInterval();
   void EndedActiveInterval();
 
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override {
@@ -281,8 +277,7 @@ inline bool IsSVGSMILElement(const SVGElement& element) {
   return element.HasTagName(svg_names::kSetTag) ||
          element.HasTagName(svg_names::kAnimateTag) ||
          element.HasTagName(svg_names::kAnimateMotionTag) ||
-         element.HasTagName(svg_names::kAnimateTransformTag) ||
-         element.HasTagName((svg_names::kDiscardTag));
+         element.HasTagName(svg_names::kAnimateTransformTag);
 }
 
 template <>

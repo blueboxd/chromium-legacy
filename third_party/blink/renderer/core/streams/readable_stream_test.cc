@@ -417,6 +417,58 @@ TEST_F(ReadableStreamTest, Serialize) {
             base::make_optional<String>("hello, bye"));
 }
 
+TEST_F(ReadableStreamTest, GarbageCollectJavaScriptUnderlyingSource) {
+  V8TestingScope scope;
+  auto* isolate = scope.GetIsolate();
+
+  v8::Global<v8::Object> weak_underlying_source;
+
+  {
+    v8::HandleScope handle_scope(isolate);
+    v8::Local<v8::Object> underlying_source = v8::Object::New(isolate);
+    ReadableStream::Create(scope.GetScriptState(),
+                           ScriptValue(isolate, underlying_source),
+                           ASSERT_NO_EXCEPTION);
+    weak_underlying_source = v8::Global<v8::Object>(isolate, underlying_source);
+    weak_underlying_source.SetWeak();
+  }
+
+  V8GCController::CollectAllGarbageForTesting(
+      isolate, v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+
+  EXPECT_TRUE(weak_underlying_source.IsEmpty());
+}
+
+TEST_F(ReadableStreamTest, GarbageCollectCPlusPlusUnderlyingSource) {
+  class NoopUnderlyingSource : public UnderlyingSourceBase {
+   public:
+    NoopUnderlyingSource(ScriptState* script_state)
+        : UnderlyingSourceBase(script_state) {}
+  };
+
+  V8TestingScope scope;
+  auto* isolate = scope.GetIsolate();
+
+  WeakPersistent<NoopUnderlyingSource> weak_underlying_source;
+
+  {
+    v8::HandleScope handle_scope(isolate);
+    auto* underlying_source =
+        MakeGarbageCollected<NoopUnderlyingSource>(scope.GetScriptState());
+    weak_underlying_source = underlying_source;
+    ReadableStream::CreateWithCountQueueingStrategy(scope.GetScriptState(),
+                                                    underlying_source, 0);
+  }
+
+  // Allow Promises to resolve.
+  v8::MicrotasksScope::PerformCheckpoint(isolate);
+
+  V8GCController::CollectAllGarbageForTesting(
+      isolate, v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+
+  EXPECT_FALSE(weak_underlying_source);
+}
+
 }  // namespace
 
 }  // namespace blink

@@ -12,7 +12,6 @@ import sys
 import unittest
 
 import cyglog_to_orderfile
-import process_profiles
 import symbol_extractor
 
 import test_utils

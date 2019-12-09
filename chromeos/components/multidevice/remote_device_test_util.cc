@@ -66,9 +66,9 @@ RemoteDeviceRefBuilder::RemoteDeviceRefBuilder() {
 
 RemoteDeviceRefBuilder::~RemoteDeviceRefBuilder() = default;
 
-RemoteDeviceRefBuilder& RemoteDeviceRefBuilder::SetUserId(
-    const std::string& user_id) {
-  remote_device_->user_id = user_id;
+RemoteDeviceRefBuilder& RemoteDeviceRefBuilder::SetUserEmail(
+    const std::string& user_email) {
+  remote_device_->user_email = user_email;
   return *this;
 }
 

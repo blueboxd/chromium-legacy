@@ -310,11 +310,9 @@ const base::string16& WebStateImpl::GetTitle() const {
   // match the WebContents implementation of this method.
   DCHECK(Configured());
   web::NavigationItem* item = navigation_manager_->GetLastCommittedItem();
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    // Display title for the visible item makes more sense. Only do this in
-    // WKBasedNavigationManager for now to limit impact.
-    item = navigation_manager_->GetVisibleItem();
-  }
+  // Display title for the visible item makes more sense. Only do this in
+  // WKBasedNavigationManager for now to limit impact.
+  item = navigation_manager_->GetVisibleItem();
   return item ? item->GetTitleForDisplay() : empty_string16_;
 }
 
@@ -584,8 +582,7 @@ WebStateImpl::GetSessionCertificatePolicyCache() {
 
 CRWSessionStorage* WebStateImpl::BuildSessionStorage() {
   [web_controller_ recordStateInHistory];
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-      restored_session_storage_) {
+  if (restored_session_storage_) {
     // UserData can be updated in an uncommitted WebState. Even
     // if a WebState hasn't been restored, its opener value may have changed.
     std::unique_ptr<web::SerializableUserData> serializable_user_data =
@@ -654,7 +651,7 @@ const GURL& WebStateImpl::GetLastCommittedURL() const {
 }
 
 GURL WebStateImpl::GetCurrentURL(URLVerificationTrustLevel* trust_level) const {
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() && !trust_level) {
+  if (!trust_level) {
     auto ignore_trust = URLVerificationTrustLevel::kNone;
     return [web_controller_ currentURLWithTrustLevel:&ignore_trust];
   }
@@ -690,8 +687,7 @@ GURL WebStateImpl::GetCurrentURL(URLVerificationTrustLevel* trust_level) const {
                        << " Last committed: " << lastCommittedURL.spec();
   UMA_HISTOGRAM_BOOLEAN("Web.CurrentOriginEqualsLastCommittedOrigin",
                         equalOrigins);
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-      (!equalOrigins || (item && item->IsUntrusted()))) {
+  if (!equalOrigins || (item && item->IsUntrusted())) {
     *trust_level = web::URLVerificationTrustLevel::kMixed;
   }
   return result;
@@ -816,13 +812,6 @@ void WebStateImpl::OnGoToIndexSameDocumentNavigation(
                                         hasUserGesture:has_user_gesture];
 }
 
-void WebStateImpl::WillChangeUserAgentType() {
-  // TODO(crbug.com/736103): due to the bug, updating the user agent of web view
-  // requires reconstructing the whole web view, change the behavior to call
-  // [WKWebView setCustomUserAgent] once the bug is fixed.
-  [web_controller_ requirePageReconstruction];
-}
-
 void WebStateImpl::LoadCurrentItem(NavigationInitiationType type) {
   [web_controller_ loadCurrentURLWithRendererInitiatedNavigation:
                        type == NavigationInitiationType::RENDERER_INITIATED];
@@ -843,8 +832,7 @@ void WebStateImpl::OnNavigationItemCommitted(NavigationItem* item) {
   // A committed navigation item indicates that NavigationManager has a new
   // valid session history so should invalidate the cached restored session
   // history.
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled())
-    restored_session_storage_ = nil;
+  restored_session_storage_ = nil;
 }
 
 WebState* WebStateImpl::GetWebState() {
@@ -881,8 +869,7 @@ void WebStateImpl::RestoreSessionStorage(CRWSessionStorage* session_storage) {
   // happen to inactive tabs when a navigation in the current tab triggers the
   // serialization of all tabs and when user clicks on tab switcher without
   // switching to a tab.
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled())
-    restored_session_storage_ = session_storage;
+  restored_session_storage_ = session_storage;
   SessionStorageBuilder session_storage_builder;
   session_storage_builder.ExtractSessionState(this, session_storage);
 }

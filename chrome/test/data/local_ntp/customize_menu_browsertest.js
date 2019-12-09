@@ -18,6 +18,7 @@ test.customizeMenu = {};
  */
 test.customizeMenu.IDS = {
   BACKGROUNDS_BUTTON: 'backgrounds-button',
+  BACKGROUNDS_DISABLED_MENU: 'backgrounds-disabled-menu',
   BACKGROUNDS_IMAGE_MENU: 'backgrounds-image-menu',
   BACKGROUNDS_MENU: 'backgrounds-menu',
   COLOR_PICKER_CONTAINER: 'color-picker-container',
@@ -190,27 +191,72 @@ test.customizeMenu.testMenu_OpenSubmenus = function() {
   // Open the richer picker. The default submenu (Background) should be shown.
   $(test.customizeMenu.IDS.EDIT_BG).click();
   const backgroundSubmenu = $(test.customizeMenu.IDS.BACKGROUNDS_MENU);
+  const backgroundDisabledSubmenu =
+      $(test.customizeMenu.IDS.BACKGROUNDS_DISABLED_MENU);
   const shortcutsSubmenu = $(test.customizeMenu.IDS.SHORTCUTS_MENU);
   const colorSubmenu = $(test.customizeMenu.IDS.COLORS_MENU);
   assertTrue(elementIsVisible(backgroundSubmenu));
+  assertFalse(elementIsVisible(backgroundDisabledSubmenu));
   assertFalse(elementIsVisible(shortcutsSubmenu));
   assertFalse(elementIsVisible(colorSubmenu));
 
   // Open the Shortcuts submenu. All other submenus should be hidden.
   $(test.customizeMenu.IDS.SHORTCUTS_BUTTON).click();
   assertFalse(elementIsVisible(backgroundSubmenu));
+  assertFalse(elementIsVisible(backgroundDisabledSubmenu));
   assertTrue(elementIsVisible(shortcutsSubmenu));
   assertFalse(elementIsVisible(colorSubmenu));
 
   // Open the Color submenu.
   $(test.customizeMenu.IDS.COLORS_BUTTON).click();
   assertFalse(elementIsVisible(backgroundSubmenu));
+  assertFalse(elementIsVisible(backgroundDisabledSubmenu));
   assertFalse(elementIsVisible(shortcutsSubmenu));
   assertTrue(elementIsVisible(colorSubmenu));
 
   // Open the Background submenu.
   $(test.customizeMenu.IDS.BACKGROUNDS_BUTTON).click();
   assertTrue(elementIsVisible(backgroundSubmenu));
+  assertFalse(elementIsVisible(backgroundDisabledSubmenu));
+  assertFalse(elementIsVisible(shortcutsSubmenu));
+  assertFalse(elementIsVisible(colorSubmenu));
+};
+
+test.customizeMenu.testMenu_OpenSubmenus_CustomBackgroundDisabled = function() {
+  test.customizeMenu.mockNtpTheme = {customBackgroundDisabledByPolicy: true};
+  init();
+
+  // Open the richer picker. The default submenu (Background disabled) should be
+  // shown.
+  $(test.customizeMenu.IDS.EDIT_BG).click();
+  const backgroundSubmenu = $(test.customizeMenu.IDS.BACKGROUNDS_MENU);
+  const backgroundDisabledSubmenu =
+      $(test.customizeMenu.IDS.BACKGROUNDS_DISABLED_MENU);
+  const shortcutsSubmenu = $(test.customizeMenu.IDS.SHORTCUTS_MENU);
+  const colorSubmenu = $(test.customizeMenu.IDS.COLORS_MENU);
+  assertFalse(elementIsVisible(backgroundSubmenu));
+  assertTrue(elementIsVisible(backgroundDisabledSubmenu));
+  assertFalse(elementIsVisible(shortcutsSubmenu));
+  assertFalse(elementIsVisible(colorSubmenu));
+
+  // Open the Shortcuts submenu. All other submenus should be hidden.
+  $(test.customizeMenu.IDS.SHORTCUTS_BUTTON).click();
+  assertFalse(elementIsVisible(backgroundSubmenu));
+  assertFalse(elementIsVisible(backgroundDisabledSubmenu));
+  assertTrue(elementIsVisible(shortcutsSubmenu));
+  assertFalse(elementIsVisible(colorSubmenu));
+
+  // Open the Color submenu.
+  $(test.customizeMenu.IDS.COLORS_BUTTON).click();
+  assertFalse(elementIsVisible(backgroundSubmenu));
+  assertFalse(elementIsVisible(backgroundDisabledSubmenu));
+  assertFalse(elementIsVisible(shortcutsSubmenu));
+  assertTrue(elementIsVisible(colorSubmenu));
+
+  // Open the Background submenu.
+  $(test.customizeMenu.IDS.BACKGROUNDS_BUTTON).click();
+  assertFalse(elementIsVisible(backgroundSubmenu));
+  assertTrue(elementIsVisible(backgroundDisabledSubmenu));
   assertFalse(elementIsVisible(shortcutsSubmenu));
   assertFalse(elementIsVisible(colorSubmenu));
 };

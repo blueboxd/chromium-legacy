@@ -100,6 +100,20 @@ enum class EnterTabSwitcherSnapshotResult {
   return self;
 }
 
+#pragma mark - Setters and getters
+
+- (id<BrowserInterface>)mainInterface {
+  return self.mainController.interfaceProvider.mainInterface;
+}
+
+- (id<BrowserInterface>)currentInterface {
+  return self.mainController.interfaceProvider.currentInterface;
+}
+
+- (id<BrowserInterface>)incognitoInterface {
+  return self.mainController.interfaceProvider.incognitoInterface;
+}
+
 #pragma mark - SceneStateObserver
 
 - (void)sceneState:(SceneState*)sceneState
@@ -195,8 +209,7 @@ enum class EnterTabSwitcherSnapshotResult {
   if (self.mainController.settingsNavigationController)
     return;
 
-  Browser* browser =
-      self.mainController.interfaceProvider.mainInterface.browser;
+  Browser* browser = self.mainInterface.browser;
   self.mainController.settingsNavigationController =
       [SettingsNavigationController autofillProfileControllerForBrowser:browser
                                                                delegate:self];
@@ -216,8 +229,7 @@ enum class EnterTabSwitcherSnapshotResult {
                 .isSettingsViewPresented);
     if (self.mainController.settingsNavigationController)
       return;
-    Browser* browser =
-        self.mainController.interfaceProvider.mainInterface.browser;
+    Browser* browser = self.mainInterface.browser;
     self.mainController.settingsNavigationController =
         [SettingsNavigationController userFeedbackControllerForBrowser:browser
                                                               delegate:self
@@ -248,8 +260,7 @@ enum class EnterTabSwitcherSnapshotResult {
 - (void)showSignin:(ShowSigninCommand*)command
     baseViewController:(UIViewController*)baseViewController {
   if (!self.mainController.signinInteractionCoordinator) {
-    Browser* mainBrowser =
-        self.mainController.interfaceProvider.mainInterface.browser;
+    Browser* mainBrowser = self.mainInterface.browser;
     self.mainController.signinInteractionCoordinator =
         [[SigninInteractionCoordinator alloc]
             initWithBrowser:mainBrowser
@@ -277,8 +288,7 @@ enum class EnterTabSwitcherSnapshotResult {
 
 - (void)showAdvancedSigninSettingsFromViewController:
     (UIViewController*)baseViewController {
-  Browser* mainBrowser =
-      self.mainController.interfaceProvider.mainInterface.browser;
+  Browser* mainBrowser = self.mainInterface.browser;
   self.mainController.signinInteractionCoordinator =
       [[SigninInteractionCoordinator alloc]
           initWithBrowser:mainBrowser
@@ -290,8 +300,7 @@ enum class EnterTabSwitcherSnapshotResult {
 
 // TODO(crbug.com/779791) : Remove settings commands from MainController.
 - (void)showAddAccountFromViewController:(UIViewController*)baseViewController {
-  Browser* mainBrowser =
-      self.mainController.interfaceProvider.mainInterface.browser;
+  Browser* mainBrowser = self.mainInterface.browser;
   if (!self.mainController.signinInteractionCoordinator) {
     self.mainController.signinInteractionCoordinator =
         [[SigninInteractionCoordinator alloc]
@@ -332,8 +341,7 @@ enum class EnterTabSwitcherSnapshotResult {
   [[DeferredInitializationRunner sharedInstance]
       runBlockIfNecessary:kPrefObserverInit];
 
-  Browser* browser =
-      self.mainController.interfaceProvider.mainInterface.browser;
+  Browser* browser = self.mainInterface.browser;
 
   self.mainController.settingsNavigationController =
       [SettingsNavigationController mainSettingsControllerForBrowser:browser
@@ -367,8 +375,7 @@ enum class EnterTabSwitcherSnapshotResult {
     return;
   }
 
-  Browser* browser =
-      self.mainController.interfaceProvider.mainInterface.browser;
+  Browser* browser = self.mainInterface.browser;
   self.mainController.settingsNavigationController =
       [SettingsNavigationController accountsControllerForBrowser:browser
                                                         delegate:self];
@@ -397,8 +404,7 @@ enum class EnterTabSwitcherSnapshotResult {
     return;
   }
 
-  Browser* browser =
-      self.mainController.interfaceProvider.mainInterface.browser;
+  Browser* browser = self.mainInterface.browser;
   self.mainController.settingsNavigationController =
       [SettingsNavigationController googleServicesControllerForBrowser:browser
                                                               delegate:self];
@@ -420,8 +426,7 @@ enum class EnterTabSwitcherSnapshotResult {
     return;
   }
 
-  Browser* browser =
-      self.mainController.interfaceProvider.mainInterface.browser;
+  Browser* browser = self.mainInterface.browser;
   self.mainController.settingsNavigationController =
       [SettingsNavigationController syncPassphraseControllerForBrowser:browser
                                                               delegate:self];
@@ -441,8 +446,7 @@ enum class EnterTabSwitcherSnapshotResult {
         showSavedPasswordsSettingsFromViewController:baseViewController];
     return;
   }
-  Browser* browser =
-      self.mainController.interfaceProvider.mainInterface.browser;
+  Browser* browser = self.mainInterface.browser;
   self.mainController.settingsNavigationController =
       [SettingsNavigationController savePasswordsControllerForBrowser:browser
                                                              delegate:self];
@@ -462,8 +466,7 @@ enum class EnterTabSwitcherSnapshotResult {
         showProfileSettingsFromViewController:baseViewController];
     return;
   }
-  Browser* browser =
-      self.mainController.interfaceProvider.mainInterface.browser;
+  Browser* browser = self.mainInterface.browser;
 
   self.mainController.settingsNavigationController =
       [SettingsNavigationController autofillProfileControllerForBrowser:browser
@@ -485,8 +488,7 @@ enum class EnterTabSwitcherSnapshotResult {
     return;
   }
 
-  Browser* browser =
-      self.mainController.interfaceProvider.mainInterface.browser;
+  Browser* browser = self.mainInterface.browser;
   self.mainController.settingsNavigationController =
       [SettingsNavigationController
           autofillCreditCardControllerForBrowser:browser
@@ -525,10 +527,8 @@ enum class EnterTabSwitcherSnapshotResult {
     // Disables browsing and purges web views.
     // Must be called only on the main thread.
     DCHECK([NSThread isMainThread]);
-    self.mainController.interfaceProvider.mainInterface.userInteractionEnabled =
-        NO;
-    self.mainController.interfaceProvider.incognitoInterface
-        .userInteractionEnabled = NO;
+    self.mainInterface.userInteractionEnabled = NO;
+    self.incognitoInterface.userInteractionEnabled = NO;
   } else if (showActivityIndicator) {
     // Show activity overlay so users know that clear browsing data is in
     // progress.
@@ -543,18 +543,14 @@ enum class EnterTabSwitcherSnapshotResult {
                  if (showActivityIndicator) {
                    // User interaction still needs to be disabled as a way to
                    // force reload all the web states and to reset NTPs.
-                   self.mainController.interfaceProvider.mainInterface
-                       .userInteractionEnabled = NO;
-                   self.mainController.interfaceProvider.incognitoInterface
-                       .userInteractionEnabled = NO;
+                   self.mainInterface.userInteractionEnabled = NO;
+                   self.incognitoInterface.userInteractionEnabled = NO;
 
                    [self.mainController.mainBVC.dispatcher
                        showActivityOverlay:NO];
                  }
-                 self.mainController.interfaceProvider.mainInterface
-                     .userInteractionEnabled = YES;
-                 self.mainController.interfaceProvider.incognitoInterface
-                     .userInteractionEnabled = YES;
+                 self.mainInterface.userInteractionEnabled = YES;
+                 self.incognitoInterface.userInteractionEnabled = YES;
                  [self.mainController.currentBVC setPrimary:YES];
 
                  if (completionBlock)

@@ -102,9 +102,10 @@ customize.IDS = {
   ATTR2: 'attr2',
   ATTRIBUTIONS: 'custom-bg-attr',
   BACK_CIRCLE: 'bg-sel-back-circle',
+  BACKGROUNDS_BUTTON: 'backgrounds-button',
   BACKGROUNDS_DEFAULT: 'backgrounds-default',
   BACKGROUNDS_DEFAULT_ICON: 'backgrounds-default-icon',
-  BACKGROUNDS_BUTTON: 'backgrounds-button',
+  BACKGROUNDS_DISABLED_MENU: 'backgrounds-disabled-menu',
   BACKGROUNDS_IMAGE_MENU: 'backgrounds-image-menu',
   BACKGROUNDS_MENU: 'backgrounds-menu',
   BACKGROUNDS_UPLOAD: 'backgrounds-upload',
@@ -1375,12 +1376,24 @@ customize.networkStateChanged = function(online) {
  */
 customize.richerPicker_openCustomizationMenu = function() {
   ntpApiHandle.logEvent(customize.LOG_TYPE.NTP_CUSTOMIZATION_MENU_OPENED);
-  customize.richerPicker_showSubmenu(
-      $(customize.IDS.BACKGROUNDS_BUTTON), $(customize.IDS.BACKGROUNDS_MENU));
+
+  const ntpTheme = assert(ntpApiHandle.ntpTheme);
+  if (!ntpTheme.customBackgroundDisabledByPolicy) {
+    customize.richerPicker_showSubmenu(
+        $(customize.IDS.BACKGROUNDS_BUTTON), $(customize.IDS.BACKGROUNDS_MENU));
+    customize.loadChromeBackgrounds();
+  } else {
+    customize.richerPicker_showSubmenu(
+        $(customize.IDS.BACKGROUNDS_BUTTON),
+        $(customize.IDS.BACKGROUNDS_DISABLED_MENU));
+    // Save the current Background submenu. Used to restore when the Background
+    // submenu is reopened.
+    customize.richerPicker_openBackgroundSubmenu.menuId =
+        customize.IDS.BACKGROUNDS_DISABLED_MENU;
+  }
 
   customize.richerPicker_preselectShortcutOptions();
   customize.richerPicker_preselectBackgroundOption();
-  customize.loadChromeBackgrounds();
   customize.loadColorsMenu();
   if (!$(customize.IDS.CUSTOMIZATION_MENU).open) {
     $(customize.IDS.CUSTOMIZATION_MENU).showModal();

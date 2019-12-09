@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="app_downloading.css">
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <oobe-dialog id="app-downloading-dialog" role="dialog" has-buttons
+        subtitle-key="appDownloadingScreenDescription"
         aria-label$="[[getDialogTitleA11yString_(numOfApps)]]"
         no-footer-padding>
       <iron-icon src="chrome://oobe/playstore.svg" slot="oobe-icon">
@@ -22,9 +23,6 @@
       <h1 slot="title" id="title-plural" hidden="[[hasSingleApp]]">
         [[i18nDynamic(locale, 'appDownloadingScreenTitlePlural', numOfApps)]]
       </h1>
-      <div slot="subtitle">
-        [[i18nDynamic(locale, 'appDownloadingScreenDescription')]]
-      </div>
       <div id="app-downloading-video-container" slot="footer">
         <if expr="chromeos and _google_chrome">
           <video loop="loop" autoplay="autoplay" muted>
@@ -36,9 +34,8 @@
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
         <oobe-next-button id="app-downloading-continue-setup-button"
-            on-tap="onContinue_" class="focus-on-show" inverse>
-          <div>[[i18nDynamic(locale, 'appDownloadingContinueSetup')]]</div>
-        </oobe-next-button>
+            text-key="appDownloadingContinueSetup" on-tap="onContinue_"
+            class="focus-on-show" inverse></oobe-next-button>
       </div>
     </oobe-dialog>
   </template>

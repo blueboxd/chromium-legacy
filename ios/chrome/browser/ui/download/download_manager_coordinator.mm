@@ -172,6 +172,7 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
 @synthesize bottomMarginHeightAnchor = _bottomMarginHeightAnchor;
 
 - (void)dealloc {
+  [self stop];
   [[InstallationNotifier sharedInstance] unregisterForNotifications:self];
 }
 

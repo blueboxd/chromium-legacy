@@ -51,7 +51,7 @@ ScriptPromise NativeFileSystemWriter::write(
   } else if (data.IsArrayBufferView()) {
     DOMArrayBufferView* array_buffer_view = data.GetAsArrayBufferView().View();
     blob_data->AppendBytes(array_buffer_view->BaseAddress(),
-                           array_buffer_view->deprecatedByteLengthAsUnsigned());
+                           array_buffer_view->byteLengthAsSizeT());
   } else if (data.IsBlob()) {
     blob = data.GetAsBlob();
   } else if (data.IsUSVString()) {

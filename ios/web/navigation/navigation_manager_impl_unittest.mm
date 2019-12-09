@@ -80,7 +80,6 @@ class MockNavigationManagerDelegate : public NavigationManagerDelegate {
   MOCK_METHOD0(RecordPageStateInNavigationItem, void());
   MOCK_METHOD2(OnGoToIndexSameDocumentNavigation,
                void(NavigationInitiationType type, bool has_user_gesture));
-  MOCK_METHOD0(WillChangeUserAgentType, void());
   MOCK_METHOD1(LoadCurrentItem, void(NavigationInitiationType type));
   MOCK_METHOD0(LoadIfNecessary, void());
   MOCK_METHOD0(Reload, void());
@@ -1582,7 +1581,6 @@ TEST_F(NavigationManagerTest, ReloadWithUserAgentType) {
   OCMExpect([mock_web_view_ URL])
       .andReturn([[NSURL alloc] initWithString:@"http://www.1.com"]);
 
-  EXPECT_CALL(navigation_manager_delegate(), WillChangeUserAgentType());
   EXPECT_CALL(navigation_manager_delegate(), RecordPageStateInNavigationItem());
   EXPECT_CALL(navigation_manager_delegate(), ClearTransientContent());
   EXPECT_CALL(navigation_manager_delegate(), ClearDialogs());
@@ -2187,8 +2185,6 @@ TEST_F(NavigationManagerTest, GoToIndexDifferentDocument) {
   EXPECT_CALL(navigation_manager_delegate(), RecordPageStateInNavigationItem());
   EXPECT_CALL(navigation_manager_delegate(), ClearTransientContent());
   EXPECT_CALL(navigation_manager_delegate(), ClearDialogs());
-  EXPECT_CALL(navigation_manager_delegate(), WillChangeUserAgentType())
-      .Times(0);
 
   navigation_manager()->GoToIndex(0);
   EXPECT_TRUE(navigation_manager()->GetItemAtIndex(0)->GetTransitionType() &
@@ -2223,34 +2219,7 @@ TEST_F(NavigationManagerTest, GoToIndexSameDocument) {
   EXPECT_CALL(navigation_manager_delegate(), RecordPageStateInNavigationItem());
   EXPECT_CALL(navigation_manager_delegate(), ClearTransientContent());
   EXPECT_CALL(navigation_manager_delegate(), ClearDialogs());
-  EXPECT_CALL(navigation_manager_delegate(), WillChangeUserAgentType())
-      .Times(0);
 
-  navigation_manager()->GoToIndex(0);
-  EXPECT_TRUE(navigation_manager()->GetItemAtIndex(0)->GetTransitionType() &
-              ui::PAGE_TRANSITION_FORWARD_BACK);
-}
-
-// Tests that WillChangeUserAgentType() is triggered when going to a navigation
-// item of different user agent type.
-TEST_F(NavigationManagerTest, GoToIndexDifferentUserAgentType) {
-  navigation_manager()->AddPendingItem(
-      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
-      web::NavigationInitiationType::BROWSER_INITIATED,
-      web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [mock_wk_list_ setCurrentURL:@"http://www.url.com/0"];
-  navigation_manager()->CommitPendingItem();
-
-  navigation_manager()->AddPendingItem(
-      GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_TYPED,
-      web::NavigationInitiationType::BROWSER_INITIATED,
-      web::NavigationManager::UserAgentOverrideOption::DESKTOP);
-  [mock_wk_list_ setCurrentURL:@"http://www.url.com/1"
-                  backListURLs:@[ @"http://www.url.com/0" ]
-               forwardListURLs:nil];
-  navigation_manager()->CommitPendingItem();
-
-  EXPECT_CALL(navigation_manager_delegate(), WillChangeUserAgentType());
   navigation_manager()->GoToIndex(0);
   EXPECT_TRUE(navigation_manager()->GetItemAtIndex(0)->GetTransitionType() &
               ui::PAGE_TRANSITION_FORWARD_BACK);

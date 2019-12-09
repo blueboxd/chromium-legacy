@@ -46,13 +46,14 @@ public class MessageCardViewBinderTest extends DummyUiActivityTestCase {
     private MessageCardView.ReviewActionProvider mUiReviewHandler = () -> {
         mReviewButtonClicked.set(true);
     };
-    private MessageCardView.DismissActionProvider mUiDismissHandler = () -> {
+    private MessageCardView.DismissActionProvider mUiDismissHandler = (int messageType) -> {
         mDismissButtonClicked.set(true);
     };
     private MessageCardView.ReviewActionProvider mMessageServiceActionHandler = () -> {
         mMessageServiceReviewCallbackRan.set(true);
     };
-    private MessageCardView.DismissActionProvider mMessageServiceDismissHandler = () -> {
+    private MessageCardView.DismissActionProvider mMessageServiceDismissHandler =
+            (int messageType) -> {
         mMessageServiceDismissCallbackRan.set(true);
     };
 

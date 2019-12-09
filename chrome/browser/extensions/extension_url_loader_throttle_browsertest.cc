@@ -225,7 +225,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionURLLoaderThrottleWithSplitCacheBrowserTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     ExtensionURLLoaderThrottleWithSplitCacheBrowserTest,
     testing::Bool());
 

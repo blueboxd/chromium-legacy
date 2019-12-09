@@ -6,8 +6,6 @@ import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("nfc") {
   sources = [
-    "ndef_error_event.cc",
-    "ndef_error_event.h",
     "ndef_message.cc",
     "ndef_message.h",
     "ndef_reader.cc",

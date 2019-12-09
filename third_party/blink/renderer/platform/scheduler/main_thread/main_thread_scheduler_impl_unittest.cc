@@ -3898,7 +3898,7 @@ class VeryHighPriorityForCompositingAlternatingBeginMainFrameExperimentTest
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     VeryHighPriorityForCompositingAlternatingBeginMainFrameExperimentTest,
     testing::Values(AntiStarvationLogic::kEnabled,
                     AntiStarvationLogic::kDisabled),
@@ -3935,7 +3935,7 @@ class VeryHighPriorityForCompositingAfterDelayUntilBeginMainFrameExperimentTest
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     VeryHighPriorityForCompositingAfterDelayUntilBeginMainFrameExperimentTest,
     testing::Values(AntiStarvationLogic::kEnabled,
                     AntiStarvationLogic::kDisabled),
@@ -3974,7 +3974,7 @@ class VeryHighPriorityForCompositingBudgetBeginMainFrameExperimentTest
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     VeryHighPriorityForCompositingBudgetBeginMainFrameExperimentTest,
     testing::Values(AntiStarvationLogic::kEnabled,
                     AntiStarvationLogic::kDisabled),

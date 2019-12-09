@@ -135,6 +135,7 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
   void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
 
   static void DisableAnimationForTesting();
+  views::View* GetLeftContainerForTesting();
   views::View* GetRightContainerForTesting();
   views::View* GetPageActionIconContainerForTesting();
 

@@ -70,8 +70,6 @@ class SMILTimeContainer final : public GarbageCollected<SMILTimeContainer> {
   void ResetDocumentTime();
   void SetDocumentOrderIndexesDirty() { document_order_indexes_dirty_ = true; }
 
-  void QueueDiscard(SVGSMILElement* discard_element);
-
   // Advance the animation timeline a single frame.
   void AdvanceFrameForTesting();
 
@@ -114,7 +112,6 @@ class SMILTimeContainer final : public GarbageCollected<SMILTimeContainer> {
   void UpdateIntervals(SMILTime presentation_time);
   void UpdateAnimationTimings(SMILTime elapsed);
   void ApplyTimedEffects(SMILTime elapsed);
-  bool PerformDiscards();
   SMILTime NextProgressTime(SMILTime presentation_time) const;
   void ServiceOnNextFrame();
   void ScheduleWakeUp(base::TimeDelta delay_time, FrameSchedulingState);
@@ -145,7 +142,6 @@ class SMILTimeContainer final : public GarbageCollected<SMILTimeContainer> {
 
   using AnimatedTargets = HeapHashCountedSet<WeakMember<SVGElement>>;
   AnimatedTargets animated_targets_;
-  HeapHashSet<Member<SVGSMILElement>> pending_discards_;
 
   PriorityQueue<SMILTime, SVGSMILElement> priority_queue_;
 

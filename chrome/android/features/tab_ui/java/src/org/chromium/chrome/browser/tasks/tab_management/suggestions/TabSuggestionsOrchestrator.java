@@ -148,6 +148,7 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
         if (tabSuggestionFeedback.tabSuggestionResponse
                 == TabSuggestionFeedback.TabSuggestionResponse.NOT_CONSIDERED) {
             RecordUserAction.record("TabsSuggestions.Close.SuggestionsReview.Dismissed");
+            return;
         } else {
             RecordUserAction.record("TabsSuggestions.Close.SuggestionsReview.Accepted");
             if (tabSuggestionFeedback.tabSuggestionResponse
@@ -155,6 +156,7 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
                 RecordUserAction.record("TabsSuggestions.Close.Accepted");
             } else {
                 RecordUserAction.record("TabsSuggestions.Close.Dismissed");
+                return;
             }
         }
 

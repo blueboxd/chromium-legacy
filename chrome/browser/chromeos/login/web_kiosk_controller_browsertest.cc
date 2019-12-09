@@ -149,4 +149,77 @@ IN_PROC_BROWSER_TEST_F(WebKioskControllerTest, ConfigureNetworkBeforeProfile) {
   EXPECT_TRUE(session_manager::SessionManager::Get()->IsSessionStarted());
 }
 
+IN_PROC_BROWSER_TEST_F(WebKioskControllerTest,
+                       ConfigureNetworkDuringInstallation) {
+  controller()->StartWebKiosk(EmptyAccountId());
+  ExpectState(AppState::CREATING_PROFILE, NetworkUIState::NOT_SHOWING);
+
+  EXPECT_CALL(*launcher(), Initialize(_)).Times(1);
+  session_controls()->OnProfilePrepared(profile(), false);
+
+  launch_controls()->InitializeNetwork();
+  ExpectState(AppState::INIT_NETWORK, NetworkUIState::NOT_SHOWING);
+  EXPECT_CALL(*launcher(), ContinueWithNetworkReady()).Times(1);
+  SetOnline(true);
+
+  launch_controls()->OnAppStartedInstalling();
+
+  // User presses the hotkey, current installation is canceled.
+  EXPECT_CALL(*launcher(), CancelCurrentInstallation()).Times(1);
+  view_controls()->OnNetworkConfigRequested();
+  ExpectState(AppState::INIT_NETWORK, NetworkUIState::SHOWING);
+
+  EXPECT_CALL(*launcher(), ContinueWithNetworkReady()).Times(1);
+  view_controls()->OnNetworkConfigFinished();
+
+  launch_controls()->OnAppStartedInstalling();
+  ExpectState(AppState::INSTALLING, NetworkUIState::NOT_SHOWING);
+
+  launch_controls()->OnAppPrepared();
+  ExpectState(AppState::INSTALLED, NetworkUIState::NOT_SHOWING);
+
+  EXPECT_CALL(*launcher(), LaunchApp()).Times(1);
+  FireSplashScreenTimer();
+
+  launch_controls()->OnAppLaunched();
+  ExpectState(AppState::LAUNCHED, NetworkUIState::NOT_SHOWING);
+  EXPECT_TRUE(session_manager::SessionManager::Get()->IsSessionStarted());
+}
+
+IN_PROC_BROWSER_TEST_F(WebKioskControllerTest,
+                       ConnectionLostDuringInstallation) {
+  controller()->StartWebKiosk(EmptyAccountId());
+  ExpectState(AppState::CREATING_PROFILE, NetworkUIState::NOT_SHOWING);
+
+  EXPECT_CALL(*launcher(), Initialize(_)).Times(1);
+  session_controls()->OnProfilePrepared(profile(), false);
+
+  launch_controls()->InitializeNetwork();
+  ExpectState(AppState::INIT_NETWORK, NetworkUIState::NOT_SHOWING);
+  EXPECT_CALL(*launcher(), ContinueWithNetworkReady()).Times(1);
+  SetOnline(true);
+
+  launch_controls()->OnAppStartedInstalling();
+
+  EXPECT_CALL(*launcher(), CancelCurrentInstallation()).Times(1);
+  SetOnline(false);
+  ExpectState(AppState::INIT_NETWORK, NetworkUIState::SHOWING);
+
+  EXPECT_CALL(*launcher(), ContinueWithNetworkReady()).Times(1);
+  view_controls()->OnNetworkConfigFinished();
+
+  launch_controls()->OnAppStartedInstalling();
+  ExpectState(AppState::INSTALLING, NetworkUIState::NOT_SHOWING);
+
+  launch_controls()->OnAppPrepared();
+  ExpectState(AppState::INSTALLED, NetworkUIState::NOT_SHOWING);
+
+  EXPECT_CALL(*launcher(), LaunchApp()).Times(1);
+  FireSplashScreenTimer();
+
+  launch_controls()->OnAppLaunched();
+  ExpectState(AppState::LAUNCHED, NetworkUIState::NOT_SHOWING);
+  EXPECT_TRUE(session_manager::SessionManager::Get()->IsSessionStarted());
+}
+
 }  // namespace chromeos

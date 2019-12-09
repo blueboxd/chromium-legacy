@@ -265,14 +265,10 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "HTML form for submit";
     case SavePasswordProgressLogger::STRING_CREATED_PASSWORD_FORM:
       return "Created PasswordForm";
-    case SavePasswordProgressLogger::STRING_SUBMITTED_PASSWORD_REPLACED:
-      return "Submitted password replaced with the provisionally saved one";
     case SavePasswordProgressLogger::STRING_DID_START_PROVISIONAL_LOAD_METHOD:
       return "PasswordAutofillAgent::DidStartProvisionalLoad";
     case SavePasswordProgressLogger::STRING_FRAME_NOT_MAIN_FRAME:
       return "|frame| is not the main frame";
-    case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVED_FORM_FOR_FRAME:
-      return "provisionally_saved_forms_[form_frame]";
     case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVE_FORM_METHOD:
       return "PasswordManager::ProvisionallySaveForm";
     case SavePasswordProgressLogger::STRING_EMPTY_PASSWORD:
@@ -313,9 +309,6 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Show password prompt";
     case SavePasswordProgressLogger::STRING_PASSWORDMANAGER_AUTOFILL:
       return "PasswordManager::Autofill";
-    case SavePasswordProgressLogger::
-        STRING_PASSWORDMANAGER_SHOW_INITIAL_PASSWORD_ACCOUNT_SUGGESTIONS:
-      return "PasswordManager::ShowInitialPasswordAccountSuggestions";
     case SavePasswordProgressLogger::STRING_WAIT_FOR_USERNAME:
       return "wait_for_username";
     case SavePasswordProgressLogger::
@@ -352,19 +345,6 @@ std::string SavePasswordProgressLogger::GetStringFromID(
              "visible";
     case SavePasswordProgressLogger::STRING_ON_FILL_PASSWORD_FORM_METHOD:
       return "PasswordAutofillAgent::OnFillPasswordForm";
-    case SavePasswordProgressLogger::
-        STRING_ON_SHOW_INITIAL_PASSWORD_ACCOUNT_SUGGESTIONS:
-      return "AutofillAgent::OnShowInitialPasswordAccountSuggestions";
-    case SavePasswordProgressLogger::STRING_AMBIGUOUS_OR_EMPTY_NAMES:
-      return "ambiguous_or_empty_names";
-    case SavePasswordProgressLogger::STRING_NUMBER_OF_POTENTIAL_FORMS_TO_FILL:
-      return "Number of potential forms to fill";
-    case SavePasswordProgressLogger::STRING_CONTAINS_FILLABLE_USERNAME_FIELD:
-      return "form_contains_fillable_username_field";
-    case SavePasswordProgressLogger::STRING_USERNAME_FIELD_NAME_EMPTY:
-      return "username_field_name empty";
-    case SavePasswordProgressLogger::STRING_PASSWORD_FIELD_NAME_EMPTY:
-      return "password_field_name empty";
     case SavePasswordProgressLogger::STRING_FORM_DATA_WAIT:
       return "form_data's wait_for_username";
     case SavePasswordProgressLogger::STRING_FILL_USERNAME_AND_PASSWORD_METHOD:

@@ -96,10 +96,6 @@ void WebClient::AllowCertificateError(
   callback.Run(false);
 }
 
-bool WebClient::IsSlimNavigationManagerEnabled() const {
-  return base::FeatureList::IsEnabled(web::features::kSlimNavigationManager);
-}
-
 void WebClient::PrepareErrorPage(WebState* web_state,
                                  const GURL& url,
                                  NSError* error,

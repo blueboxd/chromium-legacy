@@ -10,7 +10,7 @@
 Polymer({
   is: 'recommend-apps',
 
-  behaviors: [I18nBehavior, OobeDialogHostBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
   properties: {
     /**

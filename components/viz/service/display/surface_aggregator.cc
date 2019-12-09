@@ -115,31 +115,30 @@ struct SurfaceAggregator::RoundedCornerInfo {
 };
 
 struct SurfaceAggregator::ChildSurfaceInfo {
+  struct QuadStateInfo {
+    gfx::Transform transform_to_root_target;
+    gfx::Transform quad_to_target_transform;
+    gfx::Rect clip_rect;
+    bool is_clipped;
+  };
+
   ChildSurfaceInfo(RenderPassId parent_pass_id,
-                   const gfx::Transform& quad_to_target_transform,
                    const gfx::Rect& quad_rect,
-                   bool stretch_content_to_fill_bounds,
-                   bool is_clipped,
-                   const gfx::Rect& clip_rect)
+                   bool stretch_content_to_fill_bounds)
       : parent_pass_id(parent_pass_id),
-        quad_to_target_transform(quad_to_target_transform),
         quad_rect(quad_rect),
-        stretch_content_to_fill_bounds(stretch_content_to_fill_bounds),
-        is_clipped(is_clipped),
-        clip_rect(clip_rect) {
-    // In most cases there would be one or two different transforms to root
-    // target. Reserve two elements to avoid unnecessary copies.
-    transforms_to_root_target.reserve(2);
+        stretch_content_to_fill_bounds(stretch_content_to_fill_bounds) {
+    // In most cases there would be one or two different embeddings of a
+    // surface in the render pass tree. Reserve two elements to avoid
+    // unnecessary copies.
+    quad_state_infos.reserve(2);
   }
 
   RenderPassId parent_pass_id;
-  gfx::Transform quad_to_target_transform;
   gfx::Rect quad_rect;
   bool stretch_content_to_fill_bounds;
-  bool is_clipped;
-  gfx::Rect clip_rect;
   bool has_moved_pixels = false;
-  std::vector<gfx::Transform> transforms_to_root_target;
+  std::vector<QuadStateInfo> quad_state_infos;
 };
 
 struct SurfaceAggregator::RenderPassMapEntry {
@@ -1256,20 +1255,19 @@ void SurfaceAggregator::FindChildSurfaces(
             std::piecewise_construct,
             std::forward_as_tuple(surface_quad->surface_range),
             std::forward_as_tuple(
-                remapped_pass_id,
-                surface_quad->shared_quad_state->quad_to_target_transform,
-                surface_quad->rect,
-                surface_quad->stretch_content_to_fill_bounds,
-                surface_quad->shared_quad_state->is_clipped,
-                surface_quad->shared_quad_state->clip_rect));
+                remapped_pass_id, surface_quad->rect,
+                surface_quad->stretch_content_to_fill_bounds));
         DCHECK(insert_pair.second);
         it = insert_pair.first;
       }
       auto& child_surface_info = it->second;
       if (in_moved_pixel_pass)
         child_surface_info.has_moved_pixels = true;
-      child_surface_info.transforms_to_root_target.push_back(
-          transform_to_root_target);
+      child_surface_info.quad_state_infos.push_back(
+          {transform_to_root_target,
+           surface_quad->shared_quad_state->quad_to_target_transform,
+           surface_quad->shared_quad_state->clip_rect,
+           surface_quad->shared_quad_state->is_clipped});
     } else if (quad->material == DrawQuad::Material::kRenderPass) {
       // A child render pass has been found. Find its child surfaces
       // recursively.
@@ -1446,18 +1444,19 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
     // coordinate space. There would be multiple transforms for a child surface
     // if it is embedded multiple times which means its damage rect should be
     // added multiple times.
-    for (const auto& transform_to_root_target :
-         child_surface_info.transforms_to_root_target) {
+    for (const auto& quad_state_info : child_surface_info.quad_state_infos) {
       gfx::Transform target_to_surface_transform(
-          transform_to_root_target,
-          child_surface_info.quad_to_target_transform);
+          quad_state_info.transform_to_root_target,
+          quad_state_info.quad_to_target_transform);
+
       gfx::Rect child_surface_damage_in_root_target_space =
           cc::MathUtil::MapEnclosingClippedRect(target_to_surface_transform,
                                                 child_surface_damage);
-      if (child_surface_info.is_clipped) {
+      if (quad_state_info.is_clipped) {
         gfx::Rect clip_rect_in_root_target_space =
-            cc::MathUtil::MapEnclosingClippedRect(transform_to_root_target,
-                                                  child_surface_info.clip_rect);
+            cc::MathUtil::MapEnclosingClippedRect(
+                quad_state_info.transform_to_root_target,
+                quad_state_info.clip_rect);
         child_surface_damage_in_root_target_space.Intersect(
             clip_rect_in_root_target_space);
       }

@@ -1030,7 +1030,7 @@ class LoadingPredictorNetworkIsolationKeyBrowserTest
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     LoadingPredictorNetworkIsolationKeyBrowserTest,
     ::testing::Values(NetworkIsolationKeyMode::kNone,
                       NetworkIsolationKeyMode::kTopFrameOrigin,

@@ -31,8 +31,6 @@ import logging
 import re
 import sys
 
-import cyglog_to_orderfile
-import cygprofile_utils
 import symbol_extractor
 
 # Suffixes for symbols.  These are due to method splitting for inlining and

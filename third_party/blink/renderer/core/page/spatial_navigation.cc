@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 
@@ -53,6 +54,8 @@ namespace blink {
 // std::numeric_limits<double>::lowest() because, if subtracted, it becomes
 // NaN which will make all following arithmetic NaN too (an unusable number).
 constexpr double kMinDistance = std::numeric_limits<int>::lowest();
+constexpr double kPriorityClassA = kMinDistance;
+constexpr double kPriorityClassB = kMinDistance / 2;
 
 constexpr int kFudgeFactor = 2;
 
@@ -581,11 +584,29 @@ double Alignment(SpatialNavigationDirection direction,
   }
 }
 
+bool BothOnTopmostPaintLayerInStackingContext(
+    const FocusCandidate& current_interest,
+    const FocusCandidate& candidate) {
+  if (!current_interest.visible_node)
+    return false;
+
+  const LayoutObject* origin = current_interest.visible_node->GetLayoutObject();
+  const PaintLayer* focused_layer = origin->PaintingLayer();
+  if (!focused_layer || focused_layer->IsRootLayer())
+    return false;
+
+  const LayoutObject* next = candidate.visible_node->GetLayoutObject();
+  const PaintLayer* candidate_layer = next->PaintingLayer();
+  if (focused_layer != candidate_layer)
+    return false;
+
+  return !candidate_layer->HasVisibleDescendant();
+}
+
 double ComputeDistanceDataForNode(SpatialNavigationDirection direction,
                                   const FocusCandidate& current_interest,
                                   const FocusCandidate& candidate) {
   double distance = 0.0;
-  double overlap = 0.0;
   PhysicalRect node_rect = candidate.rect_in_root_frame;
   PhysicalRect current_rect = current_interest.rect_in_root_frame;
   if (node_rect.Contains(current_rect)) {
@@ -596,9 +617,10 @@ double ComputeDistanceDataForNode(SpatialNavigationDirection direction,
   }
 
   if (current_rect.Contains(node_rect)) {
-    // We give priority to "insiders", candidates that are completely inside the
-    // current focus rect, by giving them a negative, < 0, distance number.
-    distance = kMinDistance;
+    // We give highest priority to "insiders", candidates that are completely
+    // inside the current focus rect, by giving them a negative, < 0, distance
+    // number.
+    distance = kPriorityClassA;
 
     // For insiders we cannot meassure the distance from the outer box. Instead,
     // we meassure distance _from_ the focused container's rect's "opposite
@@ -611,10 +633,11 @@ double ComputeDistanceDataForNode(SpatialNavigationDirection direction,
     // "outsider".
   } else if (!IsRectInDirection(direction, current_rect, node_rect)) {
     return kMaxDistance;
-  } else {
-    PhysicalRect intersection_rect = Intersection(current_rect, node_rect);
-    overlap =
-        (intersection_rect.Width() * intersection_rect.Height()).ToDouble();
+  } else if (BothOnTopmostPaintLayerInStackingContext(current_interest,
+                                                      candidate)) {
+    // Prioritize "popup candidates" over other candidates by giving them a
+    // negative, < 0, distance number.
+    distance = kPriorityClassB;
   }
 
   LayoutPoint exit_point;
@@ -664,10 +687,11 @@ double ComputeDistanceDataForNode(SpatialNavigationDirection direction,
       return kMaxDistance;
   }
 
-  // Distance calculation is based on https://drafts.csswg.org/css-nav-1/.
-  return distance + navigation_axis_distance -
-         Alignment(direction, current_rect, node_rect) +
-         weighted_orthogonal_axis_distance - sqrt(overlap);
+  // We try to formalize this distance calculation at
+  // https://drafts.csswg.org/css-nav-1/.
+  distance += weighted_orthogonal_axis_distance.ToDouble() +
+              navigation_axis_distance.ToDouble();
+  return distance - Alignment(direction, current_rect, node_rect);
 }
 
 // Returns a thin rectangle that represents one of |box|'s edges.

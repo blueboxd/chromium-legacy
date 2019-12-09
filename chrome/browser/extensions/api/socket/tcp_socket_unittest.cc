@@ -127,7 +127,7 @@ class TCPSocketUnitTest : public TCPSocketUnitTestBase,
   net::MockClientSocketFactory mock_client_socket_factory_;
 };
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          TCPSocketUnitTest,
                          testing::Values(net::SYNCHRONOUS, net::ASYNC));
 
@@ -560,7 +560,7 @@ class TCPSocketSettingsTest : public TCPSocketUnitTestBase,
   TestSocketFactory client_socket_factory_;
 };
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          TCPSocketSettingsTest,
                          testing::Bool());
 

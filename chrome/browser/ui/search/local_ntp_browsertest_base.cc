@@ -83,6 +83,10 @@ bool TestInstantServiceObserver::IsUsingDefaultTheme() {
   return theme_.using_default_theme;
 }
 
+bool TestInstantServiceObserver::IsCustomBackgroundDisabledByPolicy() {
+  return theme_.custom_background_disabled_by_policy;
+}
+
 void TestInstantServiceObserver::NtpThemeChanged(const NtpTheme& theme) {
   theme_ = theme;
 

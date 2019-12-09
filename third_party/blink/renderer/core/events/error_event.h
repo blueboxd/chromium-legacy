@@ -36,6 +36,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/world_safe_v8_reference.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/events/error_event_init.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
@@ -43,7 +44,7 @@
 
 namespace blink {
 
-class ErrorEvent final : public Event {
+class CORE_EXPORT ErrorEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

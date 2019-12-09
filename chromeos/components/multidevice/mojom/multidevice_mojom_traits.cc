@@ -57,8 +57,8 @@ std::string StructTraits<chromeos::multidevice::mojom::RemoteDeviceDataView,
 const std::string&
 StructTraits<chromeos::multidevice::mojom::RemoteDeviceDataView,
              chromeos::multidevice::RemoteDevice>::
-    user_id(const chromeos::multidevice::RemoteDevice& remote_device) {
-  return remote_device.user_id;
+    user_email(const chromeos::multidevice::RemoteDevice& remote_device) {
+  return remote_device.user_email;
 }
 
 const std::string&
@@ -120,8 +120,8 @@ bool StructTraits<chromeos::multidevice::mojom::RemoteDeviceDataView,
   std::string device_id;
   base::Time last_update_time;
 
-  if (!in.ReadUserId(&out->user_id) || !in.ReadInstanceId(&out->instance_id) ||
-      !in.ReadDeviceName(&out->name) ||
+  if (!in.ReadUserEmail(&out->user_email) ||
+      !in.ReadInstanceId(&out->instance_id) || !in.ReadDeviceName(&out->name) ||
       !in.ReadPiiFreeDeviceName(&out->pii_free_name) ||
       !in.ReadDeviceId(&device_id) ||
       !in.ReadPersistentSymmetricKey(&out->persistent_symmetric_key) ||

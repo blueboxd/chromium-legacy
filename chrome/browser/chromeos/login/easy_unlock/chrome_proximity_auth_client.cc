@@ -50,7 +50,7 @@ void ChromeProximityAuthClient::FinalizeSignin(const std::string& secret) {
 }
 
 void ChromeProximityAuthClient::GetChallengeForUserAndDevice(
-    const std::string& user_id,
+    const std::string& user_email,
     const std::string& remote_public_key,
     const std::string& channel_binding_data,
     base::Callback<void(const std::string& challenge)> callback) {
@@ -62,7 +62,7 @@ void ChromeProximityAuthClient::GetChallengeForUserAndDevice(
   }
 
   static_cast<EasyUnlockServiceSignin*>(easy_unlock_service)
-      ->WrapChallengeForUserAndDevice(AccountId::FromUserEmail(user_id),
+      ->WrapChallengeForUserAndDevice(AccountId::FromUserEmail(user_email),
                                       remote_public_key, channel_binding_data,
                                       callback);
 }

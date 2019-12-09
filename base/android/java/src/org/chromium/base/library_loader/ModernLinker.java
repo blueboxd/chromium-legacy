@@ -5,7 +5,6 @@
 package org.chromium.base.library_loader;
 
 import org.chromium.base.Log;
-import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.JniIgnoreNatives;
 
 import javax.annotation.concurrent.GuardedBy;
@@ -51,10 +50,9 @@ class ModernLinker extends Linker {
             // We are in the browser, and with a current load address that indicates that there
             // is enough address space for shared RELRO to operate. Create the shared RELRO, and
             // store it in the map.
-            String relroPath = PathUtils.getDataDirectory() + "/RELRO:" + libFilePath;
             LibInfo libInfo = new LibInfo();
             libInfo.mLibFilePath = libFilePath;
-            if (!nativeLoadLibraryCreateRelros(libFilePath, loadAddress, relroPath, libInfo)) {
+            if (!nativeLoadLibraryCreateRelros(libFilePath, loadAddress, libInfo)) {
                 Log.e(TAG, "Unable to create relro, retrying without");
                 nativeLoadLibraryNoRelros(libFilePath);
                 libInfo.mRelroFd = -1;
@@ -101,7 +99,7 @@ class ModernLinker extends Linker {
     }
 
     private static native boolean nativeLoadLibraryCreateRelros(
-            String dlopenExtPath, long loadAddress, String relroPath, LibInfo libInfo);
+            String dlopenExtPath, long loadAddress, LibInfo libInfo);
     private static native boolean nativeLoadLibraryUseRelros(
             String dlopenExtPath, long loadAddress, int fd);
     private static native boolean nativeLoadLibraryNoRelros(String dlopenExtPath);

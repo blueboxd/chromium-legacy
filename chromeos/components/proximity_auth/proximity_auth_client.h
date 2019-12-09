@@ -41,7 +41,7 @@ class ProximityAuthClient {
   // using |channel_binding_data|.
   // |callback| will be invoked when the challenge is acquired.
   virtual void GetChallengeForUserAndDevice(
-      const std::string& user_id,
+      const std::string& user_email,
       const std::string& remote_public_key,
       const std::string& channel_binding_data,
       base::Callback<void(const std::string& challenge)> callback) = 0;

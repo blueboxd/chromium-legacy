@@ -37,8 +37,6 @@ import org.chromium.mojo.system.MojoException;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -130,7 +128,7 @@ public class NfcImpl implements Nfc {
 
         mDelegate.trackActivityForHost(mHostId, onActivityUpdatedCallback);
 
-        if (!mHasPermission || Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+        if (!mHasPermission) {
             Log.w(TAG, "NFC operations are not permitted.");
             mNfcAdapter = null;
             mNfcManager = null;
@@ -422,8 +420,6 @@ public class NfcImpl implements Nfc {
      * @see android.nfc.NfcAdapter#enableReaderMode
      */
     private void enableReaderModeIfNeeded() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return;
-
         if (mReaderCallbackHandler != null || mActivity == null || mNfcAdapter == null) return;
 
         // Do not enable reader mode, if there are no active push / watch operations.
@@ -443,8 +439,6 @@ public class NfcImpl implements Nfc {
      */
     @TargetApi(Build.VERSION_CODES.KITKAT)
     private void disableReaderMode() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return;
-
         // There is no API that could query whether reader mode is enabled for adapter.
         // If mReaderCallbackHandler is null, reader mode is not enabled.
         if (mReaderCallbackHandler == null) return;
@@ -581,67 +575,31 @@ public class NfcImpl implements Nfc {
 
     /**
      * Implements matching algorithm.
+     * https://w3c.github.io/web-nfc/#dispatching-nfc-content
      */
     private boolean matchesWatchOptions(NdefMessage message, NdefScanOptions options) {
-        // Filter by WebNfc watch Id.
-        if (!matchesWebNfcId(message.url, options.id)) return false;
+        // A message with no records is to notify that the tag is already formatted to support NDEF
+        // but does not contain a message yet. We always dispatch it for all options.
+        if (message.data.length == 0) return true;
 
-        // Matches any record / media type.
-        if ((options.mediaType == null || options.mediaType.isEmpty())
-                && options.recordType == null) {
+        for (int i = 0; i < message.data.length; i++) {
+            if (options.id != null && !options.id.equals(message.data[i].id)) {
+                continue;
+            }
+            if (options.recordType != null
+                    && !options.recordType.equals(message.data[i].recordType)) {
+                continue;
+            }
+            if (!options.mediaType.isEmpty()
+                    && !options.mediaType.equals(message.data[i].mediaType)) {
+                continue;
+            }
+
+            // Found one record matches, means the message matches.
             return true;
         }
 
-        // Filter by mediaType and recordType
-        for (int i = 0; i < message.data.length; i++) {
-            boolean matchedMediaType;
-            boolean matchedRecordType;
-
-            if (options.mediaType == null || options.mediaType.isEmpty()) {
-                // If media type for the watch options is empty, match all media types.
-                matchedMediaType = true;
-            } else {
-                matchedMediaType = options.mediaType.equals(message.data[i].mediaType);
-            }
-
-            if (options.recordType == null) {
-                // If record type for the watch options is null, match all record types.
-                matchedRecordType = true;
-            } else {
-                matchedRecordType = options.recordType.equals(message.data[i].recordType);
-            }
-
-            if (matchedMediaType && matchedRecordType) return true;
-        }
-
         return false;
-    }
-
-    /**
-     * WebNfc Id match algorithm.
-     * https://w3c.github.io/web-nfc/#url-pattern-match-algorithm
-     */
-    private boolean matchesWebNfcId(String id, String pattern) {
-        if (id != null && !id.isEmpty() && pattern != null && !pattern.isEmpty()) {
-            try {
-                URL id_url = new URL(id);
-                URL pattern_url = new URL(pattern);
-
-                if (!id_url.getProtocol().equals(pattern_url.getProtocol())) return false;
-                if (!id_url.getHost().endsWith("." + pattern_url.getHost())
-                        && !id_url.getHost().equals(pattern_url.getHost())) {
-                    return false;
-                }
-                if (pattern_url.getPath().equals(ANY_PATH)) return true;
-                if (id_url.getPath().startsWith(pattern_url.getPath())) return true;
-                return false;
-
-            } catch (MalformedURLException e) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /**

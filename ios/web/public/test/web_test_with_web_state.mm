@@ -137,8 +137,7 @@ void WebTestWithWebState::LoadHtml(NSString* html, const GURL& url) {
   // |-loadHTML|.
   // TODO(crbug.com/777884): consider changing |-loadHTML| to match WKWebView's
   // |-loadHTMLString:baseURL| that doesn't create a navigation entry.
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-      !web_state()->GetNavigationManager()->GetItemCount()) {
+  if (!web_state()->GetNavigationManager()->GetItemCount()) {
     GURL placeholder_url = wk_navigation_util::CreatePlaceholderUrlForUrl(url);
     NavigationManager::WebLoadParams params(placeholder_url);
     web_state()->GetNavigationManager()->LoadURLWithParams(params);

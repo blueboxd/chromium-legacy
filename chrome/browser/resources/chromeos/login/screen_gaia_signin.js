@@ -70,7 +70,7 @@ const DialogMode = {
 Polymer({
   is: 'gaia-signin',
 
-  behaviors: [I18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
 
   EXTERNAL_API: [
     'loadAuthExtension',

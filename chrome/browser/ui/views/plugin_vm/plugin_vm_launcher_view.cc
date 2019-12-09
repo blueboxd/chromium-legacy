@@ -174,58 +174,6 @@ PluginVmLauncherView* PluginVmLauncherView::GetActiveViewForTesting() {
   return g_plugin_vm_launcher_view;
 }
 
-int PluginVmLauncherView::GetDialogButtons() const {
-  switch (state_) {
-    case State::START_DLC_DOWNLOADING:
-    case State::DOWNLOADING_DLC:
-    case State::START_DOWNLOADING:
-    case State::DOWNLOADING:
-    case State::IMPORTING:
-      return ui::DIALOG_BUTTON_CANCEL;
-    case State::FINISHED:
-      return ui::DIALOG_BUTTON_OK;
-    case State::ERROR:
-      DCHECK(reason_);
-      switch (*reason_) {
-        case plugin_vm::PluginVmImageManager::FailureReason::NOT_ALLOWED:
-          return ui::DIALOG_BUTTON_CANCEL;
-        default:
-          return ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK;
-      }
-  }
-}
-
-base::string16 PluginVmLauncherView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  switch (state_) {
-    case State::START_DLC_DOWNLOADING:
-    case State::DOWNLOADING_DLC:
-    case State::START_DOWNLOADING:
-    case State::DOWNLOADING:
-    case State::IMPORTING: {
-      DCHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
-      return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
-    }
-    case State::FINISHED: {
-      DCHECK_EQ(button, ui::DIALOG_BUTTON_OK);
-      return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_LAUNCH_BUTTON);
-    }
-    case State::ERROR: {
-      DCHECK(reason_);
-      switch (*reason_) {
-        case plugin_vm::PluginVmImageManager::FailureReason::NOT_ALLOWED:
-          DCHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
-          return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
-        default:
-          return l10n_util::GetStringUTF16(
-              button == ui::DIALOG_BUTTON_OK
-                  ? IDS_PLUGIN_VM_LAUNCHER_RETRY_BUTTON
-                  : IDS_APP_CANCEL);
-      }
-    }
-  }
-}
-
 bool PluginVmLauncherView::ShouldShowWindowTitle() const {
   return false;
 }
@@ -477,6 +425,58 @@ PluginVmLauncherView::~PluginVmLauncherView() {
   g_plugin_vm_launcher_view = nullptr;
 }
 
+int PluginVmLauncherView::GetCurrentDialogButtons() const {
+  switch (state_) {
+    case State::START_DLC_DOWNLOADING:
+    case State::DOWNLOADING_DLC:
+    case State::START_DOWNLOADING:
+    case State::DOWNLOADING:
+    case State::IMPORTING:
+      return ui::DIALOG_BUTTON_CANCEL;
+    case State::FINISHED:
+      return ui::DIALOG_BUTTON_OK;
+    case State::ERROR:
+      DCHECK(reason_);
+      switch (*reason_) {
+        case plugin_vm::PluginVmImageManager::FailureReason::NOT_ALLOWED:
+          return ui::DIALOG_BUTTON_CANCEL;
+        default:
+          return ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK;
+      }
+  }
+}
+
+base::string16 PluginVmLauncherView::GetCurrentDialogButtonLabel(
+    ui::DialogButton button) const {
+  switch (state_) {
+    case State::START_DLC_DOWNLOADING:
+    case State::DOWNLOADING_DLC:
+    case State::START_DOWNLOADING:
+    case State::DOWNLOADING:
+    case State::IMPORTING: {
+      DCHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
+      return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
+    }
+    case State::FINISHED: {
+      DCHECK_EQ(button, ui::DIALOG_BUTTON_OK);
+      return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_LAUNCH_BUTTON);
+    }
+    case State::ERROR: {
+      DCHECK(reason_);
+      switch (*reason_) {
+        case plugin_vm::PluginVmImageManager::FailureReason::NOT_ALLOWED:
+          DCHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
+          return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
+        default:
+          return l10n_util::GetStringUTF16(
+              button == ui::DIALOG_BUTTON_OK
+                  ? IDS_PLUGIN_VM_LAUNCHER_RETRY_BUTTON
+                  : IDS_APP_CANCEL);
+      }
+    }
+  }
+}
+
 void PluginVmLauncherView::AddedToWidget() {
   // Defensive check that ensures an error message is shown if this
   // dialogue is reached somehow although PluginVm has been disabled.
@@ -499,6 +499,19 @@ void PluginVmLauncherView::OnStateUpdated() {
   SetBigMessageLabel();
   SetMessageLabel();
   SetBigImage();
+
+  int buttons = GetCurrentDialogButtons();
+  DialogDelegate::set_buttons(buttons);
+  if (buttons & ui::DIALOG_BUTTON_OK) {
+    DialogDelegate::set_button_label(
+        ui::DIALOG_BUTTON_OK,
+        GetCurrentDialogButtonLabel(ui::DIALOG_BUTTON_OK));
+  }
+  if (buttons & ui::DIALOG_BUTTON_CANCEL) {
+    DialogDelegate::set_button_label(
+        ui::DIALOG_BUTTON_CANCEL,
+        GetCurrentDialogButtonLabel(ui::DIALOG_BUTTON_CANCEL));
+  }
 
   const bool progress_bar_visible =
       state_ == State::START_DLC_DOWNLOADING ||

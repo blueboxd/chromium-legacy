@@ -199,11 +199,6 @@ void PasswordGenerationManager::GeneratedPasswordAccepted(
     PasswordForm generated,
     const FormFetcher& fetcher,
     base::WeakPtr<PasswordManagerDriver> driver) {
-  if (!base::FeatureList::IsEnabled(features::kGenerationNoOverwrites)) {
-    // If the feature not enabled, just proceed with the generation.
-    driver->GeneratedPasswordAccepted(generated.password_value);
-    return;
-  }
   // Clear the username value if there are already saved credentials with
   // the same username in order to prevent overwriting.
   std::vector<const PasswordForm*> matches = fetcher.GetNonFederatedMatches();

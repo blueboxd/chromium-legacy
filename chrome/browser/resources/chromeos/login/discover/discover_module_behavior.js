@@ -60,4 +60,4 @@ var DiscoverModuleBehaviorImpl = {
 };
 
 var DiscoverModuleBehavior =
-    [I18nBehavior, OobeDialogHostBehavior, DiscoverModuleBehaviorImpl];
+    [OobeI18nBehavior, OobeDialogHostBehavior, DiscoverModuleBehaviorImpl];

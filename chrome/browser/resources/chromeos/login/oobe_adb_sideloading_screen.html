@@ -16,14 +16,12 @@
     <!-- Dialog for normal confirmation -->
     <oobe-dialog id="enableAdbSideloadDialog" role="dialog" has-buttons
         footer-shrinkable
+        title-key="enableAdbSideloadingSetupTitle"
         aria-label$="[[i18nDynamic(locale, 'enableAdbSideloadingSetupTitle')]]"
         hidden="[[!isState_(uiState_, 'setup')]]">
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-32:alert" icon2x="oobe-64:alert">
       </hd-iron-icon>
-      <h1 slot="title">
-        [[i18nDynamic(locale, 'enableAdbSideloadingSetupTitle')]]
-      </h1>
       <div slot="subtitle">
         <div>
           [[i18nDynamic(locale, 'enableAdbSideloadingSetupMessage')]]
@@ -42,27 +40,23 @@
       <div slot="bottom-buttons" class="flex layout horizontal">
         <div class="flex"></div>
         <oobe-text-button border on-tap="onCancelTap_"
-            id="enable-adb-sideloading-cancel-button">
-          [[i18nDynamic(locale, 'enableAdbSideloadingCancelButton')]]
-        </oobe-text-button>
+            text-key="enableAdbSideloadingCancelButton"
+            id="enable-adb-sideloading-cancel-button"></oobe-text-button>
         <oobe-text-button inverse on-tap="onEnableTap_" class="focus-on-show"
-            id="enable-adb-sideloading-ok-button">
-          [[i18nDynamic(locale, 'enableAdbSideloadingConfirmButton')]]
-        </oobe-text-button>
+            text-key="enableAdbSideloadingConfirmButton"
+            id="enable-adb-sideloading-ok-button"></oobe-text-button>
       </div>
     </oobe-dialog>
 
     <!-- Dialog for error -->
     <oobe-dialog id="enableAdbSideloadErrorDialog" role="dialog" has-buttons
         footer-shrinkable
+        title-key="enableAdbSideloadingErrorTitle"
         aria-label$="[[i18nDynamic(locale, 'enableAdbSideloadingSetupTitle')]]"
         hidden="[[!isState_(uiState_, 'error')]]">
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-32:alert" icon2x="oobe-64:alert">
       </hd-iron-icon>
-      <h1 slot="title">
-        [[i18nDynamic(locale, 'enableAdbSideloadingErrorTitle')]]
-      </h1>
       <div slot="subtitle">
         [[i18nDynamic(locale, 'enableAdbSideloadingErrorMessage')]]
         <a href="#" on-tap="onLearnMoreTap_">
@@ -78,9 +72,8 @@
       </div>
       <div slot="bottom-buttons" class="flex layout horizontal">
         <div class="flex"></div>
-        <oobe-text-button inverse on-tap="onCancelTap_" class="focus-on-show">
-          [[i18nDynamic(locale, 'enableAdbSideloadingOkButton')]]
-        </oobe-text-button>
+        <oobe-text-button inverse on-tap="onCancelTap_" class="focus-on-show"
+            text-key="enableAdbSideloadingOkButton"></oobe-text-button>
       </div>
     </oobe-dialog>
   </template>

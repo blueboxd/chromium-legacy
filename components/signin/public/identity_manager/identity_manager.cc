@@ -527,6 +527,10 @@ IdentityManager::ComputeUnconsentedPrimaryAccountInfo() const {
           !HasAccountWithRefreshToken(current_account)) {
         return CoreAccountInfo();
       }
+      if (!AreRefreshTokensLoaded() &&
+          unconsented_primary_account_revoked_during_load_) {
+        return CoreAccountInfo();
+      }
       if (cookie_info.accounts_are_fresh &&
           cookie_accounts[0].id != current_account) {
         return CoreAccountInfo();
@@ -596,6 +600,11 @@ void IdentityManager::OnRefreshTokenAvailable(const CoreAccountId& account_id) {
 }
 
 void IdentityManager::OnRefreshTokenRevoked(const CoreAccountId& account_id) {
+  if (!AreRefreshTokensLoaded() && HasUnconsentedPrimaryAccount() &&
+      account_id == GetUnconsentedPrimaryAccountId()) {
+    unconsented_primary_account_revoked_during_load_ = true;
+  }
+
   UpdateUnconsentedPrimaryAccount();
   for (auto& observer : observer_list_) {
     observer.OnRefreshTokenRemovedForAccount(account_id);

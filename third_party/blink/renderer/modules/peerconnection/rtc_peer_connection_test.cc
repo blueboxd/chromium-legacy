@@ -704,7 +704,7 @@ void PostToCompleteRequest(AsyncOperationAction action, RequestType* request) {
 class FakeRTCPeerConnectionHandlerPlatform
     : public MockRTCPeerConnectionHandlerPlatform {
  public:
-  WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
+  Vector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
       RTCSessionDescriptionRequest* request,
       const WebMediaConstraints&) override {
     PostToCompleteRequest<RTCSessionDescriptionRequest>(async_operation_action_,
@@ -712,7 +712,7 @@ class FakeRTCPeerConnectionHandlerPlatform
     return {};
   }
 
-  WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
+  Vector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
       RTCSessionDescriptionRequest* request,
       RTCOfferOptionsPlatform*) override {
     PostToCompleteRequest<RTCSessionDescriptionRequest>(async_operation_action_,

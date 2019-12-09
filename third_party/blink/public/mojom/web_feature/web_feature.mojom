@@ -2345,8 +2345,6 @@ enum WebFeature {
   kCSSValueAppearanceButtonForSelectRendered = 2965,
   kCSSValueAppearanceListboxForOthersRendered = 2966,
   kCSSValueAppearanceMeterForOthersRendered = 2967,
-  kSVGSMILDiscardElementParsed = 2968,
-  kSVGSMILDiscardElementTriggered = 2969,
   kV8PointerEvent_GetPredictedEvents_Method = 2971,
   kScrollSnapOnViewportBreaks = 2972,
   kScrollPaddingOnViewportBreaks = 2973,

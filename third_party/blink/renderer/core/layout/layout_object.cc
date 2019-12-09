@@ -2481,9 +2481,6 @@ void LayoutObject::PropagateStyleToAnonymousChildren() {
         child_block_flow->IsAnonymousBlockContinuation())
       new_style->SetPosition(child->StyleRef().GetPosition());
 
-    if (child->IsLayoutNGListMarker())
-      new_style->SetWhiteSpace(child->StyleRef().WhiteSpace());
-
     UpdateAnonymousChildStyle(child, *new_style);
 
     child->SetStyle(std::move(new_style));

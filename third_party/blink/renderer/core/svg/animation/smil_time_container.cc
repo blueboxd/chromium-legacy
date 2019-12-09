@@ -101,7 +101,6 @@ void SMILTimeContainer::Unschedule(SVGSMILElement* animation) {
   DCHECK(animated_targets_.Contains(animation->targetElement()));
 
   animated_targets_.erase(animation->targetElement());
-  pending_discards_.erase(animation);
   priority_queue_.Remove(animation);
 }
 
@@ -506,52 +505,10 @@ void SMILTimeContainer::ApplyTimedEffects(SMILTime elapsed) {
     }
   }
 
-  if (PerformDiscards())
-    did_apply_effects = true;
-
   if (did_apply_effects) {
     UseCounter::Count(&GetDocument(),
                       WebFeature::kSVGSMILAnimationAppliedEffect);
   }
-}
-
-void SMILTimeContainer::QueueDiscard(SVGSMILElement* discard_element) {
-  DCHECK(discard_element->IsSVGDiscardElement());
-  pending_discards_.insert(discard_element);
-}
-
-bool SMILTimeContainer::PerformDiscards() {
-  if (pending_discards_.IsEmpty())
-    return false;
-
-  HeapVector<Member<SVGSMILElement>> discards;
-  CopyToVector(pending_discards_, discards);
-  pending_discards_.clear();
-
-  // Sort by location in the document. (Should be based on the target rather
-  // than the timed element, but often enough they will order the same.)
-  std::sort(
-      discards.begin(), discards.end(),
-      [](const Member<SVGSMILElement>& a, const Member<SVGSMILElement>& b) {
-        return a->DocumentOrderIndex() < b->DocumentOrderIndex();
-      });
-
-  for (SVGSMILElement* discard_element : discards) {
-    if (!discard_element->isConnected())
-      continue;
-    SVGElement* target_element = discard_element->targetElement();
-    if (target_element && target_element->isConnected()) {
-      UseCounter::Count(&GetDocument(),
-                        WebFeature::kSVGSMILDiscardElementTriggered);
-      target_element->remove(IGNORE_EXCEPTION_FOR_TESTING);
-      DCHECK(!target_element->isConnected());
-    }
-    if (discard_element->isConnected()) {
-      discard_element->remove(IGNORE_EXCEPTION_FOR_TESTING);
-      DCHECK(!discard_element->isConnected());
-    }
-  }
-  return true;
 }
 
 void SMILTimeContainer::AdvanceFrameForTesting() {
@@ -561,7 +518,6 @@ void SMILTimeContainer::AdvanceFrameForTesting() {
 
 void SMILTimeContainer::Trace(blink::Visitor* visitor) {
   visitor->Trace(animated_targets_);
-  visitor->Trace(pending_discards_);
   visitor->Trace(priority_queue_);
   visitor->Trace(owner_svg_element_);
 }

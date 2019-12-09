@@ -396,6 +396,11 @@ void PresentationServiceImpl::Terminate(const GURL& presentation_url,
                                     presentation_id);
 }
 
+void PresentationServiceImpl::SetControllerDelegateForTesting(
+    ControllerPresentationServiceDelegate* controller_delegate) {
+  controller_delegate_ = controller_delegate;
+}
+
 void PresentationServiceImpl::OnConnectionStateChanged(
     const PresentationInfo& connection,
     const PresentationConnectionStateChangeInfo& info) {
@@ -450,9 +455,16 @@ void PresentationServiceImpl::OnReceiverConnectionAvailable(
 
 void PresentationServiceImpl::DidFinishNavigation(
     NavigationHandle* navigation_handle) {
+  // Since the PresentationServiceImpl is tied to the lifetime of a
+  // RenderFrameHost, we should reset the connections when a navigation
+  // finished but we're still using the same RenderFrameHost.
+  // We don't need to do anything when the navigation didn't actually commit,
+  // won't use the same RenderFrameHost, or is restoring a RenderFrameHost from
+  // the back-forward cache.
   DVLOG(2) << "PresentationServiceImpl::DidNavigateAnyFrame";
   if (!navigation_handle->HasCommitted() ||
-      !FrameMatches(navigation_handle->GetRenderFrameHost())) {
+      !FrameMatches(navigation_handle->GetRenderFrameHost()) ||
+      navigation_handle->IsServedFromBackForwardCache()) {
     return;
   }
 

@@ -624,7 +624,7 @@ TEST_P(PipWindowResizerTest, DragDetailsAreDestroyed) {
 // TODO: UpdateDisplay() doesn't support different layouts of multiple displays.
 // We should add some way to try multiple layouts.
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     PipWindowResizerTest,
     testing::Values(std::make_tuple("400x400", 0u),
                     std::make_tuple("400x400/r", 0u),
@@ -888,7 +888,7 @@ TEST_P(PipWindowResizerNonSquareAspectRatioTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     PipWindowResizerNonSquareAspectRatioTest,
     testing::Values(std::make_tuple("400x300", 0u),
                     std::make_tuple("400x300,4000x3000", 0u),

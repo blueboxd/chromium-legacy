@@ -25,7 +25,7 @@ struct RemoteDevice {
   // returns empty string if |device_id| is not a valid device ID.
   static std::string DerivePublicKey(const std::string& device_id);
 
-  std::string user_id;
+  std::string user_email;
 
   // The Instance ID is the primary identifier for devices using CryptAuth v2,
   // but the Instance ID is not present in CryptAuth v1. This string is empty
@@ -44,7 +44,7 @@ struct RemoteDevice {
 
   RemoteDevice();
   RemoteDevice(
-      const std::string& user_id,
+      const std::string& user_email,
       const std::string& instance_id,
       const std::string& name,
       const std::string& pii_free_name,

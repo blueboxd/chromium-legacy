@@ -87,38 +87,24 @@ bool PrerenderService::MaybeLoadPrerenderedURL(
       lastIndex == 0;
   UMA_HISTOGRAM_BOOLEAN("Prerender.PrerenderLoadedOnFirstNTP", onFirstNTP);
 
-  web::NavigationManager* new_navigation_manager =
-      new_web_state->GetNavigationManager();
+  loading_prerender_ = true;
+  web_state_list->ReplaceWebStateAt(web_state_list->active_index(),
+                                    std::move(new_web_state));
+  loading_prerender_ = false;
+  // new_web_state is now null after the std::move, so grab a new pointer to
+  // it for further updates.
+  web::WebState* active_web_state = web_state_list->GetActiveWebState();
 
-  bool slim_navigation_manager_enabled =
-      web::GetWebClient()->IsSlimNavigationManagerEnabled();
-  if (new_navigation_manager->CanPruneAllButLastCommittedItem() ||
-      slim_navigation_manager_enabled) {
-    if (!slim_navigation_manager_enabled) {
-      new_navigation_manager->CopyStateFromAndPrune(active_navigation_manager);
-    }
-    loading_prerender_ = true;
-    web_state_list->ReplaceWebStateAt(web_state_list->active_index(),
-                                      std::move(new_web_state));
-    loading_prerender_ = false;
-    // new_web_state is now null after the std::move, so grab a new pointer to
-    // it for further updates.
-    web::WebState* active_web_state = web_state_list->GetActiveWebState();
-
-    bool typed_or_generated_transition =
-        PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED) ||
-        PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_GENERATED);
-    if (typed_or_generated_transition) {
-      LoadTimingTabHelper::FromWebState(active_web_state)
-          ->DidPromotePrerenderTab();
-    }
-
-    [restorer saveSessionImmediately:NO];
-    return true;
+  bool typed_or_generated_transition =
+      PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED) ||
+      PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_GENERATED);
+  if (typed_or_generated_transition) {
+    LoadTimingTabHelper::FromWebState(active_web_state)
+        ->DidPromotePrerenderTab();
   }
 
-  CancelPrerender();
-  return false;
+  [restorer saveSessionImmediately:NO];
+  return true;
 }
 
 void PrerenderService::CancelPrerender() {

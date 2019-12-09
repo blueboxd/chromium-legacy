@@ -13,9 +13,6 @@ namespace features {
 // Used to always allow scaling of the web page, regardless of author intent.
 extern const base::Feature kIgnoresViewportScaleLimits;
 
-// Used to enable the WKBackForwardList based navigation manager.
-extern const base::Feature kSlimNavigationManager;
-
 // Used to crash the browser if unexpected URL change is detected.
 // https://crbug.com/841105.
 extern const base::Feature kCrashOnUnexpectedURLChange;
@@ -41,9 +38,6 @@ extern const base::Feature kSSLCommittedInterstitials;
 
 // Used to enable using WKWebView.loading for WebState::IsLoading.
 extern const base::Feature kUseWKWebViewLoading;
-
-// Feature flag to move -LogLoadStarted() to WebStateDidStartNavigation().
-extern const base::Feature kLogLoadStartedInDidStartNavigation;
 
 // Feature flag enabling persistent downloads.
 extern const base::Feature kEnablePersistentDownloads;

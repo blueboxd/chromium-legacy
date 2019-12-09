@@ -310,11 +310,6 @@ extern const char kSettingsRefreshDescription[];
 extern const char kShowAutofillTypePredictionsName[];
 extern const char kShowAutofillTypePredictionsDescription[];
 
-// Title and description for the flag to enable WKBackForwardList based
-// navigation manager.
-extern const char kSlimNavigationManagerName[];
-extern const char kSlimNavigationManagerDescription[];
-
 // Title and description for the flag to use |-drawViewHierarchy:| for taking
 // snapshots.
 extern const char kSnapshotDrawViewName[];

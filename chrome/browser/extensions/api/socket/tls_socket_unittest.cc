@@ -271,7 +271,7 @@ TEST_F(TLSSocketTest, UpgradeToTLSWithCustomOptionsTLS13) {
   EXPECT_TRUE(ssl_socket.ConnectDataConsumed());
 }
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          TLSSocketTest,
                          testing::Values(net::SYNCHRONOUS, net::ASYNC));
 

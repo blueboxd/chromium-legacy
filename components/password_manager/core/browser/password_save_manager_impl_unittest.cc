@@ -1153,7 +1153,7 @@ TEST_P(PasswordSaveManagerImplTest, HTTPAuthPasswordOverridden) {
   EXPECT_EQ(new_password, updated_form.password_value);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          PasswordSaveManagerImplTest,
                          testing::Values(false, true));
 

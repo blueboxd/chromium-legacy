@@ -19,7 +19,7 @@ var ACTIVE_DIRECTORY_PASSWORD_CHANGE_ERROR_STATE = {
 Polymer({
   is: 'active-directory-password-change',
 
-  behaviors: [I18nBehavior],
+  behaviors: [OobeI18nBehavior],
 
   properties: {
     /**

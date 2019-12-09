@@ -13176,6 +13176,26 @@
       If this is set to false, automatically-generated content suggestions are not shown on the New Tab page.''',
     },
     {
+      'name': 'NTPCustomBackgroundEnabled',
+      'owners': ['mahmadi@chromium.org', 'yyushkina@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:80-', 'chrome_os:80-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 653,
+      'default_for_enterprise_users': True,
+      'caption': '''Allow users to customize the background on the New Tab page''',
+      'tags': [],
+      'desc':
+      '''If the policy is set to false, the New Tab page won't allow users to customize the background. Any existing custom background will be permanently removed even if the policy is set to true later.
+
+      If the policy is set to true or unset, users can customize the background on the New Tab page.''',
+    },
+    {
       'name': 'WebRtcUdpPortRange',
       'owners': ['guidou@chromium.org'],
       'type': 'string',
@@ -20061,6 +20081,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569, 578],
-  'highest_id_currently_used': 652,
+  'highest_id_currently_used': 653,
   'highest_atomic_group_id_currently_used': 38
 }

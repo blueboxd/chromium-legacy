@@ -18898,6 +18898,7 @@ Called by update_net_error_codes.py.-->
   <int value="650" label="AmbientAuthenticationInPrivateModesEnabled"/>
   <int value="651" label="PaymentMethodQueryEnabled"/>
   <int value="652" label="StricterMixedContentTreatmentEnabled"/>
+  <int value="653" label="NTPCustomBackgroundEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -29678,6 +29679,13 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Google CAPTCHA solved"/>
 </enum>
 
+<enum name="GoogleDocsExtensionAvailablity">
+  <int value="0" label="Available, Regular mode"/>
+  <int value="1" label="Not Available, Regular mode"/>
+  <int value="2" label="Available, Incognito mode"/>
+  <int value="3" label="Not Available, Incognito mode"/>
+</enum>
+
 <enum name="GoogleFaviconServerRequestStatus">
   <int value="0" label="Success"/>
   <int value="1" label="Failure (connection error, no HTTP response)"/>
@@ -37259,6 +37267,7 @@ from previous Chrome versions.
   <int value="-488779992" label="blink-settings"/>
   <int value="-483290305" label="WebUITabStripDemoOptions:enabled"/>
   <int value="-482259889" label="MacMDDownloadShelf:disabled"/>
+  <int value="-482188490" label="ImpulseScrollAnimations:disabled"/>
   <int value="-478462945" label="enable-ephemeral-apps"/>
   <int value="-477101783" label="HandwritingGesture:disabled"/>
   <int value="-475049740" label="disable-vr-shell"/>
@@ -38050,6 +38059,7 @@ from previous Chrome versions.
   <int value="546710806" label="disable-easy-signin"/>
   <int value="547170394"
       label="OmniboxAlternateMatchDescriptionSeparator:disabled"/>
+  <int value="548503129" label="ImpulseScrollAnimations:enabled"/>
   <int value="549483647" label="EnableUnifiedMultiDeviceSettings:disabled"/>
   <int value="550378029" label="reset-app-list-install-state"/>
   <int value="550387510" label="NTPAssetDownloadSuggestions:disabled"/>

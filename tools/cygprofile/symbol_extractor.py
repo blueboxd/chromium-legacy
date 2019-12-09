@@ -13,6 +13,8 @@ import sys
 
 import cygprofile_utils
 
+START_OF_TEXT_SYMBOL = 'linker_script_start_of_text'
+
 _SRC_PATH = os.path.abspath(os.path.join(
     os.path.dirname(__file__), os.pardir, os.pardir))
 
@@ -109,7 +111,7 @@ def _FromObjdumpLine(line):
 
   # Output the label that contains the earliest offset. It is needed later for
   # translating offsets from the profile dumps.
-  if name == cygprofile_utils.START_OF_TEXT_SYMBOL:
+  if name == START_OF_TEXT_SYMBOL:
     return SymbolInfo(name=name, offset=offset, section='.text', size=0)
 
   # Check symbol type for validity and ignore some types.

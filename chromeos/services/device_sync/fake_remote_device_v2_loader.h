@@ -36,9 +36,9 @@ class FakeRemoteDeviceV2Loader : public RemoteDeviceV2Loader {
     return id_to_device_map_;
   }
 
-  // Returns the user ID that was passed into Load(). Returns null if Load() has
-  // not been called.
-  const base::Optional<std::string>& user_id() const { return user_id_; }
+  // Returns the user email that was passed into Load(). Returns null if Load()
+  // has not been called.
+  const base::Optional<std::string>& user_email() const { return user_email_; }
 
   // Returns the user private key that was passed into Load(). Returns null if
   // Load() has not been called.
@@ -52,13 +52,13 @@ class FakeRemoteDeviceV2Loader : public RemoteDeviceV2Loader {
   // RemoteDeviceV2Loader:
   void Load(
       const CryptAuthDeviceRegistry::InstanceIdToDeviceMap& id_to_device_map,
-      const std::string& user_id,
+      const std::string& user_email,
       const std::string& user_private_key,
       LoadCallback callback) override;
 
   base::Optional<CryptAuthDeviceRegistry::InstanceIdToDeviceMap>
       id_to_device_map_;
-  base::Optional<std::string> user_id_;
+  base::Optional<std::string> user_email_;
   base::Optional<std::string> user_private_key_;
   LoadCallback callback_;
 };

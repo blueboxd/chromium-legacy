@@ -738,6 +738,10 @@ void WebAppFrameToolbarView::DisableAnimationForTesting() {
   g_animation_disabled_for_testing = true;
 }
 
+views::View* WebAppFrameToolbarView::GetLeftContainerForTesting() {
+  return left_container_;
+}
+
 views::View* WebAppFrameToolbarView::GetRightContainerForTesting() {
   return right_container_;
 }

@@ -21,11 +21,10 @@ class MockHighestPmfReporter : public HighestPmfReporter {
   MockHighestPmfReporter(
       scoped_refptr<base::TestMockTimeTaskRunner> task_runner_for_testing,
       const base::TickClock* clock)
-      : HighestPmfReporter(task_runner_for_testing, clock),
-        navigation_started_(false) {}
+      : HighestPmfReporter(task_runner_for_testing, clock) {}
   ~MockHighestPmfReporter() override = default;
 
-  void NotifyNavigationStart() { navigation_started_ = true; }
+  void NotifyNavigationStart() { first_navigation_started_ = true; }
 
   const std::vector<double>& GetReportedHighestPmf() const {
     return reported_highest_pmf_;
@@ -48,14 +47,18 @@ class MockHighestPmfReporter : public HighestPmfReporter {
     reported_webpage_count_.push_back(webpage_counts_at_current_highest_pmf_);
   }
 
-  bool HasNavigationAlreadyStarted() const override {
-    return navigation_started_;
+  bool FirstNavigationStarted() override {
+    if (!first_navigation_started_)
+      return false;
+
+    first_navigation_started_ = false;
+    return true;
   }
 
   std::vector<double> reported_highest_pmf_;
   std::vector<double> reported_peak_rss_;
   std::vector<unsigned> reported_webpage_count_;
-  bool navigation_started_;
+  bool first_navigation_started_ = false;
 };
 
 namespace peak_memory_reporter_test {

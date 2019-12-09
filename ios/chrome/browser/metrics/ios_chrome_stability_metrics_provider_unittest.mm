@@ -32,45 +32,7 @@ class IOSChromeStabilityMetricsProviderTest : public PlatformTest {
 }  // namespace
 
 TEST_F(IOSChromeStabilityMetricsProviderTest,
-       DidStartLoadingEventShouldIncrementPageLoadCount) {
-  if (base::FeatureList::IsEnabled(
-          web::features::kLogLoadStartedInDidStartNavigation))
-    return;
-  IOSChromeStabilityMetricsProvider provider(&prefs_);
-
-  // A load should not increment metrics if recording is disabled.
-  provider.WebStateDidStartLoading(nullptr);
-
-  metrics::SystemProfileProto system_profile;
-
-  // Call ProvideStabilityMetrics to check that it will force pending tasks to
-  // be executed immediately.
-  provider.ProvideStabilityMetrics(&system_profile);
-
-  EXPECT_EQ(0, system_profile.stability().page_load_count());
-  EXPECT_TRUE(histogram_tester_
-                  .GetTotalCountsForPrefix(
-                      IOSChromeStabilityMetricsProvider::kPageLoadCountMetric)
-                  .empty());
-
-  // A load should increment metrics if recording is enabled.
-  provider.OnRecordingEnabled();
-  provider.WebStateDidStartLoading(nullptr);
-
-  system_profile.Clear();
-  provider.ProvideStabilityMetrics(&system_profile);
-
-  EXPECT_EQ(1, system_profile.stability().page_load_count());
-  histogram_tester_.ExpectTotalCount(
-      IOSChromeStabilityMetricsProvider::kPageLoadCountLoadingStartedMetric, 1);
-}
-
-TEST_F(IOSChromeStabilityMetricsProviderTest,
        DidStartNavigationEventShouldIncrementPageLoadCount) {
-  if (!base::FeatureList::IsEnabled(
-          web::features::kLogLoadStartedInDidStartNavigation))
-    return;
-
   web::FakeNavigationContext context;
   context.SetUrl(GURL("https://www.site.com"));
   context.SetIsSameDocument(false);
@@ -187,11 +149,7 @@ TEST_F(IOSChromeStabilityMetricsProviderTest, WebNavigationShouldLogPageLoad) {
 
   metrics::SystemProfileProto system_profile;
   provider.ProvideStabilityMetrics(&system_profile);
-  int page_load_count = base::FeatureList::IsEnabled(
-                            web::features::kLogLoadStartedInDidStartNavigation)
-                            ? 1
-                            : 0;
-  EXPECT_EQ(page_load_count, system_profile.stability().page_load_count());
+  EXPECT_EQ(1, system_profile.stability().page_load_count());
 }
 
 TEST_F(IOSChromeStabilityMetricsProviderTest,

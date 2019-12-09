@@ -842,7 +842,7 @@ IN_PROC_BROWSER_TEST_F(SplitCacheContentBrowserTestDisabled,
       GenURL("e.com", "/worker.js")));
 }
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          SplitCacheContentBrowserTestEnabled,
                          ::testing::Values(true, false));
 

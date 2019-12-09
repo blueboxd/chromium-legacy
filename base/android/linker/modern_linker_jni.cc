@@ -22,6 +22,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <limits>
+#include <memory>
+
 #include <android/dlext.h>
 #include "base/android/linker/linker_jni.h"
 
@@ -64,99 +67,6 @@ namespace {
 
 // Record of the Java VM passed to JNI_OnLoad().
 static JavaVM* s_java_vm = nullptr;
-
-// Convenience struct wrapper around android_dlextinfo.
-struct AndroidDlextinfo {
-  AndroidDlextinfo(int flags,
-                   void* reserved_addr,
-                   size_t reserved_size,
-                   int relro_fd) {
-    memset(&extinfo, 0, sizeof(extinfo));
-    extinfo.flags = flags;
-    extinfo.reserved_addr = reserved_addr;
-    extinfo.reserved_size = reserved_size;
-    extinfo.relro_fd = relro_fd;
-  }
-
-  android_dlextinfo extinfo;
-};
-
-// android_dlopen_ext() wrapper.
-// Returns false if no android_dlopen_ext() is available, otherwise true with
-// the return value from android_dlopen_ext() in |status|.
-bool AndroidDlopenExt(const char* filename,
-                      int flag,
-                      const AndroidDlextinfo* dlextinfo,
-                      void** status) {
-  if (!android_dlopen_ext) {
-    LOG_ERROR("android_dlopen_ext is not found");
-    return false;
-  }
-
-  android_dlextinfo ext = dlextinfo->extinfo;
-  LOG_INFO(
-      "android_dlopen_ext:"
-      " filename=%s, flags=0x%llx, reserved_addr=%p, reserved_size=%d,"
-      " relro_fd=%d",
-      filename, static_cast<long long>(ext.flags), ext.reserved_addr,
-      static_cast<int>(ext.reserved_size), ext.relro_fd);
-
-  *status = android_dlopen_ext(filename, flag, &ext);
-  return true;
-}
-
-// Callback data for FindLoadedLibrarySize().
-struct CallbackData {
-  explicit CallbackData(void* address)
-      : load_address(address), load_size(0), min_vaddr(0) {}
-
-  const void* load_address;
-  size_t load_size;
-  size_t min_vaddr;
-};
-
-// Callback for dl_iterate_phdr(). Read phdrs to identify whether or not
-// this library's load address matches the |load_address| passed in
-// |data|. If yes, pass back load size and min vaddr via |data|. A non-zero
-// return value terminates iteration.
-int FindLoadedLibrarySize(dl_phdr_info* info, size_t size UNUSED, void* data) {
-  CallbackData* callback_data = reinterpret_cast<CallbackData*>(data);
-
-  // Use max and min vaddr to compute the library's load size.
-  ElfW(Addr) min_vaddr = ~0;
-  ElfW(Addr) max_vaddr = 0;
-
-  bool is_matching = false;
-  for (size_t i = 0; i < info->dlpi_phnum; ++i) {
-    const ElfW(Phdr)* phdr = &info->dlpi_phdr[i];
-    if (phdr->p_type != PT_LOAD)
-      continue;
-
-    // See if this segment's load address matches what we passed to
-    // android_dlopen_ext as extinfo.reserved_addr.
-    void* load_addr = reinterpret_cast<void*>(info->dlpi_addr + phdr->p_vaddr);
-    if (load_addr == callback_data->load_address)
-      is_matching = true;
-
-    if (phdr->p_vaddr < min_vaddr)
-      min_vaddr = phdr->p_vaddr;
-    if (phdr->p_vaddr + phdr->p_memsz > max_vaddr)
-      max_vaddr = phdr->p_vaddr + phdr->p_memsz;
-  }
-
-  // If this library matches what we seek, return its load size.
-  if (is_matching) {
-    int page_size = sysconf(_SC_PAGESIZE);
-    if (page_size != PAGE_SIZE)
-      abort();
-
-    callback_data->load_size = PAGE_END(max_vaddr) - PAGE_START(min_vaddr);
-    callback_data->min_vaddr = min_vaddr;
-    return true;
-  }
-
-  return false;
-}
 
 // Helper class for anonymous memory mapping.
 class ScopedAnonymousMmap {
@@ -212,124 +122,256 @@ ScopedAnonymousMmap ScopedAnonymousMmap::ReserveAtAddress(void* address,
   return {actual_address, size};
 }
 
-// Makes sure the file descriptor is closed unless |Release()| is called.
-class ScopedFileDescriptor {
- public:
-  static ScopedFileDescriptor Open(const String& path);
+// Starting with API level 26, the following functions from
+// libandroid.so should be used to create shared memory regions.
+//
+// This ensures compatibility with post-Q versions of Android that may not rely
+// on ashmem for shared memory.
+//
+// This is heavily inspired from //third_party/ashmem/ashmem-dev.c, which we
+// cannot reference directly to avoid increasing binary size. Also, we don't
+// need to support API level <26.
+//
+// *Not* threadsafe.
+struct SharedMemoryFunctions {
+  SharedMemoryFunctions() {
+    library_handle = dlopen("libandroid.so", RTLD_NOW);
+    create = reinterpret_cast<CreateFunction>(
+        dlsym(library_handle, "ASharedMemory_create"));
+    set_protection = reinterpret_cast<SetProtectionFunction>(
+        dlsym(library_handle, "ASharedMemory_setProt"));
 
-  ~ScopedFileDescriptor() {
-    if (owned_)
-      Close();
+    if (!create || !set_protection)
+      LOG_ERROR("Cannot get the shared memory functions from libandroid");
   }
 
-  ScopedFileDescriptor(ScopedFileDescriptor&& o)
-      : fd_(o.fd_), owned_(o.owned_) {
-    o.owned_ = false;
+  ~SharedMemoryFunctions() {
+    if (library_handle)
+      dlclose(library_handle);
   }
 
-  int get() const { return fd_; }
+  typedef int (*CreateFunction)(const char*, size_t);
+  typedef int (*SetProtectionFunction)(int fd, int prot);
 
-  bool IsValid() const { return fd_ != -1; }
+  CreateFunction create;
+  SetProtectionFunction set_protection;
 
-  int Release() {
-    owned_ = false;
-    return fd_;
-  }
-
-  bool ReopenReadOnly(const String& original_path);
-
- private:
-  explicit ScopedFileDescriptor(int fd) : fd_(fd), owned_(true) {}
-  void Close() {
-    if (IsValid())
-      close(fd_);
-    owned_ = false;
-  }
-
-  int fd_;
-  bool owned_;
-
-  // Move only.
-  ScopedFileDescriptor(const ScopedFileDescriptor&) = delete;
-  ScopedFileDescriptor& operator=(const ScopedFileDescriptor&) = delete;
+  void* library_handle;
 };
 
-ScopedFileDescriptor ScopedFileDescriptor::Open(const String& path) {
-  int flags = O_RDWR | O_CREAT | O_EXCL;
-  int mode = S_IRUSR | S_IWUSR;
-  int fd = HANDLE_EINTR(open(path.c_str(), flags, mode));
-  return ScopedFileDescriptor{fd};
-}
+// Metadata about a library loaded at a given |address|.
+struct LoadedLibraryMetadata {
+  explicit LoadedLibraryMetadata(void* address)
+      : load_address(address),
+        load_size(0),
+        min_vaddr(0),
+        relro_start(0),
+        relro_size(0) {}
 
-// Reopens |this| that was initially opened from |original_path| as a read-only
-// fd.
-// Deletes the file in the process, and returns true for success.
-bool ScopedFileDescriptor::ReopenReadOnly(const String& original_path) {
-  const char* filepath = original_path.c_str();
-  Close();
-  fd_ = HANDLE_EINTR(open(filepath, O_RDONLY));
-  if (!IsValid()) {
-    LOG_ERROR("open: %s: %s", original_path.c_str(), strerror(errno));
+  const void* load_address;
+
+  size_t load_size;
+  size_t min_vaddr;
+  size_t relro_start;
+  size_t relro_size;
+};
+
+// android_dlopen_ext() wrapper.
+// Returns false if no android_dlopen_ext() is available, otherwise true with
+// the return value from android_dlopen_ext() in |status|.
+bool AndroidDlopenExt(const char* filename,
+                      int flag,
+                      const android_dlextinfo& extinfo,
+                      void** status) {
+  if (!android_dlopen_ext) {
+    LOG_ERROR("android_dlopen_ext is not found");
     return false;
   }
 
-  // Delete the directory entry for the RELRO file. The fd we hold ensures
-  // that its data remains intact.
-  if (unlink(filepath) == -1) {
-    LOG_ERROR("unlink: %s: %s", filepath, strerror(errno));
-    return false;
-  }
+  LOG_INFO(
+      "android_dlopen_ext:"
+      " flags=0x%llx, reserved_addr=%p, reserved_size=%d",
+      static_cast<long long>(extinfo.flags), extinfo.reserved_addr,
+      static_cast<int>(extinfo.reserved_size));
 
+  *status = android_dlopen_ext(filename, flag, &extinfo);
   return true;
 }
 
-// Returns the actual size of the library loaded at |addr| in |load_size|, and
-// the min vaddr in |min_vaddr|. Returns false if the library appears not to be
-// loaded.
-bool GetLibraryLoadSize(void* addr, size_t* load_size, size_t* min_vaddr) {
-  LOG_INFO("Called for %p", addr);
+// Callback for dl_iterate_phdr(). Read phdrs to identify whether or not
+// this library's load address matches the |load_address| passed in
+// |data|. If yes, fills the metadata we care about in |data|.
+//
+// A non-zero return value terminates iteration.
+int FindLoadedLibraryMetadata(dl_phdr_info* info,
+                              size_t size UNUSED,
+                              void* data) {
+  auto* metadata = reinterpret_cast<LoadedLibraryMetadata*>(data);
 
-  // Find the real load size and min vaddr for the library loaded at |addr|.
-  CallbackData callback_data(addr);
+  // Use max and min vaddr to compute the library's load size.
+  auto min_vaddr = std::numeric_limits<ElfW(Addr)>::max();
+  ElfW(Addr) max_vaddr = 0;
+
+  ElfW(Addr) min_relro_vaddr = ~0;
+  ElfW(Addr) max_relro_vaddr = 0;
+
+  bool is_matching = false;
+  for (int i = 0; i < info->dlpi_phnum; ++i) {
+    const ElfW(Phdr)* phdr = &info->dlpi_phdr[i];
+    switch (phdr->p_type) {
+      case PT_LOAD: {
+        // See if this segment's load address matches what we passed to
+        // android_dlopen_ext as extinfo.reserved_addr.
+        //
+        // Here and below, the virtual address in memory is computed by
+        //     address == info->dlpi_addr + program_header->p_vaddr
+        // that is, the p_vaddr fields is relative to the object base address.
+        // See dl_iterate_phdr(3) for details.
+        void* load_addr =
+            reinterpret_cast<void*>(info->dlpi_addr + phdr->p_vaddr);
+        // Matching is based on the load address, since we have no idea
+        // where the relro segment is.
+        if (load_addr == metadata->load_address)
+          is_matching = true;
+
+        if (phdr->p_vaddr < min_vaddr)
+          min_vaddr = phdr->p_vaddr;
+        if (phdr->p_vaddr + phdr->p_memsz > max_vaddr)
+          max_vaddr = phdr->p_vaddr + phdr->p_memsz;
+      } break;
+      case PT_GNU_RELRO:
+        min_relro_vaddr = PAGE_START(phdr->p_vaddr);
+        max_relro_vaddr = phdr->p_vaddr + phdr->p_memsz;
+        break;
+      default:
+        break;
+    }
+  }
+
+  // If this library matches what we seek, return its load size.
+  if (is_matching) {
+    int page_size = sysconf(_SC_PAGESIZE);
+    if (page_size != PAGE_SIZE)
+      abort();
+
+    metadata->load_size = PAGE_END(max_vaddr) - PAGE_START(min_vaddr);
+    metadata->min_vaddr = min_vaddr;
+
+    metadata->relro_size =
+        PAGE_END(max_relro_vaddr) - PAGE_START(min_relro_vaddr);
+    metadata->relro_start = info->dlpi_addr + PAGE_START(min_relro_vaddr);
+
+    return true;
+  }
+
+  return false;
+}
+
+// Creates an android_dlextinfo struct so that a library is loaded inside the
+// space referenced by |mapping|.
+std::unique_ptr<android_dlextinfo> MakeAndroidDlextinfo(
+    const ScopedAnonymousMmap& mapping) {
+  auto info = std::make_unique<android_dlextinfo>();
+  memset(info.get(), 0, sizeof(*info));
+  info->flags = ANDROID_DLEXT_RESERVED_ADDRESS;
+  info->reserved_addr = mapping.address();
+  info->reserved_size = mapping.size();
+
+  return info;
+}
+
+// Copies the current relocations into a shared-memory file, and uses this file
+// as the relocations.
+//
+// Returns true for success, and populate |fd| with the relocations's fd in this
+// case.
+bool CopyAndRemapRelocations(const LoadedLibraryMetadata& metadata, int* fd) {
+  LOG_INFO("Entering");
+  void* relro_addr = reinterpret_cast<void*>(metadata.relro_start);
+
+  SharedMemoryFunctions fns;
+  if (!fns.create)
+    return false;
+
+  int shared_mem_fd = fns.create("cr_relro", metadata.relro_size);
+  if (shared_mem_fd == -1) {
+    LOG_ERROR("Cannot create the shared memory file");
+    return false;
+  }
+
+  int rw_flags = PROT_READ | PROT_WRITE;
+  fns.set_protection(shared_mem_fd, rw_flags);
+
+  void* relro_copy_addr = mmap(nullptr, metadata.relro_size, rw_flags,
+                               MAP_SHARED, shared_mem_fd, 0);
+  if (relro_copy_addr == MAP_FAILED) {
+    LOG_ERROR("Cannot mmap() space for the copy");
+    close(shared_mem_fd);
+    return false;
+  }
+
+  memcpy(relro_copy_addr, relro_addr, metadata.relro_size);
+  int retval = mprotect(relro_copy_addr, metadata.relro_size, PROT_READ);
+  if (retval) {
+    LOG_ERROR("Cannot call mprotect()");
+    close(shared_mem_fd);
+    munmap(relro_copy_addr, metadata.relro_size);
+    return false;
+  }
+
+  void* new_addr =
+      mremap(relro_copy_addr, metadata.relro_size, metadata.relro_size,
+             MREMAP_MAYMOVE | MREMAP_FIXED, relro_addr);
+  if (new_addr != relro_addr) {
+    LOG_ERROR("mremap() error");
+    close(shared_mem_fd);
+    munmap(relro_copy_addr, metadata.relro_size);
+    return false;
+  }
+
+  *fd = shared_mem_fd;
+  return true;
+}
+
+// Gathers metadata about the library loaded at |addr|.
+//
+// Returns true for success.
+bool GetLoadedLibraryMetadata(LoadedLibraryMetadata* metadata) {
+  LOG_INFO("Called for %p", metadata->load_address);
+
   if (!dl_iterate_phdr) {
     LOG_ERROR("No dl_iterate_phdr() found");
     return false;
   }
-  int status = dl_iterate_phdr(&FindLoadedLibrarySize, &callback_data);
+  int status = dl_iterate_phdr(&FindLoadedLibraryMetadata, metadata);
   if (!status) {
-    LOG_ERROR("Failed to find library at address %p", addr);
+    LOG_ERROR("Failed to find library at address %p", metadata->load_address);
     return false;
   }
 
-  *load_size = callback_data.load_size;
-  *min_vaddr = callback_data.min_vaddr;
+  LOG_INFO("Relro start address = %p, size = %d",
+           reinterpret_cast<void*>(metadata->relro_start),
+           static_cast<int>(metadata->relro_size));
+
   return true;
 }
 
 // Resizes the address space reservation to the actual required size.
 // Failure here is only a warning, as at worst this wastes virtual address
 // space, not actual memory.
-void ResizeMapping(const ScopedAnonymousMmap& mapping) {
-  // After loading we can find the actual size of the library. It should
-  // be less than the space we reserved for it.
-  size_t load_size = 0;
-  size_t min_vaddr = 0;
-  if (!GetLibraryLoadSize(mapping.address(), &load_size, &min_vaddr)) {
-    LOG_ERROR("Unable to find size for load at %p", mapping.address());
-    return;
-  }
-
+void ResizeMapping(const ScopedAnonymousMmap& mapping,
+                   const LoadedLibraryMetadata& metadata) {
   // Trim the reservation mapping to match the library's actual size. Failure
   // to resize is not a fatal error. At worst we lose a portion of virtual
   // address space that we might otherwise have recovered. Note that trimming
   // the mapping here requires that we have already released the scoped
   // mapping.
   const uintptr_t uintptr_addr = reinterpret_cast<uintptr_t>(mapping.address());
-  if (mapping.size() > load_size) {
+  if (mapping.size() > metadata.load_size) {
     // Unmap the part of the reserved address space that is beyond the end of
     // the loaded library data.
-    void* unmap = reinterpret_cast<void*>(uintptr_addr + load_size);
-    const size_t length = mapping.size() - load_size;
+    void* unmap = reinterpret_cast<void*>(uintptr_addr + metadata.load_size);
+    const size_t length = mapping.size() - metadata.load_size;
     if (munmap(unmap, length) == -1) {
       LOG_ERROR("WARNING: unmap of %d bytes at %p failed: %s",
                 static_cast<int>(length), unmap, strerror(errno));
@@ -364,43 +406,37 @@ bool CallJniOnLoad(void* handle) {
 //
 // In case of success, returns a readonly file descriptor to the relocations,
 // otherwise returns -1.
-int LoadCreateSharedRelocations(const String& path,
-                                void* wanted_address,
-                                const String& relocations_path) {
+int LoadCreateSharedRelocations(const String& path, void* wanted_address) {
   LOG_INFO("Entering");
   ScopedAnonymousMmap mapping = ScopedAnonymousMmap::ReserveAtAddress(
       wanted_address, kAddressSpaceReservationSize);
   if (!mapping.address())
     return -1;
 
-  unlink(relocations_path.c_str());
-  ScopedFileDescriptor relro_fd = ScopedFileDescriptor::Open(relocations_path);
-  if (!relro_fd.IsValid()) {
-    LOG_ERROR("open: %s: %s", relocations_path.c_str(), strerror(errno));
-    return -1;
-  }
-
-  int flags = ANDROID_DLEXT_RESERVED_ADDRESS | ANDROID_DLEXT_WRITE_RELRO;
-  AndroidDlextinfo dlextinfo(flags, mapping.address(), mapping.size(),
-                             relro_fd.get());
+  std::unique_ptr<android_dlextinfo> dlextinfo = MakeAndroidDlextinfo(mapping);
   void* handle = nullptr;
-  if (!AndroidDlopenExt(path.c_str(), RTLD_NOW, &dlextinfo, &handle)) {
-    LOG_ERROR("No android_dlopen_ext function found");
+  if (!AndroidDlopenExt(path.c_str(), RTLD_NOW, *dlextinfo, &handle)) {
+    LOG_ERROR("android_dlopen_ext() error");
     return -1;
   }
   if (handle == nullptr) {
     LOG_ERROR("android_dlopen_ext: %s", dlerror());
     return -1;
   }
-
   mapping.Release();
-  ResizeMapping(mapping);
-  if (!CallJniOnLoad(handle)) {
-    unlink(relocations_path.c_str());
-    return -1;
+
+  LoadedLibraryMetadata metadata{mapping.address()};
+  bool ok = GetLoadedLibraryMetadata(&metadata);
+  int relro_fd = -1;
+  if (ok) {
+    ResizeMapping(mapping, metadata);
+    CopyAndRemapRelocations(metadata, &relro_fd);
   }
-  relro_fd.ReopenReadOnly(relocations_path);
-  return relro_fd.Release();
+
+  if (!CallJniOnLoad(handle))
+    return false;
+
+  return relro_fd;
 }
 
 // Load the library at |path| at address |wanted_address| if possible, and
@@ -414,11 +450,9 @@ bool LoadUseSharedRelocations(const String& path,
   if (!mapping.address())
     return false;
 
-  int flags = ANDROID_DLEXT_RESERVED_ADDRESS | ANDROID_DLEXT_USE_RELRO;
-  AndroidDlextinfo dlextinfo(flags, mapping.address(), mapping.size(),
-                             relocations_fd);
+  std::unique_ptr<android_dlextinfo> dlextinfo = MakeAndroidDlextinfo(mapping);
   void* handle = nullptr;
-  if (!AndroidDlopenExt(path.c_str(), RTLD_NOW, &dlextinfo, &handle)) {
+  if (!AndroidDlopenExt(path.c_str(), RTLD_NOW, *dlextinfo, &handle)) {
     LOG_ERROR("No android_dlopen_ext function found");
     return false;
   }
@@ -426,9 +460,40 @@ bool LoadUseSharedRelocations(const String& path,
     LOG_ERROR("android_dlopen_ext: %s", dlerror());
     return false;
   }
-
   mapping.Release();
-  ResizeMapping(mapping);
+
+  LoadedLibraryMetadata metadata{mapping.address()};
+  bool ok = GetLoadedLibraryMetadata(&metadata);
+  if (!ok) {
+    LOG_ERROR("Cannot get library's metadata");
+    return false;
+  }
+
+  ResizeMapping(mapping, metadata);
+  void* shared_relro_mapping_address = mmap(
+      nullptr, metadata.relro_size, PROT_READ, MAP_SHARED, relocations_fd, 0);
+  if (shared_relro_mapping_address == MAP_FAILED) {
+    LOG_ERROR("Cannot map the relocations");
+    return false;
+  }
+
+  void* current_relro_address = reinterpret_cast<void*>(metadata.relro_start);
+  int retval = memcmp(shared_relro_mapping_address, current_relro_address,
+                      metadata.relro_size);
+  if (!retval) {
+    void* new_addr = mremap(shared_relro_mapping_address, metadata.relro_size,
+                            metadata.relro_size, MREMAP_MAYMOVE | MREMAP_FIXED,
+                            current_relro_address);
+    if (new_addr != current_relro_address) {
+      LOG_ERROR("Cannot call mremap()");
+      munmap(shared_relro_mapping_address, metadata.relro_size);
+      return false;
+    }
+  } else {
+    munmap(shared_relro_mapping_address, metadata.relro_size);
+    LOG_ERROR("Relocations are not identical, giving up.");
+  }
+
   if (!CallJniOnLoad(handle))
     return false;
 
@@ -456,12 +521,10 @@ Java_org_chromium_base_library_1loader_ModernLinker_nativeLoadLibraryCreateRelro
     jclass clazz,
     jstring jdlopen_ext_path,
     jlong load_address,
-    jstring jrelro_path,
     jobject lib_info_obj) {
   LOG_INFO("Entering");
 
   String library_path(env, jdlopen_ext_path);
-  String relro_path(env, jrelro_path);
 
   if (!IsValidAddress(load_address)) {
     LOG_ERROR("Invalid address 0x%llx", static_cast<long long>(load_address));
@@ -469,7 +532,7 @@ Java_org_chromium_base_library_1loader_ModernLinker_nativeLoadLibraryCreateRelro
   }
   void* address = reinterpret_cast<void*>(load_address);
 
-  int fd = LoadCreateSharedRelocations(library_path, address, relro_path);
+  int fd = LoadCreateSharedRelocations(library_path, address);
   if (fd == -1)
     return false;
 

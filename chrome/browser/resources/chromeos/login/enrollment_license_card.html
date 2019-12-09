@@ -32,14 +32,12 @@
     <link rel="stylesheet" href="oobe_dialog_host.css">
     <link rel="stylesheet" href="oobe_iron_flex_layout_fix.css">
 
-    <oobe-dialog id="license-selection-prompt-card" has-buttons>
+    <oobe-dialog id="license-selection-prompt-card" has-buttons
+        title-key="oauthEnrollScreenTitle"
+        subtitle-key="licenseSelectionCardExplanation">
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-32:briefcase" icon2x="oobe-64:briefcase">
       </hd-iron-icon>
-      <h1 slot="title" i18n-content="oauthEnrollScreenTitle"></h1>
-      <div slot="subtitle">
-        [[i18nDynamic(locale, 'licenseSelectionCardExplanation')]]
-      </div>
       <div slot="footer" class="flex layout vertical justified">
         <cr-radio-group selected="{{selected}}">
           <template is="dom-repeat" items="[[licenses]]" id="repeatTemplate">

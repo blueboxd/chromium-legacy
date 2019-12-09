@@ -41,7 +41,7 @@ class CONTROLLER_EXPORT HighestPmfReporter
   void OnReportMetrics();
 
   // Make the following methods virtual for testing.
-  virtual bool HasNavigationAlreadyStarted() const;
+  virtual bool FirstNavigationStarted();
   virtual void ReportMetrics();
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

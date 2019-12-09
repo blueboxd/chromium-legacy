@@ -51,7 +51,7 @@ class RemoteDeviceProviderImpl : public RemoteDeviceProvider,
     static std::unique_ptr<RemoteDeviceProvider> NewInstance(
         CryptAuthDeviceManager* v1_device_manager,
         CryptAuthV2DeviceManager* v2_device_manager,
-        const CoreAccountId& user_account_id,
+        const std::string& user_email,
         const std::string& user_private_key);
 
     static void SetInstanceForTesting(Factory* factory);
@@ -61,7 +61,7 @@ class RemoteDeviceProviderImpl : public RemoteDeviceProvider,
     virtual std::unique_ptr<RemoteDeviceProvider> BuildInstance(
         CryptAuthDeviceManager* v1_device_manager,
         CryptAuthV2DeviceManager* v2_device_manager,
-        const CoreAccountId& user_account_id,
+        const std::string& user_email,
         const std::string& user_private_key);
 
    private:
@@ -70,7 +70,7 @@ class RemoteDeviceProviderImpl : public RemoteDeviceProvider,
 
   RemoteDeviceProviderImpl(CryptAuthDeviceManager* v1_device_manager,
                            CryptAuthV2DeviceManager* v2_device_manager,
-                           const CoreAccountId& user_account_id,
+                           const std::string& user_email,
                            const std::string& user_private_key);
 
   ~RemoteDeviceProviderImpl() override;
@@ -107,8 +107,8 @@ class RemoteDeviceProviderImpl : public RemoteDeviceProvider,
   // DeviceSync is disabled.
   CryptAuthV2DeviceManager* v2_device_manager_;
 
-  // The account ID of the current user.
-  const CoreAccountId user_account_id_;
+  // The email of the current user.
+  const std::string user_email_;
 
   // The private key used to generate RemoteDevices.
   const std::string user_private_key_;

@@ -401,7 +401,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     size_t senders_size_before_add = senders_.size();
     for (const auto& web_audio_track : web_stream.AudioTracks()) {
       auto error_or_transceiver = pc_handler_->AddTrack(
-          web_audio_track, std::vector<blink::WebMediaStream>({web_stream}));
+          web_audio_track, Vector<WebMediaStream>({web_stream}));
       if (error_or_transceiver.ok()) {
         DCHECK_EQ(
             error_or_transceiver.value()->ImplementationType(),
@@ -413,7 +413,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     }
     for (const auto& web_video_track : web_stream.VideoTracks()) {
       auto error_or_transceiver = pc_handler_->AddTrack(
-          web_video_track, std::vector<blink::WebMediaStream>({web_stream}));
+          web_video_track, Vector<WebMediaStream>({web_stream}));
       if (error_or_transceiver.ok()) {
         DCHECK_EQ(
             error_or_transceiver.value()->ImplementationType(),

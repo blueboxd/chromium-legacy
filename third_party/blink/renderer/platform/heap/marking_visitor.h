@@ -234,7 +234,18 @@ class PLATFORM_EXPORT ConcurrentMarkingVisitor
   ~ConcurrentMarkingVisitor() override = default;
 
   virtual void FlushWorklists();
+
+  // Concurrent variant of MarkingVisitorCommon::AccountMarkedBytes.
+  void AccountMarkedBytesSafe(HeapObjectHeader*);
 };
+
+ALWAYS_INLINE void ConcurrentMarkingVisitor::AccountMarkedBytesSafe(
+    HeapObjectHeader* header) {
+  marked_bytes_ +=
+      header->IsLargeObject<HeapObjectHeader::AccessMode::kAtomic>()
+          ? static_cast<LargeObjectPage*>(PageFromObject(header))->size()
+          : header->size<HeapObjectHeader::AccessMode::kAtomic>();
+}
 
 // static
 ALWAYS_INLINE bool ConcurrentMarkingVisitor::IsInConstruction(

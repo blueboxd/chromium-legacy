@@ -35,6 +35,7 @@ js_type_check("closure_compile") {
     ":oobe_dialog",
     ":oobe_enable_kiosk",
     ":oobe_eula",
+    ":oobe_i18n_behavior",
     ":oobe_i18n_dropdown",
     ":oobe_network",
     ":oobe_reset",
@@ -98,6 +99,12 @@ js_library("login_screen_behavior") {
   ]
 }
 
+js_library("oobe_i18n_behavior") {
+  deps = [
+    "//ui/webui/resources/js:i18n_behavior",
+  ]
+}
+
 js_library("oobe_dialog_host_behavior") {
 }
 
@@ -109,39 +116,39 @@ js_library("oobe_welcome") {
     ":fake_oobe",
     ":login_screen_behavior",
     ":oobe_dialog_host_behavior",
-    "//ui/webui/resources/js:i18n_behavior",
+    ":oobe_i18n_behavior",
   ]
 }
 
 js_library("offline_ad_login") {
   deps = [
     ":oobe_dialog_host_behavior",
+    ":oobe_i18n_behavior",
     ":oobe_select",
     "//ui/webui/resources/cr_elements/cr_input:cr_input",
-    "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js:load_time_data",
   ]
 }
 
 js_library("multidevice_setup_first_run") {
   deps = [
+    ":oobe_i18n_behavior",
     "//ui/webui/resources/cr_components/chromeos/multidevice_setup:mojo_api",
     "//ui/webui/resources/cr_components/chromeos/multidevice_setup:multidevice_setup",
     "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js:i18n_behavior",
   ]
 }
 
 js_library("active_directory_password_change") {
   deps = [
-    "//ui/webui/resources/js:i18n_behavior",
+    ":oobe_i18n_behavior",
   ]
 }
 
 js_library("app_downloading") {
   deps = [
     ":oobe_dialog_host_behavior",
-    "//ui/webui/resources/js:i18n_behavior",
+    ":oobe_i18n_behavior",
   ]
 }
 
@@ -149,44 +156,44 @@ js_library("arc_terms_of_service") {
   deps = [
     ":html-echo",
     ":oobe_dialog_host_behavior",
-    "//ui/webui/resources/js:i18n_behavior",
+    ":oobe_i18n_behavior",
   ]
 }
 
 js_library("demo_preferences") {
   deps = [
     ":oobe_dialog_host_behavior",
-    "//ui/webui/resources/js:i18n_behavior",
+    ":oobe_i18n_behavior",
   ]
 }
 
 js_library("demo_setup") {
   deps = [
     ":oobe_dialog_host_behavior",
-    "//ui/webui/resources/js:i18n_behavior",
+    ":oobe_i18n_behavior",
   ]
 }
 
 js_library("encryption_migration") {
   deps = [
     ":oobe_dialog_host_behavior",
-    "//ui/webui/resources/js:i18n_behavior",
+    ":oobe_i18n_behavior",
   ]
 }
 
 js_library("enrollment_license_card") {
   deps = [
     ":oobe_dialog_host_behavior",
-    "//ui/webui/resources/js:i18n_behavior",
+    ":oobe_i18n_behavior",
   ]
 }
 
 js_library("fingerprint_setup") {
   deps = [
     ":oobe_dialog_host_behavior",
+    ":oobe_i18n_behavior",
     "//ui/webui/resources/cr_elements/chromeos/cr_lottie:cr_lottie",
     "//ui/webui/resources/cr_elements/cr_fingerprint:cr_fingerprint_progress_arc",
-    "//ui/webui/resources/js:i18n_behavior",
   ]
 }
 
@@ -207,7 +214,7 @@ js_library("gaia_input") {
 
 js_library("gaia_password_changed") {
   deps = [
-    "//ui/webui/resources/js:i18n_behavior",
+    ":oobe_i18n_behavior",
   ]
 }
 
@@ -220,7 +227,7 @@ js_library("html-echo") {
 js_library("marketing_opt_in") {
   deps = [
     ":oobe_dialog_host_behavior",
-    "//ui/webui/resources/js:i18n_behavior",
+    ":oobe_i18n_behavior",
   ]
 }
 
@@ -240,7 +247,7 @@ js_library("notification_card") {
 js_library("offline_gaia") {
   deps = [
     ":oobe_dialog_host_behavior",
-    "//ui/webui/resources/js:i18n_behavior",
+    ":oobe_i18n_behavior",
   ]
 }
 
@@ -260,14 +267,14 @@ js_library("oobe_enable_kiosk") {
   deps = [
     ":login_screen_behavior",
     ":oobe_dialog_host_behavior",
-    "//ui/webui/resources/js:i18n_behavior",
+    ":oobe_i18n_behavior",
   ]
 }
 
 js_library("oobe_eula") {
   deps = [
     ":oobe_dialog_host_behavior",
-    "//ui/webui/resources/js:i18n_behavior",
+    ":oobe_i18n_behavior",
   ]
 }
 
@@ -280,41 +287,41 @@ js_library("oobe_i18n_dropdown") {
 js_library("oobe_network") {
   deps = [
     ":oobe_dialog_host_behavior",
-    "//ui/webui/resources/js:i18n_behavior",
+    ":oobe_i18n_behavior",
   ]
 }
 
 js_library("oobe_reset_confirmation_overlay") {
   deps = [
-    "//ui/webui/resources/js:i18n_behavior",
+    ":oobe_i18n_behavior",
   ]
 }
 
 js_library("oobe_reset") {
   deps = [
     ":oobe_dialog_host_behavior",
-    "//ui/webui/resources/js:i18n_behavior",
+    ":oobe_i18n_behavior",
   ]
 }
 
 js_library("oobe_supervision_transition") {
   deps = [
     ":oobe_dialog_host_behavior",
-    "//ui/webui/resources/js:i18n_behavior",
+    ":oobe_i18n_behavior",
   ]
 }
 
 js_library("oobe_update") {
   deps = [
     ":oobe_dialog_host_behavior",
-    "//ui/webui/resources/js:i18n_behavior",
+    ":oobe_i18n_behavior",
   ]
 }
 
 js_library("recommend_apps") {
   deps = [
     ":oobe_dialog_host_behavior",
-    "//ui/webui/resources/js:i18n_behavior",
+    ":oobe_i18n_behavior",
   ]
 }
 
@@ -324,7 +331,7 @@ js_library("saml_confirm_password") {
 js_library("sync_consent") {
   deps = [
     ":oobe_dialog_host_behavior",
-    "//ui/webui/resources/js:i18n_behavior",
+    ":oobe_i18n_behavior",
   ]
 }
 

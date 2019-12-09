@@ -49,11 +49,6 @@ const base::Feature KEnablePasswordGenerationForClearTextFields = {
 const base::Feature kFillOnAccountSelect = {"fill-on-account-select",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Forces password generation to ask user to update the password instead of
-// overwriting silently.
-const base::Feature kGenerationNoOverwrites = {
-    "GenerationNoOverwrites", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Integration with Google's Password Manager for signed-in and sync users.
 const base::Feature kGooglePasswordManager = {
     "google-password-manager", base::FEATURE_DISABLED_BY_DEFAULT};

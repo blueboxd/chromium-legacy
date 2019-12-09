@@ -254,6 +254,13 @@ NDEFRecord* NDEFRecord::Create(const ExecutionContext* execution_context,
     return nullptr;
   }
 
+  // https://w3c.github.io/web-nfc/#dfn-map-empty-record-to-ndef
+  if (init->hasId() && record_type == "empty") {
+    exception_state.ThrowTypeError(
+        "NDEFRecordInit#id is not applicable for 'empty' records.");
+    return nullptr;
+  }
+
   NDEFRecord* instance = nullptr;
   if (record_type == "empty") {
     // https://w3c.github.io/web-nfc/#mapping-empty-record-to-ndef

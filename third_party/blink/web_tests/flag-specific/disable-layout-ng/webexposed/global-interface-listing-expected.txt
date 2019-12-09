@@ -5093,10 +5093,6 @@ interface MutationRecord
     getter target
     getter type
     method constructor
-interface NDEFErrorEvent : Event
-    attribute @@toStringTag
-    getter error
-    method constructor
 interface NDEFMessage
     attribute @@toStringTag
     getter records

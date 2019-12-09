@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -68,39 +69,60 @@ views::Label* CreateLabel(const base::string16& text) {
   return label;
 }
 
-views::View* AnchorViewForBrowser(ExtensionInstalledBubble* controller,
+const extensions::ActionInfo* GetActionInfoForExtension(
+    const extensions::Extension* extension) {
+  const extensions::ActionInfo* action_info =
+      extensions::ActionInfo::GetBrowserActionInfo(extension);
+
+  if (!action_info)
+    action_info = extensions::ActionInfo::GetPageActionInfo(extension);
+
+  return action_info;
+}
+
+bool ShouldAnchorToAction(const extensions::Extension* extension) {
+  const auto* info = GetActionInfoForExtension(extension);
+  if (!info)
+    return false;
+
+  switch (info->type) {
+    case extensions::ActionInfo::TYPE_BROWSER:
+    case extensions::ActionInfo::TYPE_PAGE:
+      return true;
+    case extensions::ActionInfo::TYPE_ACTION:
+      return false;
+  }
+}
+
+bool ShouldAnchorToOmnibox(const extensions::Extension* extension) {
+  return !extensions::OmniboxInfo::GetKeyword(extension).empty();
+}
+
+views::View* AnchorViewForBrowser(const extensions::Extension* extension,
                                   Browser* browser) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   views::View* reference_view = nullptr;
 
-  switch (controller->anchor_position()) {
-    case ExtensionInstalledBubble::ANCHOR_ACTION: {
-      if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
-        // TODO(pbos): Make sure this view pops out so that we can actually
-        // anchor to a visible action. Right now this view is most likely not
-        // visible, and will fall back on the default case on showing the
-        // installed dialog anchored to the general extensions toolbar button.
-        reference_view =
-            browser_view->toolbar_button_provider()->GetToolbarActionViewForId(
-                controller->extension()->id());
-      } else {
-        BrowserActionsContainer* container =
-            browser_view->toolbar()->browser_actions();
-        // Hitting this DCHECK means |ShouldShow| failed.
-        DCHECK(container);
-        DCHECK(!container->animating());
+  if (ShouldAnchorToAction(extension)) {
+    if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
+      // TODO(pbos): Make sure this view pops out so that we can actually
+      // anchor to a visible action. Right now this view is most likely not
+      // visible, and will fall back on the default case on showing the
+      // installed dialog anchored to the general extensions toolbar button.
+      reference_view =
+          browser_view->toolbar_button_provider()->GetToolbarActionViewForId(
+              extension->id());
+    } else {
+      BrowserActionsContainer* container =
+          browser_view->toolbar()->browser_actions();
+      // Hitting this DCHECK means |ShouldShow| failed.
+      DCHECK(container);
+      DCHECK(!container->animating());
 
-        reference_view = container->GetViewForId(controller->extension()->id());
-      }
-      break;
+      reference_view = container->GetViewForId(extension->id());
     }
-    case ExtensionInstalledBubble::ANCHOR_OMNIBOX: {
-      reference_view = browser_view->GetLocationBarView()->location_icon_view();
-      break;
-    }
-    case ExtensionInstalledBubble::ANCHOR_APP_MENU:
-      // Will be caught below.
-      break;
+  } else if (ShouldAnchorToOmnibox(extension)) {
+    reference_view = browser_view->GetLocationBarView()->location_icon_view();
   }
 
   // Default case.
@@ -158,9 +180,11 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
                                      public views::BubbleDialogDelegateView,
                                      public views::LinkListener {
  public:
-  ExtensionInstalledBubbleView(ExtensionInstalledBubble* bubble,
-                               BubbleReference reference,
-                               const SkBitmap& icon);
+  ExtensionInstalledBubbleView(
+      ExtensionInstalledBubble* bubble,
+      BubbleReference reference,
+      scoped_refptr<const extensions::Extension> extension,
+      const SkBitmap& icon);
   ~ExtensionInstalledBubbleView() override;
 
   // Recalculate the anchor position for this bubble.
@@ -192,6 +216,7 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
   // The shortcut to open the manage shortcuts page.
   views::Link* manage_shortcut_;
 
+  const scoped_refptr<const extensions::Extension> extension_;
   const gfx::ImageSkia icon_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstalledBubbleView);
@@ -200,6 +225,7 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
 ExtensionInstalledBubbleView::ExtensionInstalledBubbleView(
     ExtensionInstalledBubble* controller,
     BubbleReference bubble_reference,
+    scoped_refptr<const extensions::Extension> extension,
     const SkBitmap& icon)
     : BubbleDialogDelegateView(nullptr,
                                controller->anchor_position() ==
@@ -209,6 +235,7 @@ ExtensionInstalledBubbleView::ExtensionInstalledBubbleView(
       controller_(controller),
       bubble_reference_(bubble_reference),
       manage_shortcut_(nullptr),
+      extension_(extension),
       icon_(MakeIconFromBitmap(icon)) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::EXTENSION_INSTALLED);
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
@@ -219,7 +246,8 @@ ExtensionInstalledBubbleView::ExtensionInstalledBubbleView(
 ExtensionInstalledBubbleView::~ExtensionInstalledBubbleView() {}
 
 void ExtensionInstalledBubbleView::UpdateAnchorView() {
-  views::View* reference_view = AnchorViewForBrowser(controller_, browser());
+  views::View* reference_view =
+      AnchorViewForBrowser(extension_.get(), browser());
   if (reference_view) {
     SetAnchorView(reference_view);
   } else {
@@ -242,8 +270,7 @@ void ExtensionInstalledBubbleView::CloseBubble(BubbleCloseReason reason) {
 
 base::string16 ExtensionInstalledBubbleView::GetWindowTitle() const {
   // Add the heading (for all options).
-  base::string16 extension_name =
-      base::UTF8ToUTF16(controller_->extension()->name());
+  base::string16 extension_name = base::UTF8ToUTF16(extension_->name());
   base::i18n::AdjustStringForLocaleDirection(&extension_name);
   return l10n_util::GetStringFUTF16(IDS_EXTENSION_INSTALLED_HEADING,
                                     extension_name);
@@ -346,8 +373,8 @@ ExtensionInstalledBubbleUi::~ExtensionInstalledBubbleUi() {
 }
 
 void ExtensionInstalledBubbleUi::Show(BubbleReference bubble_reference) {
-  bubble_view_ = new ExtensionInstalledBubbleView(bubble_, bubble_reference,
-                                                  bubble_->icon());
+  bubble_view_ = new ExtensionInstalledBubbleView(
+      bubble_, bubble_reference, bubble_->extension(), bubble_->icon());
   bubble_reference_ = bubble_reference;
 
   views::BubbleDialogDelegateView::CreateBubble(bubble_view_)->Show();

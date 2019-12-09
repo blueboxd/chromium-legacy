@@ -9,7 +9,7 @@
 Polymer({
   is: 'packaged-license-screen',
 
-  behaviors: [I18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
 
   properties: {
 

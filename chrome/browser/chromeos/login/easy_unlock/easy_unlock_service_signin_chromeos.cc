@@ -530,7 +530,7 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
 
     remote_devices.push_back(remote_device);
     PA_LOG(VERBOSE) << "Loaded Remote Device:\n"
-                    << "  user id: " << remote_device.user_id << "\n"
+                    << "  user email: " << remote_device.user_email << "\n"
                     << "  device id: "
                     << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                            remote_device.GetDeviceId());

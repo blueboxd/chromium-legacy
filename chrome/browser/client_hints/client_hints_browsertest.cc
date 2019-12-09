@@ -728,7 +728,7 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
 // use webpages that may contain http-equiv Accept-CH and Accept-CH-Lifetime
 // headers. When set to false, the tests use webpages that set the headers in
 // the HTTP response headers.
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          ClientHintsBrowserTest,
                          testing::Bool());
 
@@ -741,7 +741,7 @@ class ClientHintsAllowThirdPartyBrowserTest : public ClientHintsBrowserTest {
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          ClientHintsAllowThirdPartyBrowserTest,
                          testing::Bool());
 

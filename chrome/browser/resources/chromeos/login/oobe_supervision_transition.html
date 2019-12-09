@@ -8,7 +8,8 @@
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <link rel="stylesheet" href="oobe_supervision_transition.css">
     <oobe-dialog id="supervisionTransitionDialog" role="alert"
-        aria-label$="[[getDialogA11yTitle_(locale, isRemovingSupervision_)]]">
+        aria-label$="[[getDialogA11yTitle_(locale, isRemovingSupervision_)]]"
+        subtitle-key="supervisionTransitionIntroMessage">
       <iron-icon src="chrome://oobe/supervision_icon.png" slot="oobe-icon"
           class="supervision-icon" aria-hidden="true">
       </iron-icon>
@@ -20,31 +21,22 @@
           [[i18nDynamic(locale,'removingSupervisionTitle')]]
         </div>
       </h1>
-      <div slot="subtitle">
-        [[i18nDynamic(locale,'supervisionTransitionIntroMessage')]]
-      </div>
       <div slot="footer" aria-live="off">
         <paper-progress class="slow" aria-hidden="true" indeterminate>
         </paper-progress>
       </div>
     </oobe-dialog>
     <oobe-dialog id="supervisionTransitionErrorDialog" role="alert"
+        title-key="supervisionTransitionErrorTitle"
+        subtitle-key="supervisionTransitionErrorMessage"
         aria-label$="[[i18nDynamic(locale,'supervisionTransitionErrorTitle')]]"
         has-buttons hidden>
       <iron-icon src="chrome://oobe/supervision_icon.png" slot="oobe-icon"
           aria-hidden="true">
       </iron-icon>
-      <h1 slot="title">
-        [[i18nDynamic(locale,'supervisionTransitionErrorTitle')]]
-      </h1>
-      <div slot="subtitle">
-        [[i18nDynamic(locale,'supervisionTransitionErrorMessage')]]
-      </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
         <oobe-text-button id="accept-button" on-tap="onAcceptAndContinue_"
-            inverse>
-          <div>[[i18nDynamic(locale,'supervisionTransitionButton')]]</div>
-        </oobe-text-button>
+            text-key="supervisionTransitionButton" inverse></oobe-text-button>
       </div>
     </oobe-dialog>
   </template>

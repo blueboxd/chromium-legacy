@@ -52,6 +52,8 @@ class WebKioskAppLauncher {
   virtual void ContinueWithNetworkReady();
   // Launches the app after the app is prepared.
   virtual void LaunchApp();
+  // Stops current installation.
+  virtual void CancelCurrentInstallation();
 
  private:
   void OnAppDataObtained(std::unique_ptr<WebApplicationInfo> app_info);

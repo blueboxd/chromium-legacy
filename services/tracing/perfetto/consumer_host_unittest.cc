@@ -654,7 +654,7 @@ TEST_F(TracingConsumerTest, PrivacyFilterConfigInJson) {
                    .privacy_filtering_enabled());
 
   base::RunLoop no_more_data;
-  ExpectPackets("\"perfetto_trace_stats\":\"__stripped__\"",
+  ExpectPackets("\"trace_processor_stats\":\"__stripped__\"",
                 no_more_data.QuitClosure());
 
   base::RunLoop write_done;

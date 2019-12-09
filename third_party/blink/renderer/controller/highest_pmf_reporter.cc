@@ -65,7 +65,10 @@ HighestPmfReporter::HighestPmfReporter(
   MemoryUsageMonitor::Instance().AddObserver(this);
 }
 
-bool HighestPmfReporter::HasNavigationAlreadyStarted() const {
+bool HighestPmfReporter::FirstNavigationStarted() {
+  if (first_navigation_detected_)
+    return false;
+
   for (Page* page : Page::OrdinaryPages()) {
     Frame* frame = page->MainFrame();
     if (!frame)
@@ -79,19 +82,17 @@ bool HighestPmfReporter::HasNavigationAlreadyStarted() const {
     if (!loader)
       continue;
 
-    if (!loader->GetTiming().NavigationStart().is_null())
+    if (!loader->GetTiming().NavigationStart().is_null()) {
+      first_navigation_detected_ = true;
       return true;
+    }
   }
   return false;
 }
 
 void HighestPmfReporter::OnMemoryPing(MemoryUsage usage) {
-  if (!first_navigation_detected_) {
-    if (!HasNavigationAlreadyStarted())
-      return;
-
-    first_navigation_detected_ = true;
-
+  DCHECK(IsMainThread());
+  if (FirstNavigationStarted()) {
     task_runner_->PostDelayedTask(
         FROM_HERE,
         WTF::Bind(&HighestPmfReporter::OnReportMetrics, WTF::Unretained(this)),
@@ -105,13 +106,18 @@ void HighestPmfReporter::OnMemoryPing(MemoryUsage usage) {
   peak_resident_bytes_at_current_highest_pmf_ = usage.peak_resident_bytes;
   webpage_counts_at_current_highest_pmf_ = Page::OrdinaryPages().size();
 
-  // TODO(tasak): Need to report the highest private memory footprint
-  // while a renderer is alive.
+  // TODO(tasak): Report the highest memory footprint throughout renderer's
+  // lifetime.
 }
 
 void HighestPmfReporter::OnReportMetrics() {
+  DCHECK(IsMainThread());
   ReportMetrics();
 
+  // The following code is not accurate, because OnReportMetrics will be late
+  // when renderer is slow (e.g. caused by near-OOM or heavy tasks is running
+  // or ...). However such signal getting late by minutes is unlikely, so it's
+  // ok to say "this is good enough".
   current_highest_pmf_ = 0.0;
   peak_resident_bytes_at_current_highest_pmf_ = 0.0;
   webpage_counts_at_current_highest_pmf_ = 0;

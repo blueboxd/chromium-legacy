@@ -553,12 +553,9 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   [ChromeEarlGreyAppInterface startReloading];
   AssertIsShowingDistillablePage(false, distillableURL);
 
-  // TODO(crbug.com/954248) This DCHECK's (but works) with slimnav disabled.
-  if ([ChromeEarlGrey isSlimNavigationManagerEnabled]) {
-    [ChromeEarlGrey goBack];
-    [ChromeEarlGrey goForward];
-    AssertIsShowingDistillablePage(false, distillableURL);
-  }
+  [ChromeEarlGrey goBack];
+  [ChromeEarlGrey goForward];
+  AssertIsShowingDistillablePage(false, distillableURL);
 
   // Start server to reload online error.
   self.serverRespondsWithContent = YES;

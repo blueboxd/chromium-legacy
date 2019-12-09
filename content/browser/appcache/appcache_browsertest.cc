@@ -124,8 +124,9 @@ IN_PROC_BROWSER_TEST_F(AppCacheNetworkServiceBrowserTest,
 }
 
 // Regression test for crbug.com/968179.
+// Timedout on all platforms.  http://crbug.com/1031089
 IN_PROC_BROWSER_TEST_F(AppCacheNetworkServiceBrowserTest,
-                       CacheableResourcesReuse) {
+                       DISABLED_CacheableResourcesReuse) {
   net::EmbeddedTestServer embedded_test_server;
 
   std::string manifest_nonce = "# Version 1";

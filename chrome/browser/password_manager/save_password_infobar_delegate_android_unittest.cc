@@ -307,7 +307,7 @@ TEST_P(SavePasswordInfoBarDelegateTestForUKMs, VerifyUKMRecording) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /*no extra name*/,
+    All,
     SavePasswordInfoBarDelegateTestForUKMs,
     ::testing::Values(
         PasswordFormMetricsRecorder::BubbleDismissalReason::kAccepted,

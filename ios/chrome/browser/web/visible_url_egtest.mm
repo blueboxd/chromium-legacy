@@ -150,11 +150,8 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
 // Tests that visible URL is always the same as last committed URL during
 // pending back and forward navigations.
-- (void)testBackForwardNavigation {
-  // TODO(crbug.com/874634): re-enable this test.
-  if ([ChromeEarlGrey isSlimNavigationManagerEnabled])
-    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
-
+// TODO(crbug.com/874634): re-enable this test.
+- (void)DISABLED_testBackForwardNavigation {
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   [ChromeEarlGrey purgeCachedWebViewPages];
@@ -210,11 +207,8 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
 // Tests that visible URL is always the same as last committed URL during
 // pending navigations initialted from back history popover.
-- (void)testHistoryNavigation {
-  // TODO(crbug.com/874634): re-enable this test.
-  if ([ChromeEarlGrey isSlimNavigationManagerEnabled])
-    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
-
+// TODO(crbug.com/874634): re-enable this test.
+- (void)DISABLED_testHistoryNavigation {
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   [ChromeEarlGrey purgeCachedWebViewPages];
@@ -254,11 +248,8 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
 // Tests that stopping a pending Back navigation and reloading reloads committed
 // URL, not pending URL.
-- (void)testStoppingPendingBackNavigationAndReload {
-  // TODO(crbug.com/874634): re-enable this test.
-  if ([ChromeEarlGrey isSlimNavigationManagerEnabled])
-    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
-
+// TODO(crbug.com/874634): re-enable this test.
+- (void)DISABLED_testStoppingPendingBackNavigationAndReload {
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   [ChromeEarlGrey purgeCachedWebViewPages];
@@ -294,11 +285,8 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
 // Tests that visible URL is always the same as last committed URL during
 // back forward navigations initiated with JS.
-- (void)testJSBackForwardNavigation {
-  // TODO(crbug.com/874634): re-enable this test.
-  if ([ChromeEarlGrey isSlimNavigationManagerEnabled])
-    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
-
+// TODO(crbug.com/874634): re-enable this test.
+- (void)DISABLED_testJSBackForwardNavigation {
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   [ChromeEarlGrey purgeCachedWebViewPages];
@@ -354,11 +342,8 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
 // Tests that visible URL is always the same as last committed URL during go
 // navigations initiated with JS.
-- (void)testJSGoNavigation {
-  // TODO(crbug.com/874634): re-enable this test.
-  if ([ChromeEarlGrey isSlimNavigationManagerEnabled])
-    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
-
+// TODO(crbug.com/874634): re-enable this test.
+- (void)DISABLED_testJSGoNavigation {
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   [ChromeEarlGrey purgeCachedWebViewPages];
@@ -414,11 +399,8 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
 // Tests that visible URL is always the same as last committed URL during go
 // back navigation started with pending reload in progress.
-- (void)testBackNavigationWithPendingReload {
-  // TODO(crbug.com/874634): re-enable this test.
-  if ([ChromeEarlGrey isSlimNavigationManagerEnabled])
-    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
-
+// TODO(crbug.com/874634): re-enable this test.
+- (void)DISABLED_testBackNavigationWithPendingReload {
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   [ChromeEarlGrey purgeCachedWebViewPages];
@@ -459,18 +441,8 @@ class PausableResponseProvider : public HtmlResponseProvider {
 // Tests that visible URL is always the same as last committed URL during go
 // back navigation initiated with pending renderer-initiated navigation in
 // progress.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testBackNavigationWithPendingRendererInitiatedNavigation \
-  testBackNavigationWithPendingRendererInitiatedNavigation
-#else
-#define MAYBE_testBackNavigationWithPendingRendererInitiatedNavigation \
-  FLAKY_testBackNavigationWithPendingRendererInitiatedNavigation
-#endif
-- (void)MAYBE_testBackNavigationWithPendingRendererInitiatedNavigation {
-  // TODO(crbug.com/874634): re-enable this test.
-  if ([ChromeEarlGrey isSlimNavigationManagerEnabled])
-    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
-
+// TODO(crbug.com/874634): re-enable this test.
+- (void)DISABLED_testBackNavigationWithPendingRendererInitiatedNavigation {
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   [ChromeEarlGrey purgeCachedWebViewPages];
@@ -506,11 +478,8 @@ class PausableResponseProvider : public HtmlResponseProvider {
 // Tests that visible URL is always the same as last committed URL during
 // renderer-initiated navigation started with pending back navigation in
 // progress.
-- (void)testRendererInitiatedNavigationWithPendingBackNavigation {
-  // TODO(crbug.com/874634): re-enable this test.
-  if ([ChromeEarlGrey isSlimNavigationManagerEnabled])
-    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
-
+// TODO(crbug.com/874634): re-enable this test.
+- (void)DISABLED_testRendererInitiatedNavigationWithPendingBackNavigation {
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   [ChromeEarlGrey purgeCachedWebViewPages];
@@ -546,11 +515,8 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
 // Tests that visible URL is always the same as last committed URL if user
 // issues 2 go back commands.
-- (void)testDoubleBackNavigation {
-  // TODO(crbug.com/874634): re-enable this test.
-  if ([ChromeEarlGrey isSlimNavigationManagerEnabled])
-    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
-
+// TODO(crbug.com/874634): re-enable this test.
+- (void)DISABLED_testDoubleBackNavigation {
   // Create 3rd entry in the history, to be able to go back twice.
   [ChromeEarlGrey loadURL:_testURL3];
 
@@ -586,11 +552,8 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
 // Tests that visible URL is always the same as last committed URL if user
 // issues 2 go forward commands to WebUI page (crbug.com/711465).
-- (void)testDoubleForwardNavigationToWebUIPage {
-  // TODO(crbug.com/874634): re-enable this test.
-  if ([ChromeEarlGrey isSlimNavigationManagerEnabled])
-    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
-
+// TODO(crbug.com/874634): re-enable this test.
+- (void)DISABLED_testDoubleForwardNavigationToWebUIPage {
   // Create 3rd entry in the history, to be able to go back twice.
   GURL URL(kChromeUIVersionURL);
   [ChromeEarlGrey loadURL:GURL(kChromeUIVersionURL)];
@@ -618,11 +581,8 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
 // Tests that visible URL is always the same as last committed URL if page calls
 // window.history.back() twice.
-- (void)testDoubleBackJSNavigation {
-  // TODO(crbug.com/874634): re-enable this test.
-  if ([ChromeEarlGrey isSlimNavigationManagerEnabled])
-    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
-
+// TODO(crbug.com/874634): re-enable this test.
+- (void)DISABLED_testDoubleBackJSNavigation {
   // Create 3rd entry in the history, to be able to go back twice.
   [ChromeEarlGrey loadURL:_testURL3];
 

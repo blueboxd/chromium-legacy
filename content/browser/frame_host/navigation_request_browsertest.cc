@@ -2526,7 +2526,7 @@ IN_PROC_BROWSER_TEST_P(NavigationRequestThrottleResultWithErrorPageBrowserTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     NavigationRequestThrottleResultWithErrorPageBrowserTest,
     testing::Range(NavigationThrottle::ThrottleAction::FIRST,
                    NavigationThrottle::ThrottleAction::LAST));

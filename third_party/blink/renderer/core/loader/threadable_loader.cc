@@ -847,7 +847,7 @@ void ThreadableLoader::ResponseReceived(Resource* resource,
 
   // Even if the request met the conditions to get handled by a Service Worker
   // in the constructor of this class (and therefore
-  // |m_fallbackRequestForServiceWorker| is set), the Service Worker may skip
+  // |fallback_request_for_service_worker_| is set), the Service Worker may skip
   // processing the request. Only if the request is same origin, the skipped
   // response may come here (wasFetchedViaServiceWorker() returns false) since
   // such a request doesn't have to go through the CORS algorithm by calling
@@ -942,12 +942,12 @@ void ThreadableLoader::DidTimeout(TimerBase* timer) {
   DCHECK(async_);
   DCHECK_EQ(timer, &timeout_timer_);
   // clearResource() may be called in clear() and some other places. clear()
-  // calls stop() on |m_timeoutTimer|. In the other places, the resource is set
+  // calls stop() on |timeout_|. In the other places, the resource is set
   // again. If the creation fails, clear() is called. So, here, resource() is
   // always non-nullptr.
   DCHECK(GetResource());
-  // When |m_client| is set to nullptr only in clear() where |m_timeoutTimer|
-  // is stopped. So, |m_client| is always non-nullptr here.
+  // When |client_| is set to nullptr only in clear() where |timeout_|
+  // is stopped. So, |client_| is always non-nullptr here.
   DCHECK(client_);
 
   DispatchDidFail(ResourceError::TimeoutError(GetResource()->Url()));

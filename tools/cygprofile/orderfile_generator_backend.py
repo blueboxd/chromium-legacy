@@ -22,7 +22,6 @@ import json
 import glob
 import logging
 import os
-import re
 import shutil
 import subprocess
 import sys
@@ -31,7 +30,6 @@ import time
 
 import cluster
 import cyglog_to_orderfile
-import cygprofile_utils
 import patch_orderfile
 import process_profiles
 import profile_android_startup

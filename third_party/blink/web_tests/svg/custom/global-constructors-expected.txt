@@ -30,7 +30,7 @@ PASS SVGSVGElement.toString() is 'function SVGSVGElement() { [native code] }'
 PASS SVGGElement.toString() is 'function SVGGElement() { [native code] }'
 PASS SVGDefsElement.toString() is 'function SVGDefsElement() { [native code] }'
 PASS SVGDescElement.toString() is 'function SVGDescElement() { [native code] }'
-PASS SVGDiscardElement.toString() is 'function SVGDiscardElement() { [native code] }'
+FAIL SVGDiscardElement.toString() should be function SVGDiscardElement() { [native code] }. Threw exception ReferenceError: SVGDiscardElement is not defined
 PASS SVGTitleElement.toString() is 'function SVGTitleElement() { [native code] }'
 PASS SVGSymbolElement.toString() is 'function SVGSymbolElement() { [native code] }'
 PASS SVGUseElement.toString() is 'function SVGUseElement() { [native code] }'

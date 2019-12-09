@@ -26,13 +26,13 @@ class RemoteDeviceV2Loader {
   // Converts the input CryptAuthDevices to RemoteDevices.
   // |id_to_device_map|: A map from Instance ID to CryptAuthDevice which will be
   //     converted to a list of RemoteDevices.
-  // |user_id|: The account ID of the user who owns the devices.
+  // |user_email|: The email of the user who owns the devices.
   // |user_private_key|: The private key of the user's local device. Used to
   //     derive the persistent symmetric key (PSK).
   // |callback|: Invoked when the conversion is complete.
   virtual void Load(
       const CryptAuthDeviceRegistry::InstanceIdToDeviceMap& id_to_device_map,
-      const std::string& user_id,
+      const std::string& user_email,
       const std::string& user_private_key,
       LoadCallback callback) = 0;
 };

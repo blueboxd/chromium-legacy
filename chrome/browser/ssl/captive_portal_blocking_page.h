@@ -8,8 +8,8 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
-#include "chrome/common/buildflags.h"
 #include "components/security_interstitials/content/ssl_blocking_page_base.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "net/ssl/ssl_info.h"
@@ -38,12 +38,21 @@ class CaptivePortalBlockingPage : public SSLBlockingPageBase {
   // Interstitial type, for testing.
   static const void* const kTypeForTesting;
 
-  CaptivePortalBlockingPage(content::WebContents* web_contents,
-                            const GURL& request_url,
-                            const GURL& login_url,
-                            std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-                            const net::SSLInfo& ssl_info,
-                            int cert_error);
+  // Callback that is invoked when the user has invoked the button to open the
+  // login page.
+  using OpenLoginCallback =
+      base::RepeatingCallback<void(content::WebContents*)>;
+
+  CaptivePortalBlockingPage(
+      content::WebContents* web_contents,
+      const GURL& request_url,
+      const GURL& login_url,
+      std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+      const net::SSLInfo& ssl_info,
+      std::unique_ptr<
+          security_interstitials::SecurityInterstitialControllerClient>
+          controller_client,
+      const OpenLoginCallback& open_login_callback);
   ~CaptivePortalBlockingPage() override;
 
   // InterstitialPageDelegate method:
@@ -66,6 +75,8 @@ class CaptivePortalBlockingPage : public SSLBlockingPageBase {
   // InterstitialPageDelegate method:
   void CommandReceived(const std::string& command) override;
   void OverrideEntry(content::NavigationEntry* entry) override;
+
+  OpenLoginCallback open_login_callback_;
 
   // URL of the login page, opened when the user clicks the "Connect" button.
   // If empty, the default captive portal detection URL for the platform will be

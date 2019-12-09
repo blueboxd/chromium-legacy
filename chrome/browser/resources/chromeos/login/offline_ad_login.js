@@ -32,7 +32,7 @@ var JoinConfigType;
 Polymer({
   is: 'offline-ad-login',
 
-  behaviors: [I18nBehavior, OobeDialogHostBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
   properties: {
     /**
@@ -72,9 +72,9 @@ Polymer({
      */
     userNameLabel: {type: String, value: ''},
     /**
-     * Welcome message on top of the UI.
+     * ID of localized welcome message on top of the UI.
      */
-    adWelcomeMessage: String,
+    adWelcomeMessageKey: String,
     /**
      * Error message for the machine name input.
      */
@@ -452,7 +452,7 @@ Polymer({
 
   i18nUpdateLocale: function() {
     this.setupEncList();
-    I18nBehavior.i18nUpdateLocale.call(this);
+    OobeI18nBehaviorImpl.i18nUpdateLocale.call(this);
   },
 
   onKeydownUnlockPassword_: function(e) {

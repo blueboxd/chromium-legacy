@@ -10,7 +10,7 @@
 Polymer({
   is: 'demo-setup-md',
 
-  behaviors: [I18nBehavior, OobeDialogHostBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
   properties: {
     /** Error message displayed on demoSetupErrorDialog screen. */

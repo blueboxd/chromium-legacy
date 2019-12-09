@@ -17,7 +17,6 @@ _SRC_PATH = os.path.abspath(os.path.join(
     os.path.dirname(__file__), os.pardir, os.pardir))
 path = os.path.join(_SRC_PATH, 'tools', 'cygprofile')
 sys.path.append(path)
-import cygprofile_utils
 import symbol_extractor
 
 
@@ -267,7 +266,7 @@ class SymbolOffsetProcessor(object):
       self._whitelist = set()
       symbols = self.SymbolInfos()
       start_syms = [s for s in symbols
-                    if s.name == cygprofile_utils.START_OF_TEXT_SYMBOL]
+                    if s.name == symbol_extractor.START_OF_TEXT_SYMBOL]
       assert len(start_syms) == 1, 'Can\'t find unique start of text symbol'
       start_of_text = start_syms[0].offset
       self.GetDumpOffsetToSymbolInfo()
@@ -294,7 +293,7 @@ class SymbolOffsetProcessor(object):
     """
     if self._offset_to_symbol_info is None:
       start_syms = [s for s in self.SymbolInfos()
-                    if s.name == cygprofile_utils.START_OF_TEXT_SYMBOL]
+                    if s.name == symbol_extractor.START_OF_TEXT_SYMBOL]
       assert len(start_syms) == 1, 'Can\'t find unique start of text symbol'
       start_of_text = start_syms[0].offset
       max_offset = max(s.offset + s.size for s in self.SymbolInfos())
@@ -316,7 +315,7 @@ class SymbolOffsetProcessor(object):
           if other_symbol is None or other_symbol.offset > sym.offset:
             self._offset_to_symbol_info[i] = sym
 
-        if sym.name != cygprofile_utils.START_OF_TEXT_SYMBOL and sym.size == 0:
+        if sym.name != symbol_extractor.START_OF_TEXT_SYMBOL and sym.size == 0:
           idx = offset / 2
           assert (self._offset_to_symbol_info[idx] is None or
                   self._offset_to_symbol_info[idx].size == 0), (

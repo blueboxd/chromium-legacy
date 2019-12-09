@@ -1134,6 +1134,7 @@ if (!is_android) {
       "../browser/safe_browsing/test_safe_browsing_database_helper.cc",
       "../browser/safe_browsing/test_safe_browsing_database_helper.h",
       "../browser/safe_xml_parser_browsertest.cc",
+      "../browser/search/ntp_custom_background_enabled_policy_handler_browsertest.cc",
       "../browser/search_engines/template_url_scraper_browsertest.cc",
       "../browser/secure_origin_whitelist_browsertest.cc",
       "../browser/serial/chrome_serial_browsertest.cc",

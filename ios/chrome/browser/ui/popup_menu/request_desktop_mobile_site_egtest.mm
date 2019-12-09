@@ -145,11 +145,8 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
 // Tests that requesting desktop site of a page works and going back re-opens
 // mobile version of the page.
-- (void)testRequestDesktopSiteGoBackToMobile {
-  // TODO(crbug.com/990186): Re-enable this test.
-  if ([ChromeEarlGrey isSlimNavigationManagerEnabled])
-    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
-
+// TODO(crbug.com/990186): Re-enable this test.
+- (void)DISABLED_testRequestDesktopSiteGoBackToMobile {
   std::unique_ptr<web::DataResponseProvider> provider(
       new UserAgentResponseProvider());
   web::test::SetUpHttpServer(std::move(provider));
@@ -200,11 +197,8 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
 // Tests that requesting mobile site of a page works and going back re-opens
 // desktop version of the page.
-- (void)testRequestMobileSiteGoBackToDesktop {
-  // TODO(crbug.com/990186): Re-enable this test.
-  if ([ChromeEarlGrey isSlimNavigationManagerEnabled])
-    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
-
+// TODO(crbug.com/990186): Re-enable this test.
+- (void)DISABLED_testRequestMobileSiteGoBackToDesktop {
   std::unique_ptr<web::DataResponseProvider> provider(
       new UserAgentResponseProvider());
   web::test::SetUpHttpServer(std::move(provider));

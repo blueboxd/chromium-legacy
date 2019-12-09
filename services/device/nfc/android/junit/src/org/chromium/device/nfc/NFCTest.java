@@ -158,7 +158,7 @@ public class NFCTest {
         try {
             doNothing().when(mNfcTagHandler).connect();
             doNothing().when(mNfcTagHandler).write(any(android.nfc.NdefMessage.class));
-            doReturn(createUrlWebNFCNdefMessage(TEST_URL)).when(mNfcTagHandler).read();
+            doReturn(createNdefMessageWithRecordId(DUMMY_RECORD_ID)).when(mNfcTagHandler).read();
             doNothing().when(mNfcTagHandler).close();
         } catch (IOException | FormatException e) {
         }
@@ -224,7 +224,7 @@ public class NFCTest {
         assertEquals(1, emptyMojoNdefMessage.data.length);
         assertEquals(NdefMessageUtils.RECORD_TYPE_EMPTY, emptyMojoNdefMessage.data[0].recordType);
         assertEquals(null, emptyMojoNdefMessage.data[0].mediaType);
-        assertEquals(true, emptyMojoNdefMessage.data[0].id.isEmpty());
+        assertEquals(null, emptyMojoNdefMessage.data[0].id);
         assertNull(emptyMojoNdefMessage.data[0].encoding);
         assertNull(emptyMojoNdefMessage.data[0].lang);
         assertEquals(0, emptyMojoNdefMessage.data[0].data.length);
@@ -747,9 +747,9 @@ public class NFCTest {
         mDelegate.invokeCallback();
         nfc.setClient(mNfcClient);
 
-        // Should match by WebNFC Id (exact match).
+        // Should match by record id (exact match).
         NdefScanOptions options1 = createNdefScanOptions();
-        options1.id = TEST_URL;
+        options1.id = DUMMY_RECORD_ID;
         int watchId1 = mNextWatchId++;
         WatchResponse mockWatchCallback1 = mock(WatchResponse.class);
         nfc.watch(options1, watchId1, mockWatchCallback1);
@@ -775,7 +775,7 @@ public class NFCTest {
 
         // Should not match
         NdefScanOptions options4 = createNdefScanOptions();
-        options4.id = AUTHOR_RECORD_DOMAIN;
+        options4.id = "random_record_id";
         int watchId4 = mNextWatchId++;
         WatchResponse mockWatchCallback4 = mock(WatchResponse.class);
         nfc.watch(options4, watchId4, mockWatchCallback4);
@@ -1081,146 +1081,6 @@ public class NFCTest {
     }
 
     /**
-     * Test that Nfc.watch() WebNFC Id pattern matching works correctly.
-     */
-    @Test
-    @Feature({"NFCTest"})
-    public void testWatchPatternMatching() throws IOException, FormatException {
-        TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
-        mDelegate.invokeCallback();
-        nfc.setClient(mNfcClient);
-
-        // Should match.
-        int watchId1 = mNextWatchId++;
-        {
-            NdefScanOptions options = createNdefScanOptions();
-            options.id = "https://test.com/*";
-            WatchResponse mockWatchCallback = mock(WatchResponse.class);
-            nfc.watch(options, watchId1, mockWatchCallback);
-            verify(mockWatchCallback).call(mErrorCaptor.capture());
-            assertNull(mErrorCaptor.getValue());
-        }
-
-        // Should match.
-        int watchId2 = mNextWatchId++;
-        {
-            NdefScanOptions options = createNdefScanOptions();
-            options.id = "https://test.com/contact/42";
-            WatchResponse mockWatchCallback = mock(WatchResponse.class);
-            nfc.watch(options, watchId2, mockWatchCallback);
-            verify(mockWatchCallback).call(mErrorCaptor.capture());
-            assertNull(mErrorCaptor.getValue());
-        }
-
-        // Should match.
-        int watchId3 = mNextWatchId++;
-        {
-            NdefScanOptions options = createNdefScanOptions();
-            options.id = "https://subdomain.test.com/*";
-            WatchResponse mockWatchCallback = mock(WatchResponse.class);
-            nfc.watch(options, watchId3, mockWatchCallback);
-            verify(mockWatchCallback).call(mErrorCaptor.capture());
-            assertNull(mErrorCaptor.getValue());
-        }
-
-        // Should match.
-        int watchId4 = mNextWatchId++;
-        {
-            NdefScanOptions options = createNdefScanOptions();
-            options.id = "https://subdomain.test.com/contact";
-            WatchResponse mockWatchCallback = mock(WatchResponse.class);
-            nfc.watch(options, watchId4, mockWatchCallback);
-            verify(mockWatchCallback).call(mErrorCaptor.capture());
-            assertNull(mErrorCaptor.getValue());
-        }
-
-        // Should not match.
-        {
-            NdefScanOptions options = createNdefScanOptions();
-            options.id = "https://www.test.com/*";
-            WatchResponse mockWatchCallback = mock(WatchResponse.class);
-            nfc.watch(options, mNextWatchId++, mockWatchCallback);
-            verify(mockWatchCallback).call(mErrorCaptor.capture());
-            assertNull(mErrorCaptor.getValue());
-        }
-
-        // Should not match.
-        {
-            NdefScanOptions options = createNdefScanOptions();
-            options.id = "http://test.com/*";
-            WatchResponse mockWatchCallback = mock(WatchResponse.class);
-            nfc.watch(options, mNextWatchId++, mockWatchCallback);
-            verify(mockWatchCallback).call(mErrorCaptor.capture());
-            assertNull(mErrorCaptor.getValue());
-        }
-
-        // Should not match.
-        {
-            NdefScanOptions options = createNdefScanOptions();
-            options.id = "invalid pattern url";
-            WatchResponse mockWatchCallback = mock(WatchResponse.class);
-            nfc.watch(options, mNextWatchId++, mockWatchCallback);
-            verify(mockWatchCallback).call(mErrorCaptor.capture());
-            assertNull(mErrorCaptor.getValue());
-        }
-
-        doReturn(createUrlWebNFCNdefMessage("https://subdomain.test.com/contact/42"))
-                .when(mNfcTagHandler)
-                .read();
-        nfc.processPendingOperationsForTesting(mNfcTagHandler);
-
-        // None of the watches should match NdefMessage with this WebNFC Id.
-        doReturn(createUrlWebNFCNdefMessage("https://notest.com/foo")).when(mNfcTagHandler).read();
-        nfc.processPendingOperationsForTesting(mNfcTagHandler);
-
-        // Check that client was notified and watch with correct id was triggered.
-        verify(mNfcClient, times(1))
-                .onWatch(mOnWatchCallbackCaptor.capture(), nullable(String.class),
-                        any(NdefMessage.class));
-        assertEquals(4, mOnWatchCallbackCaptor.getValue().length);
-        assertEquals(watchId1, mOnWatchCallbackCaptor.getValue()[0]);
-        assertEquals(watchId2, mOnWatchCallbackCaptor.getValue()[1]);
-        assertEquals(watchId3, mOnWatchCallbackCaptor.getValue()[2]);
-        assertEquals(watchId4, mOnWatchCallbackCaptor.getValue()[3]);
-    }
-
-    /**
-     * Test that Nfc.watch() WebNFC Id pattern matching works correctly for invalid WebNFC Ids.
-     */
-    @Test
-    @Feature({"NFCTest"})
-    public void testWatchPatternMatchingInvalidId() throws IOException, FormatException {
-        TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
-        mDelegate.invokeCallback();
-        nfc.setClient(mNfcClient);
-
-        // Should not match when invalid WebNFC Id is received.
-        NdefScanOptions options = createNdefScanOptions();
-        options.id = "https://test.com/*";
-        WatchResponse mockWatchCallback = mock(WatchResponse.class);
-        nfc.watch(options, mNextWatchId, mockWatchCallback);
-        verify(mockWatchCallback).call(mErrorCaptor.capture());
-        assertNull(mErrorCaptor.getValue());
-
-        doReturn(createUrlWebNFCNdefMessage("http://subdomain.test.com/contact/42"))
-                .when(mNfcTagHandler)
-                .read();
-        nfc.processPendingOperationsForTesting(mNfcTagHandler);
-
-        doReturn(createUrlWebNFCNdefMessage("ftp://subdomain.test.com/contact/42"))
-                .when(mNfcTagHandler)
-                .read();
-        nfc.processPendingOperationsForTesting(mNfcTagHandler);
-
-        doReturn(createUrlWebNFCNdefMessage("invalid url")).when(mNfcTagHandler).read();
-        nfc.processPendingOperationsForTesting(mNfcTagHandler);
-
-        verify(mNfcClient, times(0))
-                .onWatch(mOnWatchCallbackCaptor.capture(), nullable(String.class),
-                        any(NdefMessage.class));
-    }
-
-    /**
      * Test that Nfc.push() succeeds for NFC messages with EMPTY records.
      */
     @Test
@@ -1253,7 +1113,6 @@ public class NFCTest {
 
     private NdefScanOptions createNdefScanOptions() {
         NdefScanOptions options = new NdefScanOptions();
-        options.id = "";
         options.mediaType = "";
         return options;
     }
@@ -1280,15 +1139,9 @@ public class NFCTest {
         return message;
     }
 
-    private android.nfc.NdefMessage createUrlWebNFCNdefMessage(String webNfcId) {
-        NdefRecord urlMojoNdefRecord = new NdefRecord();
-        urlMojoNdefRecord.recordType = NdefMessageUtils.RECORD_TYPE_URL;
-        urlMojoNdefRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_URL);
-        NdefMessage urlNdefMessage = createMojoNdefMessage(webNfcId, urlMojoNdefRecord);
-        try {
-            return NdefMessageUtils.toNdefMessage(urlNdefMessage);
-        } catch (InvalidNdefMessageException e) {
-            return null;
-        }
+    private android.nfc.NdefMessage createNdefMessageWithRecordId(String id)
+            throws UnsupportedEncodingException {
+        return new android.nfc.NdefMessage(NdefMessageUtils.createPlatformUrlRecord(
+                ApiCompatibilityUtils.getBytesUtf8(TEST_URL), id, false /* isAbsUrl */));
     }
 }

@@ -5302,10 +5302,6 @@ interface MutationRecord
     getter target
     getter type
     method constructor
-interface NDEFErrorEvent : Event
-    attribute @@toStringTag
-    getter error
-    method constructor
 interface NDEFMessage
     attribute @@toStringTag
     getter records
@@ -6753,9 +6749,6 @@ interface SVGDefsElement : SVGGraphicsElement
     attribute @@toStringTag
     method constructor
 interface SVGDescElement : SVGElement
-    attribute @@toStringTag
-    method constructor
-interface SVGDiscardElement : SVGElement
     attribute @@toStringTag
     method constructor
 interface SVGElement : Element

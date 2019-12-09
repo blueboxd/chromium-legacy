@@ -483,11 +483,18 @@ void GetRTCStatsOnSignalingThread(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
     scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
     RTCStatsReportCallback callback,
-    const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids) {
+    const Vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
   TRACE_EVENT0("webrtc", "GetRTCStatsOnSignalingThread");
 
-  native_peer_connection->GetStats(blink::CreateRTCStatsCollectorCallback(
-      main_thread, std::move(callback), exposed_group_ids));
+  // TODO(crbug.com/787254): Remove this conversion routine when
+  // CreateRTCStatsCollectorCallback gets switched over to work on
+  // WTF::Vector (instead of WebVector).
+  WebVector<webrtc::NonStandardGroupId> exposed_group_ids_copy;
+  for (auto id : exposed_group_ids)
+    exposed_group_ids_copy.emplace_back(id);
+
+  native_peer_connection->GetStats(CreateRTCStatsCollectorCallback(
+      main_thread, std::move(callback), std::move(exposed_group_ids_copy)));
 }
 
 void ConvertOfferOptionsToWebrtcOfferOptions(
@@ -1121,10 +1128,9 @@ bool RTCPeerConnectionHandler::InitializeForTest(
   return true;
 }
 
-blink::WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>>
-RTCPeerConnectionHandler::CreateOffer(
-    blink::RTCSessionDescriptionRequest* request,
-    const blink::WebMediaConstraints& options) {
+Vector<std::unique_ptr<RTCRtpTransceiverPlatform>>
+RTCPeerConnectionHandler::CreateOffer(RTCSessionDescriptionRequest* request,
+                                      const WebMediaConstraints& options) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::createOffer");
 
@@ -1136,10 +1142,9 @@ RTCPeerConnectionHandler::CreateOffer(
   return CreateOfferInternal(request, std::move(webrtc_options));
 }
 
-blink::WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>>
-RTCPeerConnectionHandler::CreateOffer(
-    blink::RTCSessionDescriptionRequest* request,
-    blink::RTCOfferOptionsPlatform* options) {
+Vector<std::unique_ptr<RTCRtpTransceiverPlatform>>
+RTCPeerConnectionHandler::CreateOffer(RTCSessionDescriptionRequest* request,
+                                      RTCOfferOptionsPlatform* options) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::createOffer");
 
@@ -1151,7 +1156,7 @@ RTCPeerConnectionHandler::CreateOffer(
   return CreateOfferInternal(request, std::move(webrtc_options));
 }
 
-std::vector<std::unique_ptr<RTCRtpTransceiverPlatform>>
+Vector<std::unique_ptr<RTCRtpTransceiverPlatform>>
 RTCPeerConnectionHandler::CreateOfferInternal(
     blink::RTCSessionDescriptionRequest* request,
     webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options) {
@@ -1173,7 +1178,7 @@ RTCPeerConnectionHandler::CreateOfferInternal(
   DCHECK(transceiver_state_surfacer.is_initialized());
 
   auto transceiver_states = transceiver_state_surfacer.ObtainStates();
-  std::vector<std::unique_ptr<RTCRtpTransceiverPlatform>> transceivers;
+  Vector<std::unique_ptr<RTCRtpTransceiverPlatform>> transceivers;
   for (auto& transceiver_state : transceiver_states) {
     auto transceiver = CreateOrUpdateTransceiver(
         std::move(transceiver_state), blink::TransceiverStateUpdateMode::kAll);
@@ -1656,7 +1661,7 @@ void RTCPeerConnectionHandler::GetStats(
 
 void RTCPeerConnectionHandler::GetStats(
     RTCStatsReportCallback callback,
-    const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids) {
+    const Vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   signaling_thread()->PostTask(
       FROM_HERE, base::BindOnce(&GetRTCStatsOnSignalingThread, task_runner_,
@@ -1769,16 +1774,15 @@ void RTCPeerConnectionHandler::AddTransceiverWithMediaTypeOnSignalingThread(
 }
 
 webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
-RTCPeerConnectionHandler::AddTrack(
-    const blink::WebMediaStreamTrack& track,
-    const blink::WebVector<blink::WebMediaStream>& streams) {
+RTCPeerConnectionHandler::AddTrack(const WebMediaStreamTrack& track,
+                                   const Vector<WebMediaStream>& streams) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::AddTrack");
 
   std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
       track_ref = track_adapter_map_->GetOrCreateLocalTrackAdapter(track);
   std::vector<std::string> stream_ids(streams.size());
-  for (size_t i = 0; i < streams.size(); ++i)
+  for (WTF::wtf_size_t i = 0; i < streams.size(); ++i)
     stream_ids[i] = streams[i].Id().Utf8();
 
   // Invoke native AddTrack() on the signaling thread and surface the resulting

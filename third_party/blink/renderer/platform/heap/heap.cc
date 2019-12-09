@@ -362,7 +362,7 @@ bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,
             HeapObjectHeader::FromPayload(item.base_object_payload);
         DCHECK(!ConcurrentMarkingVisitor::IsInConstruction(header));
         item.callback(visitor, item.base_object_payload);
-        visitor->AccountMarkedBytes(header);
+        visitor->AccountMarkedBytesSafe(header);
       },
       visitor->task_id());
   if (!finished)

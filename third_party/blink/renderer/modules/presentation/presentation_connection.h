@@ -12,7 +12,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -34,7 +34,7 @@ class PresentationRequest;
 class WebString;
 
 class PresentationConnection : public EventTargetWithInlineData,
-                               public ContextLifecycleObserver,
+                               public ContextLifecycleStateObserver,
                                public mojom::blink::PresentationConnection {
   USING_GARBAGE_COLLECTED_MIXIN(PresentationConnection);
   DEFINE_WRAPPERTYPEINFO();
@@ -99,6 +99,9 @@ class PresentationConnection : public EventTargetWithInlineData,
   // ContextLifecycleObserver implementation.
   void ContextDestroyed(ExecutionContext*) override;
 
+  // ContextLifecycleStateObserver implementation.
+  void ContextLifecycleStateChanged(mojom::FrameLifecycleState state) override;
+
   String id_;
   KURL url_;
   mojom::blink::PresentationConnectionState state_;
@@ -111,6 +114,8 @@ class PresentationConnection : public EventTargetWithInlineData,
   // connections, this currently only points to another renderer. This remote
   // can be used to send messages directly to the other end.
   mojo::Remote<mojom::blink::PresentationConnection> target_connection_;
+
+  void CloseConnection();
 
  private:
   class BlobLoader;

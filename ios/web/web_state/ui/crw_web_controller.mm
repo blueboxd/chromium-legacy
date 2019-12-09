@@ -282,8 +282,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     _webStateImpl = webState;
     _webUsageEnabled = YES;
 
-    if (web::GetWebClient()->IsSlimNavigationManagerEnabled())
-      _allowsBackForwardNavigationGestures = YES;
+    _allowsBackForwardNavigationGestures = YES;
 
     DCHECK(_webStateImpl);
     // Content area is lazily instantiated.
@@ -689,8 +688,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // usage is enabled again. This can happen when purging web pages when an
   // interstitial is presented over a native view. See https://crbug.com/865985
   // for details.
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-      !_webUsageEnabled)
+  if (!_webUsageEnabled)
     return;
 
   _currentURLLoadWasTrigerred = YES;
@@ -721,13 +719,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Loads the HTML into the page at the given URL. Only for testing purpose.
 - (void)loadHTML:(NSString*)HTML forURL:(const GURL&)URL {
   [_requestController loadHTML:HTML forURL:URL];
-}
-
-- (void)requirePageReconstruction {
-  // TODO(crbug.com/736103): Removing web view will destroy session history for
-  // WKBasedNavigationManager.
-  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled())
-    [self removeWebView];
 }
 
 - (void)recordStateInHistory {
@@ -899,10 +890,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     _documentURL = newURL;
     _userInteractionState.SetUserInteractionRegisteredSinceLastUrlChange(false);
   }
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() && context &&
-      !context->IsLoadingHtmlString() && !context->IsLoadingErrorPage() &&
-      !IsWKInternalUrl(newURL) && !newURL.SchemeIs(url::kAboutScheme) &&
-      self.webView) {
+  if (context && !context->IsLoadingHtmlString() &&
+      !context->IsLoadingErrorPage() && !IsWKInternalUrl(newURL) &&
+      !newURL.SchemeIs(url::kAboutScheme) && self.webView) {
     // On iOS13, WebKit started changing the URL visible webView.URL when
     // opening a new tab and then writing to it, e.g.
     // window.open('javascript:document.write(1)').  This URL is never commited,
@@ -955,8 +945,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     return;
 
   // Restore allowsBackForwardNavigationGestures once restoration is complete.
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-      !self.navigationManagerImpl->IsRestoreSessionInProgress()) {
+  if (!self.navigationManagerImpl->IsRestoreSessionInProgress()) {
     if (_webView.allowsBackForwardNavigationGestures !=
         _allowsBackForwardNavigationGestures) {
       _webView.allowsBackForwardNavigationGestures =
@@ -1740,16 +1729,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                                          hasUserGesture:NO
                                       rendererInitiated:YES
                                   placeholderNavigation:NO];
-
-      // With slim nav, the web page title is stored in WKBackForwardListItem
-      // and synced to Navigationitem when the web view title changes.
-      // Otherwise, sync the current title for items created by same document
-      // navigations.
-      if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-        auto* pendingItem = newNavigationContext->GetItem();
-        if (pendingItem)
-          pendingItem->SetTitle(self.webStateImpl->GetTitle());
-      }
     }
   }
 
@@ -1813,11 +1792,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
            setDocumentURL:(const GURL&)newURL
                   context:(web::NavigationContextImpl*)context {
   [self setDocumentURL:newURL context:context];
-}
-
-- (void)navigationHandlerRequirePageReconstruction:
-    (CRWWKNavigationHandler*)navigationHandler {
-  [self requirePageReconstruction];
 }
 
 - (std::unique_ptr<web::NavigationContextImpl>)
@@ -1916,11 +1890,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (web::UserInteractionState*)webRequestControllerUserInteractionState:
     (CRWWebRequestController*)requestController {
   return &_userInteractionState;
-}
-
-- (void)webRequestControllerRecordStateInHistory:
-    (CRWWebRequestController*)requestController {
-  [self recordStateInHistory];
 }
 
 - (void)webRequestControllerRestoreStateFromHistory:

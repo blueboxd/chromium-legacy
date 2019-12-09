@@ -8,10 +8,12 @@
 
 #include "services/device/public/mojom/nfc.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/events/error_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
-#include "third_party/blink/renderer/modules/nfc/ndef_error_event.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_message.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_reading_event.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_scan_options.h"
@@ -90,20 +92,6 @@ ScriptPromise NDEFReader::scan(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  // 9.4 If the reader.[[Id]] is not an empty string and it is not a valid URL
-  // pattern, then reject p with a "SyntaxError" DOMException and return p.
-  // TODO(https://crbug.com/520391): Instead of NDEFScanOptions#url, introduce
-  // and use NDEFScanOptions#id to do the filtering after we add support for
-  // writing NDEFRecord#id.
-  if (options->hasId() && !options->id().IsEmpty()) {
-    KURL pattern_url(options->id());
-    if (!pattern_url.IsValid() || pattern_url.Protocol() != "https") {
-      exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
-                                        "Invalid URL pattern was provided.");
-      return ScriptPromise();
-    }
-  }
-
   // TODO(https://crbug.com/520391): With the note in
   // https://w3c.github.io/web-nfc/#the-ndefreader-and-ndefwriter-objects,
   // successive invocations of NDEFReader.scan() with new options should replace
@@ -178,19 +166,18 @@ void NDEFReader::OnReading(const String& serial_number,
       MakeGarbageCollected<NDEFMessage>(message)));
 }
 
-void NDEFReader::OnError(device::mojom::blink::NDEFErrorType error) {
-  DispatchEvent(*MakeGarbageCollected<NDEFErrorEvent>(
-      event_type_names::kError, NDEFErrorTypeToDOMException(error)));
-}
-
 void NDEFReader::OnMojoConnectionError() {
   // If |resolver_| has already settled this rejection is silently ignored.
   if (resolver_) {
     resolver_->Reject(NDEFErrorTypeToDOMException(
         device::mojom::blink::NDEFErrorType::NOT_SUPPORTED));
   }
+
   // Dispatches an error event.
-  OnError(device::mojom::blink::NDEFErrorType::NOT_SUPPORTED);
+  ErrorEvent* error = ErrorEvent::Create(
+      "No NFC adapter or cannot establish connection.",
+      SourceLocation::Capture(GetExecutionContext()), nullptr);
+  DispatchEvent(*error);
 }
 
 void NDEFReader::ContextDestroyed(ExecutionContext*) {

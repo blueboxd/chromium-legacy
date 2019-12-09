@@ -72,8 +72,8 @@ void V0InsertionPoint::SetDistributedNodes(
   for (; i < distributed_nodes_.size() && j < distributed_nodes.size();
        ++i, ++j) {
     if (distributed_nodes_.size() < distributed_nodes.size()) {
-      // If the new distribution is larger than the old one, reattach all nodes
-      // in the new distribution that were inserted.
+      // If the new distribution is larger than the old one, notify all nodes in
+      // the new distribution that were inserted.
       for (; j < distributed_nodes.size() &&
              distributed_nodes_.at(i) != distributed_nodes.at(j);
            ++j)
@@ -81,26 +81,21 @@ void V0InsertionPoint::SetDistributedNodes(
       if (j == distributed_nodes.size())
         break;
     } else if (distributed_nodes_.size() > distributed_nodes.size()) {
-      // If the old distribution is larger than the new one, reattach all nodes
-      // in the old distribution that were removed.
-      for (; i < distributed_nodes_.size() &&
-             distributed_nodes_.at(i) != distributed_nodes.at(j);
-           ++i)
-        distributed_nodes_.at(i)->FlatTreeParentChanged();
+      // If the old distribution is larger than the new one, skip all nodes in
+      // the old distribution that were removed.
+      while (i < distributed_nodes_.size() &&
+             distributed_nodes_.at(i) != distributed_nodes.at(j))
+        ++i;
       if (i == distributed_nodes_.size())
         break;
     } else if (distributed_nodes_.at(i) != distributed_nodes.at(j)) {
-      // If both distributions are the same length reattach both old and new.
-      distributed_nodes_.at(i)->FlatTreeParentChanged();
+      // If both distributions are the same length notify the new.
       distributed_nodes.at(j)->FlatTreeParentChanged();
     }
   }
 
-  // If we hit the end of either list above we need to reattach all remaining
-  // nodes.
-
-  for (; i < distributed_nodes_.size(); ++i)
-    distributed_nodes_.at(i)->FlatTreeParentChanged();
+  // If we hit the end of either list above we need to notify all remaining
+  // nodes in the new distribution.
 
   for (; j < distributed_nodes.size(); ++j)
     distributed_nodes.at(j)->FlatTreeParentChanged();

@@ -3174,6 +3174,18 @@
     ]
   },
 
+  "NTPCustomBackgroundEnabled": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "NTPCustomBackgroundEnabled": false
+        },
+        "prefs": { "ntp.custom_background_dict": {} }
+      }
+    ]
+  },
+
   "WebRtcUdpPortRange": {
     "os": ["win", "linux", "mac", "chromeos", "android"],
     "policy_pref_mapping_test": [

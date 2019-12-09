@@ -10,7 +10,7 @@
 Polymer({
   is: 'enrollment-license-card',
 
-  behaviors: [I18nBehavior, OobeDialogHostBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
   properties: {
     /**

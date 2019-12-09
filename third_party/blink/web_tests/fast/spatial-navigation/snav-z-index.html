@@ -32,6 +32,9 @@ Test that SpatNav prefers the elements with higher Z-indices.
 <div tabindex="4" id="s24" class="simple"><img src="resources/green.png" width=160px height=60px></div>
 <div tabindex="5" id="s25" class="simple"><img src="resources/green.png" width=160px height=60px></div>
 </td></tr></table>
+
+<p>Once focus reaches a popup, we favor its focusables (#p*) over focusables under it (#s*).</p>
+
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="resources/snav-testharness.js"></script>
@@ -39,7 +42,6 @@ Test that SpatNav prefers the elements with higher Z-indices.
   var resultMap = [
     ["Down", "s22"],
     ["Down", "p11"],
-    ["Down", "s23"],
     ["Down", "p12"],
     ["Down", "s24"],
     ["Down", "s25"],

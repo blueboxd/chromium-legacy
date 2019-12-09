@@ -11,14 +11,12 @@
     <link rel="stylesheet" href="oobe_dialog_host.css">
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <oobe-dialog id="packagedLicenseDialog"
+        title-key="oobePackagedLicenseTitle"
         aria-label$="[[i18nDynamic(locale, 'oobePackagedLicenseTitle')]]"
         role="dialog" has-buttons>
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-32:briefcase" icon2x="oobe-64:briefcase">
       </hd-iron-icon>
-      <h1 slot="title">
-        [[i18nDynamic(locale, 'oobePackagedLicenseTitle')]]
-      </h1>
       <div slot="subtitle">
         <p>[[i18nDynamic(locale, 'oobePackagedLicenseSubtitleP1')]]</p>
         <p>[[i18nDynamic(locale, 'oobePackagedLicenseSubtitleP2')]]</p>
@@ -30,17 +28,11 @@
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
         <oobe-text-button id="dont-enroll-button"
-            on-tap="onDontEnrollButtonPressed_">
-          <div>
-            [[i18nDynamic(locale, 'oobePackagedLicenseDontEnroll')]]
-          </div>
-        </oobe-text-button>
+            text-key="oobePackagedLicenseDontEnroll"
+            on-tap="onDontEnrollButtonPressed_"></oobe-text-button>
         <oobe-text-button id="enroll-button"
-            inverse on-tap="onEnrollButtonPressed_">
-          <div>
-            [[i18nDynamic(locale, 'oobePackagedLicenseEnroll')]]
-          </div>
-        </oobe-text-button>
+            text-key="oobePackagedLicenseEnroll"
+            inverse on-tap="onEnrollButtonPressed_"></oobe-text-button>
       </div>
     </oobe-dialog>
   </template>

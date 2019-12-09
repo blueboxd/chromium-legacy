@@ -219,6 +219,6 @@ IN_PROC_BROWSER_TEST_P(IntentPickerBubbleViewBrowserTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     IntentPickerBubbleViewBrowserTest,
     testing::Values("", "noopener", "noreferrer", "nofollow"));

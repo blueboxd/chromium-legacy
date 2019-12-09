@@ -1217,6 +1217,11 @@ const char kIgnoreLitePageRedirectHintsBlacklistDescription[] =
     "Ignore blacklist decisions made by Optimization Hints for Lite Page "
     "Redirect previews";
 
+const char kImpulseScrollAnimationsName[] = "Impulse-style scroll animations";
+const char kImpulseScrollAnimationsDescription[] =
+    "Replaces the default scroll animation with Impulse-style scroll "
+    "animations.";
+
 const char kInProductHelpDemoModeChoiceName[] = "In-Product Help Demo Mode";
 const char kInProductHelpDemoModeChoiceDescription[] =
     "Selects the In-Product Help demo mode.";

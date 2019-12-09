@@ -18,6 +18,7 @@
 #include "content/browser/frame_host/back_forward_cache_impl.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/presentation/presentation_test_utils.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/global_routing_id.h"
@@ -55,6 +56,7 @@
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 #include "unordered_map"
 
+using testing::_;
 using testing::Each;
 using testing::ElementsAre;
 using testing::Not;
@@ -4773,4 +4775,67 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
             rfh_a->GetProcess()->GetEffectiveImportance());
 }
 #endif
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       PresentationConnectionClosed) {
+  ASSERT_TRUE(CreateHttpsServer()->Start());
+  GURL url_a(https_server()->GetURL(
+      "a.com", "/back_forward_cache/presentation_controller.html"));
+
+  // Navigate to A (presentation controller page).
+  ASSERT_TRUE(NavigateToURL(shell(), url_a));
+  auto* rfh_a = current_frame_host();
+  // Start a presentation connection in A.
+  MockPresentationServiceDelegate mock_presentation_service_delegate;
+  auto& presentation_service = rfh_a->GetPresentationServiceForTesting();
+  presentation_service.SetControllerDelegateForTesting(
+      &mock_presentation_service_delegate);
+  EXPECT_CALL(mock_presentation_service_delegate, StartPresentation(_, _, _));
+  EXPECT_TRUE(ExecJs(rfh_a, "presentationRequest.start().then(setConnection)"));
+
+  // Send a mock connection to the renderer.
+  MockPresentationConnection mock_controller_connection;
+  mojo::Receiver<PresentationConnection> controller_connection_receiver(
+      &mock_controller_connection);
+  mojo::Remote<PresentationConnection> receiver_connection;
+  const std::string presentation_connection_id = "foo";
+  presentation_service.OnStartPresentationSucceeded(
+      presentation_service.start_presentation_request_id_,
+      PresentationConnectionResult::New(
+          blink::mojom::PresentationInfo::New(GURL("fake-url"),
+                                              presentation_connection_id),
+          controller_connection_receiver.BindNewPipeAndPassRemote(),
+          receiver_connection.BindNewPipeAndPassReceiver()));
+
+  // Navigate to B, make sure that the connection started in A is closed.
+  GURL url_b(https_server()->GetURL("b.com", "/title1.html"));
+  EXPECT_CALL(
+      mock_controller_connection,
+      DidClose(blink::mojom::PresentationConnectionCloseReason::WENT_AWAY));
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+  ASSERT_TRUE(NavigateToURL(shell(), url_b));
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+
+  // Navigate back to A. Ensure that connection state has been updated
+  // accordingly.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_FALSE(rfh_a->is_in_back_forward_cache());
+  EXPECT_EQ(presentation_connection_id, EvalJs(rfh_a, "connection.id"));
+  EXPECT_EQ("closed", EvalJs(rfh_a, "connection.state"));
+  EXPECT_TRUE(EvalJs(rfh_a, "connectionClosed").ExtractBool());
+
+  // Try to start another connection, should successfully reach the browser side
+  // PresentationServiceDelegate.
+  EXPECT_CALL(mock_presentation_service_delegate,
+              ReconnectPresentation(_, presentation_connection_id, _, _));
+  EXPECT_TRUE(ExecJs(rfh_a, "presentationRequest.reconnect(connection.id)"));
+  base::RunLoop().RunUntilIdle();
+
+  // Reset |presentation_service|'s controller delegate so that it won't try to
+  // call Reset() on it on destruction time.
+  presentation_service.OnDelegateDestroyed();
+}
+
 }  // namespace content

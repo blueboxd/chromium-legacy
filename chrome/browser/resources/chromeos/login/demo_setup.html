@@ -4,24 +4,22 @@
     <link rel="stylesheet" href="demo_setup.css">
     <link rel="stylesheet" href="oobe_flex_layout.css">
 
-    <oobe-dialog id="demoSetupProgressDialog" role="dialog" has-buttons hidden>
+    <oobe-dialog id="demoSetupProgressDialog" role="dialog" has-buttons hidden
+      title-key="demoSetupProgressScreenTitle">
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-32:computer" icon2x="oobe-64:computer">
       </hd-iron-icon>
-      <h1 slot="title">
-        [[i18nDynamic(locale, 'demoSetupProgressScreenTitle')]]
-      </h1>
       <div slot="footer" class="flex layout vertical center center-justified">
         <paper-spinner-lite id="spinner" dir="ltr" active></paper-spinner-lite>
       </div>
     </oobe-dialog>
 
     <oobe-dialog id="demoSetupErrorDialog" role="dialog" has-buttons hidden
-        aria-label$="[[i18nDynamic(locale, 'demoSetupErrorScreenTitle')]]">
+        aria-label$="[[i18nDynamic(locale, 'demoSetupErrorScreenTitle')]]"
+        title-key="demoSetupErrorScreenTitle">
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-32:computer" icon2x="oobe-64:computer">
       </hd-iron-icon>
-      <h1 slot="title">[[i18nDynamic(locale, 'demoSetupErrorScreenTitle')]]</h1>
       <div slot="subtitle">[[errorMessage_]]</div>
       <div slot="footer" class="flex layout vertical center center-justified">
         <img srcset="images/alert-illustration_1x.svg 1x,
@@ -31,16 +29,12 @@
         <oobe-back-button inverse on-click="onCloseClicked_"
             disabled="[[isPowerwashRequired_]]"></oobe-back-button>
         <oobe-text-button id="retryButton" on-tap="onRetryClicked_"
+            text-key="demoSetupErrorScreenRetryButtonLabel"
             inverse hidden="[[isPowerwashRequired_]]">
-          <div>
-            [[i18nDynamic(locale, 'demoSetupErrorScreenRetryButtonLabel')]]
-          </div>
         </oobe-text-button>
         <oobe-text-button id="powerwashButton" on-tap="onPowerwashClicked_"
+            text-key="demoSetupErrorScreenPowerwashButtonLabel"
             inverse hidden="[[!isPowerwashRequired_]]">
-          <div>
-            [[i18nDynamic(locale, 'demoSetupErrorScreenPowerwashButtonLabel')]]
-          </div>
         </oobe-text-button>
       </div>
     </oobe-dialog>

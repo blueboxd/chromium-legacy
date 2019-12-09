@@ -233,7 +233,7 @@ interface EmbeddedSearchClient {
   SetInputInProgress(bool input_in_progress);
 
   // The NTP theme has changed; update accordingly.
-  ThemeChanged(NtpTheme them);
+  ThemeChanged(NtpTheme theme);
 
   // A background image was selected from the file upload dialog.
   LocalBackgroundSelected();

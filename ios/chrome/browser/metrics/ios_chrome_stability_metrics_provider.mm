@@ -65,9 +65,6 @@ void IOSChromeStabilityMetricsProvider::WebStateDidStartLoading(
     return;
 
   UMA_HISTOGRAM_BOOLEAN(kPageLoadCountLoadingStartedMetric, true);
-  if (!base::FeatureList::IsEnabled(
-          web::features::kLogLoadStartedInDidStartNavigation))
-    helper_.LogLoadStarted();
 }
 
 void IOSChromeStabilityMetricsProvider::WebStateDidStartNavigation(
@@ -83,9 +80,7 @@ void IOSChromeStabilityMetricsProvider::WebStateDidStartNavigation(
   } else if (navigation_context->IsSameDocument()) {
     type = PageLoadCountNavigationType::SAME_DOCUMENT_WEB_NAVIGATION;
   } else {
-    if (base::FeatureList::IsEnabled(
-            web::features::kLogLoadStartedInDidStartNavigation))
-      helper_.LogLoadStarted();
+    helper_.LogLoadStarted();
   }
   UMA_HISTOGRAM_ENUMERATION(kPageLoadCountMetric, type,
                             PageLoadCountNavigationType::COUNT);

@@ -252,13 +252,13 @@ bool MockRTCPeerConnectionHandlerPlatform::Initialize(
   return true;
 }
 
-WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>>
+Vector<std::unique_ptr<RTCRtpTransceiverPlatform>>
 MockRTCPeerConnectionHandlerPlatform::CreateOffer(RTCSessionDescriptionRequest*,
                                                   const WebMediaConstraints&) {
   return {};
 }
 
-WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>>
+Vector<std::unique_ptr<RTCRtpTransceiverPlatform>>
 MockRTCPeerConnectionHandlerPlatform::CreateOffer(RTCSessionDescriptionRequest*,
                                                   RTCOfferOptionsPlatform*) {
   return {};
@@ -334,7 +334,7 @@ void MockRTCPeerConnectionHandlerPlatform::GetStats(RTCStatsRequest*) {}
 
 void MockRTCPeerConnectionHandlerPlatform::GetStats(
     RTCStatsReportCallback,
-    const WebVector<webrtc::NonStandardGroupId>&) {}
+    const Vector<webrtc::NonStandardGroupId>&) {}
 
 webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
 MockRTCPeerConnectionHandlerPlatform::AddTransceiverWithTrack(
@@ -362,9 +362,8 @@ MockRTCPeerConnectionHandlerPlatform::AddTransceiverWithKind(
 }
 
 webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
-MockRTCPeerConnectionHandlerPlatform::AddTrack(
-    const WebMediaStreamTrack& track,
-    const WebVector<WebMediaStream>&) {
+MockRTCPeerConnectionHandlerPlatform::AddTrack(const WebMediaStreamTrack& track,
+                                               const Vector<WebMediaStream>&) {
   transceivers_.push_back(std::unique_ptr<DummyRTCRtpTransceiverPlatform>(
       new DummyRTCRtpTransceiverPlatform(track.Source().GetType(), track)));
   std::unique_ptr<DummyRTCRtpTransceiverPlatform> copy(

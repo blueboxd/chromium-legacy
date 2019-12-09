@@ -680,6 +680,7 @@ function getNtpTheme() {
           (isDarkModeEnabled ? NTP_DESIGN.darkBackgroundColor :
                                NTP_DESIGN.backgroundColor),
       customBackgroundConfigured: false,
+      customBackgroundDisabledByPolicy: false,
       iconBackgroundColor:
           (isDarkModeEnabled ? NTP_DESIGN.iconDarkBackgroundColor :
                                NTP_DESIGN.iconBackgroundColor),

@@ -1651,6 +1651,38 @@ TEST_F(IdentityManagerTest,
   EXPECT_EQ(identity_manager()->GetUnconsentedPrimaryAccountInfo(),
             CoreAccountInfo());
 }
+
+TEST_F(IdentityManagerTest, UnconsentedPrimaryAccountDuringLoad) {
+  ClearPrimaryAccount(identity_manager(), ClearPrimaryAccountPolicy::DEFAULT);
+  // Add two accounts with cookies.
+  AccountInfo main_account_info =
+      MakeAccountAvailable(identity_manager(), kTestEmail2);
+  AccountInfo secondary_account_info =
+      MakeAccountAvailable(identity_manager(), kTestEmail3);
+  SetCookieAccounts(
+      identity_manager(), test_url_loader_factory(),
+      {{main_account_info.email, main_account_info.gaia},
+       {secondary_account_info.email, secondary_account_info.gaia}});
+  EXPECT_EQ(identity_manager()->GetUnconsentedPrimaryAccountInfo(),
+            main_account_info);
+
+  // Set the token service in "loading" mode.
+  token_service()->set_all_credentials_loaded_for_testing(false);
+
+  // Unconsented primary account is available while tokens are not loaded.
+  EXPECT_EQ(identity_manager()->GetUnconsentedPrimaryAccountInfo(),
+            main_account_info);
+  // Revoking an unrelated token doesn't change the unconsented primary account.
+  token_service()->RevokeCredentials(secondary_account_info.account_id);
+  EXPECT_EQ(identity_manager()->GetUnconsentedPrimaryAccountInfo(),
+            main_account_info);
+  // Revoke the unconsented primary account.
+  token_service()->RevokeCredentials(main_account_info.account_id);
+  EXPECT_FALSE(identity_manager()->HasUnconsentedPrimaryAccount());
+  // Finish the token load.
+  token_service()->set_all_credentials_loaded_for_testing(true);
+  EXPECT_FALSE(identity_manager()->HasUnconsentedPrimaryAccount());
+}
 #endif
 
 TEST_F(IdentityManagerTest, CallbackSentOnRefreshTokenRemovalOfUnknownAccount) {

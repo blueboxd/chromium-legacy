@@ -4,6 +4,10 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static org.chromium.chrome.browser.tasks.tab_management.MessageService.MessageType.TAB_SUGGESTION;
+
+import android.content.Context;
+
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.ui.modelutil.PropertyModel;
@@ -31,12 +35,14 @@ public class MessageCardProviderMediator implements MessageService.MessageObserv
         }
     }
 
+    private final Context mContext;
     private Map<Integer, Message> mMessageItems = new HashMap<>();
     private Map<Integer, Message> mShownMessageItems = new HashMap<>();
     private MessageCardView.DismissActionProvider mUiDismissActionProvider;
 
     public MessageCardProviderMediator(
-            MessageCardView.DismissActionProvider uiDismissActionProvider) {
+            Context context, MessageCardView.DismissActionProvider uiDismissActionProvider) {
+        mContext = context;
         mUiDismissActionProvider = uiDismissActionProvider;
     }
     /**
@@ -48,16 +54,24 @@ public class MessageCardProviderMediator implements MessageService.MessageObserv
         return new ArrayList<>(mShownMessageItems.values());
     }
 
+    private PropertyModel buildModel(int messageType, MessageService.MessageData data) {
+        switch (messageType) {
+            case TAB_SUGGESTION:
+                assert data instanceof TabSuggestionMessageService.TabSuggestionMessageData;
+                return TabSuggestionMessageCardViewModel.create(mContext, this::messageInvalidate,
+                        (TabSuggestionMessageService.TabSuggestionMessageData) data);
+            default:
+                return new PropertyModel();
+        }
+    }
+
     // MessageObserver implementations.
     @Override
     public void messageReady(
             @MessageService.MessageType int type, MessageService.MessageData data) {
         assert !mShownMessageItems.containsKey(type);
 
-        // TODO(crbug.com/1004570): Use {@code data} when ready to integrate with MessageService
-        // component.
-        PropertyModel model = new TabSuggestionMessageCardViewModel();
-        model.set(MessageCardViewProperties.UI_DISMISS_ACTION_PROVIDER, mUiDismissActionProvider);
+        PropertyModel model = buildModel(type, data);
         mMessageItems.put(type, new Message(type, model));
     }
 
@@ -67,14 +81,7 @@ public class MessageCardProviderMediator implements MessageService.MessageObserv
             mMessageItems.remove(type);
         } else if (mShownMessageItems.containsKey(type)) {
             // run ui dismiss handler;
-            MessageCardView.DismissActionProvider dismissActionProvider =
-                    mShownMessageItems.get(type).model.get(
-                            MessageCardViewProperties.UI_DISMISS_ACTION_PROVIDER);
-
-            if (dismissActionProvider != null) {
-                dismissActionProvider.dismiss();
-            }
-
+            mUiDismissActionProvider.dismiss(type);
             mShownMessageItems.remove(type);
         }
     }

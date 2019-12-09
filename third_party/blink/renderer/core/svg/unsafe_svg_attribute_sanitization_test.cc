@@ -20,7 +20,6 @@
 #include "third_party/blink/renderer/core/svg/properties/svg_property_info.h"
 #include "third_party/blink/renderer/core/svg/svg_a_element.h"
 #include "third_party/blink/renderer/core/svg/svg_animate_element.h"
-#include "third_party/blink/renderer/core/svg/svg_discard_element.h"
 #include "third_party/blink/renderer/core/svg/svg_set_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
@@ -46,7 +45,6 @@
 // The following SVG elements, although related to animation, cannot
 // set JavaScript URLs:
 //
-// - 'discard' can only remove elements, not set their attributes
 // - 'animateMotion' does not use attribute name and produces floats
 // - 'animateTransform' can only animate transform lists
 

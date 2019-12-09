@@ -117,6 +117,8 @@ class WebKioskController : public LoginPerformer::Delegate,
   // Is fired when the controller was waiting for the network connection and
   // timed out.
   void OnNetworkWaitTimedOut();
+  // Launches current app.
+  void LaunchApp();
 
   LoginDisplayHost* const host_;  // Not owned, destructed upon shutdown.
   AppLaunchSplashScreenView* web_kiosk_splash_screen_view_;  // Owned by OobeUI.

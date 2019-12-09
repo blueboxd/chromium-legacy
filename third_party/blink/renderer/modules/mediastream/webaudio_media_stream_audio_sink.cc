@@ -9,8 +9,8 @@
 #include "base/logging.h"
 #include "media/base/audio_fifo.h"
 #include "media/base/audio_parameters.h"
-#include "third_party/blink/public/platform/web_audio_source_provider_client.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/renderer/platform/media/web_audio_source_provider_client.h"
 
 namespace {
 static const size_t kMaxNumberOfAudioFifoBuffers = 10;

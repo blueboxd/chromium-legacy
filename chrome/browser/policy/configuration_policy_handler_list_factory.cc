@@ -32,6 +32,7 @@
 #include "chrome/browser/profiles/force_youtube_safety_mode_policy_handler.h"
 #include "chrome/browser/profiles/guest_mode_policy_handler.h"
 #include "chrome/browser/profiles/incognito_mode_policy_handler.h"
+#include "chrome/browser/search/ntp_custom_background_enabled_policy_handler.h"
 #include "chrome/browser/sessions/restore_on_startup_policy_handler.h"
 #include "chrome/browser/spellchecker/spellcheck_language_blacklist_policy_handler.h"
 #include "chrome/browser/spellchecker/spellcheck_language_policy_handler.h"
@@ -1444,6 +1445,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
+  handlers->AddHandler(
+      std::make_unique<NtpCustomBackgroundEnabledPolicyHandler>());
   handlers->AddHandler(std::make_unique<DefaultDownloadDirPolicyHandler>());
   handlers->AddHandler(std::make_unique<DownloadDirPolicyHandler>());
   handlers->AddHandler(std::make_unique<LocalSyncPolicyHandler>());

@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -67,6 +68,16 @@ void IsGuestViewApiAvailableToScriptContext(
     *api_is_available = true;
   }
 }
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class GoogleDocsExtensionAvailablity {
+  kAvailableRegular = 0,
+  kNotAvailableRegular = 1,
+  kAvailableIncognito = 2,
+  kNotAvailableIncognito = 3,
+  kMaxValue = kNotAvailableIncognito
+};
 
 bool ExtensionHasAccessToUrl(const Extension* extension,
                              int tab_id,
@@ -331,7 +342,7 @@ void ChromeExtensionsRendererClient::WillSendRequest(
     *new_url = GURL(chrome::kExtensionInvalidRequestURL);
   }
 
-  // TODO(https://crbug.com/588766): Remove UKM after bug is fixed.
+  // TODO(https://crbug.com/588766): Remove metrics after bug is fixed.
   if (url.ProtocolIs(extensions::kExtensionScheme) &&
       request_url.host_piece() == extension_misc::kDocsOfflineExtensionId) {
     if (!ukm_recorder_) {
@@ -346,6 +357,22 @@ void ChromeExtensionsRendererClient::WillSendRequest(
     ukm::builders::GoogleDocsOfflineExtension(source_id)
         .SetResourceRequested(true)
         .Record(ukm_recorder_.get());
+
+    bool is_available = extensions::RendererExtensionRegistry::Get()->GetByID(
+                            extension_misc::kDocsOfflineExtensionId) != nullptr;
+    bool is_incognito = IsIncognitoProcess();
+    GoogleDocsExtensionAvailablity vote;
+    if (is_incognito) {
+      vote = is_available
+                 ? GoogleDocsExtensionAvailablity::kAvailableIncognito
+                 : GoogleDocsExtensionAvailablity::kNotAvailableIncognito;
+    } else {
+      vote = is_available
+                 ? GoogleDocsExtensionAvailablity::kAvailableRegular
+                 : GoogleDocsExtensionAvailablity::kNotAvailableRegular;
+    }
+    base::UmaHistogramEnumeration(
+        "Extensions.GoogleDocOffline.AvailabilityOnResourceRequest", vote);
   }
 }
 

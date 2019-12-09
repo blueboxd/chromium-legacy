@@ -434,9 +434,13 @@ error::Error GLES2DecoderPassthroughImpl::DoBindFramebuffer(
     GLenum target,
     GLuint framebuffer) {
   CheckErrorCallbackState();
+  if (feature_info_->workarounds().do_extra_flush_around_bindframebuffer)
+    api()->glFlushFn();
   api()->glBindFramebufferEXTFn(
       target, GetFramebufferServiceID(api(), framebuffer, &framebuffer_id_map_,
                                       bind_generates_resource_));
+  if (feature_info_->workarounds().do_extra_flush_around_bindframebuffer)
+    api()->glFlushFn();
   if (CheckErrorCallbackState()) {
     return error::kNoError;
   }

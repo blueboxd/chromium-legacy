@@ -41,10 +41,6 @@ initWithBaseViewController:(UIViewController*)viewController
   return self;
 }
 
-- (void)dealloc {
-  [self stop];
-}
-
 #pragma mark - Accessors
 
 - (ChromeCoordinator*)activeChildCoordinator {

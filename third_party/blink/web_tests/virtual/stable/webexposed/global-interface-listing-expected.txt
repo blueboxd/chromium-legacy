@@ -5585,9 +5585,6 @@ interface SVGDefsElement : SVGGraphicsElement
 interface SVGDescElement : SVGElement
     attribute @@toStringTag
     method constructor
-interface SVGDiscardElement : SVGElement
-    attribute @@toStringTag
-    method constructor
 interface SVGElement : Element
     attribute @@toStringTag
     getter autofocus

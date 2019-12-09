@@ -10,7 +10,7 @@
 Polymer({
   is: 'supervision-transition-md',
 
-  behaviors: [I18nBehavior, OobeDialogHostBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
   properties: {
     /**

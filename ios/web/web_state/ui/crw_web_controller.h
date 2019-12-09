@@ -146,11 +146,6 @@ class WebStateImpl;
 // Stops loading the page.
 - (void)stopLoading;
 
-// Requires that the next load rebuild the web view. This is expensive, and
-// should be used only in the case where something has changed that the web view
-// only checks on creation, such that the whole object needs to be rebuilt.
-- (void)requirePageReconstruction;
-
 // Records the state (scroll position, form values, whatever can be harvested)
 // from the current page into the current session entry.
 - (void)recordStateInHistory;

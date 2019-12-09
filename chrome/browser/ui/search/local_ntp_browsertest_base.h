@@ -31,6 +31,7 @@ class TestInstantServiceObserver : public InstantServiceObserver {
   void WaitForThemeApplied(bool theme_installed);
 
   bool IsUsingDefaultTheme();
+  bool IsCustomBackgroundDisabledByPolicy();
 
  private:
   void NtpThemeChanged(const NtpTheme& theme) override;

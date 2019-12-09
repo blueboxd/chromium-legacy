@@ -106,7 +106,7 @@ TEST_P(ExtensionCheckupTest, UserAndNonUserInstalledExtensions) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     ExtensionCheckupTest,
     ::testing::Values(extensions_features::kNtpPromoEntryPoint,
                       extensions_features::kStartupEntryPoint));

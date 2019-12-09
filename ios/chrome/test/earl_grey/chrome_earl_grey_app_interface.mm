@@ -42,6 +42,7 @@
 #import "ios/web/public/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state.h"
+#include "net/base/mac/url_conversions.h"
 #import "services/metrics/public/cpp/ukm_recorder.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -98,6 +99,11 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
 
 + (NamedGuide*)guideWithName:(GuideName*)name view:(UIView*)view {
   return [NamedGuide guideWithName:name view:view];
+}
+
++ (void)openURLFromExternalApp:(NSString*)URL {
+  chrome_test_util::OpenChromeFromExternalApp(
+      GURL(base::SysNSStringToUTF8(URL)));
 }
 
 #pragma mark - Tab Utilities (EG2)
@@ -220,6 +226,10 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
 + (NSString*)nextTabID {
   web::WebState* web_state = chrome_test_util::GetNextWebState();
   return TabIdTabHelper::FromWebState(web_state)->tab_id();
+}
+
++ (NSUInteger)indexOfActiveNormalTab {
+  return chrome_test_util::GetIndexOfActiveNormalTab();
 }
 
 #pragma mark - WebState Utilities (EG2)
@@ -554,6 +564,11 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   return blockResult;
 }
 
++ (NSString*)mobileUserAgentString {
+  return base::SysUTF8ToNSString(
+      web::GetWebClient()->GetUserAgent(web::UserAgentType::MOBILE));
+}
+
 #pragma mark - Accessibility Utilities (EG2)
 
 + (NSError*)verifyAccessibilityForCurrentScreen {
@@ -568,10 +583,6 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
 }
 
 #pragma mark - Check features (EG2)
-
-+ (BOOL)isSlimNavigationManagerEnabled {
-  return base::FeatureList::IsEnabled(web::features::kSlimNavigationManager);
-}
 
 + (BOOL)isBlockNewTabPagePendingLoadEnabled {
   return base::FeatureList::IsEnabled(kBlockNewTabPagePendingLoad);

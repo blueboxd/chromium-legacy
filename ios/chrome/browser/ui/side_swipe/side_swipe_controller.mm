@@ -497,9 +497,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
         // fixes for slim navigation manager, only ignore this state when
         // slim is disabled.  With slim navigation enabled, this false when
         // pages can be served from WKWebView's page cache.
-        if (webState &&
-            (web::GetWebClient()->IsSlimNavigationManagerEnabled() ||
-             webState->IsLoading())) {
+        if (webState) {
           [self addCurtainWithCompletionHandler:^{
             inSwipe_ = NO;
           }];
@@ -603,14 +601,6 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 }
 
 - (void)updateNavigationEdgeSwipeForWebState:(web::WebState*)webState {
-  // With slim nav disabled, always use SideSwipeController's edge swipe for
-  // navigation.
-  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    self.leadingEdgeNavigationEnabled = YES;
-    self.trailingEdgeNavigationEnabled = YES;
-    return;
-  }
-
   if (!webState)
     return;
 
@@ -642,18 +632,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 
 #pragma mark - CRWWebStateObserver Methods
 
-// Checking -webStateDidStopLoading is likely incorrect, but to narrow the scope
-// of fixes for slim navigation manager, only ignore this callback when slim is
-// disabled.
-- (void)webStateDidStopLoading:(web::WebState*)webState {
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled())
-    return;
-  [self dismissCurtain];
-}
-
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
-  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled())
-    return;
   [self dismissCurtain];
 }
 

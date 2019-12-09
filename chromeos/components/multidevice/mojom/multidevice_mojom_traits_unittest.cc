@@ -53,7 +53,7 @@ TEST(MultiDeviceMojomStructTraitsTest, RemoteDevice) {
           chromeos::multidevice::SoftwareFeatureState::kEnabled;
 
   chromeos::multidevice::RemoteDevice input;
-  input.user_id = "userId";
+  input.user_email = "userEmail";
   input.instance_id = "instanceId";
   input.name = "name";
   input.pii_free_name = "piiFreeName";
@@ -67,7 +67,7 @@ TEST(MultiDeviceMojomStructTraitsTest, RemoteDevice) {
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
               chromeos::multidevice::mojom::RemoteDevice>(&input, &output));
 
-  EXPECT_EQ("userId", output.user_id);
+  EXPECT_EQ("userEmail", output.user_email);
   EXPECT_EQ("instanceId", output.instance_id);
   EXPECT_EQ("name", output.name);
   EXPECT_EQ("piiFreeName", output.pii_free_name);

@@ -14,6 +14,8 @@ cc_component("base") {
     "delayed_unique_notifier.h",
     "devtools_instrumentation.cc",
     "devtools_instrumentation.h",
+    "features.cc",
+    "features.h",
     "histograms.cc",
     "histograms.h",
     "index_rect.cc",

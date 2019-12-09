@@ -318,6 +318,7 @@ window.chrome.embeddedSearch.newTabPage.setBackgroundInfo;
  *   colorLight: (!Array<number>|undefined),
  *   colorPicked: (!Array<number>|undefined),
  *   customBackgroundConfigured: boolean,
+ *   customBackgroundDisabledByPolicy: boolean,
  *   iconBackgroundColor: !Array<number>,
  *   imageHorizontalAlignment: (string|undefined),
  *   imageTiling: (string|undefined),

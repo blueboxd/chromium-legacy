@@ -47,6 +47,9 @@
 // or one of |view|'s ancestors.  If no guide is found, returns nil.
 + (NamedGuide*)guideWithName:(NSString*)name view:(UIView*)view;
 
+// Loads |URL| as if it was opened from an external application.
++ (void)openURLFromExternalApp:(NSString*)URL;
+
 #pragma mark - Tab Utilities (EG2)
 
 // Selects tab with given index in current mode (incognito or main
@@ -134,6 +137,9 @@
 
 // Returns a unique identifier for the next Tab.
 + (NSString*)nextTabID;
+
+// Returns the index of active tab in normal mode.
++ (NSUInteger)indexOfActiveNormalTab;
 
 #pragma mark - WebState Utilities (EG2)
 
@@ -312,6 +318,9 @@
 // otherwise returns object representing execution result.
 + (id)executeJavaScript:(NSString*)javaScript error:(NSError**)error;
 
+// Returns the user agent that should be used for the mobile version.
++ (NSString*)mobileUserAgentString;
+
 #pragma mark - Accessibility Utilities (EG2)
 
 // Verifies that all interactive elements on screen (or at least one of their
@@ -323,9 +332,6 @@
 // Helpers for checking feature state. These can't use FeatureList directly when
 // invoked from test code, as the EG test code runs in a separate process and
 // must query Chrome for the state.
-
-// Returns YES if SlimNavigationManager feature is enabled.
-+ (BOOL)isSlimNavigationManagerEnabled WARN_UNUSED_RESULT;
 
 // Returns YES if BlockNewTabPagePendingLoad feature is enabled.
 + (BOOL)isBlockNewTabPagePendingLoadEnabled WARN_UNUSED_RESULT;

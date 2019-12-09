@@ -5,12 +5,13 @@
 import web_idl
 
 from . import name_style
-from .code_node import CodeNode
+from .code_node import Likeliness
 from .code_node import SymbolDefinitionNode
 from .code_node import SymbolNode
-from .code_node import SymbolScopeNode
 from .code_node import TextNode
-from .code_node import UnlikelyExitNode
+from .code_node_cxx import CxxIfElseNode
+from .code_node_cxx import CxxLikelyIfNode
+from .code_node_cxx import CxxUnlikelyIfNode
 from .codegen_format import format_template as _format
 
 
@@ -18,17 +19,15 @@ def blink_class_name(idl_definition):
     """
     Returns the class name of Blink implementation.
     """
-    try:
-        class_name = idl_definition.extended_attributes.get(
-            "ImplementedAs").value
-    except:
-        class_name = idl_definition.identifier
+    class_name = idl_definition.code_generator_info.receiver_implemented_as
+    if class_name:
+        return class_name
 
     if isinstance(idl_definition,
                   (web_idl.CallbackFunction, web_idl.CallbackInterface)):
-        return name_style.class_("v8", class_name)
+        return name_style.class_("v8", idl_definition.identifier)
     else:
-        return name_style.class_(class_name)
+        return name_style.class_(idl_definition.identifier)
 
 
 def blink_type_info(idl_type):
@@ -169,6 +168,95 @@ def native_value_tag(idl_type):
         return "IDLNullable<{}>".format(native_value_tag(real_type.inner_type))
 
 
+def make_default_value_expr(idl_type, default_value):
+    """
+    Returns a set of C++ expressions to be used for initialization with default
+    values.  The returned object has the following attributes.
+
+      initializer: Used as "Type var(|initializer|);".  This is None if
+          "Type var;" sets an appropriate default value.
+      assignment_value: Used as "var = |assignment_value|;".
+    """
+    assert default_value.is_type_compatible_with(idl_type)
+
+    if idl_type.is_union:
+        for member_type in idl_type.flattened_member_types:
+            if default_value.is_type_compatible_with(member_type):
+                idl_type = member_type
+                break
+        assert False
+    type_info = blink_type_info(idl_type)
+
+    is_initializer_lightweight = False
+    if default_value.idl_type.is_nullable:
+        if idl_type.unwrap().type_definition_object is not None:
+            initializer = "nullptr"
+            is_initializer_lightweight = True
+            assignment_value = "nullptr"
+        elif idl_type.unwrap().is_string:
+            initializer = None  # String::IsNull() by default
+            assignment_value = "String()"
+        elif type_info.value_t == "ScriptValue":
+            initializer = None  # ScriptValue::IsEmpty() by default
+            assignment_value = "ScriptValue()"
+        else:
+            assert not type_info.is_nullable
+            initializer = None  # !base::Optional::has_value() by default
+            assignment_value = "base::nullopt"
+    elif default_value.idl_type.is_sequence:
+        initializer = None  # VectorOf<T>::size() == 0 by default
+        assignment_value = "{}()".format(type_info.value_t)
+    elif default_value.idl_type.is_object:
+        dict_name = blink_class_name(idl_type.unwrap().type_definition_object)
+        value = _format("{}::Create()", dict_name)
+        initializer = value
+        assignment_value = value
+    elif default_value.idl_type.is_boolean:
+        value = "true" if default_value.value else "false"
+        initializer = value
+        is_initializer_lightweight = True
+        assignment_value = value
+    elif default_value.idl_type.is_integer:
+        initializer = default_value.literal
+        is_initializer_lightweight = True
+        assignment_value = default_value.literal
+    elif default_value.idl_type.is_floating_point_numeric:
+        if default_value.value == float("NaN"):
+            value_fmt = "std::numeric_limits<{type}>::quiet_NaN()"
+        elif default_value.value == float("Infinity"):
+            value_fmt = "std::numeric_limits<{type}>::infinity()"
+        elif default_value.value == float("-Infinity"):
+            value_fmt = "-std::numeric_limits<{type}>::infinity()"
+        else:
+            value_fmt = "{value}"
+        value = value_fmt.format(
+            type=type_info.value_t, value=default_value.literal)
+        initializer = value
+        is_initializer_lightweight = True
+        assignment_value = value
+    elif default_value.idl_type.is_string:
+        value = "\"{}\"".format(default_value.value)
+        initializer = value
+        assignment_value = value
+    else:
+        assert False
+
+    class DefaultValueExpr:
+        def __init__(self, initializer, is_initializer_lightweight,
+                     assignment_value):
+            assert initializer is None or isinstance(initializer, str)
+            assert isinstance(is_initializer_lightweight, bool)
+            assert isinstance(assignment_value, str)
+            self.initializer = initializer
+            self.is_initializer_lightweight = is_initializer_lightweight
+            self.assignment_value = assignment_value
+
+    return DefaultValueExpr(
+        initializer=initializer,
+        is_initializer_lightweight=is_initializer_lightweight,
+        assignment_value=assignment_value)
+
+
 def make_v8_to_blink_value(blink_var_name,
                            v8_value_expr,
                            idl_type,
@@ -182,20 +270,54 @@ def make_v8_to_blink_value(blink_var_name,
     assert (default_value is None
             or isinstance(default_value, web_idl.LiteralConstant))
 
-    pattern = (
-        "const auto& ${{{_1}}} = NativeValueTraits<{_2}>::NativeValue({_3});")
-    _1 = blink_var_name
-    _2 = native_value_tag(idl_type)
-    _3 = ["${isolate}", v8_value_expr, "${exception_state}"]
-    text = _format(pattern, _1=_1, _2=_2, _3=", ".join(_3))
+    T = TextNode
+    F = lambda *args, **kwargs: T(_format(*args, **kwargs))
 
     def create_definition(symbol_node):
-        return SymbolDefinitionNode(symbol_node, [
-            TextNode(text),
-            UnlikelyExitNode(
-                cond=TextNode("${exception_state}.HadException()"),
-                body=SymbolScopeNode([TextNode("return;")])),
-        ])
+        blink_value_expr = _format(
+            "NativeValueTraits<{_1}>::NativeValue({_2})",
+            _1=native_value_tag(idl_type),
+            _2=", ".join(["${isolate}", v8_value_expr, "${exception_state}"]))
+
+        if default_value is None:
+            return SymbolDefinitionNode(symbol_node, [
+                F("const auto& ${{{}}} = {};", blink_var_name,
+                  blink_value_expr),
+                CxxUnlikelyIfNode(
+                    cond="${exception_state}.HadException()",
+                    body=T("return;")),
+            ])
+
+        nodes = []
+        type_info = blink_type_info(idl_type)
+        default_expr = make_default_value_expr(idl_type, default_value)
+        if default_expr.initializer is None:
+            nodes.append(F("{} ${{{}}};", type_info.value_t, blink_var_name))
+        elif default_expr.is_initializer_lightweight:
+            nodes.append(
+                F("{} ${{{}}} = {};", type_info.value_t, blink_var_name,
+                  default_expr.initializer))
+        assignment = [
+            F("${{{}}} = {};", blink_var_name, blink_value_expr),
+            CxxUnlikelyIfNode(
+                cond="${exception_state}.HadException()", body=T("return;")),
+        ]
+        if (default_expr.initializer is None
+                or default_expr.is_initializer_lightweight):
+            nodes.append(
+                CxxLikelyIfNode(
+                    cond="!{}->IsUndefined()".format(v8_value_expr),
+                    body=assignment))
+        else:
+            nodes.append(
+                CxxIfElseNode(
+                    cond="{}->IsUndefined()".format(v8_value_expr),
+                    then=F("${{{}}} = {};", blink_var_name,
+                           default_expr.assignment_value),
+                    then_likeliness=Likeliness.LIKELY,
+                    else_=assignment,
+                    else_likeliness=Likeliness.LIKELY))
+        return SymbolDefinitionNode(symbol_node, nodes)
 
     return SymbolNode(blink_var_name, definition_constructor=create_definition)
 
@@ -220,9 +342,9 @@ def make_v8_to_blink_value_variadic(blink_var_name, v8_array,
     def create_definition(symbol_node):
         return SymbolDefinitionNode(symbol_node, [
             TextNode(text),
-            UnlikelyExitNode(
-                cond=TextNode("${exception_state}.HadException()"),
-                body=SymbolScopeNode([TextNode("return;")])),
+            CxxUnlikelyIfNode(
+                cond="${exception_state}.HadException()",
+                body=TextNode("return;")),
         ])
 
     return SymbolNode(blink_var_name, definition_constructor=create_definition)

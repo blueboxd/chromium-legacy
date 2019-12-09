@@ -413,6 +413,9 @@ void InstantService::UpdateNtpTheme() {
   ApplyOrResetCustomBackgroundNtpTheme();
   SetNtpElementsNtpTheme();
 
+  GetInitializedNtpTheme()->custom_background_disabled_by_policy =
+      IsCustomBackgroundDisabledByPolicy();
+
   NotifyAboutNtpTheme();
 }
 
@@ -858,6 +861,19 @@ void InstantService::FallbackToDefaultNtpTheme() {
   theme->custom_background_attribution_line_2 = std::string();
   theme->custom_background_attribution_action_url = GURL();
   theme->collection_id = std::string();
+}
+
+bool InstantService::IsCustomBackgroundDisabledByPolicy() {
+  // |prefs::kNtpCustomBackgroundDict| is managed by policy only if
+  // |policy::key::kNTPCustomBackgroundEnabled| is set to false and therefore
+  // should be empty.
+  bool managed =
+      pref_service_->IsManagedPreference(prefs::kNtpCustomBackgroundDict);
+  if (managed) {
+    DCHECK(
+        pref_service_->GetDictionary(prefs::kNtpCustomBackgroundDict)->empty());
+  }
+  return managed;
 }
 
 bool InstantService::IsCustomBackgroundSet() {

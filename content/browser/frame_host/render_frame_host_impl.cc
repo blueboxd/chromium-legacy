@@ -6570,6 +6570,12 @@ void RenderFrameHostImpl::GetPresentationService(
   presentation_service_->Bind(std::move(receiver));
 }
 
+PresentationServiceImpl&
+RenderFrameHostImpl::GetPresentationServiceForTesting() {
+  DCHECK(presentation_service_);
+  return *presentation_service_.get();
+}
+
 void RenderFrameHostImpl::GetSpeechSynthesis(
     mojo::PendingReceiver<blink::mojom::SpeechSynthesis> receiver) {
   if (!speech_synthesis_impl_) {

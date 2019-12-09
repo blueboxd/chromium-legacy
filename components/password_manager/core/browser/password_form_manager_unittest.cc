@@ -2280,7 +2280,7 @@ TEST_P(PasswordFormManagerTest, PossibleUsernameFieldManager) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          PasswordFormManagerTest,
                          testing::Values(false, true));
 

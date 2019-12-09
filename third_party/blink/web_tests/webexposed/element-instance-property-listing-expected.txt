@@ -1588,7 +1588,6 @@ svg element defs
     property systemLanguage
     property transform
 svg element desc
-svg element discard
 svg element ellipse
     property cx
     property cy

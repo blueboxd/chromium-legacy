@@ -28,6 +28,8 @@ NtpTheme::~NtpTheme() = default;
 bool NtpTheme::operator==(const NtpTheme& rhs) const {
   return using_default_theme == rhs.using_default_theme &&
          using_dark_colors == rhs.using_dark_colors &&
+         custom_background_disabled_by_policy ==
+             rhs.custom_background_disabled_by_policy &&
          custom_background_url == rhs.custom_background_url &&
          custom_background_attribution_line_1 ==
              rhs.custom_background_attribution_line_1 &&

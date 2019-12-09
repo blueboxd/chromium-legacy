@@ -1412,11 +1412,15 @@ bool VaapiWrapper::CreateContext(const gfx::Size& size) {
   // (non-null) IDs until the signature gets updated.
   constexpr VASurfaceID* empty_va_surfaces_ids_pointer = nullptr;
   constexpr size_t empty_va_surfaces_ids_size = 0u;
+
+  // No flag must be set and passing picture size is irrelevant in the case of
+  // vpp, just passing 0x0.
   const int flag = mode_ != kVideoProcess ? VA_PROGRESSIVE : 0x0;
-  const VAStatus va_res =
-      vaCreateContext(va_display_, va_config_id_, size.width(), size.height(),
-                      flag, empty_va_surfaces_ids_pointer,
-                      empty_va_surfaces_ids_size, &va_context_id_);
+  const gfx::Size picture_size = mode_ != kVideoProcess ? size : gfx::Size();
+  const VAStatus va_res = vaCreateContext(
+      va_display_, va_config_id_, picture_size.width(), picture_size.height(),
+      flag, empty_va_surfaces_ids_pointer, empty_va_surfaces_ids_size,
+      &va_context_id_);
   VA_LOG_ON_ERROR(va_res, "vaCreateContext failed");
   return va_res == VA_STATUS_SUCCESS;
 }

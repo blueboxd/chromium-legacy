@@ -10,9 +10,6 @@ import logging
 import optparse
 import sys
 
-import cyglog_to_orderfile
-import cygprofile_utils
-import patch_orderfile
 import symbol_extractor
 
 

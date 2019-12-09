@@ -573,13 +573,13 @@ class FakeRemoteDeviceProviderFactory
   std::unique_ptr<RemoteDeviceProvider> BuildInstance(
       CryptAuthDeviceManager* device_manager,
       CryptAuthV2DeviceManager* v2_device_manager,
-      const CoreAccountId& user_account_id,
+      const std::string& user_email,
       const std::string& user_private_key) override {
     EXPECT_EQ(fake_cryptauth_device_manager_factory_->instance(),
               device_manager);
     EXPECT_EQ(fake_cryptauth_v2_device_manager_factory_->instance(),
               v2_device_manager);
-    EXPECT_EQ(identity_manager_->GetPrimaryAccountId(), user_account_id);
+    EXPECT_EQ(identity_manager_->GetPrimaryAccountInfo().email, user_email);
     if (base::FeatureList::IsEnabled(features::kCryptAuthV2Enrollment)) {
       EXPECT_EQ(fake_cryptauth_v2_enrollment_manager_factory_->instance()
                     ->GetUserPrivateKey(),

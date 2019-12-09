@@ -4,6 +4,10 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import android.content.Context;
+
+import org.chromium.base.LifetimeAssert;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,11 +18,13 @@ import java.util.List;
  * {@link MessageService}.
  */
 public class MessageCardProviderCoordinator {
+    private final LifetimeAssert mLifetimeAssert = LifetimeAssert.create(this);
     private final MessageCardProviderMediator mMediator;
     private final List<MessageService> mMessageServices = new ArrayList<>();
 
-    MessageCardProviderCoordinator(MessageCardView.DismissActionProvider uiDismissActionProvider) {
-        mMediator = new MessageCardProviderMediator(uiDismissActionProvider);
+    MessageCardProviderCoordinator(
+            Context context, MessageCardView.DismissActionProvider uiDismissActionProvider) {
+        mMediator = new MessageCardProviderMediator(context, uiDismissActionProvider);
     }
 
     /**
@@ -47,5 +53,8 @@ public class MessageCardProviderCoordinator {
         for (int i = 0; i < mMessageServices.size(); i++) {
             mMessageServices.get(i).removeObserver(mMediator);
         }
+        // If mLifetimeAssert is GC'ed before this is called, it will throw an exception
+        // with a stack trace showing the stack during LifetimeAssert.create().
+        LifetimeAssert.setSafeToGc(mLifetimeAssert, true);
     }
 }

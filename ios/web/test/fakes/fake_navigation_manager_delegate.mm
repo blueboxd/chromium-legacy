@@ -18,7 +18,6 @@ void FakeNavigationManagerDelegate::RecordPageStateInNavigationItem() {}
 void FakeNavigationManagerDelegate::OnGoToIndexSameDocumentNavigation(
     NavigationInitiationType type,
     bool has_user_gesture) {}
-void FakeNavigationManagerDelegate::WillChangeUserAgentType() {}
 void FakeNavigationManagerDelegate::LoadCurrentItem(
     NavigationInitiationType type) {}
 void FakeNavigationManagerDelegate::LoadIfNecessary() {}

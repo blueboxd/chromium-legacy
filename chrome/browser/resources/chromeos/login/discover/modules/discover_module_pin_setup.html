@@ -40,16 +40,12 @@
       </div>
     </oobe-dialog>
     <oobe-dialog role="dialog" has-buttons on-keypress="onKeypress_"
+        title-key="discoverPinSetupPasswordTitle"
+        subtitle-key="discoverPinSetupPasswordSubTitle"
         hidden="[[isStepHidden_(step_, 'password')]]">
       <hd-iron-icon slot="oobe-icon" icon1x="oobe-32:lock"
           icon2x="oobe-64:lock">
       </hd-iron-icon>
-      <h1 slot="title">
-        [[i18nDynamic(locale, 'discoverPinSetupPasswordTitle')]]
-      </h1>
-      <div slot="subtitle">
-        [[i18nDynamic(locale, 'discoverPinSetupPasswordSubTitle')]]
-      </div>
       <div slot="footer" class="flex layout horizontal">
         <cr-input id="passwordInput" type="password"
             placeholder="[[i18nDynamic(locale, 'passwordPromptPasswordLabel')]]"
@@ -62,12 +58,10 @@
         </cr-input>
       </div>
       <div slot="bottom-buttons" class="flex layout horizontal end-justified">
-        <oobe-text-button on-tap="onSkipButton_">
-          <div>[[i18nDynamic(locale, 'discoverPinSetupSkip')]]</div>
-        </oobe-text-button>
+        <oobe-text-button on-tap="onSkipButton_"
+            text-key="discoverPinSetupSkip"></oobe-text-button>
         <oobe-next-button inverse disabled="[[!password_]]"
             on-tap="onPasswordSubmitButton_">
-          <div>[[i18nDynamic(locale, 'next')]]</div>
         </oobe-next-button>
       </div>
     </oobe-dialog>
@@ -122,17 +116,17 @@
             on-tap="onBackButton_"></oobe-back-button>
         <div class="flex"></div>
         <oobe-text-button id="setupSkipButton" on-tap="onSkipButton_"
+            text-key="discoverPinSetupSkip"
             hidden="[[!isStepHidden_(step_, 'done')]]">
-          <div>[[i18nDynamic(locale, 'discoverPinSetupSkip')]]</div>
         </oobe-text-button>
         <oobe-next-button inverse
             disabled="[[isNextDisabled_(step_, enableSubmit_)]]"
             on-tap="onNextButton_" class="focus-on-show"
             hidden="[[!isStepHidden_(step_, 'done')]]"></oobe-next-button>
         <oobe-text-button inverse on-tap="onDoneButton_" class="focus-on-show"
+            text-key="discoverPinSetupDone"
             hidden="[[isStepHidden_(step_, 'done')]]">
-          <div>[[i18nDynamic(locale, 'discoverPinSetupDone')]]</div>
-        </oobe-next-button>
+        </oobe-text-button>
       </div>
     </oobe-dialog>
   </template>

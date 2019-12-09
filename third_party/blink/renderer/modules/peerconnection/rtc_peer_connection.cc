@@ -887,7 +887,7 @@ ScriptPromise RTCPeerConnection::createOffer(
           RTCCreateSessionDescriptionOperation::kCreateOffer, this,
           success_callback, error_callback);
 
-  WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>> platform_transceivers;
+  Vector<std::unique_ptr<RTCRtpTransceiverPlatform>> platform_transceivers;
   if (offer_options) {
     if (offer_options->OfferToReceiveAudio() != -1 ||
         offer_options->OfferToReceiveVideo() != -1) {
@@ -2235,7 +2235,7 @@ RTCRtpSender* RTCPeerConnection::addTrack(MediaStreamTrack* track,
     }
   }
 
-  WebVector<WebMediaStream> web_streams(streams.size());
+  Vector<WebMediaStream> web_streams(streams.size());
   for (wtf_size_t i = 0; i < streams.size(); ++i) {
     web_streams[i] = streams[i]->Descriptor();
   }

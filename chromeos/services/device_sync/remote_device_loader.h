@@ -31,7 +31,7 @@ class RemoteDeviceLoader {
    public:
     static std::unique_ptr<RemoteDeviceLoader> NewInstance(
         const std::vector<cryptauth::ExternalDeviceInfo>& device_info_list,
-        const std::string& user_id,
+        const std::string& user_email,
         const std::string& user_private_key,
         std::unique_ptr<multidevice::SecureMessageDelegate>
             secure_message_delegate);
@@ -41,7 +41,7 @@ class RemoteDeviceLoader {
    protected:
     virtual std::unique_ptr<RemoteDeviceLoader> BuildInstance(
         const std::vector<cryptauth::ExternalDeviceInfo>& device_info_list,
-        const std::string& user_id,
+        const std::string& user_email,
         const std::string& user_private_key,
         std::unique_ptr<multidevice::SecureMessageDelegate>
             secure_message_delegate);
@@ -58,7 +58,7 @@ class RemoteDeviceLoader {
   // |secure_message_delegate|: Used to derive each persistent symmetric key.
   RemoteDeviceLoader(
       const std::vector<cryptauth::ExternalDeviceInfo>& device_info_list,
-      const std::string& user_id,
+      const std::string& user_email,
       const std::string& user_private_key,
       std::unique_ptr<multidevice::SecureMessageDelegate>
           secure_message_delegate);
@@ -79,8 +79,8 @@ class RemoteDeviceLoader {
   // The remaining devices whose PSK we're waiting on.
   std::vector<cryptauth::ExternalDeviceInfo> remaining_devices_;
 
-  // The id of the user who the remote devices belong to.
-  const std::string user_id_;
+  // The email of the user who the remote devices belong to.
+  const std::string user_email_;
 
   // The private key of the user's local device.
   const std::string user_private_key_;

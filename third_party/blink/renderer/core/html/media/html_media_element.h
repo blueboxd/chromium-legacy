@@ -31,7 +31,6 @@
 
 #include "base/optional.h"
 #include "base/timer/elapsed_timer.h"
-#include "third_party/blink/public/platform/web_audio_source_provider_client.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
 #include "third_party/blink/public/platform/webaudiosourceprovider_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
@@ -43,6 +42,7 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 #include "third_party/blink/renderer/platform/audio/audio_source_provider.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/media/web_audio_source_provider_client.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/supplementable.h"

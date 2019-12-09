@@ -16,7 +16,7 @@
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_log.h"
-#include "third_party/blink/public/platform/web_audio_source_provider_client.h"
+#include "third_party/blink/renderer/platform/media/web_audio_source_provider_client.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {

@@ -229,8 +229,9 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Releases the |va_surfaces| and destroys |va_context_id_|.
   virtual void DestroyContextAndSurfaces(std::vector<VASurfaceID> va_surfaces);
 
-  // Creates a VA Context of |size| and sets |va_context_id_|. The client is
-  // responsible for releasing it via DestroyContext() or
+  // Creates a VA Context of |size| and sets |va_context_id_|. In the case of a
+  // VPP VaapiWrapper, |size| is ignored and 0x0 is used to create the context.
+  // The client is responsible for releasing it via DestroyContext() or
   // DestroyContextAndSurfaces(), or it will be released on dtor.
   virtual bool CreateContext(const gfx::Size& size);
 

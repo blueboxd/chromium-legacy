@@ -196,15 +196,12 @@
 // ensureAppLaunchedWithFeaturesEnabled]
 - (void)testAppLaunchManagerLaunchWithFeatures {
   [[AppLaunchManager sharedManager]
-      ensureAppLaunchedWithFeaturesEnabled:
-          {kNewOmniboxPopupLayout, web::features::kSlimNavigationManager}
+      ensureAppLaunchedWithFeaturesEnabled:{kNewOmniboxPopupLayout}
                                   disabled:{}
                             relaunchPolicy:NoForceRelaunchAndResetState];
 
   GREYAssertTrue([ChromeEarlGrey isNewOmniboxPopupLayoutEnabled],
                  @"NewOmniboxPopupLayout should be enabled");
-  GREYAssertTrue([ChromeEarlGrey isSlimNavigationManagerEnabled],
-                 @"SlimNavigationManager should be enabled");
 
   GREYAssertEqual([ChromeEarlGrey mainTabCount], 1U,
                   @"Exactly one new tab should be opened.");

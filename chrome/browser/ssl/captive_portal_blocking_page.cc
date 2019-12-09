@@ -13,13 +13,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/interstitials/chrome_metrics_helper.h"
-#include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
-#include "chrome/browser/ssl/ssl_error_controller_client.h"
 #include "components/captive_portal/captive_portal_detector.h"
 #include "components/captive_portal/captive_portal_metrics.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/security_interstitials/content/cert_report_helper.h"
+#include "components/security_interstitials/content/security_interstitial_controller_client.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
@@ -35,32 +33,8 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
-#include "chrome/browser/ssl/captive_portal_helper_android.h"
-#include "content/public/common/referrer.h"
 #include "net/android/network_library.h"
-#include "ui/base/window_open_disposition.h"
-#else
-#include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
 #endif
-
-namespace {
-
-const char kCaptivePortalMetricsName[] = "captive_portal";
-
-std::unique_ptr<ChromeMetricsHelper> CreateCaptivePortalMetricsHelper(
-    content::WebContents* web_contents,
-    const GURL& request_url) {
-  security_interstitials::MetricsHelper::ReportDetails reporting_info;
-  reporting_info.metric_prefix = kCaptivePortalMetricsName;
-  std::unique_ptr<ChromeMetricsHelper> metrics_helper =
-      std::make_unique<ChromeMetricsHelper>(web_contents, request_url,
-                                            reporting_info);
-  metrics_helper.get()->StartRecordingCaptivePortalMetrics(false);
-  return metrics_helper;
-}
-
-} // namespace
 
 // static
 const void* const CaptivePortalBlockingPage::kTypeForTesting =
@@ -72,26 +46,23 @@ CaptivePortalBlockingPage::CaptivePortalBlockingPage(
     const GURL& login_url,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     const net::SSLInfo& ssl_info,
-    int cert_error)
-    : SSLBlockingPageBase(
-          web_contents,
-          CertificateErrorReport::INTERSTITIAL_CAPTIVE_PORTAL,
-          ssl_info,
-          request_url,
-          std::move(ssl_cert_reporter),
-          false /* overridable */,
-          base::Time::Now(),
-          std::make_unique<SSLErrorControllerClient>(
-              web_contents,
-              ssl_info,
-              cert_error,
-              request_url,
-              CreateCaptivePortalMetricsHelper(web_contents, request_url))),
+    std::unique_ptr<
+        security_interstitials::SecurityInterstitialControllerClient>
+        controller_client,
+    const OpenLoginCallback& open_login_callback)
+    : SSLBlockingPageBase(web_contents,
+                          CertificateErrorReport::INTERSTITIAL_CAPTIVE_PORTAL,
+                          ssl_info,
+                          request_url,
+                          std::move(ssl_cert_reporter),
+                          false /* overridable */,
+                          base::Time::Now(),
+                          std::move(controller_client)),
+      open_login_callback_(open_login_callback),
       login_url_(login_url),
       ssl_info_(ssl_info) {
   captive_portal::CaptivePortalMetrics::LogCaptivePortalBlockingPageEvent(
       captive_portal::CaptivePortalMetrics::SHOW_ALL);
-  ChromeSecurityBlockingPageFactory::DoChromeSpecificSetup(this);
 }
 
 CaptivePortalBlockingPage::~CaptivePortalBlockingPage() = default;
@@ -246,21 +217,7 @@ void CaptivePortalBlockingPage::CommandReceived(const std::string& command) {
     case security_interstitials::CMD_OPEN_LOGIN:
       captive_portal::CaptivePortalMetrics::LogCaptivePortalBlockingPageEvent(
           captive_portal::CaptivePortalMetrics::OPEN_LOGIN_PAGE);
-#if defined(OS_ANDROID)
-      {
-        // CaptivePortalTabHelper is not available on Android. Simply open the
-        // login URL in a new tab. login_url_ is also always empty on Android,
-        // use the platform's portal detection URL.
-        const std::string url = chrome::android::GetCaptivePortalServerUrl(
-            base::android::AttachCurrentThread());
-        content::OpenURLParams params(GURL(url), content::Referrer(),
-                                      WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                                      ui::PAGE_TRANSITION_LINK, false);
-        web_contents()->OpenURL(params);
-      }
-#else
-      CaptivePortalTabHelper::OpenLoginTabForWebContents(web_contents(), true);
-#endif
+      open_login_callback_.Run(web_contents());
       break;
     case security_interstitials::CMD_OPEN_REPORTING_PRIVACY:
       controller()->OpenExtendedReportingPrivacyPolicy(true);

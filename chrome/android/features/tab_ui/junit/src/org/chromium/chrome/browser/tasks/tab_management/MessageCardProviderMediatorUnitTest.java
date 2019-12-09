@@ -4,7 +4,12 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import android.content.Context;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -14,29 +19,46 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * Unit tests for {@link MessageCardProviderMediator}.
  */
 @RunWith(LocalRobolectricTestRunner.class)
 public class MessageCardProviderMediatorUnitTest {
-    MessageCardProviderMediator mMediator;
+    static final int SUGGESTED_TAB_COUNT = 2;
+
+    private MessageCardProviderMediator mMediator;
 
     @Mock
-    MessageCardView.DismissActionProvider mUiDismissActionProvider;
+    private MessageCardView.DismissActionProvider mUiDismissActionProvider;
+
+    @Mock
+    private Context mContext;
+
+    @Mock
+    private TabSuggestionMessageService.TabSuggestionMessageData mTabSuggestionMessageData;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        doNothing().when(mUiDismissActionProvider).dismiss();
-        mMediator = new MessageCardProviderMediator(mUiDismissActionProvider);
+        doNothing().when(mUiDismissActionProvider).dismiss(anyInt());
+        mMediator = new MessageCardProviderMediator(mContext, mUiDismissActionProvider);
     }
 
-    private void enqueueMessageItem(int type) {
-        // TODO(crbug.com/1004570): Use MessageData instead of null when ready to integrate with
-        //  MessageService component.
-        mMediator.messageReady(type, null);
+    private void enqueueMessageItem(@MessageService.MessageType int type) {
+        switch (type) {
+            case MessageService.MessageType.TAB_SUGGESTION:
+                when(mTabSuggestionMessageData.getSize()).thenReturn(SUGGESTED_TAB_COUNT);
+                when(mTabSuggestionMessageData.getDismissActionProvider())
+                        .thenReturn((messageType) -> {});
+                when(mTabSuggestionMessageData.getReviewActionProvider()).thenReturn(() -> {});
+                mMediator.messageReady(type, mTabSuggestionMessageData);
+                break;
+            default:
+                mMediator.messageReady(type, new MessageService.MessageData() {});
+        }
     }
 
     @Test
@@ -82,9 +104,21 @@ public class MessageCardProviderMediatorUnitTest {
         mMediator.getMessageItems();
         mMediator.messageInvalidate(MessageService.MessageType.TAB_SUGGESTION);
 
+        verify(mUiDismissActionProvider).dismiss(anyInt());
         Assert.assertFalse(mMediator.getShownMessageItemsForTesting().containsKey(
                 MessageService.MessageType.TAB_SUGGESTION));
         Assert.assertFalse(mMediator.getReadyMessageItemsForTesting().containsKey(
                 MessageService.MessageType.TAB_SUGGESTION));
+    }
+
+    @Test
+    public void buildModel_ForTabSuggestion() {
+        enqueueMessageItem(MessageService.MessageType.TAB_SUGGESTION);
+
+        PropertyModel model = mMediator.getReadyMessageItemsForTesting()
+                                      .get(MessageService.MessageType.TAB_SUGGESTION)
+                                      .model;
+        Assert.assertEquals(MessageService.MessageType.TAB_SUGGESTION,
+                model.get(MessageCardViewProperties.MESSAGE_TYPE));
     }
 }

@@ -825,7 +825,7 @@ TEST_F(ProximityAuthUnlockManagerImplTest, OnAuthAttempted_SignIn_Success) {
   std::string channel_binding_data = "channel binding data";
 
   EXPECT_CALL(proximity_auth_client_,
-              GetChallengeForUserAndDevice(remote_device_.user_id(),
+              GetChallengeForUserAndDevice(remote_device_.user_email(),
                                            remote_device_.public_key(),
                                            channel_binding_data, _))
       .WillOnce(Invoke(

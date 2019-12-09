@@ -34,7 +34,7 @@ namespace device_sync {
 
 namespace {
 
-const char kTestUserId[] = "testUserId";
+const char kTestUserEmail[] = "test@gmail.com";
 const char kTestUserPrivateKey[] = "testUserPrivateKey";
 const char kTestRemoteDeviceInstanceIdPrefix[] = "instanceId-";
 const char kTestRemoteDeviceNamePrefix[] = "name-";
@@ -52,7 +52,7 @@ multidevice::RemoteDevice CreateRemoteDeviceForTest(const std::string& suffix,
       has_instance_id ? "has Instance ID" : "no Instance ID";
 
   return multidevice::RemoteDevice(
-      kTestUserId,
+      kTestUserEmail,
       has_instance_id ? kTestRemoteDeviceInstanceIdPrefix + suffix
                       : std::string(),
       kTestRemoteDeviceNamePrefix + suffix,
@@ -172,11 +172,11 @@ class FakeDeviceLoader final : public RemoteDeviceLoader {
 
     std::unique_ptr<RemoteDeviceLoader> BuildInstance(
         const std::vector<cryptauth::ExternalDeviceInfo>& device_info_list,
-        const std::string& user_id,
+        const std::string& user_email,
         const std::string& user_private_key,
         std::unique_ptr<multidevice::SecureMessageDelegate>
             secure_message_delegate) override {
-      EXPECT_EQ(std::string(kTestUserId), user_id);
+      EXPECT_EQ(std::string(kTestUserEmail), user_email);
       EXPECT_EQ(std::string(kTestUserPrivateKey), user_private_key);
       std::unique_ptr<FakeDeviceLoader> device_loader =
           std::make_unique<FakeDeviceLoader>();
@@ -350,7 +350,7 @@ class DeviceSyncRemoteDeviceProviderImplTest : public ::testing::Test {
   void CreateRemoteDeviceProvider() {
     remote_device_provider_ = std::make_unique<RemoteDeviceProviderImpl>(
         fake_device_manager_.get(), fake_v2_device_manager_.get(),
-        CoreAccountId(kTestUserId), kTestUserPrivateKey);
+        kTestUserEmail, kTestUserPrivateKey);
     remote_device_provider_->AddObserver(test_observer_.get());
     EXPECT_EQ(0u, remote_device_provider_->GetSyncedDevices().size());
 
@@ -406,8 +406,8 @@ class DeviceSyncRemoteDeviceProviderImplTest : public ::testing::Test {
     EXPECT_TRUE(loader->id_to_device_map());
     EXPECT_EQ(fake_v2_device_manager_->GetSyncedDevices(),
               *loader->id_to_device_map());
-    EXPECT_TRUE(loader->user_id());
-    EXPECT_EQ(kTestUserId, *loader->user_id());
+    EXPECT_TRUE(loader->user_email());
+    EXPECT_EQ(kTestUserEmail, *loader->user_email());
     EXPECT_TRUE(loader->user_private_key());
     EXPECT_EQ(kTestUserPrivateKey, *loader->user_private_key());
 

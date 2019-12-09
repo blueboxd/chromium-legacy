@@ -164,7 +164,10 @@ class InstantService : public KeyedService,
   // Used for testing.
   void SetNextCollectionImageForTesting(const CollectionImage& image) const;
 
-  // Check if a custom background has been set by the user.
+  // Returns whether having a custom background is disabled by policy.
+  bool IsCustomBackgroundDisabledByPolicy();
+
+  // Returns whether a custom background has been set by the user.
   bool IsCustomBackgroundSet();
 
   // Returns whether the user has customized their shortcuts. Will always be

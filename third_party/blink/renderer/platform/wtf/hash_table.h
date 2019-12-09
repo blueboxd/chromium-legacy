@@ -23,7 +23,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_TABLE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_TABLE_H_
 
-#include <atomic>
 #include <memory>
 
 #include "base/numerics/checked_math.h"

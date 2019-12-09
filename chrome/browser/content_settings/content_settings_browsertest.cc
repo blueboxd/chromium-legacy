@@ -553,7 +553,7 @@ IN_PROC_BROWSER_TEST_P(CookieSettingsTest, BlockCookiesAlsoBlocksIndexedDB) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     CookieSettingsTest,
     ::testing::Values(
         std::make_pair(CookieMode::kDocumentCookieJS,

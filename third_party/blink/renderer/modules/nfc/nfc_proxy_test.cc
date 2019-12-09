@@ -25,7 +25,8 @@ namespace {
 using ::testing::_;
 using ::testing::Invoke;
 
-static const char kTestUrl[] = "https://w3c.github.io/web-nfc/";
+static const char kFakeRecordId[] =
+    "https://w3c.github.io/web-nfc/dummy-record-id";
 static const char kFakeNfcTagSerialNumber[] = "c0:45:00:02";
 
 MATCHER_P(MessageEquals, expected, "") {
@@ -77,10 +78,10 @@ class FakeNfcService : public device::mojom::blink::NFC {
     if (!client_ || !tag_message_)
       return;
 
-    // Only match the watches using |url| in options.
+    // Only match the watches using |id| in options.
     WTF::Vector<uint32_t> ids;
     for (auto& pair : watches_) {
-      if (pair.second->id == tag_message_->url) {
+      if (pair.second->id == tag_message_->data[0]->id) {
         ids.push_back(pair.first);
       }
     }
@@ -183,7 +184,7 @@ TEST_F(NFCProxyTest, SuccessfulPath) {
   auto& document = GetDocument();
   auto* nfc_proxy = NFCProxy::From(document);
   auto* scan_options = NDEFScanOptions::Create();
-  scan_options->setId(kTestUrl);
+  scan_options->setId(kFakeRecordId);
   auto* reader = MakeGarbageCollected<MockNDEFReader>(&document);
 
   {
@@ -201,11 +202,11 @@ TEST_F(NFCProxyTest, SuccessfulPath) {
 
   // Construct a NDEFMessagePtr
   auto message = device::mojom::blink::NDEFMessage::New();
-  message->url = kTestUrl;
   auto record = device::mojom::blink::NDEFRecord::New();
   WTF::Vector<uint8_t> record_data(
       {0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10});
   record->record_type = "mime";
+  record->id = kFakeRecordId;
   record->data = WTF::Vector<uint8_t>(record_data);
   message->data.push_back(std::move(record));
 
@@ -236,7 +237,7 @@ TEST_F(NFCProxyTest, ErrorPath) {
   auto& document = GetDocument();
   auto* nfc_proxy = NFCProxy::From(document);
   auto* scan_options = NDEFScanOptions::Create();
-  scan_options->setId(kTestUrl);
+  scan_options->setId(kFakeRecordId);
   auto* reader = MakeGarbageCollected<MockNDEFReader>(&document);
 
   // Make the fake NFC service return an error for the incoming watch request.

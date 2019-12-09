@@ -20,6 +20,7 @@ Bug(none) virtual/threaded/printing/ [ Skip ]
 Bug(none) virtual/threaded/http/tests/devtools/tracing/ [ Skip ]
 Bug(none) virtual/controls-refresh/ [ Skip ]
 Bug(none) virtual/controls-refresh-hc/ [ Skip ]
+Bug(none) virtual/web-components-v0-disabled/ [ Skip ]
 
 # Can't rebaseline because the file path is too long.
 Bug(none) virtual/compositor_threaded_scrollbar_scrolling/paint/invalidation/scroll/sticky/invalidate-after-composited-scroll-with-sticky.html [ Skip ]

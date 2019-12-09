@@ -4,25 +4,54 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 
 import org.chromium.ui.modelutil.PropertyModel;
 
+import java.util.Locale;
+
 /**
- * This is a {@link PropertyModel} for the TabSuggestionMessageCard.
+ * This is a util class for creating the property model of the TabSuggestionMessageCard.
  */
-public class TabSuggestionMessageCardViewModel
-        extends PropertyModel implements MessageCardView.IconProvider {
-    // TODO(meiliang): should take in a TabSuggestion object from the suggestion service, and set
-    // the property model based on the TabSuggestion object. ACTION_TEXT and DESCRIPTION_TEXT should
-    // set based on the TabSuggestion object.
-    public TabSuggestionMessageCardViewModel() {
-        super(MessageCardViewProperties.ALL_KEYS);
-        set(MessageCardViewProperties.ICON_PROVIDER, this);
+public class TabSuggestionMessageCardViewModel {
+    /**
+     * Create a {@link PropertyModel} for TabSuggestionMessageCardView.
+     * @param context The {@link Context} to use.
+     * @param uiDismissActionProvider The {@link MessageCardView.DismissActionProvider} to set.
+     * @param data The {@link TabSuggestionMessageService.TabSuggestionMessageData} to use.
+     * @return A {@link PropertyModel} for the given {@code data}.
+     */
+    public static PropertyModel create(Context context,
+            MessageCardView.DismissActionProvider uiDismissActionProvider,
+            TabSuggestionMessageService.TabSuggestionMessageData data) {
+        String descriptionTextTemplate = context.getString(
+                org.chromium.chrome.tab_ui.R.string.tab_suggestion_close_stale_message);
+        String descriptionText = String.format(Locale.getDefault(), "%d", data.getSize());
+        String actionText =
+                context.getString(org.chromium.chrome.tab_ui.R.string.tab_suggestion_review_button);
+        String dismissButtonContextDescription = context.getString(
+                org.chromium.chrome.tab_ui.R.string.accessibility_tab_suggestion_dismiss_button);
+
+        return new PropertyModel.Builder(MessageCardViewProperties.ALL_KEYS)
+                .with(MessageCardViewProperties.MESSAGE_TYPE,
+                        MessageService.MessageType.TAB_SUGGESTION)
+                .with(MessageCardViewProperties.ICON_PROVIDER,
+                        TabSuggestionMessageCardViewModel::getIconDrawable)
+                .with(MessageCardViewProperties.UI_DISMISS_ACTION_PROVIDER, uiDismissActionProvider)
+                .with(MessageCardViewProperties.MESSAGE_SERVICE_DISMISS_ACTION_PROVIDER,
+                        data.getDismissActionProvider())
+                .with(MessageCardViewProperties.MESSAGE_SERVICE_ACTION_PROVIDER,
+                        data.getReviewActionProvider())
+                .with(MessageCardViewProperties.DESCRIPTION_TEXT_TEMPLATE, descriptionTextTemplate)
+                .with(MessageCardViewProperties.DESCRIPTION_TEXT, descriptionText)
+                .with(MessageCardViewProperties.ACTION_TEXT, actionText)
+                .with(MessageCardViewProperties.DISMISS_BUTTON_CONTENT_DESCRIPTION,
+                        dismissButtonContextDescription)
+                .build();
     }
 
-    @Override
-    public Drawable getIconDrawable() {
+    private static Drawable getIconDrawable() {
         // TODO(meiliang): returns a drawable with first tab suggested tab's favicon.
         return null;
     }

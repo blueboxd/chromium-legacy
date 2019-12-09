@@ -226,7 +226,7 @@ TEST_P(AutofillPopupViewNativeViewsForEveryTypeTest, ShowClickTest) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     AutofillPopupViewNativeViewsForEveryTypeTest,
     ::testing::ValuesIn(kClickTestCase));
 

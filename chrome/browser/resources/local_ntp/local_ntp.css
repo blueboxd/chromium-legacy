@@ -1226,6 +1226,36 @@ html[dir=rtl] .menu-option {
   }
 }
 
+#backgrounds-disabled-wrapper {
+  left: 50%;
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 50%;
+}
+
+#backgrounds-disabled-icon {
+  -webkit-mask-image: url(../../../../ui/webui/resources/images/business.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background-color: rgb(var(--GG700-rgb));
+  height: 48px;
+  margin: auto;
+  width: 48px;
+}
+
+@media (prefers-color-scheme: dark) {
+  #backgrounds-disabled-icon {
+    background-color: rgb(var(--GG200-rgb));
+  }
+}
+
+#backgrounds-disabled-title {
+  margin-top: 10px;
+  text-align: center;
+}
+
 #backgrounds-default.bg-sel-tile-bg {
   background-color: white;
   height: 176px;

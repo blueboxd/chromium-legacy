@@ -211,7 +211,7 @@ public final class NdefMessageUtils {
                         new String(ndefRecord.getType(), "UTF-8"), ndefRecord.getPayload());
                 break;
         }
-        if (record != null) {
+        if ((record != null) && (ndefRecord.getTnf() != android.nfc.NdefRecord.TNF_EMPTY)) {
             record.id = new String(ndefRecord.getId(), "UTF-8");
         }
         return record;

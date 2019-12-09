@@ -117,3 +117,4 @@ max_3d_array_texture_size_1024
 disable_half_float_for_gmb
 prefer_draw_to_copy
 remove_dynamic_indexing_of_swizzled_vector
+do_extra_flush_around_bindframebuffer

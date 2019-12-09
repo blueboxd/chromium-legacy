@@ -62,12 +62,6 @@ class WKBackForwardListItemHolder;
 - (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
         createWebUIForURL:(const GURL&)URL;
 
-// Requires that the next load rebuild the web view. This is expensive, and
-// should be used only in the case where something has changed that the web view
-// only checks on creation, such that the whole object needs to be rebuilt.
-- (void)navigationHandlerRequirePageReconstruction:
-    (CRWWKNavigationHandler*)navigationHandler;
-
 - (std::unique_ptr<web::NavigationContextImpl>)
             navigationHandler:(CRWWKNavigationHandler*)navigationHandler
     registerLoadRequestForURL:(const GURL&)URL

@@ -723,7 +723,7 @@ static NSString* gUserAgentProduct = nil;
 
   // TODO(crbug.com/873729): The session will not be restored until
   // LoadIfNecessary call. Fix the bug and remove extra call.
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() && sessionStorage) {
+  if (sessionStorage) {
     _webState->GetNavigationManager()->LoadIfNecessary();
   }
 }

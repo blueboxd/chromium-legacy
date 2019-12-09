@@ -516,12 +516,8 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
   }
 
   web::WebState::CreateParams createParams(self.browserState);
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    _webState = web::WebState::CreateWithStorageSession(
-        createParams, webStateToReplace->BuildSessionStorage());
-  } else {
-    _webState = web::WebState::Create(createParams);
-  }
+  _webState = web::WebState::CreateWithStorageSession(
+      createParams, webStateToReplace->BuildSessionStorage());
 
   // Add the preload controller as a policyDecider before other tab helpers, so
   // that it can block the navigation if needed before other policy deciders

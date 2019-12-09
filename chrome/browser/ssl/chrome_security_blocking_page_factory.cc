@@ -30,7 +30,49 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#include "chrome/browser/ssl/captive_portal_helper_android.h"
+#include "content/public/common/referrer.h"
+#include "net/android/network_library.h"
+#include "ui/base/window_open_disposition.h"
+#else
+#include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
+#endif
+
 namespace {
+
+// Opens the login page for a captive portal. Passed in to
+// CaptivePortalBlockingPage to be invoked when the user has pressed the
+// connect button.
+void OpenLoginPage(content::WebContents* web_contents) {
+#if defined(OS_ANDROID)
+  {
+    // CaptivePortalTabHelper is not available on Android. Simply open the
+    // platform's portal detection URL in a new tab.
+    const std::string url = chrome::android::GetCaptivePortalServerUrl(
+        base::android::AttachCurrentThread());
+    content::OpenURLParams params(GURL(url), content::Referrer(),
+                                  WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                  ui::PAGE_TRANSITION_LINK, false);
+    web_contents->OpenURL(params);
+  }
+#else
+  CaptivePortalTabHelper::OpenLoginTabForWebContents(web_contents, true);
+#endif
+}
+
+std::unique_ptr<ChromeMetricsHelper> CreateCaptivePortalMetricsHelper(
+    content::WebContents* web_contents,
+    const GURL& request_url) {
+  security_interstitials::MetricsHelper::ReportDetails reporting_info;
+  reporting_info.metric_prefix = "captive_portal";
+  std::unique_ptr<ChromeMetricsHelper> metrics_helper =
+      std::make_unique<ChromeMetricsHelper>(web_contents, request_url,
+                                            reporting_info);
+  metrics_helper.get()->StartRecordingCaptivePortalMetrics(false);
+  return metrics_helper;
+}
 
 std::unique_ptr<ChromeMetricsHelper> CreateSSLProblemMetricsHelper(
     content::WebContents* web_contents,
@@ -118,9 +160,16 @@ ChromeSecurityBlockingPageFactory::CreateCaptivePortalBlockingPage(
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     const net::SSLInfo& ssl_info,
     int cert_error) {
-  return new CaptivePortalBlockingPage(web_contents, request_url, login_url,
-                                       std::move(ssl_cert_reporter), ssl_info,
-                                       cert_error);
+  auto page = std::make_unique<CaptivePortalBlockingPage>(
+      web_contents, request_url, login_url, std::move(ssl_cert_reporter),
+      ssl_info,
+      std::make_unique<SSLErrorControllerClient>(
+          web_contents, ssl_info, cert_error, request_url,
+          CreateCaptivePortalMetricsHelper(web_contents, request_url)),
+      base::BindRepeating(&OpenLoginPage));
+
+  DoChromeSpecificSetup(page.get());
+  return page.release();
 }
 
 // static

@@ -47,7 +47,7 @@ class CxxIfElseNode(CompositeNode):
         CompositeNode.__init__(
             self,
             template_format,
-            cond,
+            cond=_to_conditional_node(cond),
             then=_to_symbol_scope_node(then, then_likeliness),
             else_=_to_symbol_scope_node(else_, else_likeliness))
 

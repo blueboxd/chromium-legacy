@@ -25,7 +25,6 @@ extern const base::Feature kEnablePasswordsAccountStorage;
 extern const base::Feature kEnablePasswordsAccountStorageSavingUi;
 extern const base::Feature KEnablePasswordGenerationForClearTextFields;
 extern const base::Feature kFillOnAccountSelect;
-extern const base::Feature kGenerationNoOverwrites;
 extern const base::Feature kGooglePasswordManager;
 extern const base::Feature kLeakDetection;
 extern const base::Feature kLeakHistory;

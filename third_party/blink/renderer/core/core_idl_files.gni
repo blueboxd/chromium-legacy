@@ -364,7 +364,6 @@ core_idl_files =
                     "svg/svg_component_transfer_function_element.idl",
                     "svg/svg_defs_element.idl",
                     "svg/svg_desc_element.idl",
-                    "svg/svg_discard_element.idl",
                     "svg/svg_element.idl",
                     "svg/svg_ellipse_element.idl",
                     "svg/svg_fe_blend_element.idl",

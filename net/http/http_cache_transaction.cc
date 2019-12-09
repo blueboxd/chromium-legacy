@@ -1036,9 +1036,9 @@ int HttpCache::Transaction::DoGetBackendComplete(int result) {
     }
   }
 
-  // Use PUT and DELETE only to invalidate existing stored entries.
-  if ((method_ == "PUT" || method_ == "DELETE") && mode_ != READ_WRITE &&
-      mode_ != WRITE) {
+  // Use PUT, DELETE, and PATCH only to invalidate existing stored entries.
+  if ((method_ == "PUT" || method_ == "DELETE" || method_ == "PATCH") &&
+      mode_ != READ_WRITE && mode_ != WRITE) {
     mode_ = NONE;
   }
 
@@ -1806,14 +1806,15 @@ int HttpCache::Transaction::DoSuccessfulSendRequest() {
     UpdateCacheEntryStatus(CacheEntryStatus::ENTRY_NOT_IN_CACHE);
   }
 
-  // Invalidate any cached GET with a successful PUT or DELETE.
-  if (mode_ == WRITE && (method_ == "PUT" || method_ == "DELETE")) {
+  // Invalidate any cached GET with a successful PUT, DELETE, or PATCH.
+  if (mode_ == WRITE &&
+      (method_ == "PUT" || method_ == "DELETE" || method_ == "PATCH")) {
     if (NonErrorResponse(new_response_->headers->response_code()) &&
         (entry_ && !entry_->doomed)) {
       int ret = cache_->DoomEntry(cache_key_, nullptr);
       DCHECK_EQ(OK, ret);
     }
-    // Do not invalidate the entry if its a failed Delete or Put.
+    // Do not invalidate the entry if the request failed.
     DoneWithEntry(true);
   }
 
@@ -2440,7 +2441,10 @@ bool HttpCache::Transaction::ShouldPassThrough() {
   } else if (method_ == "POST" && request_->upload_data_stream &&
              request_->upload_data_stream->identifier()) {
   } else if (method_ == "PUT" && request_->upload_data_stream) {
-  } else if (method_ == "DELETE") {
+  }
+  // DELETE and PATCH requests may result in invalidating the cache, so cannot
+  // just pass through.
+  else if (method_ == "DELETE" || method_ == "PATCH") {
   } else {
     cacheable = false;
   }
@@ -2718,7 +2722,7 @@ ValidationType HttpCache::Transaction::RequiresValidation() {
     return VALIDATION_SYNCHRONOUS;
   }
 
-  if (method_ == "PUT" || method_ == "DELETE")
+  if (method_ == "PUT" || method_ == "DELETE" || method_ == "PATCH")
     return VALIDATION_SYNCHRONOUS;
 
   ValidationType validation_required_by_headers =
@@ -2781,14 +2785,14 @@ bool HttpCache::Transaction::IsResponseConditionalizable(
 bool HttpCache::Transaction::ShouldOpenOnlyMethods() const {
   // These methods indicate that we should only try to open an entry and not
   // fallback to create.
-  return method_ == "PUT" || method_ == "DELETE" ||
+  return method_ == "PUT" || method_ == "DELETE" || method_ == "PATCH" ||
          (method_ == "HEAD" && mode_ == READ_WRITE);
 }
 
 bool HttpCache::Transaction::ConditionalizeRequest() {
   DCHECK(response_.headers.get());
 
-  if (method_ == "PUT" || method_ == "DELETE")
+  if (method_ == "PUT" || method_ == "DELETE" || method_ == "PATCH")
     return false;
 
   if (fail_conditionalization_for_test_)

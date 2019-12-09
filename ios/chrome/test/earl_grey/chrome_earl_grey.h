@@ -129,6 +129,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // GREYAssert is induced.
 - (void)waitForIncognitoTabCount:(NSUInteger)count;
 
+// Loads |URL| as if it was opened from an external application.
+- (void)openURLFromExternalApp:(const GURL&)URL;
+
 #pragma mark - Settings Utilities (EG2)
 
 // Sets value for content setting.
@@ -256,6 +259,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 // Returns the number of incognito tabs.
 - (NSUInteger)incognitoTabCount WARN_UNUSED_RESULT;
+
+// Returns the index of active tab in normal (non-incognito) mode.
+- (NSUInteger)indexOfActiveNormalTab;
 
 // Simulates a backgrounding and raises an EarlGrey exception if simulation not
 // succeeded.
@@ -403,6 +409,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // induced.
 - (id)executeJavaScript:(NSString*)javaScript;
 
+// Returns the user agent that should be used for the mobile version.
+- (NSString*)mobileUserAgentString;
+
 #pragma mark - Cookie Utilities (EG2)
 
 // Returns cookies as key value pairs, where key is a cookie name and value is a
@@ -418,9 +427,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 - (void)verifyAccessibilityForCurrentScreen;
 
 #pragma mark - Feature enables checkers (EG2)
-
-// Returns YES if SlimNavigationManager feature is enabled.
-- (BOOL)isSlimNavigationManagerEnabled WARN_UNUSED_RESULT;
 
 // Returns YES if BlockNewTabPagePendingLoad feature is enabled.
 - (BOOL)isBlockNewTabPagePendingLoadEnabled WARN_UNUSED_RESULT;

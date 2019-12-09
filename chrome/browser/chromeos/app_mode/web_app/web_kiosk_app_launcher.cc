@@ -96,4 +96,9 @@ void WebKioskAppLauncher::LaunchApp() {
   delegate_->OnAppLaunched();
 }
 
+void WebKioskAppLauncher::CancelCurrentInstallation() {
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  install_task_.reset();
+}
+
 }  // namespace chromeos

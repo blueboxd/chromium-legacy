@@ -18,6 +18,25 @@
 #include "extensions/common/constants.h"
 #include "ui/base/models/menu_model.h"
 
+namespace {
+
+syncer::StringOrdinal CreateChromePositionOnLast(
+    const std::map<std::string, std::unique_ptr<ChromeAppListItem>>& items) {
+  syncer::StringOrdinal last_known_position;
+  for (auto& it : items) {
+    if (!last_known_position.IsValid() ||
+        (it.second->position().IsValid() &&
+         it.second->position().GreaterThan(last_known_position))) {
+      last_known_position = it.second->position();
+    }
+  }
+  return last_known_position.IsValid()
+             ? last_known_position.CreateAfter()
+             : syncer::StringOrdinal::CreateInitialOrdinal();
+}
+
+}  // namespace
+
 ChromeAppListModelUpdater::ChromeAppListModelUpdater(Profile* profile)
     : profile_(profile) {}
 
@@ -456,6 +475,10 @@ void ChromeAppListModelUpdater::AddItemToOemFolder(
       oem_folder->SetChromeIsFolder(true);
     }
     oem_folder->SetChromeName(oem_folder_name);
+
+    if (!position_to_try.IsValid())
+      position_to_try = CreateChromePositionOnLast(items_);
+
     oem_folder->SetChromePosition(position_to_try);
   }
 }

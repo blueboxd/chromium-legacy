@@ -35,7 +35,7 @@ public class TabSuggestionFeedback {
      * tabs among the suggestion to accept or reject and can add tabs outside the suggestion)
      * @param totalTabCount total number of tabs in the tab model
      */
-    TabSuggestionFeedback(TabSuggestion tabSuggestion,
+    public TabSuggestionFeedback(TabSuggestion tabSuggestion,
             @TabSuggestionResponse int tabSuggestionResponse, List<Integer> selectedTabIds,
             int totalTabCount) {
         this.tabSuggestion = tabSuggestion;

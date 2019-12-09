@@ -181,12 +181,6 @@ class WebClient {
                                 int64_t navigation_id,
                                 base::OnceCallback<void(NSString*)> callback);
 
-  // Allows upper layers to inject experimental flags to the web layer.
-  // TODO(crbug.com/734150): Clean up this flag after experiment. If need for a
-  // second flag arises before clean up, consider generalizing to an experiment
-  // flags struct instead of adding a bool method for each experiment.
-  virtual bool IsSlimNavigationManagerEnabled() const;
-
   // Instructs the embedder to return a container that is attached to a window.
   virtual UIView* GetWindowedContainer();
 

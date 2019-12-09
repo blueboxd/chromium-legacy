@@ -3485,6 +3485,22 @@
       "features": [
         "disable_nv12_dynamic_textures"
       ]
+    },
+    {
+      "id": 325,
+      "cr_bugs": [1018028],
+      "description": "Do extra flush before and after BindFrameBuffer call",
+      "os": {
+        "type": "win"
+      },
+      "driver_vendor": ".*Intel.*",
+      "driver_version": {
+        "op": "<",
+        "value": "24.20.100.6286"
+      },
+      "features": [
+        "do_extra_flush_around_bindframebuffer"
+      ]
     }
   ]
 }

@@ -50,7 +50,6 @@ class MODULES_EXPORT NDEFReader : public EventTargetWithInlineData,
   // Called by NFCProxy for dispatching events.
   virtual void OnReading(const String& serial_number,
                          const device::mojom::blink::NDEFMessage&);
-  virtual void OnError(device::mojom::blink::NDEFErrorType);
 
   // Called by NFCProxy for notification about connection error.
   void OnMojoConnectionError();

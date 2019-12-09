@@ -17,6 +17,7 @@
 #include "base/time/default_clock.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/password_manager/password_store_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
@@ -94,7 +95,7 @@ class ManagePasswordsBubbleModel::InteractionKeeper {
  private:
   // The way the bubble appeared.
   const password_manager::metrics_util::UIDisplayDisposition
-  display_disposition_;
+      display_disposition_;
 
   // Dismissal reason for a password bubble.
   password_manager::metrics_util::UIDismissalReason dismissal_reason_;
@@ -132,7 +133,8 @@ void ManagePasswordsBubbleModel::InteractionKeeper::ReportInteractions(
         interaction_stats_.update_time = clock_->Now();
         password_manager::PasswordStore* password_store =
             PasswordStoreFactory::GetForProfile(
-                profile, ServiceAccessType::IMPLICIT_ACCESS).get();
+                profile, ServiceAccessType::IMPLICIT_ACCESS)
+                .get();
         password_store->AddSiteStats(interaction_stats_);
       }
     }
@@ -237,8 +239,7 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
         display_disposition = metrics_util::MANUAL_WITH_PASSWORD_PENDING;
         break;
       case password_manager::ui::PENDING_PASSWORD_UPDATE_STATE:
-        display_disposition =
-            metrics_util::MANUAL_WITH_PASSWORD_PENDING_UPDATE;
+        display_disposition = metrics_util::MANUAL_WITH_PASSWORD_PENDING_UPDATE;
         break;
       case password_manager::ui::MANAGE_STATE:
         display_disposition = metrics_util::MANUAL_MANAGE_PASSWORDS;
@@ -367,8 +368,8 @@ void ManagePasswordsBubbleModel::OnPasswordAction(
   if (!profile)
     return;
   password_manager::PasswordStore* password_store =
-      PasswordStoreFactory::GetForProfile(
-          profile, ServiceAccessType::EXPLICIT_ACCESS).get();
+      GetPasswordStore(profile, password_form.IsUsingAccountStore()).get();
+
   DCHECK(password_store);
   if (action == REMOVE_PASSWORD)
     password_store->RemoveLogin(password_form);
@@ -460,8 +461,7 @@ bool ManagePasswordsBubbleModel::ReplaceToShowPromotionIfNeeded() {
   if (password_bubble_experiment::ShouldShowChromeSignInPasswordPromo(
           prefs, sync_service)) {
     interaction_keeper_->ReportInteractions(this);
-    title_ =
-        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SYNC_PROMO_TITLE);
+    title_ = l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SYNC_PROMO_TITLE);
     state_ = password_manager::ui::CHROME_SIGN_IN_PROMO_STATE;
     int show_count = prefs->GetInteger(
         password_manager::prefs::kNumberSignInPasswordPromoShown);

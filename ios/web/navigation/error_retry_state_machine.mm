@@ -87,17 +87,13 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFailProvisionalNavigation(
     // This case happens for the second back/forward navigation in offline mode
     // to a page that initially loaded successfully.
     case ErrorRetryState::kDisplayingError:
-      if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-        // In this case, a back/forward item already exists. Rewriting the
-        // WebView's URL to the placeholder URL before loading the error page
-        // ensures that WebKit doesn't associate the (empty) contents of an
-        // immediately-preceding kRewriteToWebViewURL step with the actual URL
-        // in its page cache. See http://crbug.com/950489.
-        state_ = ErrorRetryState::kLoadingPlaceholder;
-        return ErrorRetryCommand::kRewriteToPlaceholderURL;
-      } else {
-        return BackForwardOrReloadFailed();
-      }
+      // In this case, a back/forward item already exists. Rewriting the
+      // WebView's URL to the placeholder URL before loading the error page
+      // ensures that WebKit doesn't associate the (empty) contents of an
+      // immediately-preceding kRewriteToWebViewURL step with the actual URL
+      // in its page cache. See http://crbug.com/950489.
+      state_ = ErrorRetryState::kLoadingPlaceholder;
+      return ErrorRetryCommand::kRewriteToPlaceholderURL;
 
     case ErrorRetryState::kLoadingPlaceholder:
     case ErrorRetryState::kRetryPlaceholderNavigation:
@@ -166,8 +162,7 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFinishNavigation(
       if (IsRestoreSessionUrl(web_view_url)) {
         // (8) Initial load of restore_session.html. Don't change state or
         // issue command. Wait for the client-side redirect.
-      } else if (IsPlaceholderUrl(web_view_url) &&
-                 web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+      } else if (IsPlaceholderUrl(web_view_url)) {
         state_ = ErrorRetryState::kNavigatingToFailedNavigationItem;
         return ErrorRetryCommand::kRewriteToWebViewURL;
       } else {

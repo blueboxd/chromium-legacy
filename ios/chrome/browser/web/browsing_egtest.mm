@@ -324,20 +324,15 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
   [ChromeEarlGrey goBack];
   [ChromeEarlGrey waitForWebStateContainingText:"Link"];
 
-  if ([ChromeEarlGrey isSlimNavigationManagerEnabled]) {
-    // Using partial match for Omnibox text because the displayed URL is now
-    // "http://origin/#" due to the link click. This is consistent with all
-    // other browsers.
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-        assertWithMatcher:chrome_test_util::OmniboxContainingText(
-                              URL.GetContent())];
-    GREYAssertEqual(web::test::HttpServer::MakeUrl("http://origin/#"),
-                    [ChromeEarlGrey webStateVisibleURL],
-                    @"Unexpected URL after going back");
-  } else {
-    [[EarlGrey selectElementWithMatcher:OmniboxText(URL.GetContent())]
-        assertWithMatcher:grey_notNil()];
-  }
+  // Using partial match for Omnibox text because the displayed URL is now
+  // "http://origin/#" due to the link click. This is consistent with all
+  // other browsers.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      assertWithMatcher:chrome_test_util::OmniboxContainingText(
+                            URL.GetContent())];
+  GREYAssertEqual(web::test::HttpServer::MakeUrl("http://origin/#"),
+                  [ChromeEarlGrey webStateVisibleURL],
+                  @"Unexpected URL after going back");
 }
 
 // Tests that a link with WebUI URL does not trigger a load. WebUI pages may

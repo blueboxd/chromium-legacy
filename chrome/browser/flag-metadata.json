@@ -2419,6 +2419,11 @@
     "expiry_milestone": 84
   },
   {
+    "name": "impulse-scroll-animations",
+    "owners": [ "maamert@microsoft.com", "dlibby@microsoft.com", "sarsha@microsoft.com" ],
+    "expiry_milestone": 89
+  },
+  {
     "name": "in-product-help-demo-mode-choice",
     "owners": [ "dtrainor", "nyquist" ],
     // This flag is used by teams as they develop in-product help integrations,

@@ -58,8 +58,8 @@ struct RemoteDevice {
   // human-readable (i.e., it does not contain non-ASCII characters).
   string device_id;
 
-  // Identifier for the user to whom this device is registered.
-  string user_id;
+  // Email for the user to whom this device is registered.
+  string user_email;
 
   // The immutable FCM Instance ID assigned to the device. Used as the primary
   // identifier for devices using CryptAuth v2 Enrollment and DeviceSync.

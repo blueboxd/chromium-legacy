@@ -4,19 +4,28 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
+import static org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestionFeedback.TabSuggestionResponse.ACCEPTED;
+import static org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestionFeedback.TabSuggestionResponse.DISMISSED;
+import static org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestionFeedback.TabSuggestionResponse.NOT_CONSIDERED;
+
 import android.content.Context;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.Callback;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
@@ -24,6 +33,8 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabContext;
 import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestion;
+import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestionFeedback;
+import org.chromium.chrome.test.DisableNativeTestRule;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.ArrayList;
@@ -49,6 +60,9 @@ public class TabSuggestionMessageServiceUnitTest {
     private static final int CLOSE_SUGGESTION_ACTION_BUTTON_RESOURCE_ID =
             org.chromium.chrome.tab_ui.R.string.tab_suggestion_close_tab_action_button;
 
+    @Rule
+    public final DisableNativeTestRule mDisableNative = new DisableNativeTestRule();
+
     private Tab mTab1;
     private Tab mTab2;
     private Tab mTab3;
@@ -67,7 +81,10 @@ public class TabSuggestionMessageServiceUnitTest {
     TabGroupModelFilter mTabGroupModelFilter;
     @Mock
     TabSelectionEditorCoordinator.TabSelectionEditorController mTabSelectionEditorController;
-
+    @Mock
+    Callback<TabSuggestionFeedback> mTabSuggestionFeedbackCallback;
+    @Captor
+    ArgumentCaptor<TabSuggestionFeedback> mTabSuggestionFeedbackCallbackArgumentCaptor;
     @Before
     public void setUp() {
         // After setUp there are three tabs in TabModel.
@@ -123,16 +140,63 @@ public class TabSuggestionMessageServiceUnitTest {
     @Test
     public void testClosingSuggestionActionHandler() {
         List<Tab> suggestedTabs = Arrays.asList(mTab1, mTab2);
+        List<Integer> suggestedTabIds = Arrays.asList(TAB1_ID, TAB2_ID);
         List<TabSuggestion> tabSuggestions =
                 prepareTabSuggestions(suggestedTabs, TabSuggestion.TabSuggestionAction.CLOSE);
         TabSuggestion bestSuggestion = tabSuggestions.get(0);
+
+        assertEquals(3, mTabModelSelector.getCurrentModel().getCount());
 
         TabSelectionEditorActionProvider actionProvider =
                 mMessageService.getActionProvider(bestSuggestion);
         actionProvider.processSelectedTabs(suggestedTabs, mTabModelSelector);
 
         verify(mTabModel).closeMultipleTabs(eq(suggestedTabs), eq(true));
-        // TODO(crbug.com/1023699): verify callback is called.
+        verify(mTabSuggestionFeedbackCallback)
+                .onResult(mTabSuggestionFeedbackCallbackArgumentCaptor.capture());
+
+        TabSuggestionFeedback capturedFeedback =
+                mTabSuggestionFeedbackCallbackArgumentCaptor.getValue();
+        assertEquals(bestSuggestion, capturedFeedback.tabSuggestion);
+        assertEquals(ACCEPTED, capturedFeedback.tabSuggestionResponse);
+        assertEquals(suggestedTabIds, capturedFeedback.selectedTabIds);
+        assertEquals(3, capturedFeedback.totalTabCount);
+    }
+
+    @Test
+    public void testClosingSuggestionNavigationHandler() {
+        List<Tab> suggestedTabs = Arrays.asList(mTab1, mTab2);
+        List<TabSuggestion> tabSuggestions =
+                prepareTabSuggestions(suggestedTabs, TabSuggestion.TabSuggestionAction.CLOSE);
+        TabSuggestion bestSuggestion = tabSuggestions.get(0);
+
+        TabSelectionEditorCoordinator.TabSelectionEditorNavigationProvider navigationProvider =
+                mMessageService.getNavigationProvider();
+        navigationProvider.goBack();
+
+        verify(mTabSuggestionFeedbackCallback)
+                .onResult(mTabSuggestionFeedbackCallbackArgumentCaptor.capture());
+        TabSuggestionFeedback capturedFeedback =
+                mTabSuggestionFeedbackCallbackArgumentCaptor.getValue();
+        assertEquals(bestSuggestion, capturedFeedback.tabSuggestion);
+        assertEquals(DISMISSED, capturedFeedback.tabSuggestionResponse);
+    }
+
+    @Test
+    public void testDismiss() {
+        List<Tab> suggestedTabs = Arrays.asList(mTab1, mTab2);
+        List<TabSuggestion> tabSuggestions =
+                prepareTabSuggestions(suggestedTabs, TabSuggestion.TabSuggestionAction.CLOSE);
+        TabSuggestion bestSuggestion = tabSuggestions.get(0);
+
+        mMessageService.dismiss();
+
+        verify(mTabSuggestionFeedbackCallback)
+                .onResult(mTabSuggestionFeedbackCallbackArgumentCaptor.capture());
+        TabSuggestionFeedback capturedFeedback =
+                mTabSuggestionFeedbackCallbackArgumentCaptor.getValue();
+        assertEquals(bestSuggestion, capturedFeedback.tabSuggestion);
+        assertEquals(NOT_CONSIDERED, capturedFeedback.tabSuggestionResponse);
     }
 
     @Test(expected = AssertionError.class)
@@ -152,7 +216,7 @@ public class TabSuggestionMessageServiceUnitTest {
         TabSuggestion suggestion = new TabSuggestion(suggestedTabInfo, actionCode, "");
         List<TabSuggestion> tabSuggestions =
                 Collections.unmodifiableList(Arrays.asList(suggestion));
-        mMessageService.onNewSuggestion(tabSuggestions, null);
+        mMessageService.onNewSuggestion(tabSuggestions, mTabSuggestionFeedbackCallback);
 
         return tabSuggestions;
     }

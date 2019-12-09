@@ -15,7 +15,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
@@ -74,12 +73,12 @@ class TabSelectionEditorMediator
     private final TabModelSelectorObserver mTabModelSelectorObserver;
     private final TabSelectionEditorPositionProvider mPositionProvider;
     private TabSelectionEditorActionProvider mActionProvider;
+    private TabSelectionEditorCoordinator.TabSelectionEditorNavigationProvider mNavigationProvider;
 
     private final View.OnClickListener mNavigationClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            RecordUserAction.record("TabMultiSelect.Cancelled");
-            hide();
+            mNavigationProvider.goBack();
         }
     };
 
@@ -166,6 +165,9 @@ class TabSelectionEditorMediator
         mActionProvider = new TabSelectionEditorActionProvider(
                 this, TabSelectionEditorActionProvider.TabSelectionEditorAction.GROUP);
 
+        mNavigationProvider =
+                new TabSelectionEditorCoordinator.TabSelectionEditorNavigationProvider(this);
+
         if (mPositionProvider != null) {
             mModel.set(TabSelectionEditorProperties.SELECTION_EDITOR_GLOBAL_LAYOUT_LISTENER,
                     ()
@@ -216,7 +218,8 @@ class TabSelectionEditorMediator
     public void configureToolbar(@Nullable String actionButtonText,
             @Nullable TabSelectionEditorActionProvider actionProvider,
             int actionButtonEnablingThreshold,
-            @Nullable View.OnClickListener navigationButtonOnClickListener) {
+            @Nullable TabSelectionEditorCoordinator
+                    .TabSelectionEditorNavigationProvider navigationProvider) {
         if (actionButtonText != null) {
             mModel.set(TabSelectionEditorProperties.TOOLBAR_ACTION_BUTTON_TEXT, actionButtonText);
         }
@@ -227,17 +230,15 @@ class TabSelectionEditorMediator
             mModel.set(TabSelectionEditorProperties.TOOLBAR_ACTION_BUTTON_ENABLING_THRESHOLD,
                     actionButtonEnablingThreshold);
         }
-        if (navigationButtonOnClickListener != null) {
-            mModel.set(TabSelectionEditorProperties.TOOLBAR_NAVIGATION_LISTENER,
-                    navigationButtonOnClickListener);
+        if (navigationProvider != null) {
+            mNavigationProvider = navigationProvider;
         }
     }
 
     @Override
     public boolean handleBackPressed() {
         if (!isEditorVisible()) return false;
-        hide();
-        RecordUserAction.record("TabMultiSelect.Cancelled");
+        mNavigationProvider.goBack();
         return true;
     }
 

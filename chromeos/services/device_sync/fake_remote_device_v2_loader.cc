@@ -16,11 +16,11 @@ FakeRemoteDeviceV2Loader::~FakeRemoteDeviceV2Loader() = default;
 
 void FakeRemoteDeviceV2Loader::Load(
     const CryptAuthDeviceRegistry::InstanceIdToDeviceMap& id_to_device_map,
-    const std::string& user_id,
+    const std::string& user_email,
     const std::string& user_private_key,
     LoadCallback callback) {
   id_to_device_map_ = id_to_device_map;
-  user_id_ = user_id;
+  user_email_ = user_email;
   user_private_key_ = user_private_key;
   callback_ = std::move(callback);
 }

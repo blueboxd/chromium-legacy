@@ -355,11 +355,6 @@ const char kShowAutofillTypePredictionsDescription[] =
     "Annotates web forms with Autofill field type predictions as placeholder "
     "text.";
 
-const char kSlimNavigationManagerName[] = "Use Slim Navigation Manager";
-const char kSlimNavigationManagerDescription[] =
-    "When enabled, uses the experimental slim navigation manager that provides "
-    "better compatibility with HTML navigation spec.";
-
 const char kSnapshotDrawViewName[] = "Use DrawViewHierarchy for Snapshots";
 const char kSnapshotDrawViewDescription[] =
     "When enabled, snapshots will be taken using |-drawViewHierarchy:|.";

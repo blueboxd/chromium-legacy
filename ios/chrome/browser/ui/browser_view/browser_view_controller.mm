@@ -3407,7 +3407,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // after calling UrlLoadingService::Load.  Otherwise, if the
   // webState has never been visible (such as during startup with an NTP), it's
   // possible the webView can trigger a unnecessary load for chrome://newtab.
-  if (URL.GetOrigin() != kChromeUINewTabURL) {
+  if (self.currentWebState->GetVisibleURL() != kChromeUINewTabURL) {
     if (self.isNTPActiveForCurrentWebState) {
       NewTabPageTabHelper::FromWebState(self.currentWebState)->Deactivate();
     }

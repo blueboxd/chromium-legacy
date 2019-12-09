@@ -34,10 +34,10 @@
 #include <memory>
 #include <string>
 
-#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/rtc_error.h"
 #include "third_party/webrtc/api/rtp_transceiver_interface.h"
@@ -89,10 +89,10 @@ class PLATFORM_EXPORT RTCPeerConnectionHandlerPlatform {
   // create new transceivers or update the direction of existing transceivers.
   // https://w3c.github.io/webrtc-pc/#legacy-configuration-extensions
   // Plan B: Returns an empty list.
-  virtual WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
+  virtual Vector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
       RTCSessionDescriptionRequest*,
       const WebMediaConstraints&) = 0;
-  virtual WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
+  virtual Vector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
       RTCSessionDescriptionRequest*,
       RTCOfferOptionsPlatform*) = 0;
   virtual void CreateAnswer(RTCSessionDescriptionRequest*,
@@ -123,7 +123,7 @@ class PLATFORM_EXPORT RTCPeerConnectionHandlerPlatform {
   // third_party/webrtc/api/stats/.  These will replace the old stats collection
   // API when the new API has matured enough.
   virtual void GetStats(RTCStatsReportCallback,
-                        const WebVector<webrtc::NonStandardGroupId>&) = 0;
+                        const Vector<webrtc::NonStandardGroupId>&) = 0;
   virtual scoped_refptr<webrtc::DataChannelInterface> CreateDataChannel(
       const String& label,
       const webrtc::DataChannelInit&) = 0;
@@ -138,7 +138,7 @@ class PLATFORM_EXPORT RTCPeerConnectionHandlerPlatform {
   // Adds the track to the peer connection, returning the resulting transceiver
   // or error.
   virtual webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
-  AddTrack(const WebMediaStreamTrack&, const WebVector<WebMediaStream>&) = 0;
+  AddTrack(const WebMediaStreamTrack&, const Vector<WebMediaStream>&) = 0;
   // Removes the sender.
   // In Plan B: Returns OK() with value nullptr on success. The sender's track
   // must be nulled by the caller.

@@ -73,7 +73,7 @@ KioskAppManagerBase::App WebKioskController::GetAppData() {
 void WebKioskController::OnTimerFire() {
   // Start launching now.
   if (app_state_ == AppState::INSTALLED) {
-    app_launcher_->LaunchApp();
+    LaunchApp();
   } else {
     launch_on_install_ = true;
   }
@@ -93,9 +93,11 @@ void WebKioskController::OnNetworkConfigRequested() {
       MaybeShowNetworkConfigureUI();
       break;
     case AppState::INSTALLING:
-      // TODO(crbug.com/1006230): Implement network config on the
-      // installation step.
-      NOTIMPLEMENTED();
+      // When requesting to show network configure UI, we should cancel current
+      // installation and restart it as soon as the network is configured.
+      // This is identical to what happens when we lose network connection
+      // during installation.
+      OnNetworkStateChanged(/*online*/ false);
       break;
     case AppState::LAUNCHED:
       // We do nothing since the splash screen is soon to be destroyed.
@@ -106,8 +108,9 @@ void WebKioskController::OnNetworkConfigRequested() {
 void WebKioskController::OnNetworkConfigFinished() {
   network_ui_state_ = NetworkUIState::NOT_SHOWING;
   OnNetworkStateChanged(/*online=*/true);
-  if (app_state_ == AppState::INSTALLED)
-    app_launcher_->LaunchApp();
+  if (app_state_ == AppState::INSTALLED) {
+    LaunchApp();
+  }
 }
 
 void WebKioskController::MaybeShowNetworkConfigureUI() {
@@ -143,9 +146,11 @@ void WebKioskController::OnNetworkStateChanged(bool online) {
   }
 
   if (app_state_ == AppState::INSTALLING) {
-    // TODO(crbug.com/1006230): Implement case when network changes during
-    // installation.
-    NOTIMPLEMENTED();
+    if (!online) {
+      app_launcher_->CancelCurrentInstallation();
+      app_state_ = AppState::INIT_NETWORK;
+      ShowNetworkConfigureUI();
+    }
   }
 }
 
@@ -251,11 +256,6 @@ void WebKioskController::OnProfilePrepared(Profile* profile,
   // Reset virtual keyboard to use IME engines in app profile early.
   ChromeKeyboardControllerClient::Get()->RebuildKeyboardIfEnabled();
 
-  // We need to change the session state so we are able to create browser
-  // windows.
-  session_manager::SessionManager::Get()->SetSessionState(
-      session_manager::SessionState::LOGGED_IN_NOT_ACTIVE);
-
   // Can be not null in tests.
   if (!app_launcher_)
     app_launcher_.reset(new WebKioskAppLauncher(profile, this));
@@ -284,7 +284,16 @@ void WebKioskController::OnAppPrepared() {
           APP_LAUNCH_STATE_WAITING_APP_WINDOW);
   web_kiosk_splash_screen_view_->Show();
   if (launch_on_install_)
-    app_launcher_->LaunchApp();
+    LaunchApp();
+}
+
+void WebKioskController::LaunchApp() {
+  DCHECK(app_state_ == AppState::INSTALLED);
+  // We need to change the session state so we are able to create browser
+  // windows.
+  session_manager::SessionManager::Get()->SetSessionState(
+      session_manager::SessionState::LOGGED_IN_NOT_ACTIVE);
+  app_launcher_->LaunchApp();
 }
 
 void WebKioskController::OnAppLaunched() {

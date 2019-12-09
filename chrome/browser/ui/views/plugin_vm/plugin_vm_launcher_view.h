@@ -30,8 +30,6 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
   static PluginVmLauncherView* GetActiveViewForTesting();
 
   // views::BubbleDialogDelegateView implementation.
-  int GetDialogButtons() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool ShouldShowWindowTitle() const override;
   bool Accept() override;
   bool Cancel() override;
@@ -77,6 +75,9 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
   };
 
   ~PluginVmLauncherView() override;
+
+  int GetCurrentDialogButtons() const;
+  base::string16 GetCurrentDialogButtonLabel(ui::DialogButton button) const;
 
   void OnStateUpdated();
   // views::BubbleDialogDelegateView implementation.

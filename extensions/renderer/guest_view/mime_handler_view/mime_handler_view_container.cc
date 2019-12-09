@@ -24,6 +24,7 @@
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "ipc/ipc_sync_channel.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
@@ -46,7 +47,8 @@ using UMAType = MimeHandlerViewUMATypes::Type;
 
 namespace {
 
-base::LazyInstance<mojom::GuestViewAssociatedPtr>::Leaky g_guest_view;
+base::LazyInstance<mojo::AssociatedRemote<mojom::GuestView>>::Leaky
+    g_guest_view;
 
 mojom::GuestView* GetGuestView() {
   if (!g_guest_view.Get()) {

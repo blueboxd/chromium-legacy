@@ -224,7 +224,7 @@ class FakeRemoteDeviceProviderFactory
   std::unique_ptr<chromeos::device_sync::RemoteDeviceProvider> BuildInstance(
       chromeos::device_sync::CryptAuthDeviceManager* device_manager,
       chromeos::device_sync::CryptAuthV2DeviceManager* v2_device_manager,
-      const CoreAccountId& user_account_id,
+      const std::string& user_email,
       const std::string& user_private_key) override {
     return std::make_unique<chromeos::device_sync::FakeRemoteDeviceProvider>();
   }

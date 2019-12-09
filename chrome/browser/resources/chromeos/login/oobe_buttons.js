@@ -5,12 +5,20 @@
 Polymer({
   is: 'oobe-text-button',
 
+  behaviors: [OobeI18nBehavior],
+
   properties: {
     disabled: {type: Boolean, value: false, reflectToAttribute: true},
 
     inverse: {
       type: Boolean,
       observer: 'onInverseChanged_',
+    },
+
+    /* The ID of the localized string to be used as button text.
+     */
+    textKey: {
+      type: String,
     },
 
     border: Boolean,
@@ -39,11 +47,20 @@ Polymer({
 Polymer({
   is: 'oobe-back-button',
 
+  behaviors: [OobeI18nBehavior],
+
   properties: {
     disabled: {
       type: Boolean,
       value: false,
       reflectToAttribute: true,
+    },
+
+    /* The ID of the localized string to be used as button text.
+     */
+    textKey: {
+      type: String,
+      value: 'back',
     },
 
     /* Note that we are not using "aria-label" property here, because
@@ -71,8 +88,17 @@ Polymer({
 Polymer({
   is: 'oobe-next-button',
 
+  behaviors: [OobeI18nBehavior],
+
   properties: {
     disabled: {type: Boolean, value: false, reflectToAttribute: true},
+
+    /* The ID of the localized string to be used as button text.
+     */
+    textKey: {
+      type: String,
+      value: 'next',
+    },
   },
 
   focus: function() {
@@ -88,9 +114,19 @@ Polymer({
 Polymer({
   is: 'oobe-welcome-secondary-button',
 
+  behaviors: [OobeI18nBehavior],
+
   properties: {
     icon1x: {type: String, observer: 'updateIconVisibility_'},
     icon2x: String,
+
+
+    /* The ID of the localized string to be used as button text.
+     */
+    textKey: {
+      type: String,
+      value: 'back',
+    },
 
     /* Note that we are not using "aria-label" property here, because
      * we want to pass the label value but not actually declare it as an

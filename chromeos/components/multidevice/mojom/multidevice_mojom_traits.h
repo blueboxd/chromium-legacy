@@ -40,7 +40,7 @@ class StructTraits<chromeos::multidevice::mojom::RemoteDeviceDataView,
  public:
   static std::string device_id(
       const chromeos::multidevice::RemoteDevice& remote_device);
-  static const std::string& user_id(
+  static const std::string& user_email(
       const chromeos::multidevice::RemoteDevice& remote_device);
   static const std::string& instance_id(
       const chromeos::multidevice::RemoteDevice& remote_device);

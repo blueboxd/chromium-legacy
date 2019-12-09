@@ -29,6 +29,7 @@
 #include "base/values.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "cc/base/features.h"
 #include "cc/base/switches.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/flag_descriptions.h"
@@ -4637,6 +4638,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(omnibox::kOmniboxRemoveSuggestionsFromClipboard)},
 #endif  // defined(OS_ANDROID)
 
+    {"impulse-scroll-animations",
+     flag_descriptions::kImpulseScrollAnimationsName,
+     flag_descriptions::kImpulseScrollAnimationsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kImpulseScrollAnimations)},
     {"percent-based-scrolling", flag_descriptions::kPercentBasedScrollingName,
      flag_descriptions::kPercentBasedScrollingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kPercentBasedScrolling)},

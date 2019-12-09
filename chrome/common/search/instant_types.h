@@ -78,6 +78,9 @@ struct NtpTheme {
   // dark-on-light.
   bool using_dark_colors = false;
 
+  // True if having a custom background is disabled by policy.
+  bool custom_background_disabled_by_policy = false;
+
   // Url of the custom background selected by the user.
   GURL custom_background_url;
 

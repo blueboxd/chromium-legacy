@@ -107,12 +107,12 @@ class MODULES_EXPORT RTCPeerConnectionHandler
                       server_configuration,
                   const blink::WebMediaConstraints& options) override;
 
-  blink::WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
-      blink::RTCSessionDescriptionRequest* request,
-      const blink::WebMediaConstraints& options) override;
-  blink::WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
-      blink::RTCSessionDescriptionRequest* request,
-      blink::RTCOfferOptionsPlatform* options) override;
+  Vector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
+      RTCSessionDescriptionRequest* request,
+      const WebMediaConstraints& options) override;
+  Vector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
+      RTCSessionDescriptionRequest* request,
+      RTCOfferOptionsPlatform* options) override;
 
   void CreateAnswer(blink::RTCSessionDescriptionRequest* request,
                     const blink::WebMediaConstraints& options) override;
@@ -144,9 +144,9 @@ class MODULES_EXPORT RTCPeerConnectionHandler
   void RestartIce() override;
 
   void GetStats(RTCStatsRequest* request) override;
-  void GetStats(RTCStatsReportCallback callback,
-                const blink::WebVector<webrtc::NonStandardGroupId>&
-                    exposed_group_ids) override;
+  void GetStats(
+      RTCStatsReportCallback callback,
+      const Vector<webrtc::NonStandardGroupId>& exposed_group_ids) override;
   webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
   AddTransceiverWithTrack(const blink::WebMediaStreamTrack& web_track,
                           const webrtc::RtpTransceiverInit& init) override;
@@ -154,8 +154,8 @@ class MODULES_EXPORT RTCPeerConnectionHandler
   AddTransceiverWithKind(std::string kind,
                          const webrtc::RtpTransceiverInit& init) override;
   webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>> AddTrack(
-      const blink::WebMediaStreamTrack& web_track,
-      const blink::WebVector<blink::WebMediaStream>& web_streams) override;
+      const WebMediaStreamTrack& web_track,
+      const Vector<WebMediaStream>& web_streams) override;
   webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>> RemoveTrack(
       blink::RTCRtpSenderPlatform* web_sender) override;
 
@@ -302,7 +302,7 @@ class MODULES_EXPORT RTCPeerConnectionHandler
       rtc::scoped_refptr<webrtc::RtpSenderInterface> sender,
       blink::TransceiverStateSurfacer* transceiver_state_surfacer,
       bool* result);
-  std::vector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOfferInternal(
+  Vector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOfferInternal(
       blink::RTCSessionDescriptionRequest* request,
       webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options);
   void CreateOfferOnSignalingThread(

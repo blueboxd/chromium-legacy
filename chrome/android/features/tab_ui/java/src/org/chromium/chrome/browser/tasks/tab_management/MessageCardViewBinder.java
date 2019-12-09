@@ -27,6 +27,12 @@ class MessageCardViewBinder {
                 MessageCardView.ReviewActionProvider serviceProvider =
                         model.get(MessageCardViewProperties.MESSAGE_SERVICE_ACTION_PROVIDER);
                 if (serviceProvider != null) serviceProvider.review();
+
+                MessageCardView.DismissActionProvider uiDismissProvider =
+                        model.get(MessageCardViewProperties.UI_DISMISS_ACTION_PROVIDER);
+                if (uiDismissProvider != null) {
+                    uiDismissProvider.dismiss(model.get(MessageCardViewProperties.MESSAGE_TYPE));
+                }
             });
         } else if (MessageCardViewProperties.DESCRIPTION_TEXT == propertyKey) {
             itemView.setDescriptionText(model.get(MessageCardViewProperties.DESCRIPTION_TEXT));
@@ -39,13 +45,14 @@ class MessageCardViewBinder {
             itemView.setDismissButtonContentDescription(
                     model.get(MessageCardViewProperties.DISMISS_BUTTON_CONTENT_DESCRIPTION));
             itemView.setDismissButtonOnClickListener(v -> {
+                int type = model.get(MessageCardViewProperties.MESSAGE_TYPE);
                 MessageCardView.DismissActionProvider uiProvider =
                         model.get(MessageCardViewProperties.UI_DISMISS_ACTION_PROVIDER);
-                if (uiProvider != null) uiProvider.dismiss();
+                if (uiProvider != null) uiProvider.dismiss(type);
 
                 MessageCardView.DismissActionProvider serviceProvider = model.get(
                         MessageCardViewProperties.MESSAGE_SERVICE_DISMISS_ACTION_PROVIDER);
-                if (serviceProvider != null) serviceProvider.dismiss();
+                if (serviceProvider != null) serviceProvider.dismiss(type);
             });
         }
     }

@@ -49,23 +49,7 @@ var setupSelect = function(select, list, callback) {
     var runCallback = function() {
       callback(select.options[select.selectedIndex].value);
     };
-    select.addEventListener('blur', runCallback);
-    select.addEventListener('change', runCallback);
-    select.addEventListener('click', runCallback);
     select.addEventListener('input', runCallback);
-    select.addEventListener('keyup', function(event) {
-      var keycodeInterested = [
-        9,   // Tab
-        13,  // Enter
-        27,  // Escape
-        37,  // Left
-        38,  // Up
-        39,  // Right
-        40,  // Down
-      ];
-      if (keycodeInterested.indexOf(event.keyCode) >= 0)
-        runCallback();
-    });
   }
 };
 

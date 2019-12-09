@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ALLOCATOR_ALLOCATOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ALLOCATOR_ALLOCATOR_H_
 
+#include <atomic>
+
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
@@ -147,9 +149,11 @@ class __thisIsHereToForceASemicolonAfterThisMacro;
 #define USING_FAST_MALLOC_WITH_TYPE_NAME(type) \
   USING_FAST_MALLOC_INTERNAL(type, #type)
 
+// TOOD(omerkatz): replace this cast with std::atomic_ref (C++20) once it
+// becomes available
 template <typename T>
-ALWAYS_INLINE std::atomic<T>* AsAtomicPtr(T* t) {
-  return reinterpret_cast<std::atomic<T>*>(t);
+ALWAYS_INLINE std::atomic<T>* AsAtomicPtr(const T* t) {
+  return reinterpret_cast<std::atomic<T>*>(const_cast<T*>(t));
 }
 
 }  // namespace WTF

@@ -247,6 +247,7 @@ class PLATFORM_EXPORT HeapObjectHeader {
   size_t size() const;
   void SetSize(size_t size);
 
+  template <AccessMode = AccessMode::kNonAtomic>
   bool IsLargeObject() const;
 
   template <AccessMode = AccessMode::kNonAtomic>
@@ -1090,8 +1091,18 @@ NO_SANITIZE_ADDRESS inline void HeapObjectHeader::SetSize(size_t size) {
                                        (encoded_low_ & ~kHeaderSizeMask));
 }
 
+template <HeapObjectHeader::AccessMode mode>
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsLargeObject() const {
-  return internal::DecodeSize(encoded_low_) == kLargeObjectSizeInHeader;
+  uint16_t encoded_low_value;
+  if (mode == AccessMode::kNonAtomic) {
+    encoded_low_value = encoded_low_;
+  } else {
+    internal::AsanUnpoisonScope unpoison_scope(
+        static_cast<const void*>(&encoded_low_), sizeof(encoded_low_));
+    encoded_low_value =
+        WTF::AsAtomicPtr(&encoded_low_)->load(std::memory_order_relaxed);
+  }
+  return internal::DecodeSize(encoded_low_value) == kLargeObjectSizeInHeader;
 }
 
 template <HeapObjectHeader::AccessMode mode>

@@ -99,8 +99,6 @@ blink_core_sources("svg") {
     "svg_defs_element.h",
     "svg_desc_element.cc",
     "svg_desc_element.h",
-    "svg_discard_element.cc",
-    "svg_discard_element.h",
     "svg_document_extensions.cc",
     "svg_document_extensions.h",
     "svg_element.cc",

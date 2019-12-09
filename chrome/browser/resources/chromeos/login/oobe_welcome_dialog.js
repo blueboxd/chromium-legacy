@@ -250,7 +250,7 @@
   Polymer({
     is: 'oobe-welcome-dialog',
 
-    behaviors: [I18nBehavior, OobeDialogHostBehavior],
+    behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
     properties: {
       /**

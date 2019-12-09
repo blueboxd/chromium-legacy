@@ -995,6 +995,8 @@ void LocalNtpSource::StartDataRequest(
         l10n_util::GetStringUTF8(IDS_NTP_CUSTOM_LINKS_DONE);
     replacements["backgroundsOption"] =
         l10n_util::GetStringUTF8(IDS_NTP_CUSTOMIZE_MENU_BACKGROUND_LABEL);
+    replacements["customBackgroundDisabled"] = l10n_util::GetStringUTF8(
+        IDS_NTP_CUSTOMIZE_MENU_BACKGROUND_DISABLED_LABEL);
     replacements["shortcutsOption"] =
         l10n_util::GetStringUTF8(IDS_NTP_CUSTOMIZE_MENU_SHORTCUTS_LABEL);
     replacements["colorsOption"] =

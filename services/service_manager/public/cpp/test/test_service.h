@@ -37,8 +37,8 @@ namespace service_manager {
 //   };
 //
 //   TEST_F(MyTest, ConnectToFoo) {
-//     foo::mojom::FooPtr foo;
-//     connector()->BindInterface("foo", mojo::MakeRequest(&foo));
+//     mojo::Remote<foo::mojom::Foo> foo;
+//     connector()->BindInterface("foo", foo.BindNewPipeAndPassReceiver());
 //     foo->DoSomeStuff();
 //     // etc...
 //   }

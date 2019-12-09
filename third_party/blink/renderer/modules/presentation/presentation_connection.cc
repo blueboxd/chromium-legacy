@@ -160,12 +160,14 @@ class PresentationConnection::BlobLoader final
 PresentationConnection::PresentationConnection(LocalFrame& frame,
                                                const String& id,
                                                const KURL& url)
-    : ContextLifecycleObserver(frame.GetDocument()),
+    : ContextLifecycleStateObserver(frame.GetDocument()),
       id_(id),
       url_(url),
       state_(mojom::blink::PresentationConnectionState::CONNECTING),
       binary_type_(kBinaryTypeArrayBuffer),
-      file_reading_task_runner_(frame.GetTaskRunner(TaskType::kFileReading)) {}
+      file_reading_task_runner_(frame.GetTaskRunner(TaskType::kFileReading)) {
+  UpdateStateIfNeeded();
+}
 
 PresentationConnection::~PresentationConnection() {
   DCHECK(!blob_loader_);
@@ -320,7 +322,6 @@ ReceiverPresentationConnection* ReceiverPresentationConnection::Take(
                    std::move(receiver_connection_receiver));
 
   receiver->RegisterConnection(connection);
-
   return connection;
 }
 
@@ -413,6 +414,18 @@ void PresentationConnection::AddedEventListener(
 }
 
 void PresentationConnection::ContextDestroyed(ExecutionContext*) {
+  CloseConnection();
+}
+
+void PresentationConnection::ContextLifecycleStateChanged(
+    mojom::FrameLifecycleState state) {
+  if (state == mojom::FrameLifecycleState::kFrozen ||
+      state == mojom::FrameLifecycleState::kFrozenAutoResumeMedia) {
+    CloseConnection();
+  }
+}
+
+void PresentationConnection::CloseConnection() {
   DoClose(mojom::blink::PresentationConnectionCloseReason::WENT_AWAY);
   target_connection_.reset();
   connection_receiver_.reset();
@@ -422,7 +435,7 @@ void PresentationConnection::Trace(blink::Visitor* visitor) {
   visitor->Trace(blob_loader_);
   visitor->Trace(messages_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ContextLifecycleStateObserver::Trace(visitor);
 }
 
 const AtomicString& PresentationConnection::state() const {

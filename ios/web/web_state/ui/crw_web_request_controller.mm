@@ -234,8 +234,7 @@ enum class BackForwardNavigationType {
   } else {
     self.currentNavItem->SetTransitionType(
         ui::PageTransition::PAGE_TRANSITION_RELOAD);
-    if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-        !web::GetWebClient()->IsAppSpecificURL(
+    if (!web::GetWebClient()->IsAppSpecificURL(
             net::GURLWithNSURL(self.webView.URL))) {
       // New navigation manager can delegate directly to WKWebView to reload
       // for non-app-specific URLs. The necessary navigation states will be
@@ -277,9 +276,9 @@ enum class BackForwardNavigationType {
       [self.navigationHandler pageTransitionFromNavigationType:navigationType];
 
   WKBackForwardListItem* currentItem = self.webView.backForwardList.currentItem;
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() && currentItem) {
-    // SlimNav target redirect pages should default to a RELOAD transition,
-    // because transition state is not persisted on restore.
+  if (currentItem) {
+    // Target redirect pages should default to a RELOAD transition, because
+    // transition state is not persisted on restore.
     GURL targetURL;
     if (navigationType == WKNavigationTypeOther &&
         IsRestoreSessionUrl(net::GURLWithNSURL(currentItem.URL)) &&
@@ -363,29 +362,11 @@ enum class BackForwardNavigationType {
 
   self.navigationHandler.navigationState = web::WKNavigationState::REQUESTED;
 
-  // Record the state of outgoing web view.
-  // TODO(crbug.com/811770) Don't record state under WKBasedNavigationManager
-  // because it may incorrectly clobber the incoming page if this is a
-  // back/forward navigation. WKWebView restores page scroll state for web view
-  // pages anyways so this only impacts user if WKWebView is deleted.
-  if (!redirect && !web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    [_delegate webRequestControllerRecordStateInHistory:self];
-  }
-
   std::unique_ptr<web::NavigationContextImpl> context =
       web::NavigationContextImpl::CreateNavigationContext(
           self.webState, requestURL, hasUserGesture, transition,
           rendererInitiated);
   context->SetPlaceholderNavigation(placeholderNavigation);
-
-  // TODO(crbug.com/676129): LegacyNavigationManagerImpl::AddPendingItem does
-  // not create a pending item in case of reload. Remove this workaround once
-  // the bug is fixed or WKBasedNavigationManager is fully adopted.
-  if (!item) {
-    DCHECK(!web::GetWebClient()->IsSlimNavigationManagerEnabled());
-    item = self.navigationManagerImpl->GetLastCommittedItem();
-  }
-
   context->SetNavigationItemUniqueID(item->GetUniqueID());
   context->SetIsPost([self.navigationHandler isCurrentNavigationItemPOST]);
   context->SetIsSameDocument(sameDocumentNavigation);
@@ -586,6 +567,12 @@ enum class BackForwardNavigationType {
     itemUserAgentType = web::GetDefaultUserAgent(self.webView);
     self.currentNavItem->SetUserAgentType(
         itemUserAgentType, /*update_inherited_user_agent =*/false);
+  } else if (itemUserAgentType == web::UserAgentType::NONE &&
+             web::GetWebClient()->IsAppSpecificURL(
+                 self.currentNavItem->GetVirtualURL())) {
+    // In case the URL to be loaded is a WebUI URL and the user agent is nil,
+    // get the mobile user agent.
+    itemUserAgentType = web::UserAgentType::MOBILE;
   }
 
   if (itemUserAgentType != web::UserAgentType::NONE) {
@@ -663,8 +650,7 @@ enum class BackForwardNavigationType {
                       rendererInitiated:NO
                   placeholderNavigation:IsPlaceholderUrl(navigationURL)];
 
-    if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-        self.navigationManagerImpl->IsRestoreSessionInProgress()) {
+    if (self.navigationManagerImpl->IsRestoreSessionInProgress()) {
       if (self.navigationManagerImpl->ShouldBlockUrlDuringRestore(
               navigationURL)) {
         return;
@@ -753,28 +739,8 @@ enum class BackForwardNavigationType {
         forNavigation:navigation];
   };
 
-  // If the request is not a form submission or resubmission, or the user
-  // doesn't need to confirm the load, then continue right away.
-
-  if (!repostedForm || currentItem->ShouldSkipRepostFormConfirmation()) {
-    webViewNavigationBlock();
-    return;
-  }
-
-  // If the request is form submission or resubmission, then prompt the
-  // user before proceeding.
-  DCHECK(repostedForm);
-  DCHECK(!web::GetWebClient()->IsSlimNavigationManagerEnabled());
-  self.webState->ShowRepostFormWarningDialog(
-      base::BindOnce(^(bool shouldContinue) {
-        if (self.beingDestroyed)
-          return;
-
-        if (shouldContinue)
-          webViewNavigationBlock();
-        else
-          [_delegate webRequestControllerStopLoading:self];
-      }));
+  DCHECK(!repostedForm || currentItem->ShouldSkipRepostFormConfirmation());
+  webViewNavigationBlock();
 }
 
 // Returns a NSMutableURLRequest that represents the current NavigationItem.

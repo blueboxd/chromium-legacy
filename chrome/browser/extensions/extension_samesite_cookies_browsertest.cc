@@ -479,7 +479,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionSameSiteCookiesTest,
   ExpectSameSiteCookies(cookies);
 }
 
-INSTANTIATE_TEST_SUITE_P(/* no label */,
+INSTANTIATE_TEST_SUITE_P(All,
                          ExtensionSameSiteCookiesTest,
                          ::testing::Bool());
 

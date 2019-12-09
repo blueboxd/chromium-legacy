@@ -735,6 +735,9 @@ extern const char kIgnoreLitePageRedirectHintsBlacklistDescription[];
 extern const char kCompositorThreadedScrollbarScrollingName[];
 extern const char kCompositorThreadedScrollbarScrollingDescription[];
 
+extern const char kImpulseScrollAnimationsName[];
+extern const char kImpulseScrollAnimationsDescription[];
+
 extern const char kInProductHelpDemoModeChoiceName[];
 extern const char kInProductHelpDemoModeChoiceDescription[];
 

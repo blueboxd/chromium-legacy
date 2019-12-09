@@ -200,7 +200,7 @@ IN_PROC_BROWSER_TEST_P(SameSiteCookiesPolicyTest,
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(/* no label */,
+INSTANTIATE_TEST_SUITE_P(All,
                          SameSiteCookiesPolicyTest,
                          ::testing::Bool());
 

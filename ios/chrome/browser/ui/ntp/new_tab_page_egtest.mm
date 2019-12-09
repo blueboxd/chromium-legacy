@@ -51,6 +51,20 @@ BOOL WaitForHistoryToDisappear() {
   [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 }
 
+// Tests that the NTP is still displayed after loading an invalid URL.
+- (void)testNTPStayForInvalidURL {
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
+      performAction:grey_typeText(@"file://\n")];
+
+  // Make sure that the URL disappeared.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText("file://")]
+      assertWithMatcher:grey_nil()];
+
+  // Check that the NTP is still displayed (because the fake omnibox is here).
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
 // Tests that all items are accessible on the incognito page.
 - (void)testAccessibilityOnIncognitoTab {
   [ChromeEarlGrey openNewIncognitoTab];

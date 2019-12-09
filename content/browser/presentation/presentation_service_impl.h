@@ -87,6 +87,9 @@ class CONTENT_EXPORT PresentationServiceImpl
   void Terminate(const GURL& presentation_url,
                  const std::string& presentation_id) override;
 
+  void SetControllerDelegateForTesting(
+      ControllerPresentationServiceDelegate* controller_delegate);
+
  private:
   friend class PresentationServiceImplTest;
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest, OnDelegateDestroyed);
@@ -105,6 +108,8 @@ class CONTENT_EXPORT PresentationServiceImpl
                            ReceiverPresentationServiceDelegate);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
                            ReceiverDelegateOnSubFrame);
+  FRIEND_TEST_ALL_PREFIXES(BackForwardCacheBrowserTest,
+                           PresentationConnectionClosed);
 
   // Maximum number of pending ReconnectPresentation requests at any given time.
   static const int kMaxQueuedRequests = 10;

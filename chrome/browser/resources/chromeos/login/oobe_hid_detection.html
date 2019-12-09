@@ -51,15 +51,11 @@
     <link rel="stylesheet" href="oobe_dialog_host.css">
     <link rel="stylesheet" href="oobe_hid_detection.css">
     <link rel="stylesheet" href="oobe_flex_layout.css">
-    <oobe-dialog has-buttons>
+    <oobe-dialog has-buttons
+        title-key="hidDetectionInvitation"
+        subtitle-key="hidDetectionPrerequisites">
       <iron-icon icon="oobe-hid-detection:bluetooth" slot="oobe-icon">
       </iron-icon>
-      <h1 slot="title">
-        [[i18nDynamic(locale, 'hidDetectionInvitation')]]
-      </h1>
-      <div slot="subtitle">
-        [[i18nDynamic(locale, 'hidDetectionPrerequisites')]]
-      </div>
       <div slot="footer" class="flex layout vertical">
         <div class="layout vertical justified hid-selection-entry">
           <div class="flex layout horizontal center">
@@ -144,9 +140,8 @@
       </div>
       <div slot="bottom-buttons" class="flex layout horizontal end-justified">
         <oobe-text-button inverse on-tap="onHIDContinueTap_"
-            disabled="[[continueButtonDisabled]]">
-          <div>[[i18nDynamic(locale, 'hidDetectionContinue')]]</div>
-        </oobe-text-button>
+            text-key="hidDetectionContinue"
+            disabled="[[continueButtonDisabled]]"></oobe-text-button>
       </div>
     </oobe-dialog>
   </template>

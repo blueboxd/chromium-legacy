@@ -12,6 +12,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "ios/chrome/browser/metrics/tab_usage_recorder_metrics.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 #include "ios/web/public/web_state_observer.h"
 
@@ -22,104 +23,10 @@ namespace web {
 class WebState;
 }
 
-// Histogram names (visible for testing only).
-
-// The name of the histogram that records the state of the selected tab
-// (i.e. the tab being switched to).
-extern const char kSelectedTabHistogramName[];
-
-// The name of the histogram that records the number of page loads before an
-// evicted tab is selected.
-extern const char kPageLoadsBeforeEvictedTabSelected[];
-
-// The name of the histogram tracking the reload time for a previously-evicted
-// tab.
-extern const char kEvictedTabReloadTime[];
-
-// The name of the histogram for whether or not the reload of a
-// previously-evicted tab completed successfully.
-extern const char kEvictedTabReloadSuccessRate[];
-
-// The name of the histogram for whether or not the user switched tabs before an
-// evicted tab completed reloading.
-extern const char kDidUserWaitForEvictedTabReload[];
-
-// The name of the histogram that records time intervals between restores of
-// previously-evicted tabs.  The first restore seen in a session will record the
-// time since the session started.
-extern const char kTimeBetweenRestores[];
-
-// The name of the histogram that records time intervals between the last
-// restore of a previously-evicted tab and the end of the session.
-extern const char kTimeAfterLastRestore[];
-
-// Name of histogram to record whether a memory warning had been recently
-// received when a renderer termination occurred.
-extern const char kRendererTerminationSawMemoryWarning[];
-
-// Name of histogram to record the number of alive renderers when a renderer
-// termination is received.
-extern const char kRendererTerminationAliveRenderers[];
-
-// Name of histogram to record the number of renderers that were alive shortly
-// before a renderer termination. This metric is being recorded in case the OS
-// kills renderers in batches.
-extern const char kRendererTerminationRecentlyAliveRenderers[];
-
-// Name of histogram for recording the state of the tab when the renderer is
-// terminated.
-extern const char kRendererTerminationStateHistogram[];
-
-// The recently alive renderer count metric counts all renderers that were alive
-// x seconds before a renderer termination. |kSecondsBeforeRendererTermination|
-// specifies x.
-extern const int kSecondsBeforeRendererTermination;
-
 // Reports usage about the lifecycle of a single TabModel's tabs.
 class TabUsageRecorder : public web::WebStateObserver,
                          public WebStateListObserver {
  public:
-  enum TabStateWhenSelected {
-    IN_MEMORY = 0,
-    EVICTED,
-    EVICTED_DUE_TO_COLD_START,
-    PARTIALLY_EVICTED,             // Currently, used only by Android.
-    EVICTED_DUE_TO_BACKGROUNDING,  // Deprecated
-    EVICTED_DUE_TO_INCOGNITO,
-    RELOADED_DUE_TO_COLD_START_FG_TAB_ON_START,   // Android.
-    RELOADED_DUE_TO_COLD_START_BG_TAB_ON_SWITCH,  // Android.
-    LAZY_LOAD_FOR_OPEN_IN_NEW_TAB,                // Android
-    STOPPED_DUE_TO_LOADING_WHEN_BACKGROUNDING,    // Deprecated.
-    EVICTED_DUE_TO_LOADING_WHEN_BACKGROUNDING,    // Deprecated.
-    EVICTED_DUE_TO_RENDERER_TERMINATION,
-    TAB_STATE_COUNT,
-  };
-
-  enum LoadDoneState {
-    LOAD_FAILURE,
-    LOAD_SUCCESS,
-    LOAD_DONE_STATE_COUNT,
-  };
-
-  enum EvictedTabUserBehavior {
-    USER_WAITED,
-    USER_DID_NOT_WAIT,
-    USER_LEFT_CHROME,
-    USER_BEHAVIOR_COUNT,
-  };
-
-  // Enum corresponding to UMA's TabForegroundState, for
-  // Tab.StateAtRendererTermination. Must be kept in sync with the UMA enum.
-  enum RendererTerminationTabState {
-    // These two values are for when the app is in the foreground.
-    FOREGROUND_TAB_FOREGROUND_APP = 0,
-    BACKGROUND_TAB_FOREGROUND_APP,
-    // These are for when the app is in the background or inactive.
-    FOREGROUND_TAB_BACKGROUND_APP,
-    BACKGROUND_TAB_BACKGROUND_APP,
-    TERMINATION_TAB_STATE_COUNT
-  };
-
   // Initializes the TabUsageRecorder to watch |web_state_list|.
   TabUsageRecorder(WebStateList* web_state_list,
                    PrerenderService* prerender_service);
@@ -194,7 +101,8 @@ class TabUsageRecorder : public web::WebStateObserver,
 
   // Returns the state of the given tab.  Call only once per tab, as it removes
   // the tab from |evicted_web_states_|.
-  TabStateWhenSelected ExtractWebStateState(web::WebState* web_state);
+  tab_usage_recorder::TabStateWhenSelected ExtractWebStateState(
+      web::WebState* web_state);
 
   // Records various time metrics when a restore of an evicted tab begins.
   void RecordRestoreStartTime();
@@ -250,7 +158,8 @@ class TabUsageRecorder : public web::WebStateObserver,
   web::WebState* evicted_web_state_ = nullptr;
 
   // State of |evicted_web_state_| at the time it became the current tab.
-  TabStateWhenSelected evicted_web_state_state_ = IN_MEMORY;
+  tab_usage_recorder::TabStateWhenSelected evicted_web_state_state_ =
+      tab_usage_recorder::IN_MEMORY;
 
   // Keep track of the tab last selected when this tab model was switched
   // away from to another mode (e.g. to incognito).
@@ -266,7 +175,8 @@ class TabUsageRecorder : public web::WebStateObserver,
   base::TimeTicks evicted_web_state_reload_start_time_;
 
   // Keep track of the tabs that have a known eviction cause.
-  std::map<web::WebState*, TabStateWhenSelected> evicted_web_states_;
+  std::map<web::WebState*, tab_usage_recorder::TabStateWhenSelected>
+      evicted_web_states_;
 
   // The WebStateList containing all the monitored tabs.
   WebStateList* web_state_list_;  // weak

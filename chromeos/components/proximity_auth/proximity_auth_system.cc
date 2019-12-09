@@ -138,7 +138,7 @@ void ProximityAuthSystem::OnScreenDidUnlock(
 void ProximityAuthSystem::OnFocusedUserChanged(const AccountId& account_id) {
   // Update the current RemoteDeviceLifeCycle to the focused user.
   if (remote_device_life_cycle_) {
-    if (remote_device_life_cycle_->GetRemoteDevice().user_id() !=
+    if (remote_device_life_cycle_->GetRemoteDevice().user_email() !=
         account_id.GetUserEmail()) {
       PA_LOG(INFO) << "Focused user changed, destroying life cycle for "
                    << account_id.Serialize() << ".";

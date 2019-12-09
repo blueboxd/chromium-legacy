@@ -110,7 +110,7 @@ TEST_P(StoreMetricsReporterTest, StoreDependentMetrics) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /*InstantiationName*/,
+    All,
     StoreMetricsReporterTest,
     testing::Combine(
         Bool(),

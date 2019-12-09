@@ -394,9 +394,8 @@ void SyncAuthManager::OnRefreshTokensLoaded() {
   }
 }
 
-void SyncAuthManager::OnAccountsInCookieUpdated(
-    const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
-    const GoogleServiceAuthError& error) {
+void SyncAuthManager::OnUnconsentedPrimaryAccountChanged(
+    const CoreAccountInfo& unconsented_primary_account_info) {
   UpdateSyncAccountIfNecessary();
 }
 

@@ -356,9 +356,10 @@ include_rules = [
   "-ui/message_center",
   "+ui/message_center/public",
 
-  # chrome only needs switches from cc. All usage of the compositor is from
-  # content. Definitely don't include generic stuff from cc/base here, if this
-  # is needed these files need to move to base/
+  # chrome only needs switches and features flags from cc. All usage of the
+  # compositor is from content. Definitely don't include generic stuff from
+  # cc/base here, if this is needed these files need to move to base/
+  "+cc/base/features.h",
   "+cc/base/switches.h",
 
   # Unsafe to use from //chrome, see http://goo.gl/QQG5wo

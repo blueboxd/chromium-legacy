@@ -19,7 +19,7 @@ const EnableKioskMode = {
 Polymer({
   is: 'kiosk-enable',
 
-  behaviors: [I18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
 
   properties: {
     /**
@@ -90,9 +90,9 @@ Polymer({
    *
    * @private
    */
-  primaryButtonText_(locale, state) {
+  primaryButtonTextKey_(state) {
     if (state === EnableKioskMode.CONFIRM)
-      return this.i18n('kioskOKButton');
-    return this.i18n('kioskCancelButton');
+      return 'kioskOKButton';
+    return 'kioskCancelButton';
   }
 });

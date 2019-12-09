@@ -39,7 +39,7 @@ using testing::SaveArg;
 namespace proximity_auth {
 namespace {
 
-const char kRemoteDeviceUserId[] = "example@gmail.com";
+const char kRemoteDeviceUserEmail[] = "example@gmail.com";
 const char kRemoteDeviceName[] = "LGE Nexus 5";
 const int kRssiThreshold = -70;
 
@@ -79,7 +79,7 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
         fake_client_channel_(
             std::make_unique<chromeos::secure_channel::FakeClientChannel>()),
         remote_device_(chromeos::multidevice::RemoteDeviceRefBuilder()
-                           .SetUserId(kRemoteDeviceUserId)
+                           .SetUserEmail(kRemoteDeviceUserEmail)
                            .SetName(kRemoteDeviceName)
                            .Build()),
         task_runner_(new base::TestSimpleTaskRunner()),
@@ -391,7 +391,7 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
   // Note: A device without a recorded name will have "Unknown" as its name.
   chromeos::multidevice::RemoteDeviceRef remote_device =
       chromeos::multidevice::RemoteDeviceRefBuilder()
-          .SetUserId(kRemoteDeviceUserId)
+          .SetUserEmail(kRemoteDeviceUserEmail)
           .SetName(std::string())
           .Build();
 

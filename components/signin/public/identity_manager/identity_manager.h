@@ -674,6 +674,8 @@ class IdentityManager : public KeyedService,
   base::ObserverList<DiagnosticsObserver, true>::Unchecked
       diagnostics_observer_list_;
 
+  bool unconsented_primary_account_revoked_during_load_ = false;
+
 #if defined(OS_ANDROID)
   // Java-side IdentityManager object.
   base::android::ScopedJavaGlobalRef<jobject> java_identity_manager_;

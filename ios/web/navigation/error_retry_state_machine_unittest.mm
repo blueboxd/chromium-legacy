@@ -66,15 +66,9 @@ TEST_F(ErrorRetryStateMachineTest, OfflineThenReload) {
   // Reload fails again in provisional navigation (e.g. still in airplane mode).
   {
     ErrorRetryStateMachine clone(machine);
-    if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
       ASSERT_EQ(ErrorRetryCommand::kRewriteToPlaceholderURL,
                 clone.DidFailProvisionalNavigation(test_url, test_url));
       ASSERT_EQ(ErrorRetryState::kLoadingPlaceholder, clone.state());
-    } else {
-      ASSERT_EQ(ErrorRetryCommand::kLoadError,
-                clone.DidFailProvisionalNavigation(test_url, test_url));
-      ASSERT_EQ(ErrorRetryState::kReadyToDisplayError, clone.state());
-    }
   }
 
   // Reload fails after navigation is committed.
@@ -130,15 +124,9 @@ TEST_F(ErrorRetryStateMachineTest, WebErrorPageThenReload) {
   // Reload fails again in provisional navigation.
   {
     ErrorRetryStateMachine clone(machine);
-    if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-      ASSERT_EQ(ErrorRetryCommand::kRewriteToPlaceholderURL,
-                clone.DidFailProvisionalNavigation(test_url, test_url));
-      ASSERT_EQ(ErrorRetryState::kLoadingPlaceholder, clone.state());
-    } else {
-      ASSERT_EQ(ErrorRetryCommand::kLoadError,
-                clone.DidFailProvisionalNavigation(test_url, test_url));
-      ASSERT_EQ(ErrorRetryState::kReadyToDisplayError, clone.state());
-    }
+    ASSERT_EQ(ErrorRetryCommand::kRewriteToPlaceholderURL,
+              clone.DidFailProvisionalNavigation(test_url, test_url));
+    ASSERT_EQ(ErrorRetryState::kLoadingPlaceholder, clone.state());
   }
 
   // Reload fails after navigation is committed.
@@ -195,15 +183,9 @@ TEST_F(ErrorRetryStateMachineTest, SuccessThenReloadOffline) {
   // Reloads fails provisional navigation.
   {
     ErrorRetryStateMachine clone(machine);
-    if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-      ASSERT_EQ(ErrorRetryCommand::kRewriteToPlaceholderURL,
-                clone.DidFailProvisionalNavigation(test_url, test_url));
-      ASSERT_EQ(ErrorRetryState::kLoadingPlaceholder, clone.state());
-    } else {
-      ASSERT_EQ(ErrorRetryCommand::kLoadError,
-                clone.DidFailProvisionalNavigation(test_url, test_url));
-      ASSERT_EQ(ErrorRetryState::kReadyToDisplayError, clone.state());
-    }
+    ASSERT_EQ(ErrorRetryCommand::kRewriteToPlaceholderURL,
+              clone.DidFailProvisionalNavigation(test_url, test_url));
+    ASSERT_EQ(ErrorRetryState::kLoadingPlaceholder, clone.state());
   }
 
   // Reload fails after commit.

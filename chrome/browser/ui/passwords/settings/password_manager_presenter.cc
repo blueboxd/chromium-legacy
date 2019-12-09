@@ -183,7 +183,8 @@ PasswordManagerPresenter::PasswordManagerPresenter(
 
 PasswordManagerPresenter::~PasswordManagerPresenter() {
   for (bool use_account_store : {false, true}) {
-    PasswordStore* store = GetPasswordStore(use_account_store);
+    PasswordStore* store =
+        GetPasswordStore(password_view_->GetProfile(), use_account_store).get();
     if (store) {
       store->RemoveObserver(this);
     }
@@ -192,7 +193,8 @@ PasswordManagerPresenter::~PasswordManagerPresenter() {
 
 void PasswordManagerPresenter::Initialize() {
   for (bool use_account_store : {false, true}) {
-    PasswordStore* store = GetPasswordStore(use_account_store);
+    PasswordStore* store =
+        GetPasswordStore(password_view_->GetProfile(), use_account_store).get();
     if (store) {
       store->AddObserver(this);
     }
@@ -215,7 +217,8 @@ void PasswordManagerPresenter::UpdatePasswordLists() {
   // Request an update from both stores (if they exist). This will send out two
   // updates to |password_view_| as the two result sets come in.
   for (bool use_account_store : {false, true}) {
-    PasswordStore* store = GetPasswordStore(use_account_store);
+    PasswordStore* store =
+        GetPasswordStore(password_view_->GetProfile(), use_account_store).get();
     if (store) {
       store->GetAllLoginsWithAffiliationAndBrandingInformation(this);
     }
@@ -374,7 +377,9 @@ void PasswordManagerPresenter::RequestShowPassword(
 #endif
 
 void PasswordManagerPresenter::AddLogin(const autofill::PasswordForm& form) {
-  PasswordStore* store = GetPasswordStore(form.IsUsingAccountStore());
+  PasswordStore* store =
+      GetPasswordStore(password_view_->GetProfile(), form.IsUsingAccountStore())
+          .get();
   if (!store)
     return;
 
@@ -384,7 +389,9 @@ void PasswordManagerPresenter::AddLogin(const autofill::PasswordForm& form) {
 }
 
 void PasswordManagerPresenter::RemoveLogin(const autofill::PasswordForm& form) {
-  PasswordStore* store = GetPasswordStore(form.IsUsingAccountStore());
+  PasswordStore* store =
+      GetPasswordStore(password_view_->GetProfile(), form.IsUsingAccountStore())
+          .get();
   if (!store)
     return;
 
@@ -423,7 +430,8 @@ bool PasswordManagerPresenter::TryRemovePasswordEntries(
   DCHECK(!forms.empty());
 
   bool use_account_store = forms[0]->IsUsingAccountStore();
-  PasswordStore* store = GetPasswordStore(use_account_store);
+  PasswordStore* store =
+      GetPasswordStore(password_view_->GetProfile(), use_account_store).get();
   if (!store)
     return false;
 
@@ -471,16 +479,4 @@ void PasswordManagerPresenter::SetPasswordExceptionList() {
   // wasteful. Consider updating PasswordUIView to take a PasswordFormMap
   // instead.
   password_view_->SetPasswordExceptionList(GetEntryList(exception_map_));
-}
-
-PasswordStore* PasswordManagerPresenter::GetPasswordStore(
-    bool use_account_store) {
-  if (use_account_store) {
-    return AccountPasswordStoreFactory::GetForProfile(
-               password_view_->GetProfile(), ServiceAccessType::EXPLICIT_ACCESS)
-        .get();
-  }
-  return PasswordStoreFactory::GetForProfile(password_view_->GetProfile(),
-                                             ServiceAccessType::EXPLICIT_ACCESS)
-      .get();
 }

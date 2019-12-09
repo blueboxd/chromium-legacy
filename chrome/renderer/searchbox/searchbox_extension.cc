@@ -337,6 +337,8 @@ v8::Local<v8::Object> GenerateNtpTheme(v8::Isolate* isolate,
   builder.Set("themeId", theme.theme_id);
   builder.Set("themeName", theme.theme_name);
 
+  builder.Set("customBackgroundDisabledByPolicy",
+              theme.custom_background_disabled_by_policy);
   builder.Set("customBackgroundConfigured",
               !theme.custom_background_url.is_empty());
 

@@ -1238,11 +1238,6 @@ void SVGSMILElement::DidChangeAnimationTarget() {
   is_scheduled_ = true;
 }
 
-void SVGSMILElement::QueueDiscard() {
-  if (time_container_)
-    time_container_->QueueDiscard(this);
-}
-
 void SVGSMILElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(target_element_);
   visitor->Trace(target_id_observer_);

@@ -218,20 +218,6 @@ void NavigationManagerImpl::GoToIndex(int index,
   delegate_->ClearTransientContent();
   delegate_->ClearDialogs();
 
-  // Notify delegate if the new navigation will use a different user agent.
-  UserAgentType to_item_user_agent_type =
-      GetItemAtIndex(index)->GetUserAgentType();
-  NavigationItem* pending_item = GetPendingItem();
-  NavigationItem* previous_item =
-      pending_item ? pending_item : GetLastCommittedItem();
-  UserAgentType previous_item_user_agent_type =
-      previous_item ? previous_item->GetUserAgentType() : UserAgentType::NONE;
-
-  if (to_item_user_agent_type != UserAgentType::NONE &&
-      to_item_user_agent_type != previous_item_user_agent_type) {
-    delegate_->WillChangeUserAgentType();
-  }
-
   FinishGoToIndex(index, initiation_type, has_user_gesture);
 }
 
@@ -382,9 +368,6 @@ void NavigationManagerImpl::Reload(ReloadType reload_type,
 void NavigationManagerImpl::ReloadWithUserAgentType(
     UserAgentType user_agent_type) {
   DCHECK_NE(user_agent_type, UserAgentType::NONE);
-
-  // This removes the web view, which will be recreated at the end of this.
-  delegate_->WillChangeUserAgentType();
 
   NavigationItem* last_non_redirect_item = GetTransientItem();
   if (!last_non_redirect_item ||

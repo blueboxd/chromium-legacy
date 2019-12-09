@@ -35,16 +35,13 @@
 #include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
-#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
 ScriptRunner::ScriptRunner(Document* document)
-    : ContextLifecycleStateObserver(document),
-      document_(document),
+    : document_(document),
       task_runner_(document->GetTaskRunner(TaskType::kNetworking)) {
   DCHECK(document);
-  UpdateStateIfNeeded();
 }
 
 void ScriptRunner::QueueScriptForExecution(PendingScript* pending_script) {
@@ -73,15 +70,16 @@ void ScriptRunner::PostTask(const base::Location& web_trace_location) {
       WTF::Bind(&ScriptRunner::ExecuteTask, WrapWeakPersistent(this)));
 }
 
-void ScriptRunner::ContextLifecycleStateChanged(
-    mojom::FrameLifecycleState state) {
-  if (!IsExecutionSuspended())
-    PostTasksForReadyScripts(FROM_HERE);
+void ScriptRunner::Suspend() {
+  is_suspended_ = true;
 }
 
-bool ScriptRunner::IsExecutionSuspended() {
-  return !GetExecutionContext() || GetExecutionContext()->IsContextPaused() ||
-         is_force_deferred_;
+void ScriptRunner::Resume() {
+  DCHECK(is_suspended_);
+
+  is_suspended_ = false;
+  if (!IsExecutionSuspended())
+    PostTasksForReadyScripts(FROM_HERE);
 }
 
 void ScriptRunner::SetForceDeferredExecution(bool force_deferred) {
@@ -262,7 +260,6 @@ void ScriptRunner::ExecuteTask() {
 }
 
 void ScriptRunner::Trace(Visitor* visitor) {
-  ContextLifecycleStateObserver::Trace(visitor);
   visitor->Trace(document_);
   visitor->Trace(pending_in_order_scripts_);
   visitor->Trace(pending_async_scripts_);

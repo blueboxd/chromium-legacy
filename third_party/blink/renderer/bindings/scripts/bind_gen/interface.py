@@ -1026,11 +1026,32 @@ def make_install_interface_template_def(cg_context):
     return func_def
 
 
+def _blink_property_name(idl_member):
+    """
+    Returns a property name that the bindings generator can use in generated
+    code.
+
+    Note that Web IDL allows '-' (hyphen-minus) and '_' (low line) in
+    identifiers but C++ does not allow or recommend them.  This function
+    encodes these characters.
+    """
+    property_name = idl_member.identifier
+    # In Python3, we can use str.maketrans and str.translate.
+    #
+    # We're optimistic about name conflict.  It's highly unlikely that these
+    # replacements will cause a conflict.
+    assert "Dec45" not in property_name
+    assert "Dec95" not in property_name
+    property_name = property_name.replace("-", "Dec45")
+    property_name = property_name.replace("_", "Dec95")
+    return property_name
+
+
 def generate_interfaces(web_idl_database, output_dirs):
     filename = "v8_example_interface.cc"
     filepath = os.path.join(output_dirs['core'], filename)
 
-    interface = web_idl_database.find("TestNamespace")
+    interface = web_idl_database.find("KeyboardEvent")
 
     cg_context = CodeGenContext(interface=interface)
 
@@ -1044,13 +1065,13 @@ def generate_interfaces(web_idl_database, output_dirs):
     code_node = SequenceNode()
 
     for attribute in interface.attributes:
-        func_name = name_style.func(attribute.identifier,
-                                    "AttributeGetCallback")
+        func_name = name_style.func(
+            _blink_property_name(attribute), "AttributeGetCallback")
         code_node.append(
             make_attribute_get_callback_def(
                 cg_context.make_copy(attribute=attribute), func_name))
-        func_name = name_style.func(attribute.identifier,
-                                    "AttributeSetCallback")
+        func_name = name_style.func(
+            _blink_property_name(attribute), "AttributeSetCallback")
         code_node.append(
             make_attribute_set_callback_def(
                 cg_context.make_copy(attribute=attribute), func_name))
@@ -1063,8 +1084,8 @@ def generate_interfaces(web_idl_database, output_dirs):
                 func_name))
 
     for operation_group in interface.operation_groups:
-        func_name = name_style.func(operation_group.identifier,
-                                    "OperationCallback")
+        func_name = name_style.func(
+            _blink_property_name(operation_group), "OperationCallback")
         code_node.append(
             make_operation_callback_def(
                 cg_context.make_copy(operation_group=operation_group),

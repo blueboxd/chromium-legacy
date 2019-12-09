@@ -12,6 +12,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "build/build_config.h"
+#include "media/base/limits.h"
 #include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
 #include "media/gpu/chromeos/image_processor.h"
 #include "media/gpu/chromeos/image_processor_factory.h"
@@ -21,8 +22,9 @@
 namespace media {
 namespace {
 
-// The number of requested frames used for the image processor.
-constexpr size_t kNumFramesForImageProcessor = 4;
+// The number of requested frames used for the image processor should be the
+// number of frames in media::Pipeline plus the current processing frame.
+constexpr size_t kNumFramesForImageProcessor = limits::kMaxVideoFrames + 1;
 
 // Pick a compositor renderable format from |candidates|.
 // Return zero if not found.

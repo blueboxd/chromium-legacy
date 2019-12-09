@@ -172,8 +172,7 @@ using web::wk_navigation_util::IsPlaceholderUrl;
   if (@available(iOS 13, *)) {
     needs_back_forward_navigation_reload = false;
   }
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-      IsRestoreSessionUrl(webViewURL)) {
+  if (IsRestoreSessionUrl(webViewURL)) {
     if (previousURLHasAboutScheme || needs_back_forward_navigation_reload) {
       [self.webView reload];
       self.navigationHandler.navigationState =
@@ -231,7 +230,6 @@ using web::wk_navigation_util::IsPlaceholderUrl;
 - (void)webViewBackForwardStateDidChange {
   // Don't trigger for LegacyNavigationManager because its back/foward state
   // doesn't always match that of WKWebView.
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled())
     self.webStateImpl->OnBackForwardStateChanged();
 }
 
@@ -284,7 +282,6 @@ using web::wk_navigation_util::IsPlaceholderUrl;
       }
       self.navigationManagerImpl->DiscardNonCommittedItems();
       self.navigationHandler.pendingNavigationInfo = nil;
-      if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
         // Right after a history navigation that gets cancelled by a tap on
         // "Go Back", WKWebView's current back/forward list item will still be
         // for the unsafe page; updating this is the responsibility of the
@@ -294,12 +291,6 @@ using web::wk_navigation_util::IsPlaceholderUrl;
         // will be the index of the unsafe page's item. To get back into a
         // consistent state, force a reload.
         [self.webView reload];
-      } else {
-        // Tapping "Go Back" on a SafeBrowsing interstitial can change whether
-        // there are any forward or back items, e.g., by returning to or
-        // moving away from the forward-most or back-most item.
-        self.webStateImpl->OnBackForwardStateChanged();
-      }
       return;
     }
 
@@ -317,25 +308,23 @@ using web::wk_navigation_util::IsPlaceholderUrl;
     // WebStateObserver callbacks will see the updated URL.
     // TODO(crbug.com/809287) use currentItem.URL instead of self.webView.URL to
     // update NavigationItem URL.
-    if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-      const GURL webViewURL = net::GURLWithNSURL(self.webView.URL);
-      web::NavigationItem* currentItem = nullptr;
-      if (self.webView.backForwardList.currentItem) {
-        currentItem = [[CRWNavigationItemHolder
-            holderForBackForwardListItem:self.webView.backForwardList
-                                             .currentItem] navigationItem];
-      } else {
-        // WKBackForwardList.currentItem may be nil in a corner case when
-        // location.replace is called with about:blank#hash in an empty window
-        // open tab. See crbug.com/866142.
-        DCHECK(self.webStateImpl->HasOpener());
-        DCHECK(!self.navigationManagerImpl->GetTransientItem());
-        DCHECK(!self.navigationManagerImpl->GetPendingItem());
-        currentItem = self.navigationManagerImpl->GetLastCommittedItem();
-      }
-      if (currentItem && webViewURL != currentItem->GetURL())
-        currentItem->SetURL(webViewURL);
+    const GURL webViewURL = net::GURLWithNSURL(self.webView.URL);
+    web::NavigationItem* currentItem = nullptr;
+    if (self.webView.backForwardList.currentItem) {
+      currentItem = [[CRWNavigationItemHolder
+          holderForBackForwardListItem:self.webView.backForwardList.currentItem]
+          navigationItem];
+    } else {
+      // WKBackForwardList.currentItem may be nil in a corner case when
+      // location.replace is called with about:blank#hash in an empty window
+      // open tab. See crbug.com/866142.
+      DCHECK(self.webStateImpl->HasOpener());
+      DCHECK(!self.navigationManagerImpl->GetTransientItem());
+      DCHECK(!self.navigationManagerImpl->GetPendingItem());
+      currentItem = self.navigationManagerImpl->GetLastCommittedItem();
     }
+    if (currentItem && webViewURL != currentItem->GetURL())
+      currentItem->SetURL(webViewURL);
 
     [self.delegate navigationObserver:self
         URLDidChangeWithoutDocumentChange:URL];

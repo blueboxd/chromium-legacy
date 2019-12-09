@@ -51,12 +51,6 @@ class UserInteractionState;
 - (web::UserInteractionState*)webRequestControllerUserInteractionState:
     (CRWWebRequestController*)requestController;
 
-// Tells the delegate to record the state (scroll position, form values,
-// whatever can be harvested) from the current page into the current session
-// entry.
-- (void)webRequestControllerRecordStateInHistory:
-    (CRWWebRequestController*)requestController;
-
 // Tells the delegate to restores the state for current page from session
 // history.
 - (void)webRequestControllerRestoreStateFromHistory:

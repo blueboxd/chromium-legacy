@@ -134,6 +134,12 @@ void CloseTabAtIndex(NSUInteger index) {
   }
 }
 
+NSUInteger GetIndexOfActiveNormalTab() {
+  TabModel* model = chrome_test_util::GetMainController()
+                        .interfaceProvider.mainInterface.tabModel;
+  return model.webStateList->active_index();
+}
+
 void CloseAllTabsInCurrentMode() {
   [GetCurrentTabModel() closeAllTabs];
 }

@@ -68,6 +68,18 @@ bool WaitForOmniboxURLString(std::string URL) {
 
 @implementation WebUITestCase
 
+// Tests that the WebUI pages (chrome://version) have the correct User Agent.
+- (void)testUserAgent {
+  [ChromeEarlGrey loadURL:WebUIPageUrlWithHost(kChromeUIVersionHost)];
+
+  NSString* userAgent = [ChromeEarlGrey mobileUserAgentString];
+  // Verify that JavaScript navigator.userAgent returns the mobile User Agent.
+  id result = [ChromeEarlGrey executeJavaScript:@"navigator.userAgent"];
+  NSString* navigatorUserAgent = base::mac::ObjCCast<NSString>(result);
+  GREYAssertEqualObjects(userAgent, navigatorUserAgent,
+                         @"User-Agent strings did not match");
+}
+
 // Tests that chrome://version renders and contains correct version number and
 // user agent string.
 - (void)testVersion {
@@ -77,12 +89,15 @@ bool WaitForOmniboxURLString(std::string URL) {
   const std::string version = version_info::GetVersionNumber();
   [ChromeEarlGrey waitForWebStateContainingText:version];
 
+  NSString* userAgent = [ChromeEarlGrey mobileUserAgentString];
+  std::string userAgentString = base::SysNSStringToUTF8(userAgent);
+
   // Verify that mobile User Agent string is present on the page. Testing for
   // only a portion of the string is sufficient to ensure the value has been
   // populated in the UI and it is not blank. However, the exact string value is
   // not validated as this test does not have access to get the full User Agent
   // string from the WebClient.
-  [ChromeEarlGrey waitForWebStateContainingText:"AppleWebKit"];
+  [ChromeEarlGrey waitForWebStateContainingText:userAgentString];
 }
 
 // Tests that clicking on a chrome://terms link from chrome://chrome-urls

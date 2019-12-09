@@ -225,7 +225,10 @@ void HTMLAnchorElement::ParseAttribute(
     }
     if (IsLink()) {
       String parsed_url = StripLeadingAndTrailingHTMLSpaces(params.new_value);
-      if (GetDocument().IsDNSPrefetchEnabled()) {
+      // GetDocument().GetFrame() could be null if this method is called from
+      // DOMParser::parseFromString(), which internally creates a document
+      // and eventually calls this.
+      if (GetDocument().IsDNSPrefetchEnabled() && GetDocument().GetFrame()) {
         if (ProtocolIs(parsed_url, "http") || ProtocolIs(parsed_url, "https") ||
             parsed_url.StartsWith("//")) {
           WebPrescientNetworking* web_prescient_networking =

@@ -3653,6 +3653,8 @@
   <message name="IDS_CROSTINI_TERMINA_UPDATE_OFFLINE" desc="Text shown in the Crostini update dialog when the VM component needs updating but the user is offline.">
     Please connect to the internet and try again.
   </message>
+
+  <!-- Linux install package messages -->
   <message name="IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_DISPLAY_SOURCE" desc="Source of the Notification for Linux package installation.">
     Linux installer
   </message>
@@ -3675,6 +3677,14 @@
     Error while installing
   </message>
   <message name="IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_ERROR_MESSAGE" desc="Message in the Notification for Linux package installation when there is an error during installation.">
+    An error occurred during installation of your Linux application. Click on the notification for details.
+  </message>
+
+  <!-- Linux package installation failure messages -->
+  <message name="IDS_CROSTINI_PACKAGE_INSTALL_FAILURE_VIEW_TITLE" desc="Title of the crostini package-install-failure dialog, which shows detailed error messages when installing .deb packages.">
+    Error installing Linux application
+  </message>
+  <message name="IDS_CROSTINI_PACKAGE_INSTALL_FAILURE_VIEW_MESSAGE" desc="Message displayed to the user in the package-install-failure dialog.">
     An error occurred during installation of your Linux application.
   </message>
 

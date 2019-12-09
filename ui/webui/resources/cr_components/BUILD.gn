@@ -20,4 +20,7 @@ group("polymer3_elements") {
   deps = [
     "managed_footnote:managed_footnote_module",
   ]
+  if (is_chromeos) {
+    deps += [ "chromeos:polymer3_elements" ]
+  }
 }

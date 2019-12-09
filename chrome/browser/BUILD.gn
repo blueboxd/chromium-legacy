@@ -5462,6 +5462,7 @@ grit("resources") {
       "//chrome/browser/resources/chromeos/crostini_upgrader:polymer3_elements",
       "//chrome/browser/resources/chromeos/emulator:polymer3_elements",
       "//chrome/browser/resources/chromeos/set_time_dialog:polymer3_elements",
+      "//chrome/browser/resources/chromeos/smb_shares:polymer3_elements",
       "//chrome/browser/ui/webui/chromeos/add_supervision:mojo_bindings_js",
       "//chrome/browser/ui/webui/chromeos/crostini_installer:mojo_bindings_js",
       "//chrome/browser/ui/webui/chromeos/crostini_upgrader:mojo_bindings_js",

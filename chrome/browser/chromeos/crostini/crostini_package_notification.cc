@@ -32,6 +32,11 @@ int CrostiniPackageNotification::GetButtonCountForTesting() {
   return notification_->buttons().size();
 }
 
+const std::string& CrostiniPackageNotification::GetErrorMessageForTesting()
+    const {
+  return error_message_;
+}
+
 CrostiniPackageNotification::NotificationSettings::NotificationSettings() {}
 CrostiniPackageNotification::NotificationSettings::NotificationSettings(
     const NotificationSettings& rhs) = default;
@@ -154,8 +159,10 @@ CrostiniPackageNotification::GetNotificationSettingsForTypeAndAppName(
 
 // TODO(timloh): This doesn't get called if the user shuts down Crostini, so
 // the notification will be stuck at whatever percentage it is at.
-void CrostiniPackageNotification::UpdateProgress(PackageOperationStatus status,
-                                                 int progress_percent) {
+void CrostiniPackageNotification::UpdateProgress(
+    PackageOperationStatus status,
+    int progress_percent,
+    const std::string& error_message) {
   if (status == PackageOperationStatus::RUNNING &&
       current_status_ != PackageOperationStatus::RUNNING) {
     running_start_time_ = base::TimeTicks::Now();
@@ -206,6 +213,7 @@ void CrostiniPackageNotification::UpdateProgress(PackageOperationStatus status,
     case PackageOperationStatus::FAILED:
       title = notification_settings_.failure_title;
       body = notification_settings_.failure_body;
+      error_message_ = error_message;
       notification_->set_accent_color(
           ash::kSystemNotificationColorCriticalWarning);
       break;
@@ -269,6 +277,10 @@ void CrostiniPackageNotification::Close(bool by_user) {
 void CrostiniPackageNotification::Click(
     const base::Optional<int>& button_index,
     const base::Optional<base::string16>& reply) {
+  if (current_status_ == PackageOperationStatus::FAILED) {
+    crostini::ShowCrostiniPackageInstallFailureView(error_message_);
+  }
+
   if (current_status_ != PackageOperationStatus::SUCCEEDED)
     return;
 

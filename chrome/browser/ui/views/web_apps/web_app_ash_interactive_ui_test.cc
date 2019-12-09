@@ -84,7 +84,7 @@ IN_PROC_BROWSER_TEST_P(WebAppAshInteractiveUITest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     WebAppAshInteractiveUITest,
     ::testing::Values(
         web_app::ControllerType::kHostedAppController,

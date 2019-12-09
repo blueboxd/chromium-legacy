@@ -3828,7 +3828,7 @@ class OverflowButtonTextDirectionTest
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    /* prefix intentionally left blank due to only one parameterization */,
+    All,
     OverflowButtonTextDirectionTest,
     testing::Bool());
 

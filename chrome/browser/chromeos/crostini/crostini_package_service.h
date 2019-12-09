@@ -15,6 +15,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_package_notification.h"
 #include "chrome/browser/chromeos/crostini/crostini_package_operation_status.h"
@@ -60,7 +61,8 @@ class CrostiniPackageService : public KeyedService,
   // LinuxPackageOperationProgressObserver:
   void OnInstallLinuxPackageProgress(const ContainerId& container_id,
                                      InstallLinuxPackageProgressStatus status,
-                                     int progress_percent) override;
+                                     int progress_percent,
+                                     const std::string& error_message) override;
 
   void OnUninstallPackageProgress(const ContainerId& container_id,
                                   UninstallPackageProgressStatus status,
@@ -120,10 +122,12 @@ class CrostiniPackageService : public KeyedService,
   // Sets the operation status of the current operation. Sets the notification
   // window's current state and updates containers_with_running_operations_.
   // Note that if status is |SUCCEEDED| or |FAILED|, this may kick off another
-  // operation from the queued_uninstalls_ list.
+  // operation from the queued_uninstalls_ list. When status is |FAILED|, the
+  // |error_message| will contain an error reported by the installation process.
   void UpdatePackageOperationStatus(const ContainerId& container_id,
                                     PackageOperationStatus status,
-                                    int progress_percent);
+                                    int progress_percent,
+                                    const std::string& error_message = {});
 
   // Callback between sharing and invoking GetLinuxPackageInfo().
   void OnSharePathForGetLinuxPackageInfo(

@@ -141,7 +141,7 @@ class WebAppInstallManagerTest : public WebAppTest {
         icon_manager_.get());
 
     shortcut_manager_ = std::make_unique<TestAppShortcutManager>(profile());
-    file_handler_manager_ = std::make_unique<TestFileHandlerManager>();
+    file_handler_manager_ = std::make_unique<TestFileHandlerManager>(profile());
 
     install_manager_ = std::make_unique<WebAppInstallManager>(profile());
     install_manager_->SetSubsystems(&registrar(), shortcut_manager_.get(),

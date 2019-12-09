@@ -16,7 +16,8 @@ class BookmarkAppFileHandlerManager : public web_app::FileHandlerManager {
   explicit BookmarkAppFileHandlerManager(Profile* profile);
   ~BookmarkAppFileHandlerManager() override;
 
-  const std::vector<apps::FileHandlerInfo>* GetFileHandlers(
+ protected:
+  const std::vector<apps::FileHandlerInfo>* GetAllFileHandlers(
       const web_app::AppId& app_id) override;
 };
 

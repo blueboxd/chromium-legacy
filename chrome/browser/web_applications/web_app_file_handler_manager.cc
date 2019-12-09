@@ -15,7 +15,7 @@ WebAppFileHandlerManager::WebAppFileHandlerManager(Profile* profile)
 WebAppFileHandlerManager::~WebAppFileHandlerManager() = default;
 
 const std::vector<apps::FileHandlerInfo>*
-WebAppFileHandlerManager::GetFileHandlers(const AppId& app_id) {
+WebAppFileHandlerManager::GetAllFileHandlers(const AppId& app_id) {
   NOTIMPLEMENTED();
   return nullptr;
 }

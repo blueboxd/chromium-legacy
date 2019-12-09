@@ -124,6 +124,28 @@ TEST_F(CrostiniPackageNotificationTest, InstallIgnorePreviousIcons) {
   EXPECT_EQ(notification.GetButtonCountForTesting(), 1);
 }
 
+TEST_F(CrostiniPackageNotificationTest, FailureErrorMessage) {
+  CrostiniPackageNotification notification(
+      profile_.get(),
+      CrostiniPackageNotification::NotificationType::PACKAGE_INSTALL,
+      PackageOperationStatus::RUNNING,
+      ContainerId(kCrostiniDefaultVmName, kCrostiniDefaultContainerName),
+      base::string16(), kNotificationId, service_.get());
+
+  // Initially, the error message is blank.
+  EXPECT_EQ(notification.GetErrorMessageForTesting(), "");
+
+  // Non-failure statuses do not update the error_message.
+  notification.UpdateProgress(PackageOperationStatus::RUNNING, 50,
+                              "error_message_1");
+  EXPECT_EQ(notification.GetErrorMessageForTesting(), "");
+
+  // Failure statuses change the error message.
+  notification.UpdateProgress(PackageOperationStatus::FAILED, 50,
+                              "error_message_2");
+  EXPECT_EQ(notification.GetErrorMessageForTesting(), "error_message_2");
+}
+
 }  // namespace
 
 }  // namespace crostini

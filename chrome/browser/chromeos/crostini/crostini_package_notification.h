@@ -42,7 +42,9 @@ class CrostiniPackageNotification : public message_center::NotificationObserver,
                               CrostiniPackageService* installer_service);
   ~CrostiniPackageNotification() override;
 
-  void UpdateProgress(PackageOperationStatus status, int progress_percent);
+  void UpdateProgress(PackageOperationStatus status,
+                      int progress_percent,
+                      const std::string& error_message = {});
 
   void ForceAllowAutoHide();
 
@@ -62,6 +64,8 @@ class CrostiniPackageNotification : public message_center::NotificationObserver,
       const std::vector<std::string>& inserted_apps) override;
 
   int GetButtonCountForTesting();
+
+  const std::string& GetErrorMessageForTesting() const;
 
  private:
   // A type giving the string, etc displayed for each notification type. Note
@@ -106,6 +110,10 @@ class CrostiniPackageNotification : public message_center::NotificationObserver,
 
   // True if we think the notification is visible.
   bool visible_;
+
+  // If nonempty, contains an error string reported when installing the the
+  // application.
+  std::string error_message_;
 
   // If we show a launch button on completion, this is the app that will be
   // launched.

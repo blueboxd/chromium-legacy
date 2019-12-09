@@ -251,7 +251,8 @@ void CrostiniPackageService::QueueInstallLinuxPackage(
 void CrostiniPackageService::OnInstallLinuxPackageProgress(
     const ContainerId& container_id,
     InstallLinuxPackageProgressStatus status,
-    int progress_percent) {
+    int progress_percent,
+    const std::string& error_message) {
   // Linux package install has two phases, downloading and installing, which we
   // map to a single progess percentage amount by dividing the range in half --
   // 0-50% for the downloading phase, 51-100% for the installing phase.
@@ -259,8 +260,9 @@ void CrostiniPackageService::OnInstallLinuxPackageProgress(
   if (status == InstallLinuxPackageProgressStatus::INSTALLING)
     display_progress += 50;  // Second phase
 
-  UpdatePackageOperationStatus(
-      container_id, InstallStatusToOperationStatus(status), display_progress);
+  UpdatePackageOperationStatus(container_id,
+                               InstallStatusToOperationStatus(status),
+                               display_progress, error_message);
 }
 
 void CrostiniPackageService::OnUninstallPackageProgress(
@@ -387,7 +389,8 @@ void CrostiniPackageService::CreateQueuedInstall(
 void CrostiniPackageService::UpdatePackageOperationStatus(
     const ContainerId& container_id,
     PackageOperationStatus status,
-    int progress_percent) {
+    int progress_percent,
+    const std::string& error_message) {
   // Update the notification window, if any.
   auto it = running_notifications_.find(container_id);
   if (it == running_notifications_.end()) {
@@ -407,7 +410,7 @@ void CrostiniPackageService::UpdatePackageOperationStatus(
     status = PackageOperationStatus::WAITING_FOR_APP_REGISTRY_UPDATE;
   }
 
-  it->second->UpdateProgress(status, progress_percent);
+  it->second->UpdateProgress(status, progress_percent, error_message);
 
   if (status == PackageOperationStatus::SUCCEEDED ||
       status == PackageOperationStatus::FAILED) {

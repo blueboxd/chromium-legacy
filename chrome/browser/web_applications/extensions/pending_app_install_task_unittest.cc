@@ -300,7 +300,8 @@ class PendingAppInstallTaskTest : public ChromeRenderViewHostTestHarness {
     auto shortcut_manager = std::make_unique<TestAppShortcutManager>(profile());
     shortcut_manager_ = shortcut_manager.get();
 
-    auto file_handler_manager = std::make_unique<TestFileHandlerManager>();
+    auto file_handler_manager =
+        std::make_unique<TestFileHandlerManager>(profile());
     file_handler_manager_ = file_handler_manager.get();
 
     auto ui_manager = std::make_unique<TestWebAppUiManager>();

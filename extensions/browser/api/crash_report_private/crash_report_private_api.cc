@@ -190,7 +190,6 @@ void ReportJavaScriptError(
 }
 
 std::string AnonymizeErrorMessage(const std::string& message) {
-  DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   return feedback::AnonymizerTool(/*first_party_extension_ids=*/nullptr)
       .Anonymize(message);
 }

@@ -5,7 +5,9 @@
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
 
 #include "base/feature_list.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/web_app_file_handler_registration.h"
+#include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
 #include "third_party/blink/public/common/features.h"
 
 namespace web_app {
@@ -25,15 +27,25 @@ void FileHandlerManager::Start() {
   registrar_observer_.Add(registrar_);
 }
 
+void FileHandlerManager::DisableOsIntegrationForTesting() {
+  disable_os_integration_for_testing_ = true;
+}
+
 void FileHandlerManager::EnableAndRegisterOsFileHandlers(const AppId& app_id) {
-  if (!base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI) ||
-      !ShouldRegisterFileHandlersWithOs()) {
+  if (!base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI))
+    return;
+
+  UpdateBoolWebAppPref(profile()->GetPrefs(), app_id, kFileHandlersEnabled,
+                       /*value=*/true);
+
+  if (!ShouldRegisterFileHandlersWithOs() ||
+      disable_os_integration_for_testing_) {
     return;
   }
 
   std::string app_name = registrar_->GetAppShortName(app_id);
   const std::vector<apps::FileHandlerInfo>* file_handlers =
-      GetFileHandlers(app_id);
+      GetAllFileHandlers(app_id);
   if (!file_handlers)
     return;
   std::set<std::string> file_extensions =
@@ -46,12 +58,28 @@ void FileHandlerManager::EnableAndRegisterOsFileHandlers(const AppId& app_id) {
 
 void FileHandlerManager::DisableAndUnregisterOsFileHandlers(
     const AppId& app_id) {
+  UpdateBoolWebAppPref(profile()->GetPrefs(), app_id, kFileHandlersEnabled,
+                       /*value=*/false);
+
   if (!base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI) ||
-      !ShouldRegisterFileHandlersWithOs()) {
+      !ShouldRegisterFileHandlersWithOs() ||
+      disable_os_integration_for_testing_) {
     return;
   }
 
   UnregisterFileHandlersWithOs(app_id, profile());
+}
+
+const std::vector<apps::FileHandlerInfo>*
+FileHandlerManager::GetEnabledFileHandlers(const AppId& app_id) {
+  if (AreFileHandlersEnabled(app_id))
+    return GetAllFileHandlers(app_id);
+
+  return nullptr;
+}
+
+bool FileHandlerManager::AreFileHandlersEnabled(const AppId& app_id) const {
+  return GetBoolWebAppPref(profile()->GetPrefs(), app_id, kFileHandlersEnabled);
 }
 
 void FileHandlerManager::OnWebAppUninstalled(const AppId& app_id) {

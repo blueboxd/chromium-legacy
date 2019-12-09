@@ -41,11 +41,13 @@ class LinuxPackageOperationProgressObserver {
   // A successfully started package install will continually fire progress
   // events until it returns a status of SUCCEEDED or FAILED. The
   // |progress_percent| field is given as a percentage of the given step,
-  // DOWNLOADING or INSTALLING.
+  // DOWNLOADING or INSTALLING. If |status| is FAILED, the |error_message|
+  // will contain output of the failing installation command.
   virtual void OnInstallLinuxPackageProgress(
       const ContainerId& container_id,
       InstallLinuxPackageProgressStatus status,
-      int progress_percent) = 0;
+      int progress_percent,
+      const std::string& error_message) = 0;
 
   // A successfully started package uninstall will continually fire progress
   // events until it returns a status of SUCCEEDED or FAILED.

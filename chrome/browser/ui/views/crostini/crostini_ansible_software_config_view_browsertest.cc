@@ -212,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniAnsibleSoftwareConfigViewBrowserTest,
 
   ansible_management_service()->OnInstallLinuxPackageProgress(
       container_id_, crostini::InstallLinuxPackageProgressStatus::SUCCEEDED,
-      100);
+      100, /*error_message=*/{});
   base::RunLoop().RunUntilIdle();
 
   EXPECT_NE(nullptr, ActiveView());
@@ -233,7 +233,8 @@ IN_PROC_BROWSER_TEST_F(CrostiniAnsibleSoftwareConfigViewBrowserTest,
   EXPECT_TRUE(IsDefaultDialog());
 
   ansible_management_service()->OnInstallLinuxPackageProgress(
-      container_id_, crostini::InstallLinuxPackageProgressStatus::FAILED, 0);
+      container_id_, crostini::InstallLinuxPackageProgressStatus::FAILED, 0,
+      /*error_message=*/{});
   base::RunLoop().RunUntilIdle();
 
   EXPECT_NE(nullptr, ActiveView());
@@ -250,7 +251,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniAnsibleSoftwareConfigViewBrowserTest,
 
   ansible_management_service()->OnInstallLinuxPackageProgress(
       container_id_, crostini::InstallLinuxPackageProgressStatus::SUCCEEDED,
-      100);
+      100, /*error_message=*/{});
   base::RunLoop().RunUntilIdle();
 
   EXPECT_NE(nullptr, ActiveView());

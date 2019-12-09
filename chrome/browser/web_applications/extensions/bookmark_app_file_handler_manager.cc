@@ -19,7 +19,8 @@ BookmarkAppFileHandlerManager::BookmarkAppFileHandlerManager(Profile* profile)
 BookmarkAppFileHandlerManager::~BookmarkAppFileHandlerManager() = default;
 
 const std::vector<apps::FileHandlerInfo>*
-BookmarkAppFileHandlerManager::GetFileHandlers(const web_app::AppId& app_id) {
+BookmarkAppFileHandlerManager::GetAllFileHandlers(
+    const web_app::AppId& app_id) {
   const Extension* extension =
       ExtensionRegistry::Get(profile())->enabled_extensions().GetByID(app_id);
   return FileHandlers::GetFileHandlers(extension);

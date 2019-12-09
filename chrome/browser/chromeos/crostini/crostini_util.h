@@ -141,6 +141,8 @@ views::Widget* ShowCrostiniForceCloseDialog(
 // Termina version matches).
 void ShowCrostiniUpdateComponentView(Profile* profile,
                                      CrostiniUISurface ui_surface);
+// Shows the ui with the error message when installing a package fails.
+void ShowCrostiniPackageInstallFailureView(const std::string& error_message);
 
 // Shows the Crostini Container Upgrade dialog (for running upgrades in the
 // container).

@@ -13,7 +13,7 @@ import './iron-overlay-backdrop.js';
 
 import {IronA11yKeysBehavior} from '../iron-a11y-keys-behavior/iron-a11y-keys-behavior.js';
 import {dom} from '../polymer/polymer_bundled.min.js';
-import * as gestures from '../polymer/polymer_bundled.min.js';
+import {gestures} from '../polymer/polymer_bundled.min.js';
 
 /**
  * @struct

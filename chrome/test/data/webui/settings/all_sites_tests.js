@@ -83,6 +83,7 @@ suite('AllSites', function() {
             }),
           ])
     ]);
+
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();
     localDataBrowserProxy = new TestLocalDataBrowserProxy();
     settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;

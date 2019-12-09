@@ -7,12 +7,14 @@
  * interact with the browser. Used only on Chrome OS.
  */
 
+// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+
 /**
  *  @enum {number}
  *  These values must be kept in sync with the SmbMountResult enum in
  *  chrome/browser/chromeos/smb_client/smb_errors.h.
  */
-const SmbMountResult = {
+/* #export */ const SmbMountResult = {
   SUCCESS: 0,
   UNKNOWN_FAILURE: 1,
   AUTHENTICATION_FAILED: 2,
@@ -30,14 +32,14 @@ const SmbMountResult = {
 };
 
 /** @enum {string} */
-const SmbAuthMethod = {
+/* #export */ const SmbAuthMethod = {
   KERBEROS: 'kerberos',
   CREDENTIALS: 'credentials',
 };
 
 cr.define('smb_shares', function() {
   /** @interface */
-  class SmbBrowserProxy {
+  /* #export */ class SmbBrowserProxy {
     /**
      * Attempts to mount an Smb filesystem with the provided url.
      * @param {string} smbUrl File Share URL.
@@ -68,7 +70,7 @@ cr.define('smb_shares', function() {
   }
 
   /** @implements {smb_shares.SmbBrowserProxy} */
-  class SmbBrowserProxyImpl {
+  /* #export */ class SmbBrowserProxyImpl {
     /** @override */
     smbMount(
         smbUrl, smbName, username, password, authMethod,
@@ -92,6 +94,7 @@ cr.define('smb_shares', function() {
 
   cr.addSingletonGetter(SmbBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     SmbBrowserProxy: SmbBrowserProxy,
     SmbBrowserProxyImpl: SmbBrowserProxyImpl,

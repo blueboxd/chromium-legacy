@@ -283,13 +283,9 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
   // block/inline position.
   // Position changes and other types of display changes are handled elsewhere.
   if (old_style && IsOutOfFlowPositioned() && Parent() &&
-      (Parent() != ContainingBlock()) &&
       (StyleRef().GetPosition() == old_style->GetPosition()) &&
-      (StyleRef().OriginalDisplay() != old_style->OriginalDisplay()) &&
-      ((StyleRef().OriginalDisplay() == EDisplay::kBlock) ||
-       (StyleRef().OriginalDisplay() == EDisplay::kInlineBlock)) &&
-      ((old_style->OriginalDisplay() == EDisplay::kBlock) ||
-       (old_style->OriginalDisplay() == EDisplay::kInlineBlock)))
+      (StyleRef().IsOriginalDisplayInlineType() !=
+       old_style->IsOriginalDisplayInlineType()))
     Parent()->SetNeedsLayout(layout_invalidation_reason::kChildChanged,
                              kMarkContainerChain);
 

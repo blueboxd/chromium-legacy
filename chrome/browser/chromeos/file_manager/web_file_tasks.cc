@@ -55,7 +55,8 @@ void FindWebTasks(Profile* profile,
 
   auto app_ids = registrar.GetAppIds();
   for (const auto& app_id : app_ids) {
-    const auto* file_handlers = file_handler_manager.GetFileHandlers(app_id);
+    const auto* file_handlers =
+        file_handler_manager.GetEnabledFileHandlers(app_id);
 
     if (!file_handlers)
       continue;

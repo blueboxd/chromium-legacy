@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/ip_address.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -384,9 +385,8 @@ AnonymizerTool::~AnonymizerTool() {
 
 std::string AnonymizerTool::Anonymize(const std::string& input) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!::content::BrowserThread::CurrentlyOn(::content::BrowserThread::UI))
-      << "This is an expensive operation. Do not execute this on the UI "
-         "thread.";
+  base::AssertLongCPUWorkAllowed();
+
   std::string anonymized = AnonymizeMACAddresses(input);
   anonymized = AnonymizeAndroidAppStoragePaths(std::move(anonymized));
   anonymized = AnonymizeCustomPatterns(std::move(anonymized));

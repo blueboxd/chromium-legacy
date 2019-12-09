@@ -45,7 +45,8 @@ class AnsibleManagementService : public KeyedService,
   // LinuxPackageOperationProgressObserver:
   void OnInstallLinuxPackageProgress(const ContainerId& container_id,
                                      InstallLinuxPackageProgressStatus status,
-                                     int progress_percent) override;
+                                     int progress_percent,
+                                     const std::string& error_message) override;
   void OnUninstallPackageProgress(const ContainerId& container_id,
                                   UninstallPackageProgressStatus status,
                                   int progress_percent) override;

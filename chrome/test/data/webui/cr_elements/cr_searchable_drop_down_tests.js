@@ -2,8 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://resources/cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.m.js';
+// #import {Polymer, html, flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+// clang-format on
+
 suite('cr-searchable-drop-down', function() {
+  /** @type {CrSearchableDropDownElement} */
   let dropDown;
+
+  /** @type {HTMLElement} */
+  let outsideElement;
+
+  /** @type {CrInputElement} */
+  let searchInput;
 
   /**
    * @param {!Array<string>} items The list of items to be populated in the

@@ -14,6 +14,9 @@ group("closure_compile") {
     "network:closure_compile",
     "quick_unlock:closure_compile",
     "smb_shares:closure_compile",
+
+    # Targets for auto-generated Polymer 3 JS Modules
+    "smb_shares:closure_compile_module",
   ]
 }
 
@@ -39,5 +42,11 @@ js_library("bluetooth_dialog") {
   extra_sources = [
     "$interfaces_path/bluetooth_interface.js",
     "$interfaces_path/bluetooth_private_interface.js",
+  ]
+}
+
+group("polymer3_elements") {
+  deps = [
+    "smb_shares:smb_browser_proxy_module",
   ]
 }

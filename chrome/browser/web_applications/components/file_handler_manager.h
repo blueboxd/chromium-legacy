@@ -31,26 +31,43 @@ class FileHandlerManager : public AppRegistrarObserver {
   void SetSubsystems(AppRegistrar* registrar);
   void Start();
 
-  // Enables and registers OS specific file handlers for OSs that need them.
-  // Currently on Chrome OS, file handlers are enabled and registered as long as
-  // the app is installed.
+  // Disables OS integrations, such as shortcut creation on Linux or modifying
+  // the registry on Windows, to prevent side effects while testing. Note: When
+  // disabled, file handling integration will not work on most operating
+  // systems.
+  void DisableOsIntegrationForTesting();
+
+  // Enables and registers OS specific file handlers for OSs that need them. On
+  // Chrome OS file handlers are registered separately but they are
+  // still enabled and disabled here.
   void EnableAndRegisterOsFileHandlers(const AppId& app_id);
 
   // Disables file handlers for all OSs and unregisters OS specific file
-  // handlers for OSs that need them. Currently on Chrome OS, file handlers are
-  // enabled and registered as long as the app is installed.
+  // handlers for OSs that need them. On Chrome OS file handlers are registered
+  // separately but they are still enabled and disabled here.
   void DisableAndUnregisterOsFileHandlers(const AppId& app_id);
+
+  // Gets all enabled file handlers for |app_id|. |nullptr| if the app has no
+  // enabled file handlers. Note: The lifetime of the file handlers are tied to
+  // the app they belong to.
+  const std::vector<apps::FileHandlerInfo>* GetEnabledFileHandlers(
+      const AppId& app_id);
+
+ protected:
+  Profile* profile() const { return profile_; }
+
+  // Indicates whether file handlers have been registered for an app.
+  bool AreFileHandlersEnabled(const AppId& app_id) const;
 
   // Gets all file handlers for |app_id|. |nullptr| if the app has no file
   // handlers.
   // Note: The lifetime of the file handlers are tied to the app they belong to.
-  virtual const std::vector<apps::FileHandlerInfo>* GetFileHandlers(
+  virtual const std::vector<apps::FileHandlerInfo>* GetAllFileHandlers(
       const AppId& app_id) = 0;
 
- protected:
-  Profile* profile() { return profile_; }
-
  private:
+  bool disable_os_integration_for_testing_ = false;
+
   Profile* const profile_;
   AppRegistrar* registrar_ = nullptr;
 

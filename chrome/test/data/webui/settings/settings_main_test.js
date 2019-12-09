@@ -279,7 +279,7 @@ cr.define('settings_main_page', function() {
       Polymer.dom.flush();
 
       // Navigate to an "advanced" subpage.
-      settings.navigateTo(settings.routes.LANGUAGES);
+      settings.navigateTo(settings.routes.SITE_SETTINGS);
       Polymer.dom.flush();
       return assertAdvancedVisibilityAfterSearch('block');
     });
@@ -306,7 +306,7 @@ cr.define('settings_main_page', function() {
 
     // TODO(michaelpg): Move these to a new test for settings-basic-page.
     test('can collapse advanced on advanced section route', function() {
-      settings.navigateTo(settings.routes.LANGUAGES);
+      settings.navigateTo(settings.routes.PRIVACY);
       Polymer.dom.flush();
 
       const basicPage = settingsMain.$$('settings-basic-page');
@@ -338,7 +338,7 @@ cr.define('settings_main_page', function() {
     });
 
     test('navigating to a basic page does not collapse advanced', function() {
-      settings.navigateTo(settings.routes.LANGUAGES);
+      settings.navigateTo(settings.routes.PRIVACY);
       Polymer.dom.flush();
 
       assertToggleContainerVisible(true);

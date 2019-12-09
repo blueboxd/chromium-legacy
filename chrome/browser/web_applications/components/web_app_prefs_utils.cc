@@ -52,15 +52,19 @@ std::unique_ptr<prefs::DictionaryValueUpdate> UpdateWebAppDictionary(
 //   "web_app_ids": {
 //     "<app_id_1>": {
 //       "was_external_app_uninstalled_by_user": true,
+//       "file_handlers_enabled": true,
 //     },
 //     "<app_id_N>": {
 //       "was_external_app_uninstalled_by_user": false,
+//       "file_handlers_enabled": false,
 //     }
 //   }
 // }
 //
 const char kWasExternalAppUninstalledByUser[] =
     "was_external_app_uninstalled_by_user";
+
+const char kFileHandlersEnabled[] = "file_handlers_enabled";
 
 void WebAppPrefsUtilsRegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {

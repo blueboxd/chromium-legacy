@@ -136,11 +136,6 @@
         <iron-icon icon="settings:assignment"></iron-icon>
         $i18n{autofillPageTitle}
       </a>
-      <a href="/privacy" hidden="[[shouldHidePrivacy_(
-          privacySettingsRedesignEnabled_, pageVisibility.privacy)]]">
-        <iron-icon icon="cr:security"></iron-icon>
-        $i18n{privacyPageTitle}
-      </a>
       <a id="appearance" href="/appearance"
         hidden="[[!pageVisibility.appearance]]">
         <iron-icon icon="settings:palette"></iron-icon>
@@ -199,7 +194,7 @@
             $i18n{dateTimePageTitle}
           </a>
 </if>
-          <a href="/privacy" hidden="[[privacySettingsRedesignEnabled_]]">
+          <a href="/privacy">
             <iron-icon icon="cr:security"></iron-icon>
             $i18n{privacyPageTitle}
           </a>

@@ -60,7 +60,7 @@ class PanelItem extends HTMLElement {
     return `<style>
               .xf-panel-item {
                   align-items: center;
-                  background-color: #FFF;
+                  background-color: rgba(0,0,0,0);
                   border-radius: 4px;
                   display: flex;
                   flex-direction: row;
@@ -436,7 +436,7 @@ class PanelItem extends HTMLElement {
       return;
     }
 
-    let id = assert(event.target.dataset.category);
+    const id = assert(event.target.dataset.category);
     this.signal_(id);
   }
 
@@ -583,7 +583,7 @@ class PanelItem extends HTMLElement {
    * @param {string} text Text to set for the 'aria-label'.
    */
   set closeButtonAriaLabel(text) {
-    let action = this.shadowRoot.querySelector('#secondary-action');
+    const action = this.shadowRoot.querySelector('#secondary-action');
     if (action && action.dataset.category === 'cancel') {
       action.setAttribute('aria-label', text);
     }

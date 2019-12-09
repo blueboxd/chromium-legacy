@@ -2226,13 +2226,15 @@ void CrostiniManager::OnInstallLinuxPackageProgress(
   }
 
   InstallLinuxPackageProgressStatus status;
+  std::string error_message;
   switch (signal.status()) {
     case vm_tools::cicerone::InstallLinuxPackageProgressSignal::SUCCEEDED:
       status = InstallLinuxPackageProgressStatus::SUCCEEDED;
       break;
     case vm_tools::cicerone::InstallLinuxPackageProgressSignal::FAILED:
-      status = InstallLinuxPackageProgressStatus::FAILED;
       LOG(ERROR) << "Install failed: " << signal.failure_details();
+      status = InstallLinuxPackageProgressStatus::FAILED;
+      error_message = signal.failure_details();
       break;
     case vm_tools::cicerone::InstallLinuxPackageProgressSignal::DOWNLOADING:
       status = InstallLinuxPackageProgressStatus::DOWNLOADING;
@@ -2246,8 +2248,8 @@ void CrostiniManager::OnInstallLinuxPackageProgress(
 
   ContainerId container_id(signal.vm_name(), signal.container_name());
   for (auto& observer : linux_package_operation_progress_observers_) {
-    observer.OnInstallLinuxPackageProgress(container_id, status,
-                                           signal.progress_percent());
+    observer.OnInstallLinuxPackageProgress(
+        container_id, status, signal.progress_percent(), error_message);
   }
 }
 

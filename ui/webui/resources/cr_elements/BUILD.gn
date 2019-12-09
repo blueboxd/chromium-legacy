@@ -62,6 +62,7 @@ group("closure_compile") {
       # cr-searchable-drop-down is only used in smb and cups dialogs, both of
       # which are chromeos only.
       "cr_searchable_drop_down:closure_compile",
+      "cr_searchable_drop_down:closure_compile_module",
     ]
   }
 }
@@ -186,6 +187,14 @@ group("polymer3_elements") {
     "cr_view_manager:cr_view_manager_module",
     "policy:cr_tooltip_icon_module",
   ]
+
+  if (is_chromeos) {
+    deps += [
+      # cr-searchable-drop-down is only used in smb and cups dialogs, both of
+      # which are chromeos only.
+      "cr_searchable_drop_down:cr_searchable_drop_down_module",
+    ]
+  }
 }
 
 js_type_check("cr_elements_module_resources") {

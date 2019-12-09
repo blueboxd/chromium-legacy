@@ -553,7 +553,7 @@ TEST_P(ManifestIconSelectorTest, UseAnyIfNoIdealSize) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(/* No prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          ManifestIconSelectorTest,
                          ::testing::Bool());
 

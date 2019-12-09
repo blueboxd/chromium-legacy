@@ -478,7 +478,7 @@ TEST_P(InstallManagerBookmarkAppInstallableSiteTest,
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          InstallManagerBookmarkAppInstallableSiteTest,
                          ::testing::Values(web_app::ForInstallableSite::kNo,
                                            web_app::ForInstallableSite::kYes));

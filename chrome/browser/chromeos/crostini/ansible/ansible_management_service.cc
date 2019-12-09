@@ -79,7 +79,8 @@ void AnsibleManagementService::OnInstallAnsibleInDefaultContainer(
 void AnsibleManagementService::OnInstallLinuxPackageProgress(
     const ContainerId& container_id,
     InstallLinuxPackageProgressStatus status,
-    int progress_percent) {
+    int progress_percent,
+    const std::string& error_message) {
   DCHECK_EQ(container_id.vm_name, kCrostiniDefaultVmName);
   DCHECK_EQ(container_id.container_name, kCrostiniDefaultContainerName);
 

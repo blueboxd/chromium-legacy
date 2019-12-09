@@ -64,8 +64,7 @@ suite('ProtocolHandlers', function() {
    */
   let browserProxy = null;
 
-  setup(async function() {
-    await settings.forceLazyLoaded();
+  setup(function() {
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();
     settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
   });

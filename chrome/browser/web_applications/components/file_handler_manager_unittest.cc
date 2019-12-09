@@ -8,8 +8,12 @@
 #include <string>
 #include <vector>
 
+#include "base/test/scoped_feature_list.h"
+#include "chrome/browser/web_applications/test/test_app_registrar.h"
 #include "chrome/browser/web_applications/test/test_file_handler_manager.h"
+#include "chrome/browser/web_applications/test/web_app_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace web_app {
 
@@ -48,6 +52,66 @@ TEST(FileHandlerUtilsTest, GetMimeTypesFromFileHandlers) {
   EXPECT_EQ(mime_types.size(), test_mime_types.size());
   for (const auto& test_mime_type : test_mime_types) {
     EXPECT_TRUE(mime_types.find(test_mime_type) != mime_types.end());
+  }
+}
+
+class FileHandlerManagerTest : public WebAppTest {
+ protected:
+  void SetUp() override {
+    WebAppTest::SetUp();
+
+    features_.InitAndEnableFeature(blink::features::kFileHandlingAPI);
+
+    registrar_ = std::make_unique<TestAppRegistrar>();
+    file_handler_manager_ = std::make_unique<TestFileHandlerManager>(profile());
+
+    file_handler_manager_->SetSubsystems(registrar_.get());
+  }
+
+  TestFileHandlerManager& file_handler_manager() {
+    return *file_handler_manager_.get();
+  }
+
+ private:
+  std::unique_ptr<TestAppRegistrar> registrar_;
+  std::unique_ptr<TestFileHandlerManager> file_handler_manager_;
+
+  base::test::ScopedFeatureList features_;
+};
+
+TEST_F(FileHandlerManagerTest, FileHandlersAreNotAvailableUnlessEnabled) {
+  const AppId app_id = "app-id";
+
+  file_handler_manager().InstallFileHandler(
+      app_id, GURL("https://app.site/handle-foo"), {".foo", "application/foo"},
+      /*enable=*/false);
+
+  file_handler_manager().InstallFileHandler(
+      app_id, GURL("https://app.site/handle-bar"), {".bar", "application/bar"},
+      /*enable=*/false);
+
+  // File handlers are disabled by default.
+  {
+    const auto* handlers =
+        file_handler_manager().GetEnabledFileHandlers(app_id);
+    EXPECT_EQ(nullptr, handlers);
+  }
+
+  // Ensure they can be enabled.
+  file_handler_manager().EnableAndRegisterOsFileHandlers(app_id);
+  {
+    const auto* handlers =
+        file_handler_manager().GetEnabledFileHandlers(app_id);
+    EXPECT_EQ(2u, handlers->size());
+  }
+
+  // Ensure they can be disabled.
+  file_handler_manager().DisableAndUnregisterOsFileHandlers(app_id);
+
+  {
+    const auto* handlers =
+        file_handler_manager().GetEnabledFileHandlers(app_id);
+    EXPECT_EQ(nullptr, handlers);
   }
 }
 

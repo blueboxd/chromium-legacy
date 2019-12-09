@@ -20,7 +20,8 @@ class WebAppFileHandlerManager : public FileHandlerManager {
   explicit WebAppFileHandlerManager(Profile* profile);
   ~WebAppFileHandlerManager() override;
 
-  const std::vector<apps::FileHandlerInfo>* GetFileHandlers(
+ protected:
+  const std::vector<apps::FileHandlerInfo>* GetAllFileHandlers(
       const AppId& app_id) override;
 };
 

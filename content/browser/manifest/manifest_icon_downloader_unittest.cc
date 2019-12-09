@@ -174,7 +174,7 @@ TEST_P(ManifestIconDownloaderTest, ImproperWidthtoHeightRatioIsNotPicked) {
   ASSERT_EQ(-1, FindBitmap(15, 11, bitmaps));
 }
 
-INSTANTIATE_TEST_SUITE_P(/* No prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          ManifestIconDownloaderTest,
                          ::testing::Bool());
 

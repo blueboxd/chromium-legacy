@@ -112,7 +112,6 @@ cr.define('settings', function() {
     pageVisibility = {
       autofill: false,
       people: false,
-      privacy: false,
       onStartup: false,
       reset: false,
       appearance: false,

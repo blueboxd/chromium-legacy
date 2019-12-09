@@ -2758,38 +2758,38 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
   NavigateAndCheckForToolbar(app_browser_, popup_url, false);
 }
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          HostedAppTest,
                          ::testing::Values(AppType::HOSTED_APP,
                                            AppType::BOOKMARK_APP));
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          SharedAppTest,
                          ::testing::Values(AppType::HOSTED_APP,
                                            AppType::BOOKMARK_APP,
                                            AppType::WEB_APP));
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     HostedAppPWAOnlyTest,
     ::testing::Values(AppType::BOOKMARK_APP));
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     SharedPWATest,
     ::testing::Values(AppType::BOOKMARK_APP, AppType::WEB_APP));
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     HostedAppProcessModelTest,
     ::testing::Values(AppType::HOSTED_APP));
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     HostedAppIsolatedOriginTest,
     ::testing::Values(AppType::HOSTED_APP));
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     HostedAppSitePerProcessTest,
     ::testing::Values(AppType::HOSTED_APP));

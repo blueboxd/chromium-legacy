@@ -18,6 +18,8 @@ namespace web_app {
 
 extern const char kWasExternalAppUninstalledByUser[];
 
+extern const char kFileHandlersEnabled[];
+
 bool GetBoolWebAppPref(const PrefService* pref_service,
                        const AppId& app_id,
                        base::StringPiece path);

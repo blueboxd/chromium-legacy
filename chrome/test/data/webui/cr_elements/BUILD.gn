@@ -48,4 +48,8 @@ js_modulizer("modulize") {
     "test_util.isVisible|isVisible",
     "test_util.whenAttributeIs|whenAttributeIs",
   ]
+
+  if (is_chromeos) {
+    input_files += [ "cr_searchable_drop_down_tests.js" ]
+  }
 }

@@ -166,6 +166,20 @@ TEST_F('CrElementsSearchFieldV3Test', 'All', function() {
   mocha.run();
 });
 
+GEN('#if defined(OS_CHROMEOS)');
+// eslint-disable-next-line no-var
+var CrElementsSearchableDropDownV3Test = class extends CrElementsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test?module=cr_elements/cr_searchable_drop_down_tests.m.js';
+  }
+};
+
+TEST_F('CrElementsSearchableDropDownV3Test', 'All', function() {
+  mocha.run();
+});
+GEN('#endif');
+
 // eslint-disable-next-line no-var
 var CrElementsSplitterV3Test = class extends CrElementsV3BrowserTest {
   /** @override */

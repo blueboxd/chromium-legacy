@@ -1115,8 +1115,14 @@ public class TabImpl implements Tab {
         }
     }
 
-    @Override
-    public void setIsShowingErrorPage(boolean isShowingErrorPage) {
+    /**
+     * Sets whether the tab is showing an error page.  This is reset whenever the tab finishes a
+     * navigation.
+     * Note: This is kept here to keep the build green. Remove from interface as soon as
+     *       the downstream patch lands.
+     * @param isShowingErrorPage Whether the tab shows an error page.
+     */
+    void setIsShowingErrorPage(boolean isShowingErrorPage) {
         mIsShowingErrorPage = isShowingErrorPage;
     }
 

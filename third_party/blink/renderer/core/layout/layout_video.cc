@@ -189,7 +189,7 @@ bool LayoutVideo::SupportsAcceleratedRendering() const {
 }
 
 CompositingReasons LayoutVideo::AdditionalCompositingReasons() const {
-  HTMLMediaElement* element = ToHTMLMediaElement(GetNode());
+  auto* element = To<HTMLMediaElement>(GetNode());
   if (element->IsFullscreen() && element->UsesOverlayFullscreenVideo())
     return CompositingReason::kVideo;
 

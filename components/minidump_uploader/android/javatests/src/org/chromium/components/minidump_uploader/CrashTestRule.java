@@ -49,7 +49,8 @@ public class CrashTestRule implements TestRule {
     }
 
     private void setUp() throws Exception {
-        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
+        LibraryLoader.getInstance().setLibraryProcessType(LibraryProcessType.PROCESS_BROWSER);
+        LibraryLoader.getInstance().ensureInitialized();
         if (mCacheDir == null) {
             mCacheDir = getExistingCacheDir();
         }

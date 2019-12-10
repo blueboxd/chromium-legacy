@@ -1,0 +1,278 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chrome.browser.preferences;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+import android.content.SharedPreferences;
+import android.support.test.filters.SmallTest;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.InMemorySharedPreferences;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+/**
+ * Unit tests for {@link SharedPreferencesManager}.
+ */
+@RunWith(BaseRobolectricTestRunner.class)
+public class SharedPreferencesManagerTest {
+    private SharedPreferences mPrefs = new InMemorySharedPreferences();
+
+    @Mock
+    private ChromePreferenceKeyChecker mChecker;
+
+    private SharedPreferencesManager mSubject;
+
+    @Before
+    public void setUp() {
+        MockitoAnnotations.initMocks(this);
+        mSubject = new SharedPreferencesManager(mPrefs, mChecker);
+    }
+
+    @Test
+    @SmallTest
+    public void testWriteReadInt() {
+        // Verify default return values when no value is written.
+        assertEquals(0, mSubject.readInt("int_key"));
+        assertEquals(987, mSubject.readInt("int_key", 987));
+
+        // Write a value.
+        mSubject.writeInt("int_key", 123);
+
+        // Verify value written can be read.
+        assertEquals(123, mSubject.readInt("int_key"));
+        assertEquals(123, mSubject.readInt("int_key", 987));
+
+        // Remove the value.
+        mSubject.removeKey("int_key");
+
+        // Verify the removed value is not returned anymore.
+        assertEquals(0, mSubject.readInt("int_key"));
+    }
+
+    @Test
+    @SmallTest
+    public void testIncrementInt() {
+        mSubject.writeInt("int_key", 100);
+        mSubject.incrementInt("int_key");
+
+        assertEquals(101, mSubject.readInt("int_key"));
+    }
+
+    @Test
+    @SmallTest
+    public void testIncrementIntDefault() {
+        mSubject.incrementInt("int_key");
+
+        assertEquals(1, mSubject.readInt("int_key"));
+    }
+
+    @Test
+    @SmallTest
+    public void testWriteReadBoolean() {
+        // Verify default return values when no value is written.
+        assertEquals(false, mSubject.readBoolean("bool_key", false));
+        assertEquals(true, mSubject.readBoolean("bool_key", true));
+
+        // Write a value.
+        mSubject.writeBoolean("bool_key", true);
+
+        // Verify value written can be read.
+        assertEquals(true, mSubject.readBoolean("bool_key", false));
+        assertEquals(true, mSubject.readBoolean("bool_key", true));
+
+        // Remove the value.
+        mSubject.removeKey("bool_key");
+
+        // Verify the removed value is not returned anymore.
+        assertEquals(false, mSubject.readBoolean("bool_key", false));
+        assertEquals(true, mSubject.readBoolean("bool_key", true));
+    }
+
+    @Test
+    @SmallTest
+    public void testWriteReadLong() {
+        // Verify default return values when no value is written.
+        assertEquals(0, mSubject.readLong("long_key"));
+        assertEquals(9876543210L, mSubject.readLong("long_key", 9876543210L));
+
+        // Write a value.
+        mSubject.writeLong("long_key", 9999999999L);
+
+        // Verify value written can be read.
+        assertEquals(9999999999L, mSubject.readLong("long_key"));
+        assertEquals(9999999999L, mSubject.readLong("long_key", 9876543210L));
+
+        // Remove the value.
+        mSubject.removeKey("long_key");
+
+        // Verify the removed value is not returned anymore.
+        assertEquals(0, mSubject.readLong("long_key"));
+    }
+
+    @Test
+    @SmallTest
+    public void testWriteReadStringSet() {
+        Set<String> defaultStringSet = new HashSet<>(Arrays.asList("a", "b", "c"));
+        Set<String> exampleStringSet = new HashSet<>(Arrays.asList("d", "e"));
+
+        // Verify default return values when no value is written.
+        assertEquals(Collections.emptySet(), mSubject.readStringSet("string_set_key"));
+        assertEquals(defaultStringSet, mSubject.readStringSet("string_set_key", defaultStringSet));
+        assertNull(mSubject.readStringSet("string_set_key", null));
+
+        // Write a value.
+        mSubject.writeStringSet("string_set_key", exampleStringSet);
+
+        // Verify value written can be read.
+        assertEquals(exampleStringSet, mSubject.readStringSet("string_set_key"));
+        assertEquals(exampleStringSet, mSubject.readStringSet("string_set_key", defaultStringSet));
+        assertEquals(exampleStringSet, mSubject.readStringSet("string_set_key", null));
+
+        // Remove the value.
+        mSubject.removeKey("string_set_key");
+
+        // Verify the removed value is not returned anymore.
+        assertEquals(Collections.emptySet(), mSubject.readStringSet("string_set_key"));
+    }
+
+    @Test
+    @SmallTest
+    public void testAddToStringSet() {
+        mSubject.writeStringSet("string_set_key", new HashSet<>(Collections.singletonList("bar")));
+        mSubject.addToStringSet("string_set_key", "foo");
+
+        assertEquals(new HashSet<>(Arrays.asList("foo", "bar")),
+                mSubject.readStringSet("string_set_key"));
+    }
+
+    @Test
+    @SmallTest
+    public void testAddToStringSetDefault() {
+        mSubject.addToStringSet("string_set_key", "foo");
+
+        assertEquals(new HashSet<>(Collections.singletonList("foo")),
+                mSubject.readStringSet("string_set_key"));
+    }
+
+    @Test
+    @SmallTest
+    public void testRemoveFromStringSet() {
+        mSubject.writeStringSet("string_set_key", new HashSet<>(Arrays.asList("foo", "bar")));
+        mSubject.removeFromStringSet("string_set_key", "foo");
+
+        assertEquals(new HashSet<>(Collections.singletonList("bar")),
+                mSubject.readStringSet("string_set_key"));
+    }
+
+    @Test
+    @SmallTest
+    public void testRemoveFromStringSetDefault() {
+        mSubject.removeFromStringSet("string_set_key", "foo");
+
+        assertEquals(Collections.emptySet(), mSubject.readStringSet("string_set_key"));
+    }
+
+    @Test
+    @SmallTest
+    public void testCheckerIsCalled() {
+        mSubject.writeInt("int_key", 123);
+        verify(mChecker, times(1)).assertIsKeyInUse("int_key");
+        mSubject.readInt("int_key");
+        verify(mChecker, times(2)).assertIsKeyInUse("int_key");
+        mSubject.incrementInt("int_key");
+        verify(mChecker, times(3)).assertIsKeyInUse("int_key");
+
+        mSubject.writeBoolean("bool_key", true);
+        verify(mChecker, times(1)).assertIsKeyInUse("bool_key");
+        mSubject.readBoolean("bool_key", false);
+        verify(mChecker, times(2)).assertIsKeyInUse("bool_key");
+
+        mSubject.writeString("string_key", "foo");
+        verify(mChecker, times(1)).assertIsKeyInUse("string_key");
+        mSubject.readString("string_key", "");
+        verify(mChecker, times(2)).assertIsKeyInUse("string_key");
+
+        mSubject.writeLong("long_key", 999L);
+        verify(mChecker, times(1)).assertIsKeyInUse("long_key");
+        mSubject.readLong("long_key");
+        verify(mChecker, times(2)).assertIsKeyInUse("long_key");
+
+        mSubject.writeStringSet("string_set_key", new HashSet<>());
+        verify(mChecker, times(1)).assertIsKeyInUse("string_set_key");
+        mSubject.readStringSet("string_set_key");
+        verify(mChecker, times(2)).assertIsKeyInUse("string_set_key");
+        mSubject.addToStringSet("string_set_key", "bar");
+        verify(mChecker, times(3)).assertIsKeyInUse("string_set_key");
+        mSubject.removeFromStringSet("string_set_key", "bar");
+        verify(mChecker, times(4)).assertIsKeyInUse("string_set_key");
+
+        mSubject.removeKey("some_key");
+        verify(mChecker, times(1)).assertIsKeyInUse("some_key");
+    }
+
+    private static class TestObserver implements SharedPreferencesManager.Observer {
+        int mEventCount;
+
+        @Override
+        public void onPreferenceChanged(String key) {
+            mEventCount++;
+        }
+    }
+
+    @Test
+    @SmallTest
+    public void testObserver() {
+        TestObserver observer = new TestObserver();
+        mSubject.addObserver(observer);
+
+        int expectedEventCount = 0;
+
+        // Each write should issue an event.
+        mSubject.writeInt("int_key", 99);
+        expectedEventCount++;
+        assertEquals(expectedEventCount, observer.mEventCount);
+
+        mSubject.writeInt("int_key", 88);
+        expectedEventCount++;
+        assertEquals(expectedEventCount, observer.mEventCount);
+
+        mSubject.incrementInt("int_key");
+        expectedEventCount++;
+        assertEquals(expectedEventCount, observer.mEventCount);
+
+        // Reads should not trigger events.
+        mSubject.readInt("int_key");
+        assertEquals(expectedEventCount, observer.mEventCount);
+
+        // Removing a key should trigger an event.
+        mSubject.removeKey("int_key");
+        expectedEventCount++;
+        assertEquals(expectedEventCount, observer.mEventCount);
+
+        // Modifying any key should trigger an event.
+        mSubject.writeString("string_key", "foo");
+        expectedEventCount++;
+        assertEquals(expectedEventCount, observer.mEventCount);
+
+        // After removing the observer, it should stop getting events.
+        mSubject.removeObserver(observer);
+        mSubject.writeString("string_key", "bar");
+        assertEquals(expectedEventCount, observer.mEventCount);
+    }
+}

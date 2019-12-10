@@ -273,8 +273,8 @@ TEST_F(CALayerOverlayTest, AllowNonAxisAlignedTransform) {
 
   gfx::Rect damage_rect;
   CALayerOverlayList ca_layer_list;
-  OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
+  OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
+  OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
@@ -295,8 +295,8 @@ TEST_F(CALayerOverlayTest, ThreeDTransform) {
       ->quad_to_target_transform.RotateAboutXAxis(45.f);
 
   CALayerOverlayList ca_layer_list;
-  OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
+  OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
+  OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
@@ -321,8 +321,8 @@ TEST_F(CALayerOverlayTest, AllowContainingClip) {
 
   gfx::Rect damage_rect;
   CALayerOverlayList ca_layer_list;
-  OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
+  OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
+  OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
@@ -344,8 +344,8 @@ TEST_F(CALayerOverlayTest, NontrivialClip) {
 
   gfx::Rect damage_rect;
   CALayerOverlayList ca_layer_list;
-  OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
+  OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
+  OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
@@ -369,8 +369,8 @@ TEST_F(CALayerOverlayTest, SkipTransparent) {
 
   gfx::Rect damage_rect;
   CALayerOverlayList ca_layer_list;
-  OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
+  OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
+  OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
@@ -404,8 +404,8 @@ class CALayerOverlayRPDQTest : public CALayerOverlayTest {
   int render_pass_id_;
   cc::FilterOperations filters_;
   cc::FilterOperations backdrop_filters_;
-  OverlayProcessor::FilterOperationsMap render_pass_filters_;
-  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters_;
+  OverlayProcessorInterface::FilterOperationsMap render_pass_filters_;
+  OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters_;
   CALayerOverlayList ca_layer_list_;
 };
 

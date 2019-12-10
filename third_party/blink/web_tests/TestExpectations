@@ -442,6 +442,8 @@ crbug.com/417223 external/wpt/css/css-position/position-relative-table-tr-left-a
 crbug.com/417223 external/wpt/css/css-position/position-relative-table-tr-left.html [ Failure ]
 crbug.com/417223 external/wpt/css/css-position/position-relative-table-tr-top-absolute-child.html [ Failure ]
 crbug.com/417223 external/wpt/css/css-position/position-relative-table-tr-top.html [ Failure ]
+crbug.com/845235 external/wpt/css/css-position/position-absolute-center-001.tentative.html [ Failure ]
+crbug.com/845235 external/wpt/css/css-position/position-absolute-center-002.tentative.html [ Failure ]
 
 crbug.com/949909 external/wpt/css/css-text-decor/text-emphasis-color-001.xht [ Failure ]
 crbug.com/949909 external/wpt/css/css-text-decor/text-emphasis-position-above-left-001.xht [ Failure ]
@@ -690,7 +692,14 @@ crbug.com/799016 external/wpt/css/css-align/baseline-rules/synthesized-baseline-
 # Layout team disagrees with the spec for this particular test.
 crbug.com/591099 external/wpt/css/css-ui/text-overflow-015.html [ Failure ]
 
+# [css-flexbox]
+
 crbug.com/1003506 external/wpt/css/css-flexbox/percentage-heights-007.html [ Failure ]
+crbug.com/1025630 [ Mac ] external/wpt/css/css-flexbox/select-element-zero-height-001.html [ Failure ]
+crbug.com/1025630 [ Mac ] external/wpt/css/css-flexbox/select-element-zero-height-002.html [ Failure ]
+crbug.com/1025630 [ Mac ] virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/select-element-zero-height-001.html [ Failure ]
+crbug.com/1025630 [ Mac ] virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/select-element-zero-height-002.html [ Failure ]
+
 
 # ====== Layout team owned tests to here ======
 
@@ -1336,7 +1345,6 @@ crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/negative-overflow.html 
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/order-painting.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/overflow-auto-resizes-correctly.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/percentage-height-replaced-element.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/position-absolute-child.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/relpos-with-percentage-top.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/style-change.html [ Failure ]
 
@@ -1372,8 +1380,6 @@ crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/order_v
 crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/overflow-top-left.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/percentage-heights-007.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/percentage-heights-quirks-node.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/position-absolute-001.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/position-absolute-002.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/quirks-auto-block-size-with-percentage-item.html [ Pass Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/scrollbars-auto.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/scrollbars.html [ Failure ]
@@ -2704,6 +2710,9 @@ crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking
 crbug.com/1029514 external/wpt/html/semantics/embedded-content/the-video-element/resize-during-playback.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/motion/offset-anchor-transform-box-fill-box-003.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/motion/offset-anchor-transform-box-fill-box-003.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/motion/offset-anchor-transform-box-fill-box-003.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/filter-effects/backdrop-filter-containing-block.html [ Failure ]
 crbug.com/626703 [ Linux ] virtual/scalefactor200/external/wpt/css/filter-effects/backdrop-filter-basic-opacity-2.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/filter-effects/css-filters-animation-opacity.html [ Failure ]
@@ -2755,10 +2764,6 @@ crbug.com/626703 [ Win ] external/wpt/html/semantics/document-metadata/the-link-
 crbug.com/626703 [ Linux ] external/wpt/html/semantics/document-metadata/the-link-element/link-multiple-load-events.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/html/semantics/document-metadata/the-link-element/link-multiple-load-events.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/html/semantics/document-metadata/the-link-element/link-multiple-load-events.html [ Timeout ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-flexbox/select-element-zero-height-001.html [ Failure ]
-crbug.com/626703 [ Mac ] virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/select-element-zero-height-001.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-flexbox/select-element-zero-height-002.html [ Failure ]
-crbug.com/626703 [ Mac ] virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/select-element-zero-height-002.html [ Failure ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/input-events/input-events-typing.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/mathml/relations/html5-tree/css-inline-style-dynamic.tentative.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/input-events/input-events-typing.html [ Timeout ]

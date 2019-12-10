@@ -60,15 +60,9 @@ void SharedContextState::MemoryTracker::OnMemoryAllocatedChange(
     CommandBufferId id,
     uint64_t old_size,
     uint64_t new_size) {
-  uint64_t delta = new_size - old_size;
-  old_size = size_;
-  size_ += delta;
+  size_ += new_size - old_size;
   if (peak_memory_monitor_)
-    peak_memory_monitor_->OnMemoryAllocatedChange(id, old_size, size_);
-}
-
-uint64_t SharedContextState::MemoryTracker::GetMemoryUsage() const {
-  return size_;
+    peak_memory_monitor_->OnMemoryAllocatedChange(id, old_size, new_size);
 }
 
 SharedContextState::SharedContextState(
@@ -140,6 +134,15 @@ SharedContextState::~SharedContextState() {
   // InitializeGrContext(), so |owned_gr_context_| is not expected to be
   // initialized.
   DCHECK(!owned_gr_context_ || owned_gr_context_->unique());
+
+  // GPU memory allocations except skia_gr_cache_size_ tracked by this
+  // memory_tracker_ should have been released.
+  DCHECK_EQ(skia_gr_cache_size_, memory_tracker_.GetMemoryUsage());
+  // gr_context_ and all resources owned by it will be released soon, so set it
+  // to null, and UpdateSkiaOwnedMemorySize() will update skia memory usage to
+  // 0, to ensure that PeakGpuMemoryMonitor sees 0 allocated memory.
+  gr_context_ = nullptr;
+  UpdateSkiaOwnedMemorySize();
 
   // Delete the GrContext. This will either do cleanup if the context is
   // current, or the GrContext was already abandoned if the GLContext was lost.
@@ -332,6 +335,7 @@ void SharedContextState::MarkContextLost() {
       context_state_->MarkContextLost();
     if (gr_context_)
       gr_context_->abandonContext();
+    UpdateSkiaOwnedMemorySize();
     std::move(context_lost_callback_).Run();
     for (auto& observer : context_lost_observers_)
       observer.OnContextLost();
@@ -388,6 +392,7 @@ void SharedContextState::PurgeMemory(
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
       // With moderate pressure, clear any unlocked resources.
       gr_context_->purgeUnlockedResources(true /* scratchResourcesOnly */);
+      UpdateSkiaOwnedMemorySize();
       scratch_deserialization_buffer_.resize(
           kInitialScratchDeserializationBufferSize);
       scratch_deserialization_buffer_.shrink_to_fit();
@@ -395,12 +400,36 @@ void SharedContextState::PurgeMemory(
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
       // With critical pressure, purge as much as possible.
       gr_context_->freeGpuResources();
+      UpdateSkiaOwnedMemorySize();
       scratch_deserialization_buffer_.resize(0u);
       scratch_deserialization_buffer_.shrink_to_fit();
       break;
   }
 
   transfer_cache_->PurgeMemory(memory_pressure_level);
+}
+
+uint64_t SharedContextState::GetMemoryUsage() {
+  UpdateSkiaOwnedMemorySize();
+  return memory_tracker_.GetMemoryUsage();
+}
+
+void SharedContextState::UpdateSkiaOwnedMemorySize() {
+  if (!gr_context_) {
+    memory_tracker_.OnMemoryAllocatedChange(
+        CommandBufferId::FromUnsafeValue(0u), skia_gr_cache_size_, 0u);
+    skia_gr_cache_size_ = 0u;
+    return;
+  }
+  size_t new_size;
+  gr_context_->getResourceCacheUsage(nullptr /* resourceCount */, &new_size);
+  // Skia does not have a CommandBufferId. PeakMemoryMonitor currently does not
+  // use CommandBufferId to identify source, so use zero here to separate
+  // prevent confusion.
+  memory_tracker_.OnMemoryAllocatedChange(CommandBufferId::FromUnsafeValue(0u),
+                                          skia_gr_cache_size_,
+                                          static_cast<uint64_t>(new_size));
+  skia_gr_cache_size_ = static_cast<uint64_t>(new_size);
 }
 
 void SharedContextState::PessimisticallyResetGrContext() const {

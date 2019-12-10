@@ -268,7 +268,7 @@ bool DownloadDatabase::MigrateHashHttpMethodAndGenerateGuids() {
       base::StringPrintf("UPDATE %s SET guid = ? WHERE id = ?", kDownloadsTable)
           .c_str()));
   while (select.Step()) {
-    uint32_t id = select.ColumnInt(0);
+    int id = select.ColumnInt(0);
     uint64_t r1 = base::RandUint64();
     uint64_t r2 = base::RandUint64();
     std::string guid = base::StringPrintf(
@@ -598,7 +598,7 @@ bool DownloadDatabase::UpdateDownload(const DownloadRow& data) {
   statement.BindString(column++, data.by_ext_name);
   statement.BindString(column++, data.etag);
   statement.BindString(column++, data.last_modified);
-  statement.BindInt(column++, DownloadIdToInt(data.id));
+  statement.BindInt64(column++, DownloadIdToInt(data.id));
 
   if (!statement.Run())
     return false;
@@ -667,7 +667,7 @@ bool DownloadDatabase::CreateDownload(const DownloadRow& info) {
             .c_str()));
 
     int column = 0;
-    statement_insert.BindInt(column++, DownloadIdToInt(info.id));
+    statement_insert.BindInt64(column++, DownloadIdToInt(info.id));
     statement_insert.BindString(column++, info.guid);
     BindFilePath(statement_insert, info.current_path, column++);
     BindFilePath(statement_insert, info.target_path, column++);
@@ -711,7 +711,7 @@ bool DownloadDatabase::CreateDownload(const DownloadRow& info) {
   {
     sql::Statement count_urls(GetDB().GetCachedStatement(SQL_FROM_HERE,
         "SELECT count(*) FROM downloads_url_chains WHERE id=?"));
-    count_urls.BindInt(0, info.id);
+    count_urls.BindInt64(0, info.id);
     if (count_urls.Step()) {
       bool corrupt_urls = count_urls.ColumnInt(0) > 0;
       if (corrupt_urls) {
@@ -729,7 +729,7 @@ bool DownloadDatabase::CreateDownload(const DownloadRow& info) {
                                  "(id, chain_index, url) "
                                  "VALUES (?, ?, ?)"));
   for (size_t i = 0; i < info.url_chain.size(); ++i) {
-    statement_insert_chain.BindInt(0, info.id);
+    statement_insert_chain.BindInt64(0, info.id);
     statement_insert_chain.BindInt(1, static_cast<int>(i));
     statement_insert_chain.BindString(2, info.url_chain[i].spec());
     if (!statement_insert_chain.Run()) {
@@ -758,7 +758,7 @@ void DownloadDatabase::RemoveDownload(DownloadId id) {
       SQL_FROM_HERE,
       base::StringPrintf("DELETE FROM %s WHERE id=?", kDownloadsTable)
           .c_str()));
-  downloads_statement.BindInt(0, id);
+  downloads_statement.BindInt64(0, id);
   if (!downloads_statement.Run()) {
     UMA_HISTOGRAM_ENUMERATION("Download.DatabaseMainDeleteError",
                               GetDB().GetErrorCode() & 0xff, 50);
@@ -771,7 +771,7 @@ void DownloadDatabase::RemoveDownload(DownloadId id) {
 void DownloadDatabase::RemoveDownloadURLs(DownloadId id) {
   sql::Statement urlchain_statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM downloads_url_chains WHERE id=?"));
-  urlchain_statement.BindInt(0, id);
+  urlchain_statement.BindInt64(0, id);
   if (!urlchain_statement.Run()) {
     UMA_HISTOGRAM_ENUMERATION("Download.DatabaseURLChainDeleteError",
                               GetDB().GetErrorCode() & 0xff, 50);
@@ -803,7 +803,7 @@ bool DownloadDatabase::CreateOrUpdateDownloadSlice(
                          kDownloadsSlicesTable)
           .c_str()));
   int column = 0;
-  statement_replace.BindInt(column++, info.download_id);
+  statement_replace.BindInt64(column++, info.download_id);
   statement_replace.BindInt64(column++, info.offset);
   statement_replace.BindInt64(column++, info.received_bytes);
   statement_replace.BindInt64(column++, (info.finished ? 1 : 0));
@@ -815,7 +815,7 @@ void DownloadDatabase::RemoveDownloadSlices(DownloadId id) {
       SQL_FROM_HERE, base::StringPrintf("DELETE FROM %s WHERE download_id=?",
                                         kDownloadsSlicesTable)
                          .c_str()));
-  statement_delete.BindInt(0, id);
+  statement_delete.BindInt64(0, id);
   statement_delete.Run();
 }
 

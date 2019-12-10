@@ -16,7 +16,7 @@ const mojo::Remote<printing::mojom::PrintingService>& GetPrintingService() {
         remote->BindNewPipeAndPassReceiver(),
         content::ServiceProcessHost::Options()
             .WithDisplayName(IDS_UTILITY_PROCESS_PRINTING_SERVICE_NAME)
-            .WithSandboxType(service_manager::SANDBOX_TYPE_UTILITY)
+            .WithSandboxType(service_manager::SandboxType::kUtility)
             .Pass());
 
     // Ensure that if the interface is ever disconnected (e.g. the service

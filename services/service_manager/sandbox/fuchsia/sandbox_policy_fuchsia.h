@@ -34,7 +34,7 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxPolicyFuchsia {
   void Initialize(service_manager::SandboxType type);
 
   // Sets the service directory to pass to the child process when launching it.
-  // This is only supported for SANDBOX_TYPE_WEB_CONTEXT processes.  If this is
+  // This is only supported for SandboxType::kWebContext processes.  If this is
   // not called for a WEB_CONTEXT process then it will receive no services.
   void SetServiceDirectory(
       fidl::InterfaceHandle<::fuchsia::io::Directory> service_directory_client);
@@ -46,7 +46,7 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxPolicyFuchsia {
   void UpdateLaunchOptionsForSandbox(base::LaunchOptions* options);
 
  private:
-  service_manager::SandboxType type_ = service_manager::SANDBOX_TYPE_INVALID;
+  service_manager::SandboxType type_ = service_manager::SandboxType::kInvalid;
 
   // Services directory used for the /svc namespace of the child process.
   std::unique_ptr<base::fuchsia::FilteredServiceDirectory> service_directory_;

@@ -101,10 +101,9 @@ bool ShellDownloadManagerDelegate::ShouldOpenDownload(
   return true;
 }
 
-void ShellDownloadManagerDelegate::GetNextId(
-    const DownloadIdCallback& callback) {
+void ShellDownloadManagerDelegate::GetNextId(DownloadIdCallback callback) {
   static uint32_t next_id = download::DownloadItem::kInvalidId + 1;
-  callback.Run(next_id++);
+  std::move(callback).Run(next_id++);
 }
 
 // static

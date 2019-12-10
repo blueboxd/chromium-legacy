@@ -510,7 +510,7 @@ TraceConfig BackgroundTracingConfigImpl::GetConfigForCategoryPreset(
       return TraceConfig(
           "benchmark,toplevel,ipc,base,ui,v8,renderer,blink,blink_gc,mojom,"
           "latency,latencyInfo,renderer_host,cc,memory,dwrite,fonts,browser,"
-          "ServiceWorker,disabled-by-default-v8.gc,"
+          "ServiceWorker,disabled-by-default-v8.gc,disabled-by-default-file"
           "disabled-by-default-blink_gc,disabled-by-default-lifecycles,"
           "disabled-by-default-renderer.scheduler,"
           "disabled-by-default-system_stats,disabled-by-default-cpu_profiler",

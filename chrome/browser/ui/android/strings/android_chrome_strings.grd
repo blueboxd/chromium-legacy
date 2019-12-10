@@ -720,8 +720,8 @@ CHAR-LIMIT guidelines:
         Search and site suggestions disabled
       </message>
 
-      <!-- Themes preferences -->
-      <message name="IDS_PREFS_THEMES" desc="Title for the Themes preferences. [CHAR-LIMIT=32]">
+      <!-- Themes settings -->
+      <message name="IDS_THEME_SETTINGS" desc="Title for the Theme settings. [CHAR-LIMIT=32]">
         Themes
       </message>
       <message name="IDS_THEMES_SYSTEM_DEFAULT_TITLE" desc="Title for the System Default option. [CHAR-LIMIT=32]">

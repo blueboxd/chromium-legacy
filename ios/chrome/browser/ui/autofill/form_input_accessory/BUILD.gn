@@ -26,6 +26,7 @@ source_set("form_input_accessory") {
     "//ios/chrome/browser/autofill:autofill_shared",
     "//ios/chrome/browser/autofill/manual_fill",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/main",
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/ui/autofill/manual_fill",
     "//ios/chrome/browser/ui/autofill/manual_fill:manual_fill_ui",

@@ -21,6 +21,10 @@
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_manager.h"
 
+#if defined(ADDRESS_SANITIZER)
+#include <sanitizer/asan_interface.h>
+#endif  // defined(ADDRESS_SANITIZER)
+
 namespace {
 
 constexpr intptr_t kPageMagicCookie = 1;
@@ -92,6 +96,13 @@ bool MadvFreeDiscardableMemoryPosix::Lock() {
   if (!data_)
     return false;
 
+#if defined(ADDRESS_SANITIZER)
+  // We need to unpoison here since locking pages writes to them.
+  // Note that even if locking fails, we want to unpoison anyways after
+  // deallocation.
+  ASAN_UNPOISON_MEMORY_REGION(data_, allocated_pages_ * base::GetPageSize());
+#endif  // defined(ADDRESS_SANITIZER)
+
   size_t page_index;
   for (page_index = 0; page_index < allocated_pages_; ++page_index) {
     if (!LockPage(page_index))
@@ -126,6 +137,10 @@ void MadvFreeDiscardableMemoryPosix::Unlock() {
     DPCHECK(!retval);
   }
 #endif
+
+#if defined(ADDRESS_SANITIZER)
+  ASAN_POISON_MEMORY_REGION(data_, allocated_pages_ * base::GetPageSize());
+#endif  // defined(ADDRESS_SANITIZER)
 
   is_locked_ = false;
 }
@@ -291,6 +306,10 @@ bool MadvFreeDiscardableMemoryPosix::IsDiscarded() const {
 bool MadvFreeDiscardableMemoryPosix::Deallocate() {
   DFAKE_SCOPED_RECURSIVE_LOCK(thread_collision_warner_);
   if (data_) {
+#if defined(ADDRESS_SANITIZER)
+    ASAN_UNPOISON_MEMORY_REGION(data_, allocated_pages_ * base::GetPageSize());
+#endif  // defined(ADDRESS_SANITIZER)
+
     int retval = munmap(data_, allocated_pages_ * base::GetPageSize());
     PCHECK(!retval);
     data_ = nullptr;

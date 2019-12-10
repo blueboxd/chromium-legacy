@@ -44,10 +44,10 @@ import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.DiscardableReferencePool;
+import org.chromium.base.MathUtils;
 import org.chromium.base.ObservableSupplier;
 import org.chromium.base.ObservableSupplierImpl;
 import org.chromium.base.StrictModeContext;
-import org.chromium.base.Supplier;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.UsedByReflection;
@@ -62,7 +62,6 @@ import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabPanel;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
@@ -101,7 +100,6 @@ import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.chrome.browser.init.StartupTabPreloader;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingComponent;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingComponentFactory;
-import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.media.PictureInPictureController;
 import org.chromium.chrome.browser.metrics.ActivityTabStartupMetricsTracker;
@@ -156,15 +154,12 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.chrome.browser.ui.widget.textbubble.TextBubble;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
-import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.vr.ArDelegate;
 import org.chromium.chrome.browser.vr.ArDelegateProvider;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.webapps.addtohomescreen.AddToHomescreenCoordinator;
 import org.chromium.chrome.browser.widget.ScrimView;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
-import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
@@ -186,7 +181,6 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayUtil;
 import org.chromium.ui.modaldialog.ModalDialogManager;
-import org.chromium.ui.util.TokenHolder;
 import org.chromium.ui.widget.Toast;
 import org.chromium.webapk.lib.client.WebApkNavigationClient;
 import org.chromium.webapk.lib.client.WebApkValidator;
@@ -205,9 +199,10 @@ import java.util.function.Consumer;
 public abstract class ChromeActivity<C extends ChromeActivityComponent>
         extends AsyncInitializationActivity
         implements TabCreatorManager, AccessibilityStateChangeListener, PolicyChangeListener,
-                   ContextualSearchTabPromotionDelegate, SnackbarManageable, SceneChangeObserver,
-                   StatusBarColorController.StatusBarColorProvider, AppMenuDelegate, AppMenuBlocker,
-                   MenuOrKeyboardActionController {
+                   ContextualSearchTabPromotionDelegate,
+                   BottomSheetController.ObscuringAllTabsDelegate, SnackbarManageable,
+                   SceneChangeObserver, StatusBarColorController.StatusBarColorProvider,
+                   AppMenuDelegate, AppMenuBlocker, MenuOrKeyboardActionController {
     /**
      * No control container to inflate during initialization.
      */
@@ -273,12 +268,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private ContextualSearchManager mContextualSearchManager;
     protected ReaderModeManager mReaderModeManager;
     private SnackbarManager mSnackbarManager;
-    private SnackbarManager mBottomSheetSnackbarManager;
 
-    private BottomSheetController mBottomSheetController;
     private EphemeralTabCoordinator mEphemeralTabCoordinator;
     private UpdateNotificationController mUpdateNotificationController;
-    private ScrimView mScrimView;
     private StatusBarColorController mStatusBarColorController;
     private ShareDelegate mShareDelegate;
 
@@ -344,9 +336,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // onPreInflationStartup event.
         mComponent = createComponent();
 
-        super.performPreInflationStartup();
-
+        // Make sure the root coordinator is created prior to calling super to ensure all the
+        // activity lifecycle events are called.
         mRootUiCoordinator = createRootUiCoordinator();
+
+        super.performPreInflationStartup();
 
         VrModuleProvider.getDelegate().doPreInflationStartup(this, getSavedInstanceState());
 
@@ -415,13 +409,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         try (TraceEvent te = TraceEvent.scoped("ChromeActivity.performPostInflationStartup")) {
             super.performPostInflationStartup();
 
-            ViewGroup coordinator = findViewById(R.id.coordinator);
-            mScrimView = new ScrimView(
-                    this, getStatusBarColorController().getStatusBarScrimDelegate(), coordinator);
-
-            initializeBottomSheetController();
-            mShareDelegate = new ShareDelegateImpl(mBottomSheetController, getActivityTabProvider(),
-                    new ShareDelegateImpl.ShareSheetDelegate());
+            mShareDelegate = new ShareDelegateImpl(mRootUiCoordinator.getBottomSheetController(),
+                    getActivityTabProvider(), new ShareDelegateImpl.ShareSheetDelegate());
             mShareDelegateSupplier.set(mShareDelegate);
 
             Intent intent = getIntent();
@@ -701,7 +690,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * @return The View used to obscure content and bring focus to a foreground view.
      */
     public ScrimView getScrim() {
-        return mScrimView;
+        return mRootUiCoordinator.getScrim();
     }
 
     @Override
@@ -1297,11 +1286,12 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     @Override
     public SnackbarManager getSnackbarManager() {
-        if (getBottomSheetController() == null) return mSnackbarManager;
-
-        boolean useBottomSheetContainer = getBottomSheetController().isSheetOpen()
-                && getBottomSheetController().isSheetHiding();
-        return useBottomSheetContainer ? mBottomSheetSnackbarManager : mSnackbarManager;
+        if (mRootUiCoordinator != null && getBottomSheetController() != null
+                && getBottomSheetController().isSheetOpen()
+                && getBottomSheetController().isSheetHiding()) {
+            return mRootUiCoordinator.getBottomSheetSnackbarManager();
+        }
+        return mSnackbarManager;
     }
 
     @Override
@@ -1394,7 +1384,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 AutofillAssistantFacade.areDirectActionsAvailable(getActivityType())
                         ? getBottomSheetController()
                         : null,
-                mScrimView);
+                getScrim());
     }
 
     /**
@@ -1411,117 +1401,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     public @Nullable ObservableSupplier<OverviewModeBehavior> getOverviewModeBehaviorSupplier() {
         return null;
-    }
-
-    /**
-     * Initializes the {@link BottomSheetController}. The bottom sheet is only initialized after
-     * content is requested for the first time.
-     */
-    protected void initializeBottomSheetController() {
-        Supplier<View> sheetViewSupplier = () -> {
-            ViewGroup coordinator = findViewById(R.id.coordinator);
-            getLayoutInflater().inflate(R.layout.bottom_sheet, coordinator);
-
-            View sheet = coordinator.findViewById(R.id.bottom_sheet);
-
-            mBottomSheetSnackbarManager = new SnackbarManager(
-                    this, sheet.findViewById(R.id.bottom_sheet_snackbar_container), null);
-
-            return sheet;
-        };
-
-        Supplier<OverlayPanelManager> panelManagerSupplier =
-                () -> getCompositorViewHolder().getLayoutManager().getOverlayPanelManager();
-
-        mBottomSheetController = new BottomSheetController(getLifecycleDispatcher(),
-                mActivityTabProvider, mScrimView, sheetViewSupplier, panelManagerSupplier,
-                getFullscreenManager(), getWindow(), getWindowAndroid().getKeyboardDelegate());
-
-        ChromeFullscreenManager.FullscreenListener fullscreenListener =
-                new ChromeFullscreenManager.FullscreenListener() {
-                    @Override
-                    public void onContentOffsetChanged(int offset) {}
-
-                    @Override
-                    public void onControlsOffsetChanged(
-                            int topOffset, int bottomOffset, boolean needsAnimate) {}
-
-                    @Override
-                    public void onToggleOverlayVideoMode(boolean enabled) {
-                        if (mBottomSheetController.isSheetOpen()) {
-                            mBottomSheetController.collapseSheet(false);
-                        }
-                    }
-
-                    @Override
-                    public void onBottomControlsHeightChanged(
-                            int bottomControlsHeight, int bottomControlsMinHeight) {}
-                };
-        getFullscreenManager().addListener(fullscreenListener);
-
-        getLifecycleDispatcher().register((Destroyable) () -> {
-            if (mFullscreenManager == null) return;
-            mFullscreenManager.removeListener(fullscreenListener);
-        });
-
-        mBottomSheetController.addObserver(new EmptyBottomSheetObserver() {
-            /** A token for suppressing app modal dialogs. */
-            private int mAppModalToken = TokenHolder.INVALID_TOKEN;
-            /** A token for suppressing tab modal dialogs. */
-            private int mTabModalToken = TokenHolder.INVALID_TOKEN;
-
-            @Override
-            public void onSheetOpened(int reason) {
-                Tab activeTab = mActivityTabProvider.get();
-                if (activeTab != null) {
-                    WebContents webContents = activeTab.getWebContents();
-                    if (webContents != null) {
-                        SelectionPopupController.fromWebContents(webContents).clearSelection();
-                    }
-                }
-
-                BottomSheetContent content = mBottomSheetController.getCurrentSheetContent();
-                // Content with a custom scrim lifecycle should not obscure the tab. The feature
-                // is responsible for adding itself to the list of obscuring views when applicable.
-                if (content != null && content.hasCustomScrimLifecycle()) return;
-
-                mBottomSheetController.setIsObscuringAllTabs(ChromeActivity.this, true);
-
-                assert mAppModalToken == TokenHolder.INVALID_TOKEN;
-                assert mTabModalToken == TokenHolder.INVALID_TOKEN;
-                if (getModalDialogManager() != null) {
-                    mAppModalToken = getModalDialogManager().suspendType(
-                            ModalDialogManager.ModalDialogType.APP);
-                    mTabModalToken = getModalDialogManager().suspendType(
-                            ModalDialogManager.ModalDialogType.TAB);
-                }
-            }
-
-            @Override
-            public void onSheetClosed(int reason) {
-                // This can happen if the sheet has a custom lifecycle.
-                if (mAppModalToken == TokenHolder.INVALID_TOKEN
-                        && mTabModalToken == TokenHolder.INVALID_TOKEN) {
-                    return;
-                }
-
-                mBottomSheetController.setIsObscuringAllTabs(ChromeActivity.this, false);
-
-                if (getModalDialogManager() != null) {
-                    getModalDialogManager().resumeType(
-                            ModalDialogManager.ModalDialogType.APP, mAppModalToken);
-                    getModalDialogManager().resumeType(
-                            ModalDialogManager.ModalDialogType.TAB, mTabModalToken);
-                }
-                mAppModalToken = TokenHolder.INVALID_TOKEN;
-                mTabModalToken = TokenHolder.INVALID_TOKEN;
-            }
-
-            @Override
-            public void onSheetOffsetChanged(float heightFraction, float offsetPx) {
-                mBottomSheetSnackbarManager.dismissAllSnackbars();
-            }
-        });
     }
 
     /**
@@ -2245,13 +2124,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         RecordUserAction.record(recordAction);
     }
 
-    /**
-     * Add a view to the set of views that obscure the content of all tabs for
-     * accessibility. As long as this set is nonempty, all tabs should be
-     * hidden from the accessibility tree.
-     *
-     * @param view The view that obscures the contents of all tabs.
-     */
+    @Override
     public void addViewObscuringAllTabs(View view) {
         mViewsObscuringAllTabs.add(view);
 
@@ -2259,11 +2132,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (tab != null) tab.updateAccessibilityVisibility();
     }
 
-    /**
-     * Remove a view that previously obscured the content of all tabs.
-     *
-     * @param view The view that no longer obscures the contents of all tabs.
-     */
+    @Override
     public void removeViewObscuringAllTabs(View view) {
         mViewsObscuringAllTabs.remove(view);
 
@@ -2271,9 +2140,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (tab != null) tab.updateAccessibilityVisibility();
     }
 
-    /**
-     * Returns whether or not any views obscure all tabs.
-     */
+    @Override
     public boolean isViewObscuringAllTabs() {
         return !mViewsObscuringAllTabs.isEmpty();
     }
@@ -2546,7 +2413,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      *         a new controller is created.
      */
     public BottomSheetController getBottomSheetController() {
-        return mBottomSheetController;
+        return mRootUiCoordinator.getBottomSheetController();
     }
 
     /**

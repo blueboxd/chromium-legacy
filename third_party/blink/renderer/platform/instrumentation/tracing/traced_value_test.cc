@@ -4,17 +4,17 @@
 
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 
+#include <utility>
+
 #include "base/json/json_reader.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
-std::unique_ptr<base::Value> ParseTracedValue(
+base::Optional<base::Value> ParseTracedValue(
     std::unique_ptr<TracedValue> value) {
-  base::JSONReader reader;
-  return reader.ReadDeprecated(value->ToString().Utf8());
+  return base::JSONReader::Read(value->ToString().Utf8());
 }
 
 TEST(TracedValueTest, FlatDictionary) {
@@ -24,7 +24,7 @@ TEST(TracedValueTest, FlatDictionary) {
   value->SetBooleanWithCopiedName("bool", true);
   value->SetStringWithCopiedName("string", "string");
 
-  std::unique_ptr<base::Value> parsed = ParseTracedValue(std::move(value));
+  base::Optional<base::Value> parsed = ParseTracedValue(std::move(value));
   base::DictionaryValue* dictionary;
   ASSERT_TRUE(parsed->GetAsDictionary(&dictionary));
   int int_value;
@@ -59,7 +59,7 @@ TEST(TracedValueTest, Hierarchy) {
   value->EndArray();
   value->SetStringWithCopiedName("s0", "foo");
 
-  std::unique_ptr<base::Value> parsed = ParseTracedValue(std::move(value));
+  base::Optional<base::Value> parsed = ParseTracedValue(std::move(value));
   base::DictionaryValue* dictionary;
   ASSERT_TRUE(parsed->GetAsDictionary(&dictionary));
   int i0;
@@ -106,7 +106,7 @@ TEST(TracedValueTest, Escape) {
   value->SetStringWithCopiedName("s3\\", "value3");
   value->SetStringWithCopiedName("\"s4\"", "value4");
 
-  std::unique_ptr<base::Value> parsed = ParseTracedValue(std::move(value));
+  base::Optional<base::Value> parsed = ParseTracedValue(std::move(value));
   base::DictionaryValue* dictionary;
   ASSERT_TRUE(parsed->GetAsDictionary(&dictionary));
   std::string s0;
@@ -142,7 +142,7 @@ TEST(TracedValueTest, NonCopiedNames) {
   value->PushInteger(2);
   value->EndArray();
 
-  std::unique_ptr<base::Value> parsed = ParseTracedValue(std::move(value));
+  base::Optional<base::Value> parsed = ParseTracedValue(std::move(value));
   base::DictionaryValue* dictionary;
   ASSERT_TRUE(parsed->GetAsDictionary(&dictionary));
   int int_value;

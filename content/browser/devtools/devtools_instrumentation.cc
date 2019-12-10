@@ -72,15 +72,7 @@ FrameTreeNode* GetFtnForNetworkRequest(int process_id, int routing_id) {
   // the id is set to 0. In these situations, the routing_id is the frame tree
   // node id, and can be used directly.
   if (process_id == 0) {
-    FrameTreeNode* ftn = FrameTreeNode::GloballyFindByID(routing_id);
-    if (ftn == nullptr)
-      return nullptr;
-    // If this is a navigation request (process_id == 0) of a child frame
-    // (ftn->parent()), then requestWillBeSent and responseReceived are
-    // delivered to the parent frame instead of the child because we don't know
-    // if the child will become an OOPIF with a separate target yet or not. Do
-    // the same for requestWillBeSentExtraInfo and responseReceivedExtraInfo.
-    return ftn->parent() ? ftn->parent() : ftn;
+    return FrameTreeNode::GloballyFindByID(routing_id);
   }
   return FrameTreeNode::GloballyFindByID(
       RenderFrameHost::GetFrameTreeNodeIdForRoutingId(process_id, routing_id));

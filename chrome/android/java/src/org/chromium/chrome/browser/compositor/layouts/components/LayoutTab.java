@@ -9,10 +9,10 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.RectF;
 
+import org.chromium.base.MathUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.animation.FloatProperty;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.MathUtils;
 
 /**
  * {@link LayoutTab} is used to keep track of a thumbnail's bitmap and position and to

@@ -35,6 +35,10 @@ struct CoreAccountId {
   // Checks if the account is valid or not.
   bool empty() const;
 
+  // Returns true if this CoreAccountId was created from an email.
+  // Returns false if it is empty.
+  bool IsEmail() const;
+
   // Return the string representation of a CoreAccountID.
   //
   // As explained above, the string representation of a CoreAccountId is

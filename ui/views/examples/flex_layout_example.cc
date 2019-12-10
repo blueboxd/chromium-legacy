@@ -45,9 +45,6 @@ void FlexLayoutExample::CreateAdditionalControls(int vertical_pos) {
   cross_axis_alignment_ = CreateCombobox(base::ASCIIToUTF16("Cross axis"),
                                          cross_axis_values, 4, &vertical_pos);
 
-  between_child_spacing_ =
-      CreateTextfield(base::ASCIIToUTF16("Child spacing"), &vertical_pos);
-
   CreateMarginsTextFields(base::ASCIIToUTF16("Interior margin"),
                           &interior_margin_, &vertical_pos);
 
@@ -90,11 +87,6 @@ void FlexLayoutExample::ContentsChanged(Textfield* sender,
       LayoutExampleBase::TextfieldsToInsets(interior_margin_));
   layout_->SetDefault(views::kMarginsKey, LayoutExampleBase::TextfieldsToInsets(
                                               default_child_margins_));
-  if (sender == between_child_spacing_) {
-    int spacing;
-    if (base::StringToInt(between_child_spacing_->GetText(), &spacing))
-      layout_->SetBetweenChildSpacing(spacing);
-  }
   RefreshLayoutPanel(false);
 }
 

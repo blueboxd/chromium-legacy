@@ -141,15 +141,15 @@ bool DevToolsDownloadManagerDelegate::ShouldOpenDownload(
 }
 
 void DevToolsDownloadManagerDelegate::GetNextId(
-    const content::DownloadIdCallback& callback) {
+    content::DownloadIdCallback callback) {
   static uint32_t next_id = download::DownloadItem::kInvalidId + 1;
   // Be sure to follow the proxy delegate Ids to avoid compatibility problems
   // with the download manager.
   if (proxy_download_delegate_) {
-    proxy_download_delegate_->GetNextId(callback);
+    proxy_download_delegate_->GetNextId(std::move(callback));
     return;
   }
-  callback.Run(next_id++);
+  std::move(callback).Run(next_id++);
 }
 
 // static

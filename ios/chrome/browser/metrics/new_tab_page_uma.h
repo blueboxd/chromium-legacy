@@ -12,6 +12,9 @@ class ChromeBrowserState;
 }  // namespace ios
 
 class GURL;
+namespace web {
+class WebState;
+}
 
 // This namespace provides various helpers around handling NTP Uma calls.
 namespace new_tab_page_uma {
@@ -34,11 +37,20 @@ enum ActionType {
   NUM_ACTION_TYPES,
 };
 
-void RecordAction(ios::ChromeBrowserState* browserState, ActionType action);
-void RecordActionFromOmnibox(ios::ChromeBrowserState* browserState,
+void RecordAction(ios::ChromeBrowserState* browser_state,
+                  web::WebState* web_state,
+                  ActionType action);
+
+// DEPRECATED -- use the version above which passes web_state instead.
+// TODO(crbug.com/1032550) : Remove this function.
+void RecordAction(ios::ChromeBrowserState* browser_state, ActionType action);
+
+void RecordActionFromOmnibox(ios::ChromeBrowserState* browser_state,
+                             web::WebState* web_state,
                              const GURL& url,
                              ui::PageTransition transition,
-                             bool isExpectingVoiceSearch);
+                             bool is_expecting_voice_search);
+
 }  // namespace new_tab_page_uma
 
 #endif  // IOS_CHROME_BROWSER_METRICS_NEW_TAB_PAGE_UMA_H_

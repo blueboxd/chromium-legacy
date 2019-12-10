@@ -46,9 +46,6 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
     // Linker-specific parameters for this child process service.
     private ChromiumLinkerParams mLinkerParams;
 
-    // Child library process type.
-    private int mLibraryProcessType;
-
     private IGpuProcessCallback mGpuCallback;
 
     private int mCpuCount;
@@ -68,8 +65,8 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
     @Override
     public void onServiceBound(Intent intent) {
         mLinkerParams = ChromiumLinkerParams.create(intent.getExtras());
-        mLibraryProcessType =
-                ChildProcessCreationParamsImpl.getLibraryProcessType(intent.getExtras());
+        LibraryLoader.getInstance().setLibraryProcessType(
+                ChildProcessCreationParamsImpl.getLibraryProcessType(intent.getExtras()));
     }
 
     @Override
@@ -136,7 +133,7 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
     }
 
     private void initializeLibrary() {
-        LibraryLoader.getInstance().initialize(mLibraryProcessType);
+        LibraryLoader.getInstance().initialize();
 
         // Now that the library is loaded, get the FD map,
         // TODO(jcivelli): can this be done in onBeforeMain? We would have to mode onBeforeMain

@@ -1118,7 +1118,7 @@ bool AXNodeObject::ComputeIsEditableRoot() const {
 }
 
 bool AXNodeObject::IsEmbeddedObject() const {
-  return IsHTMLPlugInElement(GetNode());
+  return IsA<HTMLPlugInElement>(GetNode());
 }
 
 bool AXNodeObject::IsFieldset() const {
@@ -1238,10 +1238,7 @@ bool AXNodeObject::IsNativeImage() const {
   if (!node)
     return false;
 
-  if (IsA<HTMLImageElement>(*node))
-    return true;
-
-  if (IsHTMLPlugInElement(*node))
+  if (IsA<HTMLImageElement>(*node) || IsA<HTMLPlugInElement>(*node))
     return true;
 
   if (const auto* input = DynamicTo<HTMLInputElement>(*node))

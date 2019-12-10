@@ -102,7 +102,8 @@ void PageNodeImpl::OnMainFrameNavigationCommitted(
     bool same_document,
     base::TimeTicks navigation_committed_time,
     int64_t navigation_id,
-    const GURL& url) {
+    const GURL& url,
+    const std::string& contents_mime_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // This should never be invoked with a null navigation, nor should it be
   // called twice for the same navigation.
@@ -110,6 +111,7 @@ void PageNodeImpl::OnMainFrameNavigationCommitted(
   DCHECK_NE(navigation_id_, navigation_id);
   navigation_committed_time_ = navigation_committed_time;
   navigation_id_ = navigation_id;
+  contents_mime_type_ = contents_mime_type;
   main_frame_url_.SetAndMaybeNotify(this, url);
 
   // No mainframe document change notification on same-document navigations.
@@ -245,6 +247,11 @@ int64_t PageNodeImpl::navigation_id() const {
   return navigation_id_;
 }
 
+const std::string& PageNodeImpl::contents_mime_type() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return contents_mime_type_;
+}
+
 void PageNodeImpl::set_usage_estimate_time(
     base::TimeTicks usage_estimate_time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -348,6 +355,11 @@ bool PageNodeImpl::IsHoldingIndexedDBLock() const {
 int64_t PageNodeImpl::GetNavigationID() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return navigation_id();
+}
+
+const std::string& PageNodeImpl::GetContentsMimeType() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return contents_mime_type();
 }
 
 base::TimeDelta PageNodeImpl::GetTimeSinceLastNavigation() const {

@@ -122,7 +122,7 @@ void LaunchAudioServiceOutOfProcess(
       std::move(receiver),
       ServiceProcessHost::Options()
           .WithDisplayName("Audio Service")
-          .WithSandboxType(service_manager::SANDBOX_TYPE_AUDIO)
+          .WithSandboxType(service_manager::SandboxType::kAudio)
 #if defined(OS_MACOSX)
           // On Mac, the audio service requires a CFRunLoop provided by a
           // UI MessageLoop type, to run AVFoundation and CoreAudio code.

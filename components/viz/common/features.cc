@@ -48,17 +48,15 @@ const base::Feature kVizForWebView{"VizForWebView",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsVizDisplayCompositorEnabled() {
-#if defined(OS_MACOSX) || defined(OS_WIN)
-  // We can't remove the feature switch yet because OOP-D isn't enabled on all
-  // platforms but turning it off on Mac and Windows isn't supported. Don't
-  // check the feature switch for these platforms anymore.
-  return true;
-#else
+  // VizDisplayCompositor is always enabled except for WebView. Since we can't
+  // differentiate between Android browser and WebView at compile time we still
+  // need to check the feature there.
+  // TODO(kylechar): Switch over any remaining places this is needed in WebView
+  // to check VizForWebView feature instead of VizDisplayCompositor.
 #if defined(OS_ANDROID)
-  if (features::IsAndroidSurfaceControlEnabled())
-    return true;
-#endif
   return base::FeatureList::IsEnabled(kVizDisplayCompositor);
+#else
+  return true;
 #endif
 }
 

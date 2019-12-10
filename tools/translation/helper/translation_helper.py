@@ -217,7 +217,7 @@ def _parse_translation_expectations(path):
     untranslated_grds = []
     internal_grds = []
 
-    for group_name, settings in translations_expectations.iteritems():
+    for group_name, settings in translations_expectations.items():
       if group_name == 'untranslated_grds':
         untranslated_grds = list(settings.keys())
         assert_list_of_strings(untranslated_grds, 'untranslated_grds')

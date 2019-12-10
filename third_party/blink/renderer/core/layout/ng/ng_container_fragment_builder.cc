@@ -197,8 +197,17 @@ void NGContainerFragmentBuilder::AddOutOfFlowChildCandidate(
     NGLogicalStaticPosition::BlockEdge block_edge) {
   DCHECK(child);
 
+  // If an OOF-positioned candidate has a static-position which uses a
+  // non-block-start edge, we need to adjust its static-position when the final
+  // block-size is known.
+  bool needs_block_offset_adjustment =
+      block_edge != NGLogicalStaticPosition::BlockEdge::kBlockStart;
+  has_oof_candidate_that_needs_block_offset_adjustment_ |=
+      needs_block_offset_adjustment;
+
   oof_positioned_candidates_.emplace_back(
-      child, NGLogicalStaticPosition{child_offset, inline_edge, block_edge});
+      child, NGLogicalStaticPosition{child_offset, inline_edge, block_edge},
+      /* inline_container */ nullptr, needs_block_offset_adjustment);
 }
 
 void NGContainerFragmentBuilder::AddOutOfFlowInlineChildCandidate(
@@ -226,6 +235,27 @@ void NGContainerFragmentBuilder::SwapOutOfFlowPositionedCandidates(
     Vector<NGLogicalOutOfFlowPositionedNode>* candidates) {
   DCHECK(candidates->IsEmpty());
   std::swap(oof_positioned_candidates_, *candidates);
+
+  if (!has_oof_candidate_that_needs_block_offset_adjustment_)
+    return;
+
+  using BlockEdge = NGLogicalStaticPosition::BlockEdge;
+
+  // We might have an OOF-positioned candidate whose static-position depends on
+  // the final block-size of this fragment.
+  DCHECK_NE(BlockSize(), kIndefiniteSize);
+  for (auto& candidate : *candidates) {
+    if (!candidate.needs_block_offset_adjustment)
+      continue;
+
+    if (candidate.static_position.block_edge == BlockEdge::kBlockCenter)
+      candidate.static_position.offset.block_offset += BlockSize() / 2;
+    else if (candidate.static_position.block_edge == BlockEdge::kBlockEnd)
+      candidate.static_position.offset.block_offset += BlockSize();
+    candidate.needs_block_offset_adjustment = false;
+  }
+
+  has_oof_candidate_that_needs_block_offset_adjustment_ = false;
 }
 
 void NGContainerFragmentBuilder::

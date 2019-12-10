@@ -291,16 +291,15 @@ void MCSProbe::Start() {
       base::ThreadTaskRunnerHandle::Get(), &recorder_,
       network_connection_tracker_.get());
   gcm_store_ = std::make_unique<GCMStoreImpl>(
-      gcm_store_path_, file_thread_.task_runner(),
-      std::make_unique<FakeEncryptor>());
+      gcm_store_path_, /*remove_account_mappings_with_email_key=*/true,
+      file_thread_.task_runner(), std::make_unique<FakeEncryptor>());
 
   mcs_client_ = std::make_unique<MCSClient>(
       "probe", &clock_, connection_factory_.get(), gcm_store_.get(),
       base::ThreadTaskRunnerHandle::Get(), &recorder_);
   run_loop_ = std::make_unique<base::RunLoop>();
   gcm_store_->Load(GCMStore::CREATE_IF_MISSING,
-                   base::Bind(&MCSProbe::LoadCallback,
-                              base::Unretained(this)));
+                   base::Bind(&MCSProbe::LoadCallback, base::Unretained(this)));
   run_loop_->Run();
 }
 

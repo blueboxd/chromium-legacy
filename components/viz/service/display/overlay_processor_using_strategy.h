@@ -14,7 +14,7 @@
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/overlay_candidate.h"
-#include "components/viz/service/display/overlay_processor.h"
+#include "components/viz/service/display/overlay_processor_interface.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/ipc/common/surface_handle.h"
 
@@ -29,7 +29,7 @@ class OverlayCandidateValidatorStrategy;
 // OverlayProcessor subclass that goes through a list of strategies to determine
 // overlay candidates. THis is used by Android and Ozone platforms.
 class VIZ_SERVICE_EXPORT OverlayProcessorUsingStrategy
-    : public OverlayProcessor {
+    : public OverlayProcessorInterface {
  public:
   using CandidateList = OverlayCandidateList;
   using OverlayValidator = OverlayCandidateValidatorStrategy;
@@ -38,7 +38,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessorUsingStrategy
   class VIZ_SERVICE_EXPORT Strategy {
    public:
     virtual ~Strategy() {}
-    using PrimaryPlane = OverlayProcessor::OutputSurfaceOverlayPlane;
+    using PrimaryPlane = OverlayProcessorInterface::OutputSurfaceOverlayPlane;
     // Returns false if the strategy cannot be made to work with the
     // current set of render passes. Returns true if the strategy was successful
     // and adds any additional passes necessary to represent overlays to

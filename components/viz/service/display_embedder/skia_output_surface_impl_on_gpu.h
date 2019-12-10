@@ -19,7 +19,7 @@
 #include "components/viz/service/display/external_use_client.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_frame.h"
-#include "components/viz/service/display/overlay_processor.h"
+#include "components/viz/service/display/overlay_processor_interface.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
 #include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -137,7 +137,8 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
       base::OnceClosure on_finished,
       base::Optional<gfx::Rect> draw_rectangle);
   void ScheduleOutputSurfaceAsOverlay(
-      const OverlayProcessor::OutputSurfaceOverlayPlane& output_surface_plane);
+      const OverlayProcessorInterface::OutputSurfaceOverlayPlane&
+          output_surface_plane);
   void SwapBuffers(
       OutputSurfaceFrame frame,
       base::OnceCallback<bool()> deferred_framebuffer_draw_closure);
@@ -209,6 +210,11 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
     dependency_->PostTaskToClientThread(std::move(closure));
   }
 
+  void ReadbackDone() {
+    DCHECK_GT(num_readbacks_pending_, 0);
+    num_readbacks_pending_--;
+  }
+
  private:
   class ScopedPromiseImageAccess;
   class OffscreenSurface;
@@ -245,6 +251,8 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
     return scoped_output_device_paint_->sk_surface();
   }
 
+  void CheckReadbackCompletion();
+
   SkiaOutputSurfaceDependency* const dependency_;
   scoped_refptr<gpu::gles2::FeatureInfo> feature_info_;
   scoped_refptr<gpu::SyncPointClientState> sync_point_client_state_;
@@ -279,7 +287,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   std::unique_ptr<SkiaOutputDevice> output_device_;
   base::Optional<SkiaOutputDevice::ScopedPaint> scoped_output_device_paint_;
 
-  base::Optional<OverlayProcessor::OutputSurfaceOverlayPlane>
+  base::Optional<OverlayProcessorInterface::OutputSurfaceOverlayPlane>
       output_surface_plane_;
 
   base::flat_map<RenderPassId, OffscreenSurface> offscreen_surfaces_;
@@ -298,6 +306,9 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   std::vector<std::unique_ptr<SkDeferredDisplayList>> destroy_after_swap_;
 
   const gpu::ContextUrl copier_active_url_;
+
+  int num_readbacks_pending_ = 0;
+  bool readback_poll_pending_ = false;
 
   THREAD_CHECKER(thread_checker_);
 

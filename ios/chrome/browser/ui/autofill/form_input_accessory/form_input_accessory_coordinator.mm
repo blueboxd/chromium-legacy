@@ -14,6 +14,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_mediator.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_view_controller.h"
@@ -39,9 +40,6 @@
     ManualFillAccessoryViewControllerDelegate,
     PasswordCoordinatorDelegate>
 
-// The dispatcher used by this Coordinator.
-@property(nonatomic, weak) id<BrowserCoordinatorCommands> dispatcher;
-
 // The Mediator for the input accessory view controller.
 @property(nonatomic, strong)
     FormInputAccessoryMediator* formInputAccessoryMediator;
@@ -54,28 +52,17 @@
 // in the forms.
 @property(nonatomic, strong) ManualFillInjectionHandler* injectionHandler;
 
-// The WebStateList for this instance. Used to instantiate the child
-// coordinators lazily.
-@property(nonatomic, assign) WebStateList* webStateList;
-
 @end
 
 @implementation FormInputAccessoryCoordinator
 
-- (instancetype)
-    initWithBaseViewController:(UIViewController*)viewController
-                  browserState:(ios::ChromeBrowserState*)browserState
-                  webStateList:(WebStateList*)webStateList
-              injectionHandler:(ManualFillInjectionHandler*)injectionHandler
-                    dispatcher:(id<BrowserCoordinatorCommands>)dispatcher {
-  DCHECK(browserState);
-  DCHECK(webStateList);
-  self = [super initWithBaseViewController:viewController
-                              browserState:browserState];
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser
+                          injectionHandler:
+                              (ManualFillInjectionHandler*)injectionHandler {
+  self = [super initWithBaseViewController:viewController browser:browser];
   if (self) {
-    _webStateList = webStateList;
     _injectionHandler = injectionHandler;
-    _dispatcher = dispatcher;
   }
   return self;
 }
@@ -96,7 +83,7 @@
   _formInputAccessoryMediator = [[FormInputAccessoryMediator alloc]
          initWithConsumer:self.formInputAccessoryViewController
                  delegate:self
-             webStateList:self.webStateList
+             webStateList:self.browser->GetWebStateList()
       personalDataManager:personalDataManager
             passwordStore:passwordStore];
 }
@@ -127,13 +114,13 @@
 }
 
 - (void)startPasswordsFromButton:(UIButton*)button {
-  DCHECK(self.webStateList->GetActiveWebState());
-  const GURL& URL =
-      self.webStateList->GetActiveWebState()->GetLastCommittedURL();
+  WebStateList* webStateList = self.browser->GetWebStateList();
+  DCHECK(webStateList->GetActiveWebState());
+  const GURL& URL = webStateList->GetActiveWebState()->GetLastCommittedURL();
   ManualFillPasswordCoordinator* passwordCoordinator =
       [[ManualFillPasswordCoordinator alloc]
           initWithBaseViewController:self.baseViewController
-                        browserState:self.browserState
+                             browser:self.browser
                                  URL:URL
                     injectionHandler:self.injectionHandler];
   passwordCoordinator.delegate = self;
@@ -150,11 +137,8 @@
 - (void)startCardsFromButton:(UIButton*)button {
   CardCoordinator* cardCoordinator = [[CardCoordinator alloc]
       initWithBaseViewController:self.baseViewController
-                    browserState:self.browserState
-                                     ->GetOriginalChromeBrowserState()
-                    webStateList:self.webStateList
-                injectionHandler:self.injectionHandler
-                      dispatcher:self.dispatcher];
+                         browser:self.browser
+                injectionHandler:self.injectionHandler];
   cardCoordinator.delegate = self;
   if (IsIPadIdiom()) {
     [cardCoordinator presentFromButton:button];
@@ -169,8 +153,7 @@
 - (void)startAddressFromButton:(UIButton*)button {
   AddressCoordinator* addressCoordinator = [[AddressCoordinator alloc]
       initWithBaseViewController:self.baseViewController
-                    browserState:self.browserState
-                                     ->GetOriginalChromeBrowserState()
+                         browser:self.browser
                 injectionHandler:self.injectionHandler];
   addressCoordinator.delegate = self;
   if (IsIPadIdiom()) {

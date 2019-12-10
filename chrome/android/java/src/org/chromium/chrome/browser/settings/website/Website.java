@@ -6,10 +6,10 @@ package org.chromium.chrome.browser.settings.website;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.base.MathUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.settings.website.WebsitePreferenceBridge.StorageInfoClearedCallback;
-import org.chromium.chrome.browser.util.MathUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;

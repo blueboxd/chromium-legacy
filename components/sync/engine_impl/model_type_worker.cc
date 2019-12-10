@@ -12,161 +12,22 @@
 
 #include "base/bind.h"
 #include "base/format_macros.h"
-#include "base/guid.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/base/client_tag_hash.h"
-#include "components/sync/base/hash_util.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/engine/model_type_processor.h"
+#include "components/sync/engine_impl/bookmark_update_preprocessing.h"
 #include "components/sync/engine_impl/commit_contribution.h"
 #include "components/sync/engine_impl/non_blocking_type_commit_contribution.h"
-#include "components/sync/engine_impl/syncer_proto_util.h"
 #include "components/sync/protocol/proto_memory_estimations.h"
 
 namespace syncer {
-
-namespace {
-
-// Enumeration of possible values for the positioning schemes used in Sync
-// entities. Used in UMA metrics. Do not re-order or delete these entries; they
-// are used in a UMA histogram. Please edit SyncPositioningScheme in enums.xml
-// if a value is added.
-enum class SyncPositioningScheme {
-  UNIQUE_POSITION = 0,
-  POSITION_IN_PARENT = 1,
-  INSERT_AFTER_ITEM_ID = 2,
-  MISSING = 3,
-  kMaxValue = MISSING
-};
-
-// Used in metrics: "Sync.BookmarkGUIDSource". These values are persisted to
-// logs. Entries should not be renumbered and numeric values should never be
-// reused.
-enum class BookmarkGUIDSource {
-  // GUID came from specifics.
-  kSpecifics = 0,
-  // GUID came from originator_client_item_id and is valid.
-  kValidOCII = 1,
-  // GUID not found in the specifics and originator_client_item_id is invalid,
-  // so field left empty.
-  kLeftEmpty = 2,
-
-  kMaxValue = kLeftEmpty,
-};
-
-inline void LogGUIDSource(BookmarkGUIDSource source) {
-  base::UmaHistogramEnumeration("Sync.BookmarkGUIDSource2", source);
-}
-
-void AdaptUniquePositionForBookmarks(const sync_pb::SyncEntity& update_entity,
-                                     syncer::EntityData* data) {
-  DCHECK(data);
-  bool has_position_scheme = false;
-  SyncPositioningScheme sync_positioning_scheme;
-  if (update_entity.has_unique_position()) {
-    data->unique_position = update_entity.unique_position();
-    has_position_scheme = true;
-    sync_positioning_scheme = SyncPositioningScheme::UNIQUE_POSITION;
-  } else if (update_entity.has_position_in_parent() ||
-             update_entity.has_insert_after_item_id()) {
-    bool missing_originator_fields = false;
-    if (!update_entity.has_originator_cache_guid() ||
-        !update_entity.has_originator_client_item_id()) {
-      DLOG(ERROR) << "Update is missing requirements for bookmark position.";
-      missing_originator_fields = true;
-    }
-
-    std::string suffix = missing_originator_fields
-                             ? UniquePosition::RandomSuffix()
-                             : GenerateSyncableBookmarkHash(
-                                   update_entity.originator_cache_guid(),
-                                   update_entity.originator_client_item_id());
-
-    if (update_entity.has_position_in_parent()) {
-      data->unique_position =
-          UniquePosition::FromInt64(update_entity.position_in_parent(), suffix)
-              .ToProto();
-      has_position_scheme = true;
-      sync_positioning_scheme = SyncPositioningScheme::POSITION_IN_PARENT;
-    } else {
-      // If update_entity has insert_after_item_id, use 0 index.
-      DCHECK(update_entity.has_insert_after_item_id());
-      data->unique_position = UniquePosition::FromInt64(0, suffix).ToProto();
-      has_position_scheme = true;
-      sync_positioning_scheme = SyncPositioningScheme::INSERT_AFTER_ITEM_ID;
-    }
-  } else if (SyncerProtoUtil::ShouldMaintainPosition(update_entity) &&
-             !update_entity.deleted()) {
-    DLOG(ERROR) << "Missing required position information in update.";
-    has_position_scheme = true;
-    sync_positioning_scheme = SyncPositioningScheme::MISSING;
-  }
-  if (has_position_scheme) {
-    UMA_HISTOGRAM_ENUMERATION("Sync.Entities.PositioningScheme",
-                              sync_positioning_scheme);
-  }
-}
-
-void AdaptTitleForBookmarks(const sync_pb::SyncEntity& update_entity,
-                            sync_pb::EntitySpecifics* specifics,
-                            bool specifics_were_encrypted) {
-  DCHECK(specifics);
-  if (specifics_were_encrypted || update_entity.deleted()) {
-    // If encrypted, the name field is never populated (unencrypted) for privacy
-    // reasons. Encryption was also introduced after moving the name out of
-    // SyncEntity so this hack is not needed at all.
-    return;
-  }
-  // Legacy clients populate the name field in the SyncEntity instead of the
-  // title field in the BookmarkSpecifics.
-  if (!specifics->bookmark().has_title() && !update_entity.name().empty()) {
-    specifics->mutable_bookmark()->set_title(update_entity.name());
-  }
-}
-
-void AdaptGuidForBookmarks(const sync_pb::SyncEntity& update_entity,
-                           sync_pb::EntitySpecifics* specifics) {
-  DCHECK(specifics);
-  // Tombstones and permanent entities don't have a GUID.
-  if (update_entity.deleted() ||
-      !update_entity.server_defined_unique_tag().empty()) {
-    return;
-  }
-  // Legacy clients don't populate the guid field in the BookmarkSpecifics, so
-  // we use the originator_client_item_id instead, if it is a valid GUID.
-  // Otherwise, we leave the field empty.
-  if (specifics->bookmark().has_guid()) {
-    LogGUIDSource(BookmarkGUIDSource::kSpecifics);
-  } else if (base::IsValidGUID(update_entity.originator_client_item_id())) {
-    specifics->mutable_bookmark()->set_guid(
-        update_entity.originator_client_item_id());
-    LogGUIDSource(BookmarkGUIDSource::kValidOCII);
-  } else {
-    LogGUIDSource(BookmarkGUIDSource::kLeftEmpty);
-  }
-}
-
-void AdaptUpdateForCompatibilityAfterDecryption(
-    ModelType model_type,
-    const sync_pb::SyncEntity& update_entity,
-    sync_pb::EntitySpecifics* specifics,
-    bool specifics_were_encrypted) {
-  DCHECK(specifics);
-  if (model_type == BOOKMARKS) {
-    AdaptTitleForBookmarks(update_entity, specifics, specifics_were_encrypted);
-    AdaptGuidForBookmarks(update_entity, specifics);
-  }
-}
-
-}  // namespace
 
 ModelTypeWorker::ModelTypeWorker(
     ModelType type,
@@ -308,8 +169,9 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
         pending_updates_.push_back(std::move(response_data));
         break;
       case DECRYPTION_PENDING:
+        // Cannot decrypt now, copy the sync entity for later decryption.
         entries_pending_decryption_[update_entity->id_string()] =
-            std::move(response_data);
+            *update_entity;
         break;
       case FAILED_TO_DECRYPT:
         // Failed to decrypt the entity. Likely it is corrupt. Move on.
@@ -329,8 +191,54 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
     ModelType model_type,
     const sync_pb::SyncEntity& update_entity,
     UpdateResponseData* response_data) {
-  response_data->response_version = update_entity.version();
   auto data = std::make_unique<syncer::EntityData>();
+
+  // Deleted entities must use the default instance of EntitySpecifics in
+  // order for EntityData to correctly reflect that they are deleted.
+  const sync_pb::EntitySpecifics& specifics =
+      update_entity.deleted() ? sync_pb::EntitySpecifics::default_instance()
+                              : update_entity.specifics();
+  bool specifics_were_encrypted = false;
+
+  if (specifics.password().has_encrypted()) {
+    // Passwords use their own legacy encryption scheme.
+    DCHECK(cryptographer);
+    // TODO(crbug.com/516866): If we switch away from the password legacy
+    // encryption, this method and DecryptStoredEntities() )should be already
+    // ready for that change. Add unit test for this future-proofness.
+
+    // Make sure the worker defers password entities if the encryption key
+    // hasn't been received yet.
+    if (!cryptographer->CanDecrypt(specifics.password().encrypted())) {
+      return DECRYPTION_PENDING;
+    }
+    if (!DecryptPasswordSpecifics(*cryptographer, specifics,
+                                  &data->specifics)) {
+      return FAILED_TO_DECRYPT;
+    }
+    response_data->encryption_key_name =
+        specifics.password().encrypted().key_name();
+    specifics_were_encrypted = true;
+  } else if (specifics.has_encrypted()) {
+    // Check if specifics are encrypted and try to decrypt if so.
+    // Deleted entities should not be encrypted.
+    DCHECK(!update_entity.deleted());
+    if (!cryptographer || !cryptographer->CanDecrypt(specifics.encrypted())) {
+      // Can't decrypt right now.
+      return DECRYPTION_PENDING;
+    }
+    // Encrypted and we know the key.
+    if (!DecryptSpecifics(*cryptographer, specifics, &data->specifics)) {
+      return FAILED_TO_DECRYPT;
+    }
+    response_data->encryption_key_name = specifics.encrypted().key_name();
+    specifics_were_encrypted = true;
+  } else {
+    // No encryption.
+    data->specifics = specifics;
+  }
+
+  response_data->response_version = update_entity.version();
   // Prepare the message for the model thread.
   data->id = update_entity.id_string();
   data->client_tag_hash =
@@ -347,74 +255,17 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
   data->originator_cache_guid = update_entity.originator_cache_guid();
   data->originator_client_item_id = update_entity.originator_client_item_id();
 
-  // Adapt the update for compatibility (all except specifics that may need
-  // encryption).
+  // Adapt the update for compatibility.
   if (model_type == BOOKMARKS) {
-    AdaptUniquePositionForBookmarks(update_entity, data.get());
+    AdaptUniquePositionForBookmark(update_entity, data.get());
+    AdaptTitleForBookmark(update_entity, &data->specifics,
+                          specifics_were_encrypted);
+    AdaptGuidForBookmark(update_entity, &data->specifics);
   }
   // TODO(crbug.com/881289): Generate client tag hash for wallet data.
 
-  // Deleted entities must use the default instance of EntitySpecifics in
-  // order for EntityData to correctly reflect that they are deleted.
-  const sync_pb::EntitySpecifics& specifics =
-      update_entity.deleted() ? sync_pb::EntitySpecifics::default_instance()
-                              : update_entity.specifics();
-
-  // Passwords use their own legacy encryption scheme.
-  if (specifics.password().has_encrypted()) {
-    DCHECK(cryptographer);
-    // TODO(crbug.com/516866): If we switch away from the password legacy
-    // encryption, this method and DecryptStoredEntities() )should be already
-    // ready for that change. Add unit test for this future-proofness.
-
-    // Make sure the worker defers password entities if the encryption key
-    // hasn't been received yet.
-    if (!cryptographer->CanDecrypt(specifics.password().encrypted())) {
-      data->specifics = specifics;
-      response_data->entity = std::move(data);
-      return DECRYPTION_PENDING;
-    }
-    response_data->encryption_key_name =
-        specifics.password().encrypted().key_name();
-    if (!DecryptPasswordSpecifics(*cryptographer, specifics,
-                                  &data->specifics)) {
-      return FAILED_TO_DECRYPT;
-    }
-    AdaptUpdateForCompatibilityAfterDecryption(
-        model_type, update_entity, &data->specifics,
-        /*specifics_were_encrypted=*/true);
-    response_data->entity = std::move(data);
-    return SUCCESS;
-  }
-
-  // Check if specifics are encrypted and try to decrypt if so.
-  if (!specifics.has_encrypted()) {
-    // No encryption.
-    data->specifics = specifics;
-    AdaptUpdateForCompatibilityAfterDecryption(
-        model_type, update_entity, &data->specifics,
-        /*specifics_were_encrypted=*/false);
-    response_data->entity = std::move(data);
-    return SUCCESS;
-  }
-  // Deleted entities should not be encrypted.
-  DCHECK(!update_entity.deleted());
-  if (cryptographer && cryptographer->CanDecrypt(specifics.encrypted())) {
-    // Encrypted and we know the key.
-    if (!DecryptSpecifics(*cryptographer, specifics, &data->specifics)) {
-      return FAILED_TO_DECRYPT;
-    }
-    AdaptUpdateForCompatibilityAfterDecryption(
-        model_type, update_entity, &data->specifics,
-        /*specifics_were_encrypted=*/true);
-    response_data->entity = std::move(data);
-    response_data->encryption_key_name = specifics.encrypted().key_name();
-    return SUCCESS;
-  }
-  // Can't decrypt right now.
-  data->specifics = specifics;
   response_data->entity = std::move(data);
-  return DECRYPTION_PENDING;
+  return SUCCESS;
 }
 
 void ModelTypeWorker::ApplyUpdates(StatusController* status) {
@@ -598,66 +449,26 @@ bool ModelTypeWorker::UpdateEncryptionKeyName() {
 void ModelTypeWorker::DecryptStoredEntities() {
   for (auto it = entries_pending_decryption_.begin();
        it != entries_pending_decryption_.end();) {
-    const UpdateResponseData& encrypted_update = *it->second;
-    const EntityData& data = *encrypted_update.entity;
-    DCHECK(!data.is_deleted());
+    const sync_pb::SyncEntity& encrypted_update = it->second;
 
-    sync_pb::EntitySpecifics specifics;
-    std::string encryption_key_name;
-
-    if (data.specifics.password().has_encrypted()) {
-      encryption_key_name = data.specifics.password().encrypted().key_name();
-      if (!cryptographer_->CanDecrypt(data.specifics.password().encrypted())) {
-        ++it;
-        continue;
-      }
-      if (!DecryptPasswordSpecifics(*cryptographer_, data.specifics,
-                                    &specifics)) {
-        // Decryption error should be permanent (e.g. corrupt data), since
-        // CanDecrypt() above claims decryption keys are up-to-date. Let's
-        // ignore this update to avoid blocking other updates.
+    auto response_data = std::make_unique<UpdateResponseData>();
+    switch (PopulateUpdateResponseData(cryptographer_.get(), type_,
+                                       encrypted_update, response_data.get())) {
+      case SUCCESS:
+        pending_updates_.push_back(std::move(response_data));
         it = entries_pending_decryption_.erase(it);
-        continue;
-      }
-    } else {
-      DCHECK(data.specifics.has_encrypted());
-      encryption_key_name = data.specifics.encrypted().key_name();
-
-      if (!cryptographer_->CanDecrypt(data.specifics.encrypted())) {
+        break;
+      case DECRYPTION_PENDING:
+        // Still cannot decrypt, move on and keep this one for later.
         ++it;
-        continue;
-      }
-
-      if (!DecryptSpecifics(*cryptographer_, data.specifics, &specifics)) {
+        break;
+      case FAILED_TO_DECRYPT:
         // Decryption error should be permanent (e.g. corrupt data), since
-        // CanDecrypt() above claims decryption keys are up-to-date. Let's
-        // ignore this update to avoid blocking other updates.
+        // decryption keys are up-to-date. Let's ignore this update to avoid
+        // blocking other updates.
         it = entries_pending_decryption_.erase(it);
-        continue;
-      }
+        break;
     }
-
-    auto decrypted_update = std::make_unique<UpdateResponseData>();
-    decrypted_update->response_version = encrypted_update.response_version;
-    decrypted_update->encryption_key_name = encryption_key_name;
-    decrypted_update->entity = std::move(it->second->entity);
-    decrypted_update->entity->specifics = std::move(specifics);
-    // TODO(crbug.com/1007199): Reconcile with AdaptGuidForBookmarks().
-    if (decrypted_update->entity->specifics.has_bookmark() &&
-        decrypted_update->entity->server_defined_unique_tag.empty()) {
-      if (decrypted_update->entity->specifics.bookmark().has_guid()) {
-        LogGUIDSource(BookmarkGUIDSource::kSpecifics);
-      } else if (base::IsValidGUID(
-                     decrypted_update->entity->originator_client_item_id)) {
-        decrypted_update->entity->specifics.mutable_bookmark()->set_guid(
-            decrypted_update->entity->originator_client_item_id);
-        LogGUIDSource(BookmarkGUIDSource::kValidOCII);
-      } else {
-        LogGUIDSource(BookmarkGUIDSource::kLeftEmpty);
-      }
-    }
-    pending_updates_.push_back(std::move(decrypted_update));
-    it = entries_pending_decryption_.erase(it);
   }
 }
 

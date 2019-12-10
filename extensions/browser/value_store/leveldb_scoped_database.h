@@ -5,7 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_VALUE_STORE_LEVELDB_SCOPED_DATABASE_H_
 #define EXTENSIONS_BROWSER_VALUE_STORE_LEVELDB_SCOPED_DATABASE_H_
 
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"

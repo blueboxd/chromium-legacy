@@ -54,11 +54,12 @@
         </settings-toggle-button>
         <div class="settings-box" id="dsp-hotword-container"
             hidden="[[hotwordDspAvailable_]]">
-          <div class="start text-area settings-box-text">
-            <div class="label">
+          <div class="start text-area settings-box-text" aria-hidden="true">
+            <div class="label" id="googleAssistantEnableHotword">
               $i18n{googleAssistantEnableHotword}
             </div>
-            <div class="secondary label">
+            <div class="secondary label"
+                id="googleAssistantEnableHotwordDescription">
               $i18n{googleAssistantEnableHotwordWithoutDspDescription}
             </div>
           </div>
@@ -73,6 +74,7 @@
                preference. -->
           <select id="dsp-hotword-state" class="md-select"
               aria-labelledby="googleAssistantEnableHotword"
+              aria-describedby="googleAssistantEnableHotwordDescription"
               on-change="onDspHotwordStateChange_"
               disabled="[[hotwordEnforced_]]">
             <template is="dom-repeat" items="[[hotwordDropdownList_]]">

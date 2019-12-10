@@ -410,10 +410,10 @@ class GpuSandboxedProcessLauncherDelegate
 #if defined(OS_WIN)
     if (cmd_line_.HasSwitch(service_manager::switches::kDisableGpuSandbox)) {
       DVLOG(1) << "GPU sandbox is disabled";
-      return service_manager::SANDBOX_TYPE_NO_SANDBOX;
+      return service_manager::SandboxType::kNoSandbox;
     }
 #endif
-    return service_manager::SANDBOX_TYPE_GPU;
+    return service_manager::SandboxType::kGpu;
   }
 
  private:
@@ -440,7 +440,7 @@ void RecordAppContainerStatus(int error_code, bool crashed_before) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!crashed_before &&
       service_manager::SandboxWin::IsAppContainerEnabledForSandbox(
-          *command_line, service_manager::SANDBOX_TYPE_GPU)) {
+          *command_line, service_manager::SandboxType::kGpu)) {
     base::UmaHistogramSparse("GPU.AppContainer.Status", error_code);
   }
 }

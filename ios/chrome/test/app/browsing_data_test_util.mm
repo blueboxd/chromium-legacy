@@ -33,7 +33,7 @@ bool ClearBrowsingData(bool off_the_record, BrowsingDataRemoveMask mask) {
                      : chrome_test_util::GetOriginalBrowserState();
 
   __block bool did_complete = false;
-  [chrome_test_util::GetMainController().sceneController
+  [chrome_test_util::GetMainController()
       removeBrowsingDataForBrowserState:browser_state
                              timePeriod:browsing_data::TimePeriod::ALL_TIME
                              removeMask:mask

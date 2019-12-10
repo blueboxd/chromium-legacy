@@ -207,7 +207,7 @@ void CastMirroringServiceHost::Start(
       mirroring_service_.BindNewPipeAndPassReceiver(),
       content::ServiceProcessHost::Options()
           .WithDisplayName("Mirroring Service")
-          .WithSandboxType(service_manager::SANDBOX_TYPE_UTILITY)
+          .WithSandboxType(service_manager::SandboxType::kUtility)
           .Pass());
   mojo::PendingRemote<mojom::ResourceProvider> provider;
   resource_provider_receiver.Bind(provider.InitWithNewPipeAndPassReceiver());

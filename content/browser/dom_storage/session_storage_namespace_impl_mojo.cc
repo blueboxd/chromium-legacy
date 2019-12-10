@@ -60,7 +60,7 @@ bool SessionStorageNamespaceImplMojo::HasAreaForOrigin(
 
 void SessionStorageNamespaceImplMojo::PopulateFromMetadata(
     storage::AsyncDomStorageDatabase* database,
-    SessionStorageMetadata::NamespaceEntry namespace_metadata) {
+    storage::SessionStorageMetadata::NamespaceEntry namespace_metadata) {
   DCHECK(!IsPopulated());
   database_ = database;
   state_ = State::kPopulated;
@@ -87,7 +87,7 @@ void SessionStorageNamespaceImplMojo::PopulateFromMetadata(
 
 void SessionStorageNamespaceImplMojo::PopulateAsClone(
     storage::AsyncDomStorageDatabase* database,
-    SessionStorageMetadata::NamespaceEntry namespace_metadata,
+    storage::SessionStorageMetadata::NamespaceEntry namespace_metadata,
     const OriginAreas& areas_to_clone) {
   DCHECK(!IsPopulated());
   database_ = database;
@@ -108,7 +108,7 @@ void SessionStorageNamespaceImplMojo::PopulateAsClone(
 }
 
 void SessionStorageNamespaceImplMojo::Reset() {
-  namespace_entry_ = SessionStorageMetadata::NamespaceEntry();
+  namespace_entry_ = storage::SessionStorageMetadata::NamespaceEntry();
   database_ = nullptr;
   pending_population_from_parent_namespace_.clear();
   bind_waiting_on_population_ = false;
@@ -195,7 +195,7 @@ void SessionStorageNamespaceImplMojo::OpenArea(
     if (map_data_it != namespace_entry_->second.end()) {
       // The map exists already, either on disk or being used by another
       // namespace.
-      scoped_refptr<SessionStorageMetadata::MapData> map_data =
+      scoped_refptr<storage::SessionStorageMetadata::MapData> map_data =
           map_data_it->second;
       data_map =
           delegate_->MaybeGetExistingDataMapForId(map_data->MapNumberAsBytes());
@@ -229,7 +229,7 @@ void SessionStorageNamespaceImplMojo::Clone(
 
 void SessionStorageNamespaceImplMojo::CloneAllNamespacesWaitingForClone(
     storage::AsyncDomStorageDatabase* database,
-    SessionStorageMetadata* metadata,
+    storage::SessionStorageMetadata* metadata,
     const std::map<std::string,
                    std::unique_ptr<SessionStorageNamespaceImplMojo>>&
         namespaces_map) {

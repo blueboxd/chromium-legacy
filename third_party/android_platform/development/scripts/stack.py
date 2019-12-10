@@ -45,12 +45,12 @@ _ANDROID_M_MAJOR_VERSION=6
 
 def PrintUsage():
   """Print usage and exit with error."""
-  # pylint: disable-msg=C6310
   print
   print "  usage: " + sys.argv[0] + " [options] [FILE]"
   print
   print "  --symbols-dir=path"
-  print "       the path to a symbols dir, such as =/tmp/out/target/product/dream/symbols"
+  print "       the path to a symbols dir, such as"
+  print "       =/tmp/out/target/product/dream/symbols"
   print
   print "  --chrome-symbols-dir=path"
   print "       the path to a Chrome symbols dir (can be absolute or relative"
@@ -60,6 +60,10 @@ def PrintUsage():
   print "       the path to the build output directory, such as out/Debug."
   print "       Ignored if --chrome-symbols-dir is passed."
   print
+  print "  --apks-directory=path"
+  print "       Overrides the default apks directory. Useful if a bundle APKS"
+  print "       file has been unzipped into a temporary directory."
+  print
   print "  --packed-relocation-adjustments"
   print "  --no-packed-relocation-adjustments"
   print "       turn packed relocation adjustment on and off (default is off)"
@@ -67,7 +71,8 @@ def PrintUsage():
   print "       make no sense, try turning this feature on."
   print
   print "  --symbols-zip=path"
-  print "       the path to a symbols zip file, such as =dream-symbols-12345.zip"
+  print "       the path to a symbols zip file, such as"
+  print "       =dream-symbols-12345.zip"
   print
   print "  --more-info"
   print "  --less-info"
@@ -86,7 +91,8 @@ def PrintUsage():
   print "       component build."
   print
   print "  --verbose"
-  print "       enable extra logging, particularly for debugging failed symbolization"
+  print "       enable extra logging, particularly for debugging failed"
+  print "       symbolization"
   print
   print "  FILE should contain a stack trace in it somewhere"
   print "       the tool will find that and re-print it with"
@@ -94,7 +100,6 @@ def PrintUsage():
   print "       pass FILE, or if file is -, it reads from"
   print "       stdin."
   print
-  # pylint: enable-msg=C6310
   sys.exit(1)
 
 def UnzipSymbols(symbolfile, symdir=None):
@@ -147,7 +152,7 @@ def main(argv, test_symbolizer=None):
         "apks-directory=", "symbols-dir=", "symbols-zip=", "packed-lib=",
         "arch=", "fallback-monochrome", "verbose", "help"
     ])
-  except getopt.GetoptError, unused_error:
+  except getopt.GetoptError, _:
     PrintUsage()
 
   zip_arg = None

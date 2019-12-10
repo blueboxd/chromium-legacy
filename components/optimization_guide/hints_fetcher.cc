@@ -36,6 +36,26 @@ namespace {
 constexpr base::TimeDelta kHintsFetcherHostFetchedValidDuration =
     base::TimeDelta::FromDays(7);
 
+// Returns the string that can be used to record histograms for the request
+// context.
+//
+// Keep in sync with OptimizationGuide.RequestContexts histogram_suffixes in
+// histograms.xml.
+std::string GetStringNameForRequestContext(
+    proto::RequestContext request_context) {
+  switch (request_context) {
+    case proto::RequestContext::CONTEXT_UNSPECIFIED:
+      NOTREACHED();
+      return "Unknown";
+    case proto::RequestContext::CONTEXT_BATCH_UPDATE:
+      return "BatchUpdate";
+    case proto::RequestContext::CONTEXT_PAGE_NAVIGATION:
+      return "PageNavigation";
+  }
+  NOTREACHED();
+  return std::string();
+}
+
 }  // namespace
 
 HintsFetcher::HintsFetcher(
@@ -223,9 +243,15 @@ void HintsFetcher::HandleResponse(const std::string& get_hints_response_data,
     UMA_HISTOGRAM_COUNTS_100(
         "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount",
         get_hints_response->hints_size());
+    base::TimeDelta fetch_latency =
+        base::TimeTicks::Now() - hints_fetch_start_time_;
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "OptimizationGuide.HintsFetcher.GetHintsRequest.FetchLatency",
-        base::TimeTicks::Now() - hints_fetch_start_time_);
+        fetch_latency);
+    base::UmaHistogramMediumTimes(
+        "OptimizationGuide.HintsFetcher.GetHintsRequest.FetchLatency." +
+            GetStringNameForRequestContext(request_context_),
+        fetch_latency);
     UpdateHostsSuccessfullyFetched();
     std::move(hints_fetched_callback_)
         .Run(request_context_, HintsFetcherRequestStatus::kSuccess,

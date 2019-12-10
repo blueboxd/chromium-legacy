@@ -81,7 +81,7 @@ OverlayStrategy OverlayProcessorUsingStrategy::Strategy::GetUMAEnum() const {
 OverlayProcessorUsingStrategy::OverlayProcessorUsingStrategy(
     SkiaOutputSurface* skia_output_surface,
     std::unique_ptr<OverlayCandidateValidatorStrategy> overlay_validator)
-    : OverlayProcessor(nullptr),
+    : OverlayProcessorInterface(),
       overlay_validator_(std::move(overlay_validator)),
       skia_output_surface_(skia_output_surface) {
   if (overlay_validator_)
@@ -91,7 +91,7 @@ OverlayProcessorUsingStrategy::OverlayProcessorUsingStrategy(
 OverlayProcessorUsingStrategy::OverlayProcessorUsingStrategy(
     SkiaOutputSurface* skia_output_surface,
     std::unique_ptr<OverlayCandidateValidatorStrategy> overlay_validator)
-    : OverlayProcessor(nullptr),
+    : OverlayProcessorInterface(),
       overlay_validator_(std::move(overlay_validator)) {
   if (overlay_validator_)
     overlay_validator_->InitializeStrategies();
@@ -114,8 +114,9 @@ void OverlayProcessorUsingStrategy::ProcessForOverlays(
     DisplayResourceProvider* resource_provider,
     RenderPassList* render_passes,
     const SkMatrix44& output_color_matrix,
-    const OverlayProcessor::FilterOperationsMap& render_pass_filters,
-    const OverlayProcessor::FilterOperationsMap& render_pass_backdrop_filters,
+    const OverlayProcessorInterface::FilterOperationsMap& render_pass_filters,
+    const OverlayProcessorInterface::FilterOperationsMap&
+        render_pass_backdrop_filters,
     OutputSurfaceOverlayPlane* output_surface_plane,
     CandidateList* candidates,
     gfx::Rect* damage_rect,

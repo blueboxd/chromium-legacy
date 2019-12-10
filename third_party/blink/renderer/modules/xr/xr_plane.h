@@ -42,7 +42,7 @@ class XRPlane : public ScriptWrappable {
 
   XRSpace* planeSpace() const;
 
-  TransformationMatrix poseMatrix() const;
+  TransformationMatrix MojoFromObject() const;
 
   String orientation() const;
   HeapVector<Member<DOMPointReadOnly>> polygon() const;

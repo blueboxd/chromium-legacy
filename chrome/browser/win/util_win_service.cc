@@ -12,6 +12,6 @@ mojo::Remote<chrome::mojom::UtilWin> LaunchUtilWinServiceInstance() {
   return content::ServiceProcessHost::Launch<chrome::mojom::UtilWin>(
       content::ServiceProcessHost::Options()
           .WithDisplayName(IDS_UTILITY_PROCESS_UTILITY_WIN_NAME)
-          .WithSandboxType(service_manager::SANDBOX_TYPE_NO_SANDBOX)
+          .WithSandboxType(service_manager::SandboxType::kNoSandbox)
           .Pass());
 }

@@ -99,7 +99,6 @@ public class PageInfoController
         int INSECURE_PAGE_PREVIEW = 3;
     }
 
-    private final Context mContext;
     private final WindowAndroid mWindowAndroid;
     private final Tab mTab;
     private final PermissionParamsListBuilder mPermissionParamsListBuilder;
@@ -160,7 +159,6 @@ public class PageInfoController
             String offlinePageUrl, String offlinePageCreationDate,
             @OfflinePageState int offlinePageState, @PreviewPageState int previewPageState,
             String publisher) {
-        mContext = activity;
         mTab = tab;
         mSecurityLevel = securityLevel;
         mOfflinePageState = offlinePageState;
@@ -204,14 +202,14 @@ public class PageInfoController
                             ((TabImpl) mTab).getProfile(), displayUrlBuilder.toString());
             if (emphasizeResponse.schemeLength > 0) {
                 displayUrlBuilder.setSpan(
-                        new TextAppearanceSpan(mContext, R.style.TextAppearance_RobotoMediumStyle),
+                        new TextAppearanceSpan(activity, R.style.TextAppearance_RobotoMediumStyle),
                         0, emphasizeResponse.schemeLength, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
             }
         }
 
         final boolean useDarkColors =
                 !((TabImpl) mTab).getActivity().getNightModeStateProvider().isInNightMode();
-        OmniboxUrlEmphasizer.emphasizeUrl(displayUrlBuilder, mContext.getResources(),
+        OmniboxUrlEmphasizer.emphasizeUrl(displayUrlBuilder, activity.getResources(),
                 ((TabImpl) mTab).getProfile(), mSecurityLevel, mIsInternalPage, useDarkColors,
                 true);
         viewParams.url = displayUrlBuilder;
@@ -223,14 +221,14 @@ public class PageInfoController
                 // Delay while the dialog closes.
                 runAfterDismiss(() -> {
                     recordAction(PageInfoAction.PAGE_INFO_SITE_SETTINGS_OPENED);
-                    SiteSettingsHelper.showSiteSettings(mContext, mFullUrl);
+                    SiteSettingsHelper.showSiteSettings(activity, mFullUrl);
                 });
             };
         } else {
             viewParams.siteSettingsButtonShown = false;
         }
 
-        initPreviewUiParams(viewParams);
+        initPreviewUiParams(activity, viewParams);
 
         if (isShowingOfflinePage() && OfflinePageUtils.isConnected()) {
             viewParams.openOnlineButtonClickCallback = () -> {
@@ -252,7 +250,7 @@ public class PageInfoController
             final Intent instantAppIntent = instantAppsHandler.getInstantAppIntentForUrl(mFullUrl);
             viewParams.instantAppButtonClickCallback = () -> {
                 try {
-                    mContext.startActivity(instantAppIntent);
+                    activity.startActivity(instantAppIntent);
                     RecordUserAction.record("Android.InstantApps.LaunchedFromWebsiteSettingsPopup");
                 } catch (ActivityNotFoundException e) {
                     mView.disableInstantAppButton();
@@ -263,10 +261,10 @@ public class PageInfoController
             viewParams.instantAppButtonShown = false;
         }
 
-        mView = new PageInfoView(mContext, viewParams);
-        if (isSheet()) mView.setBackgroundColor(Color.WHITE);
+        mView = new PageInfoView(activity, viewParams);
+        if (isSheet(activity)) mView.setBackgroundColor(Color.WHITE);
         mPermissionParamsListBuilder = new PermissionParamsListBuilder(
-                mContext, mWindowAndroid, mFullUrl, this, mView::setPermissions);
+                activity, mWindowAndroid, mFullUrl, this, mView::setPermissions);
 
         // This needs to come after other member initialization.
         mNativePageInfoController = PageInfoControllerJni.get().init(this, mTab.getWebContents());
@@ -294,7 +292,7 @@ public class PageInfoController
             }
         };
 
-        mDialog = new PageInfoDialog(mContext, mView, mTab.getView(), isSheet(),
+        mDialog = new PageInfoDialog(activity, mView, mTab.getView(), isSheet(activity),
                 ((TabImpl) mTab).getActivity().getModalDialogManager(), this);
         mDialog.show();
     }
@@ -304,7 +302,7 @@ public class PageInfoController
      *
      * @param viewParams The PageInfoViewParams to set state on.
      */
-    private void initPreviewUiParams(PageInfoViewParams viewParams) {
+    private void initPreviewUiParams(Context context, PageInfoViewParams viewParams) {
         final PreviewsAndroidBridge bridge = PreviewsAndroidBridge.getInstance();
         viewParams.separatorShown = mPreviewPageState == PreviewPageState.INSECURE_PAGE_PREVIEW;
         viewParams.previewUIShown = isShowingPreview();
@@ -320,14 +318,14 @@ public class PageInfoController
             };
             final String previewOriginalHost =
                     bridge.getOriginalHost(mTab.getWebContents().getVisibleUrl());
-            final String loadOriginalText = mContext.getString(
+            final String loadOriginalText = context.getString(
                     R.string.page_info_preview_load_original, previewOriginalHost);
             final SpannableString loadOriginalSpan = SpanApplier.applySpans(loadOriginalText,
                     new SpanInfo("<link>", "</link>",
                             // The callback given to NoUnderlineClickableSpan is overridden in
                             // PageInfoView so use previewShowOriginalClickCallback (above) instead
                             // because the entire TextView will be clickable.
-                            new NoUnderlineClickableSpan(mContext.getResources(), (view) -> {})));
+                            new NoUnderlineClickableSpan(context.getResources(), (view) -> {})));
             viewParams.previewLoadOriginalMessage = loadOriginalSpan;
 
             viewParams.previewStaleTimestamp =
@@ -374,25 +372,27 @@ public class PageInfoController
 
         // Display the appropriate connection message.
         SpannableStringBuilder messageBuilder = new SpannableStringBuilder();
+        Context context = mWindowAndroid.getActivity().get();
+        assert context != null;
         if (mContentPublisher != null) {
             messageBuilder.append(
-                    mContext.getString(R.string.page_info_domain_hidden, mContentPublisher));
+                    context.getString(R.string.page_info_domain_hidden, mContentPublisher));
         } else if (isShowingPreview()) {
             if (mPreviewPageState == PreviewPageState.INSECURE_PAGE_PREVIEW) {
                 connectionInfoParams.summary = summary;
             }
         } else if (mOfflinePageState == OfflinePageState.TRUSTED_OFFLINE_PAGE) {
             messageBuilder.append(
-                    String.format(mContext.getString(R.string.page_info_connection_offline),
+                    String.format(context.getString(R.string.page_info_connection_offline),
                             mOfflinePageCreationDate));
         } else if (mOfflinePageState == OfflinePageState.UNTRUSTED_OFFLINE_PAGE) {
             // For untrusted pages, if there's a creation date, show it in the message.
             if (TextUtils.isEmpty(mOfflinePageCreationDate)) {
-                messageBuilder.append(mContext.getString(
+                messageBuilder.append(context.getString(
                         R.string.page_info_offline_page_not_trusted_without_date));
             } else {
                 messageBuilder.append(String.format(
-                        mContext.getString(R.string.page_info_offline_page_not_trusted_with_date),
+                        context.getString(R.string.page_info_offline_page_not_trusted_with_date),
                         mOfflinePageCreationDate));
             }
         } else {
@@ -405,10 +405,10 @@ public class PageInfoController
         if (isConnectionDetailsLinkVisible()) {
             messageBuilder.append(" ");
             SpannableString detailsText =
-                    new SpannableString(mContext.getString(R.string.details_link));
+                    new SpannableString(context.getString(R.string.details_link));
             final ForegroundColorSpan blueSpan =
                     new ForegroundColorSpan(ApiCompatibilityUtils.getColor(
-                            mContext.getResources(), R.color.default_text_color_link));
+                            context.getResources(), R.color.default_text_color_link));
             detailsText.setSpan(
                     blueSpan, 0, detailsText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
             messageBuilder.append(detailsText);
@@ -424,7 +424,7 @@ public class PageInfoController
                 runAfterDismiss(() -> {
                     if (!mTab.getWebContents().isDestroyed()) {
                         recordAction(PageInfoAction.PAGE_INFO_SECURITY_DETAILS_OPENED);
-                        ConnectionInfoPopup.show(mContext, mTab);
+                        ConnectionInfoPopup.show(context, mTab);
                     }
                 });
             };
@@ -435,15 +435,17 @@ public class PageInfoController
     @Override
     public void onSystemSettingsActivityRequired(Intent intentOverride) {
         runAfterDismiss(() -> {
+            Context context = mWindowAndroid.getActivity().get();
+            assert context != null;
             Intent settingsIntent;
             if (intentOverride != null) {
                 settingsIntent = intentOverride;
             } else {
                 settingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                settingsIntent.setData(Uri.parse("package:" + mContext.getPackageName()));
+                settingsIntent.setData(Uri.parse("package:" + context.getPackageName()));
             }
             settingsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            mContext.startActivity(settingsIntent);
+            context.startActivity(settingsIntent);
         });
     }
 
@@ -491,8 +493,8 @@ public class PageInfoController
         return mOfflinePageState != OfflinePageState.NOT_OFFLINE_PAGE && !isShowingPreview();
     }
 
-    private boolean isSheet() {
-        return !DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext)
+    private boolean isSheet(Context context) {
+        return !DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)
                 && !VrModuleProvider.getDelegate().isInVr();
     }
 

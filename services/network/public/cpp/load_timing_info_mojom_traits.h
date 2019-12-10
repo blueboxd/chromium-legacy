@@ -104,6 +104,16 @@ struct StructTraits<network::mojom::LoadTimingInfoDataView,
     return obj.push_end;
   }
 
+  static base::TimeTicks service_worker_start_time(
+      const net::LoadTimingInfo& obj) {
+    return obj.service_worker_start_time;
+  }
+
+  static base::TimeTicks service_worker_ready_time(
+      const net::LoadTimingInfo& obj) {
+    return obj.service_worker_ready_time;
+  }
+
   static bool Read(network::mojom::LoadTimingInfoDataView obj,
                    net::LoadTimingInfo* output);
 };

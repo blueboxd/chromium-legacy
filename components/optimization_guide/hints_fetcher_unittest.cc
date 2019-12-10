@@ -176,6 +176,9 @@ TEST_F(HintsFetcherTest, FetchOptimizationGuideServiceHints) {
 
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.FetchLatency", 1);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.FetchLatency.BatchUpdate",
+      1);
 }
 
 // Tests to ensure that multiple hint fetches by the same object cannot be in
@@ -310,6 +313,9 @@ TEST_F(HintsFetcherTest, FetchAttemptWhenNetworkOffline) {
 
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.FetchLatency", 1);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.FetchLatency.BatchUpdate",
+      1);
 }
 
 TEST_F(HintsFetcherTest, HintsFetchSuccessfulHostsRecorded) {

@@ -238,7 +238,7 @@ class ServiceExecutableProcessHost
       LaunchCallback callback) override {
     // TODO(https://crbug.com/781334): Support sandboxing.
     return launcher_
-        .Start(identity, service_manager::SANDBOX_TYPE_NO_SANDBOX,
+        .Start(identity, service_manager::SandboxType::kNoSandbox,
                std::move(callback))
         .PassInterface();
   }

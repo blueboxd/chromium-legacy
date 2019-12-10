@@ -12,8 +12,6 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
-#include "components/viz/common/features.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -56,22 +54,6 @@ class MirrorOnBootTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(MirrorOnBootTest);
 };
 
-class MirrorUsingSurfaceLayersTest : public AshTestBase {
- public:
-  MirrorUsingSurfaceLayersTest() = default;
-  ~MirrorUsingSurfaceLayersTest() override = default;
-
-  void SetUp() override {
-    scoped_feature_list_.InitWithFeatures({features::kVizDisplayCompositor},
-                                          {});
-    AshTestBase::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(MirrorUsingSurfaceLayersTest);
-};
 }  // namespace
 
 using MirrorWindowControllerTest = AshTestBase;
@@ -131,7 +113,7 @@ TEST_F(MirrorOnBootTest, MirrorOnBoot) {
 }
 
 // Test that the mirror window matches the size of the host display.
-TEST_F(MirrorUsingSurfaceLayersTest, MirrorSize) {
+TEST_F(MirrorWindowControllerTest, MirrorSize) {
   const int64_t primary_id = 1;
   const int64_t mirror_id = 2;
 

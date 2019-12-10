@@ -201,6 +201,8 @@ class ArcPolicyBridgeTestBase {
     Mock::VerifyAndClearExpectations(&observer_);
     EXPECT_CALL(observer_, OnPolicySent(expected_policy_json));
     policy_bridge()->GetPolicies(PolicyStringCallback(expected_policy_json));
+    EXPECT_EQ(expected_policy_json,
+              policy_bridge()->get_arc_policy_for_reporting());
     Mock::VerifyAndClearExpectations(&observer_);
   }
 
@@ -220,6 +222,17 @@ class ArcPolicyBridgeTestBase {
                                                     kPolicyCompliantResponse));
     run_loop().Run();
     Mock::VerifyAndClearExpectations(&observer_);
+
+    if (compliance_report_value) {
+      std::unique_ptr<base::Value> saved_compliance_report_value =
+          base::JSONReader::ReadDeprecated(
+              policy_bridge()->get_arc_policy_compliance_report());
+      ASSERT_TRUE(saved_compliance_report_value);
+      EXPECT_TRUE(
+          compliance_report_value->Equals(saved_compliance_report_value.get()));
+    } else {
+      EXPECT_TRUE(policy_bridge()->get_arc_policy_compliance_report().empty());
+    }
   }
 
   // Specifies a testing factory for ArcSmartCardManagerBridge and returns

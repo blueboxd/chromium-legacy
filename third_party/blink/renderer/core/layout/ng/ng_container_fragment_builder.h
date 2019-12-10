@@ -240,6 +240,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   bool has_block_fragmentation_ = false;
   bool is_fragmentation_context_root_ = false;
   bool may_have_descendant_above_block_start_ = false;
+
+  bool has_oof_candidate_that_needs_block_offset_adjustment_ = false;
 };
 
 }  // namespace blink

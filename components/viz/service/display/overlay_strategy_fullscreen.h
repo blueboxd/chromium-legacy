@@ -22,14 +22,14 @@ class VIZ_SERVICE_EXPORT OverlayStrategyFullscreen
       OverlayCandidateValidatorStrategy* capability_checker);
   ~OverlayStrategyFullscreen() override;
 
-  bool Attempt(
-      const SkMatrix44& output_color_matrix,
-      const OverlayProcessor::FilterOperationsMap& render_pass_backdrop_filters,
-      DisplayResourceProvider* resource_provider,
-      RenderPassList* render_pass,
-      const PrimaryPlane* primary_plane,
-      OverlayCandidateList* candidate_list,
-      std::vector<gfx::Rect>* content_bounds) override;
+  bool Attempt(const SkMatrix44& output_color_matrix,
+               const OverlayProcessorInterface::FilterOperationsMap&
+                   render_pass_backdrop_filters,
+               DisplayResourceProvider* resource_provider,
+               RenderPassList* render_pass,
+               const PrimaryPlane* primary_plane,
+               OverlayCandidateList* candidate_list,
+               std::vector<gfx::Rect>* content_bounds) override;
 
   bool RemoveOutputSurfaceAsOverlay() override;
   OverlayStrategy GetUMAEnum() const override;

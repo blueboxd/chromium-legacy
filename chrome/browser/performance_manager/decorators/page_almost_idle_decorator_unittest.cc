@@ -128,7 +128,8 @@ void PageAlmostIdleDecoratorTest::TestPageAlmostIdleTransitions(bool timeout) {
 
   // Post a navigation. The state should reset.
   page_node->OnMainFrameNavigationCommitted(false, base::TimeTicks::Now(), 1,
-                                            GURL("https://www.example.org"));
+                                            GURL("https://www.example.org"),
+                                            "text/html");
   page_data = Data::GetForTesting(page_node);
   EXPECT_EQ(LIS::kLoadingNotStarted, page_data->load_idle_state_);
   EXPECT_FALSE(page_data->idling_timer_.IsRunning());

@@ -10,9 +10,9 @@
 #include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
@@ -50,39 +50,27 @@ NSString* const kPageInfoWillHideNotification =
 
 @implementation PageInfoLegacyCoordinator
 
-@synthesize dispatcher = _dispatcher;
-@synthesize pageInfoViewController = _pageInfoViewController;
-@synthesize presentationProvider = _presentationProvider;
-@synthesize webStateList = _webStateList;
-
 #pragma mark - ChromeCoordinator
+
+- (void)start {
+  [self.browser->GetCommandDispatcher()
+      startDispatchingToTarget:self
+                   forProtocol:@protocol(PageInfoCommands)];
+}
 
 - (void)stop {
   [super stop];
   // DCHECK that the Page Info UI is not displayed before disconnecting.
   DCHECK(!self.pageInfoViewController);
-  [self.dispatcher stopDispatchingToTarget:self];
-  self.dispatcher = nil;
+  [self.browser->GetCommandDispatcher() stopDispatchingToTarget:self];
   self.presentationProvider = nil;
-  self.webStateList = nullptr;
-}
-
-#pragma mark - Public
-
-- (void)setDispatcher:(CommandDispatcher*)dispatcher {
-  if (dispatcher == self.dispatcher)
-    return;
-  if (self.dispatcher)
-    [self.dispatcher stopDispatchingToTarget:self];
-  [dispatcher startDispatchingToTarget:self
-                           forProtocol:@protocol(PageInfoCommands)];
-  _dispatcher = dispatcher;
 }
 
 #pragma mark - PageInfoCommands
 
 - (void)showPageInfoForOriginPoint:(CGPoint)originPoint {
-  web::WebState* webState = self.webStateList->GetActiveWebState();
+  web::WebState* webState =
+      self.browser->GetWebStateList()->GetActiveWebState();
   web::NavigationItem* navItem =
       webState->GetNavigationManager()->GetVisibleItem();
 
@@ -157,7 +145,8 @@ NSString* const kPageInfoWillHideNotification =
 #pragma mark - PageInfoReloading
 
 - (void)reload {
-  web::WebState* webState = self.webStateList->GetActiveWebState();
+  web::WebState* webState =
+      self.browser->GetWebStateList()->GetActiveWebState();
   if (webState) {
     // |check_for_repost| is true because the reload is explicitly initiated
     // by the user.

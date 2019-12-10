@@ -28,12 +28,11 @@
 
 @implementation FallbackCoordinator
 
-- (instancetype)
-initWithBaseViewController:(UIViewController*)viewController
-              browserState:(ios::ChromeBrowserState*)browserState
-          injectionHandler:(ManualFillInjectionHandler*)injectionHandler {
-  self = [super initWithBaseViewController:viewController
-                              browserState:browserState];
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser
+                          injectionHandler:
+                              (ManualFillInjectionHandler*)injectionHandler {
+  self = [super initWithBaseViewController:viewController browser:browser];
   if (self) {
     _injectionHandler = injectionHandler;
   }

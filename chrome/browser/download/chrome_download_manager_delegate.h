@@ -81,7 +81,7 @@ class ChromeDownloadManagerDelegate
 
   // content::DownloadManagerDelegate
   void Shutdown() override;
-  void GetNextId(const content::DownloadIdCallback& callback) override;
+  void GetNextId(content::DownloadIdCallback callback) override;
   bool DetermineDownloadTarget(
       download::DownloadItem* item,
       const content::DownloadTargetCallback& callback) override;
@@ -204,7 +204,7 @@ class ChromeDownloadManagerDelegate
   FRIEND_TEST_ALL_PREFIXES(ChromeDownloadManagerDelegateTest,
                            RequestConfirmation_Android);
 
-  typedef std::vector<content::DownloadIdCallback> IdCallbackVector;
+  using IdCallbackVector = std::vector<content::DownloadIdCallback>;
 
   // Called to show a file picker for download with |guid|
   void ShowFilePicker(
@@ -233,7 +233,7 @@ class ChromeDownloadManagerDelegate
   void SetNextId(uint32_t id);
 
   // Runs the |callback| with next id. Results in the download being started.
-  void ReturnNextId(const content::DownloadIdCallback& callback);
+  void ReturnNextId(content::DownloadIdCallback callback);
 
   void OnDownloadTargetDetermined(
       uint32_t download_id,

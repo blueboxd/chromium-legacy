@@ -250,4 +250,25 @@ TEST_F(BrowserViewControllerTest, TestFocusNextPrevious) {
   EXPECT_EQ(web_state_list->active_index(), 0);
 }
 
+// Tests that WebState::WasShown() and WebState::WasHidden() is properly called
+// for WebState activations in the BrowserViewController's WebStateList.
+TEST_F(BrowserViewControllerTest, UpdateWebStateVisibility) {
+  WebStateList* web_state_list = tabModel_.webStateList;
+  ASSERT_EQ(3, web_state_list->count());
+
+  // Activate each WebState in the list and check the visibility.
+  web_state_list->ActivateWebStateAt(0);
+  EXPECT_EQ(web_state_list->GetWebStateAt(0)->IsVisible(), true);
+  EXPECT_EQ(web_state_list->GetWebStateAt(1)->IsVisible(), false);
+  EXPECT_EQ(web_state_list->GetWebStateAt(2)->IsVisible(), false);
+  web_state_list->ActivateWebStateAt(1);
+  EXPECT_EQ(web_state_list->GetWebStateAt(0)->IsVisible(), false);
+  EXPECT_EQ(web_state_list->GetWebStateAt(1)->IsVisible(), true);
+  EXPECT_EQ(web_state_list->GetWebStateAt(2)->IsVisible(), false);
+  web_state_list->ActivateWebStateAt(2);
+  EXPECT_EQ(web_state_list->GetWebStateAt(0)->IsVisible(), false);
+  EXPECT_EQ(web_state_list->GetWebStateAt(1)->IsVisible(), false);
+  EXPECT_EQ(web_state_list->GetWebStateAt(2)->IsVisible(), true);
+}
+
 }  // namespace

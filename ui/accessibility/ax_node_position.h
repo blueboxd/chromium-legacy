@@ -41,6 +41,7 @@ class AX_EXPORT AXNodePosition : public AXPosition<AXNodePosition, AXNode> {
   bool IsInLineBreak() const override;
   bool IsInTextObject() const override;
   bool IsInWhiteSpace() const override;
+  int MaxTextOffset() const override;
 
  protected:
   void AnchorChild(int child_index,

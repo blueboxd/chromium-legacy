@@ -22,7 +22,7 @@ class SandboxDelegate {
   virtual ~SandboxDelegate() {}
 
   // Returns the SandboxType to enforce on the process, or
-  // SANDBOX_TYPE_NO_SANDBOX to run without a sandbox policy.
+  // SandboxType::kNoSandbox to run without a sandbox policy.
   virtual service_manager::SandboxType GetSandboxType() = 0;
 
 #if defined(OS_WIN)

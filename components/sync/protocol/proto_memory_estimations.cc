@@ -127,6 +127,7 @@ INSTANTIATE(EntityMetadata)
 INSTANTIATE(EntitySpecifics)
 INSTANTIATE(ModelTypeState)
 INSTANTIATE(PersistedEntityData)
+INSTANTIATE(SyncEntity)
 INSTANTIATE(UniquePosition)
 
 }  // namespace sync_pb

@@ -9,9 +9,11 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.os.Bundle;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 
 /**
@@ -20,6 +22,40 @@ import org.chromium.base.ThreadUtils;
  */
 public class BackgroundTaskSchedulerAlarmManager implements BackgroundTaskSchedulerDelegate {
     private static final String TAG = "BkgrdTaskSchedulerAM";
+
+    /**
+     * Retrieves the {@link TaskParameters} from the {@link Intent}.
+     *
+     * @param intent the {@link Intent} to extract the {@link TaskParameters} from.
+     * @return the {@link TaskParameters} for the current job.
+     */
+    static TaskParameters getTaskParametersFromIntent(Intent intent) {
+        Bundle extras = intent.getExtras();
+
+        int taskId = extras.getInt(BACKGROUND_TASK_ID_KEY, /* defaultValue= */ 0);
+        if (taskId == 0) {
+            Log.e(TAG, "Cannot not get task ID from intent extras.");
+            return null;
+        }
+
+        ScheduledTaskProto.ScheduledTask scheduledTask =
+                BackgroundTaskSchedulerPrefs.getScheduledTask(taskId);
+        if (scheduledTask == null) {
+            Log.e(TAG, "Cannot get information about task with task ID " + taskId);
+            return null;
+        }
+
+        Bundle taskExtras =
+                ExtrasToProtoConverter.convertProtoExtrasToExtras(scheduledTask.getExtrasList());
+        if (taskExtras == null) {
+            Log.e(TAG, "Cannot get extras data for task ID " + taskId);
+            return null;
+        }
+
+        TaskParameters.Builder builder = TaskParameters.create(taskId);
+        builder.addExtras(taskExtras);
+        return builder.build();
+    }
 
     @VisibleForTesting
     static PendingIntent createPendingIntentFromTaskId(Context context, int taskId) {

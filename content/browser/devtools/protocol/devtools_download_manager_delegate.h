@@ -45,7 +45,7 @@ class CONTENT_EXPORT DevToolsDownloadManagerDelegate
   bool ShouldOpenDownload(
       download::DownloadItem* item,
       const content::DownloadOpenDelayedCallback& callback) override;
-  void GetNextId(const content::DownloadIdCallback& callback) override;
+  void GetNextId(content::DownloadIdCallback callback) override;
 
  private:
   friend class base::RefCounted<DevToolsDownloadManagerDelegate>;

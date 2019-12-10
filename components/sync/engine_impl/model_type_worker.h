@@ -231,10 +231,10 @@ class ModelTypeWorker : public UpdateHandler,
   // Interface used to access and send nudges to the sync scheduler. Not owned.
   NudgeHandler* nudge_handler_;
 
-  // A map of update responses, keyed by server_id.
-  // Holds updates encrypted with pending keys.
-  std::map<std::string, std::unique_ptr<UpdateResponseData>>
-      entries_pending_decryption_;
+  // A map of sync entities, keyed by server_id. Holds updates encrypted with
+  // pending keys. Entries are stored in a map for de-duplication (applying only
+  // the latest).
+  std::map<std::string, sync_pb::SyncEntity> entries_pending_decryption_;
 
   // Accumulates all the updates from a single GetUpdates cycle in memory so
   // they can all be sent to the processor at once.

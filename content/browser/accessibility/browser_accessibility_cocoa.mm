@@ -690,6 +690,31 @@ void AppendTextToString(const std::string& extra_text, std::string* string) {
   *string += std::string(". ") + extra_text;
 }
 
+bool IsSelectedStateRelevant(BrowserAccessibility* item) {
+  if (!item->HasBoolAttribute(ax::mojom::BoolAttribute::kSelected))
+    return false;  // Does not have selected state -> not relevant.
+
+  BrowserAccessibility* container = item->PlatformGetSelectionContainer();
+  if (!container)
+    return false;  // No container -> not relevant.
+
+  if (container->HasState(ax::mojom::State::kMultiselectable))
+    return true;  // In a multiselectable -> is relevant.
+
+  // Single selection AND not selected - > is relevant.
+  // Single selection containers can explicitly set the focused item as not
+  // selected, for example via aria-selectable="false". It's useful for the user
+  // to know that it's not selected in this case.
+  // Only do this for the focused item -- that is the only item where explicitly
+  // setting the item to unselected is relevant, as the focused item is the only
+  // item that could have been selected annyway.
+  // Therefore, if the user navigates to other items by detaching accessibility
+  // focus from the input focus via VO+Shift+F3, those items will not be
+  // redundantly reported as not selected.
+  return item->manager()->GetFocus() == item &&
+         !item->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
+}
+
 }  // namespace
 
 #if defined(MAC_OS_X_VERSION_10_12) && \
@@ -2345,9 +2370,25 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (![self instanceActive])
     return nil;
 
-  if (ui::IsNameExposedInAXValueForRole([self internalRole]))
-    return NSStringForStringAttribute(owner_,
-                                      ax::mojom::StringAttribute::kName);
+  if (ui::IsNameExposedInAXValueForRole([self internalRole])) {
+    if (!IsSelectedStateRelevant(owner_))
+      return NSStringForStringAttribute(owner_,
+                                        ax::mojom::StringAttribute::kName);
+
+    // Append the selection state as a string, because VoiceOver will not
+    // automatically report selection state when an individual item is focused.
+    base::string16 name =
+        owner_->GetString16Attribute(ax::mojom::StringAttribute::kName);
+    bool is_selected =
+        owner_->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
+    int msg_id =
+        is_selected ? IDS_AX_OBJECT_SELECTED : IDS_AX_OBJECT_NOT_SELECTED;
+    ContentClient* content_client = content::GetContentClient();
+    base::string16 name_with_selection = base::ReplaceStringPlaceholders(
+        content_client->GetLocalizedString(msg_id), {name}, nullptr);
+
+    return base::SysUTF16ToNSString(name_with_selection);
+  }
 
   NSString* role = [self role];
   if ([role isEqualToString:@"AXHeading"]) {

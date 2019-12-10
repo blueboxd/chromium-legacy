@@ -6,7 +6,7 @@
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
 # culprit CLs instead of suppressing the leaks. If you have any question, #
-# ask hajimehoshi@.                                                       #
+# ask hajimehoshi@ or yuzus@.                                             #
 ###########################################################################
 
 # FIXME: scroll customization leaks memory. See
@@ -113,5 +113,5 @@ crbug.com/1029417 [ Linux ] external/wpt/web-nfc/NDEFReader_scan_filter.https.ht
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
 # culprit CLs instead of suppressing the leaks. If you have any question, #
-# ask hajimehoshi@.                                                       #
+# ask hajimehoshi@ or yuzus@.                                             #
 ###########################################################################

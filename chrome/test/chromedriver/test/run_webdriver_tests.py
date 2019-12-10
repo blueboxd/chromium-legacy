@@ -115,7 +115,8 @@ def process_skip_list(skipped_tests, results, finder, port, test_path, shard):
 class SubtestResultRecorder(object):
   def __init__(self, path, port):
     self.result = []
-    self.test_path = path
+    self.filename, _ = port.split_webdriver_subtest_pytest_name(
+        path)
     self.port = port
 
   def pytest_runtest_logreport(self, report):
@@ -147,11 +148,13 @@ class SubtestResultRecorder(object):
                 "In-test skip decorators are disallowed.")
 
   def record(self, report, status, message=None):
-    # location is a (filesystempath, lineno, domaininfo) tuple
-    # https://docs.pytest.org/en/3.6.2/reference.html#_pytest.runner.TestReport.location
-    test_name = report.location[2]
+    # location is a (filesystempath, lineno, domaininfo) tuple,
+    # indicating the actual location of a test item; domaininfo is
+    # the subtest name.
+    subtest_name = report.location[2]
     output_name = self.port.add_webdriver_subtest_suffix(
-        self.test_path, test_name)
+        self.filename, subtest_name)
+
     self.result.append(WebDriverTestResult(
         output_name, status, message))
 

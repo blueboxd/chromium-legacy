@@ -66,27 +66,6 @@ bool UnacceleratedStaticBitmapImage::IsPremultiplied() const {
          SkAlphaType::kPremul_SkAlphaType;
 }
 
-scoped_refptr<StaticBitmapImage>
-UnacceleratedStaticBitmapImage::MakeAccelerated(
-    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_wrapper) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  if (!context_wrapper)
-    return nullptr;  // Can happen if the context is lost.
-
-  GrContext* grcontext = context_wrapper->ContextProvider()->GetGrContext();
-  if (!grcontext)
-    return nullptr;  // Can happen if the context is lost.
-
-  sk_sp<SkImage> sk_image = paint_image_.GetSkImage();
-  sk_sp<SkImage> gpu_skimage = sk_image->makeTextureImage(grcontext);
-  if (!gpu_skimage)
-    return nullptr;
-
-  return AcceleratedStaticBitmapImage::CreateFromSkImage(
-      std::move(gpu_skimage), std::move(context_wrapper));
-}
-
 bool UnacceleratedStaticBitmapImage::CurrentFrameKnownToBeOpaque() {
   return paint_image_.GetSkImage()->isOpaque();
 }
@@ -112,6 +91,23 @@ void UnacceleratedStaticBitmapImage::Transfer() {
 
   original_skia_image_ = paint_image_.GetSkImage();
   original_skia_image_task_runner_ = Thread::Current()->GetTaskRunner();
+}
+
+scoped_refptr<StaticBitmapImage>
+UnacceleratedStaticBitmapImage::ConvertToColorSpace(
+    sk_sp<SkColorSpace> color_space,
+    SkColorType color_type) {
+  DCHECK(color_space);
+
+  sk_sp<SkImage> skia_image = PaintImageForCurrentFrame().GetSkImage();
+  // If we don't need to change the color type, use SkImage::makeColorSpace()
+  if (skia_image->colorType() == color_type) {
+    skia_image = skia_image->makeColorSpace(color_space);
+  } else {
+    skia_image =
+        skia_image->makeColorTypeAndColorSpace(color_type, color_space);
+  }
+  return UnacceleratedStaticBitmapImage::Create(skia_image);
 }
 
 }  // namespace blink

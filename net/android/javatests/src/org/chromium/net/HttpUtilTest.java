@@ -45,7 +45,8 @@ public class HttpUtilTest {
 
     @Before
     public void setUp() {
-        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
+        LibraryLoader.getInstance().setLibraryProcessType(LibraryProcessType.PROCESS_BROWSER);
+        LibraryLoader.getInstance().ensureInitialized();
     }
 
     @Test

@@ -271,7 +271,7 @@ void ConnectToQuarantineService(
         std::move(receiver),
         content::ServiceProcessHost::Options()
             .WithDisplayName("Quarantine Service")
-            .WithSandboxType(service_manager::SANDBOX_TYPE_NO_SANDBOX)
+            .WithSandboxType(service_manager::SandboxType::kNoSandbox)
             .Pass());
     return;
   }
@@ -356,8 +356,8 @@ void ChromeDownloadManagerDelegate::Shutdown() {
 
 content::DownloadIdCallback
 ChromeDownloadManagerDelegate::GetDownloadIdReceiverCallback() {
-  return base::Bind(&ChromeDownloadManagerDelegate::SetNextId,
-                    weak_ptr_factory_.GetWeakPtr());
+  return base::BindOnce(&ChromeDownloadManagerDelegate::SetNextId,
+                        weak_ptr_factory_.GetWeakPtr());
 }
 
 void ChromeDownloadManagerDelegate::SetNextId(uint32_t next_id) {
@@ -374,33 +374,31 @@ void ChromeDownloadManagerDelegate::SetNextId(uint32_t next_id) {
 
   IdCallbackVector callbacks;
   id_callbacks_.swap(callbacks);
-  for (IdCallbackVector::const_iterator it = callbacks.begin();
-       it != callbacks.end(); ++it) {
-    ReturnNextId(*it);
-  }
+  for (auto& callback : callbacks)
+    ReturnNextId(std::move(callback));
 }
 
 void ChromeDownloadManagerDelegate::GetNextId(
-    const content::DownloadIdCallback& callback) {
+    content::DownloadIdCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (profile_->IsOffTheRecord()) {
     content::BrowserContext::GetDownloadManager(profile_->GetOriginalProfile())
-        ->GetNextId(callback);
+        ->GetNextId(std::move(callback));
     return;
   }
   if (!next_id_retrieved_) {
-    id_callbacks_.push_back(callback);
+    id_callbacks_.push_back(std::move(callback));
     return;
   }
-  ReturnNextId(callback);
+  ReturnNextId(std::move(callback));
 }
 
 void ChromeDownloadManagerDelegate::ReturnNextId(
-    const content::DownloadIdCallback& callback) {
+    content::DownloadIdCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!profile_->IsOffTheRecord());
   // kInvalidId is returned to indicate the error.
-  callback.Run(next_download_id_);
+  std::move(callback).Run(next_download_id_);
   if (next_download_id_ != download::DownloadItem::kInvalidId)
     ++next_download_id_;
 }

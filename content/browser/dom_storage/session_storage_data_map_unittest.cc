@@ -156,8 +156,8 @@ TEST_F(SessionStorageDataMapTest, BasicEmptyCreation) {
   scoped_refptr<SessionStorageDataMap> map =
       SessionStorageDataMap::CreateFromDisk(
           &listener_,
-          base::MakeRefCounted<SessionStorageMetadata::MapData>(1,
-                                                                test_origin_),
+          base::MakeRefCounted<storage::SessionStorageMetadata::MapData>(
+              1, test_origin_),
           database_.get());
 
   bool success;
@@ -189,7 +189,8 @@ TEST_F(SessionStorageDataMapTest, ExplicitlyEmpty) {
 
   scoped_refptr<SessionStorageDataMap> map = SessionStorageDataMap::CreateEmpty(
       &listener_,
-      base::MakeRefCounted<SessionStorageMetadata::MapData>(1, test_origin_),
+      base::MakeRefCounted<storage::SessionStorageMetadata::MapData>(
+          1, test_origin_),
       database_.get());
 
   bool success;
@@ -220,8 +221,8 @@ TEST_F(SessionStorageDataMapTest, Clone) {
   scoped_refptr<SessionStorageDataMap> map1 =
       SessionStorageDataMap::CreateFromDisk(
           &listener_,
-          base::MakeRefCounted<SessionStorageMetadata::MapData>(1,
-                                                                test_origin_),
+          base::MakeRefCounted<storage::SessionStorageMetadata::MapData>(
+              1, test_origin_),
           database_.get());
 
   EXPECT_CALL(listener_,
@@ -233,8 +234,8 @@ TEST_F(SessionStorageDataMapTest, Clone) {
   scoped_refptr<SessionStorageDataMap> map2 =
       SessionStorageDataMap::CreateClone(
           &listener_,
-          base::MakeRefCounted<SessionStorageMetadata::MapData>(2,
-                                                                test_origin_),
+          base::MakeRefCounted<storage::SessionStorageMetadata::MapData>(
+              2, test_origin_),
           map1);
 
   bool success;

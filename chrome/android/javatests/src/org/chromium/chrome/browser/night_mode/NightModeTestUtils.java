@@ -11,7 +11,7 @@ import org.chromium.base.test.params.ParameterSet;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.settings.themes.ThemePreferences;
+import org.chromium.chrome.browser.settings.themes.ThemeType;
 import org.chromium.ui.test.util.DummyUiActivity;
 
 import java.util.Arrays;
@@ -66,8 +66,7 @@ public class NightModeTestUtils {
      */
     public static void setUpNightModeForChromeActivity(boolean nightModeEnabled) {
         SharedPreferencesManager.getInstance().writeInt(ChromePreferenceKeys.UI_THEME_SETTING_KEY,
-                nightModeEnabled ? ThemePreferences.ThemeSetting.DARK
-                                 : ThemePreferences.ThemeSetting.LIGHT);
+                nightModeEnabled ? ThemeType.DARK : ThemeType.LIGHT);
     }
 
     /**

@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/public/mojom/constants.mojom.h"
 #include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/base64url.h"
 #include "base/files/file_path.h"
@@ -29,10 +28,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/test/test_url_loader_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/compression_utils.h"
 #include "ui/display/display.h"
@@ -70,19 +65,14 @@ arc::ArcFeatures CreateArcFeaturesForTest() {
   return arc_features;
 }
 
-class TestCrosDisplayConfig : public ash::mojom::CrosDisplayConfigController,
-                              public service_manager::Service {
+class TestCrosDisplayConfig : public ash::mojom::CrosDisplayConfigController {
  public:
-  explicit TestCrosDisplayConfig(service_manager::mojom::ServiceRequest request)
-      : service_binding_(this, std::move(request)) {}
+  explicit TestCrosDisplayConfig(
+      mojo::PendingReceiver<ash::mojom::CrosDisplayConfigController> receiver)
+      : receiver_(this, std::move(receiver)) {}
   ~TestCrosDisplayConfig() override = default;
 
   void Flush() {
-    if (!ready_) {
-      base::RunLoop run_loop;
-      ready_callback_ = run_loop.QuitClosure();
-      run_loop.Run();
-    }
     receiver_.FlushForTesting();
   }
 
@@ -121,25 +111,9 @@ class TestCrosDisplayConfig : public ash::mojom::CrosDisplayConfigController,
                         ash::mojom::TouchCalibrationPtr calibration,
                         TouchCalibrationCallback callback) override {}
 
-  // service_manager::Service:
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override {
-    DCHECK(interface_name == ash::mojom::CrosDisplayConfigController::Name_);
-    receiver_.Bind(
-        mojo::PendingReceiver<ash::mojom::CrosDisplayConfigController>(
-            std::move(interface_pipe)));
-    ready_ = true;
-    if (ready_callback_)
-      std::move(ready_callback_).Run();
-  }
-
  private:
-  service_manager::ServiceBinding service_binding_;
-  mojo::Receiver<ash::mojom::CrosDisplayConfigController> receiver_{this};
+  mojo::Receiver<ash::mojom::CrosDisplayConfigController> receiver_;
 
-  bool ready_ = false;
-  base::OnceClosure ready_callback_;
   GetDisplayUnitInfoListCallback get_display_unit_info_list_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCrosDisplayConfig);
@@ -238,15 +212,17 @@ class RecommendAppsFetcherImplTest : public testing::Test {
     display::Display::SetInternalDisplayId(
         test_screen_.GetPrimaryDisplay().id());
 
+    mojo::PendingRemote<ash::mojom::CrosDisplayConfigController>
+        remote_display_config;
     cros_display_config_ = std::make_unique<TestCrosDisplayConfig>(
-        connector_factory_.RegisterInstance(ash::mojom::kServiceName));
+        remote_display_config.InitWithNewPipeAndPassReceiver());
 
     test_url_loader_factory_.SetInterceptor(
         base::BindRepeating(&RecommendAppsFetcherImplTest::InterceptRequest,
                             base::Unretained(this)));
 
     recommend_apps_fetcher_ = std::make_unique<RecommendAppsFetcherImpl>(
-        &delegate_, connector_factory_.GetDefaultConnector(),
+        &delegate_, std::move(remote_display_config),
         &test_url_loader_factory_);
 
     static_cast<RecommendAppsFetcherImpl*>(recommend_apps_fetcher_.get())
@@ -352,8 +328,6 @@ class RecommendAppsFetcherImplTest : public testing::Test {
   }
 
   content::BrowserTaskEnvironment task_environment_;
-
-  service_manager::TestConnectorFactory connector_factory_;
 
   std::unique_ptr<base::RunLoop> request_waiter_;
 };

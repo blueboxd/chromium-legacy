@@ -214,12 +214,6 @@ class TestExporter(object):
 
         try:
             self.wpt_github.merge_pr(pull_request.number)
-
-            # This is in the try block because if a PR can't be merged, we shouldn't
-            # delete its branch.
-            _log.info('Deleting remote branch %s...', branch)
-            self.wpt_github.delete_remote_branch(branch)
-
             change_id = self.wpt_github.extract_metadata('Change-Id: ', pull_request.body)
             if change_id:
                 cl = GerritCL(data={'change_id': change_id}, api=self.gerrit)

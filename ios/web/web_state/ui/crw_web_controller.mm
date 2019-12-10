@@ -1830,11 +1830,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 - (void)navigationHandlerWebProcessDidCrash:
     (CRWWKNavigationHandler*)navigationHandler {
-  // On iOS 11 WKWebView does not repaint after crash and reload. Recreating
-  // web view fixes the issue. TODO(crbug.com/770914): Remove this workaround
-  // once rdar://35063950 is fixed.
-  [self removeWebView];
-
   self.webStateImpl->CancelDialogs();
   self.webStateImpl->OnRenderProcessGone();
 }

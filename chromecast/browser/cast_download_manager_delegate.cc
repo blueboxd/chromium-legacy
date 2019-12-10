@@ -20,10 +20,10 @@ CastDownloadManagerDelegate::CastDownloadManagerDelegate() {}
 CastDownloadManagerDelegate::~CastDownloadManagerDelegate() {}
 
 void CastDownloadManagerDelegate::GetNextId(
-      const content::DownloadIdCallback& callback) {
+    content::DownloadIdCallback callback) {
   // See default behavior of DownloadManagerImpl::GetNextId()
   static uint32_t next_id = download::DownloadItem::kInvalidId + 1;
-  callback.Run(next_id++);
+  std::move(callback).Run(next_id++);
 }
 
 bool CastDownloadManagerDelegate::DetermineDownloadTarget(

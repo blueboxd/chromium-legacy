@@ -390,9 +390,9 @@ void InjectItemInM62Store(sql::Database* db, const OfflinePageItem& item) {
       "digest) "
       "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
   statement.BindInt64(0, item.offline_id);
-  statement.BindInt(1, store_utils::ToDatabaseTime(item.creation_time));
+  statement.BindInt64(1, store_utils::ToDatabaseTime(item.creation_time));
   statement.BindInt64(2, item.file_size);
-  statement.BindInt(3, store_utils::ToDatabaseTime(item.last_access_time));
+  statement.BindInt64(3, store_utils::ToDatabaseTime(item.last_access_time));
   statement.BindInt(4, item.access_count);
   statement.BindString(5, item.client_id.name_space);
   statement.BindString(6, item.client_id.id);
@@ -402,7 +402,7 @@ void InjectItemInM62Store(sql::Database* db, const OfflinePageItem& item) {
   statement.BindString(10, item.original_url_if_different.spec());
   statement.BindString(11, item.request_origin);
   statement.BindInt64(12, item.system_download_id);
-  statement.BindInt(13, store_utils::ToDatabaseTime(item.file_missing_time));
+  statement.BindInt64(13, store_utils::ToDatabaseTime(item.file_missing_time));
   statement.BindString(14, item.digest);
   ASSERT_TRUE(statement.Run());
   ASSERT_TRUE(db->CommitTransaction());

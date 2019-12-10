@@ -351,7 +351,7 @@
             {
               "cipd_package": 'chromium/chrome/test/chromedriver/cipd',
               'location': 'chrome/test/chromedriver/cipd',
-              'revision': 'PCCG9OmVmpDaf9oaKhJ3sSxXgINilZ9qpl4oaRU0R60C',
+              'revision': 'tLMjWvOcbQX4nMo5WnMsKWn0aaVludzuSX9yiVFUCoUC',
             }
           ]
         },
@@ -4924,7 +4924,7 @@
             {
               "cipd_package": 'chromium/chrome/test/chromedriver/cipd',
               'location': 'chrome/test/chromedriver/cipd',
-              'revision': 'PCCG9OmVmpDaf9oaKhJ3sSxXgINilZ9qpl4oaRU0R60C',
+              'revision': 'tLMjWvOcbQX4nMo5WnMsKWn0aaVludzuSX9yiVFUCoUC',
             }
           ]
         },

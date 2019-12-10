@@ -32,7 +32,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
@@ -83,7 +82,7 @@ public class TrustedWebActivityTest {
     @Before
     public void setUp() {
         // Native needs to be initialized to start the test server.
-        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
+        LibraryLoader.getInstance().ensureInitialized();
 
         mEmbeddedTestServerRule.setServerUsesHttps(true); // TWAs only work with HTTPS.
         mTestPage = mEmbeddedTestServerRule.getServer().getURL(TEST_PAGE);

@@ -163,6 +163,19 @@ TEST_F(AppServiceWrapperTest, GetInstalledApps) {
   }
 }
 
+TEST_F(AppServiceWrapperTest, GetAppName) {
+  const AppId app1(apps::mojom::AppType::kArc, kArcPackage1);
+  EXPECT_CALL(test_listener(), OnAppInstalled(app1)).Times(1);
+  SimulateAppInstalled(app1, kArcApp1);
+
+  const AppId app2(apps::mojom::AppType::kArc, kArcPackage2);
+  EXPECT_CALL(test_listener(), OnAppInstalled(app2)).Times(1);
+  SimulateAppInstalled(app2, kArcApp2);
+
+  EXPECT_EQ(kArcApp1, tested_wrapper().GetAppName(app1));
+  EXPECT_EQ(kArcApp2, tested_wrapper().GetAppName(app2));
+}
+
 // Tests installs and uninstalls of Arc apps.
 TEST_F(AppServiceWrapperTest, ArcAppInstallation) {
   // No app installed.
@@ -208,6 +221,9 @@ TEST_F(AppServiceWrapperTest, ArcAppDisabled) {
   EXPECT_CALL(test_listener(), OnAppAvailable(app)).Times(1);
   SimulateAppDisabled(app, kArcApp1, false);
 }
+
+// TODO(agawronska): Add tests for ARC apps activity once crrev.com/c/1906614 is
+// landed.
 
 }  // namespace app_time
 }  // namespace chromeos

@@ -550,6 +550,11 @@ void ServiceWorkerRegisterJob::UpdateAndContinue() {
 
 void ServiceWorkerRegisterJob::OnStartWorkerFinished(
     blink::ServiceWorkerStatusCode status) {
+  // Bail out early if the job has already completed.
+  // See https://crbug.com/1031764 for details.
+  if (phase_ == COMPLETE)
+    return;
+
   BumpLastUpdateCheckTimeIfNeeded();
 
   if (status == blink::ServiceWorkerStatusCode::kOk) {

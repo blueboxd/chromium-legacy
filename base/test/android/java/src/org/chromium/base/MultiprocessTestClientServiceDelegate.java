@@ -11,6 +11,7 @@ import android.os.RemoteException;
 import android.util.SparseArray;
 
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.process_launcher.ChildProcessServiceDelegate;
 import org.chromium.native_test.MainRunner;
 
@@ -37,6 +38,7 @@ public class MultiprocessTestClientServiceDelegate implements ChildProcessServic
 
     @Override
     public void onServiceCreated() {
+        LibraryLoader.getInstance().setLibraryProcessType(LibraryProcessType.PROCESS_CHILD);
         PathUtils.setPrivateDataDirectorySuffix("chrome_multiprocess_test_client_service");
     }
 

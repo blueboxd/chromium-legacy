@@ -53,13 +53,12 @@
              in the omnibox and a different one in the launcher. -->
         <div class="settings-box first block">
           <div id="search-wrapper">
-            <div id="searchExplanation" class="start settings-box-text">
+            <div id="searchExplanation" class="start settings-box-text"
+                aria-hidden="true">
               $i18n{osSearchEngineLabel}
-              <iron-icon id="help-icon" icon="cr:help-outline"
-                  aria-label="$i18n{osSearchEngineTooltip}"
-                  aria-describedby="tooltip"></iron-icon>
+              <iron-icon id="help-icon" icon="cr:help-outline"></iron-icon>
               <paper-tooltip id="tooltip" for="help-icon" position="bottom"
-                  aria-hidden="true" fit-to-visible-bounds>
+                  fit-to-visible-bounds>
                 $i18n{osSearchEngineTooltip}
               </paper-tooltip>
             </div>

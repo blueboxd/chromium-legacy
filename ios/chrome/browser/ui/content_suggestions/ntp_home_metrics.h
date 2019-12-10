@@ -13,6 +13,10 @@ namespace ios {
 class ChromeBrowserState;
 }
 
+namespace web {
+class WebState;
+}
+
 namespace ntp_home {
 
 // Records an NTP impression of type |impression_type|.
@@ -23,9 +27,10 @@ void RecordNTPImpression(ntp_home::IOSNTPImpression impression_type);
 // Metrics recorder for the action used to potentially leave the NTP.
 @interface NTPHomeMetrics : NSObject
 
-- (nonnull instancetype)initWithBrowserState:
-    (ios::ChromeBrowserState* _Nonnull)browserState NS_DESIGNATED_INITIALIZER;
-- (nonnull instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+                            webState:(web::WebState*)webState
+    NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
 
 - (void)recordAction:(new_tab_page_uma::ActionType)action;
 

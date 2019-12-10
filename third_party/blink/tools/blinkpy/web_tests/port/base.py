@@ -1912,8 +1912,29 @@ class Port(object):
             return test_name + Port.WEBDRIVER_SUBTEST_SEPARATOR + subtest_name
         return test_name
 
-    def add_webdriver_subtest_pytest_suffix(self, test_name, subtest_name):
-        return test_name + self.WEBDRIVER_SUBTEST_PYTEST_SEPARATOR + subtest_name
+    @staticmethod
+    def split_webdriver_subtest_pytest_name(test_name):
+        """Splits a WebDriver test name in pytest format into a filename and a subtest name and
+        returns both of them. E.g.
+
+        test.py::foo.html -> (test.py, foo.html)
+        test.py           -> (test.py, None)
+        """
+        names_after_split = test_name.split(
+            Port.WEBDRIVER_SUBTEST_PYTEST_SEPARATOR)
+
+        assert len(names_after_split) <= 2, "%s has a length greater than 2 after split by ::" % (
+            test_name)
+        if len(names_after_split) == 1:
+            return (names_after_split[0], None)
+
+        return (names_after_split[0], names_after_split[1])
+
+    @staticmethod
+    def add_webdriver_subtest_pytest_suffix(test_name, subtest_name):
+        if subtest_name is None:
+            return test_name
+        return test_name + Port.WEBDRIVER_SUBTEST_PYTEST_SEPARATOR + subtest_name
 
 
 class VirtualTestSuite(object):

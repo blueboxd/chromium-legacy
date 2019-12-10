@@ -190,6 +190,30 @@ bool AXNodePosition::IsInWhiteSpace() const {
          base::ContainsOnlyChars(GetText(), base::kWhitespaceUTF16);
 }
 
+int AXNodePosition::MaxTextOffset() const {
+  if (IsNullPosition())
+    return INVALID_OFFSET;
+
+  const AXNode* anchor = GetAnchor();
+  DCHECK(anchor);
+  base::string16 value = GetAnchor()->data().GetString16Attribute(
+      ax::mojom::StringAttribute::kValue);
+  if (!value.empty())
+    return value.length();
+
+  if (anchor->IsText()) {
+    return anchor->data()
+        .GetString16Attribute(ax::mojom::StringAttribute::kName)
+        .length();
+  }
+
+  int text_length = 0;
+  for (int i = 0; i < AnchorChildCount(); ++i)
+    text_length += CreateChildPositionAt(i)->MaxTextOffset();
+
+  return text_length;
+}
+
 bool AXNodePosition::IsInLineBreakingObject() const {
   if (IsNullPosition())
     return false;

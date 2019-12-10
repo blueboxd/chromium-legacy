@@ -22,7 +22,6 @@
 #import "ios/chrome/browser/web_state_list/active_web_state_observation_forwarder.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_observer_bridge.h"
 
@@ -187,8 +186,6 @@
   // Follow loaded URLs in the main tab model to send those in case of
   // crashes.
   breakpad::MonitorURLsForWebStateList(self.mainBrowser->GetWebStateList());
-  ios::GetChromeBrowserProvider()->InitializeCastService(
-      self.mainBrowser->GetTabModel());
 
   // Create the main coordinator, and thus the main interface.
   _mainBrowserCoordinator = [self coordinatorForBrowser:self.mainBrowser];

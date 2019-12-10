@@ -30,7 +30,7 @@ PASS input.validity.tooShort is false
 
 Disabling makes the control valid
 PASS input.validity.tooShort is true
-PASS input.disabled = true; input.validity.tooShort is false
+PASS input.disabled = true; input.validity.tooShort is true
 PASS input.disabled = false; input.validity.tooShort is true
 
 

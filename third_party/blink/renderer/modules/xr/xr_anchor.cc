@@ -49,7 +49,7 @@ XRSpace* XRAnchor::anchorSpace() const {
   return anchor_space_;
 }
 
-TransformationMatrix XRAnchor::poseMatrix() const {
+TransformationMatrix XRAnchor::MojoFromObject() const {
   if (anchor_data_) {
     return *anchor_data_->pose_matrix_;
   }

@@ -19,7 +19,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.settings.themes.ThemePreferences;
+import org.chromium.chrome.browser.settings.themes.ThemeType;
 
 /**
  * Helper methods for supporting night mode.
@@ -133,14 +133,13 @@ public class NightModeUtils {
     /**
      * The current theme setting, reflecting either the user setting or the default if the user has
      * not explicitly set a preference.
-     * @return The current theme setting. See {@link ThemePreferences.ThemeSetting}.
+     * @return The current theme setting. See {@link ThemeType}.
      */
-    public static @ThemePreferences.ThemeSetting int getThemeSetting() {
+    public static @ThemeType int getThemeSetting() {
         int userSetting = SharedPreferencesManager.getInstance().readInt(UI_THEME_SETTING_KEY, -1);
         if (userSetting == -1) {
-            return FeatureUtilities.isNightModeDefaultToLight()
-                    ? ThemePreferences.ThemeSetting.LIGHT
-                    : ThemePreferences.ThemeSetting.SYSTEM_DEFAULT;
+            return FeatureUtilities.isNightModeDefaultToLight() ? ThemeType.LIGHT
+                                                                : ThemeType.SYSTEM_DEFAULT;
         } else {
             return userSetting;
         }

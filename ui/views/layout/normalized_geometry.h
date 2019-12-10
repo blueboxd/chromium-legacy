@@ -278,6 +278,29 @@ NormalizedRect VIEWS_EXPORT Normalize(LayoutOrientation orientation,
 gfx::Rect VIEWS_EXPORT Denormalize(LayoutOrientation orientation,
                                    const NormalizedRect& rect);
 
+// Convenience methods to get and set main and cross-axis elements of
+// denormalized geometry elements.
+int VIEWS_EXPORT GetMainAxis(LayoutOrientation orientation,
+                             const gfx::Size& size);
+int VIEWS_EXPORT GetCrossAxis(LayoutOrientation orientation,
+                              const gfx::Size& size);
+base::Optional<int> VIEWS_EXPORT GetMainAxis(LayoutOrientation orientation,
+                                             const SizeBounds& size);
+base::Optional<int> VIEWS_EXPORT GetCrossAxis(LayoutOrientation orientation,
+                                              const SizeBounds& size);
+void VIEWS_EXPORT SetMainAxis(gfx::Size* size,
+                              LayoutOrientation orientation,
+                              int main);
+void VIEWS_EXPORT SetCrossAxis(gfx::Size* size,
+                               LayoutOrientation orientation,
+                               int cross);
+void VIEWS_EXPORT SetMainAxis(SizeBounds* size,
+                              LayoutOrientation orientation,
+                              base::Optional<int> main);
+void VIEWS_EXPORT SetCrossAxis(SizeBounds* size,
+                               LayoutOrientation orientation,
+                               base::Optional<int> cross);
+
 }  // namespace views
 
 #endif  // UI_VIEWS_LAYOUT_NORMALIZED_GEOMETRY_H_

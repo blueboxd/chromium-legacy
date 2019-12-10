@@ -62,7 +62,7 @@ input.focus();
 input.setSelectionRange(2, 2);
 eventSender.keyDown('Backspace');
 shouldBeTrue('input.validity.tooShort');
-shouldBeFalse('input.disabled = true; input.validity.tooShort');
+shouldBeTrue('input.disabled = true; input.validity.tooShort');
 shouldBeTrue('input.disabled = false; input.validity.tooShort');
 
 debug('');

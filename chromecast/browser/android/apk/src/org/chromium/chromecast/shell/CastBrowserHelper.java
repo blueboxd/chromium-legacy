@@ -46,7 +46,7 @@ public class CastBrowserHelper {
         DeviceUtils.addDeviceSpecificUserAgentSwitch();
 
         try {
-            LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
+            LibraryLoader.getInstance().ensureInitialized();
 
             Log.d(TAG, "Loading BrowserStartupController...");
             BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)

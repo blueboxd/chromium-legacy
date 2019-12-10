@@ -13,7 +13,7 @@ import android.widget.FrameLayout;
  * A specialized FrameLayout that is capable of ignoring all user input based on the state of
  * the bottom sheet.
  */
-public class TouchRestrictingFrameLayout extends FrameLayout {
+class TouchRestrictingFrameLayout extends FrameLayout {
     /** A handle to the bottom sheet. */
     private BottomSheet mBottomSheet;
 

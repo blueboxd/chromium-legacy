@@ -53,6 +53,11 @@
 #include "components/viz/service/display/overlay_processor_using_strategy.h"
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
+#elif defined(OS_WIN) || defined(OS_MACOSX)
+#include "components/viz/service/display/overlay_processor.h"
+#else  // Default
+#include "components/viz/service/display/overlay_candidate_validator_strategy.h"
+#include "components/viz/service/display/overlay_processor_using_strategy.h"
 #endif
 
 using testing::_;
@@ -507,7 +512,7 @@ class FakeRendererGL : public GLRenderer {
                    resource_provider,
                    std::move(current_task_runner)) {}
 
-  void SetOverlayProcessor(OverlayProcessor* processor) {
+  void SetOverlayProcessor(OverlayProcessorInterface* processor) {
     overlay_processor_.reset(processor);
   }
 
@@ -2236,11 +2241,12 @@ class TestOverlayProcessor : public OverlayProcessorUsingStrategy {
     MOCK_METHOD7(
         Attempt,
         bool(const SkMatrix44& output_color_matrix,
-             const OverlayProcessor::FilterOperationsMap&
+             const OverlayProcessorInterface::FilterOperationsMap&
                  render_pass_backdrop_filters,
              DisplayResourceProvider* resource_provider,
              RenderPassList* render_pass_list,
-             const OverlayProcessor::OutputSurfaceOverlayPlane* primary_surface,
+             const OverlayProcessorInterface::OutputSurfaceOverlayPlane*
+                 primary_surface,
              OverlayCandidateList* candidates,
              std::vector<gfx::Rect>* content_bounds));
   };
@@ -2280,9 +2286,9 @@ class TestOverlayProcessor : public OverlayProcessorUsingStrategy {
   ~TestOverlayProcessor() override = default;
 };
 #else  // Default to no overlay.
-class TestOverlayProcessor : public OverlayProcessor {
+class TestOverlayProcessor : public OverlayProcessorUsingStrategy {
  public:
-  TestOverlayProcessor() : OverlayProcessor(nullptr) {}
+  TestOverlayProcessor() : OverlayProcessorUsingStrategy(nullptr, nullptr) {}
   ~TestOverlayProcessor() override = default;
 };
 #endif
@@ -3051,7 +3057,7 @@ class ContentBoundsOverlayProcessor : public OverlayProcessorUsingStrategy {
     ~Strategy() override = default;
 
     bool Attempt(const SkMatrix44& output_color_matrix,
-                 const OverlayProcessor::FilterOperationsMap&
+                 const OverlayProcessorInterface::FilterOperationsMap&
                      render_pass_backdrop_filters,
                  DisplayResourceProvider* resource_provider,
                  RenderPassList* render_pass_list,
@@ -3134,7 +3140,7 @@ class GLRendererSwapWithBoundsTest : public GLRendererTest {
     EXPECT_EQ(true, renderer.use_swap_with_bounds());
     renderer.SetVisible(true);
 
-    OverlayProcessor* processor =
+    OverlayProcessorInterface* processor =
         new ContentBoundsOverlayProcessor(content_bounds);
     renderer.SetOverlayProcessor(processor);
 

@@ -753,6 +753,16 @@ _CONFIG = [
     },
     {
         'paths': [
+            'third_party/blink/renderer/modules/remote_objects/',
+        ],
+        'allowed': [
+            'gin::.+',
+            # gin::NamedPropertyInterceptor uses std::vector.
+            'std::vector',
+        ],
+    },
+    {
+        'paths': [
             'third_party/blink/renderer/modules/webgpu/',
         ],
         # The WebGPU Blink module needs access to the WebGPU control

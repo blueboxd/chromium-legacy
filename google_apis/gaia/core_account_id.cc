@@ -9,7 +9,7 @@
 namespace {
 // Returns whether the string looks like an email (the test is
 // crude an only checks whether it includes an '@').
-bool IsEmail(const std::string& string) {
+bool IsEmailString(const std::string& string) {
   return string.find('@') != std::string::npos;
 }
 }  // anonymous namespace
@@ -31,7 +31,7 @@ CoreAccountId CoreAccountId::FromGaiaId(const std::string& gaia_id) {
   if (gaia_id.empty())
     return CoreAccountId();
 
-  DCHECK(!IsEmail(gaia_id))
+  DCHECK(!IsEmailString(gaia_id))
       << "Expected a Gaia ID and got an email [actual = " << gaia_id << "]";
   return CoreAccountId::FromString(gaia_id);
 }
@@ -41,7 +41,8 @@ CoreAccountId CoreAccountId::FromEmail(const std::string& email) {
   if (email.empty())
     return CoreAccountId();
 
-  DCHECK(IsEmail(email)) << "Expected an email [actual = " << email << "]";
+  DCHECK(IsEmailString(email))
+      << "Expected an email [actual = " << email << "]";
   return CoreAccountId::FromString(email);
 }
 
@@ -54,6 +55,10 @@ CoreAccountId CoreAccountId::FromString(const std::string value) {
 
 bool CoreAccountId::empty() const {
   return id_.empty();
+}
+
+bool CoreAccountId::IsEmail() const {
+  return IsEmailString(id_);
 }
 
 const std::string& CoreAccountId::ToString() const {

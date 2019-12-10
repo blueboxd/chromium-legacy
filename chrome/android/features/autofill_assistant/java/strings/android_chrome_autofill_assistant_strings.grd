@@ -140,13 +140,13 @@
   <release allow_pseudo="false" seq="1">
     <messages fallback_to_english="true">
       <message name="IDS_INIT_OK" desc="Init screen confirmation text.">
-        I accept
+        I agree
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_INIT_MESSAGE" desc="Onboarding message describing autofill assistant's capability.">
-        Google Assistant saves you time by helping you check out on the web
+        Google Assistant saves you time by helping you complete actions on the web, like search and checkout.
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_GOOGLE_TERMS_DESCRIPTION" desc="Message linking to the Google terms and conditions for Google Assistant in Chrome.">
-        Chrome will send the site’s URL and content as well as your email and credit card type saved in Chrome to Google. You can turn this off in Chrome settings. <ph name="BEGIN_LINK">&lt;link&gt;</ph>Learn&#xA0;more<ph name="END_LINK">&lt;/link&gt;</ph>
+        Google Assistant sends queries (text and voice) to Chrome. Chrome will send the site's URL and content as well as relevant personal information to Google. Depending on the query this can include email and credit card type. You can turn this off in Chrome settings. <ph name="BEGIN_LINK">&lt;link&gt;</ph>Learn&#xA0;more<ph name="END_LINK">&lt;/link&gt;</ph>
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_GOOGLE_TERMS_URL" desc="URL for Google Autofill Assistant Terms of Service" translateable="false">
         http://support.google.com/assistant?p=fast_checkout

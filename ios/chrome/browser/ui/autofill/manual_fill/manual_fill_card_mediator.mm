@@ -50,19 +50,19 @@ NSString* const kAddCreditCardsAccessibilityIdentifier =
 // All available credit cards.
 @property(nonatomic, assign) std::vector<autofill::CreditCard*> cards;
 
-// The dispatcher used by this Mediator.
-@property(nonatomic, weak) id<BrowserCoordinatorCommands> dispatcher;
+// The command handler used by this Mediator.
+@property(nonatomic, weak) id<BrowserCoordinatorCommands> handler;
 
 @end
 
 @implementation ManualFillCardMediator
 
 - (instancetype)initWithCards:(std::vector<autofill::CreditCard*>)cards
-                   dispatcher:(id<BrowserCoordinatorCommands>)dispatcher {
+                      handler:(id<BrowserCoordinatorCommands>)handler {
   self = [super init];
   if (self) {
     _cards = cards;
-    _dispatcher = dispatcher;
+    _handler = handler;
   }
   return self;
 }
@@ -144,7 +144,7 @@ NSString* const kAddCreditCardsAccessibilityIdentifier =
                action:^{
                  base::RecordAction(base::UserMetricsAction(
                      "ManualFallback_CreditCard_OpenAddCreditCard"));
-                 [weakSelf.dispatcher showAddCreditCard];
+                 [weakSelf.handler showAddCreditCard];
                }];
     addCreditCardsItem.accessibilityIdentifier =
         manual_fill::kAddCreditCardsAccessibilityIdentifier;

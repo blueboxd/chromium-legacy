@@ -25,7 +25,7 @@ PASS input.validity.tooLong is false
 
 Disabling makes the control valid
 PASS input.validity.tooLong is true
-PASS input.disabled = true; input.validity.tooLong is false
+PASS input.disabled = true; input.validity.tooLong is true
 PASS input.disabled = false; input.validity.tooLong is true
 
 

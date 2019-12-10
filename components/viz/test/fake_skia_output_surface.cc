@@ -85,7 +85,7 @@ void FakeSkiaOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
 }
 
 void FakeSkiaOutputSurface::ScheduleOutputSurfaceAsOverlay(
-    OverlayProcessor::OutputSurfaceOverlayPlane output_surface_plane) {
+    OverlayProcessorInterface::OutputSurfaceOverlayPlane output_surface_plane) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   NOTIMPLEMENTED();
 }

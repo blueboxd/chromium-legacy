@@ -68,7 +68,7 @@ PASS patternMismatchFor("invalid-03") is false
 PASS patternMismatchFor("invalid-04") is false
 PASS patternMismatchFor("invalid-05") is false
 PASS patternMismatchFor("invalid-06") is false
-PASS patternMismatchFor("disabled") is false
+PASS patternMismatchFor("disabled") is true
 PASS patternMismatchFor("unicode-invalid-01") is false
 PASS patternMismatchFor("unicode-invalid-02") is false
 PASS patternMismatchFor("unicode-invalid-02") is false

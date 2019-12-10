@@ -600,8 +600,8 @@ void ResourceDispatcher::ToLocalURLResponseHead(
   RemoteToLocalTimeTicks(converter, &load_timing->receive_headers_end);
   RemoteToLocalTimeTicks(converter, &load_timing->push_start);
   RemoteToLocalTimeTicks(converter, &load_timing->push_end);
-  RemoteToLocalTimeTicks(converter, &response_head.service_worker_start_time);
-  RemoteToLocalTimeTicks(converter, &response_head.service_worker_ready_time);
+  RemoteToLocalTimeTicks(converter, &load_timing->service_worker_start_time);
+  RemoteToLocalTimeTicks(converter, &load_timing->service_worker_ready_time);
 }
 
 // TODO(dgozman): this is not used for navigation anymore, only for worker

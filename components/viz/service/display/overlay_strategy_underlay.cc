@@ -23,7 +23,8 @@ OverlayStrategyUnderlay::~OverlayStrategyUnderlay() {}
 
 bool OverlayStrategyUnderlay::Attempt(
     const SkMatrix44& output_color_matrix,
-    const OverlayProcessor::FilterOperationsMap& render_pass_backdrop_filters,
+    const OverlayProcessorInterface::FilterOperationsMap&
+        render_pass_backdrop_filters,
     DisplayResourceProvider* resource_provider,
     RenderPassList* render_pass_list,
     const PrimaryPlane* primary_plane,
@@ -117,7 +118,8 @@ bool OverlayStrategyUnderlay::Attempt(
 // Turn on blending for the output surface plane so the underlay could show
 // through.
 void OverlayStrategyUnderlay::AdjustOutputSurfaceOverlay(
-    OverlayProcessor::OutputSurfaceOverlayPlane* output_surface_plane) {
+    OverlayProcessorInterface::OutputSurfaceOverlayPlane*
+        output_surface_plane) {
   if (output_surface_plane)
     output_surface_plane->enable_blending = true;
 }

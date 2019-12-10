@@ -68,8 +68,8 @@ class UtilityProcessHostBrowserTest : public BrowserChildProcessObserver,
     host->SetMetricsName(kTestProcessName);
 #if defined(OS_WIN)
     if (elevated)
-      host->SetSandboxType(service_manager::SandboxType::
-                               SANDBOX_TYPE_NO_SANDBOX_AND_ELEVATED_PRIVILEGES);
+      host->SetSandboxType(
+          service_manager::SandboxType::kNoSandboxAndElevatedPrivileges);
 #endif
     EXPECT_TRUE(host->Start());
 

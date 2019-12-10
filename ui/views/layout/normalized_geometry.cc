@@ -377,4 +377,90 @@ gfx::Rect Denormalize(LayoutOrientation orientation,
                    Denormalize(orientation, bounds.size()));
 }
 
+int GetMainAxis(LayoutOrientation orientation, const gfx::Size& size) {
+  switch (orientation) {
+    case LayoutOrientation::kHorizontal:
+      return size.width();
+    case LayoutOrientation::kVertical:
+      return size.height();
+  }
+}
+
+int GetCrossAxis(LayoutOrientation orientation, const gfx::Size& size) {
+  switch (orientation) {
+    case LayoutOrientation::kHorizontal:
+      return size.height();
+    case LayoutOrientation::kVertical:
+      return size.width();
+  }
+}
+
+base::Optional<int> GetMainAxis(LayoutOrientation orientation,
+                                const SizeBounds& size) {
+  switch (orientation) {
+    case LayoutOrientation::kHorizontal:
+      return size.width();
+    case LayoutOrientation::kVertical:
+      return size.height();
+  }
+}
+
+base::Optional<int> GetCrossAxis(LayoutOrientation orientation,
+                                 const SizeBounds& size) {
+  switch (orientation) {
+    case LayoutOrientation::kHorizontal:
+      return size.height();
+    case LayoutOrientation::kVertical:
+      return size.width();
+  }
+}
+
+void SetMainAxis(gfx::Size* size, LayoutOrientation orientation, int main) {
+  switch (orientation) {
+    case LayoutOrientation::kHorizontal:
+      size->set_width(main);
+      break;
+    case LayoutOrientation::kVertical:
+      size->set_height(main);
+      break;
+  }
+}
+
+void SetCrossAxis(gfx::Size* size, LayoutOrientation orientation, int cross) {
+  switch (orientation) {
+    case LayoutOrientation::kHorizontal:
+      size->set_height(cross);
+      break;
+    case LayoutOrientation::kVertical:
+      size->set_width(cross);
+      break;
+  }
+}
+
+void SetMainAxis(SizeBounds* size,
+                 LayoutOrientation orientation,
+                 base::Optional<int> main) {
+  switch (orientation) {
+    case LayoutOrientation::kHorizontal:
+      size->set_width(main);
+      break;
+    case LayoutOrientation::kVertical:
+      size->set_height(main);
+      break;
+  }
+}
+
+void SetCrossAxis(SizeBounds* size,
+                  LayoutOrientation orientation,
+                  base::Optional<int> cross) {
+  switch (orientation) {
+    case LayoutOrientation::kHorizontal:
+      size->set_height(cross);
+      break;
+    case LayoutOrientation::kVertical:
+      size->set_width(cross);
+      break;
+  }
+}
+
 }  // namespace views

@@ -275,7 +275,7 @@ class AutofillAssistantUiTestUtil {
         };
 
         return new BottomSheetController(activity.getLifecycleDispatcher(),
-                activity.getActivityTabProvider(), activity.getScrim(), sheetSupplier,
+                activity.getActivityTabProvider(), activity::getScrim, sheetSupplier,
                 panelManagerProvider, activity.getFullscreenManager(), activity.getWindow(),
                 activity.getWindowAndroid().getKeyboardDelegate());
     }

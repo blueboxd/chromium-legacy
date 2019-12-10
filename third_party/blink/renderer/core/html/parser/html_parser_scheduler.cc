@@ -51,9 +51,7 @@ void SpeculationsPumpSession::AddedElementTokens(size_t count) {
 HTMLParserScheduler::HTMLParserScheduler(
     HTMLDocumentParser* parser,
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner)
-    : parser_(parser),
-      loading_task_runner_(std::move(loading_task_runner)),
-      is_paused_with_active_timer_(false) {}
+    : parser_(parser), loading_task_runner_(std::move(loading_task_runner)) {}
 
 HTMLParserScheduler::~HTMLParserScheduler() = default;
 
@@ -62,37 +60,18 @@ void HTMLParserScheduler::Trace(Visitor* visitor) {
 }
 
 bool HTMLParserScheduler::IsScheduledForUnpause() const {
-  return is_paused_with_active_timer_ ||
-         cancellable_continue_parse_task_handle_.IsActive();
+  return cancellable_continue_parse_task_handle_.IsActive();
 }
 
 void HTMLParserScheduler::ScheduleForUnpause() {
-  DCHECK(!is_paused_with_active_timer_);
   cancellable_continue_parse_task_handle_ =
       PostCancellableTask(*loading_task_runner_, FROM_HERE,
                           WTF::Bind(&HTMLParserScheduler::ContinueParsing,
                                     WrapWeakPersistent(this)));
 }
 
-void HTMLParserScheduler::Pause() {
-  DCHECK(!is_paused_with_active_timer_);
-  if (!cancellable_continue_parse_task_handle_.IsActive())
-    return;
-  is_paused_with_active_timer_ = true;
-  cancellable_continue_parse_task_handle_.Cancel();
-}
-
-void HTMLParserScheduler::Unpause() {
-  DCHECK(!cancellable_continue_parse_task_handle_.IsActive());
-  if (!is_paused_with_active_timer_)
-    return;
-  is_paused_with_active_timer_ = false;
-  ScheduleForUnpause();
-}
-
 void HTMLParserScheduler::Detach() {
   cancellable_continue_parse_task_handle_.Cancel();
-  is_paused_with_active_timer_ = false;
 }
 
 inline bool HTMLParserScheduler::ShouldYield(
@@ -129,11 +108,6 @@ bool HTMLParserScheduler::YieldIfNeeded(const SpeculationsPumpSession& session,
   }
 
   return false;
-}
-
-void HTMLParserScheduler::ForceUnpauseAfterYield() {
-  DCHECK(!cancellable_continue_parse_task_handle_.IsActive());
-  is_paused_with_active_timer_ = true;
 }
 
 void HTMLParserScheduler::ContinueParsing() {

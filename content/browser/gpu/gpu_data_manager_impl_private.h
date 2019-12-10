@@ -165,6 +165,10 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
           message(_message) { }
   };
 
+  // Decide the order of GPU process states, and go to the first one. This
+  // should only be called once, during initialization.
+  void InitializeGpuModes();
+
   // Called when GPU access (hardware acceleration and swiftshader) becomes
   // blocked.
   void OnGpuBlocked();
@@ -186,6 +190,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   void RequestDxDiagNodeData();
   void RequestGpuSupportedRuntimeVersion(bool delayed);
+
+  void GoToNextGpuMode(bool is_fallback);
 
   void RecordCompositingMode();
 
@@ -218,7 +224,10 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   std::vector<LogMessage> log_messages_;
 
   // What the gpu process is being run for.
-  gpu::GpuMode gpu_mode_ = gpu::GpuMode::HARDWARE_ACCELERATED;
+  gpu::GpuMode gpu_mode_ = gpu::GpuMode::UNKNOWN;
+
+  // Order of gpu process fallback states, used as a stack.
+  std::vector<gpu::GpuMode> fallback_modes_;
 
   // Used to tell if the gpu was disabled due to process crashes.
   bool hardware_disabled_by_fallback_ = false;

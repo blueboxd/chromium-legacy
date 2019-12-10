@@ -453,6 +453,10 @@ blink_mac_builder(
     name = 'mac10.13_retina-blink-rel',
 )
 
+blink_mac_builder(
+    name = 'mac10.14-blink-rel',
+)
+
 
 def chromiumos_builder(*, name, **kwargs):
   return try_builder(

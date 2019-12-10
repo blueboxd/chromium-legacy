@@ -268,7 +268,7 @@ network::mojom::NetworkService* GetNetworkService() {
           ServiceProcessHost::Launch(
               std::move(receiver),
               ServiceProcessHost::Options()
-                  .WithSandboxType(service_manager::SANDBOX_TYPE_NETWORK)
+                  .WithSandboxType(service_manager::SandboxType::kNetwork)
                   .WithDisplayName(base::UTF8ToUTF16("Network Service"))
                   .Pass());
         }

@@ -32,6 +32,7 @@ class OobeDisplayChooser : public ui::InputDeviceEventObserver {
   void set_cros_display_config_for_test(
       mojo::PendingRemote<ash::mojom::CrosDisplayConfigController>
           cros_display_config) {
+    cros_display_config_.reset();
     cros_display_config_.Bind(std::move(cros_display_config));
   }
 

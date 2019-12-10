@@ -22,8 +22,6 @@ class GLES2Interface;
 
 namespace blink {
 
-class WebGraphicsContext3DProviderWrapper;
-
 class PLATFORM_EXPORT StaticBitmapImage : public Image {
  public:
   static scoped_refptr<StaticBitmapImage> Create(PaintImage);
@@ -34,11 +32,10 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
 
   // Methods overridden by all sub-classes
   ~StaticBitmapImage() override = default;
-  // Creates a gpu copy of the image using the given ContextProvider. Should
-  // not be called if IsTextureBacked() is already true. May return null if the
-  // conversion failed (for instance if the context had an error).
-  virtual scoped_refptr<StaticBitmapImage> MakeAccelerated(
-      base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_wrapper) = 0;
+
+  virtual scoped_refptr<StaticBitmapImage> ConvertToColorSpace(
+      sk_sp<SkColorSpace>,
+      SkColorType = kN32_SkColorType) = 0;
 
   // Methods have common implementation for all sub-classes
   bool CurrentFrameIsComplete() override { return true; }
@@ -97,9 +94,6 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
   // Methods have exactly the same implementation for all sub-classes
   bool OriginClean() const { return is_origin_clean_; }
   void SetOriginClean(bool flag) { is_origin_clean_ = flag; }
-  scoped_refptr<StaticBitmapImage> ConvertToColorSpace(
-      sk_sp<SkColorSpace>,
-      SkColorType = kN32_SkColorType);
 
   static base::CheckedNumeric<size_t> GetSizeInBytes(
       const IntRect& rect,

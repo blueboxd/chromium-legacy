@@ -134,9 +134,9 @@ class PpapiPluginSandboxedProcessLauncherDelegate
   service_manager::SandboxType GetSandboxType() override {
 #if defined(OS_WIN)
     if (is_broker_)
-      return service_manager::SANDBOX_TYPE_NO_SANDBOX;
+      return service_manager::SandboxType::kNoSandbox;
 #endif  // OS_WIN
-    return service_manager::SANDBOX_TYPE_PPAPI;
+    return service_manager::SandboxType::kPpapi;
   }
 
 #if defined(OS_MACOSX)

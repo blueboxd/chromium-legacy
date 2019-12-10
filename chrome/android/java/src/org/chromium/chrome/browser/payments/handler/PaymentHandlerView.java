@@ -103,6 +103,11 @@ import org.chromium.ui.base.ActivityWindowAndroid;
     }
 
     @Override
+    public boolean hasCustomScrimLifecycle() {
+        return true;
+    }
+
+    @Override
     public int getVerticalScrollOffset() {
         return 0;
     }

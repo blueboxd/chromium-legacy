@@ -53,7 +53,7 @@ void NaClBrokerListener::Listen() {
 }
 
 service_manager::SandboxType NaClBrokerListener::GetSandboxType() {
-  return service_manager::SANDBOX_TYPE_PPAPI;
+  return service_manager::SandboxType::kPpapi;
 }
 
 void NaClBrokerListener::OnChannelConnected(int32_t peer_pid) {

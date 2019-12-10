@@ -127,6 +127,12 @@ class MODULES_EXPORT PeerConnectionTracker
       scoped_refptr<RTCIceCandidatePlatform> candidate,
       Source source,
       bool succeeded);
+  // Sends an update when an Ice candidate error is receiver.
+  virtual void TrackIceCandidateError(RTCPeerConnectionHandler* pc_handler,
+                                      const String& host_candidate,
+                                      const String& url,
+                                      int error_code,
+                                      const String& error_text);
 
   // Sends an update when a transceiver is added, modified or removed. This can
   // happen as a result of any of the methods indicated by |reason|.

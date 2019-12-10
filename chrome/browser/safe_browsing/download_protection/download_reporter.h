@@ -7,10 +7,11 @@
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager_observer.h"
+#include "chrome/browser/profiles/profile_observer.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/simple_download_manager_coordinator.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 namespace safe_browsing {
 
@@ -19,29 +20,32 @@ namespace safe_browsing {
 class DownloadReporter
     : public download::DownloadItem::Observer,
       public download::SimpleDownloadManagerCoordinator::Observer,
-      public content::NotificationObserver {
+      public ProfileManagerObserver,
+      public ProfileObserver {
  public:
   DownloadReporter();
   ~DownloadReporter() override;
 
-  // NotificationObserver implementation:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // ProfileManagerObserver:
+  void OnProfileAdded(Profile* profile) override;
 
-  // SimpleDownloadManagerCoordinator::Observer implementation:
+  // ProfileObserver:
+  void OnOffTheRecordProfileCreated(Profile* off_the_record) override;
+  void OnProfileWillBeDestroyed(Profile* profile) override;
+
+  // SimpleDownloadManagerCoordinator::Observer:
   void OnManagerGoingDown(
       download::SimpleDownloadManagerCoordinator* coordinator) override;
   void OnDownloadCreated(download::DownloadItem* download) override;
 
-  // DownloadItem::Observer implementation:
+  // DownloadItem::Observer:
   void OnDownloadDestroyed(download::DownloadItem* download) override;
   void OnDownloadUpdated(download::DownloadItem* download) override;
 
  private:
-  content::NotificationRegistrar profiles_registrar_;
   base::flat_map<download::DownloadItem*, download::DownloadDangerType>
       danger_types_;
+  ScopedObserver<Profile, ProfileObserver> observed_profiles_{this};
   ScopedObserver<download::SimpleDownloadManagerCoordinator,
                  download::SimpleDownloadManagerCoordinator::Observer>
       observed_coordinators_{this};

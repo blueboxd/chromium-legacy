@@ -236,7 +236,7 @@ void NGInlineLayoutAlgorithm::CreateLine(
                                  baseline_type_);
       }
 
-      if (item.IsSymbolMarker()) {
+      if (UNLIKELY(item.IsSymbolMarker())) {
         text_builder.SetItem(NGPhysicalTextFragment::kSymbolMarker,
                              line_info->ItemsData(), &item_result,
                              box->text_height);
@@ -245,10 +245,19 @@ void NGInlineLayoutAlgorithm::CreateLine(
                              line_info->ItemsData(), &item_result,
                              box->text_height);
       }
-      line_box_.AddChild(text_builder.ToTextFragment(), box->text_top,
-                         item_result.inline_size, item.BidiLevel());
+      if (UNLIKELY(item_result.hyphen_shape_result)) {
+        LayoutUnit hyphen_inline_size = item_result.HyphenInlineSize();
+        line_box_.AddChild(text_builder.ToTextFragment(), box->text_top,
+                           item_result.inline_size - hyphen_inline_size,
+                           item.BidiLevel());
+        PlaceHyphen(item_result, hyphen_inline_size, box);
+      } else {
+        line_box_.AddChild(text_builder.ToTextFragment(), box->text_top,
+                           item_result.inline_size, item.BidiLevel());
+      }
       // Text boxes always need full paint invalidations.
       item.GetLayoutObject()->ClearNeedsLayoutWithFullPaintInvalidation();
+
     } else if (item.Type() == NGInlineItem::kControl) {
       PlaceControlItem(item, *line_info, &item_result, box);
     } else if (item.Type() == NGInlineItem::kOpenTag) {
@@ -282,13 +291,6 @@ void NGInlineLayoutAlgorithm::CreateLine(
     } else if (item.Type() == NGInlineItem::kBidiControl) {
       line_box_.AddChild(item.BidiLevel());
     }
-  }
-
-  if (line_info->LineEndFragment()) {
-    // Add a generated text fragment, hyphen or ellipsis, at the logical end.
-    // By using the paragraph bidi_level, it will appear at the visual end.
-    PlaceGeneratedContent(std::move(line_info->LineEndFragment()),
-                          IsLtr(line_info->BaseDirection()) ? 0 : 1, box);
   }
 
   box_states_->OnEndPlaceItems(&line_box_, baseline_type_);
@@ -425,32 +427,23 @@ void NGInlineLayoutAlgorithm::PlaceControlItem(const NGInlineItem& item,
                      item_result->inline_size, item.BidiLevel());
 }
 
-// Place a generated content that does not exist in DOM nor in LayoutObject
-// tree.
-void NGInlineLayoutAlgorithm::PlaceGeneratedContent(
-    scoped_refptr<const NGPhysicalTextFragment> fragment,
-    UBiDiLevel bidi_level,
-    NGInlineBoxState* box) {
-  LayoutUnit inline_size = IsHorizontalWritingMode() ? fragment->Size().width
-                                                     : fragment->Size().height;
-  const ComputedStyle& style = fragment->Style();
-  if (box->CanAddTextOfStyle(style)) {
-    if (UNLIKELY(quirks_mode_))
-      box->EnsureTextMetrics(style, baseline_type_);
-    DCHECK(!box->text_metrics.IsEmpty());
-    line_box_.AddChild(std::move(fragment), box->text_top, inline_size,
-                       bidi_level);
-  } else {
-    scoped_refptr<ComputedStyle> text_style =
-        ComputedStyle::CreateAnonymousStyleWithDisplay(style,
-                                                       EDisplay::kInline);
-    NGInlineBoxState* box = box_states_->OnOpenTag(*text_style, line_box_);
-    box->ComputeTextMetrics(*text_style, baseline_type_);
-    DCHECK(!box->text_metrics.IsEmpty());
-    line_box_.AddChild(std::move(fragment), box->text_top, inline_size,
-                       bidi_level);
-    box_states_->OnCloseTag(&line_box_, box, baseline_type_);
-  }
+void NGInlineLayoutAlgorithm::PlaceHyphen(const NGInlineItemResult& item_result,
+                                          LayoutUnit hyphen_inline_size,
+                                          NGInlineBoxState* box) {
+  DCHECK(item_result.item);
+  DCHECK(item_result.hyphen_string);
+  DCHECK(item_result.hyphen_shape_result);
+  DCHECK_EQ(hyphen_inline_size, item_result.HyphenInlineSize());
+  const NGInlineItem& item = *item_result.item;
+  const WritingMode writing_mode = ConstraintSpace().GetWritingMode();
+  NGTextFragmentBuilder builder(writing_mode);
+  builder.SetText(
+      item.GetLayoutObject(), item_result.hyphen_string, item.Style(),
+      /* is_ellipsis_style */ false,
+      ShapeResultView::Create(item_result.hyphen_shape_result.get()));
+  DCHECK(!box->text_metrics.IsEmpty());
+  line_box_.AddChild(builder.ToTextFragment(), box->text_top,
+                     hyphen_inline_size, item.BidiLevel());
 }
 
 NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
@@ -694,8 +687,8 @@ bool NGInlineLayoutAlgorithm::ApplyJustify(LayoutUnit space,
   // matches to the |ShapeResult|.
   DCHECK(!line_info->Results().IsEmpty());
   const NGInlineItemResult& last_item_result = line_info->Results().back();
-  if (last_item_result.text_end_effect == NGTextEndEffect::kHyphen)
-    line_text_builder.Append(last_item_result.item->Style()->HyphenString());
+  if (last_item_result.hyphen_string)
+    line_text_builder.Append(last_item_result.hyphen_string);
 
   // Compute the spacing to justify.
   String line_text = line_text_builder.ToString();
@@ -714,14 +707,14 @@ bool NGInlineLayoutAlgorithm::ApplyJustify(LayoutUnit space,
       scoped_refptr<ShapeResult> shape_result =
           item_result.shape_result->CreateShapeResult();
       DCHECK_GE(item_result.start_offset, line_info->StartOffset());
-      // |shape_result| has more characters if it's hyphenated.
-      DCHECK(item_result.text_end_effect != NGTextEndEffect::kNone ||
-             shape_result->NumCharacters() ==
-                 item_result.end_offset - item_result.start_offset);
+      DCHECK_EQ(shape_result->NumCharacters(),
+                item_result.end_offset - item_result.start_offset);
       shape_result->ApplySpacing(spacing, item_result.start_offset -
                                               line_info->StartOffset() -
                                               shape_result->StartIndex());
       item_result.inline_size = shape_result->SnappedWidth();
+      if (UNLIKELY(item_result.hyphen_shape_result))
+        item_result.inline_size += item_result.HyphenInlineSize();
       item_result.shape_result = ShapeResultView::Create(shape_result.get());
     } else if (item_result.item->Type() == NGInlineItem::kAtomicInline) {
       float offset = 0.f;

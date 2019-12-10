@@ -131,7 +131,6 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
                                        ParserContentPolicy content_policy,
                                        ParserSynchronizationPolicy sync_policy)
     : ScriptableDocumentParser(document, content_policy),
-      ContextLifecycleStateObserver(&document),
       options_(&document),
       reentry_permit_(HTMLParserReentryPermit::Create()),
       token_(sync_policy == kForceSynchronousParsing
@@ -159,8 +158,6 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
   DCHECK(ShouldUseThreading() || (token_ && tokenizer_));
   // Threading is not allowed in prefetch mode.
   DCHECK(!document.IsPrefetchOnly() || !ShouldUseThreading());
-
-  UpdateStateIfNeeded();
 
   // Don't create preloader for parsing clipboard content.
   if (content_policy == kDisallowScriptingAndPluginContent)
@@ -194,7 +191,6 @@ void HTMLDocumentParser::Trace(Visitor* visitor) {
   visitor->Trace(script_runner_);
   visitor->Trace(preloader_);
   ScriptableDocumentParser::Trace(visitor);
-  ContextLifecycleStateObserver::Trace(visitor);
   HTMLParserScriptRunnerHost::Trace(visitor);
 }
 
@@ -390,12 +386,8 @@ void HTMLDocumentParser::EnqueueTokenizedChunk(
 
   speculations_.push_back(std::move(chunk));
 
-  if (!IsPaused() && !IsScheduledForUnpause()) {
-    if (GetDocument()->IsContextPaused())
-      parser_scheduler_->ForceUnpauseAfterYield();
-    else
-      parser_scheduler_->ScheduleForUnpause();
-  }
+  if (!IsPaused() && !IsScheduledForUnpause())
+    parser_scheduler_->ScheduleForUnpause();
 }
 
 void HTMLDocumentParser::DidReceiveEncodingDataFromBackgroundParser(
@@ -1117,16 +1109,6 @@ void HTMLDocumentParser::ParseDocumentFragment(
   parser->Finish();
   // Allows ~DocumentParser to assert it was detached before destruction.
   parser->Detach();
-}
-
-void HTMLDocumentParser::ContextLifecycleStateChanged(
-    mojom::FrameLifecycleState state) {
-  if (!parser_scheduler_)
-    return;
-  if (state == mojom::FrameLifecycleState::kRunning)
-    parser_scheduler_->Unpause();
-  else
-    parser_scheduler_->Pause();
 }
 
 void HTMLDocumentParser::AppendBytes(const char* data, size_t length) {

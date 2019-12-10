@@ -325,20 +325,20 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void DisableAudioDebugRecordings() = 0;
 
   using WebRtcRtpPacketCallback =
-      base::Callback<void(std::unique_ptr<uint8_t[]> packet_header,
-                          size_t header_length,
-                          size_t packet_length,
-                          bool incoming)>;
+      base::RepeatingCallback<void(std::unique_ptr<uint8_t[]> packet_header,
+                                   size_t header_length,
+                                   size_t packet_length,
+                                   bool incoming)>;
 
   using WebRtcStopRtpDumpCallback =
-      base::Callback<void(bool incoming, bool outgoing)>;
+      base::OnceCallback<void(bool incoming, bool outgoing)>;
 
   // Starts passing RTP packets to |packet_callback| and returns the callback
   // used to stop dumping.
   virtual WebRtcStopRtpDumpCallback StartRtpDump(
       bool incoming,
       bool outgoing,
-      const WebRtcRtpPacketCallback& packet_callback) = 0;
+      WebRtcRtpPacketCallback packet_callback) = 0;
 
   // Start/stop event log output from WebRTC on this RPH for the peer connection
   // identified locally within the RPH using the ID |lid|.

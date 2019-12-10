@@ -81,14 +81,14 @@ class SandboxMacTest : public base::MultiProcessTest {
   void ExecuteInAllSandboxTypes(const std::string& multiprocess_main,
                                 base::RepeatingClosure after_each) {
     constexpr service_manager::SandboxType kSandboxTypes[] = {
-        service_manager::SandboxType::SANDBOX_TYPE_AUDIO,
-        service_manager::SandboxType::SANDBOX_TYPE_CDM,
-        service_manager::SandboxType::SANDBOX_TYPE_GPU,
-        service_manager::SandboxType::SANDBOX_TYPE_NACL_LOADER,
-        service_manager::SandboxType::SANDBOX_TYPE_PDF_COMPOSITOR,
-        service_manager::SandboxType::SANDBOX_TYPE_PPAPI,
-        service_manager::SandboxType::SANDBOX_TYPE_RENDERER,
-        service_manager::SandboxType::SANDBOX_TYPE_UTILITY,
+        service_manager::SandboxType::kAudio,
+        service_manager::SandboxType::kCdm,
+        service_manager::SandboxType::kGpu,
+        service_manager::SandboxType::kNaClLoader,
+        service_manager::SandboxType::kPdfCompositor,
+        service_manager::SandboxType::kPpapi,
+        service_manager::SandboxType::kRenderer,
+        service_manager::SandboxType::kUtility,
     };
 
     for (const auto type : kSandboxTypes) {
@@ -141,7 +141,7 @@ MULTIPROCESS_TEST_MAIN(RendererWriteProcess) {
 
 TEST_F(SandboxMacTest, RendererCannotWriteHomeDir) {
   ExecuteWithParams("RendererWriteProcess",
-                    service_manager::SandboxType::SANDBOX_TYPE_RENDERER);
+                    service_manager::SandboxType::kRenderer);
 }
 
 MULTIPROCESS_TEST_MAIN(ClipboardAccessProcess) {
@@ -251,7 +251,7 @@ TEST_F(SandboxMacTest, FontLoadingTest) {
 
   extra_data_ = temp_file_path.value();
   ExecuteWithParams("FontLoadingProcess",
-                    service_manager::SandboxType::SANDBOX_TYPE_RENDERER);
+                    service_manager::SandboxType::kRenderer);
   temp_file_closer.reset();
   ASSERT_TRUE(base::DeleteFile(temp_file_path, false));
 }

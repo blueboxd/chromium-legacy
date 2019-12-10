@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.compositor.overlays.strip;
 
+import org.chromium.base.MathUtils;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
-import org.chromium.chrome.browser.util.MathUtils;
 
 /**
  * An interface that defines how to stack tabs and how they should look visually.  This lets

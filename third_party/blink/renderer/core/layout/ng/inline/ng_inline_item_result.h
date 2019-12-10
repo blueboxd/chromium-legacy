@@ -7,7 +7,6 @@
 
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_text_end_effect.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
@@ -37,6 +36,15 @@ struct CORE_EXPORT NGInlineItemResult {
     return end_offset - start_offset;
   }
 
+  LayoutUnit HyphenInlineSize() const {
+    return hyphen_shape_result->SnappedWidth().ClampNegativeToZero();
+  }
+
+  void ClearHyphen() {
+    hyphen_string = String();
+    hyphen_shape_result = nullptr;
+  }
+
   // The NGInlineItem and its index.
   const NGInlineItem* item;
   unsigned item_index;
@@ -51,6 +59,10 @@ struct CORE_EXPORT NGInlineItemResult {
   // ShapeResult for text items. Maybe different from NGInlineItem if re-shape
   // is needed in the line breaker.
   scoped_refptr<const ShapeResultView> shape_result;
+
+  // Hyphen character and its |ShapeResult| if this text is hyphenated.
+  String hyphen_string;
+  scoped_refptr<const ShapeResult> hyphen_shape_result;
 
   // NGLayoutResult for atomic inline items.
   scoped_refptr<const NGLayoutResult> layout_result;
@@ -111,10 +123,6 @@ struct CORE_EXPORT NGInlineItemResult {
   // |should_create_line_box|. It indicates if there are (at the current
   // position) any unpositioned floats.
   bool has_unpositioned_floats = false;
-
-  // End effects for text items.
-  // The effects are included in |shape_result|, but not in text content.
-  NGTextEndEffect text_end_effect = NGTextEndEffect::kNone;
 
   NGInlineItemResult();
   NGInlineItemResult(const NGInlineItem*,
@@ -242,12 +250,6 @@ class CORE_EXPORT NGLineInfo {
   // justify alignment.
   bool NeedsAccurateEndPosition() const { return needs_accurate_end_position_; }
 
-  // Fragment to append to the line end. Used by 'text-overflow: ellipsis'.
-  scoped_refptr<const NGPhysicalTextFragment>& LineEndFragment() {
-    return line_end_fragment_;
-  }
-  void SetLineEndFragment(scoped_refptr<const NGPhysicalTextFragment>);
-
  private:
   bool ComputeNeedsAccurateEndPosition() const;
 
@@ -258,7 +260,6 @@ class CORE_EXPORT NGLineInfo {
   const NGInlineItemsData* items_data_ = nullptr;
   const ComputedStyle* line_style_ = nullptr;
   NGInlineItemResults results_;
-  scoped_refptr<const NGPhysicalTextFragment> line_end_fragment_;
 
   NGBfcOffset bfc_offset_;
 

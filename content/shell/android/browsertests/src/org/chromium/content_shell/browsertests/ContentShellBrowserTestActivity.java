@@ -52,7 +52,7 @@ public abstract class ContentShellBrowserTestActivity extends NativeBrowserTestA
     @Override
     protected void initializeBrowserProcess() {
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
+            LibraryLoader.getInstance().ensureInitialized();
         }
 
         ContentUriUtils.setFileProviderUtil(new FileProviderHelper());

@@ -248,4 +248,53 @@ TEST(SizeTest, StaysSmall) {
   EXPECT_EQ(2 * sizeof(float), sizeof(SizeF));
 }
 
+TEST(SizeTest, OperatorAddSub) {
+  Size lhs(100, 20);
+  Size rhs(50, 10);
+
+  lhs += rhs;
+  EXPECT_EQ(Size(150, 30), lhs);
+
+  lhs = Size(100, 20);
+  EXPECT_EQ(Size(150, 30), lhs + rhs);
+
+  lhs = Size(100, 20);
+  lhs -= rhs;
+  EXPECT_EQ(Size(50, 10), lhs);
+
+  lhs = Size(100, 20);
+  EXPECT_EQ(Size(50, 10), lhs - rhs);
+}
+
+TEST(SizeTest, OperatorAddOverflow) {
+  int int_max = std::numeric_limits<int>::max();
+
+  Size lhs(int_max, int_max);
+  Size rhs(int_max, int_max);
+  EXPECT_EQ(Size(int_max, int_max), lhs + rhs);
+}
+
+TEST(SizeTest, OperatorSubClampAtZero) {
+  Size lhs(10, 10);
+  Size rhs(100, 100);
+  EXPECT_EQ(Size(0, 0), lhs - rhs);
+
+  lhs = Size(10, 10);
+  rhs = Size(100, 100);
+  lhs -= rhs;
+  EXPECT_EQ(Size(0, 0), lhs);
+}
+
+TEST(SizeTest, OperatorCompare) {
+  Size lhs(100, 20);
+  Size rhs(50, 10);
+
+  EXPECT_TRUE(lhs != rhs);
+  EXPECT_FALSE(lhs == rhs);
+
+  rhs = Size(100, 20);
+  EXPECT_TRUE(lhs == rhs);
+  EXPECT_FALSE(lhs != rhs);
+}
+
 }  // namespace gfx

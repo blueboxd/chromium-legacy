@@ -161,6 +161,7 @@ void FCMInvalidationServiceBase::InitForTest(
   invalidation_listener_ = std::move(invalidation_listener);
   invalidation_listener_->StartForTest(this);
 
+  PopulateClientID();
   DoUpdateSubscribedTopicsIfNeeded();
 }
 
@@ -173,6 +174,9 @@ base::DictionaryValue FCMInvalidationServiceBase::CollectDebugData() const {
   status.SetString(
       "InvalidationService.IID-received",
       base::TimeFormatShortDateAndTime(diagnostic_info_.instance_id_received));
+  status.SetString(
+      "InvalidationService.IID-cleared",
+      base::TimeFormatShortDateAndTime(diagnostic_info_.instance_id_cleared));
   status.SetString(
       "InvalidationService.Service-stopped",
       base::TimeFormatShortDateAndTime(diagnostic_info_.service_was_stopped));
@@ -249,8 +253,18 @@ void FCMInvalidationServiceBase::ResetClientID() {
   instance_id->DeleteID(
       base::Bind(&FCMInvalidationServiceBase::OnDeleteInstanceIDCompleted,
                  base::Unretained(this)));
+
+  // Immediately clear our cached values (before we get confirmation of the
+  // deletion), since they shouldn't be used anymore. Lower layers are the
+  // source of truth, and are responsible for ensuring that the deletion
+  // actually happens.
+  client_id_.clear();
   DictionaryPrefUpdate update(pref_service_, prefs::kInvalidationClientIDCache);
   update->RemoveKey(sender_id_);
+
+  // Also let the registrar (and its observers) know that the instance ID is
+  // gone.
+  invalidator_registrar_.UpdateInvalidatorInstanceId(std::string());
 }
 
 void FCMInvalidationServiceBase::OnInstanceIDReceived(
@@ -267,8 +281,16 @@ void FCMInvalidationServiceBase::OnInstanceIDReceived(
 
 void FCMInvalidationServiceBase::OnDeleteInstanceIDCompleted(
     instance_id::InstanceID::Result result) {
+  // Note: |client_id_| and the pref were already cleared when we initiated the
+  // deletion.
+
   UMA_HISTOGRAM_ENUMERATION("FCMInvalidations.ResetClientIDStatus", result,
                             instance_id::InstanceID::Result::LAST_RESULT + 1);
+
+  diagnostic_info_.instance_id_cleared = base::Time::Now();
+
+  // TODO(crbug.com/1028761,crbug.com/1023813): This also deleted all Instance
+  // ID *tokens*; we need to let the FCMInvalidationListener know.
 }
 
 void FCMInvalidationServiceBase::DoUpdateSubscribedTopicsIfNeeded() {

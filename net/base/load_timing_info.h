@@ -26,6 +26,8 @@ namespace net {
 //
 // The general order for events is:
 // request_start
+// service_worker_start_time
+// service_worker_ready_time
 // proxy_start
 // proxy_end
 // dns_start
@@ -133,6 +135,19 @@ struct NET_EXPORT LoadTimingInfo {
   // Corresponds to |fetchStart| in ResourceTiming
   // (http://www.w3.org/TR/resource-timing/) for Web-surfacing requests.
   base::TimeTicks request_start;
+
+  // The time immediately before starting ServiceWorker. If the response is not
+  // provided by the ServiceWorker, kept empty.
+  // Corresponds to |workerStart| in
+  // ResourceTiming (http://www.w3.org/TR/resource-timing/) for Web-surfacing
+  base::TimeTicks service_worker_start_time;
+
+  // The time immediately before dispatching fetch event in ServiceWorker.
+  // If the response is not provided by the ServiceWorker, kept empty.
+  // This value will be used for |fetchStart| (or |redirectStart|) in
+  // ResourceTiming (http://www.w3.org/TR/resource-timing/) for Web-surfacing
+  // if this is greater than |request_start|.
+  base::TimeTicks service_worker_ready_time;
 
   // The time spent determing which proxy to use.  Null when there is no PAC.
   base::TimeTicks proxy_resolve_start;

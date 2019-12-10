@@ -35,7 +35,7 @@ namespace content {
 //   constexpr auto kFooServiceIdleTimeout = base::TimeDelta::FromSeconds(5);
 //   auto foo_service = ServiceProcessHost::Launch<foo::mojom::FooService>(
 //       ServiceProcessHost::Options()
-//           .WithSandboxType(SANDBOX_TYPE_UTILITY)
+//           .WithSandboxType(SandboxType::kUtility)
 //           .WithDisplayName(IDS_FOO_SERVICE_DISPLAY_NAME)
 //           .Pass());
 //   foo_service.set_idle_handler(
@@ -75,7 +75,7 @@ class CONTENT_EXPORT ServiceProcessHost {
     // to |Launch()|.
     Options Pass();
 
-    SandboxType sandbox_type = service_manager::SANDBOX_TYPE_UTILITY;
+    SandboxType sandbox_type = SandboxType::kUtility;
     base::string16 display_name;
     base::Optional<int> child_flags;
     std::vector<std::string> extra_switches;

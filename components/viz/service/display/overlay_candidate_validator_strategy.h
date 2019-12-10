@@ -25,7 +25,7 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidatorStrategy {
 
   // A primary plane is generated when the output surface's buffer is supplied
   // by |BufferQueue|. This is considered as an overlay plane.
-  using PrimaryPlane = OverlayProcessor::OutputSurfaceOverlayPlane;
+  using PrimaryPlane = OverlayProcessorInterface::OutputSurfaceOverlayPlane;
 
   // Populates a list of strategies that may work with this validator. Should be
   // called at most once.
@@ -59,7 +59,8 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidatorStrategy {
   // |primary_plane|'s blending setting.
   bool AttemptWithStrategies(
       const SkMatrix44& output_color_matrix,
-      const OverlayProcessor::FilterOperationsMap& render_pass_backdrop_filters,
+      const OverlayProcessorInterface::FilterOperationsMap&
+          render_pass_backdrop_filters,
       DisplayResourceProvider* resource_provider,
       RenderPassList* render_pass_list,
       PrimaryPlane* primary_plane,

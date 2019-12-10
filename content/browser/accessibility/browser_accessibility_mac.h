@@ -43,6 +43,10 @@ class BrowserAccessibilityMac : public BrowserAccessibility {
     return browser_accessibility_cocoa_;
   }
 
+  // Refresh the native object associated with this.
+  // Useful for re-announcing the current focus when properties have changed.
+  void ReplaceNativeObject();
+
  private:
   // This gives BrowserAccessibility::Create access to the class constructor.
   friend class BrowserAccessibility;

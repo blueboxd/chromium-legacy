@@ -134,7 +134,7 @@
       <template is="dom-if" restamp
           if="[[showDisplaySelectMenu_(displays, selectedDisplay)]]">
         <div class="settings-box indented">
-          <div id="displayScreenTitle" class="start">
+          <div id="displayScreenTitle" class="start" aria-hidden="true">
             $i18n{displayScreenTitle}
           </div>
           <select class="md-select" on-change="updatePrimaryDisplay_"
@@ -208,7 +208,8 @@
       </div>
       <template is="dom-if" if="[[!unifiedDesktopMode_]]" restamp>
         <div class="settings-box indented">
-          <div id="displayOrientation" class="start text-area">
+          <div id="displayOrientation" class="start text-area"
+              aria-hidden="true">
             $i18n{displayOrientation}
           </div>
           <template is="dom-if" if="[[isDevicePolicyEnabled_(

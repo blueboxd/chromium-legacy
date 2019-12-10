@@ -31,4 +31,12 @@ struct LoadTimingInfo {
   mojo_base.mojom.TimeTicks receive_headers_end;
   mojo_base.mojom.TimeTicks push_start;
   mojo_base.mojom.TimeTicks push_end;
+
+  // The time immediately before starting ServiceWorker. If the response is not
+  // provided by the ServiceWorker, kept empty.
+  mojo_base.mojom.TimeTicks service_worker_start_time;
+
+  // The time immediately before dispatching fetch event in ServiceWorker.
+  // If the response is not provided by the ServiceWorker, kept empty.
+  mojo_base.mojom.TimeTicks service_worker_ready_time;
 };

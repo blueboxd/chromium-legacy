@@ -112,6 +112,10 @@
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/sync/trusted_vault_client_android.h"
+#endif  // defined(OS_ANDROID)
+
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -207,11 +211,12 @@ ChromeSyncClient::ChromeSyncClient(Profile* profile) : profile_(profile) {
       account_password_store_,
       BookmarkSyncServiceFactory::GetForProfile(profile_));
 
-  // TODO(crbug.com/1012659): Instantiate an Android-specific client.
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+  trusted_vault_client_ = std::make_unique<TrustedVaultClientAndroid>();
+#else
   trusted_vault_client_ = std::make_unique<syncer::FileBasedTrustedVaultClient>(
       profile_->GetPath().Append(kTrustedVaultFilename));
-#endif  // !defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID)
 }
 
 ChromeSyncClient::~ChromeSyncClient() {}

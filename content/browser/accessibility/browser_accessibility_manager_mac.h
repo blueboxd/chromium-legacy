@@ -66,6 +66,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerMac
 
   void AnnounceActiveDescendant(BrowserAccessibility* node) const;
 
+  bool IsInGeneratedEventBatch(ui::AXEventGenerator::Event event_type) const;
+
   // Keeps track of any edits that have been made by the user during a tree
   // update. Used by NSAccessibilityValueChangedNotification.
   // Maps AXNode IDs to value attribute changes.

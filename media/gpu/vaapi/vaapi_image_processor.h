@@ -9,9 +9,8 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/sequence_checker.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
-#include "base/task/cancelable_task_tracker.h"
 #include "build/build_config.h"
 #include "media/gpu/chromeos/image_processor.h"
 
@@ -51,20 +50,15 @@ class VaapiImageProcessor : public ImageProcessor {
                        scoped_refptr<VideoFrame> output_frame,
                        FrameReadyCB cb) override;
 
-  void ProcessTask(scoped_refptr<VideoFrame> input_frame,
-                   scoped_refptr<VideoFrame> output_frame,
-                   FrameReadyCB cb);
+  // Callback invoked on completion of VAAPI frame processing tasks.
+  void OnOutputFrameReady(FrameReadyCB cb, scoped_refptr<VideoFrame> frame);
 
   // Sequence task runner in which the buffer conversion is performed.
   const scoped_refptr<base::SequencedTaskRunner> processor_task_runner_;
-  SEQUENCE_CHECKER(processor_sequence_checker_);
-
-  // CancelableTaskTracker for posted tasks to |processor_task_runner_|. We
-  // can't use CancelableCallback or WeakPtr because we may need to cancel tasks
-  // from outside |processor_task_runner_|.
-  base::CancelableTaskTracker process_task_tracker_;
 
   const scoped_refptr<VaapiWrapper> vaapi_wrapper_;
+
+  base::WeakPtrFactory<VaapiImageProcessor> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VaapiImageProcessor);
 };

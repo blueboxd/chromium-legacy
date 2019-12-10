@@ -102,6 +102,7 @@ class TrustedHeaderClient;
 namespace service_manager {
 class Identity;
 struct Manifest;
+enum class SandboxType;
 class Service;
 
 template <typename...>
@@ -1157,7 +1158,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns the AppContainer SID for the specified sandboxed process type, or
   // empty string if this sandboxed process type does not support living inside
   // an AppContainer. Called on PROCESS_LAUNCHER thread.
-  virtual base::string16 GetAppContainerSidForSandboxType(int sandbox_type);
+  virtual base::string16 GetAppContainerSidForSandboxType(
+      service_manager::SandboxType sandbox_type);
 
   // Returns whether renderer code integrity is enabled.
   // This is called on the UI thread.

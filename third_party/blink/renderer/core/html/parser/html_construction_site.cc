@@ -300,7 +300,7 @@ void HTMLConstructionSite::AttachLater(ContainerNode* parent,
   DCHECK(ScriptingContentIsAllowed(parser_content_policy_) || !element ||
          !element->IsScriptElement());
   DCHECK(PluginContentIsAllowed(parser_content_policy_) ||
-         !IsHTMLPlugInElement(child));
+         !IsA<HTMLPlugInElement>(child));
 
   HTMLConstructionSiteTask task(HTMLConstructionSiteTask::kInsert);
   task.parent = parent;

@@ -19,10 +19,10 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.MathUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.ui.widget.animation.CancelAwareAnimatorListener;
-import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
@@ -135,6 +135,17 @@ public class ScrimView extends View implements View.OnClickListener {
          * @param visible True if the overlay has become visible.
          */
         void onScrimVisibilityChanged(boolean visible);
+    }
+
+    /**
+     * An empty implementation of the ScrimObserver interface.
+     */
+    public static class EmptyScrimObserver implements ScrimObserver {
+        @Override
+        public void onScrimClick() {}
+
+        @Override
+        public void onScrimVisibilityChanged(boolean visible) {}
     }
 
     /** The duration for the fading animation. */

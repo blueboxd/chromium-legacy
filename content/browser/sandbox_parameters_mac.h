@@ -26,7 +26,7 @@ CONTENT_EXPORT void SetupSandboxParameters(
     const base::CommandLine& command_line,
     sandbox::SeatbeltExecClient* client);
 
-// Expands the SANDBOX_TYPE_NETWORK policy to allow reading files from
+// Expands the SandboxType::kNetwork policy to allow reading files from
 // the specified |path|, which stores TLS certificates used by the browser
 // test web servers.
 CONTENT_EXPORT void SetNetworkTestCertsDirectoryForTesting(

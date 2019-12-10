@@ -16,7 +16,6 @@
 #include "third_party/skia/include/core/SkImageInfo.h"
 
 namespace blink {
-class SkiaTextureHolder;
 
 class PLATFORM_EXPORT MailboxTextureHolder final : public TextureHolder {
  public:
@@ -50,9 +49,6 @@ class PLATFORM_EXPORT MailboxTextureHolder final : public TextureHolder {
                        base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&,
                        IntSize mailbox_size,
                        bool is_origin_top_left);
-  // This function turns a texture-backed SkImage into a mailbox and a
-  // syncToken.
-  MailboxTextureHolder(const SkiaTextureHolder*, GLenum filter);
   // This function may be used when the MailboxTextureHolder is created on a
   // different thread. The caller must provide a verified sync token if it is
   // created cross-thread.

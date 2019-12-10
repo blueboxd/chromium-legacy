@@ -40,7 +40,7 @@ public class ChromiumLinkerTestActivity extends Activity {
 
         // Load the library in the browser process, this will also run the test
         // runner in this process.
-        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
+        LibraryLoader.getInstance().ensureInitialized();
 
         // Now, start a new renderer process by creating a new view.
         // This will run the test runner in the renderer process.

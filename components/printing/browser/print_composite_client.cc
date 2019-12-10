@@ -311,7 +311,7 @@ PrintCompositeClient::CreateCompositeRequest() {
   auto compositor = content::ServiceProcessHost::Launch<mojom::PdfCompositor>(
       content::ServiceProcessHost::Options()
           .WithDisplayName(IDS_PDF_COMPOSITOR_SERVICE_DISPLAY_NAME)
-          .WithSandboxType(service_manager::SANDBOX_TYPE_PDF_COMPOSITOR)
+          .WithSandboxType(service_manager::SandboxType::kPdfCompositor)
           .Pass());
 
   mojo::PendingRemote<discardable_memory::mojom::DiscardableSharedMemoryManager>

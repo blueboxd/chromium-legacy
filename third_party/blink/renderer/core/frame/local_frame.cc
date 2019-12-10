@@ -271,6 +271,14 @@ void LocalFrame::Navigate(const FrameLoadRequest& request,
       frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
     }
   }
+
+  // Navigations in portal contexts do not create back/forward entries.
+  // TODO(mcnee): Similarly, we need to restrict orphaned contexts.
+  if (GetPage()->InsidePortal() &&
+      frame_load_type == WebFrameLoadType::kStandard) {
+    frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
+  }
+
   loader_.StartNavigation(request, frame_load_type);
 
   if (request.ClientRedirectReason() != ClientNavigationReason::kNone)

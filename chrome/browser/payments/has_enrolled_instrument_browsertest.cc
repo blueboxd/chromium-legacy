@@ -331,7 +331,7 @@ IN_PROC_BROWSER_TEST_P(HasEnrolledInstrumentTest, InvalidEmailAddress) {
 // Run all tests with both values for
 // features::kStrictHasEnrolledAutofillInstrument.
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     HasEnrolledInstrumentTest,
     ::testing::Values(STRICT_HAS_ENROLLED_INSTRUMENT,
                       LEGACY_HAS_ENROLLED_INSTRUMENT));

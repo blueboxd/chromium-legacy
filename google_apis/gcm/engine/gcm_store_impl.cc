@@ -7,10 +7,12 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
@@ -184,6 +186,7 @@ class GCMStoreImpl::Backend
     : public base::RefCountedThreadSafe<GCMStoreImpl::Backend> {
  public:
   Backend(const base::FilePath& path,
+          bool remove_account_mappings_with_email_key,
           scoped_refptr<base::SequencedTaskRunner> foreground_runner,
           std::unique_ptr<Encryptor> encryptor);
 
@@ -261,6 +264,7 @@ class GCMStoreImpl::Backend
   bool LoadInstanceIDData(std::map<std::string, std::string>* instance_id_data);
 
   const base::FilePath path_;
+  bool remove_account_mappings_with_email_key_;
   scoped_refptr<base::SequencedTaskRunner> foreground_task_runner_;
   std::unique_ptr<Encryptor> encryptor_;
 
@@ -269,9 +273,12 @@ class GCMStoreImpl::Backend
 
 GCMStoreImpl::Backend::Backend(
     const base::FilePath& path,
+    bool remove_account_mappings_with_email_key,
     scoped_refptr<base::SequencedTaskRunner> foreground_task_runner,
     std::unique_ptr<Encryptor> encryptor)
     : path_(path),
+      remove_account_mappings_with_email_key_(
+          remove_account_mappings_with_email_key),
       foreground_task_runner_(foreground_task_runner),
       encryptor_(std::move(encryptor)) {}
 
@@ -1090,6 +1097,7 @@ bool GCMStoreImpl::Backend::LoadAccountMappingInfo(
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;
 
+  AccountMappings loaded_account_mappings;
   std::unique_ptr<leveldb::Iterator> iter(db_->NewIterator(read_options));
   for (iter->Seek(MakeSlice(kAccountKeyStart));
        iter->Valid() && iter->key().ToString() < kAccountKeyEnd;
@@ -1102,7 +1110,19 @@ bool GCMStoreImpl::Backend::LoadAccountMappingInfo(
       return false;
     }
     DVLOG(1) << "Found account mapping with ID: " << account_mapping.account_id;
-    account_mappings->push_back(account_mapping);
+    loaded_account_mappings.push_back(account_mapping);
+  }
+
+  for (const auto& account_mapping : loaded_account_mappings) {
+    bool remove = remove_account_mappings_with_email_key_ &&
+                  account_mapping.account_id.IsEmail();
+    base::UmaHistogramBoolean("GCM.RemoveAccountMappingWhenLoading", remove);
+    if (remove) {
+      RemoveAccountMapping(account_mapping.account_id,
+                           base::DoNothing::Repeatedly<bool>());
+    } else {
+      account_mappings->push_back(account_mapping);
+    }
   }
 
   return true;
@@ -1177,9 +1197,11 @@ bool GCMStoreImpl::Backend::LoadInstanceIDData(
 
 GCMStoreImpl::GCMStoreImpl(
     const base::FilePath& path,
+    bool remove_account_mappings_with_email_key,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     std::unique_ptr<Encryptor> encryptor)
     : backend_(new Backend(path,
+                           remove_account_mappings_with_email_key,
                            base::ThreadTaskRunnerHandle::Get(),
                            std::move(encryptor))),
       blocking_task_runner_(blocking_task_runner) {}

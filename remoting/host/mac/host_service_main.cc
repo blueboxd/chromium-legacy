@@ -120,6 +120,8 @@ class HostService {
   // the version of MacOS).
   bool CheckPermission();
 
+  bool HostIsEnabled();
+
   base::FilePath old_host_helper_file_;
   base::FilePath enabled_file_;
   base::FilePath config_file_;
@@ -163,9 +165,11 @@ int HostService::RunHost() {
     if (!output.empty()) {
       HOST_LOG << "Message from host --upgrade-token: " << output;
     }
-  } else {
+  } else if (HostIsEnabled()) {
     // Only check for non-root users, as the permission wizard is not actionable
-    // at the login screen.
+    // at the login screen. Also, permission is only needed when host is
+    // enabled - the launchd service should exit immediately if the host is
+    // disabled.
     if (!CheckPermission()) {
       return 1;
     }
@@ -175,7 +179,7 @@ int HostService::RunHost() {
   base::TimeTicks host_start_time;
 
   while (true) {
-    if (!base::PathExists(enabled_file_)) {
+    if (!HostIsEnabled()) {
       HOST_LOG << "Daemon is disabled.";
       return 0;
     }
@@ -357,6 +361,10 @@ bool HostService::CheckPermission() {
   }
   LOG(INFO) << "All permissions granted!";
   return true;
+}
+
+bool HostService::HostIsEnabled() {
+  return base::PathExists(enabled_file_);
 }
 
 }  // namespace

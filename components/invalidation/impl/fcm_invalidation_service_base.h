@@ -86,7 +86,7 @@ class FCMInvalidationServiceBase
   void OnInvalidatorStateChange(syncer::InvalidatorState state) override;
 
  protected:
-  // Initializes with an injected invalidator.
+  // Initializes with an injected listener.
   void InitForTest(
       std::unique_ptr<syncer::FCMInvalidationListener> invalidation_listener);
 
@@ -113,6 +113,7 @@ class FCMInvalidationServiceBase
   struct Diagnostics {
     base::Time instance_id_requested;
     base::Time instance_id_received;
+    base::Time instance_id_cleared;
     base::Time service_was_stopped;
     base::Time service_was_started;
   };

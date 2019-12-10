@@ -430,31 +430,8 @@ source_set("chrome_content_browser_overlay_manifest") {
   }
 }
 
-source_set("builtin_service_manifests") {
-  sources = [
-    "builtin_service_manifests.cc",
-    "builtin_service_manifests.h",
-  ]
-
-  deps = [
-    "//base",
-    "//chrome/common:buildflags",
-    "//chrome/common:mojo_bindings",
-    "//components/startup_metric_utils/common:interfaces",
-    "//device/vr/buildflags",
-    "//extensions/buildflags",
-    "//printing/buildflags",
-    "//services/service_manager/public/cpp",
-  ]
-
-  if (is_chromeos) {
-    deps += [ "//ash/public/cpp:manifest" ]
-  }
-}
-
 source_set("chrome_service_manifests") {
   public_deps = [
-    ":builtin_service_manifests",
     ":chrome_content_browser_overlay_manifest",
   ]
 }

@@ -16,12 +16,17 @@
 @class TabGridCoordinator;
 @protocol BrowserInterfaceProvider;
 @protocol TabSwitcher;
+@protocol BrowsingDataCommands;
 class AppUrlLoadingService;
+
+namespace ios {
+class ChromeBrowserState;
+}  // namespace ios
 
 // TODO(crbug.com/1012697): Remove this protocol when SceneController is
 // operational. Move the private internals back into MainController, and pass
 // ownership of Scene-related objects to SceneController.
-@protocol MainControllerGuts <NSObject>
+@protocol MainControllerGuts <BrowsingDataCommands>
 
 // Coordinator for displaying history.
 @property(nonatomic, strong) HistoryCoordinator* historyCoordinator;

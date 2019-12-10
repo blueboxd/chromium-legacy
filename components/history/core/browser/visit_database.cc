@@ -284,11 +284,11 @@ bool VisitDatabase::GetVisibleVisitsForURL(URLID url_id,
   statement.BindInt64(0, url_id);
   statement.BindInt64(1, options.EffectiveBeginTime());
   statement.BindInt64(2, options.EffectiveEndTime());
-  statement.BindInt(3, ui::PAGE_TRANSITION_CHAIN_END);
-  statement.BindInt(4, ui::PAGE_TRANSITION_CORE_MASK);
-  statement.BindInt(5, ui::PAGE_TRANSITION_AUTO_SUBFRAME);
-  statement.BindInt(6, ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
-  statement.BindInt(7, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
+  statement.BindInt64(3, ui::PAGE_TRANSITION_CHAIN_END);
+  statement.BindInt64(4, ui::PAGE_TRANSITION_CORE_MASK);
+  statement.BindInt64(5, ui::PAGE_TRANSITION_AUTO_SUBFRAME);
+  statement.BindInt64(6, ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
+  statement.BindInt64(7, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
 
   return FillVisitVectorWithOptions(statement, options, visits);
 }
@@ -349,8 +349,8 @@ bool VisitDatabase::GetVisitsInRangeForTransition(base::Time begin_time,
   int64_t end = end_time.ToInternalValue();
   statement.BindInt64(0, begin_time.ToInternalValue());
   statement.BindInt64(1, end ? end : std::numeric_limits<int64_t>::max());
-  statement.BindInt(2, ui::PAGE_TRANSITION_CORE_MASK);
-  statement.BindInt(3, transition);
+  statement.BindInt64(2, ui::PAGE_TRANSITION_CORE_MASK);
+  statement.BindInt64(3, transition);
   statement.BindInt64(
       4, max_results ? max_results : std::numeric_limits<int64_t>::max());
 
@@ -364,8 +364,8 @@ bool VisitDatabase::GetAllURLIDsForTransition(ui::PageTransition transition,
   sql::Statement statement(
       GetDB().GetUniqueStatement("SELECT DISTINCT url FROM visits "
                                  "WHERE (transition & ?) == ?"));
-  statement.BindInt(0, ui::PAGE_TRANSITION_CORE_MASK);
-  statement.BindInt(1, transition);
+  statement.BindInt64(0, ui::PAGE_TRANSITION_CORE_MASK);
+  statement.BindInt64(1, transition);
 
   while (statement.Step()) {
     urls->push_back(statement.ColumnInt64(0));
@@ -390,11 +390,11 @@ bool VisitDatabase::GetVisibleVisitsInRange(const QueryOptions& options,
 
   statement.BindInt64(0, options.EffectiveBeginTime());
   statement.BindInt64(1, options.EffectiveEndTime());
-  statement.BindInt(2, ui::PAGE_TRANSITION_CHAIN_END);
-  statement.BindInt(3, ui::PAGE_TRANSITION_CORE_MASK);
-  statement.BindInt(4, ui::PAGE_TRANSITION_AUTO_SUBFRAME);
-  statement.BindInt(5, ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
-  statement.BindInt(6, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
+  statement.BindInt64(2, ui::PAGE_TRANSITION_CHAIN_END);
+  statement.BindInt64(3, ui::PAGE_TRANSITION_CORE_MASK);
+  statement.BindInt64(4, ui::PAGE_TRANSITION_AUTO_SUBFRAME);
+  statement.BindInt64(5, ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
+  statement.BindInt64(6, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
 
   return FillVisitVectorWithOptions(statement, options, visits);
 }
@@ -447,7 +447,7 @@ bool VisitDatabase::GetRedirectFromVisit(VisitID from_visit,
       "WHERE v.from_visit = ? "
       "AND (v.transition & ?) != 0"));  // IS_REDIRECT_MASK
   statement.BindInt64(0, from_visit);
-  statement.BindInt(1, ui::PAGE_TRANSITION_IS_REDIRECT_MASK);
+  statement.BindInt64(1, ui::PAGE_TRANSITION_IS_REDIRECT_MASK);
 
   if (!statement.Step())
     return false;  // No redirect from this visit. (Or SQL error)
@@ -515,11 +515,11 @@ bool VisitDatabase::GetVisibleVisitCountToHost(const GURL& url,
   statement.BindString(0, host_query_min);
   statement.BindString(
       1, host_query_min.substr(0, host_query_min.size() - 1) + '0');
-  statement.BindInt(2, ui::PAGE_TRANSITION_CHAIN_END);
-  statement.BindInt(3, ui::PAGE_TRANSITION_CORE_MASK);
-  statement.BindInt(4, ui::PAGE_TRANSITION_AUTO_SUBFRAME);
-  statement.BindInt(5, ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
-  statement.BindInt(6, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
+  statement.BindInt64(2, ui::PAGE_TRANSITION_CHAIN_END);
+  statement.BindInt64(3, ui::PAGE_TRANSITION_CORE_MASK);
+  statement.BindInt64(4, ui::PAGE_TRANSITION_AUTO_SUBFRAME);
+  statement.BindInt64(5, ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
+  statement.BindInt64(6, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
 
   if (!statement.Step()) {
     // We've never been to this page before.
@@ -556,11 +556,11 @@ bool VisitDatabase::GetHistoryCount(const base::Time& begin_time,
 
   statement.BindInt64(0, base::Time::kTimeTToMicrosecondsOffset);
   statement.BindInt64(1, base::Time::kMicrosecondsPerSecond);
-  statement.BindInt(2, ui::PAGE_TRANSITION_CHAIN_END);
-  statement.BindInt(3, ui::PAGE_TRANSITION_CORE_MASK);
-  statement.BindInt(4, ui::PAGE_TRANSITION_AUTO_SUBFRAME);
-  statement.BindInt(5, ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
-  statement.BindInt(6, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
+  statement.BindInt64(2, ui::PAGE_TRANSITION_CHAIN_END);
+  statement.BindInt64(3, ui::PAGE_TRANSITION_CORE_MASK);
+  statement.BindInt64(4, ui::PAGE_TRANSITION_AUTO_SUBFRAME);
+  statement.BindInt64(5, ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
+  statement.BindInt64(6, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
   statement.BindInt64(7, begin_time.ToInternalValue());
   statement.BindInt64(8, end_time.ToInternalValue());
 

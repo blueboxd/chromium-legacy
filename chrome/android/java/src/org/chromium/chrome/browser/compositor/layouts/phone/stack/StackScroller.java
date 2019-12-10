@@ -9,7 +9,7 @@ import android.hardware.SensorManager;
 import android.util.Log;
 import android.view.ViewConfiguration;
 
-import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.base.MathUtils;
 
 /**
  * This class is vastly copied from {@link android.widget.OverScroller} but decouples the time

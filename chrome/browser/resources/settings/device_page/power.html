@@ -14,13 +14,13 @@
     <style include="settings-shared md-select"></style>
     <div id="powerSourceRow" class="settings-box first two-line"
         hidden$="[[!batteryStatus_.present]]">
-      <div class="start">
+      <div class="start" id="powerSourceLabelDiv">
         <div>[[powerSourceLabel_]]</div>
         <div class="secondary">[[batteryStatus_.statusText]]</div>
       </div>
       <select id="powerSource" class="md-select"
           hidden$="[[!showPowerSourceDropdown_]]"
-          aria-label="$i18n{powerSourceLabel}"
+          aria-labelledby="powerSourceLabelDiv"
           on-change="onPowerSourceChange_">
         <option value="" selected="[[isEqual_('', selectedPowerSourceId_)]]">
           $i18n{powerSourceBattery}
@@ -38,7 +38,7 @@
     </div>
 
     <div class$="settings-box [[getFirst_(batteryStatus_.present)]]">
-      <div class="start">$i18n{powerIdleLabel}</div>
+      <div class="start" aria-hidden="true">$i18n{powerIdleLabel}</div>
       <template is="dom-if" if="[[idleControlled_]]" restamp>
         <cr-policy-indicator id="idleControlledIndicator"
             indicator-type="devicePolicy"

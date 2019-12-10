@@ -14,5 +14,5 @@ declare_args() {
   closure_compile = is_chromeos || is_linux || is_android
 
   # Enable the WebUI version of the browser's tab strip.
-  enable_webui_tab_strip = is_chromeos
+  enable_webui_tab_strip = is_chromeos || is_linux || is_win
 }

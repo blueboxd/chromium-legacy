@@ -27,9 +27,8 @@ class WebvrServiceProvider {
       RenderFrameHost* render_frame_host,
       mojo::PendingReceiver<device::mojom::VRService> receiver);
 
-  using BindWebvrServiceCallback =
-      base::Callback<void(RenderFrameHost*,
-                          mojo::PendingReceiver<device::mojom::VRService>)>;
+  using BindWebvrServiceCallback = base::RepeatingCallback<
+      void(RenderFrameHost*, mojo::PendingReceiver<device::mojom::VRService>)>;
 
   CONTENT_EXPORT static void SetWebvrServiceCallback(
       BindWebvrServiceCallback callback);

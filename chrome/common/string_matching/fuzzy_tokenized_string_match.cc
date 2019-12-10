@@ -5,6 +5,7 @@
 #include "chrome/common/string_matching/fuzzy_tokenized_string_match.h"
 
 #include <algorithm>
+#include <cmath>
 #include <iterator>
 
 #include "base/i18n/case_conversion.h"

@@ -112,7 +112,7 @@ TEST(OverlayCandidateValidatorSurfaceControlTest, DisplayTransformOverlay) {
 
 TEST(OverlayCandidateValidatorSurfaceControlTest,
      DisplayTransformOutputSurfaceOverlay) {
-  OverlayProcessor::OutputSurfaceOverlayPlane candidate;
+  OverlayProcessorInterface::OutputSurfaceOverlayPlane candidate;
   candidate.display_rect = gfx::RectF(100, 200);
   candidate.transform = gfx::OVERLAY_TRANSFORM_NONE;
 

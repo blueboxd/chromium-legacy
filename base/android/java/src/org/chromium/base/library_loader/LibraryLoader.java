@@ -130,7 +130,7 @@ public class LibraryLoader {
 
     // Stores information about attempts to load the library and eventually emits those bits as
     // UMA histograms.
-    private static final LoadStatusRecorder sLoadStatusRecorder = new LoadStatusRecorder();
+    private final LoadStatusRecorder mLoadStatusRecorder = new LoadStatusRecorder();
 
     /**
      * Call this method to determine if the chromium project must load the library
@@ -142,31 +142,6 @@ public class LibraryLoader {
         return NativeLibraries.sUseLibraryInZipFile;
     }
 
-    /**
-     * Set native library preloader, if set, the NativeLibraryPreloader.loadLibrary will be invoked
-     * before calling System.loadLibrary, this only applies when not using the chromium linker.
-     *
-     * @param loader the NativeLibraryPreloader, it shall only be set once and before the
-     *               native library loaded.
-     */
-    public void setNativeLibraryPreloader(NativeLibraryPreloader loader) {
-        synchronized (mLock) {
-            assert mLibraryPreloader == null && !mLoaded;
-            mLibraryPreloader = loader;
-        }
-    }
-
-    @GuardedBy("mLock")
-    private void setConfigurationIfNeeded() {
-        if (mConfigurationSet) return;
-
-        // Cannot use initializers for the variables below, as this makes roboelectric tests fail,
-        // since they don't have a NativeLibraries class.
-        mUseChromiumLinker = NativeLibraries.sUseLinker;
-        mUseModernLinker = NativeLibraries.sUseModernLinker;
-        mConfigurationSet = true;
-    }
-
     public static LibraryLoader getInstance() {
         return sInstance;
     }
@@ -174,24 +149,68 @@ public class LibraryLoader {
     private LibraryLoader() {}
 
     /**
+     * Set the {@Link LibraryProcessType} for this process.
+     *
+     * Since this function is called extremely early on in startup, locking is not required.
+     *
+     * @param type the process type.
+     */
+    public void setLibraryProcessType(@LibraryProcessType int type) {
+        assert type != LibraryProcessType.PROCESS_UNINITIALIZED;
+        if (type == mLibraryProcessType) return;
+        if (mLibraryProcessType != LibraryProcessType.PROCESS_UNINITIALIZED) {
+            throw new IllegalStateException(
+                    String.format("Trying to change the LibraryProcessType from %d to %d",
+                            mLibraryProcessType, type));
+        }
+        mLibraryProcessType = type;
+        mLoadStatusRecorder.setProcessType(type);
+    }
+
+    /**
+     * Set native library preloader, if set, the NativeLibraryPreloader.loadLibrary will be invoked
+     * before calling System.loadLibrary, this only applies when not using the chromium linker.
+     *
+     * Since this function is called extremely early on in startup, locking is not required.
+     *
+     * @param loader the NativeLibraryPreloader, it shall only be set once and before the
+     *               native library loaded.
+     */
+    public void setNativeLibraryPreloader(NativeLibraryPreloader loader) {
+        assert mLibraryPreloader == null;
+        assert !mLoaded;
+        mLibraryPreloader = loader;
+    }
+
+    /**
      * Sets the configuration for library loading.
      *
-     * Must be called before loading the library.
+     * Must be called before loading the library. Since this function is called extremely early on
+     * in startup, locking is not required.
      *
      * @param useChromiumLinker Whether to use the chromium linker.
      * @param useModernLinker Whether to use ModernLinker.
      */
-    public void setConfiguration(boolean useChromiumLinker, boolean useModernLinker) {
-        synchronized (mLock) {
-            assert !mInitialized;
+    public void setLinkerImplementation(boolean useChromiumLinker, boolean useModernLinker) {
+        assert !mInitialized;
 
-            mUseChromiumLinker = useChromiumLinker;
-            mUseModernLinker = useModernLinker;
+        mUseChromiumLinker = useChromiumLinker;
+        mUseModernLinker = useModernLinker;
 
-            Log.d(TAG, "Configuration, useChromiumLinker = %b, useModernLinker = %b",
-                    mUseChromiumLinker, mUseModernLinker);
-            mConfigurationSet = true;
-        }
+        Log.d(TAG, "Configuration, useChromiumLinker = %b, useModernLinker = %b",
+                mUseChromiumLinker, mUseModernLinker);
+        mConfigurationSet = true;
+    }
+
+    @GuardedBy("mLock")
+    private void setLinkerImplementationIfNeededAlreadyLocked() {
+        if (mConfigurationSet) return;
+
+        // Cannot use initializers for the variables below, as this makes roboelectric tests fail,
+        // since they don't have a NativeLibraries class.
+        mUseChromiumLinker = NativeLibraries.sUseLinker;
+        mUseModernLinker = NativeLibraries.sUseModernLinker;
+        mConfigurationSet = true;
     }
 
     public boolean useChromiumLinker() {
@@ -215,16 +234,14 @@ public class LibraryLoader {
 
     /**
      *  This method blocks until the library is fully loaded and initialized.
-     *
-     * @param processType the process the shared library is loaded in.
      */
-    public void ensureInitialized(@LibraryProcessType int processType) {
+    public void ensureInitialized() {
         synchronized (mLock) {
             if (mInitialized) return;
 
             loadAlreadyLocked(ContextUtils.getApplicationContext().getApplicationInfo(),
                     false /* inZygote */);
-            initializeAlreadyLocked(processType);
+            initializeAlreadyLocked();
         }
     }
 
@@ -243,7 +260,7 @@ public class LibraryLoader {
      */
     public void preloadNowOverrideApplicationContext(Context appContext) {
         synchronized (mLock) {
-            setConfigurationIfNeeded();
+            setLinkerImplementationIfNeededAlreadyLocked();
             if (mUseChromiumLinker) return;
             preloadAlreadyLocked(appContext.getApplicationInfo());
         }
@@ -306,12 +323,10 @@ public class LibraryLoader {
      * Initializes the library here and now: must be called on the thread that the
      * native will call its "main" thread. The library must have previously been
      * loaded with loadNow.
-     *
-     * @param processType the process the shared library is loaded in.
      */
-    public void initialize(@LibraryProcessType int processType) {
+    public void initialize() {
         synchronized (mLock) {
-            initializeAlreadyLocked(processType);
+            initializeAlreadyLocked();
         }
     }
 
@@ -345,7 +360,7 @@ public class LibraryLoader {
 
     // Helper for loadAlreadyLocked(). Load a native shared library with the Chromium linker.
     // Records UMA histograms depending on the results of loading.
-    private static void loadLibraryWithCustomLinker(
+    private void loadLibraryWithCustomLinker(
             Linker linker, String library, boolean isFirstAttempt) {
         // Attempt shared RELROs, and if that fails then retry without.
         boolean loadAtFixedAddress = true;
@@ -354,14 +369,14 @@ public class LibraryLoader {
             linker.loadLibrary(library, true /* isFixedAddressPermitted */);
         } catch (UnsatisfiedLinkError e) {
             Log.w(TAG, "Failed to load native library with shared RELRO, retrying without");
-            sLoadStatusRecorder.recordLoadAttempt(
+            mLoadStatusRecorder.recordLoadAttempt(
                     false /* success */, isFirstAttempt, true /* loadAtFixedAddress */);
             loadAtFixedAddress = false;
             success = false;
             linker.loadLibrary(library, false /* isFixedAddressPermitted */);
             success = true;
         } finally {
-            sLoadStatusRecorder.recordLoadAttempt(success, isFirstAttempt, loadAtFixedAddress);
+            mLoadStatusRecorder.recordLoadAttempt(success, isFirstAttempt, loadAtFixedAddress);
         }
     }
 
@@ -376,7 +391,7 @@ public class LibraryLoader {
         return extractFileIfStale(appInfo, libraryEntry, makeLibraryDirAndSetPermission());
     }
 
-    private static void loadWithChromiumLinker(ApplicationInfo appInfo, String library) {
+    private void loadWithChromiumLinker(ApplicationInfo appInfo, String library) {
         Linker linker = Linker.getInstance();
 
         if (isInZipFile()) {
@@ -436,7 +451,8 @@ public class LibraryLoader {
         try (TraceEvent te = TraceEvent.scoped("LibraryLoader.loadAlreadyLocked")) {
             if (mLoaded) return;
             assert !mInitialized;
-            setConfigurationIfNeeded();
+            assert mLibraryProcessType != LibraryProcessType.PROCESS_UNINITIALIZED;
+            setLinkerImplementationIfNeededAlreadyLocked();
 
             long startTime = SystemClock.uptimeMillis();
 
@@ -526,15 +542,9 @@ public class LibraryLoader {
 
     // Invoke base::android::LibraryLoaded in library_loader_hooks.cc
     @GuardedBy("mLock")
-    private void initializeAlreadyLocked(@LibraryProcessType int processType) {
-        if (mInitialized) {
-            if (mLibraryProcessType != processType) {
-                throw new ProcessInitException(LoaderErrors.NATIVE_LIBRARY_LOAD_FAILED);
-            }
-            return;
-        }
-        mLibraryProcessType = processType;
-        sLoadStatusRecorder.setProcessType(processType);
+    private void initializeAlreadyLocked() {
+        if (mInitialized) return;
+        assert mLibraryProcessType != LibraryProcessType.PROCESS_UNINITIALIZED;
 
         // Add a switch for the reached code profiler as late as possible since it requires a read
         // from the shared preferences. At this point the shared preferences are usually warmed up.
@@ -567,7 +577,7 @@ public class LibraryLoader {
         // From now on, keep tracing in sync with native.
         TraceEvent.registerNativeEnabledObserver();
 
-        if (processType == LibraryProcessType.PROCESS_BROWSER
+        if (mLibraryProcessType == LibraryProcessType.PROCESS_BROWSER
                 && PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION) {
             // Perform the detection and deletion of obsolete native libraries on a
             // background thread.

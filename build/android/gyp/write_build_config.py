@@ -939,10 +939,6 @@ def main(argv):
       '--static-library-dependent-configs',
       help='GN list of .build_configs of targets that use this target as a '
       'static library.')
-  parser.add_option(
-      '--resource-ids-provider',
-      help='Path to the .build_config for the APK that this static library '
-      'target uses to generate stable resource IDs.')
 
   # options shared between android_resources and apk targets
   parser.add_option('--r-text-path', help='Path to target\'s R.txt file.')

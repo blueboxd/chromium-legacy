@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
+#include "content/public/browser/device_service.h"
 #include "content/public/browser/media_session_service.h"
 #include "ui/aura/window.h"
 #include "url/gurl.h"
@@ -67,6 +68,16 @@ bool ChromeShellDelegate::CanGoBack(gfx::NativeWindow window) const {
   if (!contents)
     return false;
   return contents->GetController().CanGoBack();
+}
+
+void ChromeShellDelegate::BindBluetoothSystemFactory(
+    mojo::PendingReceiver<device::mojom::BluetoothSystemFactory> receiver) {
+  content::GetDeviceService().BindBluetoothSystemFactory(std::move(receiver));
+}
+
+void ChromeShellDelegate::BindFingerprint(
+    mojo::PendingReceiver<device::mojom::Fingerprint> receiver) {
+  content::GetDeviceService().BindFingerprint(std::move(receiver));
 }
 
 void ChromeShellDelegate::BindNavigableContentsFactory(

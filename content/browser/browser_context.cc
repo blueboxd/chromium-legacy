@@ -231,18 +231,18 @@ base::WeakPtr<storage::BlobStorageContext> BlobStorageContextGetterForBrowser(
 void BrowserContext::AsyncObliterateStoragePartition(
     BrowserContext* browser_context,
     const std::string& partition_domain,
-    const base::Closure& on_gc_required) {
+    base::OnceClosure on_gc_required) {
   GetStoragePartitionMap(browser_context)
-      ->AsyncObliterate(partition_domain, on_gc_required);
+      ->AsyncObliterate(partition_domain, std::move(on_gc_required));
 }
 
 // static
 void BrowserContext::GarbageCollectStoragePartitions(
     BrowserContext* browser_context,
     std::unique_ptr<std::unordered_set<base::FilePath>> active_paths,
-    const base::Closure& done) {
+    base::OnceClosure done) {
   GetStoragePartitionMap(browser_context)
-      ->GarbageCollect(std::move(active_paths), done);
+      ->GarbageCollect(std::move(active_paths), std::move(done));
 }
 
 DownloadManager* BrowserContext::GetDownloadManager(BrowserContext* context) {

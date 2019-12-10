@@ -91,19 +91,17 @@ std::unique_ptr<GCMStoreImpl> GCMStoreImplTest::BuildGCMStore() {
   // and contains a CURRENT file to determine the store existence.
   store_path_ =
       temp_directory_.GetPath().Append(FILE_PATH_LITERAL("GCM Store"));
-  return std::unique_ptr<GCMStoreImpl>(
-      new GCMStoreImpl(store_path_, task_runner_,
-                       base::WrapUnique<Encryptor>(new FakeEncryptor)));
+  return std::unique_ptr<GCMStoreImpl>(new GCMStoreImpl(
+      store_path_, /*remove_account_mappings_with_email_key=*/true,
+      task_runner_, base::WrapUnique<Encryptor>(new FakeEncryptor)));
 }
 
 void GCMStoreImplTest::LoadGCMStore(
     GCMStoreImpl* gcm_store,
     std::unique_ptr<GCMStore::LoadResult>* result_dst) {
-  gcm_store->Load(
-      GCMStore::CREATE_IF_MISSING,
-      base::Bind(&GCMStoreImplTest::LoadCallback,
-                 base::Unretained(this),
-                 result_dst));
+  gcm_store->Load(GCMStore::CREATE_IF_MISSING,
+                  base::Bind(&GCMStoreImplTest::LoadCallback,
+                             base::Unretained(this), result_dst));
   PumpLoop();
 }
 

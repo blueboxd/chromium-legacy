@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/insets_f.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
 
 TEST(InsetsTest, InsetsDefault) {
@@ -279,4 +280,9 @@ TEST(InsetsTest, IntegerUnderflowOffset) {
   gfx::Insets offset_test = insets.Offset(min_vector);
   EXPECT_EQ(gfx::Insets(int_min, int_min, -10 - int_min, -10 - int_min),
             offset_test);
+}
+
+TEST(InsetsTest, Size) {
+  gfx::Insets insets(1, 2, 3, 4);
+  EXPECT_EQ(gfx::Size(6, 4), insets.size());
 }

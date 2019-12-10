@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.ntp.snippets;
 
+import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
@@ -15,7 +17,7 @@ import org.chromium.chrome.browser.ntp.cards.OptionalLeaf;
  */
 public class SectionHeader extends OptionalLeaf {
     /** The header text to be shown. */
-    private final String mHeaderText;
+    private String mHeaderText;
 
     private Runnable mToggleCallback;
     private boolean mIsExpanded;
@@ -49,6 +51,13 @@ public class SectionHeader extends OptionalLeaf {
 
     public String getHeaderText() {
         return mHeaderText;
+    }
+
+    public void setHeaderText(String headerText) {
+        if (TextUtils.equals(mHeaderText, headerText)) return;
+
+        mHeaderText = headerText;
+        notifyItemChanged(0, SectionHeaderViewHolder::updateVisuals);
     }
 
     /**

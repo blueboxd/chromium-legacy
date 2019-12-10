@@ -105,17 +105,18 @@ TEST_F(FontUniqueNameLookupTest, TestHandleFailedRead) {
   blink::FontTableMatcher matcher(mapping);
 
   // AOSP Android Kitkat has 81 fonts, the Kitkat bot seems to have 74,
-  // Marshmallow has 149, Oreo 247, let's expect at least 50.
-  ASSERT_GT(matcher.AvailableFonts(), 50u);
+  // Marshmallow has 149, Oreo 247. There are other variants that are built
+  // with fewer fonts however. Be safer and assume 10 maximum.
+  ASSERT_GT(matcher.AvailableFonts(), 10u);
   ASSERT_TRUE(font_unique_name_lookup_->PersistToFile());
   ASSERT_TRUE(base::PathExists(
       font_unique_name_lookup_->TableCacheFilePathForTesting()));
   int64_t file_size;
   ASSERT_TRUE(base::GetFileSize(
       font_unique_name_lookup_->TableCacheFilePathForTesting(), &file_size));
-  // For 81 fonts minimumm, very conservatively assume we have at least 1k of
-  // data, it's rather around 30k in practice.
-  ASSERT_GT(file_size, 1024);
+  // For 10 fonts, assume we have at least 256 bytes of data, it's
+  // around 30k in practice on Kitkat with 81 fonts.
+  ASSERT_GT(file_size, 256);
   ASSERT_TRUE(font_unique_name_lookup_->LoadFromFile());
 
   // For each truncated size, reading must fail, otherwise we successfully read

@@ -248,6 +248,7 @@
       (syscall-number SYS_gethostuuid)
       (syscall-number SYS_getpid)
       (syscall-number SYS_getppid)
+      (syscall-number SYS_getpriority)
       (syscall-number SYS_getrlimit)
       (syscall-number SYS_gettimeofday)
       (syscall-number SYS_getuid)

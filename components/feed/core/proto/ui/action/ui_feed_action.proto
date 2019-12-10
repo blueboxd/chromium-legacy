@@ -57,6 +57,7 @@ message FeedActionMetadata {
     HIDE_ELEMENT = 13;
     SHOW_TOOLTIP = 14;
     NOT_INTERESTED_IN = 15;
+    SEE_SUGGESTED_SITES = 16;
     reserved 9, 10;  // Deprecated
   }
   optional Type type = 1;

@@ -205,6 +205,8 @@ std::unique_ptr<Browser> BrowserWithTestWindowTest::CreateBrowser(
   if (hosted_app) {
     params = Browser::CreateParams::CreateForApp(
         "Test", true /* trusted_source */, gfx::Rect(), profile, true);
+  } else if (browser_type == Browser::TYPE_DEVTOOLS) {
+    params = Browser::CreateParams::CreateForDevTools(profile);
   } else {
     params.type = browser_type;
   }

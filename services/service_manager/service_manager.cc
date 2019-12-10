@@ -85,9 +85,9 @@ class DefaultServiceProcessHost : public ServiceProcessHost {
     return mojo::NullRemote();
 #else
     // TODO(https://crbug.com/781334): Support sandboxing.
-    CHECK_EQ(sandbox_type, SANDBOX_TYPE_NO_SANDBOX);
+    CHECK_EQ(sandbox_type, SandboxType::kNoSandbox);
     return launcher_
-        .Start(identity, SANDBOX_TYPE_NO_SANDBOX, std::move(callback))
+        .Start(identity, SandboxType::kNoSandbox, std::move(callback))
         .PassInterface();
 #endif  // defined(OS_IOS)
   }

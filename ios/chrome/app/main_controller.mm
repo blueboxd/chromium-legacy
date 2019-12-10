@@ -674,7 +674,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
              initWithBrowserState:self.mainBrowserState
              webStateListObserver:self
        applicationCommandEndpoint:self.sceneController
-      browsingDataCommandEndpoint:self.sceneController
+      browsingDataCommandEndpoint:self
              appURLLoadingService:self.appURLLoadingService
                   storageSwitcher:self];
 
@@ -686,7 +686,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   AuthenticationServiceFactory::CreateAndInitializeForBrowserState(
       self.mainBrowserState,
       std::make_unique<MainControllerAuthenticationServiceDelegate>(
-          self.mainBrowserState, self.sceneController));
+          self.mainBrowserState, self));
 
   // Send "Chrome Opened" event to the feature_engagement::Tracker on cold
   // start.
@@ -811,13 +811,12 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   DCHECK(self.mainBrowserState->HasOffTheRecordChromeBrowserState());
   ios::ChromeBrowserState* otrBrowserState =
       self.mainBrowserState->GetOffTheRecordChromeBrowserState();
-  [self.sceneController
-      removeBrowsingDataForBrowserState:otrBrowserState
-                             timePeriod:browsing_data::TimePeriod::ALL_TIME
-                             removeMask:BrowsingDataRemoveMask::REMOVE_ALL
-                        completionBlock:^{
-                          [self activateBVCAndMakeCurrentBVCPrimary];
-                        }];
+  [self removeBrowsingDataForBrowserState:otrBrowserState
+                               timePeriod:browsing_data::TimePeriod::ALL_TIME
+                               removeMask:BrowsingDataRemoveMask::REMOVE_ALL
+                          completionBlock:^{
+                            [self activateBVCAndMakeCurrentBVCPrimary];
+                          }];
 }
 
 - (void)destroyAndRebuildIncognitoBrowserState {
@@ -2213,6 +2212,67 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   params.user_initiated = command.userInitiated;
   params.should_focus_omnibox = command.shouldFocusOmnibox;
   self.appURLLoadingService->LoadUrlInNewTab(params);
+}
+
+#pragma mark - BrowsingDataCommands
+
+- (void)removeBrowsingDataForBrowserState:(ios::ChromeBrowserState*)browserState
+                               timePeriod:(browsing_data::TimePeriod)timePeriod
+                               removeMask:(BrowsingDataRemoveMask)removeMask
+                          completionBlock:(ProceduralBlock)completionBlock {
+  // TODO(crbug.com/632772): https://bugs.webkit.org/show_bug.cgi?id=149079
+  // makes it necessary to disable web usage while clearing browsing data.
+  // It is however unnecessary for off-the-record BrowserState (as the code
+  // is not invoked) and has undesired side-effect (cause all regular tabs
+  // to reload, see http://crbug.com/821753 for details).
+  BOOL disableWebUsageDuringRemoval =
+      !browserState->IsOffTheRecord() &&
+      IsRemoveDataMaskSet(removeMask, BrowsingDataRemoveMask::REMOVE_SITE_DATA);
+  BOOL showActivityIndicator = NO;
+
+  if (@available(iOS 13, *)) {
+    // TODO(crbug.com/632772): Visited links clearing doesn't require disabling
+    // web usage with iOS 13. Stop disabling web usage once iOS 12 is not
+    // supported.
+    showActivityIndicator = disableWebUsageDuringRemoval;
+    disableWebUsageDuringRemoval = NO;
+  }
+
+  if (disableWebUsageDuringRemoval) {
+    // Disables browsing and purges web views.
+    // Must be called only on the main thread.
+    DCHECK([NSThread isMainThread]);
+    self.interfaceProvider.mainInterface.userInteractionEnabled = NO;
+    self.interfaceProvider.incognitoInterface.userInteractionEnabled = NO;
+  } else if (showActivityIndicator) {
+    // Show activity overlay so users know that clear browsing data is in
+    // progress.
+    [self.mainBVC.dispatcher showActivityOverlay:YES];
+  }
+
+  BrowsingDataRemoverFactory::GetForBrowserState(browserState)
+      ->Remove(
+          timePeriod, removeMask, base::BindOnce(^{
+            // Activates browsing and enables web views.
+            // Must be called only on the main thread.
+            DCHECK([NSThread isMainThread]);
+            if (showActivityIndicator) {
+              // User interaction still needs to be disabled as a way to
+              // force reload all the web states and to reset NTPs.
+              self.interfaceProvider.mainInterface.userInteractionEnabled = NO;
+              self.interfaceProvider.incognitoInterface.userInteractionEnabled =
+                  NO;
+
+              [self.mainBVC.dispatcher showActivityOverlay:NO];
+            }
+            self.interfaceProvider.mainInterface.userInteractionEnabled = YES;
+            self.interfaceProvider.incognitoInterface.userInteractionEnabled =
+                YES;
+            [self.currentBVC setPrimary:YES];
+
+            if (completionBlock)
+              completionBlock();
+          }));
 }
 
 #pragma mark - MainControllerGuts

@@ -211,8 +211,21 @@ void History::pushState(scoped_refptr<SerializedScriptValue> data,
                         const String& title,
                         const String& url,
                         ExceptionState& exception_state) {
+  WebFrameLoadType load_type = WebFrameLoadType::kStandard;
+  // Navigations in portal contexts do not create back/forward entries.
+  if (GetFrame() && GetFrame()->GetPage() &&
+      GetFrame()->GetPage()->InsidePortal()) {
+    GetFrame()->GetDocument()->AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                               mojom::ConsoleMessageLevel::kWarning,
+                               "Use of history.pushState in a portal context "
+                               "is treated as history.replaceState."),
+        /* discard_duplicates */ true);
+    load_type = WebFrameLoadType::kReplaceCurrentItem;
+  }
+
   StateObjectAdded(std::move(data), title, url, ScrollRestorationInternal(),
-                   WebFrameLoadType::kStandard, exception_state);
+                   load_type, exception_state);
 }
 
 void History::replaceState(scoped_refptr<SerializedScriptValue> data,

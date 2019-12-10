@@ -91,11 +91,6 @@ class SVGFELightElement : public SVGElement {
 };
 
 template <>
-inline bool IsElementOfType<const SVGFELightElement>(
-    const SVGElement& element) {
-  return IsA<SVGFELightElement>(element);
-}
-template <>
 inline bool IsElementOfType<const SVGFELightElement>(const Node& node) {
   return IsA<SVGFELightElement>(node);
 }
@@ -103,7 +98,7 @@ template <>
 struct DowncastTraits<SVGFELightElement> {
   static bool AllowFrom(const Node& node) {
     auto* svg_element = DynamicTo<SVGElement>(node);
-    return svg_element ? IsA<SVGFELightElement>(svg_element) : false;
+    return svg_element && AllowFrom(*svg_element);
   }
   static bool AllowFrom(const SVGElement& svg_element) {
     return svg_element.HasTagName(svg_names::kFEDistantLightTag) ||

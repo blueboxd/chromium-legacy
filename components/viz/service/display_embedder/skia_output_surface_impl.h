@@ -96,7 +96,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       bool has_alpha) override;
   void SkiaSwapBuffers(OutputSurfaceFrame frame) override;
   void ScheduleOutputSurfaceAsOverlay(
-      OverlayProcessor::OutputSurfaceOverlayPlane output_surface_plane)
+      OverlayProcessorInterface::OutputSurfaceOverlayPlane output_surface_plane)
       override;
 
   SkCanvas* BeginPaintRenderPass(const RenderPassId& id,

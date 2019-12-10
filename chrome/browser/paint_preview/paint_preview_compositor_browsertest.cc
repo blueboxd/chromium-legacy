@@ -27,7 +27,7 @@ class PaintPreviewCompositorCollectionBrowserTest
     return content::ServiceProcessHost::Launch<
         mojom::PaintPreviewCompositorCollection>(
         content::ServiceProcessHost::Options()
-            .WithSandboxType(service_manager::SANDBOX_TYPE_PDF_COMPOSITOR)
+            .WithSandboxType(service_manager::SandboxType::kPdfCompositor)
             .Pass());
   }
 };

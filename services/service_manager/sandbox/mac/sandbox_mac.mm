@@ -80,7 +80,7 @@ const char* SandboxMac::kSandboxBundleVersionPath = "BUNDLE_VERSION_PATH";
 
 // static
 void SandboxMac::Warmup(SandboxType sandbox_type) {
-  DCHECK_EQ(sandbox_type, SANDBOX_TYPE_GPU);
+  DCHECK_EQ(sandbox_type, SandboxType::kGpu);
 
   @autoreleasepool {
     {  // CGColorSpaceCreateWithName(), CGBitmapContextCreate() - 10.5.6
@@ -139,7 +139,7 @@ void SandboxMac::Warmup(SandboxType sandbox_type) {
 // Load the appropriate template for the given sandbox type.
 // Returns the template as a string or an empty string on error.
 std::string LoadSandboxTemplate(SandboxType sandbox_type) {
-  DCHECK_EQ(sandbox_type, SANDBOX_TYPE_GPU);
+  DCHECK_EQ(sandbox_type, SandboxType::kGpu);
   return kSeatbeltPolicyString_gpu;
 }
 
@@ -147,7 +147,7 @@ std::string LoadSandboxTemplate(SandboxType sandbox_type) {
 
 // static
 bool SandboxMac::Enable(SandboxType sandbox_type) {
-  DCHECK_EQ(sandbox_type, SANDBOX_TYPE_GPU);
+  DCHECK_EQ(sandbox_type, SandboxType::kGpu);
 
   std::string sandbox_data = LoadSandboxTemplate(sandbox_type);
   if (sandbox_data.empty())
@@ -195,7 +195,7 @@ bool SandboxMac::Enable(SandboxType sandbox_type) {
   if (!compiler.InsertBooleanParam(kSandboxMacOS1013, macos_1013))
     return false;
 
-  if (sandbox_type == service_manager::SANDBOX_TYPE_GPU) {
+  if (sandbox_type == service_manager::SandboxType::kGpu) {
     base::FilePath bundle_path =
         SandboxMac::GetCanonicalPath(base::mac::FrameworkBundlePath());
     if (!compiler.InsertStringParam(kSandboxBundleVersionPath,
@@ -233,37 +233,36 @@ std::string SandboxMac::GetSandboxProfile(SandboxType sandbox_type) {
       std::string(service_manager::kSeatbeltPolicyString_common);
 
   switch (sandbox_type) {
-    case service_manager::SANDBOX_TYPE_AUDIO:
+    case service_manager::SandboxType::kAudio:
       profile += service_manager::kSeatbeltPolicyString_audio;
       break;
-    case service_manager::SANDBOX_TYPE_CDM:
+    case service_manager::SandboxType::kCdm:
       profile += service_manager::kSeatbeltPolicyString_cdm;
       break;
-    case service_manager::SANDBOX_TYPE_GPU:
+    case service_manager::SandboxType::kGpu:
       profile += service_manager::kSeatbeltPolicyString_gpu_v2;
       break;
-    case service_manager::SANDBOX_TYPE_NACL_LOADER:
+    case service_manager::SandboxType::kNaClLoader:
       profile += service_manager::kSeatbeltPolicyString_nacl_loader;
       break;
-    case service_manager::SANDBOX_TYPE_NETWORK:
+    case service_manager::SandboxType::kNetwork:
       profile += service_manager::kSeatbeltPolicyString_network;
       break;
-    case service_manager::SANDBOX_TYPE_PDF_COMPOSITOR:
+    case service_manager::SandboxType::kPdfCompositor:
       profile += service_manager::kSeatbeltPolicyString_pdf_compositor;
       break;
-    case service_manager::SANDBOX_TYPE_PPAPI:
+    case service_manager::SandboxType::kPpapi:
       profile += service_manager::kSeatbeltPolicyString_ppapi;
       break;
-    case service_manager::SANDBOX_TYPE_PROFILING:
-    case service_manager::SANDBOX_TYPE_UTILITY:
+    case service_manager::SandboxType::kProfiling:
+    case service_manager::SandboxType::kUtility:
       profile += service_manager::kSeatbeltPolicyString_utility;
       break;
-    case service_manager::SANDBOX_TYPE_RENDERER:
+    case service_manager::SandboxType::kRenderer:
       profile += service_manager::kSeatbeltPolicyString_renderer;
       break;
-    case service_manager::SANDBOX_TYPE_INVALID:
-    case service_manager::SANDBOX_TYPE_FIRST_TYPE:
-    case service_manager::SANDBOX_TYPE_AFTER_LAST_TYPE:
+    case service_manager::SandboxType::kNoSandbox:
+    case service_manager::SandboxType::kInvalid:
       CHECK(false);
       break;
   }

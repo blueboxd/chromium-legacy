@@ -10,6 +10,7 @@
 #include "base/numerics/clamped_math.h"
 #include "ui/gfx/geometry/geometry_export.h"
 #include "ui/gfx/geometry/insets_f.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace gfx {
 
@@ -53,6 +54,10 @@ class GEOMETRY_EXPORT Insets {
   // Returns the total height taken up by the insets, which is the sum of the
   // top and bottom insets.
   constexpr int height() const { return top_ + bottom_; }
+
+  // Returns the sum of the left and right insets as the width, the sum of the
+  // top and bottom insets as the height.
+  constexpr Size size() const { return Size(width(), height()); }
 
   // Returns true if the insets are empty.
   bool IsEmpty() const { return width() == 0 && height() == 0; }

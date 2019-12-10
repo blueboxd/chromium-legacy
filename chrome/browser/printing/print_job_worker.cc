@@ -42,6 +42,7 @@
 
 #if defined(OS_WIN)
 #include "base/threading/thread_restrictions.h"
+#include "printing/common/printing_features.h"
 #include "printing/printed_page_win.h"
 #endif
 
@@ -350,13 +351,37 @@ void PrintJobWorker::OnNewPage() {
   if (!document_)
     return;
 
+  bool do_spool_job = true;
 #if defined(OS_WIN)
+  if (!base::FeatureList::IsEnabled(printing::features::kUseXpsForPrinting)) {
+    // Using the Windows GDI print API.
+    if (!OnNewPageHelperGdi())
+      return;
+
+    do_spool_job = false;
+  }
+#endif  // defined(OS_WIN)
+
+  if (do_spool_job) {
+    if (!document_->GetMetafile()) {
+      PostWaitForPage();
+      return;
+    }
+    SpoolJob();
+  }
+
+  OnDocumentDone();
+  // Don't touch |this| anymore since the instance could be destroyed.
+}
+
+#if defined(OS_WIN)
+bool PrintJobWorker::OnNewPageHelperGdi() {
   if (page_number_ == PageNumber::npos()) {
     // Find first page to print.
     int page_count = document_->page_count();
     if (!page_count) {
       // We still don't know how many pages the document contains.
-      return;
+      return false;
     }
     // We have enough information to initialize |page_number_|.
     page_number_.Init(document_->settings(), page_count);
@@ -366,7 +391,7 @@ void PrintJobWorker::OnNewPage() {
     scoped_refptr<PrintedPage> page = document_->GetPage(page_number_.ToInt());
     if (!page) {
       PostWaitForPage();
-      return;
+      return false;
     }
     // The page is there, print it.
     SpoolPage(page.get());
@@ -374,17 +399,9 @@ void PrintJobWorker::OnNewPage() {
     if (page_number_ == PageNumber::npos())
       break;
   }
-#else
-  if (!document_->GetMetafile()) {
-    PostWaitForPage();
-    return;
-  }
-  SpoolJob();
-#endif  // defined(OS_WIN)
-
-  OnDocumentDone();
-  // Don't touch |this| anymore since the instance could be destroyed.
+  return true;
 }
+#endif  // defined(OS_WIN)
 
 void PrintJobWorker::Cancel() {
   // This is the only function that can be called from any thread.
@@ -467,13 +484,13 @@ void PrintJobWorker::SpoolPage(PrintedPage* page) {
                      JobEventDetails::PAGE_DONE, printing_context_->job_id(),
                      base::RetainedRef(document_), base::RetainedRef(page)));
 }
-#else
+#endif  // defined(OS_WIN)
+
 void PrintJobWorker::SpoolJob() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (!document_->RenderPrintedDocument(printing_context_.get()))
     OnFailure();
 }
-#endif
 
 void PrintJobWorker::OnFailure() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());

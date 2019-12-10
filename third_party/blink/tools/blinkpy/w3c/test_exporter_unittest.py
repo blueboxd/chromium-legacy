@@ -181,7 +181,6 @@ class TestExporterTest(LoggingTestCase):
             # removed it from.
             'get_pr_branch',
             'merge_pr',
-            'delete_remote_branch',
             # 5. #458479
             'pr_for_chromium_commit',
             'get_pr_branch',
@@ -348,7 +347,6 @@ class TestExporterTest(LoggingTestCase):
             'pr_for_chromium_commit',
             'get_pr_branch',
             'merge_pr',
-            'delete_remote_branch',
         ])
         self.assertEqual(test_exporter.wpt_github.pull_requests_created, [])
         self.assertEqual(test_exporter.wpt_github.pull_requests_merged, [1234])

@@ -66,7 +66,7 @@ TEST_P(SubresourceFilterConfigurationTest, DISABLED_OneListActivation) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     SubresourceFilterConfigurationTest,
     ::testing::Combine(
         ::testing::Values(ActivationScope::NO_SITES,

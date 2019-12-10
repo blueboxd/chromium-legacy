@@ -882,6 +882,24 @@ void PeerConnectionTracker::TrackAddIceCandidate(
   SendPeerConnectionUpdate(id, event, value);
 }
 
+void PeerConnectionTracker::TrackIceCandidateError(
+    RTCPeerConnectionHandler* pc_handler,
+    const String& host_candidate,
+    const String& url,
+    int error_code,
+    const String& error_text) {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
+  int id = GetLocalIDForHandler(pc_handler);
+  if (id == -1)
+    return;
+  String value = "url: " + url + "\n" + "host_candidate: " + host_candidate +
+                 "\n"
+                 "error_text: " +
+                 error_text + "\n" +
+                 "error_code: " + String::Number(error_code);
+  SendPeerConnectionUpdate(id, "icecandidateerror", value);
+}
+
 void PeerConnectionTracker::TrackAddTransceiver(
     RTCPeerConnectionHandler* pc_handler,
     PeerConnectionTracker::TransceiverUpdatedReason reason,

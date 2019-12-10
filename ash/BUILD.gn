@@ -5,7 +5,6 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//services/service_manager/public/cpp/service_executable.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 import("//ui/base/ui_features.gni")
@@ -24,8 +23,7 @@ component("ash") {
   friend = [ ":*" ]
 
   public = [
-    # This is the only header that should be used externally.
-    "ash_service.h",
+    "public/ash_interfaces.h",
 
     # TODO: move the following to source. Do NOT add new files here.
     "accessibility/accessibility_controller_impl.h",
@@ -182,8 +180,8 @@ component("ash") {
     "app_list/app_list_presenter_delegate_impl.cc",
     "app_list/app_list_presenter_delegate_impl.h",
     "ash_export.h",
+    "ash_interfaces.cc",
     "ash_prefs.cc",
-    "ash_service.cc",
     "assistant/assistant_alarm_timer_controller.cc",
     "assistant/assistant_alarm_timer_controller.h",
     "assistant/assistant_controller.cc",
@@ -518,8 +516,6 @@ component("ash") {
     "metrics/user_metrics_action.h",
     "metrics/user_metrics_recorder.cc",
     "metrics/user_metrics_recorder.h",
-    "mojo_interface_factory.cc",
-    "mojo_interface_factory.h",
     "multi_device_setup/multi_device_notification_presenter.cc",
     "multi_device_setup/multi_device_notification_presenter.h",
     "multi_profile_uma.cc",
@@ -1376,7 +1372,6 @@ component("ash") {
     "//services/device/public/mojom",
     "//services/media_session/public/cpp",
     "//services/media_session/public/mojom",
-    "//services/service_manager/public/cpp",
     "//skia",
     "//ui/aura",
     "//ui/events",
@@ -1468,7 +1463,6 @@ component("ash") {
     "//services/content/public/cpp",
     "//services/data_decoder/public/cpp",
     "//services/preferences/public/cpp",
-    "//services/service_manager/public/cpp",
 
     # TODO(msw): Remove this; ash should not depend on blink/webkit.
     "//third_party/blink/public:blink_headers",
@@ -1608,7 +1602,6 @@ static_library("ash_shell_lib_with_content") {
     ":test_support",
     "//ash/components/shortcut_viewer",
     "//ash/public/cpp",
-    "//ash/public/cpp:manifest",
     "//base:i18n",
     "//chrome:packed_resources",
 
@@ -2036,7 +2029,6 @@ test("ash_unittests") {
     "//ash/keyboard/ui",
     "//ash/keyboard/ui:test_support",
     "//ash/public/cpp",
-    "//ash/public/cpp:manifest",
     "//ash/public/cpp:test_support",
     "//ash/public/cpp:unit_tests",
     "//ash/public/cpp/vector_icons",
@@ -2367,7 +2359,6 @@ static_library("test_support") {
     "//chromeos/services/assistant/public/mojom",
     "//chromeos/services/network_config/public/cpp:test_support",
     "//dbus",
-    "//services/service_manager/public/cpp/test:test_support",
     "//testing/gtest",
     "//third_party/blink/public:blink_headers",
     "//ui/display:display_manager_test_api",

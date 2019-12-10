@@ -87,7 +87,7 @@ HTMLElement* HTMLLabelElement::control() const {
 
 HTMLFormElement* HTMLLabelElement::form() const {
   if (HTMLElement* control = this->control()) {
-    if (auto* form_control_element = ToHTMLFormControlElementOrNull(control))
+    if (auto* form_control_element = DynamicTo<HTMLFormControlElement>(control))
       return form_control_element->Form();
     if (control->IsFormAssociatedCustomElement())
       return control->EnsureElementInternals().Form();

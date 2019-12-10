@@ -447,7 +447,7 @@ class RendererSandboxedProcessLauncherDelegate
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
 
   service_manager::SandboxType GetSandboxType() override {
-    return service_manager::SANDBOX_TYPE_RENDERER;
+    return service_manager::SandboxType::kRenderer;
   }
 
 #if defined(OS_WIN)
@@ -3616,19 +3616,14 @@ void RenderProcessHostImpl::DisableAudioDebugRecordings() {
 }
 
 RenderProcessHostImpl::WebRtcStopRtpDumpCallback
-RenderProcessHostImpl::StartRtpDump(
-    bool incoming,
-    bool outgoing,
-    const WebRtcRtpPacketCallback& packet_callback) {
+RenderProcessHostImpl::StartRtpDump(bool incoming,
+                                    bool outgoing,
+                                    WebRtcRtpPacketCallback packet_callback) {
   p2p_socket_dispatcher_host_->StartRtpDump(incoming, outgoing,
-                                            packet_callback);
+                                            std::move(packet_callback));
 
-  if (stop_rtp_dump_callback_.is_null()) {
-    stop_rtp_dump_callback_ =
-        base::Bind(&P2PSocketDispatcherHost::StopRtpDump,
-                   p2p_socket_dispatcher_host_->GetWeakPtr());
-  }
-  return stop_rtp_dump_callback_;
+  return base::BindOnce(&P2PSocketDispatcherHost::StopRtpDump,
+                        p2p_socket_dispatcher_host_->GetWeakPtr());
 }
 
 void RenderProcessHostImpl::EnableWebRtcEventLogOutput(int lid,

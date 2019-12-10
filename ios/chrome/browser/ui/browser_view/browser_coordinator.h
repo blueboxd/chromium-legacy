@@ -31,8 +31,7 @@ class AppUrlLoadingService;
 
 // Command handler for ApplicationCommands.
 @property(nonatomic, weak) id<ApplicationCommands> applicationCommandHandler;
-
-// Command handler for BrowsingDataCommands
+// Command handler for BrowsingDataCommands.
 @property(nonatomic, weak) id<BrowsingDataCommands> browsingDataCommandHandler;
 
 // The application level component for url loading. Should be used only by

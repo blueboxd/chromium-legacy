@@ -72,7 +72,7 @@ HTMLFieldSetElement::InvalidateDescendantDisabledStateAndFindFocusedOne(
   {
     EventDispatchForbiddenScope event_forbidden;
     for (HTMLElement& element : Traversal<HTMLElement>::DescendantsOf(base)) {
-      if (auto* control = ToHTMLFormControlElementOrNull(element))
+      if (auto* control = DynamicTo<HTMLFormControlElement>(element))
         control->AncestorDisabledStateWasChanged();
       else if (element.IsFormAssociatedCustomElement())
         element.EnsureElementInternals().AncestorDisabledStateWasChanged();

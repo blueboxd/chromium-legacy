@@ -431,11 +431,11 @@ void ArcPolicyBridge::OnConnectionClosed() {
 
 void ArcPolicyBridge::GetPolicies(GetPoliciesCallback callback) {
   VLOG(1) << "ArcPolicyBridge::GetPolicies";
-  const std::string policy = GetCurrentJSONPolicies();
+  arc_policy_for_reporting_ = GetCurrentJSONPolicies();
   for (Observer& observer : observers_) {
-    observer.OnPolicySent(policy);
+    observer.OnPolicySent(arc_policy_for_reporting_);
   }
-  std::move(callback).Run(policy);
+  std::move(callback).Run(arc_policy_for_reporting_);
 }
 
 void ArcPolicyBridge::ReportCompliance(const std::string& request,
@@ -588,6 +588,8 @@ void ArcPolicyBridge::OnReportComplianceParse(
 
 void ArcPolicyBridge::UpdateComplianceReportMetrics(
     const base::DictionaryValue* report) {
+  JSONStringValueSerializer serializer(&arc_policy_compliance_report_);
+  serializer.Serialize(*report);
   bool is_arc_plus_plus_report_successful = false;
   report->GetBoolean("isArcPlusPlusReportSuccessful",
                      &is_arc_plus_plus_report_successful);

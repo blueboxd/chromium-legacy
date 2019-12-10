@@ -51,6 +51,7 @@ public class TestChildProcessService extends Service {
         @Override
         public void onServiceBound(Intent intent) {
             mServiceBundle = intent.getExtras();
+            LibraryLoader.getInstance().setLibraryProcessType(LibraryProcessType.PROCESS_CHILD);
         }
 
         @Override
@@ -86,7 +87,7 @@ public class TestChildProcessService extends Service {
             // in the seconary dex won't be registered. See https://crbug.com/810720.
             JNIUtils.enableSelectiveJniRegistration();
             LibraryLoader.getInstance().loadNow();
-            LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_CHILD);
+            LibraryLoader.getInstance().ensureInitialized();
 
             // Loading the library happen on the main thread and onConnectionSetup is called from
             // the client. Wait for onConnectionSetup so mIChildProcessTest is set.

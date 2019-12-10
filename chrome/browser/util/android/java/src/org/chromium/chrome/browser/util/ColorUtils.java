@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.util;
 
 import android.graphics.Color;
 
+import org.chromium.base.MathUtils;
+
 /**
  * Helper functions for working with colors.
  */

@@ -233,31 +233,46 @@ def _GetOldAndUpdatedXml(histogram_enum_name, source_enum_values,
   return (xml, new_xml)
 
 
-def CheckPresubmitErrors(histogram_enum_name, update_script_name,
-                         source_enum_path, start_marker,
-                         end_marker, strip_k_prefix = False):
-  """Reads a C++ enum from a .h file and checks for presubmit violations:
-  1. Failure to update histograms.xml to match
-  2. Introduction of duplicate values.
+def CheckPresubmitErrors(histogram_enum_name,
+                         update_script_name,
+                         source_enum_path,
+                         start_marker,
+                         end_marker,
+                         strip_k_prefix=False,
+                         histogram_value_reader=ReadHistogramValues):
+  """Extracts histogram enum values from a source file and checks for
+  violations.
+
+  Enum values are extracted from |source_enum_path| using
+  |histogram_value_reader| function. The following presubmit violations are then
+  checked:
+    1. Failure to update histograms.xml to match
+    2. Introduction of duplicate values
 
   Args:
       histogram_enum_name: The name of the XML <enum> attribute to update.
       update_script_name: The name of an update script to run to update the UMA
           mappings for the enum.
       source_enum_path: A unix-style path, relative to src/, giving
-          the C++ header file from which to read the enum.
+          the source file from which to read the enum.
       start_marker: A regular expression that matches the start of the C++ enum.
       end_marker: A regular expression that matches the end of the C++ enum.
       strip_k_prefix: Set to True if enum values are declared as kFoo and the
           'k' should be stripped.
+      histogram_value_reader: A reader function that takes four arguments
+          (source_path, start_marker, end_marker, strip_k_prefix), and returns a
+          list of strings of the extracted enum names. The default is
+          ReadHistogramValues(), which parses the values out of an enum defined
+          in a C++ source file.
+
 
   Returns:
       A string with presubmit failure description, or None (if no failures).
   """
   Log('Reading histogram enum definition from "{0}".'.format(source_enum_path))
   try:
-    source_enum_values = ReadHistogramValues(
-        source_enum_path, start_marker, end_marker, strip_k_prefix)
+    source_enum_values = histogram_value_reader(source_enum_path, start_marker,
+                                                end_marker, strip_k_prefix)
   except DuplicatedValue as duplicated_values:
     return ('%s enum has been updated and there exist '
             'duplicated values between (%s) and (%s)' %
@@ -265,7 +280,7 @@ def CheckPresubmitErrors(histogram_enum_name, update_script_name,
              duplicated_values.second_label))
 
   (xml, new_xml) = _GetOldAndUpdatedXml(histogram_enum_name, source_enum_values,
-                                        source_enum_path, None)
+                                        source_enum_path, update_script_name)
   if xml != new_xml:
     return ('%s enum has been updated and the UMA mapping needs to be '
             'regenerated. Please run %s in src/tools/metrics/histograms/ to '

@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.compositor.overlays.strip;
 
-import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.base.MathUtils;
 import org.chromium.ui.base.LocalizationUtils;
 
 /**

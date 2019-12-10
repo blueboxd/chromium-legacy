@@ -76,7 +76,7 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
       command_line_->HasSwitch(service_manager::switches::kNoSandbox) ||
       service_manager::IsUnsandboxedSandboxType(sandbox_type);
 
-  bool use_v2 = (sandbox_type != service_manager::SANDBOX_TYPE_GPU) ||
+  bool use_v2 = (sandbox_type != service_manager::SandboxType::kGpu) ||
                 base::FeatureList::IsEnabled(features::kMacV2GPUSandbox);
 
   if (use_v2 && !no_sandbox) {

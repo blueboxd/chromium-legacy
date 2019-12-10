@@ -172,7 +172,6 @@ class AssistantOnboardingCoordinator {
 
         // Hide views that should not be displayed when showing the small onboarding.
         if (Arrays.asList(mExperimentIds.split(",")).contains(SMALL_ONBOARDING_EXPERIMENT_ID)) {
-            hide(initView, R.id.onboarding_image);
             hide(initView, R.id.onboarding_subtitle);
             hide(initView, R.id.onboarding_separator);
         }

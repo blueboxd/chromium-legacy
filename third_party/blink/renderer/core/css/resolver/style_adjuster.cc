@@ -243,7 +243,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     return;
   }
 
-  if (IsHTMLFrameElementBase(element)) {
+  if (IsA<HTMLFrameElementBase>(element)) {
     if (style.Display() == EDisplay::kContents) {
       style.SetDisplay(EDisplay::kNone);
       return;
@@ -296,9 +296,9 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     return;
   }
 
-  if (IsHTMLPlugInElement(element)) {
+  if (auto* html_plugin_element = DynamicTo<HTMLPlugInElement>(element)) {
     style.SetRequiresAcceleratedCompositingForExternalReasons(
-        ToHTMLPlugInElement(element).ShouldAccelerate());
+        html_plugin_element->ShouldAccelerate());
     if (style.Display() == EDisplay::kContents)
       style.SetDisplay(EDisplay::kNone);
     return;
@@ -309,7 +309,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     // Some of these elements are handled with other adjustments above.
     if (IsA<HTMLBRElement>(element) || IsA<HTMLWBRElement>(element) ||
         IsA<HTMLMeterElement>(element) || IsA<HTMLProgressElement>(element) ||
-        IsA<HTMLCanvasElement>(element) || IsHTMLMediaElement(element) ||
+        IsA<HTMLCanvasElement>(element) || IsA<HTMLMediaElement>(element) ||
         IsA<HTMLInputElement>(element) || IsA<HTMLTextAreaElement>(element) ||
         IsA<HTMLSelectElement>(element)) {
       style.SetDisplay(EDisplay::kNone);

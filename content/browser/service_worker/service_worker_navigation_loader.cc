@@ -177,7 +177,8 @@ void ServiceWorkerNavigationLoader::StartRequest(
 
   // Record worker start time here as |fetch_dispatcher_| will start a service
   // worker if there is no running service worker.
-  response_head_->service_worker_start_time = base::TimeTicks::Now();
+  response_head_->load_timing.service_worker_start_time =
+      base::TimeTicks::Now();
   fetch_dispatcher_->Run();
 }
 
@@ -244,7 +245,7 @@ void ServiceWorkerNavigationLoader::DidPrepareFetchEvent(
   // At this point a service worker is running and the fetch event is about
   // to dispatch. Record some load timings.
   base::TimeTicks now = base::TimeTicks::Now();
-  response_head_->service_worker_ready_time = now;
+  response_head_->load_timing.service_worker_ready_time = now;
   response_head_->load_timing.send_start = now;
   response_head_->load_timing.send_end = now;
 
@@ -487,22 +488,22 @@ void ServiceWorkerNavigationLoader::RecordTimingMetrics(bool handled) {
   UMA_HISTOGRAM_TIMES(
       "ServiceWorker.LoadTiming.MainFrame.MainResource."
       "StartToForwardServiceWorker",
-      response_head_->service_worker_start_time -
+      response_head_->load_timing.service_worker_start_time -
           response_head_->load_timing.request_start);
 
   // Time spent for service worker startup.
   UMA_HISTOGRAM_MEDIUM_TIMES(
       "ServiceWorker.LoadTiming.MainFrame.MainResource."
       "ForwardServiceWorkerToWorkerReady2",
-      response_head_->service_worker_ready_time -
-          response_head_->service_worker_start_time);
+      response_head_->load_timing.service_worker_ready_time -
+          response_head_->load_timing.service_worker_start_time);
 
   // Browser -> Renderer IPC delay.
   UMA_HISTOGRAM_TIMES(
       "ServiceWorker.LoadTiming.MainFrame.MainResource."
       "WorkerReadyToFetchHandlerStart",
       fetch_event_timing_->dispatch_event_time -
-          response_head_->service_worker_ready_time);
+          response_head_->load_timing.service_worker_ready_time);
 
   // Time spent by fetch handlers.
   UMA_HISTOGRAM_TIMES(

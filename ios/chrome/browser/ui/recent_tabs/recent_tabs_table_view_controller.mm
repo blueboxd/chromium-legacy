@@ -882,7 +882,8 @@ const int kRecentlyClosedTabsSectionIndex = 0;
     base::RecordAction(base::UserMetricsAction(
         "MobileRecentTabManagerTabFromOtherDeviceOpened"));
     new_tab_page_uma::RecordAction(
-        self.browserState, new_tab_page_uma::ACTION_OPENED_FOREIGN_SESSION);
+        self.browserState, self.webStateList->GetActiveWebState(),
+        new_tab_page_uma::ACTION_OPENED_FOREIGN_SESSION);
     std::unique_ptr<web::WebState> web_state =
         session_util::CreateWebStateWithNavigationEntries(
             self.browserState, toLoad->current_navigation_index,
@@ -920,7 +921,8 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   base::RecordAction(
       base::UserMetricsAction("MobileRecentTabManagerRecentTabOpened"));
   new_tab_page_uma::RecordAction(
-      self.browserState, new_tab_page_uma::ACTION_OPENED_RECENTLY_CLOSED_ENTRY);
+      self.browserState, self.webStateList->GetActiveWebState(),
+      new_tab_page_uma::ACTION_OPENED_RECENTLY_CLOSED_ENTRY);
 
   // If RecentTabs is being displayed from incognito, the resulting tab will
   // open in the corresponding normal BVC. Change the disposition to avoid

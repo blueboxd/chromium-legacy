@@ -92,7 +92,7 @@ class ServiceSandboxedProcessLauncherDelegate
   }
 
   service_manager::SandboxType GetSandboxType() override {
-    return service_manager::SANDBOX_TYPE_UTILITY;
+    return service_manager::SandboxType::kUtility;
   }
 
  private:

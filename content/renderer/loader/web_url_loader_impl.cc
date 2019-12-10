@@ -1076,8 +1076,8 @@ void WebURLLoaderImpl::PopulateURLResponse(
   if (!head.load_timing.receive_headers_end.is_null()) {
     WebURLLoadTiming timing;
     PopulateURLLoadTiming(head.load_timing, &timing);
-    timing.SetWorkerStart(head.service_worker_start_time);
-    timing.SetWorkerReady(head.service_worker_ready_time);
+    timing.SetWorkerStart(head.load_timing.service_worker_start_time);
+    timing.SetWorkerReady(head.load_timing.service_worker_ready_time);
     response->SetLoadTiming(timing);
   }
 

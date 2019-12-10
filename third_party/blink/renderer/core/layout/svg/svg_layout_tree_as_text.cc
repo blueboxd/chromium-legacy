@@ -383,12 +383,10 @@ static WTF::TextStream& operator<<(WTF::TextStream& ts,
     WriteNameValuePair(ts, "r",
                        length_context.ValueForLength(svg_style.R(), style,
                                                      SVGLengthMode::kOther));
-  } else if (IsSVGPolyElement(*svg_element)) {
-    WriteNameAndQuotedValue(ts, "points",
-                            ToSVGPolyElement(*svg_element)
-                                .Points()
-                                ->CurrentValue()
-                                ->ValueAsString());
+  } else if (auto* svg_poly_element = DynamicTo<SVGPolyElement>(svg_element)) {
+    WriteNameAndQuotedValue(
+        ts, "points",
+        svg_poly_element->Points()->CurrentValue()->ValueAsString());
   } else if (IsA<SVGPathElement>(*svg_element)) {
     const StylePath& path =
         svg_style.D() ? *svg_style.D() : *StylePath::EmptyPath();

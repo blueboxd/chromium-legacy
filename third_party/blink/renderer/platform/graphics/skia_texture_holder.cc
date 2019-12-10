@@ -27,18 +27,12 @@ struct ReleaseContext {
   scoped_refptr<TextureHolder::MailboxRef> mailbox_ref;
   GLuint texture_id = 0u;
   bool is_shared_image = false;
-  GrTexture* gr_texture = nullptr;
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper;
 };
 
 void ReleaseTexture(void* ctx) {
   auto* release_ctx = static_cast<ReleaseContext*>(ctx);
   if (release_ctx->context_provider_wrapper) {
-    if (release_ctx->gr_texture) {
-      release_ctx->context_provider_wrapper->Utils()->RemoveCachedMailbox(
-          release_ctx->gr_texture);
-    }
-
     if (release_ctx->texture_id) {
       auto* gl =
           release_ctx->context_provider_wrapper->ContextProvider()->ContextGL();
@@ -126,14 +120,8 @@ SkiaTextureHolder::SkiaTextureHolder(
       shared_gr_context, backend_texture, origin, sk_image_info.colorType(),
       sk_image_info.alphaType(), sk_image_info.refColorSpace(), &ReleaseTexture,
       release_ctx);
-  if (image_) {
-    release_ctx->gr_texture = image_->getTexture();
-    DCHECK(release_ctx->gr_texture);
-    ContextProviderWrapper()->Utils()->RegisterMailbox(image_->getTexture(),
-                                                       mailbox);
-  } else {
+  if (!image_)
     ReleaseTexture(release_ctx);
-  }
 }
 
 SkiaTextureHolder::~SkiaTextureHolder() {

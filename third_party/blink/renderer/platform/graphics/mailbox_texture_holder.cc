@@ -50,6 +50,8 @@ MailboxTextureHolder::MailboxTextureHolder(
       sk_image_info_(SkImageInfo::MakeN32Premul(mailbox_size.Width(),
                                                 mailbox_size.Height())),
       texture_target_(GL_TEXTURE_2D) {
+  DCHECK(mailbox_.IsSharedImage());
+
   mailbox_ref()->set_sync_token(sync_token);
   InitCommon();
 }
@@ -75,30 +77,9 @@ MailboxTextureHolder::MailboxTextureHolder(
       texture_target_(texture_target) {
   DCHECK(thread_id_);
   DCHECK(!IsCrossThread() || sync_token.verified_flush());
+  DCHECK(mailbox_.IsSharedImage());
+
   this->mailbox_ref()->set_sync_token(sync_token);
-}
-
-MailboxTextureHolder::MailboxTextureHolder(
-    const SkiaTextureHolder* texture_holder,
-    GLenum filter)
-    : TextureHolder(texture_holder->ContextProviderWrapper(),
-                    texture_holder->mailbox_ref(),
-                    texture_holder->IsOriginTopLeft()),
-      texture_id_(0),
-      is_converted_from_skia_texture_(true),
-      thread_id_(0) {
-  sk_sp<SkImage> image = texture_holder->GetSkImage();
-  DCHECK(image);
-  sk_image_info_ = image->imageInfo();
-
-  if (!ContextProviderWrapper())
-    return;
-
-  if (!ContextProviderWrapper()->Utils()->GetMailboxForSkImage(
-          mailbox_, texture_target_, image, filter))
-    return;
-
-  InitCommon();
 }
 
 void MailboxTextureHolder::Sync(MailboxSyncMode mode) {

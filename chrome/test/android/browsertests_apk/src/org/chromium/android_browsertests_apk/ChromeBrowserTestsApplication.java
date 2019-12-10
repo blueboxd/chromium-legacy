@@ -7,6 +7,8 @@ package org.chromium.android_browsertests_apk;
 import android.content.Context;
 
 import org.chromium.base.PathUtils;
+import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.native_test.NativeBrowserTestApplication;
 import org.chromium.ui.base.ResourceBundle;
@@ -24,7 +26,9 @@ public class ChromeBrowserTestsApplication extends NativeBrowserTestApplication 
         if (isBrowserProcess) UmaUtils.recordMainEntryPointTime();
 
         super.attachBaseContext(base);
-
+        LibraryLoader.getInstance().setLibraryProcessType(isBrowserProcess
+                        ? LibraryProcessType.PROCESS_BROWSER
+                        : LibraryProcessType.PROCESS_CHILD);
         if (isBrowserProcess) {
             // Test-only stuff, see also NativeUnitTest.java.
             PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);

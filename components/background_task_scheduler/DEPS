@@ -1,3 +1,5 @@
 include_rules = [
+    "-content/public/android",
+    "+content/public/android/java/src/org/chromium/content_public",
     "+content/public/test/android",
 ]

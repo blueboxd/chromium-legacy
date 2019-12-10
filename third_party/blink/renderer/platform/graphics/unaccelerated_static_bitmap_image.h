@@ -23,9 +23,8 @@ class PLATFORM_EXPORT UnacceleratedStaticBitmapImage final
   bool CurrentFrameKnownToBeOpaque() override;
   IntSize Size() const override;
   bool IsPremultiplied() const override;
-  scoped_refptr<StaticBitmapImage> MakeAccelerated(
-      base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_wrapper)
-      override;
+  scoped_refptr<StaticBitmapImage> ConvertToColorSpace(sk_sp<SkColorSpace>,
+                                                       SkColorType) override;
 
   void Draw(cc::PaintCanvas*,
             const cc::PaintFlags&,

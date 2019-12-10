@@ -86,7 +86,7 @@ def _GetApkPackageName(apk_path):
 
 
 def _PathListJoin(prefix_list, suffix_list):
-   """Returns each prefix in prefix_list joined with each suffix in suffix list.
+  """Returns each prefix in prefix_list joined with each suffix in suffix list.
 
    Args:
      prefix_list: list of path prefixes.
@@ -95,9 +95,9 @@ def _PathListJoin(prefix_list, suffix_list):
    Returns:
      List of paths each of which joins a prefix with a suffix.
    """
-   return [
-       os.path.join(prefix, suffix)
-       for suffix in suffix_list for prefix in prefix_list ]
+  return [
+      os.path.join(prefix, suffix)
+      for suffix in suffix_list for prefix in prefix_list ]
 
 
 def GetCandidates(dirs, filepart, candidate_fun):
@@ -254,10 +254,12 @@ def TranslateLibPath(lib):
   # untranslated in case it is an Android symbol in SYMBOLS_DIR.
   library_name = os.path.basename(lib)
 
-  logging.debug('TranslateLibPath: lib=%s library_name=%s' % (lib, library_name))
+  logging.debug(
+      'TranslateLibPath: lib=%s library_name=%s' % (lib, library_name))
 
   candidate_libraries = GetCandidateLibraries(library_name)
-  logging.debug('TranslateLibPath: candidate_libraries=%s' % candidate_libraries)
+  logging.debug(
+      'TranslateLibPath: candidate_libraries=%s' % (candidate_libraries))
   if not candidate_libraries:
     return lib
 
@@ -273,13 +275,13 @@ def _FormatSymbolWithOffset(symbol, offset):
 
 
 def SetSecondaryAbiOutputPath(path):
-   global _SECONDARY_ABI_OUTPUT_PATH
-   if _SECONDARY_ABI_OUTPUT_PATH and _SECONDARY_ABI_OUTPUT_PATH != path:
-     raise Exception ('SetSecondaryAbiOutputPath() was already called with a ' +
-                      'different value, previous: %s new: %s' % (
-                        _SECONDARY_ABI_OUTPUT_PATH, path))
-   else:
-     _SECONDARY_ABI_OUTPUT_PATH = path
+  global _SECONDARY_ABI_OUTPUT_PATH
+  if _SECONDARY_ABI_OUTPUT_PATH and _SECONDARY_ABI_OUTPUT_PATH != path:
+    raise Exception ('SetSecondaryAbiOutputPath() was already called with a ' +
+                     'different value, previous: %s new: %s' % (
+                       _SECONDARY_ABI_OUTPUT_PATH, path))
+  else:
+    _SECONDARY_ABI_OUTPUT_PATH = path
 
 
 def SymbolInformationForSet(lib, unique_addrs, get_detailed_info,
@@ -472,7 +474,8 @@ def _CallObjdumpForSet(lib, unique_addrs, cpu_arch):
       #   000177b0 <android::IBinder::~IBinder()>:
       components = func_regexp.match(line)
       if components:
-        # This is a new function, so record the current function and its address.
+        # This is a new function, so record the current function and its
+        # address.
         current_symbol_addr = int(components.group(1), 16)
         current_symbol = components.group(2)
 

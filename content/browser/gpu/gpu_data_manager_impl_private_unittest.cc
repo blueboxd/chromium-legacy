@@ -14,6 +14,7 @@
 #include "content/browser/gpu/gpu_data_manager_testing_autogen.h"
 #include "content/browser/gpu/gpu_data_manager_testing_entry_enums_autogen.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
+#include "content/public/common/content_switches.h"
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_switches.h"
@@ -248,5 +249,40 @@ TEST_F(GpuDataManagerImplPrivateTest, UnblockThisDomainFrom3DAPIs) {
             manager->Are3DAPIsBlockedAtTime(
                 GetDomain2ForTesting(), JustBeforeExpiration(manager.get())));
 }
+
+// Android and Chrome OS do not support software compositing, while Fuchsia does
+// not support falling back to software from Vulkan.
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_FUCHSIA)
+TEST_F(GpuDataManagerImplPrivateTest, FallbackToSwiftShader) {
+  ScopedGpuDataManagerImplPrivate manager;
+  EXPECT_EQ(gpu::GpuMode::HARDWARE_ACCELERATED, manager->GetGpuMode());
+
+  manager->FallBackToNextGpuMode();
+  EXPECT_EQ(gpu::GpuMode::SWIFTSHADER, manager->GetGpuMode());
+}
+
+TEST_F(GpuDataManagerImplPrivateTest, FallbackWithSwiftShaderDisabled) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableSoftwareRasterizer);
+  ScopedGpuDataManagerImplPrivate manager;
+  EXPECT_EQ(gpu::GpuMode::HARDWARE_ACCELERATED, manager->GetGpuMode());
+
+  manager->FallBackToNextGpuMode();
+#if defined(OS_WIN)
+  gpu::GpuMode expected_mode = gpu::GpuMode::DISABLED;
+#else
+  gpu::GpuMode expected_mode = gpu::GpuMode::DISPLAY_COMPOSITOR;
+#endif  // !OS_WIN
+  EXPECT_EQ(expected_mode, manager->GetGpuMode());
+}
+#endif  // !OS_FUCHSIA
+
+TEST_F(GpuDataManagerImplPrivateTest, GpuStartsWithGpuDisabled) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableGpu);
+  ScopedGpuDataManagerImplPrivate manager;
+  EXPECT_EQ(gpu::GpuMode::SWIFTSHADER, manager->GetGpuMode());
+}
+#endif  // !OS_ANDROID && !OS_CHROMEOS
 
 }  // namespace content

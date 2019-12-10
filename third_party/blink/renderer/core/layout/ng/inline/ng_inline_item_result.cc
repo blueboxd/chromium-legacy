@@ -220,18 +220,7 @@ LayoutUnit NGLineInfo::ComputeWidth() const {
   for (const NGInlineItemResult& item_result : Results())
     inline_size += item_result.inline_size;
 
-  if (UNLIKELY(line_end_fragment_)) {
-    inline_size += line_end_fragment_->Size()
-                       .ConvertToLogical(LineStyle().GetWritingMode())
-                       .inline_size;
-  }
-
   return inline_size;
-}
-
-void NGLineInfo::SetLineEndFragment(
-    scoped_refptr<const NGPhysicalTextFragment> fragment) {
-  line_end_fragment_ = std::move(fragment);
 }
 
 }  // namespace blink

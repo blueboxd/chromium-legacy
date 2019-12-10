@@ -15,7 +15,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.EarlyTraceEvent.AsyncEvent;
 import org.chromium.base.EarlyTraceEvent.Event;
 import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 
@@ -63,7 +62,7 @@ public class EarlyTraceEventTest {
 
     @Before
     public void setUp() {
-        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
+        LibraryLoader.getInstance().ensureInitialized();
         EarlyTraceEvent.resetForTesting();
     }
 

@@ -257,19 +257,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebUIEmbeddedOptionsTest,
   EXPECT_EQ(storage_value, actual_value);
 }
 
-// TODO(https://crbug.com/415949): This test was converted from a test that
-// was marked as flaky on Mac. It may be that this new test is not flaky, so
-// we can try to re-enable once the CL that introduces this converted test
-// lands.
-#if defined(OS_MACOSX)
-#define MAYBE_ExtensionOptionsExternalLinksOpenInNewTab \
-  DISABLED_ExtensionOptionsExternalLinksOpenInNewTab
-#else
-#define MAYBE_ExtensionOptionsExternalLinksOpenInNewTab \
-  ExtensionOptionsExternalLinksOpenInNewTab
-#endif
 IN_PROC_BROWSER_TEST_F(ExtensionWebUIEmbeddedOptionsTest,
-                       MAYBE_ExtensionOptionsExternalLinksOpenInNewTab) {
+                       ExtensionOptionsExternalLinksOpenInNewTab) {
   const Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("extension_options")
                         .AppendASCII("extension_with_options_page"));

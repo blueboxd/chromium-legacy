@@ -56,7 +56,7 @@ public class ContentShellActivity extends Activity {
 
         DeviceUtils.addDeviceSpecificUserAgentSwitch();
 
-        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
+        LibraryLoader.getInstance().ensureInitialized();
 
         setContentView(R.layout.content_shell_activity);
         mShellManager = findViewById(R.id.shell_container);

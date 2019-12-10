@@ -3,28 +3,19 @@
 // found in the LICENSE file.
 
 #include "base/allocator/buildflags.h"
-#include "base/json/json_reader.h"
-#include "base/run_loop.h"
-#include "base/threading/thread_restrictions.h"
-#include "base/trace_event/trace_buffer.h"
-#include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiling_host/profiling_process_host.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "components/heap_profiling/test_driver.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
 #include "components/services/heap_profiling/public/cpp/switches.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/test/browser_test.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/zlib/zlib.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/test/base/android/android_browser_test.h"
+#else
+#include "chrome/test/base/in_process_browser_test.h"
+#endif
 
 // Some builds don't support memlog in which case the tests won't function.
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
@@ -37,10 +28,10 @@ struct TestParam {
   bool start_profiling_with_command_line_flag;
 };
 
-class MemlogBrowserTest : public InProcessBrowserTest,
+class MemlogBrowserTest : public PlatformBrowserTest,
                           public testing::WithParamInterface<TestParam> {
   void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpDefaultCommandLine(command_line);
+    PlatformBrowserTest::SetUpDefaultCommandLine(command_line);
 
     if (!GetParam().start_profiling_with_command_line_flag)
       return;

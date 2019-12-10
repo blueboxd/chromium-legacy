@@ -430,8 +430,8 @@ bool SandboxLinux::seccomp_bpf_with_tsync_supported() const {
 
 rlim_t GetProcessDataSizeLimit(SandboxType sandbox_type) {
 #if defined(ARCH_CPU_64_BITS)
-  if (sandbox_type == SANDBOX_TYPE_GPU ||
-      sandbox_type == SANDBOX_TYPE_RENDERER) {
+  if (sandbox_type == SandboxType::kGpu ||
+      sandbox_type == SandboxType::kRenderer) {
     // Allow the GPU/RENDERER process's sandbox to access more physical memory
     // if it's available on the system.
     constexpr rlim_t GB = 1024 * 1024 * 1024;
@@ -452,7 +452,7 @@ bool SandboxLinux::LimitAddressSpace(int* error) {
     !defined(THREAD_SANITIZER) && !defined(LEAK_SANITIZER)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   SandboxType sandbox_type = SandboxTypeFromCommandLine(*command_line);
-  if (sandbox_type == SANDBOX_TYPE_NO_SANDBOX) {
+  if (sandbox_type == SandboxType::kNoSandbox) {
     return false;
   }
 
@@ -506,8 +506,8 @@ void SandboxLinux::SealSandbox() {
 }
 
 void SandboxLinux::CheckForBrokenPromises(SandboxType sandbox_type) {
-  if (sandbox_type != SANDBOX_TYPE_RENDERER &&
-      sandbox_type != SANDBOX_TYPE_PPAPI) {
+  if (sandbox_type != SandboxType::kRenderer &&
+      sandbox_type != SandboxType::kPpapi) {
     return;
   }
   // Make sure that any promise made with GetStatus() wasn't broken.

@@ -180,10 +180,24 @@ void MimeHandlerViewContainerManager::CreateBeforeUnloadControl(
       before_unload_control_receiver_.BindNewPipeAndPassRemote());
 }
 
+void MimeHandlerViewContainerManager::SelfDeleteIfNecessary() {
+  // |internal_id| is only populated when |render_frame()| is embedder of a
+  // MimeHandlerViewGuest. Full-page PDF is one such case. In these cases
+  // we don't want to self-delete.
+  if (!frame_containers_.empty() || !internal_id_.empty())
+    return;
+
+  // There are no frame containers left, and we're not serving a full-page
+  // MimeHandlerView, so we remove ourselves from the map.
+  GetRenderFrameMap()->erase(routing_id());
+}
+
 void MimeHandlerViewContainerManager::DestroyFrameContainer(
     int32_t element_instance_id) {
   if (auto* frame_container = GetFrameContainer(element_instance_id))
     RemoveFrameContainer(frame_container, false /* retain manager */);
+  else
+    SelfDeleteIfNecessary();
 }
 
 void MimeHandlerViewContainerManager::DidLoad(int32_t element_instance_id,
@@ -270,14 +284,9 @@ bool MimeHandlerViewContainerManager::RemoveFrameContainer(
     return false;
   frame_containers_.erase(it);
 
-  if (!frame_containers_.size() && internal_id_.empty() && !retain_manager) {
-    // There are no frame containers left, and we're not serving a full-page
-    // MimeHandlerView, so we remove ourselves from the map.
-    auto& map = *GetRenderFrameMap();
-    map.erase(std::remove_if(map.begin(), map.end(), [this](const auto& iter) {
-      return iter.second.get() == this;
-    }));
-  }
+  if (!retain_manager)
+    SelfDeleteIfNecessary();
+
   return true;
 }
 

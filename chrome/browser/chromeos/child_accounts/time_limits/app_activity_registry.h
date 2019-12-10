@@ -29,6 +29,8 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   void OnAppUninstalled(const AppId& app_id) override;
   void OnAppAvailable(const AppId& app_id) override;
   void OnAppBlocked(const AppId& app_id) override;
+  void OnAppActive(const AppId& app_id, base::Time timestamp) override;
+  void OnAppInactive(const AppId& app_id, base::Time timestamp) override;
 
  private:
   // Bundles detailed data stored for a specific app.

@@ -48,27 +48,6 @@ void StaticBitmapImage::DrawHelper(cc::PaintCanvas* canvas,
                         WebCoreClampingModeToSkiaRectConstraint(clamp_mode));
 }
 
-scoped_refptr<StaticBitmapImage> StaticBitmapImage::ConvertToColorSpace(
-    sk_sp<SkColorSpace> color_space,
-    SkColorType color_type) {
-  DCHECK(color_space);
-  sk_sp<SkImage> skia_image = PaintImageForCurrentFrame().GetSkImage();
-
-  // If we don't need to change the color type, use SkImage::makeColorSpace()
-  if (skia_image->colorType() == color_type) {
-    skia_image = skia_image->makeColorSpace(color_space);
-  } else {
-    skia_image =
-        skia_image->makeColorTypeAndColorSpace(color_type, color_space);
-  }
-
-  if (skia_image->isTextureBacked()) {
-    return AcceleratedStaticBitmapImage::CreateFromSkImage(
-        skia_image, ContextProviderWrapper());
-  }
-  return UnacceleratedStaticBitmapImage::Create(skia_image);
-}
-
 base::CheckedNumeric<size_t> StaticBitmapImage::GetSizeInBytes(
     const IntRect& rect,
     const CanvasColorParams& color_params) {

@@ -801,6 +801,7 @@ html[dir='rtl'] .daily-refresh-label {
 #current-wallpaper-title {
   color: rgb(32, 33, 36);
   font-size: 14px;
+  line-height: 14px;
   padding-top: 9px;
 }
 

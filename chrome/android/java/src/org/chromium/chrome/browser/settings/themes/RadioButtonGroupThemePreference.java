@@ -19,7 +19,6 @@ import org.chromium.base.BuildInfo;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.night_mode.NightModeMetrics;
-import org.chromium.chrome.browser.settings.themes.ThemePreferences.ThemeSetting;
 import org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription;
 import org.chromium.chrome.browser.ui.widget.RadioButtonWithDescriptionLayout;
 
@@ -34,7 +33,7 @@ import java.util.Collections;
  */
 public class RadioButtonGroupThemePreference
         extends Preference implements RadioGroup.OnCheckedChangeListener {
-    private @ThemeSetting int mSetting;
+    private @ThemeType int mSetting;
     private RadioButtonWithDescription mSettingRadioButton;
     private RadioButtonWithDescriptionLayout mGroup;
     private ArrayList<RadioButtonWithDescription> mButtons;
@@ -51,13 +50,13 @@ public class RadioButtonGroupThemePreference
 
         // Initialize entries with null objects so that calling ArrayList#set() would not throw
         // java.lang.IndexOutOfBoundsException.
-        mButtons = new ArrayList<>(Collections.nCopies(ThemeSetting.NUM_ENTRIES, null));
+        mButtons = new ArrayList<>(Collections.nCopies(ThemeType.NUM_ENTRIES, null));
     }
 
     /**
      * @param setting The initial setting for this Preference
      */
-    public void initialize(@ThemeSetting int setting, boolean darkenWebsitesEnabled) {
+    public void initialize(@ThemeType int setting, boolean darkenWebsitesEnabled) {
         mSetting = setting;
         mDarkenWebsitesEnabled = darkenWebsitesEnabled;
     }
@@ -78,18 +77,16 @@ public class RadioButtonGroupThemePreference
 
         mCheckBox.setChecked(mDarkenWebsitesEnabled);
 
-        assert ThemeSetting.NUM_ENTRIES == 3;
-        mButtons.set(ThemeSetting.SYSTEM_DEFAULT,
+        assert ThemeType.NUM_ENTRIES == 3;
+        mButtons.set(ThemeType.SYSTEM_DEFAULT,
                 (RadioButtonWithDescription) holder.findViewById(R.id.system_default));
         if (BuildInfo.isAtLeastQ()) {
-            mButtons.get(ThemeSetting.SYSTEM_DEFAULT)
+            mButtons.get(ThemeType.SYSTEM_DEFAULT)
                     .setDescriptionText(
                             getContext().getString(R.string.themes_system_default_summary_api_29));
         }
-        mButtons.set(
-                ThemeSetting.LIGHT, (RadioButtonWithDescription) holder.findViewById(R.id.light));
-        mButtons.set(
-                ThemeSetting.DARK, (RadioButtonWithDescription) holder.findViewById(R.id.dark));
+        mButtons.set(ThemeType.LIGHT, (RadioButtonWithDescription) holder.findViewById(R.id.light));
+        mButtons.set(ThemeType.DARK, (RadioButtonWithDescription) holder.findViewById(R.id.dark));
 
         mSettingRadioButton = mButtons.get(mSetting);
         mSettingRadioButton.setChecked(true);
@@ -102,7 +99,7 @@ public class RadioButtonGroupThemePreference
     private void positionCheckbox() {
         if (ChromeFeatureList.isEnabled(
                     ChromeFeatureList.DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING)) {
-            if (mSetting == ThemeSetting.SYSTEM_DEFAULT || mSetting == ThemeSetting.DARK) {
+            if (mSetting == ThemeType.SYSTEM_DEFAULT || mSetting == ThemeType.DARK) {
                 mGroup.attachAccessoryView(mCheckboxContainer, mSettingRadioButton);
                 mCheckboxContainer.setVisibility(View.VISIBLE);
             } else {
@@ -113,14 +110,14 @@ public class RadioButtonGroupThemePreference
 
     @Override
     public void onCheckedChanged(RadioGroup group, int checkedId) {
-        for (int i = 0; i < ThemeSetting.NUM_ENTRIES; i++) {
+        for (int i = 0; i < ThemeType.NUM_ENTRIES; i++) {
             if (mButtons.get(i).isChecked()) {
                 mSetting = i;
                 mSettingRadioButton = mButtons.get(i);
                 break;
             }
         }
-        assert mSetting >= 0 && mSetting < ThemeSetting.NUM_ENTRIES : "No matching setting found.";
+        assert mSetting >= 0 && mSetting < ThemeType.NUM_ENTRIES : "No matching setting found.";
 
         positionCheckbox();
         callChangeListener(mSetting);

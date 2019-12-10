@@ -10,8 +10,8 @@
 
 namespace content {
 
-void DownloadManagerDelegate::GetNextId(const DownloadIdCallback& callback) {
-  callback.Run(download::DownloadItem::kInvalidId);
+void DownloadManagerDelegate::GetNextId(DownloadIdCallback callback) {
+  std::move(callback).Run(download::DownloadItem::kInvalidId);
 }
 
 bool DownloadManagerDelegate::DetermineDownloadTarget(

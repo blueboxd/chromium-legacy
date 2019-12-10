@@ -28,6 +28,9 @@
 // the operation failed.
 + (NSError*)removeBrowsingCache;
 
+// Opens |URL| using the application delegate.
++ (void)applicationOpenURL:(NSString*)spec;
+
 // Loads the URL |spec| in the current WebState with transition type
 // ui::PAGE_TRANSITION_TYPED and returns without waiting for the page to load.
 + (void)startLoadingURL:(NSString*)spec;
@@ -46,9 +49,6 @@
 // Returns the NamedGuide with the given |name|, if one is attached to |view|
 // or one of |view|'s ancestors.  If no guide is found, returns nil.
 + (NamedGuide*)guideWithName:(NSString*)name view:(UIView*)view;
-
-// Loads |URL| as if it was opened from an external application.
-+ (void)openURLFromExternalApp:(NSString*)URL;
 
 #pragma mark - Tab Utilities (EG2)
 
@@ -137,9 +137,6 @@
 
 // Returns a unique identifier for the next Tab.
 + (NSString*)nextTabID;
-
-// Returns the index of active tab in normal mode.
-+ (NSUInteger)indexOfActiveNormalTab;
 
 #pragma mark - WebState Utilities (EG2)
 

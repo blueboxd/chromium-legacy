@@ -35,15 +35,15 @@
 // in the forms.
 @property(nonatomic, strong) ManualFillInjectionHandler* injectionHandler;
 
-// Creates a coordinator that uses a |viewController|, |browserState| and an
+// Creates a coordinator that uses a |viewController|, |browser| and an
 // |injectionHandler|.
-- (instancetype)
-initWithBaseViewController:(UIViewController*)viewController
-              browserState:(ios::ChromeBrowserState*)browserState
-          injectionHandler:(ManualFillInjectionHandler*)injectionHandler
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser
+                          injectionHandler:
+                              (ManualFillInjectionHandler*)injectionHandler
     NS_DESIGNATED_INITIALIZER;
 
-// Unavailable, use -initWithBaseViewController:browserState:injectionHandler:.
+// Unavailable, use -initWithBaseViewController:browser:injectionHandler:.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                               browserState:
                                   (ios::ChromeBrowserState*)browserState

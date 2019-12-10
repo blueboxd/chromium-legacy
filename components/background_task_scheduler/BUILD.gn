@@ -68,6 +68,7 @@ if (is_android) {
     testonly = true
 
     java_files = [
+      "android/javatests/src/org/chromium/components/background_task_scheduler/BackgroundTaskBroadcastReceiverTest.java",
       "android/javatests/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerImplWithMockTest.java",
       "android/javatests/src/org/chromium/components/background_task_scheduler/MockBackgroundTaskSchedulerDelegate.java",
       "android/javatests/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerJobServiceTest.java",

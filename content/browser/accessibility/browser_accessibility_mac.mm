@@ -6,6 +6,8 @@
 
 #import "content/browser/accessibility/browser_accessibility_mac.h"
 
+#include "base/task/post_task.h"
+#include "base/time/time.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 
@@ -45,6 +47,58 @@ void BrowserAccessibilityMac::OnDataChanged() {
   // We take ownership of the Cocoa object here.
   browser_accessibility_cocoa_ =
       [[BrowserAccessibilityCocoa alloc] initWithObject:this];
+}
+
+// Replace a native object and refocus if it had focus.
+// This will force VoiceOver to re-announce it, and refresh Braille output.
+void BrowserAccessibilityMac::ReplaceNativeObject() {
+  BrowserAccessibilityCocoa* old_native_obj = browser_accessibility_cocoa_;
+  browser_accessibility_cocoa_ =
+      [[BrowserAccessibilityCocoa alloc] initWithObject:this];
+
+  // Replace child in parent.
+  BrowserAccessibility* parent = PlatformGetParent();
+  if (!parent)
+    return;
+
+  base::scoped_nsobject<NSMutableArray> new_children;
+  NSArray* old_children = [ToBrowserAccessibilityCocoa(parent) children];
+  for (uint i = 0; i < [old_children count]; ++i) {
+    BrowserAccessibilityCocoa* child = [old_children objectAtIndex:i];
+    if (child == old_native_obj)
+      [new_children addObject:browser_accessibility_cocoa_];
+    else
+      [new_children addObject:child];
+  }
+  [ToBrowserAccessibilityCocoa(parent) swapChildren:&new_children];
+
+  // If focused, fire a focus notification on the new native object.
+  if (manager_->GetFocus() == this) {
+    NSAccessibilityPostNotification(
+        browser_accessibility_cocoa_,
+        NSAccessibilityFocusedUIElementChangedNotification);
+  }
+
+  // Destroy after a delay so that VO is securely on the new focus first,
+  // otherwise the focus event will not be announced.
+  // We use 1000ms; however, this magic number isn't necessary to avoid
+  // use-after-free or anything scary like that. The worst case scenario if this
+  // gets destroyed, too early is that VoiceOver announces the wrong thing once.
+  base::scoped_nsobject<BrowserAccessibilityCocoa> retained_destroyed_node(
+      [old_native_obj retain]);
+
+  base::PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](base::scoped_nsobject<BrowserAccessibilityCocoa> destroyed) {
+            if (destroyed && [destroyed instanceActive]) {
+              // Follow destruction pattern from NativeReleaseReference().
+              [destroyed detach];
+              [destroyed release];
+            }
+          },
+          std::move(retained_destroyed_node)),
+      base::TimeDelta::FromMilliseconds(1000));
 }
 
 uint32_t BrowserAccessibilityMac::PlatformChildCount() const {

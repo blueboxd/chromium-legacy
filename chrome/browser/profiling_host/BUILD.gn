@@ -28,33 +28,28 @@ static_library("profiling_host") {
   ]
 }
 
-if (!is_android) {
-  source_set("profiling_browsertests") {
-    testonly = true
+source_set("profiling_browsertests") {
+  testonly = true
 
-    sources = [
-      "memlog_browsertest.cc",
-    ]
+  sources = [
+    "memlog_browsertest.cc",
+  ]
 
-    defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
-    deps = [
-      "//base",
-      "//base/allocator:buildflags",
-      "//chrome/test:test_support_ui",
-      "//components/heap_profiling:test_support",
-      "//components/services/heap_profiling/public/cpp",
-      "//testing/gmock",
-      "//testing/gtest",
-    ]
-  }
-} else {
+  deps = [
+    "//base",
+    "//base/allocator:buildflags",
+    "//components/heap_profiling:test_support",
+    "//components/services/heap_profiling/public/cpp",
+    "//content/public/common",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
+
+if (is_android) {
   import("//build/config/android/rules.gni")
-
-  # In-process browser tests aren't supported on Android. The tests are run as
-  # instrumentation tests.
-  group("profiling_browsertests") {
-  }
 
   # This library must be included by the instrumentation_test. It must not be
   # included by the apk_under_test, since in debug builds, java classes that

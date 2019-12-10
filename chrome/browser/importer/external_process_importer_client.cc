@@ -41,7 +41,7 @@ void ExternalProcessImporterClient::Start() {
       profile_import_.BindNewPipeAndPassReceiver(),
       content::ServiceProcessHost::Options()
           .WithDisplayName(IDS_UTILITY_PROCESS_PROFILE_IMPORTER_NAME)
-          .WithSandboxType(service_manager::SANDBOX_TYPE_NO_SANDBOX)
+          .WithSandboxType(service_manager::SandboxType::kNoSandbox)
           .Pass());
   profile_import_.set_disconnect_handler(
       base::BindOnce(&ExternalProcessImporterClient::OnProcessCrashed, this));

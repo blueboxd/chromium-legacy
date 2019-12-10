@@ -13,7 +13,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.library_loader.LibraryProcessType;
 
 /**
  * AwCookieManager manages cookies according to RFC2109 spec.
@@ -29,7 +28,7 @@ public final class AwCookieManager {
     }
 
     public AwCookieManager(long nativeCookieManager) {
-        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_WEBVIEW);
+        LibraryLoader.getInstance().ensureInitialized();
         mNativeCookieManager = nativeCookieManager;
     }
 

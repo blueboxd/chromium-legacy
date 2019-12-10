@@ -378,7 +378,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 #if defined(OS_WIN)
   bool PreSpawnRenderer(sandbox::TargetPolicy* policy,
                         RendererSpawnFlags flags) override;
-  base::string16 GetAppContainerSidForSandboxType(int sandbox_type) override;
+  base::string16 GetAppContainerSidForSandboxType(
+      service_manager::SandboxType sandbox_type) override;
   bool IsRendererCodeIntegrityEnabled() override;
 #endif
   void ExposeInterfacesToRenderer(
@@ -417,7 +418,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       override;
   base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
       base::StringPiece name) override;
-  std::vector<service_manager::Manifest> GetExtraServiceManifests() override;
   void OpenURL(
       content::SiteInstance* site_instance,
       const content::OpenURLParams& params,

@@ -26,7 +26,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.CustomTabsDynamicModuleTestUtils.FakeDexInputStreamProvider;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
@@ -51,7 +50,7 @@ public class CustomTabsDynamicModuleLoaderTest {
 
     @Before
     public void setUp() {
-        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
+        LibraryLoader.getInstance().ensureInitialized();
         mDexInputStreamProvider = new FakeDexInputStreamProvider();
         mModuleLoaderFromApk = new ModuleLoader(FAKE_MODULE_COMPONENT_NAME,
                 /* dexAssetName = */ null, mDexInputStreamProvider, FAKE_CLASS_LOADER_PROVIDER);

@@ -39,7 +39,7 @@ namespace {
 bool TargetCanHaveMotionTransform(const SVGElement& target) {
   // We don't have a special attribute name to verify the animation type. Check
   // the element name instead.
-  if (!target.IsSVGGraphicsElement())
+  if (!IsA<SVGGraphicsElement>(target))
     return false;
   // Spec: SVG 1.1 section 19.2.15
   // FIXME: svgTag is missing. Needs to be checked, if transforming <svg> could

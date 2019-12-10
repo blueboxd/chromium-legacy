@@ -23,6 +23,57 @@
 #error "This file requires ARC support."
 #endif
 
+// The histogram recording the state of the tab the user switches to.
+const char kSelectedTabHistogramName[] =
+    "Tab.StatusWhenSwitchedBackToForeground";
+
+// The histogram to record the number of page loads before an evicted tab is
+// selected.
+const char kPageLoadsBeforeEvictedTabSelected[] =
+    "Tab.PageLoadsSinceLastSwitchToEvictedTab";
+
+// Records the time it takes for an evicted tab to reload.
+const char kEvictedTabReloadTime[] = "Tab.RestoreTime";
+
+// Records success vs failure of an evicted tab's reload.
+const char kEvictedTabReloadSuccessRate[] = "Tab.RestoreResult";
+
+// Records whether or not the user switched tabs before an evicted tab finished
+// reloading.
+const char kDidUserWaitForEvictedTabReload[] = "Tab.RestoreUserPersistence";
+
+// The name of the histogram that records time intervals between tab restores.
+const char kTimeBetweenRestores[] = "Tabs.TimeBetweenRestores";
+
+// The name of the histogram that records time intervals since the last restore.
+const char kTimeAfterLastRestore[] = "Tabs.TimeAfterLastRestore";
+
+// Name of histogram to record whether a memory warning had been recently
+// received when a renderer termination occurred.
+const char kRendererTerminationSawMemoryWarning[] =
+    "Tab.RendererTermination.RecentlyReceivedMemoryWarning";
+
+// Name of histogram to record the number of alive renderers when a renderer
+// termination is received.
+const char kRendererTerminationAliveRenderers[] =
+    "Tab.RendererTermination.AliveRenderersCount";
+
+// Name of histogram to record the number of renderers that were alive shortly
+// before a renderer termination. This metric is being recorded in case the OS
+// kills renderers in batches.
+const char kRendererTerminationRecentlyAliveRenderers[] =
+    "Tab.RendererTermination.RecentlyAliveRenderersCount";
+
+// Name of histogram for recording the state of the tab when the renderer is
+// terminated.
+const char kRendererTerminationStateHistogram[] =
+    "Tab.StateAtRendererTermination";
+
+// The recently alive renderer count metric counts all renderers that were alive
+// x seconds before a renderer termination. |kSecondsBeforeRendererTermination|
+// specifies x.
+const int kSecondsBeforeRendererTermination = 2;
+
 TabUsageRecorder::TabUsageRecorder(WebStateList* web_state_list,
                                    PrerenderService* prerender_service)
     : restore_start_time_(base::TimeTicks::Now()),
@@ -102,8 +153,7 @@ void TabUsageRecorder::InitialRestoredTabs(
   // being processed as a switch to the foreground tab.
   for (web::WebState* web_state : web_states) {
     if (web_state != active_web_state) {
-      evicted_web_states_[web_state] =
-          tab_usage_recorder::EVICTED_DUE_TO_COLD_START;
+      evicted_web_states_[web_state] = EVICTED_DUE_TO_COLD_START;
     }
   }
 }
@@ -134,10 +184,8 @@ void TabUsageRecorder::RecordTabSwitched(web::WebState* old_web_state,
   // user did not wait for the evicted tab to finish reloading.
   if (old_web_state == evicted_web_state_ && old_web_state != new_web_state &&
       evicted_web_state_reload_start_time_ != base::TimeTicks()) {
-    UMA_HISTOGRAM_ENUMERATION(
-        tab_usage_recorder::kDidUserWaitForEvictedTabReload,
-        tab_usage_recorder::USER_DID_NOT_WAIT,
-        tab_usage_recorder::USER_BEHAVIOR_COUNT);
+    UMA_HISTOGRAM_ENUMERATION(kDidUserWaitForEvictedTabReload,
+                              USER_DID_NOT_WAIT, USER_BEHAVIOR_COUNT);
   }
   ResetEvictedTab();
 
@@ -149,20 +197,17 @@ void TabUsageRecorder::RecordTabSwitched(web::WebState* old_web_state,
   DCHECK(!prerender_service_ ||
          !prerender_service_->IsWebStatePrerendered(new_web_state));
 
-  tab_usage_recorder::TabStateWhenSelected web_state_state =
-      ExtractWebStateState(new_web_state);
-  if (web_state_state != tab_usage_recorder::IN_MEMORY) {
+  TabStateWhenSelected web_state_state = ExtractWebStateState(new_web_state);
+  if (web_state_state != IN_MEMORY) {
     // Keep track of the current 'evicted' tab.
     evicted_web_state_ = new_web_state;
     evicted_web_state_state_ = web_state_state;
-    UMA_HISTOGRAM_COUNTS_1M(
-        tab_usage_recorder::kPageLoadsBeforeEvictedTabSelected, page_loads_);
+    UMA_HISTOGRAM_COUNTS_1M(kPageLoadsBeforeEvictedTabSelected, page_loads_);
     ResetPageLoads();
   }
 
-  UMA_HISTOGRAM_ENUMERATION(tab_usage_recorder::kSelectedTabHistogramName,
-                            web_state_state,
-                            tab_usage_recorder::TAB_STATE_COUNT);
+  UMA_HISTOGRAM_ENUMERATION(kSelectedTabHistogramName, web_state_state,
+                            TAB_STATE_COUNT);
 }
 
 void TabUsageRecorder::RecordPrimaryTabModelChange(
@@ -199,10 +244,8 @@ void TabUsageRecorder::RecordPageLoadStart(web::WebState* web_state) {
     // that the user did not wait for it to load.
     if (evicted_web_state_ &&
         evicted_web_state_reload_start_time_ != base::TimeTicks()) {
-      UMA_HISTOGRAM_ENUMERATION(
-          tab_usage_recorder::kDidUserWaitForEvictedTabReload,
-          tab_usage_recorder::USER_DID_NOT_WAIT,
-          tab_usage_recorder::USER_BEHAVIOR_COUNT);
+      UMA_HISTOGRAM_ENUMERATION(kDidUserWaitForEvictedTabReload,
+                                USER_DID_NOT_WAIT, USER_BEHAVIOR_COUNT);
     }
     ResetEvictedTab();
   }
@@ -215,18 +258,15 @@ void TabUsageRecorder::RecordPageLoadDone(web::WebState* web_state,
   if (web_state == evicted_web_state_) {
     if (success) {
       LOCAL_HISTOGRAM_TIMES(
-          tab_usage_recorder::kEvictedTabReloadTime,
+          kEvictedTabReloadTime,
           base::TimeTicks::Now() - evicted_web_state_reload_start_time_);
     }
-    UMA_HISTOGRAM_ENUMERATION(tab_usage_recorder::kEvictedTabReloadSuccessRate,
-                              success ? tab_usage_recorder::LOAD_SUCCESS
-                                      : tab_usage_recorder::LOAD_FAILURE,
-                              tab_usage_recorder::LOAD_DONE_STATE_COUNT);
+    UMA_HISTOGRAM_ENUMERATION(kEvictedTabReloadSuccessRate,
+                              success ? LOAD_SUCCESS : LOAD_FAILURE,
+                              LOAD_DONE_STATE_COUNT);
 
-    UMA_HISTOGRAM_ENUMERATION(
-        tab_usage_recorder::kDidUserWaitForEvictedTabReload,
-        tab_usage_recorder::USER_WAITED,
-        tab_usage_recorder::USER_BEHAVIOR_COUNT);
+    UMA_HISTOGRAM_ENUMERATION(kDidUserWaitForEvictedTabReload, USER_WAITED,
+                              USER_BEHAVIOR_COUNT);
     ResetEvictedTab();
   }
 }
@@ -241,19 +281,15 @@ void TabUsageRecorder::RendererTerminated(web::WebState* terminated_web_state,
                                           bool web_state_visible,
                                           bool application_active) {
   // Log the tab state for the termination.
-  const tab_usage_recorder::RendererTerminationTabState web_state_state =
-      application_active
-          ? (web_state_visible
-                 ? tab_usage_recorder::FOREGROUND_TAB_FOREGROUND_APP
-                 : tab_usage_recorder::BACKGROUND_TAB_FOREGROUND_APP)
-          : (web_state_visible
-                 ? tab_usage_recorder::FOREGROUND_TAB_BACKGROUND_APP
-                 : tab_usage_recorder::BACKGROUND_TAB_BACKGROUND_APP);
+  const RendererTerminationTabState web_state_state =
+      application_active ? (web_state_visible ? FOREGROUND_TAB_FOREGROUND_APP
+                                              : BACKGROUND_TAB_FOREGROUND_APP)
+                         : (web_state_visible ? FOREGROUND_TAB_BACKGROUND_APP
+                                              : BACKGROUND_TAB_BACKGROUND_APP);
 
-  UMA_HISTOGRAM_ENUMERATION(
-      tab_usage_recorder::kRendererTerminationStateHistogram,
-      static_cast<int>(web_state_state),
-      static_cast<int>(tab_usage_recorder::TERMINATION_TAB_STATE_COUNT));
+  UMA_HISTOGRAM_ENUMERATION(kRendererTerminationStateHistogram,
+                            static_cast<int>(web_state_state),
+                            static_cast<int>(TERMINATION_TAB_STATE_COUNT));
   if (!web_state_visible) {
     if (WebStateAlreadyEvicted(terminated_web_state)) {
       // A web state may get notified multiple times that it's been evicted.
@@ -262,7 +298,7 @@ void TabUsageRecorder::RendererTerminated(web::WebState* terminated_web_state,
       return;
     }
     evicted_web_states_[terminated_web_state] =
-        tab_usage_recorder::EVICTED_DUE_TO_RENDERER_TERMINATION;
+        EVICTED_DUE_TO_RENDERER_TERMINATION;
   }
   base::TimeTicks now = base::TimeTicks::Now();
   termination_timestamps_.push_back(now);
@@ -272,21 +308,19 @@ void TabUsageRecorder::RendererTerminated(web::WebState* terminated_web_state,
   BOOL saw_memory_warning =
       [defaults boolForKey:previous_session_info_constants::
                                kDidSeeMemoryWarningShortlyBeforeTerminating];
-  UMA_HISTOGRAM_BOOLEAN(
-      tab_usage_recorder::kRendererTerminationSawMemoryWarning,
-      saw_memory_warning);
+  UMA_HISTOGRAM_BOOLEAN(kRendererTerminationSawMemoryWarning,
+                        saw_memory_warning);
 
   // Log number of live tabs after the renderer termination. This count does not
   // include |terminated_web_state|.
   int live_web_states_count = GetLiveWebStatesCount();
-  UMA_HISTOGRAM_COUNTS_100(
-      tab_usage_recorder::kRendererTerminationAliveRenderers,
-      live_web_states_count);
+  UMA_HISTOGRAM_COUNTS_100(kRendererTerminationAliveRenderers,
+                           live_web_states_count);
 
   // Clear |termination_timestamps_| of timestamps older than
   // |kSecondsBeforeRendererTermination| ago.
-  base::TimeDelta seconds_before = base::TimeDelta::FromSeconds(
-      tab_usage_recorder::kSecondsBeforeRendererTermination);
+  base::TimeDelta seconds_before =
+      base::TimeDelta::FromSeconds(kSecondsBeforeRendererTermination);
   base::TimeTicks timestamp_boundary = now - seconds_before;
   while (termination_timestamps_.front() < timestamp_boundary) {
     termination_timestamps_.pop_front();
@@ -296,9 +330,8 @@ void TabUsageRecorder::RendererTerminated(web::WebState* terminated_web_state,
   // alive within the past |kSecondsBeforeRendererTermination|.
   NSUInteger recently_live_web_states_count =
       live_web_states_count + termination_timestamps_.size();
-  UMA_HISTOGRAM_COUNTS_100(
-      tab_usage_recorder::kRendererTerminationRecentlyAliveRenderers,
-      recently_live_web_states_count);
+  UMA_HISTOGRAM_COUNTS_100(kRendererTerminationRecentlyAliveRenderers,
+                           recently_live_web_states_count);
 
   ukm::SourceId source_id =
       ukm::GetSourceIdForWebStateDocument(terminated_web_state);
@@ -314,14 +347,12 @@ void TabUsageRecorder::RendererTerminated(web::WebState* terminated_web_state,
 
 void TabUsageRecorder::AppDidEnterBackground() {
   base::TimeTicks time_now = base::TimeTicks::Now();
-  LOCAL_HISTOGRAM_TIMES(tab_usage_recorder::kTimeAfterLastRestore,
-                        time_now - restore_start_time_);
+  LOCAL_HISTOGRAM_TIMES(kTimeAfterLastRestore, time_now - restore_start_time_);
+
   if (evicted_web_state_ &&
       evicted_web_state_reload_start_time_ != base::TimeTicks()) {
-    UMA_HISTOGRAM_ENUMERATION(
-        tab_usage_recorder::kDidUserWaitForEvictedTabReload,
-        tab_usage_recorder::USER_LEFT_CHROME,
-        tab_usage_recorder::USER_BEHAVIOR_COUNT);
+    UMA_HISTOGRAM_ENUMERATION(kDidUserWaitForEvictedTabReload, USER_LEFT_CHROME,
+                              USER_BEHAVIOR_COUNT);
     ResetEvictedTab();
   }
 }
@@ -346,7 +377,7 @@ void TabUsageRecorder::ResetAll() {
 
 void TabUsageRecorder::ResetEvictedTab() {
   evicted_web_state_ = nullptr;
-  evicted_web_state_state_ = tab_usage_recorder::IN_MEMORY;
+  evicted_web_state_state_ = IN_MEMORY;
   evicted_web_state_reload_start_time_ = base::TimeTicks();
 }
 
@@ -371,26 +402,25 @@ bool TabUsageRecorder::WebStateAlreadyEvicted(web::WebState* web_state) {
   return iter != evicted_web_states_.end();
 }
 
-tab_usage_recorder::TabStateWhenSelected TabUsageRecorder::ExtractWebStateState(
+TabUsageRecorder::TabStateWhenSelected TabUsageRecorder::ExtractWebStateState(
     web::WebState* web_state) {
   if (!web_state->IsEvicted())
-    return tab_usage_recorder::IN_MEMORY;
+    return IN_MEMORY;
 
   auto iter = evicted_web_states_.find(web_state);
   if (iter != evicted_web_states_.end()) {
-    tab_usage_recorder::TabStateWhenSelected web_state_state = iter->second;
+    TabStateWhenSelected web_state_state = iter->second;
     evicted_web_states_.erase(iter);
     return web_state_state;
   }
 
-  return tab_usage_recorder::EVICTED;
+  return EVICTED;
 }
 
 void TabUsageRecorder::RecordRestoreStartTime() {
   base::TimeTicks time_now = base::TimeTicks::Now();
   // Record the time delta since the last eviction reload was seen.
-  LOCAL_HISTOGRAM_TIMES(tab_usage_recorder::kTimeBetweenRestores,
-                        time_now - restore_start_time_);
+  LOCAL_HISTOGRAM_TIMES(kTimeBetweenRestores, time_now - restore_start_time_);
   restore_start_time_ = time_now;
   evicted_web_state_reload_start_time_ = time_now;
 }

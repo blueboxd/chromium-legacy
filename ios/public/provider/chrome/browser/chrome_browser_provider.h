@@ -38,7 +38,6 @@ class WebState;
 
 class GURL;
 @protocol LogoVendor;
-@class TabModel;
 @class UITextField;
 @class UIView;
 
@@ -117,10 +116,6 @@ class ChromeBrowserProvider {
   // Allow embedders to block a specific URL.
   virtual bool ShouldBlockUrlDuringRestore(const GURL& url,
                                            web::WebState* web_state);
-
-  // Initializes the cast service.  Should be called soon after the given
-  // |main_tab_model| is created.
-  virtual void InitializeCastService(TabModel* main_tab_model) const;
 
   // Attaches any embedder-specific tab helpers to the given |web_state|.
   virtual void AttachTabHelpers(web::WebState* web_state) const;

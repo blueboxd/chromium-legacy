@@ -142,14 +142,14 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   static void AsyncObliterateStoragePartition(
       BrowserContext* browser_context,
       const std::string& partition_domain,
-      const base::Closure& on_gc_required);
+      base::OnceClosure on_gc_required);
 
   // This function clears the contents of |active_paths| but does not take
   // ownership of the pointer.
   static void GarbageCollectStoragePartitions(
       BrowserContext* browser_context,
       std::unique_ptr<std::unordered_set<base::FilePath>> active_paths,
-      const base::Closure& done);
+      base::OnceClosure done);
 
   static StoragePartition* GetDefaultStoragePartition(
       BrowserContext* browser_context);

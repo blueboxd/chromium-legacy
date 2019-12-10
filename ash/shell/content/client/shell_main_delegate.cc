@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "content/public/utility/utility_thread.h"
-#include "services/service_manager/public/cpp/service.h"
 #include "ui/base/ime/init/input_method_initializer.h"
 #include "ui/base/resource/resource_bundle.h"
 

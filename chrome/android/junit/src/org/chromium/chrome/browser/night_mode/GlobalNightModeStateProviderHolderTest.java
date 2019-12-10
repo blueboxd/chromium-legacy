@@ -17,7 +17,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.settings.themes.ThemePreferences;
+import org.chromium.chrome.browser.settings.themes.ThemeType;
 
 /**
  * Unit tests for {@link GlobalNightModeStateProviderHolder}.
@@ -40,8 +40,7 @@ public class GlobalNightModeStateProviderHolderTest {
         assertFalse(GlobalNightModeStateProviderHolder.getInstance().isInNightMode());
 
         // Verify that night mode cannot be enabled.
-        SharedPreferencesManager.getInstance().writeInt(
-                UI_THEME_SETTING_KEY, ThemePreferences.ThemeSetting.DARK);
+        SharedPreferencesManager.getInstance().writeInt(UI_THEME_SETTING_KEY, ThemeType.DARK);
         assertFalse(GlobalNightModeStateProviderHolder.getInstance().isInNightMode());
     }
 

@@ -54,14 +54,17 @@ struct NGLogicalOutOfFlowPositionedNode {
   NGLogicalStaticPosition static_position;
   // Continuation root of the optional inline container.
   const LayoutInline* inline_container;
+  bool needs_block_offset_adjustment;
 
   NGLogicalOutOfFlowPositionedNode(
       NGBlockNode node,
       NGLogicalStaticPosition static_position,
-      const LayoutInline* inline_container = nullptr)
+      const LayoutInline* inline_container = nullptr,
+      bool needs_block_offset_adjustment = false)
       : node(node),
         static_position(static_position),
-        inline_container(inline_container) {
+        inline_container(inline_container),
+        needs_block_offset_adjustment(needs_block_offset_adjustment) {
     DCHECK(!inline_container ||
            inline_container == inline_container->ContinuationRoot());
   }

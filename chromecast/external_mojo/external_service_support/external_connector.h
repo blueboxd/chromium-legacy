@@ -57,16 +57,8 @@ class ExternalConnector {
   // will remain in progress until the service is registered.
   template <typename Interface>
   void BindInterface(const std::string& service_name,
-                     mojo::InterfacePtr<Interface>* ptr) {
-    BindInterface(service_name, Interface::Name_,
-                  mojo::MakeRequest(ptr).PassMessagePipe());
-  }
-
-  template <typename Interface>
-  void BindInterface(const std::string& service_name,
-                     mojo::PendingRemote<Interface>* ptr) {
-    BindInterface(service_name, Interface::Name_,
-                  ptr->InitWithNewPipeAndPassReceiver().PassPipe());
+                     mojo::PendingReceiver<Interface> receiver) {
+    BindInterface(service_name, Interface::Name_, receiver.PassPipe());
   }
 
   virtual void BindInterface(const std::string& service_name,

@@ -36,6 +36,7 @@
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/sessions/session_ios.h"
+#import "ios/chrome/browser/sessions/session_ios_factory.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
@@ -237,6 +238,8 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   std::unique_ptr<TabUsageRecorder> _tabUsageRecorder;
   // Saves session's state.
   SessionServiceIOS* _sessionService;
+  // Session Factory used to create session data for saving.
+  SessionIOSFactory* _sessionFactory;
 
   // Used to ensure thread-safety of the certificate policy management code.
   base::CancelableTaskTracker _clearPoliciesTaskTracker;
@@ -245,8 +248,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   std::unique_ptr<web::WebStateObserver> _webStateObserver;
 }
 
-// Session window for the contents of the tab model.
-@property(nonatomic, readonly) SessionIOS* sessionForSaving;
 // Whether the underlying WebStateList's web usage is enabled.
 @property(nonatomic, readonly, getter=isWebUsageEnabled) BOOL webUsageEnabled;
 
@@ -306,6 +307,8 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
           PrerenderServiceFactory::GetForBrowserState(browserState));
     }
 
+    _sessionFactory =
+        [[SessionIOSFactory alloc] initWithWebStateList:_webStateList];
     std::unique_ptr<TabModelSyncedWindowDelegate> syncedWindowDelegate =
         std::make_unique<TabModelSyncedWindowDelegate>(_webStateList);
 
@@ -471,6 +474,7 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   if (!_browserState)
     return;
 
+  _sessionFactory = nil;
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   TabModelList::UnregisterTabModelFromChromeBrowserState(_browserState, self);
   _browserState = nullptr;
@@ -508,11 +512,8 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 
   NSString* statePath =
       base::SysUTF8ToNSString(_browserState->GetStatePath().AsUTF8Unsafe());
-  __weak TabModel* weakSelf = self;
-  SessionIOSFactory sessionFactory = ^{
-    return weakSelf.sessionForSaving;
-  };
-  [_sessionService saveSession:sessionFactory
+
+  [_sessionService saveSession:_sessionFactory
                      directory:statePath
                    immediately:immediately];
 }
@@ -530,17 +531,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
     return NO;
 
   return YES;
-}
-
-- (SessionIOS*)sessionForSaving {
-  if (![self canSaveCurrentSession])
-    return nil;
-  // Build the array of sessions. Copy the session objects as the saving will
-  // be done on a separate thread.
-  // TODO(crbug.com/661986): This could get expensive especially since this
-  // window may never be saved (if another call comes in before the delay).
-  return [[SessionIOS alloc]
-      initWithWindows:@[ SerializeWebStateList(_webStateList) ]];
 }
 
 - (BOOL)isWebUsageEnabled {

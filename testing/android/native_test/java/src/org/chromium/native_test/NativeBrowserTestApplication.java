@@ -11,6 +11,8 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BuildConfig;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.multidex.ChromiumMultiDexInstaller;
 
 /**
@@ -21,6 +23,8 @@ public abstract class NativeBrowserTestApplication extends Application {
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
         initApplicationContext();
+
+        setLibraryProcessType();
         if (isMainProcess() || isBrowserProcess()) {
             // We need secondary dex in order to run EmbeddedTestServer in a
             // privileged process.
@@ -30,6 +34,12 @@ public abstract class NativeBrowserTestApplication extends Application {
             CommandLine.init(new String[] {});
             ApplicationStatus.initialize(this);
         }
+    }
+
+    protected void setLibraryProcessType() {
+        LibraryLoader.getInstance().setLibraryProcessType(isBrowserProcess()
+                        ? LibraryProcessType.PROCESS_BROWSER
+                        : LibraryProcessType.PROCESS_CHILD);
     }
 
     /**

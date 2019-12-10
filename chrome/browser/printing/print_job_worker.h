@@ -114,12 +114,16 @@ class PrintJobWorker {
   void PostWaitForPage();
 
 #if defined(OS_WIN)
+  // Windows print GDI-specific handling for OnNewPage().
+  bool OnNewPageHelperGdi();
+
   // Renders a page in the printer.
+  // This is applicable when using the Windows GDI print API.
   void SpoolPage(PrintedPage* page);
-#else
+#endif  // defined(OS_WIN)
+
   // Renders the document to the printer.
   void SpoolJob();
-#endif
 
   // Closes the job since spooling is done.
   void OnDocumentDone();

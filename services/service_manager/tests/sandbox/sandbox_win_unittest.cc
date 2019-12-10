@@ -276,15 +276,15 @@ TEST_F(SandboxWinTest, IsGpuAppContainerEnabled) {
     return;
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   EXPECT_FALSE(service_manager::SandboxWin::IsAppContainerEnabledForSandbox(
-      command_line, SANDBOX_TYPE_GPU));
+      command_line, SandboxType::kGpu));
   command_line.AppendSwitch(switches::kEnableGpuAppContainer);
   EXPECT_TRUE(service_manager::SandboxWin::IsAppContainerEnabledForSandbox(
-      command_line, SANDBOX_TYPE_GPU));
+      command_line, SandboxType::kGpu));
   EXPECT_FALSE(service_manager::SandboxWin::IsAppContainerEnabledForSandbox(
-      command_line, SANDBOX_TYPE_NO_SANDBOX));
+      command_line, SandboxType::kNoSandbox));
   command_line.AppendSwitch(switches::kDisableGpuAppContainer);
   EXPECT_FALSE(service_manager::SandboxWin::IsAppContainerEnabledForSandbox(
-      command_line, SANDBOX_TYPE_GPU));
+      command_line, SandboxType::kGpu));
 }
 
 TEST_F(SandboxWinTest, AppContainerAccessCheckFail) {
@@ -292,8 +292,8 @@ TEST_F(SandboxWinTest, AppContainerAccessCheckFail) {
     return;
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   scoped_refptr<sandbox::AppContainerProfileBase> profile;
-  sandbox::ResultCode result =
-      CreateAppContainerProfile(command_line, true, SANDBOX_TYPE_GPU, &profile);
+  sandbox::ResultCode result = CreateAppContainerProfile(
+      command_line, true, SandboxType::kGpu, &profile);
   EXPECT_EQ(sandbox::SBOX_ERROR_CREATE_APPCONTAINER_PROFILE_ACCESS_CHECK,
             result);
   EXPECT_EQ(nullptr, profile);
@@ -305,7 +305,7 @@ TEST_F(SandboxWinTest, AppContainerCheckProfile) {
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   scoped_refptr<sandbox::AppContainerProfileBase> profile;
   sandbox::ResultCode result = CreateAppContainerProfile(
-      command_line, false, SANDBOX_TYPE_GPU, &profile);
+      command_line, false, SandboxType::kGpu, &profile);
   ASSERT_EQ(sandbox::SBOX_ALL_OK, result);
   ASSERT_NE(nullptr, profile);
   auto package_sid = sandbox::Sid::FromSddlString(kPackageSid);
@@ -323,7 +323,7 @@ TEST_F(SandboxWinTest, AppContainerCheckProfileDisableLpac) {
   command_line.AppendSwitch(switches::kDisableGpuLpac);
   scoped_refptr<sandbox::AppContainerProfileBase> profile;
   sandbox::ResultCode result = CreateAppContainerProfile(
-      command_line, false, SANDBOX_TYPE_GPU, &profile);
+      command_line, false, SandboxType::kGpu, &profile);
   ASSERT_EQ(sandbox::SBOX_ALL_OK, result);
   ASSERT_NE(nullptr, profile);
   EXPECT_FALSE(profile->GetEnableLowPrivilegeAppContainer());
@@ -337,7 +337,7 @@ TEST_F(SandboxWinTest, AppContainerCheckProfileAddCapabilities) {
                                  "  cap1   ,   cap2   ,");
   scoped_refptr<sandbox::AppContainerProfileBase> profile;
   sandbox::ResultCode result = CreateAppContainerProfile(
-      command_line, false, SANDBOX_TYPE_GPU, &profile);
+      command_line, false, SandboxType::kGpu, &profile);
   ASSERT_EQ(sandbox::SBOX_ALL_OK, result);
   ASSERT_NE(nullptr, profile);
   EXPECT_TRUE(CheckCapabilities(profile.get(), {L"cap1", L"cap2"}));

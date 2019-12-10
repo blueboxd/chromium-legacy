@@ -22,6 +22,8 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
+#elif defined(OS_FUCHSIA)
+#include "base/test/icu_test_util.h"
 #elif defined(OS_WIN)
 #include <windows.h>
 #endif
@@ -29,6 +31,14 @@
 namespace base {
 
 namespace {
+
+#if defined(OS_FUCHSIA)
+// Hawaii does not observe daylight saving time, which is useful for having a
+// constant offset when faking the time zone.
+const char kHonoluluTimeZoneId[] = "Pacific/Honolulu";
+const int kHonoluluOffsetHours = -10;
+const int kHonoluluOffsetSeconds = kHonoluluOffsetHours * 60 * 60;
+#endif
 
 TEST(TimeTestOutOfBounds, FromExplodedOutOfBoundsTime) {
   // FromUTCExploded must set time to Time(0) and failure, if the day is set to
@@ -91,6 +101,15 @@ TEST(TimeTestOutOfBounds, FromExplodedOutOfBoundsTime) {
 // See also pr_time_unittests.cc
 class TimeTest : public testing::Test {
  protected:
+#if defined(OS_FUCHSIA)
+  // POSIX local time functions always use UTC on Fuchsia. As this is not very
+  // interesting for any "local" tests, set a different default ICU timezone for
+  // the test. This only affects code that uses ICU, such as Exploded time.
+  // Chicago is a non-Pacific time zone known to observe daylight saving time.
+  TimeTest() : chicago_time_("America/Chicago") {}
+  test::ScopedRestoreDefaultTimezone chicago_time_;
+#endif
+
   void SetUp() override {
     // Use mktime to get a time_t, and turn it into a PRTime by converting
     // seconds to microseconds.  Use 15th Oct 2007 12:45:00 local.  This
@@ -188,10 +207,17 @@ TEST_F(TimeTest, LocalTimeT) {
   // C library time and exploded time.
   time_t now_t_1 = time(nullptr);
   struct tm tms;
+
 #if defined(OS_WIN)
   localtime_s(&tms, &now_t_1);
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#elif defined(OS_POSIX)
   localtime_r(&now_t_1, &tms);
+#elif defined(OS_FUCHSIA)
+  // POSIX local time functions always use UTC on Fuchsia, so set a known time
+  // zone and manually obtain the local |tms| values by using an adjusted input.
+  test::ScopedRestoreDefaultTimezone honolulu_time(kHonoluluTimeZoneId);
+  time_t adjusted_now_t_1 = now_t_1 + kHonoluluOffsetSeconds;
+  localtime_r(&adjusted_now_t_1, &tms);
 #endif
 
   // Convert to ours.
@@ -262,6 +288,8 @@ TEST_F(TimeTest, ZeroIsSymmetric) {
   EXPECT_EQ(0.0, zero_time.ToDoubleT());
 }
 
+// Note that this test does not check whether the implementation correctly
+// accounts for the local time zone.
 TEST_F(TimeTest, LocalExplode) {
   Time a = Time::Now();
   Time::Exploded exploded;
@@ -273,7 +301,7 @@ TEST_F(TimeTest, LocalExplode) {
   // The exploded structure doesn't have microseconds, and on Mac & Linux, the
   // internal OS conversion uses seconds, which will cause truncation. So we
   // can only make sure that the delta is within one second.
-  EXPECT_TRUE((a - b) < TimeDelta::FromSeconds(1));
+  EXPECT_LT(a - b, TimeDelta::FromSeconds(1));
 }
 
 TEST_F(TimeTest, UTCExplode) {
@@ -283,7 +311,11 @@ TEST_F(TimeTest, UTCExplode) {
 
   Time b;
   EXPECT_TRUE(Time::FromUTCExploded(exploded, &b));
-  EXPECT_TRUE((a - b) < TimeDelta::FromSeconds(1));
+
+  // The exploded structure doesn't have microseconds, and on Mac & Linux, the
+  // internal OS conversion uses seconds, which will cause truncation. So we
+  // can only make sure that the delta is within one second.
+  EXPECT_LT(a - b, TimeDelta::FromSeconds(1));
 }
 
 TEST_F(TimeTest, UTCMidnight) {
@@ -295,6 +327,8 @@ TEST_F(TimeTest, UTCMidnight) {
   EXPECT_EQ(0, exploded.millisecond);
 }
 
+// Note that this test does not check whether the implementation correctly
+// accounts for the local time zone.
 TEST_F(TimeTest, LocalMidnight) {
   Time::Exploded exploded;
   Time::Now().LocalMidnight().LocalExplode(&exploded);
@@ -303,6 +337,93 @@ TEST_F(TimeTest, LocalMidnight) {
   EXPECT_EQ(0, exploded.second);
   EXPECT_EQ(0, exploded.millisecond);
 }
+
+// These tests require the ability to fake the local time zone.
+#if defined(OS_FUCHSIA)
+TEST_F(TimeTest, LocalExplodeIsLocal) {
+  // Set the default time zone to a zone with an offset different from UTC.
+  test::ScopedRestoreDefaultTimezone honolulu_time(kHonoluluTimeZoneId);
+
+  // The member contains useful values for this test, which uses it as UTC.
+  Time comparison_time_utc(comparison_time_local_);
+
+  Time::Exploded utc_exploded;
+  comparison_time_utc.UTCExplode(&utc_exploded);
+
+  Time::Exploded local_exploded;
+  comparison_time_utc.LocalExplode(&local_exploded);
+
+  // The year, month, and day are the same because the (negative) offset is
+  // smaller than the hour in the test time. Similarly, there is no underflow
+  // for hour.
+  EXPECT_EQ(utc_exploded.year, local_exploded.year);
+  EXPECT_EQ(utc_exploded.month, local_exploded.month);
+  EXPECT_EQ(utc_exploded.day_of_week, local_exploded.day_of_week);
+  EXPECT_EQ(utc_exploded.day_of_month, local_exploded.day_of_month);
+  EXPECT_EQ(utc_exploded.hour + kHonoluluOffsetHours, local_exploded.hour);
+  EXPECT_EQ(utc_exploded.minute, local_exploded.minute);
+  EXPECT_EQ(utc_exploded.second, local_exploded.second);
+  EXPECT_EQ(utc_exploded.millisecond, local_exploded.millisecond);
+
+  Time time_from_local_exploded;
+  EXPECT_TRUE(
+      Time::FromLocalExploded(local_exploded, &time_from_local_exploded));
+
+  EXPECT_EQ(comparison_time_utc, time_from_local_exploded);
+
+  // Unexplode the local time using the non-local method.
+  // The resulting time should be offset hours earlier.
+  Time time_from_utc_exploded;
+  EXPECT_TRUE(Time::FromUTCExploded(local_exploded, &time_from_utc_exploded));
+  EXPECT_EQ(comparison_time_utc + TimeDelta::FromHours(kHonoluluOffsetHours),
+            time_from_utc_exploded);
+}
+
+TEST_F(TimeTest, LocalMidnightIsLocal) {
+  // Set the default time zone to a zone with an offset different from UTC.
+  test::ScopedRestoreDefaultTimezone honolulu_time(kHonoluluTimeZoneId);
+
+  // The member contains useful values for this test, which uses it as UTC.
+  Time comparison_time_utc(comparison_time_local_);
+
+  Time::Exploded utc_midnight_exploded;
+  comparison_time_utc.UTCMidnight().UTCExplode(&utc_midnight_exploded);
+
+  // Local midnight exploded in UTC will have an offset hour instead of 0.
+  Time::Exploded local_midnight_utc_exploded;
+  comparison_time_utc.LocalMidnight().UTCExplode(&local_midnight_utc_exploded);
+
+  // The year, month, and day are the same because the (negative) offset is
+  // smaller than the hour in the test time and thus both midnights round down
+  // on the same day.
+  EXPECT_EQ(utc_midnight_exploded.year, local_midnight_utc_exploded.year);
+  EXPECT_EQ(utc_midnight_exploded.month, local_midnight_utc_exploded.month);
+  EXPECT_EQ(utc_midnight_exploded.day_of_week,
+            local_midnight_utc_exploded.day_of_week);
+  EXPECT_EQ(utc_midnight_exploded.day_of_month,
+            local_midnight_utc_exploded.day_of_month);
+  EXPECT_EQ(0, utc_midnight_exploded.hour);
+  EXPECT_EQ(0 - kHonoluluOffsetHours, local_midnight_utc_exploded.hour);
+  EXPECT_EQ(0, local_midnight_utc_exploded.minute);
+  EXPECT_EQ(0, local_midnight_utc_exploded.second);
+  EXPECT_EQ(0, local_midnight_utc_exploded.millisecond);
+
+  // Local midnight exploded in local time will have no offset.
+  Time::Exploded local_midnight_exploded;
+  comparison_time_utc.LocalMidnight().LocalExplode(&local_midnight_exploded);
+
+  EXPECT_EQ(utc_midnight_exploded.year, local_midnight_exploded.year);
+  EXPECT_EQ(utc_midnight_exploded.month, local_midnight_exploded.month);
+  EXPECT_EQ(utc_midnight_exploded.day_of_week,
+            local_midnight_exploded.day_of_week);
+  EXPECT_EQ(utc_midnight_exploded.day_of_month,
+            local_midnight_exploded.day_of_month);
+  EXPECT_EQ(0, local_midnight_exploded.hour);
+  EXPECT_EQ(0, local_midnight_exploded.minute);
+  EXPECT_EQ(0, local_midnight_exploded.second);
+  EXPECT_EQ(0, local_midnight_exploded.millisecond);
+}
+#endif  // defined(OS_FUCHSIA)
 
 TEST_F(TimeTest, ParseTimeTest1) {
   time_t current_time = 0;

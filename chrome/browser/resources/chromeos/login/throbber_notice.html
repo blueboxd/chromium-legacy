@@ -11,6 +11,8 @@
   <link rel="stylesheet" href="throbber_notice.css">
   <template>
     <paper-spinner-lite dir="ltr" active></paper-spinner-lite>
-    <div id="spinner-comment"><span>[[text]]</span></div>
+    <div id="spinner-comment" aria-live="polite" aria-label="[[text]]"
+      [[text]]
+    </div>
   </template>
 </dom-module>

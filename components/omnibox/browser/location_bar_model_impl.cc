@@ -188,11 +188,15 @@ const gfx::VectorIcon& LocationBarModelImpl::GetVectorIcon() const {
 
   GURL url = GetURL();
   security_state::SecurityLevel security_level = GetSecurityLevel();
+  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
+      delegate_->GetVisibleSecurityState();
   switch (security_level) {
     case security_state::NONE:
       // Show a danger triangle icon on HTTPS pages with passive mixed content
-      // when kMarkHttpAsParameterDangerWarning is enabled.
-      if (security_state::ShouldDowngradeNeutralStyling(
+      // when kMarkHttpAsParameterDangerWarning is enabled. Only downgrade in
+      // cases where the URL has completed loading.
+      if (visible_security_state->connection_info_initialized &&
+          security_state::ShouldDowngradeNeutralStyling(
               security_level, url,
               base::BindRepeating(&content::IsOriginSecure))) {
         return omnibox::kNotSecureWarningIcon;

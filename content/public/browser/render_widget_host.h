@@ -220,15 +220,16 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // only for test code.
 
   // Add/remove a callback that can handle key presses without requiring focus.
-  typedef base::Callback<bool(const NativeWebKeyboardEvent&)>
-      KeyPressEventCallback;
+  using KeyPressEventCallback =
+      base::RepeatingCallback<bool(const NativeWebKeyboardEvent&)>;
   virtual void AddKeyPressEventCallback(
       const KeyPressEventCallback& callback) = 0;
   virtual void RemoveKeyPressEventCallback(
       const KeyPressEventCallback& callback) = 0;
 
   // Add/remove a callback that can handle all kinds of mouse events.
-  typedef base::Callback<bool(const blink::WebMouseEvent&)> MouseEventCallback;
+  using MouseEventCallback =
+      base::RepeatingCallback<bool(const blink::WebMouseEvent&)>;
   virtual void AddMouseEventCallback(const MouseEventCallback& callback) = 0;
   virtual void RemoveMouseEventCallback(const MouseEventCallback& callback) = 0;
 

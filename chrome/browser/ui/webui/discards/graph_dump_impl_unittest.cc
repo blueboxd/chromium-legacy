@@ -26,6 +26,8 @@ namespace {
 
 using performance_manager::NodeBase;
 
+const std::string kHtmlMimeType = "text/html";
+
 class TestChangeStream : public discards::mojom::GraphChangeStream {
  public:
   using FrameMap = std::map<int64_t, discards::mojom::FrameInfoPtr>;
@@ -158,9 +160,9 @@ TEST_F(DiscardsGraphDumpImplTest, ChangeStream) {
   const GURL kExampleUrl("http://www.example.org");
   int64_t next_navigation_id = 1;
   mock_graph.page->OnMainFrameNavigationCommitted(
-      false, now, next_navigation_id++, kExampleUrl);
+      false, now, next_navigation_id++, kExampleUrl, kHtmlMimeType);
   mock_graph.other_page->OnMainFrameNavigationCommitted(
-      false, now, next_navigation_id++, kExampleUrl);
+      false, now, next_navigation_id++, kExampleUrl, kHtmlMimeType);
 
   auto* main_frame = mock_graph.page->GetMainFrameNodeImpl();
   main_frame->OnNavigationCommitted(kExampleUrl, /* same_document */ false);
@@ -221,7 +223,7 @@ TEST_F(DiscardsGraphDumpImplTest, ChangeStream) {
   // Test change notifications.
   const GURL kAnotherURL("http://www.google.com/");
   mock_graph.page->OnMainFrameNavigationCommitted(
-      false, now, next_navigation_id++, kAnotherURL);
+      false, now, next_navigation_id++, kAnotherURL, kHtmlMimeType);
 
   size_t child_frame_id =
       NodeBase::GetSerializationId(mock_graph.child_frame.get());

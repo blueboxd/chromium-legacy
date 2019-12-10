@@ -14,67 +14,63 @@
 namespace service_manager {
 
 // Defines the sandbox types known within the servicemanager.
-enum SandboxType {
+enum class SandboxType {
   // Not a valid sandbox type.
-  SANDBOX_TYPE_INVALID = -1,
-
-  SANDBOX_TYPE_FIRST_TYPE = 0,  // Placeholder to ease iteration.
+  kInvalid = -1,
 
   // Do not apply any sandboxing to the process.
-  SANDBOX_TYPE_NO_SANDBOX = SANDBOX_TYPE_FIRST_TYPE,
+  kNoSandbox,
 
 #if defined(OS_WIN)
   // Do not apply any sandboxing and elevate the privileges of the process.
-  SANDBOX_TYPE_NO_SANDBOX_AND_ELEVATED_PRIVILEGES,
+  kNoSandboxAndElevatedPrivileges,
 
   // The XR Compositing process.
-  SANDBOX_TYPE_XRCOMPOSITING,
+  kXrCompositing,
 #endif
 
 #if defined(OS_FUCHSIA)
   // Sandbox type for the web::Context process on Fuchsia. Functionally it's an
   // equivalent of the browser process on other platforms.
-  SANDBOX_TYPE_WEB_CONTEXT,
+  kWebContext,
 #endif
 
   // Renderer or worker process. Most common case.
-  SANDBOX_TYPE_RENDERER,
+  kRenderer,
 
   // Utility process is as restrictive as the worker process except full
   // access is allowed to one configurable directory.
-  SANDBOX_TYPE_UTILITY,
+  kUtility,
 
   // GPU process.
-  SANDBOX_TYPE_GPU,
+  kGpu,
 
   // The PPAPI plugin process.
-  SANDBOX_TYPE_PPAPI,
+  kPpapi,
 
   // The network service process.
-  SANDBOX_TYPE_NETWORK,
+  kNetwork,
 
   // The CDM service process.
-  SANDBOX_TYPE_CDM,
+  kCdm,
 
 #if defined(OS_MACOSX)
   // The NaCl loader process.
-  SANDBOX_TYPE_NACL_LOADER,
+  kNaClLoader,
 #endif  // defined(OS_MACOSX)
 
   // The pdf compositor service process.
-  SANDBOX_TYPE_PDF_COMPOSITOR,
+  kPdfCompositor,
 
   // The profiling service process.
-  SANDBOX_TYPE_PROFILING,
+  kProfiling,
 
   // The audio service process.
-  SANDBOX_TYPE_AUDIO,
+  kAudio,
 
 #if defined(OS_CHROMEOS)
-  SANDBOX_TYPE_IME,
+  kIme,
 #endif  // defined(OS_CHROMEOS)
-
-  SANDBOX_TYPE_AFTER_LAST_TYPE,  // Placeholder to ease iteration.
 };
 
 SERVICE_MANAGER_SANDBOX_EXPORT bool IsUnsandboxedSandboxType(

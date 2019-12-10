@@ -23,8 +23,8 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
+#include "components/services/storage/dom_storage/session_storage_metadata.h"
 #include "content/browser/dom_storage/session_storage_data_map.h"
-#include "content/browser/dom_storage/session_storage_metadata.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl_mojo.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/session_storage_usage_info.h"
@@ -175,8 +175,8 @@ class CONTENT_EXPORT SessionStorageContextMojo
   // Object deletion is done through |ShutdownAndDelete()|.
   ~SessionStorageContextMojo() override;
 
-  scoped_refptr<SessionStorageMetadata::MapData> RegisterNewAreaMap(
-      SessionStorageMetadata::NamespaceEntry namespace_entry,
+  scoped_refptr<storage::SessionStorageMetadata::MapData> RegisterNewAreaMap(
+      storage::SessionStorageMetadata::NamespaceEntry namespace_entry,
       const url::Origin& origin);
 
   // SessionStorageAreaImpl::Listener implementation:
@@ -191,7 +191,7 @@ class CONTENT_EXPORT SessionStorageContextMojo
   scoped_refptr<SessionStorageDataMap> MaybeGetExistingDataMapForId(
       const std::vector<uint8_t>& map_number_as_bytes) override;
   void RegisterShallowClonedNamespace(
-      SessionStorageMetadata::NamespaceEntry source_namespace_entry,
+      storage::SessionStorageMetadata::NamespaceEntry source_namespace_entry,
       const std::string& new_namespace_id,
       const SessionStorageNamespaceImplMojo::OriginAreas& clone_from_areas)
       override;
@@ -252,12 +252,11 @@ class CONTENT_EXPORT SessionStorageContextMojo
 
   void GetStatistics(size_t* total_cache_size, size_t* unused_areas_count);
 
-
   void LogDatabaseOpenResult(OpenResult result);
 
   // Since the session storage object hierarchy references iterators owned by
   // the metadata, make sure it is destroyed last on destruction.
-  SessionStorageMetadata metadata_;
+  storage::SessionStorageMetadata metadata_;
 
   BackingMode backing_mode_;
   std::string leveldb_name_;

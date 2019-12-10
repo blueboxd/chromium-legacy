@@ -32,10 +32,9 @@ class P2PSocketDispatcherHost
   ~P2PSocketDispatcherHost() override;
 
   // Starts the RTP packet header dumping.
-  void StartRtpDump(
-      bool incoming,
-      bool outgoing,
-      const RenderProcessHost::WebRtcRtpPacketCallback& packet_callback);
+  void StartRtpDump(bool incoming,
+                    bool outgoing,
+                    RenderProcessHost::WebRtcRtpPacketCallback packet_callback);
 
   // Stops the RTP packet header dumping.
   void StopRtpDump(bool incoming, bool outgoing);

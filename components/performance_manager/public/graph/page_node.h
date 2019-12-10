@@ -84,6 +84,10 @@ class PageNode : public Node {
   // See PageNodeObserver::OnMainFrameNavigationCommitted.
   virtual int64_t GetNavigationID() const = 0;
 
+  // Returns the MIME type of the contents associated with the last committed
+  // navigation event for the main frame of this page.
+  virtual const std::string& GetContentsMimeType() const = 0;
+
   // Returns "zero" if no navigation has happened, otherwise returns the time
   // since the last navigation commit.
   virtual base::TimeDelta GetTimeSinceLastNavigation() const = 0;

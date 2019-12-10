@@ -19,7 +19,7 @@ class CastDownloadManagerDelegate : public content::DownloadManagerDelegate,
   ~CastDownloadManagerDelegate() override;
 
   // content::DownloadManagerDelegate implementation:
-  void GetNextId(const content::DownloadIdCallback& callback) override;
+  void GetNextId(content::DownloadIdCallback callback) override;
   bool DetermineDownloadTarget(
       download::DownloadItem* item,
       const content::DownloadTargetCallback& callback) override;

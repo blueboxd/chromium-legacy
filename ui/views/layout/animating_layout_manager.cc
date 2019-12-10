@@ -19,19 +19,6 @@
 
 namespace views {
 
-namespace {
-
-int GetMainAxis(LayoutOrientation orientation, const gfx::Size& size) {
-  switch (orientation) {
-    case LayoutOrientation::kHorizontal:
-      return size.width();
-    case LayoutOrientation::kVertical:
-      return size.height();
-  }
-}
-
-}  // anonymous namespace
-
 // Holds data about a view that is fading in or out as part of an animation.
 struct AnimatingLayoutManager::LayoutFadeInfo {
   // Whether the view is fading in or out.

@@ -34,6 +34,14 @@ Size& Size::operator=(const CGSize& s) {
 }
 #endif
 
+void Size::operator+=(const Size& size) {
+  Enlarge(size.width(), size.height());
+}
+
+void Size::operator-=(const Size& size) {
+  Enlarge(-size.width(), -size.height());
+}
+
 #if defined(OS_WIN)
 SIZE Size::ToSIZE() const {
   SIZE s;

@@ -76,11 +76,12 @@
 
     <h2>$i18n{textToSpeechPreviewHeading}</h2>
     <div class="settings-box first">
-      <div class="start settings-box-text">
+      <div id="textToSpeechPreviewVoice" class="start settings-box-text"
+          aria-hidden="true">
         $i18n{textToSpeechPreviewVoice}
       </div>
       <select id="previewVoice" class="md-select"
-          label="$i18n{textToSpeechPreviewVoice}"
+          aria-labelledby="textToSpeechPreviewVoice"
           value="{{defaultPreviewVoice}}"
           disabled="[[!hasVoices]]">
         <template is="dom-repeat" id="previewVoiceOptions"

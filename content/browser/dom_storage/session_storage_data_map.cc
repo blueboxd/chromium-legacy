@@ -14,7 +14,7 @@ namespace content {
 // static
 scoped_refptr<SessionStorageDataMap> SessionStorageDataMap::CreateFromDisk(
     Listener* listener,
-    scoped_refptr<SessionStorageMetadata::MapData> map_data,
+    scoped_refptr<storage::SessionStorageMetadata::MapData> map_data,
     storage::AsyncDomStorageDatabase* database) {
   return base::WrapRefCounted(new SessionStorageDataMap(
       listener, std::move(map_data), database, false));
@@ -23,7 +23,7 @@ scoped_refptr<SessionStorageDataMap> SessionStorageDataMap::CreateFromDisk(
 // static
 scoped_refptr<SessionStorageDataMap> SessionStorageDataMap::CreateEmpty(
     Listener* listener,
-    scoped_refptr<SessionStorageMetadata::MapData> map_data,
+    scoped_refptr<storage::SessionStorageMetadata::MapData> map_data,
     storage::AsyncDomStorageDatabase* database) {
   return base::WrapRefCounted(
       new SessionStorageDataMap(listener, std::move(map_data), database, true));
@@ -32,7 +32,7 @@ scoped_refptr<SessionStorageDataMap> SessionStorageDataMap::CreateEmpty(
 // static
 scoped_refptr<SessionStorageDataMap> SessionStorageDataMap::CreateClone(
     Listener* listener,
-    scoped_refptr<SessionStorageMetadata::MapData> map_data,
+    scoped_refptr<storage::SessionStorageMetadata::MapData> map_data,
     scoped_refptr<SessionStorageDataMap> clone_from) {
   return base::WrapRefCounted(new SessionStorageDataMap(
       listener, std::move(map_data), std::move(clone_from)));
@@ -44,7 +44,7 @@ void SessionStorageDataMap::DidCommit(leveldb::Status status) {
 
 SessionStorageDataMap::SessionStorageDataMap(
     Listener* listener,
-    scoped_refptr<SessionStorageMetadata::MapData> map_data,
+    scoped_refptr<storage::SessionStorageMetadata::MapData> map_data,
     storage::AsyncDomStorageDatabase* database,
     bool is_empty)
     : listener_(listener),
@@ -64,7 +64,7 @@ SessionStorageDataMap::SessionStorageDataMap(
 
 SessionStorageDataMap::SessionStorageDataMap(
     Listener* listener,
-    scoped_refptr<SessionStorageMetadata::MapData> map_data,
+    scoped_refptr<storage::SessionStorageMetadata::MapData> map_data,
     scoped_refptr<SessionStorageDataMap> forking_from)
     : listener_(listener),
       clone_from_data_map_(std::move(forking_from)),

@@ -294,16 +294,20 @@ enum class CompositingMode {
   kMaxValue = kMetal
 };
 
+// Intentionally crash with a very descriptive name.
+NOINLINE void IntentionallyCrashBrowserForUnusableGpuProcess() {
+  LOG(FATAL) << "GPU process isn't usable. Goodbye.";
+}
+
 }  // anonymous namespace
 
 GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
     : owner_(owner),
       observer_list_(base::MakeRefCounted<GpuDataManagerObserverList>()) {
   DCHECK(owner_);
+  InitializeGpuModes();
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableGpu)) {
-    DisableHardwareAcceleration();
-  } else if (command_line->HasSwitch(switches::kDisableGpuCompositing)) {
+  if (command_line->HasSwitch(switches::kDisableGpuCompositing)) {
     SetGpuCompositingDisabled();
   }
 
@@ -332,6 +336,39 @@ GpuDataManagerImplPrivate::~GpuDataManagerImplPrivate() {
 #if defined(OS_MACOSX)
   CGDisplayRemoveReconfigurationCallback(DisplayReconfigCallback, owner_);
 #endif
+}
+
+void GpuDataManagerImplPrivate::InitializeGpuModes() {
+  DCHECK_EQ(gpu::GpuMode::UNKNOWN, gpu_mode_);
+  // Android and Chrome OS can't switch to software compositing. If the GPU
+  // process initialization fails or GPU process is too unstable then crash the
+  // browser process to reset everything.
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  // On Windows, with GPU access disabled, the display compositor is run in the
+  // browser process.
+#if defined(OS_WIN)
+  fallback_modes_.push_back(gpu::GpuMode::DISABLED);
+#else
+  fallback_modes_.push_back(gpu::GpuMode::DISPLAY_COMPOSITOR);
+#endif  // OS_WIN
+  if (SwiftShaderAllowed())
+    fallback_modes_.push_back(gpu::GpuMode::SWIFTSHADER);
+#endif  // !OS_ANDROID && !OS_CHROMEOS
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kDisableGpu)) {
+    // On Fuchsia Vulkan must be used when it's enabled by the WebEngine
+    // embedder. Falling back to SW compositing in that case is not supported.
+#if defined(OS_FUCHSIA)
+    fallback_modes_.clear();
+#endif
+
+    // TODO(sgilhuly): Add a way to differentiate between using hardware GL and
+    // hardware Vulkan.
+    fallback_modes_.push_back(gpu::GpuMode::HARDWARE_ACCELERATED);
+  }
+
+  GoToNextGpuMode(/*is_fallback=*/false);
 }
 
 void GpuDataManagerImplPrivate::BlacklistWebGLForTesting() {
@@ -750,15 +787,8 @@ void GpuDataManagerImplPrivate::UpdateGpuPreferences(
 }
 
 void GpuDataManagerImplPrivate::DisableHardwareAcceleration() {
-  if (!HardwareAccelerationEnabled())
-    return;
-
-  SetGpuCompositingDisabled();
-  if (SwiftShaderAllowed()) {
-    gpu_mode_ = gpu::GpuMode::SWIFTSHADER;
-  } else {
-    OnGpuBlocked();
-  }
+  if (gpu_mode_ == gpu::GpuMode::HARDWARE_ACCELERATED)
+    GoToNextGpuMode(/*is_fallback=*/false);
 }
 
 bool GpuDataManagerImplPrivate::HardwareAccelerationEnabled() const {
@@ -766,13 +796,6 @@ bool GpuDataManagerImplPrivate::HardwareAccelerationEnabled() const {
 }
 
 void GpuDataManagerImplPrivate::OnGpuBlocked() {
-  // Decide which gpu mode to use now that gpu access is blocked.
-  if (features::IsVizDisplayCompositorEnabled()) {
-    gpu_mode_ = gpu::GpuMode::DISPLAY_COMPOSITOR;
-  } else {
-    gpu_mode_ = gpu::GpuMode::DISABLED;
-  }
-
   base::Optional<gpu::GpuFeatureInfo> gpu_feature_info_for_hardware_gpu;
   if (gpu_feature_info_.IsInitialized())
     gpu_feature_info_for_hardware_gpu = gpu_feature_info_;
@@ -1008,38 +1031,32 @@ gpu::GpuMode GpuDataManagerImplPrivate::GetGpuMode() const {
 }
 
 void GpuDataManagerImplPrivate::FallBackToNextGpuMode() {
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
-  // Android and Chrome OS can't switch to software compositing. If the GPU
-  // process initialization fails or GPU process is too unstable then crash the
-  // browser process to reset everything.
-  // On Fuchsia Vulkan must be used when it's enabled by the WebEngine embedder.
-  // Falling back to SW compositing in that case is not supported.
+  GoToNextGpuMode(/*is_fallback=*/true);
+}
+
+void GpuDataManagerImplPrivate::GoToNextGpuMode(bool is_fallback) {
+  if (fallback_modes_.empty()) {
 #if defined(OS_ANDROID)
-  FatalGpuProcessLaunchFailureOnBackground();
+    FatalGpuProcessLaunchFailureOnBackground();
 #endif
-  LOG(FATAL) << "GPU process isn't usable. Goodbye.";
-#else
+    IntentionallyCrashBrowserForUnusableGpuProcess();
+  }
+
+  if (is_fallback && gpu_mode_ == gpu::GpuMode::HARDWARE_ACCELERATED)
+    hardware_disabled_by_fallback_ = true;
+  gpu_mode_ = fallback_modes_.back();
+  fallback_modes_.pop_back();
   switch (gpu_mode_) {
     case gpu::GpuMode::HARDWARE_ACCELERATED:
-      hardware_disabled_by_fallback_ = true;
-      DisableHardwareAcceleration();
-      break;
     case gpu::GpuMode::SWIFTSHADER:
-      OnGpuBlocked();
       break;
     case gpu::GpuMode::DISPLAY_COMPOSITOR:
-      // The GPU process is frequently crashing with only the display compositor
-      // running. This should never happen so something is wrong. Crash the
-      // browser process to reset everything.
-      LOG(FATAL) << "The display compositor is frequently crashing. Goodbye.";
-      break;
     case gpu::GpuMode::DISABLED:
+      OnGpuBlocked();
+      break;
     case gpu::GpuMode::UNKNOWN:
-      // We are already at GpuMode::DISABLED. We shouldn't be launching the GPU
-      // process for it to fail.
       NOTREACHED();
   }
-#endif
 }
 
 void GpuDataManagerImplPrivate::RecordCompositingMode() {

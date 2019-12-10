@@ -64,30 +64,12 @@ string16 TimeDurationFormatWithSecondsString(const TimeDelta& delta,
   return str;
 }
 
-class ScopedRestoreDefaultTimezone {
- public:
-  ScopedRestoreDefaultTimezone(const char* zoneid) {
-    original_zone_.reset(icu::TimeZone::createDefault());
-    icu::TimeZone::adoptDefault(icu::TimeZone::createTimeZone(zoneid));
-  }
-  ~ScopedRestoreDefaultTimezone() {
-    icu::TimeZone::adoptDefault(original_zone_.release());
-  }
-
-  ScopedRestoreDefaultTimezone(const ScopedRestoreDefaultTimezone&) = delete;
-  ScopedRestoreDefaultTimezone& operator=(const ScopedRestoreDefaultTimezone&) =
-      delete;
-
- private:
-  std::unique_ptr<icu::TimeZone> original_zone_;
-};
-
 TEST(TimeFormattingTest, TimeFormatTimeOfDayDefault12h) {
   // Test for a locale defaulted to 12h clock.
   // As an instance, we use third_party/icu/source/data/locales/en.txt.
   test::ScopedRestoreICUDefaultLocale restore_locale;
   i18n::SetICUDefaultLocale("en_US");
-  ScopedRestoreDefaultTimezone la_time("America/Los_Angeles");
+  test::ScopedRestoreDefaultTimezone la_time("America/Los_Angeles");
 
   Time time;
   EXPECT_TRUE(Time::FromUTCExploded(kTestDateTimeExploded, &time));
@@ -125,7 +107,7 @@ TEST(TimeFormattingTest, TimeFormatTimeOfDayDefault24h) {
   // As an instance, we use third_party/icu/source/data/locales/en_GB.txt.
   test::ScopedRestoreICUDefaultLocale restore_locale;
   i18n::SetICUDefaultLocale("en_GB");
-  ScopedRestoreDefaultTimezone la_time("America/Los_Angeles");
+  test::ScopedRestoreDefaultTimezone la_time("America/Los_Angeles");
 
   Time time;
   EXPECT_TRUE(Time::FromUTCExploded(kTestDateTimeExploded, &time));
@@ -163,7 +145,7 @@ TEST(TimeFormattingTest, TimeFormatTimeOfDayJP) {
   // As an instance, we use third_party/icu/source/data/locales/ja.txt.
   test::ScopedRestoreICUDefaultLocale restore_locale;
   i18n::SetICUDefaultLocale("ja_JP");
-  ScopedRestoreDefaultTimezone la_time("America/Los_Angeles");
+  test::ScopedRestoreDefaultTimezone la_time("America/Los_Angeles");
 
   Time time;
   EXPECT_TRUE(Time::FromUTCExploded(kTestDateTimeExploded, &time));
@@ -190,7 +172,7 @@ TEST(TimeFormattingTest, TimeFormatTimeOfDayDE) {
   // German uses 24h by default, but uses 'AM', 'PM' for 12h format.
   test::ScopedRestoreICUDefaultLocale restore_locale;
   i18n::SetICUDefaultLocale("de");
-  ScopedRestoreDefaultTimezone la_time("America/Los_Angeles");
+  test::ScopedRestoreDefaultTimezone la_time("America/Los_Angeles");
 
   Time time;
   EXPECT_TRUE(Time::FromUTCExploded(kTestDateTimeExploded, &time));
@@ -226,7 +208,7 @@ TEST(TimeFormattingTest, TimeFormatDateUS) {
   // The date patterns are "EEEE, MMMM d, y", "MMM d, y", and "M/d/yy".
   test::ScopedRestoreICUDefaultLocale restore_locale;
   i18n::SetICUDefaultLocale("en_US");
-  ScopedRestoreDefaultTimezone la_time("America/Los_Angeles");
+  test::ScopedRestoreDefaultTimezone la_time("America/Los_Angeles");
 
   Time time;
   EXPECT_TRUE(Time::FromUTCExploded(kTestDateTimeExploded, &time));
@@ -253,7 +235,7 @@ TEST(TimeFormattingTest, TimeFormatDateGB) {
   // The date patterns are "EEEE, d MMMM y", "d MMM y", and "dd/MM/yyyy".
   test::ScopedRestoreICUDefaultLocale restore_locale;
   i18n::SetICUDefaultLocale("en_GB");
-  ScopedRestoreDefaultTimezone la_time("America/Los_Angeles");
+  test::ScopedRestoreDefaultTimezone la_time("America/Los_Angeles");
 
   Time time;
   EXPECT_TRUE(Time::FromUTCExploded(kTestDateTimeExploded, &time));
@@ -273,7 +255,7 @@ TEST(TimeFormattingTest, TimeFormatDateGB) {
 
 TEST(TimeFormattingTest, TimeFormatWithPattern) {
   test::ScopedRestoreICUDefaultLocale restore_locale;
-  ScopedRestoreDefaultTimezone la_time("America/Los_Angeles");
+  test::ScopedRestoreDefaultTimezone la_time("America/Los_Angeles");
 
   Time time;
   EXPECT_TRUE(Time::FromUTCExploded(kTestDateTimeExploded, &time));
@@ -392,7 +374,7 @@ TEST(TimeFormattingTest, TimeDurationFormatWithSeconds) {
 TEST(TimeFormattingTest, TimeIntervalFormat) {
   test::ScopedRestoreICUDefaultLocale restore_locale;
   i18n::SetICUDefaultLocale("en_US");
-  ScopedRestoreDefaultTimezone la_time("America/Los_Angeles");
+  test::ScopedRestoreDefaultTimezone la_time("America/Los_Angeles");
 
   const Time::Exploded kTestIntervalEndTimeExploded = {
       2011, 5,  6, 28,  // Sat, May 28, 2012

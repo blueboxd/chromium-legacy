@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/ash/vpn_list_forwarder.h"
 
 #include "ash/public/cpp/network_config_service.h"
-#include "ash/public/mojom/constants.mojom.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"

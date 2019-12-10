@@ -58,7 +58,7 @@ public class ChildProcessLauncherTestHelperService extends Service {
     @Override
     public void onCreate() {
         CommandLine.init(null);
-        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_CHILD);
+        LibraryLoader.getInstance().ensureInitialized();
         mHandlerThread.start();
     }
 

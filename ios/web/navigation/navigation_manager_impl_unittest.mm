@@ -83,7 +83,6 @@ class MockNavigationManagerDelegate : public NavigationManagerDelegate {
   MOCK_METHOD1(LoadCurrentItem, void(NavigationInitiationType type));
   MOCK_METHOD0(LoadIfNecessary, void());
   MOCK_METHOD0(Reload, void());
-  MOCK_METHOD1(OnNavigationItemsPruned, void(size_t));
   MOCK_METHOD1(OnNavigationItemCommitted, void(NavigationItem* item));
   MOCK_METHOD0(RemoveWebView, void());
   MOCK_METHOD4(GoToBackForwardListItem,

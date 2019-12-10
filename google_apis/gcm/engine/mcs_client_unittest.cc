@@ -209,23 +209,26 @@ void MCSClientTest::SetUp() {
 }
 
 void MCSClientTest::BuildMCSClient() {
-  gcm_store_.reset(new GCMStoreImpl(
-      temp_directory_.GetPath(), task_environment_.GetMainThreadTaskRunner(),
-      base::WrapUnique<Encryptor>(new FakeEncryptor)));
+  gcm_store_.reset(
+      new GCMStoreImpl(temp_directory_.GetPath(),
+                       /*remove_account_mappings_with_email_key=*/true,
+                       task_environment_.GetMainThreadTaskRunner(),
+                       base::WrapUnique<Encryptor>(new FakeEncryptor)));
   mcs_client_.reset(
       new TestMCSClient(&clock_, &connection_factory_, gcm_store_.get(),
                         base::ThreadTaskRunnerHandle::Get(), &recorder_));
 }
 
 void MCSClientTest::InitializeClient() {
-  gcm_store_->Load(GCMStore::CREATE_IF_MISSING, base::Bind(
-      &MCSClient::Initialize,
-      base::Unretained(mcs_client_.get()),
-      base::Bind(&MCSClientTest::ErrorCallback,
-                 base::Unretained(this)),
-      base::Bind(&MCSClientTest::MessageReceivedCallback,
-                 base::Unretained(this)),
-      base::Bind(&MCSClientTest::MessageSentCallback, base::Unretained(this))));
+  gcm_store_->Load(
+      GCMStore::CREATE_IF_MISSING,
+      base::Bind(
+          &MCSClient::Initialize, base::Unretained(mcs_client_.get()),
+          base::Bind(&MCSClientTest::ErrorCallback, base::Unretained(this)),
+          base::Bind(&MCSClientTest::MessageReceivedCallback,
+                     base::Unretained(this)),
+          base::Bind(&MCSClientTest::MessageSentCallback,
+                     base::Unretained(this))));
   run_loop_->RunUntilIdle();
   run_loop_.reset(new base::RunLoop());
 }

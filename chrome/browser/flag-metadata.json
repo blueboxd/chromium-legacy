@@ -2012,11 +2012,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-viz-display-compositor",
-    "owners": [ "kylechar", "rjkroege" ],
-    "expiry_milestone": 81
-  },
-  {
     "name": "enable-viz-hit-test-surface-layer",
     "owners": [ "yigu", "rjkroege", "kylechar" ],
     "expiry_milestone": 81

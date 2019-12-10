@@ -53,7 +53,7 @@ input.focus();
 input.setSelectionRange(5, 5);  // Move the cursor at the end.
 eventSender.keyDown('Backspace');
 shouldBeTrue('input.validity.tooLong');
-shouldBeFalse('input.disabled = true; input.validity.tooLong');
+shouldBeTrue('input.disabled = true; input.validity.tooLong');
 shouldBeTrue('input.disabled = false; input.validity.tooLong');
 
 debug('');

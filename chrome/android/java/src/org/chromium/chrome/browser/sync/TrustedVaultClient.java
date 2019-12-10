@@ -10,6 +10,7 @@ import android.content.Intent;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.util.IntentUtils;
 
@@ -103,5 +104,14 @@ public class TrustedVaultClient {
     @Nullable
     public Intent createKeyRetrievalIntent() {
         return mBackend.createKeyRetrievalIntent();
+    }
+
+    /**
+     * Forwards calls to Backend.fetchKeys().
+     */
+    @CalledByNative
+    private static byte[][] fetchKeys(String gaiaId) {
+        List<byte[]> keys = get().mBackend.fetchKeys(gaiaId);
+        return keys.toArray(new byte[0][]);
     }
 }

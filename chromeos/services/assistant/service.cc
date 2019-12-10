@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "ash/public/cpp/session/session_controller.h"
-#include "ash/public/mojom/constants.mojom.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"

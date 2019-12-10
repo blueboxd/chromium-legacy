@@ -36,7 +36,7 @@ CreateCompositorCollection() {
       mojom::PaintPreviewCompositorCollection>(
       content::ServiceProcessHost::Options()
           .WithDisplayName(IDS_PAINT_PREVIEW_COMPOSITOR_SERVICE_DISPLAY_NAME)
-          .WithSandboxType(service_manager::SANDBOX_TYPE_PDF_COMPOSITOR)
+          .WithSandboxType(service_manager::SandboxType::kPdfCompositor)
           .Pass());
   mojo::PendingRemote<discardable_memory::mojom::DiscardableSharedMemoryManager>
       discardable_memory_manager;

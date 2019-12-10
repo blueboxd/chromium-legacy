@@ -173,7 +173,8 @@
   self.NTPMediator.consumer = self.headerController;
   self.NTPMediator.dispatcher = self.dispatcher;
   self.NTPMediator.NTPMetrics =
-      [[NTPHomeMetrics alloc] initWithBrowserState:self.browserState];
+      [[NTPHomeMetrics alloc] initWithBrowserState:self.browserState
+                                          webState:self.webState];
   self.NTPMediator.metricsRecorder = self.metricsRecorder;
   self.NTPMediator.suggestionsViewController = self.suggestionsViewController;
   self.NTPMediator.suggestionsMediator = self.contentSuggestionsMediator;

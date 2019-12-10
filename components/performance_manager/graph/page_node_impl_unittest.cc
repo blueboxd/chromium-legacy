@@ -20,6 +20,9 @@ namespace {
 
 using PageNodeImplTest = GraphTestHarness;
 
+const std::string kHtmlMimeType = "text/html";
+const std::string kPdfMimeType = "application/pdf";
+
 }  // namespace
 
 TEST_F(PageNodeImplTest, SafeDowncast) {
@@ -124,9 +127,10 @@ TEST_F(PageNodeImplTest, TimeSinceLastNavigation) {
   // 1st navigation.
   GURL url("http://www.example.org");
   mock_graph.page->OnMainFrameNavigationCommitted(false, base::TimeTicks::Now(),
-                                                  10u, url);
+                                                  10u, url, kHtmlMimeType);
   EXPECT_EQ(url, mock_graph.page->main_frame_url());
   EXPECT_EQ(10u, mock_graph.page->navigation_id());
+  EXPECT_EQ(kHtmlMimeType, mock_graph.page->contents_mime_type());
   AdvanceClock(base::TimeDelta::FromSeconds(11));
   EXPECT_EQ(base::TimeDelta::FromSeconds(11),
             mock_graph.page->TimeSinceLastNavigation());
@@ -134,9 +138,10 @@ TEST_F(PageNodeImplTest, TimeSinceLastNavigation) {
   // 2nd navigation.
   url = GURL("http://www.example.org/bobcat");
   mock_graph.page->OnMainFrameNavigationCommitted(false, base::TimeTicks::Now(),
-                                                  20u, url);
+                                                  20u, url, kHtmlMimeType);
   EXPECT_EQ(url, mock_graph.page->main_frame_url());
   EXPECT_EQ(20u, mock_graph.page->navigation_id());
+  EXPECT_EQ(kHtmlMimeType, mock_graph.page->contents_mime_type());
   AdvanceClock(base::TimeDelta::FromSeconds(17));
   EXPECT_EQ(base::TimeDelta::FromSeconds(17),
             mock_graph.page->TimeSinceLastNavigation());
@@ -144,9 +149,21 @@ TEST_F(PageNodeImplTest, TimeSinceLastNavigation) {
   // Test a same-document navigation.
   url = GURL("http://www.example.org/bobcat#fun");
   mock_graph.page->OnMainFrameNavigationCommitted(true, base::TimeTicks::Now(),
-                                                  30u, url);
+                                                  30u, url, kHtmlMimeType);
   EXPECT_EQ(url, mock_graph.page->main_frame_url());
   EXPECT_EQ(30u, mock_graph.page->navigation_id());
+  EXPECT_EQ(kHtmlMimeType, mock_graph.page->contents_mime_type());
+  AdvanceClock(base::TimeDelta::FromSeconds(17));
+  EXPECT_EQ(base::TimeDelta::FromSeconds(17),
+            mock_graph.page->TimeSinceLastNavigation());
+
+  // Test a navigation to a page with a different MIME type.
+  url = GURL("http://www.example.org/document.pdf");
+  mock_graph.page->OnMainFrameNavigationCommitted(false, base::TimeTicks::Now(),
+                                                  40u, url, kPdfMimeType);
+  EXPECT_EQ(url, mock_graph.page->main_frame_url());
+  EXPECT_EQ(40u, mock_graph.page->navigation_id());
+  EXPECT_EQ(kPdfMimeType, mock_graph.page->contents_mime_type());
   AdvanceClock(base::TimeDelta::FromSeconds(17));
   EXPECT_EQ(base::TimeDelta::FromSeconds(17),
             mock_graph.page->TimeSinceLastNavigation());
@@ -275,14 +292,14 @@ TEST_F(PageNodeImplTest, ObserverWorks) {
   EXPECT_CALL(obs, OnMainFrameUrlChanged(_))
       .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
   // Expect no OnMainFrameDocumentChanged for same-document navigation
-  page_node->OnMainFrameNavigationCommitted(true, base::TimeTicks::Now(),
-                                            ++navigation_id, kTestUrl);
+  page_node->OnMainFrameNavigationCommitted(
+      true, base::TimeTicks::Now(), ++navigation_id, kTestUrl, kHtmlMimeType);
   EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
 
   EXPECT_CALL(obs, OnMainFrameDocumentChanged(_))
       .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
-  page_node->OnMainFrameNavigationCommitted(false, base::TimeTicks::Now(),
-                                            ++navigation_id, kTestUrl);
+  page_node->OnMainFrameNavigationCommitted(
+      false, base::TimeTicks::Now(), ++navigation_id, kTestUrl, kHtmlMimeType);
   EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
 
   EXPECT_CALL(obs, OnTitleUpdated(_))
@@ -321,8 +338,14 @@ TEST_F(PageNodeImplTest, PublicInterface) {
   EXPECT_EQ(page_node->ukm_source_id(), public_page_node->GetUkmSourceID());
   EXPECT_EQ(page_node->lifecycle_state(),
             public_page_node->GetLifecycleState());
+
+  page_node->OnMainFrameNavigationCommitted(false, base::TimeTicks::Now(), 10u,
+                                            GURL("https://foo.com"),
+                                            kHtmlMimeType);
   EXPECT_EQ(page_node->navigation_id(), public_page_node->GetNavigationID());
   EXPECT_EQ(page_node->main_frame_url(), public_page_node->GetMainFrameUrl());
+  EXPECT_EQ(page_node->contents_mime_type(),
+            public_page_node->GetContentsMimeType());
 }
 
 }  // namespace performance_manager

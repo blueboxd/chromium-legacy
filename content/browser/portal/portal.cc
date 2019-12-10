@@ -191,8 +191,9 @@ void Portal::Navigate(const GURL& url,
   // history entries is not useful and would introduce unnecessary complexity.
   // We therefore have portal navigations done with replacement, so that we only
   // have one entry at a time.
-  // TODO(mcnee): A portal can still self-navigate without replacement. Fix this
-  // so that we can enforce this as an invariant.
+  // TODO(mcnee): There are still corner cases (e.g. using window.opener when
+  // it's remote) that could cause a portal to navigate without replacement.
+  // Fix this so that we can enforce this as an invariant.
   constexpr bool should_replace_entry = true;
 
   portal_root->navigator()->NavigateFromFrameProxy(

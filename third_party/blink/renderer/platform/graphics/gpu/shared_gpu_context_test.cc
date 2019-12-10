@@ -209,53 +209,6 @@ TEST_F(SoftwareCompositingTest, CompositingMode) {
   EXPECT_FALSE(SharedGpuContext::IsGpuCompositingEnabled());
 }
 
-class MailboxSharedGpuContextTest : public Test {
- public:
-  void SetUp() override {
-    task_runner_ = base::MakeRefCounted<base::NullTaskRunner>();
-    handle_ = std::make_unique<base::ThreadTaskRunnerHandle>(task_runner_);
-    context_ = viz::TestContextProvider::Create();
-    InitializeSharedGpuContext(context_.get());
-  }
-
-  scoped_refptr<viz::TestContextProvider> context_;
-  scoped_refptr<base::NullTaskRunner> task_runner_;
-  std::unique_ptr<base::ThreadTaskRunnerHandle> handle_;
-};
-
-TEST_F(MailboxSharedGpuContextTest, MailboxCaching) {
-  IntSize size(10, 10);
-  std::unique_ptr<CanvasResourceProvider> resource_provider =
-      CanvasResourceProvider::Create(
-          size,
-          CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage,
-          SharedGpuContext::ContextProviderWrapper(),
-          0,  // msaa_sample_count
-          kLow_SkFilterQuality, CanvasColorParams(),
-          CanvasResourceProvider::kDefaultPresentationMode,
-          nullptr  // canvas_resource_dispatcher
-      );
-  ASSERT_TRUE(resource_provider->IsAccelerated());
-  EXPECT_TRUE(resource_provider && resource_provider->IsValid());
-  scoped_refptr<StaticBitmapImage> image = resource_provider->Snapshot();
-  GLenum texture_target = GL_TEXTURE_2D;
-  gpu::Mailbox mailbox[3];
-
-  // Creating the SkImage representation from the shared image mailbox registers
-  // the same mailbox mapping to this SkImage with the cache. This ensures we
-  // don't recreate a non-shared image mailbox if going from SkImage to mailbox.
-  mailbox[0] = image->GetMailbox();
-  SharedGpuContext::ContextProviderWrapper()->Utils()->GetMailboxForSkImage(
-      mailbox[1], texture_target,
-      image->PaintImageForCurrentFrame().GetSkImage(), GL_NEAREST);
-  EXPECT_EQ(mailbox[0], mailbox[1]);
-
-  SharedGpuContext::ContextProviderWrapper()->Utils()->GetMailboxForSkImage(
-      mailbox[2], texture_target,
-      image->PaintImageForCurrentFrame().GetSkImage(), GL_NEAREST);
-  EXPECT_EQ(mailbox[1], mailbox[2]);
-}
-
 }  // unnamed namespace
 
 }  // blink

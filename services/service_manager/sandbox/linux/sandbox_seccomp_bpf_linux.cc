@@ -156,29 +156,29 @@ std::unique_ptr<BPFBasePolicy> SandboxSeccompBPF::PolicyForSandboxType(
     SandboxType sandbox_type,
     const SandboxSeccompBPF::Options& options) {
   switch (sandbox_type) {
-    case SANDBOX_TYPE_GPU:
+    case SandboxType::kGpu:
       return GetGpuProcessSandbox(options.use_amd_specific_policies);
-    case SANDBOX_TYPE_RENDERER:
+    case SandboxType::kRenderer:
       return std::make_unique<RendererProcessPolicy>();
-    case SANDBOX_TYPE_PPAPI:
+    case SandboxType::kPpapi:
       return std::make_unique<PpapiProcessPolicy>();
-    case SANDBOX_TYPE_UTILITY:
-    case SANDBOX_TYPE_PROFILING:
+    case SandboxType::kUtility:
+    case SandboxType::kProfiling:
       return std::make_unique<UtilityProcessPolicy>();
-    case SANDBOX_TYPE_CDM:
+    case SandboxType::kCdm:
       return std::make_unique<CdmProcessPolicy>();
-    case SANDBOX_TYPE_PDF_COMPOSITOR:
+    case SandboxType::kPdfCompositor:
       return std::make_unique<PdfCompositorProcessPolicy>();
-    case SANDBOX_TYPE_NETWORK:
+    case SandboxType::kNetwork:
       return std::make_unique<NetworkProcessPolicy>();
-    case SANDBOX_TYPE_AUDIO:
+    case SandboxType::kAudio:
       return std::make_unique<AudioProcessPolicy>();
 #if defined(OS_CHROMEOS)
-    case SANDBOX_TYPE_IME:
+    case SandboxType::kIme:
       return std::make_unique<ImeProcessPolicy>();
 #endif  // defined(OS_CHROMEOS)
-    case SANDBOX_TYPE_NO_SANDBOX:
-    default:
+    case SandboxType::kNoSandbox:
+    case SandboxType::kInvalid:
       NOTREACHED();
       return nullptr;
   }
@@ -189,11 +189,11 @@ void SandboxSeccompBPF::RunSandboxSanityChecks(
     SandboxType sandbox_type,
     const SandboxSeccompBPF::Options& options) {
   switch (sandbox_type) {
-    case SANDBOX_TYPE_RENDERER:
-    case SANDBOX_TYPE_GPU:
-    case SANDBOX_TYPE_PPAPI:
-    case SANDBOX_TYPE_PDF_COMPOSITOR:
-    case SANDBOX_TYPE_CDM: {
+    case SandboxType::kRenderer:
+    case SandboxType::kGpu:
+    case SandboxType::kPpapi:
+    case SandboxType::kPdfCompositor:
+    case SandboxType::kCdm: {
       int syscall_ret;
       errno = 0;
 
@@ -216,7 +216,15 @@ void SandboxSeccompBPF::RunSandboxSanityChecks(
       CHECK_EQ(EPERM, errno);
 #endif  // !defined(NDEBUG)
     } break;
-    default:
+#if defined(OS_CHROMEOS)
+    case SandboxType::kIme:
+#endif  // defined(OS_CHROMEOS)
+    case SandboxType::kAudio:
+    case SandboxType::kProfiling:
+    case SandboxType::kNetwork:
+    case SandboxType::kUtility:
+    case SandboxType::kNoSandbox:
+    case SandboxType::kInvalid:
       // Otherwise, no checks required.
       break;
   }

@@ -470,7 +470,7 @@ IN_PROC_BROWSER_TEST_P(AdClickNavigationBrowserTest, UseCounter) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     AdClickNavigationBrowserTest,
     ::testing::Combine(
         ::testing::Values(NavigationInitiationType::kWindowOpen,
@@ -515,7 +515,7 @@ IN_PROC_BROWSER_TEST_P(AdTaggingEventFromSubframeBrowserTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     AdTaggingEventFromSubframeBrowserTest,
     ::testing::Combine(::testing::Bool(), ::testing::Bool()));
 
@@ -547,7 +547,7 @@ IN_PROC_BROWSER_TEST_P(AdTaggingEventWithScriptInStackBrowserTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     AdTaggingEventWithScriptInStackBrowserTest,
     ::testing::Bool());
 

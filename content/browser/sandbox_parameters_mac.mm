@@ -218,33 +218,35 @@ void SetupSandboxParameters(service_manager::SandboxType sandbox_type,
                             const base::CommandLine& command_line,
                             sandbox::SeatbeltExecClient* client) {
   switch (sandbox_type) {
-    case service_manager::SANDBOX_TYPE_AUDIO:
-    case service_manager::SANDBOX_TYPE_NACL_LOADER:
-    case service_manager::SANDBOX_TYPE_PDF_COMPOSITOR:
-    case service_manager::SANDBOX_TYPE_RENDERER:
+    case service_manager::SandboxType::kAudio:
+    case service_manager::SandboxType::kNaClLoader:
+    case service_manager::SandboxType::kPdfCompositor:
+    case service_manager::SandboxType::kRenderer:
       SetupCommonSandboxParameters(client);
       break;
-    case service_manager::SANDBOX_TYPE_GPU:
+    case service_manager::SandboxType::kGpu:
       SetupCommonSandboxParameters(client);
       AddDarwinDirs(client);
       break;
-    case service_manager::SANDBOX_TYPE_CDM:
+    case service_manager::SandboxType::kCdm:
       SetupCDMSandboxParameters(client);
       break;
-    case service_manager::SANDBOX_TYPE_NETWORK:
+    case service_manager::SandboxType::kNetwork:
       SetupNetworkSandboxParameters(client);
       break;
+    case service_manager::SandboxType::kPpapi:
 #if BUILDFLAG(ENABLE_PLUGINS)
-    case service_manager::SANDBOX_TYPE_PPAPI:
       SetupPPAPISandboxParameters(client);
-      break;
 #endif
-    case service_manager::SANDBOX_TYPE_PROFILING:
-    case service_manager::SANDBOX_TYPE_UTILITY:
+      break;
+    case service_manager::SandboxType::kProfiling:
+    case service_manager::SandboxType::kUtility:
       SetupUtilitySandboxParameters(client, command_line);
       break;
-    default:
-      CHECK(false) << "Unhandled parameters for sandbox_type " << sandbox_type;
+    case service_manager::SandboxType::kNoSandbox:
+    case service_manager::SandboxType::kInvalid:
+      CHECK(false) << "Unhandled parameters for sandbox_type "
+                   << static_cast<int>(sandbox_type);
   }
 }
 

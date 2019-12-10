@@ -4,25 +4,17 @@
 
 #include <map>
 
-#import <EarlGrey/EarlGrey.h>
-#import <UIKit/UIKit.h>
-#import <WebKit/WebKit.h>
-#import <XCTest/XCTest.h>
-
 #include "base/feature_list.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #include "ios/web/public/test/http_server/html_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
-#import "ios/web/public/web_state.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -74,8 +66,7 @@
                             destinationURL.GetContent())];
 
   // Verifies that the navigation to the destination page happened.
-  GREYAssertEqual(destinationURL,
-                  chrome_test_util::GetCurrentWebState()->GetVisibleURL(),
+  GREYAssertEqual(destinationURL, [ChromeEarlGrey webStateVisibleURL],
                   @"Did not navigate to the destination url.");
 
   // Verifies that the destination page is shown.
@@ -111,11 +102,7 @@
 // Tests that BVC properly handles open URL. When NTP is visible, the URL
 // should be opened in the same tab (not create a new tab).
 - (void)testOpenURLFromNTP {
-  id<UIApplicationDelegate> appDelegate =
-      [[UIApplication sharedApplication] delegate];
-  [appDelegate application:[UIApplication sharedApplication]
-                   openURL:[NSURL URLWithString:@"https://anything"]
-                   options:[NSDictionary dictionary]];
+  [ChromeEarlGrey applicationOpenURL:GURL("https://anything")];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           "https://anything")]
       assertWithMatcher:grey_notNil()];
@@ -131,11 +118,7 @@
 // tab, the URL should be opened in a new tab, adding to the tab count.
 - (void)testOpenURLFromTab {
   [ChromeEarlGrey loadURL:GURL("https://invalid")];
-  id<UIApplicationDelegate> appDelegate =
-      [[UIApplication sharedApplication] delegate];
-  [appDelegate application:[UIApplication sharedApplication]
-                   openURL:[NSURL URLWithString:@"https://anything"]
-                   options:[NSDictionary dictionary]];
+  [ChromeEarlGrey applicationOpenURL:GURL("https://anything")];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           "https://anything")]
       assertWithMatcher:grey_notNil()];
@@ -147,54 +130,11 @@
 - (void)testOpenURLFromTabSwitcher {
   [ChromeEarlGrey closeCurrentTab];
   [ChromeEarlGrey waitForMainTabCount:0];
-  id<UIApplicationDelegate> appDelegate =
-      [[UIApplication sharedApplication] delegate];
-  [appDelegate application:[UIApplication sharedApplication]
-                   openURL:[NSURL URLWithString:@"https://anything"]
-                   options:[NSDictionary dictionary]];
+  [ChromeEarlGrey applicationOpenURL:GURL("https://anything")];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           "https://anything")]
       assertWithMatcher:grey_notNil()];
   [ChromeEarlGrey waitForMainTabCount:1];
-}
-
-#pragma mark - WebState visibility
-
-// Tests that WebStates are properly marked as shown or hidden when switching
-// tabs.
-- (void)testWebStateVisibilityAfterTabSwitch {
-  const GURL testURL = web::test::HttpServer::MakeUrl("http://origin");
-  const std::string testPageContents("Test Page");
-
-  std::map<GURL, std::string> responses;
-  responses[testURL] = testPageContents;
-  web::test::SetUpSimpleHttpServer(responses);
-
-  // Load the test page.
-  [ChromeEarlGrey loadURL:testURL];
-  [ChromeEarlGrey waitForWebStateContainingText:testPageContents];
-  web::WebState* firstWebState = chrome_test_util::GetCurrentWebState();
-
-  // And do the same in a second tab.
-  [ChromeEarlGrey openNewTab];
-  [ChromeEarlGrey loadURL:testURL];
-  [ChromeEarlGrey waitForWebStateContainingText:testPageContents];
-  web::WebState* secondWebState = chrome_test_util::GetCurrentWebState();
-
-  // Check visibility before and after switching tabs.
-  GREYAssert(secondWebState->IsVisible(), @"secondWebState not visible");
-  GREYAssert(!firstWebState->IsVisible(),
-             @"firstWebState unexpectedly visible");
-
-  [ChromeEarlGrey selectTabAtIndex:0];
-  GREYAssert(firstWebState->IsVisible(), @"firstWebState not visible");
-  GREYAssert(!secondWebState->IsVisible(),
-             @"secondWebState unexpectedly visible");
-
-  [ChromeEarlGrey selectTabAtIndex:1];
-  GREYAssert(secondWebState->IsVisible(), @"secondWebState not visible");
-  GREYAssert(!firstWebState->IsVisible(),
-             @"firstWebState unexpectedly visible");
 }
 
 @end

@@ -55,10 +55,6 @@ namespace keyboard {
 class KeyboardUIFactory;
 }
 
-namespace service_manager {
-class Connector;
-}
-
 namespace ui {
 class ContextFactory;
 class ContextFactoryPrivate;
@@ -321,7 +317,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   BrightnessControlDelegate* brightness_control_delegate() {
     return brightness_control_delegate_.get();
   }
-  service_manager::Connector* connector() { return connector_; }
   CrosDisplayConfig* cros_display_config() {
     return cros_display_config_.get();
   }
@@ -566,8 +561,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   friend class ShellTestApi;
   friend class SmsObserverTest;
 
-  Shell(std::unique_ptr<ShellDelegate> shell_delegate,
-        service_manager::Connector* connector);
+  explicit Shell(std::unique_ptr<ShellDelegate> shell_delegate);
   ~Shell() override;
 
   void Init(ui::ContextFactory* context_factory,
@@ -629,7 +623,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<BacklightsForcedOffSetter> backlights_forced_off_setter_;
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
   std::unique_ptr<CrosDisplayConfig> cros_display_config_;
-  service_manager::Connector* const connector_;
   std::unique_ptr<DesksController> desks_controller_;
   std::unique_ptr<DetachableBaseHandler> detachable_base_handler_;
   std::unique_ptr<DetachableBaseNotificationController>

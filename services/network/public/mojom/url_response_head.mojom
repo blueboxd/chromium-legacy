@@ -122,16 +122,6 @@ struct URLResponseHead {
   // https://fetch.spec.whatwg.org/#concept-response-type
   FetchResponseType response_type;
 
-  // The time immediately before starting ServiceWorker. If the response is not
-  // provided by the ServiceWorker, kept empty.
-  // TODO(ksakamoto): Move this to net::LoadTimingInfo.
-  mojo_base.mojom.TimeTicks service_worker_start_time;
-
-  // The time immediately before dispatching fetch event in ServiceWorker.
-  // If the response is not provided by the ServiceWorker, kept empty.
-  // TODO(ksakamoto): Move this to net::LoadTimingInfo.
-  mojo_base.mojom.TimeTicks service_worker_ready_time;
-
   // True when the response is served from the CacheStorage via the
   // ServiceWorker.
   bool is_in_cache_storage = false;

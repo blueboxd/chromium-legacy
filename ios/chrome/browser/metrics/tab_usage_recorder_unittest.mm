@@ -102,9 +102,8 @@ TEST_F(TabUsageRecorderTest, SwitchBetweenInMemoryTabs) {
   web::TestWebState* mock_tab_b = InsertTestWebState(kURL, IN_MEMORY);
 
   tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
-  histogram_tester_.ExpectUniqueSample(
-      tab_usage_recorder::kSelectedTabHistogramName,
-      tab_usage_recorder::IN_MEMORY, 1);
+  histogram_tester_.ExpectUniqueSample(kSelectedTabHistogramName,
+                                       TabUsageRecorder::IN_MEMORY, 1);
 }
 
 TEST_F(TabUsageRecorderTest, SwitchToEvictedTab) {
@@ -112,9 +111,8 @@ TEST_F(TabUsageRecorderTest, SwitchToEvictedTab) {
   web::TestWebState* mock_tab_b = InsertTestWebState(kURL, NOT_IN_MEMORY);
 
   tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
-  histogram_tester_.ExpectUniqueSample(
-      tab_usage_recorder::kSelectedTabHistogramName,
-      tab_usage_recorder::EVICTED, 1);
+  histogram_tester_.ExpectUniqueSample(kSelectedTabHistogramName,
+                                       TabUsageRecorder::EVICTED, 1);
 }
 
 TEST_F(TabUsageRecorderTest, SwitchFromEvictedTab) {
@@ -122,9 +120,8 @@ TEST_F(TabUsageRecorderTest, SwitchFromEvictedTab) {
   web::TestWebState* mock_tab_b = InsertTestWebState(kURL, IN_MEMORY);
 
   tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
-  histogram_tester_.ExpectUniqueSample(
-      tab_usage_recorder::kSelectedTabHistogramName,
-      tab_usage_recorder::IN_MEMORY, 1);
+  histogram_tester_.ExpectUniqueSample(kSelectedTabHistogramName,
+                                       TabUsageRecorder::IN_MEMORY, 1);
 }
 
 TEST_F(TabUsageRecorderTest, SwitchBetweenEvictedTabs) {
@@ -132,9 +129,8 @@ TEST_F(TabUsageRecorderTest, SwitchBetweenEvictedTabs) {
   web::TestWebState* mock_tab_b = InsertTestWebState(kURL, NOT_IN_MEMORY);
 
   tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
-  histogram_tester_.ExpectUniqueSample(
-      tab_usage_recorder::kSelectedTabHistogramName,
-      tab_usage_recorder::EVICTED, 1);
+  histogram_tester_.ExpectUniqueSample(kSelectedTabHistogramName,
+                                       TabUsageRecorder::EVICTED, 1);
 }
 
 TEST_F(TabUsageRecorderTest, CountPageLoadsBeforeEvictedTab) {
@@ -147,8 +143,8 @@ TEST_F(TabUsageRecorderTest, CountPageLoadsBeforeEvictedTab) {
     tab_usage_recorder_.RecordPageLoadStart(mock_tab_a);
   }
   tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
-  histogram_tester_.ExpectUniqueSample(
-      tab_usage_recorder::kPageLoadsBeforeEvictedTabSelected, kNumReloads, 1);
+  histogram_tester_.ExpectUniqueSample(kPageLoadsBeforeEvictedTabSelected,
+                                       kNumReloads, 1);
 }
 
 // Tests that chrome:// URLs are not counted in page load stats.
@@ -163,8 +159,7 @@ TEST_F(TabUsageRecorderTest, CountNativePageLoadsBeforeEvictedTab) {
   }
 
   tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
-  histogram_tester_.ExpectTotalCount(
-      tab_usage_recorder::kPageLoadsBeforeEvictedTabSelected, 0);
+  histogram_tester_.ExpectTotalCount(kPageLoadsBeforeEvictedTabSelected, 0);
 }
 
 // Tests that page load stats is not updated for an evicted tab that has a
@@ -182,8 +177,7 @@ TEST_F(TabUsageRecorderTest, CountPendingNativePageLoadBeforeEvictedTab) {
   test_navigation_manager->SetPendingItem(item);
 
   tab_usage_recorder_.RecordTabSwitched(old_tab, new_evicted_tab);
-  histogram_tester_.ExpectTotalCount(
-      tab_usage_recorder::kPageLoadsBeforeEvictedTabSelected, 0);
+  histogram_tester_.ExpectTotalCount(kPageLoadsBeforeEvictedTabSelected, 0);
 }
 
 TEST_F(TabUsageRecorderTest, TestColdStartTabs) {
@@ -200,14 +194,12 @@ TEST_F(TabUsageRecorderTest, TestColdStartTabs) {
   tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
   // Switch from B (cold start evicted) to C (evicted).
   tab_usage_recorder_.RecordTabSwitched(mock_tab_b, mock_tab_c);
-  histogram_tester_.ExpectTotalCount(
-      tab_usage_recorder::kSelectedTabHistogramName, 2);
+  histogram_tester_.ExpectTotalCount(kSelectedTabHistogramName, 2);
   histogram_tester_.ExpectBucketCount(
-      tab_usage_recorder::kSelectedTabHistogramName,
-      tab_usage_recorder::EVICTED_DUE_TO_COLD_START, 1);
-  histogram_tester_.ExpectBucketCount(
-      tab_usage_recorder::kSelectedTabHistogramName,
-      tab_usage_recorder::EVICTED, 1);
+      kSelectedTabHistogramName, TabUsageRecorder::EVICTED_DUE_TO_COLD_START,
+      1);
+  histogram_tester_.ExpectBucketCount(kSelectedTabHistogramName,
+                                      TabUsageRecorder::EVICTED, 1);
 }
 
 TEST_F(TabUsageRecorderTest, TestSwitchedModeTabs) {
@@ -220,14 +212,11 @@ TEST_F(TabUsageRecorderTest, TestSwitchedModeTabs) {
   tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
   // Switch from B (incognito evicted) to C (evicted).
   tab_usage_recorder_.RecordTabSwitched(mock_tab_b, mock_tab_c);
-  histogram_tester_.ExpectTotalCount(
-      tab_usage_recorder::kSelectedTabHistogramName, 2);
+  histogram_tester_.ExpectTotalCount(kSelectedTabHistogramName, 2);
   histogram_tester_.ExpectBucketCount(
-      tab_usage_recorder::kSelectedTabHistogramName,
-      tab_usage_recorder::EVICTED_DUE_TO_INCOGNITO, 0);
-  histogram_tester_.ExpectBucketCount(
-      tab_usage_recorder::kSelectedTabHistogramName,
-      tab_usage_recorder::EVICTED, 2);
+      kSelectedTabHistogramName, TabUsageRecorder::EVICTED_DUE_TO_INCOGNITO, 0);
+  histogram_tester_.ExpectBucketCount(kSelectedTabHistogramName,
+                                      TabUsageRecorder::EVICTED, 2);
 }
 
 TEST_F(TabUsageRecorderTest, TestEvictedTabReloadTime) {
@@ -236,8 +225,7 @@ TEST_F(TabUsageRecorderTest, TestEvictedTabReloadTime) {
   tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
   tab_usage_recorder_.RecordPageLoadStart(mock_tab_b);
   tab_usage_recorder_.RecordPageLoadDone(mock_tab_b, true);
-  histogram_tester_.ExpectTotalCount(tab_usage_recorder::kEvictedTabReloadTime,
-                                     1);
+  histogram_tester_.ExpectTotalCount(kEvictedTabReloadTime, 1);
 }
 
 TEST_F(TabUsageRecorderTest, TestEvictedTabReloadSuccess) {
@@ -246,9 +234,8 @@ TEST_F(TabUsageRecorderTest, TestEvictedTabReloadSuccess) {
   tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
   tab_usage_recorder_.RecordPageLoadStart(mock_tab_b);
   tab_usage_recorder_.RecordPageLoadDone(mock_tab_b, true);
-  histogram_tester_.ExpectUniqueSample(
-      tab_usage_recorder::kEvictedTabReloadSuccessRate,
-      tab_usage_recorder::LOAD_SUCCESS, 1);
+  histogram_tester_.ExpectUniqueSample(kEvictedTabReloadSuccessRate,
+                                       TabUsageRecorder::LOAD_SUCCESS, 1);
 }
 
 TEST_F(TabUsageRecorderTest, TestEvictedTabReloadFailure) {
@@ -257,9 +244,8 @@ TEST_F(TabUsageRecorderTest, TestEvictedTabReloadFailure) {
   tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
   tab_usage_recorder_.RecordPageLoadStart(mock_tab_b);
   tab_usage_recorder_.RecordPageLoadDone(mock_tab_b, false);
-  histogram_tester_.ExpectUniqueSample(
-      tab_usage_recorder::kEvictedTabReloadSuccessRate,
-      tab_usage_recorder::LOAD_FAILURE, 1);
+  histogram_tester_.ExpectUniqueSample(kEvictedTabReloadSuccessRate,
+                                       TabUsageRecorder::LOAD_FAILURE, 1);
 }
 
 TEST_F(TabUsageRecorderTest, TestUserWaitedForEvictedTabLoad) {
@@ -269,9 +255,8 @@ TEST_F(TabUsageRecorderTest, TestUserWaitedForEvictedTabLoad) {
   tab_usage_recorder_.RecordPageLoadStart(mock_tab_b);
   tab_usage_recorder_.RecordPageLoadDone(mock_tab_b, true);
   tab_usage_recorder_.RecordTabSwitched(mock_tab_b, mock_tab_a);
-  histogram_tester_.ExpectUniqueSample(
-      tab_usage_recorder::kDidUserWaitForEvictedTabReload,
-      tab_usage_recorder::USER_WAITED, 1);
+  histogram_tester_.ExpectUniqueSample(kDidUserWaitForEvictedTabReload,
+                                       TabUsageRecorder::USER_WAITED, 1);
 }
 
 TEST_F(TabUsageRecorderTest, TestUserDidNotWaitForEvictedTabLoad) {
@@ -280,9 +265,8 @@ TEST_F(TabUsageRecorderTest, TestUserDidNotWaitForEvictedTabLoad) {
   tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
   tab_usage_recorder_.RecordPageLoadStart(mock_tab_b);
   tab_usage_recorder_.RecordTabSwitched(mock_tab_b, mock_tab_a);
-  histogram_tester_.ExpectUniqueSample(
-      tab_usage_recorder::kDidUserWaitForEvictedTabReload,
-      tab_usage_recorder::USER_DID_NOT_WAIT, 1);
+  histogram_tester_.ExpectUniqueSample(kDidUserWaitForEvictedTabReload,
+                                       TabUsageRecorder::USER_DID_NOT_WAIT, 1);
 }
 
 TEST_F(TabUsageRecorderTest, TestUserBackgroundedDuringEvictedTabLoad) {
@@ -291,9 +275,8 @@ TEST_F(TabUsageRecorderTest, TestUserBackgroundedDuringEvictedTabLoad) {
   tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
   tab_usage_recorder_.RecordPageLoadStart(mock_tab_b);
   tab_usage_recorder_.AppDidEnterBackground();
-  histogram_tester_.ExpectUniqueSample(
-      tab_usage_recorder::kDidUserWaitForEvictedTabReload,
-      tab_usage_recorder::USER_LEFT_CHROME, 1);
+  histogram_tester_.ExpectUniqueSample(kDidUserWaitForEvictedTabReload,
+                                       TabUsageRecorder::USER_LEFT_CHROME, 1);
 }
 
 TEST_F(TabUsageRecorderTest, TestTimeBetweenRestores) {
@@ -305,8 +288,7 @@ TEST_F(TabUsageRecorderTest, TestTimeBetweenRestores) {
   tab_usage_recorder_.RecordTabSwitched(mock_tab_b, mock_tab_a);
   // Should record the time since previous restore until this restore.
   tab_usage_recorder_.RecordPageLoadStart(mock_tab_a);
-  histogram_tester_.ExpectTotalCount(tab_usage_recorder::kTimeBetweenRestores,
-                                     2);
+  histogram_tester_.ExpectTotalCount(kTimeBetweenRestores, 2);
 }
 
 TEST_F(TabUsageRecorderTest, TestTimeAfterLastRestore) {
@@ -318,8 +300,7 @@ TEST_F(TabUsageRecorderTest, TestTimeAfterLastRestore) {
   tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
   // Should record nothing.
   tab_usage_recorder_.RecordPageLoadStart(mock_tab_b);
-  histogram_tester_.ExpectTotalCount(tab_usage_recorder::kTimeAfterLastRestore,
-                                     1);
+  histogram_tester_.ExpectTotalCount(kTimeAfterLastRestore, 1);
 }
 
 // Verifies that metrics are recorded correctly when a renderer terminates.
@@ -339,14 +320,12 @@ TEST_F(TabUsageRecorderTest, RendererTerminated) {
   // Add |kExpiredTimesAddedCount| expired timestamps and one recent timestamp
   // to the termination timestamp list.
   for (int seconds = kExpiredTimesAddedCount; seconds > 0; seconds--) {
-    int expired_time_delta =
-        tab_usage_recorder::kSecondsBeforeRendererTermination + seconds;
+    int expired_time_delta = kSecondsBeforeRendererTermination + seconds;
     AddTimeToDequeInTabUsageRecorder(
         now - base::TimeDelta::FromSeconds(expired_time_delta));
   }
   base::TimeTicks recent_time =
-      now - base::TimeDelta::FromSeconds(
-                tab_usage_recorder::kSecondsBeforeRendererTermination / 2);
+      now - base::TimeDelta::FromSeconds(kSecondsBeforeRendererTermination / 2);
   AddTimeToDequeInTabUsageRecorder(recent_time);
 
   mock_tab_a->OnRenderProcessGone();
@@ -355,27 +334,24 @@ TEST_F(TabUsageRecorderTest, RendererTerminated) {
   BOOL saw_memory_warning =
       [defaults boolForKey:previous_session_info_constants::
                                kDidSeeMemoryWarningShortlyBeforeTerminating];
-  histogram_tester_.ExpectUniqueSample(
-      tab_usage_recorder::kRendererTerminationSawMemoryWarning,
-      saw_memory_warning, 1);
-  histogram_tester_.ExpectUniqueSample(
-      tab_usage_recorder::kRendererTerminationAliveRenderers,
-      kAliveTabsCountAtRendererTermination, 1);
+  histogram_tester_.ExpectUniqueSample(kRendererTerminationSawMemoryWarning,
+                                       saw_memory_warning, 1);
+  histogram_tester_.ExpectUniqueSample(kRendererTerminationAliveRenderers,
+                                       kAliveTabsCountAtRendererTermination, 1);
   // Tests that the logged count of recently alive renderers is equal to the
   // live count at termination plus the recent termination and the
   // renderer terminated just now.
   histogram_tester_.ExpectUniqueSample(
-      tab_usage_recorder::kRendererTerminationRecentlyAliveRenderers,
+      kRendererTerminationRecentlyAliveRenderers,
       kAliveTabsCountAtRendererTermination + 2, 1);
 
   // Regression test for crbug.com/935205
   // Terminate the same tab again. Verify that it isn't double-counted.
   mock_tab_a->OnRenderProcessGone();
+  histogram_tester_.ExpectUniqueSample(kRendererTerminationAliveRenderers,
+                                       kAliveTabsCountAtRendererTermination, 1);
   histogram_tester_.ExpectUniqueSample(
-      tab_usage_recorder::kRendererTerminationAliveRenderers,
-      kAliveTabsCountAtRendererTermination, 1);
-  histogram_tester_.ExpectUniqueSample(
-      tab_usage_recorder::kRendererTerminationRecentlyAliveRenderers,
+      kRendererTerminationRecentlyAliveRenderers,
       kAliveTabsCountAtRendererTermination + 2, 1);
 }
 
@@ -390,8 +366,8 @@ TEST_F(TabUsageRecorderTest, SwitchToRendererTerminatedTab) {
   tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
 
   histogram_tester_.ExpectUniqueSample(
-      tab_usage_recorder::kSelectedTabHistogramName,
-      tab_usage_recorder::EVICTED_DUE_TO_RENDERER_TERMINATION, 1);
+      kSelectedTabHistogramName,
+      TabUsageRecorder::EVICTED_DUE_TO_RENDERER_TERMINATION, 1);
 }
 
 // Verifies that Tab.StateAtRendererTermination metric is correctly reported
@@ -404,13 +380,13 @@ TEST_F(TabUsageRecorderTest, StateAtRendererTerminationForeground) {
   mock_tab_a->WasShown();
   mock_tab_a->OnRenderProcessGone();
   histogram_tester_.ExpectBucketCount(
-      tab_usage_recorder::kRendererTerminationStateHistogram,
-      tab_usage_recorder::FOREGROUND_TAB_FOREGROUND_APP, 1);
+      kRendererTerminationStateHistogram,
+      TabUsageRecorder::FOREGROUND_TAB_FOREGROUND_APP, 1);
 
   mock_tab_b->OnRenderProcessGone();
   histogram_tester_.ExpectBucketCount(
-      tab_usage_recorder::kRendererTerminationStateHistogram,
-      tab_usage_recorder::BACKGROUND_TAB_FOREGROUND_APP, 1);
+      kRendererTerminationStateHistogram,
+      TabUsageRecorder::BACKGROUND_TAB_FOREGROUND_APP, 1);
 }
 
 // Verifies that Tab.StateAtRendererTermination metric is correctly reported
@@ -424,13 +400,13 @@ TEST_F(TabUsageRecorderTest, StateAtRendererTerminationBackground) {
   mock_tab_a->WasShown();
   mock_tab_a->OnRenderProcessGone();
   histogram_tester_.ExpectBucketCount(
-      tab_usage_recorder::kRendererTerminationStateHistogram,
-      tab_usage_recorder::FOREGROUND_TAB_BACKGROUND_APP, 1);
+      kRendererTerminationStateHistogram,
+      TabUsageRecorder::FOREGROUND_TAB_BACKGROUND_APP, 1);
 
   mock_tab_b->OnRenderProcessGone();
   histogram_tester_.ExpectBucketCount(
-      tab_usage_recorder::kRendererTerminationStateHistogram,
-      tab_usage_recorder::BACKGROUND_TAB_BACKGROUND_APP, 1);
+      kRendererTerminationStateHistogram,
+      TabUsageRecorder::BACKGROUND_TAB_BACKGROUND_APP, 1);
 }
 
 // Verifies that Tab.StateAtRendererTermination metric is correctly reported
@@ -444,11 +420,11 @@ TEST_F(TabUsageRecorderTest, StateAtRendererTerminationInactive) {
   mock_tab_a->WasShown();
   mock_tab_a->OnRenderProcessGone();
   histogram_tester_.ExpectBucketCount(
-      tab_usage_recorder::kRendererTerminationStateHistogram,
-      tab_usage_recorder::FOREGROUND_TAB_BACKGROUND_APP, 1);
+      kRendererTerminationStateHistogram,
+      TabUsageRecorder::FOREGROUND_TAB_BACKGROUND_APP, 1);
 
   mock_tab_b->OnRenderProcessGone();
   histogram_tester_.ExpectBucketCount(
-      tab_usage_recorder::kRendererTerminationStateHistogram,
-      tab_usage_recorder::BACKGROUND_TAB_BACKGROUND_APP, 1);
+      kRendererTerminationStateHistogram,
+      TabUsageRecorder::BACKGROUND_TAB_BACKGROUND_APP, 1);
 }

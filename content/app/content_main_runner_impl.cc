@@ -484,7 +484,7 @@ int RunZygote(ContentMainDelegate* delegate) {
 
   service_manager::SandboxType sandbox_type =
       service_manager::SandboxTypeFromCommandLine(command_line);
-  if (sandbox_type == service_manager::SANDBOX_TYPE_PROFILING)
+  if (sandbox_type == service_manager::SandboxType::kProfiling)
     sandbox::SetUseLocaltimeOverride(false);
 
   for (size_t i = 0; i < base::size(kMainFunctions); ++i) {

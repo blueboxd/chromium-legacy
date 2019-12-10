@@ -25,25 +25,25 @@ class GURL;
 // selected password will be sent to the current field in the active web state.
 @interface ManualFillPasswordCoordinator : FallbackCoordinator
 
-// The delegate for this coordinator. Delegate class extends
-// FallbackCoordinatorDelegate, and replaces super class delegate.
+// The delegate for this coordinator. Delegate protocol conforms to
+// FallbackCoordinatorDelegate, and replaces the superclass delegate.
 @property(nonatomic, weak) id<PasswordCoordinatorDelegate> delegate;
 
-// Creates a coordinator that uses a |viewController|, |browserState|,
+// Creates a coordinator that uses a |viewController|, |browser|,
 // |URL| and an |injectionHandler|.
-- (instancetype)
-    initWithBaseViewController:(UIViewController*)viewController
-                  browserState:(ios::ChromeBrowserState*)browserState
-                           URL:(const GURL&)URL
-              injectionHandler:(ManualFillInjectionHandler*)injectionHandler
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser
+                                       URL:(const GURL&)URL
+                          injectionHandler:
+                              (ManualFillInjectionHandler*)injectionHandler
     NS_DESIGNATED_INITIALIZER;
 
 // Unavailable, use
-// -initWithBaseViewController:browserState:webStateList:injectionHandler:.
-- (instancetype)
-    initWithBaseViewController:(UIViewController*)viewController
-                  browserState:(ios::ChromeBrowserState*)browserState
-              injectionHandler:(ManualFillInjectionHandler*)injectionHandler
+// -initWithBaseViewController:browser:URL:injectionHandler:.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser
+                          injectionHandler:
+                              (ManualFillInjectionHandler*)injectionHandler
     NS_UNAVAILABLE;
 
 // Presents the password view controller as a popover from the passed button.

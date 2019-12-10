@@ -566,7 +566,7 @@ void SpatialNavigationController::FocusedNodeChanged(Document* document) {
 void SpatialNavigationController::FullscreenStateChanged(Element* element) {
   if (!RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled())
     return;
-  if (IsHTMLMediaElement(element)) {
+  if (IsA<HTMLMediaElement>(element)) {
     element->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
                                kWebFocusTypeSpatialNavigation, nullptr));
   }

@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
-#include "content/browser/dom_storage/session_storage_metadata.h"
+#include "components/services/storage/dom_storage/session_storage_metadata.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -40,26 +40,28 @@ class SessionStorageDataMap;
 // SessionStorageDataMap's StorageArea.
 class CONTENT_EXPORT SessionStorageAreaImpl : public blink::mojom::StorageArea {
  public:
-  using RegisterNewAreaMap =
-      base::RepeatingCallback<scoped_refptr<SessionStorageMetadata::MapData>(
-          SessionStorageMetadata::NamespaceEntry namespace_entry,
+  using RegisterNewAreaMap = base::RepeatingCallback<
+      scoped_refptr<storage::SessionStorageMetadata::MapData>(
+          storage::SessionStorageMetadata::NamespaceEntry namespace_entry,
           const url::Origin& origin)>;
 
   // Creates a area for the given |namespace_entry|-|origin| data area. All
   // StorageArea calls are delegated to the |data_map|. The
   // |register_new_map_callback| is called when a shared |data_map| needs to be
   // forked for the copy-on-write behavior and a new map needs to be registered.
-  SessionStorageAreaImpl(SessionStorageMetadata::NamespaceEntry namespace_entry,
-                         url::Origin origin,
-                         scoped_refptr<SessionStorageDataMap> data_map,
-                         RegisterNewAreaMap register_new_map_callback);
+  SessionStorageAreaImpl(
+      storage::SessionStorageMetadata::NamespaceEntry namespace_entry,
+      url::Origin origin,
+      scoped_refptr<SessionStorageDataMap> data_map,
+      RegisterNewAreaMap register_new_map_callback);
   ~SessionStorageAreaImpl() override;
 
   // Creates a shallow copy clone for the new namespace entry.
   // This doesn't change the refcount of the underlying map - that operation
-  // must be done using SessionStorageMetadata::RegisterShallowClonedNamespace.
+  // must be done using
+  // storage::SessionStorageMetadata::RegisterShallowClonedNamespace.
   std::unique_ptr<SessionStorageAreaImpl> Clone(
-      SessionStorageMetadata::NamespaceEntry namespace_entry);
+      storage::SessionStorageMetadata::NamespaceEntry namespace_entry);
 
   void Bind(
       mojo::PendingAssociatedReceiver<blink::mojom::StorageArea> receiver);
@@ -99,7 +101,7 @@ class CONTENT_EXPORT SessionStorageAreaImpl : public blink::mojom::StorageArea {
   void CreateNewMap(NewMapType map_type,
                     const base::Optional<std::string>& delete_all_source);
 
-  SessionStorageMetadata::NamespaceEntry namespace_entry_;
+  storage::SessionStorageMetadata::NamespaceEntry namespace_entry_;
   url::Origin origin_;
   scoped_refptr<SessionStorageDataMap> shared_data_map_;
   RegisterNewAreaMap register_new_map_callback_;

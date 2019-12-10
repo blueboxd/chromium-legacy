@@ -37,11 +37,12 @@ public class MojoTestRule extends ExternalResource {
 
     public MojoTestRule(@MojoCore int shouldInitMojoCore) {
         mShouldInitCore = shouldInitMojoCore == MojoCore.INITIALIZE;
+        LibraryLoader.getInstance().setLibraryProcessType(LibraryProcessType.PROCESS_BROWSER);
     }
 
     @Override
     protected void before() {
-        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
+        LibraryLoader.getInstance().ensureInitialized();
         if (mShouldInitCore && !sIsCoreInitialized) {
             nativeInitCore();
             sIsCoreInitialized = true;

@@ -162,6 +162,13 @@ class ArcPolicyBridge : public KeyedService,
       const std::string& command,
       mojom::PolicyInstance::OnCommandReceivedCallback callback);
 
+  const std::string& get_arc_policy_for_reporting() {
+    return arc_policy_for_reporting_;
+  }
+  const std::string& get_arc_policy_compliance_report() {
+    return arc_policy_compliance_report_;
+  }
+
  private:
   void InitializePolicyService();
 
@@ -205,6 +212,12 @@ class ArcPolicyBridge : public KeyedService,
 
   // Called when the ARC connection is ready.
   base::OnceClosure on_arc_instance_ready_callback_;
+
+  // Saved last sent ArcPolicy. Should be used only for feedback reporting.
+  std::string arc_policy_for_reporting_;
+  // Saved last received compliance report. Should be used only for feedback
+  // reporting.
+  std::string arc_policy_compliance_report_;
 
   // Must be the last member.
   base::WeakPtrFactory<ArcPolicyBridge> weak_ptr_factory_{this};

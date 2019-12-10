@@ -5,12 +5,14 @@
 package org.chromium.chrome.browser.ui;
 
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ObservableSupplier;
+import org.chromium.base.Supplier;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -29,7 +31,7 @@ import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.metrics.UkmRecorder;
 import org.chromium.chrome.browser.share.ShareDelegate;
-;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
@@ -38,6 +40,8 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinatorFactory;
 import org.chromium.chrome.browser.vr.VrModeObserver;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
+import org.chromium.chrome.browser.widget.ScrimView;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogManagerObserver;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -77,6 +81,12 @@ public class RootUiCoordinator
     private ModalDialogManagerObserver mModalDialogManagerObserver;
 
     private VrModeObserver mVrModeObserver;
+
+    private BottomSheetManager mBottomSheetManager;
+    private BottomSheetController mBottomSheetController;
+    private SnackbarManager mBottomSheetSnackbarManager;
+
+    private ScrimView mScrimView;
 
     /**
      * Create a new {@link RootUiCoordinator} for the given activity.
@@ -154,14 +164,22 @@ public class RootUiCoordinator
             mActivity.getModalDialogManager().removeObserver(mModalDialogManagerObserver);
         }
 
+        if (mBottomSheetController != null) mBottomSheetController.destroy();
+
         mActivity = null;
     }
 
     @Override
-    public void onPreInflationStartup() {}
+    public void onPreInflationStartup() {
+        initializeBottomSheetController();
+    }
 
     @Override
     public void onPostInflationStartup() {
+        ViewGroup coordinator = mActivity.findViewById(R.id.coordinator);
+        mScrimView = new ScrimView(mActivity,
+                mActivity.getStatusBarColorController().getStatusBarScrimDelegate(), coordinator);
+
         mTabThemeColorProvider = new TabThemeColorProvider(mActivity);
         mTabThemeColorProvider.setActivityTabProvider(mActivity.getActivityTabProvider());
 
@@ -410,6 +428,52 @@ public class RootUiCoordinator
         mFindToolbarManager.addObserver(mFindToolbarObserver);
 
         mActivity.getToolbarManager().setFindToolbarManager(mFindToolbarManager);
+    }
+
+    /**
+     * Initialize the {@link BottomSheetController}. The view for this component is not created
+     * until content is requested in the sheet.
+     */
+    private void initializeBottomSheetController() {
+        Supplier<View> sheetViewSupplier = () -> {
+            ViewGroup coordinator = mActivity.findViewById(R.id.coordinator);
+            mActivity.getLayoutInflater().inflate(R.layout.bottom_sheet, coordinator);
+
+            View sheet = coordinator.findViewById(R.id.bottom_sheet);
+
+            mBottomSheetSnackbarManager = new SnackbarManager(mActivity,
+                    sheet.findViewById(R.id.bottom_sheet_snackbar_container),
+                    mActivity.getWindowAndroid());
+
+            return sheet;
+        };
+
+        Supplier<OverlayPanelManager> panelManagerSupplier = ()
+                -> mActivity.getCompositorViewHolder().getLayoutManager().getOverlayPanelManager();
+
+        mBottomSheetController = new BottomSheetController(mActivity.getLifecycleDispatcher(),
+                mActivityTabProvider, this::getScrim, sheetViewSupplier, panelManagerSupplier,
+                mActivity.getFullscreenManager(), mActivity.getWindow(),
+                mActivity.getWindowAndroid().getKeyboardDelegate());
+
+        mBottomSheetManager = new BottomSheetManager(mBottomSheetController, mActivityTabProvider,
+                mActivity::getFullscreenManager, mActivity::getModalDialogManager,
+                this::getBottomSheetSnackbarManager, mActivity);
+    }
+
+    /** @return The {@link BottomSheetController} for this activity. */
+    public BottomSheetController getBottomSheetController() {
+        return mBottomSheetController;
+    }
+
+    /** @return The root coordinator / activity's primary scrim. */
+    public ScrimView getScrim() {
+        return mScrimView;
+    }
+
+    /** @return The {@link SnackbarManager} for the {@link BottomSheetController}. */
+    public SnackbarManager getBottomSheetSnackbarManager() {
+        return mBottomSheetSnackbarManager;
     }
 
     // Testing methods

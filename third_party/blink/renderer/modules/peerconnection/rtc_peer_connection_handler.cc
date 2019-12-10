@@ -2423,6 +2423,10 @@ void RTCPeerConnectionHandler::OnIceCandidateError(const String& host_candidate,
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnIceCandidateError");
 
+  if (peer_connection_tracker_) {
+    peer_connection_tracker_->TrackIceCandidateError(this, host_candidate, url,
+                                                     error_code, error_text);
+  }
   if (!is_closed_) {
     client_->DidFailICECandidate(host_candidate, url, error_code, error_text);
   }

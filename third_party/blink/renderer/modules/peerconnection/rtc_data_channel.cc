@@ -126,6 +126,10 @@ static void ThrowNoBlobSupportException(ExceptionState* exception_state) {
                                      "Blob support not implemented yet");
 }
 
+static void ThrowBufferOverflowException(ExceptionState* exception_state) {
+  exception_state->ThrowRangeError("RTCDataChannel buffer overflow");
+}
+
 RTCDataChannel::Observer::Observer(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread,
     RTCDataChannel* blink_channel,
@@ -360,6 +364,11 @@ void RTCDataChannel::send(const String& data, ExceptionState& exception_state) {
   }
 
   webrtc::DataBuffer data_buffer(data.Utf8());
+  if (!(base::CheckedNumeric<unsigned>(buffered_amount_) + data_buffer.size())
+           .IsValid()) {
+    ThrowBufferOverflowException(&exception_state);
+    return;
+  }
   buffered_amount_ += data_buffer.size();
   RecordMessageSent(*channel().get(), data_buffer.size());
   if (!channel()->Send(data_buffer)) {
@@ -380,6 +389,11 @@ void RTCDataChannel::send(DOMArrayBuffer* data,
   if (!data_length)
     return;
 
+  if (!(base::CheckedNumeric<unsigned>(buffered_amount_) + data_length)
+           .IsValid()) {
+    ThrowBufferOverflowException(&exception_state);
+    return;
+  }
   buffered_amount_ += data_length;
   if (!SendRawData(static_cast<const char*>((data->Data())), data_length)) {
     // TODO(https://crbug.com/937848): Don't throw an exception if data is
@@ -390,7 +404,13 @@ void RTCDataChannel::send(DOMArrayBuffer* data,
 
 void RTCDataChannel::send(NotShared<DOMArrayBufferView> data,
                           ExceptionState& exception_state) {
-  buffered_amount_ += data.View()->deprecatedByteLengthAsUnsigned();
+  if (!(base::CheckedNumeric<unsigned>(buffered_amount_) +
+        data.View()->byteLengthAsSizeT())
+           .IsValid()) {
+    ThrowBufferOverflowException(&exception_state);
+    return;
+  }
+  buffered_amount_ += data.View()->byteLengthAsSizeT();
   if (!SendRawData(static_cast<const char*>(data.View()->BaseAddress()),
                    data.View()->deprecatedByteLengthAsUnsigned())) {
     // TODO(https://crbug.com/937848): Don't throw an exception if data is

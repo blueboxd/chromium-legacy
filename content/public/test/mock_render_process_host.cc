@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/process/process_handle.h"
@@ -467,11 +468,10 @@ void MockRenderProcessHost::EnableAudioDebugRecordings(
 void MockRenderProcessHost::DisableAudioDebugRecordings() {}
 
 RenderProcessHost::WebRtcStopRtpDumpCallback
-MockRenderProcessHost::StartRtpDump(
-    bool incoming,
-    bool outgoing,
-    const WebRtcRtpPacketCallback& packet_callback) {
-  return WebRtcStopRtpDumpCallback();
+MockRenderProcessHost::StartRtpDump(bool incoming,
+                                    bool outgoing,
+                                    WebRtcRtpPacketCallback packet_callback) {
+  return base::NullCallback();
 }
 
 void MockRenderProcessHost::EnableWebRtcEventLogOutput(int lid,

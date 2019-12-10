@@ -42,13 +42,13 @@
 // extends FallbackCoordinatorDelegate)
 @dynamic delegate;
 
-- (instancetype)
-    initWithBaseViewController:(UIViewController*)viewController
-                  browserState:(ios::ChromeBrowserState*)browserState
-                           URL:(const GURL&)URL
-              injectionHandler:(ManualFillInjectionHandler*)injectionHandler {
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser
+                                       URL:(const GURL&)URL
+                          injectionHandler:
+                              (ManualFillInjectionHandler*)injectionHandler {
   self = [super initWithBaseViewController:viewController
-                              browserState:browserState
+                                   browser:browser
                           injectionHandler:injectionHandler];
   if (self) {
     _passwordViewController =
@@ -56,7 +56,7 @@
     _passwordViewController.contentInsetsAlwaysEqualToSafeArea = YES;
 
     auto passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
-        browserState, ServiceAccessType::EXPLICIT_ACCESS);
+        self.browserState, ServiceAccessType::EXPLICIT_ACCESS);
     FaviconLoader* faviconLoader =
         IOSChromeFaviconLoaderFactory::GetForBrowserState(self.browserState);
 

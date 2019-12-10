@@ -13,7 +13,6 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserver;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
@@ -44,6 +43,31 @@ import java.util.PriorityQueue;
  * content was actually shown (see full doc on method).
  */
 public class BottomSheetController implements Destroyable {
+    /**
+     * An interface to pass around the ability to set a view that is obscuring all tabs on the
+     * activity.
+     */
+    public interface ObscuringAllTabsDelegate {
+        /**
+         * Add a view to the set of views that obscure the content of all tabs for
+         * accessibility. As long as this set is nonempty, all tabs should be
+         * hidden from the accessibility tree.
+         *
+         * @param view The view that obscures the contents of all tabs.
+         */
+        void addViewObscuringAllTabs(View view);
+
+        /**
+         * Remove a view that previously obscured the content of all tabs.
+         *
+         * @param view The view that no longer obscures the contents of all tabs.
+         */
+        void removeViewObscuringAllTabs(View view);
+
+        /** @return Whether or not any views obscure all tabs. */
+        boolean isViewObscuringAllTabs();
+    }
+
     /**
      * The base duration of the settling animation of the sheet. 218 ms is a spec for material
      * design (this is the minimum time a user is guaranteed to pay attention to something).
@@ -103,10 +127,10 @@ public class BottomSheetController implements Destroyable {
     private final ChromeFullscreenManager.FullscreenListener mFullscreenListener;
 
     /** The height of the shadow that sits above the toolbar. */
-    private final int mToolbarShadowHeight;
+    private int mToolbarShadowHeight;
 
     /** The offset of the toolbar shadow from the top that remains empty. */
-    private final int mShadowTopOffset;
+    private int mShadowTopOffset;
 
     /** The parameters that control how the scrim behaves while the sheet is open. */
     private ScrimParams mScrimParams;
@@ -148,14 +172,14 @@ public class BottomSheetController implements Destroyable {
      * Build a new controller of the bottom sheet.
      * @param lifecycleDispatcher The {@link ActivityLifecycleDispatcher} for the {@code activity}.
      * @param activityTabProvider The provider of the activity's current tab.
-     * @param scrim The scrim that shows when the bottom sheet is opened.
+     * @param scrim A supplier of the scrim that shows when the bottom sheet is opened.
      * @param bottomSheetViewSupplier A mechanism for creating a {@link BottomSheet}.
      * @param overlayManager A supplier of the manager for overlay panels to attach listeners to.
      *                       This is a supplier to get around wating for native to be initialized.
      * @param fullscreenManager A fullscreen manager for access to browser controls offsets.
      */
     public BottomSheetController(final ActivityLifecycleDispatcher lifecycleDispatcher,
-            final ActivityTabProvider activityTabProvider, final ScrimView scrim,
+            final ActivityTabProvider activityTabProvider, final Supplier<ScrimView> scrim,
             Supplier<View> bottomSheetViewSupplier, Supplier<OverlayPanelManager> overlayManager,
             ChromeFullscreenManager fullscreenManager, Window window,
             KeyboardVisibilityDelegate keyboardDelegate) {
@@ -163,10 +187,6 @@ public class BottomSheetController implements Destroyable {
         mOverlayPanelManager = overlayManager;
         mFullscreenManager = fullscreenManager;
         mPendingSheetObservers = new ArrayList<>();
-        mToolbarShadowHeight =
-                scrim.getResources().getDimensionPixelOffset(BottomSheet.getTopShadowResourceId());
-        mShadowTopOffset = scrim.getResources().getDimensionPixelOffset(
-                BottomSheet.getShadowTopOffsetResourceId());
 
         mPendingSheetObservers.add(new EmptyBottomSheetObserver() {
             /** The token used to enable browser controls persistence. */
@@ -241,10 +261,14 @@ public class BottomSheetController implements Destroyable {
      * @param bottomSheetViewSupplier A means of creating the bottom sheet.
      */
     private void initializeSheet(final ActivityLifecycleDispatcher lifecycleDispatcher,
-            final ScrimView scrim, Supplier<View> bottomSheetViewSupplier, Window window,
+            final Supplier<ScrimView> scrim, Supplier<View> bottomSheetViewSupplier, Window window,
             KeyboardVisibilityDelegate keyboardDelegate) {
         mBottomSheet = (BottomSheet) bottomSheetViewSupplier.get();
         mBottomSheet.init(window, keyboardDelegate);
+        mToolbarShadowHeight = mBottomSheet.getResources().getDimensionPixelOffset(
+                BottomSheet.getTopShadowResourceId());
+        mShadowTopOffset = mBottomSheet.getResources().getDimensionPixelOffset(
+                BottomSheet.getShadowTopOffsetResourceId());
 
         // Initialize the queue with a comparator that checks content priority.
         mContentQueue = new PriorityQueue<>(INITIAL_QUEUE_CAPACITY,
@@ -321,8 +345,8 @@ public class BottomSheetController implements Destroyable {
                     return;
                 }
 
-                scrim.showScrim(mScrimParams);
-                scrim.setViewAlpha(0);
+                scrim.get().showScrim(mScrimParams);
+                scrim.get().setViewAlpha(0);
             }
 
             @Override
@@ -332,7 +356,7 @@ public class BottomSheetController implements Destroyable {
                     return;
                 }
 
-                scrim.hideScrim(true);
+                scrim.get().hideScrim(true);
 
                 // If the sheet is closed, it is an opportunity for another content to try to
                 // take its place if it is a higher priority.
@@ -363,6 +387,15 @@ public class BottomSheetController implements Destroyable {
         mPendingSheetObservers.clear();
 
         mSheetInitializer = null;
+    }
+
+    /**
+     * Create a ScrimParams anchoring on the bottom-sheet view.
+     * @param scrimObserver The scrimObserver to set for the ScrimParams.
+     */
+    public ScrimParams createScrimParams(ScrimObserver scrimObserver) {
+        return new ScrimParams(/*anchorView=*/mBottomSheet, /*showInFrontOfAnchorView=*/false,
+                /*affectsStatusBar=*/true, /*topMargin=*/0, /*observer*/ scrimObserver);
     }
 
     // Destroyable implementation.
@@ -432,14 +465,14 @@ public class BottomSheetController implements Destroyable {
 
     /**
      * Set whether the bottom sheet is obscuring all tabs.
-     * @param activity An activity that knows about tabs.
+     * @param delegate A delegate that provides the functionality of obscuring all tabs.
      * @param isObscuring Whether the bottom sheet is considered to be obscuring.
      */
-    public void setIsObscuringAllTabs(ChromeActivity activity, boolean isObscuring) {
+    public void setIsObscuringAllTabs(ObscuringAllTabsDelegate delegate, boolean isObscuring) {
         if (isObscuring) {
-            activity.addViewObscuringAllTabs(mBottomSheet);
+            delegate.addViewObscuringAllTabs(mBottomSheet);
         } else {
-            activity.removeViewObscuringAllTabs(mBottomSheet);
+            delegate.removeViewObscuringAllTabs(mBottomSheet);
         }
     }
 

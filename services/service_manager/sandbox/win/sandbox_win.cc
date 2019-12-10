@@ -558,8 +558,8 @@ sandbox::ResultCode SetJobMemoryLimit(const base::CommandLine& cmd_line,
   // callers of SetJobLevel, only those in this file.
   SandboxType sandbox_type =
       service_manager::SandboxTypeFromCommandLine(cmd_line);
-  if (sandbox_type == service_manager::SANDBOX_TYPE_GPU ||
-      sandbox_type == service_manager::SANDBOX_TYPE_RENDERER) {
+  if (sandbox_type == SandboxType::kGpu ||
+      sandbox_type == SandboxType::kRenderer) {
     int64_t GB = 1024 * 1024 * 1024;
     // Allow the GPU/RENDERER process's sandbox to access more physical memory
     // if it's available on the system.
@@ -582,13 +582,12 @@ sandbox::ResultCode SetJobMemoryLimit(const base::CommandLine& cmd_line,
 base::string16 GetAppContainerProfileName(
     const std::string& appcontainer_id,
     service_manager::SandboxType sandbox_type) {
-  DCHECK(sandbox_type == service_manager::SANDBOX_TYPE_GPU ||
-         sandbox_type == service_manager::SANDBOX_TYPE_XRCOMPOSITING);
+  DCHECK(sandbox_type == SandboxType::kGpu ||
+         sandbox_type == SandboxType::kXrCompositing);
   auto sha1 = base::SHA1HashString(appcontainer_id);
-  std::string sandbox_base_name =
-      (sandbox_type == service_manager::SANDBOX_TYPE_XRCOMPOSITING)
-          ? std::string("chrome.sandbox.xrdevice")
-          : std::string("chrome.sandbox.gpu");
+  std::string sandbox_base_name = (sandbox_type == SandboxType::kXrCompositing)
+                                      ? std::string("chrome.sandbox.xrdevice")
+                                      : std::string("chrome.sandbox.gpu");
   std::string profile_name = base::StrCat(
       {sandbox_base_name, base::HexEncode(sha1.data(), sha1.size())});
   // CreateAppContainerProfile requires that the profile name is at most 64
@@ -602,17 +601,17 @@ sandbox::ResultCode SetupAppContainerProfile(
     sandbox::AppContainerProfile* profile,
     const base::CommandLine& command_line,
     service_manager::SandboxType sandbox_type) {
-  if (sandbox_type != service_manager::SANDBOX_TYPE_GPU &&
-      sandbox_type != service_manager::SANDBOX_TYPE_XRCOMPOSITING)
+  if (sandbox_type != SandboxType::kGpu &&
+      sandbox_type != SandboxType::kXrCompositing)
     return sandbox::SBOX_ERROR_UNSUPPORTED;
 
-  if (sandbox_type == service_manager::SANDBOX_TYPE_GPU &&
+  if (sandbox_type == SandboxType::kGpu &&
       !profile->AddImpersonationCapability(L"chromeInstallFiles")) {
     DLOG(ERROR) << "AppContainerProfile::AddImpersonationCapability() failed";
     return sandbox::SBOX_ERROR_CREATE_APPCONTAINER_PROFILE_CAPABILITY;
   }
 
-  if (sandbox_type == service_manager::SANDBOX_TYPE_XRCOMPOSITING &&
+  if (sandbox_type == SandboxType::kXrCompositing &&
       !profile->AddCapability(L"chromeInstallFiles")) {
     DLOG(ERROR) << "AppContainerProfile::AddCapability() failed";
     return sandbox::SBOX_ERROR_CREATE_APPCONTAINER_PROFILE_CAPABILITY;
@@ -622,7 +621,7 @@ sandbox::ResultCode SetupAppContainerProfile(
       L"lpacChromeInstallFiles", L"registryRead",
   };
 
-  if (sandbox_type == service_manager::SANDBOX_TYPE_GPU) {
+  if (sandbox_type == SandboxType::kGpu) {
     auto cmdline_caps = base::SplitString(
         command_line.GetSwitchValueNative(
             service_manager::switches::kAddGpuAppContainerCaps),
@@ -630,7 +629,7 @@ sandbox::ResultCode SetupAppContainerProfile(
     base_caps.insert(base_caps.end(), cmdline_caps.begin(), cmdline_caps.end());
   }
 
-  if (sandbox_type == service_manager::SANDBOX_TYPE_XRCOMPOSITING) {
+  if (sandbox_type == SandboxType::kXrCompositing) {
     auto cmdline_caps = base::SplitString(
         command_line.GetSwitchValueNative(
             service_manager::switches::kAddXrAppContainerCaps),
@@ -646,7 +645,7 @@ sandbox::ResultCode SetupAppContainerProfile(
   }
 
   // Enable LPAC for GPU process, but not for XRCompositor service.
-  if (sandbox_type == service_manager::SANDBOX_TYPE_GPU &&
+  if (sandbox_type == SandboxType::kGpu &&
       !command_line.HasSwitch(service_manager::switches::kDisableGpuLpac)) {
     profile->SetEnableLowPrivilegeAppContainer(true);
   }
@@ -770,7 +769,7 @@ sandbox::ResultCode SandboxWin::AddAppContainerProfileToPolicy(
 bool SandboxWin::IsAppContainerEnabledForSandbox(
     const base::CommandLine& command_line,
     SandboxType sandbox_type) {
-  if (sandbox_type != SANDBOX_TYPE_GPU)
+  if (sandbox_type != SandboxType::kGpu)
     return false;
   if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
     return false;
@@ -854,7 +853,7 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
     options.handles_to_inherit = handles_to_inherit;
     BOOL in_job = true;
     // Prior to Windows 8 nested jobs aren't possible.
-    if (sandbox_type == SANDBOX_TYPE_NETWORK &&
+    if (sandbox_type == SandboxType::kNetwork &&
         (base::win::GetVersion() >= base::win::Version::WIN8 ||
          (::IsProcessInJob(::GetCurrentProcess(), nullptr, &in_job) &&
           !in_job))) {
@@ -912,13 +911,13 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
   mitigations = sandbox::MITIGATION_DLL_SEARCH_ORDER;
   if (!cmd_line->HasSwitch(switches::kAllowThirdPartyModules))
     mitigations |= sandbox::MITIGATION_FORCE_MS_SIGNED_BINS;
-  if (sandbox_type == SANDBOX_TYPE_NETWORK ||
-      sandbox_type == SANDBOX_TYPE_AUDIO) {
+  if (sandbox_type == SandboxType::kNetwork ||
+      sandbox_type == SandboxType::kAudio) {
     mitigations |= sandbox::MITIGATION_DYNAMIC_CODE_DISABLE;
   }
   // TODO(wfh): Relax strict handle checks for network process until root cause
   // for this crash can be resolved. See https://crbug.com/939590.
-  if (sandbox_type != SANDBOX_TYPE_NETWORK)
+  if (sandbox_type != SandboxType::kNetwork)
     mitigations |= sandbox::MITIGATION_STRICT_HANDLE_CHECKS;
 
   result = policy->SetDelayedProcessMitigations(mitigations);
@@ -938,7 +937,7 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
 #if !defined(NACL_WIN64)
   if (process_type == service_manager::switches::kRendererProcess ||
       process_type == service_manager::switches::kPpapiPluginProcess ||
-      sandbox_type == service_manager::SANDBOX_TYPE_PDF_COMPOSITOR) {
+      sandbox_type == SandboxType::kPdfCompositor) {
     AddDirectory(base::DIR_WINDOWS_FONTS, NULL, true,
                  sandbox::TargetPolicy::FILES_ALLOW_READONLY, policy.get());
   }

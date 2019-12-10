@@ -185,27 +185,27 @@ bool HTMLInputElement::IsValidValue(const String& value) const {
 }
 
 bool HTMLInputElement::TooLong() const {
-  return willValidate() && TooLong(value(), kCheckDirtyFlag);
+  return TooLong(value(), kCheckDirtyFlag);
 }
 
 bool HTMLInputElement::TooShort() const {
-  return willValidate() && TooShort(value(), kCheckDirtyFlag);
+  return TooShort(value(), kCheckDirtyFlag);
 }
 
 bool HTMLInputElement::TypeMismatch() const {
-  return willValidate() && input_type_->TypeMismatch();
+  return input_type_->TypeMismatch();
 }
 
 bool HTMLInputElement::ValueMissing() const {
-  return willValidate() && input_type_->ValueMissing(value());
+  return input_type_->ValueMissing(value());
 }
 
 bool HTMLInputElement::HasBadInput() const {
-  return willValidate() && input_type_view_->HasBadInput();
+  return input_type_view_->HasBadInput();
 }
 
 bool HTMLInputElement::PatternMismatch() const {
-  return willValidate() && input_type_->PatternMismatch(value());
+  return input_type_->PatternMismatch(value());
 }
 
 bool HTMLInputElement::TooLong(const String& value,
@@ -219,17 +219,14 @@ bool HTMLInputElement::TooShort(const String& value,
 }
 
 bool HTMLInputElement::RangeUnderflow() const {
-  return willValidate() && input_type_->RangeUnderflow(value());
+  return input_type_->RangeUnderflow(value());
 }
 
 bool HTMLInputElement::RangeOverflow() const {
-  return willValidate() && input_type_->RangeOverflow(value());
+  return input_type_->RangeOverflow(value());
 }
 
 String HTMLInputElement::validationMessage() const {
-  if (!willValidate())
-    return String();
-
   if (CustomError())
     return CustomValidationMessage();
 
@@ -237,7 +234,7 @@ String HTMLInputElement::validationMessage() const {
 }
 
 String HTMLInputElement::ValidationSubMessage() const {
-  if (!willValidate() || CustomError())
+  if (CustomError())
     return String();
   return input_type_->ValidationMessage(*input_type_view_).second;
 }
@@ -251,7 +248,7 @@ double HTMLInputElement::Maximum() const {
 }
 
 bool HTMLInputElement::StepMismatch() const {
-  return willValidate() && input_type_->StepMismatch(value());
+  return input_type_->StepMismatch(value());
 }
 
 bool HTMLInputElement::GetAllowedValueStep(Decimal* step) const {

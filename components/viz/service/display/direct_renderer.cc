@@ -129,7 +129,7 @@ void DirectRenderer::Initialize() {
   // Create an overlay validator based on the platform and set it on the newly
   // created processor. This would initialize the strategies on the validator as
   // well.
-  overlay_processor_ = OverlayProcessor::CreateOverlayProcessor(
+  overlay_processor_ = OverlayProcessorInterface::CreateOverlayProcessor(
       output_surface_->AsSkiaOutputSurface(),
       output_surface_->GetSurfaceHandle(), output_surface_->capabilities(),
       *settings_);
@@ -343,7 +343,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
 
   // Before ProcessForOverlay calls into the hardware to ask about whether the
   // overlay setup can be handled, we need to set up the primary plane.
-  OverlayProcessor::OutputSurfaceOverlayPlane* primary_plane = nullptr;
+  OverlayProcessorInterface::OutputSurfaceOverlayPlane* primary_plane = nullptr;
   if (output_surface_->IsDisplayedAsOverlayPlane()) {
     current_frame()->output_surface_plane =
         overlay_processor_->ProcessOutputSurfaceAsOverlay(

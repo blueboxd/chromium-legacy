@@ -29,7 +29,7 @@ P2PSocketDispatcherHost::~P2PSocketDispatcherHost() {}
 void P2PSocketDispatcherHost::StartRtpDump(
     bool incoming,
     bool outgoing,
-    const RenderProcessHost::WebRtcRtpPacketCallback& packet_callback) {
+    RenderProcessHost::WebRtcRtpPacketCallback packet_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if ((!dump_incoming_rtp_packet_ && incoming) ||
       (!dump_outgoing_rtp_packet_ && outgoing)) {
@@ -39,7 +39,7 @@ void P2PSocketDispatcherHost::StartRtpDump(
     if (outgoing)
       dump_outgoing_rtp_packet_ = true;
 
-    packet_callback_ = packet_callback;
+    packet_callback_ = std::move(packet_callback);
     if (trusted_socket_manager_)
       trusted_socket_manager_->StartRtpDump(incoming, outgoing);
   }

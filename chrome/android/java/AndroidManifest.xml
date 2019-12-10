@@ -1135,6 +1135,10 @@ by a child template that "extends" this file.
             </intent-filter>
         </service>
 
+        <!-- Background Task Scheduler alarm receiver -->
+        <receiver android:name="org.chromium.components.background_task_scheduler.BackgroundTaskBroadcastReceiver"
+            android:exported="false" />
+
         <!-- GcmTaskService implementation to wake Chrome on scheduled events -->
         <service android:name="org.chromium.chrome.browser.ChromeBackgroundService"
             android:permission="com.google.android.gms.permission.BIND_NETWORK_TASK_SERVICE"

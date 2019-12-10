@@ -17,9 +17,9 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "components/services/storage/dom_storage/async_dom_storage_database.h"
+#include "components/services/storage/dom_storage/session_storage_metadata.h"
 #include "components/services/storage/dom_storage/storage_area_test_util.h"
 #include "content/browser/dom_storage/session_storage_data_map.h"
-#include "content/browser/dom_storage/session_storage_metadata.h"
 #include "content/test/gmock_util.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -78,8 +78,8 @@ class SessionStorageAreaImplTest : public testing::Test {
   }
   ~SessionStorageAreaImplTest() override = default;
 
-  scoped_refptr<SessionStorageMetadata::MapData> RegisterNewAreaMap(
-      SessionStorageMetadata::NamespaceEntry namespace_entry,
+  scoped_refptr<storage::SessionStorageMetadata::MapData> RegisterNewAreaMap(
+      storage::SessionStorageMetadata::NamespaceEntry namespace_entry,
       const url::Origin& origin) {
     std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> save_tasks;
     auto map_data =
@@ -101,7 +101,7 @@ class SessionStorageAreaImplTest : public testing::Test {
   const url::Origin test_origin1_;
   const url::Origin test_origin2_;
   std::unique_ptr<storage::AsyncDomStorageDatabase> leveldb_database_;
-  SessionStorageMetadata metadata_;
+  storage::SessionStorageMetadata metadata_;
 
   testing::StrictMock<MockListener> listener_;
 };

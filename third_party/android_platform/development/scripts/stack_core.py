@@ -40,6 +40,8 @@ _CHUNK_SIZE = 1000
 _BASE_APK = 'base.apk'
 _FALLBACK_SO = 'libchrome.so'
 
+# pylint: disable=line-too-long
+
 _ABI_LINE = re.compile('ABI: \'(?P<abi>[a-z0-9A-Z]+)\'')
 _PROCESS_INFO_LINE = re.compile('(pid: [0-9]+, tid: [0-9]+.*)')
 # Same as above, but used to extract the pid.
@@ -66,40 +68,43 @@ _LOG_FATAL_LINE = re.compile('(\[FATAL\:.*\].*)$')
 # Or lines from AndroidFeedback crash report system logs like:
 #   03-25 00:51:05.520 I/DEBUG ( 65): #00 pc 001cf42e /data/data/com.my.project/lib/libmyproject.so
 # Please note the spacing differences.
-_TRACE_LINE = re.compile('(.*)\#(?P<frame>[0-9]+)[ \t]+(..)[ \t]+(0x)?(?P<address>[0-9a-f]{0,16})[ \t]+(?P<lib>[^\r\n \t]*)(?P<symbol_present> \((?P<symbol_name>.*)\))?')  # pylint: disable-msg=C6310
+_TRACE_LINE = re.compile(
+    '(.*)\#(?P<frame>[0-9]+)[ \t]+(..)[ \t]+(0x)?(?P<address>[0-9a-f]{0,16})[ \t]+(?P<lib>[^\r\n \t]*)(?P<symbol_present> \((?P<symbol_name>.*)\))?'
+)
 
-def InitWidthRelatedLineMatchers():
-  global _DEBUG_TRACE_LINE, _VALUE_LINE, _CODE_LINE
-  # Matches lines emitted by src/base/debug/stack_trace_android.cc, like:
-  #   #00 0x7324d92d /data/app-lib/org.chromium.native_test-1/libbase.cr.so+0x0006992d
-  # This pattern includes the unused named capture groups <symbol_present> and
-  # <symbol_name> so that it can interoperate with the |_TRACE_LINE| regex.
-  _DEBUG_TRACE_LINE = re.compile(
-      '(.*)(?P<frame>\#[0-9]+ 0x[0-9a-f]{8,16}) '
-      '(?P<lib>[^+]+)\+0x(?P<address>[0-9a-f]{8,16})'
-      '(?P<symbol_present>)(?P<symbol_name>)')
+# Matches lines emitted by src/base/debug/stack_trace_android.cc, like:
+#   #00 0x7324d92d /data/app-lib/org.chromium.native_test-1/libbase.cr.so+0x0006992d
+# This pattern includes the unused named capture groups <symbol_present> and
+# <symbol_name> so that it can interoperate with the |_TRACE_LINE| regex.
+_DEBUG_TRACE_LINE = re.compile('(.*)(?P<frame>\#[0-9]+ 0x[0-9a-f]{8,16}) '
+                               '(?P<lib>[^+]+)\+0x(?P<address>[0-9a-f]{8,16})'
+                               '(?P<symbol_present>)(?P<symbol_name>)')
 
-  # Examples of matched value lines include:
-  #   bea4170c  8018e4e9  /data/data/com.my.project/lib/libmyproject.so
-  #   bea4170c  8018e4e9  /data/data/com.my.project/lib/libmyproject.so (symbol)
-  #   03-25 00:51:05.530 I/DEBUG ( 65): bea4170c 8018e4e9 /data/data/com.my.project/lib/libmyproject.so
-  # Again, note the spacing differences.
-  _VALUE_LINE = re.compile('(.*)([0-9a-f]{8,16})[ \t]+([0-9a-f]{8,16})[ \t]+([^\r\n \t]*)( \((.*)\))?')
-  # Lines from 'code around' sections of the output will be matched before
-  # value lines because otheriwse the 'code around' sections will be confused as
-  # value lines.
-  #
-  # Examples include:
-  #   801cf40c ffffc4cc 00b2f2c5 00b2f1c7 00c1e1a8
-  #   03-25 00:51:05.530 I/DEBUG ( 65): 801cf40c ffffc4cc 00b2f2c5 00b2f1c7 00c1e1a8
-  _CODE_LINE = re.compile('(.*)[ \t]*[a-f0-9]{8,16}[ \t]*[a-f0-9]{8,16}' +
-                          '[ \t]*[a-f0-9]{8,16}[ \t]*[a-f0-9]{8,16}' +
-                          '[ \t]*[a-f0-9]{8,16}[ \t]*[ \r\n]')  # pylint: disable-msg=C6310
+# Examples of matched value lines include:
+#   bea4170c  8018e4e9  /data/data/com.my.project/lib/libmyproject.so
+#   bea4170c  8018e4e9  /data/data/com.my.project/lib/libmyproject.so (symbol)
+#   03-25 00:51:05.530 I/DEBUG ( 65): bea4170c 8018e4e9 /data/data/com.my.project/lib/libmyproject.so
+# Again, note the spacing differences.
+_VALUE_LINE = re.compile(
+    '(.*)([0-9a-f]{8,16})[ \t]+([0-9a-f]{8,16})[ \t]+([^\r\n \t]*)( \((.*)\))?')
+# Lines from 'code around' sections of the output will be matched before
+# value lines because otheriwse the 'code around' sections will be confused as
+# value lines.
+#
+# Examples include:
+#   801cf40c ffffc4cc 00b2f2c5 00b2f1c7 00c1e1a8
+#   03-25 00:51:05.530 I/DEBUG ( 65): 801cf40c ffffc4cc 00b2f2c5 00b2f1c7 00c1e1a8
+_CODE_LINE = re.compile('(.*)[ \t]*[a-f0-9]{8,16}[ \t]*[a-f0-9]{8,16}' +
+                        '[ \t]*[a-f0-9]{8,16}[ \t]*[a-f0-9]{8,16}' +
+                        '[ \t]*[a-f0-9]{8,16}[ \t]*[ \r\n]')
 
 # This pattern is used to find shared library offset in APK.
 # Example:
 #    (offset 0x568000)
 _SHARED_LIB_OFFSET_IN_APK = re.compile(' \(offset 0x(?P<offset>[0-9a-f]{0,16})\)')
+
+# pylint: enable=line-too-long
+
 
 def PrintTraceLines(trace_lines):
   """Print back trace."""
@@ -122,14 +127,16 @@ def PrintValueLines(value_lines):
   print '  ADDR      VALUE     ' + 'FUNCTION'.ljust(maxlen) + '  FILE:LINE'
   for vl in value_lines:
     (addr, value, symbol_with_offset, location) = vl
-    print '  %8s  %8s  %s  %s' % (addr, value, symbol_with_offset.ljust(maxlen), location)
+    print '  %8s  %8s  %s  %s' % (addr, value, symbol_with_offset.ljust(maxlen),
+                                  location)
   return
 
 
 def PrintJavaLines(java_lines):
   """Print java stderr lines."""
   print
-  print 'Java stderr from crashing pid (may identify underlying Java exception):'
+  print('Java stderr from crashing pid '
+        '(may identify underlying Java exception):')
   for l in java_lines:
     if l.startswith('at'):
       print ' ',
@@ -154,10 +161,9 @@ def PrintDivider():
   print '-----------------------------------------------------\n'
 
 
-def StreamingConvertTrace(input, load_vaddrs, more_info, fallback_monochrome,
+def StreamingConvertTrace(_, load_vaddrs, more_info, fallback_monochrome,
                           arch_defined, llvm_symbolizer, apks_directory):
   """Symbolize stacks on the fly as they are read from an input stream."""
-  InitWidthRelatedLineMatchers()
 
   if fallback_monochrome:
     global _FALLBACK_SO
@@ -200,7 +206,6 @@ def StreamingConvertTrace(input, load_vaddrs, more_info, fallback_monochrome,
 def ConvertTrace(lines, load_vaddrs, more_info, fallback_monochrome,
                  arch_defined, llvm_symbolizer, apks_directory):
   """Convert strings containing native crash to a stack."""
-  InitWidthRelatedLineMatchers()
 
   if fallback_monochrome:
     global _FALLBACK_SO
@@ -418,7 +423,7 @@ def ResolveCrashSymbol(lines, more_info, llvm_symbolizer):
 
     match = _TRACE_LINE.match(line) or _DEBUG_TRACE_LINE.match(line)
     if match:
-      frame, code_addr, area, symbol_present, symbol_name = match.group(
+      frame, code_addr, area, _, symbol_name = match.group(
           'frame', 'address', 'lib', 'symbol_present', 'symbol_name')
       logging.debug('Found trace line: %s' % line.strip())
 
@@ -459,7 +464,7 @@ def ResolveCrashSymbol(lines, more_info, llvm_symbolizer):
                                 source_location))
     match = _VALUE_LINE.match(line)
     if match:
-      (unused_, addr, value, area, symbol_present, symbol_name) = match.groups()
+      (_, addr, value, area, _, symbol_name) = match.groups()
       if area == UNKNOWN or area == HEAP or area == STACK or not area:
         value_lines.append((addr, value, '', area))
       else:
@@ -500,7 +505,7 @@ def GetUncompressedSharedLibraryFromAPK(apkname, offset):
   sosize = 0
   with zipfile.ZipFile(apkname, 'r') as apk:
     for infoList in apk.infolist():
-      filename, file_extension = os.path.splitext(infoList.filename)
+      _, file_extension = os.path.splitext(infoList.filename)
       if (file_extension == '.so' and
            infoList.file_size == infoList.compress_size):
         with open(apkname, 'rb') as f:
@@ -527,8 +532,8 @@ def _GetSharedLibraryInHost(soname, sosize, dirs):
   Returns:
     host library path if found, or None
   """
-  for dir in dirs:
-    host_so_file = os.path.join(dir, os.path.basename(soname))
+  for d in dirs:
+    host_so_file = os.path.join(d, os.path.basename(soname))
     if not os.path.isfile(host_so_file):
       continue
     if os.path.getsize(host_so_file) != sosize:

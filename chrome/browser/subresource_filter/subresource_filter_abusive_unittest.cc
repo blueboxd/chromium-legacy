@@ -152,7 +152,7 @@ TEST_P(SubresourceFilterAbusiveTest, ConfigCombination) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     SubresourceFilterAbusiveTest,
     ::testing::Combine(
         ::testing::Values(METADATA_WARN, METADATA_ENFORCE, METADATA_NONE),

@@ -12,6 +12,8 @@
 #import "components/autofill/ios/browser/personal_data_manager_observer_bridge.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/address_list_delegate.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/address_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_address_mediator.h"
@@ -49,19 +51,22 @@
 // FallbackCoordinatorDelegate)
 @dynamic delegate;
 
-- (instancetype)
-initWithBaseViewController:(UIViewController*)viewController
-              browserState:(ios::ChromeBrowserState*)browserState
-          injectionHandler:(ManualFillInjectionHandler*)injectionHandler {
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser
+                          injectionHandler:
+                              (ManualFillInjectionHandler*)injectionHandler {
   self = [super initWithBaseViewController:viewController
-                              browserState:browserState
+                                   browser:browser
                           injectionHandler:injectionHandler];
   if (self) {
     _addressViewController = [[AddressViewController alloc] init];
     _addressViewController.contentInsetsAlwaysEqualToSafeArea = YES;
 
+    // Service must use regular browser state, even if the Browser has an
+    // OTR browser state.
     _personalDataManager =
-        autofill::PersonalDataManagerFactory::GetForBrowserState(browserState);
+        autofill::PersonalDataManagerFactory::GetForBrowserState(
+            super.browserState->GetOriginalChromeBrowserState());
     DCHECK(_personalDataManager);
 
     _personalDataManagerObserver.reset(
@@ -74,7 +79,7 @@ initWithBaseViewController:(UIViewController*)viewController
     _addressMediator =
         [[ManualFillAddressMediator alloc] initWithProfiles:profiles];
     _addressMediator.navigationDelegate = self;
-    _addressMediator.contentInjector = self.injectionHandler;
+    _addressMediator.contentInjector = super.injectionHandler;
     _addressMediator.consumer = _addressViewController;
   }
   return self;

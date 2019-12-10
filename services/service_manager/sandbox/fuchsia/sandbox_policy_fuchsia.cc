@@ -50,7 +50,7 @@ enum SandboxFeature {
 
   // Uses a service directory channel that is explicitly passed by the caller
   // instead of automatically connecting to the service directory of the current
-  // process' namespace. Intended for use by SANDBOX_TYPE_WEB_CONTEXT.
+  // process' namespace. Intended for use by SandboxType::kWebContext.
   kUseServiceDirectoryOverride = 1 << 3,
 };
 
@@ -62,7 +62,7 @@ struct SandboxConfig {
 
 constexpr SandboxConfig kSandboxConfigs[] = {
     {
-        SANDBOX_TYPE_WEB_CONTEXT,
+        SandboxType::kWebContext,
 
         // Services directory is passed by calling SetServiceDirectory().
         base::span<const char* const>(),
@@ -74,7 +74,7 @@ constexpr SandboxConfig kSandboxConfigs[] = {
             kUseServiceDirectoryOverride,
     },
     {
-        SANDBOX_TYPE_GPU,
+        SandboxType::kGpu,
         base::make_span((const char* const[]){
             fuchsia::sysmem::Allocator::Name_,
             "fuchsia.vulkan.loader.Loader",
@@ -83,7 +83,7 @@ constexpr SandboxConfig kSandboxConfigs[] = {
         kProvideVulkanResources,
     },
     {
-        SANDBOX_TYPE_NETWORK,
+        SandboxType::kNetwork,
         base::make_span((const char* const[]){
             fuchsia::net::NameLookup::Name_,
             fuchsia::netstack::Netstack::Name_,
@@ -92,7 +92,7 @@ constexpr SandboxConfig kSandboxConfigs[] = {
         kProvideSslConfig,
     },
     {
-        SANDBOX_TYPE_RENDERER,
+        SandboxType::kRenderer,
         base::make_span((const char* const[]){
             fuchsia::fonts::Provider::Name_,
             fuchsia::mediacodec::CodecFactory::Name_,
@@ -103,7 +103,7 @@ constexpr SandboxConfig kSandboxConfigs[] = {
 };
 
 constexpr SandboxConfig kDefaultConfig = {
-    SANDBOX_TYPE_INVALID,
+    SandboxType::kInvalid,
     base::span<const char* const>(),
     0,
 };
@@ -133,14 +133,14 @@ SandboxPolicyFuchsia::~SandboxPolicyFuchsia() {
 }
 
 void SandboxPolicyFuchsia::Initialize(service_manager::SandboxType type) {
-  DCHECK_NE(type, service_manager::SANDBOX_TYPE_INVALID);
-  DCHECK_EQ(type_, service_manager::SANDBOX_TYPE_INVALID);
+  DCHECK_NE(type, service_manager::SandboxType::kInvalid);
+  DCHECK_EQ(type_, service_manager::SandboxType::kInvalid);
 
   type_ = type;
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           service_manager::switches::kNoSandbox)) {
-    type_ = service_manager::SANDBOX_TYPE_NO_SANDBOX;
+    type_ = service_manager::SandboxType::kNoSandbox;
   }
 
   // If we need to pass some services for the given sandbox type then create
@@ -177,13 +177,13 @@ void SandboxPolicyFuchsia::SetServiceDirectory(
 
 void SandboxPolicyFuchsia::UpdateLaunchOptionsForSandbox(
     base::LaunchOptions* options) {
-  DCHECK_NE(type_, service_manager::SANDBOX_TYPE_INVALID);
+  DCHECK_NE(type_, service_manager::SandboxType::kInvalid);
 
   // Always clone stderr to get logs output.
   options->fds_to_remap.push_back(std::make_pair(STDERR_FILENO, STDERR_FILENO));
   options->fds_to_remap.push_back(std::make_pair(STDOUT_FILENO, STDOUT_FILENO));
 
-  if (type_ == service_manager::SANDBOX_TYPE_NO_SANDBOX) {
+  if (type_ == service_manager::SandboxType::kNoSandbox) {
     options->spawn_flags = FDIO_SPAWN_CLONE_NAMESPACE | FDIO_SPAWN_CLONE_JOB;
     options->clear_environment = false;
     return;

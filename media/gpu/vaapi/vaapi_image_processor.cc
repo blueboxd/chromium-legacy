@@ -71,6 +71,28 @@ bool IsSupported(uint32_t input_va_fourcc,
   return true;
 }
 
+void ProcessFrame(scoped_refptr<VaapiWrapper> vaapi_wrapper,
+                  scoped_refptr<VideoFrame> input_frame,
+                  scoped_refptr<VideoFrame> output_frame,
+                  scoped_refptr<base::SequencedTaskRunner> client_task_runner,
+                  ImageProcessor::FrameReadyCB cb) {
+  DVLOGF(4);
+
+  auto src_va_surface =
+      vaapi_wrapper->CreateVASurfaceForVideoFrame(input_frame.get());
+  auto dst_va_surface =
+      vaapi_wrapper->CreateVASurfaceForVideoFrame(output_frame.get());
+  if (!src_va_surface || !dst_va_surface) {
+    // Failed to create VASurface for frames. |cb| isn't executed in the case.
+    return;
+  }
+  // VA-API performs pixel format conversion and scaling without any filters.
+  vaapi_wrapper->BlitSurface(std::move(src_va_surface),
+                             std::move(dst_va_surface));
+  client_task_runner->PostTask(
+      FROM_HERE, base::BindOnce(std::move(cb), std::move(output_frame)));
+}
+
 }  // namespace
 
 // static
@@ -154,7 +176,6 @@ VaapiImageProcessor::VaapiImageProcessor(
           base::TaskTraits{base::ThreadPool()})),
       vaapi_wrapper_(std::move(vaapi_wrapper)) {
   DETACH_FROM_SEQUENCE(client_sequence_checker_);
-  DETACH_FROM_SEQUENCE(processor_sequence_checker_);
 }
 
 VaapiImageProcessor::~VaapiImageProcessor() {
@@ -168,41 +189,27 @@ bool VaapiImageProcessor::ProcessInternal(
   DVLOGF(4);
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
 
-  // TODO(akahuang): Use WeakPtr to replace base::Unretained(this).
-  process_task_tracker_.PostTask(
-      processor_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&VaapiImageProcessor::ProcessTask, base::Unretained(this),
-                     std::move(input_frame), std::move(output_frame),
-                     std::move(cb)));
+  FrameReadyCB on_frame_ready =
+      base::BindOnce(&VaapiImageProcessor::OnOutputFrameReady,
+                     weak_factory_.GetWeakPtr(), std::move(cb));
+  processor_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ProcessFrame, vaapi_wrapper_, std::move(input_frame),
+                     std::move(output_frame), client_task_runner_,
+                     std::move(on_frame_ready)));
   return true;
 }
 
-void VaapiImageProcessor::ProcessTask(scoped_refptr<VideoFrame> input_frame,
-                                      scoped_refptr<VideoFrame> output_frame,
-                                      FrameReadyCB cb) {
-  DVLOGF(4);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(processor_sequence_checker_);
-
-  auto src_va_surface =
-      vaapi_wrapper_->CreateVASurfaceForVideoFrame(input_frame.get());
-  auto dst_va_surface =
-      vaapi_wrapper_->CreateVASurfaceForVideoFrame(output_frame.get());
-  if (!src_va_surface || !dst_va_surface) {
-    // Failed to create VASurface for frames. |cb| isn't executed in the case.
-    return;
-  }
-  // VA-API performs pixel format conversion and scaling without any filters.
-  vaapi_wrapper_->BlitSurface(std::move(src_va_surface),
-                              std::move(dst_va_surface));
-  client_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(std::move(cb), std::move(output_frame)));
+void VaapiImageProcessor::OnOutputFrameReady(FrameReadyCB cb,
+                                             scoped_refptr<VideoFrame> frame) {
+  std::move(cb).Run(std::move(frame));
 }
 
 bool VaapiImageProcessor::Reset() {
   VLOGF(2);
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
 
-  process_task_tracker_.TryCancelAll();
+  weak_factory_.InvalidateWeakPtrs();
   return true;
 }
 }  // namespace media

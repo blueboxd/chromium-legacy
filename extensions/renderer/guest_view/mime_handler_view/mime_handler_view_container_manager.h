@@ -133,6 +133,11 @@ class MimeHandlerViewContainerManager
   // the HTML string injected at MimeHandlerViewAttachHelper.
   bool IsManagedByContainerManager(const blink::WebElement& plugin_element);
 
+  // If this MimeHandlerViewContainerManager isn't serving a full-page PDF, and
+  // there are no frame containers, then it should delete itself. This function
+  // looks after this.
+  void SelfDeleteIfNecessary();
+
   // Instantiated if this MHVFC is for a full-page MHV. This means MHV is
   // created when a frame was navigated to MHV resource by means other than
   // HTMLPlugInElement::RequestObjectInternal (e.g., omnibox). Note: the

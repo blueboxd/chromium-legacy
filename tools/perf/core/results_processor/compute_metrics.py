@@ -24,9 +24,6 @@ def _RunMetric(test_result, metrics):
   html_local_path = html_trace['filePath']
   html_remote_url = html_trace.get('remoteUrl')
 
-  logging.info('%s: Starting to compute metrics on trace.',
-               test_result['testPath'])
-  start = time.time()
   # The timeout needs to be coordinated with the Swarming IO timeout for the
   # task that runs this code. If this timeout is longer or close in length
   # to the swarming IO timeout then we risk being forcibly killed for not
@@ -37,8 +34,6 @@ def _RunMetric(test_result, metrics):
       html_local_path, metrics, canonical_url=html_remote_url,
       timeout=TEN_MINUTES,
       extra_import_options={'trackDetailedModelStats': True})
-  logging.info('%s: Computing metrics took %.3f seconds.' % (
-      test_result['testPath'], time.time() - start))
 
   if mre_result.failures:
     util.SetUnexpectedFailure(test_result)
@@ -83,7 +78,10 @@ def ComputeTBMv2Metrics(test_result):
                   test_result['testPath'], trace_size_in_mib)
     return
 
+  start = time.time()
   test_result['_histograms'].ImportDicts(_RunMetric(test_result, metrics))
+  logging.info('%s: Computing TBMv2 metrics took %.3f seconds.' % (
+      test_result['testPath'], time.time() - start))
 
 
 def ComputeTBMv3Metrics(test_result, trace_processor_path):
@@ -107,9 +105,11 @@ def ComputeTBMv3Metrics(test_result, trace_processor_path):
                     test_result['testPath'])
     return
 
+  start = time.time()
   for metric in metrics:
-    logging.info('%s: Computing metric %s.', test_result['testPath'], metric)
     histograms = trace_processor.RunMetric(
         trace_processor_path, artifacts[CONCATENATED_PROTO_NAME]['filePath'],
         metric)
     test_result['_histograms'].Merge(histograms)
+  logging.info('%s: Computing TBMv3 metrics took %.3f seconds.' % (
+      test_result['testPath'], time.time() - start))

@@ -11,7 +11,7 @@
 
 // These sandbox-config extension functions should be called from
 // UtilitySandboxedProcessLauncherDelegate on Windows (or the appropriate
-// Delegate if SANDBOX_TYPE_NETWORK is removed from SANDBOX_TYPE_UTILITY).
+// Delegate if SandboxType::kNetwork is removed from SandboxType::kUtility).
 //
 // NOTE: changes to this code need to be reviewed by the security team.
 

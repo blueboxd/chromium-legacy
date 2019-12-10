@@ -41,7 +41,7 @@ extern NSString* const kAddCreditCardsAccessibilityIdentifier;
 
 // The designated initializer. |cards| must not be nil.
 - (instancetype)initWithCards:(std::vector<autofill::CreditCard*>)cards
-                   dispatcher:(id<BrowserCoordinatorCommands>)dispatcher
+                      handler:(id<BrowserCoordinatorCommands>)handler
     NS_DESIGNATED_INITIALIZER;
 
 // Unavailable. Use |initWithCards:|.

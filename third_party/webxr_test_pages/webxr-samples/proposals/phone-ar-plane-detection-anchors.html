@@ -322,19 +322,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       // Creates new anchor for object and places it there.
       function addARObjectAt(session, frame, plane, pose, space) {
+        console.debug("Creating anchor", pose, space);
         if(plane != null) {
           plane.createAnchor(pose, space).then(onCreateAnchor);
         } else {
           session.createAnchor(pose, space).then(onCreateAnchor);
         }
       }
-
-      function DOMPointFromVec4(vector) {
-        return new DOMPointReadOnly(vector[0], vector[1], vector[2], vector[3]);
-      }
-
-      let rayOrigin = vec4.create();
-      let rayDirection = vec4.create();
 
       function onSelect(event) {
         if (useReticle.checked && arObject.visible) {
@@ -364,20 +358,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           let inputPose = event.frame.getPose(event.inputSource.targetRaySpace, xrRefSpace);
           if (inputPose) {
             let targetRay = new XRRay(inputPose.transform);
-            vec4.set(rayOrigin,
-                targetRay.origin.x,
-                targetRay.origin.y,
-                targetRay.origin.z,
-                targetRay.origin.w);
-            vec4.set(rayDirection,
-                targetRay.direction.x,
-                targetRay.direction.y,
-                targetRay.direction.z,
-                targetRay.direction.w);
-
-            let ray = new XRRay(DOMPointFromVec4(rayOrigin), DOMPointFromVec4(rayDirection));
-
-            const hitTestResults = hitTest(event.frame, ray, xrRefSpace);
+            const hitTestResults = hitTest(event.frame, targetRay, xrRefSpace);
             const hitTestFiltered = filterHitTestResults(hitTestResults,
                                                          extendPlanesEnabled.checked,
                                                          false,
@@ -541,14 +522,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         // continuous hit test. For the moment we're just using the flower
         // as the "reticle".
         if (useReticle.checked && pose && pose.transform.matrix) {
-          vec4.set(rayOrigin, 0, 0, 0, 1);
-          vec4.transformMat4(rayOrigin, rayOrigin, pose.transform.matrix);
-
-          vec4.set(rayDirection, 0, 0, -1, 0);
-          vec4.transformMat4(rayDirection, rayDirection, pose.transform.matrix);
-          vec4.normalize(rayDirection, rayDirection);
-
-          const ray = new XRRay(DOMPointFromVec4(rayOrigin), DOMPointFromVec4(rayDirection));
+          const ray = new XRRay(pose.transform);
 
           rayObject.matrix = ray.matrix.slice();
           rayObject.visible = true;

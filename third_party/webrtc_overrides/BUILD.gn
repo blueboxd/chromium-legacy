@@ -87,6 +87,16 @@ component("webrtc_component") {
     "//third_party/webrtc/stats:rtc_stats_test_utils",
     "//third_party/webrtc/system_wrappers",
   ]
+  if (is_chromecast) {
+    public_deps += [
+      "//third_party/webrtc/api/audio:audio_frame_api",
+      "//third_party/webrtc/api/video:encoded_image",
+      "//third_party/webrtc/media:rtc_media_engine_defaults",
+      "//third_party/webrtc/modules/audio_device:audio_device_default",
+      "//third_party/webrtc/modules/audio_mixer:audio_mixer_impl",
+      "//third_party/webrtc/modules/video_coding:codec_globals_headers",
+    ]
+  }
   if (is_chromecast || is_nacl) {
     # For chromecast and NaCL, provide a default field trial implementation.
     public_deps += [ "//third_party/webrtc/system_wrappers:field_trial" ]

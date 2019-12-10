@@ -85,6 +85,7 @@ source_set("chromeos") {
     "//chrome/common/string_matching",
     "//chrome/services/app_service:lib",
     "//chrome/services/app_service/public/cpp:app_update",
+    "//chrome/services/app_service/public/cpp:instance_update",
     "//chrome/services/file_util/public/cpp",
     "//chrome/services/printing/public/mojom",
     "//chrome/services/wilco_dtc_supportd/public/mojom",

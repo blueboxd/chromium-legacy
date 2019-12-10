@@ -260,11 +260,11 @@ int HistoryDatabase::CountUniqueDomainsVisited(base::Time begin_time,
                                                 // KEYWORD_GENERATED
       "AND hidden = 0 AND visit_time >= ? AND visit_time < ?"));
 
-  url_sql.BindInt(0, ui::PAGE_TRANSITION_CHAIN_END);
-  url_sql.BindInt(1, ui::PAGE_TRANSITION_CORE_MASK);
-  url_sql.BindInt(2, ui::PAGE_TRANSITION_AUTO_SUBFRAME);
-  url_sql.BindInt(3, ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
-  url_sql.BindInt(4, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
+  url_sql.BindInt64(0, ui::PAGE_TRANSITION_CHAIN_END);
+  url_sql.BindInt64(1, ui::PAGE_TRANSITION_CORE_MASK);
+  url_sql.BindInt64(2, ui::PAGE_TRANSITION_AUTO_SUBFRAME);
+  url_sql.BindInt64(3, ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
+  url_sql.BindInt64(4, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
 
   url_sql.BindInt64(5, begin_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
   url_sql.BindInt64(6, end_time.ToDeltaSinceWindowsEpoch().InMicroseconds());

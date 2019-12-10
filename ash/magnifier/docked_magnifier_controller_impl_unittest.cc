@@ -7,7 +7,6 @@
 #include <memory>
 #include <vector>
 
-#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/display/display_util.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/host/ash_window_tree_host.h"
@@ -31,10 +30,8 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/command_line.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/session_manager_types.h"
-#include "components/viz/common/features.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
@@ -57,16 +54,9 @@ int GetMagnifierHeight(int display_height) {
          DockedMagnifierControllerImpl::kSeparatorHeight;
 }
 
-class DockedMagnifierTest : public NoSessionAshTestBase,
-                            public ::testing::WithParamInterface<bool> {
+class DockedMagnifierTest : public NoSessionAshTestBase {
  public:
-  DockedMagnifierTest() {
-    if (IsUsingLayerMirroring())
-      feature_list_.InitAndEnableFeature(features::kVizDisplayCompositor);
-    else
-      feature_list_.InitAndDisableFeature(features::kVizDisplayCompositor);
-  }
-
+  DockedMagnifierTest() = default;
   ~DockedMagnifierTest() override = default;
 
   DockedMagnifierControllerImpl* controller() const {
@@ -152,22 +142,12 @@ class DockedMagnifierTest : public NoSessionAshTestBase,
     auto* generator = GetEventGenerator();
     generator->GestureTapAt(touch_point_in_screen);
   }
-
- protected:
-  bool IsUsingLayerMirroring() const { return GetParam(); }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(DockedMagnifierTest);
 };
-
-INSTANTIATE_TEST_SUITE_P(All, DockedMagnifierTest, ::testing::Bool());
 
 // Tests that the Fullscreen and Docked Magnifiers are mutually exclusive.
 // TODO(afakhry): Update this test to use ash::MagnificationController once
 // refactored. https://crbug.com/817157.
-TEST_P(DockedMagnifierTest, MutuallyExclusiveMagnifiers) {
+TEST_F(DockedMagnifierTest, MutuallyExclusiveMagnifiers) {
   // Start with both magnifiers disabled.
   EXPECT_FALSE(controller()->GetEnabled());
   EXPECT_FALSE(controller()->GetFullscreenMagnifierEnabled());
@@ -191,7 +171,7 @@ TEST_P(DockedMagnifierTest, MutuallyExclusiveMagnifiers) {
 }
 
 // Tests the changes in the magnifier's status, user switches.
-TEST_P(DockedMagnifierTest, TestEnableAndDisable) {
+TEST_F(DockedMagnifierTest, TestEnableAndDisable) {
   // Enable for user 1, and switch to user 2. User 2 should have it disabled.
   controller()->SetEnabled(true);
   EXPECT_TRUE(controller()->GetEnabled());
@@ -204,7 +184,7 @@ TEST_P(DockedMagnifierTest, TestEnableAndDisable) {
 }
 
 // Tests the magnifier's scale changes.
-TEST_P(DockedMagnifierTest, TestScale) {
+TEST_F(DockedMagnifierTest, TestScale) {
   // Scale changes are persisted even when the Docked Magnifier is disabled.
   EXPECT_FALSE(controller()->GetEnabled());
   controller()->SetScale(5.0f);
@@ -225,7 +205,7 @@ TEST_P(DockedMagnifierTest, TestScale) {
 
 // Tests that updates of the Docked Magnifier user prefs from outside the
 // DockedMagnifierControllerImpl (such as Settings UI) are observed and applied.
-TEST_P(DockedMagnifierTest, TestOutsidePrefsUpdates) {
+TEST_F(DockedMagnifierTest, TestOutsidePrefsUpdates) {
   EXPECT_FALSE(controller()->GetEnabled());
   user1_pref_service()->SetBoolean(prefs::kDockedMagnifierEnabled, true);
   EXPECT_TRUE(controller()->GetEnabled());
@@ -237,7 +217,7 @@ TEST_P(DockedMagnifierTest, TestOutsidePrefsUpdates) {
 
 // Tests that the workareas of displays are adjusted properly when the Docked
 // Magnifier's viewport moves from one display to the next.
-TEST_P(DockedMagnifierTest, DisplaysWorkAreas) {
+TEST_F(DockedMagnifierTest, DisplaysWorkAreas) {
   UpdateDisplay("800x600,800+0-400x300");
   const auto root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(2u, root_windows.size());
@@ -347,7 +327,7 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreas) {
 }
 
 // Test that we exit overview mode when enabling the docked magnifier.
-TEST_P(DockedMagnifierTest, DisplaysWorkAreasOverviewMode) {
+TEST_F(DockedMagnifierTest, DisplaysWorkAreasOverviewMode) {
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShell(SK_ColorWHITE, 100, gfx::Rect(0, 0, 200, 200)));
   WindowState::Get(window.get())->Maximize();
@@ -372,7 +352,7 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasOverviewMode) {
   EXPECT_TRUE(WindowState::Get(window.get())->IsMaximized());
 }
 
-TEST_P(DockedMagnifierTest, OverviewTabbing) {
+TEST_F(DockedMagnifierTest, OverviewTabbing) {
   auto window = CreateTestWindow();
   controller()->SetEnabled(true);
 
@@ -406,7 +386,7 @@ TEST_P(DockedMagnifierTest, OverviewTabbing) {
 
 // Test that we exist split view and over view modes when a single window is
 // snapped and the other snap region is hosting overview mode.
-TEST_P(DockedMagnifierTest, DisplaysWorkAreasSingleSplitView) {
+TEST_F(DockedMagnifierTest, DisplaysWorkAreasSingleSplitView) {
   // Verify that we're in tablet mode.
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_TRUE(Shell::Get()->tablet_mode_controller()->InTabletMode());
@@ -450,7 +430,7 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasSingleSplitView) {
 
 // Test that we don't exit split view with two windows snapped on both sides
 // when we enable the docked magnifier, but rather their bounds are updated.
-TEST_P(DockedMagnifierTest, DisplaysWorkAreasDoubleSplitView) {
+TEST_F(DockedMagnifierTest, DisplaysWorkAreasDoubleSplitView) {
   // Verify that we're in tablet mode.
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_TRUE(Shell::Get()->tablet_mode_controller()->InTabletMode());
@@ -493,7 +473,7 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasDoubleSplitView) {
 }
 
 // Tests that the Docked Magnifier follows touch events.
-TEST_P(DockedMagnifierTest, TouchEvents) {
+TEST_F(DockedMagnifierTest, TouchEvents) {
   UpdateDisplay("800x600,800+0-400x300");
   const auto root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(2u, root_windows.size());
@@ -523,7 +503,7 @@ TEST_P(DockedMagnifierTest, TouchEvents) {
 }
 
 // Tests the behavior of the magnifier when displays are added or removed.
-TEST_P(DockedMagnifierTest, AddRemoveDisplays) {
+TEST_F(DockedMagnifierTest, AddRemoveDisplays) {
   // Start with a single display.
   const auto disp_1_info = display::ManagedDisplayInfo::CreateFromSpecWithID(
       "0+0-600x800", 101 /* id */);
@@ -590,7 +570,7 @@ TEST_P(DockedMagnifierTest, AddRemoveDisplays) {
 
 // Tests various magnifier layer transform in the simple cases (i.e. no device
 // scale factors or screen rotations).
-TEST_P(DockedMagnifierTest, TransformSimple) {
+TEST_F(DockedMagnifierTest, TransformSimple) {
   UpdateDisplay("800x800");
   const auto root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(1u, root_windows.size());
@@ -666,7 +646,7 @@ TEST_P(DockedMagnifierTest, TransformSimple) {
 
 // Tests that the magnifier viewport follows text fields focus and input caret
 // bounds changes events.
-TEST_P(DockedMagnifierTest, TextInputFieldEvents) {
+TEST_F(DockedMagnifierTest, TextInputFieldEvents) {
   UpdateDisplay("600x900");
   const auto root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(1u, root_windows.size());
@@ -703,7 +683,7 @@ TEST_P(DockedMagnifierTest, TextInputFieldEvents) {
 // focused text input field. Changing the old display's work area bounds should
 // not cause recursive caret bounds change notifications into the docked
 // magnifier. https://crbug.com/1000903.
-TEST_P(DockedMagnifierTest, NoCrashDueToRecursion) {
+TEST_F(DockedMagnifierTest, NoCrashDueToRecursion) {
   UpdateDisplay("600x900,800x600");
   const auto roots = Shell::GetAllRootWindows();
   ASSERT_EQ(2u, roots.size());
@@ -729,7 +709,7 @@ TEST_P(DockedMagnifierTest, NoCrashDueToRecursion) {
   GetEventGenerator()->MoveMouseTo(1000, 300);
 }
 
-TEST_P(DockedMagnifierTest, FocusChangeEvents) {
+TEST_F(DockedMagnifierTest, FocusChangeEvents) {
   UpdateDisplay("600x900");
   const auto root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(1u, root_windows.size());
@@ -756,54 +736,6 @@ TEST_P(DockedMagnifierTest, FocusChangeEvents) {
   gfx::Point button_2_center(
       focus_test_helper.GetSecondButtonBoundsInRoot().CenterPoint());
   TestMagnifierLayerTransform(button_2_center, root_windows[0]);
-}
-
-// Tests that viewport layer is inverted properly when the status of the High
-// Contrast mode changes.
-TEST_P(DockedMagnifierTest, HighContrastMode) {
-  // This test is not relevant when layer mirroring is used.
-  if (IsUsingLayerMirroring())
-    return;
-
-  UpdateDisplay("600x900");
-
-  // Enable the docked magnifier.
-  DockedMagnifierControllerImpl* magnifier = controller();
-  magnifier->SetEnabled(true);
-  EXPECT_TRUE(magnifier->GetEnabled());
-
-  // Expect that the magnifier layer is not inverted.
-  const ui::Layer* viewport_layer =
-      magnifier->GetViewportMagnifierLayerForTesting();
-  ASSERT_TRUE(viewport_layer);
-  EXPECT_FALSE(viewport_layer->layer_inverted());
-
-  // Enable High Contrast mode, and expect the viewport layer to be inverted.
-  Shell::Get()->accessibility_controller()->SetHighContrastEnabled(true);
-  EXPECT_TRUE(
-      Shell::Get()->accessibility_controller()->high_contrast_enabled());
-  EXPECT_TRUE(viewport_layer->layer_inverted());
-
-  // Disable High Contrast, the layer should be updated accordingly.
-  Shell::Get()->accessibility_controller()->SetHighContrastEnabled(false);
-  EXPECT_FALSE(
-      Shell::Get()->accessibility_controller()->high_contrast_enabled());
-  EXPECT_FALSE(viewport_layer->layer_inverted());
-
-  // Now, disable the Docked Magnifier, enable High Contrast, and then re-enable
-  // the Docked Magnifier. The newly created viewport layer should be inverted.
-  magnifier->SetEnabled(false);
-  EXPECT_FALSE(magnifier->GetEnabled());
-  Shell::Get()->accessibility_controller()->SetHighContrastEnabled(true);
-  EXPECT_TRUE(
-      Shell::Get()->accessibility_controller()->high_contrast_enabled());
-  magnifier->SetEnabled(true);
-  EXPECT_TRUE(magnifier->GetEnabled());
-  const ui::Layer* new_viewport_layer =
-      magnifier->GetViewportMagnifierLayerForTesting();
-  ASSERT_TRUE(new_viewport_layer);
-  EXPECT_NE(new_viewport_layer, viewport_layer);
-  EXPECT_TRUE(new_viewport_layer->layer_inverted());
 }
 
 // TODO(afakhry): Expand tests:

@@ -53,7 +53,7 @@ XRSpace* XRPlane::planeSpace() const {
   return plane_space_;
 }
 
-TransformationMatrix XRPlane::poseMatrix() const {
+TransformationMatrix XRPlane::MojoFromObject() const {
   return *pose_matrix_;
 }
 

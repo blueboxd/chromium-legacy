@@ -25,10 +25,14 @@ SERVICE_MANAGER_SANDBOX_EXPORT extern const char kNetworkSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kPpapiSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kUtilitySandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kCdmSandbox[];
-SERVICE_MANAGER_SANDBOX_EXPORT extern const char kXrCompositingSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kPdfCompositorSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kProfilingSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kAudioSandbox[];
+
+#if defined(OS_WIN)
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kXrCompositingSandbox[];
+#endif  // OS_WIN
+
 #if defined(OS_CHROMEOS)
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kImeSandbox[];
 #endif  // OS_CHROMEOS

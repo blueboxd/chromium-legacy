@@ -240,7 +240,7 @@ class LoginPromptBrowserTest
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     LoginPromptBrowserTest,
     ::testing::Values(SplitAuthCacheByNetworkIsolationKey::kFalse,
                       SplitAuthCacheByNetworkIsolationKey::kTrue));
@@ -644,7 +644,7 @@ class MultiRealmLoginPromptBrowserTest : public LoginPromptBrowserTest {
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     MultiRealmLoginPromptBrowserTest,
     ::testing::Values(SplitAuthCacheByNetworkIsolationKey::kFalse,
                       SplitAuthCacheByNetworkIsolationKey::kTrue));

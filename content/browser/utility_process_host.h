@@ -78,7 +78,7 @@ class CONTENT_EXPORT UtilityProcessHost
   base::WeakPtr<UtilityProcessHost> AsWeakPtr();
 
   // Makes the process run with a specific sandbox type, or unsandboxed if
-  // SANDBOX_TYPE_NO_SANDBOX is specified.
+  // SandboxType::kNoSandbox is specified.
   void SetSandboxType(service_manager::SandboxType sandbox_type);
 
   service_manager::SandboxType sandbox_type() const { return sandbox_type_; }

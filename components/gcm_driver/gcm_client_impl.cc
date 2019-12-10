@@ -297,6 +297,7 @@ GCMClientImpl::~GCMClientImpl() {
 void GCMClientImpl::Initialize(
     const ChromeBuildInfo& chrome_build_info,
     const base::FilePath& path,
+    bool remove_account_mappings_with_email_key,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner,
     base::RepeatingCallback<void(
@@ -316,7 +317,8 @@ void GCMClientImpl::Initialize(
   network_connection_tracker_ = network_connection_tracker;
   chrome_build_info_ = chrome_build_info;
   gcm_store_.reset(
-      new GCMStoreImpl(path, blocking_task_runner, std::move(encryptor)));
+      new GCMStoreImpl(path, remove_account_mappings_with_email_key,
+                       blocking_task_runner, std::move(encryptor)));
   delegate_ = delegate;
   io_task_runner_ = std::move(io_task_runner);
   recorder_.SetDelegate(this);
@@ -351,12 +353,10 @@ void GCMClientImpl::Start(StartMode start_mode) {
   // Once the loading is completed, the check-in will be initiated.
   // If we're in lazy start mode, don't create a new store since none is really
   // using GCM functionality yet.
-  gcm_store_->Load(
-      (start_mode == IMMEDIATE_START) ?
-          GCMStore::CREATE_IF_MISSING :
-          GCMStore::DO_NOT_CREATE,
-      base::Bind(&GCMClientImpl::OnLoadCompleted,
-                 weak_ptr_factory_.GetWeakPtr()));
+  gcm_store_->Load((start_mode == IMMEDIATE_START) ? GCMStore::CREATE_IF_MISSING
+                                                   : GCMStore::DO_NOT_CREATE,
+                   base::Bind(&GCMClientImpl::OnLoadCompleted,
+                              weak_ptr_factory_.GetWeakPtr()));
   state_ = LOADING;
 }
 

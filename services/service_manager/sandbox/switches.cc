@@ -26,10 +26,14 @@ const char kNetworkSandbox[] = "network";
 const char kPpapiSandbox[] = "ppapi";
 const char kUtilitySandbox[] = "utility";
 const char kCdmSandbox[] = "cdm";
-const char kXrCompositingSandbox[] = "xr_compositing";
 const char kPdfCompositorSandbox[] = "pdf_compositor";
 const char kProfilingSandbox[] = "profiling";
 const char kAudioSandbox[] = "audio";
+
+#if defined(OS_WIN)
+const char kXrCompositingSandbox[] = "xr_compositing";
+#endif  // OS_WIN
+
 #if defined(OS_CHROMEOS)
 const char kImeSandbox[] = "ime";
 #endif  // OS_CHROMEOS

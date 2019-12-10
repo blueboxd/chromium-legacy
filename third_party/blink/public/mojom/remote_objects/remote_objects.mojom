@@ -17,7 +17,9 @@ import "mojo/public/mojom/base/string16.mojom";
 //
 // Identifiers used by this object apply only within this RemoteObjectHost.
 interface RemoteObjectHost {
-  GetObject(int32 object_id, RemoteObject& request);
+  // Binds |receiver| to an implementation of RemoteObject corresponding to
+  // |object_id|.
+  GetObject(int32 object_id, pending_receiver<RemoteObject> receiver);
 
   // Ideally lifetime would be scoped to an associated RemoteObject pipe. This
   // is complicated by the fact that the missing support for associated
@@ -32,6 +34,23 @@ interface RemoteObject {
   [Sync] GetMethods() => (array<string> method_names);
   [Sync] InvokeMethod(string name, array<RemoteInvocationArgument> arguments)
       => (RemoteInvocationResult result);
+};
+
+// Implemented in the renderer.
+interface RemoteObjectGatewayFactory {
+  // Creates an implementation of RemoteObjectGateway associated with |host|
+  // and binds it to |gateway|.
+  CreateRemoteObjectGateway(pending_remote<RemoteObjectHost> host,
+                            pending_receiver<RemoteObjectGateway> gateway);
+};
+
+// Implemented in the renderer.
+interface RemoteObjectGateway {
+  // Exposes object with |name| and |id| to the frame.
+  AddNamedObject(string name, int32 object_id);
+
+  // Removes object with |name| from the frame context.
+  RemoveNamedObject(string name);
 };
 
 enum SingletonJavaScriptValue {

@@ -68,6 +68,7 @@
 #include "third_party/blink/renderer/modules/presentation/presentation_controller.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_receiver.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_messaging_client.h"
+#include "third_party/blink/renderer/modules/remote_objects/remote_object_gateway_impl.h"
 #include "third_party/blink/renderer/modules/remoteplayback/html_media_element_remote_playback.h"
 #include "third_party/blink/renderer/modules/remoteplayback/remote_playback.h"
 #include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller_impl.h"
@@ -169,6 +170,8 @@ void ModulesInitializer::InitLocalFrame(LocalFrame& frame) const {
       &AppBannerController::BindMojoRequest, WrapWeakPersistent(&frame)));
   frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
       &TextSuggestionBackendImpl::Create, WrapWeakPersistent(&frame)));
+  frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
+      &RemoteObjectGatewayFactoryImpl::Create, WrapWeakPersistent(&frame)));
 }
 
 void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
@@ -249,6 +252,11 @@ void ModulesInitializer::OnClearWindowObjectInMainWorld(
     // presentation can offer a connection to the presentation receiver.
     PresentationReceiver::From(document);
   }
+
+  LocalFrame* frame = document.GetFrame();
+  DCHECK(frame);
+  if (auto* gateway = RemoteObjectGatewayImpl::From(*frame))
+    gateway->OnClearWindowObjectInMainWorld();
 }
 
 std::unique_ptr<WebMediaPlayer> ModulesInitializer::CreateWebMediaPlayer(

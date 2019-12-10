@@ -842,11 +842,6 @@ const char kExperimentalAccessibilityLanguageDetectionDynamicDescription[] =
     "Enable language detection for dynamic content which is then exposed to "
     "assistive technologies such as screen readers.";
 
-const char kVizDisplayCompositorName[] = "Viz Display Compositor (OOP-D)";
-const char kVizDisplayCompositorDescription[] =
-    "If enabled, the display compositor runs as part of the viz service in the"
-    "GPU process.";
-
 const char kCompositorThreadedScrollbarScrollingName[] =
     "Compositor threaded scrollbar scrolling";
 const char kCompositorThreadedScrollbarScrollingDescription[] =

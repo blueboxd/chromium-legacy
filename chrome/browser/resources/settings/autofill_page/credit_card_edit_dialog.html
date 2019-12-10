@@ -69,12 +69,15 @@
             value="{{creditCard.cardNumber}}"
             on-input="onCreditCardNameOrNumberChanged_">
         </cr-input>
-        <label id="creditCardExpiration" class="cr-form-field-label">
+        <!-- aria-hidden for creditCardExpiration label since
+          creditCardExpirationMonth and creditCardExpirationYear provide
+          sufficient labeling. -->
+        <label class="cr-form-field-label" aria-hidden="true">
           $i18n{creditCardExpiration}
         </label>
         <select class="md-select" id="month" value="[[expirationMonth_]]"
             on-change="onMonthChange_"
-            aria-labelledby="creditCardExpiration">
+            aria-label="$i18n{creditCardExpirationMonth}">
           <template is="dom-repeat" items="[[monthList_]]">
             <option>[[item]]</option>
           </template>

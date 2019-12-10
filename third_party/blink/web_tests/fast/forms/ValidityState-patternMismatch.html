@@ -67,8 +67,8 @@
 <input id="invalid-05" type="text" pattern="[0-9" value="1"/>
 <input id="invalid-06" type="text" pattern="[0-9" value="a"/>
 
-<input id="empty-pattern-mismatch" type="text" pattern="" value="Lorem Ipsum"
-/><input id="disabled" pattern="[0-9][A-Z]{3}" value="00AA" disabled />
+<input id="empty-pattern-mismatch" type="text" pattern="" value="Lorem Ipsum"/>
+<input id="disabled" pattern="[0-9][A-Z]{3}" value="00AA" disabled />
 
 <input id="unicode-invalid-01" pattern="\@" value="a">
 <input id="unicode-invalid-02" pattern="\p" value="o">
@@ -150,7 +150,7 @@ shouldBeFalse('patternMismatchFor("invalid-04")');
 shouldBeFalse('patternMismatchFor("invalid-05")');
 shouldBeFalse('patternMismatchFor("invalid-06")');
 
-shouldBeFalse('patternMismatchFor("disabled")');
+shouldBeTrue('patternMismatchFor("disabled")');
 
 shouldBeFalse('patternMismatchFor("unicode-invalid-01")');
 // Intentionally check twice.  crbug.com/639324.

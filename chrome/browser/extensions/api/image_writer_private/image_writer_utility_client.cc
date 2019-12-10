@@ -160,9 +160,9 @@ void ImageWriterUtilityClient::BindServiceIfNeeded() {
 
 #if defined(OS_WIN)
   constexpr auto kSandboxType =
-      service_manager::SANDBOX_TYPE_NO_SANDBOX_AND_ELEVATED_PRIVILEGES;
+      service_manager::SandboxType::kNoSandboxAndElevatedPrivileges;
 #else
-  constexpr auto kSandboxType = service_manager::SANDBOX_TYPE_NO_SANDBOX;
+  constexpr auto kSandboxType = service_manager::SandboxType::kNoSandbox;
 #endif
   content::ServiceProcessHost::Launch(
       removable_storage_writer_.BindNewPipeAndPassReceiver(),

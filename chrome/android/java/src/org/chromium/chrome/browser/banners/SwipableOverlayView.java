@@ -19,7 +19,7 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.IntDef;
 
-import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.base.MathUtils;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.WebContents;

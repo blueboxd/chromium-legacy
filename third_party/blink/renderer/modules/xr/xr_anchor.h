@@ -32,7 +32,7 @@ class XRAnchor : public ScriptWrappable {
 
   XRSpace* anchorSpace() const;
 
-  TransformationMatrix poseMatrix() const;
+  TransformationMatrix MojoFromObject() const;
 
   double lastChangedTime(bool& is_null) const;
 

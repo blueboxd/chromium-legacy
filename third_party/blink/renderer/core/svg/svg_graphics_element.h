@@ -87,19 +87,20 @@ class CORE_EXPORT SVGGraphicsElement : public SVGElement, public SVGTests {
   bool IsSVGGraphicsElement() const final { return true; }
 };
 
-inline bool IsSVGGraphicsElement(const SVGElement& element) {
-  return element.IsSVGGraphicsElement();
+template <>
+inline bool IsElementOfType<const SVGGraphicsElement>(const Node& node) {
+  return IsA<SVGGraphicsElement>(node);
 }
-
 template <>
 struct DowncastTraits<SVGGraphicsElement> {
   static bool AllowFrom(const Node& node) {
     auto* svg_element = DynamicTo<SVGElement>(node);
-    return svg_element && IsSVGGraphicsElement(*svg_element);
+    return svg_element && AllowFrom(*svg_element);
+  }
+  static bool AllowFrom(const SVGElement& svg_element) {
+    return svg_element.IsSVGGraphicsElement();
   }
 };
-
-DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGGraphicsElement);
 
 }  // namespace blink
 

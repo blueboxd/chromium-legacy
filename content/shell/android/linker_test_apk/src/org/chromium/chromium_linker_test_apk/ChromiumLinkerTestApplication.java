@@ -10,6 +10,8 @@ import android.content.Context;
 import org.chromium.base.BuildConfig;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
+import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.multidex.ChromiumMultiDexInstaller;
 import org.chromium.ui.base.ResourceBundle;
 
@@ -22,6 +24,10 @@ public class ChromiumLinkerTestApplication extends Application {
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
+        boolean isBrowserProcess = !ContextUtils.getProcessName().contains(":");
+        LibraryLoader.getInstance().setLibraryProcessType(isBrowserProcess
+                        ? LibraryProcessType.PROCESS_BROWSER
+                        : LibraryProcessType.PROCESS_CHILD);
         if (BuildConfig.IS_MULTIDEX_ENABLED) {
             ChromiumMultiDexInstaller.install(this);
         }

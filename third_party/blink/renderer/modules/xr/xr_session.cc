@@ -78,9 +78,9 @@ const char kAnchorsNotSupported[] = "Device does not support anchors!";
 
 const char kDeviceDisconnected[] = "The XR device has been disconnected.";
 
-const char kNonInvertibleMatrix[] =
-    "The operation encountered non-invertible matrix and could not be "
-    "completed.";
+const char kUnableToRetrieveMatrix[] =
+    "The operation was unable to retrieve a matrix from passed in space and "
+    "could not be completed.";
 
 const char kUnableToDecomposeMatrix[] =
     "The operation was unable to decompose a matrix and could not be "
@@ -542,18 +542,19 @@ ScriptPromise XRSession::requestReferenceSpace(
   return promise;
 }
 
-ScriptPromise XRSession::CreateAnchor(ScriptState* script_state,
-                                      XRRigidTransform* initial_pose,
-                                      XRSpace* space,
-                                      XRPlane* plane,
-                                      ExceptionState& exception_state) {
+ScriptPromise XRSession::CreateAnchor(
+    ScriptState* script_state,
+    XRRigidTransform* offset_space_from_anchor_transform,
+    XRSpace* space,
+    XRPlane* plane,
+    ExceptionState& exception_state) {
   if (ended_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kSessionEnded);
     return ScriptPromise();
   }
 
-  if (!initial_pose) {
+  if (!offset_space_from_anchor_transform) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kNoRigidTransformSpecified);
     return ScriptPromise();
@@ -572,41 +573,34 @@ ScriptPromise XRSession::CreateAnchor(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
-
   // Transformation from passed in |space| to mojo space.
   std::unique_ptr<TransformationMatrix> mojo_from_native =
       space->MojoFromNative();
 
-  DVLOG(3) << __func__
-           << ": mojo_from_native = " << mojo_from_native->ToString(true);
-
-  // Matrix will be null if transformation from object space to mojo space is
-  // not invertible, log & bail out in that case.
-  if (!mojo_from_native || !mojo_from_native->IsInvertible()) {
+  if (!mojo_from_native) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      kNonInvertibleMatrix);
+                                      kUnableToRetrieveMatrix);
     return ScriptPromise();
   }
 
-  auto native_from_mojo = mojo_from_native->Inverse();
-
   DVLOG(3) << __func__
-           << ": native_from_mojo = " << native_from_mojo.ToString(true);
+           << ": mojo_from_native = " << mojo_from_native->ToString(true);
 
   // Transformation from passed in pose to |space|.
-  auto mojo_from_initial_pose = initial_pose->TransformMatrix();
-  auto space_from_initial_pose = native_from_mojo * mojo_from_initial_pose;
+  auto offset_space_from_anchor =
+      offset_space_from_anchor_transform->TransformMatrix();
+  auto native_space_from_offset_space = space->NativeFromOffsetMatrix();
+  auto native_space_from_anchor =
+      native_space_from_offset_space * offset_space_from_anchor;
 
-  DVLOG(3) << __func__ << ": mojo_from_initial_pose = "
-           << mojo_from_initial_pose.ToString(true);
+  auto mojo_from_native_space = *mojo_from_native;
+  auto mojo_from_anchor = mojo_from_native_space * native_space_from_anchor;
 
-  DVLOG(3) << __func__ << ": space_from_initial_pose = "
-           << space_from_initial_pose.ToString(true);
+  DVLOG(3) << __func__
+           << ": mojo_from_anchor = " << mojo_from_anchor.ToString(true);
 
   TransformationMatrix::DecomposedType decomposed;
-  if (!space_from_initial_pose.Decompose(decomposed)) {
+  if (!mojo_from_anchor.Decompose(decomposed)) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kUnableToDecomposeMatrix);
     return ScriptPromise();
@@ -624,6 +618,9 @@ ScriptPromise XRSession::CreateAnchor(ScriptState* script_state,
            << ": pose_ptr->orientation = " << pose_ptr->orientation.ToString()
            << ", pose_ptr->position = " << pose_ptr->position.ToString();
 
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
+
   if (plane) {
     xr_->xrEnvironmentProviderRemote()->CreatePlaneAnchor(
         std::move(pose_ptr), plane->id(),
@@ -640,12 +637,13 @@ ScriptPromise XRSession::CreateAnchor(ScriptState* script_state,
   return promise;
 }
 
-ScriptPromise XRSession::createAnchor(ScriptState* script_state,
-                                      XRRigidTransform* initial_pose,
-                                      XRSpace* space,
-                                      ExceptionState& exception_state) {
-  return CreateAnchor(script_state, initial_pose, space, nullptr,
-                      exception_state);
+ScriptPromise XRSession::createAnchor(
+    ScriptState* script_state,
+    XRRigidTransform* offset_space_from_anchor_transform,
+    XRSpace* offset_space,
+    ExceptionState& exception_state) {
+  return CreateAnchor(script_state, offset_space_from_anchor_transform,
+                      offset_space, nullptr, exception_state);
 }
 
 int XRSession::requestAnimationFrame(V8XRFrameRequestCallback* callback) {

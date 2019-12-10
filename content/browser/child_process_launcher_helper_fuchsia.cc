@@ -21,20 +21,20 @@ namespace {
 const char* ProcessNameFromSandboxType(
     service_manager::SandboxType sandbox_type) {
   switch (sandbox_type) {
-    case service_manager::SANDBOX_TYPE_NO_SANDBOX:
+    case service_manager::SandboxType::kNoSandbox:
       return nullptr;
-    case service_manager::SANDBOX_TYPE_WEB_CONTEXT:
+    case service_manager::SandboxType::kWebContext:
       return "context";
-    case service_manager::SANDBOX_TYPE_RENDERER:
+    case service_manager::SandboxType::kRenderer:
       return "renderer";
-    case service_manager::SANDBOX_TYPE_UTILITY:
+    case service_manager::SandboxType::kUtility:
       return "utility";
-    case service_manager::SANDBOX_TYPE_GPU:
+    case service_manager::SandboxType::kGpu:
       return "gpu";
-    case service_manager::SANDBOX_TYPE_NETWORK:
+    case service_manager::SandboxType::kNetwork:
       return "network";
     default:
-      NOTREACHED() << sandbox_type;
+      NOTREACHED() << "Unknown sandbox_type.";
       return nullptr;
   }
 }

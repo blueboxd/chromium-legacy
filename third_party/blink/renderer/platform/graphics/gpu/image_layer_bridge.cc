@@ -15,6 +15,7 @@
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/color_behavior.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
@@ -24,6 +25,32 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace blink {
+namespace {
+
+scoped_refptr<StaticBitmapImage> MakeAccelerated(
+    const scoped_refptr<StaticBitmapImage>& source,
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper>
+        context_provider_wrapper) {
+  if (source->IsTextureBacked())
+    return source;
+
+  auto paint_image = source->PaintImageForCurrentFrame();
+  auto provider = CanvasResourceProvider::Create(
+      source->Size(),
+      CanvasResourceProvider::ResourceUsage::
+          kAcceleratedCompositedResourceUsage,
+      context_provider_wrapper, 0, kLow_SkFilterQuality,
+      CanvasColorParams(paint_image.GetSkImage()->imageInfo()),
+      CanvasResourceProvider::kDefaultPresentationMode, nullptr,
+      source->IsOriginTopLeft());
+  if (!provider || !provider->IsAccelerated())
+    return nullptr;
+
+  provider->Canvas()->drawImage(paint_image, 0, 0, nullptr);
+  return provider->Snapshot();
+}
+
+}  // namespace
 
 ImageLayerBridge::ImageLayerBridge(OpacityMode opacity_mode)
     : opacity_mode_(opacity_mode) {
@@ -122,7 +149,7 @@ bool ImageLayerBridge::PrepareTransferableResource(
 
   if (gpu_compositing) {
     scoped_refptr<StaticBitmapImage> image_for_compositor =
-        image_->MakeAccelerated(SharedGpuContext::ContextProviderWrapper());
+        MakeAccelerated(image_, SharedGpuContext::ContextProviderWrapper());
     if (!image_for_compositor)
       return false;
 

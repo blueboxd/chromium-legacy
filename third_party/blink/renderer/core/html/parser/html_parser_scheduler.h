@@ -64,18 +64,6 @@ class HTMLParserScheduler final : public GarbageCollected<HTMLParserScheduler> {
   void ScheduleForUnpause();
   bool YieldIfNeeded(const SpeculationsPumpSession&, bool starting_script);
 
-  /**
-   * Can only be called if this scheduler is paused. If this is called,
-   * then after the scheduler is resumed by calling resume(), this call
-   * ensures that HTMLDocumentParser::resumeAfterYield will be called. Used to
-   * signal this scheduler that the background html parser sent chunks to
-   * HTMLDocumentParser while it was paused.
-   */
-  void ForceUnpauseAfterYield();
-
-  void Pause();
-  void Unpause();
-
   void Detach();  // Clear active tasks if any.
 
   void Trace(Visitor*);
@@ -88,7 +76,6 @@ class HTMLParserScheduler final : public GarbageCollected<HTMLParserScheduler> {
   scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
 
   TaskHandle cancellable_continue_parse_task_handle_;
-  bool is_paused_with_active_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLParserScheduler);
 };

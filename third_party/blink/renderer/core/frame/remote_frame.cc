@@ -112,6 +112,12 @@ void RemoteFrame::Navigate(const FrameLoadRequest& passed_request,
       frame_request.OriginDocument(), frame_request.GetFrameType(),
       frame ? frame->GetContentSettingsClient() : nullptr);
 
+  // Navigations in portal contexts do not create back/forward entries.
+  if (GetPage()->InsidePortal() &&
+      frame_load_type == WebFrameLoadType::kStandard) {
+    frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
+  }
+
   bool is_opener_navigation = false;
   bool initiator_frame_has_download_sandbox_flag = false;
   bool initiator_frame_is_ad = false;

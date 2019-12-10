@@ -43,6 +43,7 @@ java_library("preferences_junit_tests") {
     "android/java/src/org/chromium/chrome/browser/preferences/ChromePreferenceKeyCheckerTest.java",
     "android/java/src/org/chromium/chrome/browser/preferences/ChromePreferenceKeysTest.java",
     "android/java/src/org/chromium/chrome/browser/preferences/KeyPrefixTest.java",
+    "android/java/src/org/chromium/chrome/browser/preferences/SharedPreferencesManagerTest.java",
   ]
   deps = [
     ":java",

@@ -30,22 +30,10 @@ class PLATFORM_EXPORT GraphicsContext3DUtils {
                              context_provider_wrapper)
       : context_provider_wrapper_(std::move(context_provider_wrapper)) {}
 
-  // Use this service to create a new mailbox or possibly obtain a pre-existing
-  // mailbox for a given texture. The caching of pre-existing mailboxes survives
-  // when the texture gets recycled by skia for creating a new SkSurface or
-  // SkImage with a pre-existing GrTexture backing.
-  bool GetMailboxForSkImage(gpu::Mailbox&,
-                            GLenum&,
-                            const sk_sp<SkImage>&,
-                            GLenum filter);
-  void RegisterMailbox(GrTexture*, const gpu::Mailbox&);
-  void RemoveCachedMailbox(GrTexture*);
-
   bool Accelerated2DCanvasFeatureEnabled();
 
  private:
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
-  WTF::HashMap<GrTexture*, gpu::Mailbox> cached_mailboxes_;
 };
 
 }  // namespace blink

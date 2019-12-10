@@ -15,7 +15,7 @@
 namespace content {
 
 SessionStorageAreaImpl::SessionStorageAreaImpl(
-    SessionStorageMetadata::NamespaceEntry namespace_entry,
+    storage::SessionStorageMetadata::NamespaceEntry namespace_entry,
     url::Origin origin,
     scoped_refptr<SessionStorageDataMap> data_map,
     RegisterNewAreaMap register_new_map_callback)
@@ -42,7 +42,7 @@ void SessionStorageAreaImpl::Bind(
 }
 
 std::unique_ptr<SessionStorageAreaImpl> SessionStorageAreaImpl::Clone(
-    SessionStorageMetadata::NamespaceEntry namespace_entry) {
+    storage::SessionStorageMetadata::NamespaceEntry namespace_entry) {
   DCHECK(namespace_entry_ != namespace_entry);
   return base::WrapUnique(new SessionStorageAreaImpl(
       namespace_entry, origin_, shared_data_map_, register_new_map_callback_));

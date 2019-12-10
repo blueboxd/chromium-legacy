@@ -28,5 +28,8 @@ public class WebLayerBrowserTestsApplication extends NativeBrowserTestApplicatio
     }
 
     @Override
+    protected void setLibraryProcessType() {}
+
+    @Override
     protected void initApplicationContext() {}
 }

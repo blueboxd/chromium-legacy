@@ -1091,14 +1091,6 @@ inline ContainerNode* Node::ParentOrShadowHostNode() const {
 // Allow equality comparisons of Nodes by reference or pointer, interchangeably.
 DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(Node)
 
-#define DEFINE_NODE_TYPE_CASTS(thisType, predicate) \
-  DEFINE_TYPE_CASTS(thisType, Node, node, node->predicate, node.predicate)
-
-// This requires isClassName(const Node&).
-#define DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(thisType)         \
-  DEFINE_TYPE_CASTS(thisType, Node, node, Is##thisType(*node), \
-                    Is##thisType(node))
-
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const Node&);
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const Node*);
 

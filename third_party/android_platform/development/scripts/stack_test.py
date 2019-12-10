@@ -56,14 +56,14 @@ class FakeSymbolizer:
   def __init__(self, directory):
     self._lib_directory = directory
 
-  def GetSymbolInformation(self, file, address_string):
-    basename = os.path.basename(file)
+  def GetSymbolInformation(self, library, address_string):
+    basename = os.path.basename(library)
     local_file = os.path.join(self._lib_directory, basename)
 
     # If the library doesn't exist, the LLVM symbolizer wrapper script
     # intercepts the call and returns <UNKNOWN>.
     if not os.path.exists(local_file):
-      return [('<UNKNOWN>', file)]
+      return [('<UNKNOWN>', library)]
 
     # If the address isn't in the library, LLVM symbolizer yields ??.
     lib_size = os.stat(local_file).st_size
@@ -75,7 +75,7 @@ class FakeSymbolizer:
 
     # Determine if the lib is a secondary ABI library, in which case, preface
     # its namespace with '32'.
-    if 'android_clang_' in file:
+    if 'android_clang_' in library:
       namespace += '32'
 
     method_name = '{}::Func_{:X}'.format(namespace, address)
@@ -90,11 +90,11 @@ class StackDecodeTest(unittest.TestCase):
   def tearDown(self):
     shutil.rmtree(self._temp_dir)
 
-  def _MakeElf(self, file):
+  def _MakeElf(self, library):
     # Make the unstripped lib directory in case stack.py looks for it.
-    dir = os.path.join(os.path.dirname(file), 'lib.unstripped')
-    if not os.path.exists(dir):
-      os.makedirs(dir)
+    lib_dir = os.path.join(os.path.dirname(library), 'lib.unstripped')
+    if not os.path.exists(lib_dir):
+      os.makedirs(lib_dir)
 
     # Create a library slightly less than 4K in size, so that when added to an
     # APK archive, all libraries end up on 4K boundaries. Also, make each
@@ -102,7 +102,7 @@ class StackDecodeTest(unittest.TestCase):
     # matching up libraries.
     data = '\x7fELF' + ' ' * (0xE00 - self._num_libraries)
     self._num_libraries += 1
-    with open(file, 'wb') as f:
+    with open(library, 'wb') as f:
       f.write(data)
 
   # Build a dummy APK with native libraries in it.
@@ -171,7 +171,7 @@ class StackDecodeTest(unittest.TestCase):
       sys.stdout = f
       try:
         stack.main(stack_script_args, test_symbolizer=symbolizer)
-      except:
+      except Exception:
         pass
       sys.stdout.flush()
       sys.stdout = old_stdout
@@ -201,17 +201,17 @@ class StackDecodeTest(unittest.TestCase):
     apks = {
         'chrome.apk': ['libchrome.so', 'libfoo.so'],
     }
-    input = textwrap.dedent('''
+    input_trace = textwrap.dedent('''
       DEBUG : #01 pc 00000174  /path==/base.apk (offset 0x00001000)
       DEBUG : #02 pc 00000274  /path==/base.apk (offset 0x00002000)
       DEBUG : #03 pc 00000374  /path==/lib/arm/libchrome.so
       ''')
-    expected = textwrap.dedent('''
+    expected_decode = textwrap.dedent('''
       00000174   chrome::Func_174         chrome.cc:1:1
       00000274   foo::Func_274            foo.cc:1:1
       00000374   chrome::Func_374         chrome.cc:1:1
       ''')
-    self._RunCase(input, expected, apks)
+    self._RunCase(input_trace, expected_decode, apks)
 
   def test_OutOfRangeAddresses(self):
     apks = {
@@ -219,15 +219,15 @@ class StackDecodeTest(unittest.TestCase):
     }
     # Test offsets where the address is outside the range of a valid library,
     # and when the offset does not correspond to a valid library.
-    input = textwrap.dedent('''
+    input_trace = textwrap.dedent('''
       DEBUG : #01 pc 00777777  /path==/base.apk (offset 0x00001000)
       DEBUG : #02 pc 00000374  /path==/base.apk (offset 0x00003000)
       ''')
-    expected = textwrap.dedent('''
+    expected_decode = textwrap.dedent('''
       00777777   ??                       ??:0:0
       00000374   offset 0x00003000        /path==/base.apk
       ''')
-    self._RunCase(input, expected, apks)
+    self._RunCase(input_trace, expected_decode, apks)
 
   def test_SystemLibraries(self):
     apks = {
@@ -235,15 +235,15 @@ class StackDecodeTest(unittest.TestCase):
     }
     # Here, the frames are in an on-device system library. If the trace is able
     # to supply a symbol name, ensure it's preserved in the output.
-    input = textwrap.dedent('''
+    input_trace = textwrap.dedent('''
       DEBUG : #01 pc 00000474  /system/lib/libart.so (art_function+40)
       DEBUG : #02 pc 00000474  /system/lib/libart.so
       ''')
-    expected = textwrap.dedent('''
+    expected_decode = textwrap.dedent('''
       00000474   art_function+40          /system/lib/libart.so
       00000474   <UNKNOWN>                /system/lib/libart.so
       ''')
-    self._RunCase(input, expected, apks)
+    self._RunCase(input_trace, expected_decode, apks)
 
   def test_MultiArchPrimaryAbi(self):
     apks = {
@@ -253,13 +253,13 @@ class StackDecodeTest(unittest.TestCase):
     }
     # With both architectures present, verify that the correct ABI output and
     # directory is chosen, even if identically-named libraries exist in both.
-    input = textwrap.dedent('''
+    input_trace = textwrap.dedent('''
       DEBUG : #01 pc 00000174  /path==/base.apk (offset 0x00001000)
       ''')
-    expected = textwrap.dedent('''
+    expected_decode = textwrap.dedent('''
       00000174   monochrome::Func_174         monochrome.cc:1:1
       ''')
-    self._RunCase(input, expected, apks)
+    self._RunCase(input_trace, expected_decode, apks)
 
   def test_MultiArchSecondary(self):
     apks = {
@@ -272,13 +272,13 @@ class StackDecodeTest(unittest.TestCase):
     # exist in both. This must be a different test from the primary ABI case,
     # since in practice, traces are from a single ABI (and the script relies on
     # this).
-    input = textwrap.dedent('''
+    input_trace = textwrap.dedent('''
       DEBUG : #02 pc 00000274  /path==/base.apk (offset 0x00002000)
       ''')
-    expected = textwrap.dedent('''
+    expected_decode = textwrap.dedent('''
       00000274   monochrome32::Func_274       monochrome32.cc:1:1
       ''')
-    self._RunCase(input, expected, apks)
+    self._RunCase(input_trace, expected_decode, apks)
 
 
 if __name__ == '__main__':

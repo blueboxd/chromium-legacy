@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * Unit tests for {@link LocationBarLayout} class.
@@ -76,7 +77,8 @@ public final class ToolbarSecurityIconTest {
         }
 
         @Implementation
-        public static boolean shouldDowngradeNeutralStyling(int securityLevel, String url) {
+        public static boolean shouldDowngradeNeutralStylingForWebContents(
+                WebContents webContents, String url) {
             return sShouldDowngrade;
         }
 

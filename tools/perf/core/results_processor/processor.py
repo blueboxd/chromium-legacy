@@ -194,8 +194,6 @@ def ConvertProtoTraces(test_result, trace_processor_path):
   # individual ones.
   for proto_trace_name in proto_traces:
     proto_file_path = artifacts[proto_trace_name]['filePath']
-    logging.info('%s: Converting proto trace %s.',
-                 test_result['testPath'], proto_file_path)
     json_file_path = (os.path.splitext(proto_file_path)[0] +
                       CONVERTED_JSON_SUFFIX)
     json_trace_name = (posixpath.splitext(proto_trace_name)[0] +
@@ -206,6 +204,8 @@ def ConvertProtoTraces(test_result, trace_processor_path):
         'filePath': json_file_path,
         'contentType': 'application/json',
     }
+    logging.info('%s: Proto trace converted. Source: %s. Destination: %s.',
+                 test_result['testPath'], proto_file_path, json_file_path)
 
 
 def AggregateTBMv2Traces(test_result):
@@ -220,13 +220,13 @@ def AggregateTBMv2Traces(test_result):
   if traces:
     trace_files = [artifacts[name]['filePath'] for name in traces]
     html_path = _BuildOutputPath(trace_files, compute_metrics.HTML_TRACE_NAME)
-    logging.info('%s: Aggregating traces %s.',
-                 test_result['testPath'], trace_files)
     trace_data.SerializeAsHtml(trace_files, html_path)
     artifacts[compute_metrics.HTML_TRACE_NAME] = {
       'filePath': html_path,
       'contentType': 'text/html',
     }
+    logging.info('%s: TBMv2 traces aggregated. Sources: %s. Destination: %s.',
+                 test_result['testPath'], trace_files, html_path)
   for name in traces:
     del artifacts[name]
 
@@ -256,6 +256,8 @@ def AggregateTBMv3Traces(test_result):
       'filePath': concatenated_path,
       'contentType': 'application/x-protobuf',
     }
+    logging.info('%s: Proto traces aggregated. Sources: %s. Destination: %s.',
+                 test_result['testPath'], proto_files, concatenated_path)
   for name in traces:
     del artifacts[name]
 
@@ -291,7 +293,7 @@ def UploadArtifacts(test_result, upload_bucket, run_identifier):
     urlsafe_remote_name = re.sub(r'[^A-Za-z0-9/.-]+', '_', remote_name)
     artifact['remoteUrl'] = cloud_storage.Insert(
         upload_bucket, urlsafe_remote_name, artifact['filePath'])
-    logging.info('Uploaded %s of %s to %s', name, test_result['testPath'],
+    logging.info('%s: Uploaded %s to %s', test_result['testPath'], name,
                  artifact['remoteUrl'])
 
 

@@ -110,8 +110,8 @@ void ImeServiceConnector::SetupImeService(
   if (!remote_service_) {
     auto kImeServiceSandboxType =
         chromeos::features::IsImeDecoderWithSandboxEnabled()
-            ? service_manager::SANDBOX_TYPE_IME
-            : service_manager::SANDBOX_TYPE_UTILITY;
+            ? service_manager::SandboxType::kIme
+            : service_manager::SandboxType::kUtility;
     content::ServiceProcessHost::Launch(
         remote_service_.BindNewPipeAndPassReceiver(),
         content::ServiceProcessHost::Options()

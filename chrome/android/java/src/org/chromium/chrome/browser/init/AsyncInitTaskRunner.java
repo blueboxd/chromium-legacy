@@ -11,7 +11,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryPrefetcher;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
@@ -147,7 +146,7 @@ public abstract class AsyncInitTaskRunner {
      */
     private boolean loadNativeLibrary() {
         try {
-            LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
+            LibraryLoader.getInstance().ensureInitialized();
             // The prefetch is done after the library load for two reasons:
             // - It is easier to know the library location after it has
             // been loaded.

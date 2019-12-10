@@ -14,10 +14,10 @@
 #include "base/test/bind_test_util.h"
 #include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
+#include "components/services/storage/dom_storage/session_storage_metadata.h"
 #include "components/services/storage/dom_storage/storage_area_test_util.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/dom_storage/session_storage_data_map.h"
-#include "content/browser/dom_storage/session_storage_metadata.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/gmock_util.h"
@@ -32,7 +32,7 @@ namespace content {
 
 namespace {
 
-using NamespaceEntry = SessionStorageMetadata::NamespaceEntry;
+using NamespaceEntry = storage::SessionStorageMetadata::NamespaceEntry;
 
 constexpr const int kTestProcessIdOrigin1 = 11;
 constexpr const int kTestProcessIdAllOrigins = 12;
@@ -154,7 +154,7 @@ class SessionStorageNamespaceImplMojoTest
     return namespace_impl_ptr;
   }
 
-  scoped_refptr<SessionStorageMetadata::MapData> RegisterNewAreaMap(
+  scoped_refptr<storage::SessionStorageMetadata::MapData> RegisterNewAreaMap(
       NamespaceEntry namespace_entry,
       const url::Origin& origin) {
     std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> save_tasks;
@@ -204,7 +204,7 @@ class SessionStorageNamespaceImplMojoTest
   const url::Origin test_origin1_;
   const url::Origin test_origin2_;
   const url::Origin test_origin3_;
-  SessionStorageMetadata metadata_;
+  storage::SessionStorageMetadata metadata_;
   bool bad_message_called_ = false;
 
   std::map<std::string, std::unique_ptr<SessionStorageNamespaceImplMojo>>

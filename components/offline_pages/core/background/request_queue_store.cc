@@ -300,7 +300,7 @@ AddRequestResult InsertSync(sql::Database* db, const SavePageRequest& request) {
   statement.BindString(10, request.original_url().spec());
   statement.BindString(11, request.request_origin());
   statement.BindInt64(12, static_cast<int64_t>(request.fail_state()));
-  statement.BindInt(
+  statement.BindInt64(
       13, static_cast<int64_t>(request.auto_fetch_notification_state()));
 
   if (!statement.Run())

@@ -237,10 +237,8 @@ bool NGOutOfFlowLayoutPart::SweepLegacyCandidates(
     // size first.
     // We perform a pre-layout to correctly determine the static position.
     // Copied from LayoutBlock::LayoutPositionedObject
+    // TODO(layout-dev): Remove this once LayoutFlexibleBox is removed.
     LayoutBox* layout_box = ToLayoutBox(legacy_object);
-    // TODO(dgrogan): The NG flexbox implementation doesn't have an
-    // analogous method yet, so abspos children of NG flexboxes that have a
-    // legacy containing block will not be positioned correctly.
     if (layout_box->Parent()->IsFlexibleBox()) {
       LayoutFlexibleBox* parent = ToLayoutFlexibleBox(layout_box->Parent());
       if (parent->SetStaticPositionForPositionedLayout(*layout_box)) {

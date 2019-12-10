@@ -33,7 +33,7 @@ class NaClBrokerSandboxedProcessLauncherDelegate
   NaClBrokerSandboxedProcessLauncherDelegate() {}
 
   service_manager::SandboxType GetSandboxType() override {
-    return service_manager::SANDBOX_TYPE_NO_SANDBOX;
+    return service_manager::SandboxType::kNoSandbox;
   }
 
  private:

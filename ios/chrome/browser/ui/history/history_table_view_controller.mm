@@ -1063,6 +1063,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 // Opens URL in the current tab and dismisses the history view.
 - (void)openURL:(const GURL&)URL {
+  // TODO(crbug.com/1032550) : Update this call to pass in the current WebState.
   new_tab_page_uma::RecordAction(_browserState,
                                  new_tab_page_uma::ACTION_OPENED_HISTORY_ENTRY);
   UrlLoadParams params = UrlLoadParams::InCurrentTab(URL);

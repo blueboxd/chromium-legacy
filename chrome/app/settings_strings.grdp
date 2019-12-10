@@ -5000,7 +5000,7 @@
       Low-power charger
     </message>
     <message name="IDS_SETTINGS_POWER_SOURCE_CALCULATING" desc="In Device Settings > Power, the power source description when the power status is being determined.">
-      Checking...
+      Checking power sources...
     </message>
     <message name="IDS_SETTINGS_POWER_IDLE_LABEL" desc="In Device Settings > Power, label for behavior when device is idle.">
       When idle

@@ -117,7 +117,7 @@ class MemoryPressureVoter {
   // This is the aggregator to which this voter's votes will be cast.
   MemoryPressureVoteAggregator* const aggregator_;
 
-  // Optional<> is used here as the vote will be null until the voter’s
+  // Optional<> is used here as the vote will be null until the voter's
   // first vote calculation.
   base::Optional<base::MemoryPressureListener::MemoryPressureLevel> vote_;
 

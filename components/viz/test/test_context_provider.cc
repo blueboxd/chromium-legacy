@@ -38,7 +38,10 @@ const char* const kExtensions[] = {"GL_EXT_stencil_wrap",
                                    "GL_OES_rgb8_rgba8",
                                    "GL_EXT_texture_norm16",
                                    "GL_CHROMIUM_framebuffer_multisample",
-                                   "GL_CHROMIUM_renderbuffer_format_BGRA8888"};
+                                   "GL_CHROMIUM_renderbuffer_format_BGRA8888",
+                                   "GL_OES_texture_half_float",
+                                   "GL_OES_texture_half_float_linear",
+                                   "GL_EXT_color_buffer_half_float"};
 
 class TestGLES2InterfaceForContextProvider : public TestGLES2Interface {
  public:

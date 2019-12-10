@@ -70,7 +70,7 @@ using DownloadTargetCallback =
 using DownloadOpenDelayedCallback = base::Callback<void(bool)>;
 
 // On failure, |next_id| is equal to kInvalidId.
-using DownloadIdCallback = base::Callback<void(uint32_t /* next_id */)>;
+using DownloadIdCallback = base::OnceCallback<void(uint32_t /* next_id */)>;
 
 // Called on whether a download is allowed to continue.
 using CheckDownloadAllowedCallback = base::OnceCallback<void(bool /*allow*/)>;
@@ -84,7 +84,7 @@ class CONTENT_EXPORT DownloadManagerDelegate {
   // Runs |callback| with a new download id when possible, perhaps
   // synchronously. If this call fails, |callback| will be called with
   // kInvalidId.
-  virtual void GetNextId(const DownloadIdCallback& callback);
+  virtual void GetNextId(DownloadIdCallback callback);
 
   // Called to notify the delegate that a new download |item| requires a
   // download target to be determined. The delegate should return |true| if it

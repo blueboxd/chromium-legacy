@@ -333,7 +333,7 @@ void ShellDesktopControllerAura::InitWindowManager() {
   user_activity_detector_ = std::make_unique<ui::UserActivityDetector>();
   user_activity_notifier_ =
       std::make_unique<ui::UserActivityPowerManagerNotifier>(
-          user_activity_detector_.get(), nullptr /*connector*/);
+          user_activity_detector_.get(), /*fingerprint=*/mojo::NullRemote());
 #endif
 }
 

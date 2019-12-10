@@ -47,6 +47,7 @@ public class NativeLibraryTestRule implements TestRule {
     }
 
     private void nativeInitialization(boolean initBrowserProcess) {
+        LibraryLoader.getInstance().setLibraryProcessType(LibraryProcessType.PROCESS_BROWSER);
         if (initBrowserProcess) {
             // Extract compressed resource paks.
             ResourceExtractor resourceExtractor = ResourceExtractor.get();
@@ -57,7 +58,7 @@ public class NativeLibraryTestRule implements TestRule {
             BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                     .startBrowserProcessesSync(false);
         } else {
-            LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
+            LibraryLoader.getInstance().ensureInitialized();
         }
     }
 

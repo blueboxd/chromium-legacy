@@ -23,9 +23,9 @@
           <iron-icon icon="[[icon]]">
           </iron-icon>
         </div>
-        <div class="middle" id="permissionHeader">
+        <div class="middle" id="permissionHeader" aria-hidden="true">
           [[label]]
-          <div class="secondary"
+          <div class="secondary" id="permissionSecondary"
               hidden$="[[!hasPermissionInfoString_(site.source, category,
                                                    site.setting)]]"
               inner-h-t-m-l="[[permissionInfoString_(
@@ -47,7 +47,8 @@
           </div>
         </div>
         <select id="permission" class="md-select"
-            aria-labelledby="permissionHeader"
+            aria-label$="[[label]]"
+            aria-describedby="permissionSecondary"
             on-change="onPermissionSelectionChange_"
             disabled$="[[!isPermissionUserControlled_(site.source, category,
                                                       site.setting)]]">

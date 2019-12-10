@@ -85,8 +85,8 @@ bool FieldInfoTable::AddRow(const FieldInfo& field) {
       "VALUES (?, ?, ?, ?)"));
   s.BindInt64(GetColumnNumber(FieldInfoTableColumn::kFormSignature),
               field.form_signature);
-  s.BindInt(GetColumnNumber(FieldInfoTableColumn::kFieldSignature),
-            field.field_signature);
+  s.BindInt64(GetColumnNumber(FieldInfoTableColumn::kFieldSignature),
+              field.field_signature);
   s.BindInt(GetColumnNumber(FieldInfoTableColumn::kFieldType),
             field.field_type);
   s.BindInt64(GetColumnNumber(FieldInfoTableColumn::kCreateTime),

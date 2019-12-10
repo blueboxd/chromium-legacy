@@ -7,9 +7,6 @@
 
 #import "ios/chrome/browser/ui/autofill/manual_fill/fallback_coordinator.h"
 
-@protocol BrowserCoordinatorCommands;
-class WebStateList;
-
 // Delegate for the coordinator actions.
 // TODO(crbug.com/845472): revise delegate method names.
 @protocol CardCoordinatorDelegate<FallbackCoordinatorDelegate>
@@ -27,22 +24,6 @@ class WebStateList;
 // The delegate for this coordinator. Delegate class extends
 // FallbackCoordinatorDelegate, and replaces super class delegate.
 @property(nonatomic, weak) id<CardCoordinatorDelegate> delegate;
-
-// Creates a coordinator that uses a |viewController|, |browserState|,
-// |webStateList| and |injectionHandler|.
-- (instancetype)
-    initWithBaseViewController:(UIViewController*)viewController
-                  browserState:(ios::ChromeBrowserState*)browserState
-                  webStateList:(WebStateList*)webStateList
-              injectionHandler:(ManualFillInjectionHandler*)injectionHandler
-                    dispatcher:(id<BrowserCoordinatorCommands>)dispatcher
-    NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)
-initWithBaseViewController:(UIViewController*)viewController
-              browserState:(ios::ChromeBrowserState*)browserState
-          injectionHandler:(ManualFillInjectionHandler*)injectionHandler
-    NS_UNAVAILABLE;
 
 @end
 

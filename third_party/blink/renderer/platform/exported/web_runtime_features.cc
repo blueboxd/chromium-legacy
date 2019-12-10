@@ -557,7 +557,6 @@ void WebRuntimeFeatures::EnableVideoFullscreenDetection(bool enable) {
 }
 
 void WebRuntimeFeatures::EnableVideoPlaybackQuality(bool enable) {
-  LOG(ERROR) << __func__ << "(" << enable << ")";
   RuntimeEnabledFeatures::SetVideoPlaybackQualityEnabled(enable);
 }
 

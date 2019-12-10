@@ -435,6 +435,26 @@ TEST_F(PeerConnectionTrackerTest, RemoveReceiver) {
   EXPECT_EQ(expected_value, update_value);
 }
 
+TEST_F(PeerConnectionTrackerTest, IceCandidateError) {
+  CreateTrackerWithMocks();
+  CreateAndRegisterPeerConnectionHandler();
+  auto receiver_only = CreateDefaultTransceiver(
+      RTCRtpTransceiverPlatformImplementationType::kPlanBReceiverOnly);
+  String update_value;
+  EXPECT_CALL(*mock_host_,
+              UpdatePeerConnection(_, String("icecandidateerror"), _))
+      .WillOnce(testing::SaveArg<2>(&update_value));
+  tracker_->TrackIceCandidateError(mock_handler_.get(), "[::1]", "test url",
+                                   404, "test error");
+  base::RunLoop().RunUntilIdle();
+  String expected_value(
+      "url: test url\n"
+      "host_candidate: [::1]\n"
+      "error_text: test error\n"
+      "error_code: 404");
+  EXPECT_EQ(expected_value, update_value);
+}
+
 // TODO(hta): Write tests for the other tracking functions.
 
 }  // namespace blink

@@ -191,7 +191,8 @@ class ReflectorImplTest : public testing::Test {
 
 #if defined(USE_OZONE)
   void ProcessForOverlays(
-      viz::OverlayProcessor::OutputSurfaceOverlayPlane* output_surface_plane,
+      viz::OverlayProcessorInterface::OutputSurfaceOverlayPlane*
+          output_surface_plane,
       viz::OverlayCandidateList* surfaces) {
     overlay_processor_->SetSoftwareMirrorMode(
         output_surface_->IsSoftwareMirrorMode());
@@ -251,7 +252,8 @@ TEST_F(ReflectorImplTest, CheckOverlayNoReflector) {
   if (features::IsVizDisplayCompositorEnabled())
     return;
   viz::OverlayCandidateList list;
-  viz::OverlayProcessor::OutputSurfaceOverlayPlane output_surface_plane;
+  viz::OverlayProcessorInterface::OutputSurfaceOverlayPlane
+      output_surface_plane;
   viz::OverlayCandidate overlay_plane;
   overlay_plane.plane_z_order = 1;
   list.push_back(overlay_plane);
@@ -266,7 +268,8 @@ TEST_F(ReflectorImplTest, CheckOverlaySWMirroring) {
     return;
   SetUpReflector();
   viz::OverlayCandidateList list;
-  viz::OverlayProcessor::OutputSurfaceOverlayPlane output_surface_plane;
+  viz::OverlayProcessorInterface::OutputSurfaceOverlayPlane
+      output_surface_plane;
   viz::OverlayCandidate overlay_plane;
   overlay_plane.plane_z_order = 1;
   list.push_back(overlay_plane);

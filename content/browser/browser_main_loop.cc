@@ -416,7 +416,7 @@ class OopDataDecoder : public data_decoder::ServiceProvider {
     ServiceProcessHost::Launch(
         std::move(receiver),
         ServiceProcessHost::Options()
-            .WithSandboxType(service_manager::SANDBOX_TYPE_UTILITY)
+            .WithSandboxType(service_manager::SandboxType::kUtility)
             .WithDisplayName("Data Decoder Service")
             .Pass());
   }

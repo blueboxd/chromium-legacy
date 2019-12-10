@@ -997,10 +997,10 @@ TEST_F(ChromeDownloadManagerDelegateTest,
 }
 
 TEST_F(ChromeDownloadManagerDelegateTest, WithoutHistoryDbNextId) {
-  content::DownloadIdCallback id_callback = base::Bind(
-      &ChromeDownloadManagerDelegateTest::GetNextId, base::Unretained(this));
-  delegate()->GetNextId(id_callback);
-  delegate()->GetNextId(id_callback);
+  delegate()->GetNextId(base::BindOnce(
+      &ChromeDownloadManagerDelegateTest::GetNextId, base::Unretained(this)));
+  delegate()->GetNextId(base::BindOnce(
+      &ChromeDownloadManagerDelegateTest::GetNextId, base::Unretained(this)));
   // When download database fails to initialize, id will be set to
   // |download::DownloadItem::kInvalidId|.
   delegate()->GetDownloadIdReceiverCallback().Run(
@@ -1011,10 +1011,10 @@ TEST_F(ChromeDownloadManagerDelegateTest, WithoutHistoryDbNextId) {
 }
 
 TEST_F(ChromeDownloadManagerDelegateTest, WithHistoryDbNextId) {
-  content::DownloadIdCallback id_callback = base::Bind(
-      &ChromeDownloadManagerDelegateTest::GetNextId, base::Unretained(this));
-  delegate()->GetNextId(id_callback);
-  delegate()->GetNextId(id_callback);
+  delegate()->GetNextId(base::BindOnce(
+      &ChromeDownloadManagerDelegateTest::GetNextId, base::Unretained(this)));
+  delegate()->GetNextId(base::BindOnce(
+      &ChromeDownloadManagerDelegateTest::GetNextId, base::Unretained(this)));
   // Simulates a valid download database with no records.
   delegate()->GetDownloadIdReceiverCallback().Run(1u);
   std::vector<uint32_t> expected_ids = std::vector<uint32_t>{1u, 2u};

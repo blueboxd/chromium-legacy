@@ -19,11 +19,11 @@ import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.MathUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.MockLayoutUpdateHost;
-import org.chromium.chrome.browser.util.MathUtils;
 
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;

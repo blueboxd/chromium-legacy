@@ -10,6 +10,7 @@ for more details about the presubmit API built into depot_tools.
 
 def CommonChecks(input_api, output_api):
   output = []
+  output.extend(input_api.canned_checks.RunPylint(input_api, output_api))
 
   py_tests = input_api.canned_checks.GetUnitTestsRecursively(
       input_api,

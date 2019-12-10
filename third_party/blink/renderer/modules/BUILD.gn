@@ -129,6 +129,7 @@ jumbo_component("modules") {
     "//third_party/blink/renderer/modules/push_messaging",
     "//third_party/blink/renderer/modules/quota",
     "//third_party/blink/renderer/modules/remoteplayback",
+    "//third_party/blink/renderer/modules/remote_objects",
     "//third_party/blink/renderer/modules/scheduler",
     "//third_party/blink/renderer/modules/screen_enumeration",
     "//third_party/blink/renderer/modules/screen_orientation",

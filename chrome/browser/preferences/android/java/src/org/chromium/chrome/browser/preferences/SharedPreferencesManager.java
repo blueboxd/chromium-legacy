@@ -117,9 +117,10 @@ public class SharedPreferencesManager {
      */
     public void addToStringSet(String key, String value) {
         mKeyChecker.assertIsKeyInUse(key);
-        Set<String> values = new HashSet<>(readStringSet(key));
+        Set<String> values =
+                new HashSet<>(mSharedPreferences.getStringSet(key, Collections.emptySet()));
         values.add(value);
-        writeStringSet(key, values);
+        writeStringSetUnchecked(key, values);
     }
 
     /**
@@ -127,9 +128,10 @@ public class SharedPreferencesManager {
      */
     public void removeFromStringSet(String key, String value) {
         mKeyChecker.assertIsKeyInUse(key);
-        Set<String> values = new HashSet<>(readStringSet(key));
+        Set<String> values =
+                new HashSet<>(mSharedPreferences.getStringSet(key, Collections.emptySet()));
         if (values.remove(value)) {
-            writeStringSet(key, values);
+            writeStringSetUnchecked(key, values);
         }
     }
 
@@ -138,6 +140,10 @@ public class SharedPreferencesManager {
      */
     public void writeStringSet(String key, Set<String> values) {
         mKeyChecker.assertIsKeyInUse(key);
+        writeStringSetUnchecked(key, values);
+    }
+
+    private void writeStringSetUnchecked(String key, Set<String> values) {
         mSharedPreferences.edit().putStringSet(key, values).apply();
     }
 
@@ -148,6 +154,10 @@ public class SharedPreferencesManager {
      */
     public void writeInt(String key, int value) {
         mKeyChecker.assertIsKeyInUse(key);
+        writeIntUnchecked(key, value);
+    }
+
+    private void writeIntUnchecked(String key, int value) {
         SharedPreferences.Editor ed = mSharedPreferences.edit();
         ed.putInt(key, value);
         ed.apply();
@@ -184,7 +194,7 @@ public class SharedPreferencesManager {
     public int incrementInt(String key) {
         mKeyChecker.assertIsKeyInUse(key);
         int value = mSharedPreferences.getInt(key, 0);
-        writeInt(key, ++value);
+        writeIntUnchecked(key, ++value);
         return value;
     }
 

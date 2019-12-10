@@ -3416,7 +3416,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         VoiceSearchNavigationTabHelper::FromWebState(current_web_state)
             ->IsExpectingVoiceSearch();
     new_tab_page_uma::RecordActionFromOmnibox(
-        self.browserState, URL, transitionType, isExpectingVoiceSearch);
+        self.browserState, current_web_state, URL, transitionType,
+        isExpectingVoiceSearch);
   }
 }
 
@@ -4884,7 +4885,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     newTabPageCoordinator.webState = webState;
     _ntpCoordinatorsForWebStates[webState] = newTabPageCoordinator;
   } else {
-    DCHECK(_ntpCoordinatorsForWebStates[webState]);
+    NewTabPageCoordinator* newTabPageCoordinator =
+        _ntpCoordinatorsForWebStates[webState];
+    DCHECK(newTabPageCoordinator);
+    [newTabPageCoordinator stop];
     _ntpCoordinatorsForWebStates.erase(webState);
   }
   if (self.active && self.currentWebState == webState) {

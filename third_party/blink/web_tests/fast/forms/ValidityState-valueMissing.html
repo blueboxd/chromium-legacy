@@ -199,67 +199,6 @@ test(() => {
 }, 'Updating valueMissing state by user input.');
 
 test(() => {
-  document.querySelector('#sample').innerHTML = '<input name="victim" disabled required />' +
-    '<textarea name="victim" disabled required></textarea>' +
-    '<select name="victim" disabled required>' +
-    '</select>' +
-    '<select name="victim" disabled required>' +
-    '  <option value="" selected />' +
-    '  <option value="X">X</option>' +
-    '</select>' +
-    '<select name="victim" disabled required>' +
-    '  <option value="X">X</option>' +
-    '  <option value="" selected />' +
-    '</select>' +
-    '<select name="victim" size="2" disabled required>' +
-    '  <option value="" selected />' +
-    '  <option value="X">X</option>' +
-    '</select>' +
-    '<select name="victim" size="2" disabled required>' +
-    '  <option value="X">X</option>' +
-    '  <option value="" selected />' +
-    '</select>' +
-    '<select name="victim" multiple disabled required>' +
-    '  <option value="" />' +
-    '  <option value="X">X</option>' +
-    '</select>' +
-    '<select name="victim" multiple disabled required>' +
-    '  <option value="" selected />' +
-    '  <option value="X">X</option>' +
-    '</select>' +
-    '<select name="victim" multiple disabled required>' +
-    '  <option value="X">X</option>' +
-    '  <option value="" selected />' +
-    '</select>' +
-    '<select name="victim" multiple size="2" disabled required>' +
-    '  <option value="" />' +
-    '  <option value="X">X</option>' +
-    '</select>' +
-    '<select name="victim" multiple size="2" disabled required>' +
-    '  <option value="" selected />' +
-    '  <option value="X">X</option>' +
-    '</select>' +
-    '<select name="victim" multiple size="2" disabled required>' +
-    '  <option value="X">X</option>' +
-    '  <option value="" selected />' +
-    '</select>';
-  var controls = document.querySelectorAll(':disabled');
-  for (var c of controls) {
-    assert_false(c.validity.valueMissing);
-  }
-}, 'Disabled controls never be valueMissing.');
-
-test(() => {
-  document.querySelector('#sample').innerHTML =
-    '<input readonly required />' +
-    '<textarea readonly required></textarea>';
-  var controls = document.querySelectorAll('[readonly]');
-  for (var c of controls) {
-    assert_false(c.validity.valueMissing);
-  }
-}, 'Read-only controls never be valueMissing.');
-
-test(() => {
   document.querySelector('#sample').innerHTML =
     '<fieldset id="non-supported-container">' +
     '<input name="victim" type="hidden" required />' +

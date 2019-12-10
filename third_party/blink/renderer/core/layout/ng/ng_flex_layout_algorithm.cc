@@ -50,16 +50,90 @@ LayoutUnit NGFlexLayoutAlgorithm::MainAxisContentExtent(
   return content_box_size_.inline_size;
 }
 
+namespace {
+
+enum AxisEdge { kStart, kCenter, kEnd };
+
+// Maps the resolved justify-content value to a static-position edge.
+AxisEdge MainAxisStaticPositionEdge(const ComputedStyle& style,
+                                    bool is_column) {
+  const StyleContentAlignmentData justify =
+      FlexLayoutAlgorithm::ResolvedJustifyContent(style);
+  const ContentPosition content_position = justify.GetPosition();
+  bool is_reverse_flex = is_column
+                             ? style.ResolvedIsColumnReverseFlexDirection()
+                             : style.ResolvedIsRowReverseFlexDirection();
+
+  if (content_position == ContentPosition::kFlexEnd)
+    return is_reverse_flex ? AxisEdge::kStart : AxisEdge::kEnd;
+
+  if (content_position == ContentPosition::kCenter ||
+      justify.Distribution() == ContentDistributionType::kSpaceAround ||
+      justify.Distribution() == ContentDistributionType::kSpaceEvenly)
+    return AxisEdge::kCenter;
+
+  return is_reverse_flex ? AxisEdge::kEnd : AxisEdge::kStart;
+}
+
+// Maps the resolved alignment value to a static-position edge.
+AxisEdge CrossAxisStaticPositionEdge(const ComputedStyle& style,
+                                     const ComputedStyle& child_style) {
+  ItemPosition alignment =
+      FlexLayoutAlgorithm::AlignmentForChild(style, child_style);
+  bool is_wrap_reverse = style.FlexWrap() == EFlexWrap::kWrapReverse;
+
+  if (alignment == ItemPosition::kFlexEnd)
+    return is_wrap_reverse ? AxisEdge::kStart : AxisEdge::kEnd;
+
+  if (alignment == ItemPosition::kCenter)
+    return AxisEdge::kCenter;
+
+  return is_wrap_reverse ? AxisEdge::kEnd : AxisEdge::kStart;
+}
+
+}  // namespace
+
 void NGFlexLayoutAlgorithm::HandleOutOfFlowPositioned(NGBlockNode child) {
-  // TODO(dgrogan): There's stuff from
-  // https://www.w3.org/TR/css-flexbox-1/#abspos-items that isn't done here.
-  // Specifically, neither rtl nor alignment is handled here, at least.
-  // Look at LayoutFlexibleBox::PrepareChildForPositionedLayout and
-  // SetStaticPositionForPositionedLayout to see how to statically position
-  // this.
-  container_builder_.AddOutOfFlowChildCandidate(
-      child, {border_scrollbar_padding_.inline_start,
-              border_scrollbar_padding_.block_start});
+  AxisEdge main_axis_edge = MainAxisStaticPositionEdge(Style(), is_column_);
+  AxisEdge cross_axis_edge =
+      CrossAxisStaticPositionEdge(Style(), child.Style());
+
+  AxisEdge inline_axis_edge = is_column_ ? cross_axis_edge : main_axis_edge;
+  AxisEdge block_axis_edge = is_column_ ? main_axis_edge : cross_axis_edge;
+
+  using InlineEdge = NGLogicalStaticPosition::InlineEdge;
+  using BlockEdge = NGLogicalStaticPosition::BlockEdge;
+
+  InlineEdge inline_edge;
+  BlockEdge block_edge;
+  LogicalOffset offset(border_scrollbar_padding_.inline_start,
+                       border_scrollbar_padding_.block_start);
+
+  // Determine the static-position based off the axis-edge.
+  if (inline_axis_edge == AxisEdge::kStart) {
+    inline_edge = InlineEdge::kInlineStart;
+  } else if (inline_axis_edge == AxisEdge::kCenter) {
+    inline_edge = InlineEdge::kInlineCenter;
+    offset.inline_offset += content_box_size_.inline_size / 2;
+  } else {
+    inline_edge = InlineEdge::kInlineEnd;
+    offset.inline_offset += content_box_size_.inline_size;
+  }
+
+  // We may not know the final block-size of the fragment yet. This will be
+  // adjusted within the |NGContainerFragmentBuilder| once set.
+  if (block_axis_edge == AxisEdge::kStart) {
+    block_edge = BlockEdge::kBlockStart;
+  } else if (block_axis_edge == AxisEdge::kCenter) {
+    block_edge = BlockEdge::kBlockCenter;
+    offset.block_offset -= border_scrollbar_padding_.BlockSum() / 2;
+  } else {
+    block_edge = BlockEdge::kBlockEnd;
+    offset.block_offset -= border_scrollbar_padding_.BlockSum();
+  }
+
+  container_builder_.AddOutOfFlowChildCandidate(child, offset, inline_edge,
+                                                block_edge);
 }
 
 bool NGFlexLayoutAlgorithm::IsColumnContainerMainSizeDefinite() const {

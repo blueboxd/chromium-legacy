@@ -81,6 +81,10 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 #pragma mark - Navigation Utilities (EG2)
 
+// Instructs the application delegate to open |URL| with default opening
+// options.
+- (void)applicationOpenURL:(const GURL&)URL;
+
 // Loads |URL| in the current WebState with transition type
 // ui::PAGE_TRANSITION_TYPED, and if waitForCompletion is YES
 // waits for the loading to complete within a timeout.
@@ -128,9 +132,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Waits for there to be |count| number of incognito tabs within a timeout, or a
 // GREYAssert is induced.
 - (void)waitForIncognitoTabCount:(NSUInteger)count;
-
-// Loads |URL| as if it was opened from an external application.
-- (void)openURLFromExternalApp:(const GURL&)URL;
 
 #pragma mark - Settings Utilities (EG2)
 
@@ -259,9 +260,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 // Returns the number of incognito tabs.
 - (NSUInteger)incognitoTabCount WARN_UNUSED_RESULT;
-
-// Returns the index of active tab in normal (non-incognito) mode.
-- (NSUInteger)indexOfActiveNormalTab;
 
 // Simulates a backgrounding and raises an EarlGrey exception if simulation not
 // succeeded.

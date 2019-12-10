@@ -5,6 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_TRACING_TRACED_VALUE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_TRACING_TRACED_VALUE_H_
 
+#include <memory>
+#include <string>
+
 #include "base/macros.h"
 #include "base/trace_event/traced_value.h"
 #include "third_party/blink/renderer/platform/platform_export.h"

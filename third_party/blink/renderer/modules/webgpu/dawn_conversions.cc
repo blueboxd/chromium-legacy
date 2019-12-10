@@ -23,6 +23,9 @@ WGPUBindingType AsDawnEnum<WGPUBindingType>(const WTF::String& webgpu_enum) {
   if (webgpu_enum == "storage-buffer") {
     return WGPUBindingType_StorageBuffer;
   }
+  if (webgpu_enum == "readonly-storage-buffer") {
+    return WGPUBindingType_ReadonlyStorageBuffer;
+  }
   if (webgpu_enum == "sampler") {
     return WGPUBindingType_Sampler;
   }

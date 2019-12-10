@@ -1401,6 +1401,9 @@
       </intent-filter>
     </receiver>
     <receiver
+        android:exported="false"
+        android:name="org.chromium.components.background_task_scheduler.BackgroundTaskBroadcastReceiver"/>
+    <receiver
         android:exported="true"
         android:name="com.google.android.gms.gcm.GcmReceiver"
         android:permission="com.google.android.c2dm.permission.SEND">

@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "ash/public/mojom/assistant_volume_control.mojom.h"
-#include "ash/public/mojom/constants.mojom.h"
 #include "chromeos/services/assistant/media_session/assistant_media_session.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"

@@ -271,7 +271,8 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   // To avoid lock-order inversion, this lock should not be held while making
   // calls to mojo interfaces or posting tasks, or calling any other code path
   // that may acquire another lock that may also be held while emitting a trace
-  // event (crbug.com/986248).
+  // event (crbug.com/986248). Use AutoLockWithDeferredTaskPosting rather than
+  // base::AutoLock to protect code paths which may post tasks.
   base::Lock lock_;  // Protects subsequent members.
   uint32_t target_buffer_ = 0;
   // We own the registry during startup, but transfer its ownership to the

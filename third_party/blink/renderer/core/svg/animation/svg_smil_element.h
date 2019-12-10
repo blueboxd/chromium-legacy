@@ -273,22 +273,24 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   friend class ConditionEventListener;
 };
 
-inline bool IsSVGSMILElement(const SVGElement& element) {
-  return element.HasTagName(svg_names::kSetTag) ||
-         element.HasTagName(svg_names::kAnimateTag) ||
-         element.HasTagName(svg_names::kAnimateMotionTag) ||
-         element.HasTagName(svg_names::kAnimateTransformTag);
+template <>
+inline bool IsElementOfType<const SVGSMILElement>(const Node& node) {
+  return IsA<SVGSMILElement>(node);
 }
-
 template <>
 struct DowncastTraits<SVGSMILElement> {
   static bool AllowFrom(const Node& node) {
     auto* svg_element = DynamicTo<SVGElement>(node);
-    return svg_element && IsSVGSMILElement(*svg_element);
+    return svg_element && AllowFrom(*svg_element);
+  }
+  static bool AllowFrom(const SVGElement& svg_element) {
+    return svg_element.HasTagName(svg_names::kSetTag) ||
+           svg_element.HasTagName(svg_names::kAnimateTag) ||
+           svg_element.HasTagName(svg_names::kAnimateMotionTag) ||
+           svg_element.HasTagName(svg_names::kAnimateTransformTag);
   }
 };
 
-DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGSMILElement);
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_ANIMATION_SVG_SMIL_ELEMENT_H_

@@ -468,9 +468,6 @@ template("write_build_config") {
         _config =
             rebase_path("$_dep_gen_dir/$_dep_name.build_config", root_build_dir)
         _dependent_configs += [ _config ]
-        if (_target.is_resource_ids_provider) {
-          args += [ "--resource-ids-provider=$_config" ]
-        }
       }
       args += [ "--static-library-dependent-configs=$_dependent_configs" ]
     }

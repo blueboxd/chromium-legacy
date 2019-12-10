@@ -31,6 +31,12 @@
       const responseExtraInfo = await responseExtraInfoPromise;
       return {requestExtraInfo, responseExtraInfo};
     }
+
+    async jsNavigateIFrameWithExtraInfo(iFrameId, url) {
+      const promises = [this._dp.Network.onceRequestWillBeSent(), this._dp.Network.onceRequestWillBeSentExtraInfo(), this._dp.Network.onceResponseReceivedExtraInfo(), this._dp.Network.onceResponseReceived()];
+      await this._session.evaluate(`document.getElementById('${iFrameId}').src = '${url}'`);
+      return Promise.all(promises);
+    }
   };
 
   return (dp, session) => {

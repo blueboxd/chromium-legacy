@@ -163,9 +163,6 @@ String HTMLSelectElement::validationMessage() const {
 }
 
 bool HTMLSelectElement::ValueMissing() const {
-  if (!willValidate())
-    return false;
-
   if (!IsRequired())
     return false;
 

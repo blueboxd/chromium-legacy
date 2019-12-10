@@ -499,65 +499,6 @@ enum class EnterTabSwitcherSnapshotResult {
                  completion:nil];
 }
 
-#pragma mark - BrowsingDataCommands
-
-- (void)removeBrowsingDataForBrowserState:(ios::ChromeBrowserState*)browserState
-                               timePeriod:(browsing_data::TimePeriod)timePeriod
-                               removeMask:(BrowsingDataRemoveMask)removeMask
-                          completionBlock:(ProceduralBlock)completionBlock {
-  // TODO(crbug.com/632772): https://bugs.webkit.org/show_bug.cgi?id=149079
-  // makes it necessary to disable web usage while clearing browsing data.
-  // It is however unnecessary for off-the-record BrowserState (as the code
-  // is not invoked) and has undesired side-effect (cause all regular tabs
-  // to reload, see http://crbug.com/821753 for details).
-  BOOL disableWebUsageDuringRemoval =
-      !browserState->IsOffTheRecord() &&
-      IsRemoveDataMaskSet(removeMask, BrowsingDataRemoveMask::REMOVE_SITE_DATA);
-  BOOL showActivityIndicator = NO;
-
-  if (@available(iOS 13, *)) {
-    // TODO(crbug.com/632772): Visited links clearing doesn't require disabling
-    // web usage with iOS 13. Stop disabling web usage once iOS 12 is not
-    // supported.
-    showActivityIndicator = disableWebUsageDuringRemoval;
-    disableWebUsageDuringRemoval = NO;
-  }
-
-  if (disableWebUsageDuringRemoval) {
-    // Disables browsing and purges web views.
-    // Must be called only on the main thread.
-    DCHECK([NSThread isMainThread]);
-    self.mainInterface.userInteractionEnabled = NO;
-    self.incognitoInterface.userInteractionEnabled = NO;
-  } else if (showActivityIndicator) {
-    // Show activity overlay so users know that clear browsing data is in
-    // progress.
-    [self.mainController.mainBVC.dispatcher showActivityOverlay:YES];
-  }
-
-  BrowsingDataRemoverFactory::GetForBrowserState(browserState)
-      ->Remove(timePeriod, removeMask, base::BindOnce(^{
-                 // Activates browsing and enables web views.
-                 // Must be called only on the main thread.
-                 DCHECK([NSThread isMainThread]);
-                 if (showActivityIndicator) {
-                   // User interaction still needs to be disabled as a way to
-                   // force reload all the web states and to reset NTPs.
-                   self.mainInterface.userInteractionEnabled = NO;
-                   self.incognitoInterface.userInteractionEnabled = NO;
-
-                   [self.mainController.mainBVC.dispatcher
-                       showActivityOverlay:NO];
-                 }
-                 self.mainInterface.userInteractionEnabled = YES;
-                 self.incognitoInterface.userInteractionEnabled = YES;
-                 [self.mainController.currentBVC setPrimary:YES];
-
-                 if (completionBlock)
-                   completionBlock();
-               }));
-}
-
 #pragma mark - ApplicationCommandsHelpers
 
 - (void)openUrlFromSettings:(OpenNewTabCommand*)command {
@@ -614,6 +555,21 @@ enum class EnterTabSwitcherSnapshotResult {
 
 - (BOOL)currentPageIsIncognito {
   return self.mainController.currentBrowserState->IsOffTheRecord();
+}
+
+#pragma mark - BrowsingDataCommands
+
+- (void)removeBrowsingDataForBrowserState:(ios::ChromeBrowserState*)browserState
+                               timePeriod:(browsing_data::TimePeriod)timePeriod
+                               removeMask:(BrowsingDataRemoveMask)removeMask
+                          completionBlock:(ProceduralBlock)completionBlock {
+  // Forward the call. This is only here to maintain the downstream compilation
+  // intact. Once the call site in the test downstream is updated, this will be
+  // removed.
+  [self.mainController removeBrowsingDataForBrowserState:browserState
+                                              timePeriod:timePeriod
+                                              removeMask:removeMask
+                                         completionBlock:completionBlock];
 }
 
 #pragma mark - SettingsNavigationControllerDelegate

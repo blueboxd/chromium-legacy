@@ -56,6 +56,16 @@ void AppActivityRegistry::OnAppBlocked(const AppId& app_id) {
     SetAppState(app_id, AppState::kBlocked);
 }
 
+void AppActivityRegistry::OnAppActive(const AppId& app_id,
+                                      base::Time timestamp) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void AppActivityRegistry::OnAppInactive(const AppId& app_id,
+                                        base::Time timestamp) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
 void AppActivityRegistry::Add(const AppId& app_id) {
   auto result = activity_registry_.emplace(
       app_id, AppDetails(AppActivity(AppState::kAvailable)));

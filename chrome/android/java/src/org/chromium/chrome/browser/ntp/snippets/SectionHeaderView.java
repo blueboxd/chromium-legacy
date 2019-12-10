@@ -48,18 +48,21 @@ public class SectionHeaderView extends LinearLayout implements View.OnClickListe
         mHeader = header;
         if (mHeader == null) return;
 
-        mTitleView.setText(header.getHeaderText());
-        mStatusView.setVisibility(header.isExpandable() ? View.VISIBLE : View.GONE);
+        mStatusView.setVisibility(mHeader.isExpandable() ? View.VISIBLE : View.GONE);
         updateVisuals();
-        setOnClickListener(header.isExpandable() ? this : null);
+        setOnClickListener(mHeader.isExpandable() ? this : null);
     }
 
-    /** Update the header view based on whether the header is expanded. */
+    /** Update the header view based on whether the header is expanded and its text contents. */
     public void updateVisuals() {
-        if (mHeader == null || !mHeader.isExpandable()) return;
+        if (mHeader == null) return;
 
-        mStatusView.setText(mHeader.isExpanded() ? R.string.hide : R.string.show);
-        setBackgroundResource(
-                mHeader.isExpanded() ? 0 : R.drawable.hairline_border_card_background);
+        mTitleView.setText(mHeader.getHeaderText());
+
+        if (mHeader.isExpandable()) {
+            mStatusView.setText(mHeader.isExpanded() ? R.string.hide : R.string.show);
+            setBackgroundResource(
+                    mHeader.isExpanded() ? 0 : R.drawable.hairline_border_card_background);
+        }
     }
 }

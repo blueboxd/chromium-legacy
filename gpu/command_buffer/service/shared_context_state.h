@@ -92,7 +92,8 @@ class GPU_GLES2_EXPORT SharedContextState
   void PurgeMemory(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
-  uint64_t GetMemoryUsage() const { return memory_tracker_.GetMemoryUsage(); }
+  void UpdateSkiaOwnedMemorySize();
+  uint64_t GetMemoryUsage();
 
   void PessimisticallyResetGrContext() const;
 
@@ -169,7 +170,7 @@ class GPU_GLES2_EXPORT SharedContextState
                                  uint64_t new_size) override;
 
     // Reports to GpuServiceImpl::GetVideoMemoryUsageStats()
-    uint64_t GetMemoryUsage() const;
+    uint64_t GetMemoryUsage() const { return size_; }
 
    private:
     uint64_t size_ = 0;
@@ -222,6 +223,7 @@ class GPU_GLES2_EXPORT SharedContextState
   std::unique_ptr<ServiceTransferCache> transfer_cache_;
   size_t max_resource_cache_bytes_ = 0u;
   size_t glyph_cache_max_texture_bytes_ = 0u;
+  uint64_t skia_gr_cache_size_ = 0;
   std::vector<uint8_t> scratch_deserialization_buffer_;
 
   // |need_context_state_reset| is set whenever Skia may have altered the

@@ -301,7 +301,7 @@ void PerformanceManagerTabHelper::DidFinishNavigation(
   PostToGraph(FROM_HERE, &PageNodeImpl::OnMainFrameNavigationCommitted,
               page_node_.get(), navigation_handle->IsSameDocument(),
               navigation_committed_time, navigation_handle->GetNavigationId(),
-              url);
+              url, navigation_handle->GetWebContents()->GetContentsMimeType());
 }
 
 void PerformanceManagerTabHelper::TitleWasSet(content::NavigationEntry* entry) {

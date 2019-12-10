@@ -49,8 +49,10 @@ network::mojom::URLResponseHeadPtr RewriteServiceWorkerTime(
     base::TimeTicks service_worker_start_time,
     base::TimeTicks service_worker_ready_time,
     network::mojom::URLResponseHeadPtr response_head) {
-  response_head->service_worker_start_time = service_worker_start_time;
-  response_head->service_worker_ready_time = service_worker_ready_time;
+  response_head->load_timing.service_worker_start_time =
+      service_worker_start_time;
+  response_head->load_timing.service_worker_ready_time =
+      service_worker_ready_time;
   return response_head;
 }
 
@@ -218,7 +220,8 @@ void ServiceWorkerSubresourceLoader::StartRequest(
   // time to set workerStart, since it will either started soon or the fetch
   // event will be dispatched soon.
   // https://w3c.github.io/resource-timing/#dom-performanceresourcetiming-workerstart
-  response_head_->service_worker_start_time = base::TimeTicks::Now();
+  response_head_->load_timing.service_worker_start_time =
+      base::TimeTicks::Now();
   DispatchFetchEvent();
 }
 
@@ -421,9 +424,10 @@ void ServiceWorkerSubresourceLoader::OnFallback(
   mojo::PendingRemote<network::mojom::URLLoaderClient> client;
   auto client_impl = std::make_unique<HeaderRewritingURLLoaderClient>(
       std::move(url_loader_client_),
-      base::BindRepeating(&RewriteServiceWorkerTime,
-                          response_head_->service_worker_start_time,
-                          response_head_->service_worker_ready_time));
+      base::BindRepeating(
+          &RewriteServiceWorkerTime,
+          response_head_->load_timing.service_worker_start_time,
+          response_head_->load_timing.service_worker_ready_time));
   mojo::MakeSelfOwnedReceiver(std::move(client_impl),
                               client.InitWithNewPipeAndPassReceiver());
 
@@ -446,7 +450,8 @@ void ServiceWorkerSubresourceLoader::UpdateResponseTiming(
   // |service_worker_ready_time| becomes web-exposed
   // PerformanceResourceTiming#fetchStart, which is the time just before
   // dispatching the fetch event, so set it to |dispatch_event_time|.
-  response_head_->service_worker_ready_time = timing->dispatch_event_time;
+  response_head_->load_timing.service_worker_ready_time =
+      timing->dispatch_event_time;
   fetch_event_timing_ = std::move(timing);
 }
 
@@ -625,15 +630,15 @@ void ServiceWorkerSubresourceLoader::RecordTimingMetrics(bool handled) {
   UMA_HISTOGRAM_TIMES(
       "ServiceWorker.LoadTiming.Subresource."
       "ForwardServiceWorkerToWorkerReady",
-      response_head_->service_worker_ready_time -
-          response_head_->service_worker_start_time);
+      response_head_->load_timing.service_worker_ready_time -
+          response_head_->load_timing.service_worker_start_time);
 
   // Time spent by fetch handlers.
   UMA_HISTOGRAM_TIMES(
       "ServiceWorker.LoadTiming.Subresource."
       "WorkerReadyToFetchHandlerEnd",
       fetch_event_timing_->respond_with_settled_time -
-          response_head_->service_worker_ready_time);
+          response_head_->load_timing.service_worker_ready_time);
 
   if (handled) {
     // Mojo message delay. If the controller service worker lives in the same

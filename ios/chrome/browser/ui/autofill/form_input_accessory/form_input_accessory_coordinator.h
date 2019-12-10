@@ -7,11 +7,7 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
-#import "ios/web/public/web_state_observer_bridge.h"
-
-@protocol BrowserCoordinatorCommands;
 @class ManualFillInjectionHandler;
-class WebStateList;
 
 // Delegate for the coordinator actions.
 @protocol FormInputAccessoryCoordinatorNavigator <NSObject>
@@ -40,15 +36,12 @@ class WebStateList;
 
 // Creates a coordinator that uses a |viewController| a |browserState| and
 // a |webStateList|.
-- (instancetype)
-    initWithBaseViewController:(UIViewController*)viewController
-                  browserState:(ios::ChromeBrowserState*)browserState
-                  webStateList:(WebStateList*)webStateList
-              injectionHandler:(ManualFillInjectionHandler*)injectionHandler
-                    dispatcher:(id<BrowserCoordinatorCommands>)dispatcher
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser
+                          injectionHandler:
+                              (ManualFillInjectionHandler*)injectionHandler
     NS_DESIGNATED_INITIALIZER;
 
-// Unavailable, use -initWithBaseViewController:browserState:webStateList:.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                               browserState:
                                   (ios::ChromeBrowserState*)browserState

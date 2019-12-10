@@ -20,7 +20,6 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -64,7 +63,7 @@ public class DecoderService extends Service {
                     ChromeApplication.PRIVATE_DATA_DIRECTORY_SUFFIX);
         });
 
-        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_CHILD);
+        LibraryLoader.getInstance().ensureInitialized();
         DecoderServiceJni.get().initializePhotoPickerSandbox();
 
         mNativeLibraryAndSandboxInitialized = true;

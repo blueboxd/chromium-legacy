@@ -30,7 +30,7 @@ void MediaParserProvider::RetrieveMediaParser() {
       remote_media_parser_factory_.BindNewPipeAndPassReceiver(),
       content::ServiceProcessHost::Options()
           .WithDisplayName(IDS_UTILITY_PROCESS_MEDIA_GALLERY_UTILITY_NAME)
-          .WithSandboxType(service_manager::SANDBOX_TYPE_UTILITY)
+          .WithSandboxType(service_manager::SandboxType::kUtility)
           .Pass());
   remote_media_parser_factory_.set_disconnect_handler(base::BindOnce(
       &MediaParserProvider::OnConnectionError, base::Unretained(this)));

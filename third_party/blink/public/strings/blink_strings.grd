@@ -889,6 +889,14 @@ below:
         Year
       </message>
 
+      <message name="IDS_AX_OBJECT_SELECTED" desc="The current object is selected, like an option in a list">
+        <ph name="accName">$1<ex>Hazelnuts</ex></ph> selected
+      </message>
+      <message name="IDS_AX_OBJECT_NOT_SELECTED" desc="The current object is selected, like an option in a list">
+        <ph name="accName">$1<ex>Hazelnuts</ex></ph> not selected
+      </message>
+
+
       <message name="IDS_FORM_INPUT_WEEK_TEMPLATE" desc="A specific week (1-53) in a specific year shown in a form control">
         Week <ph name="WEEKNUMBER">$2<ex>51</ex></ph>, <ph name="YEAR">$1<ex>2012</ex></ph>
       </message>

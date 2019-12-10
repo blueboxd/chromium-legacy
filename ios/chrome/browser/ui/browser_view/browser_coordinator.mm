@@ -296,11 +296,8 @@
       securityAlertPresenter:self];
   self.formInputAccessoryCoordinator = [[FormInputAccessoryCoordinator alloc]
       initWithBaseViewController:self.viewController
-                    browserState:self.browserState
-                    webStateList:self.browser->GetWebStateList()
-                injectionHandler:self.injectionHandler
-                      dispatcher:static_cast<id<BrowserCoordinatorCommands>>(
-                                     self.dispatcher)];
+                         browser:self.browser
+                injectionHandler:self.injectionHandler];
   self.formInputAccessoryCoordinator.navigator = self;
   [self.formInputAccessoryCoordinator start];
 
@@ -314,10 +311,9 @@
 
   self.pageInfoCoordinator = [[PageInfoLegacyCoordinator alloc]
       initWithBaseViewController:self.viewController
-                    browserState:self.browserState];
-  self.pageInfoCoordinator.dispatcher = self.dispatcher;
+                         browser:self.browser];
   self.pageInfoCoordinator.presentationProvider = self.viewController;
-  self.pageInfoCoordinator.webStateList = self.browser->GetWebStateList();
+  [self.pageInfoCoordinator start];
 
   self.passKitCoordinator = [[PassKitCoordinator alloc]
       initWithBaseViewController:self.viewController];
@@ -512,7 +508,7 @@
 - (void)openAllPasswordsPicker {
   self.allPasswordCoordinator = [[ManualFillAllPasswordCoordinator alloc]
       initWithBaseViewController:self.viewController
-                    browserState:self.browserState
+                         browser:self.browser
                 injectionHandler:self.injectionHandler];
   [self.allPasswordCoordinator start];
 }

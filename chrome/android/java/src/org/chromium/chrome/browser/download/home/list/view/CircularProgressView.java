@@ -15,7 +15,7 @@ import android.widget.ImageView;
 import androidx.annotation.IntDef;
 import androidx.annotation.StringRes;
 
-import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.base.MathUtils;
 import org.chromium.chrome.download.R;
 import org.chromium.ui.widget.ChromeImageButton;
 

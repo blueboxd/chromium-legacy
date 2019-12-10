@@ -170,7 +170,8 @@ public final class VolumeMap {
         // There are only a few volume index steps, so simply loop through them
         // and find the interval [dbLeft .. dbRight] that contains db, then
         // interpolate to estimate the volume level to return.
-        float dbLeft = dbMin, dbRight = dbMin;
+        float dbLeft = dbMin;
+        float dbRight = dbMin;
         int idx = minIndex + 1;
         for (; idx <= maxIndex; idx++) {
             dbLeft = dbRight;

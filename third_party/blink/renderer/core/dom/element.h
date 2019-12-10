@@ -1216,7 +1216,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   Member<ElementData> element_data_;
 };
 
-DEFINE_NODE_TYPE_CASTS(Element, IsElementNode());
 template <typename T>
 bool IsElementOfType(const Node&);
 template <>
@@ -1380,16 +1379,6 @@ inline bool IsAtShadowBoundary(const Element* element) {
   ContainerNode* parent_node = element->parentNode();
   return parent_node && parent_node->IsShadowRoot();
 }
-
-// These macros do the same as their NODE equivalents but additionally provide a
-// template specialization for isElementOfType<>() so that the Traversal<> API
-// works for these Element types.
-#define DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(thisType)         \
-  template <>                                                     \
-  inline bool IsElementOfType<const thisType>(const Node& node) { \
-    return Is##thisType(node);                                    \
-  }                                                               \
-  DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(thisType)
 
 }  // namespace blink
 

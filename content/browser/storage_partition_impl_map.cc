@@ -178,7 +178,7 @@ void BlockingObliteratePath(
     const base::FilePath& unnormalized_root,
     const std::vector<base::FilePath>& paths_to_keep,
     const scoped_refptr<base::TaskRunner>& closure_runner,
-    const base::Closure& on_gc_required) {
+    base::OnceClosure on_gc_required) {
   // Early exit required because MakeAbsoluteFilePath() will fail on POSIX
   // if |unnormalized_root| does not exist. This is safe because there is
   // nothing to do in this situation anwyays.
@@ -209,7 +209,7 @@ void BlockingObliteratePath(
     base::DeleteFileRecursively(root);
     return;
   }
-  closure_runner->PostTask(FROM_HERE, on_gc_required);
+  closure_runner->PostTask(FROM_HERE, std::move(on_gc_required));
 
   // Otherwise, start at the root and delete everything that is not in
   // |valid_paths_to_keep|.
@@ -364,7 +364,7 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
 
 void StoragePartitionImplMap::AsyncObliterate(
     const std::string& partition_domain,
-    const base::Closure& on_gc_required) {
+    base::OnceClosure on_gc_required) {
   // Find the active partitions for the domain. Because these partitions are
   // active, it is not possible to just delete the directories that contain
   // the backing data structures without causing the browser to crash. Instead,
@@ -401,12 +401,13 @@ void StoragePartitionImplMap::AsyncObliterate(
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&BlockingObliteratePath, browser_context_->GetPath(),
                      domain_root, paths_to_keep,
-                     base::ThreadTaskRunnerHandle::Get(), on_gc_required));
+                     base::ThreadTaskRunnerHandle::Get(),
+                     std::move(on_gc_required)));
 }
 
 void StoragePartitionImplMap::GarbageCollect(
     std::unique_ptr<std::unordered_set<base::FilePath>> active_paths,
-    const base::Closure& done) {
+    base::OnceClosure done) {
   // Include all paths for current StoragePartitions in the active_paths since
   // they cannot be deleted safely.
   for (PartitionMap::const_iterator it = partitions_.begin();
@@ -425,7 +426,7 @@ void StoragePartitionImplMap::GarbageCollect(
       FROM_HERE,
       base::BindOnce(&BlockingGarbageCollect, storage_root, file_access_runner_,
                      std::move(active_paths)),
-      done);
+      std::move(done));
 }
 
 void StoragePartitionImplMap::ForEach(

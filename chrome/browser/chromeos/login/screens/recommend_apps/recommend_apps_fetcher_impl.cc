@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher_impl.h"
 
-#include "ash/public/mojom/constants.mojom.h"
 #include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/base64url.h"
 #include "base/bind.h"
@@ -25,7 +24,6 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/simple_url_loader.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/zlib/google/compression_utils.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -268,16 +266,13 @@ void RecordUmaResponseSize(unsigned long responseSize) {
 
 RecommendAppsFetcherImpl::RecommendAppsFetcherImpl(
     RecommendAppsFetcherDelegate* delegate,
-    service_manager::Connector* connector,
+    mojo::PendingRemote<ash::mojom::CrosDisplayConfigController> display_config,
     network::mojom::URLLoaderFactory* url_loader_factory)
     : delegate_(delegate),
-      connector_(connector),
       url_loader_factory_(url_loader_factory),
       arc_features_getter_(
-          base::BindRepeating(&arc::ArcFeaturesParser::GetArcFeatures)) {
-  connector_->Connect(ash::mojom::kServiceName,
-                      cros_display_config_.BindNewPipeAndPassReceiver());
-}
+          base::BindRepeating(&arc::ArcFeaturesParser::GetArcFeatures)),
+      cros_display_config_(std::move(display_config)) {}
 
 RecommendAppsFetcherImpl::~RecommendAppsFetcherImpl() = default;
 

@@ -353,30 +353,6 @@ inline bool Node::HasTagName(const SVGQualifiedName& name) const {
   return svg_element && svg_element->HasTagName(name);
 }
 
-// This requires IsSVG*Element(const SVGElement&).
-#define DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(thisType)               \
-  inline bool Is##thisType(const thisType* element);                       \
-  inline bool Is##thisType(const thisType& element);                       \
-  inline bool Is##thisType(const SVGElement* element) {                    \
-    return element && Is##thisType(*element);                              \
-  }                                                                        \
-  inline bool Is##thisType(const Node& node) {                             \
-    auto* svg_element = DynamicTo<SVGElement>(node);                       \
-    return svg_element && Is##thisType(svg_element);                       \
-  }                                                                        \
-  inline bool Is##thisType(const Node* node) {                             \
-    return node && Is##thisType(*node);                                    \
-  }                                                                        \
-  template <typename T>                                                    \
-  inline bool Is##thisType(const Member<T>& node) {                        \
-    return Is##thisType(node.Get());                                       \
-  }                                                                        \
-  template <>                                                              \
-  inline bool IsElementOfType<const thisType>(const SVGElement& element) { \
-    return Is##thisType(element);                                          \
-  }                                                                        \
-  DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(thisType)
-
 }  // namespace blink
 
 #include "third_party/blink/renderer/core/svg_element_type_helpers.h"

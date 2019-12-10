@@ -22,13 +22,7 @@ class XRObjectSpace : public XRSpace {
       : XRSpace(session), object_(object) {}
 
   std::unique_ptr<TransformationMatrix> MojoFromNative() override {
-    auto object_from_mojo = object_->poseMatrix();
-
-    if (!object_from_mojo.IsInvertible()) {
-      return nullptr;
-    }
-
-    return std::make_unique<TransformationMatrix>(object_from_mojo.Inverse());
+    return std::make_unique<TransformationMatrix>(object_->MojoFromObject());
   }
 
   std::unique_ptr<TransformationMatrix> NativeFromMojo() final {

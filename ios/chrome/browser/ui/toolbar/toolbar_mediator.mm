@@ -114,12 +114,6 @@
   [self updateConsumer];
 }
 
-- (void)webState:(web::WebState*)webState
-    didPruneNavigationItemsWithCount:(size_t)pruned_item_count {
-  DCHECK_EQ(_webState, webState);
-  [self updateConsumer];
-}
-
 - (void)webStateDidStartLoading:(web::WebState*)webState {
   DCHECK_EQ(_webState, webState);
   [self updateConsumer];

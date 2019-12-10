@@ -82,9 +82,6 @@ UITextField* ChromeBrowserProvider::CreateStyledTextField() const {
   return nil;
 }
 
-void ChromeBrowserProvider::InitializeCastService(
-    TabModel* main_tab_model) const {}
-
 void ChromeBrowserProvider::AttachTabHelpers(web::WebState* web_state) const {}
 
 VoiceSearchProvider* ChromeBrowserProvider::GetVoiceSearchProvider() const {

@@ -10,13 +10,10 @@
 #include "ash/ash_export.h"
 #include "ash/system/bluetooth/tray_bluetooth_helper.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/bluetooth_system.mojom.h"
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
 
 namespace ash {
 
@@ -27,7 +24,8 @@ class TrayBluetoothHelperExperimental
       public device::mojom::BluetoothSystemClient {
  public:
   explicit TrayBluetoothHelperExperimental(
-      service_manager::Connector* connector);
+      mojo::PendingRemote<device::mojom::BluetoothSystemFactory>
+          bluetooth_system_factory);
   ~TrayBluetoothHelperExperimental() override;
 
   // TrayBluetoothHelper:
@@ -46,8 +44,7 @@ class TrayBluetoothHelperExperimental
       device::mojom::BluetoothSystem::ScanState state) override;
 
  private:
-  service_manager::Connector* connector_;
-
+  mojo::Remote<device::mojom::BluetoothSystemFactory> bluetooth_system_factory_;
   mojo::Remote<device::mojom::BluetoothSystem> bluetooth_system_;
   mojo::Receiver<device::mojom::BluetoothSystemClient>
       bluetooth_system_client_receiver_{this};

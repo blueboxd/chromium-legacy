@@ -505,11 +505,12 @@ static bool IsDirectReference(const SVGElement& element) {
 
 Path SVGUseElement::ToClipPath() const {
   const SVGGraphicsElement* element = VisibleTargetGraphicsElementForClipping();
-  if (!element || !element->IsSVGGeometryElement())
+  auto* geometry_element = DynamicTo<SVGGeometryElement>(element);
+  if (!geometry_element)
     return Path();
 
   DCHECK(GetLayoutObject());
-  Path path = ToSVGGeometryElement(*element).ToClipPath();
+  Path path = geometry_element->ToClipPath();
   AffineTransform transform = GetLayoutObject()->LocalSVGTransform();
   if (!transform.IsIdentity())
     path.Transform(transform);

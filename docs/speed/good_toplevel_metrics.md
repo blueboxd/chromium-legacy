@@ -67,9 +67,21 @@ If your metric involves thresholds (such as the 50ms task length threshold in TT
 
 We’d like to have metrics which we can compute in realtime. For example, if we’re measuring First Meaningful Paint, we’d like to know when First Meaningful Paint occurred *at the time it occurred*. This isn’t always attainable, but when possible, it avoids some classes of [survivorship bias](https://en.wikipedia.org/wiki/Survivorship_bias), which makes metrics easier to analyze.
 
+## Orthogonal
+
+Ideally there would only be one top-level metric for each aspect of user experience we aim to represent. If multiple top-level metrics represent the same thing, it adds unnecessary complexity. Consumers of the metric can get confused about which metric to use and what each measures. We can overweight one user experience which has more metrics while underweighting another which has fewer metrics.
+
+Sometimes it is necessary to have multiple metrics representing a single user experience when it's not possible to measure that user experience the same way in the lab and in the wild.
+
+## Correlates well between the lab and the wild
+
+Some metrics are much more realistic for in the wild use cases than lab. For example, it's difficult to accurately measure response to user input in the lab, since the timing of simulated lab inputs might not be realistic. Similarly, some metrics are more accurately measured in the lab. For example, a metric that requires no interaction on the page for a long period of time is more consistently measured in the lab than in the wild.
+
+We'd like to have metrics that correlate well in the wild and in the lab, so that the metrics accurately represent user experiences in the wild, and are easy to debug locally.
+
 # Example
 
-[Time to Consistently Interactive](https://docs.google.com/document/d/1GGiI9-7KeY3TPqS3YT271upUVimo-XiL5mwWorDUD4c/edit):
+[Time to Interactive](https://docs.google.com/document/d/1GGiI9-7KeY3TPqS3YT271upUVimo-XiL5mwWorDUD4c/edit):
 
 * Representative
     * We should eventually do an ablation study, similar to the page load ablation study [here](https://docs.google.com/document/d/1wpu8aqZIUVgjNm9zBP9gU_swx5ODleH1s2Kueo1pIfc/edit#).
@@ -81,13 +93,15 @@ We’d like to have metrics which we can compute in realtime. For example, if we
 * Stable
     * Analysis [here](https://docs.google.com/document/d/1GGiI9-7KeY3TPqS3YT271upUVimo-XiL5mwWorDUD4c/edit#heading=h.27s41u6tkfzj).
 * Interpretable
-    * Time to Consistently Interactive is easy to explain. We report the first 5 second window where the network is roughly idle and no tasks are greater than 50ms long.
+    * Time to Interactive is easy to explain. We report the first 5 second window where the network is roughly idle and no tasks are greater than 50ms long.
 * Elastic
-    * Time to Consistently Interactive is generally non-elastic. We’re investigating another metric which will quantify how busy the main thread is between FMP and TTI, which should be a nice elastic proxy metric for TTI.
+    * Time to Interactive is generally non-elastic. We’re investigating another metric which will quantify how busy the main thread is between FMP and TTI, which should be a nice elastic proxy metric for TTI.
 * Simple
-    * Time To Consistently Interactive has a reasonable amount of complexity, but is much simpler than Time to First Interactive. Time to Consistently Interactive has 3 parameters:
+    * Time To Interactive has a reasonable amount of complexity, but is much simpler than Time to First Interactive. Time to Interactive has 3 parameters:
         * Number of allowable requests during network idle (currently 2).
         * Length of allowable tasks during main thread idle (currently 50ms).
         * Window length (currently 5 seconds).
 * Realtime
-    * Time To Consistently Interactive is definitely not realtime, as it needs to wait until it’s seen 5 seconds of idle time before declaring that we became interactive at the start of the 5 second window.
+    * Time To Interactive is definitely not realtime, as it needs to wait until it’s seen 5 seconds of idle time before declaring that we became interactive at the start of the 5 second window.
+* Orthogonal
+    * Time to Interactive aims to represent interactivity during page load, which is also what [First Input Delay](https://web.dev/fid/) aims to represent. The reason is that we haven't found a way to accurately represent this across the lab (TTI) and wild (FID) with a single metric.

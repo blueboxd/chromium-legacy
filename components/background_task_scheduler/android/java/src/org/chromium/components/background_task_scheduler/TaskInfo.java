@@ -326,14 +326,14 @@ public class TaskInfo {
     /**
      * Specifies information regarding exact tasks.
      */
-    static class ExactInfo implements TimingInfo {
+    public static class ExactInfo implements TimingInfo {
         private final long mTriggerAtMs;
 
         private ExactInfo(Builder builder) {
             mTriggerAtMs = builder.mTriggerAtMs;
         }
 
-        long getTriggerAtMs() {
+        public long getTriggerAtMs() {
             return mTriggerAtMs;
         }
 
@@ -352,7 +352,7 @@ public class TaskInfo {
         /**
          * @return a new {@link Builder} object to set the values of the exact task.
          */
-        static Builder create() {
+        public static Builder create() {
             return new Builder();
         }
 
@@ -361,7 +361,7 @@ public class TaskInfo {
          *
          * @see #create()
          */
-        static final class Builder {
+        public static final class Builder {
             private long mTriggerAtMs;
 
             /**
@@ -369,7 +369,7 @@ public class TaskInfo {
              * @param triggerAtMs the UTC timestamp at which the task should be started.
              * @return the {@link Builder} for creating the {@link ExactInfo} object.
              */
-            Builder setTriggerAtMs(long triggerAtMs) {
+            public Builder setTriggerAtMs(long triggerAtMs) {
                 mTriggerAtMs = triggerAtMs;
                 return this;
             }
@@ -379,7 +379,7 @@ public class TaskInfo {
              *
              * @return the {@link ExactInfo} object.
              */
-            ExactInfo build() {
+            public ExactInfo build() {
                 return new ExactInfo(this);
             }
         }

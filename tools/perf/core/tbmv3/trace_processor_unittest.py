@@ -12,6 +12,7 @@ from core.tbmv3 import trace_processor
 
 import mock
 
+RUN_METHOD = 'core.tbmv3.trace_processor._RunTraceProcessor'
 
 class TraceProcessorTestCase(unittest.TestCase):
   def setUp(self):
@@ -41,7 +42,7 @@ class TraceProcessorTestCase(unittest.TestCase):
     shutil.rmtree(self.temp_dir)
 
   def testConvertProtoTraceToJson(self):
-    with mock.patch('subprocess.check_call'):
+    with mock.patch(RUN_METHOD):
       trace_processor.ConvertProtoTraceToJson(
           self.tp_path, '/path/to/proto', '/path/to/json')
 
@@ -49,8 +50,8 @@ class TraceProcessorTestCase(unittest.TestCase):
     metric_output = '{"perfetto.protos.dummy_metric": {"value": 7}}'
 
     with mock.patch('core.tbmv3.trace_processor.METRICS_PATH', self.temp_dir):
-      with mock.patch('subprocess.check_output') as check_output_patch:
-        check_output_patch.return_value = metric_output
+      with mock.patch(RUN_METHOD) as run_patch:
+        run_patch.return_value = metric_output
         histograms = trace_processor.RunMetric(
             self.tp_path, '/path/to/proto', 'dummy_metric')
 

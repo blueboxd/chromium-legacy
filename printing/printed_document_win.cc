@@ -5,8 +5,10 @@
 #include "printing/printed_document.h"
 
 #include "base/logging.h"
+#include "printing/metafile_skia.h"
 #include "printing/page_number.h"
 #include "printing/printed_page_win.h"
+#include "printing/printing_context_win.h"
 #include "printing/units.h"
 #include "skia/ext/skia_utils_win.h"
 
@@ -75,6 +77,20 @@ void PrintedDocument::RenderPrintedPage(
 
   BOOL res = RestoreDC(context, saved_state);
   DCHECK_NE(res, 0);
+}
+
+bool PrintedDocument::RenderPrintedDocument(PrintingContext* context) {
+  if (context->NewPage() != PrintingContext::OK)
+    return false;
+
+  base::string16 device_name = immutable_.settings_->device_name();
+  {
+    base::AutoLock lock(lock_);
+    const MetafilePlayer* metafile = GetMetafile();
+    static_cast<PrintingContextWin*>(context)->PrintDocument(
+        device_name, *(static_cast<const MetafileSkia*>(metafile)));
+  }
+  return context->PageDone() == PrintingContext::OK;
 }
 
 }  // namespace printing

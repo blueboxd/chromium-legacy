@@ -26,8 +26,13 @@
 #define EarlGrey [self earlGrey]
 #pragma clang diagnostic pop
 
+using chrome_test_util::ButtonWithAccessibilityLabelId;
+using chrome_test_util::ClearAutofillButton;
+using chrome_test_util::ClearBrowsingDataButton;
 using chrome_test_util::ClearBrowsingDataView;
+using chrome_test_util::ClearSavedPasswordsButton;
 using chrome_test_util::ConfirmClearBrowsingDataButton;
+using chrome_test_util::SettingsMenuBackButton;
 using chrome_test_util::SettingsMenuButton;
 using chrome_test_util::ToolsMenuView;
 using base::test::ios::kWaitForUIElementTimeout;
@@ -114,47 +119,27 @@ bool IsAppCompactWidth() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
                                           HistoryClearBrowsingDataButton()]
       performAction:grey_tap()];
-
-  // Uncheck "Cookies, Site Data" and "Cached Images and Files," which are
-  // checked by default, and press "Clear Browsing Data"
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::ClearCookiesButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::ClearCacheButton()]
-      performAction:grey_tap()];
-
-  // Set 'Time Range' to 'All Time'.
-  [[EarlGrey selectElementWithMatcher:
-                 chrome_test_util::ButtonWithAccessibilityLabelId(
-                     IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_SELECTOR_TITLE)]
-      performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:
-          chrome_test_util::ButtonWithAccessibilityLabelId(
-              IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_BEGINNING_OF_TIME)]
-      performAction:grey_tap()];
-  [[[EarlGrey
-      selectElementWithMatcher:chrome_test_util::SettingsMenuBackButton()]
-      atIndex:0] performAction:grey_tap()];
-
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ClearBrowsingDataButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:ConfirmClearBrowsingDataButton()]
-      performAction:grey_tap()];
-
-  // Wait until activity indicator modal is cleared, meaning clearing browsing
-  // data has been finished.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-
-  // Recheck "Cookies, Site Data" and "Cached Images and Files."
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::ClearCookiesButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::ClearCacheButton()]
-      performAction:grey_tap()];
+  [self selectAllBrowsingDataAndClear];
 
   // Include sufficientlyVisible condition for the case of the clear browsing
   // dialog, which also has a "Done" button and is displayed over the history
   // panel.
+  id<GREYMatcher> visibleDoneButton = grey_allOf(
+      chrome_test_util::SettingsDoneButton(), grey_sufficientlyVisible(), nil);
+  [[EarlGrey selectElementWithMatcher:visibleDoneButton]
+      performAction:grey_tap()];
+}
+
+- (void)clearAllBrowsingData {
+  // Open the "Clear Browsing Data" view by the privacy view.
+  [self openSettingsMenu];
+  [self tapSettingsMenuButton:chrome_test_util::SettingsMenuPrivacyButton()];
+  [self tapPrivacyMenuButton:chrome_test_util::ClearBrowsingDataCell()];
+
+  // Clear all data.
+  [self selectAllBrowsingDataAndClear];
+
+  // Close the "Clear Browsing Data" view.
   id<GREYMatcher> visibleDoneButton = grey_allOf(
       chrome_test_util::SettingsDoneButton(), grey_sufficientlyVisible(), nil);
   [[EarlGrey selectElementWithMatcher:visibleDoneButton]
@@ -253,6 +238,48 @@ bool IsAppCompactWidth() {
   bool toolbarVisibility = base::test::ios::WaitUntilConditionOrTimeout(
       kWaitForUIElementTimeout, condition);
   EG_TEST_HELPER_ASSERT_TRUE(toolbarVisibility, errorMessage);
+}
+
+#pragma mark - Private
+
+// Clears all browsing data from the device. This method needs to be called when
+// the "Clear Browsing Data" panel is opened.
+- (void)selectAllBrowsingDataAndClear {
+  // Check "Saved Passwords" and "Autofill Data" which are unchecked by
+  // default.
+  [[EarlGrey selectElementWithMatcher:ClearSavedPasswordsButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:ClearAutofillButton()]
+      performAction:grey_tap()];
+
+  // Set 'Time Range' to 'All Time'.
+  [[EarlGrey selectElementWithMatcher:
+                 ButtonWithAccessibilityLabelId(
+                     IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_SELECTOR_TITLE)]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:
+          ButtonWithAccessibilityLabelId(
+              IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_BEGINNING_OF_TIME)]
+      performAction:grey_tap()];
+  [[[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()] atIndex:0]
+      performAction:grey_tap()];
+
+  // Clear data, and confirm.
+  [[EarlGrey selectElementWithMatcher:ClearBrowsingDataButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:ConfirmClearBrowsingDataButton()]
+      performAction:grey_tap()];
+
+  // Wait until activity indicator modal is cleared, meaning clearing browsing
+  // data has been finished.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
+  // Recheck "Saved Passwords" and "Autofill Data".
+  [[EarlGrey selectElementWithMatcher:ClearSavedPasswordsButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:ClearAutofillButton()]
+      performAction:grey_tap()];
 }
 
 @end

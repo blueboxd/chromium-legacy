@@ -279,6 +279,10 @@ id<GREYMatcher> ClearCacheButton();
 // panel.
 id<GREYMatcher> ClearSavedPasswordsButton();
 
+// Returns matcher for the clear saved passwords cell on the clear browsing data
+// panel.
+id<GREYMatcher> ClearAutofillButton();
+
 // Returns matcher for the collection view of content suggestion.
 id<GREYMatcher> ContentSuggestionCollectionView();
 

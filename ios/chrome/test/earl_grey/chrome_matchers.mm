@@ -351,6 +351,10 @@ id<GREYMatcher> ClearSavedPasswordsButton() {
   return [ChromeMatchersAppInterface clearSavedPasswordsButton];
 }
 
+id<GREYMatcher> ClearAutofillButton() {
+  return [ChromeMatchersAppInterface clearAutofillButton];
+}
+
 id<GREYMatcher> ContentSuggestionCollectionView() {
   return [ChromeMatchersAppInterface contentSuggestionCollectionView];
 }

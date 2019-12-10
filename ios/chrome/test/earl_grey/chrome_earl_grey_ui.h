@@ -76,16 +76,19 @@
 // Focuses the omnibox by tapping it.
 - (void)focusOmnibox;
 
-// Open a new tab via the tools menu.
+// Opens a new tab via the tools menu.
 - (void)openNewTab;
 
-// Open a new incognito tab via the tools menu.
+// Opens a new incognito tab via the tools menu.
 - (void)openNewIncognitoTab;
 
-// Open and clear browsing data from history.
+// Opens and clear browsing data from history.
 - (void)openAndClearBrowsingDataFromHistory;
 
-// Assert that history is empty.
+// Clears all browsing data by opening the privacy panel in the settings view.
+- (void)clearAllBrowsingData;
+
+// Asserts that history is empty.
 - (void)assertHistoryHasNoEntries;
 
 // Reloads the page via the reload button, and does not wait for the page to

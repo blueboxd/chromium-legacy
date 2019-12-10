@@ -590,23 +590,43 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
 }
 
 + (id<GREYMatcher>)clearBrowsingHistoryButton {
+  // Needs to use grey_sufficientlyVisible() to make the difference between a
+  // cell used by the tableview and a invisible recycled cell.
   return grey_allOf(
       grey_accessibilityID(kClearBrowsingHistoryCellAccessibilityIdentifier),
       grey_sufficientlyVisible(), nil);
 }
 
 + (id<GREYMatcher>)clearCookiesButton {
-  return grey_accessibilityID(kClearCookiesCellAccessibilityIdentifier);
+  // Needs to use grey_sufficientlyVisible() to make the difference between a
+  // cell used by the tableview and a invisible recycled cell.
+  return grey_allOf(
+      grey_accessibilityID(kClearCookiesCellAccessibilityIdentifier),
+      grey_sufficientlyVisible(), nil);
 }
 
 + (id<GREYMatcher>)clearCacheButton {
+  // Needs to use grey_sufficientlyVisible() to make the difference between a
+  // cell used by the tableview and a invisible recycled cell.
   return grey_allOf(
       grey_accessibilityID(kClearCacheCellAccessibilityIdentifier),
       grey_sufficientlyVisible(), nil);
 }
 
 + (id<GREYMatcher>)clearSavedPasswordsButton {
-  return grey_accessibilityID(kClearSavedPasswordsCellAccessibilityIdentifier);
+  // Needs to use grey_sufficientlyVisible() to make the difference between a
+  // cell used by the tableview and a invisible recycled cell.
+  return grey_allOf(
+      grey_accessibilityID(kClearSavedPasswordsCellAccessibilityIdentifier),
+      grey_sufficientlyVisible(), nil);
+}
+
++ (id<GREYMatcher>)clearAutofillButton {
+  // Needs to use grey_sufficientlyVisible() to make the difference between a
+  // cell used by the tableview and a invisible recycled cell.
+  return grey_allOf(
+      grey_accessibilityID(kClearAutofillCellAccessibilityIdentifier),
+      grey_sufficientlyVisible(), nil);
 }
 
 + (id<GREYMatcher>)contentSuggestionCollectionView {

@@ -70,7 +70,7 @@ ServiceWorkerProviderHost::CreateForWindow(
       blink::mojom::ServiceWorkerProviderType::kForWindow, are_ancestors_secure,
       frame_tree_node_id, std::move(host_receiver), std::move(container_remote),
       /*running_hosted_version=*/nullptr, context));
-  auto weak_ptr = host->AsWeakPtr();
+  auto weak_ptr = host->GetWeakPtr();
   RegisterToContextCore(context, std::move(host));
   return weak_ptr;
 }
@@ -88,7 +88,7 @@ ServiceWorkerProviderHost::CreateForServiceWorker(
       (*out_provider_info)->host_remote.InitWithNewEndpointAndPassReceiver(),
       /*container_remote=*/mojo::NullAssociatedRemote(), std::move(version),
       context));
-  auto weak_ptr = host->AsWeakPtr();
+  auto weak_ptr = host->GetWeakPtr();
   RegisterToContextCore(context, std::move(host));
   return weak_ptr;
 }
@@ -114,7 +114,7 @@ ServiceWorkerProviderHost::CreateForWebWorker(
       context));
   host->container_host()->SetContainerProcessId(process_id);
 
-  auto weak_ptr = host->AsWeakPtr();
+  auto weak_ptr = host->GetWeakPtr();
   RegisterToContextCore(context, std::move(host));
   return weak_ptr;
 }
@@ -206,6 +206,12 @@ void ServiceWorkerProviderHost::CreateQuicTransportConnector(
       base::BindOnce(&CreateQuicTransportConnectorImpl, worker_process_id_,
                      running_hosted_version_->script_origin(),
                      std::move(receiver)));
+}
+
+base::WeakPtr<ServiceWorkerProviderHost>
+ServiceWorkerProviderHost::GetWeakPtr() {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  return weak_factory_.GetWeakPtr();
 }
 
 void ServiceWorkerProviderHost::SetWorkerProcessId(int worker_process_id) {

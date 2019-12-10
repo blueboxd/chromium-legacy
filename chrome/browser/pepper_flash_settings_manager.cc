@@ -413,9 +413,8 @@ void PepperFlashSettingsManager::Core::InitializeOnIOThread() {
 #endif
 
   helper_ = content::PepperFlashSettingsHelper::Create();
-  content::PepperFlashSettingsHelper::OpenChannelCallback callback =
-      base::Bind(&Core::ConnectToChannel, this);
-  helper_->OpenChannelToBroker(plugin_info.path, callback);
+  helper_->OpenChannelToBroker(plugin_info.path,
+                               base::BindOnce(&Core::ConnectToChannel, this));
 }
 
 void PepperFlashSettingsManager::Core::DeauthorizeContentLicensesOnIOThread(

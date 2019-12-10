@@ -266,10 +266,61 @@ void MockParser::ParseResponse(uint64_t response_offset,
   std::move(callback).Run(std::move(response), nullptr);
 }
 
+class TestBrowserClient : public ContentBrowserClient {
+ public:
+  TestBrowserClient() = default;
+  ~TestBrowserClient() override = default;
+  bool CanAcceptUntrustedExchangesIfNeeded() override { return true; }
+  std::string GetAcceptLangs(BrowserContext* context) override {
+    return accept_langs_;
+  }
+  void SetAcceptLangs(const std::string langs) { accept_langs_ = langs; }
+
+ private:
+  std::string accept_langs_ = "en";
+  DISALLOW_COPY_AND_ASSIGN(TestBrowserClient);
+};
+
+ContentBrowserClient* MaybeSetBrowserClientForTesting(
+    ContentBrowserClient* browser_client) {
+#if defined(OS_ANDROID)
+  // TODO(crbug.com/864403): It seems that we call unsupported Android APIs on
+  // KitKat when we set a ContentBrowserClient. Don't call such APIs and make
+  // this test available on KitKat.
+  int32_t major_version = 0, minor_version = 0, bugfix_version = 0;
+  base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
+                                               &bugfix_version);
+  if (major_version < 5)
+    return nullptr;
+#endif  // defined(OS_ANDROID)
+  return SetBrowserClientForTesting(browser_client);
+}
+
 class WebBundleBrowserTestBase : public ContentBrowserTest {
  protected:
   WebBundleBrowserTestBase() = default;
   ~WebBundleBrowserTestBase() override = default;
+
+  void SetUpOnMainThread() override {
+    ContentBrowserTest::SetUpOnMainThread();
+    original_client_ = MaybeSetBrowserClientForTesting(&browser_client_);
+  }
+
+  void TearDownOnMainThread() override {
+    ContentBrowserTest::TearDownOnMainThread();
+    if (original_client_)
+      SetBrowserClientForTesting(original_client_);
+  }
+
+  // Returns false if we cannot override accept languages. It happens only on
+  // Android Kitkat or older systems.
+  bool SetAcceptLangs(const std::string langs) {
+    if (!original_client_)
+      return false;
+
+    browser_client_.SetAcceptLangs(langs);
+    return true;
+  }
 
   void NavigateAndWaitForTitle(const GURL& test_data_url,
                                const GURL& expected_commit_url,
@@ -308,18 +359,12 @@ class WebBundleBrowserTestBase : public ContentBrowserTest {
         base::StringPrintf("location.href = '%s';", url.spec().c_str()), title);
   }
 
+  ContentBrowserClient* original_client_ = nullptr;
+
  private:
+  TestBrowserClient browser_client_;
+
   DISALLOW_COPY_AND_ASSIGN(WebBundleBrowserTestBase);
-};
-
-class TestBrowserClient : public ContentBrowserClient {
- public:
-  TestBrowserClient() = default;
-  ~TestBrowserClient() override = default;
-  bool CanAcceptUntrustedExchangesIfNeeded() override { return true; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestBrowserClient);
 };
 
 class FinishNavigationObserver : public WebContentsObserver {
@@ -341,21 +386,6 @@ class FinishNavigationObserver : public WebContentsObserver {
 
   DISALLOW_COPY_AND_ASSIGN(FinishNavigationObserver);
 };
-
-ContentBrowserClient* MaybeSetBrowserClientForTesting(
-    ContentBrowserClient* browser_client) {
-#if defined(OS_ANDROID)
-  // TODO(crbug.com/864403): It seems that we call unsupported Android APIs on
-  // KitKat when we set a ContentBrowserClient. Don't call such APIs and make
-  // this test available on KitKat.
-  int32_t major_version = 0, minor_version = 0, bugfix_version = 0;
-  base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
-                                               &bugfix_version);
-  if (major_version < 5)
-    return nullptr;
-#endif  // defined(OS_ANDROID)
-  return SetBrowserClientForTesting(browser_client);
-}
 
 }  // namespace
 
@@ -410,32 +440,18 @@ class WebBundleTrustableFileBrowserTestBase : public WebBundleBrowserTestBase {
 
   void SetUp() override { WebBundleBrowserTestBase::SetUp(); }
 
-  void SetUpOnMainThread() override {
-    WebBundleBrowserTestBase::SetUpOnMainThread();
-    original_client_ = MaybeSetBrowserClientForTesting(&browser_client_);
-  }
-
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kTrustableWebBundleFileUrl,
                                     test_data_url().spec());
   }
 
-  void TearDownOnMainThread() override {
-    WebBundleBrowserTestBase::TearDownOnMainThread();
-    if (original_client_)
-      SetBrowserClientForTesting(original_client_);
-  }
-
   const GURL& test_data_url() const { return test_data_url_; }
   const GURL& empty_page_url() const { return empty_page_url_; }
 
-  ContentBrowserClient* original_client_ = nullptr;
   GURL test_data_url_;
   GURL empty_page_url_;
 
  private:
-  TestBrowserClient browser_client_;
-
   DISALLOW_COPY_AND_ASSIGN(WebBundleTrustableFileBrowserTestBase);
 };
 
@@ -898,15 +914,24 @@ IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, ParseResponseCrash) {
 }
 
 IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, Variants) {
+  if (!SetAcceptLangs("ja,en"))
+    return;
   const GURL test_data_url =
       GetTestUrlForFile(GetTestDataPath("variants_test.wbn"));
-  NavigateToBundleAndWaitForReady(
-      test_data_url, web_bundle_utils::GetSynthesizedUrlForWebBundle(
-                         test_data_url, GURL(kTestPageUrl)));
+  NavigateAndWaitForTitle(test_data_url,
+                          web_bundle_utils::GetSynthesizedUrlForWebBundle(
+                              test_data_url, GURL(kTestPageUrl)),
+                          "lang=ja");
+  ASSERT_TRUE(SetAcceptLangs("en,ja"));
+  NavigateAndWaitForTitle(test_data_url,
+                          web_bundle_utils::GetSynthesizedUrlForWebBundle(
+                              test_data_url, GURL(kTestPageUrl)),
+                          "lang=en");
+
   ExecuteScriptAndWaitForTitle(R"(
     (async function() {
       const headers = {Accept: 'application/octet-stream'};
-      const resp = await fetch('/data', {headers});
+      const resp = await fetch('/type', {headers});
       const data = await resp.json();
       document.title = data.text;
     })();)",
@@ -914,7 +939,7 @@ IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, Variants) {
   ExecuteScriptAndWaitForTitle(R"(
     (async function() {
       const headers = {Accept: 'application/json'};
-      const resp = await fetch('/data', {headers});
+      const resp = await fetch('/type', {headers});
       const data = await resp.json();
       document.title = data.text;
     })();)",
@@ -922,12 +947,28 @@ IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, Variants) {
   ExecuteScriptAndWaitForTitle(R"(
     (async function() {
       const headers = {Accept: 'foo/bar'};
-      const resp = await fetch('/data', {headers});
+      const resp = await fetch('/type', {headers});
       const data = await resp.json();
       document.title = data.text;
     })();)",
                                "octet-stream");
-  // TODO(crbug/1029406): Test Accept-Language negotiation.
+
+  ExecuteScriptAndWaitForTitle(R"(
+    (async function() {
+      const resp = await fetch('/lang');
+      const data = await resp.json();
+      document.title = data.text;
+    })();)",
+                               "ja");
+  // If Accept-Language header is explicitly set, respect it.
+  ExecuteScriptAndWaitForTitle(R"(
+    (async function() {
+      const headers = {'Accept-Language': 'fr'};
+      const resp = await fetch('/lang', {headers});
+      const data = await resp.json();
+      document.title = data.text;
+    })();)",
+                               "fr");
 }
 
 INSTANTIATE_TEST_SUITE_P(WebBundleFileBrowserTest,

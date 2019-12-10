@@ -34,6 +34,7 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
 
   blink::Manifest manifest;
   manifest.start_url = kAppUrl;
+  manifest.scope = kAppUrl.GetWithoutFilename();
   manifest.short_name =
       base::NullableString16(base::UTF8ToUTF16(kAppShortName), false);
 
@@ -46,10 +47,10 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
     manifest.file_handlers.push_back(handler);
   }
 
-  UpdateWebAppInfoFromManifest(manifest, &web_app_info,
-                               ForInstallableSite::kNo);
+  UpdateWebAppInfoFromManifest(manifest, &web_app_info);
   EXPECT_EQ(base::UTF8ToUTF16(kAppShortName), web_app_info.title);
   EXPECT_EQ(kAppUrl, web_app_info.app_url);
+  EXPECT_EQ(kAppUrl.GetWithoutFilename(), web_app_info.scope);
   EXPECT_EQ(DisplayMode::kBrowser, web_app_info.display_mode);
 
   // The icon info from |web_app_info| should be left as is, since the manifest
@@ -73,8 +74,7 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
   icon.purpose = {blink::Manifest::ImageResource::Purpose::BADGE};
   manifest.icons.push_back(icon);
 
-  UpdateWebAppInfoFromManifest(manifest, &web_app_info,
-                               ForInstallableSite::kNo);
+  UpdateWebAppInfoFromManifest(manifest, &web_app_info);
   EXPECT_EQ(base::UTF8ToUTF16(kAppTitle), web_app_info.title);
   EXPECT_EQ(DisplayMode::kMinimalUi, web_app_info.display_mode);
 
@@ -92,40 +92,6 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
   EXPECT_EQ(file_handler[0].name, base::UTF8ToUTF16("Images"));
 }
 
-// Tests "scope" is only set for installable sites.
-TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestInstallableSite) {
-  {
-    blink::Manifest manifest;
-    manifest.start_url = kAppUrl;
-    manifest.scope = kAppUrl.GetWithoutFilename();
-    WebApplicationInfo web_app_info;
-    UpdateWebAppInfoFromManifest(manifest, &web_app_info,
-                                 ForInstallableSite::kUnknown);
-    EXPECT_EQ(GURL(), web_app_info.scope);
-  }
-
-  {
-    blink::Manifest manifest;
-    manifest.start_url = kAppUrl;
-    manifest.scope = kAppUrl.GetWithoutFilename();
-    WebApplicationInfo web_app_info;
-    UpdateWebAppInfoFromManifest(manifest, &web_app_info,
-                                 ForInstallableSite::kNo);
-    EXPECT_EQ(GURL(), web_app_info.scope);
-  }
-
-  {
-    blink::Manifest manifest;
-    manifest.start_url = kAppUrl;
-    manifest.scope = kAppUrl.GetWithoutFilename();
-    WebApplicationInfo web_app_info;
-    UpdateWebAppInfoFromManifest(manifest, &web_app_info,
-                                 ForInstallableSite::kYes);
-
-    EXPECT_NE(GURL(), web_app_info.scope);
-  }
-}
-
 // Tests that we limit the number of icons declared by a site.
 TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestTooManyIcons) {
   blink::Manifest manifest;
@@ -138,8 +104,7 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestTooManyIcons) {
   }
   WebApplicationInfo web_app_info;
 
-  UpdateWebAppInfoFromManifest(manifest, &web_app_info,
-                               ForInstallableSite::kUnknown);
+  UpdateWebAppInfoFromManifest(manifest, &web_app_info);
   EXPECT_EQ(20U, web_app_info.icon_infos.size());
 }
 
@@ -155,8 +120,7 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestIconsTooLarge) {
     manifest.icons.push_back(std::move(icon));
   }
   WebApplicationInfo web_app_info;
-  UpdateWebAppInfoFromManifest(manifest, &web_app_info,
-                               ForInstallableSite::kUnknown);
+  UpdateWebAppInfoFromManifest(manifest, &web_app_info);
 
   EXPECT_EQ(10U, web_app_info.icon_infos.size());
   for (const WebApplicationIconInfo& icon : web_app_info.icon_infos) {

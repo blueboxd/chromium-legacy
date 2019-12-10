@@ -7,8 +7,6 @@
 #include <memory>
 #include <vector>
 
-#include "ash/public/mojom/constants.mojom.h"
-#include "ash/public/mojom/ime_info.mojom.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/system_connector.h"
@@ -47,6 +45,7 @@ ImeControllerClient::ImeControllerClient(InputMethodManager* manager)
 }
 
 ImeControllerClient::~ImeControllerClient() {
+  ime_controller_->SetClient(nullptr);
   DCHECK_EQ(this, g_ime_controller_client_instance);
   g_ime_controller_client_instance = nullptr;
 
@@ -59,15 +58,9 @@ ImeControllerClient::~ImeControllerClient() {
 
 void ImeControllerClient::Init() {
   // Connect to the controller in ash.
-  content::GetSystemConnector()->Connect(
-      ash::mojom::kServiceName, ime_controller_.BindNewPipeAndPassReceiver());
-  BindAndSetClient();
-}
-
-void ImeControllerClient::InitForTesting(
-    mojo::PendingRemote<ash::mojom::ImeController> controller) {
-  ime_controller_.Bind(std::move(controller));
-  BindAndSetClient();
+  ime_controller_ = ash::ImeController::Get();
+  DCHECK(ime_controller_);
+  InitAndSetClient();
 }
 
 // static
@@ -128,7 +121,7 @@ void ImeControllerClient::UpdateCastingState(bool casting_enabled) {
 }
 
 void ImeControllerClient::OverrideKeyboardKeyset(
-    chromeos::input_method::mojom::ImeKeyset keyset,
+    chromeos::input_method::ImeKeyset keyset,
     OverrideKeyboardKeysetCallback callback) {
   input_method_manager_->OverrideKeyboardKeyset(keyset);
   std::move(callback).Run();
@@ -157,7 +150,7 @@ void ImeControllerClient::ShowModeIndicator() {
     return;
   }
 
-  // Mojo call to Ash to show the mode indicator view with the given anchor
+  // Call to Ash to show the mode indicator view with the given anchor
   // bounds and short name.
   ime_controller_->ShowModeIndicator(anchor_bounds, short_name);
 }
@@ -199,16 +192,10 @@ void ImeControllerClient::OnLayoutChanging(const std::string& layout_name) {
   ime_controller_->OnKeyboardLayoutNameChanged(layout_name);
 }
 
-void ImeControllerClient::FlushMojoForTesting() {
-  ime_controller_.FlushForTesting();
-}
+void ImeControllerClient::InitAndSetClient() {
+  ime_controller_->SetClient(this);
 
-void ImeControllerClient::BindAndSetClient() {
-  mojo::PendingRemote<ash::mojom::ImeControllerClient> client;
-  receiver_.Bind(client.InitWithNewPipeAndPassReceiver());
-  ime_controller_->SetClient(std::move(client));
-
-  // Now that the bridge is established, flush state from observed objects to
+  // Now that the client is set, flush state from observed objects to
   // the ImeController, now that it will hear it.
   input_method_manager_->NotifyObserversImeExtraInputStateChange();
   if (const chromeos::input_method::ImeKeyboard* keyboard =
@@ -218,15 +205,15 @@ void ImeControllerClient::BindAndSetClient() {
   }
 }
 
-ash::mojom::ImeInfoPtr ImeControllerClient::GetAshImeInfo(
+ash::ImeInfo ImeControllerClient::GetAshImeInfo(
     const InputMethodDescriptor& ime) const {
   InputMethodUtil* util = input_method_manager_->GetInputMethodUtil();
-  ash::mojom::ImeInfoPtr info = ash::mojom::ImeInfo::New();
-  info->id = ime.id();
-  info->name = util->GetInputMethodLongName(ime);
-  info->medium_name = util->GetInputMethodMediumName(ime);
-  info->short_name = util->GetInputMethodShortName(ime);
-  info->third_party = chromeos::extension_ime_util::IsExtensionIME(ime.id());
+  ash::ImeInfo info;
+  info.id = ime.id();
+  info.name = util->GetInputMethodLongName(ime);
+  info.medium_name = util->GetInputMethodMediumName(ime);
+  info.short_name = util->GetInputMethodShortName(ime);
+  info.third_party = chromeos::extension_ime_util::IsExtensionIME(ime.id());
   return info;
 }
 
@@ -235,31 +222,30 @@ void ImeControllerClient::RefreshIme() {
       input_method_manager_->GetActiveIMEState().get();
   if (!state) {
     const std::string empty_ime_id;
-    ime_controller_->RefreshIme(empty_ime_id,
-                                std::vector<ash::mojom::ImeInfoPtr>(),
-                                std::vector<ash::mojom::ImeMenuItemPtr>());
+    ime_controller_->RefreshIme(empty_ime_id, std::vector<ash::ImeInfo>(),
+                                std::vector<ash::ImeMenuItem>());
     return;
   }
 
   const std::string current_ime_id = state->GetCurrentInputMethod().id();
 
-  std::vector<ash::mojom::ImeInfoPtr> available_imes;
+  std::vector<ash::ImeInfo> available_imes;
   std::unique_ptr<std::vector<InputMethodDescriptor>>
       available_ime_descriptors = state->GetActiveInputMethods();
   for (const InputMethodDescriptor& descriptor : *available_ime_descriptors) {
-    ash::mojom::ImeInfoPtr info = GetAshImeInfo(descriptor);
+    ash::ImeInfo info = GetAshImeInfo(descriptor);
     available_imes.push_back(std::move(info));
   }
 
-  std::vector<ash::mojom::ImeMenuItemPtr> ash_menu_items;
+  std::vector<ash::ImeMenuItem> ash_menu_items;
   ui::ime::InputMethodMenuItemList menu_list =
       ui::ime::InputMethodMenuManager::GetInstance()
           ->GetCurrentInputMethodMenuItemList();
   for (const ui::ime::InputMethodMenuItem& menu_item : menu_list) {
-    ash::mojom::ImeMenuItemPtr ash_item = ash::mojom::ImeMenuItem::New();
-    ash_item->key = menu_item.key;
-    ash_item->label = base::UTF8ToUTF16(menu_item.label);
-    ash_item->checked = menu_item.is_selection_item_checked;
+    ash::ImeMenuItem ash_item;
+    ash_item.key = menu_item.key;
+    ash_item.label = base::UTF8ToUTF16(menu_item.label);
+    ash_item.checked = menu_item.is_selection_item_checked;
     ash_menu_items.push_back(std::move(ash_item));
   }
   ime_controller_->RefreshIme(current_ime_id, std::move(available_imes),

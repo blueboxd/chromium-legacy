@@ -21,12 +21,13 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
+#include "third_party/blink/renderer/platform/testing/find_cc_layer.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 
 namespace blink {
 
 // Tests the integration between blink and cc where a layer list is sent to cc.
-class WebLayerListTest : public PaintTestConfigurations, public testing::Test {
+class CompositingTest : public PaintTestConfigurations, public testing::Test {
  public:
   static void ConfigureCompositingWebView(WebSettings* settings) {
     settings->SetPreferCompositingToLCDTextEnabled(true);
@@ -41,7 +42,6 @@ class WebLayerListTest : public PaintTestConfigurations, public testing::Test {
     // The paint artifact compositor should have been created as part of the
     // web view helper setup.
     DCHECK(paint_artifact_compositor());
-    paint_artifact_compositor()->EnableExtraDataForTesting();
   }
 
   void TearDown() override { web_view_helper_.reset(); }
@@ -61,35 +61,12 @@ class WebLayerListTest : public PaintTestConfigurations, public testing::Test {
 
   WebViewImpl* WebView() { return web_view_helper_->GetWebView(); }
 
-  size_t ContentLayerCount() {
-    return paint_artifact_compositor()
-        ->GetExtraDataForTesting()
-        ->content_layers.size();
+  const cc::Layer* RootCcLayer() {
+    return paint_artifact_compositor()->RootLayer();
   }
 
-  size_t ScrollbarLayerCount() {
-    return paint_artifact_compositor()
-        ->GetExtraDataForTesting()
-        ->scrollbar_layers.size();
-  }
-
-  cc::Layer* ContentLayerAt(size_t index) {
-    return paint_artifact_compositor()
-        ->GetExtraDataForTesting()
-        ->content_layers[index]
-        .get();
-  }
-
-  size_t ScrollHitTestLayerCount() {
-    return paint_artifact_compositor()
-        ->GetExtraDataForTesting()
-        ->scroll_hit_test_layers.size();
-  }
-
-  cc::Layer* ScrollHitTestLayerAt(unsigned index) {
-    return paint_artifact_compositor()
-        ->GetExtraDataForTesting()
-        ->ScrollHitTestWebLayerAt(index);
+  const cc::Layer* CcLayerByDOMElementId(const char* id) {
+    return CcLayersByDOMElementId(RootCcLayer(), id)[0];
   }
 
   cc::LayerTreeHost* LayerTreeHost() {
@@ -115,9 +92,9 @@ class WebLayerListTest : public PaintTestConfigurations, public testing::Test {
   std::unique_ptr<frame_test_helpers::WebViewHelper> web_view_helper_;
 };
 
-INSTANTIATE_LAYER_LIST_TEST_SUITE_P(WebLayerListTest);
+INSTANTIATE_LAYER_LIST_TEST_SUITE_P(CompositingTest);
 
-TEST_P(WebLayerListTest, DidScrollCallbackAfterScrollableAreaChanges) {
+TEST_P(CompositingTest, DidScrollCallbackAfterScrollableAreaChanges) {
   InitializeWithHTML(*WebView()->MainFrameImpl()->GetFrame(),
                      "<style>"
                      "  #scrollable {"
@@ -141,16 +118,9 @@ TEST_P(WebLayerListTest, DidScrollCallbackAfterScrollableAreaChanges) {
       ToLayoutBox(scrollable->GetLayoutObject())->GetScrollableArea();
   EXPECT_NE(nullptr, scrollable_area);
 
-  auto initial_content_layer_count = ContentLayerCount();
-  auto initial_scrollbar_layer_count = ScrollbarLayerCount();
-  auto initial_scroll_hit_test_layer_count = ScrollHitTestLayerCount();
-
-  cc::Layer* overflow_scroll_layer = nullptr;
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    overflow_scroll_layer = ScrollHitTestLayerAt(ScrollHitTestLayerCount() - 1);
-  } else {
-    overflow_scroll_layer = ContentLayerAt(ContentLayerCount() - 2);
-  }
+  CompositorElementId scroll_element_id = scrollable_area->GetScrollElementId();
+  const auto* overflow_scroll_layer =
+      CcLayerByCcElementId(RootCcLayer(), scroll_element_id);
   EXPECT_TRUE(overflow_scroll_layer->scrollable());
   EXPECT_EQ(overflow_scroll_layer->scroll_container_bounds(),
             gfx::Size(100, 100));
@@ -159,9 +129,8 @@ TEST_P(WebLayerListTest, DidScrollCallbackAfterScrollableAreaChanges) {
   // area using the DidScroll callback.
   EXPECT_EQ(ScrollOffset(), scrollable_area->GetScrollOffset());
   cc::ScrollAndScaleSet scroll_and_scale_set;
-  scroll_and_scale_set.scrolls.push_back({scrollable_area->GetScrollElementId(),
-                                          gfx::ScrollOffset(0, 1),
-                                          base::nullopt});
+  scroll_and_scale_set.scrolls.push_back(
+      {scroll_element_id, gfx::ScrollOffset(0, 1), base::nullopt});
   overflow_scroll_layer->layer_tree_host()->ApplyScrollAndScale(
       &scroll_and_scale_set);
   UpdateAllLifecyclePhases();
@@ -180,24 +149,16 @@ TEST_P(WebLayerListTest, DidScrollCallbackAfterScrollableAreaChanges) {
 
   // The web scroll layer has not been deleted yet and we should be able to
   // apply impl-side offsets without crashing.
-  EXPECT_EQ(ContentLayerCount(), initial_content_layer_count);
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_EQ(ScrollbarLayerCount(), initial_scrollbar_layer_count);
-    EXPECT_EQ(ScrollHitTestLayerCount(), initial_scroll_hit_test_layer_count);
-  }
-  overflow_scroll_layer->SetScrollOffsetFromImplSide(gfx::ScrollOffset(0, 3));
+  ASSERT_EQ(overflow_scroll_layer,
+            CcLayerByCcElementId(RootCcLayer(), scroll_element_id));
+  const_cast<cc::Layer*>(overflow_scroll_layer)
+      ->SetScrollOffsetFromImplSide(gfx::ScrollOffset(0, 3));
 
   UpdateAllLifecyclePhases();
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_EQ(ContentLayerCount(), initial_content_layer_count);
-    EXPECT_LT(ScrollbarLayerCount(), initial_scrollbar_layer_count);
-    EXPECT_LT(ScrollHitTestLayerCount(), initial_scroll_hit_test_layer_count);
-  } else {
-    EXPECT_LT(ContentLayerCount(), initial_content_layer_count);
-  }
+  EXPECT_FALSE(CcLayerByCcElementId(RootCcLayer(), scroll_element_id));
 }
 
-TEST_P(WebLayerListTest, FrameViewScroll) {
+TEST_P(CompositingTest, FrameViewScroll) {
   InitializeWithHTML(*WebView()->MainFrameImpl()->GetFrame(),
                      "<style>"
                      "  #forceScroll {"
@@ -212,19 +173,8 @@ TEST_P(WebLayerListTest, FrameViewScroll) {
   auto* scrollable_area = GetLocalFrameView()->LayoutViewport();
   EXPECT_NE(nullptr, scrollable_area);
 
-  cc::Layer* scroll_layer = nullptr;
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_EQ(ScrollHitTestLayerCount(), 1u);
-    scroll_layer = ScrollHitTestLayerAt(0);
-  } else {
-    // Find the last scroll layer.
-    for (size_t index = ContentLayerCount() - 1; index >= 0; index--) {
-      if (ContentLayerAt(index)->scrollable()) {
-        scroll_layer = ContentLayerAt(index);
-        break;
-      }
-    }
-  }
+  const auto* scroll_layer = CcLayerByCcElementId(
+      RootCcLayer(), scrollable_area->GetScrollElementId());
   EXPECT_TRUE(scroll_layer->scrollable());
 
   // Ensure a synthetic impl-side scroll offset propagates to the scrollable
@@ -239,7 +189,7 @@ TEST_P(WebLayerListTest, FrameViewScroll) {
   EXPECT_EQ(ScrollOffset(0, 1), scrollable_area->GetScrollOffset());
 }
 
-TEST_P(WebLayerListTest, WillChangeTransformHint) {
+TEST_P(CompositingTest, WillChangeTransformHint) {
   InitializeWithHTML(*WebView()->MainFrameImpl()->GetFrame(), R"HTML(
     <style>
       #willChange {
@@ -252,11 +202,11 @@ TEST_P(WebLayerListTest, WillChangeTransformHint) {
     <div id="willChange"></div>
   )HTML");
   UpdateAllLifecyclePhases();
-  auto* layer = ContentLayerAt(ContentLayerCount() - 1);
+  auto* layer = CcLayerByDOMElementId("willChange");
   EXPECT_TRUE(layer->has_will_change_transform_hint());
 }
 
-class WebLayerListSimTest : public PaintTestConfigurations, public SimTest {
+class CompositingSimTest : public PaintTestConfigurations, public SimTest {
  public:
   void InitializeWithHTML(const String& html) {
     WebView().MainFrameWidget()->Resize(WebSize(800, 600));
@@ -264,27 +214,16 @@ class WebLayerListSimTest : public PaintTestConfigurations, public SimTest {
     SimRequest request("https://example.com/test.html", "text/html");
     LoadURL("https://example.com/test.html");
     request.Complete(html);
-
-    // Enable the paint artifact compositor extra testing data.
     UpdateAllLifecyclePhases();
     DCHECK(paint_artifact_compositor());
-    paint_artifact_compositor()->EnableExtraDataForTesting();
-    UpdateAllLifecyclePhases();
-
-    DCHECK(paint_artifact_compositor()->GetExtraDataForTesting());
   }
 
-  size_t ContentLayerCount() {
-    return paint_artifact_compositor()
-        ->GetExtraDataForTesting()
-        ->content_layers.size();
+  const cc::Layer* RootCcLayer() {
+    return paint_artifact_compositor()->RootLayer();
   }
 
-  cc::Layer* ContentLayerAt(size_t index) {
-    return paint_artifact_compositor()
-        ->GetExtraDataForTesting()
-        ->content_layers[index]
-        .get();
+  const cc::Layer* CcLayerByDOMElementId(const char* id) {
+    return CcLayersByDOMElementId(RootCcLayer(), id)[0];
   }
 
   Element* GetElementById(const AtomicString& id) {
@@ -320,9 +259,9 @@ class WebLayerListSimTest : public PaintTestConfigurations, public SimTest {
   }
 };
 
-INSTANTIATE_LAYER_LIST_TEST_SUITE_P(WebLayerListSimTest);
+INSTANTIATE_LAYER_LIST_TEST_SUITE_P(CompositingSimTest);
 
-TEST_P(WebLayerListSimTest, LayerUpdatesDoNotInvalidateEarlierLayers) {
+TEST_P(CompositingSimTest, LayerUpdatesDoNotInvalidateEarlierLayers) {
   // TODO(crbug.com/765003): CAP may make different layerization decisions and
   // we cannot guarantee that both divs will be composited in this test. When
   // CAP gets closer to launch, this test should be updated to pass.
@@ -346,12 +285,12 @@ TEST_P(WebLayerListSimTest, LayerUpdatesDoNotInvalidateEarlierLayers) {
   Compositor().BeginFrame();
 
   auto* a_element = GetElementById("a");
-  auto* a_layer = ContentLayerAt(ContentLayerCount() - 2);
+  auto* a_layer = CcLayerByDOMElementId("a");
   DCHECK_EQ(a_layer->element_id(), CompositorElementIdFromUniqueObjectId(
                                        a_element->GetLayoutObject()->UniqueId(),
                                        CompositorElementIdNamespace::kPrimary));
   auto* b_element = GetElementById("b");
-  auto* b_layer = ContentLayerAt(ContentLayerCount() - 1);
+  auto* b_layer = CcLayerByDOMElementId("b");
   DCHECK_EQ(b_layer->element_id(), CompositorElementIdFromUniqueObjectId(
                                        b_element->GetLayoutObject()->UniqueId(),
                                        CompositorElementIdNamespace::kPrimary));
@@ -373,7 +312,7 @@ TEST_P(WebLayerListSimTest, LayerUpdatesDoNotInvalidateEarlierLayers) {
   EXPECT_FALSE(host.LayersThatShouldPushProperties().count(b_layer));
 }
 
-TEST_P(WebLayerListSimTest, LayerUpdatesDoNotInvalidateLaterLayers) {
+TEST_P(CompositingSimTest, LayerUpdatesDoNotInvalidateLaterLayers) {
   // TODO(crbug.com/765003): CAP may make different layerization decisions and
   // we cannot guarantee that both divs will be composited in this test. When
   // CAP gets closer to launch, this test should be updated to pass.
@@ -398,17 +337,17 @@ TEST_P(WebLayerListSimTest, LayerUpdatesDoNotInvalidateLaterLayers) {
   Compositor().BeginFrame();
 
   auto* a_element = GetElementById("a");
-  auto* a_layer = ContentLayerAt(ContentLayerCount() - 3);
+  auto* a_layer = CcLayerByDOMElementId("a");
   DCHECK_EQ(a_layer->element_id(), CompositorElementIdFromUniqueObjectId(
                                        a_element->GetLayoutObject()->UniqueId(),
                                        CompositorElementIdNamespace::kPrimary));
   auto* b_element = GetElementById("b");
-  auto* b_layer = ContentLayerAt(ContentLayerCount() - 2);
+  auto* b_layer = CcLayerByDOMElementId("b");
   DCHECK_EQ(b_layer->element_id(), CompositorElementIdFromUniqueObjectId(
                                        b_element->GetLayoutObject()->UniqueId(),
                                        CompositorElementIdNamespace::kPrimary));
   auto* c_element = GetElementById("c");
-  auto* c_layer = ContentLayerAt(ContentLayerCount() - 1);
+  auto* c_layer = CcLayerByDOMElementId("c");
   DCHECK_EQ(c_layer->element_id(), CompositorElementIdFromUniqueObjectId(
                                        c_element->GetLayoutObject()->UniqueId(),
                                        CompositorElementIdNamespace::kPrimary));
@@ -435,7 +374,7 @@ TEST_P(WebLayerListSimTest, LayerUpdatesDoNotInvalidateLaterLayers) {
   EXPECT_FALSE(host.LayersThatShouldPushProperties().count(c_layer));
 }
 
-TEST_P(WebLayerListSimTest,
+TEST_P(CompositingSimTest,
        NoopChangeDoesNotCauseFullTreeSyncOrPropertyTreeUpdate) {
   InitializeWithHTML(R"HTML(
       <!DOCTYPE html>
@@ -471,7 +410,7 @@ TEST_P(WebLayerListSimTest,
 // need to have |subtree_property_changed| set for damage tracking. In
 // non-layer-list mode, this occurs in BuildPropertyTreesInternal (see:
 // SetLayerPropertyChangedForChild).
-TEST_P(WebLayerListSimTest, LayerSubtreeTransformPropertyChanged) {
+TEST_P(CompositingSimTest, LayerSubtreeTransformPropertyChanged) {
   // TODO(crbug.com/765003): CAP may make different layerization decisions and
   // we cannot guarantee that both divs will be composited in this test. When
   // CAP gets closer to launch, this test should be updated to pass.
@@ -503,13 +442,13 @@ TEST_P(WebLayerListSimTest, LayerSubtreeTransformPropertyChanged) {
   Compositor().BeginFrame();
 
   auto* outer_element = GetElementById("outer");
-  auto* outer_element_layer = ContentLayerAt(ContentLayerCount() - 2);
+  auto* outer_element_layer = CcLayerByDOMElementId("outer");
   DCHECK_EQ(outer_element_layer->element_id(),
             CompositorElementIdFromUniqueObjectId(
                 outer_element->GetLayoutObject()->UniqueId(),
                 CompositorElementIdNamespace::kPrimary));
   auto* inner_element = GetElementById("inner");
-  auto* inner_element_layer = ContentLayerAt(ContentLayerCount() - 1);
+  auto* inner_element_layer = CcLayerByDOMElementId("inner");
   DCHECK_EQ(inner_element_layer->element_id(),
             CompositorElementIdFromUniqueObjectId(
                 inner_element->GetLayoutObject()->UniqueId(),
@@ -548,7 +487,7 @@ TEST_P(WebLayerListSimTest, LayerSubtreeTransformPropertyChanged) {
 // damaged. The ensure damage occurs, the transform node should have
 // |transform_changed| set. In non-layer-list mode, this occurs in
 // cc::TransformTree::OnTransformAnimated and cc::Layer::SetTransform.
-TEST_P(WebLayerListSimTest, DirectTransformPropertyUpdate) {
+TEST_P(CompositingSimTest, DirectTransformPropertyUpdate) {
   // TODO(crbug.com/765003): CAP may make different layerization decisions and
   // we cannot guarantee that both divs will be composited in this test. When
   // CAP gets closer to launch, this test should be updated to pass.
@@ -580,7 +519,7 @@ TEST_P(WebLayerListSimTest, DirectTransformPropertyUpdate) {
   Compositor().BeginFrame();
 
   auto* outer_element = GetElementById("outer");
-  auto* outer_element_layer = ContentLayerAt(ContentLayerCount() - 2);
+  auto* outer_element_layer = CcLayerByDOMElementId("outer");
   DCHECK_EQ(outer_element_layer->element_id(),
             CompositorElementIdFromUniqueObjectId(
                 outer_element->GetLayoutObject()->UniqueId(),
@@ -608,7 +547,7 @@ TEST_P(WebLayerListSimTest, DirectTransformPropertyUpdate) {
 // This test is similar to |DirectTransformPropertyUpdate| but tests that
 // the changed value of a directly updated transform is still set if some other
 // change causes PaintArtifactCompositor to run and do non-direct updates.
-TEST_P(WebLayerListSimTest, DirectTransformPropertyUpdateCausesChange) {
+TEST_P(CompositingSimTest, DirectTransformPropertyUpdateCausesChange) {
   // TODO(crbug.com/765003): CAP may make different layerization decisions and
   // we cannot guarantee that both divs will be composited in this test. When
   // CAP gets closer to launch, this test should be updated to pass.
@@ -641,7 +580,7 @@ TEST_P(WebLayerListSimTest, DirectTransformPropertyUpdateCausesChange) {
   Compositor().BeginFrame();
 
   auto* outer_element = GetElementById("outer");
-  auto* outer_element_layer = ContentLayerAt(ContentLayerCount() - 2);
+  auto* outer_element_layer = CcLayerByDOMElementId("outer");
   DCHECK_EQ(outer_element_layer->element_id(),
             CompositorElementIdFromUniqueObjectId(
                 outer_element->GetLayoutObject()->UniqueId(),
@@ -651,7 +590,7 @@ TEST_P(WebLayerListSimTest, DirectTransformPropertyUpdateCausesChange) {
       GetPropertyTrees()->transform_tree.Node(outer_transform_tree_index);
 
   auto* inner_element = GetElementById("inner");
-  auto* inner_element_layer = ContentLayerAt(ContentLayerCount() - 1);
+  auto* inner_element_layer = CcLayerByDOMElementId("inner");
   DCHECK_EQ(inner_element_layer->element_id(),
             CompositorElementIdFromUniqueObjectId(
                 inner_element->GetLayoutObject()->UniqueId(),
@@ -693,7 +632,7 @@ TEST_P(WebLayerListSimTest, DirectTransformPropertyUpdateCausesChange) {
 // This test ensures that the correct transform nodes are created and bits set
 // so that the browser controls movement adjustments needed by bottom-fixed
 // elements will work.
-TEST_P(WebLayerListSimTest, AffectedByOuterViewportBoundsDelta) {
+TEST_P(CompositingSimTest, AffectedByOuterViewportBoundsDelta) {
   // TODO(bokan): This test will have to be reevaluated for CAP. It looks like
   // the fixed layer isn't composited in CAP.
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
@@ -715,7 +654,7 @@ TEST_P(WebLayerListSimTest, AffectedByOuterViewportBoundsDelta) {
   )HTML");
 
   auto* fixed_element = GetElementById("fixed");
-  auto* fixed_element_layer = ContentLayerAt(ContentLayerCount() - 2);
+  auto* fixed_element_layer = CcLayerByDOMElementId("fixed");
   DCHECK_EQ(fixed_element_layer->element_id(),
             CompositorElementIdFromUniqueObjectId(
                 fixed_element->GetLayoutObject()->UniqueId(),
@@ -757,7 +696,7 @@ TEST_P(WebLayerListSimTest, AffectedByOuterViewportBoundsDelta) {
 // damaged. The ensure damage occurs, the transform node should have
 // |transform_changed| set. In non-layer-list mode, this occurs in
 // cc::Layer::SetTransformOrigin.
-TEST_P(WebLayerListSimTest, DirectTransformOriginPropertyUpdate) {
+TEST_P(CompositingSimTest, DirectTransformOriginPropertyUpdate) {
   // TODO(crbug.com/765003): CAP may make different layerization decisions and
   // we cannot guarantee that both divs will be composited in this test. When
   // CAP gets closer to launch, this test should be updated to pass.
@@ -781,7 +720,7 @@ TEST_P(WebLayerListSimTest, DirectTransformOriginPropertyUpdate) {
   Compositor().BeginFrame();
 
   auto* box_element = GetElementById("box");
-  auto* box_element_layer = ContentLayerAt(ContentLayerCount() - 1);
+  auto* box_element_layer = CcLayerByDOMElementId("box");
   DCHECK_EQ(box_element_layer->element_id(),
             CompositorElementIdFromUniqueObjectId(
                 box_element->GetLayoutObject()->UniqueId(),
@@ -808,7 +747,7 @@ TEST_P(WebLayerListSimTest, DirectTransformOriginPropertyUpdate) {
 
 // This test is similar to |LayerSubtreeTransformPropertyChanged| but for
 // effect property node changes.
-TEST_P(WebLayerListSimTest, LayerSubtreeEffectPropertyChanged) {
+TEST_P(CompositingSimTest, LayerSubtreeEffectPropertyChanged) {
   // TODO(crbug.com/765003): CAP may make different layerization decisions and
   // we cannot guarantee that both divs will be composited in this test. When
   // CAP gets closer to launch, this test should be updated to pass.
@@ -840,13 +779,13 @@ TEST_P(WebLayerListSimTest, LayerSubtreeEffectPropertyChanged) {
   Compositor().BeginFrame();
 
   auto* outer_element = GetElementById("outer");
-  auto* outer_element_layer = ContentLayerAt(ContentLayerCount() - 2);
+  auto* outer_element_layer = CcLayerByDOMElementId("outer");
   DCHECK_EQ(outer_element_layer->element_id(),
             CompositorElementIdFromUniqueObjectId(
                 outer_element->GetLayoutObject()->UniqueId(),
                 CompositorElementIdNamespace::kPrimary));
   auto* inner_element = GetElementById("inner");
-  auto* inner_element_layer = ContentLayerAt(ContentLayerCount() - 1);
+  auto* inner_element_layer = CcLayerByDOMElementId("inner");
   DCHECK_EQ(inner_element_layer->element_id(),
             CompositorElementIdFromUniqueObjectId(
                 inner_element->GetLayoutObject()->UniqueId(),
@@ -880,7 +819,7 @@ TEST_P(WebLayerListSimTest, LayerSubtreeEffectPropertyChanged) {
 
 // This test is similar to |LayerSubtreeTransformPropertyChanged| but for
 // clip property node changes.
-TEST_P(WebLayerListSimTest, LayerSubtreeClipPropertyChanged) {
+TEST_P(CompositingSimTest, LayerSubtreeClipPropertyChanged) {
   // TODO(crbug.com/765003): CAP may make different layerization decisions and
   // we cannot guarantee that both divs will be composited in this test. When
   // CAP gets closer to launch, this test should be updated to pass.
@@ -913,9 +852,9 @@ TEST_P(WebLayerListSimTest, LayerSubtreeClipPropertyChanged) {
   Compositor().BeginFrame();
 
   auto* outer_element = GetElementById("outer");
-  auto* outer_element_layer = ContentLayerAt(ContentLayerCount() - 2);
+  auto* outer_element_layer = CcLayerByDOMElementId("outer");
   auto* inner_element = GetElementById("inner");
-  auto* inner_element_layer = ContentLayerAt(ContentLayerCount() - 1);
+  auto* inner_element_layer = CcLayerByDOMElementId("inner");
   DCHECK_EQ(inner_element_layer->element_id(),
             CompositorElementIdFromUniqueObjectId(
                 inner_element->GetLayoutObject()->UniqueId(),
@@ -939,7 +878,7 @@ TEST_P(WebLayerListSimTest, LayerSubtreeClipPropertyChanged) {
   EXPECT_FALSE(inner_element_layer->subtree_property_changed());
 }
 
-TEST_P(WebLayerListSimTest, LayerSubtreeOverflowClipPropertyChanged) {
+TEST_P(CompositingSimTest, LayerSubtreeOverflowClipPropertyChanged) {
   // TODO(crbug.com/765003): CAP may make different layerization decisions and
   // we cannot guarantee that both divs will be composited in this test. When
   // CAP gets closer to launch, this test should be updated to pass.
@@ -972,9 +911,9 @@ TEST_P(WebLayerListSimTest, LayerSubtreeOverflowClipPropertyChanged) {
   Compositor().BeginFrame();
 
   auto* outer_element = GetElementById("outer");
-  auto* outer_element_layer = ContentLayerAt(ContentLayerCount() - 2);
+  auto* outer_element_layer = CcLayerByDOMElementId("outer");
   auto* inner_element = GetElementById("inner");
-  auto* inner_element_layer = ContentLayerAt(ContentLayerCount() - 1);
+  auto* inner_element_layer = CcLayerByDOMElementId("inner");
   DCHECK_EQ(inner_element_layer->element_id(),
             CompositorElementIdFromUniqueObjectId(
                 inner_element->GetLayoutObject()->UniqueId(),
@@ -1003,7 +942,7 @@ TEST_P(WebLayerListSimTest, LayerSubtreeOverflowClipPropertyChanged) {
 // This test is similar to |LayerSubtreeClipPropertyChanged| but for cases when
 // the clip node itself does not change but the clip node associated with a
 // layer changes.
-TEST_P(WebLayerListSimTest, LayerClipPropertyChanged) {
+TEST_P(CompositingSimTest, LayerClipPropertyChanged) {
   InitializeWithHTML(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -1025,7 +964,7 @@ TEST_P(WebLayerListSimTest, LayerClipPropertyChanged) {
 
   Compositor().BeginFrame();
 
-  auto* inner_element_layer = ContentLayerAt(ContentLayerCount() - 1);
+  auto* inner_element_layer = CcLayerByDOMElementId("inner");
   EXPECT_FALSE(inner_element_layer->double_sided());
 
   // Initially, no layer should have |subtree_property_changed| set.
@@ -1037,7 +976,7 @@ TEST_P(WebLayerListSimTest, LayerClipPropertyChanged) {
   outer_element->setAttribute(html_names::kStyleAttr, "");
   UpdateAllLifecyclePhases();
 
-  inner_element_layer = ContentLayerAt(ContentLayerCount() - 1);
+  inner_element_layer = CcLayerByDOMElementId("inner");
   EXPECT_FALSE(inner_element_layer->double_sided());
   EXPECT_TRUE(inner_element_layer->subtree_property_changed());
 
@@ -1046,7 +985,7 @@ TEST_P(WebLayerListSimTest, LayerClipPropertyChanged) {
   EXPECT_FALSE(inner_element_layer->subtree_property_changed());
 }
 
-TEST_P(WebLayerListSimTest, SafeOpaqueBackgroundColorGetsSet) {
+TEST_P(CompositingSimTest, SafeOpaqueBackgroundColorGetsSet) {
   // TODO(crbug.com/765003): CAP may make different layerization decisions and
   // we cannot guarantee that both divs will be composited in this test. When
   // CAP gets closer to launch, this test should be updated to pass.
@@ -1087,7 +1026,7 @@ TEST_P(WebLayerListSimTest, SafeOpaqueBackgroundColorGetsSet) {
   Compositor().BeginFrame();
 
   auto* behind_element = GetElementById("behind");
-  auto* behind_layer = ContentLayerAt(ContentLayerCount() - 2);
+  auto* behind_layer = CcLayerByDOMElementId("behind");
   EXPECT_EQ(behind_layer->element_id(),
             CompositorElementIdFromUniqueObjectId(
                 behind_element->GetLayoutObject()->UniqueId(),
@@ -1122,7 +1061,7 @@ TEST_P(WebLayerListSimTest, SafeOpaqueBackgroundColorGetsSet) {
               (squashed_bg_color == SK_ColorCYAN));
 }
 
-TEST_P(WebLayerListSimTest, NonDrawableLayersIgnoredForRenderSurfaces) {
+TEST_P(CompositingSimTest, NonDrawableLayersIgnoredForRenderSurfaces) {
   // TODO(crbug.com/765003): CAP may make different layerization decisions. When
   // CAP gets closer to launch, this test should be updated to pass.
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
@@ -1150,10 +1089,9 @@ TEST_P(WebLayerListSimTest, NonDrawableLayersIgnoredForRenderSurfaces) {
 
   Compositor().BeginFrame();
 
-  ASSERT_GE(ContentLayerCount(), 2u);
-  auto* inner_element_layer = ContentLayerAt(ContentLayerCount() - 1);
+  auto* inner_element_layer = CcLayerByDOMElementId("inner");
   EXPECT_FALSE(inner_element_layer->DrawsContent());
-  auto* outer_element_layer = ContentLayerAt(ContentLayerCount() - 2);
+  auto* outer_element_layer = CcLayerByDOMElementId("outer");
   EXPECT_TRUE(outer_element_layer->DrawsContent());
 
   // The inner element layer is only needed for hit testing and does not draw
@@ -1164,7 +1102,7 @@ TEST_P(WebLayerListSimTest, NonDrawableLayersIgnoredForRenderSurfaces) {
   EXPECT_FALSE(effect_node->HasRenderSurface());
 }
 
-TEST_P(WebLayerListSimTest, NoRenderSurfaceWithAxisAlignedTransformAnimation) {
+TEST_P(CompositingSimTest, NoRenderSurfaceWithAxisAlignedTransformAnimation) {
   InitializeWithHTML(R"HTML(
       <!DOCTYPE html>
       <style>

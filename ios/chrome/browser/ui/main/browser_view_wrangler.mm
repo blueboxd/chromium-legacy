@@ -92,6 +92,7 @@
 @interface BrowserViewWrangler () <WebStateListObserving, CRWWebStateObserver> {
   ios::ChromeBrowserState* _browserState;
   __weak id<ApplicationCommands> _applicationCommandEndpoint;
+  __weak id<BrowsingDataCommands> _browsingDataCommandEndpoint;
   __weak id<BrowserStateStorageSwitching> _storageSwitcher;
   AppUrlLoadingService* _appURLLoadingService;
   BOOL _isShutdown;
@@ -153,12 +154,15 @@
                 webStateListObserver:(id<WebStateListObserving>)observer
           applicationCommandEndpoint:
               (id<ApplicationCommands>)applicationCommandEndpoint
+         browsingDataCommandEndpoint:
+             (id<BrowsingDataCommands>)browsingDataCommandEndpoint
                 appURLLoadingService:(AppUrlLoadingService*)appURLLoadingService
                      storageSwitcher:
                          (id<BrowserStateStorageSwitching>)storageSwitcher {
   if ((self = [super init])) {
     _browserState = browserState;
     _applicationCommandEndpoint = applicationCommandEndpoint;
+    _browsingDataCommandEndpoint = browsingDataCommandEndpoint;
     _appURLLoadingService = appURLLoadingService;
     _storageSwitcher = storageSwitcher;
     _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
@@ -445,6 +449,7 @@
       [[BrowserCoordinator alloc] initWithBaseViewController:nil
                                                      browser:browser];
   coordinator.applicationCommandHandler = _applicationCommandEndpoint;
+  coordinator.browsingDataCommandHandler = _browsingDataCommandEndpoint;
   coordinator.appURLLoadingService = _appURLLoadingService;
   return coordinator;
 }

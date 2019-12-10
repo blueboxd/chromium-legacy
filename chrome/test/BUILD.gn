@@ -3718,11 +3718,11 @@ test("unit_tests") {
       "../browser/password_manager/password_accessory_controller_impl_unittest.cc",
       "../browser/password_manager/password_generation_controller_impl_unittest.cc",
       "../browser/password_manager/save_password_infobar_delegate_android_unittest.cc",
-      "../browser/password_manager/touch_to_fill_controller_unittest.cc",
       "../browser/password_manager/update_password_infobar_delegate_android_unittest.cc",
       "../browser/permissions/permission_prompt_android_unittest.cc",
       "../browser/permissions/permission_request_notification_android_unittest.cc",
       "../browser/permissions/permission_request_notification_handler_unittest.cc",
+      "../browser/touch_to_fill/touch_to_fill_controller_unittest.cc",
       "../browser/translate/translate_manager_render_view_host_android_unittest.cc",
       "../browser/updates/update_notification_config_unittest.cc",
     ]

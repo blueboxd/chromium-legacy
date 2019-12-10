@@ -67,7 +67,7 @@ void FCMInvalidationListener::Invalidate(const std::string& payload,
   // using |*expected_public_topic| over |public_topic|.
   base::Optional<std::string> expected_public_topic =
       per_user_topic_registration_manager_
-          ->LookupRegisteredPublicTopicByPrivateTopic(private_topic);
+          ->LookupSubscribedPublicTopicByPrivateTopic(private_topic);
   if (!expected_public_topic ||
       (!public_topic.empty() && public_topic != *expected_public_topic)) {
     DVLOG(1) << "Unexpected invalidation for " << private_topic
@@ -146,7 +146,7 @@ void FCMInvalidationListener::DoRegistrationUpdate() {
       !topics_update_requested_) {
     return;
   }
-  per_user_topic_registration_manager_->UpdateRegisteredTopics(
+  per_user_topic_registration_manager_->UpdateSubscribedTopics(
       registered_topics_, instance_id_token_);
 
   // TODO(melandory): remove unacked invalidations for unregistered objects.

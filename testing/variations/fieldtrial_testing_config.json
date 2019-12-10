@@ -4326,6 +4326,25 @@
             ]
         }
     ],
+    "PaintHolding": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PaintHolding"
+                    ]
+                }
+            ]
+        }
+    ],
     "ParallelDownloadWithQUICAndHTTP2": [
         {
             "platforms": [
@@ -6454,7 +6473,7 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "setting": "2"
+                        "setting": "1"
                     },
                     "enable_features": [
                         "TabHoverCards"

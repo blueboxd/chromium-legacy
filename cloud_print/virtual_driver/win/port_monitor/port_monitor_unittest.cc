@@ -82,10 +82,10 @@ class PortMonitorTest : public testing::Test {
     base::FilePath path;
     base::PathService::Get(base::DIR_LOCAL_APP_DATA, &path);
     base::FilePath main_path = path.Append(kChromeExePath);
-    ASSERT_TRUE(base::DeleteFile(main_path, true));
+    ASSERT_TRUE(base::DeleteFileRecursively(main_path));
     base::PathService::Get(base::DIR_LOCAL_APP_DATA, &path);
     base::FilePath alternate_path = path.Append(kAlternateChromeExePath);
-    ASSERT_TRUE(base::DeleteFile(alternate_path, true));
+    ASSERT_TRUE(base::DeleteFileRecursively(alternate_path));
   }
 
  protected:

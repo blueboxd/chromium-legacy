@@ -17,6 +17,7 @@ class WebUI;
 }
 class GURL;
 class NewTabPageHandler;
+class Profile;
 
 class NewTabPageUI : public ui::MojoWebUIController,
                      public new_tab_page::mojom::PageHandlerFactory {
@@ -41,6 +42,8 @@ class NewTabPageUI : public ui::MojoWebUIController,
 
   mojo::Receiver<new_tab_page::mojom::PageHandlerFactory>
       page_factory_receiver_;
+
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(NewTabPageUI);
 };

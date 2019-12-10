@@ -48,7 +48,7 @@ void FetchRemoteSms(
   request.mutable_sms_fetch_request()->set_origin(origin.Serialize());
 
   sharing_service->SendMessageToDevice(
-      device->guid(), base::TimeDelta::FromSeconds(kDefaultTimeoutSeconds),
+      *device.get(), base::TimeDelta::FromSeconds(kDefaultTimeoutSeconds),
       std::move(request),
       base::BindOnce(
           [](base::OnceCallback<void(base::Optional<std::string>)> callback,

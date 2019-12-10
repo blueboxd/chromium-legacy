@@ -218,7 +218,7 @@ class MockWebBundleReaderFactoryImpl final : public MockWebBundleReaderFactory {
 
     base::RunLoop run_loop;
     reader->ReadResponse(
-        resource_request,
+        resource_request, "" /* accept_langs */,
         base::BindOnce(
             [](base::OnceClosure quit_closure,
                WebBundleReader::ResponseCallback callback,

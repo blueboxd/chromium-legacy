@@ -1385,12 +1385,15 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      *
      * <p>Subclasses should override this method and either extend the set of direct actions or
      * suppress registration of default direct actions.
+     *
+     *  TODO(crrev.com/959841): Move the DirectActionInitializer in the UiRootCoordinator.
      */
     protected void registerDirectActions() {
         mDirectActionInitializer.registerCommonChromeActions(this, getActivityType(), this,
-                this::onBackPressed, mTabModelSelector,
-                AutofillAssistantFacade.areDirectActionsAvailable(getActivityType()) ?
-                        getBottomSheetController() : null,
+                this::onBackPressed, mTabModelSelector, mRootUiCoordinator.getFindToolbarManager(),
+                AutofillAssistantFacade.areDirectActionsAvailable(getActivityType())
+                        ? getBottomSheetController()
+                        : null,
                 mScrimView);
     }
 

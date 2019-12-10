@@ -43,7 +43,6 @@ NDEFMessagePtr TypeConverter<NDEFMessagePtr, blink::NDEFMessage*>::Convert(
   if (!message)
     return nullptr;
   NDEFMessagePtr messagePtr = NDEFMessage::New();
-  messagePtr->url = message->url();
   messagePtr->data.resize(message->records().size());
   for (wtf_size_t i = 0; i < message->records().size(); ++i) {
     NDEFRecordPtr record = NDEFRecord::From(message->records()[i].Get());

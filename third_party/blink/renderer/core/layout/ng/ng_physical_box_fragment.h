@@ -25,6 +25,13 @@ class CORE_EXPORT NGPhysicalBoxFragment final
       NGBoxFragmentBuilder* builder,
       WritingMode block_or_line_writing_mode);
 
+  using PassKey = util::PassKey<NGPhysicalBoxFragment>;
+  NGPhysicalBoxFragment(PassKey,
+                        NGBoxFragmentBuilder* builder,
+                        const NGPhysicalBoxStrut& borders,
+                        const NGPhysicalBoxStrut& padding,
+                        WritingMode block_or_line_writing_mode);
+
   scoped_refptr<const NGLayoutResult> CloneAsHiddenForPaint() const;
 
   ~NGPhysicalBoxFragment() {
@@ -100,11 +107,6 @@ class CORE_EXPORT NGPhysicalBoxFragment final
 #endif
 
  private:
-  NGPhysicalBoxFragment(NGBoxFragmentBuilder* builder,
-                        const NGPhysicalBoxStrut& borders,
-                        const NGPhysicalBoxStrut& padding,
-                        WritingMode block_or_line_writing_mode);
-
   const NGFragmentItems* ComputeItemsAddress() const {
     DCHECK(has_fragment_items_ || has_borders_ || has_padding_);
     const NGLink* children_end = children_ + Children().size();

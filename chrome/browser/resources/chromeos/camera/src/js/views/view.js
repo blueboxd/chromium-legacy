@@ -41,132 +41,138 @@ cca.views.EnterOptions;
 
 /**
  * Base controller of a view for views' navigation sessions (cca.nav).
- * @param {string} selector Selector text of the view's root element.
- * @param {boolean=} dismissByEsc Enable dismissible by Esc-key.
- * @param {boolean=} dismissByBkgndClick Enable dismissible by background-click.
- * @constructor
  */
-cca.views.View = function(
-    selector, dismissByEsc = false, dismissByBkgndClick = false) {
+cca.views.View = class {
   /**
-   * @type {!HTMLElement}
-   * @protected
+   * @param {string} selector Selector text of the view's root element.
+   * @param {boolean=} dismissByEsc Enable dismissible by Esc-key.
+   * @param {boolean=} dismissByBkgndClick Enable dismissible by
+   *     background-click.
    */
-  this.rootElement_ =
-      /** @type {!HTMLElement} */ (document.querySelector(selector));
+  constructor(selector, dismissByEsc = false, dismissByBkgndClick = false) {
+    /**
+     * @type {!HTMLElement}
+     * @protected
+     */
+    this.rootElement_ =
+        /** @type {!HTMLElement} */ (document.querySelector(selector));
 
-  /**
-   * @type {Promise<*>}
-   * @private
-   */
-  this.session_ = null;
+    /**
+     * @type {Promise<*>}
+     * @private
+     */
+    this.session_ = null;
 
-  /**
-   * @type {boolean}
-   * @private
-   */
-  this.dismissByEsc_ = dismissByEsc;
+    /**
+     * @type {boolean}
+     * @private
+     */
+    this.dismissByEsc_ = dismissByEsc;
 
-  if (dismissByBkgndClick) {
-    this.rootElement_.addEventListener(
-        'click',
-        (event) =>
-            event.target === this.rootElement_ && this.leave({bkgnd: true}));
+    if (dismissByBkgndClick) {
+      this.rootElement_.addEventListener(
+          'click',
+          (event) =>
+              event.target === this.rootElement_ && this.leave({bkgnd: true}));
+    }
   }
-};
 
-cca.views.View.prototype = {
+  /**
+   * HTML root node of this view.
+   * @return {!HTMLElement}
+   */
   get root() {
     return this.rootElement_;
-  },
-};
+  }
 
-/**
- * Hook of the subclass for handling the key.
- * @param {string} key Key to be handled.
- * @return {boolean} Whether the key has been handled or not.
- */
-cca.views.View.prototype.handlingKey = function(key) {
-  return false;
-};
+  /**
+   * Hook of the subclass for handling the key.
+   * @param {string} key Key to be handled.
+   * @return {boolean} Whether the key has been handled or not.
+   */
+  handlingKey(key) {
+    return false;
+  }
 
-/**
- * Handles the pressed key.
- * @param {string} key Key to be handled.
- * @return {boolean} Whether the key has been handled or not.
- */
-cca.views.View.prototype.onKeyPressed = function(key) {
-  if (this.handlingKey(key)) {
-    return true;
-  } else if (key === 'Ctrl-V') {
-    const {version, version_name: versionName} = chrome.runtime.getManifest();
-    cca.toast.show(versionName || version);
-    return true;
-  } else if (this.dismissByEsc_ && key === 'Escape') {
-    this.leave();
+  /**
+   * Handles the pressed key.
+   * @param {string} key Key to be handled.
+   * @return {boolean} Whether the key has been handled or not.
+   */
+  onKeyPressed(key) {
+    if (this.handlingKey(key)) {
+      return true;
+    } else if (key === 'Ctrl-V') {
+      const {version, version_name: versionName} = chrome.runtime.getManifest();
+      cca.toast.show(versionName || version);
+      return true;
+    } else if (this.dismissByEsc_ && key === 'Escape') {
+      this.leave();
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Focuses the default element on the view if applicable.
+   */
+  focus() {}
+
+  /**
+   * Layouts the view.
+   */
+  layout() {}
+
+  /**
+   * Hook of the subclass for entering the view.
+   * @param {cca.views.EnterOptions=} options Optional rest parameters for
+   *     entering the view.
+   */
+  entering(options) {}
+
+  /**
+   * Enters the view.
+   * @param {cca.views.EnterOptions=} options Optional rest parameters for
+   *     entering the view.
+   * @return {!Promise<*>} Promise for the navigation session.
+   */
+  enter(options) {
+    // The session is started by entering the view and ended by leaving the
+    // view.
+    if (!this.session_) {
+      var end;
+      this.session_ = new Promise((resolve) => {
+        end = resolve;
+      });
+      this.session_.end = (result) => {
+        end(result);
+      };
+    }
+    this.entering(options);
+    return this.session_;
+  }
+
+  /**
+   * Hook of the subclass for leaving the view.
+   * @param {*=} condition Optional condition for leaving the view.
+   * @return {boolean} Whether able to leaving the view or not.
+   */
+  leaving(condition) {
     return true;
   }
-  return false;
-};
 
-/**
- * Focuses the default element on the view if applicable.
- */
-cca.views.View.prototype.focus = function() {};
-
-/**
- * Layouts the view.
- */
-cca.views.View.prototype.layout = function() {};
-
-/**
- * Hook of the subclass for entering the view.
- * @param {cca.views.EnterOptions=} options Optional rest parameters for
- *     entering the view.
- */
-cca.views.View.prototype.entering = function(options) {};
-
-/**
- * Enters the view.
- * @param {cca.views.EnterOptions=} options Optional rest parameters for
- *     entering the view.
- * @return {!Promise<*>} Promise for the navigation session.
- */
-cca.views.View.prototype.enter = function(options) {
-  // The session is started by entering the view and ended by leaving the view.
-  if (!this.session_) {
-    var end;
-    this.session_ = new Promise((resolve) => {
-      end = resolve;
-    });
-    this.session_.end = (result) => {
-      end(result);
-    };
+  /**
+   * Leaves the view.
+   * @param {*=} condition Optional condition for leaving the view and also as
+   *     the result for the ended session.
+   * @return {boolean} Whether able to leaving the view or not.
+   */
+  leave(condition) {
+    if (this.session_ && this.leaving(condition)) {
+      this.session_.end(condition);
+      this.session_ = null;
+      return true;
+    }
+    return false;
   }
-  this.entering(options);
-  return this.session_;
-};
-
-/**
- * Hook of the subclass for leaving the view.
- * @param {*=} condition Optional condition for leaving the view.
- * @return {boolean} Whether able to leaving the view or not.
- */
-cca.views.View.prototype.leaving = function(condition) {
-  return true;
-};
-
-/**
- * Leaves the view.
- * @param {*=} condition Optional condition for leaving the view and also as the
- *     result for the ended session.
- * @return {boolean} Whether able to leaving the view or not.
- */
-cca.views.View.prototype.leave = function(condition) {
-  if (this.session_ && this.leaving(condition)) {
-    this.session_.end(condition);
-    this.session_ = null;
-    return true;
-  }
-  return false;
 };

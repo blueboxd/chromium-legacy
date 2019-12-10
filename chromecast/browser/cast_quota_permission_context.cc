@@ -15,8 +15,8 @@ CastQuotaPermissionContext::~CastQuotaPermissionContext() {
 void CastQuotaPermissionContext::RequestQuotaPermission(
     const content::StorageQuotaParams& params,
     int render_process_id,
-    const PermissionCallback& callback) {
-  callback.Run(
+    PermissionCallback callback) {
+  std::move(callback).Run(
       content::QuotaPermissionContext::QUOTA_PERMISSION_RESPONSE_ALLOW);
 }
 

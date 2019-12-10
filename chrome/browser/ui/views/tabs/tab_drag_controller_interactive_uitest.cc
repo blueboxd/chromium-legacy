@@ -654,6 +654,7 @@ class DetachToBrowserTabDragControllerTest
       auto web_app_info = std::make_unique<WebApplicationInfo>();
       web_app_info->app_url = app_url;
       web_app_info->scope = app_url.GetWithoutFilename();
+      web_app_info->display_mode = blink::mojom::DisplayMode::kStandalone;
       web_app_info->open_as_window = true;
       terminal_app_id_ = InstallWebApp(std::move(web_app_info));
 

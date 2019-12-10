@@ -326,6 +326,10 @@ void V4L2SliceVideoDecoder::Reset(base::OnceClosure closure) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
 
+  // Reset callback for resolution change, because the pipeline won't notify
+  // flushed after reset.
+  continue_change_resolution_cb_.Reset();
+
   // Call all pending decode callback.
   backend_->ClearPendingRequests(DecodeStatus::ABORTED);
 
@@ -340,6 +344,10 @@ void V4L2SliceVideoDecoder::Reset(base::OnceClosure closure) {
     if (!StartStreamV4L2Queue())
       return;
   }
+
+  // If during flushing, Reset() will abort the following flush tasks.
+  // Now we are ready to decode new buffer. Go back to decoding state.
+  SetState(State::kDecoding);
 
   std::move(closure).Run();
 }
@@ -447,9 +455,13 @@ void V4L2SliceVideoDecoder::ContinueChangeResolution(
     const size_t num_output_frames) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
-  DCHECK_EQ(state_, State::kFlushing);
   DCHECK_EQ(input_queue_->QueuedBuffersCount(), 0u);
   DCHECK_EQ(output_queue_->QueuedBuffersCount(), 0u);
+
+  // If we already reset, then skip it.
+  if (state_ == State::kDecoding)
+    return;
+  DCHECK_EQ(state_, State::kFlushing);
 
   // Notify |backend_| that changing resolution fails.
   // Note: |backend_| is owned by this, using base::Unretained() is safe.

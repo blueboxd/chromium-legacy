@@ -75,14 +75,14 @@ class SharingService : public KeyedService, syncer::SyncServiceObserver {
       sync_pb::SharingSpecificFields::EnabledFeatures required_feature) const;
 
   // Sends a Sharing message to remote device.
-  // |device_guid|: Sync GUID of receiver device.
+  // |device|: The receiver device.
   // |response_timeout|: Maximum amount of time waiting for a response before
   // invoking |callback| with kAckTimeout.
   // |message|: Message to be sent.
   // |callback| will be invoked once a response has received from remote device,
   // or if operation has failed or timed out.
   virtual void SendMessageToDevice(
-      const std::string& device_guid,
+      const syncer::DeviceInfo& device,
       base::TimeDelta response_timeout,
       chrome_browser_sharing::SharingMessage message,
       SharingMessageSender::ResponseCallback callback);

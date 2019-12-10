@@ -85,7 +85,7 @@ const int kDefaultCacheSize = 80 * 1024 * 1024;
 
 void DeleteCache(const base::FilePath& path, bool remove_folder) {
   if (remove_folder) {
-    if (!base::DeleteFile(path, /* recursive */ true))
+    if (!base::DeleteFileRecursively(path))
       LOG(WARNING) << "Unable to delete cache folder.";
     return;
   }
@@ -96,7 +96,7 @@ void DeleteCache(const base::FilePath& path, bool remove_folder) {
       base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
   for (base::FilePath file = iter.Next(); !file.value().empty();
        file = iter.Next()) {
-    if (!base::DeleteFile(file, /* recursive */ true)) {
+    if (!base::DeleteFileRecursively(file)) {
       LOG(WARNING) << "Unable to delete cache.";
       return;
     }

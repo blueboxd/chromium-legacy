@@ -8,8 +8,9 @@ import("//tools/polymer/polymer.gni")
 js_type_check("closure_compile") {
   is_polymer3 = true
   deps = [
+    ":app",
     ":browser_proxy",
-    ":manager",
+    ":customize_dialog",
   ]
 }
 
@@ -22,22 +23,59 @@ js_library("browser_proxy") {
   externs_list = [ "externs.js" ]
 }
 
-js_library("manager") {
+js_library("app") {
   deps = [
     ":browser_proxy",
+    ":most_visited",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/cr_elements/cr_toast:cr_toast_manager.m",
   ]
 }
 
-polymer_modulizer("manager") {
-  js_file = "manager.js"
-  html_file = "manager.html"
+js_library("most_visited") {
+  deps = [
+    ":browser_proxy",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
+    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
+    "//ui/webui/resources/cr_elements/cr_toast:cr_toast_manager.m",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:cr.m",
+    "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js/cr/ui:focus_outline_manager.m",
+  ]
+}
+
+js_library("customize_dialog") {
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
+    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
+  ]
+}
+
+polymer_modulizer("app") {
+  js_file = "app.js"
+  html_file = "app.html"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("most_visited") {
+  js_file = "most_visited.js"
+  html_file = "most_visited.html"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("customize_dialog") {
+  js_file = "customize_dialog.js"
+  html_file = "customize_dialog.html"
   html_type = "v3-ready"
 }
 
 group("polymer3_elements") {
   deps = [
-    ":manager_module",
+    ":app_module",
+    ":customize_dialog_module",
+    ":most_visited_module",
   ]
 }

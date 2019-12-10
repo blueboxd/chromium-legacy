@@ -37,6 +37,9 @@ class EmbeddedTestServer;
 // end of the test. This shall only be called once per test.
 - (void)disableMockAuthentication;
 
+// Turns mock authentication back on.
+- (void)enableMockAuthentication;
+
 // Stops the HTTP server. It will be re-started at the end of the test. This
 // should only be called when the HTTP server is running. This shall only be
 // called once per test.

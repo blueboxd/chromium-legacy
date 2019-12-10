@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/nfc/ndef_message.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_push_options.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_type_converters.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_utils.h"
@@ -84,14 +85,6 @@ ScriptPromise NDEFWriter::push(ScriptState* script_state,
 
   auto message = device::mojom::blink::NDEFMessage::From(ndef_message);
   DCHECK(message);
-
-  if (!SetNDEFMessageURL(execution_context->GetSecurityOrigin()->ToString(),
-                         message.get())) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSyntaxError,
-                                           "Cannot set WebNFC Id."));
-  }
 
   if (GetNDEFMessageSize(*message) >
       device::mojom::blink::NDEFMessage::kMaxSize) {

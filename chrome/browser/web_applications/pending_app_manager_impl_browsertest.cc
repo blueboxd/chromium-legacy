@@ -211,7 +211,7 @@ IN_PROC_BROWSER_TEST_F(PendingAppManagerImplBrowserTest,
   InstallApp(std::move(install_options));
   base::Optional<AppId> app_id = registrar().FindAppWithUrlInScope(url);
   EXPECT_TRUE(app_id.has_value());
-  EXPECT_FALSE(registrar().GetAppScope(app_id.value()).has_value());
+  EXPECT_TRUE(registrar().GetAppScope(app_id.value()).has_value());
 }
 
 IN_PROC_BROWSER_TEST_F(PendingAppManagerImplBrowserTest, ForceReinstall) {

@@ -99,7 +99,7 @@ class PCMQueueInAudioInputStream : public AudioInputStream {
   // Used to determine if we need to slow down |callback_| calls.
   base::TimeTicks last_fill_;
   // Used to defer Start() to workaround http://crbug.com/160920.
-  base::CancelableClosure deferred_start_cb_;
+  base::CancelableOnceClosure deferred_start_cb_;
 
   // Is set to true on the internal AUHAL IO thread in the first input callback
   // after Start() has bee called.

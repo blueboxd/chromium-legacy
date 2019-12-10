@@ -57,7 +57,6 @@ void SetWebAppPrefsForWebContents(content::WebContents* web_contents) {
 
 content::WebContents* ShowWebApplicationWindow(
     const apps::AppLaunchParams& params,
-    const std::string& app_id,
     const GURL& default_url,
     Browser* browser,
     WindowOpenDisposition disposition) {
@@ -80,7 +79,7 @@ content::WebContents* ShowWebApplicationWindow(
 
   WebAppTabHelper* tab_helper = WebAppTabHelper::FromWebContents(web_contents);
   DCHECK(tab_helper);
-  tab_helper->SetAppId(app_id);
+  tab_helper->SetAppId(params.app_id);
 
   browser->window()->Show();
   web_contents->SetInitialFocus();
@@ -123,9 +122,8 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
 
   Browser* browser = CreateWebApplicationWindow(profile(), params.app_id);
 
-  content::WebContents* web_contents =
-      ShowWebApplicationWindow(params, params.app_id, url, browser,
-                               WindowOpenDisposition::NEW_FOREGROUND_TAB);
+  content::WebContents* web_contents = ShowWebApplicationWindow(
+      params, url, browser, WindowOpenDisposition::NEW_FOREGROUND_TAB);
 
   // TODO(crbug.com/1014328): Populate WebApp metrics instead of Extensions.
 

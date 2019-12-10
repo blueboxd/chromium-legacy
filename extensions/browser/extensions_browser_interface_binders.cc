@@ -12,13 +12,13 @@
 
 namespace extensions {
 
-void PopulateExtensionFrameBinders(
-    service_manager::BinderMapWithContext<content::RenderFrameHost*>* map,
-    content::RenderFrameHost* render_frame_host,
-    const Extension* extension) {
+void PopulateExtensionFrameBinders(service_manager::BinderMapWithContext<
+                                       content::RenderFrameHost*>* binder_map,
+                                   content::RenderFrameHost* render_frame_host,
+                                   const Extension* extension) {
   DCHECK(extension);
 
-  map->Add<KeepAlive>(
+  binder_map->Add<KeepAlive>(
       base::BindRepeating(&KeepAliveImpl::Create,
                           render_frame_host->GetProcess()->GetBrowserContext(),
                           base::RetainedRef(extension)));

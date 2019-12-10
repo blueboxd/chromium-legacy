@@ -3145,7 +3145,7 @@ TEST_F(PasswordManagerTest, FillingAndSavingFallbacksOnNonPasswordForm) {
   EXPECT_EQ(saved_match.username_value, form_data.username_field.value);
   EXPECT_EQ(saved_match.password_value, form_data.password_field.value);
   // Check that no automatic filling available.
-  uint32_t renderer_id_not_set = FormFieldData::kNotSetFormControlRendererId;
+  uint32_t renderer_id_not_set = FormData::kNotSetRendererId;
   EXPECT_EQ(renderer_id_not_set, form_data.username_field.unique_renderer_id);
   EXPECT_EQ(renderer_id_not_set, form_data.password_field.unique_renderer_id);
 

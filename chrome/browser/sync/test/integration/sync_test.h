@@ -25,8 +25,8 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/test/fake_server/fake_server.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/url_request_status.h"
 #include "services/network/test/test_url_loader_factory.h"
 
 #if defined(OS_CHROMEOS)
@@ -257,7 +257,7 @@ class SyncTest : public InProcessBrowserTest {
   // Each call to this method will overwrite responses that were previously set.
   void SetOAuth2TokenResponse(const std::string& response_data,
                               net::HttpStatusCode response_code,
-                              net::URLRequestStatus::Status status);
+                              net::Error net_error);
 
   // Triggers a migration for one or more datatypes, and waits
   // for the server to complete it.  This operation is available

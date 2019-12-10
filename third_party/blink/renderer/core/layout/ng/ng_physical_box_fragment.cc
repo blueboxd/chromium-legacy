@@ -63,12 +63,13 @@ scoped_refptr<const NGPhysicalBoxFragment> NGPhysicalBoxFragment::Create(
   // we pass the buffer as a constructor argument.
   void* data = ::WTF::Partitions::FastMalloc(
       byte_size, ::WTF::GetStringWithTypeName<NGPhysicalBoxFragment>());
-  new (data) NGPhysicalBoxFragment(builder, borders, padding,
+  new (data) NGPhysicalBoxFragment(PassKey(), builder, borders, padding,
                                    block_or_line_writing_mode);
   return base::AdoptRef(static_cast<NGPhysicalBoxFragment*>(data));
 }
 
 NGPhysicalBoxFragment::NGPhysicalBoxFragment(
+    PassKey key,
     NGBoxFragmentBuilder* builder,
     const NGPhysicalBoxStrut& borders,
     const NGPhysicalBoxStrut& padding,

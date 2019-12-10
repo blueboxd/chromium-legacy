@@ -105,7 +105,7 @@ class ImageContextImpl final : public ExternalUseClient::ImageContext {
 
   // For scoped read accessing |representation|. It is only accessed on GPU
   // thread.
-  base::Optional<gpu::SharedImageRepresentationSkia::ScopedReadAccess>
+  std::unique_ptr<gpu::SharedImageRepresentationSkia::ScopedReadAccess>
       representation_scoped_read_access_;
 
   // For holding SkPromiseImageTexture create from |fallback_texture| or legacy

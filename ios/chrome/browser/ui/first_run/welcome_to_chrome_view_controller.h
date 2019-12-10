@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 @protocol ApplicationCommands;
+@protocol BrowsingDataCommands;
 class Browser;
 @protocol SyncPresenter;
 
@@ -25,8 +26,8 @@ class Browser;
 // which can be nil.
 - (instancetype)initWithBrowser:(Browser*)browser
                       presenter:(id<SyncPresenter>)presenter
-                     dispatcher:(id<ApplicationCommands>)dispatcher
-    NS_DESIGNATED_INITIALIZER;
+                     dispatcher:(id<ApplicationCommands, BrowsingDataCommands>)
+                                    dispatcher NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithNibName:(NSString*)nibNameOrNil
                          bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;

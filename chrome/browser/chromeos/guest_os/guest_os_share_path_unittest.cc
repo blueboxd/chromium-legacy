@@ -933,4 +933,19 @@ TEST_F(GuestOsSharePathTest, UnshareOnDeleteMountRemoved) {
   run_loop()->Run();
 }
 
+TEST_F(GuestOsSharePathTest, RegisterPathThenUnshare) {
+  SetUpVolume();
+  crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
+      crostini::kCrostiniDefaultVmName);
+  guest_os_share_path_->RegisterSharedPath(crostini::kCrostiniDefaultVmName,
+                                           share_path_);
+  guest_os_share_path_->UnsharePath(
+      crostini::kCrostiniDefaultVmName, share_path_, true,
+      base::BindOnce(&GuestOsSharePathTest::UnsharePathCallback,
+                     base::Unretained(this), share_path_, Persist::NO,
+                     SeneschalClientCalled::YES, "MyFiles/path-to-share",
+                     Success::YES, ""));
+  run_loop()->Run();
+}
+
 }  // namespace guest_os

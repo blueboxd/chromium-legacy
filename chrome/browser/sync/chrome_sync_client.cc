@@ -400,23 +400,19 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
+  // Some profile types (e.g. sign-in screen) don't support app list.
   // Temporarily Disable AppListSyncableService for tablet form factor devices.
   // See crbug/1013732 for details.
-  if (!chromeos::switches::IsTabletFormFactor()) {
+  if (app_list::AppListSyncableServiceFactory::GetForProfile(profile_) &&
+      !chromeos::switches::IsTabletFormFactor()) {
     if (chromeos::features::IsSplitSettingsSyncEnabled()) {
-      // Some profile types (e.g. sign-in screen) don't support app list.
-      if (app_list::AppListSyncableServiceFactory::GetForProfile(profile_)) {
-        // Runs in sync transport-mode and full-sync mode.
-        controllers.push_back(OsSyncableServiceModelTypeController::Create(
-            syncer::APP_LIST, model_type_store_factory,
-            GetSyncableServiceForType(syncer::APP_LIST), dump_stack,
-            profile_->GetPrefs(), sync_service));
-      }
+      // Runs in sync transport-mode and full-sync mode.
+      controllers.push_back(OsSyncableServiceModelTypeController::Create(
+          syncer::APP_LIST, model_type_store_factory,
+          GetSyncableServiceForType(syncer::APP_LIST), dump_stack,
+          profile_->GetPrefs(), sync_service));
     } else {
       // Only runs in full-sync mode.
-      // TODO(jamescook): Move under the GetForProfile() check. This only works
-      // for the sign-in screen profile because SSBMTC has a "test-only" check
-      // for null SyncableService.
       controllers.push_back(
           std::make_unique<syncer::SyncableServiceBasedModelTypeController>(
               syncer::APP_LIST, model_type_store_factory,

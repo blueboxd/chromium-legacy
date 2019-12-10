@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "ash/ime/ime_controller.h"
+#include "ash/ime/ime_controller_impl.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
@@ -43,7 +43,7 @@ void ResetVirtualKeyboard() {
   // extension from accidentally loading the default keyset while it's shutting
   // down. See https://crbug.com/875456.
   Shell::Get()->ime_controller()->OverrideKeyboardKeyset(
-      chromeos::input_method::mojom::ImeKeyset::kNone);
+      chromeos::input_method::ImeKeyset::kNone);
 }
 
 }  // namespace
@@ -61,8 +61,7 @@ VirtualKeyboardController::VirtualKeyboardController()
   // Set callback to show the emoji panel
   ui::SetShowEmojiKeyboardCallback(base::BindRepeating(
       &VirtualKeyboardController::ForceShowKeyboardWithKeyset,
-      base::Unretained(this),
-      chromeos::input_method::mojom::ImeKeyset::kEmoji));
+      base::Unretained(this), chromeos::input_method::ImeKeyset::kEmoji));
 
   keyboard::KeyboardUIController::Get()->AddObserver(this);
 
@@ -86,7 +85,7 @@ VirtualKeyboardController::~VirtualKeyboardController() {
 }
 
 void VirtualKeyboardController::ForceShowKeyboardWithKeyset(
-    chromeos::input_method::mojom::ImeKeyset keyset) {
+    chromeos::input_method::ImeKeyset keyset) {
   Shell::Get()->ime_controller()->OverrideKeyboardKeyset(
       keyset, base::BindOnce(&VirtualKeyboardController::ForceShowKeyboard,
                              base::Unretained(this)));
@@ -176,7 +175,7 @@ void VirtualKeyboardController::OnKeyboardEnabledChanged(bool is_enabled) {
     // TODO(shend/shuchen): Consider moving this logic to ImeController.
     // https://crbug.com/896284.
     Shell::Get()->ime_controller()->OverrideKeyboardKeyset(
-        chromeos::input_method::mojom::ImeKeyset::kNone);
+        chromeos::input_method::ImeKeyset::kNone);
   }
 }
 

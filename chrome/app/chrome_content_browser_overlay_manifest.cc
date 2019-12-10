@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/webui/usb_internals/usb_internals.mojom.h"
 #include "chrome/common/available_offline_content.mojom.h"
 #include "chrome/common/cache_stats_recorder.mojom.h"
-#include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/common/net_benchmarking.mojom.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy.mojom.h"
 #include "components/metrics/public/mojom/call_stack_profile_collector.mojom.h"
@@ -35,7 +34,6 @@
 #include "chrome/browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_page_handler.mojom.h"
 #include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
-#include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
 #include "chromeos/services/media_perception/public/mojom/media_perception.mojom.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "chromeos/services/network_config/public/mojom/constants.mojom.h"  // nogncheck
@@ -115,17 +113,13 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                 chromeos::cellular_setup::mojom::CellularSetup,
                 chromeos::crostini_installer::mojom::PageHandlerFactory,
                 chromeos::crostini_upgrader::mojom::PageHandlerFactory,
-                chromeos::ime::mojom::InputEngineManager,
                 chromeos::machine_learning::mojom::PageHandler,
-                chromeos::media_perception::mojom::MediaPerception,
                 chromeos::multidevice_setup::mojom::MultiDeviceSetup,
                 chromeos::multidevice_setup::mojom::PrivilegedHostDeviceSetter,
                 chromeos::network_config::mojom::CrosNetworkConfig,
                 cros::mojom::CameraAppDeviceProvider,
 #endif
                 media::mojom::MediaEngagementScoreDetailsProvider,
-                media_router::mojom::MediaRouter,
-
                 // WebUI-only interfaces go below this line. These should be
                 // brokered through a dedicated interface, but they're here
                 // for for now.

@@ -2,22 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_IME_IME_CONTROLLER_H_
-#define ASH_IME_IME_CONTROLLER_H_
+#ifndef ASH_IME_IME_CONTROLLER_IMPL_H_
+#define ASH_IME_IME_CONTROLLER_IMPL_H_
 
 #include <memory>
 #include <vector>
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/cast_config_controller.h"
-#include "ash/public/mojom/ime_controller.mojom.h"
-#include "ash/public/mojom/ime_info.mojom.h"
+#include "ash/public/cpp/ime_controller.h"
+#include "ash/public/cpp/ime_controller_client.h"
+#include "ash/public/cpp/ime_info.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "ui/base/ime/chromeos/ime_keyset.h"
 #include "ui/display/display_observer.h"
 
 namespace ui {
@@ -30,9 +32,9 @@ class ModeIndicatorObserver;
 
 // Connects ash IME users (e.g. the system tray) to the IME implementation,
 // which might live in Chrome browser or in a separate mojo service.
-class ASH_EXPORT ImeController : public mojom::ImeController,
-                                 public display::DisplayObserver,
-                                 public CastConfigController::Observer {
+class ASH_EXPORT ImeControllerImpl : public ImeController,
+                                     public display::DisplayObserver,
+                                     public CastConfigController::Observer {
  public:
   class Observer {
    public:
@@ -44,17 +46,15 @@ class ASH_EXPORT ImeController : public mojom::ImeController,
         const std::string& layout_name) = 0;
   };
 
-  ImeController();
-  ~ImeController() override;
+  ImeControllerImpl();
+  ~ImeControllerImpl() override;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  const mojom::ImeInfo& current_ime() const { return current_ime_; }
+  const ImeInfo& current_ime() const { return current_ime_; }
 
-  const std::vector<mojom::ImeInfo>& available_imes() const {
-    return available_imes_;
-  }
+  const std::vector<ImeInfo>& available_imes() const { return available_imes_; }
 
   bool is_extra_input_options_enabled() const {
     return is_extra_input_options_enabled_;
@@ -66,26 +66,26 @@ class ASH_EXPORT ImeController : public mojom::ImeController,
   bool managed_by_policy() const { return managed_by_policy_; }
   bool is_menu_active() const { return is_menu_active_; }
 
-  const std::vector<mojom::ImeMenuItem>& current_ime_menu_items() const {
+  const std::vector<ImeMenuItem>& current_ime_menu_items() const {
     return current_ime_menu_items_;
   }
 
   // Binds the mojo interface to this object.
-  void BindReceiver(mojo::PendingReceiver<mojom::ImeController> receiver);
+  void BindReceiver(mojo::PendingReceiver<ImeController> receiver);
 
   // Returns true if switching to next/previous IME is allowed.
   bool CanSwitchIme() const;
 
-  // Wrappers for mojom::ImeControllerClient methods.
+  // Wrappers for ImeControllerClient methods.
   void SwitchToNextIme();
   void SwitchToLastUsedIme();
   void SwitchImeById(const std::string& ime_id, bool show_message);
   void ActivateImeMenuItem(const std::string& key);
   void SetCapsLockEnabled(bool caps_enabled);
-  void OverrideKeyboardKeyset(chromeos::input_method::mojom::ImeKeyset keyset);
+  void OverrideKeyboardKeyset(chromeos::input_method::ImeKeyset keyset);
   void OverrideKeyboardKeyset(
-      chromeos::input_method::mojom::ImeKeyset keyset,
-      mojom::ImeControllerClient::OverrideKeyboardKeysetCallback callback);
+      chromeos::input_method::ImeKeyset keyset,
+      ImeControllerClient::OverrideKeyboardKeysetCallback callback);
 
   // Returns true if the switch is allowed and the keystroke should be
   // consumed.
@@ -93,12 +93,11 @@ class ASH_EXPORT ImeController : public mojom::ImeController,
 
   void SwitchImeWithAccelerator(const ui::Accelerator& accelerator);
 
-  // mojom::ImeController:
-  void SetClient(
-      mojo::PendingRemote<mojom::ImeControllerClient> client) override;
+  // ImeController:
+  void SetClient(ImeControllerClient* client) override;
   void RefreshIme(const std::string& current_ime_id,
-                  std::vector<mojom::ImeInfoPtr> available_imes,
-                  std::vector<mojom::ImeMenuItemPtr> menu_items) override;
+                  std::vector<ImeInfo> available_imes,
+                  std::vector<ImeMenuItem> menu_items) override;
   void SetImesManagedByPolicy(bool managed) override;
   void ShowImeMenuOnShelf(bool show) override;
   void UpdateCapsLockState(bool caps_enabled) override;
@@ -128,8 +127,6 @@ class ASH_EXPORT ImeController : public mojom::ImeController,
     return keyboard_layout_name_;
   }
 
-  void FlushMojoForTesting();
-
   ModeIndicatorObserver* mode_indicator_observer() const {
     return mode_indicator_observer_.get();
   }
@@ -141,24 +138,21 @@ class ASH_EXPORT ImeController : public mojom::ImeController,
   std::vector<std::string> GetCandidateImesForAccelerator(
       const ui::Accelerator& accelerator) const;
 
-  // Receivers for users of the mojo interface.
-  mojo::ReceiverSet<mojom::ImeController> receivers_;
-
   // Client interface back to IME code in chrome.
-  mojo::Remote<mojom::ImeControllerClient> client_;
+  ImeControllerClient* client_ = nullptr;
 
   // Copy of the current IME so we can return it by reference.
-  mojom::ImeInfo current_ime_;
+  ImeInfo current_ime_;
 
   // "Available" IMEs are both installed and enabled by the user in settings.
-  std::vector<mojom::ImeInfo> available_imes_;
+  std::vector<ImeInfo> available_imes_;
 
   // True if the available IMEs are currently managed by enterprise policy.
   // For example, can occur at the login screen with device-level policy.
   bool managed_by_policy_ = false;
 
   // Additional menu items for properties of the currently selected IME.
-  std::vector<mojom::ImeMenuItem> current_ime_menu_items_;
+  std::vector<ImeMenuItem> current_ime_menu_items_;
 
   // A slightly delayed state value that is updated by asynchronously reported
   // changes from the ImeControllerClient client (source of truth) which is in
@@ -191,7 +185,7 @@ class ASH_EXPORT ImeController : public mojom::ImeController,
 
   std::unique_ptr<ModeIndicatorObserver> mode_indicator_observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(ImeController);
+  DISALLOW_COPY_AND_ASSIGN(ImeControllerImpl);
 };
 
 }  // namespace ash

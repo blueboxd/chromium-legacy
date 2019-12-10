@@ -356,8 +356,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
   memory_instrumentation::MemoryInstrumentation::GetInstance()
       ->RequestPrivateMemoryFootprint(
           base::kNullProcessId,
-          base::AdaptCallbackForRepeating(
-              base::BindOnce(&MemoryDetails::DidReceiveMemoryDump, this)));
+          base::BindOnce(&MemoryDetails::DidReceiveMemoryDump, this));
 }
 
 void MemoryDetails::DidReceiveMemoryDump(

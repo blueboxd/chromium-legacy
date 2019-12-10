@@ -210,8 +210,8 @@ WorkQueue* TaskQueueSelector::SelectWorkQueueToService() {
                              ChooseWithPriority<SetOperationOldest>(
                                  priority, &chose_delayed_over_immediate);
 
-  // If we still have any tasks remaining for |set_index| then adjust it's
-  // sort key.
+  // If we still have any tasks remaining for |priority| then adjust its sort
+  // key.
   if (active_priorities_.IsInQueue(priority))
     active_priorities_.ChangeMinKey(GetSortKeyForPriority(priority));
 

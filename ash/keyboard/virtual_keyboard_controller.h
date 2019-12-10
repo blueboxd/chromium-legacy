@@ -13,7 +13,7 @@
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/session/session_observer.h"
 #include "base/macros.h"
-#include "ui/base/ime/chromeos/public/mojom/ime_keyset.mojom.h"
+#include "ui/base/ime/chromeos/ime_keyset.h"
 #include "ui/events/devices/input_device_event_observer.h"
 
 namespace ash {
@@ -33,8 +33,7 @@ class ASH_EXPORT VirtualKeyboardController
 
   // Force enable the keyboard and show it with the given keyset: none, emoji,
   // handwriting or voice. Works even in laptop mode.
-  void ForceShowKeyboardWithKeyset(
-      chromeos::input_method::mojom::ImeKeyset keyset);
+  void ForceShowKeyboardWithKeyset(chromeos::input_method::ImeKeyset keyset);
 
   // TabletModeObserver:
   void OnTabletModeEventsBlockingChanged() override;

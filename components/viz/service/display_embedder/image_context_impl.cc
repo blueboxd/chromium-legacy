@@ -184,10 +184,9 @@ bool ImageContextImpl::BeginAccessIfNecessaryForSharedImage(
     representation_ = std::move(representation);
   }
 
-  representation_scoped_read_access_.emplace(representation_.get(),
-                                             begin_semaphores, end_semaphores);
-  if (!representation_scoped_read_access_->success()) {
-    representation_scoped_read_access_.reset();
+  representation_scoped_read_access_ =
+      representation_->BeginScopedReadAccess(begin_semaphores, end_semaphores);
+  if (!representation_scoped_read_access_) {
     representation_ = nullptr;
     DLOG(ERROR) << "Failed to fulfill the promise texture - SharedImage "
                    "begin read access failed..";

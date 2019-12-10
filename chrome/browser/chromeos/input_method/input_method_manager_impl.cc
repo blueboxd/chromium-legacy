@@ -95,15 +95,15 @@ InputMethodCategory GetInputMethodCategory(const std::string& input_method_id) {
   return category;
 }
 
-std::string KeysetToString(mojom::ImeKeyset keyset) {
+std::string KeysetToString(chromeos::input_method::ImeKeyset keyset) {
   switch (keyset) {
-    case mojom::ImeKeyset::kNone:
+    case chromeos::input_method::ImeKeyset::kNone:
       return "";
-    case mojom::ImeKeyset::kEmoji:
+    case chromeos::input_method::ImeKeyset::kEmoji:
       return "emoji";
-    case mojom::ImeKeyset::kHandwriting:
+    case chromeos::input_method::ImeKeyset::kHandwriting:
       return "hwt";
-    case mojom::ImeKeyset::kVoice:
+    case chromeos::input_method::ImeKeyset::kVoice:
       return "voice";
   }
 }
@@ -1297,7 +1297,8 @@ void InputMethodManagerImpl::MaybeNotifyImeMenuActivationChanged() {
                         is_ime_menu_activated_);
 }
 
-void InputMethodManagerImpl::OverrideKeyboardKeyset(mojom::ImeKeyset keyset) {
+void InputMethodManagerImpl::OverrideKeyboardKeyset(
+    chromeos::input_method::ImeKeyset keyset) {
   GURL url = state_->GetInputViewUrl();
 
   // If fails to find ref or tag "id" in the ref, it means the current IME is
@@ -1311,7 +1312,7 @@ void InputMethodManagerImpl::OverrideKeyboardKeyset(mojom::ImeKeyset keyset) {
   if (i == std::string::npos)
     return;
 
-  if (keyset == mojom::ImeKeyset::kNone) {
+  if (keyset == chromeos::input_method::ImeKeyset::kNone) {
     // Resets the url as the input method default url and notify the hash
     // changed to VK.
     state_->input_view_url = state_->current_input_method.input_view_url();

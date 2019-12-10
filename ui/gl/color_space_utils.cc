@@ -11,23 +11,27 @@ namespace gl {
 
 // static
 GLenum ColorSpaceUtils::GetGLColorSpace(const gfx::ColorSpace& color_space) {
-  if (color_space.transfer_ == gfx::ColorSpace::TransferID::LINEAR_HDR)
-    return GL_COLOR_SPACE_SCRGB_LINEAR_CHROMIUM;
-  else if (color_space.transfer_ == gfx::ColorSpace::TransferID::SMPTEST2084)
-    return GL_COLOR_SPACE_HDR10_CHROMIUM;
-  else
-    return GL_COLOR_SPACE_UNSPECIFIED_CHROMIUM;
+  switch (color_space.GetTransferID()) {
+    case gfx::ColorSpace::TransferID::LINEAR_HDR:
+      return GL_COLOR_SPACE_SCRGB_LINEAR_CHROMIUM;
+    case gfx::ColorSpace::TransferID::SMPTEST2084:
+      return GL_COLOR_SPACE_HDR10_CHROMIUM;
+    default:
+      return GL_COLOR_SPACE_UNSPECIFIED_CHROMIUM;
+  }
 }
 
 // static
 GLSurface::ColorSpace ColorSpaceUtils::GetGLSurfaceColorSpace(
     const gfx::ColorSpace& color_space) {
-  if (color_space.transfer_ == gfx::ColorSpace::TransferID::LINEAR_HDR)
-    return GLSurface::ColorSpace::SCRGB_LINEAR;
-  else if (color_space.transfer_ == gfx::ColorSpace::TransferID::SMPTEST2084)
-    return GLSurface::ColorSpace::HDR10;
-  else
-    return GLSurface::ColorSpace::UNSPECIFIED;
+  switch (color_space.GetTransferID()) {
+    case gfx::ColorSpace::TransferID::LINEAR_HDR:
+      return GLSurface::ColorSpace::SCRGB_LINEAR;
+    case gfx::ColorSpace::TransferID::SMPTEST2084:
+      return GLSurface::ColorSpace::HDR10;
+    default:
+      return GLSurface::ColorSpace::UNSPECIFIED;
+  }
 }
 
 #if defined(OS_WIN)

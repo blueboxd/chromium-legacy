@@ -408,16 +408,17 @@ TEST(ContextProviderImplConfigTest, WithConfigWithDisallowedCommandLineArgs) {
   ContextProviderImpl context_provider;
   context_provider.set_config_for_test(std::move(config_dict));
   context_provider.SetLaunchCallbackForTest(
-      base::BindLambdaForTesting([&](const base::CommandLine& command,
-                                     const base::LaunchOptions& options) {
-        ADD_FAILURE();
+      base::BindLambdaForTesting([&loop](const base::CommandLine& command,
+                                         const base::LaunchOptions& options) {
+        EXPECT_FALSE(command.HasSwitch("kittens-are-nice"));
         loop.Quit();
         return base::Process();
       }));
 
   fuchsia::web::ContextPtr context;
   context.set_error_handler([&loop](zx_status_t status) {
-    EXPECT_EQ(status, ZX_ERR_INTERNAL);
+    ZX_LOG(ERROR, status);
+    ADD_FAILURE();
     loop.Quit();
   });
   context_provider.Create(BuildCreateContextParams(), context.NewRequest());

@@ -37,7 +37,8 @@ extern NSString* kSigninPromoViewDisplayCountKey;
 
 // Designated initializer.  |browser| must not be nil.
 - (instancetype)initWithBrowser:(Browser*)browser
-                     dispatcher:(id<ApplicationCommands>)dispatcher;
+                     dispatcher:(id<ApplicationCommands, BrowsingDataCommands>)
+                                    dispatcher;
 
 // Records in user defaults:
 //   + the Chromium current version.

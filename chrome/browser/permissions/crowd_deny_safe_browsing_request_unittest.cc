@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/task/post_task.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/db/test_database_manager.h"
@@ -113,13 +114,22 @@ class CrowdDenySafeBrowsingRequestTest : public testing::Test {
     return fake_database_manager_.get();
   }
 
+  const base::Clock* test_clock() { return task_environment_.GetMockClock(); }
+
   void StartRequestForOriginAndExpectVerdict(const url::Origin& origin,
                                              Verdict expected_verdict) {
+    base::HistogramTester histogram_tester;
     base::MockOnceCallback<void(Verdict)> mock_callback_receiver;
-    CrowdDenySafeBrowsingRequest request(fake_database_manager(), origin,
-                                         mock_callback_receiver.Get());
+    CrowdDenySafeBrowsingRequest request(fake_database_manager(), test_clock(),
+                                         origin, mock_callback_receiver.Get());
     EXPECT_CALL(mock_callback_receiver, Run(expected_verdict));
     task_environment()->RunUntilIdle();
+
+    histogram_tester.ExpectTotalCount(
+        "Permissions.CrowdDeny.SafeBrowsing.RequestDuration", 1);
+    histogram_tester.ExpectUniqueSample(
+        "Permissions.CrowdDeny.SafeBrowsing.Verdict",
+        static_cast<int>(expected_verdict), 1);
   }
 
  private:
@@ -175,10 +185,11 @@ TEST_F(CrowdDenySafeBrowsingRequestTest, Spammy) {
 TEST_F(CrowdDenySafeBrowsingRequestTest, Timeout) {
   fake_database_manager()->set_simulate_timeout(true);
 
+  base::HistogramTester histogram_tester;
   base::MockOnceCallback<void(Verdict)> mock_callback_receiver;
   CrowdDenySafeBrowsingRequest request(
-      fake_database_manager(), url::Origin::Create(GURL(kTestOriginFoo)),
-      mock_callback_receiver.Get());
+      fake_database_manager(), test_clock(),
+      url::Origin::Create(GURL(kTestOriginFoo)), mock_callback_receiver.Get());
 
   // Verify the request doesn't time out unreasonably fast.
   EXPECT_CALL(mock_callback_receiver, Run(testing::_)).Times(0);
@@ -188,32 +199,45 @@ TEST_F(CrowdDenySafeBrowsingRequestTest, Timeout) {
   // But that it eventually does.
   EXPECT_CALL(mock_callback_receiver, Run(Verdict::kAcceptable));
   task_environment()->FastForwardUntilNoTasksRemain();
+
+  histogram_tester.ExpectUniqueSample(
+      "Permissions.CrowdDeny.SafeBrowsing.RequestDuration", 2000, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Permissions.CrowdDeny.SafeBrowsing.Verdict",
+      static_cast<int>(Verdict::kAcceptable), 1);
 }
 
 TEST_F(CrowdDenySafeBrowsingRequestTest, AbandonedImmediately) {
   fake_database_manager()->set_simulate_synchronous_result(true);
 
+  base::HistogramTester histogram_tester;
   base::MockOnceCallback<void(Verdict)> mock_callback_receiver;
   EXPECT_CALL(mock_callback_receiver, Run(testing::_)).Times(0);
 
   {
     CrowdDenySafeBrowsingRequest request(
-        fake_database_manager(), url::Origin::Create(GURL(kTestOriginFoo)),
+        fake_database_manager(), test_clock(),
+        url::Origin::Create(GURL(kTestOriginFoo)),
         mock_callback_receiver.Get());
   }
 
   task_environment()->RunUntilIdle();
+  EXPECT_THAT(histogram_tester.GetTotalCountsForPrefix("Permissions."),
+              testing::IsEmpty());
 }
 
 TEST_F(CrowdDenySafeBrowsingRequestTest, AbandonedWhileCheckPending) {
   fake_database_manager()->set_simulate_timeout(true);
 
+  base::HistogramTester histogram_tester;
   base::MockOnceCallback<void(Verdict)> mock_callback_receiver;
   EXPECT_CALL(mock_callback_receiver, Run(testing::_)).Times(0);
 
   CrowdDenySafeBrowsingRequest request(
-      fake_database_manager(), url::Origin::Create(GURL(kTestOriginFoo)),
-      mock_callback_receiver.Get());
+      fake_database_manager(), test_clock(),
+      url::Origin::Create(GURL(kTestOriginFoo)), mock_callback_receiver.Get());
 
   task_environment()->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
+  EXPECT_THAT(histogram_tester.GetTotalCountsForPrefix("Permissions."),
+              testing::IsEmpty());
 }

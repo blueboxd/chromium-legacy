@@ -77,6 +77,37 @@ base::TimeDelta RandomFetchDelay() {
       optimization_guide::features::PredictionModelFetchRandomMaxDelaySecs()));
 }
 
+// Util class for recording the state of a prediction model. The result is
+// recorded when it goes out of scope and its destructor is called.
+class ScopedPredictionManagerModelStatusRecorder {
+ public:
+  explicit ScopedPredictionManagerModelStatusRecorder(
+      optimization_guide::proto::OptimizationTarget optimization_target)
+      : status_(optimization_guide::PredictionManagerModelStatus::kUnknown),
+        optimization_target_(optimization_target) {}
+
+  ~ScopedPredictionManagerModelStatusRecorder() {
+    DCHECK_NE(status_,
+              optimization_guide::PredictionManagerModelStatus::kUnknown);
+    base::UmaHistogramEnumeration(
+        "OptimizationGuide.ShouldTargetNavigation.PredictionModelStatus",
+        status_);
+
+    base::UmaHistogramEnumeration(
+        "OptimizationGuide.ShouldTargetNavigation.PredictionModelStatus." +
+            GetStringNameForOptimizationTarget(optimization_target_),
+        status_);
+  }
+
+  void set_status(optimization_guide::PredictionManagerModelStatus status) {
+    status_ = status;
+  }
+
+ private:
+  optimization_guide::PredictionManagerModelStatus status_;
+  const optimization_guide::proto::OptimizationTarget optimization_target_;
+};
+
 }  // namespace
 
 namespace optimization_guide {
@@ -292,19 +323,31 @@ OptimizationTargetDecision PredictionManager::ShouldTargetNavigation(
       return *optimization_target_decision;
     }
   }
-
-  // TODO(crbug/1001194): Add histogram to record that the optimization target
-  // was not registered but was requested.
   if (!registered_optimization_targets_.contains(optimization_target))
     return OptimizationTargetDecision::kUnknown;
 
+  ScopedPredictionManagerModelStatusRecorder model_status_recorder(
+      optimization_target);
   auto it = optimization_target_prediction_model_map_.find(optimization_target);
   if (it == optimization_target_prediction_model_map_.end()) {
-    // TODO(crbug/1001194): Check the store to see if there is a model
-    // available. There will also be a check with metrics on if the model was
-    // available in the but not loaded.
+    if (store_is_ready_ && model_and_features_store_) {
+      OptimizationGuideStore::EntryKey model_entry_key;
+      if (model_and_features_store_->FindPredictionModelEntryKey(
+              optimization_target, &model_entry_key)) {
+        model_status_recorder.set_status(
+            PredictionManagerModelStatus::kStoreAvailableModelNotLoaded);
+      } else {
+        model_status_recorder.set_status(
+            PredictionManagerModelStatus::kStoreAvailableNoModelForTarget);
+      }
+    } else {
+      model_status_recorder.set_status(
+          PredictionManagerModelStatus::kStoreUnavailableModelUnknown);
+    }
     return OptimizationTargetDecision::kModelNotAvailableOnClient;
   }
+  model_status_recorder.set_status(
+      PredictionManagerModelStatus::kModelAvailable);
   PredictionModel* prediction_model = it->second.get();
 
   base::flat_map<std::string, float> feature_map =

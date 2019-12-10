@@ -8,12 +8,14 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 
 @protocol MainControllerGuts;
 
 // The controller object for a scene. Reacts to scene state changes.
-@interface SceneController : NSObject <SceneStateObserver, ApplicationCommands>
+@interface SceneController
+    : NSObject <SceneStateObserver, ApplicationCommands, BrowsingDataCommands>
 
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithSceneState:(SceneState*)sceneState

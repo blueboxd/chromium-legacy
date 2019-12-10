@@ -66,6 +66,8 @@ public class FindToolbarManager {
 
     /**
      * Shows the toolbar if it's not already visible otherwise activates.
+     *
+     * TODO(crrev.com/959841): Return a boolean for whether the toolbar was actually shown.
      */
     public void showToolbar() {
         if (mFindToolbar == null) {
@@ -91,6 +93,14 @@ public class FindToolbarManager {
         }
 
         mFindToolbar.activate();
+    }
+
+    /**
+     * Sets the find query text string.
+     */
+    public void setFindQuery(String findText) {
+        assert mFindToolbar != null;
+        mFindToolbar.setFindQuery(findText);
     }
 
     /**

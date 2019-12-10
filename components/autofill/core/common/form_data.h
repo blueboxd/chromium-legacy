@@ -35,10 +35,7 @@ struct FormData {
     bool operator()(const FormData& a, const FormData& b) const;
   };
 
-  // TODO(https://crbug.com/875768): Rename this const to kNotSetRendererId, and
-  // use it also for not set renderer ids in FormFieldData.
-  static constexpr uint32_t kNotSetFormRendererId =
-      std::numeric_limits<uint32_t>::max();
+  static constexpr uint32_t kNotSetRendererId = std::numeric_limits<uint32_t>::max();
 
   FormData();
   FormData(const FormData&);
@@ -100,7 +97,7 @@ struct FormData {
   // Unique renderer id returned by WebFormElement::UniqueRendererFormId(). It
   // is not persistent between page loads, so it is not saved and not used in
   // comparison in SameFormAs().
-  uint32_t unique_renderer_id = kNotSetFormRendererId;
+  uint32_t unique_renderer_id = kNotSetRendererId;
   // The type of the event that was taken as an indication that this form is
   // being or has already been submitted. This field is filled only in Password
   // Manager for submitted password forms.

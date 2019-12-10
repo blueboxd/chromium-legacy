@@ -61,6 +61,7 @@
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/common/gpu_client_ids.h"
+#include "gpu/ipc/common/result_codes.h"
 #include "gpu/ipc/host/shader_disk_cache.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "media/base/media_switches.h"
@@ -110,6 +111,11 @@ bool GpuProcessHost::crashed_before_ = false;
 int GpuProcessHost::hardware_accelerated_recent_crash_count_ = 0;
 int GpuProcessHost::swiftshader_recent_crash_count_ = 0;
 int GpuProcessHost::display_compositor_recent_crash_count_ = 0;
+
+// RESULT_CODE_HUNG is expected to be the same in both
+// gpu/ipc/common/result_codes.h and gpu/ipc/common/result_codes.h
+static_assert(RESULT_CODE_HUNG == static_cast<int>(gpu::RESULT_CODE_HUNG),
+              "Please use the same enum value in both header files.");
 
 namespace {
 

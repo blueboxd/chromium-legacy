@@ -5,7 +5,7 @@
 #include "ash/system/ime/unified_ime_detailed_view_controller.h"
 
 #include "ash/accessibility/accessibility_controller_impl.h"
-#include "ash/ime/ime_controller.h"
+#include "ash/ime/ime_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/ime/tray_ime_chromeos.h"
 #include "ash/system/tray/detailed_view_delegate.h"
@@ -66,7 +66,7 @@ void UnifiedIMEDetailedViewController::OnIMEMenuActivationChanged(
 }
 
 void UnifiedIMEDetailedViewController::Update() {
-  ImeController* ime_controller = Shell::Get()->ime_controller();
+  ImeControllerImpl* ime_controller = Shell::Get()->ime_controller();
   view_->Update(ime_controller->current_ime().id,
                 ime_controller->available_imes(),
                 ime_controller->current_ime_menu_items(),

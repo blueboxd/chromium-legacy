@@ -229,7 +229,7 @@ void FindWordsFromCategoryInForm(
     std::vector<uint32_t>* username_predictions) {
   // Auxiliary element that contains the first field (in order of appearance in
   // the form) in which a substring is encountered.
-  uint32_t chosen_field_renderer_id = FormData::kNotSetFormRendererId;
+  uint32_t chosen_field_renderer_id = FormData::kNotSetRendererId;
 
   size_t fields_found = 0;
   for (const UsernameFieldData& field_data : possible_usernames_data) {
@@ -285,9 +285,9 @@ void FindUsernameFieldInternal(
 }
 
 // Returns the |unique_renderer_id| of a given |WebFormElement|. If
-// |WebFormElement::IsNull()| return |kNotSetFormRendererId|.
+// |WebFormElement::IsNull()| return |kNotSetRendererId|.
 uint32_t GetFormRendererId(WebFormElement form) {
-  return form.IsNull() ? FormData::kNotSetFormRendererId
+  return form.IsNull() ? FormData::kNotSetRendererId
                        : form.UniqueRendererFormId();
 }
 

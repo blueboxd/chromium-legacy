@@ -142,23 +142,6 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // The root layer of the tree managed by this object.
   cc::Layer* RootLayer() const { return root_layer_.get(); }
 
-  // Returns extra information recorded during unit tests.
-  // While not part of the normal output of this class, this provides a simple
-  // way of locating the layers of interest, since there are still a slew of
-  // placeholder layers required.
-  struct PLATFORM_EXPORT ExtraDataForTesting {
-    cc::Layer* ScrollHitTestWebLayerAt(unsigned index);
-
-    Vector<scoped_refptr<cc::Layer>> content_layers;
-    Vector<scoped_refptr<cc::Layer>> synthesized_clip_layers;
-    Vector<scoped_refptr<cc::Layer>> scroll_hit_test_layers;
-    Vector<scoped_refptr<cc::Layer>> scrollbar_layers;
-  };
-  void EnableExtraDataForTesting();
-  ExtraDataForTesting* GetExtraDataForTesting() const {
-    return extra_data_for_testing_.get();
-  }
-
   void SetTracksRasterInvalidations(bool);
 
   // Called when the local frame view that owns this compositor is
@@ -209,6 +192,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
                                    const PaintChunk::Id&,
                                    CompositingReasons,
                                    RasterInvalidationTracking*);
+
+  Vector<cc::Layer*> SynthesizedClipLayersForTesting() const;
 
  private:
   // A pending layer is a collection of paint chunks that will end up in
@@ -365,9 +350,6 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   Vector<scoped_refptr<cc::Layer>> scrollbar_layers_;
 
   Vector<PendingLayer, 0> pending_layers_;
-
-  bool extra_data_for_testing_enabled_ = false;
-  std::unique_ptr<ExtraDataForTesting> extra_data_for_testing_;
 
   friend class StubChromeClientForCAP;
   friend class PaintArtifactCompositorTest;

@@ -195,6 +195,10 @@ const base::Feature kMediaApp{"MediaApp", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kParentalControlsSettings{
     "ChromeOSParentalControlsSettings", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether to enable quick answers.
+const base::Feature kQuickAnswers{"QuickAnswers",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables Release Notes on Chrome OS.
 const base::Feature kReleaseNotes{"ReleaseNotes",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
@@ -306,6 +310,10 @@ bool IsInstantTetheringBackgroundAdvertisingSupported() {
 
 bool IsParentalControlsSettingsEnabled() {
   return base::FeatureList::IsEnabled(kParentalControlsSettings);
+}
+
+bool IsQuickAnswersEnabled() {
+  return base::FeatureList::IsEnabled(kQuickAnswers);
 }
 
 bool IsSplitSettingsEnabled() {

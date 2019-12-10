@@ -181,6 +181,7 @@ void WebBundleReader::ReadMetadata(MetadataCallback callback) {
 
 void WebBundleReader::ReadResponse(
     const network::ResourceRequest& resource_request,
+    const std::string& accept_langs,
     ResponseCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_NE(state_, State::kInitial);
@@ -201,9 +202,8 @@ void WebBundleReader::ReadResponse(
   size_t response_index = 0;
   if (!entry->variants_value.empty()) {
     // Select the best variant for the request.
-    // TODO(crbug/1029406): Plumb |accept_langs| from prefs in a follow up CL.
     blink::SignedExchangeRequestMatcher matcher(resource_request.headers,
-                                                "" /* accept_langs */);
+                                                accept_langs);
     auto found = matcher.FindBestMatchingIndex(entry->variants_value);
     if (!found || *found >= entry->response_locations.size()) {
       PostTask(

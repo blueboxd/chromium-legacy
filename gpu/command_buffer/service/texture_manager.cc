@@ -2107,9 +2107,8 @@ TextureRef::~TextureRef() {
 }
 
 bool TextureRef::BeginAccessSharedImage(GLenum mode) {
-  shared_image_scoped_access_.emplace(shared_image_.get(), mode);
-  if (!shared_image_scoped_access_->success()) {
-    shared_image_scoped_access_.reset();
+  shared_image_scoped_access_ = shared_image_->BeginScopedAccess(mode);
+  if (!shared_image_scoped_access_) {
     return false;
   }
   return true;

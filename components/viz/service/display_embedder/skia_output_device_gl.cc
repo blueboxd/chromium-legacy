@@ -110,13 +110,26 @@ bool SkiaOutputDeviceGL::Reshape(const gfx::Size& size,
 
   GrGLFramebufferInfo framebuffer_info;
   framebuffer_info.fFBOID = gl_surface_->GetBackingFramebufferObject();
-  framebuffer_info.fFormat = supports_alpha_ ? GL_RGBA8 : GL_RGB8_OES;
+
+  SkColorType color_type;
+  if (color_space.IsHDR()) {
+    framebuffer_info.fFormat = GL_RGBA16F;
+    color_type = kRGBA_F16_SkColorType;
+  } else if (supports_alpha_) {
+    framebuffer_info.fFormat = GL_RGBA8;
+    color_type = kRGBA_8888_SkColorType;
+  } else {
+    framebuffer_info.fFormat = GL_RGB8_OES;
+    color_type = kRGB_888x_SkColorType;
+  }
+  // TODO(kylechar): We might need to support RGB10A2 for HDR10. HDR10 was only
+  // used with Windows updated RS3 (2017) as a workaround for a DWM bug so it
+  // might not be relevant to support anymore as a result.
+
   GrBackendRenderTarget render_target(size.width(), size.height(), 0, 8,
                                       framebuffer_info);
   auto origin = gl_surface_->FlipsVertically() ? kTopLeft_GrSurfaceOrigin
                                                : kBottomLeft_GrSurfaceOrigin;
-  auto color_type =
-      supports_alpha_ ? kRGBA_8888_SkColorType : kRGB_888x_SkColorType;
   sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
       gr_context_, render_target, origin, color_type,
       color_space.ToSkColorSpace(), &surface_props);

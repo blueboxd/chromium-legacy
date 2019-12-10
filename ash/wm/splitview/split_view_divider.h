@@ -96,7 +96,7 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
   void OnTransientChildRemoved(aura::Window* window,
                                aura::Window* transient) override;
 
-  views::Widget* divider_widget() { return divider_widget_.get(); }
+  views::Widget* divider_widget() { return divider_widget_; }
 
  private:
   void CreateDividerWidget(SplitViewController* controller);
@@ -113,7 +113,7 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
   // screen to the other, containing a small white drag bar in the middle. As
   // the user presses on it and drag it to left or right, the left and right
   // window will be resized accordingly.
-  std::unique_ptr<views::Widget> divider_widget_;
+  views::Widget* divider_widget_ = nullptr;
 
   // If true there is a window whose tabs are currently being dragged around.
   bool is_dragging_window_ = false;

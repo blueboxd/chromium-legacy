@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/chrome_extension_host_delegate.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/chrome_extensions_browser_api_provider.h"
+#include "chrome/browser/extensions/chrome_extensions_browser_interface_binders.h"
 #include "chrome/browser/extensions/chrome_extensions_interface_registration.h"
 #include "chrome/browser/extensions/chrome_kiosk_delegate.h"
 #include "chrome/browser/extensions/chrome_process_manager_delegate.h"
@@ -338,11 +339,13 @@ void ChromeExtensionsBrowserClient::RegisterExtensionInterfaces(
 }
 
 void ChromeExtensionsBrowserClient::RegisterBrowserInterfaceBindersForFrame(
-    service_manager::BinderMapWithContext<content::RenderFrameHost*>* map,
+    service_manager::BinderMapWithContext<content::RenderFrameHost*>*
+        binder_map,
     content::RenderFrameHost* render_frame_host,
     const Extension* extension) const {
-  PopulateExtensionFrameBinders(map, render_frame_host, extension);
-  PopulateChromeFrameBindersForExtension(map, render_frame_host, extension);
+  PopulateExtensionFrameBinders(binder_map, render_frame_host, extension);
+  PopulateChromeFrameBindersForExtension(binder_map, render_frame_host,
+                                         extension);
 }
 
 std::unique_ptr<RuntimeAPIDelegate>

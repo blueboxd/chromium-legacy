@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/history/history_coordinator.h"
@@ -373,7 +374,8 @@
       UrlLoadStrategy::ALWAYS_NEW_FOREGROUND_TAB;
   self.historyCoordinator.presentationDelegate = self;
   self.historyCoordinator.dispatcher =
-      static_cast<id<ApplicationCommands>>(self.dispatcher);
+      static_cast<id<ApplicationCommands, BrowsingDataCommands>>(
+          self.dispatcher);
   [self.historyCoordinator start];
 }
 

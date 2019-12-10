@@ -22,7 +22,7 @@ WaylandKeyboardDelegate::WaylandKeyboardDelegate(wl_resource* keyboard_resource,
       xkb_context_(xkb_context_new(XKB_CONTEXT_NO_FLAGS)),
       serial_tracker_(serial_tracker) {
 #if defined(OS_CHROMEOS)
-  ash::ImeController* ime_controller = ash::Shell::Get()->ime_controller();
+  ash::ImeControllerImpl* ime_controller = ash::Shell::Get()->ime_controller();
   ime_controller->AddObserver(this);
   SendNamedLayout(ime_controller->keyboard_layout_name());
 #else

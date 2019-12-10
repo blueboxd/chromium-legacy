@@ -34,11 +34,12 @@ TEST_F(BrowserViewWranglerTest, TestInitNilObserver) {
   // objects may rely on threading API in dealloc.
   @autoreleasepool {
     BrowserViewWrangler* wrangler = [[BrowserViewWrangler alloc]
-              initWithBrowserState:chrome_browser_state_.get()
-              webStateListObserver:nil
-        applicationCommandEndpoint:(id<ApplicationCommands>)nil
-              appURLLoadingService:nil
-                   storageSwitcher:nil];
+               initWithBrowserState:chrome_browser_state_.get()
+               webStateListObserver:nil
+         applicationCommandEndpoint:(id<ApplicationCommands>)nil
+        browsingDataCommandEndpoint:nil
+               appURLLoadingService:nil
+                    storageSwitcher:nil];
     [wrangler createMainBrowser];
     // Test that BVC is created on demand.
     BrowserViewController* bvc = wrangler.mainInterface.bvc;

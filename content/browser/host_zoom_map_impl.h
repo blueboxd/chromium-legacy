@@ -55,7 +55,7 @@ class CONTENT_EXPORT HostZoomMapImpl : public HostZoomMap {
   double GetDefaultZoomLevel() override;
   void SetDefaultZoomLevel(double level) override;
   std::unique_ptr<Subscription> AddZoomLevelChangedCallback(
-      const ZoomLevelChangedCallback& callback) override;
+      ZoomLevelChangedCallback callback) override;
 
   // Returns the current zoom level for the specified WebContents. This may
   // be a temporary zoom level, depending on UsesTemporaryZoomLevel().

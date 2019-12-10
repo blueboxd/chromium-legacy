@@ -10,6 +10,7 @@
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
+@protocol BrowsingDataCommands;
 @class GoogleServicesSettingsCoordinator;
 
 // Delegate for GoogleServicesSettingsCoordinator.
@@ -33,7 +34,9 @@
 @property(nonatomic, weak) id<GoogleServicesSettingsCoordinatorDelegate>
     delegate;
 // Global dispatcher.
-@property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
+@property(nonatomic, weak)
+    id<ApplicationCommands, BrowserCommands, BrowsingDataCommands>
+        dispatcher;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
     NS_UNAVAILABLE;

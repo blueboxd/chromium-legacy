@@ -3739,6 +3739,8 @@ jumbo_static_library("ui") {
       "ash/assistant/proactive_suggestions_client_impl.h",
       "ash/assistant/proactive_suggestions_loader.cc",
       "ash/assistant/proactive_suggestions_loader.h",
+      "ash/launcher/app_service_app_window_arc_tracker.cc",
+      "ash/launcher/app_service_app_window_arc_tracker.h",
       "ash/launcher/app_service_app_window_crostini_tracker.cc",
       "ash/launcher/app_service_app_window_crostini_tracker.h",
       "ash/launcher/app_service_app_window_launcher_controller.cc",

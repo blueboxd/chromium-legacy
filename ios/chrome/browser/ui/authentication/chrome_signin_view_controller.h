@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/signin/constants.h"
 
 @protocol ApplicationCommands;
+@protocol BrowsingDataCommands;
 class Browser;
 @class ChromeIdentity;
 @class ChromeSigninViewController;
@@ -81,7 +82,9 @@ using TimerGeneratorBlock = std::unique_ptr<base::OneShotTimer> (^)();
 // It is valid to set this in the |willStartSignIn:| method of the delegate.
 @property(nonatomic, assign) ShouldClearData shouldClearData;
 
-@property(nonatomic, weak, readonly) id<ApplicationCommands> dispatcher;
+@property(nonatomic, weak, readonly)
+    id<ApplicationCommands, BrowsingDataCommands>
+        dispatcher;
 
 // Designated initializer.
 // * |browser| is the browser where sign-in is being presented.
@@ -93,7 +96,8 @@ using TimerGeneratorBlock = std::unique_ptr<base::OneShotTimer> (^)();
                     accessPoint:(signin_metrics::AccessPoint)accessPoint
                     promoAction:(signin_metrics::PromoAction)promoAction
                  signInIdentity:(ChromeIdentity*)identity
-                     dispatcher:(id<ApplicationCommands>)dispatcher;
+                     dispatcher:(id<ApplicationCommands, BrowsingDataCommands>)
+                                    dispatcher;
 
 // Cancels the on-going authentication operation (if any). |delegate| will be
 // called with |didFailSignIn|.

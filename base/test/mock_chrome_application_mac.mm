@@ -21,16 +21,16 @@
 }
 
 - (void)sendEvent:(NSEvent*)event {
-  base::AutoReset<BOOL> scoper(&handlingSendEvent_, YES);
+  base::AutoReset<BOOL> scoper(&_handlingSendEvent, YES);
   [super sendEvent:event];
 }
 
 - (void)setHandlingSendEvent:(BOOL)handlingSendEvent {
-  handlingSendEvent_ = handlingSendEvent;
+  _handlingSendEvent = handlingSendEvent;
 }
 
 - (BOOL)isHandlingSendEvent {
-  return handlingSendEvent_;
+  return _handlingSendEvent;
 }
 
 @end

@@ -72,8 +72,8 @@ TEST(AXLanguageDetectionTest, BoringTree) {
 
   AXTree tree(initial_state);
   ASSERT_NE(tree.language_detection_manager, nullptr);
-  tree.language_detection_manager->DetectLanguageForSubtree(tree.root());
-  tree.language_detection_manager->LabelLanguageForSubtree(tree.root());
+  tree.language_detection_manager->DetectLanguage(tree.root());
+  tree.language_detection_manager->LabelLanguage(tree.root());
 
   // Check that tree parenting conforms to expected shape.
   AXNode* node1 = tree.GetFromId(1);
@@ -161,8 +161,8 @@ TEST(AXLanguageDetectionTest, LangAttrInheritanceFeatureFlagOff) {
 
   AXTree tree(initial_state);
   ASSERT_NE(tree.language_detection_manager, nullptr);
-  tree.language_detection_manager->DetectLanguageForSubtree(tree.root());
-  tree.language_detection_manager->LabelLanguageForSubtree(tree.root());
+  tree.language_detection_manager->DetectLanguage(tree.root());
+  tree.language_detection_manager->LabelLanguage(tree.root());
 
   {
     AXNode* node1 = tree.GetFromId(1);
@@ -262,8 +262,8 @@ TEST(AXLanguageDetectionTest, LangAttrInheritanceFeatureFlagOn) {
 
   AXTree tree(initial_state);
   ASSERT_NE(tree.language_detection_manager, nullptr);
-  tree.language_detection_manager->DetectLanguageForSubtree(tree.root());
-  tree.language_detection_manager->LabelLanguageForSubtree(tree.root());
+  tree.language_detection_manager->DetectLanguage(tree.root());
+  tree.language_detection_manager->LabelLanguage(tree.root());
 
   {
     AXNode* node1 = tree.GetFromId(1);
@@ -375,8 +375,8 @@ TEST(AXLanguageDetectionTest, LanguageDetectionBasic) {
 
   AXTree tree(initial_state);
   ASSERT_NE(tree.language_detection_manager, nullptr);
-  tree.language_detection_manager->DetectLanguageForSubtree(tree.root());
-  tree.language_detection_manager->LabelLanguageForSubtree(tree.root());
+  tree.language_detection_manager->DetectLanguage(tree.root());
+  tree.language_detection_manager->LabelLanguage(tree.root());
 
   {
     AXNode* node1 = tree.GetFromId(1);
@@ -492,7 +492,7 @@ TEST(AXLanguageDetectionTest, LanguageDetectionDetectOnly) {
 
   AXTree tree(initial_state);
   ASSERT_NE(tree.language_detection_manager, nullptr);
-  tree.language_detection_manager->DetectLanguageForSubtree(tree.root());
+  tree.language_detection_manager->DetectLanguage(tree.root());
   // Purposefully not calling Label so we can test Detect in isolation.
 
   {
@@ -593,8 +593,8 @@ TEST(AXLanguageDetectionTest, kLanguageUntouched) {
 
   AXTree tree(initial_state);
   ASSERT_NE(tree.language_detection_manager, nullptr);
-  tree.language_detection_manager->DetectLanguageForSubtree(tree.root());
-  tree.language_detection_manager->LabelLanguageForSubtree(tree.root());
+  tree.language_detection_manager->DetectLanguage(tree.root());
+  tree.language_detection_manager->LabelLanguage(tree.root());
 
   {
     AXNode* node1 = tree.GetFromId(1);

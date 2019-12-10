@@ -36,25 +36,4 @@ The below should be formatted
 32: -     border-color: lightgoldenrodyellow;
 33: - }
 34:   
-The below should NOT be formatted
-0: + body {
-1: +     background-color: lightblue;
-2: + }
-3:   
-4: - .class {
-5: -     color: red;
-6: - }
-7:   
-8: - .class2 {    color:green;font-style: italic;
-9: - }
-10:   
-11: + #id {  color: blue
-12: + }
-13:   
-14: - notUsed {color: black}
-15:   
-16: - notUsed2 {
-17: -     color: white
-18: - }
-19:   
 

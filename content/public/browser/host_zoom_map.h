@@ -181,12 +181,13 @@ class HostZoomMap {
   virtual double GetDefaultZoomLevel() = 0;
   virtual void SetDefaultZoomLevel(double level) = 0;
 
-  typedef base::Callback<void(const ZoomLevelChange&)> ZoomLevelChangedCallback;
+  using ZoomLevelChangedCallback =
+      base::RepeatingCallback<void(const ZoomLevelChange&)>;
   typedef base::CallbackList<void(const ZoomLevelChange&)>::Subscription
       Subscription;
   // Add and remove zoom level changed callbacks.
   virtual std::unique_ptr<Subscription> AddZoomLevelChangedCallback(
-      const ZoomLevelChangedCallback& callback) = 0;
+      ZoomLevelChangedCallback callback) = 0;
 
   virtual void SetClockForTesting(base::Clock* clock) = 0;
 

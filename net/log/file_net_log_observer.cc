@@ -625,7 +625,7 @@ void FileNetLogObserver::FileWriter::DeleteAllFiles() {
 
   if (IsBounded()) {
     current_event_file_.Close();
-    base::DeleteFile(inprogress_dir_path_, true);
+    base::DeleteFileRecursively(inprogress_dir_path_);
   }
 
   // Only delete |final_log_file_| if it was created internally.
@@ -760,7 +760,7 @@ void FileNetLogObserver::FileWriter::StitchFinalLogFile() {
 
   // Delete the inprogress directory (and anything that may still be left inside
   // it).
-  base::DeleteFile(inprogress_dir_path_, true);
+  base::DeleteFileRecursively(inprogress_dir_path_);
 }
 
 void FileNetLogObserver::FileWriter::CreateInprogressDirectory() {

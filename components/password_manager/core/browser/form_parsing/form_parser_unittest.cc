@@ -118,18 +118,16 @@ base::string16 StampUniqueSuffix(const char* base_str) {
 // Describes which renderer IDs are expected for username/password fields
 // identified in a PasswordForm.
 struct ParseResultIds {
-  uint32_t username_id = FormFieldData::kNotSetFormControlRendererId;
-  uint32_t password_id = FormFieldData::kNotSetFormControlRendererId;
-  uint32_t new_password_id = FormFieldData::kNotSetFormControlRendererId;
-  uint32_t confirmation_password_id =
-      FormFieldData::kNotSetFormControlRendererId;
+  uint32_t username_id = FormData::kNotSetRendererId;
+  uint32_t password_id = FormData::kNotSetRendererId;
+  uint32_t new_password_id = FormData::kNotSetRendererId;
+  uint32_t confirmation_password_id = FormData::kNotSetRendererId;
 
   bool IsEmpty() const {
-    return username_id == FormFieldData::kNotSetFormControlRendererId &&
-           password_id == FormFieldData::kNotSetFormControlRendererId &&
-           new_password_id == FormFieldData::kNotSetFormControlRendererId &&
-           confirmation_password_id ==
-               FormFieldData::kNotSetFormControlRendererId;
+    return username_id == FormData::kNotSetRendererId &&
+           password_id == FormData::kNotSetRendererId &&
+           new_password_id == FormData::kNotSetRendererId &&
+           confirmation_password_id == FormData::kNotSetRendererId;
   }
 };
 
@@ -138,7 +136,7 @@ struct ParseResultIds {
 void UpdateResultWithIdByRole(ParseResultIds* result,
                               uint32_t id,
                               ElementRole role) {
-  constexpr uint32_t kUnassigned = FormFieldData::kNotSetFormControlRendererId;
+  constexpr uint32_t kUnassigned = FormData::kNotSetRendererId;
   switch (role) {
     case ElementRole::NONE:
       // Nothing to update.
@@ -240,7 +238,7 @@ FormData GetFormDataAndExpectation(const FormParsingTestCase& test_case,
 
 // Check that |fields| has a field with unique renderer ID |renderer_id| which
 // has the name |element_name| and value |*element_value|. If |renderer_id| is
-// FormFieldData::kNotSetFormControlRendererId, then instead check that
+// FormData::kNotSetRendererId, then instead check that
 // |element_name| and |*element_value| are empty. Set |element_kind| to identify
 // the type of the field in logging: 'username', 'password', etc. The argument
 // |element_value| can be null, in which case all checks involving it are
@@ -254,7 +252,7 @@ void CheckField(const std::vector<FormFieldData>& fields,
   SCOPED_TRACE(testing::Message("Looking for element of kind ")
                << element_kind);
 
-  if (renderer_id == FormFieldData::kNotSetFormControlRendererId) {
+  if (renderer_id == FormData::kNotSetRendererId) {
     EXPECT_EQ(base::string16(), element_name);
     if (element_value)
       EXPECT_EQ(base::string16(), *element_value);

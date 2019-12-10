@@ -31,18 +31,6 @@
 #endif
 
 namespace {
-
-const CGFloat kFindBarWidthRegularRegular = 375;
-const CGFloat kFindBarCornerRadiusRegularRegular = 13;
-const CGFloat kRegularRegularHorizontalMargin = 5;
-
-// Margin between the beginning of the shadow image and the content being
-// shadowed.
-const CGFloat kShadowMargin = 196;
-
-// Find Bar animation drop down duration.
-const CGFloat kAnimationDuration = 0.15;
-
 // For the first |kSearchDelayChars| characters, delay by |kSearchLongDelay|
 // For the remaining characters, delay by |kSearchShortDelay|.
 const NSUInteger kSearchDelayChars = 3;
@@ -55,18 +43,6 @@ const NSTimeInterval kSearchShortDelay = 0.100;
 
 @interface FindBarControllerIOS ()<UITextFieldDelegate>
 
-// In legacy UI: animates find bar to iPad top right, or, when possible, to
-// align find bar horizontally with |alignmentFrame|. In new UI: animates find
-// bar to the right of |parentView| and below |toolbarView|.
-- (void)showIPadFindBarViewInParentView:(UIView*)parentView
-                       usingToolbarView:(UIView*)toolbarView
-                             selectText:(BOOL)selectText
-                               animated:(BOOL)animated;
-// Animate find bar over iPhone toolbar.
-- (void)showIPhoneFindBarViewInParentView:(UIView*)parentView
-                         usingToolbarView:(UIView*)toolbarView
-                               selectText:(BOOL)selectText
-                                 animated:(BOOL)animated;
 // Responds to touches that make editing changes on the text field, triggering
 // find-in-page searches for the field's current value.
 - (void)editingChanged;
@@ -75,9 +51,6 @@ const NSTimeInterval kSearchShortDelay = 0.100;
 // will read "Select All" instead of a11y label.
 - (void)selectAllText;
 
-// Redefined to be readwrite. This view acts as background for |findBarView| and
-// contains it as a subview.
-@property(nonatomic, readwrite, strong) UIView* view;
 // The view containing all the buttons and textfields that is common between
 // iPhone and iPad.
 @property(nonatomic, strong) FindBarView* findBarView;
@@ -89,12 +62,6 @@ const NSTimeInterval kSearchShortDelay = 0.100;
 
 @implementation FindBarControllerIOS
 
-@synthesize view = _view;
-@synthesize findBarView = _findBarView;
-@synthesize delayTimer = _delayTimer;
-@synthesize isIncognito = _isIncognito;
-@synthesize dispatcher = _dispatcher;
-
 #pragma mark - Lifecycle
 
 - (instancetype)initWithIncognito:(BOOL)isIncognito {
@@ -105,46 +72,15 @@ const NSTimeInterval kSearchShortDelay = 0.100;
   return self;
 }
 
-#pragma mark View Setup & Teardown
+#pragma mark - Public
 
-// Returns the findBar view with a |width|. The elements inside the view are
-// already positioned correctly for this width. This is needed to start the
-// animation with the elements already positioned.
-- (UIView*)constructFindBarViewWithWidth:(CGFloat)width {
-  UIView* findBarBackground = nil;
-
-  findBarBackground = [[UIView alloc] initWithFrame:CGRectMake(0, 0, width, 1)];
-  if (@available(iOS 13, *)) {
-    // When iOS 12 is dropped, only the next line is needed for styling.
-    // Every other check for |incognitoStyle| can be removed, as well as
-    // the incognito specific assets.
-    findBarBackground.overrideUserInterfaceStyle =
-        self.isIncognito ? UIUserInterfaceStyleDark
-                         : UIUserInterfaceStyleUnspecified;
+- (UIView*)createFindBarViewWithDarkAppearance:(BOOL)darkAppearance {
+  if (self.findBarView) {
+    return self.findBarView;
   }
-  findBarBackground.backgroundColor = color::DarkModeDynamicColor(
-      [UIColor colorNamed:kBackgroundColor], self.isIncognito,
-      [UIColor colorNamed:kBackgroundDarkColor]);
   self.findBarView =
-      [[FindBarView alloc] initWithDarkAppearance:self.isIncognito];
-
-  [findBarBackground addSubview:self.findBarView];
+      [[FindBarView alloc] initWithDarkAppearance:darkAppearance];
   self.findBarView.translatesAutoresizingMaskIntoConstraints = NO;
-
-  [NSLayoutConstraint activateConstraints:@[
-    [self.findBarView.trailingAnchor
-        constraintEqualToAnchor:findBarBackground.trailingAnchor],
-    [self.findBarView.leadingAnchor
-        constraintEqualToAnchor:findBarBackground.leadingAnchor],
-    [self.findBarView.heightAnchor
-        constraintEqualToConstant:kAdaptiveToolbarHeight],
-    [self.findBarView.bottomAnchor
-        constraintEqualToAnchor:findBarBackground.bottomAnchor],
-  ]];
-
-  // Make sure that the findBarView is correctly laid out for the width.
-  [findBarBackground setNeedsLayout];
-  [findBarBackground layoutIfNeeded];
 
   self.findBarView.inputField.delegate = self;
   [self.findBarView.inputField addTarget:self
@@ -166,22 +102,25 @@ const NSTimeInterval kSearchShortDelay = 0.100;
                                    action:@selector(closeFindInPage)
                          forControlEvents:UIControlEventTouchUpInside];
 
-  return findBarBackground;
+  return self.findBarView;
 }
 
-- (void)teardownView {
-  [self.view removeFromSuperview];
-  self.view = nil;
+- (void)findBarViewWillHide {
+  self.findBarView.inputField.selectedTextRange = nil;
+  [self.delayTimer invalidate];
+  self.delayTimer = nil;
 }
 
-#pragma mark - Public
+- (void)findBarViewDidHide {
+  self.findBarView = nil;
+}
 
 - (NSString*)searchTerm {
   return [self.findBarView.inputField text];
 }
 
 - (BOOL)isFindInPageShown {
-  return self.view != nil;
+  return self.findBarView != nil;
 }
 
 - (BOOL)isFocused {
@@ -236,71 +175,9 @@ const NSTimeInterval kSearchShortDelay = 0.100;
   self.findBarView.previousButton.enabled = enabled;
 }
 
-- (void)addFindBarViewToParentView:(UIView*)parentView
-                  usingToolbarView:(UIView*)toolbarView
-                        selectText:(BOOL)selectText
-                          animated:(BOOL)animated {
-  // If already showing find bar, update the height constraint only for iOS 10
-  // because the safe area anchor is not available.
-  if (self.view) {
-    return;
-  }
-
-  if (ShouldShowCompactToolbar()) {
-    [self showIPhoneFindBarViewInParentView:parentView
-                           usingToolbarView:toolbarView
-                                 selectText:selectText
-                                   animated:animated];
-  } else {
-    [self showIPadFindBarViewInParentView:parentView
-                         usingToolbarView:toolbarView
-                               selectText:selectText
-                                 animated:animated];
-  }
-}
-
-- (void)hideFindBarView:(BOOL)animate {
-  // If view is nil, nothing to hide.
-  if (!self.view) {
-    return;
-  }
-
-  self.findBarView.inputField.selectedTextRange = nil;
-  [self.delayTimer invalidate];
-  self.delayTimer = nil;
-
-  if (animate) {
-    void (^animation)();
-    if (ShouldShowCompactToolbar()) {
-      CGRect oldFrame = self.view.frame;
-      self.view.layer.anchorPoint = CGPointMake(0.5, 0);
-      self.view.frame = oldFrame;
-      animation = ^{
-        self.view.transform = CGAffineTransformMakeScale(1, 0.05);
-        self.view.alpha = 0;
-      };
-    } else {
-      CGFloat rtlModifier = base::i18n::IsRTL() ? -1 : 1;
-      animation = ^{
-        self.view.transform = CGAffineTransformMakeTranslation(
-            rtlModifier * self.view.bounds.size.width, 0);
-      };
-    }
-    [UIView animateWithDuration:kAnimationDuration
-                     animations:animation
-                     completion:^(BOOL finished) {
-                       [self teardownView];
-                     }];
-  } else {
-    [self teardownView];
-  }
-}
-
 - (void)hideKeyboard:(id)sender {
-  [self.view endEditing:YES];
+  [self.findBarView endEditing:YES];
 }
-
-#pragma mark - Internal
 
 - (void)selectAllText {
   UITextRange* wholeTextRange = [self.findBarView.inputField
@@ -309,107 +186,7 @@ const NSTimeInterval kSearchShortDelay = 0.100;
   self.findBarView.inputField.selectedTextRange = wholeTextRange;
 }
 
-// Animate find bar to iPad top right.
-- (void)showIPadFindBarViewInParentView:(UIView*)parentView
-                       usingToolbarView:(UIView*)toolbarView
-                             selectText:(BOOL)selectText
-                               animated:(BOOL)animated {
-  DCHECK(IsIPadIdiom());
-  CGFloat parentWidth = CGRectGetWidth(parentView.bounds);
-  CGFloat width = MIN(parentWidth - 2 * kRegularRegularHorizontalMargin,
-                      kFindBarWidthRegularRegular);
-  self.view = [self constructFindBarViewWithWidth:width];
-  self.view.accessibilityIdentifier = kFindInPageContainerViewId;
-
-  self.view.translatesAutoresizingMaskIntoConstraints = NO;
-  self.view.layer.cornerRadius = kFindBarCornerRadiusRegularRegular;
-  [parentView addSubview:self.view];
-
-  UIImageView* shadow =
-      [[UIImageView alloc] initWithImage:StretchableImageNamed(@"menu_shadow")];
-  shadow.translatesAutoresizingMaskIntoConstraints = NO;
-  [self.view addSubview:shadow];
-
-  [NSLayoutConstraint activateConstraints:@[
-    // Anchors findbar below |toolbarView|.
-    [self.view.topAnchor constraintEqualToAnchor:toolbarView.bottomAnchor],
-    // Aligns findbar with the right side of |parentView|.
-    [self.view.trailingAnchor
-        constraintEqualToAnchor:parentView.trailingAnchor
-                       constant:-kRegularRegularHorizontalMargin],
-    [self.view.widthAnchor constraintEqualToConstant:width],
-    [self.view.heightAnchor constraintEqualToConstant:kAdaptiveToolbarHeight],
-  ]];
-  // Layouts |shadow| around |self.view|.
-  AddSameConstraintsToSidesWithInsets(
-      shadow, self.view,
-      LayoutSides::kTop | LayoutSides::kLeading | LayoutSides::kBottom |
-          LayoutSides::kTrailing,
-      {-kShadowMargin, -kShadowMargin, -kShadowMargin, -kShadowMargin});
-
-  // Layout the view so the shadow is correctly positioned when the animation
-  // starts. Otherwise, when the shadow constraints are activated, the view is
-  // moved.
-  [self.view layoutIfNeeded];
-
-  // Position the frame of the view before animating it, so the animation looks
-  // correct (sliding in from the trailing edge).
-  CGRect toolbarFrameInParentView =
-      [toolbarView convertRect:toolbarView.bounds toView:parentView];
-  CGFloat originX = base::i18n::IsRTL() ? -width : parentWidth;
-  self.view.frame = CGRectMake(originX, CGRectGetMaxY(toolbarFrameInParentView),
-                               width, kAdaptiveToolbarHeight);
-
-  CGFloat duration = animated ? kAnimationDuration : 0;
-  [UIView animateWithDuration:duration
-      animations:^() {
-        [self.view layoutIfNeeded];
-      }
-      completion:^(BOOL finished) {
-        if (selectText)
-          [self selectAllText];
-      }];
-}
-
-// Animate find bar over iPhone toolbar.
-- (void)showIPhoneFindBarViewInParentView:(UIView*)parentView
-                         usingToolbarView:(UIView*)toolbarView
-                               selectText:(BOOL)selectText
-                                 animated:(BOOL)animated {
-  self.view =
-      [self constructFindBarViewWithWidth:toolbarView.bounds.size.width];
-  self.view.translatesAutoresizingMaskIntoConstraints = NO;
-  [parentView addSubview:self.view];
-  self.view.accessibilityIdentifier = kFindInPageContainerViewId;
-
-  // Make sure that the Find in Page view bottom constraint has a lower priority
-  // than the constraint making sure that it doesn't overlap with the status
-  // bar.
-  NSLayoutConstraint* bottomConstraint =
-      [self.view.bottomAnchor constraintEqualToAnchor:toolbarView.bottomAnchor];
-  bottomConstraint.priority = UILayoutPriorityRequired - 1;
-
-  [NSLayoutConstraint activateConstraints:@[
-    [self.view.leadingAnchor constraintEqualToAnchor:parentView.leadingAnchor],
-    [self.view.trailingAnchor
-        constraintEqualToAnchor:parentView.trailingAnchor],
-    bottomConstraint,
-    [self.findBarView.topAnchor
-        constraintGreaterThanOrEqualToAnchor:self.view.safeAreaLayoutGuide
-                                                 .topAnchor],
-    [self.view.topAnchor constraintEqualToAnchor:parentView.topAnchor],
-  ]];
-
-  CGFloat duration = animated ? kAnimationDuration : 0;
-  [UIView animateWithDuration:duration
-      animations:^() {
-        [self.view layoutIfNeeded];
-      }
-      completion:^(BOOL finished) {
-        if (selectText)
-          [self selectAllText];
-      }];
-}
+#pragma mark - Internal
 
 - (void)editingChanged {
   [self.delayTimer invalidate];

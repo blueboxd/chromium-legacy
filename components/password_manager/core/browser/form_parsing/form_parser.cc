@@ -679,10 +679,9 @@ const FormFieldData* FindUsernameFieldBaseHeuristics(
 }
 
 // A helper to return a |field|'s unique_renderer_id or
-// kNotSetFormControlRendererId if |field| is null.
+// kNotSetRendererId if |field| is null.
 uint32_t ExtractUniqueId(const FormFieldData* field) {
-  return field ? field->unique_renderer_id
-               : FormFieldData::kNotSetFormControlRendererId;
+  return field ? field->unique_renderer_id : FormData::kNotSetRendererId;
 }
 
 // Tries to find the username and password fields in |processed_fields| based

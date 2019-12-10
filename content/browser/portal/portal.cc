@@ -50,6 +50,7 @@ Portal::~Portal() {
   if (outer_node)
     outer_node->RemoveObserver(this);
   portal_contents_impl_->set_portal(nullptr);
+  Observe(nullptr);
 }
 
 // static

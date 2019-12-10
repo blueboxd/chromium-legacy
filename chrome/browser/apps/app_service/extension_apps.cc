@@ -31,10 +31,12 @@
 #include "chrome/browser/ui/app_list/extension_uninstaller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -582,6 +584,26 @@ void ExtensionApps::PauseApp(const std::string& app_id) {
   paused_apps_.insert(app_id);
   SetIconEffect(app_id);
 
+  // For Web apps that are opened in app windows, close all tabs to close the
+  // opened window, otherwise, show pause information in browsers.
+  bool is_web_app = false;
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (!browser->is_type_app()) {
+      continue;
+    }
+    if (web_app::GetAppIdFromApplicationName(browser->app_name()) == app_id) {
+      TabStripModel* tab_strip = browser->tab_strip_model();
+      tab_strip->CloseAllTabs();
+      is_web_app = true;
+    }
+  }
+
+  // For web apps that are open in tabs, PauseApp() should be called with
+  // Chrome's app_id to show pause information in browsers.
+  if (is_web_app) {
+    return;
+  }
+
   chromeos::app_time::WebTimeLimitInterface* web_limit =
       chromeos::app_time::WebTimeLimitInterface::Get(profile_);
   DCHECK(web_limit);
@@ -595,6 +617,15 @@ void ExtensionApps::UnpauseApps(const std::string& app_id) {
 
   paused_apps_.erase(app_id);
   SetIconEffect(app_id);
+
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (!browser->is_type_app()) {
+      continue;
+    }
+    if (web_app::GetAppIdFromApplicationName(browser->app_name()) == app_id) {
+      return;
+    }
+  }
 
   chromeos::app_time::WebTimeLimitInterface* web_limit =
       chromeos::app_time::WebTimeLimitInterface::Get(profile_);

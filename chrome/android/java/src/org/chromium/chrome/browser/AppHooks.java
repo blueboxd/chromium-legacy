@@ -50,6 +50,7 @@ import org.chromium.chrome.browser.services.AndroidEduOwnerCheckCallback;
 import org.chromium.chrome.browser.settings.LocationSettings;
 import org.chromium.chrome.browser.signin.GoogleActivityController;
 import org.chromium.chrome.browser.survey.SurveyController;
+import org.chromium.chrome.browser.sync.TrustedVaultClient;
 import org.chromium.chrome.browser.tab.AuthenticatorNavigationInterceptor;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.ImmersiveModeManager;
@@ -398,5 +399,12 @@ public abstract class AppHooks {
      */
     public @Nullable ImmersiveModeManager createImmersiveModeManager(View contentView) {
         return null;
+    }
+
+    /**
+     * Returns a new {@link TrustedVaultClient.Backend} instance.
+     */
+    public TrustedVaultClient.Backend createSyncTrustedVaultClientBackend() {
+        return new TrustedVaultClient.EmptyBackend();
     }
 }

@@ -125,14 +125,14 @@ void PushMessagingService::StorePushSubscriptionForTesting(
     int64_t service_worker_registration_id,
     const std::string& subscription_id,
     const std::string& sender_id,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&StorePushSubscriptionOnIOForTesting,
                      GetServiceWorkerContext(browser_context, origin),
                      service_worker_registration_id, origin, subscription_id,
-                     sender_id, callback));
+                     sender_id, std::move(callback)));
 }
 
 }  // namespace content

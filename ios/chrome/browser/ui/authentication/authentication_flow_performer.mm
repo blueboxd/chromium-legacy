@@ -489,7 +489,8 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
   _navigationController = nil;
 }
 
-- (id<ApplicationCommands, BrowserCommands>)dispatcherForSettings {
+- (id<ApplicationCommands, BrowserCommands, BrowsingDataCommands>)
+    dispatcherForSettings {
   NOTREACHED();
   return nil;
 }

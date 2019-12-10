@@ -22,7 +22,7 @@ class PairingRegistryDelegateLinuxTest : public testing::Test {
     temp_registry_ = temp_dir_.Append("paired-clients");
   }
 
-  void TearDown() override { base::DeleteFile(temp_dir_, true); }
+  void TearDown() override { base::DeleteFileRecursively(temp_dir_); }
 
  protected:
   base::FilePath temp_dir_;

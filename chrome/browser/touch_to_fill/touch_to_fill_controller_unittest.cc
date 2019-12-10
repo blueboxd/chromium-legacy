@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/password_manager/touch_to_fill_controller.h"
+#include "chrome/browser/touch_to_fill/touch_to_fill_controller.h"
 
 #include <memory>
 #include <tuple>

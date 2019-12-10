@@ -89,8 +89,7 @@ void ManifestUpdateTask::OnDidGetInstallableData(const InstallableData& data) {
   DCHECK(data.manifest);
   std::unique_ptr<WebApplicationInfo> web_application_info =
       std::make_unique<WebApplicationInfo>();
-  UpdateWebAppInfoFromManifest(*data.manifest, web_application_info.get(),
-                               ForInstallableSite::kYes);
+  UpdateWebAppInfoFromManifest(*data.manifest, web_application_info.get());
   if (!IsUpdateNeeded(*web_application_info)) {
     DestroySelf(ManifestUpdateResult::kAppUpToDate);
     return;

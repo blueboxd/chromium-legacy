@@ -58,7 +58,7 @@ class FrameThrottlingTest : public PaintTestConfigurations, public SimTest {
   // Number of rectangles that make up the root layer's touch handler region.
   size_t TouchHandlerRegionSize() {
     const auto* frame_view = WebView().MainFrameImpl()->GetFrameView();
-    return CcLayerByScrollElementId(
+    return ScrollingContentsCcLayerByScrollElementId(
                frame_view->RootCcLayer(),
                frame_view->LayoutViewport()->GetScrollElementId())
         ->touch_action_region()

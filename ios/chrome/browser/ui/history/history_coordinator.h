@@ -13,12 +13,14 @@
 enum class UrlLoadStrategy;
 
 @protocol ApplicationCommands;
+@protocol BrowsingDataCommands;
 @protocol HistoryPresentationDelegate;
 
 // Coordinator that presents History.
 @interface HistoryCoordinator : ChromeCoordinator
 // The dispatcher for this Coordinator.
-@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
+@property(nonatomic, weak) id<ApplicationCommands, BrowsingDataCommands>
+    dispatcher;
 // Opaque instructions on how to open urls.
 @property(nonatomic) UrlLoadStrategy loadStrategy;
 // Delegate used to make the Tab UI visible.

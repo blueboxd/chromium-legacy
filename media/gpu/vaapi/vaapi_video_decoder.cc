@@ -95,11 +95,6 @@ VaapiVideoDecoder::~VaapiVideoDecoder() {
   // Abort all currently scheduled decode tasks.
   ClearDecodeTaskQueue(DecodeStatus::ABORTED);
 
-  if (decoder_) {
-    decoder_->Reset();
-    decoder_ = nullptr;
-  }
-
   weak_this_factory_.InvalidateWeakPtrs();
 }
 
@@ -126,10 +121,8 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   if (state_ != State::kUninitialized) {
     DVLOGF(3) << "Reinitializing decoder";
-    if (decoder_) {
-      decoder_->Reset();
-      decoder_ = nullptr;
-    }
+
+    decoder_ = nullptr;
     vaapi_wrapper_ = nullptr;
     SetState(State::kUninitialized);
   }
@@ -145,20 +138,9 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  // Create AcceleratedVideoDecoder for the specified profile.
-  if (profile >= H264PROFILE_MIN && profile <= H264PROFILE_MAX) {
-    decoder_.reset(new H264Decoder(
-        std::make_unique<VaapiH264Accelerator>(this, vaapi_wrapper_), profile,
-        config.color_space_info()));
-  } else if (profile >= VP8PROFILE_MIN && profile <= VP8PROFILE_MAX) {
-    decoder_.reset(new VP8Decoder(
-        std::make_unique<VaapiVP8Accelerator>(this, vaapi_wrapper_)));
-  } else if (profile >= VP9PROFILE_MIN && profile <= VP9PROFILE_MAX) {
-    decoder_.reset(new VP9Decoder(
-        std::make_unique<VaapiVP9Accelerator>(this, vaapi_wrapper_), profile,
-        config.color_space_info()));
-  } else {
-    LOG(ERROR) << "Unsupported profile " << GetProfileName(profile);
+  profile_ = profile;
+  color_space_ = config.color_space_info();
+  if (!CreateAcceleratedVideoDecoder()) {
     std::move(init_cb).Run(false);
     return;
   }
@@ -168,7 +150,6 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
   frame_pool_ = client_->GetVideoFramePool();
 
   pixel_aspect_ratio_ = config.GetPixelAspectRatio();
-  profile_ = profile;
 
   output_cb_ = std::move(output_cb);
   SetState(State::kWaitingForInput);
@@ -270,6 +251,7 @@ void VaapiVideoDecoder::HandleDecodeTask() {
       // After the pipeline flushes all frames, OnPipelineFlushed() will be
       // called and we can start changing resolution.
       DCHECK(client_);
+      SetState(State::kChangingResolution);
       client_->PrepareChangeResolution();
       break;
     case AcceleratedVideoDecoder::kRanOutOfSurfaces:
@@ -411,7 +393,8 @@ void VaapiVideoDecoder::OutputFrameTask(scoped_refptr<VideoFrame> video_frame,
 
 void VaapiVideoDecoder::OnPipelineFlushed() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DCHECK(state_ == State::kDecoding);
+  DCHECK(state_ == State::kChangingResolution ||
+         state_ == State::kWaitingForInput);
   DCHECK(output_frames_.empty());
   VLOGF(2);
 
@@ -431,10 +414,16 @@ void VaapiVideoDecoder::OnPipelineFlushed() {
   vaapi_wrapper_->DestroyContext();
   vaapi_wrapper_->CreateContext(pic_size_);
 
-  // Retry the current decode task.
-  decoder_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VaapiVideoDecoder::HandleDecodeTask, weak_this_));
+  // If we reset during resolution change, then there is no decode tasks. In
+  // this case we do nothing and wait for next input. Otherwise, continue
+  // decoding the current task.
+  if (current_decode_task_) {
+    // Retry the current decode task.
+    SetState(State::kDecoding);
+    decoder_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&VaapiVideoDecoder::HandleDecodeTask, weak_this_));
+  }
 }
 
 void VaapiVideoDecoder::ReleaseFrameTask(scoped_refptr<VASurface> va_surface,
@@ -504,9 +493,21 @@ void VaapiVideoDecoder::Reset(base::OnceClosure reset_cb) {
     return;
   }
 
-  // Put the decoder in an idle state, ready to resume. This will release all
-  // VASurfaces currently held, so |output_frames_| should be empty after reset.
-  decoder_->Reset();
+  if (state_ == State::kChangingResolution) {
+    // If we reset during resolution change, re-create AVD. Then the new AVD
+    // will trigger resolution change again after reset.
+    if (!CreateAcceleratedVideoDecoder()) {
+      SetState(State::kError);
+      std::move(reset_cb).Run();
+      return;
+    }
+  } else {
+    // Put the decoder in an idle state, ready to resume. This will release all
+    // VASurfaces currently held, so |output_frames_| should be empty after
+    // reset.
+    decoder_->Reset();
+  }
+
   DCHECK(output_frames_.empty());
   SetState(State::kResetting);
 
@@ -514,6 +515,30 @@ void VaapiVideoDecoder::Reset(base::OnceClosure reset_cb) {
   decoder_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VaapiVideoDecoder::ResetDoneTask, weak_this_,
                                 std::move(reset_cb)));
+}
+
+bool VaapiVideoDecoder::CreateAcceleratedVideoDecoder() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DVLOGF(3);
+
+  pic_size_ = gfx::Size();
+
+  if (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX) {
+    decoder_.reset(new H264Decoder(
+        std::make_unique<VaapiH264Accelerator>(this, vaapi_wrapper_), profile_,
+        color_space_));
+  } else if (profile_ >= VP8PROFILE_MIN && profile_ <= VP8PROFILE_MAX) {
+    decoder_.reset(new VP8Decoder(
+        std::make_unique<VaapiVP8Accelerator>(this, vaapi_wrapper_)));
+  } else if (profile_ >= VP9PROFILE_MIN && profile_ <= VP9PROFILE_MAX) {
+    decoder_.reset(new VP9Decoder(
+        std::make_unique<VaapiVP9Accelerator>(this, vaapi_wrapper_), profile_,
+        color_space_));
+  } else {
+    VLOGF(1) << "Unsupported profile " << GetProfileName(profile_);
+    return false;
+  }
+  return true;
 }
 
 void VaapiVideoDecoder::ResetDoneTask(base::OnceClosure reset_cb) {
@@ -549,12 +574,16 @@ void VaapiVideoDecoder::SetState(State state) {
       break;
     case State::kDecoding:
       DCHECK(state_ == State::kWaitingForInput ||
-             state_ == State::kWaitingForOutput);
+             state_ == State::kWaitingForOutput ||
+             state_ == State::kChangingResolution);
       break;
     case State::kResetting:
       DCHECK(state_ == State::kWaitingForInput ||
              state_ == State::kWaitingForOutput || state_ == State::kDecoding);
       ClearDecodeTaskQueue(DecodeStatus::ABORTED);
+      break;
+    case State::kChangingResolution:
+      DCHECK_EQ(state_, State::kDecoding);
       break;
     case State::kError:
       ClearDecodeTaskQueue(DecodeStatus::DECODE_ERROR);

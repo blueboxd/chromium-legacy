@@ -108,7 +108,8 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
                                    content::RenderFrameHost* render_frame_host,
                                    const Extension* extension) const override;
   void RegisterBrowserInterfaceBindersForFrame(
-      service_manager::BinderMapWithContext<content::RenderFrameHost*>* map,
+      service_manager::BinderMapWithContext<content::RenderFrameHost*>*
+          binder_map,
       content::RenderFrameHost* render_frame_host,
       const Extension* extension) const override;
   std::unique_ptr<RuntimeAPIDelegate> CreateRuntimeAPIDelegate(

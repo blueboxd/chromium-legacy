@@ -24,6 +24,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 
+using ::testing::Property;
+
 namespace arc {
 
 namespace {
@@ -1011,9 +1013,10 @@ TEST_F(ArcExternalProtocolDialogTestUtils, TestSelectDeviceForTelLink) {
   std::vector<std::unique_ptr<syncer::DeviceInfo>> devices;
   devices.push_back(CreateSharingDevice(device_guid));
 
-  EXPECT_CALL(*sharing_service,
-              SendMessageToDevice(testing::Eq(device_guid), testing::_,
-                                  testing::_, testing::_));
+  EXPECT_CALL(
+      *sharing_service,
+      SendMessageToDevice(Property(&syncer::DeviceInfo::guid, device_guid),
+                          testing::_, testing::_, testing::_));
 
   OnIntentPickerClosedForTesting(
       rvh->GetProcess()->GetID(), rvh->GetRoutingID(), GURL("tel:0123456789"),

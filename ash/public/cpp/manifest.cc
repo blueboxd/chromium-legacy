@@ -8,7 +8,6 @@
 #include "ash/public/mojom/assistant_volume_control.mojom.h"
 #include "ash/public/mojom/constants.mojom.h"
 #include "ash/public/mojom/cros_display_config.mojom.h"
-#include "ash/public/mojom/ime_controller.mojom.h"
 #include "ash/public/mojom/tray_action.mojom.h"
 #include "base/no_destructor.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -33,10 +32,10 @@ const service_manager::Manifest& GetManifest() {
                                service_manager::Manifest::
                                    InstanceSharingPolicy::kSingleton)
                            .Build())
-          .ExposeCapability("system_ui",
-                            service_manager::Manifest::InterfaceList<
-                                mojom::CrosDisplayConfigController,
-                                mojom::ImeController, mojom::TrayAction>())
+          .ExposeCapability(
+              "system_ui",
+              service_manager::Manifest::InterfaceList<
+                  mojom::CrosDisplayConfigController, mojom::TrayAction>())
           .RequireCapability("*", "accessibility")
           .RequireCapability("*", "app")
           .RequireCapability(device::mojom::kServiceName,

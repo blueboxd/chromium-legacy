@@ -58,7 +58,7 @@ class BuildBucketApiGpuUseCaseTests:
     extracted_times, _ = gather_swarming_json_results.GatherResults(
         bot='Linux FYI Release (NVIDIA)',
         build=None, # Use the latest green build
-        step='webgl2_conformance_tests')
+        step='webgl2_conformance_validating_tests')
 
     if 'times' not in extracted_times:
       return '"times" is missing from the extracted dict'

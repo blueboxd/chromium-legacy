@@ -1838,14 +1838,11 @@ HitTestLayerRectList* Internals::touchEventTargetLayerRects(
 
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     auto* pac = document->View()->GetPaintArtifactCompositor();
-    pac->EnableExtraDataForTesting();
     document->View()->UpdateAllLifecyclePhases(
         DocumentLifecycle::LifecycleUpdateReason::kTest);
 
-    const auto& content_layers = pac->GetExtraDataForTesting()->content_layers;
-
     auto* hit_test_rects = MakeGarbageCollected<HitTestLayerRectList>();
-    for (const auto& layer : content_layers) {
+    for (const auto& layer : pac->RootLayer()->children()) {
       const cc::TouchActionRegion& touch_action_region =
           layer->touch_action_region();
       if (!touch_action_region.GetAllRegions().IsEmpty()) {

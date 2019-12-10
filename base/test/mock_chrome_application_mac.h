@@ -19,7 +19,7 @@
 @interface MockCrApp : NSApplication<CrAppProtocol,
                                      CrAppControlProtocol> {
  @private
-  BOOL handlingSendEvent_;
+  BOOL _handlingSendEvent;
 }
 @end
 

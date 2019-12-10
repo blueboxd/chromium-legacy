@@ -14,7 +14,25 @@
 <dom-module id="settings-crostini-subpage">
   <template>
     <style include="settings-shared"></style>
+    <template is="dom-if" if="[[showCrostiniContainerUpgrade_]]">
+      <div id="container-upgrade" class="settings-box first">
+        <!-- TODO(davidmunro): Add Icon from
+             https://docs.google.com/presentation/d/1cBU0TnQhuorL69NmifWJ1OzLMsu9dihw64Jo031jUZ4/edit#slide=id.g6b38a81213_0_0
+          --->
+        <div id="containerUpgradeLabel" class="start">
+          $i18n{crostiniContainerUpgrade}
+          <div class="secondary" id="secondaryText">
+            $i18n{crostiniContainerUpgradeSubtext}
+          </div>
+        </div>
+        <cr-button on-click="onContainerUpgradeClick_"
+            aria-labelledby="upgradeCrostiniLabel">
+          $i18n{crostiniContainerUpgradeButton}
+        </cr-button>
+      </div>
+    </template>
     <cr-link-row
+        class="hr"
         id="crostini-shared-paths"
         label="$i18n{crostiniSharedPaths}"
         on-click="onSharedPathsClick_"
@@ -49,8 +67,8 @@
       <div id="remove" class="settings-box">
         <div id="removeCrostiniLabel" class="start">$i18n{crostiniRemove}</div>
         <cr-button on-click="onRemoveClick_"
-          aria-labelledby="removeCrostiniLabel">
-           $i18n{crostiniRemoveButton}
+            aria-labelledby="removeCrostiniLabel">
+          $i18n{crostiniRemoveButton}
         </cr-button>
       </div>
     </template>

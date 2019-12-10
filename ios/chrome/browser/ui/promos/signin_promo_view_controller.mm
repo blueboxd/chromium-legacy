@@ -81,7 +81,8 @@ NSSet* GaiaIdSetWithIdentities(NSArray* identities) {
 }
 
 - (instancetype)initWithBrowser:(Browser*)browser
-                     dispatcher:(id<ApplicationCommands>)dispatcher {
+                     dispatcher:(id<ApplicationCommands, BrowsingDataCommands>)
+                                    dispatcher {
   self = [super
       initWithBrowser:browser
           accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_SIGNIN_PROMO

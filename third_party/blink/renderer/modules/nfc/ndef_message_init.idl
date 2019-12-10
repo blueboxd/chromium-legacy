@@ -5,6 +5,5 @@
 // https://w3c.github.io/web-nfc/#dom-ndefmessageinit
 
 dictionary NDEFMessageInit {
-    USVString url;
     sequence<NDEFRecordInit> records;
 };

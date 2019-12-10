@@ -198,7 +198,7 @@ class AUHALStream : public AudioOutputStream {
   int glitches_detected_;
 
   // Used to defer Start() to workaround http://crbug.com/160920.
-  base::CancelableClosure deferred_start_cb_;
+  base::CancelableOnceClosure deferred_start_cb_;
 
   // Callback to send statistics info.
   AudioManager::LogCallback log_callback_;

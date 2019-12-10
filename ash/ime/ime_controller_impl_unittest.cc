@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/ime/ime_controller.h"
+#include "ash/ime/ime_controller_impl.h"
 
 #include <vector>
 
 #include "ash/ime/mode_indicator_observer.h"
 #include "ash/ime/test_ime_controller_client.h"
-#include "ash/public/mojom/ime_info.mojom.h"
+#include "ash/public/cpp/ime_info.h"
 #include "ash/shell.h"
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -32,16 +32,16 @@ const int kInnerSize = 43;
 void RefreshImesWithMenuItems(const std::string& current_ime_id,
                               const std::vector<std::string>& ime_ids,
                               const std::vector<std::string>& menu_item_keys) {
-  std::vector<mojom::ImeInfoPtr> available_imes;
+  std::vector<ImeInfo> available_imes;
   for (const std::string& ime_id : ime_ids) {
-    mojom::ImeInfoPtr ime = mojom::ImeInfo::New();
-    ime->id = ime_id;
+    ImeInfo ime;
+    ime.id = ime_id;
     available_imes.push_back(std::move(ime));
   }
-  std::vector<mojom::ImeMenuItemPtr> menu_items;
+  std::vector<ImeMenuItem> menu_items;
   for (const std::string& menu_item_key : menu_item_keys) {
-    mojom::ImeMenuItemPtr item = mojom::ImeMenuItem::New();
-    item->key = menu_item_key;
+    ImeMenuItem item;
+    item.key = menu_item_key;
     menu_items.push_back(std::move(item));
   }
   Shell::Get()->ime_controller()->RefreshIme(
@@ -70,7 +70,7 @@ class TestImeObserver : public IMEObserver {
   bool ime_menu_active_ = false;
 };
 
-class TestImeControllerObserver : public ImeController::Observer {
+class TestImeControllerObserver : public ImeControllerImpl::Observer {
  public:
   TestImeControllerObserver() = default;
 
@@ -91,10 +91,10 @@ class TestImeControllerObserver : public ImeController::Observer {
   DISALLOW_COPY_AND_ASSIGN(TestImeControllerObserver);
 };
 
-using ImeControllerTest = AshTestBase;
+using ImeControllerImplTest = AshTestBase;
 
-TEST_F(ImeControllerTest, RefreshIme) {
-  ImeController* controller = Shell::Get()->ime_controller();
+TEST_F(ImeControllerImplTest, RefreshIme) {
+  ImeControllerImpl* controller = Shell::Get()->ime_controller();
   TestImeObserver observer;
   Shell::Get()->system_tray_notifier()->AddIMEObserver(&observer);
 
@@ -112,8 +112,8 @@ TEST_F(ImeControllerTest, RefreshIme) {
   EXPECT_EQ(1, observer.refresh_count_);
 }
 
-TEST_F(ImeControllerTest, NoCurrentIme) {
-  ImeController* controller = Shell::Get()->ime_controller();
+TEST_F(ImeControllerImplTest, NoCurrentIme) {
+  ImeControllerImpl* controller = Shell::Get()->ime_controller();
 
   // Set up a single IME.
   RefreshImes("ime1", {"ime1"});
@@ -125,8 +125,8 @@ TEST_F(ImeControllerTest, NoCurrentIme) {
   EXPECT_TRUE(controller->current_ime().id.empty());
 }
 
-TEST_F(ImeControllerTest, SetImesManagedByPolicy) {
-  ImeController* controller = Shell::Get()->ime_controller();
+TEST_F(ImeControllerImplTest, SetImesManagedByPolicy) {
+  ImeControllerImpl* controller = Shell::Get()->ime_controller();
   TestImeObserver observer;
   Shell::Get()->system_tray_notifier()->AddIMEObserver(&observer);
 
@@ -139,8 +139,8 @@ TEST_F(ImeControllerTest, SetImesManagedByPolicy) {
   EXPECT_EQ(1, observer.refresh_count_);
 }
 
-TEST_F(ImeControllerTest, ShowImeMenuOnShelf) {
-  ImeController* controller = Shell::Get()->ime_controller();
+TEST_F(ImeControllerImplTest, ShowImeMenuOnShelf) {
+  ImeControllerImpl* controller = Shell::Get()->ime_controller();
   TestImeObserver observer;
   Shell::Get()->system_tray_notifier()->AddIMEObserver(&observer);
 
@@ -148,8 +148,8 @@ TEST_F(ImeControllerTest, ShowImeMenuOnShelf) {
   EXPECT_TRUE(observer.ime_menu_active_);
 }
 
-TEST_F(ImeControllerTest, CanSwitchIme) {
-  ImeController* controller = Shell::Get()->ime_controller();
+TEST_F(ImeControllerImplTest, CanSwitchIme) {
+  ImeControllerImpl* controller = Shell::Get()->ime_controller();
 
   // Can't switch IMEs when none are available.
   ASSERT_EQ(0u, controller->available_imes().size());
@@ -164,8 +164,8 @@ TEST_F(ImeControllerTest, CanSwitchIme) {
   EXPECT_TRUE(controller->CanSwitchIme());
 }
 
-TEST_F(ImeControllerTest, SwitchIme) {
-  ImeController* controller = Shell::Get()->ime_controller();
+TEST_F(ImeControllerImplTest, SwitchIme) {
+  ImeControllerImpl* controller = Shell::Get()->ime_controller();
   TestImeControllerClient client;
 
   // Can't switch IME before the client is set.
@@ -179,32 +179,28 @@ TEST_F(ImeControllerTest, SwitchIme) {
   EXPECT_EQ(0, client.switch_ime_count_);
 
   // After setting the client the requests are forwarded.
-  controller->SetClient(client.CreateRemote());
+  controller->SetClient(&client);
   controller->SwitchToNextIme();
-  controller->FlushMojoForTesting();
   EXPECT_EQ(1, client.next_ime_count_);
 
   controller->SwitchToLastUsedIme();
-  controller->FlushMojoForTesting();
   EXPECT_EQ(1, client.last_used_ime_count_);
 
   controller->SwitchImeById("ime1", true /* show_message */);
-  controller->FlushMojoForTesting();
   EXPECT_EQ(1, client.switch_ime_count_);
   EXPECT_EQ("ime1", client.last_switch_ime_id_);
   EXPECT_TRUE(client.last_show_message_);
 
   controller->SwitchImeById("ime2", false /* show_message */);
-  controller->FlushMojoForTesting();
   EXPECT_EQ(2, client.switch_ime_count_);
   EXPECT_EQ("ime2", client.last_switch_ime_id_);
   EXPECT_FALSE(client.last_show_message_);
 }
 
-TEST_F(ImeControllerTest, SwitchImeWithAccelerator) {
-  ImeController* controller = Shell::Get()->ime_controller();
+TEST_F(ImeControllerImplTest, SwitchImeWithAccelerator) {
+  ImeControllerImpl* controller = Shell::Get()->ime_controller();
   TestImeControllerClient client;
-  controller->SetClient(client.CreateRemote());
+  controller->SetClient(&client);
 
   const ui::Accelerator convert(ui::VKEY_CONVERT, ui::EF_NONE);
   const ui::Accelerator non_convert(ui::VKEY_NONCONVERT, ui::EF_NONE);
@@ -239,52 +235,44 @@ TEST_F(ImeControllerTest, SwitchImeWithAccelerator) {
 
   // Convert keys jump directly to the requested IME.
   controller->SwitchImeWithAccelerator(convert);
-  controller->FlushMojoForTesting();
   EXPECT_EQ(1, client.switch_ime_count_);
   EXPECT_EQ(nacl_mozc_jp, client.last_switch_ime_id_);
 
   controller->SwitchImeWithAccelerator(non_convert);
-  controller->FlushMojoForTesting();
   EXPECT_EQ(2, client.switch_ime_count_);
   EXPECT_EQ(xkb_jp_jpn, client.last_switch_ime_id_);
 
   // Switch from nacl_mozc_jp to xkb_jp_jpn.
   RefreshImes(nacl_mozc_jp, {"ime1", nacl_mozc_jp, xkb_jp_jpn});
   controller->SwitchImeWithAccelerator(wide_half_1);
-  controller->FlushMojoForTesting();
   EXPECT_EQ(3, client.switch_ime_count_);
   EXPECT_EQ(xkb_jp_jpn, client.last_switch_ime_id_);
 
   // Switch from xkb_jp_jpn to nacl_mozc_jp.
   RefreshImes(xkb_jp_jpn, {"ime1", nacl_mozc_jp, xkb_jp_jpn});
   controller->SwitchImeWithAccelerator(wide_half_2);
-  controller->FlushMojoForTesting();
   EXPECT_EQ(4, client.switch_ime_count_);
   EXPECT_EQ(nacl_mozc_jp, client.last_switch_ime_id_);
 }
 
-TEST_F(ImeControllerTest, SetCapsLock) {
-  ImeController* controller = Shell::Get()->ime_controller();
+TEST_F(ImeControllerImplTest, SetCapsLock) {
+  ImeControllerImpl* controller = Shell::Get()->ime_controller();
   TestImeControllerClient client;
   EXPECT_EQ(0, client.set_caps_lock_count_);
 
   controller->SetCapsLockEnabled(true);
   EXPECT_EQ(0, client.set_caps_lock_count_);
 
-  controller->SetClient(client.CreateRemote());
+  controller->SetClient(&client);
 
   controller->SetCapsLockEnabled(true);
-  controller->FlushMojoForTesting();
   EXPECT_EQ(1, client.set_caps_lock_count_);
   // Does not no-op when the state is the same. Should send all notifications.
   controller->SetCapsLockEnabled(true);
-  controller->FlushMojoForTesting();
   EXPECT_EQ(2, client.set_caps_lock_count_);
   controller->SetCapsLockEnabled(false);
-  controller->FlushMojoForTesting();
   EXPECT_EQ(3, client.set_caps_lock_count_);
   controller->SetCapsLockEnabled(false);
-  controller->FlushMojoForTesting();
   EXPECT_EQ(4, client.set_caps_lock_count_);
 
   EXPECT_FALSE(controller->IsCapsLockEnabled());
@@ -294,8 +282,8 @@ TEST_F(ImeControllerTest, SetCapsLock) {
   EXPECT_FALSE(controller->IsCapsLockEnabled());
 }
 
-TEST_F(ImeControllerTest, OnKeyboardLayoutNameChanged) {
-  ImeController* controller = Shell::Get()->ime_controller();
+TEST_F(ImeControllerImplTest, OnKeyboardLayoutNameChanged) {
+  ImeControllerImpl* controller = Shell::Get()->ime_controller();
   EXPECT_TRUE(controller->keyboard_layout_name().empty());
 
   TestImeControllerObserver observer;
@@ -305,8 +293,8 @@ TEST_F(ImeControllerTest, OnKeyboardLayoutNameChanged) {
   EXPECT_EQ("us(dvorak)", observer.last_keyboard_layout_name());
 }
 
-TEST_F(ImeControllerTest, ShowModeIndicator) {
-  ImeController* controller = Shell::Get()->ime_controller();
+TEST_F(ImeControllerImplTest, ShowModeIndicator) {
+  ImeControllerImpl* controller = Shell::Get()->ime_controller();
   base::string16 text = base::ASCIIToUTF16("US");
 
   gfx::Rect cursor1_bounds(100, 100, 1, 20);
@@ -354,25 +342,22 @@ TEST_F(ImeControllerTest, ShowModeIndicator) {
   EXPECT_LT(bounds3.bottom(), screen_bounds.bottom());
 }
 
-TEST_F(ImeControllerTest, MirroringChanged) {
+TEST_F(ImeControllerImplTest, MirroringChanged) {
   UpdateDisplay("500x500,500x500");
   // The controller is already an observer of the display_manager
-  ImeController* controller = Shell::Get()->ime_controller();
+  ImeControllerImpl* controller = Shell::Get()->ime_controller();
   TestImeControllerClient client;
-  controller->SetClient(client.CreateRemote());
+  controller->SetClient(&client);
 
   display::DisplayManager* display_manager = Shell::Get()->display_manager();
   display_manager->SetMultiDisplayMode(display::DisplayManager::MIRRORING);
   display_manager->UpdateDisplays();
-  controller->FlushMojoForTesting();
   EXPECT_TRUE(client.is_mirroring_);
 
   UpdateDisplay("500x500");
-  controller->FlushMojoForTesting();
   EXPECT_FALSE(client.is_mirroring_);
 
   UpdateDisplay("500x500,500x500");
-  controller->FlushMojoForTesting();
   EXPECT_TRUE(client.is_mirroring_);
 }
 

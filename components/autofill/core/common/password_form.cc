@@ -121,21 +121,21 @@ bool PasswordForm::IsPossibleChangePasswordFormWithoutUsername() const {
 }
 
 bool PasswordForm::HasUsernameElement() const {
-  return has_renderer_ids ? username_element_renderer_id !=
-                                FormFieldData::kNotSetFormControlRendererId
-                          : !username_element.empty();
+  return has_renderer_ids
+             ? username_element_renderer_id != FormData::kNotSetRendererId
+             : !username_element.empty();
 }
 
 bool PasswordForm::HasPasswordElement() const {
-  return has_renderer_ids ? password_element_renderer_id !=
-                                FormFieldData::kNotSetFormControlRendererId
-                          : !password_element.empty();
+  return has_renderer_ids
+             ? password_element_renderer_id != FormData::kNotSetRendererId
+             : !password_element.empty();
 }
 
 bool PasswordForm::HasNewPasswordElement() const {
-  return has_renderer_ids ? new_password_element_renderer_id !=
-                                FormFieldData::kNotSetFormControlRendererId
-                          : !new_password_element.empty();
+  return has_renderer_ids
+             ? new_password_element_renderer_id != FormData::kNotSetRendererId
+             : !new_password_element.empty();
 }
 
 bool PasswordForm::IsFederatedCredential() const {

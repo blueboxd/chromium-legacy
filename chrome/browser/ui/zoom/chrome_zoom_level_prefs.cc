@@ -239,6 +239,7 @@ void ChromeZoomLevelPrefs::InitHostZoomMap(
     ExtractPerHostZoomLevels(host_zoom_dictionary,
                              true /* sanitize_partition_host_zoom_levels */);
   }
-  zoom_subscription_ = host_zoom_map_->AddZoomLevelChangedCallback(base::Bind(
-      &ChromeZoomLevelPrefs::OnZoomLevelChanged, base::Unretained(this)));
+  zoom_subscription_ =
+      host_zoom_map_->AddZoomLevelChangedCallback(base::BindRepeating(
+          &ChromeZoomLevelPrefs::OnZoomLevelChanged, base::Unretained(this)));
 }

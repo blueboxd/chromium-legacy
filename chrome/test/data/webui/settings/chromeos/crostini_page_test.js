@@ -45,6 +45,9 @@ suite('CrostiniPageTests', function() {
   suite('Main Page', function() {
     setup(function() {
       setCrostiniPrefs(false);
+      loadTimeData.overrideValues({
+        showCrostiniContainerUpgrade: true,
+      });
     });
 
     test('Enable', function() {
@@ -130,6 +133,7 @@ suite('CrostiniPageTests', function() {
       assertTrue(!!subpage.$$('#crostini-shared-usb-devices'));
       assertTrue(!!subpage.$$('#crostini-export-import'));
       assertTrue(!!subpage.$$('#remove'));
+      assertTrue(!!subpage.$$('#container-upgrade'));
     });
 
     test('SharedPaths', function() {
@@ -139,6 +143,15 @@ suite('CrostiniPageTests', function() {
         subpage = crostiniPage.$$('settings-crostini-shared-paths');
         assertTrue(!!subpage);
       });
+    });
+
+    test('ContainerUpgrade', function() {
+      assertTrue(!!subpage.$$('#container-upgrade cr-button'));
+      subpage.$$('#container-upgrade cr-button').click();
+      assertEquals(
+          1,
+          crostiniBrowserProxy.getCallCount(
+              'requestCrostiniContainerUpgradeView'));
     });
 
     test('Export', function() {

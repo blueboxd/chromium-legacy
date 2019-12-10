@@ -5,9 +5,9 @@
 #include "ash/system/ime_menu/ime_menu_tray.h"
 
 #include "ash/accelerators/accelerator_controller_impl.h"
-#include "ash/ime/ime_controller.h"
+#include "ash/ime/ime_controller_impl.h"
 #include "ash/ime/test_ime_controller_client.h"
-#include "ash/public/mojom/ime_info.mojom.h"
+#include "ash/public/cpp/ime_info.h"
 #include "ash/shell.h"
 #include "ash/system/ime_menu/ime_list_view.h"
 #include "ash/system/status_area_widget.h"
@@ -34,13 +34,13 @@ ImeMenuTray* GetTray() {
 }
 
 void SetCurrentIme(const std::string& current_ime_id,
-                   const std::vector<mojom::ImeInfo>& available_imes) {
-  std::vector<mojom::ImeInfoPtr> available_ime_ptrs;
+                   const std::vector<ImeInfo>& available_imes) {
+  std::vector<ImeInfo> available_ime_ptrs;
   for (const auto& ime : available_imes)
-    available_ime_ptrs.push_back(ime.Clone());
-  Shell::Get()->ime_controller()->RefreshIme(
-      current_ime_id, std::move(available_ime_ptrs),
-      std::vector<mojom::ImeMenuItemPtr>());
+    available_ime_ptrs.push_back(ime);
+  Shell::Get()->ime_controller()->RefreshIme(current_ime_id,
+                                             std::move(available_ime_ptrs),
+                                             std::vector<ImeMenuItem>());
 }
 
 }  // namespace
@@ -78,8 +78,8 @@ class ImeMenuTrayTest : public AshTestBase {
   }
 
   // Verifies the IME menu list has been updated with the right IME list.
-  void ExpectValidImeList(const std::vector<mojom::ImeInfo>& expected_imes,
-                          const mojom::ImeInfo& expected_current_ime) {
+  void ExpectValidImeList(const std::vector<ImeInfo>& expected_imes,
+                          const ImeInfo& expected_current_ime) {
     const std::map<views::View*, std::string>& ime_map =
         ImeListViewTestApi(GetTray()->ime_list_view_).ime_map();
     EXPECT_EQ(expected_imes.size(), ime_map.size());
@@ -132,14 +132,14 @@ TEST_F(ImeMenuTrayTest, TrayLabelTest) {
   Shell::Get()->ime_controller()->ShowImeMenuOnShelf(true);
   ASSERT_TRUE(IsVisible());
 
-  mojom::ImeInfo info1;
+  ImeInfo info1;
   info1.id = "ime1";
   info1.name = UTF8ToUTF16("English");
   info1.medium_name = UTF8ToUTF16("English");
   info1.short_name = UTF8ToUTF16("US");
   info1.third_party = false;
 
-  mojom::ImeInfo info2;
+  ImeInfo info2;
   info2.id = "ime2";
   info2.name = UTF8ToUTF16("English UK");
   info2.medium_name = UTF8ToUTF16("English UK");
@@ -202,7 +202,7 @@ TEST_F(ImeMenuTrayTest, RefreshImeWithListViewCreated) {
   EXPECT_TRUE(IsTrayBackgroundActive());
   EXPECT_TRUE(IsBubbleShown());
 
-  mojom::ImeInfo info1, info2, info3;
+  ImeInfo info1, info2, info3;
   info1.id = "ime1";
   info1.name = UTF8ToUTF16("English");
   info1.medium_name = UTF8ToUTF16("English");
@@ -221,7 +221,7 @@ TEST_F(ImeMenuTrayTest, RefreshImeWithListViewCreated) {
   info3.short_name = UTF8ToUTF16("拼");
   info3.third_party = false;
 
-  std::vector<mojom::ImeInfo> ime_info_list{info1, info2, info3};
+  std::vector<ImeInfo> ime_info_list{info1, info2, info3};
 
   // Switch to ime1.
   SetCurrentIme("ime1", ime_info_list);
@@ -282,9 +282,8 @@ TEST_F(ImeMenuTrayTest, ShowingEmojiKeysetHidesBubble) {
   EXPECT_TRUE(IsBubbleShown());
 
   TestImeControllerClient client;
-  Shell::Get()->ime_controller()->SetClient(client.CreateRemote());
-  GetTray()->ShowKeyboardWithKeyset(
-      chromeos::input_method::mojom::ImeKeyset::kEmoji);
+  Shell::Get()->ime_controller()->SetClient(&client);
+  GetTray()->ShowKeyboardWithKeyset(chromeos::input_method::ImeKeyset::kEmoji);
 
   // The menu should be hidden.
   EXPECT_FALSE(IsBubbleShown());

@@ -545,10 +545,10 @@ void ChromeMetricsServiceClient::OnLogCleanShutdown() {
 }
 
 void ChromeMetricsServiceClient::CollectFinalMetricsForLog(
-    const base::Closure& done_callback) {
+    base::OnceClosure done_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  collect_final_metrics_done_callback_ = done_callback;
+  collect_final_metrics_done_callback_ = std::move(done_callback);
   CollectFinalHistograms();
 }
 
@@ -814,12 +814,12 @@ void ChromeMetricsServiceClient::CollectFinalHistograms() {
   DCHECK(!waiting_for_collect_final_metrics_step_);
   waiting_for_collect_final_metrics_step_ = true;
 
-  base::Closure callback =
-      base::Bind(&ChromeMetricsServiceClient::OnMemoryDetailCollectionDone,
-                 weak_ptr_factory_.GetWeakPtr());
+  base::OnceClosure callback =
+      base::BindOnce(&ChromeMetricsServiceClient::OnMemoryDetailCollectionDone,
+                     weak_ptr_factory_.GetWeakPtr());
 
-  scoped_refptr<MetricsMemoryDetails> details(
-      new MetricsMemoryDetails(callback));
+  auto details =
+      base::MakeRefCounted<MetricsMemoryDetails>(std::move(callback));
   details->StartFetch();
 }
 
@@ -831,7 +831,7 @@ void ChromeMetricsServiceClient::OnMemoryDetailCollectionDone() {
   DCHECK(waiting_for_collect_final_metrics_step_);
 
   // Create a callback_task for OnHistogramSynchronizationDone.
-  base::Closure callback = base::Bind(
+  base::RepeatingClosure callback = base::BindRepeating(
       &ChromeMetricsServiceClient::OnHistogramSynchronizationDone,
       weak_ptr_factory_.GetWeakPtr());
 
@@ -865,7 +865,7 @@ void ChromeMetricsServiceClient::OnMemoryDetailCollectionDone() {
   // child processes. |timeout| specifies how long to wait before absolutely
   // calling us back on the task.
   content::FetchHistogramsAsynchronously(base::ThreadTaskRunnerHandle::Get(),
-                                         callback, timeout);
+                                         std::move(callback), timeout);
 }
 
 void ChromeMetricsServiceClient::OnHistogramSynchronizationDone() {
@@ -881,7 +881,7 @@ void ChromeMetricsServiceClient::OnHistogramSynchronizationDone() {
     return;
 
   waiting_for_collect_final_metrics_step_ = false;
-  collect_final_metrics_done_callback_.Run();
+  std::move(collect_final_metrics_done_callback_).Run();
 }
 
 void ChromeMetricsServiceClient::RecordCommandLineMetrics() {

@@ -116,9 +116,9 @@ void MediaPerceptionAPIDelegateChromeOS::SetMediaPerceptionRequestHandler(
 }
 
 void MediaPerceptionAPIDelegateChromeOS::ForwardMediaPerceptionReceiver(
+    content::RenderFrameHost* render_frame_host,
     mojo::PendingReceiver<chromeos::media_perception::mojom::MediaPerception>
-        receiver,
-    content::RenderFrameHost* render_frame_host) {
+        receiver) {
   if (!handler_) {
     DLOG(ERROR) << "Got receiver but the handler is not set.";
     return;

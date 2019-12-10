@@ -16,10 +16,10 @@ const char kExtensionsCheckupEntryPointParameter[] = "entry_point";
 const char kExtensionsCheckupBannerMessageParameter[] = "banner_message_type";
 
 // Constants for ExtensionsCheckup parameters.
-// Indicates that the user should be shown the chrome://extensions page on 
+// Indicates that the user should be shown the chrome://extensions page on
 // startup.
 const char kStartupEntryPoint[] = "startup";
-// Indicates that the user should be shown a promo on the NTP leading to the 
+// Indicates that the user should be shown a promo on the NTP leading to the
 // chrome://extensions page.
 const char kNtpPromoEntryPoint[] = "promo";
 // Indicates the focus of the message shown on chrome://the extensions page

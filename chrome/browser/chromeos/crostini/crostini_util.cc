@@ -342,6 +342,11 @@ bool ShouldConfigureDefaultContainer(Profile* profile) {
          !ansible_playbook_file_path.empty();
 }
 
+// TODO(davidmunro): Answer based on flag and current container version.
+bool ShouldAllowContainerUpgrade() {
+  return false;
+}
+
 void LaunchCrostiniApp(Profile* profile,
                        const std::string& app_id,
                        int64_t display_id) {

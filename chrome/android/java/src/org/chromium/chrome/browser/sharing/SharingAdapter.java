@@ -67,7 +67,7 @@ public class SharingAdapter extends BaseAdapter {
 
             long numDaysDeviceActive =
                     TimeUnit.MILLISECONDS.toDays(Calendar.getInstance().getTimeInMillis()
-                            - deviceInfo.lastUpdatedTimestampMilliseconds);
+                            - deviceInfo.lastUpdatedTimestampMillis);
             lastActive.setText(getLastActiveMessage(context.getResources(), numDaysDeviceActive));
         }
         return convertView;

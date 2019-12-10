@@ -50,7 +50,8 @@
                  firstRunConfig:(FirstRunConfiguration*)firstRunConfig
                  signInIdentity:(ChromeIdentity*)identity
                       presenter:(id<SyncPresenter>)presenter
-                     dispatcher:(id<ApplicationCommands>)dispatcher {
+                     dispatcher:(id<ApplicationCommands, BrowsingDataCommands>)
+                                    dispatcher {
   DCHECK(browser);
   self = [super
       initWithBrowser:browser
@@ -176,7 +177,8 @@
     // Save a reference to the presentingViewController since this view
     // controller will be dismissed.
     __weak UIViewController* baseViewController = self.presentingViewController;
-    __weak id<ApplicationCommands> dispatcher = self.dispatcher;
+    __weak id<ApplicationCommands, BrowsingDataCommands> dispatcher =
+        self.dispatcher;
     completion = ^{
       [dispatcher
           showAdvancedSigninSettingsFromViewController:baseViewController];

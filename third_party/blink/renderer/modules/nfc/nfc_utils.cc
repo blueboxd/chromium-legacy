@@ -9,33 +9,18 @@
 
 #include "services/device/public/mojom/nfc.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/modules/nfc/nfc_type_converters.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 using device::mojom::blink::NDEFPushTarget;
 
 namespace blink {
 
 size_t GetNDEFMessageSize(const device::mojom::blink::NDEFMessage& message) {
-  size_t message_size = message.url.CharactersSizeInBytes();
+  size_t message_size = 0;
   for (wtf_size_t i = 0; i < message.data.size(); ++i) {
     message_size += message.data[i]->media_type.CharactersSizeInBytes();
     message_size += message.data[i]->data.size();
   }
   return message_size;
-}
-
-bool SetNDEFMessageURL(const String& origin,
-                       device::mojom::blink::NDEFMessage* message) {
-  KURL origin_url(origin);
-
-  if (!message->url.IsEmpty() && origin_url.CanSetPathname()) {
-    origin_url.SetPath(message->url);
-  }
-
-  message->url = origin_url;
-  return origin_url.IsValid();
 }
 
 NDEFPushTarget StringToNDEFPushTarget(const String& target) {

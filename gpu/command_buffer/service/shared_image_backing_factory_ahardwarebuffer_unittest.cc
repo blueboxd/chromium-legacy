@@ -80,10 +80,10 @@ class SharedImageBackingFactoryAHBTest : public testing::Test {
     EXPECT_TRUE(skia_representation);
     std::vector<GrBackendSemaphore> begin_semaphores;
     std::vector<GrBackendSemaphore> end_semaphores;
-    base::Optional<SharedImageRepresentationSkia::ScopedReadAccess>
+    std::unique_ptr<SharedImageRepresentationSkia::ScopedReadAccess>
         scoped_read_access;
-    scoped_read_access.emplace(skia_representation.get(), &begin_semaphores,
-                               &end_semaphores);
+    scoped_read_access = skia_representation->BeginScopedReadAccess(
+        &begin_semaphores, &end_semaphores);
     auto* promise_texture = scoped_read_access->promise_image_texture();
     EXPECT_EQ(0u, begin_semaphores.size());
     EXPECT_EQ(0u, end_semaphores.size());
@@ -164,11 +164,11 @@ TEST_F(SharedImageBackingFactoryAHBTest, Basic) {
   EXPECT_TRUE(skia_representation);
   std::vector<GrBackendSemaphore> begin_semaphores;
   std::vector<GrBackendSemaphore> end_semaphores;
-  base::Optional<SharedImageRepresentationSkia::ScopedWriteAccess>
+  std::unique_ptr<SharedImageRepresentationSkia::ScopedWriteAccess>
       scoped_write_access;
-  scoped_write_access.emplace(skia_representation.get(), &begin_semaphores,
-                              &end_semaphores);
-  EXPECT_TRUE(scoped_write_access->success());
+  scoped_write_access = skia_representation->BeginScopedWriteAccess(
+      &begin_semaphores, &end_semaphores);
+  EXPECT_TRUE(scoped_write_access);
   auto* surface = scoped_write_access->surface();
   EXPECT_TRUE(surface);
   EXPECT_EQ(gl_legacy_shared_image.size().width(), surface->width());
@@ -177,10 +177,11 @@ TEST_F(SharedImageBackingFactoryAHBTest, Basic) {
   EXPECT_EQ(0u, end_semaphores.size());
   scoped_write_access.reset();
 
-  base::Optional<SharedImageRepresentationSkia::ScopedReadAccess>
+  std::unique_ptr<SharedImageRepresentationSkia::ScopedReadAccess>
       scoped_read_access;
-  scoped_read_access.emplace(skia_representation.get(), &begin_semaphores,
-                             &end_semaphores);
+  scoped_read_access = skia_representation->BeginScopedReadAccess(
+      &begin_semaphores, &end_semaphores);
+  EXPECT_TRUE(scoped_read_access);
   auto* promise_texture = scoped_read_access->promise_image_texture();
   EXPECT_EQ(0u, begin_semaphores.size());
   EXPECT_EQ(0u, end_semaphores.size());
@@ -359,11 +360,11 @@ TEST_F(SharedImageBackingFactoryAHBTest, DISABLED_OnlyOneWriter) {
 
   std::vector<GrBackendSemaphore> begin_semaphores;
   std::vector<GrBackendSemaphore> end_semaphores;
-  base::Optional<SharedImageRepresentationSkia::ScopedWriteAccess>
+  std::unique_ptr<SharedImageRepresentationSkia::ScopedWriteAccess>
       scoped_write_access;
-  scoped_write_access.emplace(skia_representation.get(), &begin_semaphores,
-                              &end_semaphores);
-  EXPECT_TRUE(scoped_write_access->success());
+  scoped_write_access = skia_representation->BeginScopedWriteAccess(
+      &begin_semaphores, &end_semaphores);
+  EXPECT_TRUE(scoped_write_access);
   EXPECT_EQ(0u, begin_semaphores.size());
   EXPECT_EQ(0u, end_semaphores.size());
 
@@ -371,11 +372,11 @@ TEST_F(SharedImageBackingFactoryAHBTest, DISABLED_OnlyOneWriter) {
       gl_legacy_shared_image.mailbox(), context_state_.get());
   std::vector<GrBackendSemaphore> begin_semaphores2;
   std::vector<GrBackendSemaphore> end_semaphores2;
-  base::Optional<SharedImageRepresentationSkia::ScopedWriteAccess>
+  std::unique_ptr<SharedImageRepresentationSkia::ScopedWriteAccess>
       scoped_write_access2;
-  scoped_write_access2.emplace(skia_representation2.get(), &begin_semaphores2,
-                               &end_semaphores2);
-  EXPECT_FALSE(scoped_write_access->success());
+  scoped_write_access2 = skia_representation2->BeginScopedWriteAccess(
+      &begin_semaphores2, &end_semaphores2);
+  EXPECT_FALSE(scoped_write_access);
   EXPECT_EQ(0u, begin_semaphores2.size());
   EXPECT_EQ(0u, end_semaphores2.size());
   skia_representation2.reset();
@@ -401,19 +402,19 @@ TEST_F(SharedImageBackingFactoryAHBTest, CanHaveMultipleReaders) {
 
   std::vector<GrBackendSemaphore> begin_semaphores;
   std::vector<GrBackendSemaphore> end_semaphores;
-  base::Optional<SharedImageRepresentationSkia::ScopedReadAccess>
+  std::unique_ptr<SharedImageRepresentationSkia::ScopedReadAccess>
       scoped_read_access;
-  scoped_read_access.emplace(skia_representation.get(), &begin_semaphores,
-                             &end_semaphores);
-  EXPECT_TRUE(scoped_read_access->success());
+  scoped_read_access = skia_representation->BeginScopedReadAccess(
+      &begin_semaphores, &end_semaphores);
+  EXPECT_TRUE(scoped_read_access);
   EXPECT_EQ(0u, begin_semaphores.size());
   EXPECT_EQ(0u, end_semaphores.size());
 
-  base::Optional<SharedImageRepresentationSkia::ScopedReadAccess>
+  std::unique_ptr<SharedImageRepresentationSkia::ScopedReadAccess>
       scoped_read_access2;
-  scoped_read_access2.emplace(skia_representation2.get(), &begin_semaphores,
-                              &end_semaphores);
-  EXPECT_TRUE(scoped_read_access2->success());
+  scoped_read_access2 = skia_representation2->BeginScopedReadAccess(
+      &begin_semaphores, &end_semaphores);
+  EXPECT_TRUE(scoped_read_access2);
   EXPECT_EQ(0u, begin_semaphores.size());
   EXPECT_EQ(0u, end_semaphores.size());
 
@@ -439,11 +440,11 @@ TEST_F(SharedImageBackingFactoryAHBTest, CannotWriteWhileReading) {
   std::vector<GrBackendSemaphore> begin_semaphores;
   std::vector<GrBackendSemaphore> end_semaphores;
 
-  base::Optional<SharedImageRepresentationSkia::ScopedReadAccess>
+  std::unique_ptr<SharedImageRepresentationSkia::ScopedReadAccess>
       scoped_read_access;
-  scoped_read_access.emplace(skia_representation.get(), &begin_semaphores,
-                             &end_semaphores);
-  EXPECT_TRUE(scoped_read_access->success());
+  scoped_read_access = skia_representation->BeginScopedReadAccess(
+      &begin_semaphores, &end_semaphores);
+  EXPECT_TRUE(scoped_read_access);
   EXPECT_EQ(0u, begin_semaphores.size());
   EXPECT_EQ(0u, end_semaphores.size());
 
@@ -453,11 +454,11 @@ TEST_F(SharedImageBackingFactoryAHBTest, CannotWriteWhileReading) {
   std::vector<GrBackendSemaphore> begin_semaphores2;
   std::vector<GrBackendSemaphore> end_semaphores2;
 
-  base::Optional<SharedImageRepresentationSkia::ScopedWriteAccess>
+  std::unique_ptr<SharedImageRepresentationSkia::ScopedWriteAccess>
       scoped_write_access;
-  scoped_write_access.emplace(skia_representation2.get(), &begin_semaphores2,
-                              &end_semaphores2);
-  EXPECT_FALSE(scoped_write_access->success());
+  scoped_write_access = skia_representation2->BeginScopedWriteAccess(
+      &begin_semaphores2, &end_semaphores2);
+  EXPECT_FALSE(scoped_write_access);
   EXPECT_EQ(0u, begin_semaphores2.size());
   EXPECT_EQ(0u, end_semaphores2.size());
   skia_representation2.reset();
@@ -480,11 +481,11 @@ TEST_F(SharedImageBackingFactoryAHBTest, CannotReadWhileWriting) {
       gl_legacy_shared_image.mailbox(), context_state_.get());
   std::vector<GrBackendSemaphore> begin_semaphores;
   std::vector<GrBackendSemaphore> end_semaphores;
-  base::Optional<SharedImageRepresentationSkia::ScopedWriteAccess>
+  std::unique_ptr<SharedImageRepresentationSkia::ScopedWriteAccess>
       scoped_write_access;
-  scoped_write_access.emplace(skia_representation.get(), &begin_semaphores,
-                              &end_semaphores);
-  EXPECT_TRUE(scoped_write_access->success());
+  scoped_write_access = skia_representation->BeginScopedWriteAccess(
+      &begin_semaphores, &end_semaphores);
+  EXPECT_TRUE(scoped_write_access);
   EXPECT_EQ(0u, begin_semaphores.size());
   EXPECT_EQ(0u, end_semaphores.size());
 
@@ -492,11 +493,11 @@ TEST_F(SharedImageBackingFactoryAHBTest, CannotReadWhileWriting) {
       gl_legacy_shared_image.mailbox(), context_state_.get());
   std::vector<GrBackendSemaphore> begin_semaphores2;
   std::vector<GrBackendSemaphore> end_semaphores2;
-  base::Optional<SharedImageRepresentationSkia::ScopedReadAccess>
+  std::unique_ptr<SharedImageRepresentationSkia::ScopedReadAccess>
       scoped_read_access;
-  scoped_read_access.emplace(skia_representation2.get(), &begin_semaphores2,
-                             &end_semaphores2);
-  EXPECT_FALSE(scoped_read_access->success());
+  scoped_read_access = skia_representation2->BeginScopedReadAccess(
+      &begin_semaphores2, &end_semaphores2);
+  EXPECT_FALSE(scoped_read_access);
   EXPECT_EQ(0u, begin_semaphores2.size());
   EXPECT_EQ(0u, end_semaphores2.size());
   skia_representation2.reset();

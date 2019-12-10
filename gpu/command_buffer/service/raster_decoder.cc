@@ -585,7 +585,7 @@ class RasterDecoderImpl final : public RasterDecoder,
   // Raster helpers.
   scoped_refptr<ServiceFontManager> font_manager_;
   std::unique_ptr<SharedImageRepresentationSkia> shared_image_;
-  base::Optional<SharedImageRepresentationSkia::ScopedWriteAccess>
+  std::unique_ptr<SharedImageRepresentationSkia::ScopedWriteAccess>
       scoped_shared_image_write_;
   SkSurface* sk_surface_ = nullptr;
   sk_sp<SkSurface> sk_surface_for_testing_;
@@ -1793,17 +1793,19 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALGLPassthrough(
     return;
   }
 
-  SharedImageRepresentationGLTexturePassthrough::ScopedAccess source_access(
-      source_shared_image.get(), GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
-  if (!source_access.success()) {
+  std::unique_ptr<SharedImageRepresentationGLTexturePassthrough::ScopedAccess>
+      source_access = source_shared_image->BeginScopedAccess(
+          GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
+  if (!source_access) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
                        "unable to access source for read");
     return;
   }
 
-  SharedImageRepresentationGLTexturePassthrough::ScopedAccess dest_access(
-      dest_shared_image.get(), GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
-  if (!dest_access.success()) {
+  std::unique_ptr<SharedImageRepresentationGLTexturePassthrough::ScopedAccess>
+      dest_access = dest_shared_image->BeginScopedAccess(
+          GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
+  if (!dest_access) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
                        "unable to access destination for write");
     return;
@@ -1846,9 +1848,10 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALGL(
     return;
   }
 
-  SharedImageRepresentationGLTexture::ScopedAccess source_access(
-      source_shared_image.get(), GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
-  if (!source_access.success()) {
+  std::unique_ptr<SharedImageRepresentationGLTexture::ScopedAccess>
+      source_access = source_shared_image->BeginScopedAccess(
+          GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
+  if (!source_access) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
                        "unable to access source for read");
     return;
@@ -1866,9 +1869,10 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALGL(
     return;
   }
 
-  SharedImageRepresentationGLTexture::ScopedAccess dest_access(
-      dest_shared_image.get(), GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
-  if (!dest_access.success()) {
+  std::unique_ptr<SharedImageRepresentationGLTexture::ScopedAccess>
+      dest_access = dest_shared_image->BeginScopedAccess(
+          GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
+  if (!dest_access) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
                        "unable to access destination for write");
     return;
@@ -2092,9 +2096,10 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALSkia(
   std::vector<GrBackendSemaphore> begin_semaphores;
   std::vector<GrBackendSemaphore> end_semaphores;
 
-  SharedImageRepresentationSkia::ScopedWriteAccess dest_scoped_access(
-      dest_shared_image.get(), &begin_semaphores, &end_semaphores);
-  if (!dest_scoped_access.success()) {
+  std::unique_ptr<SharedImageRepresentationSkia::ScopedWriteAccess>
+      dest_scoped_access = dest_shared_image->BeginScopedWriteAccess(
+          &begin_semaphores, &end_semaphores);
+  if (!dest_scoped_access) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
                        "Dest shared image is not writable");
     return;
@@ -2106,16 +2111,17 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALSkia(
   // |dest_shared_image|. We can save one copy by drawing the SHM GMB to the
   // target |dest_shared_image| directly.
   // TODO(penghuang): get rid of the one extra copy. https://crbug.com/984045
-  SharedImageRepresentationSkia::ScopedReadAccess source_scoped_access(
-      source_shared_image.get(), &begin_semaphores, &end_semaphores);
+  std::unique_ptr<SharedImageRepresentationSkia::ScopedReadAccess>
+      source_scoped_access = source_shared_image->BeginScopedReadAccess(
+          &begin_semaphores, &end_semaphores);
 
   if (!begin_semaphores.empty()) {
-    bool result = dest_scoped_access.surface()->wait(begin_semaphores.size(),
-                                                     begin_semaphores.data());
+    bool result = dest_scoped_access->surface()->wait(begin_semaphores.size(),
+                                                      begin_semaphores.data());
     DCHECK(result);
   }
 
-  if (!source_scoped_access.success()) {
+  if (!source_scoped_access) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
                        "Source shared image is not accessable");
   } else {
@@ -2123,11 +2129,11 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALSkia(
         true /* gpu_compositing */, source_shared_image->format());
     auto source_image = SkImage::MakeFromTexture(
         shared_context_state_->gr_context(),
-        source_scoped_access.promise_image_texture()->backendTexture(),
+        source_scoped_access->promise_image_texture()->backendTexture(),
         kTopLeft_GrSurfaceOrigin, color_type, kUnpremul_SkAlphaType,
         nullptr /* colorSpace */);
 
-    auto* canvas = dest_scoped_access.surface()->getCanvas();
+    auto* canvas = dest_scoped_access->surface()->getCanvas();
     SkPaint paint;
     paint.setBlendMode(SkBlendMode::kSrc);
     canvas->drawImageRect(source_image, gfx::RectToSkRect(source_rect),
@@ -2144,7 +2150,7 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALSkia(
   };
   gpu::AddVulkanCleanupTaskForSkiaFlush(
       shared_context_state_->vk_context_provider(), &flush_info);
-  dest_scoped_access.surface()->flush(
+  dest_scoped_access->surface()->flush(
       SkSurface::BackendSurfaceAccess::kNoAccess, flush_info);
 }
 
@@ -2282,23 +2288,21 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
   std::vector<GrBackendSemaphore> begin_semaphores;
   DCHECK(end_semaphores_.empty());
   DCHECK(!scoped_shared_image_write_);
-  scoped_shared_image_write_.emplace(shared_image_.get(), final_msaa_count,
-                                     surface_props, &begin_semaphores,
-                                     &end_semaphores_);
+  scoped_shared_image_write_ = shared_image_->BeginScopedWriteAccess(
+      final_msaa_count, surface_props, &begin_semaphores, &end_semaphores_);
+  if (!scoped_shared_image_write_) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
+                       "failed to create surface");
+    shared_image_.reset();
+    return;
+  }
+
   sk_surface_ = scoped_shared_image_write_->surface();
 
   if (!begin_semaphores.empty()) {
     bool result =
         sk_surface_->wait(begin_semaphores.size(), begin_semaphores.data());
     DCHECK(result);
-  }
-
-  if (!sk_surface_) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
-                       "failed to create surface");
-    scoped_shared_image_write_.reset();
-    shared_image_.reset();
-    return;
   }
 
   if (use_ddl_) {

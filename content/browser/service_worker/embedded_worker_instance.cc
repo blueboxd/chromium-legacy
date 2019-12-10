@@ -1300,7 +1300,7 @@ EmbeddedWorkerInstance::MakeScriptLoaderFactoryRemote(
           std::move(script_bundle));
   script_loader_factory_ = mojo::MakeSelfOwnedReceiver(
       std::make_unique<ServiceWorkerScriptLoaderFactory>(
-          context_, owner_version_->provider_host()->AsWeakPtr(),
+          context_, owner_version_->provider_host()->GetWeakPtr(),
           std::move(script_bundle_factory)),
       script_loader_factory_remote.InitWithNewPipeAndPassReceiver());
 

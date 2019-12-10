@@ -213,7 +213,7 @@ class MEDIA_EXPORT AUAudioInputStream
   media::AudioBlockFifo fifo_;
 
   // Used to defer Start() to workaround http://crbug.com/160920.
-  base::CancelableClosure deferred_start_cb_;
+  base::CancelableOnceClosure deferred_start_cb_;
 
   // Contains time of last successful call to AudioUnitRender().
   // Initialized first time in Start() and then updated for each valid

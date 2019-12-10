@@ -538,7 +538,7 @@ TEST_P(PasswordFormManagerTest, AutofillSignUpForm) {
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
 
   task_runner_->FastForwardUntilNoTasksRemain();
-  constexpr uint32_t kNoID = FormFieldData::kNotSetFormControlRendererId;
+  constexpr uint32_t kNoID = FormData::kNotSetRendererId;
   EXPECT_EQ(kNoID, fill_data.password_field.unique_renderer_id);
   EXPECT_EQ(saved_match_.password_value, fill_data.password_field.value);
 #if defined(OS_IOS)

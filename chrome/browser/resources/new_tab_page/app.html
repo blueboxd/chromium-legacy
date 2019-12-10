@@ -1,0 +1,34 @@
+<style include="cr-shared-style">
+  #customizeButton {
+    bottom: 16px;
+    position: absolute;
+  }
+
+  :host-context([dir='ltr']) #customizeButton {
+    right: 16px;
+  }
+
+  :host-context([dir='rtl']) #customizeButton {
+    left: 16px;
+  }
+</style>
+<most-visited></most-visited>
+<dom-if if="[[showCustomizeDialog_]]" restamp>
+  <template>
+    <ntp-customize-dialog on-close="onCustomizeDialogClose_">
+    </ntp-customize-dialog>
+  </template>
+</dom-if>
+<cr-button id="customizeButton" on-click="onCustomizeClick_">
+  $i18n{customizeButton}
+</cr-button>
+<cr-toast-manager duration="10000">
+  <cr-button id="undo" aria-label="$i18n{undoDescription}"
+      on-click="onUndoClick_">
+    $i18n{undo}
+  </cr-button>
+  <cr-button id="restore" aria-label="$i18n{restoreDefaultLinks}"
+      on-click="onRestoreDefaultsClick_">
+    $i18n{restoreDefaultLinks}
+  </cr-button>
+</cr-toast-manager>

@@ -5,7 +5,7 @@
 #include "ash/system/ime_menu/ime_menu_tray.h"
 
 #include "ash/accessibility/accessibility_controller_impl.h"
-#include "ash/ime/ime_controller.h"
+#include "ash/ime/ime_controller_impl.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/virtual_keyboard_controller.h"
@@ -203,14 +203,14 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
     // The |keyset| will be used for drawing input view keyset in IME
     // extensions. ImeMenuTray::ShowKeyboardWithKeyset() will deal with
     // the |keyset| string to generate the right input view url.
-    using chromeos::input_method::mojom::ImeKeyset;
-    ImeKeyset keyset = ImeKeyset::kNone;
+    chromeos::input_method::ImeKeyset keyset =
+        chromeos::input_method::ImeKeyset::kNone;
     if (sender == emoji_button_)
-      keyset = ImeKeyset::kEmoji;
+      keyset = chromeos::input_method::ImeKeyset::kEmoji;
     else if (sender == voice_button_)
-      keyset = ImeKeyset::kVoice;
+      keyset = chromeos::input_method::ImeKeyset::kVoice;
     else if (sender == handwriting_button_)
-      keyset = ImeKeyset::kHandwriting;
+      keyset = chromeos::input_method::ImeKeyset::kHandwriting;
     else
       NOTREACHED();
 
@@ -391,7 +391,7 @@ void ImeMenuTray::ShowImeMenuBubbleInternal(bool show_by_click) {
 }
 
 void ImeMenuTray::ShowKeyboardWithKeyset(
-    chromeos::input_method::mojom::ImeKeyset keyset) {
+    chromeos::input_method::ImeKeyset keyset) {
   CloseBubble();
 
   Shell::Get()
@@ -526,7 +526,7 @@ void ImeMenuTray::OnKeyboardSuppressionChanged(bool suppressed) {
 }
 
 void ImeMenuTray::UpdateTrayLabel() {
-  const mojom::ImeInfo& current_ime = ime_controller_->current_ime();
+  const ImeInfo& current_ime = ime_controller_->current_ime();
 
   // For ARC IMEs, we use the globe icon instead of the short name of the active
   // IME.

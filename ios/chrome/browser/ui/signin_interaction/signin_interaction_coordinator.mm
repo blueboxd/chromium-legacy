@@ -28,7 +28,9 @@
 @property(nonatomic, strong) SigninInteractionController* controller;
 
 // The dispatcher to which commands should be sent.
-@property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
+@property(nonatomic, weak)
+    id<ApplicationCommands, BrowserCommands, BrowsingDataCommands>
+        dispatcher;
 
 // The UIViewController upon which UI should be presented.
 @property(nonatomic, strong) UIViewController* presentingViewController;
@@ -47,9 +49,11 @@
 
 @implementation SigninInteractionCoordinator
 
-- (instancetype)initWithBrowser:(Browser*)browser
-                     dispatcher:
-                         (id<ApplicationCommands, BrowserCommands>)dispatcher {
+- (instancetype)
+    initWithBrowser:(Browser*)browser
+         dispatcher:
+             (id<ApplicationCommands, BrowserCommands, BrowsingDataCommands>)
+                 dispatcher {
   DCHECK(browser);
   self = [super initWithBaseViewController:nil browser:browser];
   if (self) {

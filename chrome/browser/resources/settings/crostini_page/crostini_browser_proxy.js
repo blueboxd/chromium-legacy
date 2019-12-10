@@ -81,6 +81,9 @@ cr.define('settings', function() {
 
     /** Initiates the flow to disable ARC ADB Sideloading. */
     disableArcAdbSideload() {}
+
+    /** Show the container upgrade UI. */
+    requestCrostiniContainerUpgradeView() {}
   }
 
   /** @implements {settings.CrostiniBrowserProxy} */
@@ -148,6 +151,11 @@ cr.define('settings', function() {
     /** @override */
     disableArcAdbSideload() {
       chrome.send('disableArcAdbSideload');
+    }
+
+    /** @override */
+    requestCrostiniContainerUpgradeView() {
+      chrome.send('requestCrostiniContainerUpgradeView');
     }
   }
 

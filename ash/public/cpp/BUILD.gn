@@ -98,6 +98,11 @@ component("cpp") {
     "frame_utils.cc",
     "frame_utils.h",
     "gesture_action_type.h",
+    "ime_controller.cc",
+    "ime_controller.h",
+    "ime_controller_client.h",
+    "ime_info.cc",
+    "ime_info.h",
     "immersive/immersive_context.cc",
     "immersive/immersive_context.h",
     "immersive/immersive_focus_watcher.cc",
@@ -257,6 +262,7 @@ component("cpp") {
     "//components/arc/mojom:notifications",
     "//components/session_manager:base",
     "//components/user_manager",
+    "//ui/base/ime/chromeos:ime_types",
     "//ui/gfx",
   ]
 

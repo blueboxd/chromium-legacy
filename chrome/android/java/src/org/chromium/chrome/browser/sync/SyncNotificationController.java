@@ -84,7 +84,7 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
             }
         } else if (mProfileSyncService.isEngineInitialized()
                 && mProfileSyncService.isTrustedVaultKeyRequiredForPreferredDataTypes()) {
-            Intent intent = TrustedVaultClient.createKeyRetrievalIntent();
+            Intent intent = TrustedVaultClient.get().createKeyRetrievalIntent();
             if (intent != null) {
                 showSyncNotification(mProfileSyncService.isEncryptEverythingEnabled()
                                 ? R.string.sync_error_card_title

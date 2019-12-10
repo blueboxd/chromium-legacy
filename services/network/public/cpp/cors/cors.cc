@@ -209,7 +209,7 @@ base::Optional<CorsErrorStatus> CheckAccessInternal(
 
 // These values are used for logging to UMA. Entries should not be renumbered
 // and numeric values should never be reused. Please keep in sync with
-// "AccessCheckResult" in src/tools/metrics/histograms/enums.xml.
+// "CorsAccessCheckResult" in src/tools/metrics/histograms/enums.xml.
 enum class AccessCheckResult {
   kPermitted = 0,
   kNotPermitted = 1,

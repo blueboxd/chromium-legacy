@@ -1924,9 +1924,10 @@ void VaapiWrapper::DestroyVABuffers() {
   va_buffers_.clear();
 }
 
-bool VaapiWrapper::BlitSurface(
-    const scoped_refptr<VASurface>& va_surface_src,
-    const scoped_refptr<VASurface>& va_surface_dest) {
+bool VaapiWrapper::BlitSurface(const scoped_refptr<VASurface>& va_surface_src,
+                               const scoped_refptr<VASurface>& va_surface_dest,
+                               base::Optional<gfx::Rect> src_rect,
+                               base::Optional<gfx::Rect> dest_rect) {
   base::AutoLock auto_lock(*va_lock_);
 
   if (va_buffers_.empty()) {
@@ -1951,21 +1952,25 @@ bool VaapiWrapper::BlitSurface(
         reinterpret_cast<VAProcPipelineParameterBuffer*>(mapping.data());
 
     memset(pipeline_param, 0, sizeof *pipeline_param);
-    const gfx::Size& src_size = va_surface_src->size();
-    const gfx::Size& dest_size = va_surface_dest->size();
+    if (!src_rect)
+      src_rect.emplace(gfx::Rect(va_surface_src->size()));
+    if (!dest_rect)
+      dest_rect.emplace(gfx::Rect(va_surface_dest->size()));
 
     VARectangle input_region;
-    input_region.x = input_region.y = 0;
-    input_region.width = src_size.width();
-    input_region.height = src_size.height();
+    input_region.x = src_rect->x();
+    input_region.y = src_rect->y();
+    input_region.width = src_rect->width();
+    input_region.height = src_rect->height();
     pipeline_param->surface_region = &input_region;
     pipeline_param->surface = va_surface_src->id();
     pipeline_param->surface_color_standard = VAProcColorStandardNone;
 
     VARectangle output_region;
-    output_region.x = output_region.y = 0;
-    output_region.width = dest_size.width();
-    output_region.height = dest_size.height();
+    output_region.x = dest_rect->x();
+    output_region.y = dest_rect->y();
+    output_region.width = dest_rect->width();
+    output_region.height = dest_rect->height();
     pipeline_param->output_region = &output_region;
     pipeline_param->output_background_color = 0xff000000;
     pipeline_param->output_color_standard = VAProcColorStandardNone;

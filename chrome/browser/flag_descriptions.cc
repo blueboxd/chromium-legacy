@@ -1057,6 +1057,10 @@ const char kExtensionContentVerificationEnforce[] =
 const char kExtensionContentVerificationEnforceStrict[] =
     "Enforce strict (hard fail if we can't get hashes)";
 
+const char kExtensionsCheckupName[] = "Extensions Checkup";
+const char kExtensionsCheckupDescription[] =
+    "Enable the extensions checkup experiment";
+
 const char kExtensionsToolbarMenuName[] = "Extensions Toolbar Menu";
 const char kExtensionsToolbarMenuDescription[] =
     "Enable a separate toolbar button and menu for extensions";
@@ -3535,6 +3539,10 @@ const char kEnableParentalControlsSettingsDescription[] =
 const char kEnablePlayStoreSearchName[] = "Enable Play Store search";
 const char kEnablePlayStoreSearchDescription[] =
     "Enable Play Store search in launcher.";
+
+const char kEnableQuickAnswersName[] = "Enable Quick Answers";
+const char kEnableQuickAnswersDescription[] =
+    "Enable the Quick Answers feature";
 
 const char kEnableVideoPlayerNativeControlsName[] =
     "Enable native controls in video player app";

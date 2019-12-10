@@ -58,9 +58,9 @@ class MediaPerceptionAPIDelegate {
   // Receives an incoming media perception receiver and forwards it to the
   // receiver handler if set.
   virtual void ForwardMediaPerceptionReceiver(
+      content::RenderFrameHost* render_frame_host,
       mojo::PendingReceiver<chromeos::media_perception::mojom::MediaPerception>
-          receiver,
-      content::RenderFrameHost* render_frame_host) = 0;
+          receiver) = 0;
 };
 
 }  // namespace extensions

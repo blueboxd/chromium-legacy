@@ -1024,6 +1024,34 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
   [plist setObject:[NSNumber numberWithBool:YES]
             forKey:app_mode::kNSHighResolutionCapableKey];
 
+  // 3. Fill in file handlers.
+  if (!info_->file_handler_extensions.empty() ||
+      !info_->file_handler_mime_types.empty()) {
+    base::scoped_nsobject<NSMutableArray> doc_types_value(
+        [[NSMutableArray alloc] init]);
+    base::scoped_nsobject<NSMutableDictionary> doc_types_dict(
+        [[NSMutableDictionary alloc] init]);
+    if (!info_->file_handler_extensions.empty()) {
+      base::scoped_nsobject<NSMutableArray> extensions(
+          [[NSMutableArray alloc] init]);
+      for (const auto& extension : info_->file_handler_extensions)
+        [extensions addObject:base::SysUTF8ToNSString(extension)];
+      [doc_types_dict setObject:extensions
+                         forKey:app_mode::kCFBundleTypeExtensionsKey];
+    }
+    if (!info_->file_handler_mime_types.empty()) {
+      base::scoped_nsobject<NSMutableArray> mime_types(
+          [[NSMutableArray alloc] init]);
+      for (const auto& mime_type : info_->file_handler_mime_types)
+        [mime_types addObject:base::SysUTF8ToNSString(mime_type)];
+      [doc_types_dict setObject:mime_types
+                         forKey:app_mode::kCFBundleTypeMIMETypesKey];
+    }
+    [doc_types_value addObject:doc_types_dict];
+    [plist setObject:doc_types_value
+              forKey:app_mode::kCFBundleDocumentTypesKey];
+  }
+
   base::FilePath app_name = app_path.BaseName().RemoveFinalExtension();
   [plist setObject:base::mac::FilePathToNSString(app_name)
             forKey:base::mac::CFToNSCast(kCFBundleNameKey)];

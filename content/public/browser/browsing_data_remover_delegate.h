@@ -28,9 +28,9 @@ class BrowsingDataRemoverDelegate {
   // Determines whether |origin| matches |origin_type_mask| given
   // the |special_storage_policy|.
   using EmbedderOriginTypeMatcher =
-      base::Callback<bool(int origin_type_mask,
-                          const url::Origin& origin,
-                          storage::SpecialStoragePolicy* policy)>;
+      base::RepeatingCallback<bool(int origin_type_mask,
+                                   const url::Origin& origin,
+                                   storage::SpecialStoragePolicy* policy)>;
 
   virtual ~BrowsingDataRemoverDelegate() {}
 

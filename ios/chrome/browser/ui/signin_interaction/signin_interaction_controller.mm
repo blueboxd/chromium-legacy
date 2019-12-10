@@ -45,7 +45,9 @@
 }
 
 // The dispatcher for this class.
-@property(nonatomic, weak, readonly) id<ApplicationCommands> dispatcher;
+@property(nonatomic, weak, readonly)
+    id<ApplicationCommands, BrowsingDataCommands>
+        dispatcher;
 
 // The object responsible for presenting the UI.
 @property(nonatomic, weak, readonly) id<SigninInteractionPresenting> presenter;
@@ -61,7 +63,8 @@
            presentationProvider:(id<SigninInteractionPresenting>)presenter
                     accessPoint:(signin_metrics::AccessPoint)accessPoint
                     promoAction:(signin_metrics::PromoAction)promoAction
-                     dispatcher:(id<ApplicationCommands>)dispatcher {
+                     dispatcher:(id<ApplicationCommands, BrowsingDataCommands>)
+                                    dispatcher {
   self = [super init];
   if (self) {
     DCHECK(browser);

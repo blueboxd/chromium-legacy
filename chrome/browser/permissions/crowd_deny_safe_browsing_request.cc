@@ -8,10 +8,12 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/clock.h"
 #include "base/timer/timer.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -103,9 +105,12 @@ class CrowdDenySafeBrowsingRequest::SafeBrowsingClient
 
 CrowdDenySafeBrowsingRequest::CrowdDenySafeBrowsingRequest(
     scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> database_manager,
+    const base::Clock* clock,
     const url::Origin& origin,
     VerdictCallback callback)
-    : callback_(std::move(callback)) {
+    : callback_(std::move(callback)),
+      clock_(clock),
+      request_start_time_(clock->Now()) {
   client_ = std::make_unique<SafeBrowsingClient>(
       database_manager, weak_factory_.GetWeakPtr(),
       base::SequencedTaskRunnerHandle::Get());
@@ -120,6 +125,11 @@ CrowdDenySafeBrowsingRequest::~CrowdDenySafeBrowsingRequest() {
 }
 
 void CrowdDenySafeBrowsingRequest::OnReceivedResult(Verdict verdict) {
+  base::UmaHistogramTimes("Permissions.CrowdDeny.SafeBrowsing.RequestDuration",
+                          clock_->Now() - request_start_time_);
+  base::UmaHistogramEnumeration("Permissions.CrowdDeny.SafeBrowsing.Verdict",
+                                verdict);
+
   DCHECK(callback_);
   std::move(callback_).Run(verdict);
 }

@@ -44,15 +44,16 @@ void CountRenderProcessHosts(size_t* initialized_and_not_dead, size_t* all) {
 
 }  // namespace
 
-MetricsMemoryDetails::MetricsMemoryDetails(const base::Closure& callback)
-    : callback_(callback) {}
+MetricsMemoryDetails::MetricsMemoryDetails(base::OnceClosure callback)
+    : callback_(std::move(callback)) {}
 
 MetricsMemoryDetails::~MetricsMemoryDetails() {
 }
 
 void MetricsMemoryDetails::OnDetailsAvailable() {
   UpdateHistograms();
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback_);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                std::move(callback_));
 }
 
 void MetricsMemoryDetails::UpdateHistograms() {

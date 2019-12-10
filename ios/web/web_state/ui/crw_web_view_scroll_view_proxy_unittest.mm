@@ -496,4 +496,73 @@ TEST_F(CRWWebViewScrollViewProxyTest,
   [webViewScrollViewProxy_ setScrollView:nil];
 }
 
+// Verifies that adding a key-value observer to a CRWWebViewScrollViewProxy
+// works as expected.
+TEST_F(CRWWebViewScrollViewProxyTest, AddKVObserver) {
+  UIScrollView* underlying_scroll_view = [[UIScrollView alloc] init];
+  underlying_scroll_view.contentOffset = CGPointZero;
+  [webViewScrollViewProxy_ setScrollView:underlying_scroll_view];
+
+  // Add a key-value observer to a CRWWebViewScrollViewProxy.
+  NSObject* observer = OCMClassMock([NSObject class]);
+  int context = 0;
+  [webViewScrollViewProxy_
+      addObserver:observer
+       forKeyPath:@"contentOffset"
+          options:NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew
+          context:&context];
+
+  // Setting |contentOffset| of the underlying scroll view should trigger a KVO
+  // notification. The |object| of the notification should be the
+  // CRWWebViewScrollViewProxy, not the underlying scroll view.
+  CGPoint new_offset = CGPointMake(10, 20);
+  NSDictionary<NSKeyValueChangeKey, id>* expected_change = @{
+    NSKeyValueChangeKindKey : @(NSKeyValueChangeSetting),
+    NSKeyValueChangeOldKey : @(CGPointZero),
+    NSKeyValueChangeNewKey : @(new_offset)
+  };
+  OCMExpect([observer observeValueForKeyPath:@"contentOffset"
+                                    ofObject:webViewScrollViewProxy_
+                                      change:expected_change
+                                     context:&context]);
+  underlying_scroll_view.contentOffset = new_offset;
+
+  EXPECT_OCMOCK_VERIFY(static_cast<id>(observer));
+  [webViewScrollViewProxy_ removeObserver:observer forKeyPath:@"contentOffset"];
+}
+
+// Verifies that removing a key-value observer from a CRWWebViewScrollViewProxy
+// works as expected.
+TEST_F(CRWWebViewScrollViewProxyTest, RemoveKVObserver) {
+  UIScrollView* underlying_scroll_view = [[UIScrollView alloc] init];
+  underlying_scroll_view.contentOffset = CGPointZero;
+  [webViewScrollViewProxy_ setScrollView:underlying_scroll_view];
+
+  // Add and then remove a key-value observer.
+  NSObject* observer = OCMClassMock([NSObject class]);
+  int context = 0;
+  [webViewScrollViewProxy_
+      addObserver:observer
+       forKeyPath:@"contentOffset"
+          options:NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew
+          context:&context];
+  [webViewScrollViewProxy_ removeObserver:observer forKeyPath:@"contentOffset"];
+
+  // The observer should not be notified of a change after the removal.
+  CGPoint new_offset = CGPointMake(10, 20);
+  NSDictionary<NSKeyValueChangeKey, id>* expected_change = @{
+    NSKeyValueChangeKindKey : @(NSKeyValueChangeSetting),
+    NSKeyValueChangeOldKey : @(CGPointZero),
+    NSKeyValueChangeNewKey : @(new_offset)
+  };
+  [[static_cast<id>(observer) reject]
+      observeValueForKeyPath:@"contentOffset"
+                    ofObject:webViewScrollViewProxy_
+                      change:expected_change
+                     context:&context];
+  underlying_scroll_view.contentOffset = new_offset;
+
+  EXPECT_OCMOCK_VERIFY(static_cast<id>(observer));
+}
+
 }  // namespace

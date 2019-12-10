@@ -352,7 +352,7 @@ HRESULT DoDelete(const base::FilePath& install_path) {
   if (!base::DirectoryExists(install_path))
     return S_FALSE;
   Sleep(5000);  // Give parent some time to exit.
-  return base::DeleteFile(install_path, true) ? S_OK : E_FAIL;
+  return base::DeleteFileRecursively(install_path) ? S_OK : E_FAIL;
 }
 
 HRESULT DoInstall(const base::FilePath& install_path) {
@@ -364,7 +364,7 @@ HRESULT DoInstall(const base::FilePath& install_path) {
   base::FilePath old_install_path = GetInstallLocation(kUninstallId);
   if (!old_install_path.value().empty() && install_path != old_install_path) {
     if (base::DirectoryExists(old_install_path))
-      base::DeleteFile(old_install_path, true);
+      base::DeleteFileRecursively(old_install_path);
   }
   CreateUninstallKey(kUninstallId, LoadLocalString(IDS_DRIVER_NAME),
                      kUninstallSwitch);

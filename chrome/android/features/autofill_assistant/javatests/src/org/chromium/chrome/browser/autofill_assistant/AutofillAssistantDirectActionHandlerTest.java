@@ -360,7 +360,12 @@ public class AutofillAssistantDirectActionHandlerTest {
         public void report() {}
     }
 
-    /** A simple action definition for testing. */
+    /**
+     * A simple action definition for testing.
+     *
+     * TODO(crbug.com/806868): Share these fakes. There is another one in
+     * chrome/android/junit/...directactions/
+     */
     private static class FakeDirectActionDefinition implements Definition {
         final String mId;
         List<FakeParameter> mParameters = new ArrayList<>();

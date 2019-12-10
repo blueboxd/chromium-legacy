@@ -8,10 +8,10 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/test/task_environment.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/web_package/mock_web_bundle_reader_factory.h"
 #include "content/browser/web_package/web_bundle_reader.h"
+#include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
@@ -158,7 +158,7 @@ class WebBundleURLLoaderFactoryTest : public testing::Test {
   network::ResourceRequest resource_request_;
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<MockWebBundleReaderFactory> mock_factory_;
   std::unique_ptr<WebBundleURLLoaderFactory> loader_factory_;
   WebBundleReader* reader_;

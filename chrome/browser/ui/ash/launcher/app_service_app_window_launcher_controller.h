@@ -25,6 +25,7 @@ class InstanceUpdate;
 
 class AppServiceAppWindowCrostiniTracker;
 class AppWindowBase;
+class AppServiceAppWindowArcTracker;
 class ChromeLauncherController;
 
 // AppServiceAppWindowLauncherController observes the AppService
@@ -42,6 +43,8 @@ class AppServiceAppWindowLauncherController
   ~AppServiceAppWindowLauncherController() override;
 
   // AppWindowLauncherController:
+  AppWindowLauncherItemController* ControllerForWindow(
+      aura::Window* window) override;
   void ActiveUserChanged(const std::string& user_email) override;
 
   // aura::EnvObserver:
@@ -65,6 +68,21 @@ class AppServiceAppWindowLauncherController
   void OnInstanceRegistryWillBeDestroyed(
       apps::InstanceRegistry* instance_registry) override;
 
+  // Removes an AppWindowBase from its AppWindowLauncherItemController by
+  // |window|.
+  void UnregisterWindow(aura::Window* window);
+
+  // Creates an AppWindowBase, adds it to |aura_window_to_app_window_|, and
+  // updates its AppWindowLauncherItemController by |window| and |shelf_id|.
+  // This function is used by AppServiceAppWindowArcTracker when the task id is
+  // created after the window created, to make sure the AppWindowBase and the
+  // shelf item are created.
+  void AddWindowToShelf(aura::Window* window, const ash::ShelfID& shelf_id);
+
+  AppServiceInstanceRegistryHelper* app_service_instance_helper() {
+    return app_service_instance_helper_.get();
+  }
+
   AppServiceAppWindowCrostiniTracker* app_service_crostini_tracker() {
     return crostini_tracker_.get();
   }
@@ -75,19 +93,17 @@ class AppServiceAppWindowLauncherController
 
   void SetWindowActivated(aura::Window* window, bool active);
 
-  // Creates an AppWindow and updates its AppWindowLauncherItemController by
+  // Creates an AppWindowBase and updates its AppWindowLauncherItemController by
   // |window| and |shelf_id|.
-  void RegisterAppWindow(aura::Window* window, const ash::ShelfID& shelf_id);
+  void RegisterWindow(aura::Window* window, const ash::ShelfID& shelf_id);
 
-  // Removes an AppWindow from its AppWindowLauncherItemController.
+  // Removes an AppWindowBase from its AppWindowLauncherItemController.
   void UnregisterAppWindow(AppWindowBase* app_window);
 
-  void AddToShelf(AppWindowBase* app_window);
-  void RemoveFromShelf(AppWindowBase* app_window);
+  void AddAppWindowToShelf(AppWindowBase* app_window);
+  void RemoveAppWindowFromShelf(AppWindowBase* app_window);
 
   // AppWindowLauncherController:
-  AppWindowLauncherItemController* ControllerForWindow(
-      aura::Window* window) override;
   void OnItemDelegateDiscarded(ash::ShelfItemDelegate* delegate) override;
 
   ash::ShelfID GetShelfId(aura::Window* window) const;
@@ -98,7 +114,7 @@ class AppServiceAppWindowLauncherController
   apps::AppServiceProxy* proxy_ = nullptr;
   std::unique_ptr<AppServiceInstanceRegistryHelper>
       app_service_instance_helper_;
-
+  std::unique_ptr<AppServiceAppWindowArcTracker> arc_tracker_;
   std::unique_ptr<AppServiceAppWindowCrostiniTracker> crostini_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(AppServiceAppWindowLauncherController);

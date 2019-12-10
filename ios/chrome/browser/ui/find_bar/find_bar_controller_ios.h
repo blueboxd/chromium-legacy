@@ -12,9 +12,6 @@
 
 @interface FindBarControllerIOS : NSObject
 
-// The main view, for both iPhone or iPad.
-@property(nonatomic, readonly, strong) IBOutlet UIView* view;
-
 // The dispatcher for sending browser commands.
 @property(nonatomic, weak) id<BrowserCommands> dispatcher;
 
@@ -32,16 +29,13 @@
 // Updates the results count in Find Bar.
 - (void)updateResultsCount:(FindInPageModel*)model;
 
-// Display find bar view. For regular size, the find bar aligns with the right
-// border of |parentView| and below |toolbarView|. For compact size, the find
-// bar overlaps the |toolbarView|. If |selectText| flag is YES, the text in the
-// text input field will be selected.
-- (void)addFindBarViewToParentView:(UIView*)parentView
-                  usingToolbarView:(UIView*)toolbarView
-                        selectText:(BOOL)selectText
-                          animated:(BOOL)animated;
-// Hide find bar view.
-- (void)hideFindBarView:(BOOL)animate;
+// Creates and stores a find bar view to be presented later.
+- (UIView*)createFindBarViewWithDarkAppearance:(BOOL)darkAppearance;
+// Alerts the controller that its find bar will hide.
+- (void)findBarViewWillHide;
+// Alerts the controller that its find bar did hide.
+- (void)findBarViewDidHide;
+
 // Hide the keyboard when the find next/previous buttons are pressed.
 - (IBAction)hideKeyboard:(id)sender;
 // Indicates that Find in Page is shown. When true, |view| is guaranteed not to
@@ -49,6 +43,9 @@
 - (BOOL)isFindInPageShown;
 // Indicates that the Find in Page text field is first responder.
 - (BOOL)isFocused;
+
+// Selects all the text in the Find in Page text field.
+- (void)selectAllText;
 
 @end
 

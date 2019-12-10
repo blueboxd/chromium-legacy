@@ -45,6 +45,14 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
 
   NGPhysicalTextFragment(NGTextFragmentBuilder*);
 
+  using PassKey = util::PassKey<NGPhysicalTextFragment>;
+  // For use by TrimText only
+  NGPhysicalTextFragment(PassKey,
+                         const NGPhysicalTextFragment& source,
+                         unsigned start_offset,
+                         unsigned end_offset,
+                         scoped_refptr<const ShapeResultView> shape_result);
+
   NGTextType TextType() const { return static_cast<NGTextType>(sub_type_); }
   // Returns true if the text is generated (from, e.g., list marker,
   // pseudo-element, ...) instead of from a DOM text node.
@@ -123,12 +131,6 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
       unsigned end_offset) const;
 
  private:
-  // For use by TrimText only
-  NGPhysicalTextFragment(const NGPhysicalTextFragment& source,
-                         unsigned start_offset,
-                         unsigned end_offset,
-                         scoped_refptr<const ShapeResultView> shape_result);
-
   LayoutUnit InlinePositionForOffset(unsigned offset,
                                      LayoutUnit (*round)(float),
                                      AdjustMidCluster) const;

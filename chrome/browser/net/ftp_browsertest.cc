@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/profiles/profile.h"
@@ -78,8 +79,8 @@ class FakeDefaultProtocolClientWorker
   }
 
   void SetAsDefaultImpl(const base::Closure& on_finished_callback) override {
-    base::GetContinuationTaskRunner()->PostTask(FROM_HERE,
-                                                on_finished_callback);
+    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                     on_finished_callback);
   }
 
   DISALLOW_COPY_AND_ASSIGN(FakeDefaultProtocolClientWorker);

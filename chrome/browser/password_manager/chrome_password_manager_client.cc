@@ -93,10 +93,10 @@
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
-#include "ui/base/clipboard/clipboard.h"
-#include "ui/events/keycodes/keyboard_codes.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
+#include "ui/base/clipboard/clipboard.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -112,8 +112,8 @@
 #include "chrome/browser/password_manager/password_generation_controller.h"
 #include "chrome/browser/password_manager/password_manager_launcher_android.h"
 #include "chrome/browser/password_manager/save_password_infobar_delegate_android.h"
-#include "chrome/browser/password_manager/touch_to_fill_controller.h"
 #include "chrome/browser/password_manager/update_password_infobar_delegate_android.h"
+#include "chrome/browser/touch_to_fill/touch_to_fill_controller.h"
 #include "chrome/browser/ui/android/passwords/onboarding_dialog_view.h"
 #include "chrome/browser/ui/android/snackbars/auto_signin_prompt_controller.h"
 #include "components/infobars/core/infobar.h"

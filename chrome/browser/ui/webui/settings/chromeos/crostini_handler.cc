@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_forward.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader_dialog.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -104,6 +106,10 @@ void CrostiniHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "disableArcAdbSideload",
       base::BindRepeating(&CrostiniHandler::HandleDisableArcAdbRequest,
+                          weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "requestCrostiniContainerUpgradeView",
+      base::BindRepeating(&CrostiniHandler::HandleRequestContainerUpgradeView,
                           weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -368,6 +374,12 @@ bool CrostiniHandler::CheckEligibilityToChangeArcAdbSideloading() const {
     return false;
   }
   return true;
+}
+
+void CrostiniHandler::HandleRequestContainerUpgradeView(
+    const base::ListValue* args) {
+  CHECK_EQ(0U, args->GetSize());
+  chromeos::CrostiniUpgraderDialog::Show(profile_, base::DoNothing());
 }
 
 }  // namespace settings

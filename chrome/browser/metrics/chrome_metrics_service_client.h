@@ -68,7 +68,7 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   std::string GetVersionString() override;
   void OnEnvironmentUpdate(std::string* serialized_environment) override;
   void OnLogCleanShutdown() override;
-  void CollectFinalMetricsForLog(const base::Closure& done_callback) override;
+  void CollectFinalMetricsForLog(base::OnceClosure done_callback) override;
   std::unique_ptr<metrics::MetricsLogUploader> CreateUploader(
       const GURL& server_url,
       const GURL& insecure_server_url,
@@ -180,7 +180,7 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   bool notification_listeners_active_ = false;
 
   // Saved callback received from CollectFinalMetricsForLog().
-  base::Closure collect_final_metrics_done_callback_;
+  base::OnceClosure collect_final_metrics_done_callback_;
 
   // Indicates that collect final metrics step is running.
   bool waiting_for_collect_final_metrics_step_ = false;

@@ -112,7 +112,7 @@ TEST(SmsRemoteFetcherTest, OneDevice) {
   base::RunLoop loop;
 
   EXPECT_CALL(*service, SendMessageToDevice(_, _, _, _))
-      .WillOnce(Invoke([&](const std::string& device_guid,
+      .WillOnce(Invoke([&](const syncer::DeviceInfo& device_info,
                            base::TimeDelta response_timeout,
                            chrome_browser_sharing::SharingMessage message,
                            SharingMessageSender::ResponseCallback callback) {
@@ -151,7 +151,7 @@ TEST(SmsRemoteFetcherTest, OneDeviceTimesOut) {
   base::RunLoop loop;
 
   EXPECT_CALL(*service, SendMessageToDevice(_, _, _, _))
-      .WillOnce(Invoke([&](const std::string& device_guid,
+      .WillOnce(Invoke([&](const syncer::DeviceInfo& device_info,
                            base::TimeDelta response_timeout,
                            chrome_browser_sharing::SharingMessage message,
                            SharingMessageSender::ResponseCallback callback) {

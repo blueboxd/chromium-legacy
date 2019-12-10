@@ -203,17 +203,16 @@ std::string CastMetricsServiceClient::GetVersionString() {
 }
 
 void CastMetricsServiceClient::CollectFinalMetricsForLog(
-    const base::Closure& done_callback) {
+    base::OnceClosure done_callback) {
   if (collect_final_metrics_cb_)
-    collect_final_metrics_cb_.Run(done_callback);
+    collect_final_metrics_cb_.Run(std::move(done_callback));
   else
-    done_callback.Run();
+    std::move(done_callback).Run();
 }
 
 void CastMetricsServiceClient::SetCallbacks(
-    base::RepeatingCallback<void(const base::Closure&)>
-        collect_final_metrics_cb,
-    base::RepeatingCallback<void(const base::Closure&)> external_events_cb) {
+    base::RepeatingCallback<void(base::OnceClosure)> collect_final_metrics_cb,
+    base::RepeatingCallback<void(base::OnceClosure)> external_events_cb) {
   collect_final_metrics_cb_ = collect_final_metrics_cb;
   external_events_cb_ = external_events_cb;
 }
@@ -329,11 +328,11 @@ void CastMetricsServiceClient::Finalize() {
   metrics_service_->Stop();
 }
 
-void CastMetricsServiceClient::ProcessExternalEvents(const base::Closure& cb) {
+void CastMetricsServiceClient::ProcessExternalEvents(base::OnceClosure cb) {
   if (external_events_cb_)
-    external_events_cb_.Run(cb);
+    external_events_cb_.Run(std::move(cb));
   else
-    cb.Run();
+    std::move(cb).Run();
 }
 
 }  // namespace metrics

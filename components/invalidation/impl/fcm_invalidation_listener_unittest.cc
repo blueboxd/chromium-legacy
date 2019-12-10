@@ -171,14 +171,14 @@ class MockRegistrationManager : public PerUserTopicRegistrationManager {
             nullptr /* loader_factory */,
             "fake_sender_id",
             false) {
-    ON_CALL(*this, LookupRegisteredPublicTopicByPrivateTopic)
+    ON_CALL(*this, LookupSubscribedPublicTopicByPrivateTopic)
         .WillByDefault(testing::ReturnArg<0>());
   }
   ~MockRegistrationManager() override {}
-  MOCK_METHOD2(UpdateRegisteredTopics,
+  MOCK_METHOD2(UpdateSubscribedTopics,
                void(const Topics& topics, const std::string& token));
   MOCK_METHOD0(Init, void());
-  MOCK_CONST_METHOD1(LookupRegisteredPublicTopicByPrivateTopic,
+  MOCK_CONST_METHOD1(LookupSubscribedPublicTopicByPrivateTopic,
                      base::Optional<Topic>(const std::string& private_topic));
 };
 

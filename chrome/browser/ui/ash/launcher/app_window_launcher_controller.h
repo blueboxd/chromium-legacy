@@ -41,10 +41,10 @@ class AppWindowLauncherController : public wm::ActivationChangeObserver,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;
 
+  ChromeLauncherController* owner() { return owner_; }
+
  protected:
   explicit AppWindowLauncherController(ChromeLauncherController* owner);
-
-  ChromeLauncherController* owner() { return owner_; }
 
   virtual AppWindowLauncherItemController* ControllerForWindow(
       aura::Window* window) = 0;

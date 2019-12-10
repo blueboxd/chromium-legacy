@@ -266,6 +266,30 @@ public class TopView extends RelativeLayout
     }
 
     /**
+     * Returns how many filter chips are checked.
+     */
+    public int filterChipsChecked() {
+        int checked = 0;
+        if (mNamesFilterChip.getVisibility() == View.VISIBLE && mNamesFilterChip.isSelected()) {
+            ++checked;
+        }
+        if (mAddressFilterChip.getVisibility() == View.VISIBLE && mAddressFilterChip.isSelected()) {
+            ++checked;
+        }
+        if (mEmailFilterChip.getVisibility() == View.VISIBLE && mEmailFilterChip.isSelected()) {
+            ++checked;
+        }
+        if (mTelephonesFilterChip.getVisibility() == View.VISIBLE
+                && mTelephonesFilterChip.isSelected()) {
+            ++checked;
+        }
+        if (mIconsFilterChip.getVisibility() == View.VISIBLE && mIconsFilterChip.isSelected()) {
+            ++checked;
+        }
+        return checked;
+    }
+
+    /**
      * Updates the state of the checkbox to reflect whether everything is selected.
      * @param allSelected
      */

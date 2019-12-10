@@ -17,7 +17,7 @@ DXVA2_ExtendedFormat ColorSpaceWin::GetExtendedFormat(
   format.VideoPrimaries = DXVA2_VideoPrimaries_BT709;
   format.VideoTransferFunction = DXVA2_VideoTransFunc_709;
 
-  switch (color_space.range_) {
+  switch (color_space.GetRangeID()) {
     case gfx::ColorSpace::RangeID::LIMITED:
       format.NominalRange = DXVA2_NominalRange_16_235;
       break;
@@ -31,7 +31,7 @@ DXVA2_ExtendedFormat ColorSpaceWin::GetExtendedFormat(
       break;
   }
 
-  switch (color_space.matrix_) {
+  switch (color_space.GetMatrixID()) {
     case gfx::ColorSpace::MatrixID::BT709:
       format.VideoTransferMatrix = DXVA2_VideoTransferMatrix_BT709;
       break;
@@ -55,7 +55,7 @@ DXVA2_ExtendedFormat ColorSpaceWin::GetExtendedFormat(
       break;
   }
 
-  switch (color_space.primaries_) {
+  switch (color_space.GetPrimaryID()) {
     case gfx::ColorSpace::PrimaryID::BT709:
       format.VideoPrimaries = DXVA2_VideoPrimaries_BT709;
       break;
@@ -87,7 +87,7 @@ DXVA2_ExtendedFormat ColorSpaceWin::GetExtendedFormat(
       break;
   }
 
-  switch (color_space.transfer_) {
+  switch (color_space.GetTransferID()) {
     case gfx::ColorSpace::TransferID::BT709:
     case gfx::ColorSpace::TransferID::SMPTE170M:
       format.VideoTransferFunction = DXVA2_VideoTransFunc_709;
@@ -135,11 +135,13 @@ DXVA2_ExtendedFormat ColorSpaceWin::GetExtendedFormat(
 DXGI_COLOR_SPACE_TYPE ColorSpaceWin::GetDXGIColorSpace(
     const ColorSpace& color_space,
     bool force_yuv) {
-  if (color_space.matrix_ == gfx::ColorSpace::MatrixID::RGB && !force_yuv) {
+  if (color_space.GetMatrixID() == gfx::ColorSpace::MatrixID::RGB &&
+      !force_yuv) {
     // For RGB, we default to FULL
-    if (color_space.range_ == gfx::ColorSpace::RangeID::LIMITED) {
-      if (color_space.primaries_ == gfx::ColorSpace::PrimaryID::BT2020) {
-        if (color_space.transfer_ == gfx::ColorSpace::TransferID::SMPTEST2084) {
+    if (color_space.GetRangeID() == gfx::ColorSpace::RangeID::LIMITED) {
+      if (color_space.GetPrimaryID() == gfx::ColorSpace::PrimaryID::BT2020) {
+        if (color_space.GetTransferID() ==
+            gfx::ColorSpace::TransferID::SMPTEST2084) {
           return DXGI_COLOR_SPACE_RGB_STUDIO_G2084_NONE_P2020;
         } else {
           return DXGI_COLOR_SPACE_RGB_STUDIO_G22_NONE_P2020;
@@ -148,15 +150,18 @@ DXGI_COLOR_SPACE_TYPE ColorSpaceWin::GetDXGIColorSpace(
         return DXGI_COLOR_SPACE_RGB_STUDIO_G22_NONE_P709;
       }
     } else {
-      if (color_space.primaries_ == gfx::ColorSpace::PrimaryID::BT2020) {
-        if (color_space.transfer_ == gfx::ColorSpace::TransferID::SMPTEST2084) {
+      if (color_space.GetPrimaryID() == gfx::ColorSpace::PrimaryID::BT2020) {
+        if (color_space.GetTransferID() ==
+            gfx::ColorSpace::TransferID::SMPTEST2084) {
           return DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020;
         } else {
           return DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P2020;
         }
       } else {
-        if (color_space.transfer_ == gfx::ColorSpace::TransferID::LINEAR ||
-            color_space.transfer_ == gfx::ColorSpace::TransferID::LINEAR_HDR) {
+        if (color_space.GetTransferID() ==
+                gfx::ColorSpace::TransferID::LINEAR ||
+            color_space.GetTransferID() ==
+                gfx::ColorSpace::TransferID::LINEAR_HDR) {
           return DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709;
         } else {
           return DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709;
@@ -164,14 +169,15 @@ DXGI_COLOR_SPACE_TYPE ColorSpaceWin::GetDXGIColorSpace(
       }
     }
   } else {
-    if (color_space.primaries_ == gfx::ColorSpace::PrimaryID::BT2020) {
-      if (color_space.transfer_ == gfx::ColorSpace::TransferID::SMPTEST2084) {
+    if (color_space.GetPrimaryID() == gfx::ColorSpace::PrimaryID::BT2020) {
+      if (color_space.GetTransferID() ==
+          gfx::ColorSpace::TransferID::SMPTEST2084) {
         return DXGI_COLOR_SPACE_YCBCR_STUDIO_G2084_LEFT_P2020;
         // Could also be:
         // DXGI_COLOR_SPACE_YCBCR_STUDIO_G2084_TOPLEFT_P2020
       } else {
         // For YUV, we default to LIMITED
-        if (color_space.range_ == gfx::ColorSpace::RangeID::FULL) {
+        if (color_space.GetRangeID() == gfx::ColorSpace::RangeID::FULL) {
           return DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P2020;
 
         } else {
@@ -180,20 +186,22 @@ DXGI_COLOR_SPACE_TYPE ColorSpaceWin::GetDXGIColorSpace(
           // DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_TOPLEFT_P2020
         }
       }
-    } else if (color_space.primaries_ == gfx::ColorSpace::PrimaryID::BT470BG ||
-               color_space.primaries_ ==
+    } else if (color_space.GetPrimaryID() ==
+                   gfx::ColorSpace::PrimaryID::BT470BG ||
+               color_space.GetPrimaryID() ==
                    gfx::ColorSpace::PrimaryID::SMPTE170M) {
       // For YUV, we default to LIMITED
-      if (color_space.range_ == gfx::ColorSpace::RangeID::FULL) {
+      if (color_space.GetRangeID() == gfx::ColorSpace::RangeID::FULL) {
         return DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P601;
       } else {
         return DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P601;
       }
     } else {
       // For YUV, we default to LIMITED
-      if (color_space.range_ == gfx::ColorSpace::RangeID::FULL) {
+      if (color_space.GetRangeID() == gfx::ColorSpace::RangeID::FULL) {
         // TODO(hubbe): Check if this is correct.
-        if (color_space.transfer_ == gfx::ColorSpace::TransferID::SMPTE170M) {
+        if (color_space.GetTransferID() ==
+            gfx::ColorSpace::TransferID::SMPTE170M) {
           return DXGI_COLOR_SPACE_YCBCR_FULL_G22_NONE_P709_X601;
         } else {
           return DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P709;
@@ -208,7 +216,7 @@ DXGI_COLOR_SPACE_TYPE ColorSpaceWin::GetDXGIColorSpace(
 D3D11_VIDEO_PROCESSOR_COLOR_SPACE ColorSpaceWin::GetD3D11ColorSpace(
     const ColorSpace& color_space) {
   D3D11_VIDEO_PROCESSOR_COLOR_SPACE ret = {0};
-  if (color_space.range_ == gfx::ColorSpace::RangeID::FULL) {
+  if (color_space.GetRangeID() == gfx::ColorSpace::RangeID::FULL) {
     ret.RGB_Range = 0;  // FULL
     ret.Nominal_Range = D3D11_VIDEO_PROCESSOR_NOMINAL_RANGE_0_255;
   } else {
@@ -216,7 +224,7 @@ D3D11_VIDEO_PROCESSOR_COLOR_SPACE ColorSpaceWin::GetD3D11ColorSpace(
     ret.Nominal_Range = D3D11_VIDEO_PROCESSOR_NOMINAL_RANGE_16_235;
   }
 
-  switch (color_space.matrix_) {
+  switch (color_space.GetMatrixID()) {
     case gfx::ColorSpace::MatrixID::BT709:
       ret.YCbCr_Matrix = 1;
       break;

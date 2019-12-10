@@ -89,7 +89,7 @@ class HTTPHeaderNameListParser {
   // in |output| when successful. Otherwise, returns with |output| kept empty.
   //
   // |output| must be empty.
-  void Parse(WebHTTPHeaderSet& output) {
+  void Parse(HTTPHeaderSet& output) {
     DCHECK(output.empty());
 
     while (true) {
@@ -410,7 +410,7 @@ bool CalculateCorsFlag(const KURL& url,
   return true;
 }
 
-WebHTTPHeaderSet ExtractCorsExposedHeaderNamesList(
+HTTPHeaderSet ExtractCorsExposedHeaderNamesList(
     network::mojom::CredentialsMode credentials_mode,
     const ResourceResponse& response) {
   // If a response was fetched via a service worker, it will always have
@@ -418,13 +418,13 @@ WebHTTPHeaderSet ExtractCorsExposedHeaderNamesList(
   // For requests that didn't come from a service worker, just parse the CORS
   // header.
   if (response.WasFetchedViaServiceWorker()) {
-    WebHTTPHeaderSet header_set;
+    HTTPHeaderSet header_set;
     for (const auto& header : response.CorsExposedHeaderNames())
       header_set.insert(header.Ascii());
     return header_set;
   }
 
-  WebHTTPHeaderSet header_set;
+  HTTPHeaderSet header_set;
   HTTPHeaderNameListParser parser(
       response.HttpHeaderField(http_names::kAccessControlExposeHeaders));
   parser.Parse(header_set);
@@ -441,7 +441,7 @@ WebHTTPHeaderSet ExtractCorsExposedHeaderNamesList(
 bool IsCorsSafelistedResponseHeader(const String& name) {
   // https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name
   // TODO(dcheng): Consider using a flat_set here with a transparent comparator.
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(WebHTTPHeaderSet,
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(HTTPHeaderSet,
                                   allowed_cross_origin_response_headers,
                                   ({
                                       "cache-control",

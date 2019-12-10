@@ -7,8 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
-
 @class OpenNewTabCommand;
 @class ShowSigninCommand;
 @class StartVoiceSearchCommand;
@@ -57,9 +55,7 @@
 // object that implements the methods in this protocol should be able to forward
 // ApplicationSettingsCommands to the settings view controller if necessary.
 
-@protocol ApplicationCommands<NSObject,
-                              ApplicationSettingsCommands,
-                              BrowsingDataCommands>
+@protocol ApplicationCommands <NSObject, ApplicationSettingsCommands>
 
 // Dismisses all modal dialogs.
 - (void)dismissModalDialogs;

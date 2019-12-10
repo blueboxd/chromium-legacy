@@ -454,8 +454,8 @@ void SiteSettingsHandler::OnJavascriptAllowed() {
   host_zoom_map_subscription_ =
       content::HostZoomMap::GetDefaultForBrowserContext(profile_)
           ->AddZoomLevelChangedCallback(
-              base::Bind(&SiteSettingsHandler::OnZoomLevelChanged,
-                         base::Unretained(this)));
+              base::BindRepeating(&SiteSettingsHandler::OnZoomLevelChanged,
+                                  base::Unretained(this)));
 
   pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(profile_->GetPrefs());

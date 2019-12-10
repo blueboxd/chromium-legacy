@@ -55,8 +55,8 @@ std::string TestMetricsServiceClient::GetVersionString() {
 }
 
 void TestMetricsServiceClient::CollectFinalMetricsForLog(
-    const base::Closure& done_callback) {
-  done_callback.Run();
+    base::OnceClosure done_callback) {
+  std::move(done_callback).Run();
 }
 
 std::unique_ptr<MetricsLogUploader> TestMetricsServiceClient::CreateUploader(

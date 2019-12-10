@@ -238,9 +238,6 @@ void CompositorFrameReporter::TerminateReporter() {
       MissedSubmittedFrame();
       termination_status_str = "did_not_present_frame";
       break;
-    case FrameTerminationStatus::kMainFrameAborted:
-      termination_status_str = "main_frame_aborted";
-      break;
     case FrameTerminationStatus::kReplacedByNewReporter:
       report_latency = true;
       MissedSubmittedFrame();

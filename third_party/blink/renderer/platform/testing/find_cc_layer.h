@@ -30,7 +30,7 @@ Vector<const cc::Layer*> CcLayersByDOMElementId(const cc::Layer* root,
 const cc::Layer* CcLayerByCcElementId(const cc::Layer* root,
                                       const CompositorElementId&);
 
-const cc::Layer* CcLayerByScrollElementId(
+const cc::Layer* ScrollingContentsCcLayerByScrollElementId(
     const cc::Layer* root,
     const CompositorElementId& scroll_element_id);
 

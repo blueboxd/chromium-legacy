@@ -187,7 +187,7 @@ TEST_F(PasswordFormFillingTest, TestFillOnLoadSuggestion) {
     if (!test_case.current_password_present) {
       observed_form.password_element.clear();
       observed_form.password_element_renderer_id =
-          autofill::FormFieldData::kNotSetFormControlRendererId;
+          autofill::FormData::kNotSetRendererId;
     }
 
     PasswordFormFillData fill_data;

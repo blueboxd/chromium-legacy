@@ -2539,4 +2539,27 @@ TEST_F(StyleEngineTest, RecalcEnsuredStyleOutsideFlatTreeV0) {
   EXPECT_FALSE(GetDocument().body()->ChildNeedsStyleRecalc());
 }
 
+TEST_F(StyleEngineTest, ForceReattachRecalcRootAttachShadow) {
+  ScopedFlatTreeStyleRecalcForTest scope(true);
+
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <div id="reattach"></div><div id="host"><span></span></div>
+  )HTML");
+
+  auto* reattach = GetDocument().getElementById("reattach");
+  auto* host = GetDocument().getElementById("host");
+
+  UpdateAllLifecyclePhases();
+
+  reattach->SetForceReattachLayoutTree();
+  EXPECT_FALSE(reattach->NeedsStyleRecalc());
+  EXPECT_EQ(reattach, GetStyleRecalcRoot());
+
+  // Attaching the shadow root will call RemovedFromFlatTree() on the span child
+  // of the host and mark the host for style recalc . Make sure the recalc root
+  // is correctly updated.
+  host->AttachShadowRootInternal(ShadowRootType::kOpen);
+  EXPECT_EQ(GetDocument().body(), GetStyleRecalcRoot());
+}
+
 }  // namespace blink

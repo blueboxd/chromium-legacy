@@ -39,6 +39,7 @@ class DirectActionUsageHistogram {
         map.put(ChromeDirectActionIds.NEW_TAB, DirectActionId.NEW_TAB);
         map.put(ChromeDirectActionIds.CLOSE_TAB, DirectActionId.CLOSE_TAB);
         map.put(ChromeDirectActionIds.CLOSE_ALL_TABS, DirectActionId.CLOSE_ALL_TABS);
+        map.put(ChromeDirectActionIds.FIND_IN_PAGE, DirectActionId.FIND_IN_PAGE);
         ACTION_ID_MAP = Collections.unmodifiableMap(map);
     }
 
@@ -50,7 +51,8 @@ class DirectActionUsageHistogram {
     @IntDef({DirectActionId.GO_BACK, DirectActionId.RELOAD, DirectActionId.GO_FORWARD,
             DirectActionId.BOOKMARK_THIS_PAGE, DirectActionId.DOWNLOADS, DirectActionId.PREFERENCES,
             DirectActionId.OPEN_HISTORY, DirectActionId.HELP, DirectActionId.NEW_TAB,
-            DirectActionId.CLOSE_TAB, DirectActionId.CLOSE_ALL_TABS, DirectActionId.NUM_ENTRIES})
+            DirectActionId.CLOSE_TAB, DirectActionId.CLOSE_ALL_TABS, DirectActionId.FIND_IN_PAGE,
+            DirectActionId.NUM_ENTRIES})
     @interface DirectActionId {
         /** No action was executed. */
         int UNKNOWN = 0;
@@ -70,8 +72,9 @@ class DirectActionUsageHistogram {
         int NEW_TAB = 10;
         int CLOSE_TAB = 11;
         int CLOSE_ALL_TABS = 12;
+        int FIND_IN_PAGE = 13;
 
-        int NUM_ENTRIES = 13;
+        int NUM_ENTRIES = 14;
     }
 
     /**

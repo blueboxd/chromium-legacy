@@ -25,7 +25,7 @@ SharingMessageSender::SharingMessageSender(
 SharingMessageSender::~SharingMessageSender() = default;
 
 void SharingMessageSender::SendMessageToDevice(
-    const std::string& device_guid,
+    const syncer::DeviceInfo& device,
     base::TimeDelta response_timeout,
     chrome_browser_sharing::SharingMessage message,
     ResponseCallback callback) {
@@ -38,7 +38,7 @@ void SharingMessageSender::SendMessageToDevice(
       SharingPayloadCaseToMessageType(message.payload_case());
 
   receiver_device_platform_.emplace(
-      message_guid, sync_prefs_->GetDevicePlatform(device_guid));
+      message_guid, sync_prefs_->GetDevicePlatform(device.guid()));
 
   base::PostDelayedTask(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, content::BrowserThread::UI},
@@ -48,11 +48,11 @@ void SharingMessageSender::SendMessageToDevice(
                      /*response=*/nullptr),
       response_timeout);
 
-  // TODO(crbug/1015411): Here we assume caller gets |device_guid| from
+  // TODO(crbug/1015411): Here we assume the caller gets the device guid from
   // GetDeviceCandidates, so both DeviceInfoTracker and LocalDeviceInfoProvider
   // are already ready. It's better to queue up the message and wait until
   // DeviceInfoTracker and LocalDeviceInfoProvider are ready.
-  auto target_info = sync_prefs_->GetTargetInfo(device_guid);
+  auto target_info = sync_prefs_->GetTargetInfo(device.guid());
   if (!target_info) {
     InvokeSendMessageCallback(message_guid, message_type,
                               SharingSendMessageResult::kDeviceNotFound,
@@ -77,6 +77,9 @@ void SharingMessageSender::SendMessageToDevice(
                               /*response=*/nullptr);
     return;
   }
+
+  LogSharingDeviceLastUpdatedAge(
+      message_type, base::Time::Now() - device.last_updated_timestamp());
 
   message.set_sender_guid(local_device_info->guid());
   message.set_sender_device_name(

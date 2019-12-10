@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
@@ -30,7 +31,8 @@ using SuccessCallback =
     base::OnceCallback<void(bool success, const std::string& failure_reason)>;
 
 struct SharedPathInfo {
-  explicit SharedPathInfo(const std::string& vm_name);
+  explicit SharedPathInfo(std::unique_ptr<base::FilePathWatcher> watcher,
+                          const std::string& vm_name);
   SharedPathInfo(SharedPathInfo&&);
   ~SharedPathInfo();
 
@@ -152,29 +154,24 @@ class GuestOsSharePath : public KeyedService,
                                 const base::FilePath& path,
                                 SuccessCallback callback);
 
-  void StartFileWatcher(const base::FilePath& path);
+  void OnFileWatcherDeleted(const base::FilePath& path);
 
-  // Callback for FilePathWatcher.
-  void OnFileChanged(const base::FilePath& path, bool error);
-
-  // Gets the Volume mount that this path belongs to on UI thread.
-  base::FilePath GetVolumeMountOnUIThread(const base::FilePath& path);
-
-  // Blocking function to check if the mount_path of a path is removed.
-  void CheckIfVolumeMountRemoved(const base::FilePath& path,
-                                 const base::FilePath& mount_path);
+  void OnVolumeMountCheck(const base::FilePath& path, bool mount_exists);
 
   // Returns info for specified path or nullptr if not found.
   SharedPathInfo* FindSharedPathInfo(const base::FilePath& path);
 
   Profile* profile_;
-  scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
+  // Task runner for FilePathWatchers to be created, run, and be destroyed on.
+  scoped_refptr<base::SequencedTaskRunner> file_watcher_task_runner_;
   bool first_for_session_ = true;
 
   // Allow seneschal callback to be overridden for testing.
   SeneschalCallback seneschal_callback_;
   base::ObserverList<Observer>::Unchecked observers_;
   std::map<base::FilePath, SharedPathInfo> shared_paths_;
+
+  base::WeakPtrFactory<GuestOsSharePath> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GuestOsSharePath);
 };  // class

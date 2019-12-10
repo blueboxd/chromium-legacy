@@ -22,7 +22,6 @@
 #include "chrome/browser/autofill/mock_manual_filling_view.h"
 #include "chrome/browser/autofill/mock_password_accessory_controller.h"
 #include "chrome/browser/password_manager/password_accessory_controller.h"
-#include "chrome/browser/password_manager/touch_to_fill_controller.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/password_manager/core/common/password_manager_features.h"

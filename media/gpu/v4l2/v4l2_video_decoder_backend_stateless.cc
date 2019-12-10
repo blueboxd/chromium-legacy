@@ -118,11 +118,6 @@ V4L2StatelessVideoDecoderBackend::~V4L2StatelessVideoDecoderBackend() {
       !decode_request_queue_.empty()) {
     VLOGF(1) << "Should not destroy backend during pending decode!";
   }
-
-  if (avd_) {
-    avd_->Reset();
-    avd_ = nullptr;
-  }
 }
 
 bool V4L2StatelessVideoDecoderBackend::Initialize() {
@@ -138,33 +133,8 @@ bool V4L2StatelessVideoDecoderBackend::Initialize() {
     return false;
   }
 
-  // Create codec-specific AcceleratedVideoDecoder.
-  // TODO(akahuang): Check the profile is supported.
-  if (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX) {
-    if (supports_requests_) {
-      avd_.reset(new H264Decoder(
-          std::make_unique<V4L2H264Accelerator>(this, device_.get()),
-          profile_));
-    } else {
-      avd_.reset(new H264Decoder(
-          std::make_unique<V4L2LegacyH264Accelerator>(this, device_.get()),
-          profile_));
-    }
-  } else if (profile_ >= VP8PROFILE_MIN && profile_ <= VP8PROFILE_MAX) {
-    if (supports_requests_) {
-      avd_.reset(new VP8Decoder(
-          std::make_unique<V4L2VP8Accelerator>(this, device_.get())));
-    } else {
-      avd_.reset(new VP8Decoder(
-          std::make_unique<V4L2LegacyVP8Accelerator>(this, device_.get())));
-    }
-  } else if (profile_ >= VP9PROFILE_MIN && profile_ <= VP9PROFILE_MAX) {
-    avd_.reset(new VP9Decoder(
-        std::make_unique<V4L2VP9Accelerator>(this, device_.get()), profile_));
-  } else {
-    VLOGF(1) << "Unsupported profile " << GetProfileName(profile_);
+  if (!CreateAvd())
     return false;
-  }
 
   if (supports_requests_) {
     requests_queue_ = device_->GetRequestsQueue();
@@ -456,7 +426,6 @@ bool V4L2StatelessVideoDecoderBackend::PumpDecodeTask() {
           DVLOGF(3) << "Only profile is changed. No need to do anything.";
           continue;
         }
-        pic_size_ = avd_->GetPicSize();
 
         DVLOGF(3) << "Need to change resolution. Pause decoding.";
         client_->InitiateFlush();
@@ -575,13 +544,14 @@ void V4L2StatelessVideoDecoderBackend::ChangeResolution() {
   // be no V4L2DecodeSurface left.
   DCHECK(surfaces_at_device_.empty());
   DCHECK(output_request_queue_.empty());
-  // Set output format with the new resolution.
-  DCHECK(!pic_size_.IsEmpty());
-  DVLOGF(3) << "Change resolution to " << pic_size_.ToString();
 
   size_t num_output_frames = avd_->GetRequiredNumOfPictures();
   gfx::Rect visible_rect = avd_->GetVisibleRect();
-  client_->ChangeResolution(pic_size_, visible_rect, num_output_frames);
+  gfx::Size pic_size = avd_->GetPicSize();
+  // Set output format with the new resolution.
+  DCHECK(!pic_size.IsEmpty());
+  DVLOGF(3) << "Change resolution to " << pic_size.ToString();
+  client_->ChangeResolution(pic_size, visible_rect, num_output_frames);
 }
 
 void V4L2StatelessVideoDecoderBackend::OnChangeResolutionDone(bool success) {
@@ -590,6 +560,7 @@ void V4L2StatelessVideoDecoderBackend::OnChangeResolutionDone(bool success) {
     return;
   }
 
+  pic_size_ = avd_->GetPicSize();
   client_->CompleteFlush();
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&V4L2StatelessVideoDecoderBackend::DoDecodeWork,
@@ -610,8 +581,15 @@ void V4L2StatelessVideoDecoderBackend::ClearPendingRequests(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOGF(3);
 
-  if (avd_)
-    avd_->Reset();
+  if (avd_) {
+    // If we reset during resolution change, re-create AVD. Then the new AVD
+    // will trigger resolution change again after reset.
+    if (pic_size_ != avd_->GetPicSize()) {
+      CreateAvd();
+    } else {
+      avd_->Reset();
+    }
+  }
 
   // Clear output_request_queue_.
   while (!output_request_queue_.empty())
@@ -675,6 +653,40 @@ bool V4L2StatelessVideoDecoderBackend::IsSupportedProfile(
   }
   return std::find(supported_profiles_.begin(), supported_profiles_.end(),
                    profile) != supported_profiles_.end();
+}
+
+bool V4L2StatelessVideoDecoderBackend::CreateAvd() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DVLOGF(3);
+
+  pic_size_ = gfx::Size();
+
+  if (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX) {
+    if (supports_requests_) {
+      avd_.reset(new H264Decoder(
+          std::make_unique<V4L2H264Accelerator>(this, device_.get()),
+          profile_));
+    } else {
+      avd_.reset(new H264Decoder(
+          std::make_unique<V4L2LegacyH264Accelerator>(this, device_.get()),
+          profile_));
+    }
+  } else if (profile_ >= VP8PROFILE_MIN && profile_ <= VP8PROFILE_MAX) {
+    if (supports_requests_) {
+      avd_.reset(new VP8Decoder(
+          std::make_unique<V4L2VP8Accelerator>(this, device_.get())));
+    } else {
+      avd_.reset(new VP8Decoder(
+          std::make_unique<V4L2LegacyVP8Accelerator>(this, device_.get())));
+    }
+  } else if (profile_ >= VP9PROFILE_MIN && profile_ <= VP9PROFILE_MAX) {
+    avd_.reset(new VP9Decoder(
+        std::make_unique<V4L2VP9Accelerator>(this, device_.get()), profile_));
+  } else {
+    VLOGF(1) << "Unsupported profile " << GetProfileName(profile_);
+    return false;
+  }
+  return true;
 }
 
 }  // namespace media

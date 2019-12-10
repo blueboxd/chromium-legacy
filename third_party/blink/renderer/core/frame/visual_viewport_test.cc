@@ -7,8 +7,10 @@
 #include <memory>
 
 #include "cc/layers/picture_layer.h"
+#include "cc/layers/scrollbar_layer_base.h"
 #include "cc/trees/property_tree.h"
 #include "cc/trees/scroll_node.h"
+#include "cc/trees/transform_node.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
@@ -2557,31 +2559,130 @@ TEST_F(VisualViewportScrollIntoViewTest, ScrollingToFixedFromJavascript) {
   EXPECT_EQ(100.f, visual_viewport.GetScrollOffset().Height());
 }
 
-TEST_P(VisualViewportTest, DeviceEmulationTransformNode) {
+TEST_P(VisualViewportTest, DeviceEmulation) {
   InitializeWithAndroidSettings();
-
-  WebDeviceEmulationParams params;
-  params.viewport_offset = WebFloatPoint(314, 159);
-  params.viewport_scale = 1.f;
-  WebView()->EnableDeviceEmulation(params);
 
   WebView()->MainFrameWidget()->Resize(IntSize(400, 400));
   NavigateTo("about:blank");
   UpdateAllLifecyclePhases();
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
+  EXPECT_FALSE(visual_viewport.GetDeviceEmulationTransformNode());
+  EXPECT_FALSE(GetFrame()->View()->VisualViewportNeedsRepaint());
 
-  TransformationMatrix expected_transform = TransformationMatrix();
-  expected_transform.Translate(-params.viewport_offset.x,
-                               -params.viewport_offset.y);
-  EXPECT_EQ(expected_transform.To2DTranslation(),
+  WebDeviceEmulationParams params;
+  params.viewport_offset = WebFloatPoint();
+  params.viewport_scale = 1.f;
+  WebView()->EnableDeviceEmulation(params);
+
+  UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_FALSE(visual_viewport.GetDeviceEmulationTransformNode());
+  EXPECT_FALSE(GetFrame()->View()->VisualViewportNeedsRepaint());
+  UpdateAllLifecyclePhases();
+  EXPECT_FALSE(GetFrame()->View()->VisualViewportNeedsRepaint());
+
+  // Set device mulation with viewport offset should repaint visual viewport.
+  params.viewport_offset = WebFloatPoint(314, 159);
+  WebView()->EnableDeviceEmulation(params);
+
+  UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_TRUE(GetFrame()->View()->VisualViewportNeedsRepaint());
+  ASSERT_TRUE(visual_viewport.GetDeviceEmulationTransformNode());
+  EXPECT_EQ(FloatSize(-params.viewport_offset.x, -params.viewport_offset.y),
             visual_viewport.GetDeviceEmulationTransformNode()->Translation2D());
+  UpdateAllLifecyclePhases();
+  EXPECT_FALSE(GetFrame()->View()->VisualViewportNeedsRepaint());
+
+  // Change device emulation with scale should not repaint visual viewport.
+  params.viewport_offset = WebFloatPoint();
+  params.viewport_scale = 1.5f;
+  WebView()->EnableDeviceEmulation(params);
+
+  UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_FALSE(GetFrame()->View()->VisualViewportNeedsRepaint());
+  ASSERT_TRUE(visual_viewport.GetDeviceEmulationTransformNode());
+  EXPECT_EQ(TransformationMatrix().Scale(1.5f),
+            visual_viewport.GetDeviceEmulationTransformNode()->Matrix());
+  UpdateAllLifecyclePhases();
+  EXPECT_FALSE(GetFrame()->View()->VisualViewportNeedsRepaint());
 
   // Set an identity device emulation transform and ensure the transform
-  // paint property node is cleared.
+  // paint property node is cleared and repaint visual viewport.
   WebView()->EnableDeviceEmulation(WebDeviceEmulationParams());
+  UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_TRUE(GetFrame()->View()->VisualViewportNeedsRepaint());
+  EXPECT_FALSE(visual_viewport.GetDeviceEmulationTransformNode());
   UpdateAllLifecyclePhases();
-  EXPECT_EQ(visual_viewport.GetDeviceEmulationTransformNode(), nullptr);
+  EXPECT_FALSE(GetFrame()->View()->VisualViewportNeedsRepaint());
+}
+
+TEST_P(VisualViewportTest, PaintScrollbar) {
+  InitializeWithAndroidSettings();
+
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
+  WebView()->MainFrameWidget()->Resize(IntSize(400, 400));
+  frame_test_helpers::LoadHTMLString(WebView()->MainFrameImpl(),
+                                     R"HTML(
+        <!DOCTYPE html>"
+        <meta name='viewport' content='width=device-width, initial-scale=1'>
+        <body style='width: 2000px; height: 2000px'></body>
+      )HTML",
+                                     base_url);
+  UpdateAllLifecyclePhases();
+
+  auto check_scrollbar = [](const cc::Layer* scrollbar, float scale) {
+    EXPECT_TRUE(scrollbar->DrawsContent());
+    EXPECT_FALSE(scrollbar->HitTestable());
+    EXPECT_TRUE(scrollbar->is_scrollbar());
+    EXPECT_EQ(
+        cc::VERTICAL,
+        static_cast<const cc::ScrollbarLayerBase*>(scrollbar)->orientation());
+    EXPECT_EQ(gfx::Size(7, 393), scrollbar->bounds());
+    EXPECT_EQ(gfx::Vector2dF(393, 0), scrollbar->offset_to_transform_parent());
+
+    // ScreenSpaceTransform is in the device emulation transform space, so it's
+    // not affected by device emulation scale.
+    gfx::Transform screen_space_transform;
+    screen_space_transform.Translate(393, 0);
+    EXPECT_EQ(screen_space_transform, scrollbar->ScreenSpaceTransform());
+
+    gfx::Transform transform;
+    transform.Scale(scale, scale);
+    EXPECT_EQ(transform,
+              scrollbar->layer_tree_host()
+                  ->property_trees()
+                  ->transform_tree.Node(scrollbar->transform_tree_index())
+                  ->local);
+  };
+
+  // The last layer should be the vertical scrollbar.
+  const cc::Layer* scrollbar =
+      GetFrame()->View()->RootCcLayer()->children().back().get();
+  check_scrollbar(scrollbar, 1.f);
+
+  // Apply device emulation scale.
+  WebDeviceEmulationParams params;
+  params.viewport_offset = WebFloatPoint();
+  params.viewport_scale = 1.5f;
+  WebView()->EnableDeviceEmulation(params);
+  UpdateAllLifecyclePhases();
+  ASSERT_EQ(scrollbar,
+            GetFrame()->View()->RootCcLayer()->children().back().get());
+  check_scrollbar(scrollbar, 1.5f);
+
+  params.viewport_scale = 1.f;
+  WebView()->EnableDeviceEmulation(params);
+  UpdateAllLifecyclePhases();
+  ASSERT_EQ(scrollbar,
+            GetFrame()->View()->RootCcLayer()->children().back().get());
+  check_scrollbar(scrollbar, 1.f);
+
+  params.viewport_scale = 0.75f;
+  WebView()->EnableDeviceEmulation(params);
+  UpdateAllLifecyclePhases();
+  ASSERT_EQ(scrollbar,
+            GetFrame()->View()->RootCcLayer()->children().back().get());
+  check_scrollbar(scrollbar, 0.75f);
 }
 
 // When a pinch-zoom occurs, the viewport scale and translation nodes can be

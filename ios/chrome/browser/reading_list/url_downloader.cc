@@ -123,7 +123,7 @@ void URLDownloader::DownloadCompletionHandler(
         task_runner_.get(), FROM_HERE,
         base::Bind(
             [](const base::FilePath& offline_directory_path) {
-              base::DeleteFile(offline_directory_path, true);
+              base::DeleteFileRecursively(offline_directory_path);
             },
             directory_path),
         post_delete);
@@ -154,7 +154,7 @@ void URLDownloader::HandleNextTask() {
   if (task.first == DELETE) {
     task_tracker_.PostTaskAndReplyWithResult(
         task_runner_.get(), FROM_HERE,
-        base::Bind(&base::DeleteFile, directory_path, true),
+        base::Bind(&base::DeleteFileRecursively, directory_path),
         base::Bind(&URLDownloader::DeleteCompletionHandler,
                    base::Unretained(this), url));
   } else if (task.first == DOWNLOAD) {

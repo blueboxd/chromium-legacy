@@ -21,7 +21,7 @@ class MockSharingService : public SharingService {
           sync_pb::SharingSpecificFields::EnabledFeatures required_feature));
 
   MOCK_METHOD4(SendMessageToDevice,
-               void(const std::string& device_guid,
+               void(const syncer::DeviceInfo& device,
                     base::TimeDelta response_timeout,
                     chrome_browser_sharing::SharingMessage message,
                     SharingMessageSender::ResponseCallback callback));

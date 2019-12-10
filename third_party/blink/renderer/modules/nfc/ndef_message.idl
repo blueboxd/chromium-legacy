@@ -12,6 +12,5 @@
     RaisesException=Constructor,
     Exposed=Window
 ] interface NDEFMessage {
-    readonly attribute USVString url;
     readonly attribute FrozenArray<NDEFRecord> records;
 };

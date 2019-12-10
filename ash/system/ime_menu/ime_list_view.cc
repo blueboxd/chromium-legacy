@@ -4,12 +4,12 @@
 
 #include "ash/system/ime_menu/ime_list_view.h"
 
-#include "ash/ime/ime_controller.h"
+#include "ash/ime/ime_controller_impl.h"
 #include "ash/ime/ime_switch_type.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/keyboard/virtual_keyboard_controller.h"
-#include "ash/public/mojom/ime_info.mojom.h"
+#include "ash/public/cpp/ime_info.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -210,15 +210,15 @@ ImeListView::~ImeListView() = default;
 
 void ImeListView::Init(bool show_keyboard_toggle,
                        SingleImeBehavior single_ime_behavior) {
-  ImeController* ime_controller = Shell::Get()->ime_controller();
+  ImeControllerImpl* ime_controller = Shell::Get()->ime_controller();
   Update(ime_controller->current_ime().id, ime_controller->available_imes(),
          ime_controller->current_ime_menu_items(), show_keyboard_toggle,
          single_ime_behavior);
 }
 
 void ImeListView::Update(const std::string& current_ime_id,
-                         const std::vector<mojom::ImeInfo>& list,
-                         const std::vector<mojom::ImeMenuItem>& property_items,
+                         const std::vector<ImeInfo>& list,
+                         const std::vector<ImeMenuItem>& property_items,
                          bool show_keyboard_toggle,
                          SingleImeBehavior single_ime_behavior) {
   ResetImeListView();
@@ -264,8 +264,8 @@ void ImeListView::CloseImeListView() {
 
 void ImeListView::AppendImeListAndProperties(
     const std::string& current_ime_id,
-    const std::vector<mojom::ImeInfo>& list,
-    const std::vector<mojom::ImeMenuItem>& property_list) {
+    const std::vector<ImeInfo>& list,
+    const std::vector<ImeMenuItem>& property_list) {
   DCHECK(ime_map_.empty());
   for (size_t i = 0; i < list.size(); i++) {
     const bool selected = current_ime_id == list[i].id;
@@ -316,7 +316,7 @@ void ImeListView::PrependKeyboardStatusRow() {
 }
 
 void ImeListView::HandleViewClicked(views::View* view) {
-  ImeController* ime_controller = Shell::Get()->ime_controller();
+  ImeControllerImpl* ime_controller = Shell::Get()->ime_controller();
   std::map<views::View*, std::string>::const_iterator ime = ime_map_.find(view);
   if (ime != ime_map_.end()) {
     base::RecordAction(base::UserMetricsAction("StatusArea_IME_SwitchMode"));

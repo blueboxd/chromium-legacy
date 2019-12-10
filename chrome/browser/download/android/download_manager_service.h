@@ -13,12 +13,13 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/download/download_manager_utils.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_observer.h"
 #include "components/download/public/common/all_download_event_notifier.h"
 #include "components/download/public/common/in_progress_download_manager.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 using base::android::JavaParamRef;
 
@@ -33,7 +34,7 @@ class SimpleDownloadManagerCoordinator;
 // Java object.
 class DownloadManagerService
     : public download::AllDownloadEventNotifier::Observer,
-      public content::NotificationObserver {
+      public ProfileObserver {
  public:
   static void CreateAutoResumptionHandler();
 
@@ -156,10 +157,8 @@ class DownloadManagerService
       download::SimpleDownloadManagerCoordinator* coordinator,
       download::DownloadItem* item) override;
 
-  // content::NotificationObserver methods.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // ProfileObserver:
+  void OnOffTheRecordProfileCreated(Profile* off_the_record) override;
 
   // Called by the java code to create and insert an interrupted download to
   // |in_progress_manager_| for testing purpose.
@@ -245,6 +244,8 @@ class DownloadManagerService
   download::SimpleDownloadManagerCoordinator* GetCoordinator(
       bool is_off_the_record);
 
+  void InitializeForProfile(Profile* profile);
+
   // Reference to the Java object.
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 
@@ -280,8 +281,7 @@ class DownloadManagerService
 
   ResumeCallback resume_callback_for_testing_;
 
-  // The Registrar used to register for notifications.
-  content::NotificationRegistrar registrar_;
+  ScopedObserver<Profile, ProfileObserver> observed_profiles_{this};
 
   download::SimpleDownloadManagerCoordinator* original_coordinator_;
   download::SimpleDownloadManagerCoordinator* off_the_record_coordinator_;

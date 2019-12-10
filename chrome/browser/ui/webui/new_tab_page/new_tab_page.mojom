@@ -4,6 +4,13 @@
 
 module new_tab_page.mojom;
 
+import "url/mojom/url.mojom";
+
+struct MostVisitedTile {
+  string title;
+  url.mojom.Url url;
+};
+
 // Used by the WebUI page to bootstrap bidirectional communication.
 interface PageHandlerFactory {
   // The WebUI page's |BrowserProxy| singleton calls this method when the page
@@ -14,8 +21,23 @@ interface PageHandlerFactory {
 
 // Browser-side handler for requests from WebUI page.
 interface PageHandler {
+  // Adds tile.
+  AddMostVisitedTile(url.mojom.Url url, string title) => (bool success);
+  // Deletes tile by |url|.
+  DeleteMostVisitedTile(url.mojom.Url url) => (bool success);
+  // Replaces the custom and most-visited tiles with the default tile set.
+  RestoreMostVisitedDefaults();
+  // Undoes the last action done to the tiles (add, delete, reorder, restore or
+  // update). Note that only the last action can be undone.
+  UndoMostVisitedTileAction();
+  // Updates a tile by url.
+  UpdateMostVisitedTile(url.mojom.Url url, url.mojom.Url new_url,
+                        string new_title)
+      => (bool success);
 };
 
 // WebUI-side handler for requests from the browser.
 interface Page {
+  // Updates the page with tiles.
+  SetMostVisitedTiles(array<MostVisitedTile> tiles);
 };

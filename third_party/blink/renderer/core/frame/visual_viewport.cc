@@ -124,12 +124,15 @@ PaintPropertyChangeType VisualViewport::UpdatePaintPropertyNodesIfNeeded(
 
   needs_paint_property_update_ = false;
 
-  parent_property_tree_state_ =
-      PropertyTreeState(*context.current.transform, *context.current.clip,
-                        *context.current_effect);
   auto* transform_parent = context.current.transform;
   auto* scroll_parent = context.current.scroll;
+  auto* clip_parent = context.current.clip;
+  auto* effect_parent = context.current_effect;
+
+  DCHECK(transform_parent);
   DCHECK(scroll_parent);
+  DCHECK(clip_parent);
+  DCHECK(effect_parent);
 
   {
     const auto& device_emulation_transform =
@@ -298,13 +301,12 @@ PaintPropertyChangeType VisualViewport::UpdatePaintPropertyNodesIfNeeded(
     state.compositor_element_id =
         GetScrollbarElementId(ScrollbarOrientation::kHorizontalScrollbar);
     if (!horizontal_scrollbar_effect_node_) {
-      horizontal_scrollbar_effect_node_ = EffectPaintPropertyNode::Create(
-          parent_property_tree_state_.Effect(), std::move(state));
+      horizontal_scrollbar_effect_node_ =
+          EffectPaintPropertyNode::Create(*effect_parent, std::move(state));
       change = PaintPropertyChangeType::kNodeAddedOrRemoved;
     } else {
-      change = std::max(
-          change, horizontal_scrollbar_effect_node_->Update(
-                      parent_property_tree_state_.Effect(), std::move(state)));
+      change = std::max(change, horizontal_scrollbar_effect_node_->Update(
+                                    *effect_parent, std::move(state)));
     }
   }
 
@@ -317,15 +319,20 @@ PaintPropertyChangeType VisualViewport::UpdatePaintPropertyNodesIfNeeded(
     state.compositor_element_id =
         GetScrollbarElementId(ScrollbarOrientation::kVerticalScrollbar);
     if (!vertical_scrollbar_effect_node_) {
-      vertical_scrollbar_effect_node_ = EffectPaintPropertyNode::Create(
-          parent_property_tree_state_.Effect(), std::move(state));
+      vertical_scrollbar_effect_node_ =
+          EffectPaintPropertyNode::Create(*effect_parent, std::move(state));
       change = PaintPropertyChangeType::kNodeAddedOrRemoved;
     } else {
-      change = std::max(
-          change, vertical_scrollbar_effect_node_->Update(
-                      parent_property_tree_state_.Effect(), std::move(state)));
+      change = std::max(change, vertical_scrollbar_effect_node_->Update(
+                                    *effect_parent, std::move(state)));
     }
   }
+
+  parent_property_tree_state_ =
+      PropertyTreeState(*transform_parent, *clip_parent, *effect_parent);
+
+  if (change == PaintPropertyChangeType::kNodeAddedOrRemoved)
+    MainFrame()->View()->SetVisualViewportNeedsRepaint();
 
   return change;
 }
@@ -645,6 +652,7 @@ void VisualViewport::UpdateScrollbarLayer(ScrollbarOrientation orientation) {
         orientation, thumb_thickness, scrollbar_margin, false,
         GetScrollbarElementId(orientation));
     scrollbar_layer->SetScrollElementId(scroll_layer_->element_id());
+    scrollbar_layer->SetIsDrawable(true);
   }
 
   scrollbar_layer->SetBounds(

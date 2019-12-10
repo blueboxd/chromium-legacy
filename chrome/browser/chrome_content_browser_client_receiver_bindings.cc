@@ -209,16 +209,21 @@ void ChromeContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
       content::WebContents::FromRenderFrameHost(render_frame_host);
   if (!web_contents)
     return;
-  auto* client = extensions::ExtensionsBrowserClient::Get();
-  auto* web_observer = client->GetExtensionWebContentsObserver(web_contents);
-  if (!web_observer)
+
+  const GURL& site = render_frame_host->GetSiteInstance()->GetSiteURL();
+  if (!site.SchemeIs(extensions::kExtensionScheme))
     return;
-  const extensions::Extension* extension =
-      web_observer->GetExtensionFromFrame(render_frame_host, false);
+
+  content::BrowserContext* browser_context =
+      render_frame_host->GetProcess()->GetBrowserContext();
+  auto* extension = extensions::ExtensionRegistry::Get(browser_context)
+                        ->enabled_extensions()
+                        .GetByID(site.host());
   if (!extension)
     return;
-  client->RegisterBrowserInterfaceBindersForFrame(map, render_frame_host,
-                                                  extension);
+  extensions::ExtensionsBrowserClient::Get()
+      ->RegisterBrowserInterfaceBindersForFrame(map, render_frame_host,
+                                                extension);
 #endif
 }
 

@@ -7,7 +7,7 @@
 #include <memory>
 #include <vector>
 
-#include "ash/ime/ime_controller.h"
+#include "ash/ime/ime_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -32,17 +32,16 @@ namespace ash {
 namespace tray {
 
 IMEDetailedView::IMEDetailedView(DetailedViewDelegate* delegate,
-                                 ImeController* ime_controller)
+                                 ImeControllerImpl* ime_controller)
     : ImeListView(delegate), ime_controller_(ime_controller) {
   DCHECK(ime_controller_);
 }
 
-void IMEDetailedView::Update(
-    const std::string& current_ime_id,
-    const std::vector<mojom::ImeInfo>& list,
-    const std::vector<mojom::ImeMenuItem>& property_list,
-    bool show_keyboard_toggle,
-    SingleImeBehavior single_ime_behavior) {
+void IMEDetailedView::Update(const std::string& current_ime_id,
+                             const std::vector<ImeInfo>& list,
+                             const std::vector<ImeMenuItem>& property_list,
+                             bool show_keyboard_toggle,
+                             SingleImeBehavior single_ime_behavior) {
   ImeListView::Update(current_ime_id, list, property_list, show_keyboard_toggle,
                       single_ime_behavior);
   CreateTitleRow(IDS_ASH_STATUS_TRAY_IME);

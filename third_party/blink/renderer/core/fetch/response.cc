@@ -54,7 +54,7 @@ FetchResponseData* FilterResponseDataInternal(
       return response->CreateBasicFilteredResponse();
       break;
     case network::mojom::FetchResponseType::kCors: {
-      WebHTTPHeaderSet header_names;
+      HTTPHeaderSet header_names;
       for (const auto& header : headers)
         header_names.insert(header.Ascii());
       return response->CreateCorsFilteredResponse(header_names);

@@ -21,7 +21,7 @@ namespace content {
 // once.
 CONTENT_EXPORT void FetchHistogramsAsynchronously(
     scoped_refptr<base::TaskRunner> task_runner,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     base::TimeDelta wait_time);
 
 }  // namespace content

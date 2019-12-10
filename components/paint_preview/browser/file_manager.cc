@@ -105,7 +105,7 @@ bool FileManager::CreateOrGetDirectoryFor(const GURL& url,
         DVLOG(1) << "ERROR: failed to unzip: " << path << " to " << dst_path;
         return false;
       }
-      base::DeleteFile(path, true);
+      base::DeleteFileRecursively(path);
       *directory = dst_path;
       return true;
     }
@@ -126,7 +126,7 @@ bool FileManager::CompressDirectoryFor(const GURL& url) {
       base::FilePath dst_path = path.AddExtensionASCII(kZipExt);
       if (!zip::Zip(path, dst_path, /* hidden files */ true))
         return false;
-      base::DeleteFile(path, true);
+      base::DeleteFileRecursively(path);
       return true;
     }
     case kZip:
@@ -143,7 +143,7 @@ void FileManager::DeleteArtifactsFor(const std::vector<GURL>& urls) {
     StorageType storage_type = GetPathForUrl(url, &path);
     if (storage_type == FileManager::StorageType::kNone)
       continue;
-    base::DeleteFile(path, true);
+    base::DeleteFileRecursively(path);
   }
 }
 

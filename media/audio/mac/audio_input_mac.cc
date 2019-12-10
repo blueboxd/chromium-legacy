@@ -89,8 +89,8 @@ void PCMQueueInAudioInputStream::Start(AudioInputCallback* callback) {
   if (manager_->ShouldDeferStreamStart()) {
     // Use a cancellable closure so that if Stop() is called before Start()
     // actually runs, we can cancel the pending start.
-    deferred_start_cb_.Reset(base::Bind(
-        &PCMQueueInAudioInputStream::Start, base::Unretained(this), callback));
+    deferred_start_cb_.Reset(base::BindOnce(&PCMQueueInAudioInputStream::Start,
+                                            base::Unretained(this), callback));
     manager_->GetTaskRunner()->PostDelayedTask(
         FROM_HERE,
         deferred_start_cb_.callback(),

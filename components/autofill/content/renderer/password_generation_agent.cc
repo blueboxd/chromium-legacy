@@ -52,7 +52,7 @@ using Logger = autofill::SavePasswordProgressLogger;
 
 // Returns the renderer id of the next password field in |control_elements|
 // after |new_password|. This field is likely to be the confirmation field.
-// Returns FormFieldData::kNotSetFormControlRendererId if there is no such
+// Returns FormData::kNotSetRendererId if there is no such
 // field.
 uint32_t FindConfirmationPasswordFieldId(
     const std::vector<WebFormControlElement>& control_elements,
@@ -61,7 +61,7 @@ uint32_t FindConfirmationPasswordFieldId(
       std::find(control_elements.begin(), control_elements.end(), new_password);
 
   if (iter == control_elements.end())
-    return FormFieldData::kNotSetFormControlRendererId;
+    return FormData::kNotSetRendererId;
 
   ++iter;
   for (; iter != control_elements.end(); ++iter) {
@@ -69,7 +69,7 @@ uint32_t FindConfirmationPasswordFieldId(
     if (input_element && input_element->IsPasswordFieldForAutofill())
       return input_element->UniqueRendererFormControlId();
   }
-  return FormFieldData::kNotSetFormControlRendererId;
+  return FormData::kNotSetRendererId;
 }
 
 void CopyElementValueToOtherInputElements(

@@ -54,7 +54,7 @@ void CleanUpFiles(base::FilePath root,
        !sub_directory.empty(); sub_directory = file_enumerator.Next()) {
     std::string directory_name = sub_directory.BaseName().value();
     if (!processed_directories.count(directory_name)) {
-      base::DeleteFile(sub_directory, true);
+      base::DeleteFileRecursively(sub_directory);
     }
   }
 }

@@ -283,7 +283,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitch(switches::kUseFirstDisplayAsInternal);
 
-    app_list::AppListSyncableServiceFactory::SetUseInTesting();
+    app_list::AppListSyncableServiceFactory::SetUseInTesting(true);
 
     BrowserWithTestWindowTest::SetUp();
 
@@ -478,6 +478,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     arc_test_.TearDown();
     launcher_controller_ = nullptr;
     BrowserWithTestWindowTest::TearDown();
+    app_list::AppListSyncableServiceFactory::SetUseInTesting(false);
   }
 
   std::unique_ptr<BrowserWindow> CreateBrowserWindow() override {

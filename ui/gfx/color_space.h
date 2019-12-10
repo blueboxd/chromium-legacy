@@ -31,17 +31,11 @@ template <class T, class U>
 struct StructTraits;
 }  // namespace mojo
 
-namespace gl {
-class ColorSpaceUtils;
-}  // namespace gl
-
 namespace gfx {
 
 namespace mojom {
 class ColorSpaceDataView;
 }  // namespace mojom
-
-class ICCProfile;
 
 // Used to represet a color space for the purpose of color conversion.
 // This is designed to be safe and compact enough to send over IPC
@@ -137,20 +131,22 @@ class COLOR_SPACE_EXPORT ColorSpace {
   };
 
   constexpr ColorSpace() {}
-  ColorSpace(PrimaryID primaries, TransferID transfer);
+  constexpr ColorSpace(PrimaryID primaries, TransferID transfer)
+      : ColorSpace(primaries, transfer, MatrixID::RGB, RangeID::FULL) {}
   constexpr ColorSpace(PrimaryID primaries,
                        TransferID transfer,
                        MatrixID matrix,
-                       RangeID full_range)
+                       RangeID range)
       : primaries_(primaries),
         transfer_(transfer),
         matrix_(matrix),
-        range_(full_range) {}
-
+        range_(range) {}
   ColorSpace(PrimaryID primaries,
-             const skcms_TransferFunction& fn,
+             TransferID transfer,
              MatrixID matrix,
-             RangeID full_range);
+             RangeID range,
+             const skcms_Matrix3x3* custom_primary_matrix,
+             const skcms_TransferFunction* cunstom_transfer_fn);
 
   explicit ColorSpace(const SkColorSpace& sk_color_space);
 
@@ -285,16 +281,16 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // Returns the current range ID.
   RangeID GetRangeID() const;
 
+  // Returns true if the transfer function is defined by an
+  // skcms_TransferFunction which is extended to all real values.
+  bool HasExtendedSkTransferFn() const;
+
  private:
   static void GetPrimaryMatrix(PrimaryID, skcms_Matrix3x3* to_XYZD50);
   static bool GetTransferFunction(TransferID, skcms_TransferFunction* fn);
 
   void SetCustomTransferFunction(const skcms_TransferFunction& fn);
   void SetCustomPrimaries(const skcms_Matrix3x3& to_XYZD50);
-
-  // Returns true if the transfer function is defined by an
-  // skcms_TransferFunction which is extended to all real values.
-  bool HasExtendedSkTransferFn() const;
 
   PrimaryID primaries_ = PrimaryID::INVALID;
   TransferID transfer_ = TransferID::INVALID;
@@ -309,16 +305,9 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // order.
   float custom_transfer_params_[7] = {0, 0, 0, 0, 0, 0, 0};
 
-  friend class ICCProfile;
-  friend class ICCProfileCache;
-  friend class ColorTransform;
-  friend class ColorTransformInternal;
-  friend class ColorSpaceWin;
   friend struct IPC::ParamTraits<ColorSpace>;
   friend struct mojo::StructTraits<gfx::mojom::ColorSpaceDataView,
                                    gfx::ColorSpace>;
-  friend class gl::ColorSpaceUtils;
-  FRIEND_TEST_ALL_PREFIXES(SimpleColorSpace, GetColorSpace);
 };
 
 // Stream operator so ColorSpace can be used in assertion statements.

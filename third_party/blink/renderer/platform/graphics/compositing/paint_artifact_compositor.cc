@@ -50,15 +50,6 @@ PaintArtifactCompositor::PaintArtifactCompositor(
 
 PaintArtifactCompositor::~PaintArtifactCompositor() {}
 
-void PaintArtifactCompositor::EnableExtraDataForTesting() {
-  if (extra_data_for_testing_enabled_)
-    return;
-  extra_data_for_testing_enabled_ = true;
-  extra_data_for_testing_ = std::make_unique<ExtraDataForTesting>();
-  // Ensure |extra_data_for_testing_| is populated.
-  SetNeedsUpdate();
-}
-
 void PaintArtifactCompositor::SetTracksRasterInvalidations(bool should_track) {
   tracks_raster_invalidations_ = should_track;
   for (auto& client : content_layer_clients_)
@@ -67,11 +58,6 @@ void PaintArtifactCompositor::SetTracksRasterInvalidations(bool should_track) {
 
 void PaintArtifactCompositor::WillBeRemovedFromFrame() {
   root_layer_->RemoveAllChildren();
-  if (extra_data_for_testing_enabled_) {
-    extra_data_for_testing_->content_layers.clear();
-    extra_data_for_testing_->synthesized_clip_layers.clear();
-    extra_data_for_testing_->scroll_hit_test_layers.clear();
-  }
 }
 
 // Get a JSON representation of what layers exist for this PAC.  Note that
@@ -319,8 +305,6 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
           *paint_artifact, first_paint_chunk,
           pending_layer.offset_of_decomposited_transforms)) {
     DCHECK_EQ(paint_chunks.size(), 1u);
-    if (extra_data_for_testing_enabled_)
-      extra_data_for_testing_->content_layers.push_back(foreign_layer);
     return foreign_layer;
   }
 
@@ -328,16 +312,12 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
   if (scoped_refptr<cc::Layer> scroll_layer =
           ScrollHitTestLayerForPendingLayer(*paint_artifact, pending_layer)) {
     new_scroll_hit_test_layers.push_back(scroll_layer);
-    if (extra_data_for_testing_enabled_)
-      extra_data_for_testing_->scroll_hit_test_layers.push_back(scroll_layer);
     return scroll_layer;
   }
 
   if (scoped_refptr<cc::Layer> scrollbar_layer =
           ScrollbarLayerForPendingLayer(*paint_artifact, pending_layer)) {
     new_scrollbar_layers.push_back(scrollbar_layer);
-    if (extra_data_for_testing_enabled_)
-      extra_data_for_testing_->scrollbar_layers.push_back(scrollbar_layer);
     return scrollbar_layer;
   }
 
@@ -353,8 +333,6 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
     cc_layer->SetIsDrawable(false);
 
   new_content_layer_clients.push_back(std::move(content_layer_client));
-  if (extra_data_for_testing_enabled_)
-    extra_data_for_testing_->content_layers.push_back(cc_layer);
 
   // Set properties that foreign layers would normally control for themselves
   // here to avoid changing foreign layers. This includes things set by
@@ -1106,9 +1084,6 @@ void PaintArtifactCompositor::Update(
 
   TRACE_EVENT0("blink", "PaintArtifactCompositor::Update");
 
-  if (extra_data_for_testing_enabled_)
-    extra_data_for_testing_.reset(new ExtraDataForTesting);
-
   host->property_trees()->scroll_tree.SetScrollCallbacks(scroll_callbacks_);
   root_layer_->set_property_tree_sequence_number(
       g_s_property_tree_sequence_number);
@@ -1246,13 +1221,6 @@ void PaintArtifactCompositor::Update(
                             [](const auto& entry) { return !entry.in_use; }) -
              synthesized_clip_cache_.begin();
   synthesized_clip_cache_.EraseAt(pos, synthesized_clip_cache_.size() - pos);
-
-  if (extra_data_for_testing_enabled_) {
-    for (const auto& entry : synthesized_clip_cache_) {
-      extra_data_for_testing_->synthesized_clip_layers.push_back(
-          entry.synthesized_clip->Layer());
-    }
-  }
 
   // This should be done before UpdateRenderSurfaceForEffects() for which to
   // get property tree node ids from the layers.
@@ -1515,6 +1483,14 @@ CompositingReasons PaintArtifactCompositor::GetCompositingReasons(
   return reasons;
 }
 
+Vector<cc::Layer*> PaintArtifactCompositor::SynthesizedClipLayersForTesting()
+    const {
+  Vector<cc::Layer*> synthesized_clip_layers;
+  for (const auto& entry : synthesized_clip_cache_)
+    synthesized_clip_layers.push_back(entry.synthesized_clip->Layer());
+  return synthesized_clip_layers;
+}
+
 void LayerListBuilder::Add(scoped_refptr<cc::Layer> layer) {
   DCHECK(list_valid_);
   list_.push_back(layer);
@@ -1524,12 +1500,6 @@ cc::LayerList LayerListBuilder::Finalize() {
   DCHECK(list_valid_);
   list_valid_ = false;
   return std::move(list_);
-}
-
-cc::Layer*
-PaintArtifactCompositor::ExtraDataForTesting::ScrollHitTestWebLayerAt(
-    unsigned index) {
-  return scroll_hit_test_layers[index].get();
 }
 
 #if DCHECK_IS_ON()

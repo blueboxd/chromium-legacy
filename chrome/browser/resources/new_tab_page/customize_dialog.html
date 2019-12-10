@@ -1,0 +1,52 @@
+<style>
+  ::part(dialog) {
+    height: 528px;
+    min-width: 800px;
+  }
+
+  ::part(wrapper) {
+    height: 100%;
+  }
+
+  div[slot=body] {
+    overflow-y: scroll;
+    text-align: center;
+  }
+
+  #color-container {
+    display: inline-grid;
+    grid-column-gap: 25px;
+    grid-row-gap: 25px;
+    grid-template-columns: repeat(6, auto);
+  }
+
+  .tile {
+    align-self: center;
+    height: 64px;
+    justify-self: center;
+    width: 64px;
+  }
+</style>
+<cr-dialog id="dialog">
+  <div slot="body">
+    <div id="color-container">
+      <dom-repeat items="[[colors_]]">
+        <template>
+          <div
+              class="tile"
+              style="background-image: url([[item.icon]])"
+              title="[[item.label]]">
+          </div>
+        </template>
+      </dom-repeat>
+    </div>
+  </div>
+  <div slot="button-container">
+    <cr-button class="cancel-button" on-click="onCancelClick_">
+      $i18n{cancelButton}
+    </cr-button>
+    <cr-button class="action-button" on-click="onDoneClick_">
+      $i18n{doneButton}
+    </cr-button>
+  </div>
+</cr-dialog>

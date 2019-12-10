@@ -1309,6 +1309,10 @@ if (enable_java_templates) {
     java_library_impl(target_name) {
       forward_variables_from(invoker, "*")
       type = "java_binary"
+      if (!defined(data_deps)) {
+        data_deps = []
+      }
+      data_deps += [ "//third_party/jdk:java_data" ]
     }
   }
 

@@ -131,7 +131,7 @@ class CONTENT_EXPORT PushMessagingService {
       int64_t service_worker_registration_id,
       const std::string& subscription_id,
       const std::string& sender_id,
-      const base::Closure& callback);
+      base::OnceClosure callback);
 };
 
 }  // namespace content

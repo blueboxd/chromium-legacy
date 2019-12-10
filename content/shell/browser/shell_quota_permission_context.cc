@@ -13,15 +13,15 @@ ShellQuotaPermissionContext::ShellQuotaPermissionContext() {}
 void ShellQuotaPermissionContext::RequestQuotaPermission(
     const StorageQuotaParams& params,
     int render_process_id,
-    const PermissionCallback& callback) {
+    PermissionCallback callback) {
   if (params.storage_type != blink::mojom::StorageType::kPersistent) {
     // For now we only support requesting quota with this interface
     // for Persistent storage type.
-    callback.Run(QUOTA_PERMISSION_RESPONSE_DISALLOW);
+    std::move(callback).Run(QUOTA_PERMISSION_RESPONSE_DISALLOW);
     return;
   }
 
-  callback.Run(QUOTA_PERMISSION_RESPONSE_ALLOW);
+  std::move(callback).Run(QUOTA_PERMISSION_RESPONSE_ALLOW);
 }
 
 ShellQuotaPermissionContext::~ShellQuotaPermissionContext() {}

@@ -30,6 +30,8 @@ const char kSendFeatureReportFailed[] = "Failed to write the feature report.";
 const char kReceiveFeatureReportFailed[] =
     "Failed to receive the feature report.";
 const char kUnexpectedClose[] = "The device was closed unexpectedly.";
+const char kArrayBufferTooBig[] =
+    "The provided ArrayBuffer exceeds the maximum allowed size.";
 
 Vector<uint8_t> ConvertBufferSource(
     const ArrayBufferOrArrayBufferView& buffer) {
@@ -37,12 +39,14 @@ Vector<uint8_t> ConvertBufferSource(
   Vector<uint8_t> vector;
   if (buffer.IsArrayBuffer()) {
     vector.Append(static_cast<uint8_t*>(buffer.GetAsArrayBuffer()->Data()),
-                  buffer.GetAsArrayBuffer()->DeprecatedByteLengthAsUnsigned());
+                  base::checked_cast<wtf_size_t>(
+                      buffer.GetAsArrayBuffer()->ByteLengthAsSizeT()));
   } else {
     vector.Append(
         static_cast<uint8_t*>(
             buffer.GetAsArrayBufferView().View()->BaseAddress()),
-        buffer.GetAsArrayBufferView().View()->deprecatedByteLengthAsUnsigned());
+        base::checked_cast<wtf_size_t>(
+            buffer.GetAsArrayBufferView().View()->byteLengthAsSizeT()));
   }
   return vector;
 }
@@ -188,6 +192,17 @@ ScriptPromise HIDDevice::sendReport(ScriptState* script_state,
     return promise;
   }
 
+  size_t data_size =
+      data.IsArrayBuffer()
+          ? data.GetAsArrayBuffer()->ByteLengthAsSizeT()
+          : data.GetAsArrayBufferView().View()->byteLengthAsSizeT();
+
+  if (!base::CheckedNumeric<wtf_size_t>(data_size).IsValid()) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotSupportedError, kArrayBufferTooBig));
+    return promise;
+  }
+
   device_requests_.insert(resolver);
   connection_->Write(report_id, ConvertBufferSource(data),
                      WTF::Bind(&HIDDevice::FinishSendReport,
@@ -208,6 +223,17 @@ ScriptPromise HIDDevice::sendFeatureReport(
   if (!opened()) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError, kOpenRequired));
+    return promise;
+  }
+
+  size_t data_size =
+      data.IsArrayBuffer()
+          ? data.GetAsArrayBuffer()->ByteLengthAsSizeT()
+          : data.GetAsArrayBufferView().View()->byteLengthAsSizeT();
+
+  if (!base::CheckedNumeric<wtf_size_t>(data_size).IsValid()) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotSupportedError, kArrayBufferTooBig));
     return promise;
   }
 

@@ -699,8 +699,8 @@ void MetricsService::StartScheduledUpload() {
   } else {
     // There are no logs left to send, so start creating a new one.
     client_->CollectFinalMetricsForLog(
-        base::Bind(&MetricsService::OnFinalLogInfoCollectionDone,
-                   self_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&MetricsService::OnFinalLogInfoCollectionDone,
+                       self_ptr_factory_.GetWeakPtr()));
   }
 }
 

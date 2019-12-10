@@ -64,7 +64,7 @@ java_cmd.extend(
     ['-classpath', ':'.join(classpath), '-enableassertions', \"{main_class}\"])
 java_cmd.extend(extra_program_args)
 java_cmd.extend(jar_arguments)
-os.execvp('java', java_cmd)
+os.execvp(java_cmd[0], java_cmd)
 """
 
 def main(argv):

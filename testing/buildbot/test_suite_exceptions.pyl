@@ -968,6 +968,13 @@
       },
     },
   },
+  'monochrome_apk_checker': {
+    'remove_from': [
+      # Don't run on trybots, which don't use proguard.
+      # https://crbug.com/1029936.
+      'android-kitkat-arm-rel',
+    ],
+  },
   'monochrome_public_test_ar_apk': {
     'modifications': {
       'Nougat Phone Tester': {
@@ -1927,7 +1934,7 @@
       'Mac FYI Retina Release (NVIDIA)',
     ],
   },
-  'webgl2_conformance_tests': {
+  'webgl2_conformance_validating_tests': {
     'remove_from': [
       # The Mac NVIDIA Retina bots don't have the capacity to run
       # this test suite on mac_optional_gpu_tests_rel.
@@ -1963,11 +1970,6 @@
           'shards': 6,
         },
       },
-      'Mac FYI GPU ASAN Release': {
-        'args': [
-          '--is-asan',
-        ]
-      },
       'chromeos-amd64-generic-rel': {
         'swarming': {
           'shards': 6,
@@ -1989,6 +1991,15 @@
       # constrained. crbug.com/950690
       'Mac FYI Retina Debug (NVIDIA)',
     ],
+  },
+  'webgl_conformance_validating_tests': {
+    'modifications': {
+      'Mac FYI GPU ASAN Release': {
+        'args': [
+          '--is-asan',
+        ]
+      },
+    },
   },
   'webgl_conformance_vulkan_passthrough_tests': {
     'remove_from': [

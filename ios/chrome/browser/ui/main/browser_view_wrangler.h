@@ -11,6 +11,7 @@
 
 @protocol ApplicationCommands;
 @class BrowserCoordinator;
+@protocol BrowsingDataCommands;
 @class DeviceSharingManager;
 @protocol WebStateListObserving;
 
@@ -43,6 +44,8 @@ class ChromeBrowserState;
                 webStateListObserver:(id<WebStateListObserving>)observer
           applicationCommandEndpoint:
               (id<ApplicationCommands>)applicationCommandEndpoint
+         browsingDataCommandEndpoint:
+             (id<BrowsingDataCommands>)browsingDataCommandEndpoint
                 appURLLoadingService:(AppUrlLoadingService*)appURLLoadingService
                      storageSwitcher:
                          (id<BrowserStateStorageSwitching>)storageSwitcher

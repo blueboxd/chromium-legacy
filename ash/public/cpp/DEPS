@@ -6,5 +6,6 @@ include_rules = [
   "+services/data_decoder/public",
   "+services/device/public",
   "+skia/public/mojom",
+  "+ui/base/ime/chromeos/ime_keyset.h",
   "+ui/display",
 ]

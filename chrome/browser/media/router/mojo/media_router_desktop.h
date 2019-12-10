@@ -48,10 +48,11 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
   //     suspension state.
   // |context|: The BrowserContext which owns the extension process.
   // |receiver|: The Mojo pending receiver used for binding.
-  static void BindToReceiver(const extensions::Extension* extension,
-                             content::BrowserContext* context,
-                             mojo::PendingReceiver<mojom::MediaRouter> receiver,
-                             content::RenderFrameHost* source);
+  static void BindToReceiver(
+      const extensions::Extension* extension,
+      content::BrowserContext* context,
+      content::RenderFrameHost* render_frame_host,
+      mojo::PendingReceiver<mojom::MediaRouter> receiver);
 
   // MediaRouter implementation.
   void OnUserGesture() override;

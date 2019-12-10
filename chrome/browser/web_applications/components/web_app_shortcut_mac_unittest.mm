@@ -202,6 +202,115 @@ TEST_F(WebAppShortcutCreatorTest, CreateShortcuts) {
   }
 }
 
+TEST_F(WebAppShortcutCreatorTest, FileHandlers) {
+  const base::FilePath plist_path =
+      shim_path_.Append("Contents").Append("Info.plist");
+  NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_dir_,
+                                                       info_.get());
+
+  // kCFBundleDocumentTypesKey should not be set, because we set no file
+  // handlers.
+  EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED,
+                                               ShortcutLocations()));
+  {
+    NSDictionary* plist = [NSDictionary
+        dictionaryWithContentsOfFile:base::mac::FilePathToNSString(plist_path)];
+    NSArray* doc_types_array =
+        [plist objectForKey:app_mode::kCFBundleDocumentTypesKey];
+    EXPECT_EQ(doc_types_array, nil);
+  }
+  EXPECT_TRUE(base::DeleteFileRecursively(shim_path_));
+
+  // Register 2 mime types. We should now have kCFBundleTypeMIMETypesKey but
+  // not kCFBundleTypeExtensionsKey.
+  info_->file_handler_mime_types.insert("foo/bar");
+  info_->file_handler_mime_types.insert("moo/cow");
+  EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED,
+                                               ShortcutLocations()));
+  {
+    NSDictionary* plist = [NSDictionary
+        dictionaryWithContentsOfFile:base::mac::FilePathToNSString(plist_path)];
+    NSArray* doc_types_array =
+        [plist objectForKey:app_mode::kCFBundleDocumentTypesKey];
+    EXPECT_NE(doc_types_array, nil);
+    EXPECT_EQ(1u, [doc_types_array count]);
+    NSDictionary* doc_types_dict = [doc_types_array objectAtIndex:0];
+    EXPECT_NE(doc_types_dict, nil);
+    NSArray* mime_types =
+        [doc_types_dict objectForKey:app_mode::kCFBundleTypeMIMETypesKey];
+    EXPECT_NE(mime_types, nil);
+    NSArray* extensions =
+        [doc_types_dict objectForKey:app_mode::kCFBundleTypeExtensionsKey];
+    EXPECT_EQ(extensions, nil);
+
+    // The mime types should be listed in sorted order (note that sorted order
+    // does matter for correct behavior).
+    EXPECT_EQ(2u, [mime_types count]);
+    EXPECT_NSEQ([mime_types objectAtIndex:0], @"foo/bar");
+    EXPECT_NSEQ([mime_types objectAtIndex:1], @"moo/cow");
+  }
+  EXPECT_TRUE(base::DeleteFileRecursively(shim_path_));
+
+  // Register 3 extensions with the 2 mime types.
+  info_->file_handler_extensions.insert("cow");
+  info_->file_handler_extensions.insert("pig");
+  info_->file_handler_extensions.insert("bbq");
+  EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED,
+                                               ShortcutLocations()));
+  {
+    NSDictionary* plist = [NSDictionary
+        dictionaryWithContentsOfFile:base::mac::FilePathToNSString(plist_path)];
+    NSArray* doc_types_array =
+        [plist objectForKey:app_mode::kCFBundleDocumentTypesKey];
+    EXPECT_NE(doc_types_array, nil);
+    EXPECT_EQ(1u, [doc_types_array count]);
+    NSDictionary* doc_types_dict = [doc_types_array objectAtIndex:0];
+    EXPECT_NE(doc_types_dict, nil);
+    NSArray* mime_types =
+        [doc_types_dict objectForKey:app_mode::kCFBundleTypeMIMETypesKey];
+    EXPECT_NE(mime_types, nil);
+    NSArray* extensions =
+        [doc_types_dict objectForKey:app_mode::kCFBundleTypeExtensionsKey];
+    EXPECT_NE(extensions, nil);
+
+    EXPECT_EQ(2u, [mime_types count]);
+    EXPECT_NSEQ([mime_types objectAtIndex:0], @"foo/bar");
+    EXPECT_NSEQ([mime_types objectAtIndex:1], @"moo/cow");
+    EXPECT_EQ(3u, [extensions count]);
+    EXPECT_NSEQ([extensions objectAtIndex:0], @"bbq");
+    EXPECT_NSEQ([extensions objectAtIndex:1], @"cow");
+    EXPECT_NSEQ([extensions objectAtIndex:2], @"pig");
+  }
+  EXPECT_TRUE(base::DeleteFileRecursively(shim_path_));
+
+  // Register just extensions.
+  info_->file_handler_mime_types.clear();
+  EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED,
+                                               ShortcutLocations()));
+  {
+    NSDictionary* plist = [NSDictionary
+        dictionaryWithContentsOfFile:base::mac::FilePathToNSString(plist_path)];
+    NSArray* doc_types_array =
+        [plist objectForKey:app_mode::kCFBundleDocumentTypesKey];
+    EXPECT_NE(doc_types_array, nil);
+    EXPECT_EQ(1u, [doc_types_array count]);
+    NSDictionary* doc_types_dict = [doc_types_array objectAtIndex:0];
+    EXPECT_NE(doc_types_dict, nil);
+    NSArray* mime_types =
+        [doc_types_dict objectForKey:app_mode::kCFBundleTypeMIMETypesKey];
+    EXPECT_EQ(mime_types, nil);
+    NSArray* extensions =
+        [doc_types_dict objectForKey:app_mode::kCFBundleTypeExtensionsKey];
+    EXPECT_NE(extensions, nil);
+
+    EXPECT_EQ(3u, [extensions count]);
+    EXPECT_NSEQ([extensions objectAtIndex:0], @"bbq");
+    EXPECT_NSEQ([extensions objectAtIndex:1], @"cow");
+    EXPECT_NSEQ([extensions objectAtIndex:2], @"pig");
+  }
+  EXPECT_TRUE(base::DeleteFileRecursively(shim_path_));
+}
+
 TEST_F(WebAppShortcutCreatorTest, CreateShortcutsConflict) {
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_dir_,
                                                        info_.get());

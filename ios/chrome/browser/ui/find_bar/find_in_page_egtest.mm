@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/find_bar/find_bar_constants.h"
 #import "ios/chrome/browser/ui/find_bar/find_in_page_controller_app_interface.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
+#import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_constants.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -137,7 +138,7 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
   ConditionBlock condition = ^{
     NSError* error = nil;
     [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                            kFindInPageContainerViewId)]
+                                            kToolbarAccessoryContainerViewID)]
         assertWithMatcher:grey_nil()
                     error:&error];
     return (error == nil);

@@ -50,7 +50,7 @@
         app:layout_row="3"
         app:layout_columnSpan="4" />
 
-    <TextView
+    <org.chromium.ui.widget.TextViewWithLeading
         android:id="@+id/title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -58,12 +58,13 @@
         android:minHeight="40dp"
         android:maxLines="2"
         android:ellipsize="end"
-        android:textAppearance="@style/TextAppearance.BlackBodyDefault"
+        android:textAppearance="@style/TextAppearance.BlackTitle1"
         android:textAlignment="viewStart"
+        app:leading="@dimen/text_size_large_leading"
         app:layout_column="1"
         app:layout_row="0"
         app:layout_columnSpan="2"
-        app:layout_gravity="fill_horizontal" />
+        app:layout_gravity="fill_horizontal"/>
 
     <TextView
         android:id="@+id/caption"
@@ -106,11 +107,11 @@
         tools:ignore="ContentDescription" />
 
     <include layout="@layout/list_menu_button"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:paddingTop="12dp"
-            app:layout_column="3"
-            app:layout_row="0" />
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:paddingTop="12dp"
+        app:layout_column="3"
+        app:layout_row="0" />
 
     <!-- Wrap this in a FrameLayout so that if the thumbnail is hidden this view
          does not negatively affect layout.  The FrameLayout spans the whole

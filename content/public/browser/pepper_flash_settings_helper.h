@@ -28,11 +28,11 @@ class CONTENT_EXPORT PepperFlashSettingsHelper
   // Called when OpenChannelToBroker() is completed.
   // |success| indicates whether the channel is successfully opened to the
   // broker. On error, |channel_handle| is set to IPC::ChannelHandle().
-  typedef base::Callback<void(bool /* success */,
-                              const IPC::ChannelHandle& /* channel_handle */)>
-      OpenChannelCallback;
+  using OpenChannelCallback =
+      base::OnceCallback<void(bool /* success */,
+                              const IPC::ChannelHandle& /* channel_handle */)>;
   virtual void OpenChannelToBroker(const base::FilePath& path,
-                                   const OpenChannelCallback& callback) = 0;
+                                   OpenChannelCallback callback) = 0;
 
  protected:
   friend class base::RefCounted<PepperFlashSettingsHelper>;

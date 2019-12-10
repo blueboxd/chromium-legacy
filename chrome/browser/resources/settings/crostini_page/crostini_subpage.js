@@ -57,6 +57,18 @@ Polymer({
     hideCrostiniUninstall_: {
       type: Boolean,
     },
+
+    /**
+     * Whether the button to launch the Crostini container upgrade flow should
+     * be shown.
+     * @private {boolean}
+     */
+    showCrostiniContainerUpgrade_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('showCrostiniContainerUpgrade');
+      },
+    },
   },
 
   /** settings.RouteOriginBehavior override */
@@ -114,6 +126,15 @@ Polymer({
    */
   onRemoveClick_: function() {
     settings.CrostiniBrowserProxyImpl.getInstance().requestRemoveCrostini();
+  },
+
+  /**
+   * Shows the upgrade flow dialog.
+   * @private
+   */
+  onContainerUpgradeClick_: function() {
+    settings.CrostiniBrowserProxyImpl.getInstance()
+        .requestCrostiniContainerUpgradeView();
   },
 
   /** @private */

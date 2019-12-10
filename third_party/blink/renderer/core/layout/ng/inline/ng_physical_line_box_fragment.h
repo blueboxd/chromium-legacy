@@ -31,6 +31,9 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   static scoped_refptr<const NGPhysicalLineBoxFragment> Create(
       NGLineBoxFragmentBuilder* builder);
 
+  using PassKey = util::PassKey<NGPhysicalLineBoxFragment>;
+  NGPhysicalLineBoxFragment(PassKey, NGLineBoxFragmentBuilder* builder);
+
   ~NGPhysicalLineBoxFragment() {
     for (const NGLink& child : Children())
       child.fragment->Release();
@@ -72,8 +75,6 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   const LayoutObject* ContainerLayoutObject() const { return layout_object_; }
 
  private:
-  NGPhysicalLineBoxFragment(NGLineBoxFragmentBuilder* builder);
-
   NGLineHeightMetrics metrics_;
   NGLink children_[];
 };

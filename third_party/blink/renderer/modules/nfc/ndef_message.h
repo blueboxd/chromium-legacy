@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -35,13 +34,11 @@ class MODULES_EXPORT NDEFMessage final : public ScriptWrappable {
   NDEFMessage();
   explicit NDEFMessage(const device::mojom::blink::NDEFMessage&);
 
-  const String& url() const;
   const HeapVector<Member<NDEFRecord>>& records() const;
 
   void Trace(blink::Visitor*) override;
 
  private:
-  String url_;
   HeapVector<Member<NDEFRecord>> records_;
 };
 

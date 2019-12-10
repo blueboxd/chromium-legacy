@@ -37,11 +37,12 @@ NGPhysicalLineBoxFragment::Create(NGLineBoxFragmentBuilder* builder) {
       sizeof(NGPhysicalLineBoxFragment) +
           builder->children_.size() * sizeof(NGLink),
       ::WTF::GetStringWithTypeName<NGPhysicalLineBoxFragment>());
-  new (data) NGPhysicalLineBoxFragment(builder);
+  new (data) NGPhysicalLineBoxFragment(PassKey(), builder);
   return base::AdoptRef(static_cast<NGPhysicalLineBoxFragment*>(data));
 }
 
 NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
+    PassKey key,
     NGLineBoxFragmentBuilder* builder)
     : NGPhysicalContainerFragment(builder,
                                   builder->GetWritingMode(),

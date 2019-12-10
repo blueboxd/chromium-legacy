@@ -61,16 +61,16 @@ struct NumberHolder {
 
 @interface ObjCPropertyTestBase : NSObject {
  @private
-  CountVonCount* baseCvcRetain_;
-  CountVonCount* baseCvcCopy_;
-  CountVonCount* baseCvcAssign_;
-  CountVonCount* baseCvcNotProperty_;
-  CountVonCount* baseCvcNil_;
-  CountVonCount* baseCvcCustom_;
-  int baseInt_;
-  double baseDouble_;
-  void* basePointer_;
-  NumberHolder baseStruct_;
+  CountVonCount* _baseCvcRetain;
+  CountVonCount* _baseCvcCopy;
+  CountVonCount* _baseCvcAssign;
+  CountVonCount* _baseCvcNotProperty;
+  CountVonCount* _baseCvcNil;
+  CountVonCount* _baseCvcCustom;
+  int _baseInt;
+  double _baseDouble;
+  void* _basePointer;
+  NumberHolder _baseStruct;
 }
 
 @property(retain, nonatomic) CountVonCount* baseCvcRetain;
@@ -92,35 +92,35 @@ struct NumberHolder {
 
 @implementation ObjCPropertyTestBase
 
-@synthesize baseCvcRetain = baseCvcRetain_;
-@synthesize baseCvcCopy = baseCvcCopy_;
-@synthesize baseCvcAssign = baseCvcAssign_;
-@synthesize baseCvcNil = baseCvcNil_;
-@synthesize baseCvcCustom = baseCvcCustom_;
-@synthesize baseCvcReadOnly = baseCvcReadOnly_;
+@synthesize baseCvcRetain = _baseCvcRetain;
+@synthesize baseCvcCopy = _baseCvcCopy;
+@synthesize baseCvcAssign = _baseCvcAssign;
+@synthesize baseCvcNil = _baseCvcNil;
+@synthesize baseCvcCustom = _baseCvcCustom;
+@synthesize baseCvcReadOnly = _baseCvcReadOnly;
 @dynamic baseCvcDynamic;
-@synthesize baseInt = baseInt_;
-@synthesize baseDouble = baseDouble_;
-@synthesize basePointer = basePointer_;
-@synthesize baseStruct = baseStruct_;
+@synthesize baseInt = _baseInt;
+@synthesize baseDouble = _baseDouble;
+@synthesize basePointer = _basePointer;
+@synthesize baseStruct = _baseStruct;
 
 - (void)dealloc {
-  [baseCvcNotProperty_ release];
+  [_baseCvcNotProperty release];
   base::mac::ReleaseProperties(self);
   [super dealloc];
 }
 
 - (void)setBaseCvcNotProperty:(CountVonCount*)cvc {
-  if (cvc != baseCvcNotProperty_) {
-    [baseCvcNotProperty_ release];
-    baseCvcNotProperty_ = [cvc retain];
+  if (cvc != _baseCvcNotProperty) {
+    [_baseCvcNotProperty release];
+    _baseCvcNotProperty = [cvc retain];
   }
 }
 
 - (void)setBaseCvcReadOnlyProperty:(CountVonCount*)cvc {
-  if (cvc != baseCvcReadOnly_) {
-    [baseCvcReadOnly_ release];
-    baseCvcReadOnly_ = [cvc retain];
+  if (cvc != _baseCvcReadOnly) {
+    [_baseCvcReadOnly release];
+    _baseCvcReadOnly = [cvc retain];
   }
 }
 
@@ -149,26 +149,26 @@ struct NumberHolder {
 @interface ObjCPropertyTestDerived
     : ObjCPropertyTestBase<ObjCPropertyTestProtocol, NSObject> {
  @private
-  CountVonCount* derivedCvcRetain_;
-  CountVonCount* derivedCvcCopy_;
-  CountVonCount* derivedCvcAssign_;
-  CountVonCount* derivedCvcNotProperty_;
-  CountVonCount* derivedCvcNil_;
-  CountVonCount* derivedCvcCustom_;
-  int derivedInt_;
-  double derivedDouble_;
-  void* derivedPointer_;
-  NumberHolder derivedStruct_;
+  CountVonCount* _derivedCvcRetain;
+  CountVonCount* _derivedCvcCopy;
+  CountVonCount* _derivedCvcAssign;
+  CountVonCount* _derivedCvcNotProperty;
+  CountVonCount* _derivedCvcNil;
+  CountVonCount* _derivedCvcCustom;
+  int _derivedInt;
+  double _derivedDouble;
+  void* _derivedPointer;
+  NumberHolder _derivedStruct;
 
-  CountVonCount* protoCvcRetain_;
-  CountVonCount* protoCvcCopy_;
-  CountVonCount* protoCvcAssign_;
-  CountVonCount* protoCvcNil_;
-  CountVonCount* protoCvcCustom_;
-  int protoInt_;
-  double protoDouble_;
-  void* protoPointer_;
-  NumberHolder protoStruct_;
+  CountVonCount* _protoCvcRetain;
+  CountVonCount* _protoCvcCopy;
+  CountVonCount* _protoCvcAssign;
+  CountVonCount* _protoCvcNil;
+  CountVonCount* _protoCvcCustom;
+  int _protoInt;
+  double _protoDouble;
+  void* _protoPointer;
+  NumberHolder _protoStruct;
 }
 
 @property(retain, nonatomic) CountVonCount* derivedCvcRetain;
@@ -189,27 +189,27 @@ struct NumberHolder {
 
 @implementation ObjCPropertyTestDerived
 
-@synthesize derivedCvcRetain = derivedCvcRetain_;
-@synthesize derivedCvcCopy = derivedCvcCopy_;
-@synthesize derivedCvcAssign = derivedCvcAssign_;
-@synthesize derivedCvcNil = derivedCvcNil_;
-@synthesize derivedCvcCustom = derivedCvcCustom_;
+@synthesize derivedCvcRetain = _derivedCvcRetain;
+@synthesize derivedCvcCopy = _derivedCvcCopy;
+@synthesize derivedCvcAssign = _derivedCvcAssign;
+@synthesize derivedCvcNil = _derivedCvcNil;
+@synthesize derivedCvcCustom = _derivedCvcCustom;
 @dynamic derivedCvcDynamic;
-@synthesize derivedInt = derivedInt_;
-@synthesize derivedDouble = derivedDouble_;
-@synthesize derivedPointer = derivedPointer_;
-@synthesize derivedStruct = derivedStruct_;
+@synthesize derivedInt = _derivedInt;
+@synthesize derivedDouble = _derivedDouble;
+@synthesize derivedPointer = _derivedPointer;
+@synthesize derivedStruct = _derivedStruct;
 
-@synthesize protoCvcRetain = protoCvcRetain_;
-@synthesize protoCvcCopy = protoCvcCopy_;
-@synthesize protoCvcAssign = protoCvcAssign_;
-@synthesize protoCvcNil = protoCvcNil_;
-@synthesize protoCvcCustom = protoCvcCustom_;
+@synthesize protoCvcRetain = _protoCvcRetain;
+@synthesize protoCvcCopy = _protoCvcCopy;
+@synthesize protoCvcAssign = _protoCvcAssign;
+@synthesize protoCvcNil = _protoCvcNil;
+@synthesize protoCvcCustom = _protoCvcCustom;
 @dynamic protoCvcDynamic;
-@synthesize protoInt = protoInt_;
-@synthesize protoDouble = protoDouble_;
-@synthesize protoPointer = protoPointer_;
-@synthesize protoStruct = protoStruct_;
+@synthesize protoInt = _protoInt;
+@synthesize protoDouble = _protoDouble;
+@synthesize protoPointer = _protoPointer;
+@synthesize protoStruct = _protoStruct;
 
 + (BOOL)resolveInstanceMethod:(SEL)sel {
   static const std::vector<SEL> dynamicMethods {
@@ -226,14 +226,14 @@ struct NumberHolder {
 
 - (void)dealloc {
   base::mac::ReleaseProperties(self);
-  [derivedCvcNotProperty_ release];
+  [_derivedCvcNotProperty release];
   [super dealloc];
 }
 
 - (void)setDerivedCvcNotProperty:(CountVonCount*)cvc {
-  if (cvc != derivedCvcNotProperty_) {
-    [derivedCvcNotProperty_ release];
-    derivedCvcNotProperty_ = [cvc retain];
+  if (cvc != _derivedCvcNotProperty) {
+    [_derivedCvcNotProperty release];
+    _derivedCvcNotProperty = [cvc retain];
   }
 }
 

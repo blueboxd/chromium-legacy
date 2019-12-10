@@ -2950,30 +2950,6 @@
       ]
     },
     {
-      "id":281,
-      "cr_bugs": [838725],
-      "description": "Disable AImageReader on Imagination Technologies GPU as its buggy.",
-      "os": {
-        "type": "android"
-      },
-      "gl_vendor": "Imagination Technologies.*",
-      "features": [
-        "disable_aimagereader"
-      ]
-    },
-    {
-      "id":282,
-      "cr_bugs": [838725],
-      "description": "Disable AImageReader on NVIDIA GPU for as its buggy.",
-      "os": {
-        "type": "android"
-      },
-      "gl_vendor": "NVIDIA.*",
-      "features": [
-        "disable_aimagereader"
-      ]
-    },
-    {
       "id": 283,
       "cr_bugs": [893177],
       "description": "Some drivers can't recover after OUT_OF_MEM and context lost",

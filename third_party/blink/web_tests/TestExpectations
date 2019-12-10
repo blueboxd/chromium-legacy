@@ -2322,24 +2322,14 @@ crbug.com/736319 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/736319 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/writing-modes-3/text-combine-upright-compression-006.html [ Failure ]
 crbug.com/736319 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/writing-modes-3/text-combine-upright-compression-006a.html [ Failure ]
 
-crbug.com/1029069 [ Linux ] external/wpt/css/css-fonts/standard-font-family-11.html [ Failure ]
-crbug.com/1029069 [ Mac ] external/wpt/css/css-fonts/standard-font-family-11.html [ Failure ]
-crbug.com/1029069 [ Win ] external/wpt/css/css-fonts/standard-font-family-11.html [ Failure ]
-crbug.com/1029069 [ Linux ] external/wpt/css/css-fonts/standard-font-family-12.html [ Failure ]
-crbug.com/1029069 [ Mac ] external/wpt/css/css-fonts/standard-font-family-12.html [ Failure ]
-crbug.com/1029069 [ Win ] external/wpt/css/css-fonts/standard-font-family-12.html [ Failure ]
-crbug.com/1029069 [ Linux ] external/wpt/css/css-fonts/standard-font-family-13.html [ Failure ]
-crbug.com/1029069 [ Mac ] external/wpt/css/css-fonts/standard-font-family-13.html [ Failure ]
-crbug.com/1029069 [ Win ] external/wpt/css/css-fonts/standard-font-family-13.html [ Failure ]
-crbug.com/1029069 [ Linux ] external/wpt/css/css-fonts/standard-font-family-14.html [ Failure ]
-crbug.com/1029069 [ Mac ] external/wpt/css/css-fonts/standard-font-family-14.html [ Failure ]
-crbug.com/1029069 [ Win ] external/wpt/css/css-fonts/standard-font-family-14.html [ Failure ]
-crbug.com/1029069 [ Linux ] external/wpt/css/css-fonts/standard-font-family-15.html [ Failure ]
-crbug.com/1029069 [ Mac ] external/wpt/css/css-fonts/standard-font-family-15.html [ Failure ]
-crbug.com/1029069 [ Win ] external/wpt/css/css-fonts/standard-font-family-15.html [ Failure ]
-crbug.com/1029069 [ Linux ] external/wpt/css/css-fonts/standard-font-family-16.html [ Failure ]
-crbug.com/1029069 [ Mac ] external/wpt/css/css-fonts/standard-font-family-16.html [ Failure ]
-crbug.com/1029069 [ Win ] external/wpt/css/css-fonts/standard-font-family-16.html [ Failure ]
+crbug.com/1029069 external/wpt/css/css-fonts/standard-font-family-11.html [ Failure ]
+crbug.com/1029069 external/wpt/css/css-fonts/standard-font-family-12.html [ Failure ]
+crbug.com/1029069 external/wpt/css/css-fonts/standard-font-family-13.html [ Failure ]
+crbug.com/1029069 external/wpt/css/css-fonts/standard-font-family-14.html [ Failure ]
+crbug.com/1029069 external/wpt/css/css-fonts/standard-font-family-15.html [ Failure ]
+crbug.com/1029069 external/wpt/css/css-fonts/standard-font-family-16.html [ Failure ]
+crbug.com/1029069 external/wpt/css/css-fonts/standard-font-family-19.html [ Failure ]
+crbug.com/1029069 external/wpt/css/css-fonts/standard-font-family-20.html [ Failure ]
 
 crbug.com/752449 [ Mac10.12 ] external/wpt/css/css-fonts/matching/fixed-stretch-style-over-weight.html [ Failure ]
 crbug.com/752449 [ Mac10.13 ] external/wpt/css/css-fonts/matching/fixed-stretch-style-over-weight.html [ Failure ]
@@ -2748,12 +2738,6 @@ crbug.com/626703 [ Mac ] external/wpt/offscreen-canvas/text/2d.text.measure.base
 crbug.com/626703 [ Win ] external/wpt/offscreen-canvas/text/2d.text.measure.baselines.worker.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_touch-action-pan-left-css_touch.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/standard-font-family.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-fonts/standard-font-family-19.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/standard-font-family-19.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-fonts/standard-font-family-19.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-fonts/standard-font-family-20.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/standard-font-family-20.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-fonts/standard-font-family-20.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/infrastructure/reftest/reftest_wait_TestRendered.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/infrastructure/reftest/reftest_wait_TestRendered.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/infrastructure/reftest/reftest_wait_TestRendered.html [ Timeout ]
@@ -6066,8 +6050,6 @@ crbug.com/993790 external/wpt/document-policy/required-policy/required-document-
 # Temporary suppression to allow devtools-frontend changes
 crbug.com/1029489 http/tests/devtools/elements/elements-linkify-attributes.js [ Pass Failure ]
 crbug.com/1030258 http/tests/devtools/resource-har-conversion.js [ Pass Failure ]
-crbug.com/1022013 http/tests/devtools/coverage/reveal-autoformat.js [ Pass Failure ]
-crbug.com/1022013 http/tests/devtools/sources/source-frame-toolbar-items.js [ Pass Failure ]
 
 crbug.com/1029521 virtual/threaded/external/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Pass Failure Timeout ]
 
@@ -6082,3 +6064,6 @@ crbug.com/878878 virtual/threaded/fast/scroll-snap/snap-scrolls-visual-viewport.
 
 # DevTools ListControl (disabled temporarily as part of workflow)
 crbug.com/963183 http/tests/devtools/unit/list-control-equal-height.js [ Skip  ]
+
+# Sheriff 2019-12-10
+crbug.com/1032451 virtual/threaded-no-composited-antialiasing/animations/stability/animation-iteration-event-destroy-renderer.html [ Pass Timeout ]

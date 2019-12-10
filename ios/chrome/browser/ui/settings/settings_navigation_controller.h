@@ -11,6 +11,7 @@
 
 class Browser;
 @protocol BrowserCommands;
+@protocol BrowsingDataCommands;
 @protocol ImportDataControllerDelegate;
 @protocol UserFeedbackDataSource;
 
@@ -43,7 +44,8 @@ extern NSString* const kSettingsDoneButtonId;
 
 // Asks the delegate for a dispatcher that can be passed into child view
 // controllers when they are created.
-- (id<ApplicationCommands, BrowserCommands>)dispatcherForSettings;
+- (id<ApplicationCommands, BrowserCommands, BrowsingDataCommands>)
+    dispatcherForSettings;
 
 @end
 

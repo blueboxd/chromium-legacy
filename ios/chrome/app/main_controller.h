@@ -17,6 +17,7 @@
 
 @class AppState;
 @class MetricsMediator;
+@protocol BrowsingDataCommands;
 
 // The main controller of the application, owned by the MainWindow nib. Also
 // serves as the delegate for the app. Owns all the various top-level
@@ -43,7 +44,8 @@
 @property(nonatomic, weak) MetricsMediator* metricsMediator;
 
 // For temporary plumbing only.
-@property(nonatomic, weak) id<ApplicationCommands> sceneController;
+@property(nonatomic, weak) id<ApplicationCommands, BrowsingDataCommands>
+    sceneController;
 
 @end
 

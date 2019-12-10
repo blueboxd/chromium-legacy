@@ -105,6 +105,12 @@ void LogSharingSelectedAppIndex(SharingFeatureName feature,
 void LogSharingMessageAckTime(chrome_browser_sharing::MessageType message_type,
                               base::TimeDelta time);
 
+// Logs to UMA the number of hours since the target device timestamp was last
+// updated. Logged when a message is sent to the device.
+void LogSharingDeviceLastUpdatedAge(
+    chrome_browser_sharing::MessageType message_type,
+    base::TimeDelta age);
+
 // Logs to UMA the |type| of dialog shown for sharing feature.
 void LogSharingDialogShown(SharingFeatureName feature, SharingDialogType type);
 

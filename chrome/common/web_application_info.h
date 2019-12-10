@@ -75,7 +75,9 @@ struct WebApplicationInfo {
   base::Optional<SkColor> theme_color;
 
   // App preference regarding whether the app should be opened in a tab,
-  // in a window (with or without minimal-ui buttons), or full screen.
+  // in a window (with or without minimal-ui buttons), or full screen. Defaults
+  // to browser display mode as specified in
+  // https://w3c.github.io/manifest/#display-modes
   blink::mojom::DisplayMode display_mode;
 
   // User preference as to whether the app should be opened in a window.

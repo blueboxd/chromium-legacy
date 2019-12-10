@@ -81,8 +81,7 @@ class MetricsServiceClient {
   // Called prior to a metrics log being closed, allowing the client to collect
   // extra histograms that will go in that log. Asynchronous API - the client
   // implementation should call |done_callback| when complete.
-  virtual void CollectFinalMetricsForLog(
-      const base::Closure& done_callback) = 0;
+  virtual void CollectFinalMetricsForLog(base::OnceClosure done_callback) = 0;
 
   // Get the URL of the metrics server.
   virtual GURL GetMetricsServerUrl();

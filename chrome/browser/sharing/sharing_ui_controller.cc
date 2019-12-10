@@ -177,7 +177,7 @@ void SharingUiController::SendMessageToDevice(
   UpdateIcon();
 
   sharing_service_->SendMessageToDevice(
-      device.guid(), kSendMessageTimeout, std::move(sharing_message),
+      device, kSendMessageTimeout, std::move(sharing_message),
       base::Bind(&SharingUiController::OnMessageSentToDevice,
                  weak_ptr_factory_.GetWeakPtr(), last_dialog_id_));
 }

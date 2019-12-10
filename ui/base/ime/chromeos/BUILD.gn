@@ -6,6 +6,12 @@ import("//build/config/jumbo.gni")
 
 assert(is_chromeos)
 
+source_set("ime_types") {
+  sources = [
+    "ime_keyset.h",
+  ]
+}
+
 jumbo_component("chromeos") {
   output_name = "ui_base_ime_chromeos"
 
@@ -46,11 +52,11 @@ jumbo_component("chromeos") {
 
   public_deps = [
     "//ui/base/ime",
-    "//ui/base/ime/chromeos/public/mojom",
     "//url",
   ]
 
   deps = [
+    ":ime_types",
     "//build:branding_buildflags",
     "//chromeos/constants",
     "//chromeos/ime:gencode",

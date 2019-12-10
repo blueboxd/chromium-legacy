@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "ash/detachable_base/detachable_base_pairing_status.h"
-#include "ash/ime/ime_controller.h"
+#include "ash/ime/ime_controller_impl.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/lock_screen.h"
@@ -860,7 +860,7 @@ void LockDebugView::ButtonPressed(views::Button* sender,
 
   // Enable or disable caps lock.
   if (sender->GetID() == ButtonId::kGlobalToggleCapsLock) {
-    ImeController* ime_controller = Shell::Get()->ime_controller();
+    ImeControllerImpl* ime_controller = Shell::Get()->ime_controller();
     ime_controller->SetCapsLockEnabled(!ime_controller->IsCapsLockEnabled());
     return;
   }

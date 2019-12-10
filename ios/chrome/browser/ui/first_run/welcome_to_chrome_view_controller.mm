@@ -67,7 +67,9 @@ const BOOL kDefaultStatsCheckboxValue = YES;
 // Presenter for showing sync-related UI.
 @property(nonatomic, readonly, weak) id<SyncPresenter> presenter;
 
-@property(nonatomic, readonly, weak) id<ApplicationCommands> dispatcher;
+@property(nonatomic, readonly, weak)
+    id<ApplicationCommands, BrowsingDataCommands>
+        dispatcher;
 
 @end
 
@@ -102,7 +104,8 @@ const BOOL kDefaultStatsCheckboxValue = YES;
 
 - (instancetype)initWithBrowser:(Browser*)browser
                       presenter:(id<SyncPresenter>)presenter
-                     dispatcher:(id<ApplicationCommands>)dispatcher {
+                     dispatcher:(id<ApplicationCommands, BrowsingDataCommands>)
+                                    dispatcher {
   DCHECK(browser);
   self = [super initWithNibName:nil bundle:nil];
   if (self) {

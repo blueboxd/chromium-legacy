@@ -69,7 +69,7 @@ class HistogramSynchronizer : public HistogramSubscriber {
   // TaskRunner. Note the callback is posted exactly once.
   static void FetchHistogramsAsynchronously(
       scoped_refptr<base::TaskRunner> task_runner,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       base::TimeDelta wait_time);
 
  private:
@@ -110,13 +110,13 @@ class HistogramSynchronizer : public HistogramSubscriber {
   // but is in place to assure correctness (that any tasks that were set, are
   // eventually called, and never merely discarded).
   void SetTaskRunnerAndCallback(scoped_refptr<base::TaskRunner> task_runner,
-                                const base::Closure& callback);
+                                base::OnceClosure callback);
 
   void ForceHistogramSynchronizationDoneCallback(int sequence_number);
 
   // Internal helper function, to post task, and record callback stats.
   void InternalPostTask(scoped_refptr<base::TaskRunner> task_runner,
-                        const base::Closure& callback);
+                        base::OnceClosure callback);
 
   // Gets a new sequence number to be sent to processes from browser process.
   int GetNextAvailableSequenceNumber(ProcessHistogramRequester requester);
@@ -127,7 +127,7 @@ class HistogramSynchronizer : public HistogramSubscriber {
   // When a request is made to asynchronously update the histograms, we store
   // the task and TaskRunner we use to post a completion notification in
   // |callback_| and |callback_task_runner_|.
-  base::Closure callback_ GUARDED_BY(lock_);
+  base::OnceClosure callback_ GUARDED_BY(lock_);
   scoped_refptr<base::TaskRunner> callback_task_runner_ GUARDED_BY(lock_);
 
   // We don't track the actual processes that are contacted for an update, only

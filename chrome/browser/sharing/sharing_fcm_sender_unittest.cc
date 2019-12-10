@@ -229,6 +229,6 @@ TEST_P(SharingFCMSenderResultTest, ResultTest) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     SharingFCMSenderResultTest,
     testing::ValuesIn(kSharingFCMSenderResultTestData));

@@ -585,7 +585,7 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
 
         if (mCurrentSyncError == SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_EVERYTHING
                 || mCurrentSyncError == SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_PASSWORDS) {
-            TrustedVaultClient.displayKeyRetrievalDialog();
+            TrustedVaultClient.get().displayKeyRetrievalDialog(getContext());
             return;
         }
     }

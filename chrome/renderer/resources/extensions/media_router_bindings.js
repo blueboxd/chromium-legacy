@@ -1449,6 +1449,7 @@ MediaRouteProvider.prototype.createMediaRouteController = function(
 };
 
 var ptr = new mediaRouter.mojom.MediaRouterPtr;
-Mojo.bindInterface(mediaRouter.mojom.MediaRouter.name,
-                   mojo.makeRequest(ptr).handle);
+Mojo.bindInterface(
+    mediaRouter.mojom.MediaRouter.name, mojo.makeRequest(ptr).handle, 'context',
+    true);
 exports.$set('returnValue', new MediaRouter(ptr));

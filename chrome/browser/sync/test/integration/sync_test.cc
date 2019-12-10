@@ -120,6 +120,7 @@ void SetURLLoaderFactoryForTest(
   account_manager->SetUrlLoaderFactoryForTests(url_loader_factory);
 #endif  // defined(OS_CHROMEOS)
 }
+
 class FakePerUserTopicRegistrationManager
     : public syncer::PerUserTopicRegistrationManager {
  public:
@@ -132,7 +133,7 @@ class FakePerUserTopicRegistrationManager
             /*migrate_prefs=*/false) {}
   ~FakePerUserTopicRegistrationManager() override = default;
 
-  void UpdateRegisteredTopics(const syncer::Topics& topics,
+  void UpdateSubscribedTopics(const syncer::Topics& topics,
                               const std::string& instance_id_token) override {}
 
  private:
@@ -1060,8 +1061,8 @@ void SyncTest::SetupMockGaiaResponses() {
 
 void SyncTest::SetOAuth2TokenResponse(const std::string& response_data,
                                       net::HttpStatusCode status_code,
-                                      net::URLRequestStatus::Status status) {
-  network::URLLoaderCompletionStatus completion_status(status);
+                                      net::Error net_error) {
+  network::URLLoaderCompletionStatus completion_status(net_error);
   completion_status.decoded_body_length = response_data.size();
 
   std::string response = base::StringPrintf("HTTP/1.1 %d %s\r\n", status_code,

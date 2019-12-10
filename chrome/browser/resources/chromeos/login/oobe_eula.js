@@ -18,7 +18,7 @@ Polymer({
      */
     eulaLoadingScreenShown: {
       type: Boolean,
-      value: false,
+      value: true,
     },
 
     /**
@@ -113,6 +113,7 @@ Polymer({
    */
   onFrameLoad_: function() {
     this.acceptButtonDisabled = false;
+    this.eulaLoadingScreenShown = false;
   },
 
   /**

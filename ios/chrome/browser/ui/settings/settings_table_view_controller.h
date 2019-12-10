@@ -11,6 +11,7 @@
 @protocol ApplicationCommands;
 class Browser;
 @protocol BrowserCommands;
+@protocol BrowsingDataCommands;
 @protocol SettingsMainPageCommands;
 @class SigninInteractionController;
 
@@ -25,10 +26,11 @@ class Browser;
 
 // Initializes a new SettingsTableViewController. |browser| must not
 // be nil and must not be associated with an off the record browser state.
-- (instancetype)initWithBrowser:(Browser*)browser
-                     dispatcher:
-                         (id<ApplicationCommands, BrowserCommands>)dispatcher
-    NS_DESIGNATED_INITIALIZER;
+- (instancetype)
+    initWithBrowser:(Browser*)browser
+         dispatcher:
+             (id<ApplicationCommands, BrowserCommands, BrowsingDataCommands>)
+                 dispatcher NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithTableViewStyle:(UITableViewStyle)style
                            appBarStyle:

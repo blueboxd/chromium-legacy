@@ -403,7 +403,7 @@ public class ManageSyncPreferences extends PreferenceFragmentCompat
         if (mProfileSyncService.isPassphraseRequiredForPreferredDataTypes()) {
             displayPassphraseDialog();
         } else if (mProfileSyncService.isTrustedVaultKeyRequiredForPreferredDataTypes()) {
-            TrustedVaultClient.displayKeyRetrievalDialog();
+            TrustedVaultClient.get().displayKeyRetrievalDialog(getContext());
         } else {
             displayPassphraseTypeDialog();
         }

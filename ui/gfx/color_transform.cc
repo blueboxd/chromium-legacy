@@ -877,7 +877,7 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
   steps_.push_back(
       std::make_unique<ColorTransformMatrix>(GetRangeAdjustMatrix(src)));
 
-  if (src.matrix_ == ColorSpace::MatrixID::BT2020_CL) {
+  if (src.GetMatrixID() == ColorSpace::MatrixID::BT2020_CL) {
     // BT2020 CL is a special case.
     steps_.push_back(std::make_unique<ColorTransformFromBT2020CL>());
   } else {
@@ -895,14 +895,16 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
   if (src.GetTransferFunction(&src_to_linear_fn)) {
     steps_.push_back(std::make_unique<ColorTransformSkTransferFn>(
         src_to_linear_fn, src.HasExtendedSkTransferFn()));
-  } else if (src.transfer_ == ColorSpace::TransferID::SMPTEST2084_NON_HDR) {
+  } else if (src.GetTransferID() ==
+             ColorSpace::TransferID::SMPTEST2084_NON_HDR) {
     steps_.push_back(
         std::make_unique<ColorTransformSMPTEST2048NonHdrToLinear>());
   } else {
-    steps_.push_back(std::make_unique<ColorTransformToLinear>(src.transfer_));
+    steps_.push_back(
+        std::make_unique<ColorTransformToLinear>(src.GetTransferID()));
   }
 
-  if (src.matrix_ == ColorSpace::MatrixID::BT2020_CL) {
+  if (src.GetMatrixID() == ColorSpace::MatrixID::BT2020_CL) {
     // BT2020 CL is a special case.
     steps_.push_back(
         std::make_unique<ColorTransformMatrix>(Invert(GetTransferMatrix(src))));
@@ -912,7 +914,7 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
 
   steps_.push_back(
       std::make_unique<ColorTransformMatrix>(Invert(GetPrimaryTransform(dst))));
-  if (dst.matrix_ == ColorSpace::MatrixID::BT2020_CL) {
+  if (dst.GetMatrixID() == ColorSpace::MatrixID::BT2020_CL) {
     // BT2020 CL is a special case.
     steps_.push_back(
         std::make_unique<ColorTransformMatrix>(GetTransferMatrix(dst)));
@@ -923,10 +925,11 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
     steps_.push_back(std::make_unique<ColorTransformSkTransferFn>(
         dst_from_linear_fn, dst.HasExtendedSkTransferFn()));
   } else {
-    steps_.push_back(std::make_unique<ColorTransformFromLinear>(dst.transfer_));
+    steps_.push_back(
+        std::make_unique<ColorTransformFromLinear>(dst.GetTransferID()));
   }
 
-  if (dst.matrix_ == ColorSpace::MatrixID::BT2020_CL) {
+  if (dst.GetMatrixID() == ColorSpace::MatrixID::BT2020_CL) {
     steps_.push_back(std::make_unique<ColorTransformToBT2020CL>());
   } else {
     steps_.push_back(
@@ -947,7 +950,7 @@ ColorTransformInternal::ColorTransformInternal(const ColorSpace& src,
     return;
 
   // SMPTEST2084_NON_HDR is not a valid destination.
-  if (dst.transfer_ == ColorSpace::TransferID::SMPTEST2084_NON_HDR) {
+  if (dst.GetTransferID() == ColorSpace::TransferID::SMPTEST2084_NON_HDR) {
     DLOG(ERROR) << "Invalid dst transfer function, returning identity.";
     return;
   }

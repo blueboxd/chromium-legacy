@@ -626,6 +626,9 @@ extern const char kExtensionContentVerificationBootstrap[];
 extern const char kExtensionContentVerificationEnforce[];
 extern const char kExtensionContentVerificationEnforceStrict[];
 
+extern const char kExtensionsCheckupName[];
+extern const char kExtensionsCheckupDescription[];
+
 extern const char kExtensionsToolbarMenuName[];
 extern const char kExtensionsToolbarMenuDescription[];
 
@@ -2089,6 +2092,9 @@ extern const char kEnableParentalControlsSettingsDescription[];
 
 extern const char kEnablePlayStoreSearchName[];
 extern const char kEnablePlayStoreSearchDescription[];
+
+extern const char kEnableQuickAnswersName[];
+extern const char kEnableQuickAnswersDescription[];
 
 extern const char kEnableVideoPlayerNativeControlsName[];
 extern const char kEnableVideoPlayerNativeControlsDescription[];

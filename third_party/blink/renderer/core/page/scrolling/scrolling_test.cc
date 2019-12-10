@@ -148,7 +148,7 @@ class ScrollingTest : public testing::Test, public PaintTestConfigurations {
   }
 
   const cc::Layer* FrameScrollingContentsLayer(const LocalFrame& frame) const {
-    return CcLayerByScrollElementId(
+    return ScrollingContentsCcLayerByScrollElementId(
         RootCcLayer(), frame.View()->LayoutViewport()->GetScrollElementId());
   }
 
@@ -166,8 +166,8 @@ class ScrollingTest : public testing::Test, public PaintTestConfigurations {
                                       ->GetDocument()
                                       ->getElementById(element_id)
                                       ->GetScrollableArea();
-    return CcLayerByScrollElementId(RootCcLayer(),
-                                    scrollable_area->GetScrollElementId());
+    return ScrollingContentsCcLayerByScrollElementId(
+        RootCcLayer(), scrollable_area->GetScrollElementId());
   }
 
  protected:

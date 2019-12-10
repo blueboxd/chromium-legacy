@@ -224,10 +224,7 @@ class MemberBase {
   }
 
   ALWAYS_INLINE void SetRaw(T* raw) {
-    // TOOD(omerkatz): replace this cast with std::atomic_ref (C++20) once it
-    // becomes available
-    reinterpret_cast<std::atomic<T*>*>(&raw_)->store(raw,
-                                                     std::memory_order_relaxed);
+    WTF::AsAtomicPtr(&raw_)->store(raw, std::memory_order_relaxed);
   }
   ALWAYS_INLINE T* GetRaw() const { return raw_; }
 
@@ -238,9 +235,7 @@ class MemberBase {
   T* GetSafe() const {
     // TOOD(omerkatz): replace this cast with std::atomic_ref (C++20) once it
     // becomes available
-    return reinterpret_cast<std::atomic<T*>*>(
-               const_cast<typename std::remove_const<T>::type**>(&raw_))
-        ->load(std::memory_order_relaxed);
+    return WTF::AsAtomicPtr(&raw_)->load(std::memory_order_relaxed);
   }
 
   // Thread safe version of IsHashTableDeletedValue for use while tracing.

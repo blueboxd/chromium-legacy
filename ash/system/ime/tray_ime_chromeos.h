@@ -7,7 +7,7 @@
 
 #include <stddef.h>
 
-#include "ash/public/mojom/ime_info.mojom.h"
+#include "ash/public/cpp/ime_info.h"
 #include "ash/system/ime_menu/ime_list_view.h"
 #include "base/macros.h"
 
@@ -16,7 +16,7 @@ class ImageView;
 }  // namespace views
 
 namespace ash {
-class ImeController;
+class ImeControllerImpl;
 
 namespace tray {
 
@@ -26,12 +26,12 @@ namespace tray {
 class IMEDetailedView : public ImeListView {
  public:
   IMEDetailedView(DetailedViewDelegate* delegate,
-                  ImeController* ime_controller);
+                  ImeControllerImpl* ime_controller);
   ~IMEDetailedView() override = default;
 
   void Update(const std::string& current_ime_id,
-              const std::vector<mojom::ImeInfo>& list,
-              const std::vector<mojom::ImeMenuItem>& property_list,
+              const std::vector<ImeInfo>& list,
+              const std::vector<ImeMenuItem>& property_list,
               bool show_keyboard_toggle,
               SingleImeBehavior single_ime_behavior) override;
 
@@ -48,7 +48,7 @@ class IMEDetailedView : public ImeListView {
   void ShowSettings();
   const char* GetClassName() const override;
 
-  ImeController* const ime_controller_;
+  ImeControllerImpl* const ime_controller_;
 
   // Gear icon that takes the user to IME settings.
   views::Button* settings_button_ = nullptr;

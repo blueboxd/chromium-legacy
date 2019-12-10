@@ -93,13 +93,8 @@ class LinkHighlightImplTest : public testing::Test,
     ThreadState::Current()->CollectAllGarbageForTesting();
   }
 
-  size_t ContentLayerCount() {
-    // paint_artifact_compositor()->EnableExtraDataForTesting() should be called
-    // before using this function.
-    DCHECK(paint_artifact_compositor()->GetExtraDataForTesting());
-    return paint_artifact_compositor()
-        ->GetExtraDataForTesting()
-        ->content_layers.size();
+  size_t LayerCount() {
+    return paint_artifact_compositor()->RootLayer()->children().size();
   }
 
   PaintArtifactCompositor* paint_artifact_compositor() {
@@ -243,9 +238,8 @@ TEST_P(LinkHighlightImplTest, HighlightLayerEffectNode) {
   WebViewImpl* web_view_impl = web_view_helper_.GetWebView();
   web_view_impl->MainFrameWidget()->Resize(WebSize(page_width, page_height));
 
-  paint_artifact_compositor()->EnableExtraDataForTesting();
   UpdateAllLifecyclePhases();
-  size_t layer_count_before_highlight = ContentLayerCount();
+  size_t layer_count_before_highlight = LayerCount();
 
   WebGestureEvent touch_event(WebInputEvent::kGestureShowPress,
                               WebInputEvent::kNoModifiers,
@@ -259,7 +253,7 @@ TEST_P(LinkHighlightImplTest, HighlightLayerEffectNode) {
 
   web_view_impl->EnableTapHighlightAtPoint(targeted_event);
   // The highlight should create one additional layer.
-  EXPECT_EQ(layer_count_before_highlight + 1, ContentLayerCount());
+  EXPECT_EQ(layer_count_before_highlight + 1, LayerCount());
 
   const auto* highlight = GetLinkHighlightImpl();
   ASSERT_TRUE(highlight);
@@ -295,7 +289,7 @@ TEST_P(LinkHighlightImplTest, HighlightLayerEffectNode) {
   touch_node->remove(IGNORE_EXCEPTION_FOR_TESTING);
   UpdateAllLifecyclePhases();
   // Removing the highlight layer should drop the cc layer count by one.
-  EXPECT_EQ(layer_count_before_highlight, ContentLayerCount());
+  EXPECT_EQ(layer_count_before_highlight, LayerCount());
 
   WebTestSupport::SetIsRunningWebTest(was_running_web_test);
 }
@@ -307,9 +301,8 @@ TEST_P(LinkHighlightImplTest, MultiColumn) {
   web_view_impl->MainFrameWidget()->Resize(WebSize(page_width, page_height));
   UpdateAllLifecyclePhases();
 
-  paint_artifact_compositor()->EnableExtraDataForTesting();
   UpdateAllLifecyclePhases();
-  size_t layer_count_before_highlight = ContentLayerCount();
+  size_t layer_count_before_highlight = LayerCount();
 
   WebGestureEvent touch_event(WebInputEvent::kGestureShowPress,
                               WebInputEvent::kNoModifiers,
@@ -349,7 +342,7 @@ TEST_P(LinkHighlightImplTest, MultiColumn) {
   };
 
   // The highlight should create 2 additional layer, each for each fragment.
-  EXPECT_EQ(layer_count_before_highlight + 2, ContentLayerCount());
+  EXPECT_EQ(layer_count_before_highlight + 2, LayerCount());
   EXPECT_EQ(2u, highlight->FragmentCountForTesting());
   check_layer(highlight->LayerForTesting(0));
   check_layer(highlight->LayerForTesting(1));
@@ -365,7 +358,7 @@ TEST_P(LinkHighlightImplTest, MultiColumn) {
   ASSERT_TRUE(third_fragment);
   EXPECT_FALSE(third_fragment->NextFragment());
 
-  EXPECT_EQ(layer_count_before_highlight + 3, ContentLayerCount());
+  EXPECT_EQ(layer_count_before_highlight + 3, LayerCount());
   EXPECT_EQ(3u, highlight->FragmentCountForTesting());
   check_layer(highlight->LayerForTesting(0));
   check_layer(highlight->LayerForTesting(1));
@@ -377,14 +370,14 @@ TEST_P(LinkHighlightImplTest, MultiColumn) {
   ASSERT_EQ(&first_fragment, &touch_node->GetLayoutObject()->FirstFragment());
   EXPECT_FALSE(first_fragment.NextFragment());
 
-  EXPECT_EQ(layer_count_before_highlight + 1, ContentLayerCount());
+  EXPECT_EQ(layer_count_before_highlight + 1, LayerCount());
   EXPECT_EQ(1u, highlight->FragmentCountForTesting());
   check_layer(highlight->LayerForTesting(0));
 
   touch_node->remove(IGNORE_EXCEPTION_FOR_TESTING);
   UpdateAllLifecyclePhases();
   // Removing the highlight layer should drop the cc layers for highlights.
-  EXPECT_EQ(layer_count_before_highlight, ContentLayerCount());
+  EXPECT_EQ(layer_count_before_highlight, LayerCount());
 }
 
 }  // namespace blink

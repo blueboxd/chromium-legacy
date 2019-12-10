@@ -149,6 +149,9 @@ bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
     return true;
 
   static const base::StringPiece kAllowedArgs[] = {
+      switches::kEnableFeatures,
+      switches::kEnableLowEndDeviceMode,
+      switches::kForceGpuMemAvailableMb,
       switches::kRendererProcessLimit,
       switches::kMinHeightForGpuRasterTile,
   };
@@ -156,13 +159,22 @@ bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
   for (const auto& arg : args->DictItems()) {
     if (!base::Contains(kAllowedArgs, arg.first)) {
       LOG(ERROR) << "Unknown command-line arg: " << arg.first;
-      return false;
+      // TODO(https://crbug.com/1032439): Return false here once we are done
+      // experimenting with memory-related command-line options.
+      continue;
     }
     if (!arg.second.is_string()) {
       LOG(ERROR) << "Config command-line arg must be a string: " << arg.first;
       return false;
     }
     command_line->AppendSwitchNative(arg.first, arg.second.GetString());
+
+    // TODO(https://crbug.com/1023012): enable-low-end-device-mode currently
+    // fakes 512MB total physical memory, which triggers RGB4444 textures,
+    // which
+    // we don't yet support.
+    if (arg.first == switches::kEnableLowEndDeviceMode)
+      command_line->AppendSwitch(switches::kDisableRGBA4444Textures);
   }
 
   return true;

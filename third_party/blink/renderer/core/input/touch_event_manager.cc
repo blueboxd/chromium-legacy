@@ -20,7 +20,6 @@
 #include "third_party/blink/renderer/core/layout/hit_test_canvas_result.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -395,7 +394,7 @@ TouchEventManager::DispatchTouchEventFromAccumulatdTouchPoints() {
   }
 
   // Holds the complete set of touches on the screen.
-  auto* touches = MakeGarbageCollected<TouchList>();
+  TouchList* touches = TouchList::Create();
 
   // A different view on the 'touches' list above, filtered and grouped by
   // event target. Used for the |targetTouches| list in the JS event.
@@ -423,7 +422,7 @@ TouchEventManager::DispatchTouchEventFromAccumulatdTouchPoints() {
     TargetTouchesHeapMap::iterator target_touches_iterator =
         touches_by_target.find(touch_target);
     if (target_touches_iterator == touches_by_target.end()) {
-      touches_by_target.Set(touch_target, MakeGarbageCollected<TouchList>());
+      touches_by_target.Set(touch_target, TouchList::Create());
       target_touches_iterator = touches_by_target.find(touch_target);
     }
 
@@ -444,10 +443,8 @@ TouchEventManager::DispatchTouchEventFromAccumulatdTouchPoints() {
     // for further discussion about the TouchStationary state.
     if (!touch_point_attribute->stale_ && known_target) {
       size_t event_type_idx = event_type - WebInputEvent::kPointerTypeFirst;
-      if (!changed_touches[event_type_idx].touches_) {
-        changed_touches[event_type_idx].touches_ =
-            MakeGarbageCollected<TouchList>();
-      }
+      if (!changed_touches[event_type_idx].touches_)
+        changed_touches[event_type_idx].touches_ = TouchList::Create();
       changed_touches[event_type_idx].touches_->Append(touch);
       changed_touches[event_type_idx].targets_.insert(touch_target);
     }

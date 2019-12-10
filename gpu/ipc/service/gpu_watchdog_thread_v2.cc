@@ -9,18 +9,21 @@
 #include "base/bind_helpers.h"
 #include "base/bit_cast.h"
 #include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/native_library.h"
 #include "base/power_monitor/power_monitor.h"
+#include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "gpu/config/gpu_crash_keys.h"
+#include "gpu/ipc/common/result_codes.h"
 
 namespace gpu {
 
@@ -579,8 +582,12 @@ void GpuWatchdogThreadImplV2::DeliberatelyTerminateToRecoverFromHang() {
   crash_keys::gpu_watchdog_kill_after_power_resume.Set(
       WithinOneMinFromPowerResumed() ? "1" : "0");
 
-  // Deliberately crash the process to create a crash dump.
-  *((volatile int*)0) = 0xdeadface;
+  // Use RESULT_CODE_HUNG so this crash is separated from other
+  // EXCEPTION_ACCESS_VIOLATION buckets for UMA analysis.
+  // Create a crash dump first. TerminateCurrentProcessImmediately will not
+  // create a dump.
+  base::debug::DumpWithoutCrashing();
+  base::Process::TerminateCurrentProcessImmediately(RESULT_CODE_HUNG);
 }
 
 void GpuWatchdogThreadImplV2::GpuWatchdogHistogram(

@@ -19,6 +19,7 @@ class SharingServiceProxyAndroid {
   void SendSharedClipboardMessage(
       JNIEnv* env,
       const base::android::JavaParamRef<jstring>& j_guid,
+      const jlong j_last_updated_timestamp_millis,
       const base::android::JavaParamRef<jstring>& j_text,
       const base::android::JavaParamRef<jobject>& j_runnable);
 

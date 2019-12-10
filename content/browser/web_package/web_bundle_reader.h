@@ -61,6 +61,7 @@ class CONTENT_EXPORT WebBundleReader final
       data_decoder::mojom::BundleResponsePtr,
       data_decoder::mojom::BundleResponseParseErrorPtr)>;
   void ReadResponse(const network::ResourceRequest& resource_request,
+                    const std::string& accept_langs,
                     ResponseCallback callback);
 
   // Starts loading response body. |response| should be obtained by

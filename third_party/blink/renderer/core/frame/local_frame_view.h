@@ -624,6 +624,13 @@ class CORE_EXPORT LocalFrameView final
   // The visual viewport can supply scrollbars.
   void VisualViewportScrollbarsChanged();
 
+  void SetVisualViewportNeedsRepaint() {
+    visual_viewport_needs_repaint_ = true;
+  }
+  bool VisualViewportNeedsRepaint() const {
+    return visual_viewport_needs_repaint_;
+  }
+
   LayoutUnit CaretWidth() const;
 
   size_t PaintFrameCount() const { return paint_frame_count_; }
@@ -935,6 +942,8 @@ class CORE_EXPORT LocalFrameView final
   // True if the frame has deferred commits at least once per document load.
   // We won't defer again for the same document.
   bool have_deferred_commits_ = false;
+
+  bool visual_viewport_needs_repaint_ = false;
 
   // Whether to collect layer debug information for debugging, tracing,
   // inspection, etc. Applies to local root only.

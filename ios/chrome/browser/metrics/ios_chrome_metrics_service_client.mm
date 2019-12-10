@@ -195,10 +195,10 @@ std::string IOSChromeMetricsServiceClient::GetVersionString() {
 }
 
 void IOSChromeMetricsServiceClient::CollectFinalMetricsForLog(
-    const base::Closure& done_callback) {
+    base::OnceClosure done_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  collect_final_metrics_done_callback_ = done_callback;
+  collect_final_metrics_done_callback_ = std::move(done_callback);
   CollectFinalHistograms();
 }
 
@@ -319,7 +319,7 @@ void IOSChromeMetricsServiceClient::CollectFinalHistograms() {
         (task_info_data.resident_size - task_info_data.reusable) / 1024);
   }
 
-  collect_final_metrics_done_callback_.Run();
+  std::move(collect_final_metrics_done_callback_).Run();
 }
 
 bool IOSChromeMetricsServiceClient::RegisterForNotifications() {

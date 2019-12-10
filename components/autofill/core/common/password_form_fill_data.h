@@ -58,11 +58,11 @@ struct PasswordFormFillData {
   // was introduced because the absent of ids is just temprorary situation while
   // the old form parsing still exists.
   // If there is no form tag then |form_renderer_id| ==
-  // FormData::kNotSetFormRendererId.
+  // FormData::kNotSetRendererId.
   // Username and Password elements renderer ids are in
   // |username_field.unique_renderer_id| and |password_field.unique_renderer_id|
   // correspondingly.
-  uint32_t form_renderer_id = FormData::kNotSetFormRendererId;
+  uint32_t form_renderer_id = FormData::kNotSetRendererId;
 
   // The name of the form.
   base::string16 name;

@@ -185,10 +185,10 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
   EXPECT_TRUE(skia_representation);
   std::vector<GrBackendSemaphore> begin_semaphores;
   std::vector<GrBackendSemaphore> end_semaphores;
-  base::Optional<SharedImageRepresentationSkia::ScopedWriteAccess>
+  std::unique_ptr<SharedImageRepresentationSkia::ScopedWriteAccess>
       scoped_write_access;
-  scoped_write_access.emplace(skia_representation.get(), &begin_semaphores,
-                              &end_semaphores);
+  scoped_write_access = skia_representation->BeginScopedWriteAccess(
+      &begin_semaphores, &end_semaphores);
   auto* surface = scoped_write_access->surface();
   EXPECT_TRUE(surface);
   EXPECT_EQ(size.width(), surface->width());
@@ -197,10 +197,10 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
   EXPECT_TRUE(end_semaphores.empty());
   scoped_write_access.reset();
 
-  base::Optional<SharedImageRepresentationSkia::ScopedReadAccess>
+  std::unique_ptr<SharedImageRepresentationSkia::ScopedReadAccess>
       scoped_read_access;
-  scoped_read_access.emplace(skia_representation.get(), &begin_semaphores,
-                             &end_semaphores);
+  scoped_read_access = skia_representation->BeginScopedReadAccess(
+      &begin_semaphores, &end_semaphores);
   auto* promise_texture = scoped_read_access->promise_image_texture();
   EXPECT_TRUE(promise_texture);
   EXPECT_TRUE(begin_semaphores.empty());
@@ -296,20 +296,20 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
   EXPECT_TRUE(skia_representation);
   std::vector<GrBackendSemaphore> begin_semaphores;
   std::vector<GrBackendSemaphore> end_semaphores;
-  base::Optional<SharedImageRepresentationSkia::ScopedWriteAccess>
+  std::unique_ptr<SharedImageRepresentationSkia::ScopedWriteAccess>
       scoped_write_access;
-  scoped_write_access.emplace(skia_representation.get(), &begin_semaphores,
-                              &end_semaphores);
+  scoped_write_access = skia_representation->BeginScopedWriteAccess(
+      &begin_semaphores, &end_semaphores);
   auto* surface = scoped_write_access->surface();
   EXPECT_TRUE(surface);
   EXPECT_EQ(size.width(), surface->width());
   EXPECT_EQ(size.height(), surface->height());
   scoped_write_access.reset();
 
-  base::Optional<SharedImageRepresentationSkia::ScopedReadAccess>
+  std::unique_ptr<SharedImageRepresentationSkia::ScopedReadAccess>
       scoped_read_access;
-  scoped_read_access.emplace(skia_representation.get(), &begin_semaphores,
-                             &end_semaphores);
+  scoped_read_access = skia_representation->BeginScopedReadAccess(
+      &begin_semaphores, &end_semaphores);
   auto* promise_texture = scoped_read_access->promise_image_texture();
   EXPECT_TRUE(promise_texture);
   EXPECT_TRUE(begin_semaphores.empty());

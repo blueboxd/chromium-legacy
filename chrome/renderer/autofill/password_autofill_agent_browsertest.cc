@@ -444,9 +444,8 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     fill_data_.password_field.unique_renderer_id =
         password_element_.UniqueRendererFormControlId();
     WebFormElement form = password_element_.Form();
-    fill_data_.form_renderer_id = form.IsNull()
-                                      ? FormData::kNotSetFormRendererId
-                                      : form.UniqueRendererFormId();
+    fill_data_.form_renderer_id = form.IsNull() ? FormData::kNotSetRendererId
+                                                : form.UniqueRendererFormId();
   }
 
   void UpdateUsernameAndPasswordElements() {
@@ -662,7 +661,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   uint32_t GetFormUniqueRendererId(const WebString& form_id) {
     WebLocalFrame* frame = GetMainFrame();
     if (!frame)
-      return FormData::kNotSetFormRendererId;
+      return FormData::kNotSetRendererId;
     WebFormElement web_form =
         frame->GetDocument().GetElementById(form_id).To<WebFormElement>();
     return web_form.UniqueRendererFormId();
@@ -937,10 +936,8 @@ TEST_F(PasswordAutofillAgentTest, NoFillingOnSignupForm_NoMetrics) {
   ASSERT_FALSE(element.IsNull());
   username_element_ = element.To<WebInputElement>();
 
-  fill_data_.username_field.unique_renderer_id =
-      FormFieldData::kNotSetFormControlRendererId;
-  fill_data_.password_field.unique_renderer_id =
-      FormFieldData::kNotSetFormControlRendererId;
+  fill_data_.username_field.unique_renderer_id = FormData::kNotSetRendererId;
+  fill_data_.password_field.unique_renderer_id = FormData::kNotSetRendererId;
 
   WebFormElement form_element =
       document.GetElementById("LoginTestForm").To<WebFormElement>();
@@ -2677,7 +2674,7 @@ TEST_F(PasswordAutofillAgentTest, NoForm_PromptForAJAXSubmitWithoutNavigation) {
   FireAjaxSucceeded();
 
   ExpectSameDocumentNavigationWithUsernameAndPasswords(
-      FormData::kNotSetFormRendererId, "Bob", "mypassword", "",
+      FormData::kNotSetRendererId, "Bob", "mypassword", "",
       SubmissionIndicatorEvent::XHR_SUCCEEDED);
 }
 
@@ -2701,7 +2698,7 @@ TEST_F(PasswordAutofillAgentTest,
   base::RunLoop().RunUntilIdle();
 
   ExpectSameDocumentNavigationWithUsernameAndPasswords(
-      FormData::kNotSetFormRendererId, "Bob", "mypassword", "",
+      FormData::kNotSetRendererId, "Bob", "mypassword", "",
       SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR);
 }
 
@@ -3170,7 +3167,7 @@ TEST_F(PasswordAutofillAgentTest,
     FireAjaxSucceeded();
 
     ExpectSameDocumentNavigationWithUsernameAndPasswords(
-        FormData::kNotSetFormRendererId, "Alice", "mypassword", "",
+        FormData::kNotSetRendererId, "Alice", "mypassword", "",
         SubmissionIndicatorEvent::XHR_SUCCEEDED);
   }
 }
@@ -3196,7 +3193,7 @@ TEST_F(PasswordAutofillAgentTest,
   base::RunLoop().RunUntilIdle();
 
   ExpectSameDocumentNavigationWithUsernameAndPasswords(
-      FormData::kNotSetFormRendererId, "Alice", "mypassword", "",
+      FormData::kNotSetRendererId, "Alice", "mypassword", "",
       SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR);
 }
 

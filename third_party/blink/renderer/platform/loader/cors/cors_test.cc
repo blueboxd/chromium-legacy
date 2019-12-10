@@ -17,8 +17,8 @@ class CorsExposedHeadersTest : public testing::Test {
  public:
   using CredentialsMode = network::mojom::CredentialsMode;
 
-  WebHTTPHeaderSet Parse(CredentialsMode credentials_mode,
-                         const AtomicString& header) const {
+  HTTPHeaderSet Parse(CredentialsMode credentials_mode,
+                      const AtomicString& header) const {
     ResourceResponse response;
     response.AddHttpHeaderField("access-control-expose-headers", header);
 
@@ -27,25 +27,24 @@ class CorsExposedHeadersTest : public testing::Test {
 };
 
 TEST_F(CorsExposedHeadersTest, ValidInput) {
-  EXPECT_EQ(Parse(CredentialsMode::kOmit, "valid"),
-            WebHTTPHeaderSet({"valid"}));
+  EXPECT_EQ(Parse(CredentialsMode::kOmit, "valid"), HTTPHeaderSet({"valid"}));
 
-  EXPECT_EQ(Parse(CredentialsMode::kOmit, "a,b"), WebHTTPHeaderSet({"a", "b"}));
+  EXPECT_EQ(Parse(CredentialsMode::kOmit, "a,b"), HTTPHeaderSet({"a", "b"}));
 
   EXPECT_EQ(Parse(CredentialsMode::kOmit, "   a ,  b "),
-            WebHTTPHeaderSet({"a", "b"}));
+            HTTPHeaderSet({"a", "b"}));
 
   EXPECT_EQ(Parse(CredentialsMode::kOmit, " \t   \t\t a"),
-            WebHTTPHeaderSet({"a"}));
+            HTTPHeaderSet({"a"}));
 
-  EXPECT_EQ(Parse(CredentialsMode::kOmit, "a , "), WebHTTPHeaderSet({"a", ""}));
+  EXPECT_EQ(Parse(CredentialsMode::kOmit, "a , "), HTTPHeaderSet({"a", ""}));
 }
 
 TEST_F(CorsExposedHeadersTest, DuplicatedEntries) {
-  EXPECT_EQ(Parse(CredentialsMode::kOmit, "a, a"), WebHTTPHeaderSet{"a"});
+  EXPECT_EQ(Parse(CredentialsMode::kOmit, "a, a"), HTTPHeaderSet{"a"});
 
   EXPECT_EQ(Parse(CredentialsMode::kOmit, "a, a, b"),
-            WebHTTPHeaderSet({"a", "b"}));
+            HTTPHeaderSet({"a", "b"}));
 }
 
 TEST_F(CorsExposedHeadersTest, InvalidInput) {
@@ -81,12 +80,12 @@ TEST_F(CorsExposedHeadersTest, Wildcard) {
 
   EXPECT_EQ(
       cors::ExtractCorsExposedHeaderNamesList(CredentialsMode::kOmit, response),
-      WebHTTPHeaderSet({"access-control-expose-headers", "b", "c", "d", "*"}));
+      HTTPHeaderSet({"access-control-expose-headers", "b", "c", "d", "*"}));
 
   EXPECT_EQ(
       cors::ExtractCorsExposedHeaderNamesList(CredentialsMode::kSameOrigin,
                                               response),
-      WebHTTPHeaderSet({"access-control-expose-headers", "b", "c", "d", "*"}));
+      HTTPHeaderSet({"access-control-expose-headers", "b", "c", "d", "*"}));
 }
 
 TEST_F(CorsExposedHeadersTest, Asterisk) {
@@ -99,7 +98,7 @@ TEST_F(CorsExposedHeadersTest, Asterisk) {
 
   EXPECT_EQ(cors::ExtractCorsExposedHeaderNamesList(CredentialsMode::kInclude,
                                                     response),
-            WebHTTPHeaderSet({"a", "b", "*"}));
+            HTTPHeaderSet({"a", "b", "*"}));
 }
 
 // Keep this in sync with the CalculateResponseTainting test in

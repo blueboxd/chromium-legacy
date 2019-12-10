@@ -62,9 +62,9 @@ class TestMediaPerceptionAPIDelegate : public MediaPerceptionAPIDelegate {
   }
 
   void ForwardMediaPerceptionReceiver(
+      content::RenderFrameHost* render_frame_host,
       mojo::PendingReceiver<chromeos::media_perception::mojom::MediaPerception>
-          receiver,
-      content::RenderFrameHost* render_frame_host) override {
+          receiver) override {
     NOTIMPLEMENTED();
   }
 };

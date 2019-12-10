@@ -15,6 +15,7 @@
 @protocol ApplicationCommands;
 class Browser;
 @protocol BrowserCommands;
+@protocol BrowsingDataCommands;
 @class ChromeIdentity;
 
 // The coordinator for Sign In Interaction. This coordinator handles the
@@ -33,10 +34,11 @@ class Browser;
 // Designated initializer.
 // * |browserState| is the current browser state. Must not be nil.
 // * |dispatcher| is the dispatcher to be sent commands from this class.
-- (instancetype)initWithBrowser:(Browser*)browser
-                     dispatcher:
-                         (id<ApplicationCommands, BrowserCommands>)dispatcher
-    NS_DESIGNATED_INITIALIZER;
+- (instancetype)
+    initWithBrowser:(Browser*)browser
+         dispatcher:
+             (id<ApplicationCommands, BrowserCommands, BrowsingDataCommands>)
+                 dispatcher NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                               browserState:

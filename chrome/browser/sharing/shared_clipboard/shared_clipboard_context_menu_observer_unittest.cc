@@ -30,6 +30,7 @@ using ::testing::_;
 using ::testing::ByMove;
 using ::testing::Eq;
 using ::testing::NiceMock;
+using ::testing::Property;
 using ::testing::Return;
 
 using SharingMessage = chrome_browser_sharing::SharingMessage;
@@ -133,8 +134,10 @@ TEST_F(SharedClipboardContextMenuObserverTest, SingleDevice_ShowMenu) {
             item.command_id);
 
   // Emulate click on the device.
-  EXPECT_CALL(*service(), SendMessageToDevice(Eq(guid), Eq(kSendMessageTimeout),
-                                              ProtoEquals(sharing_message), _))
+  EXPECT_CALL(*service(),
+              SendMessageToDevice(Property(&syncer::DeviceInfo::guid, guid),
+                                  Eq(kSendMessageTimeout),
+                                  ProtoEquals(sharing_message), _))
       .Times(1);
   menu_.ExecuteCommand(
       IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE, 0);
@@ -169,8 +172,9 @@ TEST_F(SharedClipboardContextMenuObserverTest, MultipleDevices_ShowMenu) {
   for (int i = 0; i < kMaxDevicesShown; i++) {
     if (i < device_count) {
       EXPECT_CALL(*service(),
-                  SendMessageToDevice(Eq(guids[i]), Eq(kSendMessageTimeout),
-                                      ProtoEquals(sharing_message), _))
+                  SendMessageToDevice(
+                      Property(&syncer::DeviceInfo::guid, guids[i]),
+                      Eq(kSendMessageTimeout), ProtoEquals(sharing_message), _))
           .Times(1);
     } else {
       EXPECT_CALL(*service(), SendMessageToDevice(_, _, _, _)).Times(0);
@@ -210,8 +214,9 @@ TEST_F(SharedClipboardContextMenuObserverTest,
   for (int i = 0; i < device_count; i++) {
     if (i < kMaxDevicesShown) {
       EXPECT_CALL(*service(),
-                  SendMessageToDevice(Eq(guids[i]), Eq(kSendMessageTimeout),
-                                      ProtoEquals(sharing_message), _))
+                  SendMessageToDevice(
+                      Property(&syncer::DeviceInfo::guid, guids[i]),
+                      Eq(kSendMessageTimeout), ProtoEquals(sharing_message), _))
           .Times(1);
     } else {
       EXPECT_CALL(*service(), SendMessageToDevice(_, _, _, _)).Times(0);

@@ -35,6 +35,7 @@ source_set("test_support") {
     "test_signin_resources_provider.mm",
   ]
   deps = [
+    ":fake_chrome_identity",
     ":signin",
     "//base",
     "//components/signin/public/identity_manager",
@@ -43,7 +44,6 @@ source_set("test_support") {
     "//ui/base:test_support",
   ]
   public_deps = [
-    ":fake_chrome_identity",
     "//testing/gmock",
   ]
 }

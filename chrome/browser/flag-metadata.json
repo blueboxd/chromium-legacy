@@ -1696,6 +1696,11 @@
     "owners": [ "//net/quic/OWNERS" ],
     "expiry_milestone": 88
   },
+    {
+    "name": "enable-quick-answers",
+    "owners": [ "croissant-eng" ],
+    "expiry_milestone": 82
+  },
   {
     "name": "enable-reader-mode",
     "owners": [ "gilmanmh@google.com" ],
@@ -2206,6 +2211,11 @@
     "name": "extension-apis",
     "owners": [ "rdevlin.cronin" ],
     "expiry_milestone": 76
+  },
+  {
+    "name": "extension-checkup",
+    "owners": ["archanasimha" ],
+    "expiry_milestone": 82
   },
   {
     "name": "extension-content-verification",

@@ -151,10 +151,10 @@ void QuotaDispatcherHost::DidGetPersistentUsageAndQuota(
 
   permission_context_->RequestQuotaPermission(
       params, process_id_,
-      base::Bind(&QuotaDispatcherHost::DidGetPermissionResponse,
-                 weak_factory_.GetWeakPtr(), origin, requested_quota,
-                 current_usage, current_quota,
-                 base::Passed(std::move(callback))));
+      base::BindOnce(&QuotaDispatcherHost::DidGetPermissionResponse,
+                     weak_factory_.GetWeakPtr(), origin, requested_quota,
+                     current_usage, current_quota,
+                     base::Passed(std::move(callback))));
 }
 
 void QuotaDispatcherHost::DidGetPermissionResponse(

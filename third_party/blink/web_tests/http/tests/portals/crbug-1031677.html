@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<body>
+<script>
+// This test passes if it does not crash.
+// This does surprise the test runner by closing the main web contents.
+var portal = document.createElement("portal");
+document.body.appendChild(portal);
+portal.activate();
+</script>
+</body>

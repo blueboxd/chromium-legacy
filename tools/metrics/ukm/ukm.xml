@@ -4869,6 +4869,61 @@ be describing additional metrics about the same event.
       The number of ad subframes that the associated renderer owns.
     </summary>
   </metric>
+  <metric name="NumberOfCallsInDetachedWindowByClosing">
+    <summary>
+      The number of function calls in a window detached by closing/removal.
+    </summary>
+  </metric>
+  <metric name="NumberOfCallsInDetachedWindowByClosing_After10sSinceDetaching">
+    <summary>
+      The number of function calls in a window detached by closing/removal, that
+      happened at least 10 seconds after detaching.
+    </summary>
+  </metric>
+  <metric name="NumberOfCallsInDetachedWindowByClosing_After1minSinceDetaching">
+    <summary>
+      The number of function calls in a window detached by closing/removal, that
+      happened at least 1 minute after detaching.
+    </summary>
+  </metric>
+  <metric name="NumberOfCallsInDetachedWindowByNavigation">
+    <summary>
+      The number of function calls in a window detached by navigating away.
+    </summary>
+  </metric>
+  <metric
+      name="NumberOfCallsInDetachedWindowByNavigation_After10sSinceDetaching">
+    <summary>
+      The number of function calls in a window detached by navigating away, that
+      happened at least 10 seconds after detaching.
+    </summary>
+  </metric>
+  <metric
+      name="NumberOfCallsInDetachedWindowByNavigation_After1minSinceDetaching">
+    <summary>
+      The number of function calls in a window detached by navigating away, that
+      happened at least 1 minute after detaching.
+    </summary>
+  </metric>
+  <metric name="NumberOfCallsInDetachedWindowByOtherReason">
+    <summary>
+      The number of function calls in a window detached by another reason.
+    </summary>
+  </metric>
+  <metric
+      name="NumberOfCallsInDetachedWindowByOtherReason_After10sSinceDetaching">
+    <summary>
+      The number of function calls in a window detached by another reason, that
+      happened at least 10 seconds after detaching.
+    </summary>
+  </metric>
+  <metric
+      name="NumberOfCallsInDetachedWindowByOtherReason_After1minSinceDetaching">
+    <summary>
+      The number of function calls in a window detached by another reason, that
+      happened at least 1 minute after detaching.
+    </summary>
+  </metric>
   <metric name="NumberOfDetachedScriptStates">
     <summary>
       The number of detached ScriptState that the associated renderer owns.

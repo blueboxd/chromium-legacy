@@ -2001,6 +2001,7 @@ LayoutEmbeddedContent* LocalFrameView::GetLayoutEmbeddedContent() const {
 }
 
 void LocalFrameView::VisualViewportScrollbarsChanged() {
+  SetVisualViewportNeedsRepaint();
   if (LayoutView* layout_view = GetLayoutView())
     layout_view->Layer()->ClearClipRects();
 }
@@ -2698,7 +2699,7 @@ void LocalFrameView::PaintTree() {
     bool has_dev_tools_overlays =
         web_local_frame_impl && web_local_frame_impl->HasDevToolsOverlays();
     if (!GetLayoutView()->Layer()->SelfOrDescendantNeedsRepaint() &&
-        !has_dev_tools_overlays) {
+        !visual_viewport_needs_repaint_ && !has_dev_tools_overlays) {
       paint_controller_->UpdateUMACountsOnFullyCached();
     } else {
       GraphicsContext graphics_context(*paint_controller_);
@@ -2709,9 +2710,6 @@ void LocalFrameView::PaintTree() {
         graphics_context.SetDarkMode(
             BuildDarkModeSettings(*settings, *GetLayoutView()));
       }
-
-      if (frame_->IsMainFrame())
-        frame_->GetPage()->GetVisualViewport().Paint(graphics_context);
 
       PaintInternal(graphics_context, kGlobalPaintNormalPhase,
                     CullRect::Infinite());
@@ -2728,6 +2726,13 @@ void LocalFrameView::PaintTree() {
       // needs to be after other paintings.
       if (has_dev_tools_overlays)
         web_local_frame_impl->PaintDevToolsOverlays(graphics_context);
+
+      if (frame_->IsMainFrame()) {
+        frame_->GetPage()->GetVisualViewport().Paint(graphics_context);
+        visual_viewport_needs_repaint_ = false;
+      } else {
+        DCHECK(!visual_viewport_needs_repaint_);
+      }
 
       paint_controller_->CommitNewDisplayItems();
     }
@@ -2827,7 +2832,7 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
       page->GetSettings().GetPreferCompositingToLCDTextEnabled();
 
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      !paint_controller_) {
+      (!paint_controller_ || visual_viewport_needs_repaint_)) {
     // Before CompositeAfterPaint, we need a transient PaintController to
     // collect the foreign layers, and this doesn't need caching. This shouldn't
     // affect caching status of DisplayItemClients because FinishCycle() is
@@ -2837,10 +2842,16 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
         std::make_unique<PaintController>(PaintController::kTransient);
 
     GraphicsContext context(*paint_controller_);
-    if (frame_->IsMainFrame())
-      frame_->GetPage()->GetVisualViewport().Paint(context);
     auto* root = GetLayoutView()->Compositor()->PaintRootGraphicsLayer();
     CollectDrawableLayersForLayerListRecursively(context, root);
+
+    if (frame_->IsMainFrame()) {
+      if (root == GetLayoutView()->Compositor()->RootGraphicsLayer())
+        frame_->GetPage()->GetVisualViewport().Paint(context);
+      visual_viewport_needs_repaint_ = false;
+    } else {
+      DCHECK(!visual_viewport_needs_repaint_);
+    }
 
     // Link highlights paint after all other layers.
     page->GetLinkHighlight().Paint(context);

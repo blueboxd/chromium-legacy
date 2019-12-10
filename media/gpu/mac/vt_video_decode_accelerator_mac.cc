@@ -432,8 +432,10 @@ gfx::ColorSpace GetImageBufferColorSpace(CVImageBufferRef image_buffer) {
   // the kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange.
   gfx::ColorSpace::RangeID range_id = gfx::ColorSpace::RangeID::LIMITED;
 
-  if (transfer_id == gfx::ColorSpace::TransferID::CUSTOM)
-    return gfx::ColorSpace(primary_id, custom_tr_fn, matrix_id, range_id);
+  if (transfer_id == gfx::ColorSpace::TransferID::CUSTOM) {
+    return gfx::ColorSpace(primary_id, gfx::ColorSpace::TransferID::CUSTOM,
+                           matrix_id, range_id, nullptr, &custom_tr_fn);
+  }
   return gfx::ColorSpace(primary_id, transfer_id, matrix_id, range_id);
 }
 

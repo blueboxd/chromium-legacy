@@ -1,40 +1,58 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module ash.mojom;
+#ifndef ASH_PUBLIC_CPP_IME_INFO_H_
+#define ASH_PUBLIC_CPP_IME_INFO_H_
 
-import "mojo/public/mojom/base/string16.mojom";
+#include <string>
+
+#include "ash/public/cpp/ash_public_export.h"
+#include "base/strings/string16.h"
+
+namespace ash {
 
 // Metadata about an installed input method.
-struct ImeInfo {
+struct ASH_PUBLIC_EXPORT ImeInfo {
+  ImeInfo();
+  ImeInfo(const ImeInfo& other);
+  ~ImeInfo();
+
   // True if the IME is a third-party extension.
-  bool third_party;
+  bool third_party = false;
 
   // ID that identifies the IME (e.g., "t:latn-post", "pinyin", "hangul").
-  string id;
+  std::string id;
 
   // Long name of the IME, which is used as the user-visible name.
-  mojo_base.mojom.String16 name;
+  base::string16 name;
 
   // Medium name of the IME, which is the same as the short name in most cases.
-  mojo_base.mojom.String16 medium_name;
+  base::string16 medium_name;
 
   // UI indicator for the IME (e.g., "US"). If the IME has no indicator, uses
   // the first two characters in its preferred keyboard layout or language code
   // (e.g., "ko", "ja", "en-US").
-  mojo_base.mojom.String16 short_name;
+  base::string16 short_name;
 };
 
 // A menu item that sets an IME configuration property.
-struct ImeMenuItem {
+struct ASH_PUBLIC_EXPORT ImeMenuItem {
+  ImeMenuItem();
+  ImeMenuItem(const ImeMenuItem& other);
+  ~ImeMenuItem();
+
   // True if the item is selected / enabled.
-  bool checked;
+  bool checked = false;
 
   // The key which identifies the property controlled by the menu item, e.g.
   // "InputMode.HalfWidthKatakana".
-  string key;
+  std::string key;
 
   // The item label, e.g. "Switch to full punctuation mode" or "Hiragana".
-  mojo_base.mojom.String16 label;
+  base::string16 label;
 };
+
+}  // namespace ash
+
+#endif  // ASH_PUBLIC_CPP_IME_INFO_H_

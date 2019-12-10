@@ -11,6 +11,7 @@
 enum class UrlLoadStrategy;
 
 @protocol ApplicationCommands;
+@protocol BrowsingDataCommands;
 @protocol HistoryLocalCommands;
 @protocol HistoryPresentationDelegate;
 @protocol HistoryClearBrowsingDataLocalCommands;
@@ -24,7 +25,8 @@ enum class UrlLoadStrategy;
 @property(nonatomic, weak) id<HistoryLocalCommands> localDispatcher;
 
 // Dispatcher for view controller.
-@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
+@property(nonatomic, weak) id<ApplicationCommands, BrowsingDataCommands>
+    dispatcher;
 
 // Opaque instructions on how to open urls.
 @property(nonatomic) UrlLoadStrategy loadStrategy;

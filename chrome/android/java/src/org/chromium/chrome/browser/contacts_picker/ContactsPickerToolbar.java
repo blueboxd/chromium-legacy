@@ -32,7 +32,12 @@ public class ContactsPickerToolbar extends SelectableListToolbar<ContactDetails>
     }
 
     // A delegate to notify when the dialog should close.
-    ContactsToolbarDelegate mDelegate;
+    private ContactsToolbarDelegate mDelegate;
+
+    // Whether any filter chips are selected. Default to true because all filter chips are selected
+    // by default when opening the dialog.
+    private boolean mFilterChipsSelected = true;
+
     public ContactsPickerToolbar(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
@@ -50,6 +55,16 @@ public class ContactsPickerToolbar extends SelectableListToolbar<ContactDetails>
     public void showBackArrow() {
         setNavigationButton(NAVIGATION_BUTTON_BACK);
     }
+
+    /**
+     * Sets whether any filter chips are |selected| in the dialog.
+     */
+    public void setFilterChipsSelected(boolean selected) {
+        mFilterChipsSelected = selected;
+        updateToolbarUI();
+    }
+
+    // SelectableListToolbar:
 
     @Override
     public void onNavigationBack() {
@@ -72,22 +87,33 @@ public class ContactsPickerToolbar extends SelectableListToolbar<ContactDetails>
     @Override
     public void onSelectionStateChange(List<ContactDetails> selectedItems) {
         super.onSelectionStateChange(selectedItems);
+        updateToolbarUI();
+    }
 
-        int selectCount = selectedItems.size();
+    /**
+     * Update the UI elements of the toolbar, based on whether contacts & filter chips are selected.
+     */
+    private void updateToolbarUI() {
+        boolean contactsSelected = !mSelectionDelegate.getSelectedItems().isEmpty();
+
+        boolean doneEnabled = contactsSelected && mFilterChipsSelected;
         ButtonCompat done = findViewById(R.id.done);
-        done.setEnabled(selectCount > 0);
+        done.setEnabled(doneEnabled);
 
         AppCompatImageView search = findViewById(R.id.search);
         ImageViewCompat.setImageTintList(search,
                 useDarkIcons() ? getDarkIconColorStateList() : getLightIconColorStateList());
 
-        if (selectCount > 0) {
+        if (doneEnabled) {
             ApiCompatibilityUtils.setTextAppearance(done, R.style.TextAppearance_Body_Inverse);
         } else {
             ApiCompatibilityUtils.setTextAppearance(
                     done, R.style.TextAppearance_BlackDisabledText3);
-
-            showBackArrow();
+            if (contactsSelected) {
+                setNavigationButton(NAVIGATION_BUTTON_SELECTION_BACK);
+            } else {
+                showBackArrow();
+            }
         }
     }
 }

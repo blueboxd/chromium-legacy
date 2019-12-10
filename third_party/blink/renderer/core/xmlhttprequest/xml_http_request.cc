@@ -1479,7 +1479,7 @@ String XMLHttpRequest::getAllResponseHeaders() const {
 
   StringBuilder string_builder;
 
-  WebHTTPHeaderSet access_control_expose_header_set =
+  HTTPHeaderSet access_control_expose_header_set =
       cors::ExtractCorsExposedHeaderNamesList(
           with_credentials_ ? network::mojom::CredentialsMode::kInclude
                             : network::mojom::CredentialsMode::kSameOrigin,
@@ -1543,7 +1543,7 @@ const AtomicString& XMLHttpRequest::getResponseHeader(
     return g_null_atom;
   }
 
-  WebHTTPHeaderSet access_control_expose_header_set =
+  HTTPHeaderSet access_control_expose_header_set =
       cors::ExtractCorsExposedHeaderNamesList(
           with_credentials_ ? network::mojom::CredentialsMode::kInclude
                             : network::mojom::CredentialsMode::kSameOrigin,

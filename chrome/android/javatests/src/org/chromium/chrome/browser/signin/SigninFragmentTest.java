@@ -4,7 +4,10 @@
 package org.chromium.chrome.browser.signin;
 
 import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.RootMatchers.isDialog;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
@@ -27,6 +30,7 @@ import org.chromium.chrome.browser.sync.SyncTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.RenderTestRule;
+import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
@@ -89,6 +93,22 @@ public class SigninFragmentTest {
                 mSyncTestRule.getActivity(), SigninAccessPoint.SETTINGS);
         onView(withId(R.id.positive_button)).check(matches(withText(R.string.signin_add_account)));
         onView(withId(R.id.negative_button)).check(matches(withText(R.string.cancel)));
+    }
+
+    @Test
+    @MediumTest
+    public void testSelectNonDefaultAccountInAccountPickerDialog() {
+        Account defaultAccount = mSyncTestRule.setUpTestAccount();
+        String nonDefaultAccountName = "test.account.nondefault@gmail.com";
+        SigninTestUtil.addTestAccount(nonDefaultAccountName);
+        getSigninFragmentViewAfterStartingActivity(() -> {
+            SigninActivityLauncher.get().launchActivityForPromoDefaultFlow(
+                    mSyncTestRule.getActivity(), SigninAccessPoint.BOOKMARK_MANAGER,
+                    defaultAccount.name);
+        });
+        onView(withText(defaultAccount.name)).check(matches(isDisplayed())).perform(click());
+        onView(withText(nonDefaultAccountName)).inRoot(isDialog()).perform(click());
+        onView(withText(nonDefaultAccountName)).check(matches(isDisplayed()));
     }
 
     private View getSigninFragmentViewAfterStartingActivity(Runnable activityTrigger) {

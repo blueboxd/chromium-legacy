@@ -60,9 +60,9 @@ class SkiaOutputDeviceBufferQueue::Image {
 
   std::unique_ptr<gpu::SharedImageRepresentationSkia> skia_representation_;
   std::unique_ptr<gpu::SharedImageRepresentationGLTexture> gl_representation_;
-  base::Optional<gpu::SharedImageRepresentationSkia::ScopedWriteAccess>
+  std::unique_ptr<gpu::SharedImageRepresentationSkia::ScopedWriteAccess>
       scoped_write_access_;
-  base::Optional<gpu::SharedImageRepresentationGLTexture::ScopedAccess>
+  std::unique_ptr<gpu::SharedImageRepresentationGLTexture::ScopedAccess>
       scoped_read_access_;
   std::vector<GrBackendSemaphore> end_semaphores_;
   std::unique_ptr<gl::GLFence> fence_;
@@ -114,10 +114,10 @@ SkSurface* SkiaOutputDeviceBufferQueue::Image::BeginWriteSkia() {
   SkSurfaceProps surface_props{0, kUnknown_SkPixelGeometry};
 
   // TODO(vasilyt): Props and MSAA
-  scoped_write_access_.emplace(skia_representation_.get(),
-                               0 /* final_msaa_count */, surface_props,
-                               &begin_semaphores, &end_semaphores_);
-  DCHECK(scoped_write_access_->success());
+  scoped_write_access_ = skia_representation_->BeginScopedWriteAccess(
+      0 /* final_msaa_count */, surface_props, &begin_semaphores,
+      &end_semaphores_);
+  DCHECK(scoped_write_access_);
   if (!begin_semaphores.empty()) {
     scoped_write_access_->surface()->wait(begin_semaphores.size(),
                                           begin_semaphores.data());
@@ -142,8 +142,8 @@ void SkiaOutputDeviceBufferQueue::Image::EndWriteSkia() {
 void SkiaOutputDeviceBufferQueue::Image::BeginPresent() {
   DCHECK(!scoped_write_access_);
   DCHECK(!scoped_read_access_);
-  scoped_read_access_.emplace(gl_representation_.get(),
-                              GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
+  scoped_read_access_ = gl_representation_->BeginScopedAccess(
+      GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
 }
 
 void SkiaOutputDeviceBufferQueue::Image::EndPresent() {
@@ -169,18 +169,21 @@ SkiaOutputDeviceBufferQueue::Image::CreateFence() {
 class SkiaOutputDeviceBufferQueue::OverlayData {
  public:
   OverlayData(
-      std::unique_ptr<gpu::SharedImageRepresentationOverlay> representation)
+      std::unique_ptr<gpu::SharedImageRepresentationOverlay> representation,
+      std::unique_ptr<gpu::SharedImageRepresentationOverlay::ScopedReadAccess>
+          scoped_read_access)
       : representation_(std::move(representation)),
-        scoped_read_access_(representation_.get(), true /* needs_gl_image */) {}
+        scoped_read_access_(std::move(scoped_read_access)) {}
   OverlayData(OverlayData&&) = default;
   ~OverlayData() = default;
   OverlayData& operator=(OverlayData&&) = default;
 
-  gl::GLImage* gl_image() { return scoped_read_access_.gl_image(); }
+  gl::GLImage* gl_image() { return scoped_read_access_->gl_image(); }
 
  private:
   std::unique_ptr<gpu::SharedImageRepresentationOverlay> representation_;
-  gpu::SharedImageRepresentationOverlay::ScopedReadAccess scoped_read_access_;
+  std::unique_ptr<gpu::SharedImageRepresentationOverlay::ScopedReadAccess>
+      scoped_read_access_;
 };
 
 SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
@@ -352,7 +355,16 @@ void SkiaOutputDeviceBufferQueue::ScheduleOverlays(
       continue;
     }
 
-    pending_overlays_.emplace_back(std::move(shared_image));
+    std::unique_ptr<gpu::SharedImageRepresentationOverlay::ScopedReadAccess>
+        shared_image_access =
+            shared_image->BeginScopedReadAccess(true /* needs_gl_image */);
+    if (!shared_image_access) {
+      LOG(ERROR) << "Could not access SharedImage for read.";
+      continue;
+    }
+
+    pending_overlays_.emplace_back(std::move(shared_image),
+                                   std::move(shared_image_access));
     auto* gl_image = pending_overlays_.back().gl_image();
     DLOG_IF(ERROR, !gl_image) << "Cannot get GLImage.";
 

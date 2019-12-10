@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_HTTP_HEADER_SET_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_HTTP_HEADER_SET_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_HTTP_HEADER_SET_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_HTTP_HEADER_SET_H_
 
 #include <set>
 #include <string>
@@ -17,8 +17,8 @@ struct CompareIgnoreCase {
   }
 };
 
-using WebHTTPHeaderSet = std::set<std::string, CompareIgnoreCase>;
+using HTTPHeaderSet = std::set<std::string, CompareIgnoreCase>;
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_HTTP_HEADER_SET_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_HTTP_HEADER_SET_H_

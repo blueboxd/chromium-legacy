@@ -17,7 +17,7 @@ class CastQuotaPermissionContext : public content::QuotaPermissionContext {
   // content::QuotaPermissionContext implementation:
   void RequestQuotaPermission(const content::StorageQuotaParams& params,
                               int render_process_id,
-                              const PermissionCallback& callback) override;
+                              PermissionCallback callback) override;
 
  private:
   ~CastQuotaPermissionContext() override;

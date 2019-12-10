@@ -97,8 +97,8 @@ PasswordFormFillData MaybeClearPasswordValues(
   // in case of filling on load nor |password_field| nor |additional_logins|
   // can't be cleared
   bool is_fallback =
-      data.has_renderer_ids && data.password_field.unique_renderer_id ==
-                                   FormFieldData::kNotSetFormControlRendererId;
+      data.has_renderer_ids &&
+      data.password_field.unique_renderer_id == FormData::kNotSetRendererId;
   if (!data.wait_for_username && !is_fallback)
     return data;
   PasswordFormFillData result(data);

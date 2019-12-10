@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/ime/ime_controller.h"
+#include "ash/ime/ime_controller_impl.h"
 
 #include <utility>
 
@@ -32,39 +32,38 @@ enum class ModeChangeKeyAction {
 
 }  // namespace
 
-ImeController::ImeController()
+ImeControllerImpl::ImeControllerImpl()
     : mode_indicator_observer_(std::make_unique<ModeIndicatorObserver>()) {}
 
-ImeController::~ImeController() {
-  if (CastConfigController::Get())
-    CastConfigController::Get()->RemoveObserver(this);
-  Shell::Get()->display_manager()->RemoveObserver(this);
+ImeControllerImpl::~ImeControllerImpl() {
+  SetClient(nullptr);
 }
 
-void ImeController::AddObserver(Observer* observer) {
+void ImeControllerImpl::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void ImeController::RemoveObserver(Observer* observer) {
+void ImeControllerImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void ImeController::BindReceiver(
-    mojo::PendingReceiver<mojom::ImeController> receiver) {
-  receivers_.Add(this, std::move(receiver));
+void ImeControllerImpl::SetClient(ImeControllerClient* client) {
+  if (client_) {
+    if (CastConfigController::Get())
+      CastConfigController::Get()->RemoveObserver(this);
+    Shell::Get()->display_manager()->RemoveObserver(this);
+  }
+
+  client_ = client;
+
+  if (client_) {
+    if (CastConfigController::Get())
+      CastConfigController::Get()->AddObserver(this);
+    Shell::Get()->display_manager()->AddObserver(this);
+  }
 }
 
-void ImeController::SetClient(
-    mojo::PendingRemote<mojom::ImeControllerClient> client) {
-  client_.Bind(std::move(client));
-
-  // Initializes some observers for client.
-  if (CastConfigController::Get())
-    CastConfigController::Get()->AddObserver(this);
-  Shell::Get()->display_manager()->AddObserver(this);
-}
-
-bool ImeController::CanSwitchIme() const {
+bool ImeControllerImpl::CanSwitchIme() const {
   // Cannot switch unless there is an active IME.
   if (current_ime_.id.empty())
     return false;
@@ -74,28 +73,28 @@ bool ImeController::CanSwitchIme() const {
   return available_imes_.size() > 1;
 }
 
-void ImeController::SwitchToNextIme() {
+void ImeControllerImpl::SwitchToNextIme() {
   if (client_)
     client_->SwitchToNextIme();
 }
 
-void ImeController::SwitchToLastUsedIme() {
+void ImeControllerImpl::SwitchToLastUsedIme() {
   if (client_)
     client_->SwitchToLastUsedIme();
 }
 
-void ImeController::SwitchImeById(const std::string& ime_id,
-                                  bool show_message) {
+void ImeControllerImpl::SwitchImeById(const std::string& ime_id,
+                                      bool show_message) {
   if (client_)
     client_->SwitchImeById(ime_id, show_message);
 }
 
-void ImeController::ActivateImeMenuItem(const std::string& key) {
+void ImeControllerImpl::ActivateImeMenuItem(const std::string& key) {
   if (client_)
     client_->ActivateImeMenuItem(key);
 }
 
-bool ImeController::CanSwitchImeWithAccelerator(
+bool ImeControllerImpl::CanSwitchImeWithAccelerator(
     const ui::Accelerator& accelerator) const {
   // If none of the input methods associated with |accelerator| are active, we
   // should ignore the accelerator.
@@ -104,7 +103,7 @@ bool ImeController::CanSwitchImeWithAccelerator(
   return !candidate_ids.empty();
 }
 
-void ImeController::SwitchImeWithAccelerator(
+void ImeControllerImpl::SwitchImeWithAccelerator(
     const ui::Accelerator& accelerator) {
   if (!client_)
     return;
@@ -122,23 +121,23 @@ void ImeController::SwitchImeWithAccelerator(
   client_->SwitchImeById(*it, true /* show_message */);
 }
 
-// mojom::ImeController:
-void ImeController::RefreshIme(const std::string& current_ime_id,
-                               std::vector<mojom::ImeInfoPtr> available_imes,
-                               std::vector<mojom::ImeMenuItemPtr> menu_items) {
+// ImeControllerImpl:
+void ImeControllerImpl::RefreshIme(const std::string& current_ime_id,
+                                   std::vector<ImeInfo> available_imes,
+                                   std::vector<ImeMenuItem> menu_items) {
   if (current_ime_id.empty())
-    current_ime_ = mojom::ImeInfo();
+    current_ime_ = ImeInfo();
 
   available_imes_.clear();
   available_imes_.reserve(available_imes.size());
   for (const auto& ime : available_imes) {
-    if (ime->id.empty()) {
+    if (ime.id.empty()) {
       DLOG(ERROR) << "Received IME with invalid ID.";
       continue;
     }
-    available_imes_.push_back(*ime);
-    if (ime->id == current_ime_id)
-      current_ime_ = *ime;
+    available_imes_.push_back(ime);
+    if (ime.id == current_ime_id)
+      current_ime_ = ime;
   }
 
   // Either there is no current IME or we found a valid one in the list of
@@ -148,37 +147,37 @@ void ImeController::RefreshIme(const std::string& current_ime_id,
   current_ime_menu_items_.clear();
   current_ime_menu_items_.reserve(menu_items.size());
   for (const auto& item : menu_items)
-    current_ime_menu_items_.push_back(*item);
+    current_ime_menu_items_.push_back(item);
 
   Shell::Get()->system_tray_notifier()->NotifyRefreshIME();
 }
 
-void ImeController::SetImesManagedByPolicy(bool managed) {
+void ImeControllerImpl::SetImesManagedByPolicy(bool managed) {
   managed_by_policy_ = managed;
   Shell::Get()->system_tray_notifier()->NotifyRefreshIME();
 }
 
-void ImeController::ShowImeMenuOnShelf(bool show) {
+void ImeControllerImpl::ShowImeMenuOnShelf(bool show) {
   is_menu_active_ = show;
   Shell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(show);
 }
 
-void ImeController::UpdateCapsLockState(bool caps_enabled) {
+void ImeControllerImpl::UpdateCapsLockState(bool caps_enabled) {
   is_caps_lock_enabled_ = caps_enabled;
 
-  for (ImeController::Observer& observer : observers_)
+  for (ImeControllerImpl::Observer& observer : observers_)
     observer.OnCapsLockChanged(caps_enabled);
 }
 
-void ImeController::OnKeyboardLayoutNameChanged(
+void ImeControllerImpl::OnKeyboardLayoutNameChanged(
     const std::string& layout_name) {
   keyboard_layout_name_ = layout_name;
 
-  for (ImeController::Observer& observer : observers_)
+  for (ImeControllerImpl::Observer& observer : observers_)
     observer.OnKeyboardLayoutNameChanged(layout_name);
 }
 
-void ImeController::SetExtraInputOptionsEnabledState(
+void ImeControllerImpl::SetExtraInputOptionsEnabledState(
     bool is_extra_input_options_enabled,
     bool is_emoji_enabled,
     bool is_handwriting_enabled,
@@ -189,8 +188,9 @@ void ImeController::SetExtraInputOptionsEnabledState(
   is_voice_enabled_ = is_voice_enabled;
 }
 
-void ImeController::ShowModeIndicator(const gfx::Rect& anchor_bounds,
-                                      const base::string16& ime_short_name) {
+void ImeControllerImpl::ShowModeIndicator(
+    const gfx::Rect& anchor_bounds,
+    const base::string16& ime_short_name) {
   ImeModeIndicatorView* mi_view =
       new ImeModeIndicatorView(anchor_bounds, ime_short_name);
   views::BubbleDialogDelegateView::CreateBubble(mi_view);
@@ -198,15 +198,16 @@ void ImeController::ShowModeIndicator(const gfx::Rect& anchor_bounds,
   mi_view->ShowAndFadeOut();
 }
 
-void ImeController::OnDisplayMetricsChanged(const display::Display& display,
-                                            uint32_t changed_metrics) {
+void ImeControllerImpl::OnDisplayMetricsChanged(const display::Display& display,
+                                                uint32_t changed_metrics) {
   if (changed_metrics & display::DisplayObserver::DISPLAY_METRIC_MIRROR_STATE) {
     Shell* shell = Shell::Get();
     client_->UpdateMirroringState(shell->display_manager()->IsInMirrorMode());
   }
 }
 
-void ImeController::OnDevicesUpdated(const std::vector<SinkAndRoute>& devices) {
+void ImeControllerImpl::OnDevicesUpdated(
+    const std::vector<SinkAndRoute>& devices) {
   DCHECK(client_);
 
   bool casting_desktop = false;
@@ -219,34 +220,30 @@ void ImeController::OnDevicesUpdated(const std::vector<SinkAndRoute>& devices) {
   client_->UpdateCastingState(casting_desktop);
 }
 
-void ImeController::SetCapsLockEnabled(bool caps_enabled) {
+void ImeControllerImpl::SetCapsLockEnabled(bool caps_enabled) {
   is_caps_lock_enabled_ = caps_enabled;
 
   if (client_)
     client_->SetCapsLockEnabled(caps_enabled);
 }
 
-void ImeController::OverrideKeyboardKeyset(
-    chromeos::input_method::mojom::ImeKeyset keyset) {
+void ImeControllerImpl::OverrideKeyboardKeyset(
+    chromeos::input_method::ImeKeyset keyset) {
   OverrideKeyboardKeyset(keyset, base::DoNothing());
 }
 
-void ImeController::OverrideKeyboardKeyset(
-    chromeos::input_method::mojom::ImeKeyset keyset,
-    mojom::ImeControllerClient::OverrideKeyboardKeysetCallback callback) {
+void ImeControllerImpl::OverrideKeyboardKeyset(
+    chromeos::input_method::ImeKeyset keyset,
+    ImeControllerClient::OverrideKeyboardKeysetCallback callback) {
   if (client_)
     client_->OverrideKeyboardKeyset(keyset, std::move(callback));
 }
 
-void ImeController::FlushMojoForTesting() {
-  client_.FlushForTesting();
-}
-
-bool ImeController::IsCapsLockEnabled() const {
+bool ImeControllerImpl::IsCapsLockEnabled() const {
   return is_caps_lock_enabled_;
 }
 
-std::vector<std::string> ImeController::GetCandidateImesForAccelerator(
+std::vector<std::string> ImeControllerImpl::GetCandidateImesForAccelerator(
     const ui::Accelerator& accelerator) const {
   std::vector<std::string> candidate_ids;
 
@@ -277,7 +274,7 @@ std::vector<std::string> ImeController::GetCandidateImesForAccelerator(
   }
 
   // Obtain the intersection of input_method_ids_to_switch and available_imes_.
-  for (const mojom::ImeInfo& ime : available_imes_) {
+  for (const ImeInfo& ime : available_imes_) {
     if (base::Contains(input_method_ids_to_switch, ime.id))
       candidate_ids.push_back(ime.id);
   }

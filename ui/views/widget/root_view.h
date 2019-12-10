@@ -123,7 +123,6 @@ class VIEWS_EXPORT RootView : public View,
   void SetMouseHandler(View* new_mouse_handler) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void UpdateParentLayer() override;
-  void Layout() override;
 
  protected:
   // Overridden from View:

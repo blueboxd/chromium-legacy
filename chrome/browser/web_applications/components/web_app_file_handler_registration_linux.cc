@@ -14,11 +14,7 @@ namespace web_app {
 
 namespace {
 
-void OnShortcutInfoReceived(const std::set<std::string> mime_types,
-                            std::unique_ptr<ShortcutInfo> info) {
-  for (const auto& mime_type : mime_types)
-    info->mime_types.push_back(mime_type);
-
+void OnShortcutInfoReceived(std::unique_ptr<ShortcutInfo> info) {
   base::FilePath shortcut_data_dir = internals::GetShortcutDataDir(*info);
 
   ShortcutLocations locations;
@@ -44,7 +40,7 @@ void RegisterFileHandlersWithOs(const AppId& app_id,
   AppShortcutManager& shortcut_manager =
       WebAppProviderBase::GetProviderBase(profile)->shortcut_manager();
   shortcut_manager.GetShortcutInfoForApp(
-      app_id, base::BindOnce(OnShortcutInfoReceived, mime_types));
+      app_id, base::BindOnce(OnShortcutInfoReceived));
 }
 
 void UnregisterFileHandlersWithOs(const AppId& app_id, Profile* profile) {

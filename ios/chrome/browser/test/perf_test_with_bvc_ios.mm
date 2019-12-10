@@ -132,6 +132,7 @@ void PerfTestWithBVC::SetUp() {
                      initWithBrowser:browser_.get()
                    dependencyFactory:bvc_factory_
           applicationCommandEndpoint:nil
+         browsingDataCommandEndpoint:nil
                    commandDispatcher:command_dispatcher_
       browserContainerViewController:[[BrowserContainerViewController alloc]
                                          init]];

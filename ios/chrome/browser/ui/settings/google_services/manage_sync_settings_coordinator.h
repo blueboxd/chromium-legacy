@@ -9,6 +9,7 @@
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
+@protocol BrowsingDataCommands;
 @class ManageSyncSettingsCoordinator;
 
 // Delegate for ManageSyncSettingsCoordinator.
@@ -28,7 +29,9 @@
 // Delegate.
 @property(nonatomic, weak) id<ManageSyncSettingsCoordinatorDelegate> delegate;
 // Global dispatcher.
-@property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
+@property(nonatomic, weak)
+    id<ApplicationCommands, BrowserCommands, BrowsingDataCommands>
+        dispatcher;
 
 @end
 

@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
@@ -27,6 +28,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/manifest_handlers/file_handler_info.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "skia/ext/image_operations.h"
@@ -204,6 +206,12 @@ std::unique_ptr<ShortcutInfo> ShortcutInfoForExtensionAndProfile(
   shortcut_info->profile_name =
       profile->GetPrefs()->GetString(prefs::kProfileName);
   shortcut_info->version_for_display = app->GetVersionForDisplay();
+  if (const auto* info = extensions::FileHandlers::GetFileHandlers(app)) {
+    shortcut_info->file_handler_extensions =
+        web_app::GetFileExtensionsFromFileHandlers(*info);
+    shortcut_info->file_handler_mime_types =
+        web_app::GetMimeTypesFromFileHandlers(*info);
+  }
   return shortcut_info;
 }
 

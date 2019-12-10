@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/authentication/chrome_signin_view_controller.h"
 
 @protocol ApplicationCommands;
+@protocol BrowsingDataCommands;
 class Browser;
 @class FirstRunConfiguration;
 @protocol SyncPresenter;
@@ -20,7 +21,8 @@ class Browser;
                  firstRunConfig:(FirstRunConfiguration*)firstRunConfig
                  signInIdentity:(ChromeIdentity*)identity
                       presenter:(id<SyncPresenter>)presenter
-                     dispatcher:(id<ApplicationCommands>)dispatcher;
+                     dispatcher:(id<ApplicationCommands, BrowsingDataCommands>)
+                                    dispatcher;
 
 @end
 

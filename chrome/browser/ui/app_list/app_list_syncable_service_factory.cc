@@ -50,8 +50,8 @@ std::unique_ptr<KeyedService> AppListSyncableServiceFactory::BuildInstanceFor(
 }
 
 // static
-void AppListSyncableServiceFactory::SetUseInTesting() {
-  use_in_testing = true;
+void AppListSyncableServiceFactory::SetUseInTesting(bool use) {
+  use_in_testing = use;
 }
 
 AppListSyncableServiceFactory::AppListSyncableServiceFactory()

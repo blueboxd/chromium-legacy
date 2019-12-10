@@ -109,6 +109,14 @@ public class RootUiCoordinator
         return mToolbarManager;
     }
 
+    /**
+     * @return The find toolbar manager or {@code null} if UI inflation is not yet complete.
+     */
+    @Nullable
+    public FindToolbarManager getFindToolbarManager() {
+        return mFindToolbarManager;
+    }
+
     @Override
     public void destroy() {
         mMenuOrKeyboardActionController.unregisterMenuOrKeyboardActionHandler(this);

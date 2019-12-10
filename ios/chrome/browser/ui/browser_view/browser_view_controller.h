@@ -16,6 +16,7 @@
 class Browser;
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
+@protocol BrowsingDataCommands;
 @class BrowserContainerViewController;
 @class BrowserViewControllerDependencyFactory;
 @class CommandDispatcher;
@@ -49,6 +50,8 @@ class ChromeBrowserState;
                      (BrowserViewControllerDependencyFactory*)factory
         applicationCommandEndpoint:
             (id<ApplicationCommands>)applicationCommandEndpoint
+       browsingDataCommandEndpoint:
+           (id<BrowsingDataCommands>)browsingDataCommandEndpoint
                  commandDispatcher:(CommandDispatcher*)commandDispatcher
     browserContainerViewController:
         (BrowserContainerViewController*)browserContainerViewController
@@ -61,6 +64,7 @@ class ChromeBrowserState;
 
 @property(nonatomic, readonly) id<ApplicationCommands,
                                   BrowserCommands,
+                                  BrowsingDataCommands,
                                   OmniboxFocuser,
                                   PasswordBreachCommands,
                                   PopupMenuCommands,

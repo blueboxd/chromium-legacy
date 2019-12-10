@@ -131,6 +131,7 @@ void StyleRecalcRoot::RemovedFromFlatTree(const Node& node) {
   // make sure we don't have a recalc root outside the flat tree, which is not
   // allowed with FlatTreeStyleRecalc enabled.
   if (GetRootNode()->NeedsStyleRecalc() ||
+      GetRootNode()->GetForceReattachLayoutTree() ||
       GetRootNode()->ChildNeedsStyleRecalc()) {
     return;
   }

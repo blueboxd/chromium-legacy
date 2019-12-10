@@ -6,9 +6,7 @@
 
 namespace content {
 
-bool DevToolsAgentHostClient::MayAttachToRenderer(
-    content::RenderFrameHost* render_frame_host,
-    bool is_webui) {
+bool DevToolsAgentHostClient::MayAttachToURL(const GURL& url, bool is_webui) {
   return true;
 }
 

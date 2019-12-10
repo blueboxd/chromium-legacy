@@ -74,10 +74,10 @@ namespace blink {
 
 namespace {
 
-Vector<String> HeaderSetToVector(const WebHTTPHeaderSet& headers) {
+Vector<String> HeaderSetToVector(const HTTPHeaderSet& headers) {
   Vector<String> result;
   result.ReserveInitialCapacity(SafeCast<wtf_size_t>(headers.size()));
-  // WebHTTPHeaderSet stores headers using Latin1 encoding.
+  // HTTPHeaderSet stores headers using Latin1 encoding.
   for (const auto& header : headers)
     result.push_back(String(header.data(), header.size()));
   return result;
@@ -128,7 +128,7 @@ FetchResponseData* FetchResponseData::CreateBasicFilteredResponse() const {
 }
 
 FetchResponseData* FetchResponseData::CreateCorsFilteredResponse(
-    const WebHTTPHeaderSet& exposed_headers) const {
+    const HTTPHeaderSet& exposed_headers) const {
   DCHECK_EQ(type_, Type::kDefault);
   // "A CORS filtered response is a filtered response whose type is |CORS|,
   // header list excludes all headers in internal response's header list,

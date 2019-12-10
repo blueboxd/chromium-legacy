@@ -22,6 +22,7 @@ class SharingMessage;
 }  // namespace chrome_browser_sharing
 
 namespace syncer {
+class DeviceInfo;
 class LocalDeviceInfoProvider;
 }  // namespace syncer
 
@@ -43,7 +44,7 @@ class SharingMessageSender {
   virtual ~SharingMessageSender();
 
   virtual void SendMessageToDevice(
-      const std::string& device_guid,
+      const syncer::DeviceInfo& device,
       base::TimeDelta response_timeout,
       chrome_browser_sharing::SharingMessage message,
       ResponseCallback callback);

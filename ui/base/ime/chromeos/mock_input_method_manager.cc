@@ -202,7 +202,7 @@ void MockInputMethodManager::NotifyImeMenuItemsChanged(
 
 void MockInputMethodManager::MaybeNotifyImeMenuActivationChanged() {}
 
-void MockInputMethodManager::OverrideKeyboardKeyset(mojom::ImeKeyset keyset) {}
+void MockInputMethodManager::OverrideKeyboardKeyset(ImeKeyset keyset) {}
 
 void MockInputMethodManager::SetImeMenuFeatureEnabled(ImeMenuFeature feature,
                                                       bool enabled) {

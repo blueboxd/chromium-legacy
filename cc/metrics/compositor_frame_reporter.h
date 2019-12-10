@@ -44,9 +44,6 @@ class CC_EXPORT CompositorFrameReporter {
     // was not presented.
     kDidNotPresentFrame,
 
-    // Main frame was aborted; the reporter will not continue reporting.
-    kMainFrameAborted,
-
     // Reporter that is currently at a stage is replaced by a new one (e.g. two
     // BeginImplFrames can happen without issuing BeginMainFrame, so the first
     // reporter would terminate with this status).

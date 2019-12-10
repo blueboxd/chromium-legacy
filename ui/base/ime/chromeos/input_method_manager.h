@@ -16,8 +16,8 @@
 #include "base/memory/ref_counted.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "ui/base/ime/chromeos/ime_keyset.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
-#include "ui/base/ime/chromeos/public/mojom/ime_keyset.mojom.h"
 
 class Profile;
 
@@ -346,7 +346,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodManager {
 
   // Overrides active keyset with the given keyset if the active IME supports
   // the given keyset.
-  virtual void OverrideKeyboardKeyset(mojom::ImeKeyset keyset) = 0;
+  virtual void OverrideKeyboardKeyset(ImeKeyset keyset) = 0;
 
   // Enables or disables some advanced features, e.g. handwiring, voices input.
   virtual void SetImeMenuFeatureEnabled(ImeMenuFeature feature,

@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-[
-  Exposed=(Window,LayoutWorklet,PaintWorklet)
-] enum CSSNumericBaseType {
+// https://drafts.css-houdini.org/css-typed-om/#enumdef-cssnumericbasetype
+enum CSSNumericBaseType {
     "length",
     "angle",
     "time",
@@ -14,10 +13,8 @@
     "percent",
 };
 
-// https://drafts.css-houdini.org/css-typed-om/#cssnumerictype
-[
-  Exposed=(Window,LayoutWorklet,PaintWorklet)
-] dictionary CSSNumericType {
+// https://drafts.css-houdini.org/css-typed-om/#dictdef-cssnumerictype
+dictionary CSSNumericType {
     long length;
     long angle;
     long time;

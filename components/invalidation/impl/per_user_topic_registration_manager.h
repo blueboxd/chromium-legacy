@@ -17,7 +17,6 @@
 #include "components/invalidation/impl/per_user_topic_registration_request.h"
 #include "components/invalidation/public/identity_provider.h"
 #include "components/invalidation/public/invalidation_export.h"
-#include "components/invalidation/public/invalidation_object_id.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/invalidator_state.h"
 #include "net/base/backoff_entry.h"
@@ -50,7 +49,7 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
 
   PerUserTopicRegistrationManager(
       invalidation::IdentityProvider* identity_provider,
-      PrefService* local_state,
+      PrefService* pref_service,
       network::mojom::URLLoaderFactory* url_loader_factory,
       const std::string& project_id,
       bool migrate_prefs);
@@ -60,7 +59,7 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
   // Just calls std::make_unique. For ease of base::Bind'ing
   static std::unique_ptr<PerUserTopicRegistrationManager> Create(
       invalidation::IdentityProvider* identity_provider,
-      PrefService* local_state,
+      PrefService* pref_service,
       network::mojom::URLLoaderFactory* url_loader_factory,
       const std::string& project_id,
       bool migrate_prefs);
@@ -74,7 +73,7 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  virtual void UpdateRegisteredTopics(const Topics& topics,
+  virtual void UpdateSubscribedTopics(const Topics& topics,
                                       const std::string& token);
 
   virtual void Init();
@@ -86,30 +85,30 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
 
   base::DictionaryValue CollectDebugData() const;
 
-  virtual base::Optional<Topic> LookupRegisteredPublicTopicByPrivateTopic(
+  virtual base::Optional<Topic> LookupSubscribedPublicTopicByPrivateTopic(
       const std::string& private_topic) const;
 
-  TopicSet GetRegisteredTopicsForTest() const;
+  TopicSet GetSubscribedTopicsForTest() const;
 
   bool HaveAllRequestsFinishedForTest() const {
-    return registration_statuses_.empty();
+    return pending_subscriptions_.empty();
   }
 
  private:
-  struct RegistrationEntry;
-  enum class TokenStateOnRegistrationRequest;
+  struct SubscriptionEntry;
+  enum class TokenStateOnSubscriptionRequest;
 
-  void DoRegistrationUpdate();
+  void StartPendingSubscriptions();
 
-  // Tries to register |topic|. No retry in case of failure.
-  void StartRegistrationRequest(const Topic& topic);
+  // Tries to subscribe to |topic|. No retry in case of failure.
+  void StartPendingSubscriptionRequest(const Topic& topic);
 
-  void ActOnSuccesfullRegistration(
+  void ActOnSuccessfulSubscription(
       const Topic& topic,
       const std::string& private_topic_name,
       PerUserTopicRegistrationRequest::RequestType type);
   void ScheduleRequestForRepetition(const Topic& topic);
-  void RegistrationFinishedForTopic(
+  void SubscriptionFinishedForTopic(
       Topic topic,
       Status code,
       std::string private_topic_name,
@@ -119,16 +118,26 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
 
   void OnAccessTokenRequestCompleted(GoogleServiceAuthError error,
                                      std::string access_token);
-  void OnAccessTokenRequestSucceeded(std::string access_token);
+  void OnAccessTokenRequestSucceeded(const std::string& access_token);
   void OnAccessTokenRequestFailed(GoogleServiceAuthError error);
 
-  TokenStateOnRegistrationRequest DropAllSavedRegistrationsOnTokenChange();
+  TokenStateOnSubscriptionRequest DropAllSavedSubscriptionsOnTokenChange();
   void NotifySubscriptionChannelStateChange(
       SubscriptionChannelState invalidator_state);
 
-  std::map<Topic, std::unique_ptr<RegistrationEntry>> registration_statuses_;
+  PrefService* const pref_service_;
+  invalidation::IdentityProvider* const identity_provider_;
+  network::mojom::URLLoaderFactory* const url_loader_factory_;
 
-  // For registered topics, these map from the topic to the private topic name
+  const std::string project_id_;
+
+  const bool migrate_prefs_;
+
+  // Subscription or unsubscription requests that are either scheduled or
+  // started, but not finished yet.
+  std::map<Topic, std::unique_ptr<SubscriptionEntry>> pending_subscriptions_;
+
+  // For subscribed topics, these map from the topic to the private topic name
   // and vice versa.
   std::map<Topic, std::string> topic_to_private_topic_;
   std::map<std::string, Topic> private_topic_to_topic_;
@@ -136,19 +145,12 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
   // Token derived from GCM IID.
   std::string instance_id_token_;
 
-  PrefService* local_state_ = nullptr;
-
-  invalidation::IdentityProvider* const identity_provider_;
+  // Cached OAuth2 access token, and/or pending request to fetch one.
   std::string access_token_;
   std::unique_ptr<invalidation::ActiveAccountAccessTokenFetcher>
       access_token_fetcher_;
   base::OneShotTimer request_access_token_retry_timer_;
   net::BackoffEntry request_access_token_backoff_;
-
-  network::mojom::URLLoaderFactory* const url_loader_factory_;
-
-  const std::string project_id_;
-  const bool migrate_prefs_;
 
   base::ObserverList<Observer>::Unchecked observers_;
   SubscriptionChannelState last_issued_state_ =

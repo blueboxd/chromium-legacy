@@ -13,10 +13,8 @@
 
 namespace ash {
 
-namespace mojom {
-class ImeInfo;
-class ImeMenuItem;
-}
+struct ImeInfo;
+struct ImeMenuItem;
 
 class KeyboardStatusRow;
 
@@ -43,8 +41,8 @@ class ImeListView : public TrayDetailedView {
 
   // Updates the view.
   virtual void Update(const std::string& current_ime_id,
-                      const std::vector<mojom::ImeInfo>& list,
-                      const std::vector<mojom::ImeMenuItem>& property_items,
+                      const std::vector<ImeInfo>& list,
+                      const std::vector<ImeMenuItem>& property_items,
                       bool show_keyboard_toggle,
                       SingleImeBehavior single_ime_behavior);
 
@@ -86,8 +84,8 @@ class ImeListView : public TrayDetailedView {
   // Appends the IMEs and properties to the IME menu's scrollable area.
   void AppendImeListAndProperties(
       const std::string& current_ime_id,
-      const std::vector<mojom::ImeInfo>& list,
-      const std::vector<mojom::ImeMenuItem>& property_items);
+      const std::vector<ImeInfo>& list,
+      const std::vector<ImeMenuItem>& property_items);
 
   // Initializes |keyboard_status_row_| and adds it above the scrollable list.
   void PrependKeyboardStatusRow();

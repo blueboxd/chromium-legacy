@@ -7,9 +7,13 @@
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
+#include "base/stl_util.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/launcher/app_service_app_window_arc_tracker.h"
 #include "chrome/browser/ui/ash/launcher/app_service_app_window_crostini_tracker.h"
 #include "chrome/browser/ui/ash/launcher/app_service_app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/app_window_base.h"
@@ -17,6 +21,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/services/app_service/public/cpp/instance.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "components/arc/arc_util.h"
 #include "extensions/common/constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -27,19 +32,37 @@ AppServiceAppWindowLauncherController::AppServiceAppWindowLauncherController(
     : AppWindowLauncherController(owner),
       proxy_(apps::AppServiceProxyFactory::GetForProfile(owner->profile())),
       app_service_instance_helper_(
-          std::make_unique<AppServiceInstanceRegistryHelper>(owner->profile())),
-      crostini_tracker_(
-          std::make_unique<AppServiceAppWindowCrostiniTracker>()) {
+          std::make_unique<AppServiceInstanceRegistryHelper>(
+              owner->profile())) {
   aura::Env::GetInstance()->AddObserver(this);
   DCHECK(proxy_);
-  DCHECK(app_service_instance_helper_);
-  DCHECK(crostini_tracker_);
   Observe(&proxy_->InstanceRegistry());
+
+  if (arc::IsArcAllowedForProfile(owner->profile()))
+    arc_tracker_ = std::make_unique<AppServiceAppWindowArcTracker>(this);
+
+  if (crostini::CrostiniFeatures::Get()->IsUIAllowed(owner->profile()))
+    crostini_tracker_ = std::make_unique<AppServiceAppWindowCrostiniTracker>();
 }
 
 AppServiceAppWindowLauncherController::
     ~AppServiceAppWindowLauncherController() {
   aura::Env::GetInstance()->RemoveObserver(this);
+}
+
+AppWindowLauncherItemController*
+AppServiceAppWindowLauncherController::ControllerForWindow(
+    aura::Window* window) {
+  if (!window)
+    return nullptr;
+
+  auto it = aura_window_to_app_window_.find(window);
+  if (it == aura_window_to_app_window_.end())
+    return nullptr;
+
+  AppWindowBase* const app_window = it->second.get();
+  DCHECK(app_window);
+  return app_window->controller();
 }
 
 void AppServiceAppWindowLauncherController::ActiveUserChanged(
@@ -57,20 +80,15 @@ void AppServiceAppWindowLauncherController::ActiveUserChanged(
     AppWindowBase* app_window = window_item.second.get();
     const std::string app_id = app_window->shelf_id().app_id;
     // Skips ARC apps, because task id is used for ARC apps.
-    if (app_id == ash::kInternalAppIdKeyboardShortcutViewer ||
-        proxy_->AppRegistryCache().GetAppType(app_id) ==
-            apps::mojom::AppType::kArc ||
-        new_proxy->AppRegistryCache().GetAppType(app_id) ==
-            apps::mojom::AppType::kArc) {
+    if (app_id == ash::kInternalAppIdKeyboardShortcutViewer)
       continue;
-    }
 
     if (!new_proxy->InstanceRegistry()
              .GetWindows(app_window->shelf_id().app_id)
              .empty()) {
-      AddToShelf(app_window);
+      AddAppWindowToShelf(app_window);
     } else {
-      RemoveFromShelf(app_window);
+      RemoveAppWindowFromShelf(app_window);
     }
   }
 
@@ -92,6 +110,8 @@ void AppServiceAppWindowLauncherController::OnWindowInitialized(
     return;
 
   observed_windows_.Add(window);
+  if (arc_tracker_)
+    arc_tracker_->AddCandidateWindow(window);
 }
 
 void AppServiceAppWindowLauncherController::OnWindowPropertyChanged(
@@ -115,7 +135,7 @@ void AppServiceAppWindowLauncherController::OnWindowPropertyChanged(
                                             shelf_id.launch_id,
                                             apps::InstanceState::kUnknown);
 
-  RegisterAppWindow(window, shelf_id);
+  RegisterWindow(window, shelf_id);
 }
 
 void AppServiceAppWindowLauncherController::OnWindowVisibilityChanging(
@@ -124,6 +144,9 @@ void AppServiceAppWindowLauncherController::OnWindowVisibilityChanging(
   // Skip OnWindowVisibilityChanged for ancestors/descendants.
   if (!observed_windows_.IsObserving(window))
     return;
+
+  if (arc_tracker_)
+    arc_tracker_->OnWindowVisibilityChanging(window);
 
   ash::ShelfID shelf_id = GetShelfId(window);
   if (shelf_id.IsNull())
@@ -148,19 +171,24 @@ void AppServiceAppWindowLauncherController::OnWindowVisibilityChanging(
   if (!visible || shelf_id.app_id == extension_misc::kChromeAppId)
     return;
 
-  RegisterAppWindow(window, shelf_id);
+  RegisterWindow(window, shelf_id);
 
-  crostini_tracker_->OnWindowVisibilityChanging(window, shelf_id.app_id);
+  if (crostini_tracker_)
+    crostini_tracker_->OnWindowVisibilityChanging(window, shelf_id.app_id);
 }
 
 void AppServiceAppWindowLauncherController::OnWindowDestroying(
     aura::Window* window) {
   DCHECK(observed_windows_.IsObserving(window));
   observed_windows_.Remove(window);
+  if (arc_tracker_)
+    arc_tracker_->RemoveCandidateWindow(window);
 
-  ash::ShelfID shelf_id =
-      ash::ShelfID::Deserialize(window->GetProperty(ash::kShelfIDKey));
-    // Delete the instance from InstanceRegistry.
+  const ash::ShelfID shelf_id = GetShelfId(window);
+  if (shelf_id.IsNull())
+    return;
+
+  // Delete the instance from InstanceRegistry.
   app_service_instance_helper_->OnInstances(
       shelf_id.app_id, window, std::string(), apps::InstanceState::kDestroyed);
 
@@ -168,9 +196,9 @@ void AppServiceAppWindowLauncherController::OnWindowDestroying(
   if (app_window_it == aura_window_to_app_window_.end())
     return;
 
-  RemoveFromShelf(app_window_it->second.get());
+  RemoveAppWindowFromShelf(app_window_it->second.get());
 
-  if (!shelf_id.IsNull())
+  if (!shelf_id.IsNull() && crostini_tracker_)
     crostini_tracker_->OnWindowDestroying(shelf_id.app_id);
 
   aura_window_to_app_window_.erase(app_window_it);
@@ -218,23 +246,40 @@ void AppServiceAppWindowLauncherController::OnInstanceRegistryWillBeDestroyed(
   Observe(nullptr);
 }
 
+void AppServiceAppWindowLauncherController::UnregisterWindow(
+    aura::Window* window) {
+  auto app_window_it = aura_window_to_app_window_.find(window);
+  if (app_window_it == aura_window_to_app_window_.end())
+    return;
+  UnregisterAppWindow(app_window_it->second.get());
+}
+
+void AppServiceAppWindowLauncherController::AddWindowToShelf(
+    aura::Window* window,
+    const ash::ShelfID& shelf_id) {
+  base::Contains(aura_window_to_app_window_, window);
+
+  auto app_window_ptr = std::make_unique<AppWindowBase>(
+      shelf_id, views::Widget::GetWidgetForNativeWindow(window));
+  aura_window_to_app_window_[window] = std::move(app_window_ptr);
+
+  AddAppWindowToShelf(app_window_ptr.get());
+}
+
 void AppServiceAppWindowLauncherController::SetWindowActivated(
     aura::Window* window,
     bool active) {
   if (!window)
     return;
 
-  // If the instance is exist, get the current app_id, launch_id and state.
-  ash::ShelfID shelf_id;
+  const ash::ShelfID shelf_id = GetShelfId(window);
+  if (shelf_id.IsNull())
+    return;
+
   apps::InstanceState state = apps::InstanceState::kUnknown;
-  bool instance_exist = proxy_->InstanceRegistry().ForOneInstance(
-      window, [&shelf_id, &state](const apps::InstanceUpdate& update) {
-        shelf_id = ash::ShelfID(update.AppId(), update.LaunchId());
-        state = update.State();
-      });
-  if (!instance_exist) {
-    shelf_id = ash::ShelfID::Deserialize(window->GetProperty(ash::kShelfIDKey));
-  }
+  proxy_->InstanceRegistry().ForOneInstance(
+      window,
+      [&state](const apps::InstanceUpdate& update) { state = update.State(); });
 
   // When sets the instance active state, the instance should be in started and
   // running state.
@@ -250,7 +295,7 @@ void AppServiceAppWindowLauncherController::SetWindowActivated(
                                             std::string(), state);
 }
 
-void AppServiceAppWindowLauncherController::RegisterAppWindow(
+void AppServiceAppWindowLauncherController::RegisterWindow(
     aura::Window* window,
     const ash::ShelfID& shelf_id) {
   // Skip when this window has been handled. This can happen when the window
@@ -269,12 +314,10 @@ void AppServiceAppWindowLauncherController::RegisterAppWindow(
   if (app_service_instance_helper_->IsWebApp(shelf_id.app_id))
     return;
 
-  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
-  auto app_window_ptr = std::make_unique<AppWindowBase>(shelf_id, widget);
-  AppWindowBase* app_window = app_window_ptr.get();
-  aura_window_to_app_window_[window] = std::move(app_window_ptr);
+  if (arc_tracker_)
+    arc_tracker_->AttachControllerToWindow(window);
 
-  AddToShelf(app_window);
+  AddWindowToShelf(window, shelf_id);
 }
 
 void AppServiceAppWindowLauncherController::UnregisterAppWindow(
@@ -282,14 +325,14 @@ void AppServiceAppWindowLauncherController::UnregisterAppWindow(
   if (!app_window)
     return;
 
-  AppWindowLauncherItemController* controller = app_window->controller();
+  AppWindowLauncherItemController* const controller = app_window->controller();
   if (controller)
     controller->RemoveWindow(app_window);
 
   app_window->SetController(nullptr);
 }
 
-void AppServiceAppWindowLauncherController::AddToShelf(
+void AppServiceAppWindowLauncherController::AddAppWindowToShelf(
     AppWindowBase* app_window) {
   const ash::ShelfID shelf_id = app_window->shelf_id();
   // Internal Camera app does not have own window. Either ARC or extension
@@ -317,7 +360,7 @@ void AppServiceAppWindowLauncherController::AddToShelf(
   app_window->SetController(item_controller);
 }
 
-void AppServiceAppWindowLauncherController::RemoveFromShelf(
+void AppServiceAppWindowLauncherController::RemoveAppWindowFromShelf(
     AppWindowBase* app_window) {
   const ash::ShelfID shelf_id = app_window->shelf_id();
   // Internal Camera app does not have own window. Either ARC or extension
@@ -333,25 +376,8 @@ void AppServiceAppWindowLauncherController::RemoveFromShelf(
       owner()->shelf_model()->GetAppWindowLauncherItemController(
           app_window->shelf_id());
 
-  if (item_controller != nullptr && item_controller->window_count() == 0)
+  if (item_controller && item_controller->window_count() == 0)
     owner()->CloseLauncherItem(item_controller->shelf_id());
-}
-
-AppWindowLauncherItemController*
-AppServiceAppWindowLauncherController::ControllerForWindow(
-    aura::Window* window) {
-  if (!window)
-    return nullptr;
-
-  auto app_window_it = aura_window_to_app_window_.find(window);
-  if (app_window_it == aura_window_to_app_window_.end())
-    return nullptr;
-
-  AppWindowBase* app_window = app_window_it->second.get();
-  if (app_window == nullptr)
-    return nullptr;
-
-  return app_window->controller();
 }
 
 void AppServiceAppWindowLauncherController::OnItemDelegateDiscarded(
@@ -370,9 +396,12 @@ void AppServiceAppWindowLauncherController::OnItemDelegateDiscarded(
 
 ash::ShelfID AppServiceAppWindowLauncherController::GetShelfId(
     aura::Window* window) const {
-  std::string shelf_app_id = crostini_tracker_->GetShelfAppId(window);
-  if (!shelf_app_id.empty())
-    return ash::ShelfID(shelf_app_id);
+  if (crostini_tracker_) {
+    std::string shelf_app_id;
+    shelf_app_id = crostini_tracker_->GetShelfAppId(window);
+    if (!shelf_app_id.empty())
+      return ash::ShelfID(shelf_app_id);
+  }
 
   ash::ShelfID shelf_id;
 
@@ -398,5 +427,8 @@ ash::ShelfID AppServiceAppWindowLauncherController::GetShelfId(
   if (plugin_vm::IsPluginVmWindow(window))
     return ash::ShelfID(plugin_vm::kPluginVmAppId);
 
-  return ash::ShelfID();
+  if (arc_tracker_)
+    return arc_tracker_->GetShelfId(arc::GetWindowTaskId(window));
+
+  return shelf_id;
 }

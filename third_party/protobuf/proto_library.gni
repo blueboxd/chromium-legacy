@@ -248,6 +248,10 @@ template("proto_library") {
     outputs = get_path_info(protogens + protogens_cc, "abspath")
     args = protos
 
+    if (defined(invoker.testonly)) {
+      testonly = invoker.testonly
+    }
+
     args += [
       # Wrapper should never pick a system protoc.
       # Path should be rebased because |root_build_dir| for current toolchain

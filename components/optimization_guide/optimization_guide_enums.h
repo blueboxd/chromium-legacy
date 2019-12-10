@@ -93,6 +93,28 @@ enum class NavigationHostCoveredStatus {
   kMaxValue = kFetchNotSuccessful,
 };
 
+// The statuses for a prediction model in the prediction manager when requested
+// to be evaluated.
+//
+// Keep in sync with OptimizationGuidePredictionManagerModelStatus in enums.xml.
+enum class PredictionManagerModelStatus {
+  kUnknown,
+  // The model is loaded and available for use.
+  kModelAvailable,
+  // The store is initialized but does not contain a model for the optimization
+  // target.
+  kStoreAvailableNoModelForTarget,
+  // The store is initialized and contains a model for the optimization target
+  // but it is not loaded in memory.
+  kStoreAvailableModelNotLoaded,
+  // The store is not initialized and it is unknown if it contains a model for
+  // the optimization target.
+  kStoreUnavailableModelUnknown,
+
+  // Add new values above this line.
+  kMaxValue = kStoreUnavailableModelUnknown,
+};
+
 }  // namespace optimization_guide
 
 #endif  // COMPONENTS_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_ENUMS_H_

@@ -726,6 +726,11 @@ public class FindToolbar extends LinearLayout {
         mSettingFindTextProgrammatically = false;
     }
 
+    /** Sets the find query text string. */
+    void setFindQuery(String findText) {
+        mFindQuery.setText(findText);
+    }
+
     /** Clears the result displays (except in-page match highlighting). */
     protected void clearResults() {
         setStatus("", false);

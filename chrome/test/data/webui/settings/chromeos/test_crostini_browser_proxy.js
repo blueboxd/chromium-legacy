@@ -14,6 +14,7 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
       'removeCrostiniSharedPath',
       'exportCrostiniContainer',
       'importCrostiniContainer',
+      'requestCrostiniContainerUpgradeView',
     ]);
     this.sharedUsbDevices = [];
   }
@@ -69,5 +70,10 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
   /** override */
   importCrostiniContainer() {
     this.methodCalled('importCrostiniContainer');
+  }
+
+  /** @override */
+  requestCrostiniContainerUpgradeView() {
+    this.methodCalled('requestCrostiniContainerUpgradeView');
   }
 }

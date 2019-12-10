@@ -1106,6 +1106,13 @@ void AdsPageLoadMetricsObserver::MaybeTriggerHeavyAdIntervention(
   if (*heavy_ad_send_reports_only_)
     return;
 
+  // Record heavy ad network size only when an ad is unloaded as a result of
+  // network usage.
+  if (frame_data->heavy_ad_status() == FrameData::HeavyAdStatus::kNetwork) {
+    ADS_HISTOGRAM("HeavyAds.NetworkBytesAtFrameUnload", PAGE_BYTES_HISTOGRAM,
+                  FrameData::kAnyVisibility, frame_data->network_bytes());
+  }
+
   GetDelegate().GetWebContents()->GetController().LoadPostCommitErrorPage(
       render_frame_host, render_frame_host->GetLastCommittedURL(),
       heavy_ads::PrepareHeavyAdPage(), net::ERR_BLOCKED_BY_CLIENT);

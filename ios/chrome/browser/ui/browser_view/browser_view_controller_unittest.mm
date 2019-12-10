@@ -138,6 +138,7 @@ class BrowserViewControllerTest : public BlockCleanupTest {
                        initWithBrowser:browser_.get()
                      dependencyFactory:factory
             applicationCommandEndpoint:mockApplicationCommandHandler
+           browsingDataCommandEndpoint:nil
                      commandDispatcher:command_dispatcher_
         browserContainerViewController:[[BrowserContainerViewController alloc]
                                            init]];

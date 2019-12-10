@@ -847,7 +847,7 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
   gfx::Rect adjusted_bounds = bounds;
   if (!is_display_move_pending) {
     ash::ClientControlledState::AdjustBoundsForMinimumWindowVisibility(
-        target_display.bounds(), &adjusted_bounds);
+        target_display.work_area(), &adjusted_bounds);
   }
 
   if (adjusted_bounds == widget_->GetWindowBoundsInScreen() &&
@@ -1068,9 +1068,8 @@ void ClientControlledShellSurface::OnPostWidgetCommit() {
 
   widget_->GetNativeWindow()->SetProperty(aura::client::kZOrderingKey,
                                           pending_always_on_top_
-                                          ? ui::ZOrderLevel::kFloatingWindow
-                                          : ui::ZOrderLevel::kNormal);
-
+                                              ? ui::ZOrderLevel::kFloatingWindow
+                                              : ui::ZOrderLevel::kNormal);
 }
 
 void ClientControlledShellSurface::OnSurfaceDestroying(Surface* surface) {

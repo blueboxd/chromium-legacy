@@ -435,6 +435,7 @@ class StatsRatesCalculator {
         type: 'outbound-rtp',
         metricCalculators: {
           bytesSent: new RateCalculator('bytesSent', 'timestamp'),
+          headerBytesSent: new RateCalculator('headerBytesSent', 'timestamp'),
           packetsSent: new RateCalculator('packetsSent', 'timestamp'),
           totalPacketSendDelay: new RateCalculator(
               'totalPacketSendDelay', 'packetsSent',
@@ -453,6 +454,8 @@ class StatsRatesCalculator {
         type: 'inbound-rtp',
         metricCalculators: {
           bytesReceived: new RateCalculator('bytesReceived', 'timestamp'),
+          headerBytesReceived:
+              new RateCalculator('headerBytesReceived', 'timestamp'),
           packetsReceived: new RateCalculator('packetsReceived', 'timestamp'),
           framesDecoded: new RateCalculator('framesDecoded', 'timestamp'),
           totalDecodeTime: new RateCalculator(

@@ -117,7 +117,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) MockInputMethodManager
       const std::string& engine_id,
       const std::vector<InputMethodManager::MenuItem>& items) override;
   void MaybeNotifyImeMenuActivationChanged() override;
-  void OverrideKeyboardKeyset(mojom::ImeKeyset keyset) override;
+  void OverrideKeyboardKeyset(ImeKeyset keyset) override;
   void SetImeMenuFeatureEnabled(ImeMenuFeature feature, bool enabled) override;
   bool GetImeMenuFeatureEnabled(ImeMenuFeature feature) const override;
   void NotifyObserversImeExtraInputStateChange() override;

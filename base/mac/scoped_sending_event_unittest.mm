@@ -11,13 +11,13 @@
 
 @interface ScopedSendingEventTestCrApp : NSApplication <CrAppControlProtocol> {
  @private
-  BOOL handlingSendEvent_;
+  BOOL _handlingSendEvent;
 }
 @property(nonatomic, assign, getter=isHandlingSendEvent) BOOL handlingSendEvent;
 @end
 
 @implementation ScopedSendingEventTestCrApp
-@synthesize handlingSendEvent = handlingSendEvent_;
+@synthesize handlingSendEvent = _handlingSendEvent;
 @end
 
 namespace {

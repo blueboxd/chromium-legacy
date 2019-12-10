@@ -15,7 +15,7 @@
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
-#include "ash/ime/ime_controller.h"
+#include "ash/ime/ime_controller_impl.h"
 #include "ash/ime/mode_indicator_observer.h"
 #include "ash/ime/test_ime_controller_client.h"
 #include "ash/magnifier/docked_magnifier_controller_impl.h"
@@ -24,9 +24,9 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/ime_info.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/test/shell_test_api.h"
-#include "ash/public/mojom/ime_info.mojom.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
@@ -87,15 +87,15 @@ using media_session::mojom::MediaSessionAction;
 namespace {
 
 void AddTestImes() {
-  mojom::ImeInfoPtr ime1 = mojom::ImeInfo::New();
-  ime1->id = "id1";
-  mojom::ImeInfoPtr ime2 = mojom::ImeInfo::New();
-  ime2->id = "id2";
-  std::vector<mojom::ImeInfoPtr> available_imes;
+  ImeInfo ime1;
+  ime1.id = "id1";
+  ImeInfo ime2;
+  ime2.id = "id2";
+  std::vector<ImeInfo> available_imes;
   available_imes.push_back(std::move(ime1));
   available_imes.push_back(std::move(ime2));
-  Shell::Get()->ime_controller()->RefreshIme(
-      "id1", std::move(available_imes), std::vector<mojom::ImeMenuItemPtr>());
+  Shell::Get()->ime_controller()->RefreshIme("id1", std::move(available_imes),
+                                             std::vector<ImeMenuItem>());
 }
 
 ui::Accelerator CreateReleaseAccelerator(ui::KeyboardCode key_code,
@@ -1443,10 +1443,10 @@ namespace {
 
 // Tests the TOGGLE_CAPS_LOCK accelerator.
 TEST_F(AcceleratorControllerTest, ToggleCapsLockAccelerators) {
-  ImeController* controller = Shell::Get()->ime_controller();
+  ImeControllerImpl* controller = Shell::Get()->ime_controller();
 
   TestImeControllerClient client;
-  controller->SetClient(client.CreateRemote());
+  controller->SetClient(&client);
   EXPECT_EQ(0, client.set_caps_lock_count_);
 
   // 1. Press Alt, Press Search, Release Search, Release Alt.
@@ -1459,7 +1459,6 @@ TEST_F(AcceleratorControllerTest, ToggleCapsLockAccelerators) {
   const ui::Accelerator release_search_before_alt(
       CreateReleaseAccelerator(ui::VKEY_LWIN, ui::EF_ALT_DOWN));
   EXPECT_TRUE(ProcessInController(release_search_before_alt));
-  controller->FlushMojoForTesting();
   EXPECT_EQ(1, client.set_caps_lock_count_);
   EXPECT_TRUE(controller->IsCapsLockEnabled());
   controller->UpdateCapsLockState(false);
@@ -1469,7 +1468,6 @@ TEST_F(AcceleratorControllerTest, ToggleCapsLockAccelerators) {
                                               ui::EF_COMMAND_DOWN);
   EXPECT_FALSE(ProcessInController(press_search_then_alt));
   EXPECT_TRUE(ProcessInController(release_search_before_alt));
-  controller->FlushMojoForTesting();
   EXPECT_EQ(2, client.set_caps_lock_count_);
   EXPECT_TRUE(controller->IsCapsLockEnabled());
   controller->UpdateCapsLockState(false);
@@ -1479,7 +1477,6 @@ TEST_F(AcceleratorControllerTest, ToggleCapsLockAccelerators) {
   const ui::Accelerator release_alt_before_search(
       CreateReleaseAccelerator(ui::VKEY_MENU, ui::EF_COMMAND_DOWN));
   EXPECT_TRUE(ProcessInController(release_alt_before_search));
-  controller->FlushMojoForTesting();
   EXPECT_EQ(3, client.set_caps_lock_count_);
   EXPECT_TRUE(controller->IsCapsLockEnabled());
   controller->UpdateCapsLockState(false);
@@ -1487,7 +1484,6 @@ TEST_F(AcceleratorControllerTest, ToggleCapsLockAccelerators) {
   // 4. Press Search, Press Alt, Release Alt, Release Search.
   EXPECT_FALSE(ProcessInController(press_search_then_alt));
   EXPECT_TRUE(ProcessInController(release_alt_before_search));
-  controller->FlushMojoForTesting();
   EXPECT_EQ(4, client.set_caps_lock_count_);
   EXPECT_TRUE(controller->IsCapsLockEnabled());
   controller->UpdateCapsLockState(false);
@@ -1499,7 +1495,6 @@ TEST_F(AcceleratorControllerTest, ToggleCapsLockAccelerators) {
   generator->PressKey(ui::VKEY_MENU, ui::EF_NONE);
   generator->PressKey(ui::VKEY_LWIN, ui::EF_ALT_DOWN);
   generator->ReleaseKey(ui::VKEY_MENU, ui::EF_COMMAND_DOWN);
-  controller->FlushMojoForTesting();
   EXPECT_FALSE(controller->IsCapsLockEnabled());
   controller->UpdateCapsLockState(false);
   generator->ReleaseKey(ui::VKEY_M, ui::EF_NONE);
@@ -1534,7 +1529,6 @@ TEST_F(AcceleratorControllerTest, ToggleCapsLockAccelerators) {
     // triggered.
     EXPECT_FALSE(ProcessInController(press_search_then_alt));
     EXPECT_TRUE(ProcessInController(release_search_before_alt));
-    controller->FlushMojoForTesting();
     EXPECT_EQ(5, client.set_caps_lock_count_);
     EXPECT_TRUE(controller->IsCapsLockEnabled());
     controller->UpdateCapsLockState(false);
@@ -1549,7 +1543,6 @@ TEST_F(AcceleratorControllerTest, ToggleCapsLockAccelerators) {
   // triggered.
   EXPECT_FALSE(ProcessInController(press_search_then_alt));
   EXPECT_TRUE(ProcessInController(release_search_before_alt));
-  controller->FlushMojoForTesting();
   EXPECT_EQ(6, client.set_caps_lock_count_);
   EXPECT_TRUE(controller->IsCapsLockEnabled());
   controller->UpdateCapsLockState(false);
@@ -2503,12 +2496,11 @@ TEST_F(AcceleratorControllerTest, ChangeIMEMode_SwitchesInputMethod) {
   ImeController* controller = Shell::Get()->ime_controller();
 
   TestImeControllerClient client;
-  controller->SetClient(client.CreateRemote());
+  controller->SetClient(&client);
 
   EXPECT_EQ(0, client.next_ime_count_);
 
   ProcessInController(ui::Accelerator(ui::VKEY_MODECHANGE, ui::EF_NONE));
-  controller->FlushMojoForTesting();
 
   EXPECT_EQ(1, client.next_ime_count_);
 }

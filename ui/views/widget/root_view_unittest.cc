@@ -7,6 +7,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
+#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/views/context_menu_controller.h"
@@ -783,6 +785,38 @@ TEST_F(RootViewDesktopNativeWidgetTest, SingleLayoutDuringInit) {
   EXPECT_EQ(1, delegate->layout_count());
   widget->CloseNow();
 }
+
+#if !defined(OS_MACOSX)
+
+// Tests that AnnounceText sets up the correct text value on the hidden view,
+// and that the resulting hidden view actually stays hidden.
+TEST_F(RootViewTest, AnnounceTextTest) {
+  Widget widget;
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  init_params.bounds = {100, 100, 100, 100};
+  widget.Init(std::move(init_params));
+  widget.Show();
+  internal::RootView* root_view =
+      static_cast<internal::RootView*>(widget.GetRootView());
+  root_view->SetContentsView(new View());
+
+  EXPECT_EQ(1U, root_view->children().size());
+  const base::string16 kText = base::ASCIIToUTF16("Text");
+  root_view->AnnounceText(kText);
+  EXPECT_EQ(2U, root_view->children().size());
+  root_view->Layout();
+  EXPECT_FALSE(root_view->children()[0]->size().IsEmpty());
+  EXPECT_TRUE(root_view->children()[1]->size().IsEmpty());
+  View* const hidden_view = root_view->children()[1];
+  ui::AXNodeData node_data;
+  hidden_view->GetAccessibleNodeData(&node_data);
+  EXPECT_EQ(kText,
+            node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
+}
+
+#endif  // !defined(OS_MACOSX)
 
 }  // namespace test
 }  // namespace views

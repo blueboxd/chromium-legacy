@@ -278,7 +278,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
 
   // Stores information about form field structure.
   struct FormFieldInfo {
-    uint32_t unique_renderer_id = FormFieldData::kNotSetFormControlRendererId;
+    uint32_t unique_renderer_id = FormData::kNotSetRendererId;
     std::string form_control_type;
     std::string autocomplete_attribute;
     bool is_focusable = false;
@@ -293,7 +293,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
 
     FormStructureInfo& operator=(FormStructureInfo&& other);
 
-    uint32_t unique_renderer_id = FormData::kNotSetFormRendererId;
+    uint32_t unique_renderer_id = FormData::kNotSetRendererId;
     std::vector<FormFieldInfo> fields;
   };
 
@@ -548,9 +548,9 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   bool recorded_first_filling_result_ = false;
 
   // Contains renderer id of last updated input element.
-  uint32_t last_updated_field_renderer_id_ = FormData::kNotSetFormRendererId;
+  uint32_t last_updated_field_renderer_id_ = FormData::kNotSetRendererId;
   // Contains renderer id of the form of the last updated input element.
-  uint32_t last_updated_form_renderer_id_ = FormData::kNotSetFormRendererId;
+  uint32_t last_updated_form_renderer_id_ = FormData::kNotSetRendererId;
 
   // Current state of Touch To Fill. This is reset during
   // CleanupOnDocumentShutdown.

@@ -9,6 +9,7 @@
 #include <dawn/webgpu.h>
 
 #include "base/callback_helpers.h"
+#include "base/util/type_safety/pass_key.h"
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
@@ -93,62 +94,28 @@ class SharedImageRepresentationFactoryRef : public SharedImageRepresentation {
   bool PresentSwapChain() { return backing()->PresentSwapChain(); }
 };
 
-class GPU_GLES2_EXPORT SharedImageRepresentationGLTexture
+class GPU_GLES2_EXPORT SharedImageRepresentationGLTextureBase
     : public SharedImageRepresentation {
  public:
   class ScopedAccess {
    public:
-    ScopedAccess() = default;
-
-    ScopedAccess(SharedImageRepresentationGLTexture* representation,
-                 GLenum mode)
-        : representation_(representation),
-          success_(representation_->BeginAccess(mode)) {
-      constexpr GLenum kReadAccess = 0x8AF6;
-      if (success()) {
-        if (mode == kReadAccess)
-          representation_->backing()->OnReadSucceeded();
-        else
-          representation_->backing()->OnWriteSucceeded();
-      }
-    }
-
-    ScopedAccess(ScopedAccess&& other) { *this = std::move(other); }
-
-    ~ScopedAccess() { reset(); }
-
-    ScopedAccess& operator=(ScopedAccess&& other) {
-      reset();
-      representation_ = other.representation_;
-      success_ = other.success_;
-      other.representation_ = nullptr;
-      other.success_ = false;
-      return *this;
-    }
-
-    bool success() const { return success_; }
-
-    void reset() {
-      if (representation_ && success()) {
-        representation_->EndAccess();
-        representation_ = nullptr;
-        success_ = false;
-      }
-    }
+    ScopedAccess(util::PassKey<SharedImageRepresentationGLTextureBase> pass_key,
+                 SharedImageRepresentationGLTextureBase* representation)
+        : representation_(representation) {}
+    ~ScopedAccess() { representation_->EndAccess(); }
 
    private:
-    SharedImageRepresentationGLTexture* representation_ = nullptr;
-    bool success_ = false;
+    SharedImageRepresentationGLTextureBase* representation_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedAccess);
   };
 
-  SharedImageRepresentationGLTexture(SharedImageManager* manager,
-                                     SharedImageBacking* backing,
-                                     MemoryTypeTracker* tracker)
+  SharedImageRepresentationGLTextureBase(SharedImageManager* manager,
+                                         SharedImageBacking* backing,
+                                         MemoryTypeTracker* tracker)
       : SharedImageRepresentation(manager, backing, tracker) {}
 
-  virtual gles2::Texture* GetTexture() = 0;
+  std::unique_ptr<ScopedAccess> BeginScopedAccess(GLenum mode);
 
  protected:
   friend class SharedImageRepresentationSkiaGL;
@@ -159,69 +126,29 @@ class GPU_GLES2_EXPORT SharedImageRepresentationGLTexture
   virtual void EndAccess() {}
 };
 
-class GPU_GLES2_EXPORT SharedImageRepresentationGLTexturePassthrough
-    : public SharedImageRepresentation {
+class GPU_GLES2_EXPORT SharedImageRepresentationGLTexture
+    : public SharedImageRepresentationGLTextureBase {
  public:
-  class ScopedAccess {
-   public:
-    ScopedAccess() = default;
+  SharedImageRepresentationGLTexture(SharedImageManager* manager,
+                                     SharedImageBacking* backing,
+                                     MemoryTypeTracker* tracker)
+      : SharedImageRepresentationGLTextureBase(manager, backing, tracker) {}
 
-    ScopedAccess(SharedImageRepresentationGLTexturePassthrough* representation,
-                 GLenum mode)
-        : representation_(representation),
-          success_(representation_->BeginAccess(mode)) {
-      constexpr GLenum kReadAccess = 0x8AF6;
-      if (success()) {
-        if (mode == kReadAccess)
-          representation_->backing()->OnReadSucceeded();
-        else
-          representation_->backing()->OnWriteSucceeded();
-      }
-    }
+  // TODO(ericrk): Move this to the ScopedAccess object. crbug.com/1003686
+  virtual gles2::Texture* GetTexture() = 0;
+};
 
-    ScopedAccess(ScopedAccess&& other) { *this = std::move(other); }
-
-    ~ScopedAccess() { reset(); }
-
-    ScopedAccess& operator=(ScopedAccess&& other) {
-      reset();
-      representation_ = other.representation_;
-      success_ = other.success_;
-      other.representation_ = nullptr;
-      other.success_ = false;
-      return *this;
-    }
-
-    bool success() const { return success_; }
-
-    void reset() {
-      if (representation_ && success())
-        representation_->EndAccess();
-      representation_ = nullptr;
-      success_ = false;
-    }
-
-   private:
-    SharedImageRepresentationGLTexturePassthrough* representation_ = nullptr;
-    bool success_ = false;
-    DISALLOW_COPY_AND_ASSIGN(ScopedAccess);
-  };
-
+class GPU_GLES2_EXPORT SharedImageRepresentationGLTexturePassthrough
+    : public SharedImageRepresentationGLTextureBase {
+ public:
   SharedImageRepresentationGLTexturePassthrough(SharedImageManager* manager,
                                                 SharedImageBacking* backing,
                                                 MemoryTypeTracker* tracker)
-      : SharedImageRepresentation(manager, backing, tracker) {}
+      : SharedImageRepresentationGLTextureBase(manager, backing, tracker) {}
 
+  // TODO(ericrk): Move this to the ScopedAccess object. crbug.com/1003686
   virtual const scoped_refptr<gles2::TexturePassthrough>&
   GetTexturePassthrough() = 0;
-
- protected:
-  friend class SharedImageRepresentationSkiaGL;
-
-  // TODO(ericrk): Make these pure virtual and ensure real implementations
-  // exist.
-  virtual bool BeginAccess(GLenum mode);
-  virtual void EndAccess() {}
 };
 
 class GPU_GLES2_EXPORT SharedImageRepresentationSkia
@@ -229,17 +156,11 @@ class GPU_GLES2_EXPORT SharedImageRepresentationSkia
  public:
   class GPU_GLES2_EXPORT ScopedWriteAccess {
    public:
-    ScopedWriteAccess(SharedImageRepresentationSkia* representation,
-                      int final_msaa_count,
-                      const SkSurfaceProps& surface_props,
-                      std::vector<GrBackendSemaphore>* begin_semaphores,
-                      std::vector<GrBackendSemaphore>* end_semaphores);
-    ScopedWriteAccess(SharedImageRepresentationSkia* representation,
-                      std::vector<GrBackendSemaphore>* begin_semaphores,
-                      std::vector<GrBackendSemaphore>* end_semaphores);
+    ScopedWriteAccess(util::PassKey<SharedImageRepresentationSkia> pass_key,
+                      SharedImageRepresentationSkia* representation,
+                      sk_sp<SkSurface> surface);
     ~ScopedWriteAccess();
 
-    bool success() const { return !!surface_; }
     SkSurface* surface() const { return surface_.get(); }
 
    private:
@@ -251,12 +172,11 @@ class GPU_GLES2_EXPORT SharedImageRepresentationSkia
 
   class GPU_GLES2_EXPORT ScopedReadAccess {
    public:
-    ScopedReadAccess(SharedImageRepresentationSkia* representation,
-                     std::vector<GrBackendSemaphore>* begin_semaphores,
-                     std::vector<GrBackendSemaphore>* end_semaphores);
+    ScopedReadAccess(util::PassKey<SharedImageRepresentationSkia> pass_key,
+                     SharedImageRepresentationSkia* representation,
+                     sk_sp<SkPromiseImageTexture> promise_image_texture);
     ~ScopedReadAccess();
 
-    bool success() const { return !!promise_image_texture_; }
     SkPromiseImageTexture* promise_image_texture() const {
       return promise_image_texture_.get();
     }
@@ -272,6 +192,23 @@ class GPU_GLES2_EXPORT SharedImageRepresentationSkia
                                 SharedImageBacking* backing,
                                 MemoryTypeTracker* tracker)
       : SharedImageRepresentation(manager, backing, tracker) {}
+
+  // Note: See BeginWriteAccess below for a description of the semaphore
+  // parameters.
+  std::unique_ptr<ScopedWriteAccess> BeginScopedWriteAccess(
+      int final_msaa_count,
+      const SkSurfaceProps& surface_props,
+      std::vector<GrBackendSemaphore>* begin_semaphores,
+      std::vector<GrBackendSemaphore>* end_semaphores);
+  std::unique_ptr<ScopedWriteAccess> BeginScopedWriteAccess(
+      std::vector<GrBackendSemaphore>* begin_semaphores,
+      std::vector<GrBackendSemaphore>* end_semaphores);
+
+  // Note: See BeginReadAccess below for a description of the semaphore
+  // parameters.
+  std::unique_ptr<ScopedReadAccess> BeginScopedReadAccess(
+      std::vector<GrBackendSemaphore>* begin_semaphores,
+      std::vector<GrBackendSemaphore>* end_semaphores);
 
  protected:
   // Begin the write access. The implementations should insert semaphores into
@@ -315,7 +252,8 @@ class SharedImageRepresentationDawn : public SharedImageRepresentation {
   virtual void EndAccess() = 0;
 };
 
-class SharedImageRepresentationOverlay : public SharedImageRepresentation {
+class GPU_GLES2_EXPORT SharedImageRepresentationOverlay
+    : public SharedImageRepresentation {
  public:
   SharedImageRepresentationOverlay(SharedImageManager* manager,
                                    SharedImageBacking* backing,
@@ -324,24 +262,13 @@ class SharedImageRepresentationOverlay : public SharedImageRepresentation {
 
   class ScopedReadAccess {
    public:
-    ScopedReadAccess(SharedImageRepresentationOverlay* representation,
-                              bool needs_gl_image)
-        : representation_(representation) {
-      representation_->BeginReadAccess();
-      gl_image_ = needs_gl_image ? representation_->GetGLImage() : nullptr;
-    }
-    ScopedReadAccess(ScopedReadAccess&& other) { *this = std::move(other); }
+    ScopedReadAccess(util::PassKey<SharedImageRepresentationOverlay> pass_key,
+                     SharedImageRepresentationOverlay* representation,
+                     gl::GLImage* gl_image)
+        : representation_(representation), gl_image_(gl_image) {}
     ~ScopedReadAccess() {
       if (representation_)
         representation_->EndReadAccess();
-    }
-
-    ScopedReadAccess& operator=(ScopedReadAccess&& other) {
-      representation_ = other.representation_;
-      other.representation_ = nullptr;
-      gl_image_ = other.gl_image_;
-      other.gl_image_ = nullptr;
-      return *this;
     }
 
     gl::GLImage* gl_image() const {
@@ -358,6 +285,8 @@ class SharedImageRepresentationOverlay : public SharedImageRepresentation {
   virtual void NotifyOverlayPromotion(bool promotion,
                                       const gfx::Rect& bounds) = 0;
 #endif
+
+  std::unique_ptr<ScopedReadAccess> BeginScopedReadAccess(bool needs_gl_image);
 
  protected:
   // TODO(weiliangc): Currently this only handles Android pre-SurfaceControl

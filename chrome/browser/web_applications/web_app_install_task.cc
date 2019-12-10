@@ -483,8 +483,7 @@ void WebAppInstallTask::OnDidPerformInstallableCheck(
                                         : ForInstallableSite::kNo;
 
   if (manifest)
-    UpdateWebAppInfoFromManifest(*manifest, web_app_info.get(),
-                                 for_installable_site);
+    UpdateWebAppInfoFromManifest(*manifest, web_app_info.get());
 
   AppId app_id = GenerateAppIdFromURL(web_app_info->app_url);
 

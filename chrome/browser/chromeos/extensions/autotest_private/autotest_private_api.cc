@@ -1288,7 +1288,7 @@ ExtensionFunction::ResponseAction AutotestPrivateGetHistogramFunction::Run() {
   // we'd report stale data for histograms that are e.g. recorded by renderers.
   content::FetchHistogramsAsynchronously(
       base::ThreadTaskRunnerHandle::Get(),
-      base::BindRepeating(
+      base::BindOnce(
           &AutotestPrivateGetHistogramFunction::RespondOnHistogramsFetched,
           this, params->name),
       kHistogramsRefreshTimeout);

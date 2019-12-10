@@ -55,20 +55,23 @@ public class SharingServiceProxy {
 
     /**
      * Sends a shared clipboard message to the device specified by GUID.
-     * @param guid The guid of the device on the receiving end.
-     * @param message The text to send.
+     * @param guid The guid of the receiver device.
+     * @param lastUpdatedTimestampMillis The last updated timestamp in milliseconds of the receiver
+     *         device.
+     * @param text The text to send.
      * @param callback The result of the operation. Runs |callback| with a
      *         org.chromium.chrome.browser.sharing.SharingSendMessageResult enum value.
      */
     public void sendSharedClipboardMessage(
-            String guid, String message, Callback<Integer> callback) {
+            String guid, long lastUpdatedTimestampMillis, String text, Callback<Integer> callback) {
         if (sNativeSharingServiceProxyAndroid == 0) {
             callback.onResult(SharingSendMessageResult.INTERNAL_ERROR);
             return;
         }
 
         Natives jni = SharingServiceProxyJni.get();
-        jni.sendSharedClipboardMessage(sNativeSharingServiceProxyAndroid, guid, message, callback);
+        jni.sendSharedClipboardMessage(sNativeSharingServiceProxyAndroid, guid,
+                lastUpdatedTimestampMillis, text, callback);
     }
 
     /**
@@ -80,17 +83,17 @@ public class SharingServiceProxy {
         public String guid;
         public String clientName;
         public SyncEnums.DeviceType deviceType;
-        public long lastUpdatedTimestampMilliseconds;
+        public long lastUpdatedTimestampMillis;
     }
 
     @CalledByNative
     private static void createDeviceInfoAndAppendToList(ArrayList<DeviceInfo> deviceInfo,
-            String guid, String clientName, int deviceType, long lastUpdatedTimestampMilliseconds) {
+            String guid, String clientName, int deviceType, long lastUpdatedTimestampMillis) {
         DeviceInfo device = new DeviceInfo();
         device.guid = guid;
         device.clientName = clientName;
         device.deviceType = SyncEnums.DeviceType.valueOf(deviceType);
-        device.lastUpdatedTimestampMilliseconds = lastUpdatedTimestampMilliseconds;
+        device.lastUpdatedTimestampMillis = lastUpdatedTimestampMillis;
         deviceInfo.add(device);
     }
 
@@ -125,7 +128,7 @@ public class SharingServiceProxy {
     interface Natives {
         void initSharingService(Profile profile);
         void sendSharedClipboardMessage(long nativeSharingServiceProxyAndroid, String guid,
-                String text, Callback<Integer> callback);
+                long lastUpdatedTimestampMillis, String text, Callback<Integer> callback);
         void getDeviceCandidates(long nativeSharingServiceProxyAndroid,
                 ArrayList<DeviceInfo> deviceInfo, int requiredFeature);
         void addDeviceCandidatesInitializedObserver(

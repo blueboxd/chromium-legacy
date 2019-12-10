@@ -205,6 +205,17 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             interface = interface.inherited
         return result
 
+    def does_implement(self, identifier):
+        """
+        Returns True if this is or inherits from the given interface.
+        """
+        assert isinstance(identifier, str)
+
+        for interface in self.inclusive_inherited_interfaces:
+            if interface.identifier == identifier:
+                return True
+        return False
+
     @property
     def attributes(self):
         """

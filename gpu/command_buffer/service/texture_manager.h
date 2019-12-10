@@ -794,7 +794,7 @@ class GPU_GLES2_EXPORT TextureRef : public base::RefCounted<TextureRef> {
   SharedImageRepresentationGLTexture* shared_image() const {
     return shared_image_.get();
   }
-  const base::Optional<SharedImageRepresentationGLTexture::ScopedAccess>&
+  const std::unique_ptr<SharedImageRepresentationGLTexture::ScopedAccess>&
   shared_image_scoped_access() const {
     return shared_image_scoped_access_;
   }
@@ -823,7 +823,7 @@ class GPU_GLES2_EXPORT TextureRef : public base::RefCounted<TextureRef> {
   bool force_context_lost_;
 
   std::unique_ptr<SharedImageRepresentationGLTexture> shared_image_;
-  base::Optional<SharedImageRepresentationGLTexture::ScopedAccess>
+  std::unique_ptr<SharedImageRepresentationGLTexture::ScopedAccess>
       shared_image_scoped_access_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureRef);

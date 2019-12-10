@@ -4,7 +4,7 @@
 
 #include "ash/system/ime/ime_feature_pod_controller.h"
 
-#include "ash/ime/ime_controller.h"
+#include "ash/ime/ime_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
@@ -20,7 +20,7 @@ namespace {
 
 bool IsButtonVisible() {
   DCHECK(Shell::Get());
-  ImeController* ime_controller = Shell::Get()->ime_controller();
+  ImeControllerImpl* ime_controller = Shell::Get()->ime_controller();
   size_t ime_count = ime_controller->available_imes().size();
   return !ime_controller->is_menu_active() &&
          (ime_count > 1 || ime_controller->managed_by_policy());
@@ -28,7 +28,7 @@ bool IsButtonVisible() {
 
 base::string16 GetLabelString() {
   DCHECK(Shell::Get());
-  ImeController* ime_controller = Shell::Get()->ime_controller();
+  ImeControllerImpl* ime_controller = Shell::Get()->ime_controller();
   size_t ime_count = ime_controller->available_imes().size();
   if (ime_count > 1) {
     return ime_controller->current_ime().short_name;
@@ -41,7 +41,7 @@ base::string16 GetLabelString() {
 
 base::string16 GetTooltipString() {
   DCHECK(Shell::Get());
-  ImeController* ime_controller = Shell::Get()->ime_controller();
+  ImeControllerImpl* ime_controller = Shell::Get()->ime_controller();
   size_t ime_count = ime_controller->available_imes().size();
   if (ime_count > 1) {
     return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_IME_TOOLTIP_WITH_NAME,

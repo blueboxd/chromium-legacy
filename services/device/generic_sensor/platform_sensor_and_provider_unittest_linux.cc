@@ -56,7 +56,7 @@ constexpr double kMagnetometerOffsetValue = 3.0;
 constexpr double kMagnetometerScalingValue = 0.000001;
 
 void DeleteFile(const base::FilePath& file) {
-  EXPECT_TRUE(base::DeleteFile(file, true));
+  EXPECT_TRUE(base::DeleteFileRecursively(file));
 }
 
 void WriteValueToFile(const base::FilePath& path, double value) {

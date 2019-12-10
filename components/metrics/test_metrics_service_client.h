@@ -33,7 +33,7 @@ class TestMetricsServiceClient : public MetricsServiceClient {
   bool GetBrand(std::string* brand_code) override;
   SystemProfileProto::Channel GetChannel() override;
   std::string GetVersionString() override;
-  void CollectFinalMetricsForLog(const base::Closure& done_callback) override;
+  void CollectFinalMetricsForLog(base::OnceClosure done_callback) override;
   std::unique_ptr<MetricsLogUploader> CreateUploader(
       const GURL& server_url,
       const GURL& insecure_server_url,

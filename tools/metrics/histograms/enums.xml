@@ -4914,6 +4914,7 @@ Unknown properties are collapsed to zero. -->
   <int value="-438850149" label="PermissionRequestManager"/>
   <int value="72716222" label="WebBluetooth"/>
   <int value="88001126" label="MixedContentSettingsTabHelper"/>
+  <int value="362309862" label="OomInterventionTabHelper"/>
   <int value="671363579" label="banners::AppBannerManager"/>
   <int value="990438262" label="MediaWebContentsObserver::OnMediaPlaying"/>
   <int value="1683256665" label="NativeFileSystem"/>
@@ -11281,14 +11282,6 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="CorsAccessCheckError">
-  <summary>The CORS check results for each request.</summary>
-  <int value="0" label="CORS request was permitted"/>
-  <int value="1" label="CORS request was not permitted"/>
-  <int value="2" label="CORS preflight permitted a CORS request"/>
-  <int value="3" label="CORS preflight didn't permit a CORS request"/>
-</enum>
-
-<enum name="CorsAccessCheckResult">
   <summary>
     The detailed error type for CORS check failures. See
     services/network/public/mojom/cors.mojom for detailed information.
@@ -11317,6 +11310,14 @@ Called by update_net_error_codes.py.-->
   <int value="21" label="kMethodDisallowedByPreflightResponse"/>
   <int value="22" label="kHeaderDisallowedByPreflightResponse"/>
   <int value="23" label="kRedirectContainsCredentials"/>
+</enum>
+
+<enum name="CorsAccessCheckResult">
+  <summary>The CORS check results for each request.</summary>
+  <int value="0" label="CORS request was permitted"/>
+  <int value="1" label="CORS request was not permitted"/>
+  <int value="2" label="CORS preflight permitted a CORS request"/>
+  <int value="3" label="CORS preflight didn't permit a CORS request"/>
 </enum>
 
 <enum name="CorsCompletionStatus">
@@ -12416,6 +12417,17 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="0" label="Unknown"/>
   <int value="1" label="By User"/>
   <int value="2" label="Connect to Linux Clicked"/>
+</enum>
+
+<enum name="CrowdDenyNotificationUxQuality">
+  <int value="0" label="Uknown"/>
+  <int value="1" label="Accceptable"/>
+  <int value="2" label="Unsolicited prompts"/>
+</enum>
+
+<enum name="CrowdDenySafeBrowsingVerdict">
+  <int value="0" label="Acceptable"/>
+  <int value="1" label="Unsolicited notification prompts"/>
 </enum>
 
 <enum name="CryptAuthApiCallResult">
@@ -14405,6 +14417,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="10" label="new_tab"/>
   <int value="11" label="close_tab"/>
   <int value="12" label="close_all_tabs"/>
+  <int value="13" label="find_in_page"/>
 </enum>
 
 <enum name="DirectCompositionVideoPresentationMode">
@@ -27225,6 +27238,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="18" label="Empty K"/>
   <int value="19" label="Invalid P256 ECDSA"/>
   <int value="20" label="Invalid K"/>
+  <int value="21" label="IAM missing permission"/>
 </enum>
 
 <enum name="FormDataDeserializationStatus">
@@ -35921,6 +35935,7 @@ from previous Chrome versions.
   <int value="-2139379065" label="StoragePressureUI:enabled"/>
   <int value="-2138883960" label="AutofillRejectCompanyBirthyearName:disabled"/>
   <int value="-2136259447" label="PasswordManagerOnboardingAndroid:disabled"/>
+  <int value="-2136173537" label="QuickAnswers:enabled"/>
   <int value="-2134333982" label="ShowArcFilesApp:enabled"/>
   <int value="-2134244069" label="HttpFormWarning:enabled"/>
   <int value="-2133892372" label="ResamplingInputEvents:disabled"/>
@@ -37414,6 +37429,7 @@ from previous Chrome versions.
   <int value="-314605926" label="protect-sync-credential-on-reauth:enabled"/>
   <int value="-311148335" label="v8-pac-mojo-out-of-process"/>
   <int value="-310908854" label="new-wallpaper-picker"/>
+  <int value="-307260007" label="ExtensionsCheckup:disabled"/>
   <int value="-304951461" label="TextSuggestionsTouchBar:enabled"/>
   <int value="-300018686" label="disable-cloud-import"/>
   <int value="-299841473" label="top-document-isolation:enabled"/>
@@ -38067,6 +38083,7 @@ from previous Chrome versions.
   <int value="538600423" label="OmniboxDocumentProvider:enabled"/>
   <int value="538685995" label="InstallableInkDrop:enabled"/>
   <int value="542960889" label="HeavyAdIntervention:enabled"/>
+  <int value="544443920" label="QuickAnswers:disabled"/>
   <int value="546043947" label="ImplicitRootScroller:enabled"/>
   <int value="546520086" label="enable-data-reduction-proxy-savings-promo"/>
   <int value="546710806" label="disable-easy-signin"/>
@@ -38346,6 +38363,7 @@ from previous Chrome versions.
   <int value="908370794" label="UserActivityPredictionMlService:enabled"/>
   <int value="908523940" label="PassiveEventListenersDueToFling:disabled"/>
   <int value="909439558" label="disable-device-discovery"/>
+  <int value="909525364" label="ExtensionsCheckup:enabled"/>
   <int value="910725730" label="WebRtcHWVP9Encoding:disabled"/>
   <int value="912119426" label="InfiniteSessionRestore:disabled"/>
   <int value="913138924" label="RecurrentInterstitialFeature:disabled"/>
@@ -47106,6 +47124,25 @@ Called by update_net_trust_anchors.py.-->
     Guide Service was started but was not available in time to make a decision.
     (Added in M80, Previously, this was combined with &quot;No hint available
     for page load&quot;.)
+  </int>
+</enum>
+
+<enum name="OptimizationGuidePredictionManagerModelStatus">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Model for target is available">
+    The prediction model for the optimization target is loaded and available for
+    evaluation.
+  </int>
+  <int value="2" label="Store is available but does not contain the model">
+    The store is initialized but the model does not exist for the optimization
+    target.
+  </int>
+  <int value="3" label="Store is available but the model is not loaded yet">
+    The store is initialized but the model has not been loaded into memory yet.
+  </int>
+  <int value="4" label="Store is unvailable and model availability is unknown">
+    The store is not yet initialized and it is unknown if it contains a model
+    for the optimization target or not.
   </int>
 </enum>
 

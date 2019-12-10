@@ -8,4 +8,8 @@ mojom("mojo_bindings") {
   sources = [
     "new_tab_page.mojom",
   ]
+
+  public_deps = [
+    "//url/mojom:url_mojom_gurl",
+  ]
 }

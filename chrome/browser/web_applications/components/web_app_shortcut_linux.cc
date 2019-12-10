@@ -286,12 +286,16 @@ bool CreateDesktopShortcut(const ShortcutInfo& shortcut_info,
       break;
   }
 
+  std::vector<std::string> mime_types(
+      shortcut_info.file_handler_mime_types.begin(),
+      shortcut_info.file_handler_mime_types.end());
+
   // Set NoDisplay=true if hidden. This will hide the application from
   // user-facing menus.
   std::string contents = shell_integration_linux::GetDesktopFileContents(
       chrome_exe_path, app_name, shortcut_info.url, shortcut_info.extension_id,
       shortcut_info.title, icon_name, shortcut_info.profile_path, "",
-      base::JoinString(shortcut_info.mime_types, ";"),
+      base::JoinString(mime_types, ";"),
       creation_locations.applications_menu_location ==
           APP_MENU_LOCATION_HIDDEN);
   success = CreateShortcutInApplicationsMenu(shortcut_filename, contents,

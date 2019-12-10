@@ -5,6 +5,7 @@
 #include "components/gcm_driver/web_push_common.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/string_util.h"
 
 namespace {
 
@@ -34,7 +35,8 @@ enum class ForbiddenResponseBody {
   kEmptyK = 18,
   kInvalidP256ECDSA = 19,
   kInvalidK = 20,
-  kMaxValue = kInvalidK,
+  kIamMissingPermission = 21,
+  kMaxValue = kIamMissingPermission,
 };
 
 ForbiddenResponseBody GetResposneBodyEnum(const std::string* response_body) {
@@ -139,6 +141,11 @@ ForbiddenResponseBody GetResposneBodyEnum(const std::string* response_body) {
       "have the following format: t=jwtToken; "
       "k=base64(publicApplicationServerKey)\n") {
     return ForbiddenResponseBody::kInvalidK;
+  }
+
+  if (base::StartsWith(*response_body, "permission check failed for method",
+                       base::CompareCase::SENSITIVE)) {
+    return ForbiddenResponseBody::kIamMissingPermission;
   }
 
   return ForbiddenResponseBody::kUnknownBody;

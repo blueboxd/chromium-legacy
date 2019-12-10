@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
+import 'chrome://resources/mojo/url/mojom/url.mojom-lite.js';
+
 import './new_tab_page.mojom-lite.js';
+
 import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
 
 export class BrowserProxy {

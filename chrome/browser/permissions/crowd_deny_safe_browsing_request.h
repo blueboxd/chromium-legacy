@@ -12,7 +12,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
+
+namespace base {
+class Clock;
+}
 
 namespace url {
 class Origin;
@@ -27,21 +32,29 @@ class SafeBrowsingDatabaseManager;
 class CrowdDenySafeBrowsingRequest {
  public:
   // The crowd deny verdict for a given origin.
+  //
+  // These enumeration values are recorded into histograms. Entries should not
+  // be renumbered and numeric values should not be reused.
   enum class Verdict {
-    kAcceptable,
-    kKnownToShowUnsolicitedNotificationPermissionRequests
+    kAcceptable = 0,
+    kKnownToShowUnsolicitedNotificationPermissionRequests = 1,
+
+    // Must be equal to the greatest among enumeraiton values.
+    kMaxValue = kKnownToShowUnsolicitedNotificationPermissionRequests,
   };
 
   using VerdictCallback = base::OnceCallback<void(Verdict)>;
 
   // Constructs a request that fetches the verdict for |origin| by consulting
-  // the |database_manager|, and invokes |callback| when done.
+  // the |database_manager|, and invokes |callback| when done. The |clock| is
+  // used for measuring how long the request takes, and should outlive |this|.
   //
   // It is guaranteed that |callback| will never be invoked synchronously, and
   // it will not be invoked after |this| goes out of scope.
   CrowdDenySafeBrowsingRequest(
       scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>
           database_manager,
+      const base::Clock* clock,
       const url::Origin& origin,
       VerdictCallback callback);
   ~CrowdDenySafeBrowsingRequest();
@@ -61,6 +74,11 @@ class CrowdDenySafeBrowsingRequest {
   std::unique_ptr<SafeBrowsingClient> client_;
 
   VerdictCallback callback_;
+
+  // For telemetry purposes. The caller guarantees |clock_| to outlive |this|.
+  const base::Clock* clock_;
+  const base::Time request_start_time_;
+
   base::WeakPtrFactory<CrowdDenySafeBrowsingRequest> weak_factory_{this};
 };
 

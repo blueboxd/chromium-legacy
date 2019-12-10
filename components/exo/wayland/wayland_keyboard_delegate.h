@@ -16,7 +16,7 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/ime/ime_controller.h"
+#include "ash/ime/ime_controller_impl.h"
 #include "ash/shell.h"
 #include "ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h"
 #endif
@@ -40,7 +40,7 @@ class WaylandKeyboardDelegate : public WaylandInputDelegate,
                                 public KeyboardObserver
 #if defined(OS_CHROMEOS)
     ,
-                                public ash::ImeController::Observer
+                                public ash::ImeControllerImpl::Observer
 #endif
 {
 #if BUILDFLAG(USE_XKBCOMMON)
@@ -65,7 +65,7 @@ class WaylandKeyboardDelegate : public WaylandInputDelegate,
   void OnKeyboardModifiers(int modifier_flags) override;
 
 #if defined(OS_CHROMEOS)
-  // Overridden from ImeController::Observer:
+  // Overridden from ImeControllerImpl::Observer:
   void OnCapsLockChanged(bool enabled) override;
   void OnKeyboardLayoutNameChanged(const std::string& layout_name) override;
 #endif

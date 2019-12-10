@@ -18,7 +18,7 @@ class ShellQuotaPermissionContext : public QuotaPermissionContext {
   // The callback will be dispatched on the IO thread.
   void RequestQuotaPermission(const StorageQuotaParams& params,
                               int render_process_id,
-                              const PermissionCallback& callback) override;
+                              PermissionCallback callback) override;
 
  private:
   ~ShellQuotaPermissionContext() override;

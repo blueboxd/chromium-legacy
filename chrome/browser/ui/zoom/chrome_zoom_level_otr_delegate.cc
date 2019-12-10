@@ -21,8 +21,9 @@ void ChromeZoomLevelOTRDelegate::InitHostZoomMap(
   DCHECK(host_zoom_map);
   host_zoom_map_ = host_zoom_map;
 
-  zoom_subscription_ = host_zoom_map_->AddZoomLevelChangedCallback(base::Bind(
-      &ChromeZoomLevelOTRDelegate::OnZoomLevelChanged, base::Unretained(this)));
+  zoom_subscription_ = host_zoom_map_->AddZoomLevelChangedCallback(
+      base::BindRepeating(&ChromeZoomLevelOTRDelegate::OnZoomLevelChanged,
+                          base::Unretained(this)));
 }
 
 void ChromeZoomLevelOTRDelegate::OnZoomLevelChanged(

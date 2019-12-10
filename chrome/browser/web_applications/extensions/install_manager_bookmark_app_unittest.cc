@@ -396,12 +396,7 @@ TEST_P(InstallManagerBookmarkAppInstallableSiteTest,
           web_contents(), kAppUrl, kAppUrl.spec(),
           AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN)
           .is_null());
-
-  if (GetParam() == web_app::ForInstallableSite::kYes) {
-    EXPECT_EQ(GURL(kAppScope), GetScopeURLFromBookmarkApp(extension));
-  } else {
-    EXPECT_EQ(GURL(), GetScopeURLFromBookmarkApp(extension));
-  }
+  EXPECT_EQ(GURL(kAppScope), GetScopeURLFromBookmarkApp(extension));
 }
 
 TEST_P(InstallManagerBookmarkAppInstallableSiteTest,
@@ -451,12 +446,7 @@ TEST_P(InstallManagerBookmarkAppInstallableSiteTest,
   EXPECT_TRUE(extension->from_bookmark());
   EXPECT_EQ(kAppTitle, extension->name());
   EXPECT_EQ(kAppUrl, AppLaunchInfo::GetLaunchWebURL(extension));
-
-  if (GetParam() == web_app::ForInstallableSite::kYes) {
-    EXPECT_EQ(GURL(kAppScope), GetScopeURLFromBookmarkApp(extension));
-  } else {
-    EXPECT_EQ(GURL(), GetScopeURLFromBookmarkApp(extension));
-  }
+  EXPECT_EQ(GURL(kAppScope), GetScopeURLFromBookmarkApp(extension));
 }
 
 TEST_P(InstallManagerBookmarkAppInstallableSiteTest,
@@ -471,11 +461,7 @@ TEST_P(InstallManagerBookmarkAppInstallableSiteTest,
 
   const Extension* extension = InstallWebAppFromManifestWithFallback();
 
-  if (GetParam() == web_app::ForInstallableSite::kYes) {
-    EXPECT_EQ(GURL(kAppDefaultScope), GetScopeURLFromBookmarkApp(extension));
-  } else {
-    EXPECT_EQ(GURL(), GetScopeURLFromBookmarkApp(extension));
-  }
+  EXPECT_EQ(GURL(kAppDefaultScope), GetScopeURLFromBookmarkApp(extension));
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

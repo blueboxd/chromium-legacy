@@ -250,8 +250,8 @@ void OffTheRecordProfileImpl::TrackZoomLevelsFromParent() {
   // Observe parent profile's HostZoomMap changes so they can also be applied
   // to this profile's HostZoomMap.
   track_zoom_subscription_ = parent_host_zoom_map->AddZoomLevelChangedCallback(
-      base::Bind(&OffTheRecordProfileImpl::OnParentZoomLevelChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&OffTheRecordProfileImpl::OnParentZoomLevelChanged,
+                          base::Unretained(this)));
   if (!profile_->GetZoomLevelPrefs())
     return;
 

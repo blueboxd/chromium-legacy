@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/sharing/fake_device_info.h"
 #include "chrome/browser/sharing/mock_sharing_service.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
@@ -24,6 +25,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+using ::testing::Property;
 
 namespace {
 
@@ -78,21 +81,17 @@ MATCHER_P(ProtoEquals, message, "") {
 
 // Check the call to sharing service when a device is chosen.
 TEST_F(SharedClipboardUiControllerTest, OnDeviceChosen) {
-  syncer::DeviceInfo device_info(kReceiverGuid, kReceiverName, "chrome_version",
-                                 "user_agent",
-                                 sync_pb::SyncEnums_DeviceType_TYPE_PHONE,
-                                 "device_id", base::SysInfo::HardwareInfo(),
-                                 /*last_updated_timestamp=*/base::Time::Now(),
-                                 /*send_tab_to_self_receiving_enabled=*/false,
-                                 /*sharing_info=*/base::nullopt);
+  std::unique_ptr<syncer::DeviceInfo> device_info =
+      CreateFakeDeviceInfo(kReceiverGuid, kReceiverName);
 
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_shared_clipboard_message()->set_text(kExpectedText);
-  EXPECT_CALL(*service(),
-              SendMessageToDevice(testing::Eq(kReceiverGuid),
-                                  testing::Eq(kSendMessageTimeout),
-                                  ProtoEquals(sharing_message), testing::_));
-  controller_->OnDeviceChosen(device_info);
+  EXPECT_CALL(
+      *service(),
+      SendMessageToDevice(Property(&syncer::DeviceInfo::guid, kReceiverGuid),
+                          testing::Eq(kSendMessageTimeout),
+                          ProtoEquals(sharing_message), testing::_));
+  controller_->OnDeviceChosen(*device_info.get());
 }
 
 // Check the call to sharing service to get all synced devices.

@@ -209,6 +209,17 @@ void LogSharingMessageAckTime(chrome_browser_sharing::MessageType message_type,
   }
 }
 
+void LogSharingDeviceLastUpdatedAge(
+    chrome_browser_sharing::MessageType message_type,
+    base::TimeDelta age) {
+  constexpr char kBase[] = "Sharing.DeviceLastUpdatedAge";
+  int hours = age.InHours();
+  base::UmaHistogramCounts1000(kBase, hours);
+  base::UmaHistogramCounts1000(
+      base::StrCat({kBase, ".", MessageTypeToMessageSuffix(message_type)}),
+      hours);
+}
+
 void LogSharingDialogShown(SharingFeatureName feature, SharingDialogType type) {
   base::UmaHistogramEnumeration(
       base::StrCat({"Sharing.", GetEnumStringValue(feature), "DialogShown"}),

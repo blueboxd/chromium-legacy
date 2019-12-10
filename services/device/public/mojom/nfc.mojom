@@ -65,11 +65,6 @@ struct NDEFMessage {
   // The body of the NDEFMessage is a collection of NDEFRecord objects.
   array<NDEFRecord> data;
 
-  // The |url| field is an ASCII serialized origin, optionally followed by a URL
-  // path. It represents Web NFC id, that can be used for matching Web NFC
-  // content with the filter specified by |url| field in NDEFScanOptions.
-  string? url;
-
   // Maximum size of NFC message that can be sent over IPC is 32KB.
   const uint32 kMaxSize = 32768;
 };

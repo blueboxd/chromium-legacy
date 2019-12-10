@@ -101,85 +101,110 @@ AXLanguageDetectionManager::AXLanguageDetectionManager()
                                       kShortTextIdentifierMaxByteLength) {}
 AXLanguageDetectionManager::~AXLanguageDetectionManager() = default;
 
-// Detect language for a subtree rooted at the given node.
+// Detect language for a subtree rooted at the given subtree_root.
+void AXLanguageDetectionManager::DetectLanguage(AXNode* subtree_root) {
+  TRACE_EVENT0("accessibility", "AXLanguageInfo::DetectLanguage");
+  DCHECK(subtree_root);
+  if (!::switches::IsExperimentalAccessibilityLanguageDetectionEnabled()) {
+    return;
+  }
+
+  DetectLanguageForSubtree(subtree_root);
+}
+
+// Detect language for a subtree rooted at the given subtree_root.
+// Will not check feature flag.
 void AXLanguageDetectionManager::DetectLanguageForSubtree(
     AXNode* subtree_root) {
-  TRACE_EVENT0("accessibility", "AXLanguageInfo::DetectLanguageForSubtree");
+  // Only perform detection for kStaticText(s).
+  //
+  // Do not visit the children of kStaticText(s) as they don't have
+  // interesting children for language detection.
+  //
+  // Since kInlineTextBox(es) contain text from their parent, any detection on
+  // them is redundant. Instead they can inherit the detected language.
+  if (subtree_root->data().role == ax::mojom::Role::kStaticText) {
+    DetectLanguageForNode(subtree_root);
+  } else {
+    // Otherwise, recurse into children for detection.
+    for (AXNode* child : subtree_root->children()) {
+      DetectLanguageForSubtree(child);
+    }
+  }
+}
+
+// Detect language for a single node.
+// Will not descend into children.
+// Will not check feature flag.
+void AXLanguageDetectionManager::DetectLanguageForNode(AXNode* node) {
+  // TODO(chrishall): implement strategy for nodes which are too small to get
+  // reliable language detection results. Consider combination of
+  // concatenation and bubbling up results.
+  auto text = node->GetStringAttribute(ax::mojom::StringAttribute::kName);
+
+  // FindTopNMostFreqLangs will pad the results with
+  // NNetLanguageIdentifier::kUnknown in order to reach the requested number
+  // of languages, this means we cannot rely on the results' length and we
+  // have to filter the results.
+  const auto results = language_identifier_.FindTopNMostFreqLangs(
+      text, kMaxDetectedLanguagesPerSpan);
+
+  std::vector<std::string> reliable_results;
+
+  for (const auto res : results) {
+    // The output of FindTopNMostFreqLangs is already sorted by byte count,
+    // this seems good enough for now.
+    // Only consider results which are 'reliable', this will also remove
+    // 'unknown'.
+    if (res.is_reliable) {
+      reliable_results.push_back(res.language);
+    }
+  }
+
+  // Only allocate a(n) LanguageInfo if we have results worth keeping.
+  if (reliable_results.size()) {
+    AXLanguageInfo* lang_info = node->GetLanguageInfo();
+    if (lang_info) {
+      lang_info->detected_languages.clear();
+    } else {
+      node->SetLanguageInfo(std::make_unique<AXLanguageInfo>());
+      lang_info = node->GetLanguageInfo();
+    }
+
+    lang_info->detected_languages = std::move(reliable_results);
+    lang_info_stats_.Add(lang_info->detected_languages);
+  }
+}
+
+// Label language for each node in the subtree rooted at the given subtree_root.
+// This relies on DetectLanguage having already been run.
+void AXLanguageDetectionManager::LabelLanguage(AXNode* subtree_root) {
+  TRACE_EVENT0("accessibility", "AXLanguageInfo::LabelLanguage");
+
   DCHECK(subtree_root);
+
   if (!::switches::IsExperimentalAccessibilityLanguageDetectionEnabled()) {
     return;
   }
 
-  DetectLanguageForSubtreeInternal(subtree_root);
+  LabelLanguageForSubtree(subtree_root);
 }
 
-// Detect language for a subtree rooted at the given node
-// will not check feature flag.
-void AXLanguageDetectionManager::DetectLanguageForSubtreeInternal(
-    AXNode* node) {
-  if (node->IsText()) {
-    // TODO(chrishall): implement strategy for nodes which are too small to get
-    // reliable language detection results. Consider combination of
-    // concatenation and bubbling up results.
-    auto text = node->GetStringAttribute(ax::mojom::StringAttribute::kName);
-
-    // FindTopNMostFreqLangs will pad the results with
-    // NNetLanguageIdentifier::kUnknown in order to reach the requested number
-    // of languages, this means we cannot rely on the results' length and we
-    // have to filter the results.
-    const auto results = language_identifier_.FindTopNMostFreqLangs(
-        text, kMaxDetectedLanguagesPerSpan);
-
-    std::vector<std::string> reliable_results;
-
-    for (const auto res : results) {
-      // The output of FindTopNMostFreqLangs is already sorted by byte count,
-      // this seems good enough for now.
-      // Only consider results which are 'reliable', this will also remove
-      // 'unknown'.
-      if (res.is_reliable) {
-        reliable_results.push_back(res.language);
-      }
-    }
-
-    // Only allocate a(n) LanguageInfo if we have results worth keeping.
-    if (reliable_results.size()) {
-      AXLanguageInfo* lang_info = node->GetLanguageInfo();
-      if (lang_info) {
-        lang_info->detected_languages.clear();
-      } else {
-        node->SetLanguageInfo(std::make_unique<AXLanguageInfo>());
-        lang_info = node->GetLanguageInfo();
-      }
-
-      lang_info->detected_languages = std::move(reliable_results);
-      lang_info_stats_.Add(lang_info->detected_languages);
-    }
-  }
-
-  // TODO(chrishall): refactor this as textnodes only ever have inline text
-  // boxes as children. This means we don't need to recurse except for
-  // inheritance which can be handled elsewhere.
-  for (AXNode* child : node->children()) {
-    DetectLanguageForSubtreeInternal(child);
-  }
-}
-
-// Label language for each node in the subtree rooted at the given node.
-// This relies on DetectLanguageForSubtree having already been run.
+// Label language for each node in the subtree rooted at the given subtree_root.
+// Will not check feature flag.
 void AXLanguageDetectionManager::LabelLanguageForSubtree(AXNode* subtree_root) {
-  TRACE_EVENT0("accessibility", "AXLanguageInfo::LabelLanguageForSubtree");
+  LabelLanguageForNode(subtree_root);
 
-  DCHECK(subtree_root);
-
-  if (!::switches::IsExperimentalAccessibilityLanguageDetectionEnabled()) {
-    return;
+  // Recurse into children to continue labelling.
+  for (AXNode* child : subtree_root->children()) {
+    LabelLanguageForSubtree(child);
   }
-
-  LabelLanguageForSubtreeInternal(subtree_root);
 }
 
-void AXLanguageDetectionManager::LabelLanguageForSubtreeInternal(AXNode* node) {
+// Detect language for a single node.
+// Will not descend into children.
+// Will not check feature flag.
+void AXLanguageDetectionManager::LabelLanguageForNode(AXNode* node) {
   AXLanguageInfo* lang_info = node->GetLanguageInfo();
 
   // lang_info is only attached by Detect when it thinks a node is interesting,
@@ -213,11 +238,6 @@ void AXLanguageDetectionManager::LabelLanguageForSubtreeInternal(AXNode* node) {
       // LanguageInfo.language, but we can clear the detected results.
       lang_info->detected_languages.clear();
     }
-  }
-
-  // Recurse into children to continue labelling.
-  for (AXNode* child : node->children()) {
-    LabelLanguageForSubtreeInternal(child);
   }
 }
 

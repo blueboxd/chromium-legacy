@@ -234,7 +234,7 @@ void AUHALStream::Start(AudioSourceCallback* callback) {
     // Use a cancellable closure so that if Stop() is called before Start()
     // actually runs, we can cancel the pending start.
     deferred_start_cb_.Reset(
-        base::Bind(&AUHALStream::Start, base::Unretained(this), callback));
+        base::BindOnce(&AUHALStream::Start, base::Unretained(this), callback));
     manager_->GetTaskRunner()->PostDelayedTask(
         FROM_HERE, deferred_start_cb_.callback(),
         base::TimeDelta::FromSeconds(
@@ -308,9 +308,10 @@ OSStatus AUHALStream::Render(AudioUnitRenderActionFlags* flags,
       number_of_frames_requested_ = number_of_frames;
       DVLOG(1) << "Audio frame size changed from " << number_of_frames_
                << " to " << number_of_frames << " adding FIFO to compensate.";
-      audio_fifo_.reset(new AudioPullFifo(
-          params_.channels(), number_of_frames_,
-          base::Bind(&AUHALStream::ProvideInput, base::Unretained(this))));
+      audio_fifo_.reset(
+          new AudioPullFifo(params_.channels(), number_of_frames_,
+                            base::BindRepeating(&AUHALStream::ProvideInput,
+                                                base::Unretained(this))));
     }
   }
 

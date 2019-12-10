@@ -4,7 +4,7 @@
 
 #include "ash/system/unified/ime_mode_view.h"
 
-#include "ash/ime/ime_controller.h"
+#include "ash/ime/ime_controller_impl.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -83,7 +83,7 @@ void ImeModeView::Update() {
     return;
   }
 
-  ImeController* ime_controller = Shell::Get()->ime_controller();
+  ImeControllerImpl* ime_controller = Shell::Get()->ime_controller();
 
   size_t ime_count = ime_controller->available_imes().size();
   SetVisible(!ime_menu_on_shelf_activated_ &&

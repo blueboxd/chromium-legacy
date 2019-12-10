@@ -269,8 +269,12 @@ void RootView::AnnounceText(const base::string16& text) {
   NOTREACHED();
 #else
   DCHECK(GetWidget());
-  if (!announce_view_)
+  DCHECK(GetContentsView());
+  if (!announce_view_) {
     announce_view_ = AddChildView(std::make_unique<AnnounceTextView>());
+    static_cast<FillLayout*>(GetLayoutManager())
+        ->SetChildViewIgnoredByLayout(announce_view_, true);
+  }
   announce_view_->Announce(text);
 #endif
 }
@@ -645,14 +649,6 @@ void RootView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 void RootView::UpdateParentLayer() {
   if (layer())
     ReparentLayer(widget_->GetLayer());
-}
-
-void RootView::Layout() {
-  View::Layout();
-  // TODO(crbug.com/1026461): when FillLayout derives from LayoutManagerBase,
-  // just ignore the announce view instead of forcing it to zero size.
-  if (announce_view_)
-    announce_view_->SetSize({0, 0});
 }
 
 ////////////////////////////////////////////////////////////////////////////////

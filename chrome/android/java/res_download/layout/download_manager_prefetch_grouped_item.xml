@@ -40,7 +40,7 @@
         android:layout_marginTop="-12dp"
         android:layout_alignParentEnd="true" />
 
-    <TextView
+    <org.chromium.ui.widget.TextViewWithLeading
         android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -48,11 +48,12 @@
         android:layout_toStartOf="@+id/more"
         android:layout_marginStart="16dp"
         android:layout_alignTop="@id/thumbnail"
-        android:maxLines="3"
+        android:maxLines="2"
         android:ellipsize="end"
-        android:textAppearance="@style/TextAppearance.BlackBodyDefault"
+        android:textAppearance="@style/TextAppearance.BlackTitle1"
         android:textAlignment="viewStart"
-        app:layout_gravity="fill_horizontal" />
+        app:leading="@dimen/text_size_large_leading"
+        app:layout_gravity="fill_horizontal"/>
 
     <TextView
         android:id="@+id/timestamp"
@@ -60,7 +61,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/title"
         android:layout_alignStart="@id/title"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="10dp"
         android:maxLines="1"
         android:ellipsize="end"
         android:textAppearance="@style/TextAppearance.BlackCaption"

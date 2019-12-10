@@ -116,22 +116,22 @@ void CastBrowserMetrics::Finalize() {
 }
 
 void CastBrowserMetrics::CollectFinalMetricsForLog(
-    const base::Closure& done_callback) {
+    base::OnceClosure done_callback) {
   // Asynchronously fetch metrics data from child processes. Since this method
   // is called on log upload, metrics that occur between log upload and child
   // process termination will not be uploaded.
   content::FetchHistogramsAsynchronously(
-      base::ThreadTaskRunnerHandle::Get(), done_callback,
+      base::ThreadTaskRunnerHandle::Get(), std::move(done_callback),
       base::TimeDelta::FromSeconds(kMetricsFetchTimeoutSeconds));
 }
 
-void CastBrowserMetrics::ProcessExternalEvents(const base::Closure& cb) {
+void CastBrowserMetrics::ProcessExternalEvents(base::OnceClosure cb) {
 #if defined(OS_LINUX)
   external_metrics_->ProcessExternalEvents(
-      base::Bind(&ExternalMetrics::ProcessExternalEvents,
-                 base::Unretained(platform_metrics_), cb));
+      base::BindOnce(&ExternalMetrics::ProcessExternalEvents,
+                     base::Unretained(platform_metrics_), std::move(cb)));
 #else
-  cb.Run();
+  std::move(cb).Run();
 #endif  // defined(OS_LINUX)
 }
 

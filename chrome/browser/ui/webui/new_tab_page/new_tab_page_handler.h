@@ -7,22 +7,50 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
+#include "components/ntp_tiles/most_visited_sites.h"
+#include "components/ntp_tiles/ntp_tile.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
+class GURL;
+class Profile;
+
 class NewTabPageHandler : public content::WebContentsObserver,
+                          public ntp_tiles::MostVisitedSites::Observer,
                           public new_tab_page::mojom::PageHandler {
  public:
-  NewTabPageHandler(
-      mojo::PendingReceiver<new_tab_page::mojom::PageHandler>
-          pending_page_handler,
-      mojo::PendingRemote<new_tab_page::mojom::Page> pending_page);
+  NewTabPageHandler(mojo::PendingReceiver<new_tab_page::mojom::PageHandler>
+                        pending_page_handler,
+                    mojo::PendingRemote<new_tab_page::mojom::Page> pending_page,
+                    Profile* profile);
   ~NewTabPageHandler() override;
 
+  // new_tab_page::mojom::PageHandler:
+  void AddMostVisitedTile(const GURL& url,
+                          const std::string& title,
+                          AddMostVisitedTileCallback callback) override;
+  void DeleteMostVisitedTile(const GURL& url,
+                             DeleteMostVisitedTileCallback callback) override;
+  void RestoreMostVisitedDefaults() override;
+  void UpdateMostVisitedTile(const GURL& url,
+                             const GURL& new_url,
+                             const std::string& new_title,
+                             UpdateMostVisitedTileCallback callback) override;
+  void UndoMostVisitedTileAction() override;
+
  private:
+  // ntp_tiles::MostVisitedSites::Observer implementation.
+  void OnURLsAvailable(
+      const std::map<ntp_tiles::SectionType, ntp_tiles::NTPTilesVector>&
+          sections) override;
+  void OnIconMadeAvailable(const GURL& site_url) override {}
+
+  // Data source for NTP tiles (aka Most Visited tiles). May be null.
+  std::unique_ptr<ntp_tiles::MostVisitedSites> most_visited_sites_;
+
   mojo::Remote<new_tab_page::mojom::Page> page_;
 
   mojo::Receiver<new_tab_page::mojom::PageHandler> receiver_;

@@ -76,6 +76,9 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   FrameTreeNode* frame_tree_node() { return frame_tree_node_; }
 
+  void OnNavigationRequestWillBeSent(
+      const NavigationRequest& navigation_request);
+
   // DevToolsAgentHost overrides.
   void DisconnectWebContents() override;
   void ConnectWebContents(WebContents* web_contents) override;

@@ -34,8 +34,8 @@ MediaRouterDesktop::~MediaRouterDesktop() = default;
 void MediaRouterDesktop::BindToReceiver(
     const extensions::Extension* extension,
     content::BrowserContext* context,
-    mojo::PendingReceiver<mojom::MediaRouter> receiver,
-    content::RenderFrameHost* source) {
+    content::RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<mojom::MediaRouter> receiver) {
   MediaRouterDesktop* impl = static_cast<MediaRouterDesktop*>(
       MediaRouterFactory::GetApiForBrowserContext(context));
   DCHECK(impl);

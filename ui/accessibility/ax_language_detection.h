@@ -150,13 +150,13 @@ class AX_EXPORT AXLanguageDetectionManager {
   // This is the first pass in detection and labelling.
   // This only detects the language, it does not label it, for that see
   //  LabelLanguageForSubtree.
-  void DetectLanguageForSubtree(AXNode* subtree_root);
+  void DetectLanguage(AXNode* subtree_root);
 
   // Label language for each node in the subtree rooted at the given node.
   // This is the second pass in detection and labelling.
   // This will label the language, but relies on the earlier detection phase
   // having already completed.
-  void LabelLanguageForSubtree(AXNode* subtree_root);
+  void LabelLanguage(AXNode* subtree_root);
 
   // Sub-node language detection for a given string attribute.
   // For example, if a node has name: "My name is Fred", then calling
@@ -169,8 +169,14 @@ class AX_EXPORT AXLanguageDetectionManager {
  private:
   AXLanguageInfoStats lang_info_stats_;
 
-  void DetectLanguageForSubtreeInternal(AXNode* subtree_root);
-  void LabelLanguageForSubtreeInternal(AXNode* subtree_root);
+  // Perform detection for subtree rooted at subtree_root.
+  void DetectLanguageForSubtree(AXNode* subtree_root);
+  // Perform detection for node. Will not descend into children.
+  void DetectLanguageForNode(AXNode* node);
+  // Perform labelling for subtree rooted at subtree_root.
+  void LabelLanguageForSubtree(AXNode* subtree_root);
+  // Perform labelling for node. Will not descend into children.
+  void LabelLanguageForNode(AXNode* node);
 
   // This language identifier is constructed with a default minimum byte length
   // of chrome_lang_id::NNetLanguageIdentifier::kMinNumBytesToConsider and is

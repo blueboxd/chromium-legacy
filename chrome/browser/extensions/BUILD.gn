@@ -464,6 +464,8 @@ jumbo_static_library("extensions") {
     "chrome_extensions_browser_api_provider.h",
     "chrome_extensions_browser_client.cc",
     "chrome_extensions_browser_client.h",
+    "chrome_extensions_browser_interface_binders.cc",
+    "chrome_extensions_browser_interface_binders.h",
     "chrome_extensions_interface_registration.cc",
     "chrome_extensions_interface_registration.h",
     "chrome_kiosk_delegate.h",

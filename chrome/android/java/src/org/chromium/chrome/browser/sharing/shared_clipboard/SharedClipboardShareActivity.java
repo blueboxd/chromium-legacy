@@ -128,7 +128,8 @@ public class SharedClipboardShareActivity
         SharedClipboardMetrics.recordDeviceClick(position);
         SharedClipboardMetrics.recordTextSize(text.length());
 
-        SharedClipboardMessageHandler.showSendingNotification(device.guid, device.clientName, text);
+        SharedClipboardMessageHandler.showSendingNotification(
+                device.guid, device.clientName, device.lastUpdatedTimestampMillis, text);
         finish();
     }
 }

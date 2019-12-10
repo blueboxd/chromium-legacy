@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
@@ -243,6 +244,51 @@ void UseCounterCallback(v8::Isolate* isolate,
     case v8::Isolate::kSharedArrayBufferConstructed:
       blink_feature = WebFeature::kV8SharedArrayBufferConstructed;
       break;
+    // The following 9 counters differ from the rest, because they're reported
+    // via UKM using the instance counter mechanism. Using the typical use
+    // counter infrastructure won't work, because it doesn't work on detached
+    // windows.
+    // TODO(bartekn,chromium:1018156): Remove once not needed.
+    case v8::Isolate::kCallInDetachedWindowByNavigation:
+      InstanceCounters::IncrementCounter(
+          InstanceCounters::kV8CallInDetachedWindowByNavigationCounter);
+      return;
+    case v8::Isolate::kCallInDetachedWindowByNavigationAfter10s:
+      InstanceCounters::IncrementCounter(
+          InstanceCounters::kV8CallInDetachedWindowByNavigationAfter10sCounter);
+      return;
+    case v8::Isolate::kCallInDetachedWindowByNavigationAfter1min:
+      InstanceCounters::IncrementCounter(
+          InstanceCounters::
+              kV8CallInDetachedWindowByNavigationAfter1minCounter);
+      return;
+    case v8::Isolate::kCallInDetachedWindowByClosing:
+      InstanceCounters::IncrementCounter(
+          InstanceCounters::kV8CallInDetachedWindowByClosingCounter);
+      return;
+    case v8::Isolate::kCallInDetachedWindowByClosingAfter10s:
+      InstanceCounters::IncrementCounter(
+          InstanceCounters::kV8CallInDetachedWindowByClosingAfter10sCounter);
+      return;
+    case v8::Isolate::kCallInDetachedWindowByClosingAfter1min:
+      InstanceCounters::IncrementCounter(
+          InstanceCounters::kV8CallInDetachedWindowByClosingAfter1minCounter);
+      return;
+    case v8::Isolate::kCallInDetachedWindowByOtherReason:
+      InstanceCounters::IncrementCounter(
+          InstanceCounters::kV8CallInDetachedWindowByOtherReasonCounter);
+      return;
+    case v8::Isolate::kCallInDetachedWindowByOtherReasonAfter10s:
+      InstanceCounters::IncrementCounter(
+          InstanceCounters::
+              kV8CallInDetachedWindowByOtherReasonAfter10sCounter);
+      return;
+    case v8::Isolate::kCallInDetachedWindowByOtherReasonAfter1min:
+      InstanceCounters::IncrementCounter(
+          InstanceCounters::
+              kV8CallInDetachedWindowByOtherReasonAfter1minCounter);
+      return;
+    // End of special case.
     default:
       // This can happen if V8 has added counters that this version of Blink
       // does not know about. It's harmless.

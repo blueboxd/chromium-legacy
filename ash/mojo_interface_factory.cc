@@ -8,7 +8,7 @@
 
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/display/cros_display_config.h"
-#include "ash/ime/ime_controller.h"
+#include "ash/ime/ime_controller_impl.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/media/media_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
@@ -35,12 +35,6 @@ void BindCrosDisplayConfigControllerReceiverOnMainThread(
     Shell::Get()->cros_display_config()->BindReceiver(std::move(receiver));
 }
 
-void BindImeControllerReceiverOnMainThread(
-    mojo::PendingReceiver<mojom::ImeController> receiver) {
-  if (Shell::HasInstance())
-    Shell::Get()->ime_controller()->BindReceiver(std::move(receiver));
-}
-
 void BindTrayActionReceiverOnMainThread(
     mojo::PendingReceiver<mojom::TrayAction> receiver) {
   if (Shell::HasInstance())
@@ -54,9 +48,6 @@ void RegisterInterfaces(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
   registry->AddInterface(
       base::BindRepeating(&BindCrosDisplayConfigControllerReceiverOnMainThread),
-      main_thread_task_runner);
-  registry->AddInterface(
-      base::BindRepeating(&BindImeControllerReceiverOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindTrayActionReceiverOnMainThread),

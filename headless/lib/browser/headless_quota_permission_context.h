@@ -17,7 +17,7 @@ class HeadlessQuotaPermissionContext : public content::QuotaPermissionContext {
   // The callback will be dispatched on the IO thread.
   void RequestQuotaPermission(const content::StorageQuotaParams& params,
                               int render_process_id,
-                              const PermissionCallback& callback) override;
+                              PermissionCallback callback) override;
 
  private:
   ~HeadlessQuotaPermissionContext() override;

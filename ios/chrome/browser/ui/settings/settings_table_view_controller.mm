@@ -15,6 +15,7 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #import "components/prefs/ios/pref_observer_bridge.h"
+#include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/util.h"
 #include "components/signin/public/base/signin_metrics.h"
@@ -221,8 +222,9 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   BOOL _settingsHasBeenDismissed;
 }
 
-@property(nonatomic, readonly, weak) id<ApplicationCommands, BrowserCommands>
-    dispatcher;
+@property(nonatomic, readonly, weak)
+    id<ApplicationCommands, BrowserCommands, BrowsingDataCommands>
+        dispatcher;
 
 // The SigninInteractionCoordinator that presents Sign In UI for the
 // Settings page.
@@ -242,9 +244,11 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 
 #pragma mark Initialization
 
-- (instancetype)initWithBrowser:(Browser*)browser
-                     dispatcher:
-                         (id<ApplicationCommands, BrowserCommands>)dispatcher {
+- (instancetype)
+    initWithBrowser:(Browser*)browser
+         dispatcher:
+             (id<ApplicationCommands, BrowserCommands, BrowsingDataCommands>)
+                 dispatcher {
   DCHECK(browser);
   DCHECK(!browser->GetBrowserState()->IsOffTheRecord());
   UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)

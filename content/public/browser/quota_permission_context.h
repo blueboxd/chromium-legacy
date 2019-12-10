@@ -21,12 +21,11 @@ class QuotaPermissionContext
     QUOTA_PERMISSION_RESPONSE_CANCELLED,
   };
 
-  typedef base::Callback<void(QuotaPermissionResponse)> PermissionCallback;
+  using PermissionCallback = base::OnceCallback<void(QuotaPermissionResponse)>;
 
-  virtual void RequestQuotaPermission(
-      const StorageQuotaParams& params,
-      int render_process_id,
-      const PermissionCallback& callback) = 0;
+  virtual void RequestQuotaPermission(const StorageQuotaParams& params,
+                                      int render_process_id,
+                                      PermissionCallback callback) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<QuotaPermissionContext>;

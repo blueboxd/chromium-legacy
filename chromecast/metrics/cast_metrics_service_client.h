@@ -67,7 +67,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient,
   // Processes all events from shared file. This should be used to consume all
   // events in the file before shutdown. This function is safe to call from any
   // thread.
-  void ProcessExternalEvents(const base::Closure& cb);
+  void ProcessExternalEvents(base::OnceClosure cb);
 
   void InitializeMetricsService();
   void StartMetricsService();
@@ -81,7 +81,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient,
   bool GetBrand(std::string* brand_code) override;
   ::metrics::SystemProfileProto::Channel GetChannel() override;
   std::string GetVersionString() override;
-  void CollectFinalMetricsForLog(const base::Closure& done_callback) override;
+  void CollectFinalMetricsForLog(base::OnceClosure done_callback) override;
   GURL GetMetricsServerUrl() override;
   std::unique_ptr<::metrics::MetricsLogUploader> CreateUploader(
       const GURL& server_url,
@@ -102,9 +102,8 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient,
 
   PrefService* pref_service() const { return pref_service_; }
   void SetCallbacks(
-      base::RepeatingCallback<void(const base::Closure&)>
-          collect_final_metrics_cb,
-      base::RepeatingCallback<void(const base::Closure&)> external_events_cb);
+      base::RepeatingCallback<void(base::OnceClosure)> collect_final_metrics_cb,
+      base::RepeatingCallback<void(base::OnceClosure)> external_events_cb);
 
  private:
   std::unique_ptr<::metrics::ClientInfo> LoadClientInfo();
@@ -121,8 +120,8 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient,
   std::unique_ptr<::metrics::MetricsService> metrics_service_;
   std::unique_ptr<::metrics::EnabledStateProvider> enabled_state_provider_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-  base::RepeatingCallback<void(const base::Closure&)> collect_final_metrics_cb_;
-  base::RepeatingCallback<void(const base::Closure&)> external_events_cb_;
+  base::RepeatingCallback<void(base::OnceClosure)> collect_final_metrics_cb_;
+  base::RepeatingCallback<void(base::OnceClosure)> external_events_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMetricsServiceClient);
 };

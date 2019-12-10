@@ -14,6 +14,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.MenuOrKeyboardActionController;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
+import org.chromium.chrome.browser.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.widget.ScrimView;
@@ -66,14 +67,17 @@ public class DirectActionInitializer {
      * @param goBackAction Implementation of the "go_back" action, usually {@link
      *         android.app.Activity#onBackPressed}.
      * @param tabModelSelector The activity's {@link TabModelSelector}
+     * @param findToolbarManager Manager to use for the "find_in_page" action, if it exists
      * @param bottomSheetController Controller for the activity's bottom sheet, if it exists
      * @param scrim The activity's scrim view, if it exists
      */
     public void registerCommonChromeActions(Context context, @ActivityType int activityType,
             MenuOrKeyboardActionController actionController, Runnable goBackAction,
-            TabModelSelector tabModelSelector,
+            TabModelSelector tabModelSelector, @Nullable FindToolbarManager findToolbarManager,
             @Nullable BottomSheetController bottomSheetController, ScrimView scrim) {
         mCoordinator.register(new GoBackDirectActionHandler(goBackAction));
+        mCoordinator.register(
+                new FindInPageDirectActionHandler(tabModelSelector, findToolbarManager));
 
         registerMenuHandlerIfNecessary(actionController, tabModelSelector)
                 .whitelistActions(R.id.forward_menu_id, R.id.reload_menu_id);

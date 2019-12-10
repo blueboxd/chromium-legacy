@@ -323,11 +323,13 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
   // Currently language detection only runs once for initial load complete, any
   // content loaded after this will not have language detection performed for
   // it.
+  //
+  // TODO(chrishall): We may want to run this more often for dynamic content.
   for (const auto& targeted_event : event_generator_) {
     if (targeted_event.event_params.event ==
         ui::AXEventGenerator::Event::LOAD_COMPLETE) {
-      tree_.language_detection_manager->DetectLanguageForSubtree(tree_.root());
-      tree_.language_detection_manager->LabelLanguageForSubtree(tree_.root());
+      tree_.language_detection_manager->DetectLanguage(tree_.root());
+      tree_.language_detection_manager->LabelLanguage(tree_.root());
       break;
     }
   }

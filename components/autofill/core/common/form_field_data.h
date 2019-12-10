@@ -63,9 +63,6 @@ struct FormFieldData {
     bool operator()(const FormFieldData& a, const FormFieldData& b) const;
   };
 
-  static constexpr uint32_t kNotSetFormControlRendererId =
-      std::numeric_limits<uint32_t>::max();
-
   FormFieldData();
   FormFieldData(const FormFieldData&);
   FormFieldData& operator=(const FormFieldData&);
@@ -147,7 +144,7 @@ struct FormFieldData {
   // Unique renderer id returned by WebFormElement::UniqueRendererFormId(). It
   // is not persistent between page loads, so it is not saved and not used in
   // comparison in SameFieldAs().
-  uint32_t unique_renderer_id = kNotSetFormControlRendererId;
+  uint32_t unique_renderer_id = std::numeric_limits<uint32_t>::max();
 
   // The ax node id of the form control in the accessibility tree.
   int32_t form_control_ax_id = 0;

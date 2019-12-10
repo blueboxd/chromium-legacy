@@ -214,9 +214,9 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveResponse(
     return;
   }
 
-  WebHTTPHeaderSet exposed_headers =
+  HTTPHeaderSet exposed_headers =
       cors::ExtractCorsExposedHeaderNamesList(credentials_mode_, response);
-  WebHTTPHeaderSet blocked_headers;
+  HTTPHeaderSet blocked_headers;
   for (const auto& header : response.HttpHeaderFields()) {
     if (FetchUtils::IsForbiddenResponseHeaderName(header.key) ||
         (!cors::IsCorsSafelistedResponseHeader(header.key) &&

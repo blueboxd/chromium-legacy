@@ -18,7 +18,6 @@ NDEFMessage* NDEFMessage::Create(const ExecutionContext* execution_context,
                                  const NDEFMessageInit* init,
                                  ExceptionState& exception_state) {
   NDEFMessage* message = MakeGarbageCollected<NDEFMessage>();
-  message->url_ = init->url();
   if (init->hasRecords()) {
     for (const NDEFRecordInit* record_init : init->records()) {
       NDEFRecord* record =
@@ -77,15 +76,10 @@ NDEFMessage* NDEFMessage::Create(const ExecutionContext* execution_context,
 
 NDEFMessage::NDEFMessage() = default;
 
-NDEFMessage::NDEFMessage(const device::mojom::blink::NDEFMessage& message)
-    : url_(message.url) {
+NDEFMessage::NDEFMessage(const device::mojom::blink::NDEFMessage& message) {
   for (wtf_size_t i = 0; i < message.data.size(); ++i) {
     records_.push_back(MakeGarbageCollected<NDEFRecord>(*message.data[i]));
   }
-}
-
-const String& NDEFMessage::url() const {
-  return url_;
 }
 
 const HeapVector<Member<NDEFRecord>>& NDEFMessage::records() const {

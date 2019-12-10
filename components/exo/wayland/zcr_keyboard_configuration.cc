@@ -8,7 +8,7 @@
 #include <wayland-server-core.h>
 #include <wayland-server-protocol-core.h>
 
-#include "ash/ime/ime_controller.h"
+#include "ash/ime/ime_controller_impl.h"
 #include "ash/shell.h"
 #include "base/feature_list.h"
 #include "components/exo/keyboard.h"
@@ -27,14 +27,15 @@ namespace {
 class WaylandKeyboardDeviceConfigurationDelegate
     : public KeyboardDeviceConfigurationDelegate,
       public KeyboardObserver,
-      public ash::ImeController::Observer {
+      public ash::ImeControllerImpl::Observer {
  public:
   WaylandKeyboardDeviceConfigurationDelegate(wl_resource* resource,
                                              Keyboard* keyboard)
       : resource_(resource), keyboard_(keyboard) {
     keyboard_->SetDeviceConfigurationDelegate(this);
     keyboard_->AddObserver(this);
-    ash::ImeController* ime_controller = ash::Shell::Get()->ime_controller();
+    ash::ImeControllerImpl* ime_controller =
+        ash::Shell::Get()->ime_controller();
     ime_controller->AddObserver(this);
     OnKeyboardLayoutNameChanged(ime_controller->keyboard_layout_name());
   }
@@ -61,7 +62,7 @@ class WaylandKeyboardDeviceConfigurationDelegate
             : ZCR_KEYBOARD_DEVICE_CONFIGURATION_V1_KEYBOARD_TYPE_VIRTUAL);
   }
 
-  // Overridden from ImeController::Observer:
+  // Overridden from ImeControllerImpl::Observer:
   void OnCapsLockChanged(bool enabled) override {}
 
   void OnKeyboardLayoutNameChanged(const std::string& layout_name) override {

@@ -715,7 +715,7 @@ AudioOutputStream* AudioManagerMac::MakeLowLatencyOutputStream(
     // fire the callbacks during stream creation, leading to re-entrancy issues
     // otherwise.  See http://crbug.com/349604
     output_device_listener_.reset(
-        new AudioDeviceListenerMac(BindToCurrentLoop(base::Bind(
+        new AudioDeviceListenerMac(BindToCurrentLoop(base::BindRepeating(
             &AudioManagerMac::HandleDeviceChanges, base::Unretained(this)))));
     device_listener_first_init = true;
   }

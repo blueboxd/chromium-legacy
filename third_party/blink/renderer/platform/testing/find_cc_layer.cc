@@ -35,7 +35,7 @@ const cc::Layer* CcLayerByCcElementId(const cc::Layer* root,
   return root->layer_tree_host()->LayerByElementId(element_id);
 }
 
-const cc::Layer* CcLayerByScrollElementId(
+const cc::Layer* ScrollingContentsCcLayerByScrollElementId(
     const cc::Layer* root,
     const CompositorElementId& scroll_element_id) {
   const auto& scroll_tree =

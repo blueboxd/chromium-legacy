@@ -6,15 +6,14 @@
 
 #include <vector>
 
+#include "ash/ime/ime_controller_impl.h"
 #include "ash/shell.h"
-#include "ash/ime/ime_controller.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/test/ash_test_base.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-
 
 namespace ash {
 
@@ -62,17 +61,16 @@ class IMEFeaturePodControllerTest : public NoSessionAshTestBase {
   }
 
   void RefreshImeController() {
-    std::vector<mojom::ImeInfoPtr> available_ime_ptrs;
+    std::vector<ImeInfo> available_imes;
     for (const auto& ime : available_imes_)
-      available_ime_ptrs.push_back(ime.Clone());
+      available_imes.push_back(ime);
 
-    std::vector<mojom::ImeMenuItemPtr> menu_item_ptrs;
+    std::vector<ImeMenuItem> menu_items;
     for (const auto& item : menu_items_)
-      menu_item_ptrs.push_back(item.Clone());
+      menu_items_.push_back(item);
 
-    Shell::Get()->ime_controller()->RefreshIme(current_ime_.id,
-                                              std::move(available_ime_ptrs),
-                                              std::move(menu_item_ptrs));
+    Shell::Get()->ime_controller()->RefreshIme(
+        current_ime_.id, std::move(available_imes), std::move(menu_items));
   }
 
  private:
@@ -82,9 +80,9 @@ class IMEFeaturePodControllerTest : public NoSessionAshTestBase {
   std::unique_ptr<FeaturePodButton> button_;
 
   // IMEs
-  mojom::ImeInfo current_ime_;
-  std::vector<mojom::ImeInfo> available_imes_;
-  std::vector<mojom::ImeMenuItem> menu_items_;
+  ImeInfo current_ime_;
+  std::vector<ImeInfo> available_imes_;
+  std::vector<ImeMenuItem> menu_items_;
 
   DISALLOW_COPY_AND_ASSIGN(IMEFeaturePodControllerTest);
 };

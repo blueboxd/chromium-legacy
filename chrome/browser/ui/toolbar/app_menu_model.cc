@@ -265,7 +265,7 @@ void AppMenuModel::Init() {
 
   browser_zoom_subscription_ =
       zoom::ZoomEventManager::GetForBrowserContext(browser_->profile())
-          ->AddZoomLevelChangedCallback(base::Bind(
+          ->AddZoomLevelChangedCallback(base::BindRepeating(
               &AppMenuModel::OnZoomLevelChanged, base::Unretained(this)));
 
   TabStripModel* tab_strip_model = browser_->tab_strip_model();

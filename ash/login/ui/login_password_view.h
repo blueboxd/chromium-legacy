@@ -6,7 +6,7 @@
 #define ASH_LOGIN_UI_LOGIN_PASSWORD_VIEW_H_
 
 #include "ash/ash_export.h"
-#include "ash/ime/ime_controller.h"
+#include "ash/ime/ime_controller_impl.h"
 #include "ash/login/ui/animated_rounded_image_view.h"
 #include "ash/public/cpp/session/user_info.h"
 #include "base/scoped_observer.h"
@@ -40,7 +40,7 @@ enum class EasyUnlockIconId;
 class ASH_EXPORT LoginPasswordView : public views::View,
                                      public views::ButtonListener,
                                      public views::TextfieldController,
-                                     public ImeController::Observer {
+                                     public ImeControllerImpl::Observer {
  public:
   // TestApi is used for tests to get internal implementation details.
   class ASH_EXPORT TestApi {
@@ -123,7 +123,7 @@ class ASH_EXPORT LoginPasswordView : public views::View,
   bool HandleKeyEvent(views::Textfield* sender,
                       const ui::KeyEvent& key_event) override;
 
-  // ImeController::Observer:
+  // ImeControllerImpl::Observer:
   void OnCapsLockChanged(bool enabled) override;
   void OnKeyboardLayoutNameChanged(const std::string&) override {}
 

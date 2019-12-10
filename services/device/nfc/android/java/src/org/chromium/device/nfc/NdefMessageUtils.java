@@ -33,8 +33,6 @@ public final class NdefMessageUtils {
     public static final String RECORD_TYPE_UNKNOWN = "unknown";
     public static final String RECORD_TYPE_SMART_POSTER = "smart-poster";
 
-    private static final String AUTHOR_RECORD_DOMAIN = "w3.org";
-    private static final String AUTHOR_RECORD_TYPE = "A";
     private static final String ENCODING_UTF8 = "utf-8";
     private static final String ENCODING_UTF16 = "utf-16";
 
@@ -102,8 +100,6 @@ public final class NdefMessageUtils {
             for (int i = 0; i < message.data.length; ++i) {
                 records.add(toNdefRecord(message.data[i]));
             }
-            records.add(createPlatformExternalRecord(AUTHOR_RECORD_DOMAIN, AUTHOR_RECORD_TYPE,
-                    null /* id */, ApiCompatibilityUtils.getBytesUtf8(message.url)));
             android.nfc.NdefRecord[] ndefRecords = new android.nfc.NdefRecord[records.size()];
             records.toArray(ndefRecords);
             return new android.nfc.NdefMessage(ndefRecords);
@@ -119,28 +115,17 @@ public final class NdefMessageUtils {
     public static NdefMessage toNdefMessage(android.nfc.NdefMessage ndefMessage)
             throws UnsupportedEncodingException {
         android.nfc.NdefRecord[] ndefRecords = ndefMessage.getRecords();
-        NdefMessage webNdefMessage = new NdefMessage();
-        List<NdefRecord> nfcRecords = new ArrayList<NdefRecord>();
+        NdefMessage message = new NdefMessage();
+        List<NdefRecord> records = new ArrayList<NdefRecord>();
 
         for (int i = 0; i < ndefRecords.length; i++) {
-            // NFC Forum requires that the domain and type used in an external record are treated as
-            // case insensitive, so we compare while ignoring the case.
-            if ((ndefRecords[i].getTnf() == android.nfc.NdefRecord.TNF_EXTERNAL_TYPE)
-                    && new String(ndefRecords[i].getType(), "UTF-8")
-                                    .compareToIgnoreCase(
-                                            AUTHOR_RECORD_DOMAIN + ":" + AUTHOR_RECORD_TYPE)
-                            == 0) {
-                webNdefMessage.url = new String(ndefRecords[i].getPayload(), "UTF-8");
-                continue;
-            }
-
-            NdefRecord nfcRecord = toNdefRecord(ndefRecords[i]);
-            if (nfcRecord != null) nfcRecords.add(nfcRecord);
+            NdefRecord record = toNdefRecord(ndefRecords[i]);
+            if (record != null) records.add(record);
         }
 
-        webNdefMessage.data = new NdefRecord[nfcRecords.size()];
-        nfcRecords.toArray(webNdefMessage.data);
-        return webNdefMessage;
+        message.data = new NdefRecord[records.size()];
+        records.toArray(message.data);
+        return message;
     }
 
     /**

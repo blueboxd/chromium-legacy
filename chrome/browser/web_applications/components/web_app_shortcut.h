@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_SHORTCUT_H_
 
 #include <memory>
+#include <set>
 #include <string>
-#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
@@ -40,7 +40,8 @@ struct ShortcutInfo {
   base::FilePath profile_path;
   std::string profile_name;
   std::string version_for_display;
-  std::vector<std::string> mime_types;
+  std::set<std::string> file_handler_extensions;
+  std::set<std::string> file_handler_mime_types;
 
  private:
   // Since gfx::ImageFamily |favicon| has a non-thread-safe reference count in

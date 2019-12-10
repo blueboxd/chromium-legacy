@@ -448,10 +448,12 @@ class SharedImageBackingFactoryD3DTest
                                                           context_state_);
     ASSERT_NE(skia_representation, nullptr);
 
-    SharedImageRepresentationSkia::ScopedReadAccess scoped_read_access(
-        skia_representation.get(), nullptr, nullptr);
+    std::unique_ptr<SharedImageRepresentationSkia::ScopedReadAccess>
+        scoped_read_access =
+            skia_representation->BeginScopedReadAccess(nullptr, nullptr);
+    EXPECT_TRUE(scoped_read_access);
 
-    auto* promise_texture = scoped_read_access.promise_image_texture();
+    auto* promise_texture = scoped_read_access->promise_image_texture();
     GrBackendTexture backend_texture = promise_texture->backendTexture();
 
     EXPECT_TRUE(backend_texture.isValid());
@@ -516,9 +518,10 @@ TEST_P(SharedImageBackingFactoryD3DTest, GL_SkiaGL) {
   EXPECT_EQ(expected_target,
             gl_representation->GetTexturePassthrough()->target());
 
-  SharedImageRepresentationGLTexturePassthrough::ScopedAccess scoped_access(
-      gl_representation.get(), GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
-  EXPECT_TRUE(scoped_access.success());
+  std::unique_ptr<SharedImageRepresentationGLTexturePassthrough::ScopedAccess>
+      scoped_access = gl_representation->BeginScopedAccess(
+          GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
+  EXPECT_TRUE(scoped_access);
 
   // Create an FBO.
   GLuint fbo = 0;

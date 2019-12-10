@@ -590,6 +590,12 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_CROSTINI_ARC_ADB_CONFIRMATION_TITLE_ENABLE},
       {"crostiniArcAdbConfirmationTitleDisable",
        IDS_SETTINGS_CROSTINI_ARC_ADB_CONFIRMATION_TITLE_DISABLE},
+      {"crostiniContainerUpgrade",
+       IDS_SETTINGS_CROSTINI_CONTAINER_UPGRADE_MESSAGE},
+      {"crostiniContainerUpgradeSubtext",
+       IDS_SETTINGS_CROSTINI_CONTAINER_UPGRADE_SUBTEXT},
+      {"crostiniContainerUpgradeButton",
+       IDS_SETTINGS_CROSTINI_CONTAINER_UPGRADE_BUTTON},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
   html_source->AddString(
@@ -632,6 +638,8 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
                           chromeos::ProfileHelper::IsOwnerProfile(profile));
   html_source->AddBoolean("isEnterpriseManaged",
                           IsDeviceManaged() || IsProfileManaged(profile));
+  html_source->AddBoolean("showCrostiniContainerUpgrade",
+                          crostini::ShouldAllowContainerUpgrade());
 }
 
 void AddPluginVmStrings(content::WebUIDataSource* html_source,

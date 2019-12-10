@@ -117,7 +117,8 @@
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/browser_coordinator.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
-#include "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
@@ -670,11 +671,12 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   self.mainBrowserState = chromeBrowserState;
   [_browserViewWrangler shutdown];
   _browserViewWrangler = [[BrowserViewWrangler alloc]
-            initWithBrowserState:self.mainBrowserState
-            webStateListObserver:self
-      applicationCommandEndpoint:self.sceneController
-            appURLLoadingService:self.appURLLoadingService
-                 storageSwitcher:self];
+             initWithBrowserState:self.mainBrowserState
+             webStateListObserver:self
+       applicationCommandEndpoint:self.sceneController
+      browsingDataCommandEndpoint:self.sceneController
+             appURLLoadingService:self.appURLLoadingService
+                  storageSwitcher:self];
 
   // Force an obvious initialization of the AuthenticationService. This must
   // be done before creation of the UI to ensure the service is initialised

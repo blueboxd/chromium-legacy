@@ -33,10 +33,8 @@ struct PasswordFormGenerationData {
   base::string16 new_password_element;
   base::string16 confirmation_password_element;
 #endif
-  uint32_t new_password_renderer_id =
-      FormFieldData::kNotSetFormControlRendererId;
-  uint32_t confirmation_password_renderer_id =
-      FormFieldData::kNotSetFormControlRendererId;
+  uint32_t new_password_renderer_id = FormData::kNotSetRendererId;
+  uint32_t confirmation_password_renderer_id = FormData::kNotSetRendererId;
 };
 
 }  // namespace autofill

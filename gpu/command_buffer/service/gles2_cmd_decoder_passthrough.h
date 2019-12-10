@@ -109,9 +109,8 @@ struct PassthroughResources {
 
     bool BeginAccess(GLenum mode) {
       DCHECK(!is_being_accessed());
-      scoped_access_.emplace(representation_.get(), mode);
-      if (!scoped_access_->success()) {
-        scoped_access_.reset();
+      scoped_access_ = representation_->BeginScopedAccess(mode);
+      if (!scoped_access_) {
         return false;
       }
       return true;
@@ -127,7 +126,7 @@ struct PassthroughResources {
    private:
     std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
         representation_;
-    base::Optional<SharedImageRepresentationGLTexturePassthrough::ScopedAccess>
+    std::unique_ptr<SharedImageRepresentationGLTexturePassthrough::ScopedAccess>
         scoped_access_;
     DISALLOW_COPY_AND_ASSIGN(SharedImageData);
   };

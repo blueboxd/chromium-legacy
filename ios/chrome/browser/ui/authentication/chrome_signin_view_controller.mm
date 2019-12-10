@@ -184,7 +184,8 @@ enum AuthenticationState {
                     accessPoint:(signin_metrics::AccessPoint)accessPoint
                     promoAction:(signin_metrics::PromoAction)promoAction
                  signInIdentity:(ChromeIdentity*)identity
-                     dispatcher:(id<ApplicationCommands>)dispatcher {
+                     dispatcher:(id<ApplicationCommands, BrowsingDataCommands>)
+                                    dispatcher {
   self = [super init];
   if (self) {
     _browser = browser;

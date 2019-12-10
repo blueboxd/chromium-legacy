@@ -24,19 +24,19 @@ PepperFlashSettingsHelperImpl::~PepperFlashSettingsHelperImpl() {
 
 void PepperFlashSettingsHelperImpl::OpenChannelToBroker(
     const base::FilePath& path,
-    const OpenChannelCallback& callback) {
+    OpenChannelCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (callback.is_null())
+  if (!callback)
     return;
-  if (!callback_.is_null())
-    callback.Run(false, IPC::ChannelHandle());
+  if (callback_)
+    std::move(callback).Run(false, IPC::ChannelHandle());
 
   // Balanced in OnPpapiChannelOpened(). We need to keep this object around
   // until then.
   AddRef();
 
-  callback_ = callback;
+  callback_ = std::move(callback);
   PluginServiceImpl* plugin_service = PluginServiceImpl::GetInstance();
   plugin_service->OpenChannelToPpapiBroker(0, 0, path, this);
 }
@@ -53,14 +53,13 @@ void PepperFlashSettingsHelperImpl::OnPpapiChannelOpened(
     base::ProcessId /* plugin_pid */,
     int /* plugin_child_id */) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!callback_.is_null());
+  DCHECK(callback_);
 
   if (channel_handle.is_mojo_channel_handle())
-    callback_.Run(true, channel_handle);
+    std::move(callback_).Run(true, channel_handle);
   else
-    callback_.Run(false, IPC::ChannelHandle());
+    std::move(callback_).Run(false, IPC::ChannelHandle());
 
-  callback_.Reset();
   // Balance the AddRef() call in Initialize().
   Release();
 }

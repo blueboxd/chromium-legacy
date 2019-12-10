@@ -10,7 +10,7 @@
 #include "services/network/public/mojom/cors.mojom-blink-forward.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
-#include "third_party/blink/public/platform/web_http_header_set.h"
+#include "third_party/blink/renderer/platform/network/http_header_set.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -124,7 +124,7 @@ PLATFORM_EXPORT bool CalculateCorsFlag(
     const SecurityOrigin* isolated_world_origin,
     network::mojom::RequestMode request_mode);
 
-PLATFORM_EXPORT WebHTTPHeaderSet
+PLATFORM_EXPORT HTTPHeaderSet
 ExtractCorsExposedHeaderNamesList(network::mojom::CredentialsMode,
                                   const ResourceResponse&);
 

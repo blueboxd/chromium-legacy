@@ -94,12 +94,12 @@ void ExternalMetrics::Start() {
   ScheduleCollection();
 }
 
-void ExternalMetrics::ProcessExternalEvents(const base::Closure& cb) {
+void ExternalMetrics::ProcessExternalEvents(base::OnceClosure cb) {
   task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(base::IgnoreResult(&ExternalMetrics::CollectEvents),
                      weak_factory_.GetWeakPtr()),
-      cb);
+      std::move(cb));
 }
 
 void ExternalMetrics::RecordCrash(const std::string& crash_kind) {

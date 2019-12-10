@@ -47,18 +47,23 @@ constexpr int ColorSpace::kInvalidId;
 constexpr float ColorSpace::kDefaultSDRWhiteLevel;
 
 ColorSpace::ColorSpace(PrimaryID primaries,
-                       TransferID transfer)
+                       TransferID transfer,
+                       MatrixID matrix,
+                       RangeID range,
+                       const skcms_Matrix3x3* custom_primary_matrix,
+                       const skcms_TransferFunction* custom_transfer_fn)
     : primaries_(primaries),
       transfer_(transfer),
-      matrix_(MatrixID::RGB),
-      range_(RangeID::FULL) {}
-
-ColorSpace::ColorSpace(PrimaryID primaries,
-                       const skcms_TransferFunction& fn,
-                       MatrixID matrix,
-                       RangeID range)
-    : primaries_(primaries), matrix_(matrix), range_(range) {
-  SetCustomTransferFunction(fn);
+      matrix_(matrix),
+      range_(range) {
+  if (custom_primary_matrix) {
+    DCHECK_EQ(PrimaryID::CUSTOM, primaries_);
+    SetCustomPrimaries(*custom_primary_matrix);
+  }
+  if (custom_transfer_fn) {
+    DCHECK_EQ(TransferID::CUSTOM, transfer_);
+    SetCustomTransferFunction(*custom_transfer_fn);
+  }
 }
 
 ColorSpace::ColorSpace(const SkColorSpace& sk_color_space)
@@ -102,9 +107,7 @@ ColorSpace ColorSpace::CreateCustom(const skcms_Matrix3x3& to_XYZD50,
                                     const skcms_TransferFunction& fn) {
   ColorSpace result(ColorSpace::PrimaryID::CUSTOM,
                     ColorSpace::TransferID::CUSTOM, ColorSpace::MatrixID::RGB,
-                    ColorSpace::RangeID::FULL);
-  result.SetCustomPrimaries(to_XYZD50);
-  result.SetCustomTransferFunction(fn);
+                    ColorSpace::RangeID::FULL, &to_XYZD50, &fn);
   return result;
 }
 
@@ -112,8 +115,8 @@ ColorSpace ColorSpace::CreateCustom(const skcms_Matrix3x3& to_XYZD50,
 ColorSpace ColorSpace::CreateCustom(const skcms_Matrix3x3& to_XYZD50,
                                     TransferID transfer) {
   ColorSpace result(ColorSpace::PrimaryID::CUSTOM, transfer,
-                    ColorSpace::MatrixID::RGB, ColorSpace::RangeID::FULL);
-  result.SetCustomPrimaries(to_XYZD50);
+                    ColorSpace::MatrixID::RGB, ColorSpace::RangeID::FULL,
+                    &to_XYZD50, nullptr);
   return result;
 }
 
@@ -530,6 +533,11 @@ ColorSpace::RangeID ColorSpace::GetRangeID() const {
   return range_;
 }
 
+bool ColorSpace::HasExtendedSkTransferFn() const {
+  return transfer_ == TransferID::LINEAR_HDR ||
+         transfer_ == TransferID::IEC61966_2_1_HDR;
+}
+
 // static
 void ColorSpace::GetPrimaryMatrix(PrimaryID primary_id,
                                   skcms_Matrix3x3* to_XYZD50) {
@@ -807,11 +815,6 @@ bool ColorSpace::GetInverseTransferFunction(skcms_TransferFunction* fn) const {
     return false;
   *fn = SkTransferFnInverse(*fn);
   return true;
-}
-
-bool ColorSpace::HasExtendedSkTransferFn() const {
-  return transfer_ == TransferID::LINEAR_HDR ||
-         transfer_ == TransferID::IEC61966_2_1_HDR;
 }
 
 void ColorSpace::GetTransferMatrix(SkMatrix44* matrix) const {

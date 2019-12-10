@@ -41,6 +41,7 @@ blink_platform_sources("network") {
     "header_field_tokenizer.h",
     "http_header_map.cc",
     "http_header_map.h",
+    "http_header_set.h",
     "http_parsers.cc",
     "http_parsers.h",
     "http_request_headers_mojom_traits.cc",

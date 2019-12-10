@@ -127,6 +127,9 @@ class V4L2StatelessVideoDecoderBackend : public V4L2VideoDecoderBackend,
   // Returns whether |profile| is supported by a v4l2 stateless decoder driver.
   bool IsSupportedProfile(VideoCodecProfile profile);
 
+  // Create codec-specific AcceleratedVideoDecoder and reset related variables.
+  bool CreateAvd();
+
   // Video profile we are decoding.
   VideoCodecProfile profile_;
 

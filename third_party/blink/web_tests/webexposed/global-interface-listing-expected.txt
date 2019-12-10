@@ -5305,7 +5305,6 @@ interface MutationRecord
 interface NDEFMessage
     attribute @@toStringTag
     getter records
-    getter url
     method constructor
 interface NDEFReader : EventTarget
     attribute @@toStringTag

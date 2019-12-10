@@ -30,7 +30,7 @@ class AppListSyncableServiceFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* browser_context);
 
   // Marks AppListSyncableService to be used in tests.
-  static void SetUseInTesting();
+  static void SetUseInTesting(bool use);
 
  private:
   friend struct base::DefaultSingletonTraits<AppListSyncableServiceFactory>;

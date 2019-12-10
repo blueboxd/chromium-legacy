@@ -54,7 +54,7 @@ class ZoomLevelChangeObserver {
   explicit ZoomLevelChangeObserver(content::BrowserContext* context)
       : message_loop_runner_(new content::MessageLoopRunner) {
     subscription_ = zoom::ZoomEventManager::GetForBrowserContext(context)
-                        ->AddZoomLevelChangedCallback(base::Bind(
+                        ->AddZoomLevelChangedCallback(base::BindRepeating(
                             &ZoomLevelChangeObserver::OnZoomLevelChanged,
                             base::Unretained(this)));
   }

@@ -32,6 +32,7 @@ static_assert(sizeof(NGPhysicalTextFragment) ==
 }  // anonymous namespace
 
 NGPhysicalTextFragment::NGPhysicalTextFragment(
+    PassKey key,
     const NGPhysicalTextFragment& source,
     unsigned start_offset,
     unsigned end_offset,
@@ -214,8 +215,9 @@ scoped_refptr<const NGPhysicalTextFragment> NGPhysicalTextFragment::TrimText(
   DCHECK_LE(new_end_offset, EndOffset());
   scoped_refptr<ShapeResultView> new_shape_result = ShapeResultView::Create(
       shape_result_.get(), new_start_offset, new_end_offset);
-  return base::AdoptRef(new NGPhysicalTextFragment(
-      *this, new_start_offset, new_end_offset, std::move(new_shape_result)));
+  return base::AdoptRef(
+      new NGPhysicalTextFragment(PassKey(), *this, new_start_offset,
+                                 new_end_offset, std::move(new_shape_result)));
 }
 
 unsigned NGPhysicalTextFragment::TextOffsetForPoint(

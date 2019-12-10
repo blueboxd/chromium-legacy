@@ -483,6 +483,10 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
 
+  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::DisplayManager* display_manager =
+      ash::Shell::Get()->display_manager();
+
   std::unique_ptr<Surface> surface(new Surface);
 
   gfx::Rect client_bounds(20, 50, 300, 200);
@@ -492,6 +496,8 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
 
   auto shell_surface =
       exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+  shell_surface->SetSystemUiVisibility(true);  // disable shelf.
+
   surface->Attach(buffer.get());
   shell_surface->SetGeometry(client_bounds);
   surface->SetFrame(SurfaceFrameType::NORMAL);
@@ -520,6 +526,18 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
   EXPECT_EQ(
       gfx::Size(800, 568),
       frame_view->GetClientBoundsForWindowBounds(fullscreen_bounds).size());
+
+  // With work area top insets.
+  display_manager->UpdateWorkAreaOfDisplay(display_id,
+                                           gfx::Insets(200, 0, 0, 0));
+  shell_surface->SetGeometry(gfx::Rect(0, 0, 800, 368));
+  surface->Commit();
+
+  widget->LayoutRootViewIfNecessary();
+  EXPECT_TRUE(frame_view->GetVisible());
+  EXPECT_EQ(gfx::Rect(0, 200, 800, 400), widget->GetWindowBoundsInScreen());
+
+  display_manager->UpdateWorkAreaOfDisplay(display_id, gfx::Insets(0, 0, 0, 0));
 
   // AutoHide
   surface->SetFrame(SurfaceFrameType::AUTOHIDE);

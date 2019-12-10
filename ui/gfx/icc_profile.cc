@@ -153,21 +153,23 @@ ICCProfile ICCProfile::FromData(const void* data_as_void, size_t size) {
 }
 
 ColorSpace ICCProfile::GetColorSpace() const {
-  if (!internals_)
+  if (!internals_ || !internals_->is_valid_)
     return ColorSpace();
 
-  if (!internals_->is_valid_)
-    return ColorSpace();
-
-  return ColorSpace::CreateCustom(internals_->to_XYZD50_,
-                                  internals_->transfer_fn_);
+  return ColorSpace(ColorSpace::PrimaryID::CUSTOM,
+                    ColorSpace::TransferID::CUSTOM, ColorSpace::MatrixID::RGB,
+                    ColorSpace::RangeID::FULL, &internals_->to_XYZD50_,
+                    &internals_->transfer_fn_);
 }
 
 ColorSpace ICCProfile::GetPrimariesOnlyColorSpace() const {
-  ColorSpace result = GetColorSpace();
-  if (result.IsValid())
-    result.transfer_ = ColorSpace::TransferID::IEC61966_2_1;
-  return result;
+  if (!internals_ || !internals_->is_valid_)
+    return ColorSpace();
+
+  return ColorSpace(ColorSpace::PrimaryID::CUSTOM,
+                    ColorSpace::TransferID::IEC61966_2_1,
+                    ColorSpace::MatrixID::RGB, ColorSpace::RangeID::FULL,
+                    &internals_->to_XYZD50_, nullptr);
 }
 
 bool ICCProfile::IsColorSpaceAccurate() const {
@@ -185,11 +187,11 @@ ICCProfile ICCProfile::FromColorSpace(const ColorSpace& color_space) {
   if (!color_space.IsValid()) {
     return ICCProfile();
   }
-  if (color_space.matrix_ != ColorSpace::MatrixID::RGB) {
+  if (color_space.GetMatrixID() != ColorSpace::MatrixID::RGB) {
     DLOG(ERROR) << "Not creating non-RGB ICCProfile";
     return ICCProfile();
   }
-  if (color_space.range_ != ColorSpace::RangeID::FULL) {
+  if (color_space.GetRangeID() != ColorSpace::RangeID::FULL) {
     DLOG(ERROR) << "Not creating non-full-range ICCProfile";
     return ICCProfile();
   }

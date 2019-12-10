@@ -88,8 +88,7 @@ class ServiceWorkerVersion;
 // worker IPC message.
 //
 // TODO(https://crbug.com/931087): Rename this to ServiceWorkerHost.
-class CONTENT_EXPORT ServiceWorkerProviderHost
-    : public base::SupportsWeakPtr<ServiceWorkerProviderHost> {
+class CONTENT_EXPORT ServiceWorkerProviderHost {
  public:
   // Used to create a ServiceWorkerProviderHost for a window during a
   // navigation. The ServiceWorkerProviderContext will later be created in the
@@ -176,6 +175,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
     return container_host_.get();
   }
 
+  base::WeakPtr<ServiceWorkerProviderHost> GetWeakPtr();
+
  private:
   static void RegisterToContextCore(
       base::WeakPtr<ServiceWorkerContextCore> context,
@@ -215,6 +216,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // TODO(https://crbug.com/931087): Make an execution context host (e.g.,
   // RenderFrameHostImpl) own this container host.
   std::unique_ptr<content::ServiceWorkerContainerHost> container_host_;
+
+  base::WeakPtrFactory<ServiceWorkerProviderHost> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHost);
 };

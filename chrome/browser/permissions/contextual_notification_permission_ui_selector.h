@@ -13,6 +13,10 @@
 class Profile;
 class PermissionRequest;
 
+namespace url {
+class Origin;
+}
+
 // Determines if the quiet prompt UI should be used to display a notification
 // permission request on a given site. This is the case when:
 //  1) the quiet UI is enabled in prefs for all sites, either directly by the
@@ -20,6 +24,7 @@ class PermissionRequest;
 //  2) the quiet UI is triggered by crowd deny, either through:
 //     a) CrowdDenyPreloadData, that is, the component updater, or
 //     b) CrowdDenySafeBrowsingRequest, that is, on-demand Safe Browsing pings.
+// If both (1) and (2) are fulfilled, the crowd-deny UI is shown.
 //
 // Each instance of this class is long-lived and can support multiple requests,
 // but only one at a time.
@@ -42,8 +47,10 @@ class ContextualNotificationPermissionUiSelector
   ContextualNotificationPermissionUiSelector& operator=(
       const ContextualNotificationPermissionUiSelector&) = delete;
 
+  void EvaluateCrowdDenyTrigger(url::Origin origin);
   void OnSafeBrowsingVerdictReceived(
       CrowdDenySafeBrowsingRequest::Verdict verdict);
+  void OnCrowdDenyTriggerEvaluated(UiToUse ui_to_use);
 
   void Notify(UiToUse ui_to_use, base::Optional<QuietUiReason> quiet_ui_reason);
 

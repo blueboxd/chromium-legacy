@@ -15,11 +15,10 @@ class ChromeQuotaPermissionContext : public content::QuotaPermissionContext {
   // The callback will be dispatched on the IO thread.
   void RequestQuotaPermission(const content::StorageQuotaParams& params,
                               int render_process_id,
-                              const PermissionCallback& callback) override;
+                              PermissionCallback callback) override;
 
-  void DispatchCallbackOnIOThread(
-      const PermissionCallback& callback,
-      QuotaPermissionResponse response);
+  void DispatchCallbackOnIOThread(PermissionCallback callback,
+                                  QuotaPermissionResponse response);
 
  private:
   ~ChromeQuotaPermissionContext() override;

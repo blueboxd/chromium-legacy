@@ -123,6 +123,20 @@ InputHandlerPointerResult ScrollbarController::HandlePointerDown(
         ->PostDelayedTask(FROM_HERE, cancelable_autoscroll_task_->callback(),
                           kInitialAutoscrollTimerDelay);
   }
+  // Since compositor threaded scrollbar scrolling is gesture-based, the
+  // following code is needed to prevent scroll chaining.
+  // TODO(savella): This should be solved by not chaining element-id based
+  // scrolls
+  ScrollTree& scroll_tree =
+      layer_tree_host_impl_->active_tree()->property_trees()->scroll_tree;
+  ScrollNode* scroll_node =
+      scroll_tree.FindNodeFromElementId(scrollbar->scroll_element_id());
+  gfx::Vector2dF delta = gfx::Vector2dF(scroll_result.scroll_offset.x(),
+                                        scroll_result.scroll_offset.y());
+  if (scroll_node != nullptr && layer_tree_host_impl_->ComputeScrollDelta(
+                                    *scroll_node, delta) == gfx::Vector2dF()) {
+    scroll_result.scroll_offset = gfx::ScrollOffset();
+  }
   return scroll_result;
 }
 

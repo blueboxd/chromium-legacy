@@ -477,14 +477,9 @@ webkitLocale
 webkitLogicalHeight
 webkitLogicalWidth
 webkitMarginAfter
-webkitMarginAfterCollapse
 webkitMarginBefore
-webkitMarginBeforeCollapse
-webkitMarginBottomCollapse
-webkitMarginCollapse
 webkitMarginEnd
 webkitMarginStart
-webkitMarginTopCollapse
 webkitMask
 webkitMaskBoxImage
 webkitMaskBoxImageOutset

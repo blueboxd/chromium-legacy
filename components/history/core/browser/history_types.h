@@ -432,6 +432,53 @@ struct HistoryCountResult {
   int count = 0;
 };
 
+// DomainDiversity  -----------------------------------------------------------
+struct DomainMetricCountType {
+  DomainMetricCountType(const int metric_count,
+                        const base::Time& metric_start_time)
+      : count(metric_count), start_time(metric_start_time) {}
+  int count;
+  base::Time start_time;
+};
+
+// DomainMetricSet represents a set of 1-day, 7-day and 28-day domain visit
+// counts whose spanning periods all end at the same time.
+struct DomainMetricSet {
+  DomainMetricSet();
+  DomainMetricSet(const DomainMetricSet&);
+  ~DomainMetricSet();
+
+  DomainMetricSet& operator=(const DomainMetricSet&);
+
+  base::Optional<DomainMetricCountType> one_day_metric;
+  base::Optional<DomainMetricCountType> seven_day_metric;
+  base::Optional<DomainMetricCountType> twenty_eight_day_metric;
+
+  // The end time of the spanning periods. All 3 metrics should have the same
+  // end time.
+  base::Time end_time;
+};
+
+// DomainDiversityResults is a collection of DomainMetricSet's computed for
+// a continuous range of end dates. Typically, each DomainMetricSet holds a
+// metric set whose 1-day, 7-day and 28-day spanning periods all end at one
+// unique midnight in that date range.
+using DomainDiversityResults = std::vector<DomainMetricSet>;
+
+// The callback to process all domain diversity metrics
+using DomainDiversityCallback =
+    base::OnceCallback<void(DomainDiversityResults)>;
+
+// The bitmask to specify the types of metrics to compute in
+// HistoryBackend::GetDomainDiversity()
+using DomainMetricBitmaskType = uint32_t;
+enum DomainMetricType : DomainMetricBitmaskType {
+  kNoMetric = 0,
+  kEnableLast1DayMetric = 1 << 0,
+  kEnableLast7DayMetric = 1 << 1,
+  kEnableLast28DayMetric = 1 << 2
+};
+
 // HistoryLastVisitToHostResult encapsulates the result of a call to
 // HistoryBackend::GetLastVisitToHost().
 struct HistoryLastVisitToHostResult {

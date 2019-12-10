@@ -255,8 +255,7 @@ TEST_P(WindowOcclusionWinTest, EmptyWindowIsVisible) {
   EXPECT_EQ(result[window], aura::Window::OcclusionState::VISIBLE);
 }
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */
-                         ,
+INSTANTIATE_TEST_SUITE_P(All,
                          WindowOcclusionWinTest,
                          ::testing::Values(
                              OffsetAndBoundsPair(5, gfx::Rect(0, 0, 100, 100)),

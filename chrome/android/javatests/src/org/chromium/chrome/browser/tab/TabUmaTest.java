@@ -14,6 +14,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ObservableSupplierImpl;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
@@ -21,11 +22,13 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.TabbedModeTabDelegateFactory;
+import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.Callable;
@@ -60,7 +63,10 @@ public class TabUmaTest {
     }
 
     private TabbedModeTabDelegateFactory createTabDelegateFactory() {
-        return new TabbedModeTabDelegateFactory(mActivityTestRule.getActivity());
+        BrowserControlsVisibilityDelegate visibilityDelegate =
+                new BrowserControlsVisibilityDelegate(BrowserControlsState.BOTH) {};
+        return new TabbedModeTabDelegateFactory(mActivityTestRule.getActivity(), visibilityDelegate,
+                new ObservableSupplierImpl<ShareDelegate>());
     }
 
     /**

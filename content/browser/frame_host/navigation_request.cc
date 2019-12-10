@@ -3872,13 +3872,14 @@ bool NavigationRequest::IsNavigationStarted() const {
 }
 
 bool NavigationRequest::RequiresSourceSiteInstance() const {
-  // TODO(acolwell): Include about:blank as part of this check. This will
-  // require fixing |source_site_instance_| setting logic and code that
-  // constructs NavigationRequests.
-  return (common_params_->url.SchemeIs(url::kDataScheme)) &&
-         !dest_site_instance_ && common_params_->initiator_origin &&
-         !common_params_->initiator_origin->GetTupleOrPrecursorTupleIfOpaque()
-              .IsInvalid();
+  const bool is_data_or_about =
+      common_params_->url.SchemeIs(url::kDataScheme) ||
+      common_params_->url.IsAboutBlank();
+  const bool has_valid_initiator =
+      common_params_->initiator_origin &&
+      !common_params_->initiator_origin->GetTupleOrPrecursorTupleIfOpaque()
+           .IsInvalid();
+  return is_data_or_about && has_valid_initiator && !dest_site_instance_;
 }
 
 void NavigationRequest::SetSourceSiteInstanceToInitiatorIfNeeded() {

@@ -474,7 +474,10 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
 
   // Whether the previous layout is right-side-up (see |IsLayoutRightSideUp|).
   // Consistent with |IsLayoutRightSideUp|, |is_previous_layout_right_side_up_|
-  // is always true in clamshell mode.
+  // is always true in clamshell mode. It is not really used in clamshell mode,
+  // but it is kept up to date in anticipation that future code changes could
+  // introduce a bug similar to https://crbug.com/1029181 which could be
+  // overlooked for years while occasionally irritating or confusing real users.
   bool is_previous_layout_right_side_up_ = true;
 
   // True when the divider is being dragged (not during its snap animation).

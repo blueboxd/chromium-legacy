@@ -265,7 +265,7 @@ void CastAudioOutputStream::MixerServiceWrapper::FillNextBuffer(
 
 CastAudioOutputStream::CastAudioOutputStream(
     CastAudioManager* audio_manager,
-    service_manager::Connector* connector,
+    chromecast::mojom::ServiceConnector* connector,
     const ::media::AudioParameters& audio_params,
     const std::string& device_id_or_group_id,
     bool use_mixer_service)

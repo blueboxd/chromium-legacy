@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/core/script/script_element_base.h"
 #include "third_party/blink/renderer/core/script/script_runner.h"
 #include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -289,7 +290,15 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     non_blocking_ = true;
 
   // <spec step="4">Let source text be the element's child text content.</spec>
-  const String source_text = element_->TextFromChildren();
+  //
+  // Trusted Types additionally requires:
+  // https://w3c.github.io/webappsec-trusted-types/dist/spec/#slot-value-verification
+  // - Step 4: Execute the Prepare the script URL and text algorithm upon the
+  //     script element. If that algorithm threw an error, then return. The
+  //     script is not executed.
+  // - Step 5: Let source text be the element’s [[ScriptText]] internal slot
+  //     value.
+  const String source_text = GetScriptText();
 
   // <spec step="5">If the element has no src attribute, and source text is the
   // empty string, then return. The script is not executed.</spec>
@@ -386,8 +395,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // executed. [CSP]</spec>
   if (!element_->HasSourceAttribute() &&
       !element_->AllowInlineScriptForCSP(element_->GetNonceForElement(),
-                                         position.line_,
-                                         element_->TextFromChildren())) {
+                                         position.line_, source_text)) {
     return false;
   }
 
@@ -611,7 +619,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     // <spec step="24.1">Let src be the value of the element's src
     // attribute.</spec>
     //
-    // This step is done later as ScriptElementBase::TextFromChildren():
+    // This step is done later as ScriptElementBase::ChildTextContent():
     // - in ScriptLoader::PrepareScript() (Step 26, 6th Clause),
     // - in HTMLParserScriptRunner::ProcessScriptElementInternal()
     //   (Duplicated code of Step 26, 6th Clause),
@@ -633,8 +641,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
       // 1. Let import map parse result be the result of create an import map
       // parse result, given source text, base URL and settings object. [spec
       // text]
-      PendingImportMap* pending_import_map = PendingImportMap::CreateInline(
-          *element_, element_->TextFromChildren(), base_url);
+      PendingImportMap* pending_import_map =
+          PendingImportMap::CreateInline(*element_, source_text, base_url);
 
       // Because we currently support inline import maps only, the pending
       // import map is ready immediately and thus we call `register an import
@@ -662,8 +670,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         }
 
         prepared_pending_script_ = ClassicPendingScript::CreateInline(
-            element_, position, base_url, element_->TextFromChildren(),
-            script_location_type, options);
+            element_, position, base_url, source_text, script_location_type,
+            options);
 
         // <spec step="25.2.A.2">Set the script's script to script.</spec>
         //
@@ -689,10 +697,10 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         // <spec label="fetch-an-inline-module-script-graph" step="1">Let script
         // be the result of creating a JavaScript module script using source
         // text, settings object, base URL, and options.</spec>
-        ModuleScript* module_script = JSModuleScript::Create(
-            ParkableString(element_->TextFromChildren().Impl()), nullptr,
-            ScriptSourceLocationType::kInline, modulator, source_url, base_url,
-            options, position);
+        ModuleScript* module_script =
+            JSModuleScript::Create(ParkableString(source_text.Impl()), nullptr,
+                                   ScriptSourceLocationType::kInline, modulator,
+                                   source_url, base_url, options, position);
 
         // <spec label="fetch-an-inline-module-script-graph" step="2">If script
         // is null, asynchronously complete this algorithm with null, and abort
@@ -1013,6 +1021,22 @@ PendingScript*
 ScriptLoader::GetPendingScriptIfControlledByScriptRunnerForCrossDocMove() {
   DCHECK(!pending_script_ || pending_script_->IsControlledByScriptRunner());
   return pending_script_;
+}
+
+String ScriptLoader::GetScriptText() const {
+  // Step 3 of
+  // https://w3c.github.io/webappsec-trusted-types/dist/spec/#abstract-opdef-prepare-the-script-url-and-text
+  // called from § 4.1.3.3, step 4 of
+  // https://w3c.github.io/webappsec-trusted-types/dist/spec/#slot-value-verification
+  // This will return the [[ScriptText]] internal slot value after that step,
+  // or a null string if the the Trusted Type algorithm threw an error.
+  String child_text_content = element_->ChildTextContent();
+  DCHECK(!child_text_content.IsNull());
+  String script_text_internal_slot = element_->ScriptTextInternalSlot();
+  if (child_text_content == script_text_internal_slot)
+    return child_text_content;
+  return GetStringForScriptExecution(child_text_content,
+                                     element_->GetDocument().ContextDocument());
 }
 
 }  // namespace blink

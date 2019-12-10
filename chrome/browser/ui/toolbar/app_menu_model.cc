@@ -862,10 +862,14 @@ bool AppMenuModel::CreateActionToolbarOverflowMenu() {
 
   // We only add the extensions overflow container if there are any icons that
   // aren't shown in the main container.
-  // browser_->window() can return null during startup, and
-  // GetToolbarActionsBar() can be null in testing.
-  if (browser_->window() && browser_->window()->GetToolbarActionsBar() &&
-      browser_->window()->GetToolbarActionsBar()->NeedsOverflow()) {
+  // browser_->window() can return null during startup.
+  if (!browser_->window())
+    return false;
+
+  // |toolbar_actions_bar| can be null in testing.
+  ToolbarActionsBar* const toolbar_actions_bar =
+      ToolbarActionsBar::FromBrowserWindow(browser_->window());
+  if (toolbar_actions_bar && toolbar_actions_bar->NeedsOverflow()) {
     AddItem(IDC_EXTENSIONS_OVERFLOW_MENU, base::string16());
     return true;
   }

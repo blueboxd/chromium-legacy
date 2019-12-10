@@ -20,7 +20,7 @@ class URLRequestContextMemoryDumpTest
       public WithTaskEnvironment {};
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     URLRequestContextMemoryDumpTest,
     ::testing::Values(base::trace_event::MemoryDumpLevelOfDetail::DETAILED,
                       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND));

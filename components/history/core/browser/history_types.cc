@@ -275,6 +275,13 @@ HistoryAddPageArgs::HistoryAddPageArgs(const HistoryAddPageArgs& other) =
 
 HistoryAddPageArgs::~HistoryAddPageArgs() {}
 
+// DomainMetricSet ------------------------------------------------------------
+
+DomainMetricSet::DomainMetricSet() {}
+DomainMetricSet::DomainMetricSet(const DomainMetricSet&) = default;
+DomainMetricSet::~DomainMetricSet() {}
+DomainMetricSet& DomainMetricSet::operator=(const DomainMetricSet&) = default;
+
 // IconMapping ----------------------------------------------------------------
 
 IconMapping::IconMapping() {}

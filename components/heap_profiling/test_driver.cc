@@ -37,33 +37,26 @@ namespace {
 constexpr const char kTestCategory[] = "kTestCategory";
 const char kMallocEvent[] = "kMallocEvent";
 const char kMallocTypeTag[] = "kMallocTypeTag";
+const char kMallocVariadicTypeTag[] = "kMallocVariadicTypeTag";
 const char kPAEvent[] = "kPAEvent";
 const char kVariadicEvent[] = "kVariadicEvent";
 const char kThreadName[] = "kThreadName";
 
-// Note: When we test sampling with |sample_everything| = true, we set the
-// sampling interval to 2. It's important that all allocations made in this file
-// have size >> 2, so that the probability that they are sampled is
-// exponentially close to 1.
-//
 // Make some specific allocations in Browser to do a deeper test of the
 // allocation tracking.
-constexpr int kMallocAllocSize = 7907;
-constexpr int kMallocAllocCount = 157;
+constexpr int kMallocAllocSize = 700;
+constexpr int kMallocAllocCount = 1570;
 
-constexpr int kVariadicAllocCount = 157;
+constexpr int kVariadicAllocCount = 1000;
 
 // The sample rate should not affect the sampled allocations. Intentionally
 // choose an odd number.
-constexpr int kSampleRate = 7777;
-constexpr int kSamplingAllocSize = 1000;
-constexpr int kSamplingAllocCount = 1000;
-const char kSamplingAllocTypeName[] = "kSamplingAllocTypeName";
+constexpr int kSampleRate = 777;
 
 // Test fixed-size partition alloc. The size must be aligned to system pointer
 // size.
-constexpr int kPartitionAllocSize = 8 * 23;
-constexpr int kPartitionAllocCount = 107;
+constexpr int kPartitionAllocSize = 8 * 25;
+constexpr int kPartitionAllocCount = 2000;
 static const char* kPartitionAllocTypeName = "kPartitionAllocTypeName";
 
 // Ideally, we'd check to see that at least one renderer exists, and all
@@ -163,47 +156,6 @@ struct Node {
 };
 using NodeMap = std::unordered_map<uint64_t, Node>;
 
-// Parses maps.nodes and maps.strings. Returns |true| on success.
-bool ParseNodes(base::Value* heaps_v2, NodeMap* output) {
-  base::Value* nodes = heaps_v2->FindPath({"maps", "nodes"});
-  for (const base::Value& node_value : nodes->GetList()) {
-    const base::Value* id = node_value.FindKey("id");
-    const base::Value* name_sid = node_value.FindKey("name_sid");
-    if (!id || !name_sid) {
-      LOG(ERROR) << "Node missing id or name_sid field";
-      return false;
-    }
-
-    Node node;
-    node.name_id = name_sid->GetInt();
-
-    const base::Value* parent_id = node_value.FindKey("parent");
-    if (parent_id) {
-      node.parent_id = parent_id->GetInt();
-    }
-
-    (*output)[id->GetInt()] = node;
-  }
-
-  base::Value* strings = heaps_v2->FindPath({"maps", "strings"});
-  for (const base::Value& string_value : strings->GetList()) {
-    const base::Value* id = string_value.FindKey("id");
-    const base::Value* string = string_value.FindKey("string");
-    if (!id || !string) {
-      LOG(ERROR) << "String struct missing id or string field";
-      return false;
-    }
-    for (auto& pair : *output) {
-      if (pair.second.name_id == id->GetInt()) {
-        pair.second.name = string->GetString();
-        break;
-      }
-    }
-  }
-
-  return true;
-}
-
 // Parses maps.types and maps.strings. Returns |true| on success.
 bool ParseTypes(base::Value* heaps_v2, NodeMap* output) {
   base::Value* types = heaps_v2->FindPath({"maps", "types"});
@@ -233,183 +185,6 @@ bool ParseTypes(base::Value* heaps_v2, NodeMap* output) {
         pair.second.name = string->GetString();
         break;
       }
-    }
-  }
-
-  return true;
-}
-
-// Verify expectations are present in heap dump.
-bool ValidateDump(base::Value* heaps_v2,
-                  int expected_alloc_size,
-                  int expected_alloc_count,
-                  const char* allocator_name,
-                  const char* type_name,
-                  const std::string& frame_name,
-                  const std::string& thread_name) {
-  base::Value* sizes =
-      heaps_v2->FindPath({"allocators", allocator_name, "sizes"});
-  if (!sizes) {
-    LOG(ERROR) << "Failed to find path: 'allocators." << allocator_name
-               << ".sizes' in heaps v2";
-    return false;
-  }
-
-  base::Value::ConstListView sizes_list = sizes->GetList();
-  if (sizes_list.empty()) {
-    LOG(ERROR) << "'allocators." << allocator_name
-               << ".sizes' is an empty list";
-    return false;
-  }
-
-  base::Value* counts =
-      heaps_v2->FindPath({"allocators", allocator_name, "counts"});
-  if (!counts) {
-    LOG(ERROR) << "Failed to find path: 'allocators." << allocator_name
-               << ".counts' in heaps v2";
-    return false;
-  }
-
-  base::Value::ConstListView counts_list = counts->GetList();
-  if (sizes_list.size() != counts_list.size()) {
-    LOG(ERROR)
-        << "'allocators." << allocator_name
-        << ".sizes' does not have the same number of elements as *.counts";
-    return false;
-  }
-
-  base::Value* types =
-      heaps_v2->FindPath({"allocators", allocator_name, "types"});
-  if (!types) {
-    LOG(ERROR) << "Failed to find path: 'allocators." << allocator_name
-               << ".types' in heaps v2";
-    return false;
-  }
-
-  base::Value::ConstListView types_list = types->GetList();
-  if (types_list.empty()) {
-    LOG(ERROR) << "'allocators." << allocator_name
-               << ".types' is an empty list";
-    return false;
-  }
-
-  if (sizes_list.size() != types_list.size()) {
-    LOG(ERROR)
-        << "'allocators." << allocator_name
-        << ".types' does not have the same number of elements as *.sizes";
-    return false;
-  }
-
-  base::Value* nodes =
-      heaps_v2->FindPath({"allocators", allocator_name, "nodes"});
-  if (!nodes) {
-    LOG(ERROR) << "Failed to find path: 'allocators." << allocator_name
-               << ".nodes' in heaps v2";
-    return false;
-  }
-
-  base::Value::ConstListView nodes_list = nodes->GetList();
-  if (sizes_list.size() != nodes_list.size()) {
-    LOG(ERROR)
-        << "'allocators." << allocator_name
-        << ".sizes' does not have the same number of elements as *.nodes";
-    return false;
-  }
-
-  bool found_browser_alloc = false;
-  size_t browser_alloc_index = 0;
-  for (size_t i = 0; i < sizes_list.size(); i++) {
-    if (counts_list[i].GetInt() == expected_alloc_count &&
-        sizes_list[i].GetInt() != expected_alloc_size) {
-      LOG(WARNING) << "Allocation candidate (size:" << sizes_list[i].GetInt()
-                   << " count:" << counts_list[i].GetInt() << ")";
-    }
-    if (counts_list[i].GetInt() == expected_alloc_count &&
-        sizes_list[i].GetInt() == expected_alloc_size) {
-      browser_alloc_index = i;
-      found_browser_alloc = true;
-      break;
-    }
-  }
-
-  if (!found_browser_alloc) {
-    LOG(ERROR) << "Failed to find an allocation of the "
-                  "appropriate size. Did the send buffer "
-                  "not flush? (size: "
-               << expected_alloc_size << " count:" << expected_alloc_count
-               << ")";
-    return false;
-  }
-
-  // Find the type, if an expectation was passed in.
-  if (type_name) {
-    NodeMap node_map;
-    if (!ParseTypes(heaps_v2, &node_map)) {
-      LOG(ERROR) << "Failed to parse type and string structs";
-      return false;
-    }
-
-    int type = types_list[browser_alloc_index].GetInt();
-    auto it = node_map.find(type);
-    if (it == node_map.end()) {
-      LOG(ERROR) << "Failed to look up type.";
-      return false;
-    }
-    if (it->second.name != type_name) {
-      LOG(ERROR) << "actual name: " << it->second.name
-                 << " expected name: " << type_name;
-      return false;
-    }
-  }
-
-  // Check that the frame has the right name.
-  if (!frame_name.empty()) {
-    NodeMap node_map;
-    if (!ParseNodes(heaps_v2, &node_map)) {
-      LOG(ERROR) << "Failed to parse node and string structs";
-      return false;
-    }
-
-    int node_id = nodes_list[browser_alloc_index].GetInt();
-    auto it = node_map.find(node_id);
-
-    if (it == node_map.end()) {
-      LOG(ERROR) << "Failed to find frame for node with id: " << node_id;
-      return false;
-    }
-
-    if (it->second.name != frame_name) {
-      LOG(ERROR) << "Wrong name: " << it->second.name
-                 << " for frame with expected name: " << frame_name;
-      return false;
-    }
-  }
-
-  // Check that the thread [top frame] has the right name.
-  if (!thread_name.empty()) {
-    NodeMap node_map;
-    if (!ParseNodes(heaps_v2, &node_map)) {
-      LOG(ERROR) << "Failed to parse node and string structs";
-      return false;
-    }
-
-    int node_id = nodes_list[browser_alloc_index].GetInt();
-    auto it = node_map.find(node_id);
-    while (true) {
-      if (it == node_map.end() || it->second.parent_id == kNullParent)
-        break;
-      it = node_map.find(it->second.parent_id);
-    }
-
-    if (it == node_map.end()) {
-      LOG(ERROR) << "Failed to find root for node with id: " << node_id;
-      return false;
-    }
-
-    if (it->second.name != thread_name) {
-      LOG(ERROR) << "Wrong name: " << it->second.name
-                 << " for thread with expected name: " << thread_name;
-      return false;
     }
   }
 
@@ -471,25 +246,32 @@ bool ValidateSamplingAllocations(base::Value* heaps_v2,
     return false;
   }
 
-  found = false;
-  size_t index = 0;
-  for (size_t i = 0; i < types_list.size(); ++i) {
-    if (types_list[i].GetInt() == id_of_type) {
-      index = i;
-      found = true;
-      break;
-    }
-  }
-
-  if (!found) {
-    LOG(ERROR) << "Failed to find type with correct sid";
-    return false;
-  }
-
   // Look up the size.
   base::Value::ConstListView sizes;
   if (!GetAllocatorSubarray(heaps_v2, allocator_name, "sizes",
                             types_list.size(), &sizes)) {
+    return false;
+  }
+
+  // Look up the count.
+  base::Value::ConstListView counts;
+  if (!GetAllocatorSubarray(heaps_v2, allocator_name, "counts",
+                            types_list.size(), &counts)) {
+    return false;
+  }
+
+  int allocations_with_matching_type = 0;
+  size_t index = 0;
+  for (size_t i = 0; i < types_list.size(); ++i) {
+    if (types_list[i].GetInt() == id_of_type) {
+      index = i;
+      ++allocations_with_matching_type;
+    }
+  }
+
+  if (allocations_with_matching_type != 1) {
+    LOG(ERROR) << "Expected 1 but found " << allocations_with_matching_type
+               << " allocations with matching type";
     return false;
   }
 
@@ -498,13 +280,6 @@ bool ValidateSamplingAllocations(base::Value* heaps_v2,
     LOG(ERROR) << "sampling size " << sizes[index].GetInt()
                << " was not within a factor of 2 of expected size "
                << approximate_size;
-    return false;
-  }
-
-  // Look up the count.
-  base::Value::ConstListView counts;
-  if (!GetAllocatorSubarray(heaps_v2, allocator_name, "counts",
-                            types_list.size(), &counts)) {
     return false;
   }
 
@@ -564,9 +339,6 @@ TestDriver::~TestDriver() = default;
 
 bool TestDriver::RunTest(const Options& options) {
   options_ = options;
-
-  if (options_.should_sample)
-    base::PoissonAllocationSampler::Get()->SuppressRandomnessForTest(true);
 
   running_on_ui_thread_ =
       content::BrowserThread::CurrentlyOn(content::BrowserThread::UI);
@@ -699,11 +471,8 @@ bool TestDriver::CheckOrStartProfilingOnUIThreadWithAsyncSignalling() {
                                     base::Unretained(&wait_for_ui_thread_));
   }
 
-  uint32_t sampling_rate = options_.should_sample
-                               ? (options_.sample_everything ? 2 : kSampleRate)
-                               : 1;
   Supervisor::GetInstance()->Start(options_.mode, options_.stack_mode,
-                                   sampling_rate, std::move(start_callback));
+                                   kSampleRate, std::move(start_callback));
 
   return true;
 }
@@ -739,11 +508,8 @@ bool TestDriver::CheckOrStartProfilingOnUIThreadWithNestedRunLoops() {
     start_callback = run_loop->QuitClosure();
   }
 
-  uint32_t sampling_rate = options_.should_sample
-                               ? (options_.sample_everything ? 2 : kSampleRate)
-                               : 1;
   Supervisor::GetInstance()->Start(options_.mode, options_.stack_mode,
-                                   sampling_rate, std::move(start_callback));
+                                   kSampleRate, std::move(start_callback));
   run_loop->Run();
   if (ShouldProfileBrowser()) {
     WaitForProfilingToStartForBrowserUIThread();
@@ -757,18 +523,28 @@ void TestDriver::MakeTestAllocations() {
 
   base::PlatformThread::SetName(kThreadName);
 
-  // In sampling mode, only sampling allocations are relevant.
-  if (!IsRecordingAllAllocations()) {
-    leaks_.reserve(kSamplingAllocCount);
-    for (int i = 0; i < kSamplingAllocCount; ++i) {
-      leaks_.push_back(static_cast<char*>(partition_allocator_.root()->Alloc(
-          kSamplingAllocSize, kSamplingAllocTypeName)));
-    }
-    return;
+  // Profiling is turned on by default with a sampling interval of 1MB. We reset
+  // the sampling interval, but the change isn't picked by the thread-local
+  // cache until we make a sufficient number of allocations. This is an
+  // implementation limitation, but it's easy to work around by making a couple
+  // of large allocations.
+  constexpr int kFourMegsAllocation = 1 << 22;
+  for (int i = 0; i < 10; ++i) {
+    leaks_.push_back(static_cast<char*>(malloc(kFourMegsAllocation)));
   }
 
-  leaks_.reserve(2 * kMallocAllocCount + 1 + kPartitionAllocSize);
+  // We must reserve vector size in advance so that the vector allocation does
+  // not get tagged as TRACE_HEAP_PROFILER_API_SCOPED_TASK_EXECUTION.
+  leaks_.reserve(leaks_.size() + kPartitionAllocCount);
+  {
+    TRACE_EVENT0(kTestCategory, kPAEvent);
+    for (int i = 0; i < kPartitionAllocCount; ++i) {
+      leaks_.push_back(static_cast<char*>(partition_allocator_.root()->Alloc(
+          kPartitionAllocSize, kPartitionAllocTypeName)));
+    }
+  }
 
+  leaks_.reserve(leaks_.size() + kMallocAllocCount);
   {
     TRACE_HEAP_PROFILER_API_SCOPED_TASK_EXECUTION event(kMallocTypeTag);
     TRACE_EVENT0(kTestCategory, kMallocEvent);
@@ -778,31 +554,16 @@ void TestDriver::MakeTestAllocations() {
     }
   }
 
+  leaks_.reserve(leaks_.size() + kVariadicAllocCount);
   {
-    TRACE_EVENT0(kTestCategory, kPAEvent);
-
-    for (int i = 0; i < kPartitionAllocCount; ++i) {
-      leaks_.push_back(static_cast<char*>(partition_allocator_.root()->Alloc(
-          kPartitionAllocSize, kPartitionAllocTypeName)));
-    }
-  }
-
-  {
+    TRACE_HEAP_PROFILER_API_SCOPED_TASK_EXECUTION event(kMallocVariadicTypeTag);
     TRACE_EVENT0(kTestCategory, kVariadicEvent);
 
     for (int i = 0; i < kVariadicAllocCount; ++i) {
-      leaks_.push_back(new char[i + 8000]);  // Variadic allocation.
-      total_variadic_allocations_ += i + 8000;
+      leaks_.push_back(new char[i + kMallocAllocSize]);  // Variadic allocation.
+      total_variadic_allocations_ += i + kMallocAllocSize;
     }
   }
-
-  // // Navigate around to force allocations in the renderer.
-  // ASSERT_TRUE(embedded_test_server()->Start());
-  // ui_test_utils::NavigateToURL(
-  //     browser(), embedded_test_server()->GetURL("/english_page.html"));
-  // // Vive la France!
-  // ui_test_utils::NavigateToURL(
-  //     browser(), embedded_test_server()->GetURL("/french_page.html"));
 }
 
 void TestDriver::CollectResults(bool synchronous) {
@@ -866,46 +627,30 @@ bool TestDriver::ValidateBrowserAllocations(base::Value* dump_json) {
 
   std::string thread_name = ShouldIncludeNativeThreadNames() ? kThreadName : "";
 
-  if (IsRecordingAllAllocations()) {
     if (should_validate_dumps) {
-      result = ValidateDump(heaps_v2, kMallocAllocSize * kMallocAllocCount,
-                            kMallocAllocCount, "malloc", kMallocTypeTag,
-                            HasPseudoFrames() ? kMallocEvent : "", thread_name);
+      result = ValidateSamplingAllocations(heaps_v2, "malloc",
+                                           kMallocAllocSize * kMallocAllocCount,
+                                           kMallocAllocCount, kMallocTypeTag);
       if (!result) {
         LOG(ERROR) << "Failed to validate malloc fixed allocations";
         return false;
       }
 
-      result = ValidateDump(
-          heaps_v2, total_variadic_allocations_, kVariadicAllocCount, "malloc",
-          nullptr, HasPseudoFrames() ? kVariadicEvent : "", thread_name);
+      result = ValidateSamplingAllocations(
+          heaps_v2, "malloc", total_variadic_allocations_, kVariadicAllocCount,
+          kMallocVariadicTypeTag);
       if (!result) {
         LOG(ERROR) << "Failed to validate malloc variadic allocations";
         return false;
       }
-    }
-
-    // TODO(ajwong): Like malloc, all Partition-Alloc allocations get glommed
-    // together for some Android device/OS configurations. However, since there
-    // is only one place that uses partition alloc in the browser process [this
-    // test], the count is still valid. This should still be made more robust by
-    // fixing backtrace. https://crbug.com/786450.
-    result = ValidateDump(heaps_v2, kPartitionAllocSize * kPartitionAllocCount,
-                          kPartitionAllocCount, "partition_alloc",
-                          kPartitionAllocTypeName,
-                          HasPseudoFrames() ? kPAEvent : "", thread_name);
-    if (!result) {
-      LOG(ERROR) << "Failed to validate PA allocations";
-      return false;
-    }
-  } else {
-    bool result = ValidateSamplingAllocations(
-        heaps_v2, "partition_alloc", kSamplingAllocSize * kSamplingAllocCount,
-        kSamplingAllocCount, kSamplingAllocTypeName);
-    if (!result) {
-      LOG(ERROR) << "Failed to validate sampling allocations";
-      return false;
-    }
+      result = ValidateSamplingAllocations(
+          heaps_v2, "partition_alloc",
+          kPartitionAllocSize * kPartitionAllocCount, kPartitionAllocCount,
+          kPartitionAllocTypeName);
+      if (!result) {
+        LOG(ERROR) << "Failed to validate sampling allocations";
+        return false;
+      }
   }
 
   int process_count = NumProcessesWithName(dump_json, "Browser", nullptr);
@@ -980,10 +725,6 @@ bool TestDriver::HasNativeFrames() {
   return options_.stack_mode == mojom::StackMode::NATIVE_WITH_THREAD_NAMES ||
          options_.stack_mode == mojom::StackMode::NATIVE_WITHOUT_THREAD_NAMES ||
          options_.stack_mode == mojom::StackMode::MIXED;
-}
-
-bool TestDriver::IsRecordingAllAllocations() {
-  return !options_.should_sample || options_.sample_everything;
 }
 
 void TestDriver::WaitForProfilingToStartForBrowserUIThread() {

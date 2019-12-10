@@ -327,6 +327,11 @@ bool ExtensionFunction::PreRunValidation(std::string* error) {
 }
 
 ExtensionFunction::ResponseAction ExtensionFunction::RunWithValidation() {
+#if DCHECK_IS_ON()
+  DCHECK(!did_run_);
+  did_run_ = true;
+#endif
+
   std::string error;
   if (!PreRunValidation(&error)) {
     DCHECK(!error.empty() || bad_message_);

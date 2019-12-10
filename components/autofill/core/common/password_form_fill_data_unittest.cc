@@ -31,7 +31,6 @@ TEST(PasswordFormFillDataTest, TestSinglePreferredMatch) {
   form_on_page.password_value = ASCIIToUTF16("test");
   form_on_page.submit_element = ASCIIToUTF16("");
   form_on_page.signon_realm = "https://foo.com/";
-  form_on_page.preferred = false;
   form_on_page.scheme = PasswordForm::Scheme::kHtml;
 
   // Create an exact match in the database.
@@ -44,7 +43,6 @@ TEST(PasswordFormFillDataTest, TestSinglePreferredMatch) {
   preferred_match.password_value = ASCIIToUTF16("test");
   preferred_match.submit_element = ASCIIToUTF16("");
   preferred_match.signon_realm = "https://foo.com/";
-  preferred_match.preferred = true;
   preferred_match.scheme = PasswordForm::Scheme::kHtml;
 
   std::vector<const PasswordForm*> matches;
@@ -80,7 +78,6 @@ TEST(PasswordFormFillDataTest, TestPublicSuffixDomainMatching) {
   form_on_page.password_value = ASCIIToUTF16("test");
   form_on_page.submit_element = ASCIIToUTF16("");
   form_on_page.signon_realm = "https://foo.com/";
-  form_on_page.preferred = false;
   form_on_page.scheme = PasswordForm::Scheme::kHtml;
 
   // Create a match from the database that matches using public suffix.
@@ -94,7 +91,6 @@ TEST(PasswordFormFillDataTest, TestPublicSuffixDomainMatching) {
   preferred_match.submit_element = ASCIIToUTF16("");
   preferred_match.signon_realm = "https://foo.com/";
   preferred_match.is_public_suffix_match = true;
-  preferred_match.preferred = true;
   preferred_match.scheme = PasswordForm::Scheme::kHtml;
 
   // Create a match that matches exactly, so |is_public_suffix_match| has a
@@ -108,7 +104,6 @@ TEST(PasswordFormFillDataTest, TestPublicSuffixDomainMatching) {
   exact_match.password_value = ASCIIToUTF16("test");
   exact_match.submit_element = ASCIIToUTF16("");
   exact_match.signon_realm = "https://foo.com/";
-  exact_match.preferred = false;
   exact_match.scheme = PasswordForm::Scheme::kHtml;
 
   // Create a match that was matched using public suffix, so
@@ -123,7 +118,6 @@ TEST(PasswordFormFillDataTest, TestPublicSuffixDomainMatching) {
   public_suffix_match.submit_element = ASCIIToUTF16("");
   public_suffix_match.is_public_suffix_match = true;
   public_suffix_match.signon_realm = "https://foo.com/";
-  public_suffix_match.preferred = false;
   public_suffix_match.scheme = PasswordForm::Scheme::kHtml;
 
   // Add one exact match and one public suffix match.
@@ -162,7 +156,6 @@ TEST(PasswordFormFillDataTest, TestAffiliationMatch) {
   form_on_page.password_value = ASCIIToUTF16("test");
   form_on_page.submit_element = ASCIIToUTF16("");
   form_on_page.signon_realm = "https://foo.com/";
-  form_on_page.preferred = false;
   form_on_page.scheme = PasswordForm::Scheme::kHtml;
 
   // Create a match from the database that matches using affiliation.
@@ -172,7 +165,6 @@ TEST(PasswordFormFillDataTest, TestAffiliationMatch) {
   preferred_match.password_value = ASCIIToUTF16("test");
   preferred_match.signon_realm = "android://hash@foo.com/";
   preferred_match.is_affiliation_based_match = true;
-  preferred_match.preferred = true;
 
   // Create a match that matches exactly, so |is_affiliation_based_match| has a
   // default value false.
@@ -185,7 +177,6 @@ TEST(PasswordFormFillDataTest, TestAffiliationMatch) {
   exact_match.password_value = ASCIIToUTF16("test");
   exact_match.submit_element = ASCIIToUTF16("");
   exact_match.signon_realm = "https://foo.com/";
-  exact_match.preferred = false;
   exact_match.scheme = PasswordForm::Scheme::kHtml;
 
   // Create a match that was matched using public suffix, so
@@ -196,7 +187,6 @@ TEST(PasswordFormFillDataTest, TestAffiliationMatch) {
   affiliated_match.password_value = ASCIIToUTF16("test");
   affiliated_match.is_affiliation_based_match = true;
   affiliated_match.signon_realm = "https://foo1.com/";
-  affiliated_match.preferred = false;
   affiliated_match.scheme = PasswordForm::Scheme::kHtml;
 
   // Add one exact match and one affiliation based match.
@@ -233,7 +223,6 @@ TEST(PasswordFormFillDataTest, RendererIDs) {
   PasswordForm preferred_match = form_on_page;
   preferred_match.username_value = ASCIIToUTF16("test@gmail.com");
   preferred_match.password_value = ASCIIToUTF16("test");
-  preferred_match.preferred = true;
 
   // Set renderer id related fields.
   FormData form_data;
@@ -272,7 +261,6 @@ TEST(PasswordFormFillDataTest, NoPasswordElement) {
   PasswordForm preferred_match = form_on_page;
   preferred_match.username_value = ASCIIToUTF16("test@gmail.com");
   preferred_match.password_value = ASCIIToUTF16("test");
-  preferred_match.preferred = true;
 
   FormData form_data;
   form_data.unique_renderer_id = 42;

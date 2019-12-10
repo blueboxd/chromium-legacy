@@ -883,6 +883,14 @@ void GpuServiceImpl::OnForegrounded() {
     watchdog_thread_->OnForegrounded();
 }
 
+#if !defined(OS_ANDROID)
+void GpuServiceImpl::OnMemoryPressure(
+    ::base::MemoryPressureListener::MemoryPressureLevel level) {
+  // Forward the notification to the registry of MemoryPressureListeners.
+  base::MemoryPressureListener::NotifyMemoryPressure(level);
+}
+#endif
+
 #if defined(OS_MACOSX)
 void GpuServiceImpl::BeginCATransaction() {
   DCHECK(io_runner_->BelongsToCurrentThread());

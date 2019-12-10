@@ -319,6 +319,16 @@ class HistoryService : public KeyedService {
   void CountUniqueHostsVisitedLastMonth(GetHistoryCountCallback callback,
                                         base::CancelableTaskTracker* tracker);
 
+  // For each of the continuous |number_of_days_to_report| midnights
+  // immediately preceding |report_time| (inclusive), report (a subset of) the
+  // last 1-day, 7-day and 28-day domain visit counts ending at that midnight.
+  // The subset of metric types to report is specified by |metric_type_bitmask|.
+  void GetDomainDiversity(base::Time report_time,
+                          int number_of_days_to_report,
+                          DomainMetricBitmaskType metric_type_bitmask,
+                          DomainDiversityCallback callback,
+                          base::CancelableTaskTracker* tracker);
+
   using GetLastVisitToHostCallback =
       base::OnceCallback<void(HistoryLastVisitToHostResult)>;
 

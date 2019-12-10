@@ -88,8 +88,17 @@ std::vector<uintptr_t*> ThreadDelegatePosix::GetRegistersToRewrite(
   for (size_t i = 19; i <= 29; ++i)
     registers.push_back(reinterpret_cast<uintptr_t*>(&thread_context->regs[i]));
   return registers;
-#elif defined(ARCH_CPU_X86_64)  // #if defined(ARCH_CPU_ARM_FAMILY) &&
-                                // defined(ARCH_CPU_32_BITS)
+#elif defined(ARCH_CPU_X86_FAMILY) && defined(ARCH_CPU_32_BITS)
+  return {
+      // Return the set of callee-save registers per the i386 System V ABI
+      // section 2.2.3, plus the stack pointer.
+      reinterpret_cast<uintptr_t*>(&thread_context->gregs[REG_EBX]),
+      reinterpret_cast<uintptr_t*>(&thread_context->gregs[REG_EBP]),
+      reinterpret_cast<uintptr_t*>(&thread_context->gregs[REG_ESI]),
+      reinterpret_cast<uintptr_t*>(&thread_context->gregs[REG_EDI]),
+      reinterpret_cast<uintptr_t*>(&thread_context->gregs[REG_ESP]),
+  };
+#elif defined(ARCH_CPU_X86_FAMILY) && defined(ARCH_CPU_64_BITS)
   return {
       // Return the set of callee-save registers per the x86-64 System V ABI
       // section 3.2.1, plus the stack pointer.

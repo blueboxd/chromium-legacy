@@ -3456,7 +3456,9 @@ TEST_F(NetworkContextTest, PrivacyModeDisabledByDefault) {
 
   EXPECT_FALSE(network_context->url_request_context()
                    ->network_delegate()
-                   ->ForcePrivacyMode(kURL, kOtherURL, kOtherOrigin));
+                   ->ForcePrivacyMode(kURL,
+                                      net::SiteForCookies::FromUrl(kOtherURL),
+                                      kOtherOrigin));
 }
 
 TEST_F(NetworkContextTest, PrivacyModeEnabledIfCookiesBlocked) {
@@ -3467,10 +3469,13 @@ TEST_F(NetworkContextTest, PrivacyModeEnabledIfCookiesBlocked) {
                     network_context.get());
   EXPECT_TRUE(network_context->url_request_context()
                   ->network_delegate()
-                  ->ForcePrivacyMode(kURL, kOtherURL, kOtherOrigin));
+                  ->ForcePrivacyMode(kURL,
+                                     net::SiteForCookies::FromUrl(kOtherURL),
+                                     kOtherOrigin));
   EXPECT_FALSE(network_context->url_request_context()
                    ->network_delegate()
-                   ->ForcePrivacyMode(kOtherURL, kURL, kOrigin));
+                   ->ForcePrivacyMode(
+                       kOtherURL, net::SiteForCookies::FromUrl(kURL), kOrigin));
 }
 
 TEST_F(NetworkContextTest, PrivacyModeDisabledIfCookiesAllowed) {
@@ -3481,7 +3486,9 @@ TEST_F(NetworkContextTest, PrivacyModeDisabledIfCookiesAllowed) {
                     network_context.get());
   EXPECT_FALSE(network_context->url_request_context()
                    ->network_delegate()
-                   ->ForcePrivacyMode(kURL, kOtherURL, kOtherOrigin));
+                   ->ForcePrivacyMode(kURL,
+                                      net::SiteForCookies::FromUrl(kOtherURL),
+                                      kOtherOrigin));
 }
 
 TEST_F(NetworkContextTest, PrivacyModeDisabledIfCookiesSettingForOtherURL) {
@@ -3493,7 +3500,9 @@ TEST_F(NetworkContextTest, PrivacyModeDisabledIfCookiesSettingForOtherURL) {
                     network_context.get());
   EXPECT_FALSE(network_context->url_request_context()
                    ->network_delegate()
-                   ->ForcePrivacyMode(kURL, kOtherURL, kOtherOrigin));
+                   ->ForcePrivacyMode(kURL,
+                                      net::SiteForCookies::FromUrl(kOtherURL),
+                                      kOtherOrigin));
 }
 
 TEST_F(NetworkContextTest, PrivacyModeEnabledIfThirdPartyCookiesBlocked) {
@@ -3503,12 +3512,16 @@ TEST_F(NetworkContextTest, PrivacyModeEnabledIfThirdPartyCookiesBlocked) {
       network_context->url_request_context()->network_delegate();
 
   network_context->cookie_manager()->BlockThirdPartyCookies(true);
-  EXPECT_TRUE(delegate->ForcePrivacyMode(kURL, kOtherURL, kOtherOrigin));
-  EXPECT_FALSE(delegate->ForcePrivacyMode(kURL, kURL, kOrigin));
+  EXPECT_TRUE(delegate->ForcePrivacyMode(
+      kURL, net::SiteForCookies::FromUrl(kOtherURL), kOtherOrigin));
+  EXPECT_FALSE(delegate->ForcePrivacyMode(
+      kURL, net::SiteForCookies::FromUrl(kURL), kOrigin));
 
   network_context->cookie_manager()->BlockThirdPartyCookies(false);
-  EXPECT_FALSE(delegate->ForcePrivacyMode(kURL, kOtherURL, kOtherOrigin));
-  EXPECT_FALSE(delegate->ForcePrivacyMode(kURL, kURL, kOrigin));
+  EXPECT_FALSE(delegate->ForcePrivacyMode(
+      kURL, net::SiteForCookies::FromUrl(kOtherURL), kOtherOrigin));
+  EXPECT_FALSE(delegate->ForcePrivacyMode(
+      kURL, net::SiteForCookies::FromUrl(kURL), kOrigin));
 }
 
 TEST_F(NetworkContextTest, CanSetCookieFalseIfCookiesBlocked) {

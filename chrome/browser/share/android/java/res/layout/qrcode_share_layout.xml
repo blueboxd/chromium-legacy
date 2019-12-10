@@ -8,12 +8,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
+    <ImageView
+        android:id="@+id/tab_line"
+        android:layout_width="match_parent"
+        style="@style/TabBarShadow"
+        android:importantForAccessibility="no"/>
 
     <TextView
         android:id="@+id/qrcode_text_image"
         android:layout_width="250dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="200dp"
+        android:layout_marginTop="80dp"
+        android:drawableBottom="@drawable/qrcode_background"
+        android:drawablePadding="24dp"
         android:gravity="center_horizontal"
         android:layout_gravity="center_horizontal"
         android:text="@string/qr_code_share_description"
@@ -24,6 +31,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
+        android:layout_marginTop="30dp"
         android:text="@string/qr_code_download"
         style="@style/TextButton"/>
 </LinearLayout>

@@ -19,7 +19,7 @@ import org.chromium.ui.modelutil.PropertyModel;
  * Dialog prompting a user to either enable integration with Digital Wellbeing or to revoke
  * permission for that integration.
  * TODO(pnoland): Revisit the style of this dialog and where it's used(i.e. whether it's used from
- * PrivacyPreferences or not) to ensure that the visual style is consistent.
+ * PrivacySettings or not) to ensure that the visual style is consistent.
  */
 public class UsageStatsConsentDialog {
     private Activity mActivity;

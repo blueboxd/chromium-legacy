@@ -1518,7 +1518,7 @@ Status ExecutePerformActions(Session* session,
               if (has_touch_start[id]) {
                 if (event.type == kPause)
                   event.type = kTouchMove;
-                event.id = dispatch_touch_events.size();
+                event.id = j;
                 dispatch_touch_events.push_back(event);
               }
               if (j == last_touch_index) {

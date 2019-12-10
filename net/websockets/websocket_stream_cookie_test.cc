@@ -37,7 +37,7 @@ class TestBase : public WebSocketStreamCreateTestBase {
  public:
   void CreateAndConnect(const GURL& url,
                         const url::Origin& origin,
-                        const GURL& site_for_cookies,
+                        const SiteForCookies& site_for_cookies,
                         const net::NetworkIsolationKey& network_isolation_key,
                         const std::string& cookie_header,
                         const std::string& response_body) {
@@ -142,7 +142,7 @@ TEST_P(WebSocketStreamClientUseCookieTest, ClientUseCookie) {
   const GURL cookie_url(GetParam().cookie_url);
   const url::Origin origin =
       url::Origin::Create(GURL("http://www.example.com"));
-  const GURL site_for_cookies("http://www.example.com/");
+  const SiteForCookies site_for_cookies = SiteForCookies::FromOrigin(origin);
   const net::NetworkIsolationKey network_isolation_key(origin, origin);
   const std::string cookie_line(GetParam().cookie_line);
   const std::string cookie_header(AddCRLFIfNotEmpty(GetParam().cookie_header));
@@ -181,7 +181,7 @@ TEST_P(WebSocketStreamServerSetCookieTest, ServerSetCookie) {
   const GURL cookie_url(GetParam().cookie_url);
   const url::Origin origin =
       url::Origin::Create(GURL("http://www.example.com"));
-  const GURL site_for_cookies("http://www.example.com/");
+  const SiteForCookies site_for_cookies = SiteForCookies::FromOrigin(origin);
   const net::NetworkIsolationKey network_isolation_key(origin, origin);
   const std::string cookie_line(GetParam().cookie_line);
   const std::string cookie_header(AddCRLFIfNotEmpty(GetParam().cookie_header));

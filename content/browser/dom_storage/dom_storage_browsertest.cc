@@ -10,9 +10,9 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "components/services/storage/dom_storage/legacy_dom_storage_database.h"
+#include "components/services/storage/dom_storage/local_storage_impl.h"
 #include "components/services/storage/public/cpp/constants.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
-#include "content/browser/dom_storage/local_storage_context_mojo.h"
 #include "content/browser/dom_storage/session_storage_context_mojo.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -177,7 +177,7 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, DataMigrates) {
   const base::FilePath legacy_local_storage_path =
       partition()->GetPath().Append(storage::kLocalStoragePath);
   base::FilePath db_path = legacy_local_storage_path.Append(
-      LocalStorageContextMojo::LegacyDatabaseFileNameFromOrigin(
+      storage::LocalStorageImpl::LegacyDatabaseFileNameFromOrigin(
           url::Origin::Create(GetTestUrl("dom_storage", "store_data.html"))));
   {
     base::ScopedAllowBlockingForTesting allow_blocking;

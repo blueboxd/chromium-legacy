@@ -173,6 +173,10 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   void OnBackgroundCleanup() override;
   void OnBackgrounded() override;
   void OnForegrounded() override;
+#if !defined(OS_ANDROID)
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel level) override;
+#endif
 #if defined(OS_MACOSX)
   void BeginCATransaction() override;
   void CommitCATransaction(CommitCATransactionCallback callback) override;

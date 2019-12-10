@@ -18,7 +18,6 @@ struct GLVersionInfo;
 struct GLWindowSystemBindingInfo;
 
 GL_EXPORT void InitializeStaticGLBindingsGLX();
-GL_EXPORT void InitializeLogGLBindingsGLX();
 GL_EXPORT void ClearBindingsGLX();
 GL_EXPORT bool GetGLWindowSystemBindingInfoGLX(const GLVersionInfo& gl_info,
                                                GLWindowSystemBindingInfo* info);

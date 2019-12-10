@@ -197,6 +197,7 @@ void ProfilingClient::RetrieveHeapProfile(
     auto mojo_sample = mojom::HeapProfileSample::New();
     mojo_sample->allocator = ConvertType(sample.allocator);
     mojo_sample->size = sample.size;
+    mojo_sample->total = sample.total;
     mojo_sample->context_id = reinterpret_cast<uintptr_t>(sample.context);
     mojo_sample->stack.reserve(sample.stack.size() +
                                (g_include_thread_names ? 1 : 0));

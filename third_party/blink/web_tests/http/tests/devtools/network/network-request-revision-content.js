@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 (async function() {
+  'use strict';
   TestRunner.addResult(
       `Tests how revision requests content if original content was not loaded yet. https://bugs.webkit.org/show_bug.cgi?id=63631\n`);
   await TestRunner.loadModule('network_test_runner');
@@ -22,7 +23,8 @@
   Workspace.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, step2);
   TestRunner.evaluateInPage('loadStylesheet()');
 
-  var resource;
+  let uiSourceCode;
+
   function step2(event) {
     var eventUISourceCode = event.data;
     if (eventUISourceCode.url().indexOf('style.css') == -1)
@@ -35,7 +37,7 @@
     uiSourceCode.requestContent().then(step3);
   }
 
-  function step3({ content, error, isEncoded }) {
+  function step3({content}) {
     TestRunner.addResult(uiSourceCode.url());
     TestRunner.addResult(content);
     TestRunner.completeTest();

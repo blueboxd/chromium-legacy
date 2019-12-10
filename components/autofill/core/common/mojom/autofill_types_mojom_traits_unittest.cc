@@ -100,7 +100,6 @@ void CreateTestPasswordForm(PasswordForm* form) {
   form->new_password_value = base::ASCIIToUTF16("new_password_value");
   form->new_password_marked_by_site = false;
   form->new_password_element = base::ASCIIToUTF16("confirmation_password");
-  form->preferred = false;
   form->date_created = AutofillClock::Now();
   form->date_synced = AutofillClock::Now();
   form->blacklisted_by_user = false;

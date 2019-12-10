@@ -5,7 +5,7 @@
 Polymer({
   is: 'demo-preferences-md',
 
-  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
+  behaviors: [I18nBehavior, OobeDialogHostBehavior],
 
   properties: {
     /**

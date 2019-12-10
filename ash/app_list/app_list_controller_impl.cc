@@ -126,8 +126,8 @@ void SetAssistantPrivacyInfoDismissed() {
 // Whether a window will be shown over the applist when shown in tablet mode.
 bool HasVisibleWindows() {
   std::vector<aura::Window*> window_list =
-      ash::Shell::Get()->mru_window_tracker()->BuildMruWindowList(
-          ash::DesksMruType::kActiveDesk);
+      Shell::Get()->mru_window_tracker()->BuildMruWindowList(
+          DesksMruType::kActiveDesk);
   for (auto* window : window_list) {
     if (window->TargetVisibility())
       return true;
@@ -216,7 +216,7 @@ SearchModel* AppListControllerImpl::GetSearchModel() {
 }
 
 void AppListControllerImpl::AddItem(
-    std::unique_ptr<ash::AppListItemMetadata> item_data) {
+    std::unique_ptr<AppListItemMetadata> item_data) {
   const std::string folder_id = item_data->folder_id;
   if (folder_id.empty())
     model_->AddItem(CreateAppListItem(std::move(item_data)));
@@ -225,7 +225,7 @@ void AppListControllerImpl::AddItem(
 }
 
 void AppListControllerImpl::AddItemToFolder(
-    std::unique_ptr<ash::AppListItemMetadata> item_data,
+    std::unique_ptr<AppListItemMetadata> item_data,
     const std::string& folder_id) {
   // When we're setting a whole model of a profile, each item may have its
   // folder id set properly. However, |AppListModel::AddItemToFolder| requires
@@ -249,11 +249,11 @@ void AppListControllerImpl::MoveItemToFolder(const std::string& id,
   model_->MoveItemToFolder(item, folder_id);
 }
 
-void AppListControllerImpl::SetStatus(ash::AppListModelStatus status) {
+void AppListControllerImpl::SetStatus(AppListModelStatus status) {
   model_->SetStatus(status);
 }
 
-void AppListControllerImpl::SetState(ash::AppListState state) {
+void AppListControllerImpl::SetState(AppListState state) {
   model_->SetState(state);
 }
 
@@ -283,7 +283,7 @@ void AppListControllerImpl::UpdateSearchBox(const base::string16& text,
 }
 
 void AppListControllerImpl::PublishSearchResults(
-    std::vector<std::unique_ptr<ash::SearchResultMetadata>> results) {
+    std::vector<std::unique_ptr<SearchResultMetadata>> results) {
   std::vector<std::unique_ptr<SearchResult>> new_results;
   for (auto& result_metadata : results) {
     std::unique_ptr<SearchResult> result = std::make_unique<SearchResult>();
@@ -295,7 +295,7 @@ void AppListControllerImpl::PublishSearchResults(
 
 void AppListControllerImpl::SetItemMetadata(
     const std::string& id,
-    std::unique_ptr<ash::AppListItemMetadata> data) {
+    std::unique_ptr<AppListItemMetadata> data) {
   AppListItem* item = model_->FindItem(id);
   if (!item)
     return;
@@ -350,7 +350,7 @@ void AppListControllerImpl::SetItemPercentDownloaded(
 
 void AppListControllerImpl::SetModelData(
     int profile_id,
-    std::vector<std::unique_ptr<ash::AppListItemMetadata>> apps,
+    std::vector<std::unique_ptr<AppListItemMetadata>> apps,
     bool is_search_engine_google) {
   // Clear old model data.
   model_->DeleteAllItems();
@@ -375,7 +375,7 @@ void AppListControllerImpl::SetModelData(
 }
 
 void AppListControllerImpl::SetSearchResultMetadata(
-    std::unique_ptr<ash::SearchResultMetadata> metadata) {
+    std::unique_ptr<SearchResultMetadata> metadata) {
   SearchResult* result = search_model_.FindSearchResult(metadata->id);
   if (result)
     result->SetMetadata(std::move(metadata));
@@ -437,7 +437,7 @@ void AppListControllerImpl::ResolveOemFolderPosition(
     ResolveOemFolderPositionCallback callback) {
   // In ash:
   AppListFolderItem* ash_oem_folder = FindFolderItem(kOemFolderId);
-  std::unique_ptr<ash::AppListItemMetadata> metadata;
+  std::unique_ptr<AppListItemMetadata> metadata;
   if (ash_oem_folder) {
     const syncer::StringOrdinal& oem_folder_pos =
         preferred_oem_position.IsValid() ? preferred_oem_position
@@ -519,8 +519,8 @@ void AppListControllerImpl::OnAppListItemUpdated(AppListItem* item) {
     client_->OnItemUpdated(profile_id_, item->CloneMetadata());
 }
 
-void AppListControllerImpl::OnAppListStateChanged(ash::AppListState new_state,
-                                                  ash::AppListState old_state) {
+void AppListControllerImpl::OnAppListStateChanged(AppListState new_state,
+                                                  AppListState old_state) {
   if (!app_list_features::IsAssistantLauncherUIEnabled())
     return;
 
@@ -540,17 +540,17 @@ void AppListControllerImpl::OnAppListStateChanged(ash::AppListState new_state,
     }
   }
 
-  if (new_state == ash::AppListState::kStateEmbeddedAssistant) {
+  if (new_state == AppListState::kStateEmbeddedAssistant) {
     // ShowUi will be no-op if the AssistantUiModel is already visible.
     Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
-        ash::AssistantEntryPoint::kUnspecified);
+        AssistantEntryPoint::kUnspecified);
     return;
   }
 
-  if (old_state == ash::AppListState::kStateEmbeddedAssistant) {
+  if (old_state == AppListState::kStateEmbeddedAssistant) {
     // CloseUi will be no-op if the AssistantUiModel is already closed.
     Shell::Get()->assistant_controller()->ui_controller()->CloseUi(
-        ash::AssistantExitPoint::kBackInLauncher);
+        AssistantExitPoint::kBackInLauncher);
   }
 }
 
@@ -584,8 +584,7 @@ void AppListControllerImpl::UpdateYPositionAndOpacity(
                                        background_opacity);
 }
 
-void AppListControllerImpl::EndDragFromShelf(
-    ash::AppListViewState app_list_state) {
+void AppListControllerImpl::EndDragFromShelf(AppListViewState app_list_state) {
   // Avoid dragging app list when homecher is enabled.
   if (IsTabletMode())
     return;
@@ -597,11 +596,11 @@ void AppListControllerImpl::ProcessMouseWheelEvent(
   presenter_.ProcessMouseWheelOffset(event.offset());
 }
 
-ash::ShelfAction AppListControllerImpl::ToggleAppList(
+ShelfAction AppListControllerImpl::ToggleAppList(
     int64_t display_id,
     AppListShowSource show_source,
     base::TimeTicks event_time_stamp) {
-  ash::ShelfAction action =
+  ShelfAction action =
       presenter_.ToggleAppList(display_id, show_source, event_time_stamp);
   UpdateExpandArrowVisibility();
   if (action == SHELF_ACTION_APP_LIST_SHOWN)
@@ -609,7 +608,7 @@ ash::ShelfAction AppListControllerImpl::ToggleAppList(
   return action;
 }
 
-ash::AppListViewState AppListControllerImpl::GetAppListViewState() {
+AppListViewState AppListControllerImpl::GetAppListViewState() {
   return model_->state_fullscreen();
 }
 
@@ -867,7 +866,7 @@ void AppListControllerImpl::UpdateScaleAndOpacityForHomeLauncher(
 
 base::Optional<base::TimeDelta>
 AppListControllerImpl::GetOptionalAnimationDuration() {
-  if (model_->state() == ash::AppListState::kStateEmbeddedAssistant) {
+  if (model_->state() == AppListState::kStateEmbeddedAssistant) {
     // If Assistant is shown, we don't want any delay in animation transitions
     // since the launcher is already shown.
     return base::TimeDelta::Min();
@@ -899,7 +898,7 @@ void AppListControllerImpl::SetKeyboardTraversalMode(bool engaged) {
     focused_view->SchedulePaint();
 }
 
-ash::ShelfAction AppListControllerImpl::OnHomeButtonPressed(
+ShelfAction AppListControllerImpl::OnHomeButtonPressed(
     int64_t display_id,
     AppListShowSource show_source,
     base::TimeTicks event_time_stamp) {
@@ -911,11 +910,11 @@ ash::ShelfAction AppListControllerImpl::OnHomeButtonPressed(
   // Perform the "back" action for the app list.
   if (!handled) {
     Back();
-    return ash::SHELF_ACTION_APP_LIST_BACK;
+    return SHELF_ACTION_APP_LIST_BACK;
   }
 
   LogAppListShowSource(show_source);
-  return ash::SHELF_ACTION_APP_LIST_SHOWN;
+  return SHELF_ACTION_APP_LIST_SHOWN;
 }
 
 bool AppListControllerImpl::IsShowingEmbeddedAssistantUI() const {
@@ -932,7 +931,7 @@ void AppListControllerImpl::UpdateExpandArrowVisibility() {
   //     drag from top of home screen is disabled.
   if (IsTabletMode()) {
     should_show = !features::IsDragFromShelfToHomeOrOverviewEnabled() &&
-                  !ash::Shell::Get()
+                  !Shell::Get()
                        ->mru_window_tracker()
                        ->BuildWindowForCycleList(kActiveDesk)
                        .empty();
@@ -943,13 +942,13 @@ void AppListControllerImpl::UpdateExpandArrowVisibility() {
   presenter_.SetExpandArrowViewVisibility(should_show);
 }
 
-ash::AppListViewState AppListControllerImpl::CalculateStateAfterShelfDrag(
+AppListViewState AppListControllerImpl::CalculateStateAfterShelfDrag(
     const ui::LocatedEvent& event_in_screen,
     float launcher_above_shelf_bottom_amount) const {
   if (presenter_.GetView())
     return presenter_.GetView()->CalculateStateAfterShelfDrag(
         event_in_screen, launcher_above_shelf_bottom_amount);
-  return ash::AppListViewState::kClosed;
+  return AppListViewState::kClosed;
 }
 
 void AppListControllerImpl::SetAppListModelForTest(
@@ -983,16 +982,16 @@ void AppListControllerImpl::RecordShelfAppLaunched(
 
 void AppListControllerImpl::StartAssistant() {
   if (app_list_features::IsAssistantLauncherUIEnabled()) {
-    ash::Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
-        ash::AssistantEntryPoint::kLauncherSearchBoxMic);
+    Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
+        AssistantEntryPoint::kLauncherSearchBoxMic);
     return;
   }
 
   if (!IsTabletMode())
     DismissAppList();
 
-  ash::Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
-      ash::AssistantEntryPoint::kLauncherSearchBox);
+  Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
+      AssistantEntryPoint::kLauncherSearchBox);
 }
 
 void AppListControllerImpl::StartSearch(const base::string16& raw_query) {
@@ -1027,7 +1026,7 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
 
   UMA_HISTOGRAM_ENUMERATION(kSearchResultOpenDisplayTypeHistogram,
                             result->display_type(),
-                            ash::SearchResultDisplayType::kLast);
+                            SearchResultDisplayType::kLast);
 
   // Suggestion chips are not represented to the user as search results, so do
   // not record search result metrics for them.
@@ -1066,7 +1065,7 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
     Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
         AssistantEntryPoint::kLauncherSearchResult);
     Shell::Get()->assistant_controller()->OpenUrl(
-        ash::assistant::util::CreateAssistantQueryDeepLink(
+        assistant::util::CreateAssistantQueryDeepLink(
             base::UTF16ToUTF8(result->title())));
   } else {
     if (client_)
@@ -1107,7 +1106,7 @@ void AppListControllerImpl::GetSearchResultContextMenuModel(
 void AppListControllerImpl::ViewShown(int64_t display_id) {
   if (app_list_features::IsAssistantLauncherUIEnabled() &&
       GetAssistantViewDelegate()->GetUiModel()->ui_mode() !=
-          ash::AssistantUiMode::kLauncherEmbeddedUi) {
+          AssistantUiMode::kLauncherEmbeddedUi) {
     CloseAssistantUi(AssistantExitPoint::kLauncherOpen);
   }
   UpdateAssistantVisibility();
@@ -1166,9 +1165,9 @@ void AppListControllerImpl::GetContextMenuModel(
 }
 
 ui::ImplicitAnimationObserver* AppListControllerImpl::GetAnimationObserver(
-    ash::AppListViewState target_state) {
+    AppListViewState target_state) {
   // |presenter_| observes the close animation only.
-  if (target_state == ash::AppListViewState::kClosed)
+  if (target_state == AppListViewState::kClosed)
     return &presenter_;
   return nullptr;
 }
@@ -1253,7 +1252,7 @@ int AppListControllerImpl::GetTargetYForAppListHide(aura::Window* root_window) {
   return Shelf::ForWindow(root_window)->GetIdealBounds().y();
 }
 
-ash::AssistantViewDelegate* AppListControllerImpl::GetAssistantViewDelegate() {
+AssistantViewDelegate* AppListControllerImpl::GetAssistantViewDelegate() {
   return Shell::Get()->assistant_controller()->view_delegate();
 }
 
@@ -1266,7 +1265,7 @@ void AppListControllerImpl::OnSearchResultVisibilityChanged(
 
 void AppListControllerImpl::NotifySearchResultsForLogging(
     const base::string16& raw_query,
-    const ash::SearchResultIdWithPositionIndices& results,
+    const SearchResultIdWithPositionIndices& results,
     int position_index) {
   if (client_) {
     base::string16 query;
@@ -1315,7 +1314,7 @@ void AppListControllerImpl::MarkAssistantPrivacyInfoDismissed() {
 }
 
 void AppListControllerImpl::OnStateTransitionAnimationCompleted(
-    ash::AppListViewState state) {
+    AppListViewState state) {
   if (!state_transition_animation_callback_.is_null())
     state_transition_animation_callback_.Run(state);
 }
@@ -1332,7 +1331,7 @@ gfx::Rect AppListControllerImpl::SnapBoundsToDisplayEdge(
   AppListView* app_list_view = presenter_.GetView();
   DCHECK(app_list_view && app_list_view->GetWidget());
   aura::Window* window = app_list_view->GetWidget()->GetNativeView();
-  return ash::screen_util::SnapBoundsToDisplayEdge(bounds, window);
+  return screen_util::SnapBoundsToDisplayEdge(bounds, window);
 }
 
 int AppListControllerImpl::GetShelfHeight() {
@@ -1506,7 +1505,7 @@ syncer::StringOrdinal AppListControllerImpl::GetOemFolderPos() {
 }
 
 std::unique_ptr<AppListItem> AppListControllerImpl::CreateAppListItem(
-    std::unique_ptr<ash::AppListItemMetadata> metadata) {
+    std::unique_ptr<AppListItemMetadata> metadata) {
   std::unique_ptr<AppListItem> app_list_item =
       metadata->is_folder ? std::make_unique<AppListFolderItem>(metadata->id)
                           : std::make_unique<AppListItem>(metadata->id);
@@ -1532,7 +1531,7 @@ int64_t AppListControllerImpl::GetDisplayIdToShowAppListOn() {
   }
 
   return display::Screen::GetScreen()
-      ->GetDisplayNearestWindow(ash::Shell::GetRootWindowForNewWindows())
+      ->GetDisplayNearestWindow(Shell::GetRootWindowForNewWindows())
       .id();
 }
 
@@ -1577,9 +1576,8 @@ void AppListControllerImpl::UpdateLauncherContainer(
 }
 
 int AppListControllerImpl::GetContainerId() const {
-  return ShouldLauncherShowBehindApps()
-             ? ash::kShellWindowId_HomeScreenContainer
-             : ash::kShellWindowId_AppListContainer;
+  return ShouldLauncherShowBehindApps() ? kShellWindowId_HomeScreenContainer
+                                        : kShellWindowId_AppListContainer;
 }
 
 aura::Window* AppListControllerImpl::GetContainerForDisplayId(
@@ -1593,7 +1591,7 @@ aura::Window* AppListControllerImpl::GetContainerForDisplayId(
 
 bool AppListControllerImpl::ShouldLauncherShowBehindApps() const {
   return IsTabletMode() &&
-         model_->state() != ash::AppListState::kStateEmbeddedAssistant;
+         model_->state() != AppListState::kStateEmbeddedAssistant;
 }
 
 int AppListControllerImpl::GetLastQueryLength() {

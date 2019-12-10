@@ -140,6 +140,9 @@ class CORE_EXPORT ScriptLoader final : public GarbageCollected<ScriptLoader>,
   // PendingScriptClient
   void PendingScriptFinished(PendingScript*) override;
 
+  // Get the effective script text (after Trusted Types checking).
+  String GetScriptText() const;
+
   Member<ScriptElementBase> element_;
 
   // https://html.spec.whatwg.org/C/#script-processing-model

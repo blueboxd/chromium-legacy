@@ -245,6 +245,10 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     // Tooltips
     case ui::NativeTheme::kColorId_TooltipBackground:
       return GetBgColorFromStyleContext(GetTooltipContext());
+    case ui::NativeTheme::kColorId_TooltipIcon:
+      return GetFgColor("GtkButton#button.image-button");
+    case ui::NativeTheme::kColorId_TooltipIconHovered:
+      return GetFgColor("GtkButton#button.image-button:hover");
     case ui::NativeTheme::kColorId_TooltipText: {
       auto context = GetTooltipContext();
       context = AppendCssNodeToStyleContext(context, "GtkLabel");

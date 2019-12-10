@@ -160,20 +160,13 @@ TEST_F(ScopedOverviewTransformWindowTest, TransformingLetteredRect) {
   EXPECT_NEAR((overview_bounds.height() - original_header) / scale,
               transformed_rect.height() - original_header / scale, 1);
   EXPECT_TRUE(overview_bounds.Contains(transformed_rect));
-
-  // Verify that for an extreme window, the transform window stores the
-  // original overview item bounds, minus the header.
-  gfx::RectF new_overview_bounds = overview_bounds;
-  new_overview_bounds.Inset(0, overview_header, 0, 0);
-  ASSERT_TRUE(transform_window.overview_bounds().has_value());
-  EXPECT_EQ(transform_window.overview_bounds().value(), new_overview_bounds);
 }
 
 // Verify that a window which will be displayed like a pillar box on the window
 // grid has the correct bounds.
 TEST_F(ScopedOverviewTransformWindowTest, TransformingPillaredRect) {
   // Create a window whose height is more than twice the width.
-  const gfx::Rect original_bounds(10, 10, 100, 300);
+  const gfx::Rect original_bounds(10, 10, 150, 450);
   const int scale = 3;
   std::unique_ptr<aura::Window> window = CreateTestWindow(original_bounds);
   ScopedOverviewTransformWindow transform_window(nullptr, window.get());
@@ -197,16 +190,12 @@ TEST_F(ScopedOverviewTransformWindowTest, TransformingPillaredRect) {
   transformed_rect = transform_window.ShrinkRectToFitPreservingAspectRatio(
       gfx::RectF(original_bounds), overview_bounds, original_header,
       overview_header);
-  EXPECT_NEAR(overview_bounds.height() - overview_header,
-              transformed_rect.height() - original_header / scale, 1);
+  const float overview_scale =
+      original_bounds.height() / overview_bounds.height();
+  const float expected_height = overview_bounds.height() - overview_header +
+                                original_header / overview_scale;
+  EXPECT_NEAR(expected_height, transformed_rect.height(), 1);
   EXPECT_TRUE(overview_bounds.Contains(transformed_rect));
-
-  // Verify that for an extreme window, the transform window stores the
-  // original overview item bounds, minus the header.
-  gfx::RectF new_overview_bounds = overview_bounds;
-  new_overview_bounds.Inset(0, overview_header, 0, 0);
-  ASSERT_TRUE(transform_window.overview_bounds().has_value());
-  EXPECT_EQ(transform_window.overview_bounds().value(), new_overview_bounds);
 }
 
 // Tests the cases when very wide or tall windows enter overview mode.

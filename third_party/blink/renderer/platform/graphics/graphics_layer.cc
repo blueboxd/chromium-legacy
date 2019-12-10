@@ -258,8 +258,6 @@ void GraphicsLayer::SetOffsetFromLayoutObject(const IntSize& offset) {
     return;
 
   offset_from_layout_object_ = offset;
-  CcLayer()->SetFiltersOrigin(FloatPoint() -
-                              FloatSize(offset_from_layout_object_));
 
   // If the compositing layer offset changes, we need to repaint.
   SetNeedsDisplay();

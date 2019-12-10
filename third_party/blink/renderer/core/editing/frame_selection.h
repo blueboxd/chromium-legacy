@@ -272,6 +272,10 @@ class CORE_EXPORT FrameSelection final
   Range* DocumentCachedRange() const;
   void ClearDocumentCachedRange();
 
+  // Invalidates the cached visual selection information, like
+  // |VisibleSelection| and selection bounds.
+  void MarkCacheDirty();
+
   FrameCaret& FrameCaretForTesting() const { return *frame_caret_; }
 
   LayoutTextSelectionStatus ComputeLayoutSelectionStatus(

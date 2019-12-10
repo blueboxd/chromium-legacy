@@ -22,8 +22,14 @@ const base::Feature kAudioServiceSandbox {
 
 // Enables network service sandbox.
 // (Only causes an effect when feature kNetworkService is enabled.)
-const base::Feature kNetworkServiceSandbox{"NetworkServiceSandbox",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kNetworkServiceSandbox {
+  "NetworkServiceSandbox",
+#if defined(OS_MACOSX)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 #if defined(OS_WIN)
 // Emergency "off switch" for new Windows sandbox security mitigation,

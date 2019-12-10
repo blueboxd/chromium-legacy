@@ -40,7 +40,7 @@ mojom("mojom") {
     "//services/network/public/mojom:mutable_network_traffic_annotation_interface",
   ]
 
-  if (is_chromeos && use_dbus) {
+  if (is_chromeos) {
     sources += [
       "mtp_file_entry.mojom",
       "mtp_manager.mojom",
@@ -63,6 +63,33 @@ mojom("mojom") {
   ]
 }
 
+mojom("device_service") {
+  sources = [
+    "device_service.mojom",
+  ]
+
+  # We can't depend on the Blink variant of ":generic_sensors", but we need the
+  # non-Blink variant as a dependency. Blink can never use the DeviceService
+  # interface directly anyway, so don't generate bindings for it.
+  disable_variants = true
+
+  enabled_features = []
+  if (is_linux && use_udev) {
+    enabled_features += [ "enable_input_device_manager" ]
+  }
+
+  if (!is_android) {
+    enabled_features += [ "enable_hid" ]
+  }
+
+  public_deps = [
+    ":generic_sensor",
+    ":mojom",
+    ":usb",
+    ":usb_test",
+  ]
+}
+
 mojom("generic_sensor") {
   generate_java = true
   sources = [
@@ -78,8 +105,10 @@ mojom("generic_sensor") {
   export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
   export_header_blink = "third_party/blink/public/platform/web_common.h"
 
-  visibility_blink =
-      [ "//third_party/blink/renderer/platform:blink_platform_public_deps" ]
+  visibility_blink = [
+    ":mojom_blink",
+    "//third_party/blink/renderer/platform:blink_platform_public_deps",
+  ]
 
   # Generic Sensor Mojom interfaces are exposed publicly to layout tests which
   # use prepackaged redistributable JS bindings. It is therefore not desirable
@@ -140,6 +169,7 @@ mojom("usb") {
 }
 
 mojom("usb_test") {
+  generate_java = true
   sources = [
     "usb_manager_test.mojom",
   ]

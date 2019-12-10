@@ -71,7 +71,7 @@
         android:order="12"
         android:title="@string/prefs_section_advanced"/>
     <Preference
-        android:fragment="org.chromium.chrome.browser.settings.privacy.PrivacyPreferences"
+        android:fragment="org.chromium.chrome.browser.settings.privacy.PrivacySettings"
         android:key="privacy"
         android:order="13"
         android:title="@string/prefs_privacy"/>
@@ -86,17 +86,17 @@
         android:order="15"
         android:title="@string/prefs_site_settings"/>
     <Preference
-        android:fragment="org.chromium.chrome.browser.settings.languages.LanguagesPreferences"
+        android:fragment="org.chromium.chrome.browser.settings.languages.LanguageSettings"
         android:key="languages"
         android:order="16"
-        android:title="@string/prefs_languages"/>
+        android:title="@string/language_settings"/>
     <org.chromium.chrome.browser.settings.ChromeBasePreference
         android:fragment="org.chromium.chrome.browser.settings.datareduction.DataReductionPreferenceFragment"
         android:key="data_reduction"
         android:order="17"
         android:title="@string/data_reduction_title_lite_mode"/>
     <org.chromium.chrome.browser.settings.ChromeBasePreference
-        android:fragment="org.chromium.chrome.browser.settings.download.DownloadPreferences"
+        android:fragment="org.chromium.chrome.browser.settings.download.DownloadSettings"
         android:key="downloads"
         android:order="18"
         android:title="@string/menu_downloads"/>

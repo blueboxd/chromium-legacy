@@ -14,7 +14,7 @@
         android:id="@+id/snackbar_shadow_top"
         android:layout_width="match_parent"
         android:layout_height="@dimen/snackbar_shadow_height"
-        android:layout_above="@+id/snackbar"
+        android:layout_alignParentTop="true"
         android:layout_toEndOf="@+id/snackbar_shadow_left"
         android:layout_toStartOf="@+id/snackbar_shadow_right"
         android:background="@drawable/infobar_shadow_top" />
@@ -43,7 +43,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="@dimen/snackbar_min_height"
-        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/snackbar_shadow_top"
         android:layout_toEndOf="@id/snackbar_shadow_left"
         android:layout_toStartOf="@id/snackbar_shadow_right"
         android:orientation="horizontal" >

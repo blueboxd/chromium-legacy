@@ -81,6 +81,8 @@ import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.gesturenav.NavigationSheet;
 import org.chromium.chrome.browser.gesturenav.TabbedSheetDelegate;
 import org.chromium.chrome.browser.incognito.IncognitoNotificationManager;
@@ -268,6 +270,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
 
     private ScreenshotMonitor mScreenshotMonitor;
 
+    private ComposedBrowserControlsVisibilityDelegate mAppBrowserControlsVisibilityDelegate;
     private TabModalLifetimeHandler mTabModalHandler;
 
     private boolean mUIWithNativeInitialized;
@@ -1633,7 +1636,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
     @Override
     protected Pair<ChromeTabCreator, ChromeTabCreator> createTabCreators() {
         Supplier<TabDelegateFactory> tabDelegateFactorySupplier = () -> {
-            return new TabbedModeTabDelegateFactory(this);
+            return new TabbedModeTabDelegateFactory(
+                    this, getAppBrowserControlsVisibilityDelegate(), getShareDelegateSupplier());
         };
         return Pair.create(new ChromeTabCreator(this, getWindowAndroid(), getStartupTabPreloader(),
                                    tabDelegateFactorySupplier, false),
@@ -2211,10 +2215,26 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
         return getLayoutManager().getOverviewListLayout();
     }
 
+    private ComposedBrowserControlsVisibilityDelegate getAppBrowserControlsVisibilityDelegate() {
+        if (mAppBrowserControlsVisibilityDelegate == null) {
+            mAppBrowserControlsVisibilityDelegate = new ComposedBrowserControlsVisibilityDelegate();
+        }
+        return mAppBrowserControlsVisibilityDelegate;
+    }
+
+    @Override
+    protected ChromeFullscreenManager createFullscreenManager() {
+        ChromeFullscreenManager fullscreenManager = super.createFullscreenManager();
+        getAppBrowserControlsVisibilityDelegate().addDelegate(
+                fullscreenManager.getBrowserVisibilityDelegate());
+        return fullscreenManager;
+    }
+
     @Override
     protected ModalDialogManager createModalDialogManager() {
         ModalDialogManager manager = super.createModalDialogManager();
-        mTabModalHandler = new TabModalLifetimeHandler(this, manager);
+        mTabModalHandler = new TabModalLifetimeHandler(
+                this, manager, getAppBrowserControlsVisibilityDelegate());
         return manager;
     }
 

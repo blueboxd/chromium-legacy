@@ -15,7 +15,7 @@ const ADB_SIDELOADING_SCREEN_STATE = {
 Polymer({
   is: 'oobe-adb-sideloading-screen',
 
-  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
+  behaviors: [I18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
 
   properties: {
     uiState_: String,

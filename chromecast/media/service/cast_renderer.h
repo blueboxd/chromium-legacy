@@ -12,6 +12,7 @@
 #include "base/no_destructor.h"
 #include "base/unguessable_token.h"
 #include "chromecast/common/mojom/multiroom.mojom.h"
+#include "chromecast/common/mojom/service_connector.mojom.h"
 #include "chromecast/media/base/video_resolution_policy.h"
 #include "chromecast/media/cma/backend/cma_backend_factory.h"
 #include "chromecast/media/service/mojom/video_geometry_setter.mojom.h"
@@ -28,7 +29,6 @@ class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace service_manager {
-class Connector;
 namespace mojom {
 class InterfaceProvider;
 }  // namespace mojom
@@ -48,14 +48,12 @@ class CastRenderer : public ::media::Renderer,
                      public VideoResolutionPolicy::Observer,
                      public mojom::VideoGeometryChangeClient {
  public:
-  // |connector| provides interfaces for services hosted by ServiceManager.
   // |host_interfaces| provides interfaces tied to RenderFrameHost.
   CastRenderer(CmaBackendFactory* backend_factory,
                const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
                VideoModeSwitcher* video_mode_switcher,
                VideoResolutionPolicy* video_resolution_policy,
                const base::UnguessableToken& overlay_plane_id,
-               service_manager::Connector* connector,
                service_manager::mojom::InterfaceProvider* host_interfaces);
   ~CastRenderer() final;
   // For CmaBackend implementation, CastRenderer must be connected to
@@ -121,7 +119,7 @@ class CastRenderer : public ::media::Renderer,
   VideoModeSwitcher* video_mode_switcher_;
   VideoResolutionPolicy* video_resolution_policy_;
   base::UnguessableToken overlay_plane_id_;
-  service_manager::Connector* connector_;
+  mojo::Remote<chromecast::mojom::ServiceConnector> service_connector_;
   service_manager::mojom::InterfaceProvider* host_interfaces_;
 
   ::media::RendererClient* client_;

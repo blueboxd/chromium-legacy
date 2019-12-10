@@ -40,6 +40,10 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::UserAgentMetadataDataView,
     return data.model;
   }
 
+  static const bool& mobile(const ::blink::UserAgentMetadata& data) {
+    return data.mobile;
+  }
+
   static bool Read(blink::mojom::UserAgentMetadataDataView data,
                    ::blink::UserAgentMetadata* out);
 };

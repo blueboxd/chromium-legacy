@@ -206,6 +206,12 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
     }
   }
 
+  // Registered with base::StatisticsRecorder to receive a callback on every
+  // histogram sample which gets added.
+  static void OnMetricsSampleCallback(const char* histogram_name,
+                                      uint64_t name_hash,
+                                      base::HistogramBase::Sample sample);
+
  private:
   friend class base::NoDestructor<TraceEventDataSource>;
 

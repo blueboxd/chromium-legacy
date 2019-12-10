@@ -273,8 +273,6 @@ bool StructTraits<
           &out->confirmation_password_element))
     return false;
 
-  out->preferred = data.preferred();
-
   if (!data.ReadDateCreated(&out->date_created) ||
       !data.ReadDateSynced(&out->date_synced))
     return false;

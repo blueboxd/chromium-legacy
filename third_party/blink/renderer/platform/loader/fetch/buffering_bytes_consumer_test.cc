@@ -7,7 +7,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/platform/loader/fetch/data_pipe_bytes_consumer.h"
 #include "third_party/blink/renderer/platform/loader/testing/bytes_consumer_test_reader.h"
@@ -74,10 +73,6 @@ TEST_F(BufferingBytesConsumerTest, ReadWithDelay) {
   auto* replaying_bytes_consumer =
       MakeGarbageCollected<ReplayingBytesConsumer>(task_runner);
 
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(
-      features::kBufferingBytesConsumerDelay, {{"milliseconds", "10"}});
-
   replaying_bytes_consumer->Add(Command(Command::kWait));
   replaying_bytes_consumer->Add(Command(Command::kData, "1"));
   replaying_bytes_consumer->Add(Command(Command::kWait));
@@ -143,10 +138,6 @@ TEST_F(BufferingBytesConsumerTest, Buffering) {
 }
 
 TEST_F(BufferingBytesConsumerTest, BufferingWithDelay) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(
-      features::kBufferingBytesConsumerDelay, {{"milliseconds", "10"}});
-
   auto task_runner = base::MakeRefCounted<scheduler::FakeTaskRunner>();
   auto* replaying_bytes_consumer =
       MakeGarbageCollected<ReplayingBytesConsumer>(task_runner);
@@ -175,7 +166,7 @@ TEST_F(BufferingBytesConsumerTest, BufferingWithDelay) {
   EXPECT_EQ(PublicState::kReadableOrWaiting,
             replaying_bytes_consumer->GetPublicState());
 
-  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(11));
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(51));
   task_runner->RunUntilIdle();
 
   // After the delay expires the underlying consumer should be completely read.
@@ -242,10 +233,6 @@ TEST_F(BufferingBytesConsumerTest, DrainAsDataPipeFailsWithoutDelay) {
 }
 
 TEST_F(BufferingBytesConsumerTest, DrainAsDataPipeSucceedsWithDelay) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(
-      features::kBufferingBytesConsumerDelay, {{"milliseconds", "10"}});
-
   auto task_runner = base::MakeRefCounted<scheduler::FakeTaskRunner>();
 
   DataPipeBytesConsumer::CompletionNotifier* notifier = nullptr;
@@ -262,10 +249,6 @@ TEST_F(BufferingBytesConsumerTest, DrainAsDataPipeSucceedsWithDelay) {
 }
 
 TEST_F(BufferingBytesConsumerTest, DrainAsDataPipeFailsWithExpiredDelay) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(
-      features::kBufferingBytesConsumerDelay, {{"milliseconds", "10"}});
-
   auto task_runner = base::MakeRefCounted<scheduler::FakeTaskRunner>();
 
   DataPipeBytesConsumer::CompletionNotifier* notifier = nullptr;
@@ -276,7 +259,7 @@ TEST_F(BufferingBytesConsumerTest, DrainAsDataPipeFailsWithExpiredDelay) {
   auto* bytes_consumer = BufferingBytesConsumer::CreateWithDelay(
       data_pipe_consumer, scheduler::GetSingleThreadTaskRunnerForTesting());
 
-  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(11));
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(51));
 
   EXPECT_EQ(PublicState::kReadableOrWaiting, bytes_consumer->GetPublicState());
   auto drained_consumer_handle = bytes_consumer->DrainAsDataPipe();

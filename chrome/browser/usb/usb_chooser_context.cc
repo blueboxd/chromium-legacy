@@ -22,11 +22,9 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/pref_names.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/device_service.h"
 #include "services/device/public/cpp/usb/usb_ids.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -198,8 +196,7 @@ void UsbChooserContext::EnsureConnectionWithDeviceManager() {
     return;
 
   // Receive mojo::Remote<UsbDeviceManager> from DeviceService.
-  content::GetSystemConnector()->Connect(
-      device::mojom::kServiceName,
+  content::GetDeviceService().BindUsbDeviceManager(
       device_manager_.BindNewPipeAndPassReceiver());
 
   SetUpDeviceManagerConnection();

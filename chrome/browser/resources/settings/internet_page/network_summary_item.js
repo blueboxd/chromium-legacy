@@ -326,35 +326,6 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.NetworkStateProperties} activeNetworkState
-   * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
-   * @param {!Array<!OncMojo.NetworkStateProperties>} networkStateList
-   * @return {string}
-   * @private
-   */
-  getDetailsA11yString_: function(
-      activeNetworkState, deviceState, networkStateList) {
-    let a11yString = this.getNetworkTypeString_(deviceState.type);
-    // If the item opens a network detail page directly then also include the
-    // network display name in the A11y string to give more context.
-    if (!this.shouldShowSubpage_(deviceState, networkStateList)) {
-      let displayName;
-      if (activeNetworkState.guid) {
-        displayName = OncMojo.getNetworkStateDisplayName(activeNetworkState);
-      } else if (networkStateList.length > 0) {
-        displayName = OncMojo.getNetworkStateDisplayName(networkStateList[0]);
-      }
-      // Display name could be same as network type string. Only combine the
-      // two strings if we have a valid display name.
-      if (displayName !== undefined && displayName != a11yString) {
-        a11yString = this.i18n(
-            'internetSummaryButtonA11yLabel', a11yString, displayName);
-      }
-    }
-    return a11yString;
-  },
-
-  /**
    * Event triggered when the enable button is toggled.
    * @param {!Event} event
    * @private

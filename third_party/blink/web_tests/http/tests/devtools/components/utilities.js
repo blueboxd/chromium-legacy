@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 (async function() {
+  'use strict';
   TestRunner.addResult(`This test checks Web Inspector utilities.\n`);
 
 
@@ -40,8 +41,9 @@
         var allValues = a.concat(b).concat(actual);
         for (var i = 0; i < allValues.length; ++i) {
           var value = allValues[i];
-          expectedCount = checkOperation(count(a, value), count(b, value));
-          actualCount = count(actual, value);
+          const expectedCount =
+              checkOperation(count(a, value), count(b, value));
+          const actualCount = count(actual, value);
           TestRunner.assertEquals(
               expectedCount, actualCount,
               'Incorrect result for value: ' + value + ' at [' + a + '] ' + opName + ' [' + b + '] -> [' + actual +
@@ -155,7 +157,7 @@
                 compareArrays(
                     middle.slice(first - left, first - left + count), actual.slice(first, first + count),
                     'sorted ' + left + ' ' + right + ' ' + first + ' ' + count);
-                actualRest = actual.slice(first + count, right + 1);
+                const actualRest = actual.slice(first + count, right + 1);
                 actualRest.sort(comparator);
                 compareArrays(
                     middle.slice(first - left + count), actualRest,

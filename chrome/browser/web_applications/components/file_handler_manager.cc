@@ -94,6 +94,40 @@ void FileHandlerManager::OnAppRegistrarDestroyed() {
   registrar_observer_.RemoveAll();
 }
 
+const base::Optional<GURL> FileHandlerManager::GetMatchingFileHandlerURL(
+    const AppId& app_id,
+    const std::vector<base::FilePath>& launch_files) {
+  const std::vector<apps::FileHandlerInfo>* file_handlers =
+      GetAllFileHandlers(app_id);
+  if (!file_handlers || launch_files.empty())
+    return base::nullopt;
+
+  // Leading `.` for each file extension must be removed to match those given by
+  // FileHandlerInfo.extensions below.
+  std::set<std::string> file_extensions;
+  for (const auto& file_path : launch_files) {
+    std::string extension =
+        base::FilePath(file_path.Extension()).AsUTF8Unsafe();
+    if (extension.length() <= 1)
+      return base::nullopt;
+    file_extensions.insert(extension.substr(1));
+  }
+
+  for (const auto& file_handler : *file_handlers) {
+    bool all_extensions_supported = true;
+    for (const auto& extension : file_extensions) {
+      if (!file_handler.extensions.count(extension)) {
+        all_extensions_supported = false;
+        break;
+      }
+    }
+    if (all_extensions_supported)
+      return GURL(file_handler.id);
+  }
+
+  return base::nullopt;
+}
+
 std::set<std::string> GetFileExtensionsFromFileHandlers(
     const std::vector<apps::FileHandlerInfo>& file_handlers) {
   std::set<std::string> file_extensions;

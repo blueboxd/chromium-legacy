@@ -38,7 +38,11 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
                                     public ::wm::ActivationChangeObserver,
                                     public ::wm::TransientWindowObserver {
  public:
-  SplitViewDivider(SplitViewController* controller);
+  // The distance to the divider edge in which a touch gesture will be
+  // considered as a valid event on the divider.
+  static constexpr int kDividerEdgeInsetForTouch = 8;
+
+  explicit SplitViewDivider(SplitViewController* controller);
   ~SplitViewDivider() override;
 
   // static version of GetDividerBoundsInScreen(bool is_dragging) function.
@@ -69,6 +73,11 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
   void OnWindowDragStarted(aura::Window* dragged_window);
   void OnWindowDragEnded();
 
+  // Splitview divider resizable area for gesture events while in landscape mode
+  // is restricted for back gesture now. Returns true if |location| is inside
+  // the area that can be used to resize the snapped windows.
+  bool IsInsideLandscapeResizableArea(const gfx::Point& location);
+
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
 
@@ -87,7 +96,7 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
   void OnTransientChildRemoved(aura::Window* window,
                                aura::Window* transient) override;
 
-  views::Widget* divider_widget() { return divider_widget_; }
+  views::Widget* divider_widget() { return divider_widget_.get(); }
 
  private:
   void CreateDividerWidget(SplitViewController* controller);
@@ -104,7 +113,7 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
   // screen to the other, containing a small white drag bar in the middle. As
   // the user presses on it and drag it to left or right, the left and right
   // window will be resized accordingly.
-  views::Widget* divider_widget_ = nullptr;
+  std::unique_ptr<views::Widget> divider_widget_;
 
   // If true there is a window whose tabs are currently being dragged around.
   bool is_dragging_window_ = false;

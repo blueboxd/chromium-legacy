@@ -1350,7 +1350,7 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(
         return true;
 
       LogCanAccessDataForOriginCrashKeys(
-          "(empty)" /* expected_process_lock */,
+          /* expected_process_lock= */ "(empty)",
           GetKilledProcessOriginLock(security_state), origin.GetDebugString(),
           "opaque_origin_without_precursor_in_locked_process");
 
@@ -1444,7 +1444,8 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
       // A process with no lock can only access data from origins that do not
       // require a locked process.
       bool should_lock_target =
-          SiteInstanceImpl::ShouldLockToOrigin(isolation_context, site_url);
+          SiteInstanceImpl::ShouldLockToOrigin(isolation_context, site_url,
+                                               /* is_guest= */ false);
       if (!should_lock_target)
         return true;
       failure_reason = " citadel_enforcement";

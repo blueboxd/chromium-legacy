@@ -5,6 +5,7 @@
 package org.chromium.base.library_loader;
 
 import android.annotation.SuppressLint;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
@@ -248,7 +249,13 @@ public abstract class Linker {
                         ContextUtils.getApplicationContext().getApplicationInfo().className;
                 boolean isIncrementalInstall =
                         appClass != null && appClass.contains("incrementalinstall");
-                if (LibraryLoader.getInstance().useModernLinker() && !isIncrementalInstall) {
+                // Use ModernLinker on Android P+, as LegacyLinker crashes when building with
+                // Control Flow Integrity (crbug.com/980304).
+                boolean useModernLinker =
+                        (LibraryLoader.getInstance().useModernLinker() && !isIncrementalInstall)
+                        || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+                                && !isIncrementalInstall);
+                if (useModernLinker) {
                     sSingleton = new ModernLinker();
                 } else {
                     sSingleton = new LegacyLinker();

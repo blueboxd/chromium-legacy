@@ -337,7 +337,6 @@ class PasswordFormManagerTest : public testing::Test,
     saved_match_.origin = origin;
     saved_match_.action = action;
     saved_match_.signon_realm = "https://accounts.google.com/";
-    saved_match_.preferred = true;
     saved_match_.username_value = ASCIIToUTF16("test@gmail.com");
     saved_match_.username_element = ASCIIToUTF16("field1");
     saved_match_.password_value = ASCIIToUTF16("test1");
@@ -637,7 +636,7 @@ TEST_P(PasswordFormManagerTest, SetSubmittedMultipleTimes) {
 }
 
 // Tests that when PasswordFormManager receives saved matches it waits for
-// server predictions and fills on receving them.
+// server predictions and fills on receiving them.
 TEST_P(PasswordFormManagerTest, ServerPredictionsWithinDelay) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
 
@@ -654,7 +653,7 @@ TEST_P(PasswordFormManagerTest, ServerPredictionsWithinDelay) {
   form_manager_->ProcessServerPredictions(predictions);
   Mock::VerifyAndClearExpectations(&driver_);
 
-  // Expect no filling on receving predictions again.
+  // Expect no filling on receiving predictions again.
   EXPECT_CALL(driver_, FillPasswordForm(_)).Times(0);
   form_manager_->ProcessServerPredictions(predictions);
 }
@@ -785,7 +784,7 @@ TEST_P(PasswordFormManagerTest, CreatePendingCredentialsPSLMatchSaved) {
 
 // Tests creating pending credentials when new credentials are different only in
 // password with already saved one.
-TEST_P(PasswordFormManagerTest, CreatePendingCredentialsPasswordOverriden) {
+TEST_P(PasswordFormManagerTest, CreatePendingCredentialsPasswordOverridden) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
 
@@ -823,7 +822,7 @@ TEST_P(PasswordFormManagerTest, CreatePendingCredentialsUpdate) {
 }
 
 // Tests creating pending credentials when a change password form is submitted
-// and there are multipe saved forms.
+// and there are multiple saved forms.
 TEST_P(PasswordFormManagerTest, CreatePendingCredentialsUpdateMultipleSaved) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
   PasswordForm another_saved_match = saved_match_;
@@ -937,7 +936,6 @@ TEST_P(PasswordFormManagerTest, SaveNewCredentials) {
   EXPECT_EQ(expected_signon_realm, saved_form.signon_realm);
   EXPECT_EQ(new_username, saved_form.username_value);
   EXPECT_EQ(new_password, saved_form.password_value);
-  EXPECT_TRUE(saved_form.preferred);
 
   EXPECT_EQ(submitted_form.fields[kUsernameFieldIndex].name,
             saved_form.username_element);
@@ -989,8 +987,6 @@ TEST_P(PasswordFormManagerTest, SavePSLToAlreadySaved) {
   EXPECT_EQ(saved_form.username_element, psl_saved_match_.username_element);
   EXPECT_EQ(saved_form.password_element, psl_saved_match_.password_element);
 
-  EXPECT_TRUE(saved_form.preferred);
-
   EXPECT_EQ(std::vector<const PasswordForm*>{&psl_saved_match_}, best_matches);
 }
 
@@ -1020,7 +1016,6 @@ TEST_P(PasswordFormManagerTest, OverridePassword) {
   form_manager_->Save();
 
   EXPECT_TRUE(ArePasswordFormUniqueKeysEqual(saved_match_, updated_form));
-  EXPECT_TRUE(updated_form.preferred);
   EXPECT_EQ(new_password, updated_form.password_value);
 }
 
@@ -1030,7 +1025,6 @@ TEST_P(PasswordFormManagerTest, UpdatePasswordOnChangePasswordForm) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
   CreateFormManager(observed_form_only_password_fields_);
   PasswordForm not_best_saved_match = saved_match_;
-  not_best_saved_match.preferred = false;
   PasswordForm saved_match_another_username = saved_match_;
   saved_match_another_username.username_value += ASCIIToUTF16("1");
 
@@ -1060,7 +1054,6 @@ TEST_P(PasswordFormManagerTest, UpdatePasswordOnChangePasswordForm) {
   form_manager_->Save();
 
   EXPECT_TRUE(ArePasswordFormUniqueKeysEqual(saved_match_, updated_form));
-  EXPECT_TRUE(updated_form.preferred);
   EXPECT_EQ(new_password, updated_form.password_value);
 }
 
@@ -1766,7 +1759,6 @@ TEST_P(PasswordFormManagerTest, Update) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
 
   PasswordForm not_best_saved_match = saved_match_;
-  not_best_saved_match.preferred = false;
   PasswordForm saved_match_another_username = saved_match_;
   saved_match_another_username.username_value += ASCIIToUTF16("1");
   SetNonFederatedAndNotifyFetchCompleted(
@@ -1795,7 +1787,6 @@ TEST_P(PasswordFormManagerTest, Update) {
   form_manager_->Update(saved_match_);
 
   EXPECT_TRUE(ArePasswordFormUniqueKeysEqual(saved_match_, updated_form));
-  EXPECT_TRUE(updated_form.preferred);
   EXPECT_EQ(new_password, updated_form.password_value);
   EXPECT_GE(updated_form.date_last_used, kNow);
 }

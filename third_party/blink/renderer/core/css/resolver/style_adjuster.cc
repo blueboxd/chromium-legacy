@@ -204,7 +204,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
   if (IsA<HTMLDivElement>(element) || IsA<HTMLSpanElement>(element))
     return;
 
-  if (IsHTMLTableCellElement(element)) {
+  if (IsA<HTMLTableCellElement>(element)) {
     if (style.WhiteSpace() == EWhiteSpace::kWebkitNowrap) {
       // Figure out if we are really nowrapping or if we should just
       // use normal instead. If the width of the cell is fixed, then

@@ -255,7 +255,8 @@ void PreconnectManager::OnPreresolveFinished(PreresolveJobId job_id,
   DCHECK(job);
 
   if (observer_)
-    observer_->OnPreresolveFinished(job->url, success);
+    observer_->OnPreresolveFinished(job->url, job->network_isolation_key,
+                                    success);
 
   job->resolve_host_client = nullptr;
   FinishPreresolveJob(job_id, success);

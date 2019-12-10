@@ -141,9 +141,9 @@ TEST_F(AppListControllerImplTest, AppListHiddenWhenShelfAlignmentChanges) {
   Shelf* const shelf = AshTestBase::GetPrimaryShelf();
   shelf->SetAlignment(ShelfAlignment::kBottom);
 
-  const std::vector<ash::ShelfAlignment> alignments(
+  const std::vector<ShelfAlignment> alignments(
       {ShelfAlignment::kLeft, ShelfAlignment::kRight, ShelfAlignment::kBottom});
-  for (ash::ShelfAlignment alignment : alignments) {
+  for (ShelfAlignment alignment : alignments) {
     ShowAppListNow();
     EXPECT_TRUE(Shell::Get()
                     ->app_list_controller()
@@ -209,7 +209,7 @@ TEST_F(AppListControllerImplTest, HideRoundingCorners) {
   aura::Window* native_window = GetAppListView()->GetWidget()->GetNativeView();
   gfx::Rect app_list_screen_bounds = native_window->GetBoundsInScreen();
   EXPECT_EQ(0, app_list_screen_bounds.y());
-  EXPECT_EQ(ash::AppListViewState::kHalf, GetAppListView()->app_list_state());
+  EXPECT_EQ(AppListViewState::kHalf, GetAppListView()->app_list_state());
   gfx::Transform expected_transform;
   expected_transform.Translate(0, -(ShelfConfig::Get()->shelf_size() / 2));
   EXPECT_EQ(
@@ -337,11 +337,10 @@ TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenVKeyboardEnabled) {
   // the PEEKING state.
   ShowAppListNow();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ash::AppListViewState::kPeeking,
-            GetAppListView()->app_list_state());
+  EXPECT_EQ(AppListViewState::kPeeking, GetAppListView()->app_list_state());
   EXPECT_EQ(nullptr, GetVirtualKeyboardWindow());
   EXPECT_EQ(GetAppListView()->GetPreferredWidgetBoundsForState(
-                ash::AppListViewState::kPeeking),
+                AppListViewState::kPeeking),
             GetAppListViewNativeWindow()->bounds());
 }
 
@@ -359,7 +358,7 @@ TEST_F(AppListControllerImplTest,
   ShowAppListNow();
   GetSearchBoxView()->SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ash::AppListViewState::kHalf, GetAppListView()->app_list_state());
+  EXPECT_EQ(AppListViewState::kHalf, GetAppListView()->app_list_state());
   EXPECT_TRUE(GetVirtualKeyboardWindow()->IsVisible());
 
   EXPECT_EQ(0, GetAppListView()->GetBoundsInScreen().y());
@@ -368,7 +367,7 @@ TEST_F(AppListControllerImplTest,
   // remain at the top of the screen.
   GetAppListView()->SetState(AppListViewState::kHalf);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ash::AppListViewState::kHalf, GetAppListView()->app_list_state());
+  EXPECT_EQ(AppListViewState::kHalf, GetAppListView()->app_list_state());
 
   EXPECT_EQ(0, GetAppListView()->GetBoundsInScreen().y());
 
@@ -378,7 +377,7 @@ TEST_F(AppListControllerImplTest,
   EXPECT_EQ(nullptr, GetVirtualKeyboardWindow());
 
   // Verify the app list bounds have been updated to match kHalf state.
-  EXPECT_EQ(ash::AppListViewState::kHalf, GetAppListView()->app_list_state());
+  EXPECT_EQ(AppListViewState::kHalf, GetAppListView()->app_list_state());
   const gfx::Rect shelf_bounds =
       AshTestBase::GetPrimaryShelf()->shelf_widget()->GetWindowBoundsInScreen();
   EXPECT_EQ(shelf_bounds.bottom() - 545 /*half app list height*/,
@@ -412,10 +411,10 @@ TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenDismissVKeyboard) {
   // (1) AppListView's state is FULLSCREEN_SEARCH
   // (2) AppListView's bounds are the same as the preferred bounds for
   // the FULLSCREEN_SEARCH state.
-  EXPECT_EQ(ash::AppListViewState::kFullscreenSearch,
+  EXPECT_EQ(AppListViewState::kFullscreenSearch,
             GetAppListView()->app_list_state());
   EXPECT_EQ(GetAppListView()->GetPreferredWidgetBoundsForState(
-                ash::AppListViewState::kFullscreenSearch),
+                AppListViewState::kFullscreenSearch),
             GetAppListViewNativeWindow()->bounds());
 }
 
@@ -470,8 +469,7 @@ TEST_F(AppListControllerImplTest,
   constexpr int tapping_height = 72;
 
   ShowAppListNow();
-  ASSERT_EQ(ash::AppListViewState::kPeeking,
-            GetAppListView()->app_list_state());
+  ASSERT_EQ(AppListViewState::kPeeking, GetAppListView()->app_list_state());
 
   // Get in screen bounds of arrow
   gfx::Rect expand_arrow = GetAppListView()
@@ -486,7 +484,7 @@ TEST_F(AppListControllerImplTest,
   // Tap expand arrow icon and check that full screen apps view is entered.
   ui::test::EventGenerator* event_generator = GetEventGenerator();
   event_generator->GestureTapAt(expand_arrow.CenterPoint());
-  ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps,
+  ASSERT_EQ(AppListViewState::kFullscreenAllApps,
             GetAppListView()->app_list_state());
 
   // Hide the AppListView. Wait until animation is finished
@@ -497,13 +495,12 @@ TEST_F(AppListControllerImplTest,
   // tap target for the expand arrow icon still brings up full app list
   // view.
   ShowAppListNow();
-  ASSERT_EQ(ash::AppListViewState::kPeeking,
-            GetAppListView()->app_list_state());
+  ASSERT_EQ(AppListViewState::kPeeking, GetAppListView()->app_list_state());
 
   event_generator->GestureTapAt(gfx::Point(expand_arrow.top_right().x() - 1,
                                            expand_arrow.top_right().y() + 1));
 
-  ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps,
+  ASSERT_EQ(AppListViewState::kFullscreenAllApps,
             GetAppListView()->app_list_state());
 }
 
@@ -657,8 +654,7 @@ TEST_P(HotseatAppListControllerImplTest, GetItemBoundsForWindow) {
                    << "} with selected page " << selected_page);
 
       std::unique_ptr<aura::Window> window(CreateTestWindow());
-      window->SetProperty(ash::kAppIDKey,
-                          new std::string(test_case.window_app_id));
+      window->SetProperty(kAppIDKey, new std::string(test_case.window_app_id));
 
       const gfx::Rect item_bounds =
           home_screen_delegate->GetInitialAppListItemScreenBoundsForWindow(
@@ -837,13 +833,12 @@ class AppListControllerImplMetricsTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    controller_ = ash::Shell::Get()->app_list_controller();
-    ash::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
-        true);
+    controller_ = Shell::Get()->app_list_controller();
+    PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(true);
   }
 
   void TearDown() override {
-    ash::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
+    PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
         false);
     AshTestBase::TearDown();
   }

@@ -74,25 +74,17 @@ bool SaturatedTimeFromUTCExploded(const base::Time::Exploded& exploded,
   return false;
 }
 
-bool MatchesSiteForCookies(const GURL& url, const GURL& site_for_cookies) {
-  return registry_controlled_domains::SameDomainOrHost(
-      url, site_for_cookies,
-      registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-}
-
 CookieOptions::SameSiteCookieContext ComputeSchemeChange(
     CookieOptions::SameSiteCookieContext same_site_type,
     const GURL& url,
-    const GURL& site_for_cookies) {
-  if (site_for_cookies.is_empty())
-    return same_site_type;
-
+    const SiteForCookies& site_for_cookies) {
   DCHECK(same_site_type ==
              CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT ||
          same_site_type == CookieOptions::SameSiteCookieContext::SAME_SITE_LAX);
 
   bool url_secure = url.SchemeIsCryptographic();
-  bool site_for_cookies_secure = site_for_cookies.SchemeIsCryptographic();
+  bool site_for_cookies_secure =
+      GURL::SchemeIsCryptographic(site_for_cookies.scheme());
 
   // Check for different schemes and add flag if so.
   if (url_secure && !site_for_cookies_secure) {
@@ -108,9 +100,9 @@ CookieOptions::SameSiteCookieContext ComputeSchemeChange(
 
 CookieOptions::SameSiteCookieContext ComputeSameSiteContext(
     const GURL& url,
-    const GURL& site_for_cookies,
+    const SiteForCookies& site_for_cookies,
     const base::Optional<url::Origin>& initiator) {
-  if (MatchesSiteForCookies(url, site_for_cookies)) {
+  if (site_for_cookies.IsFirstParty(url)) {
     CookieOptions::SameSiteCookieContext same_site_type;
     if (!initiator ||
         registry_controlled_domains::SameDomainOrHost(
@@ -430,7 +422,7 @@ std::string SerializeRequestCookieLine(
 CookieOptions::SameSiteCookieContext ComputeSameSiteContextForRequest(
     const std::string& http_method,
     const GURL& url,
-    const GURL& site_for_cookies,
+    const SiteForCookies& site_for_cookies,
     const base::Optional<url::Origin>& initiator,
     bool attach_same_site_cookies) {
   // Set SameSiteCookieMode according to the rules laid out in
@@ -484,7 +476,7 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForRequest(
 
 NET_EXPORT CookieOptions::SameSiteCookieContext
 ComputeSameSiteContextForScriptGet(const GURL& url,
-                                   const GURL& site_for_cookies,
+                                   const SiteForCookies& site_for_cookies,
                                    const base::Optional<url::Origin>& initiator,
                                    bool attach_same_site_cookies) {
   if (attach_same_site_cookies) {
@@ -497,13 +489,12 @@ ComputeSameSiteContextForScriptGet(const GURL& url,
 
 CookieOptions::SameSiteCookieContext ComputeSameSiteContextForResponse(
     const GURL& url,
-    const GURL& site_for_cookies,
+    const SiteForCookies& site_for_cookies,
     const base::Optional<url::Origin>& initiator,
     bool attach_same_site_cookies) {
   // |initiator| is here in case it'll be decided to ignore |site_for_cookies|
   // for entirely browser-side requests (see https://crbug.com/958335).
-  if (attach_same_site_cookies ||
-      MatchesSiteForCookies(url, site_for_cookies)) {
+  if (attach_same_site_cookies || site_for_cookies.IsFirstParty(url)) {
     return ComputeSchemeChange(
         CookieOptions::SameSiteCookieContext::SAME_SITE_LAX, url,
         site_for_cookies);
@@ -514,10 +505,9 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForResponse(
 
 CookieOptions::SameSiteCookieContext ComputeSameSiteContextForScriptSet(
     const GURL& url,
-    const GURL& site_for_cookies,
+    const SiteForCookies& site_for_cookies,
     bool attach_same_site_cookies) {
-  if (attach_same_site_cookies ||
-      MatchesSiteForCookies(url, site_for_cookies)) {
+  if (attach_same_site_cookies || site_for_cookies.IsFirstParty(url)) {
     return ComputeSchemeChange(
         CookieOptions::SameSiteCookieContext::SAME_SITE_LAX, url,
         site_for_cookies);
@@ -528,12 +518,11 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForScriptSet(
 
 CookieOptions::SameSiteCookieContext ComputeSameSiteContextForSubresource(
     const GURL& url,
-    const GURL& site_for_cookies,
+    const SiteForCookies& site_for_cookies,
     bool attach_same_site_cookies) {
   // If the URL is same-site as site_for_cookies it's same-site as all frames
   // in the tree from the initiator frame up --- including the initiator frame.
-  if (attach_same_site_cookies ||
-      MatchesSiteForCookies(url, site_for_cookies)) {
+  if (attach_same_site_cookies || site_for_cookies.IsFirstParty(url)) {
     return ComputeSchemeChange(
         CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT, url,
         site_for_cookies);

@@ -428,6 +428,12 @@ void Label::SelectRange(const gfx::Range& range) {
     SchedulePaint();
 }
 
+views::PropertyChangedSubscription Label::AddTextChangedCallback(
+    views::PropertyChangedCallback callback) {
+  return AddPropertyChangedCallback(&full_text_ + kLabelText,
+                                    std::move(callback));
+}
+
 int Label::GetBaseline() const {
   return GetInsets().top() + font_list().GetBaseline();
 }

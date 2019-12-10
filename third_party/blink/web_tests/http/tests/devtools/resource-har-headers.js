@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 (async function() {
+  'use strict';
   TestRunner.addResult(`Tests the nondeterministic bits of HAR conversion via the magic of hard-coded values.\n`);
   await TestRunner.loadModule('application_test_runner');
   await TestRunner.loadModule('network_test_runner');
@@ -18,7 +19,6 @@
     request.responseHeaders = [{name: 'Response', value: 'response-value'}];
     request.responseHeadersText = 'HTTP/1.1 200 OK\r\nResponse: headers-text';
 
-    request.documentURL = 'http://example.com/inspector-test.js';
     request.requestMethod = 'GET';
     request.mimeType = 'text/html';
     request.statusCode = 200;

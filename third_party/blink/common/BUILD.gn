@@ -157,6 +157,7 @@ jumbo_source_set("common_unittests_sources") {
     "bluetooth/web_bluetooth_device_id_unittest.cc",
     "client_hints/client_hints_unittest.cc",
     "device_memory/approximated_device_memory_unittest.cc",
+    "feature_policy/document_policy_unittest.cc",
     "feature_policy/feature_policy_unittest.cc",
     "frame/user_activation_state_unittest.cc",
     "http/structured_header_unittest.cc",

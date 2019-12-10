@@ -50,7 +50,7 @@ function initializeDiscoverAPI() {
   Polymer({
     is: 'discover-ui',
 
-    behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
+    behaviors: [I18nBehavior, OobeDialogHostBehavior],
 
     properties: {
       /**

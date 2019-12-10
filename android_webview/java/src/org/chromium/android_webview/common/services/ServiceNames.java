@@ -11,6 +11,8 @@ package org.chromium.android_webview.common.services;
  * their name.
  */
 public class ServiceNames {
+    public static final String AW_MINIDUMP_UPLOAD_JOB_SERVICE =
+            "org.chromium.android_webview.services.AwMinidumpUploadJobService";
     public static final String CRASH_RECEIVER_SERVICE =
             "org.chromium.android_webview.services.CrashReceiverService";
     public static final String DEVELOPER_UI_SERVICE =

@@ -571,6 +571,43 @@ TEST_F(ExtensionInfoGeneratorUnitTest, RuntimeHostPermissionsSpecificHosts) {
   EXPECT_FALSE(runtime_hosts->has_all_hosts);
 }
 
+// Tests that requesting all_url style permissions as a runtime granted pattern
+// correctly is treated as having access to all sites.
+TEST_F(ExtensionInfoGeneratorUnitTest, RuntimeHostPermissionsAllURLs) {
+  scoped_refptr<const Extension> all_urls_extension = CreateExtension(
+      "all_urls", ListBuilder().Append(kAllHostsPermission).Build(),
+      Manifest::INTERNAL);
+
+  // Withholding host permissions should result in the extension being set to
+  // run on click.
+  ScriptingPermissionsModifier permissions_modifier(profile(),
+                                                    all_urls_extension);
+  permissions_modifier.SetWithholdHostPermissions(true);
+  std::unique_ptr<developer::ExtensionInfo> info =
+      GenerateExtensionInfo(all_urls_extension->id());
+  const developer::RuntimeHostPermissions* runtime_hosts =
+      info->permissions.runtime_host_permissions.get();
+  EXPECT_EQ(developer::HOST_ACCESS_ON_CLICK, runtime_hosts->host_access);
+  EXPECT_EQ(R"([{"granted":false,"host":"*://*/*"}])",
+            SiteControlsToString(runtime_hosts->hosts));
+
+  // Grant the requested pattern ("*://*/*").
+  URLPattern all_url(Extension::kValidHostPermissionSchemes,
+                     kAllHostsPermission);
+  PermissionSet all_url_set(APIPermissionSet(), ManifestPermissionSet(),
+                            URLPatternSet({all_url}), URLPatternSet({all_url}));
+  PermissionsUpdater(profile()).GrantRuntimePermissions(
+      *all_urls_extension, all_url_set, base::DoNothing::Once());
+
+  // Now the extension should look like it has access to all hosts, while still
+  // also counting as having permission withholding enabled.
+  info = GenerateExtensionInfo(all_urls_extension->id());
+  runtime_hosts = info->permissions.runtime_host_permissions.get();
+  EXPECT_EQ(developer::HOST_ACCESS_ON_ALL_SITES, runtime_hosts->host_access);
+  EXPECT_EQ(R"([{"granted":true,"host":"*://*/*"}])",
+            SiteControlsToString(runtime_hosts->hosts));
+}
+
 // Tests the population of withheld runtime hosts when they overlap with granted
 // patterns.
 TEST_F(ExtensionInfoGeneratorUnitTest, WithheldUrlsOverlapping) {

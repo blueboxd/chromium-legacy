@@ -90,9 +90,6 @@ class AppServiceAppWindowLauncherController
       aura::Window* window) override;
   void OnItemDelegateDiscarded(ash::ShelfItemDelegate* delegate) override;
 
-  // Return true if the app is opened in a browser tab.
-  bool IsOpenedInBrowserTab(const std::string& app_id);
-
   ash::ShelfID GetShelfId(aura::Window* window) const;
 
   AuraWindowToAppWindow aura_window_to_app_window_;

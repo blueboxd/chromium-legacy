@@ -12,39 +12,112 @@ FillLayout::FillLayout() = default;
 
 FillLayout::~FillLayout() = default;
 
-void FillLayout::Layout(View* host) {
-  if (host->children().empty())
-    return;
+FillLayout& FillLayout::SetIncludeHiddenViews(bool include_hidden_views) {
+  if (include_hidden_views != include_hidden_views_) {
+    include_hidden_views_ = include_hidden_views;
+    InvalidateHost(true);
+  }
+  return *this;
+}
 
-  for (View* child : host->children())
-    child->SetBoundsRect(host->GetContentsBounds());
+FillLayout& FillLayout::SetMinimumSizeEnabled(bool minimum_size_enabled) {
+  if (minimum_size_enabled != minimum_size_enabled_) {
+    minimum_size_enabled_ = minimum_size_enabled;
+    InvalidateHost(true);
+  }
+  return *this;
+}
+
+ProposedLayout FillLayout::CalculateProposedLayout(
+    const SizeBounds& size_bounds) const {
+  // Because we explicitly override GetPreferredSize and
+  // GetPreferredHeightForWidth(), we should always call this method with well-
+  // defined bounds.
+  DCHECK(size_bounds.width().has_value());
+  DCHECK(size_bounds.height().has_value());
+
+  ProposedLayout layout;
+  layout.host_size = host_view()->size();
+
+  const gfx::Rect contents_bounds = host_view()->GetContentsBounds();
+  for (View* child : host_view()->children()) {
+    if (ShouldIncludeChild(child)) {
+      layout.child_layouts.push_back(
+          {child, child->GetVisible(), contents_bounds});
+    }
+  }
+
+  return layout;
 }
 
 gfx::Size FillLayout::GetPreferredSize(const View* host) const {
-  if (host->children().empty())
-    return gfx::Size();
+  DCHECK_EQ(host_view(), host);
 
-  gfx::Size preferred_size;
-  for (View* child : host->children())
-    preferred_size.SetToMax(child->GetPreferredSize());
-  gfx::Rect rect(preferred_size);
-  rect.Inset(-host->GetInsets());
-  return rect.size();
+  gfx::Size result;
+
+  bool has_child = false;
+  for (const View* child : host->children()) {
+    if (ShouldIncludeChild(child)) {
+      has_child = true;
+      result.SetToMax(child->GetPreferredSize());
+    }
+  }
+
+  // For backwards compatibility, do not include insets if there are no
+  // children.
+  if (has_child) {
+    const gfx::Insets insets = host->GetInsets();
+    result.Enlarge(insets.width(), insets.height());
+  }
+
+  return result;
+}
+
+gfx::Size FillLayout::GetMinimumSize(const View* host) const {
+  DCHECK_EQ(host_view(), host);
+
+  if (!minimum_size_enabled_)
+    return host->GetPreferredSize();
+
+  gfx::Size result;
+
+  bool has_child = false;
+  for (const View* child : host->children()) {
+    if (ShouldIncludeChild(child)) {
+      has_child = true;
+      result.SetToMax(child->GetMinimumSize());
+    }
+  }
+
+  // For backwards compatibility, do not include insets if there are no
+  // children.
+  if (has_child) {
+    const gfx::Insets insets = host->GetInsets();
+    result.Enlarge(insets.width(), insets.height());
+  }
+
+  return result;
 }
 
 int FillLayout::GetPreferredHeightForWidth(const View* host, int width) const {
-  if (host->children().empty())
-    return 0;
+  DCHECK_EQ(host_view(), host);
 
   const gfx::Insets insets = host->GetInsets();
-  int preferred_height = 0;
-  for (View* child : host->children()) {
-    int cur_preferred_height = 0;
-    cur_preferred_height =
-        child->GetHeightForWidth(width - insets.width()) + insets.height();
-    preferred_height = std::max(preferred_height, cur_preferred_height);
+  width -= insets.width();
+  int height = 0;
+  for (const View* child : host->children()) {
+    if (ShouldIncludeChild(child)) {
+      height =
+          std::max(height, insets.height() + child->GetHeightForWidth(width));
+    }
   }
-  return preferred_height;
+
+  return height;
+}
+
+bool FillLayout::ShouldIncludeChild(const View* view) const {
+  return include_hidden_views_ ? !IsChildViewIgnoredByLayout(view)
+                               : IsChildIncludedInLayout(view);
 }
 
 }  // namespace views

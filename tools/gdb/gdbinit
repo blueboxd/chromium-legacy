@@ -94,4 +94,13 @@ gdb.events.new_objfile.connect(newobj_handler)
 
 gdb.execute("set environment CHROMIUM_GDBINIT_SOURCED=1")
 
+# GDB 9.1 adds a setting, disabled by default, to do multithreaded symbol
+# loading. This is a major speed up for Chrome, so turn it on here. We
+# use try..except to avoid displaying errors in earlier GDB versions.
+try:
+  # unlimited means "number of cores"
+  gdb.execute("maint set worket-threads unlimited")
+except:
+  pass
+
 end

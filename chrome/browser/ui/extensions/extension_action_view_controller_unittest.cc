@@ -11,18 +11,22 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/chrome_extensions_browser_client.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
+#include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
+#include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/extensions/icon_with_badge_image_source.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_unittest.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/notification_service.h"
@@ -32,9 +36,58 @@
 #include "extensions/common/user_script.h"
 #include "ui/base/l10n/l10n_util.h"
 
-class ExtensionActionViewControllerUnitTest : public ToolbarActionsBarUnitTest {
+namespace {
+
+// A helper class to create a "main" and "overflow" extension toolbar. This is
+// used in tests that are relevant to the overflow behavior, and not valid with
+// the new ExtensionsMenu (https://crbug.com/943702).
+class LegacyToolbarTestHelper {
  public:
-  ExtensionActionViewControllerUnitTest() {}
+  explicit LegacyToolbarTestHelper(Browser* browser)
+      : test_util_(BrowserActionTestUtil::Create(browser, false)),
+        overflow_test_util_(test_util_->CreateOverflowBar(browser)),
+        main_bar_(test_util_->GetToolbarActionsBar()),
+        overflow_bar_(overflow_test_util_->GetToolbarActionsBar()) {
+    if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
+      ADD_FAILURE();
+  }
+  ~LegacyToolbarTestHelper() = default;
+
+  LegacyToolbarTestHelper(const LegacyToolbarTestHelper& other) = delete;
+  LegacyToolbarTestHelper& operator=(const LegacyToolbarTestHelper& other) =
+      delete;
+
+  ToolbarActionsBar* main_bar() { return main_bar_; }
+  ToolbarActionsBar* overflow_bar() { return overflow_bar_; }
+
+ private:
+  std::unique_ptr<BrowserActionTestUtil> test_util_;
+  std::unique_ptr<BrowserActionTestUtil> overflow_test_util_;
+  ToolbarActionsBar* main_bar_ = nullptr;
+  ToolbarActionsBar* overflow_bar_ = nullptr;
+};
+
+enum class ToolbarType {
+  kExtensionsMenu,
+  kLegacyToolbar,
+};
+
+}  // namespace
+
+class ExtensionActionViewControllerUnitTest
+    : public BrowserWithTestWindowTest,
+      public testing::WithParamInterface<ToolbarType> {
+ public:
+  ExtensionActionViewControllerUnitTest() {
+    if (GetParam() == ToolbarType::kExtensionsMenu) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kExtensionsToolbarMenu);
+    } else {
+      DCHECK_EQ(ToolbarType::kLegacyToolbar, GetParam());
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kExtensionsToolbarMenu);
+    }
+  }
 
   ExtensionActionViewControllerUnitTest(
       const ExtensionActionViewControllerUnitTest& other) = delete;
@@ -44,10 +97,29 @@ class ExtensionActionViewControllerUnitTest : public ToolbarActionsBarUnitTest {
   ~ExtensionActionViewControllerUnitTest() override = default;
 
   void SetUp() override {
-    ToolbarActionsBarUnitTest::SetUp();
+    BrowserWithTestWindowTest::SetUp();
+
+    // Initialize the various pieces of the extensions system.
+    extensions::LoadErrorReporter::Init(false);
+    extensions::TestExtensionSystem* extension_system =
+        static_cast<extensions::TestExtensionSystem*>(
+            extensions::ExtensionSystem::Get(profile()));
+    extension_system->CreateExtensionService(
+        base::CommandLine::ForCurrentProcess(), base::FilePath(), false);
+    toolbar_model_ =
+        extensions::extension_action_test_util::CreateToolbarModelForProfile(
+            profile());
     extension_service_ =
         extensions::ExtensionSystem::Get(profile())->extension_service();
-    view_size_ = toolbar_actions_bar()->GetViewSize();
+
+    test_util_ = BrowserActionTestUtil::Create(browser(), false);
+
+    view_size_ = test_util_->GetToolbarActionSize();
+  }
+
+  void TearDown() override {
+    test_util_.reset();
+    BrowserWithTestWindowTest::TearDown();
   }
 
   // Sets whether the given |action| wants to run on the |web_contents|.
@@ -65,58 +137,78 @@ class ExtensionActionViewControllerUnitTest : public ToolbarActionsBarUnitTest {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
 
-  // Returns the ExtensionActionViewController at the specified |index|.
-  // Adds a test failure if |index| is out of bounds.
-  ExtensionActionViewController* GetViewControllerAt(size_t index) {
-    return GetViewControllerAtIndexFromActionsBar(index, toolbar_actions_bar());
+  ExtensionActionViewController* GetViewControllerForId(
+      const std::string& action_id) {
+    // It's safe to static cast here, because these tests only deal with
+    // extensions.
+    return static_cast<ExtensionActionViewController*>(
+        test_util_->GetExtensionsContainer()->GetActionForId(action_id));
   }
-  // Same as above, but fetches the action from the overflow bar.
-  ExtensionActionViewController* GetOverflowedViewControllerAt(size_t index) {
-    return GetViewControllerAtIndexFromActionsBar(index, overflow_bar());
+
+  scoped_refptr<const extensions::Extension> CreateAndAddExtension(
+      const std::string& name,
+      extensions::ExtensionBuilder::ActionType action_type) {
+    scoped_refptr<const extensions::Extension> extension =
+        extensions::ExtensionBuilder(name)
+            .SetAction(action_type)
+            .SetLocation(extensions::Manifest::INTERNAL)
+            .Build();
+    extension_service()->AddExtension(extension.get());
+    return extension;
   }
 
   extensions::ExtensionService* extension_service() {
     return extension_service_;
   }
+  ToolbarActionsModel* toolbar_model() { return toolbar_model_; }
   const gfx::Size& view_size() const { return view_size_; }
 
  private:
-  // A helper method to retrieve the ExtensionActionViewController at |index|
-  // from the given |actions_bar|.
-  ExtensionActionViewController* GetViewControllerAtIndexFromActionsBar(
-      size_t index,
-      ToolbarActionsBar* actions_bar) {
-    if (index >= actions_bar->GetIconCount()) {
-      ADD_FAILURE() << "Requested out of bound index `" << index
-                    << "`, icon count: " << actions_bar->GetIconCount();
-      return nullptr;
-    }
-    // It's safe to static cast here, because these tests only deal with
-    // extensions.
-    return static_cast<ExtensionActionViewController*>(
-        actions_bar->GetActions()[index]);
-  }
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   // The ExtensionService associated with the primary profile.
   extensions::ExtensionService* extension_service_ = nullptr;
 
+  // ToolbarActionsModel associated with the main profile.
+  ToolbarActionsModel* toolbar_model_ = nullptr;
+
+  std::unique_ptr<BrowserActionTestUtil> test_util_;
+
   // The standard size associated with a toolbar action view.
   gfx::Size view_size_;
+};
+
+// Helper classes used to instantiate a test for one version of the toolbar
+// only. These are used for behavior that is specific to that version, such as
+// overflow behavior.
+class LegacyExtensionActionViewControllerUnitTest
+    : public ExtensionActionViewControllerUnitTest {
+ public:
+  LegacyExtensionActionViewControllerUnitTest() {
+    DCHECK_EQ(ToolbarType::kLegacyToolbar, GetParam());
+  }
+};
+class ExtensionsMenuExtensionActionViewControllerUnitTest
+    : public ExtensionActionViewControllerUnitTest {
+ public:
+  ExtensionsMenuExtensionActionViewControllerUnitTest() {
+    DCHECK_EQ(ToolbarType::kExtensionsMenu, GetParam());
+  }
 };
 
 // Tests the icon appearance of extension actions with the toolbar redesign.
 // Extensions that don't want to run should have their icons grayscaled.
 TEST_P(ExtensionActionViewControllerUnitTest,
        ExtensionActionWantsToRunAppearance) {
-  CreateAndAddExtension("extension",
-                        extensions::ExtensionBuilder::ActionType::PAGE_ACTION);
-  EXPECT_EQ(1u, toolbar_actions_bar()->GetIconCount());
-  EXPECT_EQ(0u, overflow_bar()->GetIconCount());
+  const std::string id =
+      CreateAndAddExtension(
+          "extension", extensions::ExtensionBuilder::ActionType::PAGE_ACTION)
+          ->id();
 
   AddTab(browser(), GURL("chrome://newtab"));
 
   content::WebContents* web_contents = GetActiveWebContents();
-  ExtensionActionViewController* action = GetViewControllerAt(0);
+  ExtensionActionViewController* const action = GetViewControllerForId(id);
   ASSERT_TRUE(action);
   std::unique_ptr<IconWithBadgeImageSource> image_source =
       action->GetIconImageSourceForTesting(web_contents, view_size());
@@ -134,21 +226,26 @@ TEST_P(ExtensionActionViewControllerUnitTest,
 
 // Tests that overflowed extensions with page actions that want to run have an
 // additional decoration.
-TEST_P(ExtensionActionViewControllerUnitTest, OverflowedPageActionAppearance) {
+// The overflow menu is only applicable to the legacy toolbar.
+TEST_P(LegacyExtensionActionViewControllerUnitTest,
+       OverflowedPageActionAppearance) {
   CreateAndAddExtension("extension",
                         extensions::ExtensionBuilder::ActionType::PAGE_ACTION);
-  EXPECT_EQ(1u, toolbar_actions_bar()->GetIconCount());
-  EXPECT_EQ(0u, overflow_bar()->GetIconCount());
+
+  LegacyToolbarTestHelper test_helper(browser());
+  EXPECT_EQ(1u, test_helper.main_bar()->GetIconCount());
+  EXPECT_EQ(0u, test_helper.overflow_bar()->GetIconCount());
 
   AddTab(browser(), GURL("chrome://newtab"));
 
   content::WebContents* web_contents = GetActiveWebContents();
 
   toolbar_model()->SetVisibleIconCount(0u);
-  EXPECT_EQ(0u, toolbar_actions_bar()->GetIconCount());
-  EXPECT_EQ(1u, overflow_bar()->GetIconCount());
+  EXPECT_EQ(0u, test_helper.main_bar()->GetIconCount());
+  ASSERT_EQ(1u, test_helper.overflow_bar()->GetIconCount());
 
-  ExtensionActionViewController* action = GetOverflowedViewControllerAt(0);
+  auto* const action = static_cast<ExtensionActionViewController*>(
+      test_helper.overflow_bar()->GetActions()[0]);
   std::unique_ptr<IconWithBadgeImageSource> image_source =
       action->GetIconImageSourceForTesting(web_contents, view_size());
   EXPECT_TRUE(image_source->grayscale());
@@ -180,7 +277,8 @@ TEST_P(ExtensionActionViewControllerUnitTest, BrowserActionBlockedActions) {
 
   AddTab(browser(), GURL("https://www.google.com/"));
 
-  ExtensionActionViewController* action_controller = GetViewControllerAt(0);
+  ExtensionActionViewController* const action_controller =
+      GetViewControllerForId(extension->id());
   ASSERT_TRUE(action_controller);
   EXPECT_EQ(extension.get(), action_controller->extension());
 
@@ -229,7 +327,8 @@ TEST_P(ExtensionActionViewControllerUnitTest, PageActionBlockedActions) {
   permissions_modifier.SetWithholdHostPermissions(true);
   AddTab(browser(), GURL("https://www.google.com/"));
 
-  ExtensionActionViewController* action_controller = GetViewControllerAt(0);
+  ExtensionActionViewController* const action_controller =
+      GetViewControllerForId(extension->id());
   ASSERT_TRUE(action_controller);
   EXPECT_EQ(extension.get(), action_controller->extension());
 
@@ -255,7 +354,8 @@ TEST_P(ExtensionActionViewControllerUnitTest, PageActionBlockedActions) {
 
 // Tests the appearance of page actions with blocked actions in the overflow
 // menu.
-TEST_P(ExtensionActionViewControllerUnitTest,
+// The overflow menu is only applicable to the legacy toolbar.
+TEST_P(LegacyExtensionActionViewControllerUnitTest,
        PageActionBlockedActionsInOverflow) {
   scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder("page action")
@@ -275,18 +375,17 @@ TEST_P(ExtensionActionViewControllerUnitTest,
   // shouldn't show the page action decoration because we are showing the
   // blocked action decoration (and should only show one at a time).
   toolbar_model()->SetVisibleIconCount(0u);
-  EXPECT_EQ(0u, toolbar_actions_bar()->GetIconCount());
-  EXPECT_EQ(1u, overflow_bar()->GetIconCount());
-  ExtensionActionViewController* action_controller =
-      GetOverflowedViewControllerAt(0);
+
+  LegacyToolbarTestHelper test_helper(browser());
+  EXPECT_EQ(0u, test_helper.main_bar()->GetIconCount());
+  EXPECT_EQ(1u, test_helper.overflow_bar()->GetIconCount());
+  auto* const action = static_cast<ExtensionActionViewController*>(
+      test_helper.overflow_bar()->GetActions()[0]);
 
   content::WebContents* web_contents = GetActiveWebContents();
-  SetActionWantsToRunOnTab(action_controller->extension_action(), web_contents,
-                           true);
-
+  SetActionWantsToRunOnTab(action->extension_action(), web_contents, true);
   std::unique_ptr<IconWithBadgeImageSource> image_source =
-      action_controller->GetIconImageSourceForTesting(web_contents,
-                                                      view_size());
+      action->GetIconImageSourceForTesting(web_contents, view_size());
   EXPECT_FALSE(image_source->grayscale());
   EXPECT_TRUE(image_source->paint_page_action_decoration());
   EXPECT_FALSE(image_source->paint_blocked_actions_decoration());
@@ -297,17 +396,19 @@ TEST_P(ExtensionActionViewControllerUnitTest,
       extension.get(), extensions::UserScript::DOCUMENT_IDLE,
       base::DoNothing());
 
-  image_source = action_controller->GetIconImageSourceForTesting(web_contents,
-                                                                 view_size());
+  image_source =
+      action->GetIconImageSourceForTesting(web_contents, view_size());
   EXPECT_FALSE(image_source->grayscale());
   EXPECT_FALSE(image_source->paint_page_action_decoration());
   EXPECT_TRUE(image_source->paint_blocked_actions_decoration());
 }
 
-TEST_P(ExtensionActionViewControllerUnitTest, ExtensionActionContextMenu) {
-  CreateAndAddExtension(
-      "extension", extensions::ExtensionBuilder::ActionType::BROWSER_ACTION);
-  EXPECT_EQ(1u, toolbar_actions_bar()->GetIconCount());
+TEST_P(LegacyExtensionActionViewControllerUnitTest,
+       ExtensionActionContextMenuVisibility) {
+  std::string id =
+      CreateAndAddExtension(
+          "extension", extensions::ExtensionBuilder::ActionType::BROWSER_ACTION)
+          ->id();
 
   // Check that the context menu has the proper string for the action's position
   // (in the main toolbar, in the overflow container, or temporarily popped
@@ -325,18 +426,49 @@ TEST_P(ExtensionActionViewControllerUnitTest, ExtensionActionContextMenu) {
               visibility_label);
   };
 
-  check_visibility_string(toolbar_actions_bar()->GetActions()[0],
+  LegacyToolbarTestHelper test_helper(browser());
+  check_visibility_string(test_helper.main_bar()->GetActions()[0],
                           IDS_EXTENSIONS_HIDE_BUTTON_IN_MENU);
   toolbar_model()->SetVisibleIconCount(0u);
-  check_visibility_string(overflow_bar()->GetActions()[0],
+  check_visibility_string(test_helper.overflow_bar()->GetActions()[0],
                           IDS_EXTENSIONS_SHOW_BUTTON_IN_TOOLBAR);
   base::RunLoop run_loop;
-  toolbar_actions_bar()->PopOutAction(toolbar_actions_bar()->GetActions()[0],
-                                      false,
-                                      run_loop.QuitClosure());
+  test_helper.main_bar()->PopOutAction(test_helper.main_bar()->GetActions()[0],
+                                       false, run_loop.QuitClosure());
   run_loop.Run();
-  check_visibility_string(toolbar_actions_bar()->GetActions()[0],
+  check_visibility_string(test_helper.main_bar()->GetActions()[0],
                           IDS_EXTENSIONS_KEEP_BUTTON_IN_TOOLBAR);
+}
+
+TEST_P(ExtensionsMenuExtensionActionViewControllerUnitTest,
+       ExtensionActionContextMenuVisibility) {
+  std::string id =
+      CreateAndAddExtension(
+          "extension", extensions::ExtensionBuilder::ActionType::BROWSER_ACTION)
+          ->id();
+
+  // Check that the context menu has the proper string for the action's pinned
+  // state.
+  auto check_visibility_string = [](ToolbarActionViewController* action,
+                                    int expected_visibility_string) {
+    ui::SimpleMenuModel* context_menu =
+        static_cast<ui::SimpleMenuModel*>(action->GetContextMenu());
+    int visibility_index = context_menu->GetIndexOfCommandId(
+        extensions::ExtensionContextMenuModel::TOGGLE_VISIBILITY);
+    ASSERT_GE(visibility_index, 0);
+    base::string16 visibility_label =
+        context_menu->GetLabelAt(visibility_index);
+    EXPECT_EQ(l10n_util::GetStringUTF16(expected_visibility_string),
+              visibility_label);
+  };
+
+  ExtensionActionViewController* const action = GetViewControllerForId(id);
+  ASSERT_TRUE(action);
+
+  // Default state: unpinned.
+  check_visibility_string(action, IDS_EXTENSIONS_PIN_TO_TOOLBAR);
+  toolbar_model()->SetActionVisibility(id, true);
+  check_visibility_string(action, IDS_EXTENSIONS_UNPIN_FROM_TOOLBAR);
 }
 
 class ExtensionActionViewControllerGrayscaleTest
@@ -369,7 +501,6 @@ void ExtensionActionViewControllerGrayscaleTest::RunGrayscaleTest(
   extensions::ScriptingPermissionsModifier permissions_modifier(profile(),
                                                                 extension);
   permissions_modifier.SetWithholdHostPermissions(true);
-  ASSERT_EQ(1u, toolbar_actions_bar()->GetIconCount());
   const GURL kUrl("https://www.google.com/");
 
   // Make sure UserScriptListener doesn't hold up the navigation.
@@ -418,7 +549,8 @@ void ExtensionActionViewControllerGrayscaleTest::RunGrayscaleTest(
        BlockedActions::kNotPainted},
   };
 
-  ExtensionActionViewController* controller = GetViewControllerAt(0);
+  ExtensionActionViewController* const controller =
+      GetViewControllerForId(extension->id());
   ASSERT_TRUE(controller);
   content::WebContents* web_contents = GetActiveWebContents();
   ExtensionAction* extension_action =
@@ -518,7 +650,8 @@ TEST_P(ExtensionActionViewControllerGrayscaleTest,
 
 INSTANTIATE_TEST_SUITE_P(All,
                          ExtensionActionViewControllerGrayscaleTest,
-                         testing::Values(false, true));
+                         testing::Values(ToolbarType::kExtensionsMenu,
+                                         ToolbarType::kLegacyToolbar));
 
 TEST_P(ExtensionActionViewControllerUnitTest, RuntimeHostsTooltip) {
   scoped_refptr<const extensions::Extension> extension =
@@ -533,11 +666,11 @@ TEST_P(ExtensionActionViewControllerUnitTest, RuntimeHostsTooltip) {
   extensions::ScriptingPermissionsModifier permissions_modifier(profile(),
                                                                 extension);
   permissions_modifier.SetWithholdHostPermissions(true);
-  ASSERT_EQ(1u, toolbar_actions_bar()->GetIconCount());
   const GURL kUrl("https://www.google.com/");
   AddTab(browser(), kUrl);
 
-  ExtensionActionViewController* controller = GetViewControllerAt(0);
+  ExtensionActionViewController* const controller =
+      GetViewControllerForId(extension->id());
   ASSERT_TRUE(controller);
   content::WebContents* web_contents = GetActiveWebContents();
   int tab_id = SessionTabHelper::IdForTab(web_contents).id();
@@ -585,12 +718,19 @@ TEST_P(ExtensionActionViewControllerUnitTest, TestGetIconWithNullWebContents) {
 
   // Try getting an icon with no active web contents. Nothing should crash, and
   // a non-empty icon should be returned.
-  ToolbarActionViewController* controller =
-      toolbar_actions_bar()->GetActions()[0];
+  ExtensionActionViewController* const controller =
+      GetViewControllerForId(extension->id());
   gfx::Image icon = controller->GetIcon(nullptr, view_size());
   EXPECT_FALSE(icon.IsEmpty());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ExtensionActionViewControllerUnitTest,
-                         testing::Values(false, true));
+                         testing::Values(ToolbarType::kExtensionsMenu,
+                                         ToolbarType::kLegacyToolbar));
+INSTANTIATE_TEST_SUITE_P(,
+                         LegacyExtensionActionViewControllerUnitTest,
+                         testing::Values(ToolbarType::kLegacyToolbar));
+INSTANTIATE_TEST_SUITE_P(,
+                         ExtensionsMenuExtensionActionViewControllerUnitTest,
+                         testing::Values(ToolbarType::kExtensionsMenu));

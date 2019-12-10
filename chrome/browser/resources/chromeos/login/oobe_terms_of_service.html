@@ -16,12 +16,20 @@
 
     <!-- ERROR DIALOG -->
     <oobe-dialog id="termsOfServiceErrorDialog" role="dialog"
-        title-key="termsOfServiceError"
-        subtitle-key="termsOfServiceTryAgain"
-        aria-label$="[[i18nDynamic(locale, 'termsOfServiceError')]]"
+        aria-labelledby="title"
         hidden="[[!isInErrorState_(uiState)]]" has-buttons>
       <iron-icon icon="cr:warning" slot="oobe-icon" class="warning">
       </iron-icon>
+      <h1 id="title" slot="title">
+        <div>
+          [[i18nDynamic(locale, 'termsOfServiceError')]]
+        </div>
+      </h1>
+      <div slot="subtitle">
+        <div>
+          [[i18nDynamic(locale, 'termsOfServiceTryAgain')]]
+        </div>
+      </div>
       <div slot="bottom-buttons" class="flex layout horizontal">
         <oobe-back-button id="errorBackButton"
             disabled="[[backButtonDisabled_]]"
@@ -62,9 +70,12 @@
         <oobe-back-button id="backButton" disabled="[[backButtonDisabled_]]"
             on-tap="onTosBackButtonPressed_"></oobe-back-button>
         <oobe-text-button id="acceptButton" inverse
-            text-key="termsOfServiceAcceptButton"
             disabled="[[acceptButtonDisabled_]]"
-            on-tap="onTermsOfServiceAccepted_"></oobe-text-button>
+            on-tap="onTermsOfServiceAccepted_">
+            <div>
+              [[i18nDynamic(locale, 'termsOfServiceAcceptButton')]]
+            </div>
+        </oobe-text-button>
       </div>
     </oobe-dialog>
   </template>

@@ -21,7 +21,7 @@
   TestRunner.showPanel('layers');
   await LayersTestRunner.requestLayers();
   var layer = LayersTestRunner.findLayerByNodeIdAttribute('layer');
-  initialQuads = layer.quad().toString();
+  const initialQuads = layer.quad().toString();
 
   // Updating layers should not produce invalid layer to-screen transforms
   // (see: https://crbug.com/977578). Backface visibility is changed, rather

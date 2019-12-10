@@ -9,38 +9,30 @@
 #include "base/strings/string_util.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_implementation_wrapper.h"
 #include "ui/gl/gl_surface_wgl.h"
 
 namespace gl {
 
 RealWGLApi* g_real_wgl = nullptr;
-LogWGLApi* g_log_wgl = nullptr;
+
+GL_IMPL_WRAPPER_TYPE(WGL) * g_wgl_wrapper = nullptr;
 
 void InitializeStaticGLBindingsWGL() {
   g_driver_wgl.InitializeStaticBindings();
-  if (!g_real_wgl) {
-    g_real_wgl = new RealWGLApi();
+  if (!g_wgl_wrapper) {
+    auto real_api = std::make_unique<RealWGLApi>();
+    real_api->Initialize(&g_driver_wgl);
+    g_wgl_wrapper = new GL_IMPL_WRAPPER_TYPE(WGL)(std::move(real_api));
   }
-  g_real_wgl->Initialize(&g_driver_wgl);
-  g_current_wgl_context = g_real_wgl;
-}
 
-void InitializeLogGLBindingsWGL() {
-  if (!g_log_wgl) {
-    g_log_wgl = new LogWGLApi(g_real_wgl);
-  }
-  g_current_wgl_context = g_log_wgl;
+  g_current_wgl_context = g_wgl_wrapper->api();
 }
 
 void ClearBindingsWGL() {
-  if (g_log_wgl) {
-    delete g_log_wgl;
-    g_log_wgl = nullptr;
-  }
-  if (g_real_wgl) {
-    delete g_real_wgl;
-    g_real_wgl = nullptr;
-  }
+  delete g_wgl_wrapper;
+  g_wgl_wrapper = nullptr;
+
   g_current_wgl_context = nullptr;
   g_driver_wgl.ClearBindings();
 }

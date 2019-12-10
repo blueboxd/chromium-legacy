@@ -90,8 +90,10 @@ struct MediaPipelineDeviceParams {
   // some backends.
   TaskRunner* const task_runner;
 
-  // connector allows the backend to bind to services through ServiceManager.
-  service_manager::Connector* connector;
+  // This field is deprecated.
+  //
+  // TODO(yucliu): Remove this field.
+  service_manager::Connector* const connector;
 
   // Identifies the content type for volume control.
   const AudioContentType content_type;

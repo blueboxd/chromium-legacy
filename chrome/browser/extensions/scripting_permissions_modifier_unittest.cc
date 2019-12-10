@@ -693,6 +693,96 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
   EXPECT_THAT(GetEffectivePatternsAsStrings(*extension), testing::IsEmpty());
 }
 
+// Tests that HasBroadGrantedHostPermissions detects cases where there is a
+// granted permission that is sufficiently broad enough to be counted as akin to
+// <all_urls> type permissions.
+TEST_F(ScriptingPermissionsModifierUnitTest, HasBroadGrantedHostPermissions) {
+  InitializeEmptyExtensionService();
+
+  struct {
+    std::vector<std::string> hosts;
+    bool expected_broad_permissions;
+  } test_cases[] = {{{}, false},
+                    {{"https://www.google.com/*"}, false},
+                    {{"https://www.google.com/*", "*://chromium.org/*"}, false},
+                    {{"*://*.google.*/*"}, false},
+                    {{"<all_urls>"}, true},
+                    {{"https://*/*"}, true},
+                    {{"*://*/*"}, true},
+                    {{"https://www.google.com/*", "<all_urls>"}, true}};
+
+  for (const auto& test_case : test_cases) {
+    std::string test_case_name = base::JoinString(test_case.hosts, ",");
+    SCOPED_TRACE(test_case_name);
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder("test: " + test_case_name)
+            .AddPermission("<all_urls>")
+            .Build();
+    ScriptingPermissionsModifier modifier(profile(), extension.get());
+
+    modifier.SetWithholdHostPermissions(true);
+
+    EXPECT_FALSE(modifier.HasBroadGrantedHostPermissions());
+
+    std::string error;
+    bool allow_file_access = false;
+    URLPatternSet patterns;
+    patterns.Populate(test_case.hosts, Extension::kValidHostPermissionSchemes,
+                      allow_file_access, &error);
+    permissions_test_util::GrantRuntimePermissionsAndWaitForCompletion(
+        profile(), *extension,
+        PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
+                      std::move(patterns), URLPatternSet()));
+
+    EXPECT_EQ(test_case.expected_broad_permissions,
+              modifier.HasBroadGrantedHostPermissions());
+  }
+}
+
+// Tests RemoveBroadGrantedHostPermissions only removes the broad permissions
+// and leaves others intact.
+TEST_F(ScriptingPermissionsModifierUnitTest,
+       RemoveBroadGrantedHostPermissions) {
+  InitializeEmptyExtensionService();
+
+  const GURL google_com = GURL("https://google.com/*");
+  const GURL example_com = GURL("https://example.com/*");
+
+  // Define a list of broad patters that should give access to both URLs.
+  std::string broad_patterns[] = {"https://*/*", "<all_urls>",
+                                  "https://*.com/*"};
+
+  for (const auto& broad_pattern : broad_patterns) {
+    SCOPED_TRACE(broad_pattern);
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder("test: " + broad_pattern)
+            .AddPermission("<all_urls>")
+            .Build();
+    ScriptingPermissionsModifier modifier(profile(), extension.get());
+
+    modifier.SetWithholdHostPermissions(true);
+
+    // Explicitly grant google.com and the broad pattern.
+    modifier.GrantHostPermission(google_com);
+    const URLPattern pattern(Extension::kValidHostPermissionSchemes,
+                             broad_pattern);
+    permissions_test_util::GrantRuntimePermissionsAndWaitForCompletion(
+        profile(), *extension,
+        PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
+                      URLPatternSet({pattern}), URLPatternSet()));
+
+    EXPECT_TRUE(modifier.HasGrantedHostPermission(google_com));
+    EXPECT_TRUE(modifier.HasGrantedHostPermission(example_com));
+
+    // Now removing the broad patterns should leave it only with the explicit
+    // google permission.
+    modifier.RemoveBroadGrantedHostPermissions();
+    EXPECT_TRUE(modifier.HasGrantedHostPermission(google_com));
+    EXPECT_FALSE(modifier.HasGrantedHostPermission(example_com));
+    EXPECT_FALSE(modifier.HasBroadGrantedHostPermissions());
+  }
+}
+
 // Tests granting runtime permissions for a full host when the extension only
 // wants to run on a subset of that host.
 TEST_F(ScriptingPermissionsModifierUnitTest,

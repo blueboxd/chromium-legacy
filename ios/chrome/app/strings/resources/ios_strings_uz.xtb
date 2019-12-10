@@ -91,6 +91,7 @@
 <translation id="209018056901015185">To‘liq versiya</translation>
 <translation id="2103075008456228677">history.google.com sahifasini ochish</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ta xatcho‘p ko‘chirildi</translation>
+<translation id="2118594521750010466">Tuzatish.</translation>
 <translation id="213900355088104901">Yashirin kezish uchun inkognito rejimida varaq oching</translation>
 <translation id="2139867232736819575">Nusxalangan matnni qidirish</translation>
 <translation id="2149973817440762519">Xatcho‘p tahriri</translation>
@@ -98,6 +99,7 @@
 <translation id="2198757192731523470">Qidiruv, rekama va boshqa xizmatlarni sizga moslashtirish uchun Google tarix maʼlumotlaringizdan foydalanishi mumkin.</translation>
 <translation id="2230173723195178503">Veb-sahifa yuklandi</translation>
 <translation id="2239626343334228536">Brauzer tarixini tozalash...</translation>
+<translation id="2257567812274161158">Sinxronizatsiya ishlamayapti.</translation>
 <translation id="2267753748892043616">Hisob qo‘shish</translation>
 <translation id="2268044343513325586">Aniqlashtirish</translation>
 <translation id="2273327106802955778">Batafsil menyusi</translation>
@@ -129,6 +131,7 @@
 <translation id="2691653761409724435">Oflayn rejimda mavjud emas</translation>
 <translation id="2695507686909505111">Sahifa tarjima qilindi</translation>
 <translation id="2702801445560668637">Mutolaa ro‘yxati</translation>
+<translation id="2704491540504985681">Yuklanmalar</translation>
 <translation id="2704606927547763573">Nusxa olindi</translation>
 <translation id="2709516037105925701">Avtoto‘ldirish</translation>
 <translation id="2712127207578915686">Faylni ochib bo‘lmadi</translation>
@@ -218,6 +221,7 @@
 <translation id="3943492037546055397">Parollar</translation>
 <translation id="3967822245660637423">Yuklab olindi</translation>
 <translation id="3989635538409502728">Chiqish</translation>
+<translation id="399419089947468503">Parollar sinxronlanmadi</translation>
 <translation id="3995521777587992544">Sahifa yuklanishidagi kutish qatori: <ph name="EMAIL" /> yuklandi.</translation>
 <translation id="4002066346123236978">Nomi</translation>
 <translation id="4004204301268239848">Google hisobingizga saqlangan parollardan har qanday qurilmada foydalanishingiz mumkin.</translation>
@@ -238,6 +242,7 @@
 <translation id="424315890655130736">Kodli iborani kiriting</translation>
 <translation id="4263576668337963058">Sahifa amallarini chiqarish</translation>
 <translation id="4272631900155121838">QR-kodni skanerlash uchun sozlamalar orqali kamerani yoqing.</translation>
+<translation id="4276041135170112053">Tuzatish.</translation>
 <translation id="4281844954008187215">Foydalanish shartlari</translation>
 <translation id="430793432425771671">Barchasini sinxronlash</translation>
 <translation id="430967081421617822">Shu kungacha</translation>
@@ -286,6 +291,7 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="4904877109095351937">O‘qildi deb belgilash</translation>
 <translation id="4930268273022498155">Mavjud ma’lumotlarni o‘chirish. <ph name="USER_EMAIL1" /> hisobiga o‘tib. bu ma’lumotlardan foydalanishingiz mumkin.</translation>
 <translation id="4941089862236492464">Yozuvni joylab bo‘lmadi.</translation>
+<translation id="4944543191714094452">Sahifa ichidan qidirish…</translation>
 <translation id="4945756290001680296">Parol sozlamalariga kirish</translation>
 <translation id="4979397965658815378">Xatcho‘plar, tarix, parollar va boshqa sozlamalarni barcha qurilmalaringizda sinxronlash uchun Google hisobingizga kiring.</translation>
 <translation id="5005498671520578047">Parolni nusxalash</translation>
@@ -317,6 +323,7 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="5433691172869980887">Foydalanuvchi nomi nusxalandi</translation>
 <translation id="54401264925851789">Sahifa xavfsizligi haqida ma’lumot</translation>
 <translation id="5443952882982198570">Bank kartalari</translation>
+<translation id="5457907402803865181">Parollar sinxronlanmadi</translation>
 <translation id="5525269841082836315">Kodli ibora yaratish</translation>
 <translation id="5548760955356983418">Handoff funksiyasi veb-saytni bir qurilmada ochib, boshqasida davom etish imkoniyatini beradi. Ochilgan sayt Mac kompyuteringizning Dock panelida paydo bo‘ladi.
 
@@ -408,6 +415,7 @@ Ma’lumotlaringiz <ph name="TIME" /> sanasida kodli ibora bilan shifrlangan. Si
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ta xatcho‘p o‘chirildi</translation>
 <translation id="6610002944194042868">Tarjima parametrlari</translation>
 <translation id="6628106477656132239">Amal qilish muddati xato kiritildi</translation>
+<translation id="6638511529934826365">Matnni kattalashtirish…</translation>
 <translation id="6642362222295953972">Oldin ochilgan varaqqa oʻtish</translation>
 <translation id="6643016212128521049">Tozalash</translation>
 <translation id="6656103420185847513">Jildni o‘zgartirish</translation>

@@ -267,7 +267,7 @@ void HTMLTableElement::SetNeedsTableStyleRecalc() const {
     element->SetNeedsStyleRecalc(
         kLocalStyleChange,
         StyleChangeReasonForTracing::FromAttribute(html_names::kRulesAttr));
-    if (IsHTMLTableCellElement(*element))
+    if (IsA<HTMLTableCellElement>(*element))
       element = ElementTraversal::NextSkippingChildren(*element, this);
     else
       element = ElementTraversal::Next(*element, this);

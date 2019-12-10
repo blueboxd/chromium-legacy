@@ -85,14 +85,6 @@ Polymer({
       value: false,
     },
 
-    /** @private */
-    privacySettingsRedesignEnabled_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('privacySettingsRedesignEnabled');
-      },
-    },
-
     /**
      * Used for HTML bindings. This is defined as a property rather than within
      * the ready callback, because the value needs to be available before
@@ -110,6 +102,25 @@ Polymer({
       value: function() {
         return loadTimeData.getBoolean('enableSafeBrowsingSubresourceFilter');
       }
+    },
+
+    /** @private */
+    privacySettingsRedesignEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('privacySettingsRedesignEnabled');
+      },
+    },
+
+    /**
+     * Whether the more settings list is opened.
+     * @private
+     */
+    moreOpened_: {
+      type: Boolean,
+      value: function() {
+        return !loadTimeData.getBoolean('privacySettingsRedesignEnabled');
+      },
     },
 
     /** @private */
@@ -480,6 +491,22 @@ Polymer({
   onRestartTap_: function(e) {
     e.stopPropagation();
     settings.LifetimeBrowserProxyImpl.getInstance().restart();
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getIronCollapseCssClass_: function() {
+    return this.privacySettingsRedesignEnabled_ ? 'iron-collapse-indented' : '';
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getTopBarCssClass_: function() {
+    return this.privacySettingsRedesignEnabled_ ? 'settings-box first' : '';
   },
 });
 })();

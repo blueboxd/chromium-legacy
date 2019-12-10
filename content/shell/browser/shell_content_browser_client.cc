@@ -189,10 +189,8 @@ blink::UserAgentMetadata GetShellUserAgentMetadata() {
   metadata.full_version = CONTENT_SHELL_VERSION;
   metadata.major_version = CONTENT_SHELL_MAJOR_VERSION;
   metadata.platform = BuildOSCpuInfo(false);
-
-  // TODO(mkwst): Split these out from BuildOSCpuInfo().
-  metadata.architecture = "";
-  metadata.model = "";
+  metadata.architecture = BuildCpuInfo();
+  metadata.model = BuildModelInfo();
 
   return metadata;
 }

@@ -9,6 +9,6 @@
   ],
   "optional_permissions": [
     "tabs",
-    "geolocation"
+    "bookmarks"
   ]
 }

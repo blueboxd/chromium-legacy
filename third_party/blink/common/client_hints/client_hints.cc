@@ -12,7 +12,7 @@ namespace blink {
 const char* const kClientHintsNameMapping[] = {
     "device-memory", "dpr",  "width", "viewport-width", "rtt",      "downlink",
     "ect",           "lang", "ua",    "arch",           "platform", "model",
-};
+    "mobile"};
 
 const char* const kClientHintsHeaderMapping[] = {
     "device-memory",
@@ -27,6 +27,7 @@ const char* const kClientHintsHeaderMapping[] = {
     "sec-ch-ua-arch",
     "sec-ch-ua-platform",
     "sec-ch-ua-model",
+    "sec-ch-ua-mobile",
 };
 
 const size_t kClientHintsMappingsCount = base::size(kClientHintsNameMapping);

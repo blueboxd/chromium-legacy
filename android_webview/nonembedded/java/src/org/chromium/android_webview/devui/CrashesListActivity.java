@@ -31,6 +31,7 @@ import org.chromium.android_webview.common.CommandLineUtil;
 import org.chromium.android_webview.common.PlatformServiceBridge;
 import org.chromium.android_webview.common.crash.CrashInfo;
 import org.chromium.android_webview.common.crash.CrashInfo.UploadState;
+import org.chromium.android_webview.common.crash.CrashUploadUtil;
 import org.chromium.android_webview.devui.util.NavigationMenuHelper;
 import org.chromium.android_webview.devui.util.WebViewCrashInfoCollector;
 import org.chromium.base.CommandLine;
@@ -207,18 +208,49 @@ public class CrashesListActivity extends Activity {
             }
             setTwoLineListItemText(view.findViewById(R.id.upload_status), uploadState, uploadInfo);
 
-            Button button = view.findViewById(R.id.crash_report_button);
+            Button bugButton = view.findViewById(R.id.crash_report_button);
             // Report button is only clickable if the crash report is uploaded.
             if (crashInfo.uploadState == UploadState.UPLOADED) {
-                button.setEnabled(true);
-                button.setOnClickListener(v -> {
+                bugButton.setEnabled(true);
+                bugButton.setOnClickListener(v -> {
                     startActivity(new Intent(Intent.ACTION_VIEW, getReportUri(crashInfo)));
                 });
             } else {
-                button.setEnabled(false);
+                bugButton.setEnabled(false);
+            }
+
+            Button uploadButton = view.findViewById(R.id.crash_upload_button);
+            if (crashInfo.uploadState == UploadState.SKIPPED
+                    || crashInfo.uploadState == UploadState.PENDING) {
+                uploadButton.setVisibility(View.VISIBLE);
+                uploadButton.setOnClickListener(v -> {
+                    if (!CrashUploadUtil.isNetworkUnmetered(CrashesListActivity.this)) {
+                        new AlertDialog.Builder(CrashesListActivity.this)
+                                .setTitle("Network Warning")
+                                .setMessage(
+                                        "You are connected to a metered network or cellular data."
+                                        + " Do you want to proceed?")
+                                .setPositiveButton("Upload",
+                                        (dialog, id) -> attemptUploadCrash(crashInfo.localId))
+                                .setNegativeButton("Cancel", (dialog, id) -> finish())
+                                .create()
+                                .show();
+                    } else {
+                        attemptUploadCrash(crashInfo.localId);
+                    }
+                });
+            } else {
+                uploadButton.setVisibility(View.GONE);
             }
 
             return view;
+        }
+
+        private void attemptUploadCrash(String crashLocalId) {
+            // Attempt uploading the file asynchronously, upload is not guaranteed.
+            CrashUploadUtil.tryUploadCrashDumpWithLocalId(CrashesListActivity.this, crashLocalId);
+            // Update the uploadState to be PENDING_USER_REQUESTED or UPLOADED.
+            updateCrashes();
         }
 
         @Override

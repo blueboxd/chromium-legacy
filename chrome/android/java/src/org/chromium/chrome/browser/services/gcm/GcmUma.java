@@ -78,13 +78,6 @@ public class GcmUma {
         });
     }
 
-    public static void recordSubscriptionLazyCheckTime(long time) {
-        // Use {@link CachedMetrics} so this gets reported when native is loaded instead of calling
-        // native right away.
-        new CachedMetrics.TimesHistogramSample("PushMessaging.TimeToCheckIfSubscriptionLazy")
-                .record(time);
-    }
-
     public static void recordWebPushReceivedDeviceState(@WebPushDeviceState int state) {
         // Use {@link CachedMetrics} so this gets reported when native is loaded instead of calling
         // native right away.

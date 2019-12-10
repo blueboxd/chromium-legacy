@@ -44,6 +44,11 @@ class PageLiveStateDecorator {
                                        bool is_being_mirrored);
   static void OnIsCapturingDesktopChanged(content::WebContents* contents,
                                           bool is_capturing_desktop);
+
+  // Set the auto discardable property. This indicates whether or not the page
+  // can be discarded during an intervention.
+  static void SetIsAutoDiscardable(content::WebContents* contents,
+                                   bool is_auto_discardable);
 };
 
 class PageLiveStateDecorator::Data {
@@ -58,6 +63,7 @@ class PageLiveStateDecorator::Data {
   virtual bool IsCapturingAudio() const = 0;
   virtual bool IsBeingMirrored() const = 0;
   virtual bool IsCapturingDesktop() const = 0;
+  virtual bool IsAutoDiscardable() const = 0;
 
   static Data* GetOrCreateForTesting(PageNode* page_node);
 };

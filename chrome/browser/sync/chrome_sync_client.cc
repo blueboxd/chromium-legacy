@@ -118,8 +118,8 @@
 #include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
-#include "chrome/browser/chromeos/sync/os_preferences_model_type_controller.h"
 #include "chrome/browser/chromeos/sync/os_sync_model_type_controller.h"
+#include "chrome/browser/chromeos/sync/os_syncable_service_model_type_controller.h"
 #include "chrome/browser/sync/wifi_configuration_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
@@ -403,12 +403,25 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
   // Temporarily Disable AppListSyncableService for tablet form factor devices.
   // See crbug/1013732 for details.
   if (!chromeos::switches::IsTabletFormFactor()) {
-    // TODO(https://crbug.com/1031549): Make this type run in transport-only
-    // mode for SplitSettingsSync.
-    controllers.push_back(
-        std::make_unique<syncer::SyncableServiceBasedModelTypeController>(
+    if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+      // Some profile types (e.g. sign-in screen) don't support app list.
+      if (app_list::AppListSyncableServiceFactory::GetForProfile(profile_)) {
+        // Runs in sync transport-mode and full-sync mode.
+        controllers.push_back(OsSyncableServiceModelTypeController::Create(
             syncer::APP_LIST, model_type_store_factory,
-            GetSyncableServiceForType(syncer::APP_LIST), dump_stack));
+            GetSyncableServiceForType(syncer::APP_LIST), dump_stack,
+            profile_->GetPrefs(), sync_service));
+      }
+    } else {
+      // Only runs in full-sync mode.
+      // TODO(jamescook): Move under the GetForProfile() check. This only works
+      // for the sign-in screen profile because SSBMTC has a "test-only" check
+      // for null SyncableService.
+      controllers.push_back(
+          std::make_unique<syncer::SyncableServiceBasedModelTypeController>(
+              syncer::APP_LIST, model_type_store_factory,
+              GetSyncableServiceForType(syncer::APP_LIST), dump_stack));
+    }
   }
 #endif  // defined(OS_CHROMEOS)
 
@@ -432,13 +445,13 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
   }
   if (chromeos::features::IsSplitSettingsSyncEnabled()) {
     if (!disabled_types.Has(syncer::OS_PREFERENCES)) {
-      controllers.push_back(OsPreferencesModelTypeController::Create(
+      controllers.push_back(OsSyncableServiceModelTypeController::Create(
           syncer::OS_PREFERENCES, model_type_store_factory,
           GetSyncableServiceForType(syncer::OS_PREFERENCES), dump_stack,
           profile_->GetPrefs(), sync_service));
     }
     if (!disabled_types.Has(syncer::OS_PRIORITY_PREFERENCES)) {
-      controllers.push_back(OsPreferencesModelTypeController::Create(
+      controllers.push_back(OsSyncableServiceModelTypeController::Create(
           syncer::OS_PRIORITY_PREFERENCES, model_type_store_factory,
           GetSyncableServiceForType(syncer::OS_PRIORITY_PREFERENCES),
           dump_stack, profile_->GetPrefs(), sync_service));

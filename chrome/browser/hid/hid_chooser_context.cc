@@ -9,9 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "content/public/browser/system_connector.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "content/public/browser/device_service.h"
 
 namespace {
 
@@ -181,8 +179,8 @@ void HidChooserContext::EnsureHidManagerConnection() {
     return;
 
   mojo::PendingRemote<device::mojom::HidManager> manager;
-  content::GetSystemConnector()->Connect(
-      device::mojom::kServiceName, manager.InitWithNewPipeAndPassReceiver());
+  content::GetDeviceService().BindHidManager(
+      manager.InitWithNewPipeAndPassReceiver());
   SetUpHidManagerConnection(std::move(manager));
 }
 

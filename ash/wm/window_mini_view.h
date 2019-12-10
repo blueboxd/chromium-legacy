@@ -62,10 +62,17 @@ class ASH_EXPORT WindowMiniView : public views::View,
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // aura::WindowObserver:
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
   void OnWindowDestroying(aura::Window* window) override;
   void OnWindowTitleChanged(aura::Window* window) override;
 
  private:
+  // Updates the icon view by creating it if necessary, and grabbing the correct
+  // image from |source_window_|.
+  void UpdateIconView();
+
   // The window this class is meant to be a header for. This class also may
   // optionally show a mirrored view of this window.
   aura::Window* source_window_;
@@ -73,7 +80,7 @@ class ASH_EXPORT WindowMiniView : public views::View,
   // Views for the icon and title.
   views::View* header_view_ = nullptr;
   views::Label* title_label_ = nullptr;
-  views::ImageView* image_view_ = nullptr;
+  views::ImageView* icon_view_ = nullptr;
 
   // A view that covers the area except the header. It is null when the window
   // associated is not pillar or letter boxed.

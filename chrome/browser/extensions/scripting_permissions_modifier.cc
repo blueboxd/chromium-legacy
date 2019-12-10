@@ -300,6 +300,15 @@ bool ScriptingPermissionsModifier::HasGrantedHostPermission(
       .MatchesSecurityOrigin(url);
 }
 
+bool ScriptingPermissionsModifier::HasBroadGrantedHostPermissions() {
+  std::unique_ptr<const PermissionSet> runtime_permissions =
+      GetRuntimePermissionsFromPrefs(*extension_, *extension_prefs_);
+
+  // Don't consider API permissions in this case.
+  constexpr bool kIncludeApiPermissions = false;
+  return runtime_permissions->ShouldWarnAllHosts(kIncludeApiPermissions);
+}
+
 void ScriptingPermissionsModifier::RemoveGrantedHostPermission(
     const GURL& url) {
   DCHECK(CanAffectExtension());
@@ -318,6 +327,33 @@ void ScriptingPermissionsModifier::RemoveGrantedHostPermission(
   for (const auto& pattern : runtime_permissions->scriptable_hosts()) {
     if (pattern.MatchesSecurityOrigin(url))
       scriptable_hosts.AddPattern(pattern);
+  }
+
+  PermissionsUpdater(browser_context_)
+      .RevokeRuntimePermissions(
+          *extension_,
+          PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
+                        std::move(explicit_hosts), std::move(scriptable_hosts)),
+          base::DoNothing::Once());
+}
+
+void ScriptingPermissionsModifier::RemoveBroadGrantedHostPermissions() {
+  DCHECK(CanAffectExtension());
+
+  std::unique_ptr<const PermissionSet> runtime_permissions =
+      GetRuntimePermissionsFromPrefs(*extension_, *extension_prefs_);
+
+  URLPatternSet explicit_hosts;
+  for (const auto& pattern : runtime_permissions->explicit_hosts()) {
+    if (pattern.MatchesEffectiveTld()) {
+      explicit_hosts.AddPattern(pattern);
+    }
+  }
+  URLPatternSet scriptable_hosts;
+  for (const auto& pattern : runtime_permissions->scriptable_hosts()) {
+    if (pattern.MatchesEffectiveTld()) {
+      scriptable_hosts.AddPattern(pattern);
+    }
   }
 
   PermissionsUpdater(browser_context_)

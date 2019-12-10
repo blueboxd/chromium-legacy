@@ -19,8 +19,8 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/services/storage/dom_storage/local_storage_impl.h"
 #include "components/services/storage/public/cpp/constants.h"
-#include "content/browser/dom_storage/local_storage_context_mojo.h"
 #include "content/browser/dom_storage/session_storage_context_mojo.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -62,6 +62,43 @@ void AdaptUsageInfo(
 
 }  // namespace
 
+class DOMStorageContextWrapper::StoragePolicyObserver
+    : public storage::SpecialStoragePolicy::Observer {
+ public:
+  explicit StoragePolicyObserver(
+      scoped_refptr<storage::SpecialStoragePolicy> storage_policy,
+      scoped_refptr<DOMStorageContextWrapper> context_wrapper)
+      : storage_policy_(std::move(storage_policy)),
+        context_wrapper_(std::move(context_wrapper)) {
+    storage_policy_->AddObserver(this);
+  }
+
+  StoragePolicyObserver(const StoragePolicyObserver&) = delete;
+  StoragePolicyObserver& operator=(const StoragePolicyObserver&) = delete;
+
+  ~StoragePolicyObserver() override {
+    DCHECK(!context_wrapper_);
+    storage_policy_->RemoveObserver(this);
+  }
+
+  void DidShutdownContextWrapper() { context_wrapper_.reset(); }
+
+ private:
+  // storage::SpecialStoragePolicy::Observer:
+  void OnPolicyChanged() override {
+    if (!context_wrapper_)
+      return;
+
+    base::PostTask(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&DOMStorageContextWrapper::OnStoragePolicyChanged,
+                       context_wrapper_));
+  }
+
+  const scoped_refptr<storage::SpecialStoragePolicy> storage_policy_;
+  scoped_refptr<DOMStorageContextWrapper> context_wrapper_;
+};
+
 scoped_refptr<DOMStorageContextWrapper> DOMStorageContextWrapper::Create(
     const base::FilePath& profile_path,
     const base::FilePath& local_partition_path,
@@ -74,29 +111,26 @@ scoped_refptr<DOMStorageContextWrapper> DOMStorageContextWrapper::Create(
       base::CreateSingleThreadTaskRunner({BrowserThread::IO});
 
   // TODO(https://crbug.com/1000959): This should be bound in an instance of
-  // the Storage Service. For now we bind it alone on the IO thread, because the
-  // LocalStorageContextMojo implementation still has some details that must
-  // run on that thread.
+  // the Storage Service. For now we bind it alone on the IO thread because
+  // that's where the implementation has effectively lived for some time.
   mojo::Remote<storage::mojom::LocalStorageControl> local_storage_control;
   mojo_task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(
           [](const base::FilePath& storage_root,
-             scoped_refptr<storage::SpecialStoragePolicy> storage_policy,
              mojo::PendingReceiver<storage::mojom::LocalStorageControl>
                  receiver) {
             // Deletes itself on shutdown completion.
-            new LocalStorageContextMojo(
+            new storage::LocalStorageImpl(
                 storage_root,
                 base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
                 base::CreateSequencedTaskRunner(
                     {base::ThreadPool(), base::MayBlock(),
                      base::TaskPriority::USER_BLOCKING,
                      base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
-                storage_policy, std::move(receiver));
+                std::move(receiver));
           },
-          data_path, base::WrapRefCounted(special_storage_policy),
-          local_storage_control.BindNewPipeAndPassReceiver()));
+          data_path, local_storage_control.BindNewPipeAndPassReceiver()));
 
   SessionStorageContextMojo* mojo_session_state = nullptr;
   mojo_session_state = new SessionStorageContextMojo(
@@ -117,17 +151,34 @@ scoped_refptr<DOMStorageContextWrapper> DOMStorageContextWrapper::Create(
 #endif
       std::string(kSessionStorageDirectory));
 
-  return base::WrapRefCounted(new DOMStorageContextWrapper(
-      mojo_task_runner, mojo_session_state, std::move(local_storage_control)));
+  auto wrapper = base::WrapRefCounted(new DOMStorageContextWrapper(
+      mojo_task_runner, mojo_session_state, std::move(local_storage_control),
+      special_storage_policy));
+
+  if (special_storage_policy) {
+    // If there's a SpecialStoragePolicy, ensure the wrapper is observing it on
+    // the IO thread and query the initial set of in-use origins ASAP.
+    wrapper->storage_policy_observer_ =
+        base::SequenceBound<StoragePolicyObserver>(
+            base::CreateSequencedTaskRunner(BrowserThread::IO),
+            base::WrapRefCounted(special_storage_policy), wrapper);
+
+    wrapper->local_storage_control_->GetUsage(base::BindOnce(
+        &DOMStorageContextWrapper::OnStartupUsageRetrieved, wrapper));
+  }
+
+  return wrapper;
 }
 
 DOMStorageContextWrapper::DOMStorageContextWrapper(
     scoped_refptr<base::SequencedTaskRunner> mojo_task_runner,
     SessionStorageContextMojo* mojo_session_storage_context,
-    mojo::Remote<storage::mojom::LocalStorageControl> local_storage_control)
+    mojo::Remote<storage::mojom::LocalStorageControl> local_storage_control,
+    storage::SpecialStoragePolicy* special_storage_policy)
     : mojo_session_state_(mojo_session_storage_context),
       mojo_task_runner_(std::move(mojo_task_runner)),
-      local_storage_control_(std::move(local_storage_control)) {
+      local_storage_control_(std::move(local_storage_control)),
+      storage_policy_(special_storage_policy) {
   memory_pressure_listener_.reset(new base::MemoryPressureListener(
       base::BindRepeating(&DOMStorageContextWrapper::OnMemoryPressure,
                           base::Unretained(this))));
@@ -282,6 +333,12 @@ void DOMStorageContextWrapper::Shutdown() {
     mojo_session_state_ = nullptr;
   }
   memory_pressure_listener_.reset();
+
+  if (storage_policy_observer_) {
+    // Make sure the observer drops its reference to |this|.
+    storage_policy_observer_.Post(
+        FROM_HERE, &StoragePolicyObserver::DidShutdownContextWrapper);
+  }
 }
 
 void DOMStorageContextWrapper::Flush() {
@@ -305,6 +362,10 @@ void DOMStorageContextWrapper::OpenLocalStorage(
     mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
   DCHECK(local_storage_control_);
   local_storage_control_->BindStorageArea(origin, std::move(receiver));
+  if (storage_policy_) {
+    EnsureLocalStorageOriginIsTracked(origin.GetURL());
+    OnStoragePolicyChanged();
+  }
 }
 
 void DOMStorageContextWrapper::OpenSessionStorage(
@@ -386,6 +447,51 @@ void DOMStorageContextWrapper::PurgeMemory(PurgeOption purge_option) {
         FROM_HERE, base::BindOnce(&SessionStorageContextMojo::PurgeMemory,
                                   base::Unretained(mojo_session_state_)));
   }
+}
+
+void DOMStorageContextWrapper::OnStartupUsageRetrieved(
+    std::vector<storage::mojom::LocalStorageUsageInfoPtr> usage) {
+  for (const auto& info : usage)
+    EnsureLocalStorageOriginIsTracked(info->origin.GetURL());
+  OnStoragePolicyChanged();
+}
+
+void DOMStorageContextWrapper::EnsureLocalStorageOriginIsTracked(
+    const GURL& origin) {
+  DCHECK(storage_policy_);
+  auto it = local_storage_origins_.find(origin);
+  if (it == local_storage_origins_.end())
+    local_storage_origins_[origin] = {};
+}
+
+void DOMStorageContextWrapper::OnStoragePolicyChanged() {
+  if (!local_storage_control_)
+    return;
+
+  // Scan for any relevant changes to policy regarding origins we know we're
+  // managing.
+  std::vector<storage::mojom::LocalStoragePolicyUpdatePtr> policy_updates;
+  for (auto& entry : local_storage_origins_) {
+    const GURL& origin = entry.first;
+    LocalStorageOriginState& state = entry.second;
+    state.should_purge_on_shutdown = ShouldPurgeLocalStorageOnShutdown(origin);
+    if (state.should_purge_on_shutdown != state.will_purge_on_shutdown) {
+      state.will_purge_on_shutdown = state.should_purge_on_shutdown;
+      policy_updates.push_back(storage::mojom::LocalStoragePolicyUpdate::New(
+          url::Origin::Create(origin), state.should_purge_on_shutdown));
+    }
+  }
+
+  if (!policy_updates.empty())
+    local_storage_control_->ApplyPolicyUpdates(std::move(policy_updates));
+}
+
+bool DOMStorageContextWrapper::ShouldPurgeLocalStorageOnShutdown(
+    const GURL& origin) {
+  if (!storage_policy_)
+    return false;
+  return storage_policy_->IsStorageSessionOnly(origin) &&
+         !storage_policy_->IsStorageProtected(origin);
 }
 
 }  // namespace content

@@ -179,6 +179,7 @@ source_set("test_util") {
     ":test_uws_catalog",
     "//base",
     "//base/test:test_support",
+    "//chrome/chrome_cleaner:buildflags",
     "//chrome/chrome_cleaner/constants:common_strings",
     "//chrome/chrome_cleaner/crash:crashpad_lib",
     "//chrome/chrome_cleaner/ipc:sandbox",

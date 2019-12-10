@@ -35,6 +35,8 @@ AssistantProactiveSuggestionsController::
 
 AssistantProactiveSuggestionsController::
     ~AssistantProactiveSuggestionsController() {
+  CloseUi(ProactiveSuggestionsShowResult::kCloseByContextChange);
+
   auto* client = ProactiveSuggestionsClient::Get();
   if (client)
     client->SetDelegate(nullptr);
@@ -224,6 +226,37 @@ void AssistantProactiveSuggestionsController::
       AssistantEntryPoint::kProactiveSuggestions);
 }
 
+void AssistantProactiveSuggestionsController::OnWidgetVisibilityChanged(
+    views::Widget* widget,
+    bool visible) {
+  DCHECK_EQ(widget, view_->GetWidget());
+  if (!visible) {
+    // The auto-close timer should only run while the proactive suggestions
+    // widget is visible to the user.
+    auto_close_timer_.Stop();
+    return;
+  }
+
+  // When a |timeout_threshold| is specified and the proactive suggestions
+  // widget is shown, it will automatically be closed if the user doesn't
+  // interact with it within a fixed time interval.
+  const base::TimeDelta timeout_threshold =
+      chromeos::assistant::features::GetProactiveSuggestionsTimeoutThreshold();
+  if (!timeout_threshold.is_zero()) {
+    auto_close_timer_.Start(
+        FROM_HERE, timeout_threshold,
+        base::BindRepeating(&AssistantProactiveSuggestionsController::CloseUi,
+                            weak_factory_.GetWeakPtr(),
+                            ProactiveSuggestionsShowResult::kCloseByTimeout));
+  }
+}
+
+void AssistantProactiveSuggestionsController::OnWidgetDestroying(
+    views::Widget* widget) {
+  DCHECK_EQ(widget, view_->GetWidget());
+  widget->RemoveObserver(this);
+}
+
 void AssistantProactiveSuggestionsController::OnCardClickDeepLinkReceived(
     const std::map<std::string, std::string>& params) {
   // A deep link of action type |kCardClick| should specify an |kHref| value
@@ -368,6 +401,7 @@ void AssistantProactiveSuggestionsController::MaybeShowUi() {
   }
 
   view_->Init();
+  view_->GetWidget()->AddObserver(this);
   view_->ShowWhenReady();
 
   RecordProactiveSuggestionsShowAttempt(
@@ -380,19 +414,6 @@ void AssistantProactiveSuggestionsController::MaybeShowUi() {
           IsProactiveSuggestionsSuppressDuplicatesEnabled()) {
     proactive_suggestions_blacklist_.emplace(
         view_->proactive_suggestions()->hash());
-  }
-
-  // When a |timeout_threshold| is specified, the proactive suggestions view
-  // will automatically be closed if the user doesn't interact with it within a
-  // fixed time interval.
-  const base::TimeDelta timeout_threshold =
-      chromeos::assistant::features::GetProactiveSuggestionsTimeoutThreshold();
-  if (!timeout_threshold.is_zero()) {
-    auto_close_timer_.Start(
-        FROM_HERE, timeout_threshold,
-        base::BindRepeating(&AssistantProactiveSuggestionsController::CloseUi,
-                            weak_factory_.GetWeakPtr(),
-                            ProactiveSuggestionsShowResult::kCloseByTimeout));
   }
 }
 
@@ -414,8 +435,6 @@ void AssistantProactiveSuggestionsController::CloseUi(
   // presented in comparison to follow up presentations of the same content.
   RecordProactiveSuggestionsShowResult(
       view_->proactive_suggestions()->category(), result, has_shown_before);
-
-  auto_close_timer_.Stop();
 
   view_->Close();
   view_ = nullptr;

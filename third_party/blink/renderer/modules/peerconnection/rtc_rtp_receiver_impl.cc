@@ -159,21 +159,20 @@ class RTCRtpReceiverImpl::RTCRtpReceiverInternal
     state_ = std::move(state);
   }
 
-  blink::WebVector<std::unique_ptr<RTCRtpSource>> GetSources() {
+  Vector<std::unique_ptr<RTCRtpSource>> GetSources() {
     // The webrtc_recever_ is a proxy, so this is a blocking call to the webrtc
     // signalling thread.
     auto webrtc_sources = webrtc_receiver_->GetSources();
-    blink::WebVector<std::unique_ptr<RTCRtpSource>> sources(
-        webrtc_sources.size());
-    for (size_t i = 0; i < webrtc_sources.size(); ++i) {
+    Vector<std::unique_ptr<RTCRtpSource>> sources(
+        static_cast<WTF::wtf_size_t>(webrtc_sources.size()));
+    for (WTF::wtf_size_t i = 0; i < webrtc_sources.size(); ++i) {
       sources[i] = std::make_unique<RTCRtpSource>(webrtc_sources[i]);
     }
     return sources;
   }
 
-  void GetStats(
-      RTCStatsReportCallback callback,
-      const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids) {
+  void GetStats(RTCStatsReportCallback callback,
+                const Vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
     signaling_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&RTCRtpReceiverInternal::GetStatsOnSignalingThread, this,
@@ -201,11 +200,19 @@ class RTCRtpReceiverImpl::RTCRtpReceiverInternal
 
   void GetStatsOnSignalingThread(
       RTCStatsReportCallback callback,
-      const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids) {
+      const Vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
+    // TODO(crbug.com/787254): Remove this conversion step once
+    // CreateRTCStatsCollectorCallback() operates over WTF::Vector (instead of
+    // WebVector).
+    WebVector<webrtc::NonStandardGroupId> exposed_group_ids_copy(
+        exposed_group_ids.size());
+    for (WTF::wtf_size_t i = 0; i < exposed_group_ids.size(); ++i)
+      exposed_group_ids_copy[i] = exposed_group_ids[i];
+
     native_peer_connection_->GetStats(
-        webrtc_receiver_.get(),
-        blink::CreateRTCStatsCollectorCallback(
-            main_task_runner_, std::move(callback), exposed_group_ids));
+        webrtc_receiver_.get(), blink::CreateRTCStatsCollectorCallback(
+                                    main_task_runner_, std::move(callback),
+                                    std::move(exposed_group_ids_copy)));
   }
 
   const scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection_;
@@ -288,22 +295,22 @@ const blink::WebMediaStreamTrack& RTCRtpReceiverImpl::Track() const {
   return internal_->state().track_ref()->web_track();
 }
 
-WebVector<String> RTCRtpReceiverImpl::StreamIds() const {
+Vector<String> RTCRtpReceiverImpl::StreamIds() const {
   const auto& stream_ids = internal_->state().stream_ids();
-  WebVector<String> wtf_stream_ids(stream_ids.size());
-  for (size_t i = 0; i < stream_ids.size(); ++i)
+  Vector<String> wtf_stream_ids(
+      static_cast<WTF::wtf_size_t>(stream_ids.size()));
+  for (WTF::wtf_size_t i = 0; i < stream_ids.size(); ++i)
     wtf_stream_ids[i] = String::FromUTF8(stream_ids[i]);
   return wtf_stream_ids;
 }
 
-blink::WebVector<std::unique_ptr<RTCRtpSource>>
-RTCRtpReceiverImpl::GetSources() {
+Vector<std::unique_ptr<RTCRtpSource>> RTCRtpReceiverImpl::GetSources() {
   return internal_->GetSources();
 }
 
 void RTCRtpReceiverImpl::GetStats(
     RTCStatsReportCallback callback,
-    const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids) {
+    const Vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
   internal_->GetStats(std::move(callback), exposed_group_ids);
 }
 

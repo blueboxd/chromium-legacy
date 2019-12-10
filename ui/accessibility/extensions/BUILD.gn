@@ -94,7 +94,6 @@ grit("colorenhancer_strings") {
   source = "strings/accessibility_extensions_strings.grd"
   outputs = locale_files
   output_dir = "$root_out_dir/colorenhancer"
-  depfile_dir = "$root_out_dir"
   resource_ids = ""
 }
 
@@ -136,7 +135,6 @@ grit("caretbrowsing_strings") {
   source = "strings/accessibility_extensions_strings.grd"
   outputs = locale_files
   output_dir = "$root_out_dir/caretbrowsing"
-  depfile_dir = "$root_out_dir"
   resource_ids = ""
 }
 

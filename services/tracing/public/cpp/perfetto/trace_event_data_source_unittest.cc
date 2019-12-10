@@ -14,6 +14,8 @@
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
 #include "base/json/json_reader.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
@@ -247,7 +249,8 @@ class TraceEventDataSourceTest : public testing::Test {
   }
 
   void CreateTraceEventDataSource(bool privacy_filtering_enabled = false,
-                                  bool start_trace = true) {
+                                  bool start_trace = true,
+                                  const std::string& chrome_trace_config = "") {
     task_environment_.RunUntilIdle();
     base::RunLoop tracing_started;
     base::SequencedTaskRunnerHandle::Get()->PostTaskAndReply(
@@ -259,6 +262,7 @@ class TraceEventDataSourceTest : public testing::Test {
       perfetto::DataSourceConfig config;
       config.mutable_chrome_config()->set_privacy_filtering_enabled(
           privacy_filtering_enabled);
+      config.mutable_chrome_config()->set_trace_config(chrome_trace_config);
       TraceEventDataSource::GetInstance()->StartTracing(producer_client(),
                                                         config);
     }
@@ -1578,6 +1582,32 @@ TEST_F(TraceEventDataSourceTest, TypedArgumentsTracingOnScopedMultipleEvents) {
   ExpectTraceEvent(e_packet, /*category_iid=*/0u, /*name_iid=*/0u,
                    TRACE_EVENT_PHASE_END);
   EXPECT_FALSE(e_packet->track_event().has_log_message());
+}
+
+TEST_F(TraceEventDataSourceTest, HistogramSample) {
+  base::trace_event::TraceConfig trace_config(
+      "-*,disabled-by-default-histogram_samples",
+      base::trace_event::RECORD_UNTIL_FULL);
+
+  CreateTraceEventDataSource(/*privacy_filtering_enabled=*/false,
+                             /*start_trace=*/true, trace_config.ToString());
+
+  UMA_HISTOGRAM_BOOLEAN("Foo.Bar", true);
+
+  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 3u);
+
+  auto* td_packet = producer_client()->GetFinalizedPacket();
+  ExpectThreadDescriptor(td_packet);
+
+  auto* e_packet = producer_client()->GetFinalizedPacket(1);
+
+  ExpectEventCategories(e_packet,
+                        {{1u, TRACE_DISABLED_BY_DEFAULT("histogram_samples")}});
+  ExpectEventNames(e_packet, {{1u, "HistogramSample"}});
+  ASSERT_TRUE(e_packet->track_event().has_chrome_histogram_sample());
+  EXPECT_EQ(e_packet->track_event().chrome_histogram_sample().name_hash(),
+            base::HashMetricName("Foo.Bar"));
+  EXPECT_EQ(e_packet->track_event().chrome_histogram_sample().sample(), 1u);
 }
 
 // TODO(eseckler): Add startup tracing unittests.

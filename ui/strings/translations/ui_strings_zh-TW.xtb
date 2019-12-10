@@ -74,7 +74,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{1 年前}other{# 年前}}</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1 天內}other{# 天內}}</translation>
 <translation id="2931838996092594335">點選</translation>
-<translation id="2981684127883932071">顯示建議項目</translation>
+<translation id="2981684127883932071">目前正顯示建議項目</translation>
 <translation id="3036649622769666520">開啟檔案</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3068711042108640621">在左側顯示檔案櫃</translation>
@@ -249,8 +249,8 @@
 <translation id="9150735707954472829">分頁</translation>
 <translation id="9161053988251441839">建議使用的應用程式</translation>
 <translation id="9170848237812810038">取消(&amp;U)</translation>
-<translation id="9178475906033259337">顯示 1 項與「<ph name="QUERY" />」相符的搜尋結果</translation>
+<translation id="9178475906033259337">目前正顯示 1 項與「<ph name="QUERY" />」相符的搜尋結果</translation>
 <translation id="932327136139879170">首頁</translation>
 <translation id="944069440740578670">未讀通知</translation>
-<translation id="974545358917229949">顯示「<ph name="RESULT_COUNT" />」項與「<ph name="QUERY" />」相符的搜尋結果</translation>
+<translation id="974545358917229949">目前正顯示 <ph name="RESULT_COUNT" /> 項與「<ph name="QUERY" />」相符的搜尋結果</translation>
 </translationbundle>

@@ -159,23 +159,22 @@ const blink::WebMediaStreamTrack& FakeRTCRtpReceiverImpl::Track() const {
   return track_;
 }
 
-WebVector<String> FakeRTCRtpReceiverImpl::StreamIds() const {
-  WebVector<String> wtf_stream_ids(stream_ids_.size());
+Vector<String> FakeRTCRtpReceiverImpl::StreamIds() const {
+  Vector<String> wtf_stream_ids(stream_ids_.size());
   for (size_t i = 0; i < stream_ids_.size(); ++i) {
     wtf_stream_ids[i] = String::FromUTF8(stream_ids_[i]);
   }
   return wtf_stream_ids;
 }
 
-blink::WebVector<std::unique_ptr<RTCRtpSource>>
-FakeRTCRtpReceiverImpl::GetSources() {
+Vector<std::unique_ptr<RTCRtpSource>> FakeRTCRtpReceiverImpl::GetSources() {
   NOTIMPLEMENTED();
   return {};
 }
 
 void FakeRTCRtpReceiverImpl::GetStats(
     RTCStatsReportCallback,
-    const blink::WebVector<webrtc::NonStandardGroupId>&) {
+    const Vector<webrtc::NonStandardGroupId>&) {
   NOTIMPLEMENTED();
 }
 

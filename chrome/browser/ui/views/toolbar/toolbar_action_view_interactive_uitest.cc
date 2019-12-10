@@ -278,7 +278,8 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
     extension_service()->AddExtension(extension.get());
   }
 
-  const auto* const actions_bar = browser()->window()->GetToolbarActionsBar();
+  const auto* const actions_bar =
+      ToolbarActionsBar::FromBrowserWindow(browser()->window());
   ASSERT_EQ(16u, actions_bar->toolbar_actions_unordered().size());
 
   // Reduce visible count to 0 so that all actions are overflowed.

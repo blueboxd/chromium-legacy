@@ -21,7 +21,6 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Utility methods and classes for testing modal dialogs.
@@ -41,9 +40,9 @@ public class ModalDialogTestUtils {
     /**
      * @return A {@link PropertyModel} of a modal dialog that is used for testing.
      */
-    public static PropertyModel createDialog(ChromeActivity activity, String title,
-            @Nullable TestDialogDismissedObserver observer) throws ExecutionException {
-        return TestThreadUtils.runOnUiThreadBlocking(() -> {
+    public static PropertyModel createDialog(
+            ChromeActivity activity, String title, @Nullable TestDialogDismissedObserver observer) {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
             ModalDialogProperties.Controller controller = new ModalDialogProperties.Controller() {
                 @Override
                 public void onDismiss(

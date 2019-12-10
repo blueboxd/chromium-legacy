@@ -34,9 +34,22 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SpecialStoragePolicy
 
   class COMPONENT_EXPORT(STORAGE_BROWSER) Observer {
    public:
-    virtual void OnGranted(const GURL& origin, int change_flags) = 0;
-    virtual void OnRevoked(const GURL& origin, int change_flags) = 0;
-    virtual void OnCleared() = 0;
+    // Called when one or more features corresponding to |change_flags| have
+    // been granted for |origin| storage.
+    virtual void OnGranted(const GURL& origin, int change_flags) {}
+
+    // Called when one or more features corresponding to |change_flags| have
+    // been revoked for |origin| storage.
+    virtual void OnRevoked(const GURL& origin, int change_flags) {}
+
+    // Called when all features corresponding to ChangeFlags have been revoked
+    // for all origins.
+    virtual void OnCleared() {}
+
+    // Called any time the policy changes in any meaningful way, i.e., the
+    // public Is/Has querying methods may return different values from before
+    // this notification.
+    virtual void OnPolicyChanged() {}
 
    protected:
     virtual ~Observer();
@@ -81,9 +94,16 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SpecialStoragePolicy
  protected:
   friend class base::RefCountedThreadSafe<SpecialStoragePolicy>;
   virtual ~SpecialStoragePolicy();
+
+  // Notify observes of specific policy changes. Note that all of these also
+  // implicitly invoke |NotifyPolicyChanged()|.
   void NotifyGranted(const GURL& origin, int change_flags);
   void NotifyRevoked(const GURL& origin, int change_flags);
   void NotifyCleared();
+
+  // Subclasses can call this for any policy changes which don't fit any of the
+  // above notifications.
+  void NotifyPolicyChanged();
 
   base::ObserverList<Observer>::Unchecked observers_;
 };

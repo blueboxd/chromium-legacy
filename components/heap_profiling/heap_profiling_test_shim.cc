@@ -41,7 +41,5 @@ jboolean HeapProfilingTestShim::RunTestForMode(
   options.stack_mode = heap_profiling::ConvertStringToStackMode(
       base::android::ConvertJavaStringToUTF8(stack_mode));
   options.profiling_already_started = !dynamically_start_profiling;
-  options.should_sample = should_sample;
-  options.sample_everything = sample_everything;
   return driver.RunTest(options);
 }

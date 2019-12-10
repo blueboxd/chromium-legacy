@@ -5,7 +5,7 @@
 <translation id="1682483655351012182">Sinkronizatu Chrome-ko datuak</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Google Chrome Pribatutasun-oharra</translation>
-<translation id="1863312987075920112">Aplikazioa erabiltzen baduzu, onartu egingo dituzu Chrome <ph name="BEGIN_LINK_TOS" />Zerbitzu-baldintzak<ph name="END_LINK_TOS" /> eta <ph name="BEGIN_LINK_PRIVACY" />Pribatutasun-oharra<ph name="END_LINK_PRIVACY" />.</translation>
+<translation id="1863312987075920112">Aplikazioa erabiltzen baduzu, onartu egingo dituzu Chrome-ren <ph name="BEGIN_LINK_TOS" />Zerbitzu-baldintzak<ph name="END_LINK_TOS" /> eta <ph name="BEGIN_LINK_PRIVACY" />Pribatutasun-oharra<ph name="END_LINK_PRIVACY" />.</translation>
 <translation id="2147651015520127414">Webgunearen ziurtagiria <ph name="ISSUER" /> hornitzaileak jaulki duela egiaztatu du Chrome-k.</translation>
 <translation id="2199719347983604670">Chrome-ren sinkronizazioaren datuak</translation>
 <translation id="2347208864470321755">Eginbide hau aktibatzen denean, beste hizkuntzetan dauden orriak Google Translate bidez itzuli nahi dituzun galdetuko dizu Chrome-k. <ph name="BEGIN_LINK" />Lortu informazio gehiago<ph name="END_LINK" /></translation>
@@ -38,7 +38,7 @@
 <translation id="6600954340915313787">Chrome-n kopiatu da</translation>
 <translation id="6648150602980899529"><ph name="DOMAIN" /> domeinuak kudeatutako kontu batekin hasi duzu saioa eta Chrome datuen kontrola administratzaileari eman diozu. Datuak betiko lotuko dira kontu honekin. Saioa amaitzen baduzu Chrome-ko datuak ezabatu egingo dira gailutik, baina Google-ko kontuan izango dituzu gordeta.</translation>
 <translation id="6676840375528380067">Gailu honetan dituzun Chrome-ko datuak garbitu nahi dituzu?</translation>
-<translation id="690638524486313356">Google Chrome Zerbitzu-baldintzak</translation>
+<translation id="690638524486313356">Google Chrome-ren Zerbitzu-baldintzak</translation>
 <translation id="7165736900384873061">Hasi Google Chrome QR eskanerra erabiltzen</translation>
 <translation id="7172660552945675509">Aholkua: <ph name="BEGIN_LINK" />ainguratu Chrome dock-ean<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome-k aurpegi bidezko identifikazioa erabiltzen du pasahitzak baimena dutenek bakarrik atzitzen dituztela ziurtatzeko.</translation>

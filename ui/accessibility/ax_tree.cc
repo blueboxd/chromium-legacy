@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "ui/accessibility/accessibility_switches.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_language_detection.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_position.h"
@@ -2054,59 +2055,108 @@ AXTree::Selection AXTree::GetUnignoredSelection() const {
   AXNode* focus_node = GetFromId(data().sel_focus_object_id);
 
   AXNodePosition::AXPositionInstance anchor_position =
-      anchor_node ? AXNodePosition::CreatePosition(data().tree_id, *anchor_node,
+      anchor_node ? AXNodePosition::CreatePosition(*anchor_node,
                                                    data().sel_anchor_offset,
                                                    data().sel_anchor_affinity)
                   : AXNodePosition::CreateNullPosition();
-  if (anchor_position->IsIgnoredPosition()) {
-    anchor_position = anchor_position->AsUnignoredTextPosition(
-        data().sel_is_backward ? AXNodePosition::AdjustmentBehavior::kMoveRight
-                               : AXNodePosition::AdjustmentBehavior::kMoveLeft);
+
+  // Null positions are never ignored.
+  if (anchor_position->IsIgnored()) {
+    anchor_position = anchor_position->AsUnignoredPosition(
+        data().sel_is_backward ? AXPositionAdjustmentBehavior::kMoveForwards
+                               : AXPositionAdjustmentBehavior::kMoveBackwards);
+
+    // Any selection endpoint that is inside a leaf node is expressed as a text
+    // position in AXTreeData.
+    if (anchor_position->IsLeafTreePosition())
+      anchor_position = anchor_position->AsTextPosition();
+
     // We do not expect the selection to have an endpoint on an inline text
-    // box.
-    if (!anchor_position->IsNullPosition() &&
+    // box as this will create issues with parts of the code that don't use
+    // inline text boxes.
+    if (anchor_position->IsTextPosition() &&
         anchor_position->GetAnchor()->data().role ==
-            ax::mojom::Role::kInlineTextBox)
+            ax::mojom::Role::kInlineTextBox) {
       anchor_position = anchor_position->CreateParentPosition();
-    unignored_selection.anchor_object_id = anchor_position->anchor_id();
-    unignored_selection.anchor_offset = anchor_position->text_offset();
-    unignored_selection.anchor_affinity = anchor_position->affinity();
-  } else if (anchor_position->IsTreePosition()) {
-    // Fix offset to be in terms of the unignored index.
-    if (data().sel_anchor_offset == int32_t{anchor_node->children().size()}) {
-      unignored_selection.anchor_offset = anchor_node->GetUnignoredChildCount();
-    } else {
-      AXNode* child = anchor_node->children()[data().sel_anchor_offset];
-      unignored_selection.anchor_offset = child->GetUnignoredIndexInParent();
+    }
+
+    switch (anchor_position->kind()) {
+      case AXPositionKind::NULL_POSITION:
+        // If one of the selection endpoints is invalid, then both endpoints
+        // should be unset.
+        unignored_selection.anchor_object_id = AXNode::kInvalidAXID;
+        unignored_selection.anchor_offset = -1;
+        unignored_selection.anchor_affinity =
+            ax::mojom::TextAffinity::kDownstream;
+        unignored_selection.focus_object_id = AXNode::kInvalidAXID;
+        unignored_selection.focus_offset = -1;
+        unignored_selection.focus_affinity =
+            ax::mojom::TextAffinity::kDownstream;
+        return unignored_selection;
+      case AXPositionKind::TREE_POSITION:
+        unignored_selection.anchor_object_id = anchor_position->anchor_id();
+        unignored_selection.anchor_offset = anchor_position->child_index();
+        unignored_selection.anchor_affinity =
+            ax::mojom::TextAffinity::kDownstream;
+        break;
+      case AXPositionKind::TEXT_POSITION:
+        unignored_selection.anchor_object_id = anchor_position->anchor_id();
+        unignored_selection.anchor_offset = anchor_position->text_offset();
+        unignored_selection.anchor_affinity = anchor_position->affinity();
+        break;
     }
   }
 
   AXNodePosition::AXPositionInstance focus_position =
-      focus_node ? AXNodePosition::CreatePosition(data().tree_id, *focus_node,
-                                                  data().sel_focus_offset,
-                                                  data().sel_focus_affinity)
-                 : AXNodePosition::CreateNullPosition();
-  if (focus_position->IsIgnoredPosition()) {
-    focus_position = focus_position->AsUnignoredTextPosition(
-        !data().sel_is_backward
-            ? AXNodePosition::AdjustmentBehavior::kMoveRight
-            : AXNodePosition::AdjustmentBehavior::kMoveLeft);
+      focus_node
+          ? AXNodePosition::CreatePosition(*focus_node, data().sel_focus_offset,
+                                           data().sel_focus_affinity)
+          : AXNodePosition::CreateNullPosition();
+
+  // Null positions are never ignored.
+  if (focus_position->IsIgnored()) {
+    focus_position = focus_position->AsUnignoredPosition(
+        !data().sel_is_backward ? AXPositionAdjustmentBehavior::kMoveForwards
+                                : AXPositionAdjustmentBehavior::kMoveBackwards);
+
+    // Any selection endpoint that is inside a leaf node is expressed as a text
+    // position in AXTreeData.
+    if (focus_position->IsLeafTreePosition())
+      focus_position = focus_position->AsTextPosition();
+
     // We do not expect the selection to have an endpoint on an inline text
-    // box.
-    if (!focus_position->IsNullPosition() &&
+    // box as this will create issues with parts of the code that don't use
+    // inline text boxes.
+    if (focus_position->IsTextPosition() &&
         focus_position->GetAnchor()->data().role ==
-            ax::mojom::Role::kInlineTextBox)
+            ax::mojom::Role::kInlineTextBox) {
       focus_position = focus_position->CreateParentPosition();
-    unignored_selection.focus_object_id = focus_position->anchor_id();
-    unignored_selection.focus_offset = focus_position->text_offset();
-    unignored_selection.focus_affinity = focus_position->affinity();
-  } else if (focus_position->IsTreePosition()) {
-    // Fix offset to be in terms of the unignored index.
-    if (data().sel_focus_offset == int32_t{focus_node->children().size()}) {
-      unignored_selection.focus_offset = focus_node->GetUnignoredChildCount();
-    } else {
-      AXNode* child = focus_node->children()[data().sel_focus_offset];
-      unignored_selection.focus_offset = child->GetUnignoredIndexInParent();
+    }
+
+    switch (focus_position->kind()) {
+      case AXPositionKind::NULL_POSITION:
+        // If one of the selection endpoints is invalid, then both endpoints
+        // should be unset.
+        unignored_selection.anchor_object_id = AXNode::kInvalidAXID;
+        unignored_selection.anchor_offset = -1;
+        unignored_selection.anchor_affinity =
+            ax::mojom::TextAffinity::kDownstream;
+        unignored_selection.focus_object_id = AXNode::kInvalidAXID;
+        unignored_selection.focus_offset = -1;
+        unignored_selection.focus_affinity =
+            ax::mojom::TextAffinity::kDownstream;
+        return unignored_selection;
+      case AXPositionKind::TREE_POSITION:
+        unignored_selection.focus_object_id = focus_position->anchor_id();
+        unignored_selection.focus_offset = focus_position->child_index();
+        unignored_selection.focus_affinity =
+            ax::mojom::TextAffinity::kDownstream;
+        break;
+      case AXPositionKind::TEXT_POSITION:
+        unignored_selection.focus_object_id = focus_position->anchor_id();
+        unignored_selection.focus_offset = focus_position->text_offset();
+        unignored_selection.focus_affinity = focus_position->affinity();
+        break;
     }
   }
 

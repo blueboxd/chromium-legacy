@@ -147,7 +147,8 @@ void OnDeviceHeadProvider::Start(const AutocompleteInput& input,
   Stop(!minimal_changes, false);
 
   const std::string mode = base::GetFieldTrialParamValueByFeature(
-      omnibox::kOnDeviceHeadProvider, "IncognitoServeMode");
+      omnibox::kOnDeviceHeadProvider,
+      OmniboxFieldTrial::kOnDeviceHeadSuggestIncognitoServeMode);
   if (!IsOnDeviceHeadProviderAllowed(input, mode)) {
     matches_.clear();
     return;

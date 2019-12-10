@@ -757,7 +757,7 @@ struct WebSocketStreamCreationCallbackArgumentSaver {
       const GURL& socket_url,
       const std::vector<std::string>& requested_subprotocols,
       const url::Origin& origin,
-      const GURL& site_for_cookies,
+      const SiteForCookies& site_for_cookies,
       const net::NetworkIsolationKey& network_isolation_key,
       const HttpRequestHeaders& additional_headers,
       URLRequestContext* url_request_context,
@@ -774,7 +774,7 @@ struct WebSocketStreamCreationCallbackArgumentSaver {
 
   GURL socket_url;
   url::Origin origin;
-  GURL site_for_cookies;
+  SiteForCookies site_for_cookies;
   net::NetworkIsolationKey network_isolation_key;
   URLRequestContext* url_request_context;
   std::unique_ptr<WebSocketStream::ConnectDelegate> connect_delegate;
@@ -848,7 +848,7 @@ class WebSocketChannelTest : public TestWithTaskEnvironment {
     ConnectData()
         : socket_url("ws://ws/"),
           origin(url::Origin::Create(GURL("http://ws"))),
-          site_for_cookies("http://ws/") {
+          site_for_cookies(SiteForCookies::FromUrl(GURL("http://ws/"))) {
       url::Origin top_frame_origin = url::Origin::Create(GURL("http://ws-1"));
       this->network_isolation_key =
           net::NetworkIsolationKey(top_frame_origin, origin);
@@ -864,7 +864,7 @@ class WebSocketChannelTest : public TestWithTaskEnvironment {
     // Origin of the request
     url::Origin origin;
     // First party for cookies for the request.
-    GURL site_for_cookies;
+    net::SiteForCookies site_for_cookies;
     // NetworkIsolationKey created from the origin of the top level frame.
     net::NetworkIsolationKey network_isolation_key;
 
@@ -985,7 +985,8 @@ class WebSocketChannelReceiveUtf8Test : public WebSocketChannelStreamTest {
 TEST_F(WebSocketChannelTest, EverythingIsPassedToTheCreatorFunction) {
   connect_data_.socket_url = GURL("ws://example.com/test");
   connect_data_.origin = url::Origin::Create(GURL("http://example.com"));
-  connect_data_.site_for_cookies = GURL("http://example.com/");
+  connect_data_.site_for_cookies =
+      SiteForCookies::FromUrl(GURL("http://example.com/"));
   url::Origin top_frame_origin =
       url::Origin::Create(GURL("http://example-1.com"));
   connect_data_.network_isolation_key =
@@ -1001,7 +1002,8 @@ TEST_F(WebSocketChannelTest, EverythingIsPassedToTheCreatorFunction) {
 
   EXPECT_EQ(connect_data_.socket_url, actual.socket_url);
   EXPECT_EQ(connect_data_.origin.Serialize(), actual.origin.Serialize());
-  EXPECT_EQ(connect_data_.site_for_cookies, actual.site_for_cookies);
+  EXPECT_TRUE(
+      connect_data_.site_for_cookies.IsEquivalent(actual.site_for_cookies));
   EXPECT_EQ(connect_data_.network_isolation_key, actual.network_isolation_key);
 }
 

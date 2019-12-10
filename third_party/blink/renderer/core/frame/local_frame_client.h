@@ -86,6 +86,7 @@ enum class WebFeature : int32_t;
 }  // namespace mojom
 
 class AssociatedInterfaceProvider;
+class ContentSecurityPolicy;
 class Document;
 class DocumentLoader;
 class HTMLFormElement;
@@ -240,6 +241,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual DocumentLoader* CreateDocumentLoader(
       LocalFrame*,
       WebNavigationType,
+      base::Optional<ContentSecurityPolicy*>,
       std::unique_ptr<WebNavigationParams> navigation_params,
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) = 0;
 

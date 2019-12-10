@@ -84,14 +84,6 @@ OverlayCandidateValidatorStrategy::Create(
 #endif
 }
 
-bool OverlayCandidateValidatorStrategy::AllowCALayerOverlays() const {
-  return false;
-}
-
-bool OverlayCandidateValidatorStrategy::AllowDCLayerOverlays() const {
-  return false;
-}
-
 bool OverlayCandidateValidatorStrategy::AttemptWithStrategies(
     const SkMatrix44& output_color_matrix,
     const OverlayProcessor::FilterOperationsMap& render_pass_backdrop_filters,

@@ -81,9 +81,7 @@
     {
         name: "DiffNeedsFullLayoutAndPaintInvalidation",
         fields_to_diff: ["padding-top", "padding-left", "padding-right", 
-                "padding-bottom", "-webkit-appearance",
-                "-webkit-margin-before-collapse",
-                "-webkit-margin-after-collapse", "-webkit-line-clamp",
+                "padding-bottom", "-webkit-appearance", "-webkit-line-clamp",
                 "text-overflow", "shape-margin", "order", "-webkit-highlight",
                 "text-indent", "text-align-last", "TextIndentLine", "-internal-effective-zoom",
                 "word-break", "overflow-wrap", "-webkit-line-break", 

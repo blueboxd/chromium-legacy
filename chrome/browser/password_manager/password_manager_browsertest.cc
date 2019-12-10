@@ -3339,7 +3339,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   password_store->AddLogin(signin_form);
   signin_form.username_value = base::ASCIIToUTF16("last_used_username");
   signin_form.password_value = base::ASCIIToUTF16("last_used_password");
-  signin_form.preferred = true;
   password_store->AddLogin(signin_form);
   WaitForPasswordStore();
 
@@ -3868,12 +3867,10 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   admin_form.origin = embedded_test_server()->base_url();
   admin_form.username_value = base::ASCIIToUTF16("admin");
   admin_form.password_value = base::ASCIIToUTF16("random_secret");
-  admin_form.preferred = true;
   password_store->AddLogin(admin_form);
 
   autofill::PasswordForm user_form = admin_form;
   user_form.username_value = base::ASCIIToUTF16("user");
-  user_form.preferred = false;
   password_store->AddLogin(user_form);
 
   NavigateToFile("/password/password_form.html");

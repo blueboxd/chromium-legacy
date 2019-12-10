@@ -90,13 +90,27 @@ class SVGFELightElement : public SVGElement {
   Member<SVGAnimatedNumber> limiting_cone_angle_;
 };
 
-inline bool IsSVGFELightElement(const SVGElement& element) {
-  return element.HasTagName(svg_names::kFEDistantLightTag) ||
-         element.HasTagName(svg_names::kFEPointLightTag) ||
-         element.HasTagName(svg_names::kFESpotLightTag);
+template <>
+inline bool IsElementOfType<const SVGFELightElement>(
+    const SVGElement& element) {
+  return IsA<SVGFELightElement>(element);
 }
-
-DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGFELightElement);
+template <>
+inline bool IsElementOfType<const SVGFELightElement>(const Node& node) {
+  return IsA<SVGFELightElement>(node);
+}
+template <>
+struct DowncastTraits<SVGFELightElement> {
+  static bool AllowFrom(const Node& node) {
+    auto* svg_element = DynamicTo<SVGElement>(node);
+    return svg_element ? IsA<SVGFELightElement>(svg_element) : false;
+  }
+  static bool AllowFrom(const SVGElement& svg_element) {
+    return svg_element.HasTagName(svg_names::kFEDistantLightTag) ||
+           svg_element.HasTagName(svg_names::kFEPointLightTag) ||
+           svg_element.HasTagName(svg_names::kFESpotLightTag);
+  }
+};
 
 }  // namespace blink
 

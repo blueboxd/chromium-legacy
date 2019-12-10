@@ -1237,27 +1237,6 @@ struct DowncastTraits<Element> {
   static bool AllowFrom(const Node& node) { return node.IsElementNode(); }
 };
 
-// Type casting.
-template <typename T>
-inline T& ToElement(Node& node) {
-  SECURITY_DCHECK(IsElementOfType<const T>(node));
-  return static_cast<T&>(node);
-}
-template <typename T>
-inline T* ToElement(Node* node) {
-  SECURITY_DCHECK(!node || IsElementOfType<const T>(*node));
-  return static_cast<T*>(node);
-}
-template <typename T>
-inline const T& ToElement(const Node& node) {
-  SECURITY_DCHECK(IsElementOfType<const T>(node));
-  return static_cast<const T&>(node);
-}
-template <typename T>
-inline const T* ToElement(const Node* node) {
-  SECURITY_DCHECK(!node || IsElementOfType<const T>(*node));
-  return static_cast<const T*>(node);
-}
 
 inline bool IsDisabledFormControl(const Node* node) {
   auto* element = DynamicTo<Element>(node);
@@ -1405,13 +1384,6 @@ inline bool IsAtShadowBoundary(const Element* element) {
 // These macros do the same as their NODE equivalents but additionally provide a
 // template specialization for isElementOfType<>() so that the Traversal<> API
 // works for these Element types.
-#define DEFINE_ELEMENT_TYPE_CASTS(thisType, predicate)            \
-  template <>                                                     \
-  inline bool IsElementOfType<const thisType>(const Node& node) { \
-    return node.predicate;                                        \
-  }                                                               \
-  DEFINE_NODE_TYPE_CASTS(thisType, predicate)
-
 #define DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(thisType)         \
   template <>                                                     \
   inline bool IsElementOfType<const thisType>(const Node& node) { \

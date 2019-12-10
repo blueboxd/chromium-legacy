@@ -80,7 +80,8 @@ void ExtensionMessageBubbleBrowserTest::CheckBubble(
     bool should_be_highlighting) {
   EXPECT_EQ(should_be_highlighting, toolbar_model()->is_highlighting());
   EXPECT_TRUE(toolbar_model()->has_active_bubble());
-  EXPECT_TRUE(browser->window()->GetToolbarActionsBar()->is_showing_bubble());
+  EXPECT_TRUE(ToolbarActionsBar::FromBrowserWindow(browser->window())
+                  ->is_showing_bubble());
   CheckBubbleNative(browser, position);
 }
 
@@ -92,7 +93,8 @@ void ExtensionMessageBubbleBrowserTest::CheckBubbleIsNotPresent(
   ASSERT_TRUE(!should_be_highlighting || should_profile_have_bubble);
   EXPECT_EQ(should_be_highlighting, toolbar_model()->is_highlighting());
   EXPECT_EQ(should_profile_have_bubble, toolbar_model()->has_active_bubble());
-  EXPECT_FALSE(browser->window()->GetToolbarActionsBar()->is_showing_bubble());
+  EXPECT_FALSE(ToolbarActionsBar::FromBrowserWindow(browser->window())
+                   ->is_showing_bubble());
   CheckBubbleIsNotPresentNative(browser);
 }
 

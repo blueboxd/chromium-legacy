@@ -91,6 +91,7 @@
 <translation id="209018056901015185">Versoek werkskermwerf</translation>
 <translation id="2103075008456228677">Maak history.google.com oop</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> items is geskuif</translation>
+<translation id="2118594521750010466">Maak nou reg</translation>
 <translation id="213900355088104901">Maak 'n incognito-oortjie oop om privaat te blaai</translation>
 <translation id="2139867232736819575">Soek vir teks wat jy gekopieer het</translation>
 <translation id="2149973817440762519">Wysig boekmerk</translation>
@@ -98,6 +99,7 @@
 <translation id="2198757192731523470">Google sal dalk jou geskiedenis gebruik om Search, advertensies en ander Google-dienste te personaliseer.</translation>
 <translation id="2230173723195178503">Webblad is gelaai</translation>
 <translation id="2239626343334228536">Vee blaaierdata uit …</translation>
+<translation id="2257567812274161158">Sinkronisering werk nie.</translation>
 <translation id="2267753748892043616">Voeg rekening by</translation>
 <translation id="2268044343513325586">Verfyn</translation>
 <translation id="2273327106802955778">Meer-kieslys</translation>
@@ -129,6 +131,7 @@
 <translation id="2691653761409724435">Nie vanlyn beskikbaar nie</translation>
 <translation id="2695507686909505111">Bladsy is vertaal</translation>
 <translation id="2702801445560668637">Leeslys</translation>
+<translation id="2704491540504985681">Aflaaie</translation>
 <translation id="2704606927547763573">Gekopieer</translation>
 <translation id="2709516037105925701">Outovul</translation>
 <translation id="2712127207578915686">Kan nie lêer oopmaak nie</translation>
@@ -218,6 +221,7 @@
 <translation id="3943492037546055397">Wagwoorde</translation>
 <translation id="3967822245660637423">Aflaai is voltooi</translation>
 <translation id="3989635538409502728">Meld af</translation>
+<translation id="399419089947468503">Kon nie wagwoorde sinkroniseer nie</translation>
 <translation id="3995521777587992544">Bladlaaivorderingsbalk, <ph name="EMAIL" /> gelaai.</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4004204301268239848">Wagwoorde word in jou Google-rekening gestoor sodat jy hulle op enige toestel kan gebruik.</translation>
@@ -238,6 +242,7 @@
 <translation id="424315890655130736">Voer wagfrase in</translation>
 <translation id="4263576668337963058">Wys beskikbare bladsyhandelinge</translation>
 <translation id="4272631900155121838">Aktiveer die kamera in instellings om 'n QR-kode te skandeer</translation>
+<translation id="4276041135170112053">Maak nou reg.</translation>
 <translation id="4281844954008187215">Diensbepalings</translation>
 <translation id="430793432425771671">Sinkroniseer alles</translation>
 <translation id="430967081421617822">Alle tye</translation>
@@ -286,6 +291,7 @@ Jou data is met jou sinkroniseringwagfrase geënkripteer. Voer dit in om te begi
 <translation id="4904877109095351937">Merk as gelees</translation>
 <translation id="4930268273022498155">Vee bestaande data uit. Jy kan dit herwin deur weer na <ph name="USER_EMAIL1" /> oor te skakel.</translation>
 <translation id="4941089862236492464">Jammer, kon nie jou item deel nie.</translation>
+<translation id="4944543191714094452">Soek op bladsy …</translation>
 <translation id="4945756290001680296">Gaan by wagwoordinstelling in</translation>
 <translation id="4979397965658815378">Meld met jou Google-rekening aan om jou boekmerke, wagwoorde, geskiedenis en ander instellings op al jou toestelle te kry</translation>
 <translation id="5005498671520578047">Kopieer wagwoord</translation>
@@ -317,6 +323,7 @@ Jou data is met jou sinkroniseringwagfrase geënkripteer. Voer dit in om te begi
 <translation id="5433691172869980887">Gebruikernaam is gekopieer</translation>
 <translation id="54401264925851789">Bladsy se sekuriteitsinligting</translation>
 <translation id="5443952882982198570">Kredietkaarte</translation>
+<translation id="5457907402803865181">Kon nie wagwoorde sinkroniseer nie.</translation>
 <translation id="5525269841082836315">Skep wagfrase</translation>
 <translation id="5548760955356983418">Oorgee laat jou toe om op 'n webwerf op hierdie toestel te begin blaai en dan maklik op jou Mac voort te gaan. Die huidige oop webwerf sal in die dok van jou Mac verskyn.
 
@@ -408,6 +415,7 @@ Jou data is op <ph name="TIME" /> met jou sinkroniseringwagfrase geënkripteer.<
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> items uitgevee</translation>
 <translation id="6610002944194042868">Vertaalopsies</translation>
 <translation id="6628106477656132239">Ongeldige vervaldatum</translation>
+<translation id="6638511529934826365">Zoem teks …</translation>
 <translation id="6642362222295953972">Skakel oor na bestaande oortjie</translation>
 <translation id="6643016212128521049">Vee uit</translation>
 <translation id="6656103420185847513">Wysig vouer</translation>

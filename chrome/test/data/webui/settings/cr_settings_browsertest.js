@@ -1093,6 +1093,7 @@ CrSettingsCertificateManagerTest.prototype = {
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_util.js',
     '../test_browser_proxy.js',
+    'ensure_lazy_loaded.js',
     'certificate_manager_test.js',
   ]),
 };
@@ -1250,7 +1251,8 @@ CrSettingsSiteDataDetailsTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
+  browsePreload:
+      'chrome://settings/site_settings/site_data_details_subpage.html',
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -1327,7 +1329,8 @@ CrSettingsCategoryDefaultSettingTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
+  browsePreload:
+      'chrome://settings/site_settings/category_default_setting.html',
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -1352,13 +1355,15 @@ CrSettingsCategorySettingExceptionsTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
+  browsePreload:
+      'chrome://settings/site_settings/category_setting_exceptions.html',
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
     'test_util.js',
     'test_site_settings_prefs_browser_proxy.js',
+    'ensure_lazy_loaded.js',
     'category_setting_exceptions_tests.js',
   ]),
 };
@@ -1377,7 +1382,7 @@ CrSettingsSiteEntryTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
+  browsePreload: 'chrome://settings/site_settings/site_entry.html',
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -1435,6 +1440,7 @@ CrSettingsSiteDetailsTest.prototype = {
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
     'test_util.js',
+    'ensure_lazy_loaded.js',
     'test_site_settings_prefs_browser_proxy.js',
     'site_details_tests.js',
   ]),
@@ -1463,7 +1469,7 @@ CrSettingsSiteDetailsPermissionTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
+  browsePreload: 'chrome://settings/site_settings/site_details_permission.html',
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -1488,7 +1494,7 @@ CrSettingsSiteListTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
+  browsePreload: 'chrome://settings/site_settings/site_list.html',
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -1532,6 +1538,7 @@ CrSettingsSiteListEntryTest.prototype = {
     '../test_browser_proxy.js',
     '../test_util.js',
     'test_util.js',
+    'ensure_lazy_loaded.js',
     'test_site_settings_prefs_browser_proxy.js',
     'site_list_entry_tests.js',
   ]),
@@ -1559,6 +1566,7 @@ CrSettingsZoomLevelsTest.prototype = {
     '../test_util.js',
     'test_util.js',
     'test_site_settings_prefs_browser_proxy.js',
+    'ensure_lazy_loaded.js',
     'zoom_levels_tests.js',
   ]),
 };
@@ -1584,6 +1592,7 @@ CrSettingsProtocolHandlersTest.prototype = {
     '../test_browser_proxy.js',
     'test_util.js',
     'test_site_settings_prefs_browser_proxy.js',
+    'ensure_lazy_loaded.js',
     'protocol_handlers_tests.js',
   ]),
 };

@@ -45,7 +45,6 @@ bool GLTestHelper::InitializeGL(gl::GLImplementation gl_impl) {
 
     if (!gl::init::InitializeGLOneOffPlatformImplementation(
             false,  // fallback_to_software_gl
-            false,  // gpu_service_logging
             false,  // disable_gl_drawing
             false   // init_extensions
             )) {

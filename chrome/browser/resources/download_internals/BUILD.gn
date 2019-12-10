@@ -5,6 +5,7 @@
 import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
+  uses_js_modules = true
   deps = [
     ":download_internals",
     ":download_internals_browser_proxy",
@@ -16,21 +17,19 @@ js_library("download_internals") {
   deps = [
     ":download_internals_browser_proxy",
     "//third_party/jstemplate:jstemplate",
-    "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js:util",
+    "//ui/webui/resources/js:cr.m",
+    "//ui/webui/resources/js:util.m",
   ]
 }
 
 js_library("download_internals_browser_proxy") {
   deps = [
-    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:cr.m",
   ]
 }
 
 js_library("download_internals_visuals") {
   deps = [
     ":download_internals_browser_proxy",
-    "//ui/webui/resources/js:cr",
   ]
 }

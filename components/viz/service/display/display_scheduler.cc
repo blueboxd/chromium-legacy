@@ -4,15 +4,8 @@
 
 #include "components/viz/service/display/display_scheduler.h"
 
-#include <vector>
-
 #include "base/auto_reset.h"
-#include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
-#include "components/viz/common/surfaces/surface_info.h"
-#include "components/viz/service/display/output_surface.h"
 
 namespace viz {
 
@@ -26,10 +19,8 @@ DisplayScheduler::DisplayScheduler(BeginFrameSource* begin_frame_source,
       inside_surface_damaged_(false),
       visible_(false),
       output_surface_lost_(false),
-      root_frame_missing_(true),
       inside_begin_frame_deadline_interval_(false),
       needs_draw_(false),
-      expecting_root_surface_damage_because_of_resize_(false),
       has_pending_surfaces_(false),
       next_swap_id_(1),
       pending_swaps_(0),
@@ -52,10 +43,19 @@ DisplayScheduler::~DisplayScheduler() {
   // in-flight swap. So always mark the gpu as not busy during destruction.
   begin_frame_source_->SetIsGpuBusy(false);
   StopObservingBeginFrames();
+  if (damage_tracker_)
+    damage_tracker_->RemoveObserver(this);
 }
 
 void DisplayScheduler::SetClient(DisplaySchedulerClient* client) {
   client_ = client;
+}
+
+void DisplayScheduler::SetDamageTracker(DisplayDamageTracker* damage_tracker) {
+  DCHECK(!damage_tracker_);
+  DCHECK(damage_tracker);
+  damage_tracker_ = damage_tracker;
+  damage_tracker_->AddObserver(this);
 }
 
 void DisplayScheduler::SetVisible(bool visible) {
@@ -69,15 +69,26 @@ void DisplayScheduler::SetVisible(bool visible) {
   ScheduleBeginFrameDeadline();
 }
 
-void DisplayScheduler::SetRootFrameMissing(bool missing) {
-  TRACE_EVENT1("viz", "DisplayScheduler::SetRootFrameMissing", "missing",
-               missing);
-  if (root_frame_missing_ == missing)
-    return;
-
-  root_frame_missing_ = missing;
+void DisplayScheduler::OnRootFrameMissing(bool missing) {
   MaybeStartObservingBeginFrames();
   ScheduleBeginFrameDeadline();
+}
+
+void DisplayScheduler::OnDisplayDamaged() {
+  // We may cause a new BeginFrame to be run inside this method, but to help
+  // avoid being reentrant to the caller of SurfaceDamaged, track when this is
+  // happening with |inside_surface_damaged_|.
+  base::AutoReset<bool> auto_reset(&inside_surface_damaged_, true);
+
+  needs_draw_ = true;
+  MaybeStartObservingBeginFrames();
+  UpdateHasPendingSurfaces();
+  ScheduleBeginFrameDeadline();
+}
+
+void DisplayScheduler::OnPendingSurfacesChanged() {
+  if (UpdateHasPendingSurfaces())
+    ScheduleBeginFrameDeadline();
 }
 
 // This is used to force an immediate swap before a resize.
@@ -89,70 +100,6 @@ void DisplayScheduler::ForceImmediateSwapIfPossible() {
     DidFinishFrame(did_draw);
 }
 
-void DisplayScheduler::DisplayResized() {
-  expecting_root_surface_damage_because_of_resize_ = true;
-  needs_draw_ = true;
-  ScheduleBeginFrameDeadline();
-}
-
-// Notification that there was a resize or the root surface changed and
-// that we should just draw immediately.
-void DisplayScheduler::SetNewRootSurface(const SurfaceId& root_surface_id) {
-  TRACE_EVENT0("viz", "DisplayScheduler::SetNewRootSurface");
-  root_surface_id_ = root_surface_id;
-  BeginFrameAck ack;
-  ack.has_damage = true;
-  ProcessSurfaceDamage(root_surface_id, ack, true);
-}
-
-// Indicates that there was damage to one of the surfaces.
-// Has some logic to wait for multiple active surfaces before
-// triggering the deadline.
-void DisplayScheduler::ProcessSurfaceDamage(const SurfaceId& surface_id,
-                                            const BeginFrameAck& ack,
-                                            bool display_damaged) {
-  TRACE_EVENT1("viz", "DisplayScheduler::SurfaceDamaged", "surface_id",
-               surface_id.ToString());
-
-  // We may cause a new BeginFrame to be run inside this method, but to help
-  // avoid being reentrant to the caller of SurfaceDamaged, track when this is
-  // happening with |inside_surface_damaged_|.
-  base::AutoReset<bool> auto_reset(&inside_surface_damaged_, true);
-
-  if (display_damaged) {
-    needs_draw_ = true;
-
-    if (surface_id == root_surface_id_)
-      expecting_root_surface_damage_because_of_resize_ = false;
-
-    MaybeStartObservingBeginFrames();
-  }
-
-  // Update surface state.
-  bool valid_ack = ack.sequence_number != BeginFrameArgs::kInvalidFrameNumber;
-  if (valid_ack) {
-    auto it = surface_states_.find(surface_id);
-    // Ignore stray acknowledgments for prior BeginFrames, to ensure we don't
-    // override a newer sequence number in the surface state. We may receive
-    // such stray acks e.g. when a CompositorFrame activates in a later
-    // BeginFrame than it was created.
-    if (it != surface_states_.end() &&
-        (it->second.last_ack.source_id != ack.source_id ||
-         it->second.last_ack.sequence_number < ack.sequence_number)) {
-      it->second.last_ack = ack;
-    } else {
-      valid_ack = false;
-    }
-  }
-
-  bool pending_surfaces_changed = false;
-  if (display_damaged || valid_ack)
-    pending_surfaces_changed = UpdateHasPendingSurfaces();
-
-  if (display_damaged || pending_surfaces_changed)
-    ScheduleBeginFrameDeadline();
-}
-
 bool DisplayScheduler::UpdateHasPendingSurfaces() {
   // If we're not currently inside a deadline interval, we will call
   // UpdateHasPendingSurfaces() again during OnBeginFrameImpl().
@@ -160,44 +107,8 @@ bool DisplayScheduler::UpdateHasPendingSurfaces() {
     return false;
 
   bool old_value = has_pending_surfaces_;
-
-  for (const std::pair<SurfaceId, SurfaceBeginFrameState>& entry :
-       surface_states_) {
-    const SurfaceId& surface_id = entry.first;
-    const SurfaceBeginFrameState& state = entry.second;
-
-    // Surface is ready if it hasn't received the current BeginFrame or receives
-    // BeginFrames from a different source and thus likely belongs to a
-    // different surface hierarchy.
-    uint64_t source_id = current_begin_frame_args_.source_id;
-    uint64_t sequence_number = current_begin_frame_args_.sequence_number;
-    if (!state.last_args.IsValid() || state.last_args.source_id != source_id ||
-        state.last_args.sequence_number != sequence_number) {
-      continue;
-    }
-
-    // Surface is ready if it has acknowledged the current BeginFrame.
-    if (state.last_ack.source_id == source_id &&
-        state.last_ack.sequence_number == sequence_number) {
-      continue;
-    }
-
-    // Surface is ready if there is an unacked active CompositorFrame, because
-    // its producer is CompositorFrameAck throttled.
-    if (client_->SurfaceHasUnackedFrame(entry.first))
-      continue;
-
-    has_pending_surfaces_ = true;
-    TRACE_EVENT_INSTANT2("viz", "DisplayScheduler::UpdateHasPendingSurfaces",
-                         TRACE_EVENT_SCOPE_THREAD, "has_pending_surfaces",
-                         has_pending_surfaces_, "pending_surface_id",
-                         surface_id.ToString());
-    return has_pending_surfaces_ != old_value;
-  }
-  has_pending_surfaces_ = false;
-  TRACE_EVENT_INSTANT1("viz", "DisplayScheduler::UpdateHasPendingSurfaces",
-                       TRACE_EVENT_SCOPE_THREAD, "has_pending_surfaces",
-                       has_pending_surfaces_);
+  has_pending_surfaces_ =
+      damage_tracker_->HasPendingSurfaces(current_begin_frame_args_);
   return has_pending_surfaces_ != old_value;
 }
 
@@ -299,7 +210,7 @@ bool DisplayScheduler::ShouldDraw() const {
   // Note: When any of these cases becomes true, MaybeStartObservingBeginFrames
   // must be called to ensure the draw will happen.
   return needs_draw_ && !output_surface_lost_ && visible_ &&
-         !root_frame_missing_;
+         !damage_tracker_->root_frame_missing();
 }
 
 void DisplayScheduler::OnBeginFrameSourcePausedChanged(bool paused) {
@@ -307,50 +218,6 @@ void DisplayScheduler::OnBeginFrameSourcePausedChanged(bool paused) {
   // feature.
   if (paused)
     NOTIMPLEMENTED();
-}
-
-void DisplayScheduler::OnFirstSurfaceActivation(
-    const SurfaceInfo& surface_info) {}
-
-void DisplayScheduler::OnSurfaceActivated(
-    const SurfaceId& surface_id,
-    base::Optional<base::TimeDelta> duration) {}
-
-void DisplayScheduler::OnSurfaceMarkedForDestruction(
-    const SurfaceId& surface_id) {
-  auto it = surface_states_.find(surface_id);
-  if (it == surface_states_.end())
-    return;
-  surface_states_.erase(it);
-  if (UpdateHasPendingSurfaces())
-    ScheduleBeginFrameDeadline();
-}
-
-bool DisplayScheduler::OnSurfaceDamaged(const SurfaceId& surface_id,
-                                        const BeginFrameAck& ack) {
-  bool damaged = client_ && client_->SurfaceDamaged(surface_id, ack);
-  ProcessSurfaceDamage(surface_id, ack, damaged);
-
-  return damaged;
-}
-
-void DisplayScheduler::OnSurfaceDestroyed(const SurfaceId& surface_id) {
-  if (client_)
-    client_->SurfaceDestroyed(surface_id);
-}
-
-void DisplayScheduler::OnSurfaceDamageExpected(const SurfaceId& surface_id,
-                                               const BeginFrameArgs& args) {
-  TRACE_EVENT1("viz", "DisplayScheduler::SurfaceDamageExpected", "surface_id",
-               surface_id.ToString());
-  // Insert a new state for the surface if we don't know of it yet. We don't use
-  // OnSurfaceCreated for this, because it may not be called if a
-  // CompositorFrameSinkSupport starts submitting frames to a different Display,
-  // but continues using the same Surface, or if a Surface does not activate its
-  // first CompositorFrame immediately.
-  surface_states_[surface_id].last_args = args;
-  if (UpdateHasPendingSurfaces())
-    ScheduleBeginFrameDeadline();
 }
 
 base::TimeTicks DisplayScheduler::DesiredBeginFrameDeadlineTime() const {
@@ -398,14 +265,14 @@ DisplayScheduler::DesiredBeginFrameDeadlineMode() const {
     return BeginFrameDeadlineMode::kLate;
   }
 
-  if (root_frame_missing_) {
+  if (damage_tracker_->root_frame_missing()) {
     TRACE_EVENT_INSTANT0("viz", "Root frame missing", TRACE_EVENT_SCOPE_THREAD);
     return BeginFrameDeadlineMode::kLate;
   }
 
-  bool all_surfaces_ready = !has_pending_surfaces_ &&
-                            root_surface_id_.is_valid() &&
-                            !expecting_root_surface_damage_because_of_resize_;
+  bool all_surfaces_ready =
+      !has_pending_surfaces_ && damage_tracker_->IsRootSurfaceValid() &&
+      !damage_tracker_->expecting_root_surface_damage_because_of_resize();
 
   // When no draw is needed, only allow an early deadline in full-pipe mode.
   // This way, we can unblock the BeginFrame in full-pipe mode if no draw is
@@ -426,7 +293,7 @@ DisplayScheduler::DesiredBeginFrameDeadlineMode() const {
   }
 
   // TODO(mithro): Be smarter about resize deadlines.
-  if (expecting_root_surface_damage_because_of_resize_) {
+  if (damage_tracker_->expecting_root_surface_damage_because_of_resize()) {
     TRACE_EVENT_INSTANT0("viz", "Entire display damaged",
                          TRACE_EVENT_SCOPE_THREAD);
     return BeginFrameDeadlineMode::kLate;
@@ -490,7 +357,7 @@ bool DisplayScheduler::AttemptDrawAndSwap() {
     // We are going idle, so reset expectations.
     // TODO(eseckler): Should we avoid going idle if
     // |expecting_root_surface_damage_because_of_resize_| is true?
-    expecting_root_surface_damage_because_of_resize_ = false;
+    damage_tracker_->reset_expecting_root_surface_damage_because_of_resize();
 
     StopObservingBeginFrames();
   }

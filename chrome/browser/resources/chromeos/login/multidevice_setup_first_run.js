@@ -53,7 +53,7 @@ cr.define('multidevice_setup', function() {
   const MultiDeviceSetupFirstRun = Polymer({
     is: 'multidevice-setup-first-run',
 
-    behaviors: [OobeI18nBehavior, WebUIListenerBehavior],
+    behaviors: [I18nBehavior, WebUIListenerBehavior],
 
     properties: {
       /** @private {!multidevice_setup.MultiDeviceSetupDelegate} */

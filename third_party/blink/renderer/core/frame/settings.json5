@@ -229,6 +229,7 @@
       invalidate: "MediaControls",
     },
 
+    // Only affects main thread scrolling
     {
       name: "scrollAnimatorEnabled",
       initial: true,

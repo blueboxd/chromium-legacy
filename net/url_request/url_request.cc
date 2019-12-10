@@ -444,7 +444,7 @@ void URLRequest::SetDefaultCookiePolicyToBlock() {
   g_default_can_use_cookies = false;
 }
 
-void URLRequest::set_site_for_cookies(const GURL& site_for_cookies) {
+void URLRequest::set_site_for_cookies(const SiteForCookies& site_for_cookies) {
   DCHECK(!is_pending_);
   site_for_cookies_ = site_for_cookies;
 }
@@ -920,7 +920,8 @@ void URLRequest::Redirect(
   method_ = redirect_info.new_method;
   referrer_ = redirect_info.new_referrer;
   referrer_policy_ = redirect_info.new_referrer_policy;
-  site_for_cookies_ = redirect_info.new_site_for_cookies;
+  site_for_cookies_ =
+      SiteForCookies::FromUrl(redirect_info.new_site_for_cookies);
 
   url_chain_.push_back(redirect_info.new_url);
   --redirect_limit_;

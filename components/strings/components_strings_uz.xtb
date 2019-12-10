@@ -9,7 +9,6 @@
 <translation id="1036348656032585052">O‘chirib qo‘yish</translation>
 <translation id="1038842779957582377">noma’lum ism</translation>
 <translation id="1039626062703039346">Chrome Google hisobingizni himoyalash va parolni almashtirish uchun yordam beradi. Googlega bu sayt haqida ogohlantirish yuboriladi.</translation>
-<translation id="1044897699341250361">Bu nima degani</translation>
 <translation id="1050038467049342496">Boshqa ilovalarni yoping</translation>
 <translation id="1055184225775184556">&amp;Qo‘shishni bekor qilish</translation>
 <translation id="1056898198331236512">Ogohlantirish</translation>
@@ -183,7 +182,6 @@
 <translation id="1745880797583122200">Bu brauzer nazorat ostida</translation>
 <translation id="17513872634828108">Ichki oynalarni ochish</translation>
 <translation id="1753706481035618306">Sahifa raqami</translation>
-<translation id="175838129965056221">Chrome ulanishingiz kuzatuv ostidaligini aniqladi</translation>
 <translation id="1763864636252898013">Bu <ph name="DOMAIN" /> serveri ekanligini tasdiqlab bo‘lmadi. Uning havfsizlik sertifikati qurilmangizdagi operatsion tizimga ishonchli tuyulmayapti. Balki, server noto‘g‘ri sozlangan yoki kimdir ma’lumotlaringizni o‘g‘rilashga urinayotgan bo‘lishi mumkin.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows tarmoq diagnostikasi bilan tekshirib ko‘ring<ph name="END_LINK" />.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -252,7 +250,6 @@
 <translation id="2119867082804433120">Quyi oʻngdan teshik ochish</translation>
 <translation id="2129079103035905234">Harakat sensorlari</translation>
 <translation id="2130448033692577677">DnsOverHttpsMode qoidasi sozlanmagani sababli siz tanlangan andozalar tatbiq qilinmasligi mumkin.</translation>
-<translation id="2131277894177304644">Chromium ulanishingiz kuzatuv ostidaligini aniqladi</translation>
 <translation id="213826338245044447">Mobil xatcho‘plar</translation>
 <translation id="214556005048008348">To‘lovni bekor qilish</translation>
 <translation id="2147827593068025794">Orqa fonda sinxronlash</translation>
@@ -404,7 +401,6 @@
 <translation id="2799020568854403057">Ehtiyot bo‘ling! Saytda zararli ilovalar bor!</translation>
 <translation id="2799223571221894425">Qaytadan ishga tushirish</translation>
 <translation id="2803306138276472711">Google saytlar xavfsizligini tekshirish tizimi yaqinda <ph name="SITE" /> saytida <ph name="BEGIN_LINK" />zararli dasturlarni<ph name="END_LINK" /> topdi. Ehtiyot bo‘ling, ba’zida himoyalangan saytlardan ham zararli dasturlar tarqatilishi mumkin.</translation>
-<translation id="281585763351939989">Chromium ulanishingiz kuzatuv ostidaligini aniqladi.</translation>
 <translation id="2824775600643448204">Manzil va qidiruv paneli</translation>
 <translation id="2826760142808435982">Aloqa shifrlangan va <ph name="CIPHER" /> yordamida tekshirilgan. Kalitlar almashinuvi mexanizmi sifatida <ph name="KX" /> qo‘llanilmoqda.</translation>
 <translation id="2835170189407361413">Tozalash</translation>
@@ -449,7 +445,6 @@
 <translation id="3024663005179499861">Qoida turi noto‘g‘ri</translation>
 <translation id="3037605927509011580">Ana xolos!</translation>
 <translation id="3041612393474885105">Sertifikat haqida ma’lumot</translation>
-<translation id="304755864151473094">Bu nega yuz beryapti</translation>
 <translation id="3057676462092457419"><ph name="SECURE_DNS_MODE_SECURE" /> DnsOverHttps rejimi hozircha ishlamaydi, rejim faolsizlantirildi: <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">C9 (Envelope)</translation>
 <translation id="3061707000357573562">Xizmatni tuzatish</translation>
@@ -478,7 +473,6 @@
 <translation id="320323717674993345">To‘lovni bekor qilish</translation>
 <translation id="3207960819495026254">Xatcho‘plarga qo‘shildi</translation>
 <translation id="3209034400446768650">Sahifa pul yechib olishi mumkin</translation>
-<translation id="3209080785413271048">Saqlangan toʻlov usullarini Windows Hello orqali tasdiqlash.</translation>
 <translation id="3212581601480735796"><ph name="HOSTNAME" /> saytidagi harakatlaringiz kuzatuv ostida</translation>
 <translation id="3215092763954878852">WebAuthn ishlatib boʻlmadi</translation>
 <translation id="3225919329040284222">Serverdagi sertifikat ba’zi saytlardagi yuqori darajali havfsizlik ichki parametrlariga mos kelmaydi.</translation>
@@ -492,7 +486,6 @@
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> <ph name="SUGGESTED_DOMAIN" /> domeniga oʻxsharkan. Odatda shubhali kimsalar URL manzillarga kichik oʻzgarishlar kiritib, saytlarga soxta nusxalar yasaydi.</translation>
 <translation id="3270847123878663523">&amp;Qayta tartiblashni bekor qilish</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
-<translation id="3281668902344226640">Saqlangan toʻlov usullarini Touch ID yordamida tasdiqlash.</translation>
 <translation id="3282497668470633863">Karta egasining ismini kiriting</translation>
 <translation id="3287510313208355388">Internet ulanganda yuklab olish</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> parametri haqida batafsil axborot olish</translation>
@@ -631,7 +624,6 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Yo‘q}=1{1 ta saytdan }other{# ta saytdan }}</translation>
 <translation id="397105322502079400">Hisoblanmoqda...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> saytiga kirish taqiqlangan</translation>
-<translation id="3981540111851280311">Brauzeringizda <ph name="ENROLLMENT_DOMAIN" /> tomonidan Chrome Enterprise himoya tizimi faollashtirildi. Chrome Enterprise himoya tizimida ayrim maʼlumotlaringizga ruxsat bor.</translation>
 <translation id="3987405730340719549">Chrome bu saytni soxta yoki firibgarlarniki deb hisoblaydi.
 
     Bu ogohlantirish xato chiqqan boʻlsa, https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals sahifasini oching.</translation>
@@ -696,7 +688,6 @@
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Tarmoq diagnostikasi bilan tekshirib ko‘ring<ph name="END_LINK" /></translation>
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" /><ph name="SITE" /> saytini ochish<ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">Haqiqiy</translation>
-<translation id="4248776159690739358">Chrome Enterprise himoya tizimi xavfli boʻlishi mumkin deb aniqlagan xavfsizlikka oid hodisalar haqida administratorga xabar qilib turing. Bu ochilgan sahifalarning URL manzillari, fayl nomlari yoki meta axborotlar, qurilma va Chrome foydalanuvchilari nomlaridan iborat boʻlishi mumkin.</translation>
 <translation id="4250431568374086873">Bu sayt bilan o‘rnatilgan aloqa himoyalanmagan.</translation>
 <translation id="4250680216510889253">Yo‘q</translation>
 <translation id="425582637250725228">Kiritilgan o‘zgarishlar saqlanmasligi mumkin.</translation>
@@ -731,8 +722,6 @@
 <translation id="4372948949327679948">Kutilgan <ph name="VALUE_TYPE" /> qiymati.</translation>
 <translation id="4377125064752653719">Siz <ph name="DOMAIN" /> saytiga o‘tmoqchi bo‘ldingiz, lekin server taqdim qilgan sertifikat noshiri tomonidan bekor qilingan. Bu server bergan havfsizlik hisob ma’lumotlari ishonchsizligini bildiradi. Siz firibgarlar saytiga kirgan bo‘lishingiz mumkin.</translation>
 <translation id="4378154925671717803">Telefon</translation>
-<translation id="437847259914972036">Internetdagi barcha harakatlaringiz va kiritayotgan maʼlumotlaringiz kuzatuv ostida, saytlar kontenti sizga bildirmay oʻzgarishi mumkin.</translation>
-<translation id="4398334096870680409">Bu funksiya qurilmangizda ishlamaydi.</translation>
 <translation id="4406896451731180161">qidiruv natijalari</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" /> cookie fayllari</translation>
 <translation id="4415426530740016218">Olib ketish manzili</translation>
@@ -771,7 +760,6 @@
 <translation id="4594403342090139922">&amp;O‘chirishni bekor qilish</translation>
 <translation id="4597348597567598915">Hajmi: 8</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
-<translation id="4613966523036881546">Bu ulanish tarmoq paketlarini tutib olishi kuzatilmoqda, shu sababli uning sertifikati Chrome tomonidan ishonchsiz deb belgilandi.</translation>
 <translation id="4635654612248442824"><ph name="ORIGIN" /> sayti manba siyosati tekshiruvini talab qildi
     lekin bu tekshiruv barcha soʻrovlar uchun ishlatilganda bu siyosat uchun qoʻllanilmaydi.</translation>
 <translation id="464342062220857295">Funksiyalar qidiruvi</translation>
@@ -1149,7 +1137,7 @@
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">Batafsil qo‘shing</translation>
 <translation id="6447842834002726250">Cookie fayllari</translation>
-<translation id="644931407731409778">{COUNT,plural, =1{1 ta sahifali}other{# ta sahifali}} PDF hujjat</translation>
+<translation id="644931407731409778">{COUNT,plural, =1{1 sahifali}other{# sahifali}} PDF hujjat</translation>
 <translation id="6451458296329894277">Forma qayta jo‘natilishini tasdiqlang</translation>
 <translation id="6457206614190510200">Ikkala chekkasini tikish</translation>
 <translation id="6465306955648956876">Parollarni boshqarish...</translation>
@@ -1168,7 +1156,6 @@
 <translation id="6547208576736763147">Chapdan 2 ta teshik ochish</translation>
 <translation id="6554795675067793129">Hisobingiz <ph name="ENROLLMENT_DOMAIN" /> domenida boshqariladi.</translation>
 <translation id="6556866813142980365">Qaytarish</translation>
-<translation id="6559565319173126218">Bu ulanish tarmoq paketlarini tutib olishi kuzatilmoqda, shu sababli uning sertifikati Chrome tomonidan ishonchsiz deb belgilandi.</translation>
 <translation id="6569060085658103619">Siz kengaytma sahifasidasiz.</translation>
 <translation id="6573200754375280815">Oʻngdan 2 ta teshik ochish</translation>
 <translation id="6578796323535178455">C2 (Envelope)</translation>
@@ -1197,12 +1184,10 @@
 <translation id="6685834062052613830">Hisobdan chiqing va sozlash jarayonini nihoyasiga yetkazing</translation>
 <translation id="6689271823431384964">Hisobingizga kirganingiz uchun Chrome kartalarni Google hisobingizga saqlashni taklif qilmoqda. Buni sozlamalar orqali oʻzgartirish mumkin. Karta egasining ismi hisobingizdan olinadi.</translation>
 <translation id="6704582573942289642">Bu aynan kerakli saytmi?</translation>
-<translation id="6707256370811247129">Chrome brauzerida yuklab olingan va yuklangan fayllar hamda keshlangan maʼlumotlarni skanerlash</translation>
 <translation id="6710213216561001401">Avvalgi</translation>
 <translation id="6710594484020273272">&lt;Qidiruv so‘rovini kiriting&gt;</translation>
 <translation id="671076103358959139">Qaydnoma tokeni:</translation>
 <translation id="6711464428925977395">Proksi serverda xatolik mavjud yoki manzil noto‘g‘ri kiritildi.</translation>
-<translation id="6721811549156553509">Tarmoq monitori – siz tashrif buyuradigan saytlarni soxtalashi, u saytlarda kiritayotgan maʼlumotlaringizni (parollar yoki bank kartalari axboroti) yozib olishi mumkin. Yodda tuting: Internetdagi barcha harakatlaringiz va maxfiy maʼlumotlaringiz tarmoq monitorlariga koʻrinib turadi. Bundan tashqari u siz kiradigan saytlardagi kontentni oʻzgartira oladi. Bu Internetga ruxsati bor boshqa qurilma, ilova va boshqa brauzerlardan foydalanishda ham yuz berishi mumkin.</translation>
 <translation id="6738516213925468394">Maʼlumotlaringiz <ph name="TIME" /> sanasida <ph name="BEGIN_LINK" />kodli ibora<ph name="END_LINK" /> bilan shifrlangan. Sinxronizatsiyani boshlash uchun uni kiriting.</translation>
 <translation id="674375294223700098">Sertifikat serverida noma’lum xato</translation>
 <translation id="6744009308914054259">Aloqa o‘rnatilguncha Yuklanmalar jildini ochib oflayn maqolalar o‘qishingiz mumkin.</translation>
@@ -1287,7 +1272,6 @@
 <translation id="721197778055552897">Bu muammo haqidagi <ph name="BEGIN_LINK" />tafsilotlar<ph name="END_LINK" />.</translation>
 <translation id="7219179957768738017">Bu ulanishda <ph name="SSL_VERSION" /> protokoli ishlatilmoqda.</translation>
 <translation id="7220786058474068424">Amalga oshirilmoqda</translation>
-<translation id="7239736667463137521">Chrome ulanishingiz kuzatuv ostidaligini aniqladi.</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Ehtiyot bo‘ling! Zararli DT.</translation>
 <translation id="724975217298816891"><ph name="CREDIT_CARD" /> kartasining amal qilish muddati va CVC kodini kiritib, bank kartangiz ma’lumotlarini yangilang. Tasdiqlangandan so‘ng, kartangiz ma’lumotlari bu saytda saqlanib qoladi.</translation>
@@ -1314,7 +1298,6 @@ Batafsil axborot:
 <translation id="7346048084945669753">Tasarrufidami:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Buyruqlar qatori</translation>
-<translation id="7353776484425559055">Bu ulanish tarmoq paketlarini tutib olishi kuzatilmoqda, shu sababli uning sertifikati Chromium tomonidan ishonchsiz deb belgilandi. Bu ogohlantirish qurilmangizda oʻrnatilgan sertifikat sababli chiqishi ham mumkin. Xavfsiz ulanishlar oʻrnatishda Chromium kompyuter yoki mobil qurilmada lokal oʻrnatilgan sertifikatlarni ishonchli deb hisoblaydi. Buning yordamida foydalanuvchilar saytlarni ishlab chiqish vaqtida ulanishlarni tekshirish va xatolarini tuzatish vositalarini ishga tushirishi mumkin, tashkilotlar esa tarmoqdagi ichki trafikni kuzatishi va tutib olishi mumkin. Agar bu vositalar tashqi tarmoqdan trafik tutib olishda ishlatilayotgan boʻlsa, Chromium bu haqida ogohlantiradi.</translation>
 <translation id="7372973238305370288">qidiruv natijasi</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Media boshqaruv elementlari</translation>
@@ -1346,7 +1329,6 @@ Batafsil axborot:
 <translation id="7460618730930299168">Bu seans sozlamalari siz tanlagandan farqli. Davom ettirilsinmi?</translation>
 <translation id="7473891865547856676">Yo‘q, rahmat</translation>
 <translation id="7481312909269577407">Oldinga</translation>
-<translation id="748406663033922918">Saqlangan toʻlov usullarini ekran qulfi yordamida tasdiqlash.</translation>
 <translation id="7485870689360869515">Ma‘lumotlar topilmadi.</translation>
 <translation id="7495290002932347110">Siz ishlatadigan sayt yoki ilovadagi parolingiz oshkor etilgan. Chrome hoziroq saqlangan parollaringizni tekshirishni va <ph name="ORIGIN" /> parolingizni yangilashni tavsiya qiladi.</translation>
 <translation id="7498234416455752244">Tahrirlashda davom etish</translation>
@@ -1376,12 +1358,10 @@ Batafsil axborot:
 <translation id="7592362899630581445">Server sertifikati nom cheklovlarni buzgan.</translation>
 <translation id="7598391785903975535"><ph name="UPPER_ESTIMATE" />dan kam</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> sayti ayni vaqtda ushbu so‘rovni qayta ishlay olmaydi.</translation>
-<translation id="7599841999395223597">Bu ulanish tarmoq paketlarini tutib olishi kuzatilmoqda, shu sababli uning sertifikati Chrome tomonidan ishonchsiz deb belgilandi. Bu ogohlantirish qurilmangizda oʻrnatilgan sertifikat sababli chiqishi ham mumkin. Xavfsiz ulanishlar oʻrnatishda Chrome kompyuter yoki mobil qurilmada lokal oʻrnatilgan sertifikatlarni ishonchli deb hisoblaydi. Buning yordamida foydalanuvchilar saytlarni ishlab chiqish vaqtida ulanishlarni tekshirish va xatolarini tuzatish vositalarini ishga tushirishi mumkin, tashkilotlar esa tarmoqdagi ichki trafikni kuzatishi va tutib olishi mumkin. Agar bu vositalar tashqi tarmoqdan trafik tutib olishda ishlatilayotgan boʻlsa, Chrome bu haqida ogohlantiradi.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> tili hech qachon tarjima qilinmasin</translation>
 <translation id="7610193165460212391">Diapazondan tashqaridagi qiymat: <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Muddati: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Sizda allaqachon boshqa Google hisobi paroli orqali shifrlangan ma’lumotlar mavjud. O‘sha parolni quyida kiriting.</translation>
-<translation id="7625784245512586808">Chrome Enterprise himoya tizimi</translation>
 <translation id="7633909222644580952">Foydalanish statistikasi va ishdan chiqishlar hisoboti</translation>
 <translation id="7637571805876720304">Bu kredit karta Chromium’dan o‘chirib tashlansinmi?</translation>
 <translation id="7638605456503525968">Ketma-ket portlar</translation>
@@ -1469,7 +1449,6 @@ Batafsil axborot:
 <translation id="8041940743680923270">Global parametrdan foydalanish (so‘ralsin)</translation>
 <translation id="8042918947222776840">Olib ketish usulini tanlang</translation>
 <translation id="8057711352706143257">“<ph name="SOFTWARE_NAME" />” noto‘g‘ri sozlangan. “<ph name="SOFTWARE_NAME" />” dasturini o‘chirib ko‘ring. <ph name="FURTHER_EXPLANATION" /></translation>
-<translation id="8062224330780487419">Endi kartaning xavfsizlik kodini kiritish kerak emas</translation>
 <translation id="8066955247577885446">Xatolik yuz berdi.</translation>
 <translation id="8074253406171541171">10x13 (Envelope)</translation>
 <translation id="8078141288243656252">Aylantirilganda izohlanmaydi</translation>
@@ -1486,7 +1465,6 @@ Batafsil axborot:
 <translation id="8103161714697287722">To‘lov usuli</translation>
 <translation id="8105368624971345109">O‘chirib qo‘yish</translation>
 <translation id="8118489163946903409">To‘lov usuli</translation>
-<translation id="8124023448510659215">Bu ulanish tarmoq paketlarini tutib olishi kuzatilmoqda, shu sababli uning sertifikati Chromium tomonidan ishonchsiz deb belgilandi.</translation>
 <translation id="8127301229239896662">Kompyuter yoki tarmog‘ingizda “<ph name="SOFTWARE_NAME" />” dasturi noto‘g‘ri o‘rnatilgan. Muammo yechimini administratordan so‘rang.</translation>
 <translation id="8131740175452115882">Tasdiqlash</translation>
 <translation id="8149426793427495338">Kompyuteringiz uyqu rejimiga o‘tib qoldi.</translation>
@@ -1531,6 +1509,7 @@ Batafsil axborot:
 <translation id="8308427013383895095">Tarmoqdagi muammolar tufayli tarjima qilib bo‘lmadi.</translation>
 <translation id="831207732689920588">Bu sahifa Chrome tomonidan shubhali deb topildi.</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" /> saytiga kirish taqiqlangan</translation>
+<translation id="833262891116910667">Ajratib belgilash</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Shaxsiy ma’lumotlaringizga havfli bo‘lishiga qaramay va zararli dasturlar hali olib tashlanmagan bo‘lsa ham bu saytga baribir o‘tishni xohlasangiz, <ph name="BEGIN_LINK" />bu yerni bosing<ph name="END_LINK" />.</translation>
 <translation id="8349305172487531364">Xatcho‘plar paneli</translation>
@@ -1628,8 +1607,6 @@ Batafsil axborot:
 <translation id="8957210676456822347">Tegishli portalga kirish</translation>
 <translation id="8962950042226115166">Shubhali sayt</translation>
 <translation id="8968766641738584599">Karta eslab qolinsin</translation>
-<translation id="8969267497192857913">Internetdagi harakatlaringiz (qidirayotgan soʻrovlar, ochayotgan sahifalar va boshqa amallar) kuzatuv ostida, saytlar kontenti oʻzgarishi mumkin.
-    <ph name="BEGIN_LEARN_MORE_LINK" />Batafsil<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">Server sertifikati eskirdi.</translation>
 <translation id="8975012916872825179">Telefon raqamlari, epochta va eltib berish manzillari kabi ma’lumotlarni eslab qoladi</translation>
 <translation id="8975263830901772334">Chop etiladigan fayllar nomlari</translation>
@@ -1663,7 +1640,6 @@ Batafsil axborot:
 <translation id="9080712759204168376">Buyurtma axboroti</translation>
 <translation id="9089260154716455634">Qoidalar amal qilmaydigan vaqt:</translation>
 <translation id="9095388113577226029">Boshqa tillar...</translation>
-<translation id="9098981495403789647">Brauzeringizda administrator tomonidan Chrome Enterprise himoya tizimi faollashtirdi. Chrome Enterprise himoya tizimida ayrim maʼlumotlaringizga ruxsat bor.</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> sayti ma’lumotlaringizni himoyalash uchun shifrlashdan foydalanadi, lekin hozir Chromium <ph name="SITE" /> saytiga ulanish uchun uringanda, ushbu sayt shubhali va noto‘g‘ri tasdiqlash ma’lumotlarini qaytarmoqda. Bunday holat zararli sayt o‘zini <ph name="SITE" /> o‘rnida ko‘rsatayotganda yoki Wi-Fi ulanishi uzilib qolganda yuz berishi mumkin. Shaxsiy ma’lumotlaringizga hech qanday xavf tug‘ilgani yo‘q, chunki Chromium aloqani ma’lumotlar almashinuvidan oldin uzib qo‘ydi.</translation>
 <translation id="9106062320799175032">To‘lov manzilini kiriting</translation>
 <translation id="9114524666733003316">Karta tasdiqlanmoqda...</translation>

@@ -152,7 +152,6 @@ grit("resources") {
     "sync_driver_resources.pak",
   ]
   output_dir = "$root_gen_dir/components"
-  depfile_dir = target_gen_dir
   grit_flags = [
     "-E",
     "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),

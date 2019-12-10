@@ -131,7 +131,10 @@ class PreconnectManager {
                                  int num_sockets,
                                  bool allow_credentials) {}
 
-    virtual void OnPreresolveFinished(const GURL& url, bool success) {}
+    virtual void OnPreresolveFinished(
+        const GURL& url,
+        const net::NetworkIsolationKey& network_isolation_key,
+        bool success) {}
     virtual void OnProxyLookupFinished(
         const GURL& url,
         const net::NetworkIsolationKey& network_isolation_key,

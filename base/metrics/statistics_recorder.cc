@@ -39,6 +39,13 @@ StatisticsRecorder* StatisticsRecorder::top_ = nullptr;
 // static
 bool StatisticsRecorder::is_vlog_initialized_ = false;
 
+// static
+std::atomic<bool> StatisticsRecorder::have_active_callbacks_{false};
+
+// static
+std::atomic<StatisticsRecorder::GlobalSampleCallback>
+    StatisticsRecorder::global_sample_callback_{nullptr};
+
 size_t StatisticsRecorder::BucketRangesHash::operator()(
     const BucketRanges* const a) const {
   return a->checksum();
@@ -250,6 +257,10 @@ bool StatisticsRecorder::SetCallback(const std::string& name,
   if (it != top_->histograms_.end())
     it->second->SetFlags(HistogramBase::kCallbackExists);
 
+  have_active_callbacks_.store(
+      global_sample_callback() || !top_->callbacks_.empty(),
+      std::memory_order_relaxed);
+
   return true;
 }
 
@@ -264,6 +275,10 @@ void StatisticsRecorder::ClearCallback(const std::string& name) {
   const HistogramMap::const_iterator it = top_->histograms_.find(name);
   if (it != top_->histograms_.end())
     it->second->ClearFlags(HistogramBase::kCallbackExists);
+
+  have_active_callbacks_.store(
+      global_sample_callback() || !top_->callbacks_.empty(),
+      std::memory_order_relaxed);
 }
 
 // static
@@ -273,6 +288,20 @@ StatisticsRecorder::OnSampleCallback StatisticsRecorder::FindCallback(
   EnsureGlobalRecorderWhileLocked();
   const auto it = top_->callbacks_.find(name);
   return it != top_->callbacks_.end() ? it->second : OnSampleCallback();
+}
+
+// static
+void StatisticsRecorder::SetGlobalSampleCallback(
+    const GlobalSampleCallback& new_global_sample_callback) {
+  const AutoLock auto_lock(lock_.Get());
+  EnsureGlobalRecorderWhileLocked();
+
+  DCHECK(!global_sample_callback() || !new_global_sample_callback);
+  global_sample_callback_.store(new_global_sample_callback);
+
+  have_active_callbacks_.store(
+      new_global_sample_callback || !top_->callbacks_.empty(),
+      std::memory_order_relaxed);
 }
 
 // static

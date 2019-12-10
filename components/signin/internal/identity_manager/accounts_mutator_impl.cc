@@ -46,6 +46,12 @@ CoreAccountId AccountsMutatorImpl::AddOrUpdateAccount(
       account_tracker_service_->SeedAccountInfo(gaia_id, email);
   account_tracker_service_->SetIsAdvancedProtectionAccount(
       account_id, is_under_advanced_protection);
+
+  // Flush the account changes to disk. Otherwise, in case of a browser crash,
+  // the account may be added to the token service but not to the account
+  // tracker, which is not intended.
+  account_tracker_service_->CommitPendingAccountChanges();
+
   token_service_->UpdateCredentials(account_id, refresh_token, source);
 
   return account_id;

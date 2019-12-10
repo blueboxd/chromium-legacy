@@ -74,14 +74,12 @@ void InitializeOneOffHelper(bool init_extensions) {
       << "kUseGL has not effect in tests";
 
   bool fallback_to_software_gl = false;
-  bool gpu_service_logging = false;
   bool disable_gl_drawing = true;
 
   CHECK(gl::init::InitializeStaticGLBindingsImplementation(
       impl, fallback_to_software_gl));
   CHECK(gl::init::InitializeGLOneOffPlatformImplementation(
-      fallback_to_software_gl, gpu_service_logging, disable_gl_drawing,
-      init_extensions));
+      fallback_to_software_gl, disable_gl_drawing, init_extensions));
 }
 }  // namespace
 
@@ -106,13 +104,12 @@ void GLSurfaceTestSupport::InitializeOneOffImplementation(
   // bindings in different ways.
   init::ShutdownGL(false);
 
-  bool gpu_service_logging = false;
   bool disable_gl_drawing = false;
 
   CHECK(gl::init::InitializeStaticGLBindingsImplementation(
       impl, fallback_to_software_gl));
   CHECK(gl::init::InitializeGLOneOffPlatformImplementation(
-      fallback_to_software_gl, gpu_service_logging, disable_gl_drawing, true));
+      fallback_to_software_gl, disable_gl_drawing, true));
 }
 
 // static

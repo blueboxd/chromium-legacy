@@ -20,6 +20,7 @@ class EventMonitor;
 namespace ash {
 
 class AssistantViewDelegate;
+class ViewShadow;
 
 // Rich entry point for the proactive suggestions feature.
 class COMPONENT_EXPORT(ASSISTANT_UI) ProactiveSuggestionsRichView
@@ -59,6 +60,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) ProactiveSuggestionsRichView
   mojo::Remote<content::mojom::NavigableContentsFactory> contents_factory_;
   std::unique_ptr<content::NavigableContents> contents_;
   std::unique_ptr<views::EventMonitor> event_monitor_;
+  std::unique_ptr<ViewShadow> view_shadow_;
 
   // Because the web contents that this view embeds loads asynchronously, it
   // may cause UI jank if we show our widget before loading has stopped. To

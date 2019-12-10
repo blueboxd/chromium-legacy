@@ -91,6 +91,7 @@
 <translation id="209018056901015185">Повна версія сайту</translation>
 <translation id="2103075008456228677">Відкрити history.google.com</translation>
 <translation id="2116625576999540962">Переміщено елементів: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
+<translation id="2118594521750010466">Виправити</translation>
 <translation id="213900355088104901">Щоб переглядати веб-сторінки конфіденційно, відкрийте анонімну вкладку</translation>
 <translation id="2139867232736819575">Шукати скопійований текст</translation>
 <translation id="2149973817440762519">Редагувати закладку</translation>
@@ -98,6 +99,7 @@
 <translation id="2198757192731523470">Ваша історія може допомогти нам персоналізувати Пошук, оголошення й інші сервіси Google.</translation>
 <translation id="2230173723195178503">Веб-сторінку завантажено</translation>
 <translation id="2239626343334228536">Очищення даних веб-перегляду…</translation>
+<translation id="2257567812274161158">Синхронізація не працює.</translation>
 <translation id="2267753748892043616">Додати обліковий запис</translation>
 <translation id="2268044343513325586">Уточнити</translation>
 <translation id="2273327106802955778">Більше опцій</translation>
@@ -129,6 +131,7 @@
 <translation id="2691653761409724435">Недоступно в режимі офлайн</translation>
 <translation id="2695507686909505111">Сторінку перекладено</translation>
 <translation id="2702801445560668637">Список читання</translation>
+<translation id="2704491540504985681">Завантаження</translation>
 <translation id="2704606927547763573">Скопійов.</translation>
 <translation id="2709516037105925701">Автозаповнення</translation>
 <translation id="2712127207578915686">Не вдалося відкрити файл</translation>
@@ -218,6 +221,7 @@
 <translation id="3943492037546055397">Паролі</translation>
 <translation id="3967822245660637423">Завантажено</translation>
 <translation id="3989635538409502728">Вийти</translation>
+<translation id="399419089947468503">Не вдається синхронізувати паролі</translation>
 <translation id="3995521777587992544">Індикатор перебігу завантаження сторінки. Завантажено <ph name="EMAIL" />.</translation>
 <translation id="4002066346123236978">Назва</translation>
 <translation id="4004204301268239848">Паролі зберігаються в обліковому записі Google, щоб ви могли користуватися ними на будь-якому пристрої.</translation>
@@ -238,6 +242,7 @@
 <translation id="424315890655130736">Ввести парольну фразу</translation>
 <translation id="4263576668337963058">Показати доступні дії зі сторінкою</translation>
 <translation id="4272631900155121838">Щоб відсканувати QR-код, увімкніть камеру в налаштуваннях</translation>
+<translation id="4276041135170112053">Виправити.</translation>
 <translation id="4281844954008187215">Умови використання</translation>
 <translation id="430793432425771671">Синхронізувати все</translation>
 <translation id="430967081421617822">Увесь час</translation>
@@ -286,6 +291,7 @@
 <translation id="4904877109095351937">Позначити як прочитані</translation>
 <translation id="4930268273022498155">Видалити наявні дані. Щоб відновити їх, поверніться в обліковий запис <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Під час спроби поділитися елементом виникла проблема.</translation>
+<translation id="4944543191714094452">Знайти на сторінці…</translation>
 <translation id="4945756290001680296">Доступ до налаштувань паролів</translation>
 <translation id="4979397965658815378">Увійдіть в обліковий запис Google, щоб мати доступ до закладок, паролів, історії й інших налаштувань на всіх своїх пристроях</translation>
 <translation id="5005498671520578047">Копіювати пароль</translation>
@@ -317,6 +323,7 @@
 <translation id="5433691172869980887">Ім’я користувача скопійовано</translation>
 <translation id="54401264925851789">Відомості про безпеку сторінки</translation>
 <translation id="5443952882982198570">Кредитні картки</translation>
+<translation id="5457907402803865181">Не вдалося синхронізувати паролі.</translation>
 <translation id="5525269841082836315">Створити парол.фразу</translation>
 <translation id="5548760955356983418">За допомогою Handoff можна почати переглядати веб-сайт на цьому пристрої, а потім легко продовжити на пристрої Mac. Відкритий веб-сайт з’явиться на панелі Dock на пристрої Mac.
 
@@ -408,6 +415,7 @@
 <translation id="6482629121755362506">Видалено елементів: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6610002944194042868">Параметри перекладу</translation>
 <translation id="6628106477656132239">Недійсна дата закінчення терміну дії</translation>
+<translation id="6638511529934826365">Масштабувати текст…</translation>
 <translation id="6642362222295953972">Перейти на наявну вкладку</translation>
 <translation id="6643016212128521049">Очистити</translation>
 <translation id="6656103420185847513">Редагувати папку</translation>

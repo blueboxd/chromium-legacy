@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <fuchsia/sys/cpp/fidl.h>
 #include <fuchsia/web/cpp/fidl.h>
 #include <lib/fidl/cpp/binding.h>
 #include <lib/fidl/cpp/binding_set.h>
@@ -17,6 +18,7 @@
 #include "fuchsia/base/result_receiver.h"
 #include "fuchsia/base/test_devtools_list_fetcher.h"
 #include "fuchsia/base/test_navigation_listener.h"
+#include "fuchsia/engine/test/context_provider_test_connector.h"
 #include "fuchsia/engine/test_debug_listener.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,25 +37,25 @@ class WebEngineDebugIntegrationTest : public testing::Test {
   ~WebEngineDebugIntegrationTest() override = default;
 
   void SetUp() override {
-    web_context_provider_ = base::fuchsia::ComponentContextForCurrentProcess()
-                                ->svc()
-                                ->Connect<fuchsia::web::ContextProvider>();
+    ConnectContextProvider(web_context_provider_.NewRequest(),
+                           web_context_controller_.NewRequest());
     web_context_provider_.set_error_handler(
         [](zx_status_t status) { ADD_FAILURE(); });
 
     WaitForWebEngine();
 
     // Connect to the Debug API.
-    base::FileEnumerator file_enum(base::FilePath("/hub/c/chromium.cmx"), false,
-                                   base::FileEnumerator::DIRECTORIES);
-    base::FilePath chromium_path = file_enum.Next();
-    ASSERT_FALSE(chromium_path.empty());
+    base::FileEnumerator file_enum(
+        base::FilePath("/hub/c/context_provider.cmx"), false,
+        base::FileEnumerator::DIRECTORIES);
+    base::FilePath web_engine_path = file_enum.Next();
+    ASSERT_FALSE(web_engine_path.empty());
 
     // There should only be one instance of WebEngine in the realm.
     ASSERT_TRUE(file_enum.Next().empty());
 
     debug_dir_ = std::make_unique<sys::ServiceDirectory>(
-        base::fuchsia::OpenDirectory(chromium_path.Append("out/debug")));
+        base::fuchsia::OpenDirectory(web_engine_path.Append("out/debug")));
     debug_dir_->Connect(debug_.NewRequest());
 
     // Attach the DevToolsListener. EnableDevTools has an acknowledgement
@@ -102,6 +104,8 @@ class WebEngineDebugIntegrationTest : public testing::Test {
   fidl::Binding<fuchsia::web::DevToolsListener> dev_tools_listener_binding_;
   std::unique_ptr<sys::ServiceDirectory> debug_dir_;
   fuchsia::web::ContextProviderPtr web_context_provider_;
+  fidl::InterfaceHandle<fuchsia::sys::ComponentController>
+      web_context_controller_;
   fuchsia::web::DebugSyncPtr debug_;
 
   base::OnceClosure on_url_fetch_complete_ack_;

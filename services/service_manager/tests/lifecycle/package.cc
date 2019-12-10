@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/task/single_thread_task_executor.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/service_executable/service_main.h"
@@ -27,7 +27,7 @@ class PackagedApp : public service_manager::Service,
         service_manager_connection_closed_callback_(
             std::move(service_manager_connection_closed_callback)),
         destruct_callback_(std::move(destruct_callback)) {
-    bindings_.set_connection_error_handler(
+    receivers_.set_disconnect_handler(
         base::BindRepeating(&PackagedApp::MaybeQuit, base::Unretained(this)));
     registry_.AddInterface<service_manager::test::mojom::LifecycleControl>(
         base::BindRepeating(&PackagedApp::Create, base::Unretained(this)));
@@ -48,8 +48,10 @@ class PackagedApp : public service_manager::Service,
     std::move(destruct_callback_).Run();
   }
 
-  void Create(service_manager::test::mojom::LifecycleControlRequest request) {
-    bindings_.AddBinding(this, std::move(request));
+  void Create(
+      mojo::PendingReceiver<service_manager::test::mojom::LifecycleControl>
+          receiver) {
+    receivers_.Add(this, std::move(receiver));
   }
 
   // LifecycleControl:
@@ -70,12 +72,12 @@ class PackagedApp : public service_manager::Service,
       service_binding_.Close();
 
     // This only closed our relationship with the service manager, existing
-    // |bindings_| remain active.
+    // |receivers_| remain active.
     MaybeQuit();
   }
 
   void MaybeQuit() {
-    if (service_binding_.is_bound() || !bindings_.empty())
+    if (service_binding_.is_bound() || !receivers_.empty())
       return;
 
     // Deletes |this|.
@@ -85,7 +87,7 @@ class PackagedApp : public service_manager::Service,
   service_manager::ServiceBinding service_binding_;
 
   service_manager::BinderRegistry registry_;
-  mojo::BindingSet<service_manager::test::mojom::LifecycleControl> bindings_;
+  mojo::ReceiverSet<service_manager::test::mojom::LifecycleControl> receivers_;
 
   // Run when this object's connection to the service manager is closed.
   base::OnceClosure service_manager_connection_closed_callback_;

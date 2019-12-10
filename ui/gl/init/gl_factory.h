@@ -57,7 +57,6 @@ GL_INIT_EXPORT bool InitializeStaticGLBindingsImplementation(
 // successfully.
 GL_INIT_EXPORT bool InitializeGLOneOffPlatformImplementation(
     bool fallback_to_software_gl,
-    bool gpu_service_logging,
     bool disable_gl_drawing,
     bool init_extensions);
 

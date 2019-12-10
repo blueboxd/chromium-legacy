@@ -36,7 +36,8 @@ import java.util.List;
  * 2. Remove it from createKeysInUse().
  * 3. Delete the KeyPrefix constant.
  *
- * Tests in ChromePreferenceKeysTest ensure the sanity of this file.
+ * Tests in ChromePreferenceKeysTest and checks in {@link ChromePreferenceKeyChecker} ensure the
+ * sanity of this file.
  */
 public final class ChromePreferenceKeys {
     /** An all-time counter of taps that triggered the Contextual Search peeking panel. */
@@ -520,7 +521,7 @@ public final class ChromePreferenceKeys {
      *     format.
      */
     @CheckDiscard("Validation is performed in tests and in debug builds.")
-    static List<String> createGrandfatheredFormatKeysForTesting() {
+    static List<String> createGrandfatheredFormatKeys() {
         // clang-format off
         return Arrays.asList(
                 CONTEXTUAL_SEARCH_ALL_TIME_TAP_COUNT,

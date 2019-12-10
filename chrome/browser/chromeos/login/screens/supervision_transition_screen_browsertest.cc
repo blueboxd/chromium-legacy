@@ -164,7 +164,7 @@ IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest,
   logged_in_user_mixin().GetLoginManagerMixin()->WaitForActiveSession();
 }
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          SupervisionTransitionScreenTest,
                          testing::Values(LoggedInUserMixin::LogInType::kRegular,
                                          LoggedInUserMixin::LogInType::kChild));

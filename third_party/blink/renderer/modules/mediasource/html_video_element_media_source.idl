@@ -30,7 +30,7 @@
 
 [
     ImplementedAs=HTMLVideoElementMediaSource,
-    RuntimeEnabled=MediaSourceExperimental
+    RuntimeEnabled=VideoPlaybackQuality
 ] partial interface HTMLVideoElement {
     VideoPlaybackQuality getVideoPlaybackQuality();
 };

@@ -6,12 +6,10 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_STRATEGY_UNDERLAY_H_
 
 #include "base/macros.h"
-#include "components/viz/service/display/overlay_processor.h"
+#include "components/viz/service/display/overlay_processor_using_strategy.h"
 #include "components/viz/service/viz_service_export.h"
 
 namespace viz {
-
-class OverlayCandidateValidatorStrategy;
 
 // The underlay strategy looks for a video quad without regard to quads above
 // it. The video is "underlaid" through a black transparent quad substituted
@@ -19,7 +17,7 @@ class OverlayCandidateValidatorStrategy;
 // hardware under the the scene. This is only valid for overlay contents that
 // are fully opaque.
 class VIZ_SERVICE_EXPORT OverlayStrategyUnderlay
-    : public OverlayProcessor::Strategy {
+    : public OverlayProcessorUsingStrategy::Strategy {
  public:
   enum class OpaqueMode {
     // Require candidates to be |is_opaque|.

@@ -28,6 +28,7 @@ enum WebClientHintsType {
   kUAArch = 9,
   kUAPlatform = 10,
   kUAModel = 11,
+  kUAMobile = 12,
 
   // Warning: Before adding a new client hint, read the warning at the top.
 };

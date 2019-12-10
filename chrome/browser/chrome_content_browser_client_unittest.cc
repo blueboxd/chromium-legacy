@@ -485,6 +485,6 @@ TEST(ChromeContentBrowserClientTest, UserAgentMetadata) {
   EXPECT_EQ(metadata.full_version, version_info::GetVersionNumber());
   EXPECT_EQ(metadata.major_version, version_info::GetMajorVersionNumber());
   EXPECT_EQ(metadata.platform, version_info::GetOSType());
-  EXPECT_EQ(metadata.architecture, "");
-  EXPECT_EQ(metadata.model, "");
+  EXPECT_EQ(metadata.architecture, content::BuildCpuInfo());
+  EXPECT_EQ(metadata.model, content::BuildModelInfo());
 }

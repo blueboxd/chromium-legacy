@@ -1212,7 +1212,7 @@ Element* FocusController::FindFocusableElementInShadowHost(
       // element so we don't count this.
       break;
     }
-    if (ToElement(current)->IsFocusable()) {
+    if (To<Element>(current)->IsFocusable()) {
       UseCounter::Count(shadow_host.GetDocument(),
                         WebFeature::kDelegateFocusNotFirstInFlatTree);
       break;

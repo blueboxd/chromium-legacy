@@ -14,5 +14,4 @@ grit("media_internals_resources") {
     "media_internals_resources.pak",
   ]
   output_dir = "$root_gen_dir/content/browser/resources/media"
-  depfile_dir = target_gen_dir
 }

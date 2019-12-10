@@ -2073,20 +2073,19 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     return nil;
   NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
 
-  if (ui::IsTableLike(owner_->GetRole())) {
-    for (BrowserAccessibilityCocoa* child in [self children]) {
-      if ([[child role] isEqualToString:NSAccessibilityRowRole])
-        [ret addObject:child];
-    }
-  } else if ([self internalRole] == ax::mojom::Role::kColumn) {
-    const std::vector<int32_t>& indirectChildIds = owner_->GetIntListAttribute(
+  std::vector<int32_t> node_id_list;
+  if (ui::IsTableLike(owner_->GetRole()))
+    node_id_list = owner_->node()->GetTableRowNodeIds();
+  // Rows attribute for a column is the list of all the elements in that column
+  // at each row.
+  else if ([self internalRole] == ax::mojom::Role::kColumn)
+    node_id_list = owner_->GetIntListAttribute(
         ax::mojom::IntListAttribute::kIndirectChildIds);
-    for (uint32_t i = 0; i < indirectChildIds.size(); ++i) {
-      int id = indirectChildIds[i];
-      BrowserAccessibility* rowElement = owner_->manager()->GetFromID(id);
-      if (rowElement)
-        [ret addObject:ToBrowserAccessibilityCocoa(rowElement)];
-    }
+
+  for (int32_t node_id : node_id_list) {
+    BrowserAccessibility* rowElement = owner_->manager()->GetFromID(node_id);
+    if (rowElement)
+      [ret addObject:ToBrowserAccessibilityCocoa(rowElement)];
   }
 
   return ret;

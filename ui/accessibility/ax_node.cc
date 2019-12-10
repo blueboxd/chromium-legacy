@@ -496,6 +496,18 @@ base::Optional<int> AXNode::GetTableRowRowIndex() const {
   return base::nullopt;
 }
 
+std::vector<AXNode::AXID> AXNode::GetTableRowNodeIds() const {
+  std::vector<AXNode::AXID> row_node_ids;
+  const AXTableInfo* table_info = GetAncestorTableInfo();
+  if (!table_info)
+    return row_node_ids;
+
+  for (AXNode* node : table_info->row_nodes)
+    row_node_ids.push_back(node->data().id);
+
+  return row_node_ids;
+}
+
 #if defined(OS_MACOSX)
 
 //

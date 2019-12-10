@@ -485,7 +485,7 @@ class JobControllerReconsiderProxyAfterErrorTest
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     JobControllerReconsiderProxyAfterErrorTest,
     ::testing::Combine(::testing::Bool(),
                        testing::ValuesIn(proxy_test_mock_errors)));
@@ -3102,7 +3102,7 @@ class HttpStreamFactoryJobControllerMisdirectedRequestRetry
       public ::testing::WithParamInterface<::testing::tuple<bool, bool>> {};
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     HttpStreamFactoryJobControllerMisdirectedRequestRetry,
     ::testing::Combine(::testing::Bool(), ::testing::Bool()));
 
@@ -3197,7 +3197,7 @@ class HttpStreamFactoryJobControllerPreconnectTest
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     HttpStreamFactoryJobControllerPreconnectTest,
     ::testing::Bool());
 

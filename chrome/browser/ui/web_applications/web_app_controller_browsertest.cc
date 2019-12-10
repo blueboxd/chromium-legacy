@@ -110,6 +110,10 @@ content::WebContents* WebAppControllerBrowserTest::OpenApplication(
   return contents;
 }
 
+GURL WebAppControllerBrowserTest::GetInstallableAppURL() {
+  return https_server()->GetURL("/banners/manifest_test_page.html");
+}
+
 void WebAppControllerBrowserTest::SetUpInProcessBrowserTestFixture() {
   extensions::ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
   cert_verifier_.SetUpInProcessBrowserTestFixture();

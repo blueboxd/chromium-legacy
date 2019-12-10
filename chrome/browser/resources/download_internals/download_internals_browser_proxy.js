@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+
 /**
  * Contains the possible states a ServiceEntry can be in.
  * @enum {string}
  */
-const ServiceEntryState = {
+export const ServiceEntryState = {
   NEW: 'NEW',
   AVAILABLE: 'AVAILABLE',
   ACTIVE: 'ACTIVE',
@@ -18,7 +20,7 @@ const ServiceEntryState = {
  * Contains the possible states a ServiceEntry's driver can be in.
  * @enum {string}
  */
-const DriverEntryState = {
+export const DriverEntryState = {
   IN_PROGRESS: 'IN_PROGRESS',
   COMPLETE: 'COMPLETE',
   CANCELLED: 'CANCELLED',
@@ -29,7 +31,7 @@ const DriverEntryState = {
  * Contains the possible results a ServiceEntry can have.
  * @enum {string}
  */
-const ServiceEntryResult = {
+export const ServiceEntryResult = {
   SUCCEED: 'SUCCEED',
   FAIL: 'FAIL',
   ABORT: 'ABORT',
@@ -44,7 +46,7 @@ const ServiceEntryResult = {
  * Contains the possible results of a ServiceRequest.
  * @enum {string}
  */
-const ServiceRequestResult = {
+export const ServiceRequestResult = {
   ACCEPTED: 'ACCEPTED',
   BACKOFF: 'BACKOFF',
   UNEXPECTED_CLIENT: 'UNEXPECTED_CLIENT',
@@ -61,7 +63,7 @@ const ServiceRequestResult = {
  *   fileMonitorStatus: string
  * }}
  */
-let ServiceStatus;
+export let ServiceStatus;
 
 /**
  * @typedef {{
@@ -78,7 +80,7 @@ let ServiceStatus;
  *   }
  * }}
  */
-let ServiceEntry;
+export let ServiceEntry;
 
 /**
  * @typedef {{
@@ -87,56 +89,50 @@ let ServiceEntry;
  *   result: !ServiceRequestResult
  * }}
  */
-let ServiceRequest;
+export let ServiceRequest;
 
-cr.define('downloadInternals', function() {
-  /** @interface */
-  class DownloadInternalsBrowserProxy {
-    /**
-     * Gets the current status of the Download Service.
-     * @return {!Promise<ServiceStatus>} A promise firing when the service
-     *     status is fetched.
-     */
-    getServiceStatus() {}
-
-    /**
-     * Gets the current list of downloads the Download Service is aware of.
-     * @return {!Promise<!Array<!ServiceEntry>>} A promise firing when the list
-     *     of downloads is fetched.
-     */
-    getServiceDownloads() {}
-
-    /**
-     * Starts a download with the Download Service.
-     * @param {string} url The download URL.
-     */
-    startDownload(url) {}
-  }
+/** @interface */
+export class DownloadInternalsBrowserProxy {
+  /**
+   * Gets the current status of the Download Service.
+   * @return {!Promise<ServiceStatus>} A promise firing when the service
+   *     status is fetched.
+   */
+  getServiceStatus() {}
 
   /**
-   * @implements {downloadInternals.DownloadInternalsBrowserProxy}
+   * Gets the current list of downloads the Download Service is aware of.
+   * @return {!Promise<!Array<!ServiceEntry>>} A promise firing when the list
+   *     of downloads is fetched.
    */
-  class DownloadInternalsBrowserProxyImpl {
-    /** @override */
-    getServiceStatus() {
-      return cr.sendWithPromise('getServiceStatus');
-    }
+  getServiceDownloads() {}
 
-    /** @override */
-    getServiceDownloads() {
-      return cr.sendWithPromise('getServiceDownloads');
-    }
+  /**
+   * Starts a download with the Download Service.
+   * @param {string} url The download URL.
+   * @return {!Promise}
+   */
+  startDownload(url) {}
+}
 
-    /** @override */
-    startDownload(url) {
-      return cr.sendWithPromise('startDownload', url);
-    }
+/**
+ * @implements {DownloadInternalsBrowserProxy}
+ */
+export class DownloadInternalsBrowserProxyImpl {
+  /** @override */
+  getServiceStatus() {
+    return sendWithPromise('getServiceStatus');
   }
 
-  cr.addSingletonGetter(DownloadInternalsBrowserProxyImpl);
+  /** @override */
+  getServiceDownloads() {
+    return sendWithPromise('getServiceDownloads');
+  }
 
-  return {
-    DownloadInternalsBrowserProxy: DownloadInternalsBrowserProxy,
-    DownloadInternalsBrowserProxyImpl: DownloadInternalsBrowserProxyImpl
-  };
-});
+  /** @override */
+  startDownload(url) {
+    return sendWithPromise('startDownload', url);
+  }
+}
+
+addSingletonGetter(DownloadInternalsBrowserProxyImpl);

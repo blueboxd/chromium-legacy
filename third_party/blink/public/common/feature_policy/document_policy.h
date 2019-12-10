@@ -103,6 +103,12 @@ class BLINK_COMMON_EXPORT DocumentPolicy {
   // and their default values.
   static const FeatureState& GetFeatureDefaults();
 
+  // Serialize document policy according to http_structured_header.
+  static base::Optional<std::string> Serialize(const FeatureState& policy);
+
+  // Parse document policy header to FeatureState
+  static base::Optional<FeatureState> Parse(const std::string& header);
+
  private:
   friend class DocumentPolicyTest;
 

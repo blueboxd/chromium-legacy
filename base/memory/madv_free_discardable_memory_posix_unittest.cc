@@ -140,44 +140,4 @@ TEST_F(MadvFreeDiscardableMemoryTest, LockShouldFailAfterDiscard) {
   ASSERT_FALSE(mem->IsValid());
 }
 
-#ifdef GTEST_HAS_DEATH_TEST
-// These tests verify that additional memory protection checks are working
-// properly.
-#if DCHECK_IS_ON()
-
-TEST_F(MadvFreeDiscardableMemoryDeathTest, ReadWriteShouldFailIfUnlocked) {
-  SUCCEED_IF_MADV_FREE_UNSUPPORTED();
-
-  const size_t kPageCount = 10;
-
-  std::unique_ptr<MadvFreeDiscardableMemoryPosixTester> mem =
-      AllocateLockedDiscardableMemoryPagesForTest(kPageCount);
-
-  mem->SetKeepMemoryForTesting(true);
-
-  memset(mem->data(), 0xee, kPageCount * kPageSize);
-
-  mem->Unlock();
-  ASSERT_FALSE(mem->IsLockedForTesting());
-
-  // Write to unlocked memory should fail.
-  ASSERT_DEATH({ memset(mem->data(), 0x11, kPageCount * kPageSize); }, ".*");
-
-  int result;
-  // Read from unlocked memory should fail.
-  ASSERT_DEATH(
-      { result = memcmp(mem->data(), mem->data(), kPageCount * kPageSize); },
-      ".*");
-
-  ASSERT_TRUE(mem->Lock());
-  ASSERT_TRUE(mem->IsLockedForTesting());
-  // Write to memory after re-locking should not fail.
-  memset(mem->data(), 0xaa, kPageCount * kPageSize);
-  // Read from memory after re-locking should not fail.
-  result = memcmp(mem->data(), mem->data(), kPageCount * kPageSize);
-}
-
-#endif  // DCHECK_IS_ON()
-#endif  // GTEST_HAS_DEATH_TEST
-
 }  // namespace base

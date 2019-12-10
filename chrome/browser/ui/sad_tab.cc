@@ -132,6 +132,10 @@ int SadTab::GetTitle() {
   return 0;
 }
 
+int SadTab::GetErrorCodeFormatString() {
+  return IDS_SAD_TAB_ERROR_CODE;
+}
+
 int SadTab::GetInfoMessage() {
   switch (kind_) {
 #if defined(OS_CHROMEOS)
@@ -196,6 +200,10 @@ std::vector<int> SadTab::GetSubMessages() {
   }
   NOTREACHED();
   return std::vector<int>();
+}
+
+int SadTab::GetCrashedErrorCode() {
+  return web_contents_->GetCrashedErrorCode();
 }
 
 void SadTab::RecordFirstPaint() {

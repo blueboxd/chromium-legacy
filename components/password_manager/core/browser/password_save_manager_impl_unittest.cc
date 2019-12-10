@@ -263,7 +263,6 @@ class PasswordSaveManagerImplTest : public testing::Test,
     saved_match_.origin = origin;
     saved_match_.action = action;
     saved_match_.signon_realm = "https://accounts.google.com/";
-    saved_match_.preferred = true;
     saved_match_.username_value = ASCIIToUTF16("test@gmail.com");
     saved_match_.username_element = ASCIIToUTF16("field1");
     saved_match_.password_value = ASCIIToUTF16("test1");
@@ -590,7 +589,6 @@ TEST_P(PasswordSaveManagerImplTest, SaveNewCredentials) {
   EXPECT_EQ(expected_signon_realm, saved_form.signon_realm);
   EXPECT_EQ(new_username, saved_form.username_value);
   EXPECT_EQ(new_password, saved_form.password_value);
-  EXPECT_TRUE(saved_form.preferred);
 
   EXPECT_EQ(submitted_form.fields[kUsernameFieldIndex].name,
             saved_form.username_element);
@@ -644,8 +642,6 @@ TEST_P(PasswordSaveManagerImplTest, SavePSLToAlreadySaved) {
   EXPECT_EQ(psl_saved_match_.username_element, saved_form.username_element);
   EXPECT_EQ(psl_saved_match_.password_element, saved_form.password_element);
 
-  EXPECT_TRUE(saved_form.preferred);
-
   EXPECT_EQ(std::vector<const PasswordForm*>{&psl_saved_match_}, best_matches);
 }
 
@@ -676,7 +672,6 @@ TEST_P(PasswordSaveManagerImplTest, OverridePassword) {
   password_save_manager_impl()->Save(observed_form_, Parse(submitted_form));
 
   EXPECT_TRUE(ArePasswordFormUniqueKeysEqual(saved_match_, updated_form));
-  EXPECT_TRUE(updated_form.preferred);
   EXPECT_EQ(new_password, updated_form.password_value);
 }
 
@@ -684,7 +679,6 @@ TEST_P(PasswordSaveManagerImplTest, OverridePassword) {
 // saved password is updated.
 TEST_P(PasswordSaveManagerImplTest, UpdatePasswordOnChangePasswordForm) {
   PasswordForm not_best_saved_match = saved_match_;
-  not_best_saved_match.preferred = false;
   PasswordForm saved_match_another_username = saved_match_;
   saved_match_another_username.username_value += ASCIIToUTF16("1");
 
@@ -718,7 +712,6 @@ TEST_P(PasswordSaveManagerImplTest, UpdatePasswordOnChangePasswordForm) {
                                      Parse(submitted_form));
 
   EXPECT_TRUE(ArePasswordFormUniqueKeysEqual(saved_match_, updated_form));
-  EXPECT_TRUE(updated_form.preferred);
   EXPECT_EQ(new_password, updated_form.password_value);
 }
 
@@ -1076,7 +1069,6 @@ TEST_P(PasswordSaveManagerImplTest, UserEventsForGeneration_Clear) {
 
 TEST_P(PasswordSaveManagerImplTest, Update) {
   PasswordForm not_best_saved_match = saved_match_;
-  not_best_saved_match.preferred = false;
   PasswordForm saved_match_another_username = saved_match_;
   saved_match_another_username.username_value += ASCIIToUTF16("1");
   SetNonFederatedAndNotifyFetchCompleted(
@@ -1108,7 +1100,6 @@ TEST_P(PasswordSaveManagerImplTest, Update) {
                                        Parse(submitted_form));
 
   EXPECT_TRUE(ArePasswordFormUniqueKeysEqual(saved_match_, updated_form));
-  EXPECT_TRUE(updated_form.preferred);
   EXPECT_EQ(new_password, updated_form.password_value);
   EXPECT_GE(updated_form.date_last_used, kNow);
 }

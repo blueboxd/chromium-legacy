@@ -25,8 +25,8 @@ class OmniboxPopupView {
   // Invalidates one line of the autocomplete popup.
   virtual void InvalidateLine(size_t line) = 0;
 
-  // Invoked when the specified line has been selected.
-  virtual void OnLineSelected(size_t line) = 0;
+  // Invoked on the old and new selected lines when the selected line changes.
+  virtual void OnSelectionStateChanged(size_t line) = 0;
 
   // Redraws the popup window to match any changes in the result set; this may
   // mean opening or closing the window.

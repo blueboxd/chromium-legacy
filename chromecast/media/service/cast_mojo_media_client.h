@@ -55,7 +55,6 @@ class CastMojoMediaClient : public ::media::MojoMediaClient {
       service_manager::mojom::InterfaceProvider* host_interfaces) override;
 
  private:
-  service_manager::Connector* connector_;
   CmaBackendFactory* const backend_factory_;
   const CreateCdmFactoryCB create_cdm_factory_cb_;
   VideoModeSwitcher* video_mode_switcher_;

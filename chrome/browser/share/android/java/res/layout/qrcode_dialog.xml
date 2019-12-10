@@ -37,16 +37,9 @@
         android:contentDescription="@string/close"
         app:tint="@color/standard_mode_tint" />
 
-    <ImageView
-        android:id="@+id/tab_line"
-        android:layout_width="match_parent"
-        style="@style/TabBarShadow"
-        android:layout_below="@+id/tab_layout"
-        android:importantForAccessibility="no"/>
-
     <android.support.v4.view.ViewPager
         android:id="@+id/qrcode_view_pager"
         android:layout_width="match_parent"
         android:layout_height="fill_parent"
-        android:layout_below="@id/tab_line"/>
+        android:layout_below="@id/tab_layout"/>
 </RelativeLayout>

@@ -1211,7 +1211,7 @@ class SSLClientSocketReadTest
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     SSLClientSocketReadTest,
     ::testing::Combine(::testing::Values(READ_IF_READY_SUPPORTED,
                                          READ_IF_READY_NOT_SUPPORTED),
@@ -5510,7 +5510,7 @@ class TLS13DowngradeTest
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     TLS13DowngradeTest,
     ::testing::Combine(
         ::testing::Values(
@@ -5612,7 +5612,7 @@ class TLS13DowngradeMetricsTest
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          TLS13DowngradeMetricsTest,
                          ::testing::ValuesIn(kTLS13DowngradeMetricsParams));
 
@@ -5714,7 +5714,7 @@ class SSLHandshakeDetailsTest
     : public SSLClientSocketTest,
       public ::testing::WithParamInterface<SSLHandshakeDetailsParams> {};
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          SSLHandshakeDetailsTest,
                          ::testing::ValuesIn(kSSLHandshakeDetailsParams));
 

@@ -498,7 +498,8 @@ class CacheStorageCacheTest : public testing::Test {
         std::vector<std::string>() /* cors_exposed_header_names */,
         nullptr /* side_data_blob */,
         nullptr /* side_data_blob_for_cache_put */,
-        nullptr /* content_security_policy */);
+        nullptr /* content_security_policy */,
+        false /* loaded_with_credentials */);
   }
 
   void CopySideDataToResponse(const std::string& uuid,
@@ -2109,6 +2110,30 @@ TEST_F(CacheStorageCacheTest, VerifyOpaqueSizePadding) {
   // And delete the opaque response entirely.
   EXPECT_TRUE(Delete(opaque_request));
   EXPECT_EQ(unpadded_total_resource_size, Size());
+
+  // Now write an identically sized opaque response with the
+  // loaded_with_credentials flag set.
+  blink::mojom::FetchAPIRequestPtr credentialed_opaque_request =
+      BackgroundFetchSettledFetch::CloneRequest(non_opaque_request);
+  credentialed_opaque_request->url = GURL("http://example.com/opaque.html");
+  // Same URL length means same cache sizes (ignoring padding).
+  EXPECT_EQ(credentialed_opaque_request->url.spec().length(),
+            non_opaque_request->url.spec().length());
+  blink::mojom::FetchAPIResponsePtr credentialed_opaque_response(
+      CreateBlobBodyResponse());
+  credentialed_opaque_response->response_type =
+      network::mojom::FetchResponseType::kOpaque;
+  credentialed_opaque_response->response_time = response_time;
+  credentialed_opaque_response->loaded_with_credentials = true;
+
+  EXPECT_TRUE(Put(credentialed_opaque_request,
+                  std::move(credentialed_opaque_response)));
+
+  int64_t size_after_credentialed_opaque_put = Size();
+  int64_t credentialed_opaque_padding = size_after_credentialed_opaque_put -
+                                        2 * unpadded_no_data_cache_size -
+                                        unpadded_side_data_size;
+  ASSERT_NE(credentialed_opaque_padding, opaque_padding);
 }
 
 TEST_F(CacheStorageCacheTest, TestDifferentOpaqueSideDataSizes) {

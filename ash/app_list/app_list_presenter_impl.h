@@ -33,7 +33,7 @@ enum class AppListViewState;
 // animation. While the UI is visible, it monitors things such as app list
 // activation state to auto dismiss the UI.
 class APP_LIST_EXPORT AppListPresenterImpl
-    : public ash::PaginationModelObserver,
+    : public PaginationModelObserver,
       public aura::client::FocusChangeObserver,
       public ui::ImplicitAnimationObserver,
       public views::WidgetObserver {
@@ -72,9 +72,9 @@ class APP_LIST_EXPORT AppListPresenterImpl
   // Show the app list if it is visible, hide it if it is hidden. If
   // |event_time_stamp| is not 0, it means |ToggleAppList()| was triggered by
   // one of the AppListShowSources: kSearchKey or kShelfButton.
-  ash::ShelfAction ToggleAppList(int64_t display_id,
-                                 AppListShowSource show_source,
-                                 base::TimeTicks event_time_stamp);
+  ShelfAction ToggleAppList(int64_t display_id,
+                            AppListShowSource show_source,
+                            base::TimeTicks event_time_stamp);
 
   // Returns current visibility of the app list. Deprecated, use
   // |IsAtLeastPartiallyVisible| instead.
@@ -93,7 +93,7 @@ class APP_LIST_EXPORT AppListPresenterImpl
                                  float background_opacity);
 
   // Ends the drag of app list from shelf.
-  void EndDragFromShelf(ash::AppListViewState app_list_state);
+  void EndDragFromShelf(AppListViewState app_list_state);
 
   // Passes a MouseWheelEvent from the shelf to the AppListView.
   void ProcessMouseWheelOffset(const gfx::Vector2d& scroll_offset_vector);

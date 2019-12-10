@@ -64,8 +64,8 @@ class OmniboxResultView : public views::View,
 
   void Invalidate(bool force_reapply_styles = false);
 
-  // Invoked when this result view has been selected.
-  void OnSelected();
+  // Invoked when this result view has been selected or unselected.
+  void OnSelectionStateChanged();
 
   // Whether |this| matches the model's selected index.
   bool IsSelected() const;
@@ -124,6 +124,10 @@ class OmniboxResultView : public views::View,
   // and timestamp the match was selected (base::TimeTicks() if unknown).
   void OpenMatch(WindowOpenDisposition disposition,
                  base::TimeTicks match_selection_timestamp);
+
+  // Sets the visibility of the |remove_suggestion_button_| based on the current
+  // state.
+  void UpdateRemoveSuggestionVisibility();
 
   // views::View:
   const char* GetClassName() const override;

@@ -184,6 +184,7 @@
 <translation id="3386978599540877378">luppen i fuld skærm</translation>
 <translation id="3400357268283240774">Yderligere indstillinger</translation>
 <translation id="3413817803639110246">Der er intet at se endnu</translation>
+<translation id="3428447136709161042">Afbryde forbindelsen til <ph name="NETWORK_NAME" /></translation>
 <translation id="343571671045587506">Rediger påmindelse</translation>
 <translation id="3445925074670675829">USB-C-enhed</translation>
 <translation id="3454224730401036106">Din forbindelse er skiftet til et mere sikkert netværk</translation>
@@ -322,6 +323,7 @@
 <translation id="5537725057119320332">Cast</translation>
 <translation id="5548285847212963613">Udvidelsen "<ph name="EXTENSION_NAME" />" kan hjælpe med at oprette forbindelse til dette netværk.</translation>
 <translation id="554893713779400387">Slå diktering til/fra</translation>
+<translation id="556042886152191864">Knap</translation>
 <translation id="5571066253365925590">Bluetooth er aktiveret</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" /> d. <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Tryk på Ctrl+Alt+Z for at deaktivere oplæsning.</translation>
@@ -424,7 +426,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6857811139397017780">Aktivér <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Genvejen er deaktiveret</translation>
 <translation id="6910714959251846841">Denne opdatering kræver, at der udføres en powerwash på din enhed. Få flere oplysninger om den nyeste <ph name="SYSTEM_APP_NAME" />-opdatering.</translation>
-<translation id="6911468394164995108">Vælg et andet...</translation>
 <translation id="6919251195245069855">Dit chipkort blev ikke genkendt. Prøv igen.</translation>
 <translation id="6972754398087986839">Kom godt i gang</translation>
 <translation id="6981982820502123353">Hjælpefunktioner</translation>
@@ -470,6 +471,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7569509451529460200">Braille og ChromeVox er aktiveret</translation>
 <translation id="7593891976182323525">Søg eller Shift</translation>
 <translation id="7600875258240007829">Se alle notifikationer</translation>
+<translation id="7642647758716480637">Åbn indstillingerne for <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ejer)</translation>
 <translation id="7647488630410863958">Lås enheden op for at se dine notifikationer</translation>
 <translation id="7649070708921625228">Hjælp</translation>

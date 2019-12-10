@@ -214,6 +214,7 @@
 <translation id="2532336938189706096">Вэб харах</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> зүйлийг устгасан</translation>
 <translation id="2536728043171574184">Энэ хуудсын офлайн хуулбарыг харж байна</translation>
+<translation id="2537178555904266562">Нууц үгийг синк хийхэд алдаа гарлаа</translation>
 <translation id="2546283357679194313">Cookies болон сайтын дата</translation>
 <translation id="2567385386134582609">ЗУРАГ</translation>
 <translation id="257088987046510401">Themes</translation>
@@ -231,6 +232,7 @@
 <translation id="2650751991977523696">Файлыг дахин татаж авах уу?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# Аудио файл}other{# Аудио файл}}</translation>
 <translation id="2653659639078652383">Илгээх</translation>
+<translation id="2669093958999339774">Мэдэгдлийн сануулгад танд саад болохыг хориглож, оронд нь илүү чимээгүй зурвас ашиглах</translation>
 <translation id="2677748264148917807">Үлдээх</translation>
 <translation id="2704606927547763573">Хуулсан</translation>
 <translation id="2707726405694321444">Хуудсыг дахин шинэчлэх</translation>
@@ -248,7 +250,6 @@
 <translation id="281504910091592009"><ph name="BEGIN_LINK" />Google Бүртгэл<ph name="END_LINK" />-дээ хадгалсан нууц үгнүүдийг харах болон удирдах</translation>
 <translation id="2818669890320396765">Хавчуургаа бүх төхөөрөмждөө авахын тулд нэвтрээд синкийг асаана уу</translation>
 <translation id="2822354292072154809">Та <ph name="CHOSEN_OBJECT_NAME" />-н бүх сайтын зөвшөөрлийг шинэчлэх үү?</translation>
-<translation id="2836148919159985482">Бүтэн дэлгэцийн горимоос гарахын тулд буцах товчлуурыг дарна уу.</translation>
 <translation id="2842985007712546952">Толгой хавтас</translation>
 <translation id="2858138569776157458">Шилдэг сайтууд</translation>
 <translation id="2860954141821109167">Гар утасны аппыг энэ төхөөрөмж дээр идэвхжүүлсэн эсэхийг шалгана уу</translation>
@@ -358,14 +359,15 @@
 <translation id="3632295766818638029">Нууц үгийг харуулах</translation>
 <translation id="363596933471559332">Хадгалсан итгэмжлэлийг ашиглан вэбсайтад автоматаар нэвтрэх. Энэ үйлдлийг идэвхжүүлээгүй тохиолдолд аливаа вэбсайтад хандах бүрт таниас баталгаажуулалт шаардана.</translation>
 <translation id="3658159451045945436">Шинэчилснээр таны зочилсон сайтын жагсаалт зэрэг өгөгдөл хадгалалтын түүхийг устгана.</translation>
-<translation id="3682730288090679318">Танд мэдэгдэл харуулах эсэхийг асуухыг сайтуудад автоматаар хориглохын тулд идэвхжүүлэх. Хэрэв сайт мэдэгдлийн хүсэлт тавивал хуудасны доод хэсэгт мэдээллийн цонх харагдана.</translation>
 <translation id="3692944402865947621">Сангийн байршил олдоогүй тул <ph name="FILE_NAME" />-г татаж чадсангүй.</translation>
+<translation id="3701167022068948696">Одоо засах</translation>
 <translation id="3714981814255182093">Find Bar-г нээх</translation>
 <translation id="3716182511346448902">Энэ хуудас хэт их хэмжээний санах ой ашиглаж байгаа тул үүнийг Chrome түр зогсоосон болно.</translation>
 <translation id="3730075448226062617">Chrome-д микрофондоо хандахыг зөвшөөрөхийн тулд микрофоныг <ph name="BEGIN_LINK" />Android-н тохиргоонд<ph name="END_LINK" /> мөн адил асаана уу.</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" />-д хавчуулсан</translation>
 <translation id="3744111561329211289">Дэвсгэрт синк хийх</translation>
 <translation id="3749259744154402564">Дэмждэггүй</translation>
+<translation id="3767376082821709728">Таны зочлох шинэ сайтууд нь танд мэдэгдэл илгээх боломжгүй</translation>
 <translation id="3771001275138982843">Шинэчлэлтийг татаж чадсангүй</translation>
 <translation id="3771033907050503522">Мэдээний нууцлалтай цонх</translation>
 <translation id="3773755127849930740">Холбохыг зөвшөөрөхийн тулд <ph name="BEGIN_LINK" />Bluetooth-г асаана уу<ph name="END_LINK" /></translation>
@@ -590,7 +592,6 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="5414836363063783498">Баталгаажуулж байна ...</translation>
 <translation id="5423934151118863508">Таны хамгийн их зочилсон хуудас энд гарч ирэх болно</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> гигабайт боломжтой</translation>
-<translation id="5427766642345310212">Ойлголоо. Өгөгдмөл тохиргоогоор мэдэгдлийн шинэ хүсэлт нь энд харагдана.</translation>
 <translation id="543338862236136125">Нууц үг засах</translation>
 <translation id="5433691172869980887">Хэрэглэгчийн нэрийг хуулсан</translation>
 <translation id="543509235395288790"><ph name="COUNT" /> файлыг татаж байна (<ph name="MEGABYTES" />).</translation>
@@ -677,7 +678,6 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="5962718611393537961">Буулгахын тулд товших</translation>
 <translation id="6000066717592683814">Google хэвээр байлгах</translation>
 <translation id="6005538289190791541">Санал болгосон нууц үг</translation>
-<translation id="6019358956729171834">Дахиад ачаалах…</translation>
 <translation id="6036057147555329831">Нэмэлт ICU</translation>
 <translation id="6039379616847168523">Дараагийн чихтэй хуудаст очих</translation>
 <translation id="6040143037577758943">Хаах</translation>
@@ -773,6 +773,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="666731172850799929"><ph name="APP_NAME" /> дотор нээ</translation>
 <translation id="666981079809192359">Chrome-н нууцлалын мэдэгдэл</translation>
 <translation id="6676840375528380067">Энэ төхөөрөмжөөс Chrome-н өгөгдлөө устгах уу?</translation>
+<translation id="6689172468748959065">Профайл зураг</translation>
 <translation id="6697492270171225480">Хуудас олдоогүй үед төстэй хуудсын зөвлөмжийг харуулах</translation>
 <translation id="6697947395630195233">Энэ сайтад таны байршлыг хуваалцахын тулд Chrome-д таны байршилд хандах зөвшөөрөл шаардлагатай байна.</translation>
 <translation id="6698801883190606802">Синк хийсэн мэдээллийг удирдах</translation>
@@ -955,6 +956,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="8035133914807600019">Шинэ хавтас...</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> өдөр үлдсэн</translation>
 <translation id="804335162455518893">SD карт олдсонгүй</translation>
+<translation id="8046278916126163020">Таны зочлох шинэ сайтууд нь танд мэдэгдэл илгээх зөвшөөрөл асуух боломжтой</translation>
 <translation id="805047784848435650">Таны хайлтын түүхэнд тулгуурласан</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> мегабайт боломжтой</translation>
 <translation id="8058746566562539958">Chrome-н шинэ чихтэй хуудсанд нээх</translation>

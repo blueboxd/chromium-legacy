@@ -313,6 +313,7 @@ mojom::blink::FetchAPIResponsePtr FetchResponseData::PopulateFetchAPIResponse(
   response->cors_exposed_header_names =
       HeaderSetToVector(cors_exposed_header_names_);
   response->side_data_blob = side_data_blob_;
+  response->loaded_with_credentials = loaded_with_credentials_;
   for (const auto& header : HeaderList()->List())
     response->headers.insert(header.first, header.second);
 
@@ -345,7 +346,8 @@ FetchResponseData::FetchResponseData(Type type,
       status_(status),
       status_message_(status_message),
       header_list_(MakeGarbageCollected<FetchHeaderList>()),
-      response_time_(base::Time::Now()) {}
+      response_time_(base::Time::Now()),
+      loaded_with_credentials_(false) {}
 
 void FetchResponseData::ReplaceBodyStreamBuffer(BodyStreamBuffer* buffer) {
   if (type_ == Type::kBasic || type_ == Type::kCors) {

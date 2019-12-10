@@ -14,6 +14,7 @@
 #include "net/base/net_export.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
+#include "net/cookies/site_for_cookies.h"
 #include "url/origin.h"
 
 class GURL;
@@ -113,7 +114,7 @@ NET_EXPORT std::string SerializeRequestCookieLine(
 NET_EXPORT CookieOptions::SameSiteCookieContext
 ComputeSameSiteContextForRequest(const std::string& http_method,
                                  const GURL& url,
-                                 const GURL& site_for_cookies,
+                                 const SiteForCookies& site_for_cookies,
                                  const base::Optional<url::Origin>& initiator,
                                  bool attach_same_site_cookies);
 
@@ -122,7 +123,7 @@ ComputeSameSiteContextForRequest(const std::string& http_method,
 // If |attach_same_site_cookies| is true, this returns SAME_SITE_STRICT.
 NET_EXPORT CookieOptions::SameSiteCookieContext
 ComputeSameSiteContextForScriptGet(const GURL& url,
-                                   const GURL& site_for_cookies,
+                                   const SiteForCookies& site_for_cookies,
                                    const base::Optional<url::Origin>& initiator,
                                    bool attach_same_site_cookies);
 
@@ -133,7 +134,7 @@ ComputeSameSiteContextForScriptGet(const GURL& url,
 // If |attach_same_site_cookies| is true, this returns SAME_SITE_LAX.
 NET_EXPORT CookieOptions::SameSiteCookieContext
 ComputeSameSiteContextForResponse(const GURL& url,
-                                  const GURL& site_for_cookies,
+                                  const SiteForCookies& site_for_cookies,
                                   const base::Optional<url::Origin>& initiator,
                                   bool attach_same_site_cookies);
 
@@ -144,7 +145,7 @@ ComputeSameSiteContextForResponse(const GURL& url,
 // If |attach_same_site_cookies| is true, this returns SAME_SITE_LAX.
 NET_EXPORT CookieOptions::SameSiteCookieContext
 ComputeSameSiteContextForScriptSet(const GURL& url,
-                                   const GURL& site_for_cookies,
+                                   const SiteForCookies& site_for_cookies,
                                    bool attach_same_site_cookies);
 
 // Determines which of the cookies for |url| can be accessed when fetching a
@@ -153,7 +154,7 @@ ComputeSameSiteContextForScriptSet(const GURL& url,
 NET_EXPORT CookieOptions::SameSiteCookieContext
 // If |attach_same_site_cookies| is true, this returns SAME_SITE_STRICT.
 ComputeSameSiteContextForSubresource(const GURL& url,
-                                     const GURL& site_for_cookies,
+                                     const SiteForCookies& site_for_cookies,
                                      bool attach_same_site_cookies);
 
 // Returns whether the respective SameSite feature is enabled.

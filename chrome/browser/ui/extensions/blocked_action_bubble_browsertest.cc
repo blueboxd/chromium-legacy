@@ -80,8 +80,8 @@ void ExtensionBlockedActionsBubbleTest::ShowUi(const std::string& name) {
     EXPECT_TRUE(observer.last_navigation_succeeded());
   }
 
-  ToolbarActionsBar* toolbar_actions_bar =
-      browser()->window()->GetToolbarActionsBar();
+  ToolbarActionsBar* const toolbar_actions_bar =
+      ToolbarActionsBar::FromBrowserWindow(browser()->window());
   ASSERT_EQ(1u, toolbar_actions_bar->GetActions().size());
   EXPECT_TRUE(toolbar_actions_bar->GetActions()[0]->WantsToRun(tab));
 

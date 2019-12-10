@@ -32,7 +32,9 @@
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
+#include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_app_tab_helper.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_launch/web_launch_files_helper.h"
@@ -400,13 +402,24 @@ Browser* CreateApplicationWindow(Profile* profile,
 
 WebContents* ShowApplicationWindow(Profile* profile,
                                    const apps::AppLaunchParams& params,
-                                   const GURL& url,
+                                   const GURL& default_url,
                                    Browser* browser,
                                    WindowOpenDisposition disposition) {
   const Extension* const extension = GetExtension(profile, params);
   ui::PageTransition transition =
       (extension ? ui::PAGE_TRANSITION_AUTO_BOOKMARK
                  : ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
+
+  GURL url = default_url;
+
+  if (extension && extension->from_bookmark()) {
+    web_app::FileHandlerManager& file_handler_manager =
+        web_app::WebAppProviderBase::GetProviderBase(profile)
+            ->file_handler_manager();
+    url = file_handler_manager
+              .GetMatchingFileHandlerURL(params.app_id, params.launch_files)
+              .value_or(default_url);
+  }
 
   NavigateParams nav_params(browser, url, transition);
   nav_params.disposition = disposition;

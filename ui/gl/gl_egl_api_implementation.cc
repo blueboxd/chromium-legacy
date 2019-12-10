@@ -4,43 +4,32 @@
 
 #include "ui/gl/gl_egl_api_implementation.h"
 
-#include "base/command_line.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_implementation_wrapper.h"
 #include "ui/gl/gl_surface_egl.h"
 
 namespace gl {
 
-RealEGLApi* g_real_egl = nullptr;
-LogEGLApi* g_log_egl = nullptr;
+GL_IMPL_WRAPPER_TYPE(EGL) * g_egl_wrapper = nullptr;
 
 void InitializeStaticGLBindingsEGL() {
   g_driver_egl.InitializeStaticBindings();
-  if (!g_real_egl) {
-    g_real_egl = new RealEGLApi();
+  if (!g_egl_wrapper) {
+    auto real_api = std::make_unique<RealEGLApi>();
+    real_api->Initialize(&g_driver_egl);
+    g_egl_wrapper = new GL_IMPL_WRAPPER_TYPE(EGL)(std::move(real_api));
   }
-  g_real_egl->Initialize(&g_driver_egl);
-  g_current_egl_context = g_real_egl;
-}
 
-void InitializeLogGLBindingsEGL() {
-  if (!g_log_egl) {
-    g_log_egl = new LogEGLApi(g_real_egl);
-  }
-  g_current_egl_context = g_log_egl;
+  g_current_egl_context = g_egl_wrapper->api();
 }
 
 void ClearBindingsEGL() {
-  if (g_log_egl) {
-    delete g_log_egl;
-    g_log_egl = nullptr;
-  }
-  if (g_real_egl) {
-    delete g_real_egl;
-    g_real_egl = nullptr;
-  }
+  delete g_egl_wrapper;
+  g_egl_wrapper = nullptr;
+
   g_current_egl_context = nullptr;
   g_driver_egl.ClearBindings();
 }

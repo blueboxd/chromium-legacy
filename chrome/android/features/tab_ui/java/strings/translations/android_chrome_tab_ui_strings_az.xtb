@@ -5,6 +5,7 @@
 <translation id="1181037720776840403">Silin</translation>
 <translation id="125153950246128346">Başqa taba baxmaq üçün klikləyin</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> tab}other{<ph name="TABS_COUNT_MANY" /> tab}}</translation>
+<translation id="2569352796411618312">Təklif: <ph name="NUMBER_OF_TABS" /> tabel bu yaxınlarda istifadə edilməyib. Bağlansınlar?</translation>
 <translation id="257674075312929031">Qrup</translation>
 <translation id="2613747923081026172">Qrup yaradın</translation>
 <translation id="2671423594960767771">Qrupu paylaşın</translation>
@@ -23,6 +24,9 @@
 <translation id="6840760312327750441">Panelləri qruplaşdırmaq üçün panelə toxunub saxlayın. Daha sonra digər panelin üzərinə çəkin.</translation>
 <translation id="7151209024774799310">Tabları qrupdan silin</translation>
 <translation id="7559245342362162951">Qrup tabını tam ekran cədvəlində göstərin</translation>
+<translation id="7792771145871471484">Təklifləri nəzərdən keçirin.</translation>
+<translation id="7966321538264951561">Təkliflərdən imtina edin.</translation>
+<translation id="83556505225171773">{TABS_COUNT,plural, =1{Seçilmiş <ph name="TABS_COUNT_ONE" /> tabeli bağlayın}other{Seçilmiş <ph name="TABS_COUNT_MANY" /> tabeli bağlayın}}</translation>
 <translation id="9150694013019234766">Ekranın aşağısındakı tab qrupunda tablar arasında keçid edin</translation>
 <translation id="9169594135889675189">Qrupa yeni tab əlavə edin</translation>
 <translation id="959682366969460160">Sistemləşdirin</translation>

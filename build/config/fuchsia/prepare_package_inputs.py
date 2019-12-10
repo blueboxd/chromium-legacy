@@ -85,7 +85,7 @@ def _WriteBuildIdsTxt(binary_paths, ids_txt_path):
 
 def BuildManifest(args):
   binaries = []
-  with open(args.manifest_path, 'w') as manifest, \
+  with open(args.package_manifest_path, 'w') as manifest, \
        open(args.depfile_path, 'w') as depfile:
     # Process the runtime deps file for file paths, recursively walking
     # directories as needed.
@@ -135,16 +135,14 @@ def BuildManifest(args):
       raise Exception('Could not locate executable inside runtime_deps.')
 
     # Write meta/package manifest file.
-    with open(os.path.join(os.path.dirname(args.manifest_path), 'package'),
-              'w') as package_json:
+    with open(os.path.join(os.path.dirname(args.package_manifest_path),
+                           'package'), 'w') as package_json:
       json.dump({'version': '0', 'name': args.app_name}, package_json)
       manifest.write('meta/package=%s\n' %
                    os.path.relpath(package_json.name, args.out_dir))
 
     # Write component manifest file.
-    cmx_file_path = os.path.join(os.path.dirname(args.manifest_path),
-                                 args.app_name + '.cmx')
-    with open(cmx_file_path, 'w') as component_manifest_file:
+    with open(args.component_manifest_path, 'w') as component_manifest_file:
       component_manifest = json.load(open(args.manifest_input_path, 'r'))
       component_manifest.update({
           'program': { 'binary': args.app_filename },
@@ -153,10 +151,11 @@ def BuildManifest(args):
 
       manifest.write('meta/%s=%s\n' %
                      (os.path.basename(component_manifest_file.name),
-                      os.path.relpath(cmx_file_path, args.out_dir)))
+                      os.path.relpath(args.component_manifest_path,
+                                      args.out_dir)))
 
     depfile.write(
-        "%s: %s" % (os.path.relpath(args.manifest_path, args.out_dir),
+        "%s: %s" % (os.path.relpath(args.package_manifest_path, args.out_dir),
                     " ".join([os.path.relpath(f, args.out_dir)
                               for f in expanded_files])))
 
@@ -180,8 +179,10 @@ def main():
       help='Path to write GN deps file.')
   parser.add_argument('--exclude-file', action='append', default=[],
       help='Package-relative file path to exclude from the package.')
-  parser.add_argument('--manifest-path', required=True,
-                      help='Manifest output path.')
+  parser.add_argument('--package-manifest-path', required=True,
+                      help='Package manifest (file listing) output path.')
+  parser.add_argument('--component-manifest-path', required=True,
+                      help='Component manifest (.cmx) output path.')
   parser.add_argument('--build-ids-file', required=True,
                       help='Debug symbol index path.')
 

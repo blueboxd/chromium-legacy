@@ -5,7 +5,7 @@
 Polymer({
   is: 'update-required-card',
 
-  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
+  behaviors: [I18nBehavior, OobeDialogHostBehavior],
 
   properties: {
     /**

@@ -37,9 +37,9 @@ namespace ash {
 
 namespace {
 
-// The distance to the divider edge in which a touch gesture will be considered
-// as a valid event on the divider.
-constexpr int kDividerEdgeInsetForTouch = 8;
+// Distance from the divider's center point that reserved for splitview
+// resizing in landscape orientation.
+constexpr int kDistanceForSplitViewResize = 32;
 
 // The window targeter that is installed on the always on top container window
 // when the split view mode is active.
@@ -56,7 +56,8 @@ class AlwaysOnTopWindowTargeter : public aura::WindowTargeter {
     if (target == divider_window_) {
       *hit_test_rect_mouse = *hit_test_rect_touch = gfx::Rect(target->bounds());
       hit_test_rect_touch->Inset(
-          gfx::Insets(-kDividerEdgeInsetForTouch, -kDividerEdgeInsetForTouch));
+          gfx::Insets(-SplitViewDivider::kDividerEdgeInsetForTouch,
+                      -SplitViewDivider::kDividerEdgeInsetForTouch));
       return true;
     }
     return aura::WindowTargeter::GetHitTestRects(target, hit_test_rect_mouse,
@@ -123,12 +124,6 @@ class DividerView : public views::View, public views::ViewTargeterDelegate {
 
   // views::View:
   void Layout() override {
-    // There is no divider in clamshell split view. If we are in clamshell mode,
-    // then we must be transitioning from tablet mode, and the divider will be
-    // destroyed, meaning there is no need to update it.
-    if (!Shell::Get()->tablet_mode_controller()->InTabletMode())
-      return;
-
     divider_view_->SetBoundsRect(GetLocalBounds());
     divider_handler_view_->Refresh(controller_->is_resizing());
   }
@@ -167,6 +162,8 @@ class DividerView : public views::View, public views::ViewTargeterDelegate {
         break;
       case ui::ET_GESTURE_TAP_DOWN:
       case ui::ET_GESTURE_SCROLL_BEGIN:
+        if (!divider_->IsInsideLandscapeResizableArea(location))
+          break;
         controller_->StartResize(location);
         OnResizeStatusChanged();
         break;
@@ -250,8 +247,6 @@ SplitViewDivider::SplitViewDivider(SplitViewController* controller)
 
 SplitViewDivider::~SplitViewDivider() {
   Shell::Get()->activation_client()->RemoveObserver(this);
-  divider_widget_->Close();
-  split_view_window_targeter_.reset();
   for (auto* window : observed_windows_) {
     window->RemoveObserver(this);
     ::wm::TransientWindowManager::GetOrCreate(window)->RemoveObserver(this);
@@ -363,6 +358,14 @@ void SplitViewDivider::OnWindowDragEnded() {
   SetAlwaysOnTop(true);
 }
 
+bool SplitViewDivider::IsInsideLandscapeResizableArea(
+    const gfx::Point& location) {
+  const gfx::Point center_point =
+      GetDividerBoundsInScreen(/*is_dragging=*/false).CenterPoint();
+  return location.y() >= center_point.y() - kDistanceForSplitViewResize &&
+         location.y() <= center_point.y() + kDistanceForSplitViewResize;
+}
+
 void SplitViewDivider::OnWindowDestroying(aura::Window* window) {
   RemoveObservedWindow(window);
 }
@@ -433,11 +436,11 @@ void SplitViewDivider::OnTransientChildRemoved(aura::Window* window,
 
 void SplitViewDivider::CreateDividerWidget(SplitViewController* controller) {
   DCHECK(!divider_widget_);
-  // Native widget owns this widget.
-  divider_widget_ = new views::Widget;
+  divider_widget_ = std::make_unique<views::Widget>();
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.opacity = views::Widget::InitParams::WindowOpacity::kOpaque;
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = Shell::GetContainer(controller->root_window(),
                                       kShellWindowId_AlwaysOnTopContainer);
   params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);

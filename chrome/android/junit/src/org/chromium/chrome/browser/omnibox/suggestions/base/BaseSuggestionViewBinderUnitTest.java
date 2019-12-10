@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
+import android.content.res.Resources;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -23,6 +24,7 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ui.widget.RoundedCornerImageView;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -44,7 +46,7 @@ public class BaseSuggestionViewBinderUnitTest {
     ImageView mActionView;
 
     private Activity mActivity;
-
+    private Resources mResources;
     private PropertyModel mModel;
 
     @Before
@@ -52,12 +54,14 @@ public class BaseSuggestionViewBinderUnitTest {
         MockitoAnnotations.initMocks(this);
 
         mActivity = Robolectric.buildActivity(Activity.class).setup().get();
+        mResources = mActivity.getResources();
 
         when(mBaseView.getContext()).thenReturn(mActivity);
         when(mDecorView.getContext()).thenReturn(mActivity);
         when(mActionView.getContext()).thenReturn(mActivity);
         when(mBaseView.getSuggestionImageView()).thenReturn(mDecorView);
         when(mBaseView.getActionImageView()).thenReturn(mActionView);
+        when(mBaseView.getResources()).thenReturn(mResources);
 
         mModel = new PropertyModel(BaseSuggestionViewProperties.ALL_KEYS);
         PropertyModelChangeProcessor.create(mModel, mBaseView, new BaseSuggestionViewBinder());
@@ -127,5 +131,27 @@ public class BaseSuggestionViewBinderUnitTest {
         ordered.verify(mActionView).setVisibility(View.GONE);
         // Ensure we're releasing drawable to free memory.
         ordered.verify(mActionView).setImageDrawable(null);
+    }
+
+    @Test
+    public void suggestionPadding_decorIconPresent() {
+        final int startSpace = 0;
+        final int endSpace = mResources.getDimensionPixelSize(
+                R.dimen.omnibox_suggestion_refine_view_modern_end_padding);
+
+        SuggestionDrawableState state = SuggestionDrawableState.Builder.forColor(0).build();
+        mModel.set(BaseSuggestionViewProperties.ICON, state);
+        verify(mBaseView).setPaddingRelative(startSpace, 0, endSpace, 0);
+    }
+
+    @Test
+    public void suggestionPadding_decorIconAbsent() {
+        final int startSpace = mResources.getDimensionPixelSize(
+                R.dimen.omnibox_suggestion_start_offset_without_icon);
+        final int endSpace = mResources.getDimensionPixelSize(
+                R.dimen.omnibox_suggestion_refine_view_modern_end_padding);
+
+        mModel.set(BaseSuggestionViewProperties.ICON, null);
+        verify(mBaseView).setPaddingRelative(startSpace, 0, endSpace, 0);
     }
 }

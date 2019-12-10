@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -32,6 +33,9 @@ namespace {
 
 const int kAppCacheFetchBufferSize = 32768;
 const size_t kMaxConcurrentUrlFetches = 2;
+
+const base::Feature kAppCacheManifestScopeChecksFeature{
+    "AppCacheManifestScopeChecks", base::FEATURE_ENABLED_BY_DEFAULT};
 
 std::string FormatUrlErrorMessage(
       const char* format, const GURL& url,
@@ -167,7 +171,8 @@ int64_t ComputeAppCacheResponsePadding(const GURL& response_url,
 
   return storage::ComputeResponsePadding(response_url.spec(),
                                          storage::GetDefaultPaddingKey(),
-                                         /*has_metadata=*/false);
+                                         /*has_metadata=*/false,
+                                         /*loaded_with_credentials=*/false);
 }
 
 }  // namespace
@@ -235,6 +240,7 @@ AppCacheUpdateJob::AppCacheUpdateJob(AppCacheServiceImpl* service,
       fetched_manifest_parser_version_(-1),
       cached_manifest_scope_(""),
       fetched_manifest_scope_(""),
+      manifest_scope_checks_enabled_(true),
       group_(group),
       update_type_(UNKNOWN_TYPE),
       internal_state_(FETCH_MANIFEST),
@@ -245,6 +251,8 @@ AppCacheUpdateJob::AppCacheUpdateJob(AppCacheServiceImpl* service,
       manifest_has_valid_mime_type_(false),
       stored_state_(UNSTORED),
       storage_(service->storage()) {
+  manifest_scope_checks_enabled_ =
+      base::FeatureList::IsEnabled(kAppCacheManifestScopeChecksFeature);
   service_->AddObserver(this);
 }
 
@@ -518,7 +526,9 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
 
     // We should only ever allow AppCaches to remain unchanged if their parser
     // version is 1 or higher.
-    DCHECK_GE(cached_manifest_parser_version_, 1);
+    if (manifest_scope_checks_enabled_) {
+      DCHECK_GE(cached_manifest_parser_version_, 1);
+    }
 
     // No manifest update is planned.  Set the fetched manifest parser version
     // and scope to match their initial values.
@@ -533,7 +543,8 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
 
   AppCacheManifest manifest;
   if (!ParseManifest(manifest_url_, fetched_manifest_scope_,
-                     manifest_data_.data(), manifest_data_.length(),
+                     manifest_scope_checks_enabled_, manifest_data_.data(),
+                     manifest_data_.length(),
                      manifest_has_valid_mime_type_
                          ? PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES
                          : PARSE_MANIFEST_PER_STANDARD,
@@ -551,8 +562,16 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
     return;
   }
 
+  // Ensure manifest scope checking is enabled only if we configured it that
+  // way.
+  DCHECK_EQ(manifest_scope_checks_enabled_, manifest.scope_checks_enabled);
+
   // Ensure the manifest parser version matches what we configured.
-  DCHECK_EQ(manifest.parser_version, 1);
+  if (manifest_scope_checks_enabled_) {
+    DCHECK_EQ(manifest.parser_version, 1);
+  } else {
+    DCHECK_EQ(manifest.parser_version, 0);
+  }
   fetched_manifest_parser_version_ = manifest.parser_version;
 
   // Ensure the manifest scope matches what we configured.
@@ -938,7 +957,10 @@ void AppCacheUpdateJob::StoreGroupAndCache() {
   //    - For parser version, the newly fetched parser version must be greater
   //      than or equal to the version we began with.
   //    - For scope, the fetched manifest scope must be valid.
-  DCHECK_GE(fetched_manifest_parser_version_, cached_manifest_parser_version_);
+  if (manifest_scope_checks_enabled_) {
+    DCHECK_GE(fetched_manifest_parser_version_,
+              cached_manifest_parser_version_);
+  }
   DCHECK(AppCache::CheckValidManifestScope(manifest_url_,
                                            fetched_manifest_scope_));
 
@@ -1079,8 +1101,15 @@ void AppCacheUpdateJob::CheckIfManifestChanged() {
     return;
   }
 
-  if (fetched_manifest_scope_ != cached_manifest_scope_ ||
-      cached_manifest_parser_version_ < 1) {
+  if (fetched_manifest_scope_ != cached_manifest_scope_) {
+    ContinueHandleManifestFetchCompleted(true);
+    return;
+  }
+
+  if ((manifest_scope_checks_enabled_ &&
+       cached_manifest_parser_version_ <= 0) ||
+      (!manifest_scope_checks_enabled_ &&
+       cached_manifest_parser_version_ >= 1)) {
     ContinueHandleManifestFetchCompleted(true);
     return;
   }
@@ -1097,7 +1126,11 @@ void AppCacheUpdateJob::CheckIfManifestChanged() {
 }
 
 void AppCacheUpdateJob::OnManifestDataReadComplete(int result) {
-  DCHECK_GE(cached_manifest_parser_version_, 1);
+  if (manifest_scope_checks_enabled_) {
+    DCHECK_GE(cached_manifest_parser_version_, 1);
+  } else {
+    DCHECK_EQ(cached_manifest_parser_version_, 0);
+  }
   DCHECK_EQ(fetched_manifest_scope_, cached_manifest_scope_);
   if (result > 0) {
     loaded_manifest_data_.append(read_manifest_buffer_->data(), result);
@@ -1357,9 +1390,13 @@ void AppCacheUpdateJob::OnResponseInfoLoaded(
 
   // Needed response info for a manifest fetch request.
   if (internal_state_ == FETCH_MANIFEST) {
-    if (http_info && cached_manifest_parser_version_ > 0)
+    if ((manifest_scope_checks_enabled_ && http_info &&
+         cached_manifest_parser_version_ >= 1) ||
+        (!manifest_scope_checks_enabled_ && http_info &&
+         cached_manifest_parser_version_ <= 0)) {
       manifest_fetcher_->set_existing_response_headers(
           http_info->headers.get());
+    }
     manifest_fetcher_->Start();
     return;
   }

@@ -214,6 +214,7 @@
 <translation id="2532336938189706096">Webaansig</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> items is uitgevee</translation>
 <translation id="2536728043171574184">Bekyk tans 'n vanlyn kopie van hierdie bladsy</translation>
+<translation id="2537178555904266562">Kon nie wagwoorde sinkroniseer nie</translation>
 <translation id="2546283357679194313">Webkoekies en werfdata</translation>
 <translation id="2567385386134582609">PRENT</translation>
 <translation id="257088987046510401">Temas</translation>
@@ -231,6 +232,7 @@
 <translation id="2650751991977523696">Laai lêer weer af?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# oudiolêer}other{# oudiolêers}}</translation>
 <translation id="2653659639078652383">Dien in</translation>
+<translation id="2669093958999339774">Keer dat kennisgewingporboodskappe jou onderbreek en gebruik eerder 'n stiller boodskap</translation>
 <translation id="2677748264148917807">Gaan uit</translation>
 <translation id="2704606927547763573">Gekopieer</translation>
 <translation id="2707726405694321444">Herlaai bladsy</translation>
@@ -248,7 +250,6 @@
 <translation id="281504910091592009">Bekyk en bestuur gestoorde wagwoorde in jou <ph name="BEGIN_LINK" />Google-rekening<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Meld aan en skakel sinkronisering aan om jou boekmerke op al jou toestelle te kry</translation>
 <translation id="2822354292072154809">Is jy seker jy wil alle werftoestemmings vir <ph name="CHOSEN_OBJECT_NAME" /> terugstel?</translation>
-<translation id="2836148919159985482">Raak die terugknoppie om volskerm te verlaat.</translation>
 <translation id="2842985007712546952">Moedervouer</translation>
 <translation id="2858138569776157458">Topwerwe</translation>
 <translation id="2860954141821109167">Maak seker dat 'n foonprogram op hierdie toestel geaktiveer is</translation>
@@ -358,14 +359,15 @@
 <translation id="3632295766818638029">Ontmasker wagwoord</translation>
 <translation id="363596933471559332">Meld outomaties met gebergde eiebewyse by webwerwe aan. As die kenmerk af is, sal jy elke keer om verifikasie gevra word voordat jy by 'n webwerf aanmeld.</translation>
 <translation id="3658159451045945436">As jy terugstel, sal jou geskiedenis van databesparings uitgevee word, insluitend die lys werwe wat jy besoek het.</translation>
-<translation id="3682730288090679318">Aktiveer dit om werwe outomaties te keer om jou te vra om jou kennisgewings te wys. As 'n werf kennisgewings versoek, sal 'n inligtingbalk aan die onderkant van die bladsy verskyn.</translation>
 <translation id="3692944402865947621"><ph name="FILE_NAME" /> aflaai het misluk omdat die bergingligging nie bereik kan word nie.</translation>
+<translation id="3701167022068948696">Stel nou reg</translation>
 <translation id="3714981814255182093">Maak die Vindbalk oop</translation>
 <translation id="3716182511346448902">Hierdie bladsy gebruik te veel berging en daarom het Chrome dit laat wag.</translation>
 <translation id="3730075448226062617">Vir Chrome om toegang tot jou mikrofoon te kry, moet jy mikrofoon ook in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" /> aanskakel.</translation>
 <translation id="3739899004075612870">Geboekmerk in <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Agtergrondsinkronisering</translation>
 <translation id="3749259744154402564">Ongesteun</translation>
+<translation id="3767376082821709728">Nuwe werwe wat jy besoek, kan nie vir jou kennisgewings stuur nie</translation>
 <translation id="3771001275138982843">Kon nie die opdatering aflaai nie</translation>
 <translation id="3771033907050503522">Incognito-oortjies</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Skakel Bluetooth aan<ph name="END_LINK" /> om saambinding moontlik te maak</translation>
@@ -591,7 +593,6 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="5414836363063783498">Verifieer tans …</translation>
 <translation id="5423934151118863508">Jou mees besoekte bladsye sal hier verskyn</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB is beskikbaar</translation>
-<translation id="5427766642345310212">Het dit. Nuwe kennisgewingversoeke sal by verstek hier verskyn.</translation>
 <translation id="543338862236136125">Wysig wagwoord</translation>
 <translation id="5433691172869980887">Gebruikernaam is gekopieer</translation>
 <translation id="543509235395288790">Laai tans <ph name="COUNT" /> lêers af (<ph name="MEGABYTES" />).</translation>
@@ -678,7 +679,6 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="5962718611393537961">Tik om in te vou</translation>
 <translation id="6000066717592683814">Hou Google</translation>
 <translation id="6005538289190791541">Voorgestelde wagwoord</translation>
-<translation id="6019358956729171834">Laai meer …</translation>
 <translation id="6036057147555329831">Ekstra ICU</translation>
 <translation id="6039379616847168523">Spring na die volgende oortjie</translation>
 <translation id="6040143037577758943">Maak toe</translation>
@@ -774,6 +774,7 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="666731172850799929">Maak oop in <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Chrome se privaatheidkennisgewing</translation>
 <translation id="6676840375528380067">Vee jou Chrome-data op hierdie toestel uit?</translation>
+<translation id="6689172468748959065">Profielfoto's</translation>
 <translation id="6697492270171225480">Wys voorstelle vir soortgelyke bladsye wanneer 'n bladsy nie gevind kan word nie</translation>
 <translation id="6697947395630195233">Chrome het toegang tot jou ligging nodig om jou ligging met hierdie werf te deel.</translation>
 <translation id="6698801883190606802">Bestuur gesinkroniseerde data</translation>
@@ -956,6 +957,7 @@ Die werf kry NIE toegang tot die kamera nie. Net jy kan die kameraprente sien.</
 <translation id="8035133914807600019">Nuwe vouer …</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> dae oor</translation>
 <translation id="804335162455518893">Kon nie SD-kaart kry nie</translation>
+<translation id="8046278916126163020">Nuwe werwe wat jy besoek, kan vra of hulle vir jou kennisgewings mag stuur</translation>
 <translation id="805047784848435650">Gegrond op jou blaaigeskiedenis</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB beskikbaar</translation>
 <translation id="8058746566562539958">Open in nuwe Chrome-oortjie</translation>

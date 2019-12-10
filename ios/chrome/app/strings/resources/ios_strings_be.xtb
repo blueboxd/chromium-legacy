@@ -91,6 +91,7 @@
 <translation id="209018056901015185">Запытаць версію для настольнага камп'ютара</translation>
 <translation id="2103075008456228677">Адкрыць history.google.com</translation>
 <translation id="2116625576999540962">Перамешчана элементаў: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
+<translation id="2118594521750010466">Выправіць</translation>
 <translation id="213900355088104901">Для прагляду вэб-старонак у прыватным рэжыме адкрыйце ўкладку інкогніта</translation>
 <translation id="2139867232736819575">Пошук скапіраванага тэксту</translation>
 <translation id="2149973817440762519">Рэдагаваць закладку</translation>
@@ -98,6 +99,7 @@
 <translation id="2198757192731523470">Google можа выкарыстоўваць вашу гісторыю, каб персаналізаваць пошук, паказ рэкламы і іншыя сэрвісы Google.</translation>
 <translation id="2230173723195178503">Вэб-старонка загружана</translation>
 <translation id="2239626343334228536">Ідзе ачыстка даных прагляду...</translation>
+<translation id="2257567812274161158">Сінхранізацыя не працуе.</translation>
 <translation id="2267753748892043616">Дадаць уліковы запіс</translation>
 <translation id="2268044343513325586">Удакладніць</translation>
 <translation id="2273327106802955778">Меню "Дадаткова"</translation>
@@ -129,6 +131,7 @@
 <translation id="2691653761409724435">Недаступна ў пазасеткавым рэжыме</translation>
 <translation id="2695507686909505111">Старонка перакладзена</translation>
 <translation id="2702801445560668637">Спіс чытання</translation>
+<translation id="2704491540504985681">Спампоўкі</translation>
 <translation id="2704606927547763573">Скапіравана</translation>
 <translation id="2709516037105925701">Аўтазапаўненне</translation>
 <translation id="2712127207578915686">Немагчыма адкрыць файл</translation>
@@ -218,6 +221,7 @@
 <translation id="3943492037546055397">Паролі</translation>
 <translation id="3967822245660637423">Спампоўка завершана</translation>
 <translation id="3989635538409502728">Выйсці</translation>
+<translation id="399419089947468503">Памылка пры сінхранізацыі пароляў</translation>
 <translation id="3995521777587992544">Індыкатар стану загрузкі старонкі, загружана <ph name="EMAIL" />.</translation>
 <translation id="4002066346123236978">Назва</translation>
 <translation id="4004204301268239848">Паролі захоўваюцца ў вашым Уліковым запісе Google, і вы зможаце карыстацца імі з любой прылады.</translation>
@@ -238,6 +242,7 @@
 <translation id="424315890655130736">Увядз. фразу-пароль</translation>
 <translation id="4263576668337963058">Паказаць даступныя дзеянні са старонкай</translation>
 <translation id="4272631900155121838">Каб сканіраваць QR-код, уключыце камеру ў наладах</translation>
+<translation id="4276041135170112053">Вырашыце праблему.</translation>
 <translation id="4281844954008187215">Умовы выкарыстання</translation>
 <translation id="430793432425771671">Сінхранізаваць усе</translation>
 <translation id="430967081421617822">За ўвесь час</translation>
@@ -286,6 +291,7 @@
 <translation id="4904877109095351937">Пазначыць як прачытанае</translation>
 <translation id="4930268273022498155">Выдаліць існуючыя даныя. Каб вярнуць іх, можна пераключыцца назад на карыстальніка <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Узнікла праблема з абагульваннем вашага элемента.</translation>
+<translation id="4944543191714094452">Пошук на старонцы…</translation>
 <translation id="4945756290001680296">Доступ да налад пароля</translation>
 <translation id="4979397965658815378">Каб закладкі, паролі, гісторыя і іншыя налады былі даступнымі на ўсіх вашых прыладах, увайдзіце ва Уліковы запіс Google</translation>
 <translation id="5005498671520578047">Капіраваць пароль</translation>
@@ -317,6 +323,7 @@
 <translation id="5433691172869980887">Імя карыстальніка скапіравана</translation>
 <translation id="54401264925851789">Інфармацыя пра бяспеку старонкі</translation>
 <translation id="5443952882982198570">Крэдытныя карты</translation>
+<translation id="5457907402803865181">Памылка пры сінхранізацыі пароляў.</translation>
 <translation id="5525269841082836315">Стварэнне фразы-пароля</translation>
 <translation id="5548760955356983418">Функцыя перадачы вэб-сайта дазваляе пачаць прагляд вэб-старонкі на адной прыладзе, а затым працягнуць, перайшоўшы на Mac. Адкрыты вэб-сайт з'явіцца ў док-панэлі камп'ютара Mac.
 
@@ -408,6 +415,7 @@
 <translation id="6482629121755362506">Выдалена элементаў: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6610002944194042868">Параметры перакладу</translation>
 <translation id="6628106477656132239">Несапраўдны тэрмін дзеяння</translation>
+<translation id="6638511529934826365">Змяніць памер тэксту…</translation>
 <translation id="6642362222295953972">Пераключыцца на існуючую ўкладку</translation>
 <translation id="6643016212128521049">Ачысціць</translation>
 <translation id="6656103420185847513">Рэдагаваць папку</translation>

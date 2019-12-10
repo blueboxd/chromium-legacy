@@ -130,6 +130,8 @@ cast_source_set("browser") {
     "renderer_prelauncher.h",
     "service/cast_service_simple.cc",
     "service/cast_service_simple.h",
+    "service_connector.cc",
+    "service_connector.h",
     "tts/tts_controller.h",
     "tts/tts_controller_impl.cc",
     "tts/tts_controller_impl.h",

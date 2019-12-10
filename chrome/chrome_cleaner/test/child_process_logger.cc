@@ -81,10 +81,16 @@ void ChildProcessLogger::DumpLogs() const {
   std::vector<base::StringPiece> lines =
       base::SplitStringPiece(log_file_contents, "\n", base::TRIM_WHITESPACE,
                              base::SPLIT_WANT_NONEMPTY);
+  if (lines.empty()) {
+    LOG(ERROR) << "Child process log file is empty";
+    return;
+  }
+
   LOG(ERROR) << "Dumping child process logs";
   for (const auto& line : lines) {
     LOG(ERROR) << "Child process: " << line;
   }
+  LOG(ERROR) << "Finished dumping child process logs";
 }
 
 }  // namespace chrome_cleaner

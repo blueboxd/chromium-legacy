@@ -184,6 +184,7 @@
 <translation id="3386978599540877378">isikhulisi sesikrini esigcwele</translation>
 <translation id="3400357268283240774">Izilungiselelo ezingeziwe</translation>
 <translation id="3413817803639110246">Akukho ongakubona okwamanje</translation>
+<translation id="3428447136709161042">Nqamula kusukela ku-<ph name="NETWORK_NAME" /></translation>
 <translation id="343571671045587506">Hlela isikhumbuzo</translation>
 <translation id="3445925074670675829">Idivayisi ye-USB-C</translation>
 <translation id="3454224730401036106">Ukuxhumeka kwakho kushintshelwe kunethiwekhi evikeleke kakhulu</translation>
@@ -322,6 +323,7 @@
 <translation id="5537725057119320332">Sakaza</translation>
 <translation id="5548285847212963613">Isandiso esingu-"<ph name="EXTENSION_NAME" />" singasiza ukuxhumeka kule nethiwekhi.</translation>
 <translation id="554893713779400387">Guqula ukuthola</translation>
+<translation id="556042886152191864">Inkinobho</translation>
 <translation id="5571066253365925590">I-Bluetooth inikwe amandla</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Cindezela ku-Ctrl + Alt + Z ukuze ukhubaze impendulo ekhulunyiwe.</translation>
@@ -423,7 +425,6 @@
 <translation id="6857811139397017780">Yenza kusebenze i-<ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Isinqamuleli sivaliwe</translation>
 <translation id="6910714959251846841">Lesi sibuyekezo sidinga i-powerwashing yedivayisi yakho. Funda kabanzi mayelana nesibuyekezo sakamuva se-<ph name="SYSTEM_APP_NAME" />.</translation>
-<translation id="6911468394164995108">Joyina enye...</translation>
 <translation id="6919251195245069855">Ayikwazanga ukubona ikhadi lakho elisebenza ngobuchwepheshe besimanje. Zama futhi.</translation>
 <translation id="6972754398087986839">Qala</translation>
 <translation id="6981982820502123353">Ukufinyeleleka</translation>
@@ -469,6 +470,7 @@
 <translation id="7569509451529460200">I-Braille ne-ChromeVox inikwe amandla</translation>
 <translation id="7593891976182323525">Usesho noma i-Shift</translation>
 <translation id="7600875258240007829">Bona zonke izaziso</translation>
+<translation id="7642647758716480637">Vula izilungiselelo ze-<ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (umnikazi)</translation>
 <translation id="7647488630410863958">Vula idivayisi ukuze ubuke izaziso zakho</translation>
 <translation id="7649070708921625228">Usizo</translation>

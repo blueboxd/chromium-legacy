@@ -16,11 +16,11 @@
 #include "build/build_config.h"
 #include "chromecast/base/task_runner_impl.h"
 #include "chromecast/common/mojom/multiroom.mojom.h"
+#include "chromecast/common/mojom/service_connector.mojom.h"
 #include "media/audio/audio_io.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace chromecast {
 namespace media {
@@ -104,7 +104,7 @@ class CastAudioOutputStream : public ::media::AudioOutputStream {
   // ::media::AudioDeviceDescription::kDefaultDeviceId or
   // ::media::AudioDeviceDescription::kCommunicationsId.
   CastAudioOutputStream(CastAudioManager* audio_manager,
-                        service_manager::Connector* connector,
+                        chromecast::mojom::ServiceConnector* connector,
                         const ::media::AudioParameters& audio_params,
                         const std::string& device_id_or_group_id,
                         bool use_mixer_service);
@@ -136,7 +136,7 @@ class CastAudioOutputStream : public ::media::AudioOutputStream {
   double volume_;
   AudioOutputState audio_thread_state_;
   CastAudioManager* const audio_manager_;
-  service_manager::Connector* connector_;
+  chromecast::mojom::ServiceConnector* connector_;
   const ::media::AudioParameters audio_params_;
   // Valid |device_id_| are kDefaultDeviceId, and kCommunicationsDeviceId
   const std::string device_id_;

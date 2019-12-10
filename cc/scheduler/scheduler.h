@@ -13,6 +13,7 @@
 #include "cc/cc_export.h"
 #include "cc/scheduler/begin_frame_tracker.h"
 #include "cc/scheduler/draw_result.h"
+#include "cc/scheduler/scheduler.h"
 #include "cc/scheduler/scheduler_settings.h"
 #include "cc/scheduler/scheduler_state_machine.h"
 #include "cc/tiles/tile_priority.h"
@@ -39,6 +40,11 @@ namespace cc {
 struct BeginMainFrameMetrics;
 class CompositorTimingHistory;
 
+enum class FrameSkippedReason {
+  kRecoverLatency,
+  kNoDamage,
+};
+
 class SchedulerClient {
  public:
   // Returns whether the frame has damage.
@@ -61,7 +67,8 @@ class SchedulerClient {
       bool needs_redraw) = 0;
   virtual void ScheduledActionPerformImplSideInvalidation() = 0;
   virtual void DidFinishImplFrame() = 0;
-  virtual void DidNotProduceFrame(const viz::BeginFrameAck& ack) = 0;
+  virtual void DidNotProduceFrame(const viz::BeginFrameAck& ack,
+                                  FrameSkippedReason reason) = 0;
   virtual void WillNotReceiveBeginFrame() = 0;
   virtual void SendBeginMainFrameNotExpectedSoon() = 0;
   virtual void ScheduledActionBeginMainFrameNotExpectedUntil(
@@ -357,7 +364,8 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   void BeginImplFrameSynchronous(const viz::BeginFrameArgs& args);
   void BeginImplFrame(const viz::BeginFrameArgs& args, base::TimeTicks now);
   void FinishImplFrame();
-  void SendDidNotProduceFrame(const viz::BeginFrameArgs& args);
+  void SendDidNotProduceFrame(const viz::BeginFrameArgs& args,
+                              FrameSkippedReason reason);
   void OnBeginImplFrameDeadline();
   void PollToAdvanceCommitState();
   void BeginMainFrameAnimateAndLayoutOnly(const viz::BeginFrameArgs& args);

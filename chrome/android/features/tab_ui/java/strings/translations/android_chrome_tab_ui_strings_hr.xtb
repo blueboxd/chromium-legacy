@@ -5,6 +5,7 @@
 <translation id="1181037720776840403">Ukloni</translation>
 <translation id="125153950246128346">Dodirnite za prikaz druge kartice</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> kartica}one{<ph name="TABS_COUNT_MANY" /> kartica}few{<ph name="TABS_COUNT_MANY" /> kartice}other{<ph name="TABS_COUNT_MANY" /> kartica}}</translation>
+<translation id="2569352796411618312">Prijedlog: broj vaših kartica koje niste koristili neko vrijeme: <ph name="NUMBER_OF_TABS" />. Želite li ih zatvoriti?</translation>
 <translation id="257674075312929031">Grupa</translation>
 <translation id="2613747923081026172">Izradi grupu</translation>
 <translation id="2671423594960767771">Dijeli grupu</translation>
@@ -23,6 +24,9 @@
 <translation id="6840760312327750441">Da biste grupirali kartice, dodirnite i držite karticu. Zatim je povucite na drugu karticu.</translation>
 <translation id="7151209024774799310">Ukloni kartice iz grupe</translation>
 <translation id="7559245342362162951">Prikaži kartice grupe u rešetki na cijelom zaslonu</translation>
+<translation id="7792771145871471484">Pregledajte prijedloge.</translation>
+<translation id="7966321538264951561">Odbacite prijedloge.</translation>
+<translation id="83556505225171773">{TABS_COUNT,plural, =1{Zatvori <ph name="TABS_COUNT_ONE" /> odabranu karticu}one{Zatvori <ph name="TABS_COUNT_MANY" /> odabranu karticu}few{Zatvori <ph name="TABS_COUNT_MANY" /> odabrane kartice}other{Zatvori <ph name="TABS_COUNT_MANY" /> odabranih kartica}}</translation>
 <translation id="9150694013019234766">Prebacujte se između kartica u grupi kartica pri dnu zaslona</translation>
 <translation id="9169594135889675189">Dodaj novu karticu grupi</translation>
 <translation id="959682366969460160">Organizirajte se</translation>

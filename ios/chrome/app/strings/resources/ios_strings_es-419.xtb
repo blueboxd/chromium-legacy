@@ -91,6 +91,7 @@
 <translation id="209018056901015185">Versión para escritorio</translation>
 <translation id="2103075008456228677">Abrir history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos movidos</translation>
+<translation id="2118594521750010466">Corregir ahora</translation>
 <translation id="213900355088104901">Para navegar de forma privada, abre una pestaña de incógnito</translation>
 <translation id="2139867232736819575">Buscar el texto copiado</translation>
 <translation id="2149973817440762519">Editar marcador</translation>
@@ -98,6 +99,7 @@
 <translation id="2198757192731523470">Es posible que Google use tu historial para personalizar la Búsqueda, los anuncios y otros servicios de Google.</translation>
 <translation id="2230173723195178503">Se cargó la página web</translation>
 <translation id="2239626343334228536">Borrando datos de navegación…</translation>
+<translation id="2257567812274161158">La sincronización no funciona.</translation>
 <translation id="2267753748892043616">Agregar cuenta</translation>
 <translation id="2268044343513325586">Definir mejor</translation>
 <translation id="2273327106802955778">Menú Más</translation>
@@ -129,6 +131,7 @@
 <translation id="2691653761409724435">No disponible sin conexión</translation>
 <translation id="2695507686909505111">Se tradujo la página</translation>
 <translation id="2702801445560668637">Lista de lectura</translation>
+<translation id="2704491540504985681">Descargas</translation>
 <translation id="2704606927547763573">Copiado</translation>
 <translation id="2709516037105925701">Autocompletar</translation>
 <translation id="2712127207578915686">Error al abrir el archivo</translation>
@@ -218,6 +221,7 @@
 <translation id="3943492037546055397">Contraseñas</translation>
 <translation id="3967822245660637423">Descarga completa</translation>
 <translation id="3989635538409502728">Salir</translation>
+<translation id="399419089947468503">Se produjo un error al sincronizar las contraseñas</translation>
 <translation id="3995521777587992544">Barra de progreso de la carga de la página; se cargó <ph name="EMAIL" />.</translation>
 <translation id="4002066346123236978">Título</translation>
 <translation id="4004204301268239848">Las contraseñas se guardan en tu Cuenta de Google para que puedas usarlas en cualquier dispositivo.</translation>
@@ -238,6 +242,7 @@
 <translation id="424315890655130736">Ingresar frase de contraseña</translation>
 <translation id="4263576668337963058">Mostrar las acciones de página disponibles</translation>
 <translation id="4272631900155121838">Habilita la cámara en la configuración para escanear un código QR</translation>
+<translation id="4276041135170112053">Corregir ahora</translation>
 <translation id="4281844954008187215">Condiciones del servicio</translation>
 <translation id="430793432425771671">Sincronizar todo</translation>
 <translation id="430967081421617822">Todo el tiempo</translation>
@@ -286,6 +291,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="4904877109095351937">Marcar como leídas</translation>
 <translation id="4930268273022498155">Borra los datos existentes. Para recuperarlos, cambia de nuevo a <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Se produjo un error al compartir tu elemento.</translation>
+<translation id="4944543191714094452">Buscar en la página…</translation>
 <translation id="4945756290001680296">Accede a la configuración de contraseñas</translation>
 <translation id="4979397965658815378">Accede con tu cuenta de Google para obtener tus favoritos, contraseñas, historial y otras opciones de configuración en todos tus dispositivos</translation>
 <translation id="5005498671520578047">Copiar contraseña</translation>
@@ -317,6 +323,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5433691172869980887">Se copió el nombre de usuario</translation>
 <translation id="54401264925851789">Información de seguridad de la página</translation>
 <translation id="5443952882982198570">Tarjetas de crédito</translation>
+<translation id="5457907402803865181">Se produjo un error al sincronizar las contraseñas.</translation>
 <translation id="5525269841082836315">Crear frase contras.</translation>
 <translation id="5548760955356983418">Handoff te permite comenzar a navegar en un sitio web en este dispositivo y, luego, continuar fácilmente en tu Mac. El sitio web que está abierto ahora aparecerá en el Dock de tu Mac.
 
@@ -408,6 +415,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos eliminados</translation>
 <translation id="6610002944194042868">Opciones de traducción</translation>
 <translation id="6628106477656132239">La fecha de vencimiento no es válida</translation>
+<translation id="6638511529934826365">Hacer zoom en el texto…</translation>
 <translation id="6642362222295953972">Cambiar a la pestaña existente</translation>
 <translation id="6643016212128521049">Borrar</translation>
 <translation id="6656103420185847513">Editar carpeta</translation>

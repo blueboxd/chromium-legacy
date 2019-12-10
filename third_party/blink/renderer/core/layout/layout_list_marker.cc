@@ -540,7 +540,8 @@ void LayoutListMarker::ListItemStyleDidChange() {
   const ComputedStyle* cached_marker_style =
       list_item->IsPseudoElement()
           ? nullptr
-          : ToElement(list_item)->CachedStyleForPseudoElement(kPseudoIdMarker);
+          : To<Element>(list_item)->CachedStyleForPseudoElement(
+                kPseudoIdMarker);
   scoped_refptr<ComputedStyle> new_style;
   if (cached_marker_style) {
     new_style = ComputedStyle::Clone(*cached_marker_style);

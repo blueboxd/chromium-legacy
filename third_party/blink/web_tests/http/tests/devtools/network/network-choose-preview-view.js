@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 (async function() {
+  'use strict';
   TestRunner.addResult(`Tests to make sure the proper view is used for the data that is received in network panel.\n`);
   await TestRunner.loadModule('network_test_runner');
   await TestRunner.showPanel('network');
@@ -78,7 +79,7 @@
   await testPreviewer('text/foobar', 'Foo Bar', 500);
 
   TestRunner.addResult('Binary Image File');
-  await testPreviewer('image/png', 'Bin\0ary\1 File\0\0', 200);
+  await testPreviewer('image/png', 'Bin\0ary\x01 File\0\0', 200);
 
   TestRunner.addResult('Binary Blank Image File');
   await testPreviewer('image/png', '', 200);

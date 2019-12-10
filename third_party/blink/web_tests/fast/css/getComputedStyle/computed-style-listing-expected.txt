@@ -21,8 +21,6 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 -webkit-line-break: auto
 -webkit-line-clamp: none
 -webkit-locale: auto
--webkit-margin-after-collapse: collapse
--webkit-margin-before-collapse: collapse
 -webkit-mask-box-image: none
 -webkit-mask-box-image-outset: 0px
 -webkit-mask-box-image-repeat: stretch

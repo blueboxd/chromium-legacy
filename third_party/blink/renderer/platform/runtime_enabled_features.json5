@@ -1729,6 +1729,10 @@
       name: "VideoFullscreenOrientationLock",
     },
     {
+      name: "VideoPlaybackQuality",
+      status: "stable",
+    },
+    {
       // See https://crbug.com/1012063
       name: "VideoRequestAnimationFrame",
       status: "experimental",

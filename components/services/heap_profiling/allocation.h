@@ -53,11 +53,11 @@ inline bool operator==(const AllocationSite& a, const AllocationSite& b) {
 
 // Data associated with an allocation site in the AllocationMap.
 struct AllocationMetrics {
-  // Size of the allocation responsible for prodicing the sample.
+  // Total size of allocations associated with a given sample.
   size_t size = 0;
 
   // Number of allocations associated with the sample.
-  size_t count = 0;
+  float count = 0;
 };
 
 using AllocationMap =

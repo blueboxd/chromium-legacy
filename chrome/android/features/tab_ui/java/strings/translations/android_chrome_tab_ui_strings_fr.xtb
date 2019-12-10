@@ -5,6 +5,7 @@
 <translation id="1181037720776840403">Supprimer</translation>
 <translation id="125153950246128346">Appuyer pour afficher un autre onglet</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> onglet}one{<ph name="TABS_COUNT_MANY" /> onglet}other{<ph name="TABS_COUNT_MANY" /> onglets}}</translation>
+<translation id="2569352796411618312">Suggestion : <ph name="NUMBER_OF_TABS" /> des onglets ouverts n'ont pas été utilisés récemment. Voulez-vous les fermer ?</translation>
 <translation id="257674075312929031">Groupe</translation>
 <translation id="2613747923081026172">Créer un groupe</translation>
 <translation id="2671423594960767771">Partager le groupe</translation>
@@ -23,6 +24,9 @@
 <translation id="6840760312327750441">Pour regrouper des onglets, appuyez de manière prolongée sur un onglet, puis faites-le glisser vers un autre.</translation>
 <translation id="7151209024774799310">Supprimer des onglets</translation>
 <translation id="7559245342362162951">Afficher les onglets du groupe dans une grille en plein écran</translation>
+<translation id="7792771145871471484">Afficher les suggestions.</translation>
+<translation id="7966321538264951561">Fermer les suggestions.</translation>
+<translation id="83556505225171773">{TABS_COUNT,plural, =1{Fermer l'onglet sélectionné (<ph name="TABS_COUNT_ONE" />)}one{Fermer l'onglet sélectionné (<ph name="TABS_COUNT_MANY" />)}other{Fermer les onglets sélectionnés (<ph name="TABS_COUNT_MANY" />)}}</translation>
 <translation id="9150694013019234766">Passer d'un onglet à l'autre depuis votre groupe d'onglets dans la partie inférieure de l'écran</translation>
 <translation id="9169594135889675189">Ajouter un nouvel onglet au groupe</translation>
 <translation id="959682366969460160">Restez organisé</translation>

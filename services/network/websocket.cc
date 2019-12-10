@@ -559,9 +559,10 @@ void WebSocket::AddChannel(
       headers_to_pass.SetHeader(header->name, header->value);
     }
   }
-  channel_->SendAddChannelRequest(socket_url, requested_protocols, origin_,
-                                  site_for_cookies, network_isolation_key,
-                                  headers_to_pass);
+  channel_->SendAddChannelRequest(
+      socket_url, requested_protocols, origin_,
+      net::SiteForCookies::FromUrl(site_for_cookies), network_isolation_key,
+      headers_to_pass);
 }
 
 void WebSocket::OnWritable(MojoResult result,

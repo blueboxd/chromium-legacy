@@ -18,7 +18,6 @@ namespace gl {
 struct GLWindowSystemBindingInfo;
 
 GL_EXPORT void InitializeStaticGLBindingsEGL();
-GL_EXPORT void InitializeLogGLBindingsEGL();
 GL_EXPORT void ClearBindingsEGL();
 GL_EXPORT bool GetGLWindowSystemBindingInfoEGL(GLWindowSystemBindingInfo* info);
 GL_EXPORT void SetDisabledExtensionsEGL(const std::string& disabled_extensions);

@@ -232,10 +232,6 @@ android_builder(
 )
 
 android_builder(
-    name = 'android_compile_rel',
-)
-
-android_builder(
     name = 'android_compile_x64_dbg',
     tryjob = tryjob(
         location_regexp = [
@@ -376,6 +372,8 @@ angle_builder(
 
 angle_builder(
     name = 'win-angle-deqp-rel-64',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 
@@ -386,6 +384,8 @@ angle_builder(
 
 angle_builder(
     name = 'win-angle-rel-64',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 
@@ -565,6 +565,8 @@ dawn_builder(
 
 dawn_builder(
     name = 'dawn-win10-x64-deps-rel',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
     tryjob = tryjob(
         location_regexp = [
@@ -608,6 +610,8 @@ dawn_builder(
 
 dawn_builder(
     name = 'win-dawn-rel',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 
@@ -844,42 +848,62 @@ def gpu_win_builder(*, name, os=os.WINDOWS_ANY, **kwargs):
 
 gpu_win_builder(
     name = 'gpu-fyi-try-win-xr-builder-64',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 gpu_win_builder(
     name = 'gpu-fyi-try-win10-intel-dqp-64',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 gpu_win_builder(
     name = 'gpu-fyi-try-win10-intel-exp-64',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 gpu_win_builder(
     name = 'gpu-fyi-try-win10-intel-rel-64',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 gpu_win_builder(
     name = 'gpu-fyi-try-win10-nvidia-dbg-64',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 gpu_win_builder(
     name = 'gpu-fyi-try-win10-nvidia-dqp-64',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 gpu_win_builder(
     name = 'gpu-fyi-try-win10-nvidia-dx12vk-dbg-64',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 gpu_win_builder(
     name = 'gpu-fyi-try-win10-nvidia-dx12vk-rel-64',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 gpu_win_builder(
     name = 'gpu-fyi-try-win10-nvidia-exp-64',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 gpu_win_builder(
     name = 'gpu-fyi-try-win10-nvidia-skgl-64',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 gpu_win_builder(
@@ -888,6 +912,8 @@ gpu_win_builder(
 
 gpu_win_builder(
     name = 'gpu-fyi-try-win10-nvidia-rel-64',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 gpu_win_builder(
@@ -904,6 +930,8 @@ gpu_win_builder(
 
 gpu_win_builder(
     name = 'gpu-fyi-try-win7-nvidia-dqp-64',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 gpu_win_builder(
@@ -912,6 +940,8 @@ gpu_win_builder(
 
 gpu_win_builder(
     name = 'gpu-fyi-try-win7-nvidia-rel-64',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 gpu_win_builder(
@@ -921,6 +951,8 @@ gpu_win_builder(
 gpu_win_builder(
     name = 'win_optional_gpu_tests_rel',
     builderless = True,
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_DEFAULT,
     tryjob = tryjob(
         location_regexp = [
@@ -1581,6 +1613,8 @@ win_builder(
 
 win_builder(
     name = 'win_chromium_x64_rel_ng',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 win_builder(

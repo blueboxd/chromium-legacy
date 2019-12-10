@@ -289,4 +289,9 @@ bool ShouldUseTabletModeGridLayout() {
          Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
+gfx::Rect ToStableSizeRoundedRect(const gfx::RectF& rect) {
+  return gfx::Rect(gfx::ToRoundedPoint(rect.origin()),
+                   gfx::ToRoundedSize(rect.size()));
+}
+
 }  // namespace ash

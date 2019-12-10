@@ -21,7 +21,7 @@ namespace media {
 class MojoDecoderBufferReader;
 class MojoDecoderBufferWriter;
 
-// A Decryptor implementation based on mojom::DecryptorPtr.
+// A Decryptor implementation based on mojo::PendingRemote<mojom::Decryptor>.
 // This class is single threaded. The |remote_decryptor| is connected before
 // being passed to MojoDecryptor, but it is bound to the thread MojoDecryptor
 // lives on the first time it is used in this class.

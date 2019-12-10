@@ -5,6 +5,7 @@
 <translation id="1181037720776840403">Verwyder</translation>
 <translation id="125153950246128346">Tik om nog 'n oortjie te sien</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> oortjie}other{<ph name="TABS_COUNT_MANY" /> oortjies}}</translation>
+<translation id="2569352796411618312">Voorstel: <ph name="NUMBER_OF_TABS" /> van jou oortjies is nie onlangs gebruik nie. Maak hulle toe?</translation>
 <translation id="257674075312929031">Groep</translation>
 <translation id="2613747923081026172">Skep groep</translation>
 <translation id="2671423594960767771">Deel groep</translation>
@@ -23,6 +24,9 @@
 <translation id="6840760312327750441">Raak en hou 'n oortjie om oortjies te groepeer. Sleep dit dan op 'n ander oortjie.</translation>
 <translation id="7151209024774799310">Verwyder oortjies uit groep</translation>
 <translation id="7559245342362162951">Wys groep se oortjies in volskermrooster</translation>
+<translation id="7792771145871471484">Gaan die voorstelle na.</translation>
+<translation id="7966321538264951561">Maak die voorstelle toe.</translation>
+<translation id="83556505225171773">{TABS_COUNT,plural, =1{Maak <ph name="TABS_COUNT_ONE" /> gekose oortjie toe}other{Maak <ph name="TABS_COUNT_MANY" /> gekose oortjies toe}}</translation>
 <translation id="9150694013019234766">Wissel tussen oortjies in jou oortjiegroep naby die onderkant van die skerm</translation>
 <translation id="9169594135889675189">Voeg nuwe oortjie by groep</translation>
 <translation id="959682366969460160">Raak georganiseerd</translation>

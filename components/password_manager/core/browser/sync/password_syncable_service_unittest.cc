@@ -93,7 +93,6 @@ MATCHER_P(PasswordIs, form, "") {
           actual_password.password_element() &&
       expected_password.username_value() == actual_password.username_value() &&
       expected_password.password_value() == actual_password.password_value() &&
-      expected_password.preferred() == actual_password.preferred() &&
       expected_password.date_last_used() == actual_password.date_last_used() &&
       expected_password.date_created() == actual_password.date_created() &&
       expected_password.blacklisted() == actual_password.blacklisted() &&
@@ -329,13 +328,11 @@ TEST_F(PasswordSyncableServiceTest, Merge) {
   form1.signon_realm = kSignonRealm;
   form1.action = GURL("http://pie.com");
   form1.date_created = base::Time::Now();
-  form1.preferred = true;
   form1.date_last_used = form1.date_created;
   form1.username_value = base::ASCIIToUTF16(kUsername);
   form1.password_value = base::ASCIIToUTF16(kPassword);
 
   autofill::PasswordForm form2(form1);
-  form2.preferred = false;
   form2.date_created = form1.date_created + base::TimeDelta::FromDays(1);
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(AppendForm(form1));
@@ -698,8 +695,6 @@ TEST_F(PasswordSyncableServiceTest, SerializeEmptyPasswordForm) {
   EXPECT_EQ("", specifics.password_element());
   EXPECT_TRUE(specifics.has_password_value());
   EXPECT_EQ("", specifics.password_value());
-  EXPECT_TRUE(specifics.has_preferred());
-  EXPECT_FALSE(specifics.preferred());
   EXPECT_TRUE(specifics.has_date_last_used());
   EXPECT_EQ(0, specifics.date_last_used());
   EXPECT_TRUE(specifics.has_date_created());
@@ -730,7 +725,6 @@ TEST_F(PasswordSyncableServiceTest, SerializeNonEmptyPasswordForm) {
   form.username_value = base::ASCIIToUTF16("god@google.com");
   form.password_element = base::ASCIIToUTF16("password_element");
   form.password_value = base::ASCIIToUTF16("!@#$%^&*()");
-  form.preferred = true;
   form.date_last_used = base::Time::FromDeltaSinceWindowsEpoch(
       base::TimeDelta::FromMicroseconds(100));
   form.date_created = base::Time::FromInternalValue(100);
@@ -760,8 +754,6 @@ TEST_F(PasswordSyncableServiceTest, SerializeNonEmptyPasswordForm) {
   EXPECT_EQ("password_element", specifics.password_element());
   EXPECT_TRUE(specifics.has_password_value());
   EXPECT_EQ("!@#$%^&*()", specifics.password_value());
-  EXPECT_TRUE(specifics.has_preferred());
-  EXPECT_TRUE(specifics.preferred());
   EXPECT_TRUE(specifics.has_date_last_used());
   EXPECT_EQ(100, specifics.date_last_used());
   EXPECT_TRUE(specifics.has_date_created());

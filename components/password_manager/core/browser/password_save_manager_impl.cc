@@ -197,7 +197,6 @@ void PasswordSaveManagerImpl::CreatePendingCredentials(
   pending_credentials_.password_value =
       HasGeneratedPassword() ? generation_manager_->generated_password()
                              : password_to_save.first;
-  pending_credentials_.preferred = true;
   pending_credentials_.date_last_used = base::Time::Now();
   pending_credentials_.form_has_autofilled_value =
       parsed_submitted_form.form_has_autofilled_value;
@@ -269,7 +268,6 @@ void PasswordSaveManagerImpl::Update(
   pending_credentials_ = credentials_to_update;
   pending_credentials_.password_value = password_to_save;
   pending_credentials_.skip_zero_click = skip_zero_click;
-  pending_credentials_.preferred = true;
   pending_credentials_.date_last_used = base::Time::Now();
 
   pending_credentials_state_ = PendingCredentialsState::UPDATE;
@@ -407,9 +405,7 @@ void PasswordSaveManagerImpl::ProcessUpdate(
          pending_credentials_.IsFederatedCredential());
   // If we're doing an Update, we either autofilled correctly and need to
   // update the stats, or the user typed in a new password for autofilled
-  // username, or the user selected one of the non-preferred matches,
-  // thus requiring a swap of preferred bits.
-  DCHECK(pending_credentials_.preferred);
+  // username.
   DCHECK(!client_->IsIncognito());
 
   password_manager_util::UpdateMetadataForUsage(&pending_credentials_);

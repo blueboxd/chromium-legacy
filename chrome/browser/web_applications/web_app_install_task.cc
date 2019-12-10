@@ -461,13 +461,14 @@ void WebAppInstallTask::OnGetWebApplicationInfo(
 void WebAppInstallTask::OnDidPerformInstallableCheck(
     std::unique_ptr<WebApplicationInfo> web_app_info,
     bool force_shortcut_app,
-    base::Optional<blink::Manifest> opt_manifest,
+    base::Optional<blink::Manifest> manifest,
     bool valid_manifest_for_web_app,
     bool is_installable) {
   if (ShouldStopInstall())
     return;
 
   DCHECK(web_app_info);
+  DCHECK(!manifest || !manifest->IsEmpty());
 
   if (install_params_ && install_params_->require_manifest &&
       !valid_manifest_for_web_app) {
@@ -481,9 +482,9 @@ void WebAppInstallTask::OnDidPerformInstallableCheck(
                                         ? ForInstallableSite::kYes
                                         : ForInstallableSite::kNo;
 
-  const blink::Manifest manifest = opt_manifest.value_or(blink::Manifest{});
-  UpdateWebAppInfoFromManifest(manifest, web_app_info.get(),
-                               for_installable_site);
+  if (manifest)
+    UpdateWebAppInfoFromManifest(*manifest, web_app_info.get(),
+                                 for_installable_site);
 
   AppId app_id = GenerateAppIdFromURL(web_app_info->app_url);
 
@@ -498,11 +499,12 @@ void WebAppInstallTask::OnDidPerformInstallableCheck(
 
   // A system app should always have a manifest icon.
   if (install_source_ == WebappInstallSource::SYSTEM_DEFAULT) {
-    DCHECK(!manifest.icons.empty());
+    DCHECK(manifest);
+    DCHECK(!manifest->icons.empty());
   }
 
   // If the manifest specified icons, don't use the page icons.
-  const bool skip_page_favicons = !manifest.icons.empty();
+  const bool skip_page_favicons = manifest && !manifest->icons.empty();
 
   CheckForPlayStoreIntentOrGetIcons(manifest, std::move(web_app_info),
                                     std::move(icon_urls), for_installable_site,
@@ -510,7 +512,7 @@ void WebAppInstallTask::OnDidPerformInstallableCheck(
 }
 
 void WebAppInstallTask::CheckForPlayStoreIntentOrGetIcons(
-    const blink::Manifest& manifest,
+    base::Optional<blink::Manifest> manifest,
     std::unique_ptr<WebApplicationInfo> web_app_info,
     std::vector<GURL> icon_urls,
     ForInstallableSite for_installable_site,
@@ -520,8 +522,8 @@ void WebAppInstallTask::CheckForPlayStoreIntentOrGetIcons(
   // be sent to the store.
   if (base::FeatureList::IsEnabled(features::kApkWebAppInstalls) &&
       for_installable_site == ForInstallableSite::kYes &&
-      !background_installation_) {
-    for (const auto& application : manifest.related_applications) {
+      !background_installation_ && manifest) {
+    for (const auto& application : manifest->related_applications) {
       std::string id = base::UTF16ToUTF8(application.id.string());
       if (!base::EqualsASCII(application.platform.string(),
                              kChromeOsPlayPlatform)) {

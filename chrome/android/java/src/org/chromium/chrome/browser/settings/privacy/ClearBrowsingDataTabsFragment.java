@@ -49,7 +49,7 @@ public class ClearBrowsingDataTabsFragment extends Fragment {
             mFetcher.requestInfoAboutOtherFormsOfBrowsingHistory();
         } else {
             mFetcher = savedInstanceState.getParcelable(
-                    ClearBrowsingDataPreferences.CLEAR_BROWSING_DATA_FETCHER);
+                    ClearBrowsingDataFragment.CLEAR_BROWSING_DATA_FETCHER);
         }
 
         RecordUserAction.record("ClearBrowsingData_DialogCreated");
@@ -104,7 +104,7 @@ public class ClearBrowsingDataTabsFragment extends Fragment {
         super.onSaveInstanceState(outState);
         // mFetcher acts as a cache for important sites and history data. If the activity gets
         // suspended, we can save the cached data and reuse it when we are activated again.
-        outState.putParcelable(ClearBrowsingDataPreferences.CLEAR_BROWSING_DATA_FETCHER, mFetcher);
+        outState.putParcelable(ClearBrowsingDataFragment.CLEAR_BROWSING_DATA_FETCHER, mFetcher);
     }
 
     private static class ClearBrowsingDataPagerAdapter extends FragmentPagerAdapter {
@@ -126,13 +126,13 @@ public class ClearBrowsingDataTabsFragment extends Fragment {
         @Override
         public Fragment getItem(int position) {
             position = adjustIndexForDirectionality(position);
-            ClearBrowsingDataPreferences fragment;
+            ClearBrowsingDataFragment fragment;
             switch (position) {
                 case 0:
-                    fragment = new ClearBrowsingDataPreferencesBasic();
+                    fragment = new ClearBrowsingDataFragmentBasic();
                     break;
                 case 1:
-                    fragment = new ClearBrowsingDataPreferencesAdvanced();
+                    fragment = new ClearBrowsingDataFragmentAdvanced();
                     break;
                 default:
                     throw new RuntimeException("invalid position: " + position);

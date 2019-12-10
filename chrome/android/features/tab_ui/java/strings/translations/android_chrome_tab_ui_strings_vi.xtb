@@ -5,6 +5,7 @@
 <translation id="1181037720776840403">Xóa</translation>
 <translation id="125153950246128346">Nhấn để xem một tab khác</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> tab}other{<ph name="TABS_COUNT_MANY" /> tab}}</translation>
+<translation id="2569352796411618312">Đề xuất: Gần đây, bạn không sử dụng <ph name="NUMBER_OF_TABS" /> tab. Bạn có muốn đóng các tab này không?</translation>
 <translation id="257674075312929031">Nhóm</translation>
 <translation id="2613747923081026172">Tạo nhóm</translation>
 <translation id="2671423594960767771">Chia sẻ nhóm</translation>
@@ -23,6 +24,9 @@
 <translation id="6840760312327750441">Để nhóm các tab, hãy chạm và giữ một tab. Sau đó, kéo tab đó lên một tab khác.</translation>
 <translation id="7151209024774799310">Xóa tab khỏi nhóm</translation>
 <translation id="7559245342362162951">Hiển thị các tab của nhóm trong lưới toàn màn hình</translation>
+<translation id="7792771145871471484">Xem lại các đề xuất.</translation>
+<translation id="7966321538264951561">Đóng nội dung đề xuất.</translation>
+<translation id="83556505225171773">{TABS_COUNT,plural, =1{Đóng <ph name="TABS_COUNT_ONE" /> tab đã chọn}other{Đóng <ph name="TABS_COUNT_MANY" /> tab đã chọn}}</translation>
 <translation id="9150694013019234766">Chuyển đổi giữa các tab trong nhóm tab ở gần cuối màn hình</translation>
 <translation id="9169594135889675189">Thêm tab mới vào nhóm</translation>
 <translation id="959682366969460160">Sắp xếp gọn gàng</translation>

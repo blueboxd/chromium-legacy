@@ -51,7 +51,6 @@ void PostProcessMatches(const PasswordForm& pending,
 
   // Update existing matches in the password store.
   for (const auto* match : matches) {
-    DCHECK(pending.preferred);
     if (match->IsFederatedCredential() ||
         ArePasswordFormUniqueKeysEqual(pending, *match))
       continue;
@@ -63,24 +62,16 @@ void PostProcessMatches(const PasswordForm& pending,
       store->RemoveLogin(*match);
       continue;
     }
-    base::Optional<PasswordForm> form_to_update;
     const bool same_username = match->username_value == pending.username_value;
     if (same_username) {
       // Maybe update the password value.
       const bool form_has_old_password = match->password_value == old_password;
       if (form_has_old_password) {
-        form_to_update = *match;
-        form_to_update->password_value = pending.password_value;
+        PasswordForm form_to_update = *match;
+        form_to_update.password_value = pending.password_value;
+        SanitizeFormData(&form_to_update.form_data);
+        store->UpdateLogin(std::move(form_to_update));
       }
-    } else if (match->preferred && !match->is_public_suffix_match) {
-      // No other credential on the same security origin can be preferred but
-      // the most recent one.
-      form_to_update = *match;
-      form_to_update->preferred = false;
-    }
-    if (form_to_update) {
-      SanitizeFormData(&form_to_update->form_data);
-      store->UpdateLogin(std::move(*form_to_update));
     }
   }
 }

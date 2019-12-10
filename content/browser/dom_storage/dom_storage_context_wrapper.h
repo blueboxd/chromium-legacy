@@ -12,9 +12,10 @@
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
+#include "base/threading/sequence_bound.h"
 #include "components/services/storage/public/mojom/local_storage_control.mojom.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/dom_storage_context.h"
@@ -67,7 +68,8 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   DOMStorageContextWrapper(
       scoped_refptr<base::SequencedTaskRunner> mojo_task_runner,
       SessionStorageContextMojo* mojo_session_storage_context,
-      mojo::Remote<storage::mojom::LocalStorageControl> local_storage_control);
+      mojo::Remote<storage::mojom::LocalStorageControl> local_storage_control,
+      storage::SpecialStoragePolicy* special_storage_policy);
 
   storage::mojom::LocalStorageControl* GetLocalStorageControl();
 
@@ -136,6 +138,12 @@ class CONTENT_EXPORT DOMStorageContextWrapper
 
   void PurgeMemory(PurgeOption purge_option);
 
+  void OnStartupUsageRetrieved(
+      std::vector<storage::mojom::LocalStorageUsageInfoPtr> usage);
+  void EnsureLocalStorageOriginIsTracked(const GURL& origin);
+  void OnStoragePolicyChanged();
+  bool ShouldPurgeLocalStorageOnShutdown(const GURL& origin);
+
   // Keep all mojo-ish details together and not bleed them through the public
   // interface. The |mojo_session_state_| object is owned by this object, but
   // destroyed asynchronously on the |mojo_task_runner_|.
@@ -162,6 +170,30 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   // Connection to the partition's LocalStorageControl interface within the
   // Storage Service.
   mojo::Remote<storage::mojom::LocalStorageControl> local_storage_control_;
+
+  const scoped_refptr<storage::SpecialStoragePolicy> storage_policy_;
+
+  // This wrapper generally lives on the UI thread, but must observe the
+  // BrowserContext's SpecialStoragePolicy from the IO thread. This helper does
+  // that.
+  class StoragePolicyObserver;
+  base::SequenceBound<StoragePolicyObserver> storage_policy_observer_;
+
+  // Tracks the total set of origins which may currently have Local Storage data
+  // in this partition. This set is synchronized on startup of Local Storage and
+  // maintained as new storage areas are bound. This mapping is used to
+  // efficiently deduce what policy changes to push to the Local Storage
+  // implementation any time a SpecialStoragePolicy change is observed.
+  struct LocalStorageOriginState {
+    // Indicates that storage for this origin should be purged on shutdown.
+    bool should_purge_on_shutdown = false;
+
+    // Indicates the last value for |purge_on_shutdown| communicated to the
+    // Local Storage implementation.
+    bool will_purge_on_shutdown = false;
+  };
+  // NOTE: The GURL key is specifically an origin GURL.
+  std::map<GURL, LocalStorageOriginState> local_storage_origins_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageContextWrapper);
 };

@@ -105,6 +105,10 @@ class CORE_EXPORT FetchResponseData final
   void SetSideDataBlob(scoped_refptr<BlobDataHandle> blob) {
     side_data_blob_ = std::move(blob);
   }
+  bool LoadedWithCredentials() const { return loaded_with_credentials_; }
+  void SetLoadedWithCredentials(bool loaded_with_credentials) {
+    loaded_with_credentials_ = loaded_with_credentials;
+  }
 
   // If the type is Default, replaces |buffer_|.
   // If the type is Basic or CORS, replaces |buffer_| and
@@ -133,6 +137,7 @@ class CORE_EXPORT FetchResponseData final
   String cache_storage_cache_name_;
   WebHTTPHeaderSet cors_exposed_header_names_;
   scoped_refptr<BlobDataHandle> side_data_blob_;
+  bool loaded_with_credentials_;
 
   DISALLOW_COPY_AND_ASSIGN(FetchResponseData);
 };

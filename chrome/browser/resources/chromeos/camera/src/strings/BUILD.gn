@@ -67,7 +67,5 @@ grit("camera_strings") {
   ]
   output_dir = chrome_camera_app_dir
 
-  # Don't pollute the extension directory with stamp and .d files.
-  depfile_dir = target_out_dir
   resource_ids = ""
 }

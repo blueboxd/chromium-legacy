@@ -49,6 +49,7 @@ message CacheResponse {
   optional int64 response_time = 6;
   repeated string cors_exposed_header_names = 7;
   repeated string url_list = 8;
+  optional bool loaded_with_credentials = 9;
 }
 
 message CacheMetadata {

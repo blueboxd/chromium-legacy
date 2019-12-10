@@ -82,7 +82,8 @@ interface ContentDecryptionModule {
   Initialize(string key_system,
              url.mojom.Origin security_origin,
              CdmConfig cdm_config)
-      => (CdmPromiseResult result, int32 cdm_id, Decryptor? decryptor);
+      => (CdmPromiseResult result, int32 cdm_id,
+          pending_remote<Decryptor>? decryptor);
 
   // Provides a server certificate to be used to encrypt messages to the
   // license server.

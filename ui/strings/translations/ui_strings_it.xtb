@@ -8,7 +8,7 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 m}other{# m}}</translation>
 <translation id="1181037720776840403">Rimuovi</translation>
 <translation id="1201402288615127009">Avanti</translation>
-<translation id="1218444235442067213"><ph name="APP_NAME" />, App Play Store</translation>
+<translation id="1218444235442067213"><ph name="APP_NAME" />, app Play Store</translation>
 <translation id="1243314992276662751">Carica</translation>
 <translation id="1266864766717917324">Impossibile condividere <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
@@ -19,7 +19,7 @@
 <translation id="1368832886055348810">Da sinistra a destra</translation>
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1398853756734560583">Ingrandisci</translation>
-<translation id="1414271762428216854"><ph name="APP_NAME" />, App installata</translation>
+<translation id="1414271762428216854"><ph name="APP_NAME" />, app installata</translation>
 <translation id="1450753235335490080">Impossibile condividere <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">Hai eseguito questa ricerca in precedenza. Se elimini "<ph name="QUERY" />" dalla cronologia, la query verrà rimossa in modo permanente dal tuo account su tutti i tuoi dispositivi.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuto e }other{# minuti e }}</translation>
@@ -114,8 +114,8 @@
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> spostata nella cartella <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">TUTTE LE APP</translation>
 <translation id="4588090240171750605">Scorri a destra</translation>
-<translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, Valutazione a stelle <ph name="RATING_SCORE" /></translation>
-<translation id="4648249871170053485"><ph name="APP_NAME" />, Consiglio applicazione</translation>
+<translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, valutazione a stelle <ph name="RATING_SCORE" /></translation>
+<translation id="4648249871170053485"><ph name="APP_NAME" />, consiglio applicazione</translation>
 <translation id="4690510401873698237">Shelf in basso</translation>
 <translation id="4724120544754982507">Centro notifiche, <ph name="UNREAD_NOTIFICATION_COUNT" /> notifiche da leggere</translation>
 <translation id="4730374152663651037">USATE SPESSO</translation>
@@ -219,7 +219,7 @@
 <translation id="8179976553408161302">Invio</translation>
 <translation id="8210608804940886430">Pagina giù</translation>
 <translation id="8245914219290430011">Tabulazione</translation>
-<translation id="8247998213073982446"><ph name="APP_NAME" />, App</translation>
+<translation id="8247998213073982446"><ph name="APP_NAME" />, app</translation>
 <translation id="8259556432390118667">Valore del colore esadecimale</translation>
 <translation id="8328145009876646418">Margine sinistro</translation>
 <translation id="8331626408530291785">Scorri verso l'alto</translation>

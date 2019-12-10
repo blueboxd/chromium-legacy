@@ -214,6 +214,7 @@
 <translation id="2532336938189706096">Vefyfirlit</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> atriðum eytt</translation>
 <translation id="2536728043171574184">Skoðar ótengt afrit af þessari síðu</translation>
+<translation id="2537178555904266562">Villa við að samstilla aðgangsorð</translation>
 <translation id="2546283357679194313">Fótspor og gögn vefsvæða</translation>
 <translation id="2567385386134582609">MYND</translation>
 <translation id="257088987046510401">Þemu</translation>
@@ -231,6 +232,7 @@
 <translation id="2650751991977523696">Sækja skrá aftur?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# hljóðskrá}one{# hljóðskrá}other{# hljóðskrár}}</translation>
 <translation id="2653659639078652383">Senda</translation>
+<translation id="2669093958999339774">Komdu í veg fyrir að tilkynningar trufli þig og notaðu hljóðlátari skilaboð í staðinn</translation>
 <translation id="2677748264148917807">Yfirgefa</translation>
 <translation id="2704606927547763573">Afritað</translation>
 <translation id="2707726405694321444">Endurnýja síðu</translation>
@@ -248,7 +250,6 @@
 <translation id="281504910091592009">Þú getur skoðað og haft umsjón með vistuðum aðgangsorðum á <ph name="BEGIN_LINK" />Google reikningnum<ph name="END_LINK" /> þínum</translation>
 <translation id="2818669890320396765">Skráðu þig inn og kveiktu á samstillingu til að fá aðgang að bókamerkjunum þínum í öllum tækjum</translation>
 <translation id="2822354292072154809">Viltu örugglega endurstilla allar heimildir vefsvæða fyrir „<ph name="CHOSEN_OBJECT_NAME" />“?</translation>
-<translation id="2836148919159985482">Snertu bakkhnappinn til að hætta birtingu á öllum skjánum.</translation>
 <translation id="2842985007712546952">Yfirmappa</translation>
 <translation id="2858138569776157458">Vinsælast</translation>
 <translation id="2860954141821109167">Gakktu úr skugga um að símaforritið sé virkt í þessu tæki</translation>
@@ -358,14 +359,15 @@
 <translation id="3632295766818638029">Birta aðgangsorð</translation>
 <translation id="363596933471559332">Skrá þig sjálfkrafa inn á vefsvæði með vistuðum skilríkjum. Þegar slökkt er á þessum eiginleika verðurðu beðin(n) um staðfestingu í hvert sinn sem þú skráir þig inn á vefsvæði.</translation>
 <translation id="3658159451045945436">Ef þú endurstillir þurrkast út ferill gagnasparnaðar, þar með talinn listi yfir heimsótt vefsvæði.</translation>
-<translation id="3682730288090679318">Kveiktu á þessu til að koma í veg fyrir að vefsvæði geti beðið um að birta þér tilkynningar. Ef vefsvæði biður um að birta tilkynningar birtist upplýsingastika neðst á síðunni.</translation>
 <translation id="3692944402865947621">Ekki tókst að sækja <ph name="FILE_NAME" /> því að ekki næst í geymslustaðinn.</translation>
+<translation id="3701167022068948696">Laga núna</translation>
 <translation id="3714981814255182093">Opna leitarstikuna</translation>
 <translation id="3716182511346448902">Chrome stöðvaði þessa síðu því hún notar of mikið minni.</translation>
 <translation id="3730075448226062617">Til að leyfa Chrome að fá aðgang að hljóðnemanum þarftu einnig að kveikja á honum í <ph name="BEGIN_LINK" />stillingum Android<ph name="END_LINK" />.</translation>
 <translation id="3739899004075612870">Bókamerki bætt við <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Samstilling í bakgrunni</translation>
 <translation id="3749259744154402564">Ekki stutt</translation>
+<translation id="3767376082821709728">Ný vefsvæði sem þú heimsækir geta ekki sent þér tilkynningar</translation>
 <translation id="3771001275138982843">Ekki var hægt að sækja uppfærslu</translation>
 <translation id="3771033907050503522">Huliðsflipar</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Kveiktu á Bluetooth<ph name="END_LINK" /> til að leyfa pörun</translation>
@@ -591,7 +593,6 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="5414836363063783498">Staðfestir…</translation>
 <translation id="5423934151118863508">Síðurnar sem þú heimsækir oftast munu birtast hér</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB tiltæk</translation>
-<translation id="5427766642345310212">Skilið. Sjálfgefið birtast nýjar tilkynningabeiðnir hér.</translation>
 <translation id="543338862236136125">Breyta aðgangsorði</translation>
 <translation id="5433691172869980887">Notandanafn afritað</translation>
 <translation id="543509235395288790">Sækir <ph name="COUNT" /> skrár (<ph name="MEGABYTES" />).</translation>
@@ -678,7 +679,6 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="5962718611393537961">Ýttu til að draga saman</translation>
 <translation id="6000066717592683814">Nota Google áfram</translation>
 <translation id="6005538289190791541">Útbúið aðgangsorð</translation>
-<translation id="6019358956729171834">Hlaða fleiri…</translation>
 <translation id="6036057147555329831">Auka ICU</translation>
 <translation id="6039379616847168523">Stökkva í næsta flipa</translation>
 <translation id="6040143037577758943">Loka</translation>
@@ -774,6 +774,7 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="666731172850799929">Opna í <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Persónuverndartilkynning Chrome</translation>
 <translation id="6676840375528380067">Viltu hreinsa Chrome gögnin úr þessu tæki?</translation>
+<translation id="6689172468748959065">Prófílmyndir</translation>
 <translation id="6697492270171225480">Birta tillögur að svipuðum síðum þegar síða finnst ekki</translation>
 <translation id="6697947395630195233">Chrome þarf staðsetningaraðgang til að deila staðsetningu þinni með þessu vefsvæði.</translation>
 <translation id="6698801883190606802">Stjórna samstilltum gögnum</translation>
@@ -956,6 +957,7 @@ Vefsvæðið fær EKKI aðgang að myndavélinni. Myndir frá myndavélinni eru 
 <translation id="8035133914807600019">Ný mappa…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> dagar eftir</translation>
 <translation id="804335162455518893">SD-kort fannst ekki</translation>
+<translation id="8046278916126163020">Ný vefsvæði sem þú heimsækir geta beðið um að senda þér tilkynningar</translation>
 <translation id="805047784848435650">Byggt á vafraferlinum þínum</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB tiltæk</translation>
 <translation id="8058746566562539958">Opna í nýjum flipa Chrome</translation>

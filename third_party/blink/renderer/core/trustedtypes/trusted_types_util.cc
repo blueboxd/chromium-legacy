@@ -13,8 +13,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/node.h"
-#include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
@@ -41,10 +39,10 @@ enum TrustedTypeViolationKind {
   kTrustedHTMLAssignmentAndDefaultPolicyFailed,
   kTrustedScriptAssignmentAndDefaultPolicyFailed,
   kTrustedScriptURLAssignmentAndDefaultPolicyFailed,
-  kTextNodeScriptAssignment,
-  kTextNodeScriptAssignmentAndDefaultPolicyFailed,
   kNavigateToJavascriptURL,
   kNavigateToJavascriptURLAndDefaultPolicyFailed,
+  kScriptExecution,
+  kScriptExecutionAndDefaultPolicyFailed,
 };
 
 const char* GetMessage(TrustedTypeViolationKind kind) {
@@ -66,15 +64,6 @@ const char* GetMessage(TrustedTypeViolationKind kind) {
     case kTrustedScriptURLAssignmentAndDefaultPolicyFailed:
       return "This document requires 'TrustedScriptURL' assignment and the "
              "'default' policy failed to execute.";
-    case kTextNodeScriptAssignment:
-      return "This document requires 'TrustedScript' assignment, "
-             "and inserting a text node into a script element is equivalent to "
-             "a 'TrustedScript' assignment.";
-    case kTextNodeScriptAssignmentAndDefaultPolicyFailed:
-      return "This document requires 'TrustedScript' assignment. "
-             "Inserting a text node into a script element is equivalent to "
-             "a 'TrustedScript' assignment and the default policy failed to "
-             "execute.";
     case kNavigateToJavascriptURL:
       return "This document requires 'TrustedScript' assignment. "
              "Navigating to a javascript:-URL is equivalent to a "
@@ -82,8 +71,16 @@ const char* GetMessage(TrustedTypeViolationKind kind) {
     case kNavigateToJavascriptURLAndDefaultPolicyFailed:
       return "This document requires 'TrustedScript' assignment. "
              "Navigating to a javascript:-URL is equivalent to a "
-             "'TrustedScript' assignment and the default policy failed to"
+             "'TrustedScript' assignment and the 'default' policy failed to"
              "execute.";
+    case kScriptExecution:
+      return "This document requires 'TrustedScript' assignment. "
+             "This script element was modified without use of TrustedScript "
+             "assignment.";
+    case kScriptExecutionAndDefaultPolicyFailed:
+      return "This document requires 'TrustedScript' assignment. "
+             "This script element was modified without use of TrustedScript "
+             "assignment and the 'default' policy failed to execute.";
   }
   NOTREACHED();
   return "";
@@ -151,6 +148,75 @@ TrustedTypePolicy* GetDefaultPolicy(const ExecutionContext* execution_context) {
   return execution_context->GetTrustedTypes()
              ? execution_context->GetTrustedTypes()->defaultPolicy()
              : nullptr;
+}
+
+// Functionally identical to GetStringFromTrustedScript(const String&, ..), but
+// to be called outside of regular script execution. This is required for both
+// GetStringForScriptExecution & TrustedTypesCheckForJavascriptURLinNavigation,
+// and has a number of additional parameters to enable proper error reporting
+// for each case.
+String GetStringFromScriptHelper(
+    const String& script,
+    Document* doc,
+
+    // Parameters to customize error messages:
+    const char* element_name_for_exception,
+    const char* attribute_name_for_exception,
+    TrustedTypeViolationKind violation_kind,
+    TrustedTypeViolationKind violation_kind_when_default_policy_failed) {
+  bool require_trusted_type = RequireTrustedTypesCheck(doc);
+  if (!require_trusted_type)
+    return script;
+
+  // Set up JS context & friends.
+  //
+  // All other functions in here are expected to be called during JS execution,
+  // where naturally everything is properly set up for more JS execution.
+  // This one is called during navigation, and thus needs to do a bit more
+  // work. We need two JavaScript-ish things:
+  // - TrustedTypeFail expects an ExceptionState, which it will use to throw
+  //   an exception. In our case, we will always clear the exception (as there
+  //   is no user script to pass it to), and we only use this as a signalling
+  //   mechanism.
+  // - If the default policy applies, we need to execute the JS callback.
+  //   Unlike the various ScriptController::Execute* and ..::Eval* methods,
+  //   we are not executing a source String, but an already compiled callback
+  //   function.
+  v8::HandleScope handle_scope(doc->GetIsolate());
+  ScriptState::Scope script_state_scope(
+      ScriptState::From(static_cast<LocalWindowProxyManager*>(
+                            doc->GetFrame()->GetWindowProxyManager())
+                            ->MainWorldProxy()
+                            ->ContextIfInitialized()));
+  ExceptionState exception_state(
+      doc->GetIsolate(), ExceptionState::kUnknownContext,
+      element_name_for_exception, attribute_name_for_exception);
+
+  TrustedTypePolicy* default_policy = GetDefaultPolicy(doc);
+  if (!default_policy) {
+    if (TrustedTypeFail(violation_kind, doc, exception_state, script)) {
+      exception_state.ClearException();
+      return String();
+    }
+    return script;
+  }
+
+  TrustedScript* result =
+      default_policy->CreateScript(doc->GetIsolate(), script, exception_state);
+  if (exception_state.HadException()) {
+    exception_state.ClearException();
+    return String();
+  }
+
+  if (result->toString().IsNull()) {
+    if (TrustedTypeFail(violation_kind_when_default_policy_failed, doc,
+                        exception_state, script)) {
+      exception_state.ClearException();
+      return String();
+    }
+    return script;
+  }
+  return result->toString();
 }
 
 }  // namespace
@@ -410,95 +476,19 @@ String GetStringFromTrustedScriptURL(
   return result->toString();
 }
 
-Node* TrustedTypesCheckForHTMLScriptElement(Node* child,
-                                            Document* doc,
-                                            ExceptionState& exception_state) {
-  bool require_trusted_type = RequireTrustedTypesCheck(doc);
-  if (!require_trusted_type)
-    return child;
-
-  TrustedTypePolicy* default_policy = GetDefaultPolicy(doc);
-  if (!default_policy) {
-    return TrustedTypeFail(kTextNodeScriptAssignment, doc, exception_state,
-                           child->textContent())
-               ? nullptr
-               : child;
-  }
-
-  TrustedScript* result = default_policy->CreateScript(
-      doc->GetIsolate(), child->textContent(), exception_state);
-  if (exception_state.HadException()) {
-    return nullptr;
-  }
-
-  if (result->toString().IsNull()) {
-    return TrustedTypeFail(kTextNodeScriptAssignmentAndDefaultPolicyFailed, doc,
-                           exception_state, child->textContent())
-               ? nullptr
-               : child;
-  }
-
-  return Text::Create(*doc, result->toString());
+String CORE_EXPORT GetStringForScriptExecution(const String& script,
+                                               Document* doc) {
+  return GetStringFromScriptHelper(script, doc, "script", "text",
+                                   kScriptExecution,
+                                   kScriptExecutionAndDefaultPolicyFailed);
 }
 
 String TrustedTypesCheckForJavascriptURLinNavigation(
     const String& javascript_url,
     Document* doc) {
-  bool require_trusted_type = RequireTrustedTypesCheck(doc);
-  if (!require_trusted_type)
-    return javascript_url;
-
-  // Set up JS context & friends.
-  //
-  // All other functions in here are expected to be called during JS execution,
-  // where naturally everything is propertly set up for more JS execution.
-  // This one is called during navigation, and thus needs to do a bit more
-  // work. We need two JavaScript-ish things:
-  // - TrustedTypeFail expects an ExceptionState, which it will use to throw
-  //   an exception. In our case, we will always clear the exception (as there
-  //   is no user script to pass it to), and we only use this as a signalling
-  //   mechanism.
-  // - If the default policy applies, we need to execute the JS callback.
-  //   Unlike the various ScriptController::Execute* and ..::Eval* methods,
-  //   we are not executing a source String, but an already compiled callback
-  //   function.
-  v8::HandleScope handle_scope(doc->GetIsolate());
-  ScriptState::Scope script_state_scope(
-      ScriptState::From(static_cast<LocalWindowProxyManager*>(
-                            doc->GetFrame()->GetWindowProxyManager())
-                            ->MainWorldProxy()
-                            ->ContextIfInitialized()));
-  ExceptionState exception_state(
-      doc->GetIsolate(), ExceptionState::kUnknownContext, "Location", "href");
-
-  TrustedTypePolicy* default_policy = GetDefaultPolicy(doc);
-  if (!default_policy) {
-    if (TrustedTypeFail(kNavigateToJavascriptURL, doc, exception_state,
-                        javascript_url)) {
-      exception_state.ClearException();
-      return String();
-    }
-    return javascript_url;
-  }
-
-  TrustedScript* result = default_policy->CreateScript(
-      doc->GetIsolate(), javascript_url, exception_state);
-  if (exception_state.HadException()) {
-    exception_state.ClearException();
-    return String();
-  }
-
-  if (result->toString().IsNull()) {
-    if (TrustedTypeFail(kNavigateToJavascriptURLAndDefaultPolicyFailed, doc,
-                        exception_state, javascript_url)) {
-      exception_state.ClearException();
-      return String();
-    }
-    return javascript_url;
-  }
-  // TODO(vogelheim): Figure out whether we need to check whether this string
-  // parses as a URL, and whether we need to do this here.
-  return result->toString();
+  return GetStringFromScriptHelper(
+      javascript_url, doc, "Location", "href", kNavigateToJavascriptURL,
+      kNavigateToJavascriptURLAndDefaultPolicyFailed);
 }
 
 }  // namespace blink

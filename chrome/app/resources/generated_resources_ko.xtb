@@ -255,6 +255,7 @@
 <translation id="1353980523955420967">PPD를 찾을 수 없습니다. Chromebook이 온라인 상태인지 확인하고 다시 시도해 보세요.</translation>
 <translation id="1355466263109342573"><ph name="PLUGIN_NAME" />이(가) 차단되었습니다.</translation>
 <translation id="1358741672408003399">영문 철자 및 문법</translation>
+<translation id="1359923111303110318">Smart Lock으로 기기를 잠금 해제할 수 있습니다. 잠금 해제하려면 Enter 키를 누르세요.</translation>
 <translation id="1361164813881551742">직접 추가</translation>
 <translation id="1361655923249334273">사용되지 않음</translation>
 <translation id="1361872463926621533">시작 시 소리 재생</translation>
@@ -300,7 +301,6 @@
 <translation id="1422159345171879700">안전하지 않은 스크립트 로드</translation>
 <translation id="1426410128494586442">예</translation>
 <translation id="1426870617281699524">다시 시도를 클릭하고 컴퓨터에 표시된 메시지를 수락하세요</translation>
-<translation id="1426891891566455573"><ph name="DEVICE_NAME" />, 마우스</translation>
 <translation id="1427269577154060167">국가</translation>
 <translation id="142758023928848008">고정키 사용(연속으로 입력하여 단축키 사용)</translation>
 <translation id="1429300045468813835">모두 삭제됨</translation>
@@ -605,6 +605,7 @@
 <translation id="1832511806131704864">휴대전화 변경사항이 업데이트됨</translation>
 <translation id="1834503245783133039">다운로드 실패: <ph name="FILE_NAME" /></translation>
 <translation id="1834583737373831634">MIDI 기기</translation>
+<translation id="1835261175655098052">Linux 업그레이드 중</translation>
 <translation id="1838374766361614909">검색어 지우기</translation>
 <translation id="1841545962859478868">기기 관리자가 다음을 모니터링할 수 있습니다.</translation>
 <translation id="1841616161104323629">기기 기록이 누락되었습니다.</translation>
@@ -820,7 +821,6 @@
 <translation id="2157875535253991059">페이지가 현재 전체화면으로 전환되었습니다.</translation>
 <translation id="216169395504480358">Wi-Fi 추가</translation>
 <translation id="2162155940152307086">동기화 설정을 종료하면 동기화가 시작됩니다.</translation>
-<translation id="2162295688984026195"><ph name="DEVICE_NAME" />, 키보드 및 마우스 조합</translation>
 <translation id="2163470535490402084"><ph name="DEVICE_TYPE" /> 기기에 로그인하려면 인터넷에 연결하세요.</translation>
 <translation id="2165421703844373933">"Ok Google"이라고 말하여 어시스턴트에 액세스합니다. 배터리를 절약하려면 '사용(권장)'을 선택하세요. 기기가 전원에 연결되어 있거나 충전 중일 때만 어시스턴트가 응답합니다.</translation>
 <translation id="2166369534954157698">재빠른 갈색 여우가 게으른 개를 뛰어넘습니다.</translation>
@@ -1037,6 +1037,7 @@
 <translation id="2464089476039395325">HTTP 프록시</translation>
 <translation id="2468205691404969808">페이지를 방문하지 않더라도 쿠키를 통해 환경설정 저장</translation>
 <translation id="2468402215065996499">다마고치</translation>
+<translation id="2469259292033957819">저장된 프린터가 없습니다.</translation>
 <translation id="2469375675106140201">맞춤법 검사 맞춤설정</translation>
 <translation id="247051149076336810">파일 공유 URL</translation>
 <translation id="2470702053775288986">지원되지 않는 확장 프로그램이 사용 중지됨</translation>
@@ -1151,7 +1152,6 @@
 <translation id="2621713457727696555">잠김</translation>
 <translation id="26224892172169984">모든 사이트에서 프로토콜 처리 허용 안함</translation>
 <translation id="2624142942574147739">카메라와 마이크에 액세스하는 페이지입니다.</translation>
-<translation id="2624917159090553505"><ph name="DEVICE_NAME" />, 주변기기</translation>
 <translation id="2626799779920242286">나중에 다시 시도해 주세요.</translation>
 <translation id="2628770867680720336">ADB 디버깅을 사용 설정하려면 이 Chromebook을 초기화해야 합니다. <ph name="BEGIN_LINK_LEARN_MORE" />자세히 알아보기<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="2629227353894235473">Android 앱 개발</translation>
@@ -1189,6 +1189,7 @@
 <translation id="2665919335226618153">포맷 중에 오류가 발생했습니다.</translation>
 <translation id="2666990579225592931">게스트 창 열기</translation>
 <translation id="2667463864537187133">맞춤법 검사 관리</translation>
+<translation id="2669093958999339774">방해가 되는 알림 허용 요청 팝업 대신 눈에 덜 띄는 메시지를 사용합니다.</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" />이(가) Chrome 탭을 공유합니다.</translation>
 <translation id="2670429602441959756">이 페이지에는 아직 VR에서 지원되지 않는 기능이 있습니다. 종료합니다...</translation>
 <translation id="2671451824761031126">북마크와 설정을 가져왔습니다.</translation>
@@ -1234,6 +1235,7 @@
 <translation id="2725200716980197196">네트워크 연결 복원</translation>
 <translation id="2727633948226935816">다시 표시하지 않음</translation>
 <translation id="2727712005121231835">실제 크기</translation>
+<translation id="2730029791981212295">Linux 앱 및 파일 백업 중</translation>
 <translation id="273093730430620027">카메라에 액세스하는 페이지입니다.</translation>
 <translation id="2731392572903530958">닫은 창 다시 열기(&amp;E)</translation>
 <translation id="2731700343119398978">잠시 기다려 주세요...</translation>
@@ -1253,7 +1255,6 @@
 <translation id="2749756011735116528"><ph name="PRODUCT_NAME" />에 로그인</translation>
 <translation id="2749881179542288782">영문 철자 및 문법 검사</translation>
 <translation id="2751739896257479635">EAP 2단계 인증</translation>
-<translation id="2753765606311578230"><ph name="DEVICE_NAME" />, 차량 오디오 기기</translation>
 <translation id="2755367719610958252">접근성 기능 관리</translation>
 <translation id="275662540872599901">화면 꺼짐</translation>
 <translation id="2762441749940182211">카메라 차단됨</translation>
@@ -1270,6 +1271,7 @@
 <translation id="2776441542064982094">네트워크에 등록할 수 있는 기기가 없는 것 같습니다. 기기의 전원이 켜져 있고 인터넷에 연결되어 있다면 사용 설명서의 안내에 따라 등록해 보세요.</translation>
 <translation id="2780009105947267877">플러그인 VM 설정 중...</translation>
 <translation id="2781692009645368755">Google Pay</translation>
+<translation id="2782104745158847185">Linux 애플리케이션 설치 중 오류 발생</translation>
 <translation id="2783298271312924866">다운로드됨</translation>
 <translation id="2783321960289401138">바로가기 만들기...</translation>
 <translation id="2783829359200813069">암호화 유형 선택</translation>
@@ -1278,6 +1280,7 @@
 <translation id="2785873697295365461">파일 설명자</translation>
 <translation id="2787354132612937472">—</translation>
 <translation id="2788135150614412178">+</translation>
+<translation id="2789486458103222910">확인</translation>
 <translation id="2791952154587244007">오류가 발생했습니다. 이 기기에서 키오스크 애플리케이션을 자동 실행할 수 없습니다.</translation>
 <translation id="2792290659606763004">Android 앱을 삭제하시겠습니까?</translation>
 <translation id="2794233252405721443">차단된 사이트</translation>
@@ -1355,7 +1358,6 @@
 <translation id="2889064240420137087">다음으로 링크 열기...</translation>
 <translation id="2889925978073739256">샌드박스 처리되지 않은 플러그인 계속 차단</translation>
 <translation id="2893168226686371498">기본 브라우저</translation>
-<translation id="2894380829637873837"><ph name="DEVICE_NAME" />, 태블릿</translation>
 <translation id="2894757982205307093">그룹에 새 탭 추가</translation>
 <translation id="289644616180464099">SIM 카드가 잠겨 있습니다.</translation>
 <translation id="2896909745808647285"><ph name="FILE_NAME" /> 파일은 암호화되어 있으며 열리지 않도록 차단되었습니다.</translation>
@@ -1455,7 +1457,6 @@
 <translation id="3024374909719388945">24시간 단위 사용</translation>
 <translation id="3031417829280473749">X 요원</translation>
 <translation id="3031557471081358569">가져올 항목 선택:</translation>
-<translation id="3036527976720628348"><ph name="DEVICE_NAME" />, 휴대전화</translation>
 <translation id="3036546437875325427">Flash 사용</translation>
 <translation id="3037754279345160234">도메인 연결 구성을 파싱할 수 없습니다. 관리자에게 문의하세요.</translation>
 <translation id="3038612606416062604">수동으로 프린터 추가</translation>
@@ -1493,6 +1494,7 @@
 <translation id="3090871774332213558">'<ph name="DEVICE_NAME" />' 페어링됨</translation>
 <translation id="3092699946856346803">SIM을 삽입하고 다시 시도해 주세요.</translation>
 <translation id="3101709781009526431">날짜 및 시간</translation>
+<translation id="3103941660000130485">Linux 업그레이드 중 오류 발생</translation>
 <translation id="310671807099593501">사이트에서 블루투스를 사용하고 있습니다.</translation>
 <translation id="3115147772012638511">캐시를 기다리는 중...</translation>
 <translation id="3115580024857770654">모두 접기</translation>
@@ -1543,11 +1545,13 @@
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">로그인을 건너뛰고 <ph name="LINK_START" />게스트로 로그인<ph name="LINK_END" />할 수도 있습니다.</translation>
 <translation id="3172045848207518317">사이트에서 동영상 입력을 공유하는 중입니다.</translation>
+<translation id="3172808215939929606">페이지가 번역됨</translation>
 <translation id="3177909033752230686">페이지 언어:</translation>
 <translation id="3179982752812949580">텍스트 글꼴</translation>
 <translation id="3181954750937456830">세이프 브라우징(사용자와 사용자의 기기를 위험한 사이트로부터 보호)</translation>
 <translation id="3182749001423093222">맞춤법 검사</translation>
 <translation id="3183139917765991655">프로필 가져오기 도구</translation>
+<translation id="3188257591659621405">내 파일</translation>
 <translation id="3188465121994729530">이동 평균</translation>
 <translation id="3190558889382726167">비밀번호 저장됨</translation>
 <translation id="3192947282887913208">오디오 파일</translation>
@@ -1673,6 +1677,7 @@
 <translation id="338583716107319301">구분자</translation>
 <translation id="338691029516748599">네트워크 <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, 신호 강도 <ph name="SIGNAL_STRENGTH" />%, 관리자가 관리함, 연결</translation>
 <translation id="3387614642886316601">향상된 맞춤법 검사 기능 사용</translation>
+<translation id="3390741581549395454">Linux 앱 및 파일 백업이 완료되었습니다. 업그레이드가 곧 시작됩니다.</translation>
 <translation id="3396800784455899911">'동의 및 계속' 버튼을 클릭하면 이러한 Google 서비스와 관련하여 위에 설명된 처리 방식에 동의하는 것으로 간주됩니다.</translation>
 <translation id="3399432415385675819">알림이 사용 중지됩니다.</translation>
 <translation id="3400390787768057815"><ph name="WIDTH" />x<ph name="HEIGHT" />(<ph name="REFRESH_RATE" />Hz) - 인터레이스</translation>
@@ -1824,6 +1829,7 @@
 <translation id="3600792891314830896">소리를 재생하는 사이트 음소거</translation>
 <translation id="360180734785106144">새로운 기능이 출시되면 즉시 제공합니다.</translation>
 <translation id="3602290021589620013">미리보기</translation>
+<translation id="3603177256297531067">페이지를 번역할 수 없음</translation>
 <translation id="3603622770190368340">네트워크 인증서 받기</translation>
 <translation id="3605780360466892872">와이셔츠</translation>
 <translation id="3608576286259426129">사용자 이미지 미리보기</translation>
@@ -1832,6 +1838,7 @@
 <translation id="3612673635130633812">&lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt;에서 다운로드함</translation>
 <translation id="3613134908380545408"><ph name="FOLDER_NAME" /> 표시</translation>
 <translation id="3613422051106148727">새 탭에서 열기(&amp;O)</translation>
+<translation id="3614974189435417452">백업 완료</translation>
 <translation id="3615073365085224194">손가락으로 지문 센서를 터치하세요.</translation>
 <translation id="3615579745882581859"><ph name="FILE_NAME" />을(를) 스캔하는 중입니다.</translation>
 <translation id="3616741288025931835">인터넷 사용 기록 삭제(&amp;C)...</translation>
@@ -1892,7 +1899,7 @@
 <translation id="3688507211863392146">애플리케이션에서 연 파일 및 폴더에 쓰기</translation>
 <translation id="3688526734140524629">채널 변경</translation>
 <translation id="3688578402379768763">최신</translation>
-<translation id="3689300613247337921"><ph name="DEVICE_NAME" />, 컴퓨터</translation>
+<translation id="3688794912214798596">언어 변경...</translation>
 <translation id="3691231116639905343">키보드 앱</translation>
 <translation id="3691267899302886494"><ph name="HOST" />에서 화면을 공유하려고 합니다</translation>
 <translation id="3693415264595406141">비밀번호:</translation>
@@ -1919,6 +1926,7 @@
 <translation id="3714195043138862580">이 데모 기기는 프로비저닝 해제 상태로 설정되었습니다.</translation>
 <translation id="3714633008798122362">웹 캘린더</translation>
 <translation id="3719826155360621982">홈페이지</translation>
+<translation id="3721119614952978349">나와 Google의 관계</translation>
 <translation id="3722108462506185496">가상 머신 서비스를 시작하지 못했습니다. 다시 시도해 주세요.</translation>
 <translation id="3725367690636977613">쪽</translation>
 <translation id="3726137731714254362">여기에서 폴더를 삭제하면 공유가 중지되지만 파일이 삭제되지는 않습니다.</translation>
@@ -1955,6 +1963,7 @@
 <translation id="37613671848467444">시크릿 창에서 열기(&amp;I)</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{USB 기기 1개와 통신}other{USB 기기 #개와 통신}}</translation>
 <translation id="3765246971671567135">오프라인 데모 모드 정책을 읽을 수 없습니다.</translation>
+<translation id="3767376082821709728">새로 방문하는 사이트에서 알림을 보낼 수 없습니다.</translation>
 <translation id="3768037234834996183">환경설정 동기화 중...</translation>
 <translation id="377050016711188788">아이스크림</translation>
 <translation id="3771294271822695279">동영상 파일</translation>
@@ -1968,6 +1977,7 @@
 <translation id="3778740492972734840">개발자 도구(&amp;D)</translation>
 <translation id="3778868487658107119">질문을 하고 작업을 지시하세요. 나만의 Google이 언제든지 도와드립니다.</translation>
 <translation id="3780211714699334884">이 탭을 닫을 때까지 <ph name="ORIGIN" />에서 <ph name="FOLDERNAME" />의 파일을 수정할 수 있게 됩니다.</translation>
+<translation id="3780827508782506612">페이지가 번역됨</translation>
 <translation id="378312418865624974">이 컴퓨터의 고유 식별자 조회</translation>
 <translation id="3785308913036335955">앱 단축키 표시</translation>
 <translation id="3785727820640310185">이 사이트의 저장된 비밀번호</translation>
@@ -2067,6 +2077,7 @@
 <translation id="3909791450649380159">잘라내기(&amp;T)</translation>
 <translation id="3911824782900911339">새 탭 페이지</translation>
 <translation id="3915280005470252504">음성 검색</translation>
+<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> 다시 시도해 보세요. 남은 시도 횟수: <ph name="ATTEMPTS_LEFT" />회</translation>
 <translation id="3916445069167113093">이 형식의 파일은 컴퓨터를 손상시킬 수 있습니다. 그래도 <ph name="FILE_NAME" />을(를) 다운로드하시겠습니까?</translation>
 <translation id="3918972485393593704">Google에 세부정보 신고</translation>
 <translation id="3919145445993746351">어느 컴퓨터에서나 내 확장 프로그램을 사용하려면 동기화를 사용 설정하세요.</translation>
@@ -2322,7 +2333,6 @@
 <translation id="4295979599050707005">웹사이트, 앱, Chrome 확장 프로그램 및 Google Play에서 계정(<ph name="USER_EMAIL" />)을 사용하도록 확인하려면 다시 로그인하세요. 계정을 삭제할 수도 있습니다. <ph name="LINK_BEGIN" />자세히 알아보기<ph name="LINK_END" /></translation>
 <translation id="4296575653627536209">관리 대상 사용자 추가</translation>
 <translation id="4297219207642690536">다시 시작 및 재설정</translation>
-<translation id="4297322094678649474">언어 변경</translation>
 <translation id="4301671483919369635">이 페이지에서 파일을 수정할 수 있습니다.</translation>
 <translation id="4303079906735388947">보안 키의 새로운 PIN을 설정하세요.</translation>
 <translation id="4305402730127028764"><ph name="DEVICE_NAME" />(으)로 복사</translation>
@@ -2576,7 +2586,6 @@
 <translation id="4694024090038830733">프린터 구성은 관리자가 처리합니다.</translation>
 <translation id="4694604912444486114">원숭이</translation>
 <translation id="4697551882387947560">탐색 세션이 종료될 때</translation>
-<translation id="4698630591226285015"><ph name="DEVICE_NAME" />, 오디오 기기</translation>
 <translation id="4699172675775169585">캐시된 이미지 또는 파일</translation>
 <translation id="4699357559218762027">(자동 실행)</translation>
 <translation id="470074695271471509">로그아웃하여 완료하시겠습니까?</translation>
@@ -2639,6 +2648,7 @@
 <translation id="4804756772600045300">계속하면 Android 앱 생성과 테스트에 ADB 디버깅을 사용 설정합니다. ADB 디버깅은 Google의 확인을 거치지 않은 테스트 앱의 설치를 허용합니다.</translation>
 <translation id="4804818685124855865">연결 해제</translation>
 <translation id="4804827417948292437">아보카도</translation>
+<translation id="4805077164141082536">업그레이드하기 전에 현재 Linux 컨테이너를 백업하는 것이 좋습니다.</translation>
 <translation id="4807098396393229769">카드 명의</translation>
 <translation id="4808319664292298116"><ph name="DOMAIN" />에서 VR을 시작하시겠습니까?</translation>
 <translation id="4808667324955055115">팝업 차단됨</translation>
@@ -2738,6 +2748,7 @@
 <translation id="4933484234309072027"><ph name="URL" />에 삽입</translation>
 <translation id="493571969993549666">관리 대상 사용자 추가</translation>
 <translation id="4939805055470675027"><ph name="CARRIER_NAME" />에 연결할 수 없음</translation>
+<translation id="4940364377601827259">저장할 수 있는 프린터가 <ph name="PRINTER_COUNT" />대 있습니다.</translation>
 <translation id="4941246025622441835">다음과 같이 기기를 엔터프라이즈 관리용으로 등록할 때 이 기기 요청을 사용합니다.</translation>
 <translation id="4941627891654116707">글꼴 크기</translation>
 <translation id="494286511941020793">프록시 설정 도움말</translation>
@@ -2767,7 +2778,6 @@
 <translation id="4977942889532008999">액세스 확인</translation>
 <translation id="4980805016576257426">확장 프로그램에 멀웨어가 포함되어 있습니다.</translation>
 <translation id="4981449534399733132">동기화된 모든 기기 및 Google 계정에서 인터넷 사용 기록을 삭제하려면 <ph name="BEGIN_LINK" />로그인<ph name="END_LINK" />하세요.</translation>
-<translation id="4986357476502426173"><ph name="DEVICE_NAME" />, 동영상 기기</translation>
 <translation id="4986728572522335985">PIN을 비롯하여 보안 키에 저장된 모든 데이터가 삭제됩니다</translation>
 <translation id="4988526792673242964">페이지</translation>
 <translation id="49896407730300355">반시계 방향으로 회전(&amp;O)</translation>
@@ -2811,6 +2821,7 @@
 <translation id="5052499409147950210">사이트 수정</translation>
 <translation id="5053604404986157245">임의로 생성된 TPM 비밀번호는 사용할 수 없습니다. Powerwash 이후에는 정상입니다.</translation>
 <translation id="5057110919553308744">확장 프로그램을 클릭할 경우</translation>
+<translation id="5060332552815861872">저장할 수 있는 프린터가 1대 있습니다.</translation>
 <translation id="5061347216700970798">{NUM_BOOKMARKS,plural, =1{폴더에 북마크가 있습니다. 삭제하시겠습니까?}other{폴더에 #개의 북마크가 있습니다. 삭제하시겠습니까?}}</translation>
 <translation id="5062930723426326933">로그인하지 못했습니다. 인터넷에 연결한 후 다시 시도하세요.</translation>
 <translation id="5063480226653192405">사용</translation>
@@ -2982,6 +2993,7 @@
 <translation id="5308380583665731573">연결</translation>
 <translation id="5310281978693206542">기기로 링크 전송</translation>
 <translation id="5311304534597152726">다음으로 로그인</translation>
+<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> 다시 시도해 보세요.</translation>
 <translation id="5315738755890845852">불필요한 중괄호: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">주소</translation>
 <translation id="5317780077021120954">저장</translation>
@@ -3108,7 +3120,6 @@
 <translation id="5495466433285976480">다음에 다시 시작할 때 모든 로컬 사용자, 파일, 데이터 및 기타 설정이 삭제됩니다. 모든 사용자는 다시 로그인해야 합니다.</translation>
 <translation id="5495597166260341369">디스플레이를 켜진 상태로 유지</translation>
 <translation id="5496587651328244253">정리</translation>
-<translation id="549673810209994709">이 페이지를 번역할 수 없습니다.</translation>
 <translation id="5499313591153584299">이 파일은 컴퓨터에 해로울 수 있습니다.</translation>
 <translation id="5502500733115278303">Firefox에서 가져온 북마크</translation>
 <translation id="5505307013568720083">잉크 부족</translation>
@@ -3203,6 +3214,7 @@
 <translation id="5620568081365989559">DevTools에서 <ph name="FOLDER_PATH" />에 대한 완전한 액세스를 요청합니다. 민감한 정보를 노출하지 않도록 주의하시기 바랍니다.</translation>
 <translation id="5620612546311710611">사용 통계</translation>
 <translation id="5620655347161642930">비밀번호 내보내기...</translation>
+<translation id="5621137386706841383">최대 30분 정도 걸릴 수 있습니다.</translation>
 <translation id="5623282979409330487">사이트에서 움직임 감지 센서에 액세스하는 중입니다.</translation>
 <translation id="5623842676595125836">로그</translation>
 <translation id="5624120631404540903">비밀번호 관리</translation>
@@ -3224,6 +3236,7 @@
 <translation id="5646558797914161501">사업가</translation>
 <translation id="5648166631817621825">지난 7일</translation>
 <translation id="5649053991847567735">자동 다운로드</translation>
+<translation id="5653154844073528838">저장된 프린터가 <ph name="PRINTER_COUNT" />대 있습니다.</translation>
 <translation id="5656845498778518563">Google에 의견 보내기</translation>
 <translation id="5657667036353380798">외부 확장 프로그램을 사용하려면 Chrome 버전 <ph name="MINIMUM_CHROME_VERSION" /> 이상이 설치되어 있어야 합니다.</translation>
 <translation id="5658415415603568799">보안을 강화하기 위해 Smart Lock에서 20시간 후에 비밀번호를 입력하라는 메시지를 표시합니다.</translation>
@@ -3264,7 +3277,6 @@
 <translation id="5711983031544731014">잠금 해제할 수 없습니다. 비밀번호를 입력하세요.</translation>
 <translation id="5713723565110096165">잘못된 PIN입니다. 남은 재시도 횟수는 <ph name="RETRIES" />회입니다.</translation>
 <translation id="5715711091495208045">플러그인 중개인: <ph name="PLUGIN_NAME" /></translation>
-<translation id="5716052956047449618"><ph name="DEVICE_NAME" />, 모뎀</translation>
 <translation id="5719603411793408026">기본 검색엔진</translation>
 <translation id="5720705177508910913">현재 사용자</translation>
 <translation id="572155275267014074">Android 설정</translation>
@@ -3393,6 +3405,7 @@
 <translation id="5895138241574237353">다시 시작</translation>
 <translation id="5895187275912066135">발급 날짜</translation>
 <translation id="5900302528761731119">Google 프로필 사진</translation>
+<translation id="5900358982890952556">Linux 업그레이드(베타)</translation>
 <translation id="5901494423252125310">프린터 덮개 열림</translation>
 <translation id="5901630391730855834">노란색</translation>
 <translation id="5906655207909574370">업데이트가 거의 완료되었습니다. 업데이트를 완료하려면 기기를 다시 시작하세요.</translation>
@@ -3417,6 +3430,7 @@
 <translation id="5925147183566400388">인증 업무 준칙 URI</translation>
 <translation id="592880897588170157">Chrome에서 PDF 파일을 자동으로 여는 대신 다운로드</translation>
 <translation id="5931146425219109062">방문하는 웹사이트의 전체 데이터 조회 및 변경</translation>
+<translation id="5932124097031739492">Linux가 업그레이드되었습니다.</translation>
 <translation id="5932224571077948991">사이트에서 방해가 되거나 사용자를 현혹하는 광고를 표시함</translation>
 <translation id="59324397759951282"><ph name="MANUFACTURER_NAME" />의 USB 기기</translation>
 <translation id="5932881020239635062">일련번호</translation>
@@ -3663,6 +3677,7 @@
 <translation id="6277105963844135994">네트워크 시간 초과</translation>
 <translation id="6277518330158259200">스크린샷 캡쳐하기(&amp;A)</translation>
 <translation id="6278057325678116358">GTK+ 사용</translation>
+<translation id="6278776436938569440">위치 변경</translation>
 <translation id="6279183038361895380">|<ph name="ACCELERATOR" />|을(를) 눌러 커서 표시</translation>
 <translation id="6280215091796946657">다른 계정으로 로그인</translation>
 <translation id="6280912520669706465">ARC</translation>
@@ -3754,9 +3769,6 @@
 <translation id="6418160186546245112"><ph name="IDS_SHORT_PRODUCT_NAME" />의 이전 설치 버전으로 되돌리는 중</translation>
 <translation id="6418481728190846787">모든 앱에 대한 액세스 완전히 삭제</translation>
 <translation id="6418511932144861495">중요한 업데이트 설치</translation>
-<translation id="6419288379019356534"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />에서 관리하는 기기입니다.
-    <ph name="LINE_BREAK" />
-    '다음'을 클릭하여 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 계정에 로그인하세요.</translation>
 <translation id="6419546358665792306">압축해제된 확장 프로그램을 로드합니다.</translation>
 <translation id="642469772702851743">소유자가 이 기기(SN: <ph name="SERIAL_NUMBER" />)를 잠갔습니다.</translation>
 <translation id="6426200009596957090">ChromeVox 설정 열기</translation>
@@ -3836,7 +3848,6 @@
 <translation id="6532106788206463496">변경사항 저장</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />참고:<ph name="END_BOLD" /> 데이터 수집으로 인해 성능이 감소할 수 있으므로 확신이 있는 경우 또는 요청을 받은 경우에만 사용하도록 설정합니다.</translation>
 <translation id="6541638731489116978">움직임 감지 센서 액세스가 차단된 사이트입니다.</translation>
-<translation id="6542922424766292144"><ph name="DEVICE_NAME" />, 키보드</translation>
 <translation id="6545665334409411530">반복 속도</translation>
 <translation id="6545864417968258051">블루투스 검색</translation>
 <translation id="6545867563032584178">Mac 시스템 환경설정에서 마이크가 사용 중지되었습니다</translation>
@@ -3972,6 +3983,7 @@
 <translation id="6757101664402245801">URL을 복사했습니다</translation>
 <translation id="6758056191028427665">개선할 점이나 격려하고 싶은 점을 알려주세요.</translation>
 <translation id="6759193508432371551">초기화</translation>
+<translation id="6767566652486411142">다른 언어 선택...</translation>
 <translation id="6767639283522617719">도메인에 가입할 수 없습니다. 조직 단위에 맞는 설정인지 확인하세요.</translation>
 <translation id="6769712124046837540">프린터 추가 중...</translation>
 <translation id="6770664076092644100">NFC를 통해 인증</translation>
@@ -4052,7 +4064,6 @@
 <translation id="6876155724392614295">자전거</translation>
 <translation id="6876469544038980967">도움이 되지 않음</translation>
 <translation id="6878422606530379992">센서가 허용됨</translation>
-<translation id="6878665006737889642">설치 다시 시도</translation>
 <translation id="6880587130513028875">이 페이지에서 이미지가 차단되었습니다.</translation>
 <translation id="6883319974225028188">시스템에서 기기 구성을 저장하지 못했습니다.</translation>
 <translation id="6885771755599377173">시스템 정보 미리보기</translation>
@@ -4089,6 +4100,7 @@
 <translation id="6930036377490597025">외장 보안 키 또는 내장 센서</translation>
 <translation id="6935286146439255109">용지함 없음</translation>
 <translation id="693807610556624488">기기(<ph name="DEVICE_NAME" />)의 쓰기 작업이 최대 속성 길이를 초과합니다.</translation>
+<translation id="6938386202199793006">저장된 프린터가 1대 있습니다.</translation>
 <translation id="6941937518557314510"><ph name="TOKEN_NAME" />에 로그인하여 인증서로 <ph name="HOST_NAME" />에서 인증을 받으세요.</translation>
 <translation id="6943176775188458830">인쇄 취소</translation>
 <translation id="6943836128787782965">HTTP 실패</translation>
@@ -4287,7 +4299,6 @@
 <translation id="7216409898977639127">이동통신사</translation>
 <translation id="7216595297012131718">원하는 대로 언어를 정렬하세요.</translation>
 <translation id="7220019174139618249">'<ph name="FOLDER" />'(으)로 비밀번호를 내보낼 수 없음</translation>
-<translation id="7220023250700248346"><ph name="DEVICE_NAME" />, 조이스틱</translation>
 <translation id="722055596168483966">Google 서비스 맞춤설정</translation>
 <translation id="7221855153210829124">알림 표시</translation>
 <translation id="7221869452894271364">페이지 새로고침</translation>
@@ -4316,7 +4327,6 @@
 <translation id="725109152065019550">관리자가 계정에서 외부 저장소를 사용 중지했습니다.</translation>
 <translation id="7251346854160851420">기본 배경화면</translation>
 <translation id="7253521419891527137">자세히 알아보기(&amp;L)</translation>
-<translation id="7254554697254365959">페이지를 번역할 수 없습니다.</translation>
 <translation id="7254951428499890870">'<ph name="APP_NAME" />'을(를) 진단 모드로 실행하시겠습니까?</translation>
 <translation id="7255002516883565667">현재 이 기기에서만 사용할 수 있는 카드가 1장 있습니다.</translation>
 <translation id="7255935316994522020">적용</translation>
@@ -4405,7 +4415,6 @@
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">이동 시 마우스 커서 강조표시</translation>
 <translation id="7377451353532943397">계속해서 센서 액세스 차단</translation>
-<translation id="7378627244592794276">안함</translation>
 <translation id="73786666777299047">Chrome 웹 스토어 열기</translation>
 <translation id="7378812711085314936">데이터 연결 가져오기</translation>
 <translation id="7378962964415201590">새 스마트폰 페어링</translation>
@@ -4540,7 +4549,6 @@
 <translation id="7584578941316704630">파일을 열기 전에 검사하시겠습니까?</translation>
 <translation id="7586498138629385861">Chrome 앱이 열려 있을 때 Chrome이 계속 실행됩니다.</translation>
 <translation id="7589461650300748890">주의하세요.</translation>
-<translation id="7591957897535945411">페이지가 번역되었습니다.</translation>
 <translation id="7593653750169415785">알림을 몇 번 거부했으므로 자동으로 차단되었습니다.</translation>
 <translation id="7595453277607160340">Android 앱을 사용하고 <ph name="DEVICE_TYPE" /> 기기가 제대로 작동하도록 하려면 다시 로그인하고 업데이트하세요.</translation>
 <translation id="7595547011743502844"><ph name="ERROR" />(오류 코드: <ph name="ERROR_CODE" />).</translation>
@@ -4641,7 +4649,6 @@
 <translation id="7728570244950051353">절전 모드 해제 시 잠금 화면</translation>
 <translation id="7728668285692163452">채널 변경 추후 적용</translation>
 <translation id="7730449930968088409">화면의 콘텐츠 캡쳐</translation>
-<translation id="7731119595976065702">다른 언어...</translation>
 <translation id="7732111077498238432">네트워크는 정책을 통해 제어됩니다</translation>
 <translation id="7737238973539693982">Linux(베타) 삭제</translation>
 <translation id="7737456446569756884">이 기기는 <ph name="MONTH_AND_YEAR" />까지 자동 소프트웨어 및 보안 업데이트를 받습니다.</translation>
@@ -4867,7 +4874,6 @@
 <translation id="8005600846065423578"><ph name="HOST" />에서 클립보드를 볼 수 있도록 항상 허용</translation>
 <translation id="8008356846765065031">인터넷 연결이 끊겼습니다. 인터넷 연결을 확인하세요.</translation>
 <translation id="8009225694047762179">비밀번호 관리</translation>
-<translation id="8012382203418782830">페이지가 번역되었습니다.</translation>
 <translation id="8012647001091218357">현재 부모님께 연락할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="8013993649590906847">이미지에 유용한 설명이 없으면 Chrome에서 자동으로 설명을 제공하려고 시도합니다. 설명을 생성하기 위해 이미지가 Google로 전송됩니다.</translation>
 <translation id="8014154204619229810">업데이터가 현재 실행 중입니다. 잠시 후에 새로고침하여 다시 확인해 주세요.</translation>
@@ -4900,6 +4906,7 @@
 <translation id="8044899503464538266">느리게</translation>
 <translation id="8045253504249021590">Google 대시보드를 통해 동기화가 중지되었습니다.</translation>
 <translation id="8045923671629973368">애플리케이션 ID 또는 웹 스토어 URL 입력</translation>
+<translation id="8046278916126163020">새로 방문하는 사이트에서 알림 표시 허용을 요청할 수 있습니다.</translation>
 <translation id="804786196054284061">최종 사용자 라이선스 계약</translation>
 <translation id="8049705080247101012">Google에서 '<ph name="EXTENSION_NAME" />'을(를) 악성 프로그램으로 분류했으며 설치가 금지되었습니다</translation>
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>
@@ -4910,6 +4917,7 @@
 <translation id="8054921503121346576">USB 키보드 연결됨</translation>
 <translation id="8058655154417507695">유효기간 연도</translation>
 <translation id="8059417245945632445">기기 검사(&amp;I)</translation>
+<translation id="8059456211585183827">저장할 수 있는 프린터가 없습니다.</translation>
 <translation id="8063235345342641131">기본 녹색 아바타</translation>
 <translation id="8064671687106936412">키:</translation>
 <translation id="8068253693380742035">로그인하려면 터치하세요.</translation>
@@ -5014,6 +5022,7 @@
 <translation id="8213577208796878755">사용 가능한 다른 기기가 1개 있습니다.</translation>
 <translation id="8214489666383623925">파일 열기...</translation>
 <translation id="8214962590150211830">이 사용자 삭제</translation>
+<translation id="8215295261562449873">Linux를 업그레이드하기 전에 앱과 파일을 다운로드 폴더에 백업합니다.</translation>
 <translation id="8217399928341212914">여러 파일을 다운로드하지 못하도록 계속 차단</translation>
 <translation id="8221491193165283816">기본적으로 알림을 차단하는 중입니다. 이 사이트의 알림을 허용하려면 여기를 클릭하세요.</translation>
 <translation id="8225265270453771718">애플리케이션 창 공유</translation>
@@ -5185,6 +5194,7 @@
 <translation id="8465252176946159372">잘못된 값입니다.</translation>
 <translation id="8465444703385715657"><ph name="PLUGIN_NAME" />에 실행 권한이 필요합니다.</translation>
 <translation id="8466417995783206254">이 탭에서는 PIP 모드로 동영상이 재생되고 있습니다.</translation>
+<translation id="8467326454809944210">다른 언어 선택</translation>
 <translation id="8468750959626135884">Android 휴대전화로 <ph name="DEVICE_TYPE" />을(를) 잠금 해제하세요.</translation>
 <translation id="8470214316007448308">다른 사용자</translation>
 <translation id="8470513973197838199"><ph name="ORIGIN" />의 저장된 비밀번호</translation>
@@ -5219,6 +5229,7 @@
 <translation id="8523849605371521713">정책에 의해 추가</translation>
 <translation id="8524783101666974011">Google 계정에 카드 추가</translation>
 <translation id="8525306231823319788">전체화면</translation>
+<translation id="8526666462501866815">Linux 업그레이드 취소 중</translation>
 <translation id="8528074251912154910">언어 추가</translation>
 <translation id="8528962588711550376">로그인 중입니다.</translation>
 <translation id="8529925957403338845">인스턴트 테더링 연결 실패</translation>
@@ -5226,6 +5237,7 @@
 <translation id="8535005006684281994">Netscape Certificate Renewal URL</translation>
 <translation id="8538358978858059843">Cast에 클라우드 서비스를 사용하시겠습니까?</translation>
 <translation id="8539727552378197395">허용 안함(Http만)</translation>
+<translation id="8539766201049804895">업그레이드</translation>
 <translation id="8540608333167683902">네트워크 <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, 신호 강도 <ph name="SIGNAL_STRENGTH" />%, 세부정보</translation>
 <translation id="8543556556237226809">질문이 있으신가요? 프로필 관리자에게 문의하세요.</translation>
 <translation id="8545575359873600875">비밀번호를 확인할 수 없습니다. 이 관리 대상 사용자의 관리자가 최근에 비밀번호를 변경했을 수 있습니다. 비밀번호를 변경했다면 다음에 로그인할 때 새로운 비밀번호를 사용해야 합니다. 이전 비밀번호를 사용해 보세요.</translation>
@@ -5272,7 +5284,6 @@
 <translation id="8608618451198398104">Kerberos 티켓 추가</translation>
 <translation id="8609465669617005112">위로 이동</translation>
 <translation id="8610103157987623234">잘못된 형식입니다. 다시 시도하세요.</translation>
-<translation id="8613368722576151038"><ph name="DEVICE_NAME" />, 게임패드</translation>
 <translation id="8615618338313291042">시크릿 모드 애플리케이션:<ph name="APP_NAME" /></translation>
 <translation id="8619803522055190423">그림자</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
@@ -5543,7 +5554,6 @@
 <translation id="895347679606913382">다운로드 시작...</translation>
 <translation id="8956941634583033512">{0,plural, =1{1일 이내로 업데이트해 주세요}other{#일 이내로 업데이트해 주세요}}</translation>
 <translation id="895944840846194039">자바스크립트 메모리</translation>
-<translation id="8961448405689538648"><ph name="DEVICE_NAME" />, 알 수 없는 기기 유형</translation>
 <translation id="8962083179518285172">세부정보 숨기기</translation>
 <translation id="8962918469425892674">사이트에서 모션 센서 또는 조도 센서를 사용 중입니다.</translation>
 <translation id="8965037249707889821">이전 비밀번호 입력</translation>
@@ -5592,7 +5602,6 @@
 <translation id="9023015617655685412">현재 탭을 북마크에 추가</translation>
 <translation id="9024127637873500333">새 탭에서 열기(&amp;O)</translation>
 <translation id="9024158959543687197">공유를 마운트하는 중에 오류가 발생했습니다. 파일 공유 URL을 확인한 후 다시 시도해 주세요.</translation>
-<translation id="9024885274934357065">기기가 Smart Lock으로 잠금 해제됩니다. 잠금 해제하려면 Enter 키를 누르세요.</translation>
 <translation id="9026731007018893674">다운로드</translation>
 <translation id="9026852570893462412">이 과정은 몇 분 정도 걸릴 수 있습니다. 가상 머신을 다운로드합니다.</translation>
 <translation id="9027459031423301635">새 탭에서 링크 열기(&amp;T)</translation>
@@ -5695,7 +5704,6 @@
 <translation id="9179734824669616955"><ph name="DEVICE_TYPE" />에 Linux(베타) 설치</translation>
 <translation id="9180281769944411366">이 과정은 몇 분 정도 걸릴 수 있습니다. Linux 컨테이너를 시작합니다.</translation>
 <translation id="9180380851667544951">사이트에서 화면을 공유할 수 있습니다.</translation>
-<translation id="9188441292293901223"><ph name="DEVICE_TYPE" />을(를) 잠금 해제하려면 휴대전화의 Android를 최신 버전으로 업데이트하세요.</translation>
 <translation id="9188732951356337132">사용 및 진단 데이터를 보냅니다. 이 기기는 현재 진단, 기기 및 앱 사용 데이터를 Google에 자동으로 보내고 있습니다. 이 데이터는 자녀를 식별하는 용도로 사용되지 않으며, 시스템 및 앱 안정성 등을 개선하는 데 활용됩니다. 일부 수집 데이터는 Google 앱과 파트너(Android 개발자 등)에게도 도움을 줍니다. 자녀의 추가 웹 및 앱 활동이 사용 설정되어 있다면 이 데이터가 자녀의 Google 계정에 저장될 수 있습니다. <ph name="BEGIN_LINK2" />자세히 알아보기<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPSec + 사전 공유 키</translation>
 <translation id="920045321358709304"><ph name="SEARCH_ENGINE" /> 검색</translation>
@@ -5728,7 +5736,6 @@
 <translation id="939598580284253335">암호 입력</translation>
 <translation id="939736085109172342">새 폴더</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" />에서 Chrome 탭과 오디오를 공유 중입니다.</translation>
-<translation id="945166830402967374">조직의 기기 관리자에게 문의하세요.</translation>
 <translation id="945522503751344254">의견 보내기</translation>
 <translation id="947329552760389097">요소 검사(&amp;I)</translation>
 <translation id="952992212772159698">활성화되지 않음</translation>

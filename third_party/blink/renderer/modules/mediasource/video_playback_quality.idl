@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 [
-    RuntimeEnabled=MediaSourceExperimental
+    RuntimeEnabled=VideoPlaybackQuality
 ] interface VideoPlaybackQuality {
     readonly attribute DOMHighResTimeStamp creationTime;
     readonly attribute unsigned long totalVideoFrames;

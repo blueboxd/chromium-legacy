@@ -38,6 +38,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/test/database_test_utils.h"
@@ -633,16 +634,35 @@ TEST_F(HistoryServiceTest, HistoryDBTaskCanceled) {
   ASSERT_FALSE(done_invoked);
 }
 
-// Helper to add a page with specified days back in the past.
-void AddPageInThePast(HistoryService* history,
-                      const std::string& url_spec,
-                      int days_back) {
+// Helper to add a page at specified point of time.
+void AddPageAtTime(HistoryService* history,
+                   const std::string& url_spec,
+                   base::Time time_in_the_past) {
   const GURL url(url_spec);
-  base::Time time_in_the_past =
-      base::Time::Now() - base::TimeDelta::FromDays(days_back);
   history->AddPage(url, time_in_the_past, nullptr, 0, GURL(),
                    history::RedirectList(), ui::PAGE_TRANSITION_LINK,
                    history::SOURCE_BROWSED, false);
+}
+
+void AddPageInThePast(HistoryService* history,
+                      const std::string& url_spec,
+                      int days_back) {
+  base::Time time_in_the_past =
+      base::Time::Now() - base::TimeDelta::FromDays(days_back);
+  AddPageAtTime(history, url_spec, time_in_the_past);
+}
+
+// Helper to add a page with specified days back in the past.
+base::Time GetTimeInThePast(base::Time base_time,
+                            int days_back,
+                            int hours_since_midnight,
+                            int minutes = 0,
+                            int seconds = 0) {
+  base::Time past_midnight = MidnightNDaysLater(base_time, -days_back);
+
+  return past_midnight + base::TimeDelta::FromHours(hours_since_midnight) +
+         base::TimeDelta::FromMinutes(minutes) +
+         base::TimeDelta::FromSeconds(seconds);
 }
 
 // Helper to contain a callback and run loop logic.
@@ -658,6 +678,58 @@ int GetMonthlyHostCountHelper(HistoryService* history,
       tracker);
   run_loop.Run();
   return count;
+}
+
+DomainDiversityResults GetDomainDiversityHelper(
+    HistoryService* history,
+    base::Time begin_time,
+    base::Time end_time,
+    DomainMetricBitmaskType metric_type_bitmask,
+    base::CancelableTaskTracker* tracker) {
+  base::RunLoop run_loop;
+  base::TimeDelta dst_rounding_offset = base::TimeDelta::FromHours(4);
+
+  // Compute the number of days to report metrics for.
+  int number_of_days = 0;
+  if (begin_time < end_time) {
+    number_of_days = (end_time.LocalMidnight() - begin_time.LocalMidnight() +
+                      dst_rounding_offset)
+                         .InDaysFloored();
+  }
+
+  DomainDiversityResults results;
+  history->GetDomainDiversity(
+      end_time, number_of_days, metric_type_bitmask,
+      base::BindLambdaForTesting([&](DomainDiversityResults result) {
+        results = result;
+        run_loop.Quit();
+      }),
+      tracker);
+  run_loop.Run();
+  return results;
+}
+
+// Test one domain visit metric. A negative value indicates that an invalid
+// metric is expected.
+void TestDomainMetric(const base::Optional<DomainMetricCountType>& metric,
+                      int expected) {
+  if (expected >= 0) {
+    ASSERT_TRUE(metric.has_value());
+    EXPECT_EQ(metric.value().count, expected);
+  } else {
+    EXPECT_FALSE(metric.has_value());
+  }
+}
+
+// Test a set of 1-day, 7-day and 28-day domain visit metrics.
+void TestDomainMetricSet(const DomainMetricSet& metric_set,
+                         int expected_one_day_metric,
+                         int expected_seven_day_metric,
+                         int expected_twenty_eight_day_metric) {
+  TestDomainMetric(metric_set.one_day_metric, expected_one_day_metric);
+  TestDomainMetric(metric_set.seven_day_metric, expected_seven_day_metric);
+  TestDomainMetric(metric_set.twenty_eight_day_metric,
+                   expected_twenty_eight_day_metric);
 }
 
 // Counts hosts visited in the last month.
@@ -684,5 +756,155 @@ TEST_F(HistoryServiceTest, CountMonthlyVisitedHosts) {
 
   // The time required to compute host count is reported on each computation.
   histogram_tester.ExpectTotalCount("History.DatabaseMonthlyHostCountTime", 4);
+}
+
+TEST_F(HistoryServiceTest, GetDomainDiversityShortBasetimeRange) {
+  base::HistogramTester histogram_tester;
+  HistoryService* history = history_service_.get();
+  ASSERT_TRUE(history);
+
+  base::Time query_time = base::Time::Now();
+
+  // Make sure |query_time| is at least some time past the midnight so that
+  // some domain visits can be inserted between |query_time| and midnight\
+  // for testing.
+  query_time =
+      std::max(query_time.LocalMidnight() + base::TimeDelta::FromMinutes(10),
+               query_time);
+
+  AddPageAtTime(history, "http://www.google.com/",
+                GetTimeInThePast(query_time, /*days_back=*/2,
+                                 /*hours_since_midnight=*/12));
+  AddPageAtTime(history, "http://www.gmail.com/",
+                GetTimeInThePast(query_time, 2, 13));
+  AddPageAtTime(history, "http://www.gmail.com/foo",
+                GetTimeInThePast(query_time, 2, 14));
+  AddPageAtTime(history, "http://images.google.com/foo",
+                GetTimeInThePast(query_time, 1, 7));
+
+  // Domains visited on the query day will not be included in the result.
+  AddPageAtTime(history, "http://www.youtube.com/", query_time.LocalMidnight());
+  AddPageAtTime(history, "http://www.chromium.com/",
+                query_time.LocalMidnight() + base::TimeDelta::FromMinutes(5));
+  AddPageAtTime(history, "http://www.youtube.com/", query_time);
+
+  // IP addresses, empty strings, non-TLD's should not be counted
+  // as domains.
+  AddPageAtTime(history, "127.0.0.1", GetTimeInThePast(query_time, 1, 8));
+  AddPageAtTime(history, "", GetTimeInThePast(query_time, 1, 13));
+  AddPageAtTime(history, "http://localhost/",
+                GetTimeInThePast(query_time, 1, 8));
+  AddPageAtTime(history, "http://ak/", GetTimeInThePast(query_time, 1, 14));
+
+  // Should return empty result if |begin_time| == |end_time|.
+  DomainDiversityResults res = GetDomainDiversityHelper(
+      history, query_time, query_time,
+      history::kEnableLast1DayMetric | history::kEnableLast7DayMetric |
+          history::kEnableLast28DayMetric,
+      &tracker_);
+  EXPECT_EQ(res.size(), 0u);
+
+  // Metrics will be computed for each of the 4 continuous midnights .
+  res = GetDomainDiversityHelper(
+      history, GetTimeInThePast(query_time, 4, 0), query_time,
+      history::kEnableLast1DayMetric | history::kEnableLast7DayMetric |
+          history::kEnableLast28DayMetric,
+      &tracker_);
+
+  ASSERT_EQ(res.size(), 4u);
+
+  TestDomainMetricSet(res[0], 1, 2, 2);
+  TestDomainMetricSet(res[1], 2, 2, 2);
+  TestDomainMetricSet(res[2], 0, 0, 0);
+  TestDomainMetricSet(res[3], 0, 0, 0);
+}
+
+TEST_F(HistoryServiceTest, GetDomainDiversityLongBasetimeRange) {
+  base::HistogramTester histogram_tester;
+  HistoryService* history = history_service_.get();
+  ASSERT_TRUE(history);
+
+  base::Time query_time = base::Time::Now();
+
+  AddPageAtTime(history, "http://www.google.com/",
+                GetTimeInThePast(query_time, /*days_back=*/90,
+                                 /*hours_since_midnight=*/6));
+  AddPageAtTime(history, "http://maps.google.com/",
+                GetTimeInThePast(query_time, 34, 6));
+  AddPageAtTime(history, "http://www.google.com/",
+                GetTimeInThePast(query_time, 31, 4));
+  AddPageAtTime(history, "https://www.google.co.uk/",
+                GetTimeInThePast(query_time, 14, 5));
+  AddPageAtTime(history, "http://www.gmail.com/",
+                GetTimeInThePast(query_time, 10, 13));
+  AddPageAtTime(history, "http://www.chromium.org/foo",
+                GetTimeInThePast(query_time, 7, 14));
+  AddPageAtTime(history, "https://www.youtube.com/",
+                GetTimeInThePast(query_time, 2, 12));
+  AddPageAtTime(history, "https://www.youtube.com/foo",
+                GetTimeInThePast(query_time, 2, 12));
+  AddPageAtTime(history, "https://www.chromium.org/",
+                GetTimeInThePast(query_time, 1, 13));
+  AddPageAtTime(history, "https://www.google.com/",
+                GetTimeInThePast(query_time, 1, 13));
+
+  DomainDiversityResults res = GetDomainDiversityHelper(
+      history, GetTimeInThePast(query_time, 7, 12), query_time,
+      history::kEnableLast1DayMetric | history::kEnableLast7DayMetric |
+          history::kEnableLast28DayMetric,
+      &tracker_);
+  // Only up to seven days will be considered.
+  ASSERT_EQ(res.size(), 7u);
+
+  TestDomainMetricSet(res[0], 2, 3, 5);
+  TestDomainMetricSet(res[1], 1, 2, 4);
+  TestDomainMetricSet(res[2], 0, 1, 3);
+  TestDomainMetricSet(res[3], 0, 2, 4);
+  TestDomainMetricSet(res[4], 0, 2, 4);
+  TestDomainMetricSet(res[5], 0, 2, 4);
+  TestDomainMetricSet(res[6], 1, 2, 4);
+}
+
+TEST_F(HistoryServiceTest, GetDomainDiversityBitmaskTest) {
+  base::HistogramTester histogram_tester;
+  HistoryService* history = history_service_.get();
+  ASSERT_TRUE(history);
+
+  base::Time query_time = base::Time::Now();
+
+  AddPageAtTime(history, "http://www.google.com/",
+                GetTimeInThePast(query_time, /*days_back=*/28,
+                                 /*hours_since_midnight=*/6));
+  AddPageAtTime(history, "http://www.youtube.com/",
+                GetTimeInThePast(query_time, 7, 6));
+  AddPageAtTime(history, "http://www.chromium.com/",
+                GetTimeInThePast(query_time, 1, 4));
+
+  DomainDiversityResults res = GetDomainDiversityHelper(
+      history, GetTimeInThePast(query_time, 7, 12), query_time,
+      history::kEnableLast1DayMetric | history::kEnableLast7DayMetric,
+      &tracker_);
+  ASSERT_EQ(res.size(), 7u);
+
+  TestDomainMetricSet(res[0], 1, 2, -1);
+  TestDomainMetricSet(res[1], 0, 1, -1);
+  TestDomainMetricSet(res[2], 0, 1, -1);
+  TestDomainMetricSet(res[3], 0, 1, -1);
+  TestDomainMetricSet(res[4], 0, 1, -1);
+  TestDomainMetricSet(res[5], 0, 1, -1);
+  TestDomainMetricSet(res[6], 1, 1, -1);
+
+  res = GetDomainDiversityHelper(
+      history, GetTimeInThePast(query_time, 6, 12), query_time,
+      history::kEnableLast28DayMetric | history::kEnableLast7DayMetric,
+      &tracker_);
+
+  ASSERT_EQ(res.size(), 6u);
+  TestDomainMetricSet(res[0], -1, 2, 3);
+  TestDomainMetricSet(res[1], -1, 1, 2);
+  TestDomainMetricSet(res[2], -1, 1, 2);
+  TestDomainMetricSet(res[3], -1, 1, 2);
+  TestDomainMetricSet(res[4], -1, 1, 2);
+  TestDomainMetricSet(res[5], -1, 1, 2);
 }
 }  // namespace history

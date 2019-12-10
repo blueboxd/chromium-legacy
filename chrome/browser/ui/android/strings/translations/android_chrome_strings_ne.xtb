@@ -214,6 +214,7 @@
 <translation id="2532336938189706096">वेब दृश्य</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> वस्तुहरू मेटाइए</translation>
 <translation id="2536728043171574184">यो पृष्ठको एक अफलाइन प्रतिलिपि हेर्दै</translation>
+<translation id="2537178555904266562">पासवर्डहरू सिंक गर्ने क्रममा त्रुटि भयो</translation>
 <translation id="2546283357679194313">कुकीहरू र साइट डाटा</translation>
 <translation id="2567385386134582609">छवि</translation>
 <translation id="257088987046510401">थिमहरू</translation>
@@ -231,6 +232,7 @@
 <translation id="2650751991977523696">फाइल पुनः डाउनलोड गर्ने हो?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# अडियो फाइल}other{# अडियो फाइलहरू}}</translation>
 <translation id="2653659639078652383">पेश गर्नुहोस्</translation>
+<translation id="2669093958999339774">सूचनाका प्रम्प्टहरूलाई आफूलाई बाधा पुर्‍याउनबाट रोकी यसको सट्टा तपाईंलाई सुटुक्क सूचित गर्ने सुविधा प्रयोग गर्नुहोस्।</translation>
 <translation id="2677748264148917807">छोड्नुहोस्</translation>
 <translation id="2704606927547763573">प्रतिलिपि गरियो</translation>
 <translation id="2707726405694321444">पृष्ठ ताजा गर्नुहोस्</translation>
@@ -248,7 +250,6 @@
 <translation id="281504910091592009">आफ्नो <ph name="BEGIN_LINK" />Google खाता<ph name="END_LINK" /> मा सुरक्षित गरिएका पासवर्डहरू हेर्नुहोस् र व्यवस्थापन गर्नुहोस्</translation>
 <translation id="2818669890320396765">आफ्ना सबै यन्त्रमा पुस्तक चिन्हहरू प्राप्त गर्न साइन इन गरी सिंक गर्ने सुविधा सक्रिय गर्नुहोस्</translation>
 <translation id="2822354292072154809">तपाईं साँच्चिकै <ph name="CHOSEN_OBJECT_NAME" /> का साइटसम्बन्धी सम्पूर्ण अनुमतिहरू रिसेट गर्न चाहनुहुन्छ?</translation>
-<translation id="2836148919159985482">पूर्ण स्क्रिनबाट बाहिर निस्कनका लागि पछाडि बटनलाई छुनुहोस्।</translation>
 <translation id="2842985007712546952">अभिभावक फोल्डर</translation>
 <translation id="2858138569776157458">शीर्ष साइटहरू</translation>
 <translation id="2860954141821109167">यस यन्त्रमा कुनै फोन अनुप्रयोग सक्षम गरिएको कुरा सुनिश्चित गर्नुहोस्</translation>
@@ -358,14 +359,15 @@
 <translation id="3632295766818638029">पासवर्डको मास्क हटाउनुहोस्</translation>
 <translation id="363596933471559332">भण्डारण गरिएका प्रमाणपत्रहरूको प्रयोग गरेर स्वचालित रूपमा वेबसाइटहरूमा साइन इन गर्नुहोस्। यो सुविधा बन्द हुँदा तपाईँलाई हरेक पटक वेबसाइटमा साइन इन गर्नुभन्दा पहिले प्रमाणीकरणको लागि सोधिने छ।</translation>
 <translation id="3658159451045945436">रिसेट गर्नुले हेरिएका साइटहरूको सूचीलगायत तपाईंको डेटा बचतको इतिहास मेटाउँछ।</translation>
-<translation id="3682730288090679318">साइटहरूलाई तपाईंलाई सूचनाहरू देखाउने कि भनेर सोध्न स्वतः रोक लगाउने सुविधा सक्षम पार्नुहोस्। कुनै साइटले सूचनाहरू देखाउने अनुरोध गरेको खण्डमा उक्त पृष्ठको फेदमा एउटा जानकारी पट्टी देखिने छ।</translation>
 <translation id="3692944402865947621">भण्डारण स्थान पहुँचयोग्य नहुनाले <ph name="FILE_NAME" /> डाउनलोड गर्न सकिएन।</translation>
+<translation id="3701167022068948696">अहिले नै समाधान गर्नुहोस्</translation>
 <translation id="3714981814255182093">खोजको पट्टी खोल्नुहोस्</translation>
 <translation id="3716182511346448902">यस पृष्ठले अत्यधिक मेमोरी प्रयोग गर्ने भएकाले Chromium ले यसलाई पज गर्‍यो।</translation>
 <translation id="3730075448226062617">Chrome लाई तपाईंको माइक्रोफोनमाथि पहुँच राख्न दिन <ph name="BEGIN_LINK" />Android का सेटिङहरू<ph name="END_LINK" /> मा गई माइक्रोफोन पनि सक्रिय गर्नुहोस्।</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> मा पुस्तक चिन्ह लगाइयो</translation>
 <translation id="3744111561329211289">पृष्ठभूमिमा सिंक गर्ने सुविधा</translation>
 <translation id="3749259744154402564">असमर्थित</translation>
+<translation id="3767376082821709728">तपाईं जाने नयाँ साइटहरूले तपाईंलाई सूचना पठाउन सक्दैनन्</translation>
 <translation id="3771001275138982843">अद्यावधिक डाउनलोड गर्न सकिएन</translation>
 <translation id="3771033907050503522">इन्कग्निटो ट्याबहरू</translation>
 <translation id="3773755127849930740">जोडा बनाउने प्रक्रियालाई अनुमति दिन <ph name="BEGIN_LINK" />ब्लुटुथ<ph name="END_LINK" /> लाई सक्रिय गर्नुहोस्</translation>
@@ -438,7 +440,7 @@
 <translation id="4307992518367153382">आधारभूत</translation>
 <translation id="4314815835985389558">सिंक व्यवस्थापन गर्नुहोस्</translation>
 <translation id="4351244548802238354">सम्बाद बन्द गर्नुहोस्</translation>
-<translation id="4353114845960720315">तपाईं VR मा हुँदा यो साइटले निम्न कुराबारे सिक्न सक्छ:</translation>
+<translation id="4353114845960720315">तपाईं VR मा हुँदा यो साइटले निम्न कुराबारे जानकारी सङकलन गर्न सक्छ:</translation>
 <translation id="4378154925671717803">फोन</translation>
 <translation id="4384468725000734951">खोजीका लागि Sogou प्रयोग गर्दै</translation>
 <translation id="4404568932422911380">कुनै पनि पुस्तक चिन्ह छैन</translation>
@@ -590,7 +592,6 @@
 <translation id="5414836363063783498">प्रमाणीकरण गर्दै...</translation>
 <translation id="5423934151118863508">तपाईँले धेरै भ्रमण गर्नुभएका पृष्ठहरू यहाँ देखिने छन्।</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> जि.बि. उपलब्ध छ</translation>
-<translation id="5427766642345310212">बुझेँ। पूर्वनिर्धारित सेटिङअनुसार सूचनासम्बन्धी नयाँ अनुरोधहरू यहाँ देखिने छन्।</translation>
 <translation id="543338862236136125">पासवर्ड सम्पादन गर्नुहोस्</translation>
 <translation id="5433691172869980887">प्रयोगकर्ताको नाम प्रतिलिपि गरियो</translation>
 <translation id="543509235395288790"><ph name="COUNT" /> फाइलहरू डाउनलोड गर्दै (<ph name="MEGABYTES" />)।</translation>
@@ -652,7 +653,7 @@
 <translation id="5809361687334836369">{HOURS,plural, =1{# घन्टा अघि}other{# घन्टा अघि}}</translation>
 <translation id="5810288467834065221">प्रतिलिपि अधिकार <ph name="YEAR" /> Google LLC। सर्वाधिकार सुरक्षित।</translation>
 <translation id="5817918615728894473">जोडा  बनाउनुहोस्</translation>
-<translation id="5819762621475381970">- तपाईंको कोठाको प्रारूप</translation>
+<translation id="5819762621475381970">- तपाईंको कोठाको लेआउट</translation>
 <translation id="583281660410589416">अज्ञात</translation>
 <translation id="5833984609253377421">लिंक आदान प्रदान गर्नुहोस्</translation>
 <translation id="5836192821815272682">Chrome को अद्यावधिक डाउनलोड गर्दै…</translation>
@@ -677,7 +678,6 @@
 <translation id="5962718611393537961">संक्षिप्त गर्न ट्याप गर्नुहोस्</translation>
 <translation id="6000066717592683814">Google लाई पूर्वनिर्धारित खोज इञ्जिनका रूपमा कायम राख्नुहोस्</translation>
 <translation id="6005538289190791541">सिफारिस गरिएको पासवर्ड</translation>
-<translation id="6019358956729171834">थप लोड गर्नुहोस्…</translation>
 <translation id="6036057147555329831">अतिरिक्त ICU</translation>
 <translation id="6039379616847168523">अर्को ट्याबमा जानुहोस्</translation>
 <translation id="6040143037577758943">बन्द गर्नुहोस्</translation>
@@ -773,6 +773,7 @@
 <translation id="666731172850799929"><ph name="APP_NAME" /> मा खोल्नुहोस्</translation>
 <translation id="666981079809192359">Chrome गोपनीयता सूचना</translation>
 <translation id="6676840375528380067">यस यन्त्रबाट तपाईंको Chrome को डेटा हटाउने हो?</translation>
+<translation id="6689172468748959065">प्रोफाइल तस्बिरहरू</translation>
 <translation id="6697492270171225480">कुनै पृष्ठ फेला पार्न नसकिएको खण्डमा मिल्दाजुल्दा पृष्ठसम्बन्धी सुझावहरू देखाउनुहोस्</translation>
 <translation id="6697947395630195233">यो साइटसँग तपाईंको स्थानसम्बन्धी जानकारी आदान प्रदान गर्न Chrome लाई तपाईंको स्थानमाथिको पहुँच आवश्यक हुन्छ।</translation>
 <translation id="6698801883190606802">सिंक गरिएका डेटा व्यवस्थित गर्नुहोस्</translation>
@@ -955,6 +956,7 @@
 <translation id="8035133914807600019">नयाँ फोल्डर...</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> दिन बाँकी छ</translation>
 <translation id="804335162455518893">SD कार्ड फेला परेन</translation>
+<translation id="8046278916126163020">तपाईं जाने नयाँ साइटहरूले तपाईंलाई सूचनाहरू पठाउन तपाईंसँग अनुमति माग्न सक्छन्।</translation>
 <translation id="805047784848435650">तपाईंको ब्राउजिङसम्बन्धी इतिहासमा आधारित</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> एम.बि.उपलब्ध छ</translation>
 <translation id="8058746566562539958">Chrome को नयाँ ट्याबमा खोल्नुहोस्</translation>

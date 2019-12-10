@@ -18,6 +18,7 @@
 #include "media/base/key_systems.h"
 #include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "url/origin.h"
 
 namespace media {
@@ -154,7 +155,9 @@ void MojoCdmService::OnCdmCreated(
     cdm_promise_result->exception = CdmPromise::Exception::NOT_SUPPORTED_ERROR;
     cdm_promise_result->system_code = 0;
     cdm_promise_result->error_message = error_message;
-    std::move(callback).Run(std::move(cdm_promise_result), 0, nullptr);
+    mojo::PendingRemote<mojom::Decryptor> decryptor;
+    std::move(callback).Run(std::move(cdm_promise_result), 0,
+                            std::move(decryptor));
     return;
   }
 
@@ -168,7 +171,7 @@ void MojoCdmService::OnCdmCreated(
 
   // If |cdm| has a decryptor, create the MojoDecryptorService
   // and pass the connection back to the client.
-  mojom::DecryptorPtr decryptor_ptr;
+  mojo::PendingRemote<mojom::Decryptor> decryptor_remote;
   CdmContext* const cdm_context = cdm_->GetCdmContext();
   if (cdm_context && cdm_context->GetDecryptor()) {
     DVLOG(2) << __func__ << ": CDM supports Decryptor.";
@@ -176,12 +179,12 @@ void MojoCdmService::OnCdmCreated(
     // pass in a CdmContextRef.
     decryptor_.reset(
         new MojoDecryptorService(cdm_context->GetDecryptor(), nullptr));
-    decryptor_binding_ = std::make_unique<mojo::Binding<mojom::Decryptor>>(
-        decryptor_.get(), MakeRequest(&decryptor_ptr));
-    // base::Unretained is safe because |decryptor_binding_| is owned by |this|.
-    // If |this| is destructed, |decryptor_binding_| will be destructed as well
-    // and the error handler should never be called.
-    decryptor_binding_->set_connection_error_handler(base::BindOnce(
+    decryptor_receiver_ = std::make_unique<mojo::Receiver<mojom::Decryptor>>(
+        decryptor_.get(), decryptor_remote.InitWithNewPipeAndPassReceiver());
+    // base::Unretained is safe because |decryptor_receiver_| is owned by
+    // |this|. If |this| is destructed, |decryptor_receiver_| will be destructed
+    // as well and the error handler should never be called.
+    decryptor_receiver_->set_disconnect_handler(base::BindOnce(
         &MojoCdmService::OnDecryptorConnectionError, base::Unretained(this)));
   }
 
@@ -195,7 +198,7 @@ void MojoCdmService::OnCdmCreated(
 
   cdm_promise_result->success = true;
   std::move(callback).Run(std::move(cdm_promise_result), cdm_id,
-                          std::move(decryptor_ptr));
+                          std::move(decryptor_remote));
 }
 
 void MojoCdmService::OnSessionMessage(const std::string& session_id,

@@ -5399,13 +5399,8 @@ grit("resources") {
 
   deps = [
     ":chrome_internal_resources_gen",
-    "//chrome/browser/engagement:mojo_bindings_js",
-    "//chrome/browser/media:mojo_bindings_js",
     "//chrome/browser/resources/browser_switch:app_module",
     "//chrome/browser/resources/ssl/ssl_error_assistant:make_ssl_error_assistant_protobuf",
-    "//chrome/browser/ui/webui/bluetooth_internals:mojo_bindings_js",
-    "//chrome/browser/ui/webui/interventions_internals:mojo_bindings_js",
-    "//chrome/browser/ui/webui/omnibox:mojo_bindings_js",
     "//chrome/browser/ui/webui/usb_internals:mojo_bindings_js",
     "//device/bluetooth/public/mojom:deprecated_experimental_interfaces_js",
     "//device/bluetooth/public/mojom:mojom_js",
@@ -5449,11 +5444,8 @@ grit("resources") {
   }
 
   if (is_android) {
-    deps += [
-      "//chrome/browser/ui/webui/explore_sites_internals:mojo_bindings_js",
-      "//chrome/browser/ui/webui/feed_internals:mojo_bindings_js",
-      "//chrome/browser/ui/webui/snippets_internals:mojo_bindings_js",
-    ]
+    deps +=
+        [ "//chrome/browser/ui/webui/explore_sites_internals:mojo_bindings_js" ]
   } else {
     deps += [ "//chrome/browser/ui/webui/app_management:mojo_bindings_js" ]
   }
@@ -5505,6 +5497,38 @@ if (is_chrome_branded) {
 } else {
   group("chrome_internal_resources_gen") {
     # Empty placeholder.
+  }
+}
+
+grit("dev_ui_browser_resources") {
+  source = "dev_ui_browser_resources.grd"
+
+  # The .grd contains references to generated files.
+  source_is_generated = true
+
+  defines = chrome_grit_defines
+
+  output_dir = "$root_gen_dir/chrome"
+  outputs = [
+    "grit/dev_ui_browser_resources.h",
+    "dev_ui_browser_resources.pak",
+  ]
+
+  grit_flags = [
+    "-E",
+    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+  ]
+
+  deps = [
+    "//chrome/browser/engagement:mojo_bindings_js",
+    "//chrome/browser/media:mojo_bindings_js",
+    "//chrome/browser/ui/webui/interventions_internals:mojo_bindings_js",
+  ]
+  if (is_android) {
+    deps += [
+      "//chrome/browser/ui/webui/feed_internals:mojo_bindings_js",
+      "//chrome/browser/ui/webui/snippets_internals:mojo_bindings_js",
+    ]
   }
 }
 

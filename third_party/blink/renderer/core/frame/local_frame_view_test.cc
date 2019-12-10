@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/test/metrics/histogram_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
@@ -18,6 +19,7 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
+#include "third_party/blink/renderer/platform/instrumentation/memory_pressure_listener.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
@@ -298,6 +300,29 @@ TEST_F(LocalFrameViewTest,
   EXPECT_EQ(2u, frame_view->BackgroundAttachmentFixedObjects().size());
   EXPECT_TRUE(
       frame_view->RequiresMainThreadScrollingForBackgroundAttachmentFixed());
+}
+
+TEST_F(LocalFrameViewTest, PurgeSignalHistogram) {
+  const char* kHistogramName =
+      "Memory.Experimental.Renderer.LocalFrameRootPurgeSignal";
+  base::HistogramTester histogram_tester;
+
+  SetBodyInnerHTML("");
+  UpdateAllLifecyclePhasesForTest();
+
+  histogram_tester.ExpectTotalCount(kHistogramName, 0);
+
+  MemoryPressureListenerRegistry::Instance().OnPurgeMemory();
+  histogram_tester.ExpectTotalCount(kHistogramName, 1);
+  histogram_tester.ExpectBucketCount(kHistogramName, 0 /* kInitial */, 1);
+
+  MemoryPressureListenerRegistry::Instance().OnPurgeMemory();
+  histogram_tester.ExpectTotalCount(kHistogramName, 2);
+  histogram_tester.ExpectBucketCount(kHistogramName, 1 /* kMultiple */, 1);
+
+  MemoryPressureListenerRegistry::Instance().OnPurgeMemory();
+  histogram_tester.ExpectTotalCount(kHistogramName, 3);
+  histogram_tester.ExpectBucketCount(kHistogramName, 1 /* kMultiple */, 2);
 }
 
 // Ensure the fragment navigation "scroll into view and focus" behavior doesn't

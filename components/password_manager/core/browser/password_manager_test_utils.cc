@@ -23,7 +23,6 @@ std::unique_ptr<PasswordForm> PasswordFormFromData(
     const PasswordFormData& form_data) {
   auto form = std::make_unique<PasswordForm>();
   form->scheme = form_data.scheme;
-  form->preferred = form_data.preferred;
   form->date_last_used = base::Time::FromDoubleT(form_data.last_usage_time);
   form->date_created = base::Time::FromDoubleT(form_data.creation_time);
   if (form_data.signon_realm)

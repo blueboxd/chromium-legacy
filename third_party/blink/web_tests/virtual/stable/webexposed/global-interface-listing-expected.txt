@@ -3510,6 +3510,7 @@ interface HTMLVideoElement : HTMLMediaElement
     getter webkitSupportsFullscreen
     getter width
     method constructor
+    method getVideoPlaybackQuality
     method requestPictureInPicture
     method webkitEnterFullScreen
     method webkitEnterFullscreen
@@ -7246,6 +7247,13 @@ interface ValidityState
     getter typeMismatch
     getter valid
     getter valueMissing
+    method constructor
+interface VideoPlaybackQuality
+    attribute @@toStringTag
+    getter corruptedVideoFrames
+    getter creationTime
+    getter droppedVideoFrames
+    getter totalVideoFrames
     method constructor
 interface VisualViewport : EventTarget
     attribute @@toStringTag

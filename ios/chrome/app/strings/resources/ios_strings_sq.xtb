@@ -91,6 +91,7 @@
 <translation id="209018056901015185">Kërko sajtin për desktop</translation>
 <translation id="2103075008456228677">Hap history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementë u lëvizën</translation>
+<translation id="2118594521750010466">Rregullo tani</translation>
 <translation id="213900355088104901">Për të shfletuar në mënyrë private, hap një skedë "të fshehtë"</translation>
 <translation id="2139867232736819575">Kërko për tekstin që kopjove</translation>
 <translation id="2149973817440762519">Redakto faqeshënuesin</translation>
@@ -98,6 +99,7 @@
 <translation id="2198757192731523470">Google mund ta përdorë historikun tënd për të personalizuar "Kërko me Google", reklamat dhe shërbime të tjera të Google.</translation>
 <translation id="2230173723195178503">Faqja e uebit u ngarkua</translation>
 <translation id="2239626343334228536">Të dhënat e shfletimit po pastrohen...</translation>
+<translation id="2257567812274161158">Sinkronizimi nuk po punon.</translation>
 <translation id="2267753748892043616">Shto një llogari</translation>
 <translation id="2268044343513325586">Ripërpuno</translation>
 <translation id="2273327106802955778">Menyja "Më shumë"</translation>
@@ -129,6 +131,7 @@
 <translation id="2691653761409724435">Nuk mundësohet jashtë linje</translation>
 <translation id="2695507686909505111">Faqja u përkthye</translation>
 <translation id="2702801445560668637">Lista e leximit</translation>
+<translation id="2704491540504985681">Shkarkime</translation>
 <translation id="2704606927547763573">Kopjuar</translation>
 <translation id="2709516037105925701">Plotëso automatikisht</translation>
 <translation id="2712127207578915686">Skedari nuk mund të hapet</translation>
@@ -218,6 +221,7 @@
 <translation id="3943492037546055397">Fjalëkalimet</translation>
 <translation id="3967822245660637423">Shkarkimi përfundoi</translation>
 <translation id="3989635538409502728">Dil</translation>
+<translation id="399419089947468503">Gabim gjatë sinkronizimit të fjalëkalimeve</translation>
 <translation id="3995521777587992544">Shiriti i progresit të ngarkimit të faqes, është ngarkuar <ph name="EMAIL" />.</translation>
 <translation id="4002066346123236978">Titulli</translation>
 <translation id="4004204301268239848">Fjalëkalimet ruhen në llogarinë tënde të Google që të mund t'i përdorësh në çdo pajisje.</translation>
@@ -238,6 +242,7 @@
 <translation id="424315890655130736">Fut frazën e kalimit</translation>
 <translation id="4263576668337963058">Shfaq veprimet e disponueshme të faqes</translation>
 <translation id="4272631900155121838">Për të skanuar një kod QR, aktivizo kamerën nga cilësimet</translation>
+<translation id="4276041135170112053">Rregullo tani.</translation>
 <translation id="4281844954008187215">Kushtet e shërbimit</translation>
 <translation id="430793432425771671">Sinkronizo gjithçka</translation>
 <translation id="430967081421617822">Gjatë të gjithë kohës</translation>
@@ -286,6 +291,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="4904877109095351937">Shëno si të lexuara</translation>
 <translation id="4930268273022498155">Fshi të dhënat ekzistuese. Mund t'i marrësh ato duke u kthyer përsëri te <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Na vjen keq, kishte një problem në ndarjen e artikullit tënd.</translation>
+<translation id="4944543191714094452">Gjej në faqe…</translation>
 <translation id="4945756290001680296">Qasu te cilësimet e fjalëkalimit</translation>
 <translation id="4979397965658815378">Identifikohu me llogarinë e Google për të marrë faqeshënuesit, fjalëkalimet, historikun dhe cilësime të tjera në të gjitha pajisjet e tua.</translation>
 <translation id="5005498671520578047">Kopjo fjalëkalimin</translation>
@@ -317,6 +323,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="5433691172869980887">Emri i përdoruesit u kopjua</translation>
 <translation id="54401264925851789">Informacioni i sigurisë së faqes</translation>
 <translation id="5443952882982198570">Kartat e kreditit</translation>
+<translation id="5457907402803865181">Gabim gjatë sinkronizimit të fjalëkalimeve.</translation>
 <translation id="5525269841082836315">Krijo fjalëkalim</translation>
 <translation id="5548760955356983418">Handoff të lejon të fillosh të shfletosh një faqe interneti në këtë pajisje dhe pastaj me lehtësi të vazhdosh në kompjuterin tënd Mac. Faqja aktuale e hapur e internetit do të shfaqet në Dock të kompjuterit tënd Mac.
 
@@ -408,6 +415,7 @@ Të dhënat e tua janë koduar me frazën tënde të kalimit më <ph name="TIME"
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementë u fshinë</translation>
 <translation id="6610002944194042868">Opsionet e "Përkthe"</translation>
 <translation id="6628106477656132239">Datë skadimi e pavlefshme</translation>
+<translation id="6638511529934826365">Zmadho tekstin…</translation>
 <translation id="6642362222295953972">Kalo te skeda ekzistuese</translation>
 <translation id="6643016212128521049">Pastro</translation>
 <translation id="6656103420185847513">Redakto dosjen</translation>

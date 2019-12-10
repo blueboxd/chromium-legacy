@@ -22,6 +22,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_state.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -49,16 +50,18 @@ class DragWindowFromShelfControllerTest : public AshTestBase {
                  const gfx::Point& location_in_screen,
                  HotseatState hotseat_state) {
     window_drag_controller_ = std::make_unique<DragWindowFromShelfController>(
-        window, location_in_screen, hotseat_state);
+        window, gfx::PointF(location_in_screen), hotseat_state);
   }
   void Drag(const gfx::Point& location_in_screen,
             float scroll_x,
             float scroll_y) {
-    window_drag_controller_->Drag(location_in_screen, scroll_x, scroll_y);
+    window_drag_controller_->Drag(gfx::PointF(location_in_screen), scroll_x,
+                                  scroll_y);
   }
   void EndDrag(const gfx::Point& location_in_screen,
                base::Optional<float> velocity_y) {
-    window_drag_controller_->EndDrag(location_in_screen, velocity_y);
+    window_drag_controller_->EndDrag(gfx::PointF(location_in_screen),
+                                     velocity_y);
   }
   void CancelDrag() { window_drag_controller_->CancelDrag(); }
 

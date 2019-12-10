@@ -53,7 +53,7 @@ CastAudioManager::CastAudioManager(
     GetSessionIdCallback get_session_id_callback,
     scoped_refptr<base::SingleThreadTaskRunner> browser_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
-    service_manager::Connector* connector,
+    mojo::PendingRemote<chromecast::mojom::ServiceConnector> connector,
     bool use_mixer)
     : CastAudioManager(std::move(audio_thread),
                        audio_log_factory,
@@ -61,7 +61,7 @@ CastAudioManager::CastAudioManager(
                        std::move(get_session_id_callback),
                        std::move(browser_task_runner),
                        std::move(media_task_runner),
-                       connector,
+                       std::move(connector),
                        use_mixer,
                        false) {}
 
@@ -72,7 +72,7 @@ CastAudioManager::CastAudioManager(
     GetSessionIdCallback get_session_id_callback,
     scoped_refptr<base::SingleThreadTaskRunner> browser_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
-    service_manager::Connector* connector,
+    mojo::PendingRemote<chromecast::mojom::ServiceConnector> connector,
     bool use_mixer,
     bool force_use_cma_backend_for_output)
     : AudioManagerBase(std::move(audio_thread), audio_log_factory),
@@ -80,13 +80,13 @@ CastAudioManager::CastAudioManager(
       get_session_id_callback_(std::move(get_session_id_callback)),
       browser_task_runner_(std::move(browser_task_runner)),
       media_task_runner_(std::move(media_task_runner)),
-      browser_connector_(connector),
+      pending_connector_(std::move(connector)),
       force_use_cma_backend_for_output_(force_use_cma_backend_for_output),
       weak_factory_(this) {
   DCHECK(browser_task_runner_->BelongsToCurrentThread());
   DCHECK(backend_factory_getter_);
   DCHECK(get_session_id_callback_);
-  DCHECK(browser_connector_);
+  DCHECK(pending_connector_);
   weak_this_ = weak_factory_.GetWeakPtr();
   if (use_mixer)
     mixer_ = std::make_unique<CastAudioMixer>(this);
@@ -264,25 +264,12 @@ std::string CastAudioManager::GetSessionId(std::string audio_group_id) {
   return mixer_output_stream_.get();
 }
 
-void CastAudioManager::SetConnectorForTesting(
-    std::unique_ptr<service_manager::Connector> connector) {
-  connector_ = std::move(connector);
-}
-
-service_manager::Connector* CastAudioManager::GetConnector() {
+chromecast::mojom::ServiceConnector* CastAudioManager::GetConnector() {
   if (!connector_) {
-    mojo::PendingReceiver<service_manager::mojom::Connector> receiver;
-    connector_ = service_manager::Connector::Create(&receiver);
-    browser_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&CastAudioManager::BindConnectorReceiver,
-                                  weak_this_, std::move(receiver)));
+    DCHECK(pending_connector_);
+    connector_.Bind(std::move(pending_connector_));
   }
   return connector_.get();
-}
-
-void CastAudioManager::BindConnectorReceiver(
-    mojo::PendingReceiver<service_manager::mojom::Connector> receiver) {
-  browser_connector_->BindConnectorReceiver(std::move(receiver));
 }
 
 bool CastAudioManager::UseMixerOutputStream(

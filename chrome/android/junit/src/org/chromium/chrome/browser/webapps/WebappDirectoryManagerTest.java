@@ -21,7 +21,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowLooper;
 
-import org.chromium.base.FileUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
@@ -69,12 +68,6 @@ public class WebappDirectoryManagerTest {
         }
     }
 
-    /** Deletes directory and all of its children. Recreates empty directory in its place. */
-    private void deleteDirectoryAndRecreate(File f) {
-        FileUtils.recursivelyDeleteFile(f);
-        Assert.assertTrue(f.mkdirs());
-    }
-
     private Context mContext;
     private TestWebappDirectoryManager mWebappDirectoryManager;
 
@@ -85,19 +78,10 @@ public class WebappDirectoryManagerTest {
         PathUtils.setPrivateDataDirectorySuffix("chrome");
         mWebappDirectoryManager = new TestWebappDirectoryManager();
         mWebappDirectoryManager.resetForTesting();
-
-        // Set up directories.
-        deleteDirectoryAndRecreate(mContext.getDataDir());
-        FileUtils.recursivelyDeleteFile(mWebappDirectoryManager.getBaseWebappDirectory(mContext));
-        deleteDirectoryAndRecreate(mContext.getCodeCacheDir());
     }
 
     @After
     public void tearDown() {
-        FileUtils.recursivelyDeleteFile(mContext.getDataDir());
-        FileUtils.recursivelyDeleteFile(mContext.getCodeCacheDir());
-        FileUtils.recursivelyDeleteFile(mWebappDirectoryManager.getBaseWebappDirectory(mContext));
-        FileUtils.recursivelyDeleteFile(WebappDirectoryManager.getWebApkUpdateDirectory());
         ThreadUtils.setThreadAssertsDisabledForTesting(false);
     }
 

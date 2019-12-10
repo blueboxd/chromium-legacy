@@ -41,6 +41,7 @@ class SadTab {
   // suggests reloading and subsequent ones suggest sending feedback.)
   int GetTitle();
   int GetInfoMessage();
+  int GetErrorCodeFormatString();
   int GetButtonTitle();
   int GetHelpLinkTitle();
 
@@ -51,6 +52,9 @@ class SadTab {
   // Returns the target of the "Learn more" link. Use it for the context menu
   // and to show the URL on hover, but call PerformAction() for regular clicks.
   const char* GetHelpLinkURL();
+
+  // Returns the error code describing the reason for the crash.
+  int GetCrashedErrorCode();
 
   // Virtual for testing.
   virtual void RecordFirstPaint();

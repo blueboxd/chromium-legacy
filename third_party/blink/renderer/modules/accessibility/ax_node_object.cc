@@ -425,7 +425,7 @@ static bool IsRequiredOwnedElement(AXObject* parent,
 
   if (!current_element)
     return false;
-  if (IsHTMLTableCellElement(*current_element))
+  if (IsA<HTMLTableCellElement>(*current_element))
     return IsA<HTMLTableRowElement>(*parent_node);
   if (IsA<HTMLTableRowElement>(*current_element))
     return IsA<HTMLTableSectionElement>(parent_html_element);
@@ -527,7 +527,7 @@ static ax::mojom::Role DecideRoleFromSiblings(Element* cell) {
       IsNonEmptyNonHeaderCell(previous_cell))
     return ax::mojom::Role::kRowHeader;
 
-  const Element* row = ToElement(cell->parentNode());
+  const auto* row = To<Element>(cell->parentNode());
   if (!row || !row->HasTagName(html_names::kTrTag))
     return ax::mojom::Role::kColumnHeader;
 
@@ -658,7 +658,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   }
   if (IsA<HTMLTableRowElement>(*GetNode()))
     return DetermineTableRowRole();
-  if (IsHTMLTableCellElement(*GetNode()))
+  if (IsA<HTMLTableCellElement>(*GetNode()))
     return DetermineTableCellRole();
   if (IsA<HTMLTableSectionElement>(*GetNode()))
     return DetermineTableCellRole();

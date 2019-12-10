@@ -122,7 +122,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   }
 
   bool has_overlay_validator() const {
-    return !!overlay_processor_->GetOverlayCandidateValidator();
+    return overlay_processor_->IsOverlaySupported();
   }
   bool OverlayNeedsSurfaceOccludingDamageRect() const;
 

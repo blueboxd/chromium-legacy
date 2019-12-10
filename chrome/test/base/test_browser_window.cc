@@ -147,10 +147,6 @@ autofill::AutofillBubbleHandler* TestBrowserWindow::GetAutofillBubbleHandler() {
   return &autofill_bubble_handler_;
 }
 
-ToolbarActionsBar* TestBrowserWindow::GetToolbarActionsBar() {
-  return nullptr;
-}
-
 ExtensionsContainer* TestBrowserWindow::GetExtensionsContainer() {
   return nullptr;
 }

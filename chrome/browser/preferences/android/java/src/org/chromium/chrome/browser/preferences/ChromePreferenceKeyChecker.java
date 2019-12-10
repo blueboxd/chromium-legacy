@@ -1,0 +1,99 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chrome.browser.preferences;
+
+import android.text.TextUtils;
+
+import androidx.annotation.VisibleForTesting;
+
+import org.chromium.base.annotations.CheckDiscard;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
+
+/**
+ * Class that checks if given Strings are valid SharedPreferences keys to use.
+ */
+@CheckDiscard("Validation is performed in tests and in debug builds.")
+class ChromePreferenceKeyChecker extends BaseChromePreferenceKeyChecker {
+    private static final ChromePreferenceKeyChecker INSTANCE = new ChromePreferenceKeyChecker();
+
+    private Set<String> mKeysInUse;
+    private Set<String> mGrandfatheredFormatKeys;
+    private Pattern mDynamicPartPattern;
+
+    /**
+     * Constructor called by the singleton, pulls the lists of keys from {@link
+     * ChromePreferenceKeys}.
+     */
+    private ChromePreferenceKeyChecker() {
+        this(ChromePreferenceKeys.createKeysInUse(),
+                ChromePreferenceKeys.createGrandfatheredFormatKeys());
+    }
+
+    /**
+     * Generic constructor, dependencies are passed in.
+     */
+    @VisibleForTesting
+    ChromePreferenceKeyChecker(List<String> keysInUse, List<String> grandfatheredKeys) {
+        mKeysInUse = new HashSet<>(keysInUse);
+        mGrandfatheredFormatKeys = new HashSet<>(grandfatheredKeys);
+
+        // The dynamic part cannot be empty, but otherwise it is anything that does not contain
+        // stars.
+        mDynamicPartPattern = Pattern.compile("[^\\*]+");
+    }
+
+    /**
+     * @return The ChromePreferenceKeyChecker singleton.
+     */
+    public static ChromePreferenceKeyChecker getInstance() {
+        return INSTANCE;
+    }
+
+    /**
+     * Assert that the |key| passed is in use.
+     */
+    @Override
+    void assertIsKeyInUse(String key) {
+        assert isKeyInUse(key);
+    }
+
+    /**
+     * @return Whether |key| is in use.
+     */
+    private boolean isKeyInUse(String key) {
+        // Grandfathered keys cannot be dynamic, so just check if they are in [keys in use].
+        if (mGrandfatheredFormatKeys.contains(key)) {
+            return mKeysInUse.contains(key);
+        }
+
+        // If not a format-grandfathered key, assume it follows the format and find out if it is
+        // a prefixed key.
+        String[] parts = key.split("\\.", 4);
+        if (parts.length < 3) return false;
+        boolean isPrefixed = parts.length >= 4;
+
+        if (isPrefixed) {
+            // Key with prefix in format "Chrome.[Feature].[KeyPrefix].[Suffix]".
+
+            // Check if its prefix is whitelisted in |mKeysInUse|.
+            String prefixFormat =
+                    TextUtils.join(".", Arrays.asList(parts[0], parts[1], parts[2], "*"));
+            if (!mKeysInUse.contains(prefixFormat)) return false;
+
+            // Check if the dynamic part is correctly formed.
+            String dynamicPart = parts[3];
+            return mDynamicPartPattern.matcher(dynamicPart).matches();
+        } else {
+            // Regular key in format "Chrome.[Feature].[Key]" which was not present in |mKeysInUse|.
+            // Just check if it is in [keys in use].
+            return mKeysInUse.contains(key);
+        }
+    }
+}

@@ -22,10 +22,6 @@ All changes to this list should go through Blink's feature review process: http:
     -webkit-line-break
     -webkit-line-clamp
     -webkit-locale
-    -webkit-margin-after-collapse
-    -webkit-margin-before-collapse
-    -webkit-margin-bottom-collapse
-    -webkit-margin-top-collapse
     -webkit-mask-box-image-outset
     -webkit-mask-box-image-repeat
     -webkit-mask-box-image-slice
@@ -384,9 +380,6 @@ All changes to this list should go through Blink's feature review process: http:
         break-before
     -webkit-column-break-inside
         break-inside
-    -webkit-margin-collapse
-        -webkit-margin-after-collapse
-        -webkit-margin-before-collapse
     -webkit-mask
         -webkit-mask-clip
         -webkit-mask-image

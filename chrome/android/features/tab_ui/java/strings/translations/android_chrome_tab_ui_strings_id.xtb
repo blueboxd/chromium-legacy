@@ -5,6 +5,7 @@
 <translation id="1181037720776840403">Hapus</translation>
 <translation id="125153950246128346">Ketuk untuk melihat tab lainnya</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> tab}other{<ph name="TABS_COUNT_MANY" /> tab}}</translation>
+<translation id="2569352796411618312">Saran: <ph name="NUMBER_OF_TABS" /> dari beberapa tab Anda belum digunakan akhir-akhir ini. Tutup?</translation>
 <translation id="257674075312929031">Grup</translation>
 <translation id="2613747923081026172">Buat grup</translation>
 <translation id="2671423594960767771">Bagikan grup</translation>
@@ -23,6 +24,9 @@
 <translation id="6840760312327750441">Untuk mengelompokkan tab, sentuh lama sebuah tab. Lalu, tarik ke tab lainnya.</translation>
 <translation id="7151209024774799310">Keluarkan tab dari kelompok</translation>
 <translation id="7559245342362162951">Tampilkan tab grup dalam petak layar penuh</translation>
+<translation id="7792771145871471484">Tinjau saran.</translation>
+<translation id="7966321538264951561">Tutup saran.</translation>
+<translation id="83556505225171773">{TABS_COUNT,plural, =1{Tutup <ph name="TABS_COUNT_ONE" /> tab yang dipilih}other{Tutup <ph name="TABS_COUNT_MANY" /> tab yang dipilih}}</translation>
 <translation id="9150694013019234766">Beralih ke tab lain pada grup tab Anda di dekat bagian bawah layar</translation>
 <translation id="9169594135889675189">Tambahkan tab baru ke grup</translation>
 <translation id="959682366969460160">Atur dengan mudah</translation>

@@ -215,19 +215,20 @@ class CORE_EXPORT HTMLElement : public Element {
   void OnXMLLangAttrChanged(const AttributeModificationParams&);
 };
 
-DEFINE_ELEMENT_TYPE_CASTS(HTMLElement, IsHTMLElement());
-
-template <>
-struct DowncastTraits<HTMLElement> {
-  static bool AllowFrom(const Node& node) { return node.IsHTMLElement(); }
-};
-
 template <typename T>
 bool IsElementOfType(const HTMLElement&);
 template <>
 inline bool IsElementOfType<const HTMLElement>(const HTMLElement&) {
   return true;
 }
+template <>
+inline bool IsElementOfType<const HTMLElement>(const Node& node) {
+  return IsA<HTMLElement>(node);
+}
+template <>
+struct DowncastTraits<HTMLElement> {
+  static bool AllowFrom(const Node& node) { return node.IsHTMLElement(); }
+};
 
 inline HTMLElement::HTMLElement(const QualifiedName& tag_name,
                                 Document& document,

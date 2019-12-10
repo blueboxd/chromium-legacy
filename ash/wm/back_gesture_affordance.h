@@ -21,7 +21,8 @@ class ASH_EXPORT BackGestureAffordance : public gfx::AnimationDelegate {
  public:
   enum class State { DRAGGING, ABORTING, COMPLETING };
 
-  explicit BackGestureAffordance(const gfx::Point& location);
+  BackGestureAffordance(const gfx::Point& location,
+                        bool dragged_from_splitview_divider = false);
   ~BackGestureAffordance() override;
 
   // Updates the drag related properties. Note, |during_reverse_dragging|
@@ -89,6 +90,9 @@ class ASH_EXPORT BackGestureAffordance : public gfx::AnimationDelegate {
 
   // Current x-offset of the affordance.
   float current_offset_ = 0.f;
+
+  // True if dragged from the splitview divider to go back.
+  bool dragged_from_splitview_divider_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BackGestureAffordance);
 };

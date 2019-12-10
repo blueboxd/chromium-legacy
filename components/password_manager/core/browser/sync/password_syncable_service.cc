@@ -56,7 +56,6 @@ bool AreLocalAndSyncPasswordsEqual(
           password_specifics.username_value() &&
       base::UTF16ToUTF8(password_form.password_value) ==
           password_specifics.password_value() &&
-      password_form.preferred == password_specifics.preferred() &&
       password_form.date_last_used.ToDeltaSinceWindowsEpoch()
               .InMicroseconds() == password_specifics.date_last_used() &&
       password_form.date_created.ToInternalValue() ==
@@ -473,7 +472,6 @@ syncer::SyncData SyncDataFromPassword(
   CopyStringField(password_element);
   CopyStringField(username_value);
   CopyStringField(password_value);
-  CopyField(preferred);
   password_specifics->set_date_last_used(
       password_form.date_last_used.ToDeltaSinceWindowsEpoch().InMicroseconds());
   password_specifics->set_date_created(
@@ -509,7 +507,6 @@ autofill::PasswordForm PasswordFromSpecifics(
       base::UTF8ToUTF16(password.password_element());
   new_password.username_value = base::UTF8ToUTF16(password.username_value());
   new_password.password_value = base::UTF8ToUTF16(password.password_value());
-  new_password.preferred = password.preferred();
   if (password.has_date_last_used()) {
     new_password.date_last_used = base::Time::FromDeltaSinceWindowsEpoch(
         base::TimeDelta::FromMicroseconds(password.date_last_used()));

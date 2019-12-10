@@ -44,7 +44,6 @@ class FindBar;
 class GURL;
 class LocationBar;
 class StatusBubble;
-class ToolbarActionsBar;
 
 namespace autofill {
 class AutofillBubbleHandler;
@@ -290,11 +289,6 @@ class BrowserWindow : public ui::BaseWindow {
 
   // Focuses the toolbar (for accessibility).
   virtual void FocusToolbar() = 0;
-
-  // Returns the ToolbarActionsBar associated with the window, if any.
-  // TODO(pbos): Replace usages of |GetToolbarActionsBar| with
-  // |GetExtensionsContainer|.
-  virtual ToolbarActionsBar* GetToolbarActionsBar() = 0;
 
   // Returns the ExtensionsContainer associated with the window, if any.
   virtual ExtensionsContainer* GetExtensionsContainer() = 0;

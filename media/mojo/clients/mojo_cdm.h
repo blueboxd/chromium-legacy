@@ -122,7 +122,7 @@ class MojoCdm : public ContentDecryptionModule,
   // Callback for InitializeCdm.
   void OnCdmInitialized(mojom::CdmPromiseResultPtr result,
                         int cdm_id,
-                        mojom::DecryptorPtr decryptor);
+                        mojo::PendingRemote<mojom::Decryptor> decryptor);
 
   // Callback when new decryption key is available.
   void OnKeyAdded();
@@ -144,7 +144,7 @@ class MojoCdm : public ContentDecryptionModule,
   mojo::AssociatedReceiver<ContentDecryptionModuleClient> client_receiver_{
       this};
 
-  // Protects |cdm_id_|, |decryptor_ptr_|, |decryptor_| and
+  // Protects |cdm_id_|, |decryptor_remote_|, |decryptor_| and
   // |decryptor_task_runner_| which could be accessed from other threads.
   // See CdmContext implementation above.
   mutable base::Lock lock_;
@@ -153,14 +153,15 @@ class MojoCdm : public ContentDecryptionModule,
   // be invalid if initialization succeeded.
   int cdm_id_;
 
-  // The DecryptorPtrInfo exposed by the remote CDM. Set after initialization
-  // is completed and cleared after |decryptor_| is created. May be invalid
-  // after initialization if the CDM doesn't support a Decryptor.
-  mojo::PendingRemote<mojom::Decryptor> decryptor_ptr_info_;
+  // The mojo::PendingRemote<mojom::Decryptor> exposed by the remote CDM. Set
+  // after initialization is completed and cleared after |decryptor_| is
+  // created. May be invalid after initialization if the CDM doesn't support a
+  // Decryptor.
+  mojo::PendingRemote<mojom::Decryptor> decryptor_remote_;
 
-  // Decryptor based on |decryptor_ptr_|, lazily created in GetDecryptor().
-  // Since GetDecryptor() can be called on a different thread, use
-  // |decryptor_task_runner_| to bind |decryptor_| to that thread.
+  // Decryptor based on |decryptor_remote_|, lazily created in
+  // GetDecryptor(). Since GetDecryptor() can be called on a different thread,
+  // use |decryptor_task_runner_| to bind |decryptor_| to that thread.
   std::unique_ptr<MojoDecryptor> decryptor_;
   scoped_refptr<base::SingleThreadTaskRunner> decryptor_task_runner_;
 

@@ -25,4 +25,9 @@ mojom("gl") {
       "//components/chromeos_camera/common",
     ]
   }
+
+  enabled_features = []
+  if (!is_android) {
+    enabled_features += [ "is_not_android" ]
+  }
 }

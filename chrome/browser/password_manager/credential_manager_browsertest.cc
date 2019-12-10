@@ -332,7 +332,6 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   form_1.origin = origin;
   form_1.username_value = base::ASCIIToUTF16("user1");
   form_1.password_value = base::ASCIIToUTF16("abcdef");
-  form_1.preferred = true;
 
   autofill::PasswordForm form_2;
   form_2.signon_realm = origin.spec();
@@ -418,7 +417,6 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   form_1.origin = origin;
   form_1.username_value = base::ASCIIToUTF16("user1");
   form_1.password_value = base::ASCIIToUTF16("abcdef");
-  form_1.preferred = true;
 
   autofill::PasswordForm form_2;
   form_2.signon_realm = origin.spec();
@@ -509,7 +507,6 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   form_1.username_element = base::ASCIIToUTF16("user");
   form_1.password_element = base::ASCIIToUTF16("pass");
   form_1.origin = GURL(origin.spec() + "/my/custom/path/");
-  form_1.preferred = true;
 
   autofill::PasswordForm form_2;
   form_2.signon_realm = origin.spec();
@@ -749,7 +746,8 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
           PasswordStoreFactory::GetForProfile(
-              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS).get());
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
   autofill::PasswordForm signin_form;
   signin_form.signon_realm = embedded_test_server()->base_url().spec();
   signin_form.password_value = base::ASCIIToUTF16("password");
@@ -764,8 +762,8 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
 
   NavigateToFile("/password/password_form.html");
   std::string fill_password =
-  "document.getElementById('username_field').value = 'trash';"
-  "document.getElementById('password_field').value = 'trash';";
+      "document.getElementById('username_field').value = 'trash';"
+      "document.getElementById('password_field').value = 'trash';";
   ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_password));
 
   // Call the API to trigger the notification to the client.
@@ -915,7 +913,8 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, SaveViaAPIAndAutofill) {
       static_cast<password_manager::TestPasswordStore*>(
           PasswordStoreFactory::GetForProfile(
               browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
-              .get())->stored_passwords();
+              .get())
+          ->stored_passwords();
   ASSERT_EQ(1u, stored.size());
   autofill::PasswordForm signin_form = stored.begin()->second[0];
   EXPECT_EQ(base::ASCIIToUTF16("user"), signin_form.username_value);
@@ -938,7 +937,6 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, UpdateViaAPIAndAutofill) {
   signin_form.username_value = base::ASCIIToUTF16("user");
   signin_form.origin = embedded_test_server()->base_url();
   signin_form.skip_zero_click = true;
-  signin_form.preferred = true;
   // Set an old value for the |date_last_used| to make sure it gets updated.
   signin_form.date_last_used = base::Time::UnixEpoch();
   password_store->AddLogin(signin_form);

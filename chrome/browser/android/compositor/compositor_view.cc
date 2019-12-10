@@ -95,10 +95,11 @@ CompositorView::CompositorView(JNIEnv* env,
   // It is safe to not keep a ref on the feature checker because it adds one
   // internally in CheckGpuFeatureAvailability and unrefs after the callback is
   // dispatched.
-  auto surface_control_feature_checker = content::GpuFeatureChecker::Create(
-      gpu::GpuFeatureType::GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL,
-      base::Bind(&CompositorView::OnSurfaceControlFeatureStatusUpdate,
-                 weak_factory_.GetWeakPtr()));
+  scoped_refptr<content::GpuFeatureChecker> surface_control_feature_checker =
+      content::GpuFeatureChecker::Create(
+          gpu::GpuFeatureType::GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL,
+          base::BindOnce(&CompositorView::OnSurfaceControlFeatureStatusUpdate,
+                         weak_factory_.GetWeakPtr()));
   surface_control_feature_checker->CheckGpuFeatureAvailability();
 }
 

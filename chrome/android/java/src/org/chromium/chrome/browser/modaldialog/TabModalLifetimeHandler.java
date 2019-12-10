@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.modaldialog;
 
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.fullscreen.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -42,6 +43,7 @@ public class TabModalLifetimeHandler implements NativeInitObserver, Destroyable 
 
     private final ChromeActivity mActivity;
     private final ModalDialogManager mManager;
+    private final ComposedBrowserControlsVisibilityDelegate mAppVisibilityDelegate;
     private TabModalPresenter mPresenter;
     private TabModelSelectorTabModelObserver mTabModelObserver;
     private Tab mActiveTab;
@@ -50,10 +52,14 @@ public class TabModalLifetimeHandler implements NativeInitObserver, Destroyable 
     /**
      * @param activity The {@link ChromeActivity} that this handler is attached to.
      * @param manager The {@link ModalDialogManager} that this handler handles.
+     * @param appVisibilityDelegate The {@link ComposedBrowserControlsVisibilityDelegate} that
+     *                              handles the application browser controls visibility.
      */
-    public TabModalLifetimeHandler(ChromeActivity activity, ModalDialogManager manager) {
+    public TabModalLifetimeHandler(ChromeActivity activity, ModalDialogManager manager,
+            ComposedBrowserControlsVisibilityDelegate appVisibilityDelegate) {
         mActivity = activity;
         mManager = manager;
+        mAppVisibilityDelegate = appVisibilityDelegate;
         activity.getLifecycleDispatcher().register(this);
         mTabModalSuspendedToken = TokenHolder.INVALID_TOKEN;
     }
@@ -80,6 +86,7 @@ public class TabModalLifetimeHandler implements NativeInitObserver, Destroyable 
     @Override
     public void onFinishNativeInitialization() {
         mPresenter = new TabModalPresenter(mActivity);
+        mAppVisibilityDelegate.addDelegate(mPresenter.getBrowserControlsVisibilityDelegate());
         mManager.registerPresenter(mPresenter, ModalDialogType.TAB);
 
         handleTabChanged(mActivity.getActivityTab());

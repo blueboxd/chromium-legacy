@@ -5,6 +5,7 @@
 <translation id="1181037720776840403">Olib tashlash</translation>
 <translation id="125153950246128346">Boshqa varaqni ochish uchun bosing</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> ta varaq}other{<ph name="TABS_COUNT_MANY" /> ta varaq}}</translation>
+<translation id="2569352796411618312">Bildirgi: <ph name="NUMBER_OF_TABS" /> ta varaq oxirgi vaqtlarda ishlatilmayapti. Ular yopilsinmi?</translation>
 <translation id="257674075312929031">Guruh</translation>
 <translation id="2613747923081026172">Guruh yaratish</translation>
 <translation id="2671423594960767771">Guruh havolasi</translation>
@@ -23,6 +24,9 @@
 <translation id="6840760312327750441">Varaqlarni guruhlash uchun varaqni bosib turing. Keyin esa tortib, boshqa varaq ustiga tashlang.</translation>
 <translation id="7151209024774799310">Varaqlarni guruhdan olib tashlash</translation>
 <translation id="7559245342362162951">Guruh varaqlarini butun ekranga jadval shaklida chiqarish</translation>
+<translation id="7792771145871471484">Bu varaqlarni ochish.</translation>
+<translation id="7966321538264951561">Bildirgilarni yopish</translation>
+<translation id="83556505225171773">{TABS_COUNT,plural, =1{Tanlangan <ph name="TABS_COUNT_ONE" /> ta varaqni yopish}other{Tanlangan <ph name="TABS_COUNT_MANY" /> ta varaqni yopish}}</translation>
 <translation id="9150694013019234766">Ekranning quyi qismidagi varaqlar guruhidagi varaqlarni almashtirish</translation>
 <translation id="9169594135889675189">Guruhga yangi varaq kiritish</translation>
 <translation id="959682366969460160">Ishni tashkillash</translation>

@@ -5,6 +5,7 @@
 <translation id="1181037720776840403">Remover</translation>
 <translation id="125153950246128346">Toque para ver outra guia</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> guia}one{<ph name="TABS_COUNT_MANY" /> guia}other{<ph name="TABS_COUNT_MANY" /> guias}}</translation>
+<translation id="2569352796411618312">Sugestão: <ph name="NUMBER_OF_TABS" /> das suas guias não foram usadas recentemente. Fechar todas elas?</translation>
 <translation id="257674075312929031">Grupo</translation>
 <translation id="2613747923081026172">Criar grupo</translation>
 <translation id="2671423594960767771">Compartilhar grupo</translation>
@@ -23,6 +24,9 @@
 <translation id="6840760312327750441">Para agrupar guias, toque em uma delas e a mantenha pressionada. Depois disso, arraste-a para outra guia.</translation>
 <translation id="7151209024774799310">Remover guias do grupo</translation>
 <translation id="7559245342362162951">Mostrar guias do grupo em grade de tela cheia</translation>
+<translation id="7792771145871471484">Revisar as sugestões.</translation>
+<translation id="7966321538264951561">Dispensar as sugestões.</translation>
+<translation id="83556505225171773">{TABS_COUNT,plural, =1{Fechar <ph name="TABS_COUNT_ONE" /> guia selecionada}one{Fechar <ph name="TABS_COUNT_MANY" /> guia selecionada}other{Fechar <ph name="TABS_COUNT_MANY" /> guias selecionadas}}</translation>
 <translation id="9150694013019234766">Alterne entre as guias do seu grupo de guias perto da parte inferior da tela</translation>
 <translation id="9169594135889675189">Adicionar nova guia ao grupo</translation>
 <translation id="959682366969460160">Organize-se</translation>

@@ -240,6 +240,10 @@ class CONTENT_EXPORT AppCacheUpdateJob
   // Stores the manifest scope determined during the fetch phase.
   std::string fetched_manifest_scope_;
 
+  // If true, AppCaches will be limited to their determined manifest scope
+  // (either the scope of the manifest URL or the override the server gives us).
+  bool manifest_scope_checks_enabled_;
+
   // Defined prior to refs to AppCaches and Groups because destruction
   // order matters, the disabled_storage_reference_ must outlive those
   // objects.

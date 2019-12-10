@@ -40,7 +40,7 @@ TEST_F(PermissionsParserTest, RemoveOverlappingAPIPermissions) {
   // removed from optional permissions as it is specified as required.
   EXPECT_THAT(required_api_names,
               testing::UnorderedElementsAre("tabs", "storage"));
-  EXPECT_THAT(optional_api_names, testing::UnorderedElementsAre("geolocation"));
+  EXPECT_THAT(optional_api_names, testing::UnorderedElementsAre("bookmarks"));
 }
 
 TEST_F(PermissionsParserTest, RemoveOverlappingHostPermissions) {
@@ -135,4 +135,21 @@ TEST_F(PermissionsParserTest, HostPermissionsKeyInvalidHosts) {
   scoped_refptr<Extension> extension(LoadAndExpectWarnings(
       "host_permissions_key_invalid_hosts.json", expected_warnings));
 }
+
+// Tests that listing a permissions as optional when that permission cannot be
+// optional produces a warning and doesn't add the permission.
+TEST_F(PermissionsParserTest, UnsupportedOptionalPermissionWarning) {
+  scoped_refptr<Extension> extension(LoadAndExpectWarning(
+      "unsupported_optional_api_permission.json",
+      ErrorUtils::FormatErrorMessage(
+          manifest_errors::kPermissionCannotBeOptional, "debugger")));
+
+  // Check that the debugger was not included in the optional permissions as it
+  // is not allowed to be optional.
+  std::set<std::string> optional_api_names =
+      PermissionsParser::GetOptionalPermissions(extension.get())
+          .GetAPIsAsStrings();
+  EXPECT_THAT(optional_api_names, testing::UnorderedElementsAre("tabs"));
+}
+
 }  // namespace extensions

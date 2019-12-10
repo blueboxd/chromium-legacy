@@ -5,7 +5,6 @@
 #include "ui/accessibility/ax_node_position.h"
 
 #include "base/strings/string_util.h"
-#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_manager_map.h"
@@ -13,6 +12,22 @@
 namespace ui {
 
 AXTree* AXNodePosition::tree_ = nullptr;
+
+// static
+AXNodePosition::AXPositionInstance AXNodePosition::CreatePosition(
+    const AXNode& node,
+    int child_index_or_text_offset,
+    ax::mojom::TextAffinity affinity) {
+  if (!node.tree())
+    return CreateNullPosition();
+
+  AXTreeID tree_id = node.tree()->GetAXTreeID();
+  if (node.IsText())
+    return CreateTextPosition(tree_id, node.id(), child_index_or_text_offset,
+                              affinity);
+
+  return CreateTreePosition(tree_id, node.id(), child_index_or_text_offset);
+}
 
 AXNodePosition::AXNodePosition() = default;
 
@@ -23,75 +38,6 @@ AXNodePosition::AXNodePosition(const AXNodePosition& other)
 
 AXNodePosition::AXPositionInstance AXNodePosition::Clone() const {
   return AXPositionInstance(new AXNodePosition(*this));
-}
-
-// static
-AXNodePosition::AXPositionInstance AXNodePosition::CreatePosition(
-    AXTreeID tree_id,
-    const AXNode& node,
-    int offset,
-    ax::mojom::TextAffinity affinity) {
-  AXPositionInstance position = CreateNullPosition();
-  // If either the current anchor, or the 'child after tree position' is
-  // ignored, we must 'fix' the position by finding the nearest unignored
-  // position. 'child after tree position' being the child at the child_offset
-  // that tree position refers to.
-  if (node.IsText()) {
-    position = CreateTextPosition(tree_id, node.id(), offset, affinity);
-  } else {
-    position = CreateTreePosition(tree_id, node.id(), offset);
-  }
-  return position;
-}
-
-bool AXNodePosition::IsIgnoredPosition() const {
-  if (IsNullPosition())
-    return false;
-
-  // If this position is pointing to an ignored node, then consider this
-  // position as ignored.
-  if (GetAnchor()->IsIgnored())
-    return true;
-
-  // If there are any ignored nodes in the parent chain from the leaf node to
-  // this node's anchor, consider the position to be ignored.
-  AXPositionInstance leaf_position = AsLeafTextPosition();
-  AXNode* descendant = leaf_position->GetAnchor();
-  while (descendant && descendant->id() != anchor_id()) {
-    if (descendant->IsIgnored())
-      return true;
-    descendant = descendant->parent();
-  }
-
-  return false;
-}
-
-AXNodePosition::AXPositionInstance AXNodePosition::AsUnignoredTextPosition(
-    AdjustmentBehavior adjustment_behavior) const {
-  if (IsNullPosition())
-    return CreateNullPosition();
-
-  if (!IsLeafTextPosition())
-    return AsLeafTextPosition()->AsUnignoredTextPosition(adjustment_behavior);
-
-  AXPositionInstance unignored_position =
-      CreateUnignoredPositionFromLeafTextPosition(adjustment_behavior);
-
-  // If creating an unignored position using |adjustment_behavior| returns a
-  // null position, the position may be at the start or end of a document.
-  // For this case attempt to adjust using the opposite AdjustmentBehavior.
-  if (features::IsAccessibilityExposeDisplayNoneEnabled()) {
-    if (unignored_position->IsNullPosition()) {
-      const AdjustmentBehavior opposite_adjustment =
-          (adjustment_behavior == AdjustmentBehavior::kMoveRight)
-              ? AdjustmentBehavior::kMoveLeft
-              : AdjustmentBehavior::kMoveRight;
-      unignored_position =
-          CreateUnignoredPositionFromLeafTextPosition(opposite_adjustment);
-    }
-  }
-
-  return unignored_position;
 }
 
 void AXNodePosition::AnchorChild(int child_index,
@@ -346,39 +292,6 @@ AXNode* AXNodePosition::GetParent(AXNode* child,
 
   *parent_id = parent->id();
   return parent;
-}
-
-AXNodePosition::AXPositionInstance
-AXNodePosition::CreateUnignoredPositionFromLeafTextPosition(
-    AdjustmentBehavior adjustment_behavior) const {
-  DCHECK(IsLeafTextPosition());
-
-  AXNode* unignored_node = GetAnchor();
-  if (!unignored_node->IsIgnored())
-    return Clone();
-
-  // Find the next/previous node that is not ignored.
-  while (unignored_node) {
-    switch (adjustment_behavior) {
-      case AdjustmentBehavior::kMoveRight:
-        unignored_node = unignored_node->GetNextUnignoredInTreeOrder();
-        break;
-      case AdjustmentBehavior::kMoveLeft:
-        unignored_node = unignored_node->GetPreviousUnignoredInTreeOrder();
-    }
-    if (unignored_node && unignored_node->IsText()) {
-      switch (adjustment_behavior) {
-        case AdjustmentBehavior::kMoveRight:
-          return CreateTextPosition(tree_id(), unignored_node->id(), 0,
-                                    ax::mojom::TextAffinity::kDownstream);
-        case AdjustmentBehavior::kMoveLeft:
-          return CreateTextPosition(tree_id(), unignored_node->id(), 0,
-                                    ax::mojom::TextAffinity::kDownstream)
-              ->CreatePositionAtEndOfAnchor();
-      }
-    }
-  }
-  return CreateNullPosition();
 }
 
 }  // namespace ui

@@ -2541,6 +2541,7 @@ if (!is_android) {
         "../browser/ui/cocoa/task_manager_mac_browsertest.mm",
         "../browser/ui/cocoa/touchbar/browser_window_touch_bar_controller_browsertest.mm",
         "../browser/ui/views/certificate_viewer_mac_browsertest.mm",
+        "../browser/ui/views/frame/browser_non_client_frame_view_mac_browsertest.cc",
         "../browser/ui/views/ssl_client_certificate_selector_mac_browsertest.mm",
         "../common/profiler/stack_sampling_browsertest.cc",
 
@@ -5492,6 +5493,7 @@ if (!is_android) {
       "../browser/extensions/extension_fullscreen_apitest.cc",
       "../browser/extensions/extension_function_test_utils.cc",
       "../browser/extensions/extension_keybinding_apitest.cc",
+      "../browser/extensions/omnibox_focus_interactive_test.cc",
       "../browser/extensions/window_open_interactive_apitest.cc",
       "../browser/global_keyboard_shortcuts_mac_browsertest.mm",
       "../browser/mouse_events_interactive_uitest.cc",
@@ -6523,8 +6525,8 @@ if (is_chromeos) {
       "../common/string_matching/tokenized_string_fuzzer.cc",
     ]
     deps = [
-      "//ash/public/cpp",
       "//base",
+      "//chrome/common/string_matching",
     ]
   }
 }

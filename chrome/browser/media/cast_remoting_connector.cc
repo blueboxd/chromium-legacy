@@ -334,7 +334,7 @@ void CastRemotingConnector::StartRemoting(RemotingBridge* bridge) {
   if (remoting_allowed_.has_value()) {
     StartRemotingIfPermitted();
   } else {
-    base::OnceCallback<void(bool)> dialog_result_callback(base::BindOnce(
+    PermissionResultCallback dialog_result_callback(base::BindOnce(
         [](base::WeakPtr<CastRemotingConnector> connector, bool is_allowed) {
           DCHECK_CURRENTLY_ON(BrowserThread::UI);
           if (!connector)

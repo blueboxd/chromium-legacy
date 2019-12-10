@@ -66,10 +66,11 @@ void TooltipIcon::MouseMovedOutOfHost() {
 }
 
 void TooltipIcon::SetDrawAsHovered(bool hovered) {
-  SetImage(
-      gfx::CreateVectorIcon(vector_icons::kInfoOutlineIcon, tooltip_icon_size_,
-                            hovered ? SkColorSetARGB(0xBD, 0, 0, 0)
-                                    : SkColorSetARGB(0xBD, 0x44, 0x44, 0x44)));
+  SetImage(gfx::CreateVectorIcon(
+      vector_icons::kInfoOutlineIcon, tooltip_icon_size_,
+      GetNativeTheme()->GetSystemColor(
+          hovered ? ui::NativeTheme::kColorId_TooltipIconHovered
+                  : ui::NativeTheme::kColorId_TooltipIcon)));
 }
 
 void TooltipIcon::ShowBubble() {

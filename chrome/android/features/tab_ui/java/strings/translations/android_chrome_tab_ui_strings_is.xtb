@@ -5,6 +5,7 @@
 <translation id="1181037720776840403">Fjarlægja</translation>
 <translation id="125153950246128346">Ýttu til að sjá annan flipa</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> flipi}one{<ph name="TABS_COUNT_MANY" /> flipi}other{<ph name="TABS_COUNT_MANY" /> flipar}}</translation>
+<translation id="2569352796411618312">Tillaga: <ph name="NUMBER_OF_TABS" /> af flipunum þínum hafa ekki verið notaðir nýlega. Viltu loka þeim?</translation>
 <translation id="257674075312929031">Hópur</translation>
 <translation id="2613747923081026172">Búa til hóp</translation>
 <translation id="2671423594960767771">Deila hópi</translation>
@@ -23,6 +24,9 @@
 <translation id="6840760312327750441">Haltu fingri á flipa til að flokka hann. Dragðu hann svo ofan á annan flipa.</translation>
 <translation id="7151209024774799310">Fjarlægja flipa úr hópi</translation>
 <translation id="7559245342362162951">Sýna flipa hóps á öllum skjánum</translation>
+<translation id="7792771145871471484">Skoða tillögurnar.</translation>
+<translation id="7966321538264951561">Hunsa tillögurnar.</translation>
+<translation id="83556505225171773">{TABS_COUNT,plural, =1{Loka <ph name="TABS_COUNT_ONE" /> völdum flipa}one{Loka <ph name="TABS_COUNT_MANY" /> völdum flipa}other{Loka <ph name="TABS_COUNT_MANY" /> völdum flipum}}</translation>
 <translation id="9150694013019234766">Flettu á milli flipa í flipahópnum neðarlega á skjánum</translation>
 <translation id="9169594135889675189">Bæta nýjum flipa við hóp</translation>
 <translation id="959682366969460160">Skipulag</translation>

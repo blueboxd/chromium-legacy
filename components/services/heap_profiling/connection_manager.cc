@@ -217,31 +217,10 @@ bool ConnectionManager::ConvertProfileToExportParams(
                        .first->second;
     }
 
-    size_t alloc_size = sample->size;
-    size_t alloc_count = 1;
-
-    // If allocations were sampled, then we need to desample to return accurate
-    // results.
-    // TODO(alph): Move it closer to the the sampler, so other components
-    // wouldn't care about the math.
-    if (alloc_size < sampling_rate && alloc_size != 0) {
-      // To desample, we need to know the probability P that an allocation will
-      // be sampled. Once we know P, we still have to deal with discretization.
-      // Let's say that there's 1 allocation with P=0.85. Should we report 1 or
-      // 2 allocations? Should we report a fudged size (size / 0.85), or a
-      // discreted size, e.g. (1 * size) or (2 * size)? There are tradeoffs.
-      //
-      // We choose to emit a fudged size, which will return a more accurate
-      // total allocation size, but less accurate per-allocation size.
-      //
-      // The aggregate probability that an allocation will be sampled is
-      // alloc_size / sampling_rate. For a more detailed treatise, see
-      // https://bugs.chromium.org/p/chromium/issues/detail?id=810748#c4
-      float desampling_multiplier =
-          static_cast<float>(sampling_rate) / static_cast<float>(alloc_size);
-      alloc_count *= desampling_multiplier;
-      alloc_size *= desampling_multiplier;
-    }
+    size_t alloc_size = sample->total;
+    float alloc_count = 1;
+    if (sample->size != 0)
+      alloc_count = float(sample->total) / float(sample->size);
 
     std::vector<Address> stack(sample->stack.begin(), sample->stack.end());
     AllocationMetrics& metrics =

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 (async function() {
+  'use strict';
   TestRunner.addResult(`Tests scripts sorting in the scripts panel.\n`);
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.loadModule('sdk_test_runner');
@@ -14,8 +15,10 @@
     return navigatorView;
   }
 
-  sourcesNavigatorView = createNavigatorView(Sources.NetworkNavigatorView);
-  contentScriptsNavigatorView = createNavigatorView(Sources.ContentScriptsNavigatorView);
+  const sourcesNavigatorView =
+      createNavigatorView(Sources.NetworkNavigatorView);
+  const contentScriptsNavigatorView =
+      createNavigatorView(Sources.ContentScriptsNavigatorView);
 
   var pageMock = new SDKTestRunner.PageMock('http://example.com');
   pageMock.turnIntoWorker();

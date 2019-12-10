@@ -34,10 +34,12 @@ class BrowserActionTestUtilViews : public BrowserActionTestUtil {
   bool ActionButtonWantsToRun(size_t index) override;
   void SetWidth(int width) override;
   ToolbarActionsBar* GetToolbarActionsBar() override;
+  ExtensionsContainer* GetExtensionsContainer() override;
   std::unique_ptr<BrowserActionTestUtil> CreateOverflowBar(
       Browser* browser) override;
   gfx::Size GetMinPopupSize() override;
   gfx::Size GetMaxPopupSize() override;
+  gfx::Size GetToolbarActionSize() override;
   bool CanBeResized() override;
 
  private:

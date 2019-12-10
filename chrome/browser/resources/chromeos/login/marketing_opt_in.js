@@ -10,7 +10,7 @@
 Polymer({
   is: 'marketing-opt-in',
 
-  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
+  behaviors: [I18nBehavior, OobeDialogHostBehavior],
 
   /**
    * This is 'on-tap' event handler for 'AcceptAndContinue/Next' buttons.

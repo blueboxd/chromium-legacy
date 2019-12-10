@@ -44,13 +44,15 @@ net::CookieOptions MakeOptionsForSet(mojom::RestrictedCookieManagerRole role,
     options.set_exclude_httponly();  // Default, but make it explicit here.
     options.set_same_site_cookie_context(
         net::cookie_util::ComputeSameSiteContextForScriptSet(
-            url, site_for_cookies, attach_same_site_cookies));
+            url, net::SiteForCookies::FromUrl(site_for_cookies),
+            attach_same_site_cookies));
   } else {
     // mojom::RestrictedCookieManagerRole::NETWORK
     options.set_include_httponly();
     options.set_same_site_cookie_context(
         net::cookie_util::ComputeSameSiteContextForSubresource(
-            url, site_for_cookies, attach_same_site_cookies));
+            url, net::SiteForCookies::FromUrl(site_for_cookies),
+            attach_same_site_cookies));
   }
   return options;
 }
@@ -67,14 +69,15 @@ net::CookieOptions MakeOptionsForGet(mojom::RestrictedCookieManagerRole role,
     options.set_exclude_httponly();  // Default, but make it explicit here.
     options.set_same_site_cookie_context(
         net::cookie_util::ComputeSameSiteContextForScriptGet(
-            url, site_for_cookies, base::nullopt /*initiator*/,
-            attach_same_site_cookies));
+            url, net::SiteForCookies::FromUrl(site_for_cookies),
+            base::nullopt /*initiator*/, attach_same_site_cookies));
   } else {
     // mojom::RestrictedCookieManagerRole::NETWORK
     options.set_include_httponly();
     options.set_same_site_cookie_context(
         net::cookie_util::ComputeSameSiteContextForSubresource(
-            url, site_for_cookies, attach_same_site_cookies));
+            url, net::SiteForCookies::FromUrl(site_for_cookies),
+            attach_same_site_cookies));
   }
   return options;
 }

@@ -136,9 +136,7 @@ class PasswordStoreTest : public testing::Test {
     OSCryptMocker::SetUp();
   }
 
-  void TearDown() override {
-    OSCryptMocker::TearDown();
-  }
+  void TearDown() override { OSCryptMocker::TearDown(); }
 
   void WaitForPasswordStore() { task_environment_.RunUntilIdle(); }
 
@@ -153,7 +151,8 @@ class PasswordStoreTest : public testing::Test {
 
  private:
   base::ScopedTempDir temp_dir_;
-  base::test::TaskEnvironment task_environment_{base::test::TaskEnvironment::MainThreadType::UI};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::UI};
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreTest);
 };
@@ -172,7 +171,7 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
-  const time_t cutoff = 1325376000;  // 00:00 Jan 1 2012 UTC
+  const time_t cutoff = 1325376000;           // 00:00 Jan 1 2012 UTC
   const time_t last_usage_time = 1546300800;  // 00:00 Jan 1 2019 UTC
   static const PasswordFormData form_data[] = {
       // A form on https://www.google.com/ older than the cutoff. Will be
@@ -180,29 +179,29 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
       {PasswordForm::Scheme::kHtml, "https://www.google.com",
        "https://www.google.com/origin", "https://www.google.com/action",
        L"submit_element", L"username_element", L"password_element",
-       L"username_value_1", L"", true, last_usage_time, cutoff - 1},
+       L"username_value_1", L"", last_usage_time, cutoff - 1},
       // A form on https://www.google.com/ older than the cutoff. Will be
       // ignored.
       {PasswordForm::Scheme::kHtml, "https://www.google.com",
        "https://www.google.com/origin", "https://www.google.com/action",
        L"submit_element", L"username_element", L"password_element",
-       L"username_value_2", L"", true, last_usage_time, cutoff - 1},
+       L"username_value_2", L"", last_usage_time, cutoff - 1},
       // A form on https://www.google.com/ newer than the cutoff.
       {PasswordForm::Scheme::kHtml, "https://www.google.com",
        "https://www.google.com/origin", "https://www.google.com/action",
        L"submit_element", L"username_element", L"password_element",
-       L"username_value_3", L"", true, last_usage_time, cutoff + 1},
+       L"username_value_3", L"", last_usage_time, cutoff + 1},
       // A form on https://accounts.google.com/ older than the cutoff.
       {PasswordForm::Scheme::kHtml, "https://accounts.google.com",
        "https://accounts.google.com/origin",
        "https://accounts.google.com/action", L"submit_element",
-       L"username_element", L"password_element", L"username_value", L"", true,
+       L"username_element", L"password_element", L"username_value", L"",
        last_usage_time, cutoff - 1},
       // A form on http://bar.example.com/ older than the cutoff.
       {PasswordForm::Scheme::kHtml, "http://bar.example.com",
        "http://bar.example.com/origin", "http://bar.example.com/action",
        L"submit_element", L"username_element", L"password_element",
-       L"username_value", L"", true, last_usage_time, cutoff - 1},
+       L"username_value", L"", last_usage_time, cutoff - 1},
   };
 
   // Build the forms vector and add the forms to the store.
@@ -701,7 +700,7 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
        kTestAndroidRealm1,
        "", "", L"", L"", L"",
        kTestUsername,
-       kTestOldPassword, true, last_usage_time, 2},
+       kTestOldPassword, last_usage_time, 2},
 
       // --- Positive samples --- Credentials that the password update should be
       // automatically propagated to.
@@ -712,7 +711,7 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
        kTestWebOrigin1,
        "", L"", L"",  L"",
        kTestUsername,
-       kTestOldPassword, true, last_usage_time, 1},
+       kTestOldPassword, last_usage_time, 1},
       // Credential for another affiliated web site with the same username.
       // Although the password is different than the current/old password for
       // the Android application, it should be updated regardless.
@@ -721,7 +720,7 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
        kTestWebOrigin2,
        "", L"", L"",  L"",
        kTestUsername,
-       kTestOtherPassword, true,last_usage_time,  1},
+       kTestOtherPassword,last_usage_time,  1},
 
       // --- Negative samples --- Credentials that the password update should
       // not be propagated to.
@@ -733,21 +732,21 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
        kTestWebOrigin3,
        "", L"", L"",  L"",
        kTestUsername,
-       kTestNewPassword, true, last_usage_time, 1},
+       kTestNewPassword,  last_usage_time, 1},
       // Credential for the HTTP version of an affiliated web site.
       {PasswordForm::Scheme::kHtml,
        kTestInsecureWebRealm,
        kTestInsecureWebOrigin,
        "", L"", L"",  L"",
        kTestUsername,
-       kTestOldPassword, true, last_usage_time, 1},
+       kTestOldPassword,  last_usage_time, 1},
       // Credential for an affiliated web site, but with a different username.
       {PasswordForm::Scheme::kHtml,
        kTestWebRealm1,
        kTestWebOrigin1,
        "", L"", L"",  L"",
        kTestOtherUsername,
-       kTestOldPassword, true,last_usage_time,  1},
+       kTestOldPassword, last_usage_time,  1},
       // Credential for a web site that is a PSL match to a web sites affiliated
       // with the Android application.
       {PasswordForm::Scheme::kHtml,
@@ -755,26 +754,26 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
        kTestPSLMatchingWebOrigin,
        "poisoned", L"poisoned", L"",  L"",
        kTestUsername,
-       kTestOldPassword, true,last_usage_time,  1},
+       kTestOldPassword, last_usage_time,  1},
       // Credential for an unrelated web site.
       {PasswordForm::Scheme::kHtml,
        kTestUnrelatedWebRealm,
        kTestUnrelatedWebOrigin,
        "", L"", L"",  L"",
        kTestUsername,
-       kTestOldPassword, true,last_usage_time,  1},
+       kTestOldPassword, last_usage_time,  1},
       // Credential for an affiliated Android application.
       {PasswordForm::Scheme::kHtml,
        kTestAndroidRealm2,
        "", "", L"", L"", L"",
        kTestUsername,
-       kTestOldPassword, true,last_usage_time,  1},
+       kTestOldPassword, last_usage_time,  1},
       // Credential for an unrelated Android application.
       {PasswordForm::Scheme::kHtml,
        kTestUnrelatedAndroidRealm,
        "", "", L"", L"", L"",
        kTestUsername,
-       kTestOldPassword, true,last_usage_time,  1},
+       kTestOldPassword, last_usage_time,  1},
       // Credential for an affiliated web site with the same username, but one
       // that was updated at the same time via Sync as the Android credential.
       {PasswordForm::Scheme::kHtml,
@@ -782,7 +781,7 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
        kTestWebOrigin5,
        "", L"", L"",  L"",
        kTestUsername,
-       kTestOtherPassword, true, last_usage_time, 2}};
+       kTestOtherPassword, last_usage_time, 2}};
   /* clang-format on */
 
   // The number of positive samples in |kTestCredentials|.
@@ -801,8 +800,7 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
     // Set up the initial test data set.
     std::vector<std::unique_ptr<PasswordForm>> all_credentials;
     for (size_t i = 0; i < base::size(kTestCredentials); ++i) {
-      all_credentials.push_back(
-          FillPasswordFormWithData(kTestCredentials[i]));
+      all_credentials.push_back(FillPasswordFormWithData(kTestCredentials[i]));
       all_credentials.back()->date_synced =
           all_credentials.back()->date_created;
       store->AddLogin(*all_credentials.back());
@@ -843,8 +841,9 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
     //       normally be trigger by Sync.
     MockPasswordStoreObserver mock_observer;
     store->AddObserver(&mock_observer);
-    EXPECT_CALL(mock_observer, OnLoginsChanged(testing::SizeIs(
-                                   kExpectedNumberOfPropagatedUpdates)));
+    EXPECT_CALL(
+        mock_observer,
+        OnLoginsChanged(testing::SizeIs(kExpectedNumberOfPropagatedUpdates)));
     if (test_remove_and_add_login) {
       store->ScheduleTask(
           base::BindOnce(IgnoreResult(&PasswordStore::RemoveLoginSync), store,

@@ -316,12 +316,14 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // SiteInstance site URL, and its process would be locked to |lock_url|.
   // |site_url| and |lock_url| may differ in cases where an effective URL is
   // not the actual site that the process is locked to, which happens for
-  // hosted apps.
+  // hosted apps. |is_guest| should be set to true if the call is being made
+  // for a <webview> guest SiteInstance.
   static bool IsSuitableHost(RenderProcessHost* host,
                              BrowserContext* browser_context,
                              const IsolationContext& isolation_context,
                              const GURL& site_url,
-                             const GURL& lock_url);
+                             const GURL& lock_url,
+                             bool is_guest);
 
   // Returns an existing RenderProcessHost for |url| in |browser_context|,
   // if one exists.  Otherwise a new RenderProcessHost should be created and
@@ -336,12 +338,14 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const GURL& url);
 
   // Variant of the above that takes in a SiteInstance site URL and the
-  // process's origin lock URL, when they are known.
+  // process's origin lock URL, when they are known. |is_guest| should be set
+  // to true if the call is being made for a <webview> guest SiteInstance.
   static RenderProcessHost* GetSoleProcessHostForSite(
       BrowserContext* browser_context,
       const IsolationContext& isolation_context,
       const GURL& site_url,
-      const GURL& lock_url);
+      const GURL& lock_url,
+      const bool is_guest);
 
   // Registers the given |process| to be used for all sites identified by
   // |site_instance| within |browser_context|.

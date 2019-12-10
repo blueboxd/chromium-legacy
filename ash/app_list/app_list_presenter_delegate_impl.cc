@@ -165,7 +165,7 @@ aura::Window* AppListPresenterDelegateImpl::GetContainerForWindow(
 
 aura::Window* AppListPresenterDelegateImpl::GetRootWindowForDisplayId(
     int64_t display_id) {
-  return ash::Shell::Get()->GetRootWindowForDisplayId(display_id);
+  return Shell::Get()->GetRootWindowForDisplayId(display_id);
 }
 
 void AppListPresenterDelegateImpl::OnVisibilityChanged(bool visible,

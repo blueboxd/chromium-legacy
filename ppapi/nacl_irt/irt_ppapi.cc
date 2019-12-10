@@ -6,8 +6,8 @@
 
 #include <stdint.h>
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/threading/thread.h"
 #include "ipc/ipc_logging.h"
 #include "ppapi/nacl_irt/irt_interfaces.h"
@@ -30,7 +30,7 @@ void PpapiPluginRegisterThreadCreator(
 int irt_ppapi_start(const struct PP_StartFunctions* funcs) {
   g_pp_functions = *funcs;
 
-  base::MessageLoop loop;
+  base::SingleThreadTaskExecutor executor;
   ppapi::proxy::PluginGlobals plugin_globals(
       scoped_refptr<base::TaskRunner>(ppapi::GetIOThread()->task_runner()));
 

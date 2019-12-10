@@ -15,7 +15,7 @@ import org.chromium.chrome.browser.signin.SigninHelper;
 import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
-import org.chromium.components.signin.identitymanager.OAuth2TokenService;
+import org.chromium.components.signin.identitymanager.ProfileOAuth2TokenServiceDelegate;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -141,7 +141,8 @@ public final class SigninTestUtil {
         ChromeSigninController.get().setSignedInAccountName(null);
         ContextUtils.getAppSharedPreferences()
                 .edit()
-                .putStringSet(OAuth2TokenService.STORED_ACCOUNTS_KEY, new HashSet<>())
+                .putStringSet(
+                        ProfileOAuth2TokenServiceDelegate.STORED_ACCOUNTS_KEY, new HashSet<>())
                 .apply();
     }
 

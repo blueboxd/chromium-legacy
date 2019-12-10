@@ -59,6 +59,13 @@ struct CONTENT_EXPORT OpenURLParams {
   // in reasonable defaults for other properties (like WindowOpenDisposition).
   static OpenURLParams FromNavigationHandle(NavigationHandle* handle);
 
+#if DCHECK_IS_ON()
+  // Returns true if the contents of this struct are considered valid and
+  // satisfy dependencies between fields (e.g. about:blank URLs require
+  // |initiator_origin| and |source_site_instance| to be set).
+  bool Valid() const;
+#endif
+
   // The URL/referrer to be opened.
   GURL url;
   Referrer referrer;

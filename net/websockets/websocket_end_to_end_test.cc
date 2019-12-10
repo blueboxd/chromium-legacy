@@ -294,7 +294,8 @@ class WebSocketEndToEndTest : public TestWithTaskEnvironment {
       InitialiseContext();
     }
     url::Origin origin = url::Origin::Create(GURL("http://localhost"));
-    GURL site_for_cookies("http://localhost/");
+    net::SiteForCookies site_for_cookies =
+        net::SiteForCookies::FromOrigin(origin);
     net::NetworkIsolationKey network_isolation_key(origin, origin);
     event_interface_ = new ConnectTestingEventInterface();
     channel_ = std::make_unique<WebSocketChannel>(

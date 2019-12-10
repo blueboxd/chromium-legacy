@@ -6,6 +6,7 @@
 
 #include <alpha-compositing-unstable-v1-server-protocol.h>
 #include <aura-shell-server-protocol.h>
+#include <color-space-unstable-v1-server-protocol.h>
 #include <cursor-shapes-unstable-v1-server-protocol.h>
 #include <gaming-input-unstable-v2-server-protocol.h>
 #include <grp.h>
@@ -59,6 +60,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "components/exo/wayland/wl_shell.h"
+#include "components/exo/wayland/zcr_color_space.h"
 #include "components/exo/wayland/zcr_cursor_shapes.h"
 #include "components/exo/wayland/zcr_gaming_input.h"
 #include "components/exo/wayland/zcr_keyboard_configuration.h"
@@ -181,6 +183,8 @@ Server::Server(Display* display)
   wl_global_create(wl_display_.get(),
                    &zwp_relative_pointer_manager_v1_interface, 1, display_,
                    bind_relative_pointer_manager);
+  wl_global_create(wl_display_.get(), &zcr_color_space_v1_interface, 1,
+                   display_, bind_color_space);
 
   zwp_text_manager_data_ =
       std::make_unique<WaylandTextInputManager>(serial_tracker_.get());

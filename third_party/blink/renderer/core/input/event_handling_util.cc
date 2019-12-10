@@ -105,7 +105,8 @@ ContainerNode* ParentForClickEventInteractiveElementSensitive(
     const Node& node) {
   // IE doesn't dispatch click events for mousedown/mouseup events across form
   // controls.
-  if (node.IsHTMLElement() && ToHTMLElement(node).IsInteractiveContent())
+  auto* html_element = DynamicTo<HTMLElement>(node);
+  if (html_element && html_element->IsInteractiveContent())
     return nullptr;
 
   return FlatTreeTraversal::Parent(node);

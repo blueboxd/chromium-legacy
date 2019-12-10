@@ -159,64 +159,73 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   bool IsInSelfHitTestingPhase(HitTestAction) const;
   bool VisibleToHitTestRequest(const HitTestRequest&) const;
 
+  // This struct has common data needed while traversing trees for the hit
+  // testing.
+  struct HitTestContext {
+    STACK_ALLOCATED();
+
+   public:
+    HitTestContext(HitTestAction action,
+                   const HitTestLocation& location,
+                   const PhysicalOffset& inline_root_offset,
+                   HitTestResult* result)
+        : action(action),
+          location(location),
+          inline_root_offset(inline_root_offset),
+          result(result) {}
+
+    HitTestAction action;
+    const HitTestLocation& location;
+    // When traversing within an inline formatting context, this member
+    // represents the offset of the root of the inline formatting context.
+    PhysicalOffset inline_root_offset;
+    // The result is set to this member, but its address does not change during
+    // the traversal.
+    HitTestResult* result;
+  };
+
   // Hit tests the children of a container fragment, which is either
   // |box_fragment_|, or one of its child line box fragments.
   // @param physical_offset Physical offset of the container fragment's content
   // box in paint layer. Note that this includes scrolling offset when the
   // container has 'overflow: scroll'.
-  bool HitTestChildren(HitTestResult&,
-                       const HitTestLocation& hit_test_location,
-                       const PhysicalOffset& physical_offset,
-                       HitTestAction);
-  bool HitTestChildren(HitTestResult&,
+  bool NodeAtPoint(const HitTestContext& hit_test,
+                   const PhysicalOffset& physical_offset);
+  bool HitTestChildren(const HitTestContext& hit_test,
+                       const PhysicalOffset& physical_offset);
+  bool HitTestChildren(const HitTestContext& hit_test,
                        const NGInlineCursor& children,
-                       const HitTestLocation& hit_test_location,
-                       const PhysicalOffset& physical_offset,
-                       HitTestAction);
-  bool HitTestPaintFragmentChildren(HitTestResult&,
+                       const PhysicalOffset& physical_offset);
+  bool HitTestPaintFragmentChildren(const HitTestContext& hit_test,
                                     const NGInlineCursor& children,
-                                    const HitTestLocation& hit_test_location,
-                                    const PhysicalOffset& physical_offset,
-                                    HitTestAction);
-  bool HitTestItemsChildren(HitTestResult&,
-                            const NGInlineCursor& children,
-                            const HitTestLocation& hit_test_location,
-                            const PhysicalOffset& physical_offset,
-                            HitTestAction);
+                                    const PhysicalOffset& physical_offset);
+  bool HitTestItemsChildren(const HitTestContext& hit_test,
+                            const NGInlineCursor& children);
 
   // Hit tests a box fragment, which is a child of either |box_fragment_|, or
   // one of its child line box fragments.
   // @param physical_offset Physical offset of the given box fragment in the
   // paint layer.
-  bool HitTestChildBoxFragment(HitTestResult&,
+  bool HitTestChildBoxFragment(const HitTestContext& hit_test,
                                const NGPhysicalBoxFragment& fragment,
                                const NGInlineBackwardCursor& cursor,
-                               const HitTestLocation& hit_test_location,
-                               const PhysicalOffset& physical_offset,
-                               HitTestAction);
+                               const PhysicalOffset& physical_offset);
 
   // Hit tests the given text fragment.
   // @param physical_offset Physical offset of the text fragment in paint layer.
-  bool HitTestTextFragment(HitTestResult&,
+  bool HitTestTextFragment(const HitTestContext& hit_test,
                            const NGInlineBackwardCursor& cursor,
-                           const HitTestLocation& hit_test_location,
-                           const PhysicalOffset& physical_offset,
-                           HitTestAction);
-  bool HitTestTextItem(HitTestResult& result,
-                       const NGFragmentItem& text_item,
-                       const HitTestLocation& hit_test_location,
-                       const PhysicalOffset& physical_offset,
-                       HitTestAction action);
+                           const PhysicalOffset& physical_offset);
+  bool HitTestTextItem(const HitTestContext& hit_test,
+                       const NGFragmentItem& text_item);
 
   // Hit tests the given line box fragment.
   // @param physical_offset Physical offset of the line box fragment in paint
   // layer.
-  bool HitTestLineBoxFragment(HitTestResult&,
+  bool HitTestLineBoxFragment(const HitTestContext& hit_test,
                               const NGPhysicalLineBoxFragment& fragment,
                               const NGInlineBackwardCursor& cursor,
-                              const HitTestLocation& hit_test_location,
-                              const PhysicalOffset& physical_offset,
-                              HitTestAction);
+                              const PhysicalOffset& physical_offset);
 
   // Returns whether the hit test location is completely outside the border box,
   // which possibly has rounded corners.

@@ -280,7 +280,7 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     NoStatePrefetchBrowserTestHttpCache_DefaultAndAppendFrameOrigin,
     ::testing::Combine(::testing::Values(true), ::testing::Bool()));
 
@@ -359,7 +359,7 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     NoStatePrefetchBrowserTestHttpCache_DefaultAndDoubleKeyedHttpCache,
     ::testing::Combine(::testing::Bool(), ::testing::Values(false)));
 

@@ -182,13 +182,17 @@ class TransparentButton : public views::Button {
 
   const char* GetClassName() const override { return "TransparentButton"; }
 
-  // Forward dragging events, since this class doesn't have enough context to
-  // handle them.
+  // Forward dragging and capture loss events, since this class doesn't have
+  // enough context to handle them. Let the button class manage visual
+  // transitions.
   bool OnMouseDragged(const ui::MouseEvent& event) override {
+    Button::OnMouseDragged(event);
     return parent()->OnMouseDragged(event);
   }
-
-  void OnMouseCaptureLost() override { parent()->OnMouseCaptureLost(); }
+  void OnMouseCaptureLost() override {
+    parent()->OnMouseCaptureLost();
+    Button::OnMouseCaptureLost();
+  }
 };
 
 }  // namespace
@@ -214,7 +218,6 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
       deep_scanning_label_(nullptr),
       open_now_button_(nullptr) {
   views::InstallRectHighlightPathGenerator(this);
-  SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
   model_->AddObserver(this);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -464,7 +467,7 @@ void DownloadItemView::OnDownloadOpened() {
 
 // In dangerous mode we have to layout our buttons.
 void DownloadItemView::Layout() {
-  InkDropHostView::Layout();
+  View::Layout();
 
   UpdateColorsFromTheme();
 
@@ -581,7 +584,6 @@ bool DownloadItemView::OnMouseDragged(const ui::MouseEvent& event) {
   if (!starting_drag_) {
     starting_drag_ = true;
     drag_start_point_ = event.location();
-    AnimateInkDrop(views::InkDropState::HIDDEN, &event);
   }
   if (dragging_) {
     if (model_->GetState() == DownloadItem::COMPLETE) {
@@ -637,10 +639,6 @@ void DownloadItemView::OnThemeChanged() {
   UpdateColorsFromTheme();
   SchedulePaint();
   UpdateDropdownButton();
-}
-
-void DownloadItemView::OnInkDropCreated() {
-  ConfigureInkDrop();
 }
 
 void DownloadItemView::ShowContextMenuForViewImpl(
@@ -921,8 +919,6 @@ void DownloadItemView::ShowContextMenuImpl(const gfx::Rect& rect,
   static_cast<views::internal::RootView*>(GetWidget()->GetRootView())
       ->SetMouseHandler(nullptr);
 
-  AnimateInkDrop(views::InkDropState::HIDDEN, nullptr);
-
   if (!context_menu_.get())
     context_menu_ = std::make_unique<DownloadShelfContextMenuView>(this);
   context_menu_->Run(GetWidget()->GetTopLevelWidget(), rect, source_type,
@@ -948,18 +944,8 @@ void DownloadItemView::SetDropdownState(State new_state) {
   SchedulePaint();
 }
 
-void DownloadItemView::ConfigureInkDrop() {
-  if (HasInkDrop())
-    GetInkDrop()->SetShowHighlightOnHover(!IsShowingWarningDialog());
-}
-
-SkColor DownloadItemView::GetInkDropBaseColor() const {
-  return color_utils::DeriveDefaultIconColor(GetTextColor());
-}
-
 void DownloadItemView::SetMode(Mode mode) {
   mode_ = mode;
-  ConfigureInkDrop();
 }
 
 void DownloadItemView::TransitionToWarningDialog() {

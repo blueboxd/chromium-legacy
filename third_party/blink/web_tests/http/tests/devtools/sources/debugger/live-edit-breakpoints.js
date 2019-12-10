@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 (async function() {
+  'use strict';
   TestRunner.addResult(
       `Tests breakpoints are correctly dimmed and restored in JavaScriptSourceFrame during live edit.\n`);
   await TestRunner.loadModule('sources_test_runner');
@@ -22,7 +23,7 @@
           '        ' + pathToFileName(breakpoints[i].url) + ':' + breakpoints[i].lineNumber +
           ', enabled:' + breakpoints[i].enabled);
 
-    locations = breakpointManager.allBreakpointLocations();
+    const locations = breakpointManager.allBreakpointLocations();
     TestRunner.addResult('    Dumping breakpoint locations');
     for (var i = 0; i < locations.length; ++i) {
       var uiLocation = locations[i].uiLocation;

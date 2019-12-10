@@ -115,4 +115,108 @@ TEST_F(FileHandlerManagerTest, FileHandlersAreNotAvailableUnlessEnabled) {
   }
 }
 
+TEST_F(FileHandlerManagerTest, NoHandlersRegistered) {
+  const AppId app_id = "app-id";
+
+  // Returns nullopt when no file handlers are registered.
+  const base::FilePath path(FILE_PATH_LITERAL("file.foo"));
+  EXPECT_EQ(base::nullopt,
+            file_handler_manager().GetMatchingFileHandlerURL(app_id, {path}));
+}
+
+TEST_F(FileHandlerManagerTest, NoLaunchFilesPassed) {
+  const AppId app_id = "app-id";
+
+  // Returns nullopt when no launch files are passed.
+  EXPECT_EQ(base::nullopt,
+            file_handler_manager().GetMatchingFileHandlerURL(app_id, {}));
+}
+
+TEST_F(FileHandlerManagerTest, SingleValidExtensionSingleExtensionHandler) {
+  const AppId app_id = "app-id";
+  const GURL url("https://app.site/handle-foo");
+
+  file_handler_manager().InstallFileHandler(app_id, url, {".foo"});
+
+  // Matches on single valid extension.
+  const base::FilePath path(FILE_PATH_LITERAL("file.foo"));
+  EXPECT_EQ(url,
+            file_handler_manager().GetMatchingFileHandlerURL(app_id, {path}));
+}
+
+TEST_F(FileHandlerManagerTest, SingleInvalidExtensionSingleExtensionHandler) {
+  const AppId app_id = "app-id";
+  const GURL url("https://app.site/handle-foo");
+
+  file_handler_manager().InstallFileHandler(app_id, url, {".foo"});
+
+  // Returns nullopt on single invalid extension.
+  const base::FilePath path(FILE_PATH_LITERAL("file.bar"));
+  EXPECT_EQ(base::nullopt,
+            file_handler_manager().GetMatchingFileHandlerURL(app_id, {path}));
+}
+
+TEST_F(FileHandlerManagerTest, SingleValidExtensionMultiExtensionHandler) {
+  const AppId app_id = "app-id";
+  const GURL url("https://app.site/handle-foo");
+
+  file_handler_manager().InstallFileHandler(app_id, url, {".foo", ".bar"});
+
+  // Matches on single valid extension for multi-extension handler.
+  const base::FilePath path(FILE_PATH_LITERAL("file.foo"));
+  EXPECT_EQ(url,
+            file_handler_manager().GetMatchingFileHandlerURL(app_id, {path}));
+}
+
+TEST_F(FileHandlerManagerTest, MultipleValidExtensions) {
+  const AppId app_id = "app-id";
+  const GURL url("https://app.site/handle-foo");
+
+  file_handler_manager().InstallFileHandler(app_id, url, {".foo", ".bar"});
+
+  // Matches on multiple valid extensions for multi-extension handler.
+  const base::FilePath path1(FILE_PATH_LITERAL("file.foo"));
+  const base::FilePath path2(FILE_PATH_LITERAL("file.bar"));
+  EXPECT_EQ(url, file_handler_manager().GetMatchingFileHandlerURL(
+                     app_id, {path1, path2}));
+}
+
+TEST_F(FileHandlerManagerTest, PartialExtensionMatch) {
+  const AppId app_id = "app-id";
+  const GURL url("https://app.site/handle-foo");
+
+  file_handler_manager().InstallFileHandler(app_id, url, {".foo"});
+
+  // Returns nullopt on partial extension match.
+  const base::FilePath path1(FILE_PATH_LITERAL("file.foo"));
+  const base::FilePath path2(FILE_PATH_LITERAL("file.bar"));
+  EXPECT_EQ(base::nullopt, file_handler_manager().GetMatchingFileHandlerURL(
+                               app_id, {path1, path2}));
+}
+
+TEST_F(FileHandlerManagerTest, SingleFileWithoutExtension) {
+  const AppId app_id = "app-id";
+  const GURL url("https://app.site/handle-foo");
+
+  file_handler_manager().InstallFileHandler(app_id, url, {".foo"});
+
+  // Returns nullopt where a file has no extension.
+  const base::FilePath path(FILE_PATH_LITERAL("file"));
+  EXPECT_EQ(base::nullopt,
+            file_handler_manager().GetMatchingFileHandlerURL(app_id, {path}));
+}
+
+TEST_F(FileHandlerManagerTest, FileWithoutExtensionAmongMultipleFiles) {
+  const AppId app_id = "app-id";
+  const GURL url("https://app.site/handle-foo");
+
+  file_handler_manager().InstallFileHandler(app_id, url, {".foo"});
+
+  // Returns nullopt where one file has no extension while others do.
+  const base::FilePath path1(FILE_PATH_LITERAL("file"));
+  const base::FilePath path2(FILE_PATH_LITERAL("file.foo"));
+  EXPECT_EQ(base::nullopt, file_handler_manager().GetMatchingFileHandlerURL(
+                               app_id, {path1, path2}));
+}
+
 }  // namespace web_app

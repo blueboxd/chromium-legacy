@@ -522,6 +522,13 @@ void Surface::SetApplicationId(const char* application_id) {
     delegate_->OnSetApplicationId(application_id);
 }
 
+void Surface::SetColorSpace(gfx::ColorSpace color_space) {
+  TRACE_EVENT1("exo", "Surface::SetColorSpace", "color_space",
+               color_space.ToString());
+
+  pending_state_.color_space = color_space;
+}
+
 void Surface::SetParent(Surface* parent, const gfx::Point& position) {
   TRACE_EVENT2("exo", "Surface::SetParent", "parent", !!parent, "position",
                position.ToString());
@@ -598,7 +605,8 @@ void Surface::CommitSurfaceHierarchy(bool synchronized) {
         pending_state_.only_visible_on_secure_output !=
             state_.only_visible_on_secure_output ||
         pending_state_.blend_mode != state_.blend_mode ||
-        pending_state_.alpha != state_.alpha;
+        pending_state_.alpha != state_.alpha ||
+        pending_state_.color_space != state_.color_space;
 
     bool needs_update_buffer_transform =
         pending_state_.buffer_scale != state_.buffer_scale ||
@@ -927,6 +935,7 @@ void Surface::UpdateResource(FrameSinkResourceManager* resource_manager) {
             state_.only_visible_on_secure_output, &current_resource_)) {
       current_resource_has_alpha_ =
           FormatHasAlpha(current_buffer_.buffer()->GetFormat());
+      current_resource_.color_space = state_.color_space;
     } else {
       current_resource_.id = 0;
       // Use the buffer's size, so the AppendContentsToFrame() will append

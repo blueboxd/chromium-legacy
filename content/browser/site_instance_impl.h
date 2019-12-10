@@ -286,10 +286,12 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // Note that this function currently requires passing in a site URL (which
   // may use effective URLs), and not a lock URL to which the process may
   // eventually be locked via LockToOrigin().  See comments on lock_url() for
-  // more info.
+  // more info. |is_guest| should be set to true if the call is being made for
+  // a <webview> guest SiteInstance(i.e. SiteInstance::IsGuest() returns true).
   // TODO(alexmos):  See if this can take a lock URL instead.
   static bool ShouldLockToOrigin(const IsolationContext& isolation_context,
-                                 GURL site_url);
+                                 const GURL& site_url,
+                                 const bool is_guest);
 
   // Converts |site_url| into an origin that can be used as
   // |URLLoaderFactoryParams::request_initiator_site_lock|.

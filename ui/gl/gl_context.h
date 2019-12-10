@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "ui/gfx/extension_set.h"
 #include "ui/gl/gl_export.h"
+#include "ui/gl/gl_implementation_wrapper.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_state_restorer.h"
 #include "ui/gl/gl_workarounds.h"
@@ -256,7 +257,7 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
 
   virtual void ResetExtensions() = 0;
 
-  GLApi* gl_api() { return gl_api_.get(); }
+  GLApi* gl_api() { return gl_api_wrapper_->api(); }
 
 #if defined(OS_MACOSX)
   // Child classes are responsible for calling DestroyBackpressureFences during
@@ -285,9 +286,8 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   bool static_bindings_initialized_ = false;
   bool dynamic_bindings_initialized_ = false;
   std::unique_ptr<DriverGL> driver_gl_;
-  std::unique_ptr<GLApi> gl_api_;
-  std::unique_ptr<TraceGLApi> trace_gl_api_;
-  std::unique_ptr<LogGLApi> log_gl_api_;
+
+  std::unique_ptr<GL_IMPL_WRAPPER_TYPE(GL)> gl_api_wrapper_;
   std::unique_ptr<CurrentGL> current_gl_;
 
   // Copy of the real API (if one was created) for dynamic initialization

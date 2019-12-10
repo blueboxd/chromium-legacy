@@ -13,7 +13,6 @@ namespace blink {
 class Document;
 class ExecutionContext;
 class ExceptionState;
-class Node;
 class StringOrTrustedHTML;
 class StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL;
 class StringOrTrustedScript;
@@ -57,25 +56,19 @@ String CORE_EXPORT GetStringFromTrustedScript(StringOrTrustedScript,
                                               const ExecutionContext*,
                                               ExceptionState&);
 
-String GetStringFromTrustedScript(const String&,
-                                  const ExecutionContext*,
-                                  ExceptionState&);
+String CORE_EXPORT GetStringFromTrustedScript(const String&,
+                                              const ExecutionContext*,
+                                              ExceptionState&);
 
 String CORE_EXPORT GetStringFromTrustedScriptURL(StringOrTrustedScriptURL,
                                                  const ExecutionContext*,
                                                  ExceptionState&);
 
-// For <script> elements, we need to treat insertion of DOM text nodes
-// as equivalent to string assignment. This checks the child-node to be
-// inserted and runs all of the Trusted Types checks if it's a text node.
-//
-// Returns nullptr if the check failed, or the node to use (possibly child)
-//         if they succeeded.
-Node* TrustedTypesCheckForHTMLScriptElement(Node* child,
-                                            Document*,
-                                            ExceptionState&);
-
+// Functionally equivalent to GetStringFromTrustedScript(const String&, ...),
+// but with setup & error handling suitable for the asynchronous execution
+// cases.
 String TrustedTypesCheckForJavascriptURLinNavigation(const String&, Document*);
+String CORE_EXPORT GetStringForScriptExecution(const String&, Document*);
 
 // Determine whether a Trusted Types check is needed in this execution context.
 //

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 (async function() {
+  'use strict';
   TestRunner.addResult(`Tests that Elements properly populate and select after immediate updates crbug.com/829884\n`);
   await TestRunner.loadModule('elements_test_runner');
   await TestRunner.showPanel('elements');
@@ -31,7 +32,7 @@
 
   function afterExpand() {
     ElementsTestRunner.selectNodeWithId('body', node => {
-      treeElement = node[treeOutline.treeElementSymbol()];
+      const treeElement = node[treeOutline.treeElementSymbol()];
       TestRunner.addResult(`AFTER EXPAND: TreeElement childCount: ${treeElement.childCount()}`);
 
       var selectedElement = treeOutline.selectedTreeElement;

@@ -121,8 +121,12 @@ void WebDocumentLoaderImpl::SetExtraData(
 WebDocumentLoaderImpl::WebDocumentLoaderImpl(
     LocalFrame* frame,
     WebNavigationType navigation_type,
+    base::Optional<ContentSecurityPolicy*> content_security_policy,
     std::unique_ptr<WebNavigationParams> navigation_params)
-    : DocumentLoader(frame, navigation_type, std::move(navigation_params)),
+    : DocumentLoader(frame,
+                     navigation_type,
+                     content_security_policy,
+                     std::move(navigation_params)),
       response_wrapper_(DocumentLoader::GetResponse()) {}
 
 WebDocumentLoaderImpl::~WebDocumentLoaderImpl() {

@@ -214,6 +214,7 @@
 <translation id="2532336938189706096">ვებ-ხედი</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> ერთეული წაიშალა</translation>
 <translation id="2536728043171574184">თქვენ ამ გვერდის ხაზგარეშე ასლს ნახულობთ</translation>
+<translation id="2537178555904266562">შეცდომა პაროლების სინქრონიზაციისას</translation>
 <translation id="2546283357679194313">ქუქი-ფაილები და საიტის მონაცემები</translation>
 <translation id="2567385386134582609">სურათი</translation>
 <translation id="257088987046510401">თემები</translation>
@@ -231,6 +232,7 @@
 <translation id="2650751991977523696">გსურთ ფაილის ხელახლა ჩამოტვირთვა?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# აუდიოფაილი}other{# აუდიოფაილი}}</translation>
 <translation id="2653659639078652383">გაგზავნა</translation>
+<translation id="2669093958999339774">შეტყობინებებთან დაკავშირებული ხელისშემშლელი მოთხოვნების დაბლოკვა და უფრო ჩუმი ვერსიის გამოყენება</translation>
 <translation id="2677748264148917807">დატოვება</translation>
 <translation id="2704606927547763573">დაკოპირდა</translation>
 <translation id="2707726405694321444">გვერდის განახლება</translation>
@@ -248,7 +250,6 @@
 <translation id="281504910091592009">ნახეთ და მართეთ შენახული პაროლები თქვენს <ph name="BEGIN_LINK" />Google ანგარიშში<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">თქვენს ყველა მოწყობილობაზე არსებულ სანიშნეებზე წვდომისთვის შედით სისტემაში და ჩართეთ სინქრონიზაცია</translation>
 <translation id="2822354292072154809">ნამდვილად გსურთ, საიტის ყველა ნებართვის გადაყენება <ph name="CHOSEN_OBJECT_NAME" />-ისთვის?</translation>
-<translation id="2836148919159985482">სრულეკრანიანი რეჟიმიდან გამოსასვლელად, შეეხეთ ღილაკს „უკან“.</translation>
 <translation id="2842985007712546952">ზედა საქაღალდე</translation>
 <translation id="2858138569776157458">ტოპ-საიტები</translation>
 <translation id="2860954141821109167">დარწმუნდით, რომ ამ მოწყობილობაზე ჩართულია ტელეფონის აპი</translation>
@@ -358,14 +359,15 @@
 <translation id="3632295766818638029">პაროლის გამოჩენა</translation>
 <translation id="363596933471559332">ავტორიზაციის შენახული მონაცემების მეშვეობით ვებსაიტებში ავტომატური შესვლა. ამ ფუნქციის გამორთვის შემთხვევაში, ვებსაიტში შესვლის ყოველი მცდელობისას დადასტურება მოგიწევთ.</translation>
 <translation id="3658159451045945436">გადაყენების შემთხვევაში, წაიშლება მონაცემთა დაზოგვის ისტორია (მათ შორის, მონახულებული საიტების სია).</translation>
-<translation id="3682730288090679318">ჩართვის შემთხვევაში საიტებისთვის ავტომატურად დაიბლოკება თქვენთვის შეტყობინებების ჩვენების შემოთავაზების შესაძლებლობა. საიტის მიერ შეტყობინებების მოთხოვნის შემთხვევაში გვერდის ქვედა ნაწილში გამოჩნდება საინფორმაციო ზოლი.</translation>
 <translation id="3692944402865947621"><ph name="FILE_NAME" /> ვერ ჩამოიტვირთა, რადგან ვერ მოხერხდა ჩამოტვირთვის მდებარეობაზე წვდომა.</translation>
+<translation id="3701167022068948696">ახლავე შესწორება</translation>
 <translation id="3714981814255182093">ძიების ზოლის გახსნა</translation>
 <translation id="3716182511346448902">ეს გვერდი იყენებს მეხსიერების მეტისმეტად დიდ მოცულობას, რის გამოც Chrome-მა ის დააპაუზა.</translation>
 <translation id="3730075448226062617">Chrome-ისთვის თქვენს მიკროფონზე წვდომის დასაშვებად ჩართეთ მიკროფონზე წვდომის ნებართვაც <ph name="BEGIN_LINK" />Android-ის პარამეტრებიდან<ph name="END_LINK" />.</translation>
 <translation id="3739899004075612870">სანიშნე შენახულია „<ph name="PRODUCT_NAME" />“-ში</translation>
 <translation id="3744111561329211289">ფონური სინქრონიზაცია</translation>
 <translation id="3749259744154402564">მხარდაუჭერელი</translation>
+<translation id="3767376082821709728">თქვენ მიერ მონახულებული ახალი საიტები ვერ გამოგიგზავნით შეტყობინებებს</translation>
 <translation id="3771001275138982843">განახლების ჩამოტვირთვა ვერ მოხერხდა</translation>
 <translation id="3771033907050503522">ინკოგნიტო ჩანართები</translation>
 <translation id="3773755127849930740">დაწყვილების დასაშვებად, <ph name="BEGIN_LINK" />ჩართეთ Bluetooth<ph name="END_LINK" /></translation>
@@ -591,7 +593,6 @@
 <translation id="5414836363063783498">დადასტურება…</translation>
 <translation id="5423934151118863508">აქ გამოჩნდება თქვენ მიერ ყველაზე ხშირად მონახულებული გვერდები</translation>
 <translation id="5424588387303617268">ხელმისაწვდომია <ph name="GIGABYTES" /> გბაიტი</translation>
-<translation id="5427766642345310212">გასაგებია. ნაგულისხმევად ახალი შეტყობინებების მოთხოვნები გამოჩნდება აქ.</translation>
 <translation id="543338862236136125">პაროლის რედაქტირება</translation>
 <translation id="5433691172869980887">მომხმარებლის სახელი დაკოპირდა</translation>
 <translation id="543509235395288790">მიმდინარეობს <ph name="COUNT" /> ფაილის ჩამოტვირთვა (<ph name="MEGABYTES" />).</translation>
@@ -678,7 +679,6 @@
 <translation id="5962718611393537961">შეეხეთ ჩასაკეცად</translation>
 <translation id="6000066717592683814">Google-ის შენარჩუნება</translation>
 <translation id="6005538289190791541">შემოთავაზებული პაროლი</translation>
-<translation id="6019358956729171834">მეტის ჩატვირთვა…</translation>
 <translation id="6036057147555329831">დამატებითი ICU მოდული</translation>
 <translation id="6039379616847168523">შემდეგ ჩანართზე გადასვლა</translation>
 <translation id="6040143037577758943">დახურვა</translation>
@@ -774,6 +774,7 @@
 <translation id="666731172850799929">გახსნა <ph name="APP_NAME" />-ში</translation>
 <translation id="666981079809192359">Chrome-ის კონფიდენციალურობის ცნობა</translation>
 <translation id="6676840375528380067">გასუფთავდეს თქვენი Chrome მონაცემები ამ მოწყობილობიდან?</translation>
+<translation id="6689172468748959065">პროფილის ფოტოები</translation>
 <translation id="6697492270171225480">მსგავსი გვერდების შემოთავაზებების ჩვენება, როცა გვერდი ვერ მოიძებნება</translation>
 <translation id="6697947395630195233">Chrome საჭიროებს თქვენს მდებარეობაზე წვდომის ნებართვას, რათა ის ამ საიტის გაუზიაროს.</translation>
 <translation id="6698801883190606802">სინქრონიზებული მონაცემების მართვა</translation>
@@ -956,6 +957,7 @@
 <translation id="8035133914807600019">ახალი საქაღალდე…</translation>
 <translation id="8037750541064988519">დარჩენილია <ph name="DAYS" /> დღე</translation>
 <translation id="804335162455518893">SD ბარათი ვერ მოიძებნა</translation>
+<translation id="8046278916126163020">თქვენ მიერ მონახულებულმა ახალმა საიტებმა შეიძლება გთხოვოთ თქვენთვის შეტყობინებების გამოგზავნის ნებართვა</translation>
 <translation id="805047784848435650">თქვენი დათვალიერების ისტორიის საფუძველზე</translation>
 <translation id="8051695050440594747">ხელმისაწვდომია <ph name="MEGABYTES" /> მბაიტი</translation>
 <translation id="8058746566562539958">Chrome-ის ახალ ჩანართში გახსნა</translation>

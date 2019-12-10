@@ -9,7 +9,6 @@
 <translation id="1036348656032585052">Uitschakelen</translation>
 <translation id="1038842779957582377">onbekende naam</translation>
 <translation id="1039626062703039346">Chrome kan je helpen je Google-account te beschermen en je wachtwoord te wijzigen. Hiermee ontvangt Google een melding over deze site.</translation>
-<translation id="1044897699341250361">Wat dit betekent</translation>
 <translation id="1050038467049342496">Andere apps sluiten</translation>
 <translation id="1055184225775184556">&amp;Toevoegen ongedaan maken</translation>
 <translation id="1056898198331236512">Waarschuwing</translation>
@@ -184,7 +183,6 @@
 <translation id="1745880797583122200">Je browser wordt beheerd</translation>
 <translation id="17513872634828108">Geopende tabbladen</translation>
 <translation id="1753706481035618306">Paginanummer</translation>
-<translation id="175838129965056221">Chrome heeft gedetecteerd dat je verbinding wordt gecontroleerd</translation>
 <translation id="1763864636252898013">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door het besturingssysteem van je apparaat. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Voer Windows Netwerkcontrole uit<ph name="END_LINK" />.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -253,7 +251,6 @@
 <translation id="2119867082804433120">Perforatie rechtsonder</translation>
 <translation id="2129079103035905234">Bewegingssensoren</translation>
 <translation id="2130448033692577677">De gespecificeerde templates worden misschien niet toegepast omdat het beleid DnsOverHttpsMode niet is ingesteld.</translation>
-<translation id="2131277894177304644">Chromium heeft gedetecteerd dat je verbinding wordt gecontroleerd</translation>
 <translation id="213826338245044447">Mobiele bladwijzers</translation>
 <translation id="214556005048008348">Betaling annuleren</translation>
 <translation id="2147827593068025794">Synchronisatie op de achtergrond</translation>
@@ -395,7 +392,6 @@
 <translation id="2799020568854403057">De volgende site bevat schadelijke apps</translation>
 <translation id="2799223571221894425">Opnieuw starten</translation>
 <translation id="2803306138276472711">Google Safe Browsing heeft onlangs <ph name="BEGIN_LINK" />malware gedetecteerd<ph name="END_LINK" /> op <ph name="SITE" />. Websites die normaal gesproken veilig zijn, worden soms geïnfecteerd met malware.</translation>
-<translation id="281585763351939989">Chromium heeft gedetecteerd dat je verbinding wordt gecontroleerd.</translation>
 <translation id="2824775600643448204">Adres- en zoekbalk</translation>
 <translation id="2826760142808435982">De verbinding is gecodeerd en geverifieerd met <ph name="CIPHER" /> en gebruikt <ph name="KX" /> als mechanisme voor sleuteluitwisseling.</translation>
 <translation id="2835170189407361413">Formulier leegmaken</translation>
@@ -440,7 +436,6 @@
 <translation id="3024663005179499861">Onjuist beleidstype</translation>
 <translation id="3037605927509011580">Helaas.</translation>
 <translation id="3041612393474885105">Certificaatgegevens</translation>
-<translation id="304755864151473094">Waarom dit gebeurt</translation>
 <translation id="3057676462092457419">De DnsOverHttps-modus <ph name="SECURE_DNS_MODE_SECURE" /> wordt nog niet ondersteund. De modus is ingesteld op <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">C9 (envelop)</translation>
 <translation id="3061707000357573562">Patchservice</translation>
@@ -468,7 +463,6 @@
 <translation id="320323717674993345">Betaling annuleren</translation>
 <translation id="3207960819495026254">Toegevoegd aan 'Bladwijzers'</translation>
 <translation id="3209034400446768650">Pagina kan geld in rekening brengen</translation>
-<translation id="3209080785413271048">Gebruik Windows Hello om je opgeslagen betaalmethoden te verifiëren.</translation>
 <translation id="3212581601480735796">Je activiteit op <ph name="HOSTNAME" /> wordt gecontroleerd</translation>
 <translation id="3215092763954878852">Kan WebAuthn niet gebruiken</translation>
 <translation id="3225919329040284222">De server heeft een certificaat gepresenteerd dat niet overeenkomt met de ingebouwde verwachtingen. Deze verwachtingen zijn opgenomen voor bepaalde websites om je te beschermen.</translation>
@@ -482,7 +476,6 @@
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> lijkt op <ph name="SUGGESTED_DOMAIN" />. Aanvallers maken sites soms na door vergelijkbare URL's te gebruiken.</translation>
 <translation id="3270847123878663523">&amp;Volgorde wijzigen ongedaan maken</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
-<translation id="3281668902344226640">Gebruik Touch ID om je opgeslagen betaalmethoden te verifiëren.</translation>
 <translation id="3282497668470633863">Naam op pas toevoegen</translation>
 <translation id="3287510313208355388">Downloaden wanneer online</translation>
 <translation id="3293642807462928945">Meer informatie over het beleid <ph name="POLICY_NAME" /></translation>
@@ -616,7 +609,6 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Geen}=1{Van één site }other{Van # sites }}</translation>
 <translation id="397105322502079400">Berekenen...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> wordt geblokkeerd</translation>
-<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> heeft Chrome Enterprise Threat Protection ingeschakeld in je browser. Chrome Enterprise Threat Protection heeft toegang tot sommige van je gegevens.</translation>
 <translation id="3987405730340719549">Chrome heeft vastgesteld dat deze site mogelijk nep of bedrieglijk is.
 
     Als je denkt dat deze waarschuwing onterecht is, ga je naar https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
@@ -681,7 +673,6 @@
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Voer Netwerkcontrole uit<ph name="END_LINK" />.</translation>
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" />Doorgaan naar <ph name="SITE" /><ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">Geldig</translation>
-<translation id="4248776159690739358">Deel gegevens over beveiligingsgebeurtenissen die zijn gemarkeerd door Chrome Enterprise Threat Protection met je beheerder. Deze gegevens zijn bijvoorbeeld URL's van pagina's die je hebt bezocht, bestandsnamen of metadata en de gebruikersnaam die je gebruikt om in te loggen op je apparaat en bij Chrome.</translation>
 <translation id="4250431568374086873">Je verbinding met deze site is niet volledig beveiligd</translation>
 <translation id="4250680216510889253">Nee</translation>
 <translation id="425582637250725228">Wijzigingen die je hebt aangebracht, worden mogelijk niet opgeslagen.</translation>
@@ -716,8 +707,6 @@
 <translation id="4372948949327679948">Verwachte <ph name="VALUE_TYPE" /> waarde.</translation>
 <translation id="4377125064752653719">Je probeert <ph name="DOMAIN" /> te bereiken, maar het certificaat dat de server heeft geretourneerd, is ingetrokken door de uitgever. Dat betekent dat de veiligheidsgaranties die de server heeft geretourneerd, absoluut niet kunnen worden vertrouwd. Het kan zijn dat je met een hacker aan het communiceren bent.</translation>
 <translation id="4378154925671717803">Telefoon</translation>
-<translation id="437847259914972036">Je activiteit op internet en informatie die je opgeeft worden in de gaten gehouden en de content kan zonder jouw medeweten worden gewijzigd.</translation>
-<translation id="4398334096870680409">Deze functie is niet beschikbaar op je apparaat.</translation>
 <translation id="4406896451731180161">zoekresultaten</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" /> cookies</translation>
 <translation id="4415426530740016218">Ophaaladres</translation>
@@ -756,7 +745,6 @@
 <translation id="4594403342090139922">&amp;Verwijderen ongedaan maken</translation>
 <translation id="4597348597567598915">Grootte 8</translation>
 <translation id="4600854749408232102">C6/C5 (envelop)</translation>
-<translation id="4613966523036881546">Het certificaat voor deze verbinding wordt niet vertrouwd door Google Chrome, omdat bekend is dat het certificaat wordt gebruikt voor netwerkonderschepping en -controle.</translation>
 <translation id="4635654612248442824">De site <ph name="ORIGIN" /> heeft gevraagd een herkomstbeleid toe te passen op alle verzoeken van de site, maar dit beleid kan momenteel niet worden toegepast.</translation>
 <translation id="464342062220857295">Zoekfuncties</translation>
 <translation id="4646534391647090355">Breng me daar nu naartoe</translation>
@@ -1152,7 +1140,6 @@
 <translation id="6547208576736763147">Twee perforaties links</translation>
 <translation id="6554795675067793129">Je account wordt beheerd door <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Opnieuw</translation>
-<translation id="6559565319173126218">Het gepresenteerde certificaat voor deze verbinding wordt niet vertrouwd door Chrome, omdat bekend is dat het certificaat wordt gebruikt voor netwerkonderschepping en -controle.</translation>
 <translation id="6569060085658103619">Je bekijkt een extensiepagina</translation>
 <translation id="6573200754375280815">Twee perforaties rechts</translation>
 <translation id="6578796323535178455">C2 (envelop)</translation>
@@ -1181,12 +1168,10 @@
 <translation id="6685834062052613830">Uitloggen en configuratie voltooien</translation>
 <translation id="6689271823431384964">Chrome biedt aan je kaarten in je Google-account op te slaan omdat je bent ingelogd. Je kunt dit wijzigen in de instellingen. De naam van de kaarthouder is afkomstig uit je account.</translation>
 <translation id="6704582573942289642">Is dit de juiste site?</translation>
-<translation id="6707256370811247129">De content van het cachegeheugen en de bestanden die je downloadt of uploadt in Chrome scannen.</translation>
 <translation id="6710213216561001401">Vorige</translation>
 <translation id="6710594484020273272">&lt;Typ een zoekterm&gt;</translation>
 <translation id="671076103358959139">Inschrijftoken:</translation>
 <translation id="6711464428925977395">Er is iets mis met de proxyserver of het adres is onjuist.</translation>
-<translation id="6721811549156553509">Het netwerkcontroleapparaat kan zich voordoen als de sites die je bezoekt en kan je activiteit en informatie die je opgeeft (zoals wachtwoorden, berichten of creditcards) zien. Je moet voorzichtig zijn als je online iets gevoeligs doet, omdat het netwerkcontroleapparaat dit kan zien en de content kan veranderen op de pagina's die je bezoekt. Dit omvat activiteit in andere browsers en programma's die toegang hebben tot internet.</translation>
 <translation id="6738516213925468394">Je gegevens zijn op <ph name="TIME" /> versleuteld met je <ph name="BEGIN_LINK" />wachtwoordzin voor synchronisatie<ph name="END_LINK" />. Geef deze op om de synchronisatie te starten.</translation>
 <translation id="674375294223700098">Onbekende fout met servercertificaat.</translation>
 <translation id="6744009308914054259">Terwijl je op een verbinding wacht, kun je naar Downloads gaan om offline artikelen te lezen.</translation>
@@ -1271,7 +1256,6 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /> over dit probleem.</translation>
 <translation id="7219179957768738017">De verbinding maakt gebruik van <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Verwerken</translation>
-<translation id="7239736667463137521">Chrome heeft gedetecteerd dat je verbinding wordt gecontroleerd.</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">De volgende website bevat malware</translation>
 <translation id="724975217298816891">Geef de vervaldatum en CVC-code voor <ph name="CREDIT_CARD" /> op om je creditcardgegevens te updaten. Zodra je bevestigt, worden je creditcardgegevens gedeeld met deze site.</translation>
@@ -1298,7 +1282,6 @@ Aanvullende informatie:
 <translation id="7346048084945669753">Is gelieerd:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Opdrachtregel</translation>
-<translation id="7353776484425559055">Het certificaat voor deze verbinding wordt niet vertrouwd door Chromium, omdat bekend is dat het certificaat wordt gebruikt voor netwerkonderschepping en -controle. Je ziet deze fout mogelijk als gevolg van een certificaat dat je hebt geïnstalleerd op je apparaat. Bij het maken van beveiligde verbindingen vertrouwt Chromium certificaten die lokaal zijn geïnstalleerd op de computer of het mobiele apparaat van een gebruiker. Zo kunnen gebruikers tools uitvoeren om hun verbindingen te controleren en fouten daarmee op te sporen tijdens de ontwikkeling van websites. In zakelijke omgevingen kan intern verkeer worden onderschept en gecontroleerd. Chromium geeft een waarschuwing weer voor gevallen waar dit wordt misbruikt om verkeer op het openbare internet te onderscheppen.</translation>
 <translation id="7372973238305370288">zoekresultaat</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Mediabediening</translation>
@@ -1330,7 +1313,6 @@ Aanvullende informatie:
 <translation id="7460618730930299168">De screening verschilt van wat je hebt geselecteerd. Doorgaan?</translation>
 <translation id="7473891865547856676">Nee, bedankt</translation>
 <translation id="7481312909269577407">Vooruit</translation>
-<translation id="748406663033922918">Gebruik schermvergrendeling om je opgeslagen betaalmethoden te verifiëren.</translation>
 <translation id="7485870689360869515">Geen gegevens gevonden.</translation>
 <translation id="7495290002932347110">Je wachtwoord is gelekt bij een gegevenslek op een site of in een app. Chrome raadt je aan nu je opgeslagen wachtwoorden te controleren en je wachtwoord op <ph name="ORIGIN" /> te wijzigen.</translation>
 <translation id="7498234416455752244">Doorgaan met bewerken</translation>
@@ -1360,12 +1342,10 @@ Aanvullende informatie:
 <translation id="7592362899630581445">Het certificaat van de server is in strijd met naambeperkingen.</translation>
 <translation id="7598391785903975535">Minder dan <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> kan dit verzoek momenteel niet verwerken.</translation>
-<translation id="7599841999395223597">Het certificaat voor deze verbinding wordt niet vertrouwd door Chrome, omdat bekend is dat het certificaat wordt gebruikt voor netwerkonderschepping en -controle. Je ziet deze fout mogelijk als gevolg van een certificaat dat je hebt geïnstalleerd op je apparaat. Bij het maken van beveiligde verbindingen vertrouwt Chrome certificaten die lokaal zijn geïnstalleerd op de computer of het mobiele apparaat van een gebruiker. Zo kunnen gebruikers tools uitvoeren om hun verbindingen te controleren en fouten daarmee op te sporen tijdens de ontwikkeling van websites. In zakelijke omgevingen kan intern verkeer worden onderschept en gecontroleerd. Chrome geeft een waarschuwing weer voor gevallen waar dit wordt misbruikt om verkeer op het openbare internet te onderscheppen.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> nooit vertalen</translation>
 <translation id="7610193165460212391">Waarde <ph name="VALUE" /> is buiten bereik.</translation>
 <translation id="7613889955535752492">Vervaldatum: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Je hebt al gegevens die zijn gecodeerd met een andere versie van het wachtwoord voor je Google-account. Geef dit wachtwoord hieronder op.</translation>
-<translation id="7625784245512586808">Chrome Enterprise Threat Protection</translation>
 <translation id="7633909222644580952">Prestatiegegevens en crashrapporten</translation>
 <translation id="7637571805876720304">Creditcard verwijderen uit Chromium?</translation>
 <translation id="7638605456503525968">Seriële poorten</translation>
@@ -1453,7 +1433,6 @@ Aanvullende informatie:
 <translation id="8041940743680923270">Algemene standaardinstelling gebruiken (Vragen)</translation>
 <translation id="8042918947222776840">Ophaalmethode kiezen</translation>
 <translation id="8057711352706143257">'<ph name="SOFTWARE_NAME" />' is niet correct geconfigureerd. Als je '<ph name="SOFTWARE_NAME" />' verwijdert, wordt het probleem meestal opgelost. <ph name="FURTHER_EXPLANATION" /></translation>
-<translation id="8062224330780487419">Je hoeft vanaf nu de beveiligingscode van de kaart niet meer op te geven</translation>
 <translation id="8066955247577885446">Er is iets misgegaan.</translation>
 <translation id="8074253406171541171">10x13 (envelop)</translation>
 <translation id="8078141288243656252">Kan geen aantekeningen maken als het document is gedraaid</translation>
@@ -1470,7 +1449,6 @@ Aanvullende informatie:
 <translation id="8103161714697287722">Betaalmethode</translation>
 <translation id="8105368624971345109">Uitschakelen</translation>
 <translation id="8118489163946903409">Betaalmethode</translation>
-<translation id="8124023448510659215">Het certificaat voor deze verbinding wordt niet vertrouwd door Chromium, omdat bekend is dat het certificaat wordt gebruikt voor netwerkonderschepping en -controle.</translation>
 <translation id="8127301229239896662">'<ph name="SOFTWARE_NAME" />' is niet correct geïnstalleerd op je computer of netwerk. Neem contact op met je IT-beheerder om dit probleem op te lossen.</translation>
 <translation id="8131740175452115882">Bevestigen</translation>
 <translation id="8149426793427495338">De slaapstand van je computer is geactiveerd.</translation>
@@ -1515,6 +1493,7 @@ Aanvullende informatie:
 <translation id="8308427013383895095">De vertaling is mislukt omdat er een probleem is opgetreden met de netwerkverbinding.</translation>
 <translation id="831207732689920588">Deze pagina is verdacht (gemarkeerd door Chrome).</translation>
 <translation id="8332188693563227489">Toegang tot <ph name="HOST_NAME" /> is geweigerd</translation>
+<translation id="833262891116910667">Markeren</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Als je de beveiligingsrisico's begrijpt, kun je <ph name="BEGIN_LINK" />deze site bezoeken<ph name="END_LINK" /> voordat de schadelijke programma's zijn verwijderd.</translation>
 <translation id="8349305172487531364">Bladwijzerbalk</translation>
@@ -1612,8 +1591,6 @@ Aanvullende informatie:
 <translation id="8957210676456822347">Autorisatie van captive portal</translation>
 <translation id="8962950042226115166">Verdachte site</translation>
 <translation id="8968766641738584599">Pas opslaan</translation>
-<translation id="8969267497192857913">Alles wat je typt, pagina's die je bekijkt en andere activiteiten op internet worden in de gaten gehouden en content op sites kan zonder jouw medeweten worden gewijzigd.
-    <ph name="BEGIN_LEARN_MORE_LINK" />Meer informatie<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">Het servercertificaat is verlopen.</translation>
 <translation id="8975012916872825179">Inclusief informatie als telefoonnummers, e-mailadressen en verzendadressen</translation>
 <translation id="8975263830901772334">Namen van bestanden die je afdrukt</translation>
@@ -1647,7 +1624,6 @@ Aanvullende informatie:
 <translation id="9080712759204168376">Besteloverzicht</translation>
 <translation id="9089260154716455634">Beleid buiten gebruikstijd:</translation>
 <translation id="9095388113577226029">Meer talen...</translation>
-<translation id="9098981495403789647">Je beheerder heeft Chrome Enterprise Threat Protection ingeschakeld in je browser. Chrome Enterprise Threat Protection heeft toegang tot sommige van je gegevens.</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> gebruikt gewoonlijk versleuteling om je gegevens te beschermen. Toen Chromium deze keer probeerde verbinding te maken met <ph name="SITE" />, retourneerde de website ongewone en onjuiste inloggegevens. Dit gebeurt wanneer een aanvaller probeert zich als <ph name="SITE" /> voor te doen of wanneer een wifi-inlogscherm de verbinding heeft verbroken. Je gegevens zijn nog steeds beveiligd omdat Chromium de verbinding heeft beëindigd voordat er gegevens konden worden uitgewisseld.</translation>
 <translation id="9106062320799175032">Factuuradres toevoegen</translation>
 <translation id="9114524666733003316">Creditcard bevestigen...</translation>

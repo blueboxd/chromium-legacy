@@ -8,6 +8,7 @@
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "services/device/public/mojom/bluetooth_system.mojom.h"
 #include "services/device/public/mojom/constants.mojom.h"
+#include "services/device/public/mojom/device_service.mojom.h"
 #include "services/device/public/mojom/fingerprint.mojom.h"
 #include "services/device/public/mojom/geolocation_config.mojom.h"
 #include "services/device/public/mojom/geolocation_context.mojom.h"
@@ -43,6 +44,9 @@ const service_manager::Manifest& GetManifest() {
                              service_manager::Manifest::InstanceSharingPolicy::
                                  kSharedAcrossGroups)
                          .Build())
+        .ExposeCapability(
+            "device_service",
+            service_manager::Manifest::InterfaceList<mojom::DeviceService>())
         .ExposeCapability(
             "device:battery_monitor",
             service_manager::Manifest::InterfaceList<mojom::BatteryMonitor>())

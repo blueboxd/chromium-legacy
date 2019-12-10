@@ -91,6 +91,7 @@
 <translation id="209018056901015185">Ver como ordenador</translation>
 <translation id="2103075008456228677">Abrir history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos movidos</translation>
+<translation id="2118594521750010466">Corrixir agora</translation>
 <translation id="213900355088104901">Para navegar de forma privada, abre unha pestana de incógnito</translation>
 <translation id="2139867232736819575">Buscar texto que copiaches</translation>
 <translation id="2149973817440762519">Editar marcador</translation>
@@ -98,6 +99,7 @@
 <translation id="2198757192731523470">Google pode utilizar o teu historial para personalizar a Busca, os anuncios e outros servizos seus.</translation>
 <translation id="2230173723195178503">Cargouse a páxina web</translation>
 <translation id="2239626343334228536">Borrando datos de navegación…</translation>
+<translation id="2257567812274161158">A sincronización non funciona.</translation>
 <translation id="2267753748892043616">Engadir conta</translation>
 <translation id="2268044343513325586">Refina</translation>
 <translation id="2273327106802955778">Menú Máis</translation>
@@ -129,6 +131,7 @@
 <translation id="2691653761409724435">Non dispoñible sen conexión</translation>
 <translation id="2695507686909505111">Traduciuse a páxina</translation>
 <translation id="2702801445560668637">Lista de lectura</translation>
+<translation id="2704491540504985681">Descargas</translation>
 <translation id="2704606927547763573">Copiada</translation>
 <translation id="2709516037105925701">Autocompletar</translation>
 <translation id="2712127207578915686">Non se pode abrir o ficheiro</translation>
@@ -218,6 +221,7 @@
 <translation id="3943492037546055397">Contrasinais</translation>
 <translation id="3967822245660637423">Descarga completa</translation>
 <translation id="3989635538409502728">Pechar sesión</translation>
+<translation id="399419089947468503">Produciuse un erro ao sincronizar os contrasinais</translation>
 <translation id="3995521777587992544">Barra de progreso de carga de páxinas: cargouse <ph name="EMAIL" />.</translation>
 <translation id="4002066346123236978">Título</translation>
 <translation id="4004204301268239848">Os contrasinais gárdanse na túa Conta de Google para que poidas usalos en calquera dispositivo.</translation>
@@ -238,6 +242,7 @@
 <translation id="424315890655130736">Introducir contrasinal</translation>
 <translation id="4263576668337963058">Mostrar accións da páxina dispoñibles</translation>
 <translation id="4272631900155121838">Para escanear un código QR, activa a cámara na configuración</translation>
+<translation id="4276041135170112053">Corrixir agora.</translation>
 <translation id="4281844954008187215">Condicións de servizo</translation>
 <translation id="430793432425771671">Sincronizar todo</translation>
 <translation id="430967081421617822">Todo o período</translation>
@@ -286,6 +291,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="4904877109095351937">Marcar como lidos</translation>
 <translation id="4930268273022498155">Elimina os datos existentes. Podes recuperalos volvendo cambiar á conta <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Produciuse un problema ao compartir o teu elemento.</translation>
+<translation id="4944543191714094452">Buscar o contido na páxina…</translation>
 <translation id="4945756290001680296">Acceder á configuración do contrasinal</translation>
 <translation id="4979397965658815378">Inicia sesión na túa conta de Google para ter os marcadores, os contrasinais, o historial e o resto das opcións de configuración en todos os teus dispositivos.</translation>
 <translation id="5005498671520578047">Copiar contrasinal</translation>
@@ -317,6 +323,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5433691172869980887">Copiouse o nome de usuario</translation>
 <translation id="54401264925851789">Información de seguranza da páxina</translation>
 <translation id="5443952882982198570">Tarxetas de crédito</translation>
+<translation id="5457907402803865181">Produciuse un erro ao sincronizar os contrasinais.</translation>
 <translation id="5525269841082836315">Crear contrasinal</translation>
 <translation id="5548760955356983418">Handoff permíteche comezar a navegar nun sitio web neste dispositivo e despois continuar facilmente no teu Mac. O sitio web aberto actualmente aparecerá no Dock do teu Mac.
 
@@ -408,6 +415,7 @@ Os teus datos encriptáronse co teu contrasinal de sincronización o <ph name="T
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos eliminados</translation>
 <translation id="6610002944194042868">Opcións de tradución</translation>
 <translation id="6628106477656132239">A data de vencemento non é válida</translation>
+<translation id="6638511529934826365">Aplicar zoom ao texto…</translation>
 <translation id="6642362222295953972">Cambiar á pestana xa aberta</translation>
 <translation id="6643016212128521049">Borrar</translation>
 <translation id="6656103420185847513">Editar cartafol</translation>

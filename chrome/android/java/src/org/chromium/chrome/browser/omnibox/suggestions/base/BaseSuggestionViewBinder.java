@@ -32,13 +32,16 @@ public class BaseSuggestionViewBinder
     public void bind(PropertyModel model, BaseSuggestionView view, PropertyKey propertyKey) {
         if (BaseSuggestionViewProperties.SUGGESTION_DELEGATE == propertyKey) {
             view.setDelegate(model.get(BaseSuggestionViewProperties.SUGGESTION_DELEGATE));
+            updateContentViewPadding(model, view);
         } else if (BaseSuggestionViewProperties.ICON == propertyKey) {
             updateSuggestionIcon(model, view);
+            updateContentViewPadding(model, view);
         } else if (BaseSuggestionViewProperties.ACTION_ICON == propertyKey) {
             updateActionIcon(model, view);
         } else if (SuggestionCommonProperties.LAYOUT_DIRECTION == propertyKey) {
             ViewCompat.setLayoutDirection(
                     view, model.get(SuggestionCommonProperties.LAYOUT_DIRECTION));
+            updateContentViewPadding(model, view);
         } else if (SuggestionCommonProperties.USE_DARK_COLORS == propertyKey) {
             updateSuggestionIcon(model, view);
             updateActionIcon(model, view);
@@ -93,7 +96,27 @@ public class BaseSuggestionViewBinder
         updateIcon(view, sds, ChromeColors.getIconTintRes(!isDarkMode(model)));
     }
 
-    /** Update image view using supplied drawable state object */
+    /**
+     * Update content view padding.
+     * This is required only to adjust the leading padding for undecorated suggestions.
+     * TODO(crbug.com/1019937): remove after suggestion favicons are launched.
+     */
+    private static void updateContentViewPadding(PropertyModel model, BaseSuggestionView view) {
+        final int direction = view.getLayoutDirection();
+        final SuggestionDrawableState sds = model.get(BaseSuggestionViewProperties.ICON);
+        final int startSpace = sds == null ? view.getResources().getDimensionPixelSize(
+                                       R.dimen.omnibox_suggestion_start_offset_without_icon)
+                                           : 0;
+
+        // TODO(ender): Drop this view and expand the last icon size by 8dp to ensure it remains
+        // centered with the omnibox "Clear" button.
+        final int endSpace = view.getResources().getDimensionPixelSize(
+                R.dimen.omnibox_suggestion_refine_view_modern_end_padding);
+
+        view.setPaddingRelative(startSpace, 0, endSpace, 0);
+    }
+
+    /** Update image view using supplied drawable state object. */
     private static void updateIcon(
             ImageView view, SuggestionDrawableState sds, @ColorRes int tintRes) {
         final Resources res = view.getContext().getResources();

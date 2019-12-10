@@ -184,6 +184,7 @@
 <translation id="3386978599540877378">Лупата за увеличаване на целия екран</translation>
 <translation id="3400357268283240774">Допълнителни настройки</translation>
 <translation id="3413817803639110246">Тук още няма нищо</translation>
+<translation id="3428447136709161042">Прекратяване на връзката със <ph name="NETWORK_NAME" /></translation>
 <translation id="343571671045587506">Редактиране на напомнянето</translation>
 <translation id="3445925074670675829">USB-C устройство</translation>
 <translation id="3454224730401036106">Връзката ви бе прехвърлена към по-сигурна мрежа</translation>
@@ -322,6 +323,7 @@
 <translation id="5537725057119320332">Предаване</translation>
 <translation id="5548285847212963613">Разширението <ph name="EXTENSION_NAME" /> може да помогне за свързването с тази мрежа.</translation>
 <translation id="554893713779400387">Превключване на режима на диктуване</translation>
+<translation id="556042886152191864">Бутон</translation>
 <translation id="5571066253365925590">Bluetooth е активиран</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Натиснете Ctrl + Alt + Z, за да деактивирате обратната връзка с говор.</translation>
@@ -423,7 +425,6 @@
 <translation id="6857811139397017780">Активиране на <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Прекият път е изключен</translation>
 <translation id="6910714959251846841">Тази актуализация изисква Powerwash на устройството ви. Научете повече за най-новата актуализация на <ph name="SYSTEM_APP_NAME" />.</translation>
-<translation id="6911468394164995108">Присъединяване другаде...</translation>
 <translation id="6919251195245069855">Смарткартата ви не бе разпозната. Опитайте отново.</translation>
 <translation id="6972754398087986839">Първи стъпки</translation>
 <translation id="6981982820502123353">Достъпност</translation>
@@ -469,6 +470,7 @@
 <translation id="7569509451529460200">Активирахте функцията за брайлово писмо и ChromeVox</translation>
 <translation id="7593891976182323525">„търсене“ или „Shift“</translation>
 <translation id="7600875258240007829">Преглед на всички известия</translation>
+<translation id="7642647758716480637">Отваряне на настройките за <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (собственик)</translation>
 <translation id="7647488630410863958">Отключете устройството, за да прегледате известията си</translation>
 <translation id="7649070708921625228">Помощ</translation>

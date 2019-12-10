@@ -5,6 +5,7 @@
 <translation id="1181037720776840403">移除</translation>
 <translation id="125153950246128346">輕按即可查看另一個分頁</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> 個分頁}other{<ph name="TABS_COUNT_MANY" /> 個分頁}}</translation>
+<translation id="2569352796411618312">我有建議：你有 <ph name="NUMBER_OF_TABS" /> 個分頁最近冇用過，係咪要閂咗佢？</translation>
 <translation id="257674075312929031">群組</translation>
 <translation id="2613747923081026172">建立群組</translation>
 <translation id="2671423594960767771">分享群組項目</translation>
@@ -23,6 +24,9 @@
 <translation id="6840760312327750441">如要將分頁加入群組，請輕觸並按住分頁，然後將它拖曳到其他分頁上。</translation>
 <translation id="7151209024774799310">從群組中移除標籤</translation>
 <translation id="7559245342362162951">用全螢幕網格顯示群組嘅分頁</translation>
+<translation id="7792771145871471484">睇下建議。</translation>
+<translation id="7966321538264951561">閂建議。</translation>
+<translation id="83556505225171773">{TABS_COUNT,plural, =1{閂 <ph name="TABS_COUNT_ONE" /> 個揀咗嘅分頁}other{閂 <ph name="TABS_COUNT_MANY" /> 個揀咗嘅分頁}}</translation>
 <translation id="9150694013019234766">喺接近畫面底部附近嘅分頁群組入面切換分頁</translation>
 <translation id="9169594135889675189">喺群組入面加新嘅分頁</translation>
 <translation id="959682366969460160">讓所有內容變得井井有條</translation>

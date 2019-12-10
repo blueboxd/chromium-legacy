@@ -376,7 +376,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^google_apis/dive/',
   '^google_apis/gaia/',
   '^google_apis/gcm/',
-  '^headless/',
   '^ios/chrome/',
   '^ios/components/',
   '^ios/net/',

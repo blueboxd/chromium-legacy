@@ -95,7 +95,8 @@ sync_pb::PasswordSpecifics SpecificsFromPassword(
       base::UTF16ToUTF8(password_form.username_value));
   password_data->set_password_value(
       base::UTF16ToUTF8(password_form.password_value));
-  password_data->set_preferred(password_form.preferred);
+  password_data->set_date_last_used(
+      password_form.date_last_used.ToDeltaSinceWindowsEpoch().InMicroseconds());
   password_data->set_date_created(
       password_form.date_created.ToDeltaSinceWindowsEpoch().InMicroseconds());
   password_data->set_blacklisted(password_form.blacklisted_by_user);
@@ -269,8 +270,9 @@ bool ProfilesContainSamePasswordForms(int index_a, int index_b) {
 bool AllProfilesContainSamePasswordFormsAsVerifier() {
   for (int i = 0; i < test()->num_clients(); ++i) {
     if (!ProfileContainsSamePasswordFormsAsVerifier(i)) {
-      DVLOG(1) << "Profile " << i << " does not contain the same password"
-                                     " forms as the verifier.";
+      DVLOG(1) << "Profile " << i
+               << " does not contain the same password"
+                  " forms as the verifier.";
       return false;
     }
   }
@@ -280,8 +282,9 @@ bool AllProfilesContainSamePasswordFormsAsVerifier() {
 bool AllProfilesContainSamePasswordForms() {
   for (int i = 1; i < test()->num_clients(); ++i) {
     if (!ProfilesContainSamePasswordForms(0, i)) {
-      DVLOG(1) << "Profile " << i << " does not contain the same password"
-                                     " forms as Profile 0.";
+      DVLOG(1) << "Profile " << i
+               << " does not contain the same password"
+                  " forms as Profile 0.";
       return false;
     }
   }
@@ -331,7 +334,7 @@ void InjectEncryptedServerPassword(
 
 SamePasswordFormsChecker::SamePasswordFormsChecker()
     : MultiClientStatusChangeChecker(
-        sync_datatype_helper::test()->GetSyncServices()),
+          sync_datatype_helper::test()->GetSyncServices()),
       in_progress_(false),
       needs_recheck_(false) {}
 
@@ -374,8 +377,7 @@ SamePasswordFormsAsVerifierChecker::SamePasswordFormsAsVerifierChecker(int i)
           sync_datatype_helper::test()->GetSyncService(i)),
       index_(i),
       in_progress_(false),
-      needs_recheck_(false) {
-}
+      needs_recheck_(false) {}
 
 // This method uses the same re-entrancy prevention trick as
 // the SamePasswordFormsChecker.

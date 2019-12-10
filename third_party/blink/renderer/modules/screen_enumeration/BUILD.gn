@@ -6,10 +6,8 @@ import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("screen_enumeration") {
   sources = [
-    "navigator_screen_manager.cc",
-    "navigator_screen_manager.h",
-    "screen_manager.cc",
-    "screen_manager.h",
+    "global_screen_enumeration.cc",
+    "global_screen_enumeration.h",
   ]
 
   public_deps = [

@@ -18,8 +18,6 @@ enum class CheckupMessage {
   PRIVACY = 1,
   // A neutral message.
   NEUTRAL = 2,
-  // New message types must be added before MAX_ACTIONS.
-  kMaxValue = NEUTRAL
 };
 
 // Returns true if the user should be shown the extensions page and checkup
@@ -29,6 +27,10 @@ bool ShouldShowExtensionsCheckupOnStartup(content::BrowserContext* context);
 // Returns true if the user should be shown the extensions checkup promo in
 // the NTP.
 bool ShouldShowExtensionsCheckupPromo(content::BrowserContext* context);
+
+// Returns an enum representing the type of message the checkup banner will
+// convey.
+CheckupMessage GetCheckupMessageFocus();
 
 }  // namespace extensions
 

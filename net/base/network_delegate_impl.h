@@ -78,7 +78,7 @@ class NET_EXPORT NetworkDelegateImpl : public NetworkDelegate {
 
   bool OnForcePrivacyMode(
       const GURL& url,
-      const GURL& site_for_cookies,
+      const SiteForCookies& site_for_cookies,
       const base::Optional<url::Origin>& top_frame_origin) const override;
 
   bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(

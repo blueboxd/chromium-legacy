@@ -119,7 +119,6 @@ PasswordFormFillData GetTestPasswordFormFillData() {
   preferred_match.username_value = ASCIIToUTF16("test@gmail.com");
   preferred_match.password_element = ASCIIToUTF16("password");
   preferred_match.password_value = ASCIIToUTF16("test");
-  preferred_match.preferred = true;
 
   std::vector<const PasswordForm*> matches;
   PasswordForm non_preferred_match = preferred_match;

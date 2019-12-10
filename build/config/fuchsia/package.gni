@@ -5,7 +5,7 @@
 import("//build/config/fuchsia/config.gni")
 import("//build/config/sysroot.gni")
 
-# Creates a Fuchsia .far package file.
+# Creates a Fuchsia .far package file containing a Fuchsia component.
 #
 # Parameters are:
 # package_name_override: Specifies the name of the package to generate,
@@ -14,6 +14,8 @@ import("//build/config/sysroot.gni")
 # manifest: A path to the manifest that will be used.
 #     "testonly" targets default to using //build/config/fuchsia/tests-with-exec.cmx.
 #     Non-test targets must explicitly specify a |manifest|.
+# component_name_override: If set, specifies the name of the component.
+#     By default, the component name is the same as the package name.
 # deps: Additional targets to build and include in the package (optional).
 template("fuchsia_package") {
   pkg = {
@@ -41,11 +43,16 @@ template("fuchsia_package") {
   _runtime_deps_file = "$_pkg_out_dir/${pkg.package_name}.runtime_deps"
   _archive_manifest = "$_pkg_out_dir/${pkg.package_name}.archive_manifest"
   _build_ids_file = "$_pkg_out_dir/ids.txt"
-  _component_manifest = "$_pkg_out_dir/${pkg.package_name}.cmx"
   _meta_far_file = "$_pkg_out_dir/meta.far"
   _combined_far_file = "$_pkg_out_dir/${pkg.package_name}-0.far"
   _final_far_file = "$_pkg_out_dir/${pkg.package_name}.far"
   _package_info_path = "$_pkg_out_dir/package"
+
+  if (defined(pkg.component_name_override)) {
+    _generated_cmx = "$_pkg_out_dir/${pkg.component_name_override}.cmx"
+  } else {
+    _generated_cmx = "$_pkg_out_dir/${pkg.package_name}.cmx"
+  }
 
   _write_manifest_target = "${pkg.package_name}__write_manifest"
   _package_target = "${pkg.package_name}__pkg"
@@ -72,7 +79,7 @@ template("fuchsia_package") {
     outputs = [
       _archive_manifest,
       _build_ids_file,
-      _component_manifest,
+      _generated_cmx,
     ]
 
     if (!defined(deps)) {
@@ -100,8 +107,10 @@ template("fuchsia_package") {
       rebase_path(_runtime_deps_file, root_build_dir),
       "--depfile-path",
       rebase_path(_depfile, root_build_dir),
-      "--manifest-path",
+      "--package-manifest-path",
       rebase_path(_archive_manifest, root_build_dir),
+      "--component-manifest-path",
+      rebase_path(_generated_cmx, root_build_dir),
       "--build-ids-file",
       rebase_path(_build_ids_file, root_build_dir),
     ]

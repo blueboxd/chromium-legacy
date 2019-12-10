@@ -334,20 +334,20 @@ struct SVGAttributeHashTranslator {
   }
 };
 
-DEFINE_ELEMENT_TYPE_CASTS(SVGElement, IsSVGElement());
-
-template <>
-struct DowncastTraits<SVGElement> {
-  static bool AllowFrom(const Node& node) { return node.IsSVGElement(); }
-};
-
 template <typename T>
 bool IsElementOfType(const SVGElement&);
 template <>
 inline bool IsElementOfType<const SVGElement>(const SVGElement&) {
   return true;
 }
-
+template <>
+inline bool IsElementOfType<const SVGElement>(const Node& node) {
+  return IsA<SVGElement>(node);
+}
+template <>
+struct DowncastTraits<SVGElement> {
+  static bool AllowFrom(const Node& node) { return node.IsSVGElement(); }
+};
 inline bool Node::HasTagName(const SVGQualifiedName& name) const {
   auto* svg_element = DynamicTo<SVGElement>(this);
   return svg_element && svg_element->HasTagName(name);

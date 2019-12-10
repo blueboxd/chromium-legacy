@@ -79,6 +79,9 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // Returns the |available_space_|.
   gfx::Rect GetHotseatBackgroundBounds() const;
 
+  // Returns whether the view should adapt to RTL.
+  bool ShouldAdaptToRTL() const;
+
   views::View* GetShelfContainerViewForTest();
   bool ShouldAdjustForTest() const;
 
@@ -155,9 +158,6 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   LayoutStrategy CalculateLayoutStrategy(
       int scroll_distance_on_main_axis) const;
 
-  // Returns whether the view should adapt to RTL.
-  bool ShouldAdaptToRTL() const;
-
   // Returns whether the app icon layout should be centering alignment.
   bool ShouldApplyDisplayCentering() const;
 
@@ -176,6 +176,7 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void ViewHierarchyChanged(
       const views::ViewHierarchyChangedDetails& details) override;
+  void ScrollRectToVisible(const gfx::Rect& rect) override;
 
   // ShelfButtonDelegate:
   void OnShelfButtonAboutToRequestFocusFromTabTraversal(ShelfButton* button,
@@ -280,11 +281,13 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   void MaybeUpdateGradientZone(bool is_left_arrow_changed,
                                bool is_right_arrow_changed);
 
-  // Returns the actual scroll offset on the view's main axis. When the left
-  // arrow button shows, |shelf_view_| is translated due to the change in
+  // Returns the actual scroll offset for the given scroll distance along the
+  // main axis under the specific layout strategy. When the left arrow button
+  // shows, |shelf_view_| is translated due to the change in
   // |shelf_container_view_|'s bounds. That translation offset is not included
   // in |scroll_offset_|.
-  int GetActualScrollOffset() const;
+  int GetActualScrollOffset(int main_axis_scroll_distance,
+                            LayoutStrategy layout_strategy) const;
 
   // Updates |first_tappable_app_index_| and |last_tappable_app_index_|.
   void UpdateTappableIconIndices();
@@ -316,19 +319,24 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // correctly. Returns whether the animation is created.
   bool AdjustOffset();
 
-  // Returns the offset by which the shelf view should be translated to ensure
-  // the correct UI.
-  int CalculateAdjustedOffset() const;
+  // Returns the offset by which the scroll distance along the main axis should
+  // be adjusted to ensure the correct UI under the specific layout strategy.
+  int CalculateAdjustmentOffset(int main_axis_scroll_distance,
+                                LayoutStrategy layout_strategy) const;
+
+  int CalculateScrollDistanceAfterAdjustment(
+      int main_axis_scroll_distance,
+      LayoutStrategy layout_strategy) const;
 
   // Updates the available space for child views (such as the arrow button,
   // shelf view) which is smaller than the view's bounds due to paddings.
   void UpdateAvailableSpace();
 
-  // Updates the clip rectangle of |shelf_container_view_|. Note that
-  // |shelf_container_view_|'s bounds are the same with ScrollableShelfView's.
-  // It is why we can use |visible_space_| directly without coordinate
-  // transformation.
-  void UpdateVisibleSpace();
+  // Returns the clip rectangle of |shelf_container_view_| for the given layout
+  // strategy. Note that |shelf_container_view_|'s bounds are the same with
+  // ScrollableShelfView's. It is why we can use |visible_space_| directly
+  // without coordinate transformation.
+  gfx::Rect CalculateVisibleSpace(LayoutStrategy layout_strategy) const;
 
   // Calculates the padding insets which help to show the edging app icon's
   // ripple ring correctly.

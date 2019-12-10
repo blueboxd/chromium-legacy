@@ -116,6 +116,7 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
   suggestion_view_->OnMatchUpdate(this, match_);
   keyword_view_->OnMatchUpdate(this, match_);
   suggestion_tab_switch_button_->SetVisible(match.ShouldShowTabMatchButton());
+  UpdateRemoveSuggestionVisibility();
 
   suggestion_view_->content()->SetText(match_.contents, match_.contents_class);
   if (match_.answer) {
@@ -198,39 +199,24 @@ void OmniboxResultView::Invalidate(bool force_reapply_styles) {
     keyword_view_->description()->ApplyTextColor(
         OmniboxPart::RESULTS_TEXT_DIMMED);
   }
-
-  // Refresh the Remove button.
-  {
-    bool old_visibility = remove_suggestion_button_->GetVisible();
-    bool new_visibility = match_.SupportsDeletion() &&
-                          !match_.associated_keyword &&
-                          !match_.ShouldShowTabMatchButton() &&
-                          base::FeatureList::IsEnabled(
-                              omnibox::kOmniboxSuggestionTransparencyOptions) &&
-                          (IsSelected() || IsMouseHovered());
-
-    remove_suggestion_button_->SetVisible(new_visibility);
-
-    if (old_visibility != new_visibility)
-      InvalidateLayout();
-  }
 }
 
-void OmniboxResultView::OnSelected() {
-  DCHECK(IsSelected());
+void OmniboxResultView::OnSelectionStateChanged() {
+  UpdateRemoveSuggestionVisibility();
+  if (IsSelected()) {
+    // Immediately before notifying screen readers that the selected item has
+    // changed, we want to update the name of the newly-selected item so that
+    // any cached values get updated prior to the selection change.
+    EmitTextChangedAccessiblityEvent();
 
-  // Immediately before notifying screen readers that the selected item has
-  // changed, we want to update the name of the newly-selected item so that any
-  // cached values get updated prior to the selection change.
-  EmitTextChangedAccessiblityEvent();
+    // Send accessibility event on the popup box that its selection has changed.
+    EmitSelectedChildrenChangedAccessibilityEvent();
 
-  // Send accessibility event on the popup box that its selection has changed.
-  EmitSelectedChildrenChangedAccessibilityEvent();
-
-  // The text is also accessible via text/value change events in the omnibox but
-  // this selection event allows the screen reader to get more details about the
-  // list and the user's position within it.
-  NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+    // The text is also accessible via text/value change events in the omnibox
+    // but this selection event allows the screen reader to get more details
+    // about the list and the user's position within it.
+    NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+  }
 }
 
 bool OmniboxResultView::IsSelected() const {
@@ -506,6 +492,7 @@ gfx::Image OmniboxResultView::GetIcon() const {
 void OmniboxResultView::SetHovered(bool hovered) {
   if (is_hovered_ != hovered) {
     is_hovered_ = hovered;
+    UpdateRemoveSuggestionVisibility();
     Invalidate();
   }
 }
@@ -514,6 +501,21 @@ void OmniboxResultView::OpenMatch(WindowOpenDisposition disposition,
                                   base::TimeTicks match_selection_timestamp) {
   popup_contents_view_->OpenMatch(model_index_, disposition,
                                   match_selection_timestamp);
+}
+
+void OmniboxResultView::UpdateRemoveSuggestionVisibility() {
+  bool old_visibility = remove_suggestion_button_->GetVisible();
+  bool new_visibility = match_.SupportsDeletion() &&
+                        !match_.associated_keyword &&
+                        !match_.ShouldShowTabMatchButton() &&
+                        base::FeatureList::IsEnabled(
+                            omnibox::kOmniboxSuggestionTransparencyOptions) &&
+                        (IsSelected() || IsMouseHovered());
+
+  remove_suggestion_button_->SetVisible(new_visibility);
+
+  if (old_visibility != new_visibility)
+    InvalidateLayout();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -25,7 +25,7 @@ class TestCookieAccessDelegate : public CookieAccessDelegate {
       const CanonicalCookie& cookie) const override;
   bool ShouldIgnoreSameSiteRestrictions(
       const GURL& url,
-      const GURL& site_for_cookies) const override;
+      const SiteForCookies& site_for_cookies) const override;
 
   // Sets the expected return value for any cookie whose Domain
   // matches |cookie_domain|. Pass the value of |cookie.Domain()| and any

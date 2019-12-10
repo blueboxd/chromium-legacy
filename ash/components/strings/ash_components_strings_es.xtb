@@ -13,7 +13,7 @@
 <translation id="1383876407941801731">Buscar</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> o <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
 <translation id="1477442857810932985">Ir al final de la línea</translation>
-<translation id="1499072997694708844">Cierra todas las ventanas de búsqueda abiertas o detén la carga de la página actual</translation>
+<translation id="1499072997694708844">Cerrar todas las ventanas de búsqueda abiertas o detener la carga de la página actual</translation>
 <translation id="1510238584712386396">Menú de aplicaciones</translation>
 <translation id="152892567002884378">Subir el volumen</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> y <ph name="ESC" /></translation>
@@ -116,7 +116,7 @@
 <translation id="5222676887888702881">Cerrar sesión</translation>
 <translation id="5236674127086649162">Volver a cargar la página actual sin utilizar contenido almacenado en caché</translation>
 <translation id="526651782186312376">Seleccionar texto hasta el principio de la línea</translation>
-<translation id="5316716239522500219">Copiar monitores</translation>
+<translation id="5316716239522500219">Proyectar monitores</translation>
 <translation id="539072479502328326">Activar o desactivar la lupa fijada</translation>
 <translation id="5541719484267030947">Pulsa <ph name="ESC" /> mientras arrastras las pestaña</translation>
 <translation id="5554139136362089836">Hacer búsquedas en la página actual</translation>
@@ -147,7 +147,7 @@
 <translation id="6445033640292336367">Volver a colocar la pestaña en su posición original</translation>
 <translation id="6474744297082284761">Reducir (si la lupa fijada o la lupa de pantalla completa están habilitadas)</translation>
 <translation id="649811797655257835">Selecciona el archivo y pulsa <ph name="SPACE" /></translation>
-<translation id="6556040137485212400">Abre la ventana que lleva más tiempo sin usarse</translation>
+<translation id="6556040137485212400">Abrir la ventana que lleva más tiempo sin usarse</translation>
 <translation id="666343722268997814">Abrir el menú del botón derecho del elemento destacado</translation>
 <translation id="6671538777808758331">Ir al siguiente resultado de búsqueda</translation>
 <translation id="6681606577947445973"><ph name="REFRESH" /> o <ph name="CTRL" /> <ph name="SEPARATOR" /> <ph name="R" /></translation>

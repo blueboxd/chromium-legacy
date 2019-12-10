@@ -14,7 +14,9 @@
 #include "base/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/layer_type.h"
+#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/transform.h"
 
 namespace aura {
@@ -95,6 +97,10 @@ base::Optional<gfx::RectF> GetSplitviewBoundsMaintainingAspectRatio(
 
 // Check if kNewOverviewLayout is enabled for tablet mode.
 bool ShouldUseTabletModeGridLayout();
+
+// Returns a Rect by rounding the values of the given RectF in a way that
+// returns the same size for SizeF regardless of its origin.
+ASH_EXPORT gfx::Rect ToStableSizeRoundedRect(const gfx::RectF& rect);
 
 }  // namespace ash
 

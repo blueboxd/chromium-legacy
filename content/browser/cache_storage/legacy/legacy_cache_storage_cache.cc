@@ -357,7 +357,8 @@ blink::mojom::FetchAPIResponsePtr CreateResponse(
           metadata.response().cors_exposed_header_names().begin(),
           metadata.response().cors_exposed_header_names().end()),
       nullptr /* side_data_blob */, nullptr /* side_data_blob_for_cache_put */,
-      nullptr /* content_security_policy */);
+      nullptr /* content_security_policy */,
+      metadata.response().loaded_with_credentials());
 }
 
 // The size of opaque (non-cors) resource responses are padded in order
@@ -396,7 +397,10 @@ int64_t CalculateResponsePaddingInternal(
   DCHECK(ShouldPadResourceSize(response));
   DCHECK_GE(side_data_size, 0);
   const std::string& url = response->url_list(response->url_list_size() - 1);
-  return storage::ComputeResponsePadding(url, padding_key, side_data_size > 0);
+  bool loaded_with_credentials = response->has_loaded_with_credentials() &&
+                                 response->loaded_with_credentials();
+  return storage::ComputeResponsePadding(url, padding_key, side_data_size > 0,
+                                         loaded_with_credentials);
 }
 
 }  // namespace
@@ -1244,7 +1248,8 @@ int64_t LegacyCacheStorageCache::CalculateResponsePadding(
   if (!ShouldPadResourceSize(response))
     return 0;
   return storage::ComputeResponsePadding(response.url_list.back().spec(),
-                                         padding_key, side_data_size > 0);
+                                         padding_key, side_data_size > 0,
+                                         response.loaded_with_credentials);
 }
 
 // static
@@ -1692,6 +1697,8 @@ void LegacyCacheStorageCache::PutDidCreateEntry(
       put_context->response->response_type));
   for (const auto& url : put_context->response->url_list)
     response_metadata->add_url_list(url.spec());
+  response_metadata->set_loaded_with_credentials(
+      put_context->response->loaded_with_credentials);
   response_metadata->set_response_time(
       put_context->response->response_time.ToInternalValue());
   for (ResponseHeaderMap::const_iterator it =

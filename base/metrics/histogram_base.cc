@@ -164,6 +164,11 @@ void HistogramBase::WriteJSON(std::string* output,
 }
 
 void HistogramBase::FindAndRunCallback(HistogramBase::Sample sample) const {
+  StatisticsRecorder::GlobalSampleCallback global_sample_callback =
+      StatisticsRecorder::global_sample_callback();
+  if (global_sample_callback)
+    global_sample_callback(histogram_name(), name_hash(), sample);
+
   if ((flags() & kCallbackExists) == 0)
     return;
 

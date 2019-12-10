@@ -360,6 +360,7 @@
 <translation id="3462439746547587373"><ph name="NAME" />、ボタン</translation>
 <translation id="3466530247399808663">キーの押下が無効</translation>
 <translation id="3468959318854349468">タイトルなし</translation>
+<translation id="3469005380014336304">行グループ</translation>
 <translation id="3469413619751135069">ペールグリーン</translation>
 <translation id="3473644018603298796"><ph name="COUNT" /> 件選択</translation>
 <translation id="3486232535569802404"><ph name="V1" />～<ph name="V2" /></translation>
@@ -463,6 +464,7 @@
 <translation id="4204126831294769023">アズール</translation>
 <translation id="4204864733111726379">フローラル ホワイト</translation>
 <translation id="4206289001967551965">表の中です</translation>
+<translation id="4207770814752775793">テキスト読み上げの設定をデフォルト値にリセットします。</translation>
 <translation id="4209770650650780359">上または下矢印キーでオート コンプリートの候補を表示します。</translation>
 <translation id="4215733775853809057">次のスライダ</translation>
 <translation id="42164919740161077">カデットブルー</translation>
@@ -766,6 +768,7 @@
 <translation id="6290434000785343030">次のコンボ ボックスはありません。</translation>
 <translation id="6305702903308659374">ChromeVox の読み上げ中も通常の音量で再生する</translation>
 <translation id="6307969636681130414">オン</translation>
+<translation id="6315652249189065725">キーボード ショートカット メニューを開く</translation>
 <translation id="6322856989298155004">通知音</translation>
 <translation id="6324551002951139333">文法の誤りが見つかりました</translation>
 <translation id="6325241889020214828"><ph name="TEXT" /> をコピーします。</translation>
@@ -959,6 +962,7 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="7668307052366682650">{COUNT,plural, =1{時間}other{時間}}</translation>
 <translation id="7674576868851035240">次のリンク</translation>
 <translation id="7674768236845044097">マーク</translation>
+<translation id="7676847077928500578">テキスト読み上げの設定をリセットします</translation>
 <translation id="7684431668231950609">テキスト編集、URL エントリ</translation>
 <translation id="7685589220304187312">ツールバー</translation>
 <translation id="7693840228159394336">前のラジオボタン</translation>

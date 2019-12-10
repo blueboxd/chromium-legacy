@@ -54,7 +54,6 @@ sync_pb::PasswordSpecifics SpecificsFromPassword(
       base::UTF16ToUTF8(password_form.username_value));
   password_data->set_password_value(
       base::UTF16ToUTF8(password_form.password_value));
-  password_data->set_preferred(password_form.preferred);
   password_data->set_date_last_used(
       password_form.date_last_used.ToDeltaSinceWindowsEpoch().InMicroseconds());
   password_data->set_date_created(
@@ -91,7 +90,6 @@ autofill::PasswordForm PasswordFromEntityChange(
       base::UTF8ToUTF16(password_data.password_element());
   password.username_value = base::UTF8ToUTF16(password_data.username_value());
   password.password_value = base::UTF8ToUTF16(password_data.password_value());
-  password.preferred = password_data.preferred();
   if (password_data.has_date_last_used()) {
     password.date_last_used = base::Time::FromDeltaSinceWindowsEpoch(
         base::TimeDelta::FromMicroseconds(password_data.date_last_used()));
@@ -114,7 +112,6 @@ autofill::PasswordForm PasswordFromEntityChange(
   password.federation_origin =
       url::Origin::Create(GURL(password_data.federation_url()));
   password.date_synced = sync_time;
-
   return password;
 }
 
@@ -153,7 +150,6 @@ bool AreLocalAndRemotePasswordsEqual(
           password_specifics.username_value() &&
       base::UTF16ToUTF8(password_form.password_value) ==
           password_specifics.password_value() &&
-      password_form.preferred == password_specifics.preferred() &&
       password_form.date_last_used ==
           base::Time::FromDeltaSinceWindowsEpoch(
               base::TimeDelta::FromMicroseconds(

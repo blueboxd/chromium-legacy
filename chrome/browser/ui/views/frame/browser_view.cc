@@ -1217,18 +1217,14 @@ void BrowserView::FocusToolbar() {
   toolbar_button_provider_->FocusToolbar();
 }
 
-ToolbarActionsBar* BrowserView::GetToolbarActionsBar() {
-  CHECK(!base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
-
-  BrowserActionsContainer* container =
-      toolbar_button_provider_->GetBrowserActionsContainer();
-  return container ? container->toolbar_actions_bar() : nullptr;
-}
-
 ExtensionsContainer* BrowserView::GetExtensionsContainer() {
   if (toolbar_ && toolbar_->extensions_container())
     return toolbar_->extensions_container();
-  return GetToolbarActionsBar();
+
+  CHECK(!base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
+  BrowserActionsContainer* container =
+      toolbar_button_provider_->GetBrowserActionsContainer();
+  return container ? container->toolbar_actions_bar() : nullptr;
 }
 
 void BrowserView::ToolbarSizeChanged(bool is_animating) {

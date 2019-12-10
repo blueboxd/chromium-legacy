@@ -184,6 +184,7 @@
 <translation id="3386978599540877378">the full-screen magnifier</translation>
 <translation id="3400357268283240774">Additional settings</translation>
 <translation id="3413817803639110246">Nothing to see just yet</translation>
+<translation id="3428447136709161042">Disconnect from <ph name="NETWORK_NAME" /></translation>
 <translation id="343571671045587506">Edit reminder</translation>
 <translation id="3445925074670675829">USB-C device</translation>
 <translation id="3454224730401036106">Your connection has switched to a more secure network</translation>
@@ -322,6 +323,7 @@
 <translation id="5537725057119320332">Cast</translation>
 <translation id="5548285847212963613">The extension "<ph name="EXTENSION_NAME" />" can help connect to this network.</translation>
 <translation id="554893713779400387">Toggle dictation</translation>
+<translation id="556042886152191864">Button</translation>
 <translation id="5571066253365925590">Bluetooth enabled</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Press Ctrl + Alt + Z to disable spoken feedback.</translation>
@@ -423,7 +425,6 @@
 <translation id="6857811139397017780">Activate <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Shortcut turned off</translation>
 <translation id="6910714959251846841">This update requires powerwashing of your device. Learn more about the latest <ph name="SYSTEM_APP_NAME" /> update.</translation>
-<translation id="6911468394164995108">Join other ...</translation>
 <translation id="6919251195245069855">Couldn’t recognise your smart card. Try again.</translation>
 <translation id="6972754398087986839">Get Started</translation>
 <translation id="6981982820502123353">Accessibility</translation>
@@ -469,6 +470,7 @@
 <translation id="7569509451529460200">Braille and ChromeVox are enabled</translation>
 <translation id="7593891976182323525">Search or Shift</translation>
 <translation id="7600875258240007829">See all notifications</translation>
+<translation id="7642647758716480637">Open settings for <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (owner)</translation>
 <translation id="7647488630410863958">Unlock device to view your notifications</translation>
 <translation id="7649070708921625228">Help</translation>

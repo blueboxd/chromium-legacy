@@ -89,4 +89,10 @@ TEST_F(PageLiveStateDecoratorTest, OnIsCapturingDesktopChanged) {
                        &PageLiveStateDecorator::OnIsCapturingDesktopChanged);
 }
 
+TEST_F(PageLiveStateDecoratorTest, SetIsAutoDiscardable) {
+  EndToEndPropertyTest(contents(),
+                       &PageLiveStateDecorator::Data::IsAutoDiscardable,
+                       &PageLiveStateDecorator::SetIsAutoDiscardable);
+}
+
 }  // namespace performance_manager

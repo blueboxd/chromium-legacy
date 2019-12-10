@@ -37,8 +37,10 @@
     <div class="settings-box two-line no-padding">
       <div actionable class="flex layout horizontal center link-wrapper"
           on-click="onShowDetailsTap_">
-        <div id="details" no-flex$="[[showSimInfo_(deviceState)]]">
+        <div id="details" no-flex$="[[showSimInfo_(deviceState)]]"
+             aria-hidden="true">
           <network-icon
+              id="networkIcon"
               show-technology-badge="[[showTechnologyBadge_]]"
               network-state="[[activeNetworkState]]"
               device-state="[[deviceState]]">
@@ -59,16 +61,19 @@
         </template>
 
         <template is="dom-if" if="[[showPolicyIndicator_(activeNetworkState)]]">
-          <cr-policy-indicator indicator-type="[[getIndicatorTypeForSource(
-              activeNetworkState.source)]]" on-click="doNothing_">
+          <cr-policy-indicator
+            icon-aria-label="[[getTitleText_(activeNetworkState)]]"
+            indicator-type="[[getIndicatorTypeForSource(
+                                activeNetworkState.source)]]"
+            on-click="doNothing_">
           </cr-policy-indicator>
         </template>
 
         <template is="dom-if" if="[[showDetailsIsVisible_(activeNetworkState,
             deviceState, networkStateList)]]">
           <cr-icon-button class="subpage-arrow"
-              aria-label$="[[getDetailsA11yString_(activeNetworkState,
-                  deviceState, networkStateList)]]"
+              aria-labelledby="networkTitleText"
+              aria-describedby="networkState networkIcon"
               aria-roledescription="$i18n{subpageArrowRoleDescription}">
           </cr-icon-button>
         </template>

@@ -128,6 +128,14 @@ constexpr int kForgiveGpuCrashMinutes = 60;
 // the display compositor, after this many minutes.
 constexpr int kForgiveDisplayCompositorCrashMinutes = 10;
 
+#if !defined(OS_ANDROID)
+// Feature controlling whether or not memory pressure signals will be forwarded
+// to the GPU process.
+const base::Feature kForwardMemoryPressureEventsToGpuProcess{
+    "ForwardMemoryPressureEventsToGpuProcess",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // This matches base::TerminationStatus.
 // These values are persisted to logs. Entries (except MAX_ENUM) should not be
 // renumbered and numeric values should never be reused. Should also avoid
@@ -638,6 +646,14 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
           switches::kInProcessGPU)) {
     in_process_ = true;
   }
+#if !defined(OS_ANDROID)
+  if (!in_process_ &&
+      base::FeatureList::IsEnabled(kForwardMemoryPressureEventsToGpuProcess)) {
+    memory_pressure_listener_ =
+        std::make_unique<base::MemoryPressureListener>(base::BindRepeating(
+            &GpuProcessHost::OnMemoryPressure, base::Unretained(this)));
+  }
+#endif
 
   // If the 'single GPU process' policy ever changes, we still want to maintain
   // it for 'gpu thread' mode and only create one instance of host and thread.
@@ -1213,5 +1229,12 @@ viz::mojom::GpuService* GpuProcessHost::gpu_service() {
 int GpuProcessHost::GetIDForTesting() const {
   return process_->GetData().id;
 }
+
+#if !defined(OS_ANDROID)
+void GpuProcessHost::OnMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel level) {
+  gpu_host_->gpu_service()->OnMemoryPressure(level);
+}
+#endif
 
 }  // namespace content

@@ -801,7 +801,8 @@
                   'ui/login/',
     },
     'chromeos_media_app': {
-      'filepath': 'chromeos/components/media_app_ui/',
+      'filepath': 'chromeos/components/media_app_ui/|'\
+                  'chrome/browser/chromeos/web_applications/',
     },
     'chromeos_net': {
       'filepath': 'ash/system/network/|'\

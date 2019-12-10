@@ -78,7 +78,6 @@ PasswordForm CreateGenerated() {
   form.action = GURL("https://signup.example.org");
   form.username_value = ASCIIToUTF16("MyName");
   form.password_value = ASCIIToUTF16("Strong password");
-  form.preferred = true;
   form.type = autofill::PasswordForm::Type::kGenerated;
   return form;
 }
@@ -400,12 +399,10 @@ TEST_F(PasswordGenerationManagerTest, PresaveGeneratedPassword_ThenUpdate) {
   related_psl_password.password_value = ASCIIToUTF16("old password");
 
   PasswordForm unrelated_password = CreateSaved();
-  unrelated_password.preferred = true;
   unrelated_password.username_value = ASCIIToUTF16("another username");
   unrelated_password.password_value = ASCIIToUTF16("some password");
 
   PasswordForm unrelated_psl_password = CreateSavedPSL();
-  unrelated_psl_password.preferred = true;
   unrelated_psl_password.username_value = ASCIIToUTF16("another username");
   unrelated_psl_password.password_value = ASCIIToUTF16("some password");
 
@@ -431,10 +428,6 @@ TEST_F(PasswordGenerationManagerTest, PresaveGeneratedPassword_ThenUpdate) {
   PasswordForm related_psl_password_expected = related_psl_password;
   related_psl_password_expected.password_value = generated.password_value;
   EXPECT_CALL(store(), UpdateLogin(related_psl_password_expected));
-
-  PasswordForm unrelated_password_expected = unrelated_password;
-  unrelated_password_expected.preferred = false;
-  EXPECT_CALL(store(), UpdateLogin(unrelated_password_expected));
 
   manager().CommitGeneratedPassword(
       generated, matches, ASCIIToUTF16("old password"), &form_saver());

@@ -91,6 +91,7 @@
 <translation id="209018056901015185">Версия для ПК</translation>
 <translation id="2103075008456228677">Открыть history.google.com</translation>
 <translation id="2116625576999540962">Перемещено закладок: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
+<translation id="2118594521750010466">Исправить</translation>
 <translation id="213900355088104901">Чтобы просматривать сайты анонимно, откройте вкладку в режиме инкогнито</translation>
 <translation id="2139867232736819575">Поиск скопированного текста</translation>
 <translation id="2149973817440762519">Закладка</translation>
@@ -98,6 +99,7 @@
 <translation id="2198757192731523470">Google может использовать вашу историю, чтобы персонализировать рекламу, а также Поиск и другие сервисы.</translation>
 <translation id="2230173723195178503">Веб-страница загружена</translation>
 <translation id="2239626343334228536">Удаление данных о работе в браузере…</translation>
+<translation id="2257567812274161158">Ошибка синхронизации.</translation>
 <translation id="2267753748892043616">Добавить аккаунт</translation>
 <translation id="2268044343513325586">Уточнить</translation>
 <translation id="2273327106802955778">Меню "Ещё"</translation>
@@ -129,6 +131,7 @@
 <translation id="2691653761409724435">Недоступно в офлайн-режиме</translation>
 <translation id="2695507686909505111">Страница переведена</translation>
 <translation id="2702801445560668637">Список для чтения</translation>
+<translation id="2704491540504985681">Скачанные файлы</translation>
 <translation id="2704606927547763573">Скопировано</translation>
 <translation id="2709516037105925701">Автозаполнение</translation>
 <translation id="2712127207578915686">Невозможно открыть файл</translation>
@@ -218,6 +221,7 @@
 <translation id="3943492037546055397">Пароли</translation>
 <translation id="3967822245660637423">Скачивание завершено.</translation>
 <translation id="3989635538409502728">Выйти</translation>
+<translation id="399419089947468503">Ошибка при синхронизации паролей</translation>
 <translation id="3995521777587992544">Индикатор загрузки страницы: выполнено <ph name="EMAIL" />.</translation>
 <translation id="4002066346123236978">Название</translation>
 <translation id="4004204301268239848">Пароли сохраняются в аккаунте Google и будут доступны на любом устройстве.</translation>
@@ -238,6 +242,7 @@
 <translation id="424315890655130736">Введите кодовую фразу</translation>
 <translation id="4263576668337963058">Показать доступные действия со страницей</translation>
 <translation id="4272631900155121838">Чтобы отсканировать QR-код, разрешите доступ к камере в настройках.</translation>
+<translation id="4276041135170112053">Исправить</translation>
 <translation id="4281844954008187215">Условия использования</translation>
 <translation id="430793432425771671">Синхронизировать все</translation>
 <translation id="430967081421617822">Все время</translation>
@@ -286,6 +291,7 @@
 <translation id="4904877109095351937">Отметить как прочитанное</translation>
 <translation id="4930268273022498155">Удалить сохраненные данные. Чтобы снова получить к ним доступ, переключитесь на аккаунт <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Не удалось опубликовать запись.</translation>
+<translation id="4944543191714094452">Найти на странице…</translation>
 <translation id="4945756290001680296">Доступ к настройкам паролей</translation>
 <translation id="4979397965658815378">Войдите в аккаунт Google, чтобы пользоваться своими закладками, паролями, историей и другими настройками на любом устройстве</translation>
 <translation id="5005498671520578047">Для копирования пароля</translation>
@@ -317,6 +323,7 @@
 <translation id="5433691172869980887">Имя пользователя скопировано</translation>
 <translation id="54401264925851789">Сведения о надежности страницы</translation>
 <translation id="5443952882982198570">Кредитные карты</translation>
+<translation id="5457907402803865181">Ошибка при синхронизации паролей.</translation>
 <translation id="5525269841082836315">Создание код. фразы</translation>
 <translation id="5548760955356983418">Функция Handoff позволит начать просмотр веб-сайта на одном устройстве и продолжить на другом. Открытый сайт появится на панели Dock вашего компьютера Mac.
 
@@ -408,6 +415,7 @@
 <translation id="6482629121755362506">Удалено закладок: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6610002944194042868">Параметры перевода</translation>
 <translation id="6628106477656132239">Неверная дата окончания срока действия</translation>
+<translation id="6638511529934826365">Изменить масштаб текста</translation>
 <translation id="6642362222295953972">Переключиться на открытую ранее вкладку</translation>
 <translation id="6643016212128521049">Удалить</translation>
 <translation id="6656103420185847513">Редактировать папку</translation>

@@ -63,11 +63,7 @@ config("runtime_library") {
   # The Windows component build fails to link with libc++'s debug mode. See
   # https://crbug.com/923166#c33, https://crbug.com/923166#c44, and
   # https://llvm.org/PR41018.
-  #
-  # Some Android tests fail with _LIBCPP_DEBUG=0 due to bugs. See
-  # https://crbug.com/923166#c43 and https://crbug.com/923166#c47. Once those
-  # fixes land, this should also be enabled on Android.
-  if (!(is_win && is_component_build) && !is_android) {
+  if (!(is_win && is_component_build)) {
     # libc++ has two levels of debug mode. Setting _LIBCPP_DEBUG to zero
     # enables most assertions. Setting it to one additionally enables iterator
     # debugging. See https://libcxx.llvm.org/docs/DesignDocs/DebugMode.html

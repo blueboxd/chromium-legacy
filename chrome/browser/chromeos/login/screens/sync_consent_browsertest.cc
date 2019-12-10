@@ -282,7 +282,7 @@ IN_PROC_BROWSER_TEST_P(SyncConsentPolicyDisabledTest,
   test::WaitForPrimaryUserSessionStart();
 }
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          SyncConsentPolicyDisabledTest,
                          testing::Bool());
 

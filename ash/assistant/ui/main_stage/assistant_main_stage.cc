@@ -26,6 +26,7 @@
 #include "ui/compositor/callback_layer_animation_observer.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -273,7 +274,7 @@ void AssistantMainStage::InitOverlayLayoutContainer() {
 
   // The greeting label will be animated on its own layer.
   greeting_label_->SetPaintToLayer();
-  greeting_label_->layer()->SetFillsBoundsOpaquely(false);
+  greeting_label_->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
 
   overlay_layout_container_->AddChildView(greeting_label_);
 

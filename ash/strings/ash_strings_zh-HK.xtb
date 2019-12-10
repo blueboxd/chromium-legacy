@@ -184,6 +184,7 @@
 <translation id="3386978599540877378">全螢幕放大鏡</translation>
 <translation id="3400357268283240774">其他設定</translation>
 <translation id="3413817803639110246">目前尚未有任何通知</translation>
+<translation id="3428447136709161042">中斷同<ph name="NETWORK_NAME" />嘅連線</translation>
 <translation id="343571671045587506">編輯提醒</translation>
 <translation id="3445925074670675829">USB-C 裝置</translation>
 <translation id="3454224730401036106">連線已切換至更安全的網絡</translation>
@@ -295,7 +296,7 @@
 <translation id="4924411785043111640">重新啟動並重設</translation>
 <translation id="495046168593986294">向上捲動</translation>
 <translation id="4961318399572185831">投放螢幕</translation>
-<translation id="5018302031617932556">「夜燈模式」讓您在光線昏暗的環境下輕易觀看螢幕內容或閱讀。輕按即可變更模式。</translation>
+<translation id="5018302031617932556">「夜燈模式」讓您更易在光線昏暗的環境下觀看螢幕內容或閱讀。輕按即可變更模式。</translation>
 <translation id="5030687792513154421">使用時間結束</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> 已連接至新手機</translation>
 <translation id="5083553833479578423">啟用更多「Google 助理」功能。</translation>
@@ -322,6 +323,7 @@
 <translation id="5537725057119320332">投放</translation>
 <translation id="5548285847212963613">擴充程式「<ph name="EXTENSION_NAME" />」可用來連線至此網絡。</translation>
 <translation id="554893713779400387">切換語音輸入</translation>
+<translation id="556042886152191864">按鈕</translation>
 <translation id="5571066253365925590">藍牙已啟用</translation>
 <translation id="5597451508971090205"><ph name="DATE" /><ph name="SHORT_WEEKDAY" /></translation>
 <translation id="5600837773213129531">按下 Ctrl + Alt + Z 鍵即可停用朗讀功能。</translation>
@@ -423,7 +425,6 @@
 <translation id="6857811139397017780">啟用 <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">已關閉快速鍵功能</translation>
 <translation id="6910714959251846841">此更新需要為裝置執行 Powerwash。進一步瞭解有關 <ph name="SYSTEM_APP_NAME" /> 的更新。</translation>
-<translation id="6911468394164995108">加入其他網絡…</translation>
 <translation id="6919251195245069855">無法辨識智能卡，請再試一次。</translation>
 <translation id="6972754398087986839">開始使用</translation>
 <translation id="6981982820502123353">協助工具</translation>
@@ -469,6 +470,7 @@
 <translation id="7569509451529460200">已啟用點字和 ChromeVox</translation>
 <translation id="7593891976182323525">搜尋鍵或 Shift 鍵</translation>
 <translation id="7600875258240007829">查看所有通知</translation>
+<translation id="7642647758716480637">打開<ph name="NETWORK_NAME" />嘅設定，<ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (擁有者)</translation>
 <translation id="7647488630410863958">解鎖裝置即可查看您的通知</translation>
 <translation id="7649070708921625228">說明</translation>

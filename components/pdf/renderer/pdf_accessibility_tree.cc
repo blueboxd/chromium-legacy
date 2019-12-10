@@ -187,7 +187,7 @@ ui::AXNode* GetStaticTextNodeFromNode(ui::AXNode* node) {
   // Get the static text from the link node.
   if (node &&
       (node->data().role == ax::mojom::Role::kLink ||
-       node->data().role == ax::mojom::Role::kButton) &&
+       node->data().role == ax::mojom::Role::kMark) &&
       node->children().size() == 1) {
     static_node = node->children()[0];
   }

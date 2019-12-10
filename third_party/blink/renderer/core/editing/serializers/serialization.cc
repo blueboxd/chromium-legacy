@@ -124,7 +124,8 @@ static void CompleteURLs(DocumentFragment& fragment, const String& base_url) {
 
 static bool IsHTMLBlockElement(const Node* node) {
   DCHECK(node);
-  return IsHTMLTableCellElement(*node) || IsNonTableCellHTMLBlockElement(node);
+  return IsA<HTMLTableCellElement>(*node) ||
+         IsNonTableCellHTMLBlockElement(node);
 }
 
 static HTMLElement* AncestorToRetainStructureAndAppearanceForBlock(

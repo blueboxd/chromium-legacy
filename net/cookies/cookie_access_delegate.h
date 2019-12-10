@@ -12,6 +12,8 @@
 
 namespace net {
 
+class SiteForCookies;
+
 class NET_EXPORT CookieAccessDelegate {
  public:
   CookieAccessDelegate();
@@ -26,7 +28,7 @@ class NET_EXPORT CookieAccessDelegate {
   // value vs the request context.
   virtual bool ShouldIgnoreSameSiteRestrictions(
       const GURL& url,
-      const GURL& site_for_cookies) const = 0;
+      const SiteForCookies& site_for_cookies) const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CookieAccessDelegate);

@@ -339,7 +339,6 @@ static bool AllowInitialInShorthand(CSSPropertyID property_id) {
     case CSSPropertyID::kListStyle:
     case CSSPropertyID::kOffset:
     case CSSPropertyID::kTextDecoration:
-    case CSSPropertyID::kWebkitMarginCollapse:
     case CSSPropertyID::kWebkitMask:
     case CSSPropertyID::kWebkitTextEmphasis:
     case CSSPropertyID::kWebkitTextStroke:
@@ -522,8 +521,6 @@ String StylePropertySerializer::SerializeShorthand(
       return Get2Values(marginInlineShorthand());
     case CSSPropertyID::kOffset:
       return OffsetValue();
-    case CSSPropertyID::kWebkitMarginCollapse:
-      return GetShorthandValue(webkitMarginCollapseShorthand());
     case CSSPropertyID::kOverflow:
       return Get2Values(overflowShorthand());
     case CSSPropertyID::kOverscrollBehavior:

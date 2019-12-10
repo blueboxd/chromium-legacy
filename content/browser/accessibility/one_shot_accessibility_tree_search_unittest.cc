@@ -41,7 +41,7 @@ class TestBrowserAccessibilityManager : public BrowserAccessibilityManager {
 // These tests prevent other tests from being run. crbug.com/514632
 #if defined(ANDROID) && defined(ADDRESS_SANITIZER)
 #define MAYBE_OneShotAccessibilityTreeSearchTest \
-  DISABLED_OneShotAccessibilityTreeSearchTets
+  DISABLED_OneShotAccessibilityTreeSearchTest
 #else
 #define MAYBE_OneShotAccessibilityTreeSearchTest \
   OneShotAccessibilityTreeSearchTest

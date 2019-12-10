@@ -214,6 +214,7 @@
 <translation id="2532336938189706096">ویب منظر</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> آئٹمز حذف ہو گئے</translation>
 <translation id="2536728043171574184">اس صفحہ کی ایک آف لائن کاپی دیکھی جا رہی ہے</translation>
+<translation id="2537178555904266562">پاس ورڈز کی مطابقت پذیری کرنے میں خرابی</translation>
 <translation id="2546283357679194313">کوکیز اور سائٹ ڈیٹا</translation>
 <translation id="2567385386134582609">تصویر</translation>
 <translation id="257088987046510401">تھیمز</translation>
@@ -231,6 +232,7 @@
 <translation id="2650751991977523696">فائل دوبارہ ڈاؤن لوڈ کریں؟</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# آڈیو فائل}other{# آڈیو فائلیں}}</translation>
 <translation id="2653659639078652383">جمع کرائیں</translation>
+<translation id="2669093958999339774">اطلاع کی پرامپٹس کو آپ کو خلل ڈالنے سے مسدود کریں اور اس کے بجائے پُرسکون پیغام کا استعمال کریں</translation>
 <translation id="2677748264148917807">چھوڑیں</translation>
 <translation id="2704606927547763573">کاپی کیا</translation>
 <translation id="2707726405694321444">صفحہ ریفریش کریں</translation>
@@ -248,7 +250,6 @@
 <translation id="281504910091592009">‏اپنے <ph name="BEGIN_LINK" />Google اکاؤنٹ<ph name="END_LINK" /> میں محفوظ کردہ پاس ورڈز دیکھیں اور ان کا نظم کریں</translation>
 <translation id="2818669890320396765">اپنے سبھی آلات پر اپنے بُک مارکس حاصل کرنے کیلئے، سائن ان کریں اور سِنک کو آن کریں</translation>
 <translation id="2822354292072154809">کیا آپ واقعی <ph name="CHOSEN_OBJECT_NAME" /> کے لیے سائٹ کی سبھی اجازتوں کو دوبارہ ترتیب دینا چاہتے ہیں؟</translation>
-<translation id="2836148919159985482">پوری اسکرین سے باہر نکلنے کیلئے پیچھے جائیں بٹن کو ٹچ کریں۔</translation>
 <translation id="2842985007712546952">پیرینٹ فولڈر</translation>
 <translation id="2858138569776157458">ٹاپ سائٹس</translation>
 <translation id="2860954141821109167">یہ یقینی بنائیں کہ اس آلے پر کوئی فون ایپ فعال ہے</translation>
@@ -358,14 +359,15 @@
 <translation id="3632295766818638029">پاس ورڈ ظاہر کریں</translation>
 <translation id="363596933471559332">اسٹور کردہ اسناد کا استعمال کر کے ویب سائٹس میں خود کار طور پر سائن ان کریں۔ خصوصیت آف ہونے پر، کسی ویب سائٹ میں سائن ان کرنے سے پہلے ہر بار آپ سے توثیق کرنے کو کہا جائے گا۔</translation>
 <translation id="3658159451045945436">ری سیٹ کرنے سے ملاحظہ کردہ سائٹس کی فہرست سمیت ڈیٹا بچت کی آپ کی سرگزشت صاف ہو جاتی ہے۔</translation>
-<translation id="3682730288090679318">آپ کو اطلاعات دکھانے کی درخواست کرنے سے سائٹس کو خودکار طور پر مسدود کرنے کے لیے فعال کریں۔ اگر کوئی سائٹ اطلاعات کی درخواست کرتی ہے، تو صفحہ کے نیچے ایک معلومات بار ظاہر ہوگا۔</translation>
 <translation id="3692944402865947621">اسٹوریج کا مقام ناقابل رسائی ہونے کے سبب <ph name="FILE_NAME" /> ڈاؤن لوڈ کرنا ناکام ہو گیا۔</translation>
+<translation id="3701167022068948696">ابھی درست کریں</translation>
 <translation id="3714981814255182093">تلاش کریں بار کھولیں</translation>
 <translation id="3716182511346448902">‏یہ صفحہ بہت زیادہ میموری استعمال کرتا ہے، لہذا Chrome نے اسے موقوف کر دیا۔</translation>
 <translation id="3730075448226062617">‏Chrome کو اپنے مائیکروفون تک رسائی دینے کیلئے، <ph name="BEGIN_LINK" />Android کی ترتیبات<ph name="END_LINK" /> میں بھی مائیکروفون آن کریں۔</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> میں بُک مارک کر دیا گیا</translation>
 <translation id="3744111561329211289">پس منظر کی مطابقت پذیری</translation>
 <translation id="3749259744154402564">غیر تعاون یافتہ</translation>
+<translation id="3767376082821709728">نئی سائٹز جو آپ ملاحظہ کرتے ہیں آپ کو اطلاعات نہیں بھیج سکتی ہیں</translation>
 <translation id="3771001275138982843">اپ ڈیٹ ڈاؤن لوڈ نہیں ہو سکا</translation>
 <translation id="3771033907050503522">پوشیدگی ٹیبز</translation>
 <translation id="3773755127849930740">جوڑا بنانے کی اجازت دینے کیلئے <ph name="BEGIN_LINK" />بلوٹوتھ کو آن کریں<ph name="END_LINK" /></translation>
@@ -591,7 +593,6 @@
 <translation id="5414836363063783498">توثیق ہو رہی ہے…</translation>
 <translation id="5423934151118863508">آپ کے سب سے زیادہ ملاحظہ کردہ صفحات یہاں دکھائے جائیں گے</translation>
 <translation id="5424588387303617268">‏<ph name="GIGABYTES" /> GB دستیاب ہے</translation>
-<translation id="5427766642345310212">سمجھ آ گئی۔ بذریعہ ڈیفالٹ نئی اطلاع کی درخواستیں یہاں ظاہر ہوں گی۔</translation>
 <translation id="543338862236136125">پاس ورڈ میں ترمیم کریں</translation>
 <translation id="5433691172869980887">صارف نام کاپی ہو گیا</translation>
 <translation id="543509235395288790"><ph name="COUNT" /> فائلیں (<ph name="MEGABYTES" />) ڈاؤن لوڈ ہو رہی ہیں۔</translation>
@@ -678,7 +679,6 @@
 <translation id="5962718611393537961">سکیڑنے کیلئے تھپتھپائیں</translation>
 <translation id="6000066717592683814">‏Google کو رکھیں</translation>
 <translation id="6005538289190791541">تجویز کردہ پاس ورڈ</translation>
-<translation id="6019358956729171834">مزید لوڈ کریں…</translation>
 <translation id="6036057147555329831">‏اضافی ICU</translation>
 <translation id="6039379616847168523">اگلے ٹیب پر جائیں</translation>
 <translation id="6040143037577758943">بند کریں</translation>
@@ -774,6 +774,7 @@
 <translation id="666731172850799929"><ph name="APP_NAME" /> میں کھولیں</translation>
 <translation id="666981079809192359">‏Chrome کی رازداری کا نوٹس</translation>
 <translation id="6676840375528380067">‏اس آلہ سے آپ کا Chrome ڈیٹا صاف کریں؟</translation>
+<translation id="6689172468748959065">پروفائل کی تصاویر</translation>
 <translation id="6697492270171225480">صفحہ نہ مل پانے کی صورت میں ملتے جلتے صفحات کے لیے تجاویز دکھائیں</translation>
 <translation id="6697947395630195233">‏Chrome کو اس سائٹ کے ساتھ آپ کے مقام کا اشتراک کرنے کیلئے آپ کے مقام تک رسائی درکار ہے۔</translation>
 <translation id="6698801883190606802">مطابقت پذیر ڈیٹا کا نظم کریں</translation>
@@ -956,6 +957,7 @@
 <translation id="8035133914807600019">نیا فولڈر…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> دن باقی</translation>
 <translation id="804335162455518893">‏SD کارڈ نہیں ملا</translation>
+<translation id="8046278916126163020">آپ جو نئی سائٹس ملاحظہ کرتے ہیں وہ آپ کو اطلاعات بھیجنے کے لیے پوچھ سکتی ہیں</translation>
 <translation id="805047784848435650">آپ کی براؤزنگ سرگزشت کی بنیاد پر</translation>
 <translation id="8051695050440594747">‏<ph name="MEGABYTES" /> MB دستیاب ہے</translation>
 <translation id="8058746566562539958">‏نئے Chrome ٹیب میں کھولیں</translation>

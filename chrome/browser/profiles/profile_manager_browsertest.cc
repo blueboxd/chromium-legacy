@@ -584,7 +584,6 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_DeletePasswords) {
   form.signon_realm = "http://accounts.google.com/";
   form.username_value = base::ASCIIToUTF16("my_username");
   form.password_value = base::ASCIIToUTF16("my_password");
-  form.preferred = true;
   form.blacklisted_by_user = false;
 
   scoped_refptr<password_manager::PasswordStore> password_store =

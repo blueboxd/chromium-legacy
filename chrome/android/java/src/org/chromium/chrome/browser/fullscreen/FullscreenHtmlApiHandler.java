@@ -20,6 +20,8 @@ import android.view.WindowManager;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.base.ObservableSupplier;
+import org.chromium.base.ObservableSupplierImpl;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.Tab;
@@ -47,6 +49,7 @@ public class FullscreenHtmlApiHandler {
     private final Window mWindow;
     private final Handler mHandler;
     private final FullscreenHtmlApiDelegate mDelegate;
+    private final ObservableSupplierImpl<Boolean> mPersistentModeSupplier;
 
     // We need to cache WebContents/ContentView since we are setting fullscreen UI state on
     // the WebContents's container view, and a Tab can change to have null web contents/
@@ -56,7 +59,6 @@ public class FullscreenHtmlApiHandler {
     @Nullable
     private View mContentViewInFullscreen;
     @Nullable private Tab mTabInFullscreen;
-    private boolean mIsPersistentMode;
     private FullscreenOptions mFullscreenOptions;
 
     // Toast at the top of the screen that is shown when user enters fullscreen for the
@@ -158,7 +160,7 @@ public class FullscreenHtmlApiHandler {
                     // Change this assert to simply ignoring the message to work around
                     // https://crbug/365638
                     // TODO(aberent): Fix bug
-                    // assert mIsPersistentMode : "Calling after we exited fullscreen";
+                    // assert getPersistentFullscreenMode() : "Calling after we exited fullscreen";
                     if (!fullscreenHtmlApiHandler.getPersistentFullscreenMode()) return;
 
                     if ((systemUiVisibility & SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN) == 0) {
@@ -187,6 +189,9 @@ public class FullscreenHtmlApiHandler {
         mWindow = window;
         mDelegate = delegate;
         mHandler = new FullscreenHandler(this);
+
+        mPersistentModeSupplier = new ObservableSupplierImpl<>();
+        mPersistentModeSupplier.set(false);
     }
 
     /**
@@ -196,11 +201,11 @@ public class FullscreenHtmlApiHandler {
      * @param options Options to choose mode of fullscreen.
      */
     public void enterPersistentFullscreenMode(FullscreenOptions options) {
-        if (mIsPersistentMode && ObjectsCompat.equals(mFullscreenOptions, options)) {
+        if (getPersistentFullscreenMode() && ObjectsCompat.equals(mFullscreenOptions, options)) {
             return;
         }
 
-        mIsPersistentMode = true;
+        mPersistentModeSupplier.set(true);
         mDelegate.onEnterFullscreen(options);
     }
 
@@ -209,9 +214,9 @@ public class FullscreenHtmlApiHandler {
      * if they have been hidden.
      */
     public void exitPersistentFullscreenMode() {
-        if (!mIsPersistentMode) return;
+        if (!getPersistentFullscreenMode()) return;
 
-        mIsPersistentMode = false;
+        mPersistentModeSupplier.set(false);
 
         if (mWebContentsInFullscreen != null && mTabInFullscreen != null) {
             exitFullscreen(mWebContentsInFullscreen, mContentViewInFullscreen, mTabInFullscreen);
@@ -231,7 +236,15 @@ public class FullscreenHtmlApiHandler {
      * @see #setPersistentFullscreenMode(boolean)
      */
     public boolean getPersistentFullscreenMode() {
-        return mIsPersistentMode;
+        return mPersistentModeSupplier.get();
+    }
+
+    /**
+     * @return An observable supplier that determines whether the app is in persistent fullscreen
+     *         mode.
+     */
+    public ObservableSupplier<Boolean> getPersistentFullscreenModeSupplier() {
+        return mPersistentModeSupplier;
     }
 
     private void exitFullscreen(WebContents webContents, View contentView, Tab tab) {
@@ -358,7 +371,7 @@ public class FullscreenHtmlApiHandler {
      * @see View#getSystemUiVisibility()
      */
     public void onContentViewSystemUiVisibilityChange(int visibility) {
-        if (mTabInFullscreen == null || !mIsPersistentMode) return;
+        if (mTabInFullscreen == null || !getPersistentFullscreenMode()) return;
         mHandler.sendEmptyMessageDelayed(
                 MSG_ID_SET_FULLSCREEN_SYSTEM_UI_FLAGS, ANDROID_CONTROLS_SHOW_DURATION_MS);
     }
@@ -372,7 +385,7 @@ public class FullscreenHtmlApiHandler {
 
         mHandler.removeMessages(MSG_ID_SET_FULLSCREEN_SYSTEM_UI_FLAGS);
         mHandler.removeMessages(MSG_ID_CLEAR_LAYOUT_FULLSCREEN_FLAG);
-        if (mTabInFullscreen == null || !mIsPersistentMode || !hasWindowFocus) return;
+        if (mTabInFullscreen == null || !getPersistentFullscreenMode() || !hasWindowFocus) return;
         mHandler.sendEmptyMessageDelayed(
                 MSG_ID_SET_FULLSCREEN_SYSTEM_UI_FLAGS, ANDROID_CONTROLS_SHOW_DURATION_MS);
     }

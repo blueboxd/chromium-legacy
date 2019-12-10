@@ -20,7 +20,7 @@
         android:title="@string/usage_stats_setting_title"
         android:persistent="false" />
     <Preference
-        android:fragment="org.chromium.chrome.browser.settings.privacy.DoNotTrackPreference"
+        android:fragment="org.chromium.chrome.browser.settings.privacy.DoNotTrackSettings"
         android:key="do_not_track"
         android:title="@string/do_not_track_title" />
     <Preference

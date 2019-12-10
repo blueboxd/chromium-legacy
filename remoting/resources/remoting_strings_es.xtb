@@ -162,7 +162,7 @@ Si la casilla <ph name="SERVICE_SCRIPT_NAME" /> ya está marcada, desmárcala y 
 <translation id="4784508858340177375">El servidor X ha fallado o no se ha podido iniciar.</translation>
 <translation id="4795786176190567663">No tienes permiso para realizar esa acción.</translation>
 <translation id="4798680868612952294">Opciones del ratón</translation>
-<translation id="4804818685124855865">Desvincular</translation>
+<translation id="4804818685124855865">Desconectar</translation>
 <translation id="4808503597364150972">Introduce el PIN de <ph name="HOSTNAME" />.</translation>
 <translation id="4812684235631257312">Host</translation>
 <translation id="4867841927763172006">Enviar Impr Pant</translation>

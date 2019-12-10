@@ -103,6 +103,11 @@ thread_local bool g_internal_reentry_guard;
 // Accumulated bytes towards sample thread local key.
 thread_local intptr_t g_accumulated_bytes_tls;
 
+// Used as a workaround to avoid bias from muted samples. See
+// ScopedMuteThreadSamples for more details.
+thread_local intptr_t g_accumulated_bytes_tls_snapshot;
+const intptr_t kAccumulatedBytesOffset = 1 << 29;
+
 // A boolean used to distinguish first allocation on a thread:
 //   false - first allocation on the thread;
 //   true  - otherwise.
@@ -301,11 +306,25 @@ void PartitionFreeHook(void* address) {
 PoissonAllocationSampler::ScopedMuteThreadSamples::ScopedMuteThreadSamples() {
   DCHECK(!g_internal_reentry_guard);
   g_internal_reentry_guard = true;
+
+  // We mute thread samples immediately after taking a sample, which is when we
+  // reset g_accumulated_bytes_tls. This breaks the random sampling requirement
+  // of the poisson process, and causes us to systematically overcount all other
+  // allocations. That's because muted allocations rarely trigger a sample
+  // [which would cause them to be ignored] since they occur right after
+  // g_accumulated_bytes_tls is reset.
+  //
+  // To counteract this, we drop g_accumulated_bytes_tls by a large, fixed
+  // amount to lower the probability that a sample is taken to close to 0. Then
+  // we reset it after we're done muting thread samples.
+  g_accumulated_bytes_tls_snapshot = g_accumulated_bytes_tls;
+  g_accumulated_bytes_tls -= kAccumulatedBytesOffset;
 }
 
 PoissonAllocationSampler::ScopedMuteThreadSamples::~ScopedMuteThreadSamples() {
   DCHECK(g_internal_reentry_guard);
   g_internal_reentry_guard = false;
+  g_accumulated_bytes_tls = g_accumulated_bytes_tls_snapshot;
 }
 
 // static
@@ -433,7 +452,6 @@ void PoissonAllocationSampler::DoRecordAlloc(intptr_t accumulated_bytes,
     return;
 
   size_t mean_interval = g_sampling_interval.load(std::memory_order_relaxed);
-
   if (UNLIKELY(!g_sampling_interval_initialized_tls)) {
     g_sampling_interval_initialized_tls = true;
     // This is the very first allocation on the thread. It always makes it

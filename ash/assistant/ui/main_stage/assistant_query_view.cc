@@ -14,6 +14,7 @@
 #include "net/base/escape.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/background.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
@@ -83,6 +84,7 @@ void AssistantQueryView::InitLayout() {
   label_->SetAutoColorReadabilityEnabled(false);
   label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_CENTER);
   label_->SetLineHeight(kLineHeightDip);
+  label_->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
   AddChildView(label_);
 }
 

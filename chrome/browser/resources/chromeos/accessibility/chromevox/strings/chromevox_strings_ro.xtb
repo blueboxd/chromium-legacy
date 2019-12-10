@@ -360,6 +360,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="3462439746547587373"><ph name="NAME" />, buton</translation>
 <translation id="3466530247399808663">O apăsare de tastă nevalidă</translation>
 <translation id="3468959318854349468">Fără titlu</translation>
+<translation id="3469005380014336304">Grup de rânduri</translation>
 <translation id="3469413619751135069">Verde pal</translation>
 <translation id="3473644018603298796"><ph name="COUNT" /> selectate</translation>
 <translation id="3486232535569802404">De la <ph name="V1" /> la <ph name="V2" /></translation>
@@ -463,7 +464,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="4204126831294769023">Azuriu</translation>
 <translation id="4204864733111726379">Alb floral</translation>
 <translation id="4206289001967551965">În interiorul tabelului</translation>
-<translation id="4207770814752775793">Resetează setările pentru redarea vocală a textului la valorile prestabilite.</translation>
+<translation id="4207770814752775793">Setează redarea vocală a textului la valorile prestabilite.</translation>
 <translation id="4209770650650780359">Apasă săgeata în sus sau săgeata în jos pentru completări automate.</translation>
 <translation id="4215733775853809057">Glisorul următor</translation>
 <translation id="42164919740161077">Albastru cadet</translation>
@@ -961,7 +962,7 @@ Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
 <translation id="7668307052366682650">{COUNT,plural, =1{oră}few{ore}other{de ore}}</translation>
 <translation id="7674576868851035240">Linkul următor</translation>
 <translation id="7674768236845044097">marcaj</translation>
-<translation id="7676847077928500578">Resetează setările pentru redarea vocală a textului</translation>
+<translation id="7676847077928500578">Resetează redarea vocală a textului</translation>
 <translation id="7684431668231950609">Câmp editare text de tip adresă URL</translation>
 <translation id="7685589220304187312">bară de instrumente</translation>
 <translation id="7693840228159394336">Butonul radio anterior</translation>

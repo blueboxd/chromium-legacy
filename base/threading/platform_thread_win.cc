@@ -189,8 +189,9 @@ bool CreateThreadInternal(size_t stack_size,
 }  // namespace
 
 namespace features {
+// TODO(https://crbug.com/872820): Cleanup this experiment after M80 branch.
 const Feature kWindowsThreadModeBackground{"WindowsThreadModeBackground",
-                                           FEATURE_DISABLED_BY_DEFAULT};
+                                           FEATURE_ENABLED_BY_DEFAULT};
 }  // namespace features
 
 namespace internal {
@@ -364,6 +365,9 @@ void PlatformThread::SetCurrentThreadPriorityImpl(ThreadPriority priority) {
   int desired_priority = THREAD_PRIORITY_ERROR_RETURN;
   switch (priority) {
     case ThreadPriority::BACKGROUND:
+      // Using THREAD_MODE_BACKGROUND_BEGIN instead of THREAD_PRIORITY_LOWEST
+      // improves input latency and navigation time. See
+      // https://docs.google.com/document/d/16XrOwuwTwKWdgPbcKKajTmNqtB4Am8TgS9GjbzBYLc0
       desired_priority = use_thread_mode_background
                              ? THREAD_MODE_BACKGROUND_BEGIN
                              : THREAD_PRIORITY_LOWEST;

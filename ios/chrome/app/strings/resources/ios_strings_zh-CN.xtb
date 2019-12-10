@@ -91,6 +91,7 @@
 <translation id="209018056901015185">请求切换到桌面版网站</translation>
 <translation id="2103075008456228677">打开 history.google.com</translation>
 <translation id="2116625576999540962">移动了<ph name="NUMBER_OF_SELECTED_BOOKMARKS" />项</translation>
+<translation id="2118594521750010466">立即修正</translation>
 <translation id="213900355088104901">要想私密地浏览，请打开一个无痕式标签页</translation>
 <translation id="2139867232736819575">搜索您复制的文字</translation>
 <translation id="2149973817440762519">修改书签</translation>
@@ -98,6 +99,7 @@
 <translation id="2198757192731523470">Google 可能会利用您的历史记录为您提供个性化的 Google 搜索、广告和其他 Google 服务。</translation>
 <translation id="2230173723195178503">已加载网页</translation>
 <translation id="2239626343334228536">正在清除浏览数据…</translation>
+<translation id="2257567812274161158">同步功能无法正常运行。</translation>
 <translation id="2267753748892043616">添加帐号</translation>
 <translation id="2268044343513325586">优化</translation>
 <translation id="2273327106802955778">“更多”菜单</translation>
@@ -129,6 +131,7 @@
 <translation id="2691653761409724435">无法离线查看</translation>
 <translation id="2695507686909505111">网页翻译完毕</translation>
 <translation id="2702801445560668637">读取列表</translation>
+<translation id="2704491540504985681">下载内容</translation>
 <translation id="2704606927547763573">已复制</translation>
 <translation id="2709516037105925701">自动填充</translation>
 <translation id="2712127207578915686">无法打开该文件</translation>
@@ -218,6 +221,7 @@
 <translation id="3943492037546055397">密码</translation>
 <translation id="3967822245660637423">下载完毕</translation>
 <translation id="3989635538409502728">退出</translation>
+<translation id="399419089947468503">同步密码时出错</translation>
 <translation id="3995521777587992544">网页加载进度条，已加载 <ph name="EMAIL" />。</translation>
 <translation id="4002066346123236978">标题</translation>
 <translation id="4004204301268239848">系统会将密码保存在您的 Google 帐号中，以便您在任意设备上使用。</translation>
@@ -238,6 +242,7 @@
 <translation id="424315890655130736">请输入密码</translation>
 <translation id="4263576668337963058">显示可用的网页操作</translation>
 <translation id="4272631900155121838">要扫描 QR 码，请从设置中启用相机功能</translation>
+<translation id="4276041135170112053">立即修正。</translation>
 <translation id="4281844954008187215">服务条款</translation>
 <translation id="430793432425771671">同步所有内容</translation>
 <translation id="430967081421617822">时间不限</translation>
@@ -286,6 +291,7 @@
 <translation id="4904877109095351937">标记为已读</translation>
 <translation id="4930268273022498155">删除现有数据。您可通过切换回 <ph name="USER_EMAIL1" /> 来获取现有数据。</translation>
 <translation id="4941089862236492464">很抱歉，分享您的信息时出现问题。</translation>
+<translation id="4944543191714094452">在网页中查找…</translation>
 <translation id="4945756290001680296">访问密码设置</translation>
 <translation id="4979397965658815378">登录 Google 帐号，即可获取您在任何登录过的设备上的书签、密码、历史记录及其他设置</translation>
 <translation id="5005498671520578047">复制密码</translation>
@@ -317,6 +323,7 @@
 <translation id="5433691172869980887">已复制用户名</translation>
 <translation id="54401264925851789">网页安全信息</translation>
 <translation id="5443952882982198570">信用卡</translation>
+<translation id="5457907402803865181">同步密码时出错。</translation>
 <translation id="5525269841082836315">创建密码</translation>
 <translation id="5548760955356983418">借助 Handoff 功能，您在此设备上浏览网站时，可轻松改用 Mac 继续浏览。当前打开的网站将显示在 Mac 的 Dock 中。
 
@@ -408,6 +415,7 @@
 <translation id="6482629121755362506">删除了<ph name="NUMBER_OF_SELECTED_BOOKMARKS" />项</translation>
 <translation id="6610002944194042868">翻译选项</translation>
 <translation id="6628106477656132239">失效日期无效</translation>
+<translation id="6638511529934826365">缩放文字…</translation>
 <translation id="6642362222295953972">切换到已打开的标签页</translation>
 <translation id="6643016212128521049">清除</translation>
 <translation id="6656103420185847513">修改文件夹</translation>

@@ -214,6 +214,7 @@
 <translation id="2532336938189706096">Veb Görünüşü</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> element silindi</translation>
 <translation id="2536728043171574184">Bu səhifənin oflayn nüsxəsinə baxılır</translation>
+<translation id="2537178555904266562">Parolları sinxronlaşdıran zaman xəta baş verdi</translation>
 <translation id="2546283357679194313">Kukilər və sayt datası</translation>
 <translation id="2567385386134582609">ŞƏKİL</translation>
 <translation id="257088987046510401">Temalar</translation>
@@ -231,6 +232,7 @@
 <translation id="2650751991977523696">Fayl yenidən endirilsin?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# Audio fayl}other{# Audio fayl}}</translation>
 <translation id="2653659639078652383">Təqdim edin</translation>
+<translation id="2669093958999339774">Bildiriş dəvətlərinin sizi narahat etməsini bloklayın, əvəzində səssiz bildirişlər alın</translation>
 <translation id="2677748264148917807">Tərk edin</translation>
 <translation id="2704606927547763573">Kopyalandı</translation>
 <translation id="2707726405694321444">Səhifəni yeniləyin</translation>
@@ -248,7 +250,6 @@
 <translation id="281504910091592009"><ph name="BEGIN_LINK" />Google Hesabınızda<ph name="END_LINK" /> yadda saxlanılmış parollara baxın və idarə edin</translation>
 <translation id="2818669890320396765">Bütün cihazlarda əlfəcinləri əldə etmək üçün daxil olun və sinxronizasiyanı aktiv edin</translation>
 <translation id="2822354292072154809"><ph name="CHOSEN_OBJECT_NAME" /> üçün bütün sayt icazələrini sıfırlamaq istədiyinizə əminsiniz?</translation>
-<translation id="2836148919159985482">Tam ekrandan çıxmaq üçün geri düyməsinə basın.</translation>
 <translation id="2842985007712546952">Ana qovluq</translation>
 <translation id="2858138569776157458">Populyar saytlar</translation>
 <translation id="2860954141821109167">Telefon tətbiqinin bu cihazda aktiv edildiyinə əmin olun</translation>
@@ -358,14 +359,15 @@
 <translation id="3632295766818638029">Parolu görünən edin</translation>
 <translation id="363596933471559332">Saxlanmış kredensialları istifadə edərək vebsaytlara avtomatik daxil olun. Funksiya deaktiv olanda sayta hər dəfə girdiyinizdə doğrulama tələb olunacaq.</translation>
 <translation id="3658159451045945436">Sıfırlamaq daxil olduğunuz saytlar daxil olmaqla, yadda saxlanılan data tarixçəsini silir.</translation>
-<translation id="3682730288090679318">Saytların sizə bildirişlər göstərmək üçün müraciətinin avtomatik bloklanmasını aktiv edin. Sayt bildirişlər üçün sorğu göndərərsə, səhifənin aşağısında məlumat paneli görünəcək.</translation>
 <translation id="3692944402865947621"><ph name="FILE_NAME" /> endirməsi alınmadı çünki yaddaş məkanı əlçatan deyil.</translation>
+<translation id="3701167022068948696">İndi düzəliş edin</translation>
 <translation id="3714981814255182093">Tapma Barını açın</translation>
 <translation id="3716182511346448902">Bu səhifə həddindən çox yaddaş istifadə etdiyinə görə Chrome tərəfindən dayandırıldı.</translation>
 <translation id="3730075448226062617">Həmçinin, Chrome'un mikrofona daxil olmasına icazə vermək üçün <ph name="BEGIN_LINK" />Android Ayarlarında<ph name="END_LINK" /> mikrofonu aktiv edin.</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> məhsulunda əlfəcinlənib</translation>
 <translation id="3744111561329211289">Arxa fon sinx</translation>
 <translation id="3749259744154402564">Dəstəklənmir</translation>
+<translation id="3767376082821709728">Daxil olduğunuz yeni saytlar sizə bildirişlər göndərə bilməz</translation>
 <translation id="3771001275138982843">Güncəlləməni endirmək mümkün olmadı</translation>
 <translation id="3771033907050503522">Gizli Panellər</translation>
 <translation id="3773755127849930740">Qoşalaşdırmağa icazə vermək üçün <ph name="BEGIN_LINK" />Bluetooth'u aktiv edin<ph name="END_LINK" /></translation>
@@ -591,7 +593,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5414836363063783498">Doğrulanır...</translation>
 <translation id="5423934151118863508">Ən çox daxil olduğunuz səhifələr burada görünəcək</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB əlçatandır</translation>
-<translation id="5427766642345310212">Anladım. Defolt olaraq, yeni bildiriş sorğuları burada görünəcək.</translation>
 <translation id="543338862236136125">Parolu redaktə edin</translation>
 <translation id="5433691172869980887">İstifadəçi adı kopyalandı</translation>
 <translation id="543509235395288790"><ph name="COUNT" /> fayl (<ph name="MEGABYTES" />) endirilir.</translation>
@@ -678,7 +679,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5962718611393537961">Yığcamlaşdırmaq üçün klikləyin</translation>
 <translation id="6000066717592683814">Google'u saxlayın</translation>
 <translation id="6005538289190791541">Təklif edilən parol</translation>
-<translation id="6019358956729171834">Daha çox yükləyin…</translation>
 <translation id="6036057147555329831">Ekstra ICU</translation>
 <translation id="6039379616847168523">Növbəti panelə keşin</translation>
 <translation id="6040143037577758943">Qapat</translation>
@@ -772,6 +772,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="666731172850799929"><ph name="APP_NAME" /> tətbiqində açın</translation>
 <translation id="666981079809192359">Chrome Məxfilik Bildirişi</translation>
 <translation id="6676840375528380067">Chrome datası bu cihazdan silinsin?</translation>
+<translation id="6689172468748959065">Profil fotoları</translation>
 <translation id="6697492270171225480">Səhifə tapılmadığı zaman oxşar səhifələr üçün təklifləri göstərin</translation>
 <translation id="6697947395630195233">Chrome məkanı bu saytla paylaşmaq üçün məkana giriş tələb edir.</translation>
 <translation id="6698801883190606802">Sinxronlaşmış datanı idarə edin</translation>
@@ -954,6 +955,7 @@ Bu sayt kameraya daxil olmur. Kamera şəkillərini yalnız Siz görürsünüz.<
 <translation id="8035133914807600019">Yeni qovluq...</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> gün qaldı</translation>
 <translation id="804335162455518893">SD kart tapılmadı</translation>
+<translation id="8046278916126163020">Daxil olduğunuz yeni saytlar bildirişlər göndərmək üçün icazə istəyə bilər</translation>
 <translation id="805047784848435650">Axtarış tarixçəsinə əsasən</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB əlçatandır</translation>
 <translation id="8058746566562539958">Yeni Chrome tabında açın</translation>

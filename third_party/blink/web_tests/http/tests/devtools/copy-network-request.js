@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 (async function() {
+  'use strict';
   TestRunner.addResult(`Tests curl command generation\n`);
   await TestRunner.loadModule('network_test_runner');
   await TestRunner.showPanel('network');
@@ -54,8 +55,11 @@
   await dumpRequest({}, '123');
   await dumpRequest({'Content-Type': 'application/x-www-form-urlencoded'}, '1&b');
   await dumpRequest({'Content-Type': 'application/json'}, '{"a":1}');
-  await dumpRequest({'Content-Type': 'application/binary'}, '1234\r\n\x30\x30\2\3\4\5\'"!');
-  await dumpRequest({'Content-Type': 'application/binary'}, '1234\r\n\1\x30\x30\2\3\4\5\'"!');
+  await dumpRequest(
+      {'Content-Type': 'application/binary'}, '1234\r\n00\x02\x03\x04\x05\'"!');
+  await dumpRequest(
+      {'Content-Type': 'application/binary'},
+      '1234\r\n\x0100\x02\x03\x04\x05\'"!');
   await dumpRequest(
       {'Content-Type': 'application/binary'},
       '%OS%\r\n%%OS%%\r\n"\\"\'$&!');  // Ensure %OS% for windows is not env evaled

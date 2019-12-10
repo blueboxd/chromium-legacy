@@ -101,6 +101,8 @@ class BLINK_COMMON_EXPORT Item {
     return string_value_;
   }
 
+  ItemType Type() const { return type_; }
+
  private:
   ItemType type_ = kNullType;
   // TODO(iclelland): Make this class more memory-efficient, replacing the

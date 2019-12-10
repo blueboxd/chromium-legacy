@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.content_public.common.BrowserControlsState;
 
 import java.util.concurrent.TimeoutException;
 
@@ -49,7 +50,10 @@ public class TrustedWebActivityTestUtil {
     /** Checks if given instance of {@link CustomTabActivity} is a Trusted Web Activity. */
     public static boolean isTrustedWebActivity(CustomTabActivity activity) {
         // A key part of the Trusted Web Activity UI is the lack of browser controls.
-        return !TestThreadUtils.runOnUiThreadBlockingNoException(
-                () -> TabBrowserControlsConstraintsHelper.get(activity.getActivityTab()).canShow());
+        @BrowserControlsState
+        int constraints = TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            return TabBrowserControlsConstraintsHelper.getConstraints(activity.getActivityTab());
+        });
+        return constraints == BrowserControlsState.HIDDEN;
     }
 }

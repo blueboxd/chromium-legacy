@@ -8,7 +8,7 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 м.}one{# м.}other{# м.}}</translation>
 <translation id="1181037720776840403">Отстрани</translation>
 <translation id="1201402288615127009">Следно</translation>
-<translation id="1218444235442067213"><ph name="APP_NAME" />, апликација на Play Store</translation>
+<translation id="1218444235442067213"><ph name="APP_NAME" />, апликација од Play Store</translation>
 <translation id="1243314992276662751">Постави</translation>
 <translation id="1266864766717917324">Не можеше да се сподели <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
@@ -114,8 +114,8 @@
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> е преместена во папката <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">СИТЕ АПЛИКАЦИИ</translation>
 <translation id="4588090240171750605">Лизгај надесно</translation>
-<translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, оцена со ѕвезда <ph name="RATING_SCORE" /></translation>
-<translation id="4648249871170053485"><ph name="APP_NAME" />, препорака за апликација</translation>
+<translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, оцена со ѕвезди: <ph name="RATING_SCORE" /></translation>
+<translation id="4648249871170053485"><ph name="APP_NAME" />, препорачана апликација</translation>
 <translation id="4690510401873698237">Полицата е најдолу</translation>
 <translation id="4724120544754982507">Центар за известувања, <ph name="UNREAD_NOTIFICATION_COUNT" /> непрочитани известувања</translation>
 <translation id="4730374152663651037">ЧЕСТО КОРИСТЕНИ</translation>
@@ -125,7 +125,7 @@
 <translation id="4971687151119236543">Претходна песна на медиуми</translation>
 <translation id="5046499563572181734">Допрете тука</translation>
 <translation id="5076340679995252485">&amp;Залепи</translation>
-<translation id="5198715732953550718"><ph name="MOVED_APP_NAME" /> комбинирана со <ph name="IN_PLACE_APP" /> за да се создаде нова папка.</translation>
+<translation id="5198715732953550718"><ph name="MOVED_APP_NAME" /> е комбинирана со <ph name="IN_PLACE_APP" /> за да се создаде нова папка.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> ПБ</translation>
 <translation id="5266161281976477809">Триаголник за откривање</translation>
 <translation id="5278860589123563674">Не успеа да се испрати</translation>

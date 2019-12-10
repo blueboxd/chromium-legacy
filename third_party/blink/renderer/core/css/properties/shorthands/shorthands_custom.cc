@@ -2959,45 +2959,6 @@ const CSSValue* WebkitColumnBreakInside::CSSValueFromComputedStyleInternal(
       style.BreakInside());
 }
 
-bool WebkitMarginCollapse::ParseShorthand(
-    bool important,
-    CSSParserTokenRange& range,
-    const CSSParserContext& context,
-    const CSSParserLocalContext&,
-    HeapVector<CSSPropertyValue, 256>& properties) const {
-  CSSValueID id = range.ConsumeIncludingWhitespace().Id();
-  if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(
-          CSSPropertyID::kWebkitMarginBeforeCollapse, id, context.Mode()))
-    return false;
-
-  CSSValue* before_collapse = CSSIdentifierValue::Create(id);
-  css_property_parser_helpers::AddProperty(
-      CSSPropertyID::kWebkitMarginBeforeCollapse,
-      CSSPropertyID::kWebkitMarginCollapse, *before_collapse, important,
-      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
-      properties);
-
-  if (range.AtEnd()) {
-    css_property_parser_helpers::AddProperty(
-        CSSPropertyID::kWebkitMarginAfterCollapse,
-        CSSPropertyID::kWebkitMarginCollapse, *before_collapse, important,
-        css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
-        properties);
-    return true;
-  }
-
-  id = range.ConsumeIncludingWhitespace().Id();
-  if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(
-          CSSPropertyID::kWebkitMarginAfterCollapse, id, context.Mode()))
-    return false;
-  css_property_parser_helpers::AddProperty(
-      CSSPropertyID::kWebkitMarginAfterCollapse,
-      CSSPropertyID::kWebkitMarginCollapse, *CSSIdentifierValue::Create(id),
-      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
-      properties);
-  return true;
-}
-
 bool WebkitMaskBoxImage::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,

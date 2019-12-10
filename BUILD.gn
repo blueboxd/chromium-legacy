@@ -1009,6 +1009,19 @@ if (!is_ios) {
     }
   }
 
+  group("devtools_web_tests") {
+    testonly = true
+    deps = [
+      ":blink_web_tests",
+    ]
+    data_deps = [
+      ":blink_web_tests",
+    ]
+    data = [
+      "//third_party/devtools-frontend/src/test/webtests/",
+    ]
+  }
+
   # https://www.chromium.org/developers/testing/webkit-layout-tests
   generate_wrapper("blink_web_tests") {
     testonly = true

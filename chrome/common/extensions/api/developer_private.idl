@@ -257,7 +257,6 @@ namespace developerPrivate {
   };
 
   dictionary ProfileInfo {
-    boolean appInfoDialogEnabled;
     boolean canLoadUnpacked;
     boolean inDeveloperMode;
     boolean isDeveloperModeControlledByPolicy;

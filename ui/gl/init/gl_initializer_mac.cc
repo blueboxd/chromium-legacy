@@ -223,10 +223,6 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
   return false;
 }
 
-void InitializeLogGLBindings() {
-  InitializeLogGLBindingsGL();
-}
-
 void ShutdownGLPlatform() {
   ClearBindingsGL();
 #if defined(USE_EGL)

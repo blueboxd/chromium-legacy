@@ -287,4 +287,145 @@ IN_PROC_BROWSER_TEST_F(BrowserAccessibilityCocoaBrowserTest,
   }
 }
 
+IN_PROC_BROWSER_TEST_F(BrowserAccessibilityCocoaBrowserTest,
+                       TestTableGetRowNodesNestedRows) {
+  // rootWebArea(#1)
+  // ++grid(#2)
+  // ++++row(#3)
+  // ++++++columnHeader(#4)
+  // ++++++columnHeader(#5)
+  // ++++genericContainer(#6)
+  // ++++++row(#7)
+  // ++++++++cell(#8)
+  // ++++++++cell(#9)
+  // ++++++row(#10)
+  // ++++++++cell(#11)
+  // ++++++++cell(#12)
+
+  ui::AXTreeUpdate tree;
+  tree.root_id = 1;
+  tree.nodes.resize(12);
+  tree.nodes[0].id = 1;
+  tree.nodes[0].role = ax::mojom::Role::kRootWebArea;
+  tree.nodes[0].child_ids = {2};
+
+  tree.nodes[1].id = 2;
+  tree.nodes[1].role = ax::mojom::Role::kGrid;
+  tree.nodes[1].child_ids = {3, 6};
+
+  tree.nodes[2].id = 3;
+  tree.nodes[2].role = ax::mojom::Role::kRow;
+  tree.nodes[2].AddStringAttribute(ax::mojom::StringAttribute::kName, "row1");
+  tree.nodes[2].child_ids = {4, 5};
+
+  tree.nodes[3].id = 4;
+  tree.nodes[3].role = ax::mojom::Role::kColumnHeader;
+  tree.nodes[3].AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                   "header1");
+
+  tree.nodes[4].id = 5;
+  tree.nodes[4].role = ax::mojom::Role::kColumnHeader;
+  tree.nodes[4].AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                   "header2");
+
+  tree.nodes[5].id = 6;
+  tree.nodes[5].role = ax::mojom::Role::kGenericContainer;
+  tree.nodes[5].child_ids = {7, 10};
+
+  tree.nodes[6].id = 7;
+  tree.nodes[6].role = ax::mojom::Role::kRow;
+  tree.nodes[6].AddStringAttribute(ax::mojom::StringAttribute::kName, "row2");
+  tree.nodes[6].child_ids = {8, 9};
+
+  tree.nodes[7].id = 8;
+  tree.nodes[7].role = ax::mojom::Role::kCell;
+  tree.nodes[7].AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                   "cell1_row2");
+
+  tree.nodes[8].id = 9;
+  tree.nodes[8].role = ax::mojom::Role::kCell;
+  tree.nodes[8].AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                   "cell2_row2");
+
+  tree.nodes[9].id = 10;
+  tree.nodes[9].role = ax::mojom::Role::kRow;
+  tree.nodes[9].AddStringAttribute(ax::mojom::StringAttribute::kName, "row3");
+  tree.nodes[9].child_ids = {11, 12};
+
+  tree.nodes[10].id = 11;
+  tree.nodes[10].role = ax::mojom::Role::kCell;
+  tree.nodes[10].AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                    "cell1_row3");
+
+  tree.nodes[11].id = 12;
+  tree.nodes[11].role = ax::mojom::Role::kCell;
+  tree.nodes[11].AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                    "cell2_row3");
+
+  std::unique_ptr<BrowserAccessibilityManagerMac> manager(
+      new BrowserAccessibilityManagerMac(tree, nullptr));
+
+  BrowserAccessibility* table = manager->GetRoot()->PlatformGetChild(0);
+  base::scoped_nsobject<BrowserAccessibilityCocoa> table_obj(
+      [ToBrowserAccessibilityCocoa(table) retain]);
+  NSArray* row_nodes = [table_obj rows];
+
+  EXPECT_EQ(3U, [row_nodes count]);
+  EXPECT_NSEQ(@"AXRow", [row_nodes[0] role]);
+  EXPECT_NSEQ(@"row1", [row_nodes[0] descriptionForAccessibility]);
+
+  EXPECT_NSEQ(@"AXRow", [row_nodes[1] role]);
+  EXPECT_NSEQ(@"row2", [row_nodes[1] descriptionForAccessibility]);
+
+  EXPECT_NSEQ(@"AXRow", [row_nodes[2] role]);
+  EXPECT_NSEQ(@"row3", [row_nodes[2] descriptionForAccessibility]);
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserAccessibilityCocoaBrowserTest,
+                       TestTableGetRowNodesIndirectChildIds) {
+  // rootWebArea(#1)
+  // ++column(#2), indirectChildIds={3, 4}
+  // ++row(#3)
+  // ++row(#4)
+
+  ui::AXTreeUpdate tree;
+  tree.root_id = 1;
+  tree.nodes.resize(4);
+
+  tree.nodes[0].id = 1;
+  tree.nodes[0].role = ax::mojom::Role::kRootWebArea;
+  tree.nodes[0].child_ids = {2, 3, 4};
+
+  tree.nodes[1].id = 2;
+  tree.nodes[1].role = ax::mojom::Role::kColumn;
+  tree.nodes[1].AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                   "column1");
+  tree.nodes[1].AddIntListAttribute(
+      ax::mojom::IntListAttribute::kIndirectChildIds,
+      std::vector<int32_t>{3, 4});
+
+  tree.nodes[2].id = 3;
+  tree.nodes[2].role = ax::mojom::Role::kRow;
+  tree.nodes[2].AddStringAttribute(ax::mojom::StringAttribute::kName, "row1");
+
+  tree.nodes[3].id = 4;
+  tree.nodes[3].role = ax::mojom::Role::kRow;
+  tree.nodes[3].AddStringAttribute(ax::mojom::StringAttribute::kName, "row2");
+
+  std::unique_ptr<BrowserAccessibilityManagerMac> manager(
+      new BrowserAccessibilityManagerMac(tree, nullptr));
+
+  BrowserAccessibility* column = manager->GetRoot()->PlatformGetChild(0);
+  base::scoped_nsobject<BrowserAccessibilityCocoa> col_obj(
+      [ToBrowserAccessibilityCocoa(column) retain]);
+  EXPECT_NSEQ(@"AXColumn", [col_obj role]);
+  EXPECT_NSEQ(@"column1", [col_obj descriptionForAccessibility]);
+
+  NSArray* row_nodes = [col_obj rows];
+  EXPECT_NSEQ(@"AXRow", [row_nodes[0] role]);
+  EXPECT_NSEQ(@"row1", [row_nodes[0] descriptionForAccessibility]);
+
+  EXPECT_NSEQ(@"AXRow", [row_nodes[1] role]);
+  EXPECT_NSEQ(@"row2", [row_nodes[1] descriptionForAccessibility]);
+}
 }  // namespace content

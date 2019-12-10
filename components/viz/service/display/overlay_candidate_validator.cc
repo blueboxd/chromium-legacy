@@ -58,10 +58,6 @@ std::unique_ptr<OverlayCandidateValidator> OverlayCandidateValidator::Create(
   return nullptr;
 }
 
-bool OverlayCandidateValidator::StrategyNeedsOutputSurfacePlaneRemoved() {
-  return false;
-}
-
 OverlayCandidateValidator::OverlayCandidateValidator() = default;
 OverlayCandidateValidator::~OverlayCandidateValidator() = default;
 

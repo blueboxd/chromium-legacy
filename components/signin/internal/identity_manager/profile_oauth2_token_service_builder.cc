@@ -17,7 +17,7 @@
 
 #if defined(OS_ANDROID)
 #include "components/signin/internal/base/account_manager_facade_android.h"
-#include "components/signin/internal/identity_manager/oauth2_token_service_delegate_android.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate_android.h"
 #else
 #include "components/signin/internal/identity_manager/mutable_profile_oauth2_token_service_delegate.h"
 #include "components/signin/public/webdata/token_web_data.h"
@@ -39,14 +39,14 @@ namespace {
 #if defined(OS_ANDROID)
 // TODO(crbug.com/986435) Provide AccountManagerFacade as a parameter once
 // IdentityServicesProvider owns its instance management.
-std::unique_ptr<OAuth2TokenServiceDelegateAndroid> CreateAndroidOAuthDelegate(
-    AccountTrackerService* account_tracker_service) {
+std::unique_ptr<ProfileOAuth2TokenServiceDelegateAndroid>
+CreateAndroidOAuthDelegate(AccountTrackerService* account_tracker_service) {
   auto account_manager_facade =
-      OAuth2TokenServiceDelegateAndroid::
+      ProfileOAuth2TokenServiceDelegateAndroid::
               get_disable_interaction_with_system_accounts()
           ? nullptr
           : AccountManagerFacadeAndroid::GetJavaObject();
-  return std::make_unique<OAuth2TokenServiceDelegateAndroid>(
+  return std::make_unique<ProfileOAuth2TokenServiceDelegateAndroid>(
       account_tracker_service, account_manager_facade);
 }
 #elif defined(OS_IOS)

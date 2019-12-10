@@ -40,7 +40,7 @@
 <translation id="1358735829858566124">ਫਾਈਲ ਜਾਂ ਡਾਇਰੈਕਟਰੀ ਵਰਤੋਂ ਯੋਗ ਨਹੀਂ ਹੈ।</translation>
 <translation id="1363028406613469049">ਟਰੈਕ</translation>
 <translation id="1378727793141957596">Google Drive ਵਿੱਚ ਸੁਆਗਤ ਹੈ!</translation>
-<translation id="1383876407941801731">ਖੋਜ</translation>
+<translation id="1383876407941801731">ਖੋਜੋ</translation>
 <translation id="1395262318152388157">ਸੀਕ ਸਲਾਈਡਰ</translation>
 <translation id="1399648040768741453">ਤੇਲਗੂ ਕੀ-ਬੋਰਡ (ਧੁਨੀਆਤਮਿਕ)</translation>
 <translation id="1430915738399379752">ਪ੍ਰਿੰਟ ਕਰੋ</translation>
@@ -112,7 +112,7 @@
 <translation id="2291538123825441971"><ph name="NUMBER_OF_FILES" /> ਫ਼ਾਈਲਾਂ ਖੋਲ੍ਹੀਆਂ ਜਾ ਰਹੀਆਂ ਹਨ।</translation>
 <translation id="2303301624314357662">ਫ਼ਾਈਲ <ph name="FILE_NAME" /> ਨੂੰ ਖੋਲ੍ਹਿਆ ਜਾ ਰਿਹਾ ਹੈ।</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> ਨੂੰ ਕੱਢ ਦਿੱਤਾ ਗਿਆ ਹੈ।</translation>
-<translation id="2325650632570794183">ਇਹ ਫਾਈਲ ਪ੍ਰਕਾਰ ਸਮਰਥਿਤ ਨਹੀਂ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਅਜਿਹਾ ਐਪ ਲੱਭਣ ਲਈ Chrome Web Store ਵਿਖੇ ਜਾਓ ਜੋ ਇਸ ਪ੍ਰਕਾਰ ਦੀ ਫਾਈਲ ਖੋਲ੍ਹ ਸਕਦਾ ਹੈ।</translation>
+<translation id="2325650632570794183">ਇਹ ਫ਼ਾਈਲ ਕਿਸਮ ਸਮਰਥਿਤ ਨਹੀਂ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਅਜਿਹੀ ਐਪ ਲੱਭਣ ਲਈ 'Chrome ਵੈੱਬ ਸਟੋਰ' 'ਤੇ ਜਾਓ ਜੋ ਇਸ ਕਿਸਮ ਦੀ ਫ਼ਾਈਲ ਖੋਲ੍ਹ ਸਕਦੀ ਹੈ।</translation>
 <translation id="23434688402327542">ਕਜ਼ਾਖ਼ ਕੀ-ਬੋਰਡ</translation>
 <translation id="2352947182261340447">ਸਥਾਨਕ ਸਟੋਰੇਜ ਵਿੱਚ ਲੋੜੀਂਦੀ ਜਗ੍ਹਾ ਉਪਲਬਧ ਨਹੀਂ ਹੈ।</translation>
 <translation id="2377319039870049694">ਸੂਚੀ ਦ੍ਰਿਸ਼ 'ਤੇ ਸਵਿੱਚ ਕਰੋ</translation>
@@ -297,7 +297,7 @@
 <translation id="4694604912444486114">ਬਾਂਦਰ</translation>
 <translation id="4697043402264950621"><ph name="COLUMN_NAME" /> ਮੁਤਾਬਕ ਵੱਧਦੇ ਕ੍ਰਮ ਵਿੱਚ ਕ੍ਰਮ-ਬੱਧ ਕੀਤੀ ਫ਼ਾਈਲ ਸੂਚੀ।</translation>
 <translation id="4711094779914110278">Turki</translation>
-<translation id="4713544552769165154">ਇਹ ਫ਼ਾਈਲ Macintosh ਸਾਫ਼ਟਵੇਅਰ ਵਰਤਦੇ ਹੋਏ ਇੱਕ ਕੰਪਿਊਟਰ ਲਈ ਤਿਆਰ ਕੀਤੀ ਗਈ ਹੈ। ਇਹ ਤੁਹਾਡੇ ਉਸ ਡੀਵਾਈਸ ਦੇ ਅਨੁਕੂਲ ਨਹੀਂ ਹੈ ਜੋ Chrome OS ਨੂੰ ਚਲਾਉਂਦਾ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਕੋਈ ਅਨੁਕੂਲ ਬਦਲੀ ਐਪ ਲਈ <ph name="BEGIN_LINK" />Chrome ਵੈੱਬ ਸਟੋਰ<ph name="END_LINK" /> ਖੋਜੋ। <ph name="BEGIN_LINK_HELP" />ਹੋਰ ਜਾਣੋ<ph name="END_LINK_HELP" /></translation>
+<translation id="4713544552769165154">ਇਹ ਫ਼ਾਈਲ Macintosh ਸਾਫ਼ਟਵੇਅਰ ਵਰਤਣ ਵਾਲੇ ਕੰਪਿਊਟਰ ਲਈ ਤਿਆਰ ਕੀਤੀ ਗਈ ਹੈ। ਇਹ ਤੁਹਾਡੇ Chrome OS ਨਾਲ ਚਲਣ ਵਾਲੇ ਡੀਵਾਈਸ ਦੇ ਅਨੁਕੂਲ ਨਹੀਂ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਇਸ ਦੇ ਬਦਲਾਅ ਵਜੋਂ ਕਿਸੇ ਅਨੁਕੂਲ ਐਪ ਲਈ <ph name="BEGIN_LINK" />Chrome ਵੈੱਬ ਸਟੋਰ<ph name="END_LINK" /> ਖੋਜੋ।<ph name="BEGIN_LINK_HELP" />ਹੋਰ ਜਾਣੋ<ph name="END_LINK_HELP" /></translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> ਫ਼ੋਟੋਆਂ ਬੈਕ ਅਪ ਕੀਤਾ</translation>
 <translation id="4725511304875193254">ਕੋਰਗੀ</translation>
 <translation id="4732760563705710320">ਮਾਫ਼ ਕਰਨਾ, ਇਹ ਵੀਡੀਓ ਤੁਹਾਡੀ ਕਾਸਟ ਡੀਵਾਈਸ ਵੱਲੋਂ ਸਮਰਥਿਤ ਨਹੀਂ ਹੈ।</translation>
@@ -420,7 +420,7 @@
 <translation id="5833610766403489739">ਇਹ ਫ਼ਾਈਲ ਕਿਤੇ ਹੋਰ ਚਲੀ ਗਈ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੀ ਡਾਊਨਲੋਡ ਟਿਕਾਣਾ ਸੈਟਿੰਗ ਦੀ ਜਾਂਚ ਕਰੋ ਅਤੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
 <translation id="5838451609423551646">ਚੋਣ ਤੋਂ ਸਾਰੇ ਇੰਦਰਾਜ ਹਟਾਏ ਗਏ।</translation>
 <translation id="5838825566232597749">ਅਮਰੀਕੀ ਵਰਕਮੈਨ ਅੰਤਰਰਾਸ਼ਟਰੀ</translation>
-<translation id="5850516540536751549">ਇਹ ਫਾਈਲ ਪ੍ਰਕਾਰ ਸਮਰਥਿਤ ਨਹੀਂ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਅਜਿਹਾ ਐਪ ਲੱਭਣ ਲਈ <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> ਵਿਖੇ ਜਾਓ ਜੋ ਇਸ ਪ੍ਰਕਾਰ ਦੀ ਫਾਈਲ ਖੋਲ੍ਹ ਸਕਦਾ ਹੈ।
+<translation id="5850516540536751549">ਇਹ ਫ਼ਾਈਲ ਕਿਸਮ ਸਮਰਥਿਤ ਨਹੀਂ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਅਜਿਹੀ ਐਪ ਲੱਭਣ ਲਈ <ph name="BEGIN_LINK" />Chrome ਵੈੱਬ ਸਟੋਰ<ph name="END_LINK" /> 'ਤੇ ਜਾਓ ਜੋ ਇਸ ਕਿਸਮ ਦੀ ਫ਼ਾਈਲ ਖੋਲ੍ਹ ਸਕਦੀ ਹੈ।
     <ph name="BEGIN_LINK_HELP" />ਹੋਰ ਜਾਣੋ<ph name="END_LINK_HELP" /></translation>
 <translation id="5851063901794976166">ਇੱਥੇ  ਦੇਖਣ  ਲਈ ਕੁਝ ਨਹੀਂ...</translation>
 <translation id="5857774240076772505">Linux ਐਪਾਂ ਨੂੰ <ph name="FOLDER_NAME" /> ਫੋਲਡਰ ਵਿੱਚ ਫ਼ਾਈਲਾਂ ਸੋਧਣ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ</translation>
@@ -516,7 +516,7 @@
 <translation id="696203921837389374">ਮੋਬਾਈਲ ਡਾਟਾ ਤੋਂ ਸਿੰਕ ਕਰਨਾ ਬੰਦ ਕਰੋ</translation>
 <translation id="6965382102122355670">ਠੀਕ</translation>
 <translation id="6970230597523682626">Bulgarian</translation>
-<translation id="6978611942794658017">ਇਹ ਫਾਈਲ Windows ਸਾਫਟਵੇਅਰ ਵਰਤਦੇ ਹੋਏ ਇੱਕ PC ਲਈ ਤਿਆਰ ਕੀਤੀ ਗਈ ਹੈ।ਇਹ ਤੁਹਾਡੀ ਡੀਵਾਈਸ ਨਾਲ ਅਨੁਕੂਲ ਨਹੀਂ ਹੈ ਜੋ Chrome OS ਨੂੰ ਚਲਾਉਂਦੀ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਅਨੁਕੂਲ ਬਦਲੀ ਐਪ ਲਈ Chrome Web Store ਖੋਜੋ।</translation>
+<translation id="6978611942794658017">ਇਹ ਫ਼ਾਈਲ Windows ਸਾਫ਼ਟਵੇਅਰ ਵਰਤਣ ਵਾਲੇ PC ਲਈ ਤਿਆਰ ਕੀਤੀ ਗਈ ਹੈ। ਇਹ ਤੁਹਾਡੇ Chrome OS ਨਾਲ ਚਲਣ ਵਾਲੇ ਡੀਵਾਈਸ ਦੇ ਅਨੁਕੂਲ ਨਹੀਂ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਇਸ ਦੇ ਬਦਲਾਅ ਵਜੋਂ ਕਿਸੇ ਅਨੁਕੂਲ ਐਪ ਲਈ 'Chrome ਵੈੱਬ ਸਟੋਰ' ਖੋਜੋ।</translation>
 <translation id="6979158407327259162">Google ਡਰਾਈਵ</translation>
 <translation id="6990081529015358884">ਤੁਹਾਡਾ ਸਪੇਸ ਖ਼ਤਮ ਹੋਣ ਵਾਲਾ ਹੈ</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> ਫੋਲਡਰ ਚੁਣੇ</translation>
@@ -672,7 +672,7 @@
 <translation id="8722421161699219904">US ਅੰਤਰਰਾਸ਼ਟਰੀ ਕੀ-ਬੋਰਡ</translation>
 <translation id="872537912056138402">Croatian</translation>
 <translation id="874420130893181774">ਰਵਾਇਤੀ Pinyin ਇਨਪੁੱਟ ਵਿਧੀ</translation>
-<translation id="8775404590947523323">ਤੁਹਾਡੇ ਸੰਪਾਦਨ ਸਵੈਚਲਿਤ ਤੌਰ 'ਤੇ ਸੁਰੱਖਿਅਤ ਕੀਤੇ ਗਏ ਹਨ।<ph name="BREAKS" />ਅਸਲ ਚਿੱਤਰ ਦੀ ਇੱਕ ਕਾਪੀ ਰੱਖਣ ਲਈ, "ਮੂਲ ਚਿੱਤਰ ਓਵਰਰਾਈਟ ਕਰੋ" ਨੂੰ ਅਨਚੈਕ ਕਰੋ।</translation>
+<translation id="8775404590947523323">ਤੁਹਾਡੇ ਸੰਪਾਦਨ ਸਵੈਚਲਿਤ ਤੌਰ 'ਤੇ ਸੁਰੱਖਿਅਤ ਕੀਤੇ ਗਏ ਹਨ।<ph name="BREAKS" />ਅਸਲ ਚਿੱਤਰ ਦੀ ਇੱਕ ਕਾਪੀ ਰੱਖਣ ਲਈ, "ਅਸਲ 'ਤੇ ਓਵਰਰਾਈਟ ਕਰੋ" 'ਤੇ ਨਿਸ਼ਾਨ ਹਟਾਓ।</translation>
 <translation id="8803496343472038847">ਰੂਸੀ ਧੁਨੀਆਤਮਿਕ ਕੀ-ਬੋਰਡ</translation>
 <translation id="8808686172382650546">ਬਿੱਲੀ</translation>
 <translation id="8810671769985673465">ਜ਼ਿਪ ਕਰਨਾ ਅਸਫਲ ਰਿਹਾ, ਆਈਟਮ ਮੌਜੂਦ ਹੈ: "<ph name="FILE_NAME" />"</translation>
@@ -697,7 +697,7 @@
 <translation id="9130775360844693113">'<ph name="DESTINATION_NAME" />' ਦੇ ਮੈਂਬਰ ਇਹਨਾਂ ਆਈਟਮਾਂ ਤੱਕ ਪਹੁੰਚ ਪ੍ਰਾਪਤ ਕਰਨਗੇ।</translation>
 <translation id="9131598836763251128">ਇੱਕ ਜਾਂ ਵੱਧ ਫਾਈਲਾਂ ਚੁਣੋ</translation>
 <translation id="9133055936679483811">ਜ਼ਿਪ ਕਰਨਾ ਅਸਫਲ। <ph name="ERROR_MESSAGE" /></translation>
-<translation id="9134524245363717059">ਇਹ ਫ਼ਾਈਲ Macintosh ਸਾਫ਼ਟਵੇਅਰ ਵਰਤਦੇ ਹੋਏ ਇੱਕ ਕੰਪਿਊਟਰ ਲਈ ਤਿਆਰ ਕੀਤੀ ਗਈ ਹੈ। ਇਹ ਤੁਹਾਡੇ ਉਸ ਡੀਵਾਈਸ ਦੇ ਅਨੁਕੂਲ ਨਹੀਂ ਹੈ ਜੋ Chrome OS ਨੂੰ ਚਲਾਉਂਦਾ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਅਨੁਕੂਲ ਬਦਲੀ ਐਪ ਲਈ 'Chrome ਵੈੱਬ ਸਟੋਰ' ਖੋਜੋ।</translation>
+<translation id="9134524245363717059">ਇਹ ਫ਼ਾਈਲ Macintosh ਸਾਫ਼ਟਵੇਅਰ ਵਰਤਣ ਵਾਲੇ ਕੰਪਿਊਟਰ ਲਈ ਤਿਆਰ ਕੀਤੀ ਗਈ ਹੈ। ਇਹ ਤੁਹਾਡੇ Chrome OS ਨਾਲ ਚਲਣ ਵਾਲੇ ਡੀਵਾਈਸ ਦੇ ਅਨੁਕੂਲ ਨਹੀਂ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਇਸ ਦੇ ਬਦਲਾਅ ਵਜੋਂ ਕਿਸੇ ਅਨੁਕੂਲ ਐਪ ਲਈ 'Chrome ਵੈੱਬ ਸਟੋਰ' ਖੋਜੋ।</translation>
 <translation id="913758436357682283">ਮਿਆਂਮਾਰ ਮਿਆਂਸਾਨ ਕੀ-ਬੋਰਡ</translation>
 <translation id="9148058034647219655">ਬਾਹਰ ਜਾਓ</translation>
 <translation id="9153744823707037316">Array ਇਨਪੁੱਟ ਵਿਧੀ</translation>

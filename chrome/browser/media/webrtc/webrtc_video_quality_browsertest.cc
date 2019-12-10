@@ -158,6 +158,8 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
     ffmpeg_command.AppendArg(base::StringPrintf("%dx%d", width, height));
     ffmpeg_command.AppendArg("-b:v");
     ffmpeg_command.AppendArg(base::StringPrintf("%d", 120 * width * height));
+    ffmpeg_command.AppendArg("-vsync");
+    ffmpeg_command.AppendArg("passthrough");
     ffmpeg_command.AppendArgPath(yuv_video_filename);
 
     // We produce an output file that will later be used as an input to the

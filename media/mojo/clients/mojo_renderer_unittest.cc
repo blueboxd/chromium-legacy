@@ -175,7 +175,7 @@ class MojoRendererTest : public ::testing::Test {
 
   void OnCdmCreated(mojom::CdmPromiseResultPtr result,
                     int cdm_id,
-                    mojom::DecryptorPtr decryptor) {
+                    mojo::PendingRemote<mojom::Decryptor> decryptor) {
     EXPECT_TRUE(result->success);
     EXPECT_NE(CdmContext::kInvalidCdmId, cdm_id);
     cdm_context_.set_cdm_id(cdm_id);

@@ -217,8 +217,9 @@ void OmniboxPopupContentsView::InvalidateLine(size_t line) {
   }
 }
 
-void OmniboxPopupContentsView::OnLineSelected(size_t line) {
-  result_view_at(line)->OnSelected();
+void OmniboxPopupContentsView::OnSelectionStateChanged(size_t line) {
+  result_view_at(line)->OnSelectionStateChanged();
+  InvalidateLine(line);
 }
 
 void OmniboxPopupContentsView::UpdatePopupAppearance() {

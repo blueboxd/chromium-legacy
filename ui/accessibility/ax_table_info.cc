@@ -36,7 +36,7 @@ void FindCellsInRow(AXNode* node, std::vector<AXNode*>* cell_nodes) {
 }
 
 // Given a node representing a table/grid, search its children
-// recursively to find any rows and append them to |row_nodes|, then
+// recursively to find any rows and append them to |row_node_list|, then
 // for each row find its cells and add them to |cell_nodes_per_row| as a
 // 2-dimensional array.
 //
@@ -44,7 +44,7 @@ void FindCellsInRow(AXNode* node, std::vector<AXNode*>* cell_nodes) {
 // its rows: generic containers like <div>, any nodes that are ignored, and
 // table sections (which have Role::kRowGroup).
 void FindRowsAndThenCells(AXNode* node,
-                          std::vector<AXNode*>* row_nodes,
+                          std::vector<AXNode*>* row_node_list,
                           std::vector<std::vector<AXNode*>>* cell_nodes_per_row,
                           int32_t& caption_node_id) {
   for (AXNode* child : node->children()) {
@@ -52,10 +52,10 @@ void FindRowsAndThenCells(AXNode* node,
         child->data().role == ax::mojom::Role::kGenericContainer ||
         child->data().role == ax::mojom::Role::kGroup ||
         child->data().role == ax::mojom::Role::kRowGroup) {
-      FindRowsAndThenCells(child, row_nodes, cell_nodes_per_row,
+      FindRowsAndThenCells(child, row_node_list, cell_nodes_per_row,
                            caption_node_id);
     } else if (IsTableRow(child->data().role)) {
-      row_nodes->push_back(child);
+      row_node_list->push_back(child);
       cell_nodes_per_row->push_back(std::vector<AXNode*>());
       FindCellsInRow(child, &cell_nodes_per_row->back());
     } else if (child->data().role == ax::mojom::Role::kCaption)
@@ -98,7 +98,6 @@ bool AXTableInfo::Update() {
 
   ClearVectors();
 
-  std::vector<AXNode*> row_nodes;
   std::vector<std::vector<AXNode*>> cell_nodes_per_row;
   caption_id = 0;
   FindRowsAndThenCells(table_node_, &row_nodes, &cell_nodes_per_row,
@@ -157,10 +156,11 @@ void AXTableInfo::ClearVectors() {
   cell_ids.clear();
   unique_cell_ids.clear();
   cell_data_vector.clear();
+  row_nodes.clear();
 }
 
 void AXTableInfo::BuildCellDataVectorFromRowAndCellNodes(
-    const std::vector<AXNode*>& row_nodes,
+    const std::vector<AXNode*>& row_node_list,
     const std::vector<std::vector<AXNode*>>& cell_nodes_per_row) {
   // Iterate over the cells and build up an array of CellData
   // entries, one for each cell. Compute the actual row and column
@@ -172,7 +172,7 @@ void AXTableInfo::BuildCellDataVectorFromRowAndCellNodes(
   size_t next_row_index = 0;
   for (size_t i = 0; i < cell_nodes_per_row.size(); i++) {
     auto& cell_nodes_in_this_row = cell_nodes_per_row[i];
-    AXNode* row_node = row_nodes[i];
+    AXNode* row_node = row_node_list[i];
     bool is_first_cell_in_row = true;
     size_t current_col_index = 0;
     size_t current_aria_col_index = 1;

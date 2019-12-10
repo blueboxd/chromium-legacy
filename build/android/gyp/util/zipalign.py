@@ -69,7 +69,9 @@ def _SetAlignment(zip_obj, zip_info, alignment):
   """
   cur_offset = zip_obj.fp.tell()
   header_size = _FIXED_ZIP_HEADER_LEN + len(zip_info.filename)
-  padding_needed = (cur_offset - header_size) % alignment
+  padding_needed = (alignment - (
+      (cur_offset + header_size) % alignment)) % alignment
+
 
   # Extra field used to 4-byte align classes.dex. Alignment speeds up
   # execution when dex files are used via incremental install.

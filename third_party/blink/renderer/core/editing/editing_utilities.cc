@@ -1246,7 +1246,7 @@ bool IsDisplayInsideTable(const Node* node) {
 bool IsTableCell(const Node* node) {
   DCHECK(node);
   LayoutObject* r = node->GetLayoutObject();
-  return r ? r->IsTableCell() : IsHTMLTableCellElement(*node);
+  return r ? r->IsTableCell() : IsA<HTMLTableCellElement>(*node);
 }
 
 HTMLElement* CreateDefaultParagraphElement(Document& document) {

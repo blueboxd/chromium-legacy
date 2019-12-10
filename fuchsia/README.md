@@ -226,7 +226,7 @@ window should be displayed and ready to use.
     First kill any running processes:
 
     ```bash
-    $ killall chromium.cmx; killall web_runner.cmx
+    $ killall context_provider.cmx; killall web_runner.cmx
     ```
 
     Then repeat steps 1 through 6 from the installation instructions, excluding

@@ -215,7 +215,7 @@ class CompositedScrollingMetricTest : public CompositedScrollingBrowserTest,
   };
 };
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          CompositedScrollingMetricTest,
                          ::testing::Bool());
 

@@ -9,7 +9,7 @@
 Polymer({
   is: 'oobe-update-md',
 
-  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
+  behaviors: [I18nBehavior, OobeDialogHostBehavior],
 
   properties: {
     /**

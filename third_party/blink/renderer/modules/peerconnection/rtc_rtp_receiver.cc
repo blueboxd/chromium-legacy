@@ -130,7 +130,7 @@ ScriptPromise RTCRtpReceiver::getStats(ScriptState* script_state) {
   ScriptPromise promise = resolver->Promise();
   receiver_->GetStats(
       WTF::Bind(WebRTCStatsReportCallbackResolver, WrapPersistent(resolver)),
-      GetExposedGroupIdsDeprecated(script_state));
+      GetExposedGroupIds(script_state));
   return promise;
 }
 

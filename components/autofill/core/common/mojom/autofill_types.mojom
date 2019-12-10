@@ -280,7 +280,6 @@ struct PasswordForm {
   mojo_base.mojom.String16 new_password_value;
   bool new_password_marked_by_site;
   mojo_base.mojom.String16 confirmation_password_element;
-  bool preferred;
   mojo_base.mojom.Time date_created;
   mojo_base.mojom.Time date_synced;
   bool blacklisted_by_user;

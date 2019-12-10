@@ -18,6 +18,7 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/site_for_cookies.h"
 #include "net/proxy_resolution/proxy_retry_info.h"
 
 class GURL;
@@ -85,7 +86,7 @@ class NET_EXPORT NetworkDelegate {
                     bool allowed_from_caller);
   bool ForcePrivacyMode(
       const GURL& url,
-      const GURL& site_for_cookies,
+      const SiteForCookies& site_for_cookies,
       const base::Optional<url::Origin>& top_frame_origin) const;
 
   bool CancelURLRequestWithPolicyViolatingReferrerHeader(
@@ -240,7 +241,7 @@ class NET_EXPORT NetworkDelegate {
   // settings block cookies from being get or set.
   virtual bool OnForcePrivacyMode(
       const GURL& url,
-      const GURL& site_for_cookies,
+      const SiteForCookies& site_for_cookies,
       const base::Optional<url::Origin>& top_frame_origin) const = 0;
 
   // Called when the |referrer_url| for requesting |target_url| during handling

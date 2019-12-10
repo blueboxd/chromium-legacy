@@ -5,6 +5,7 @@
 #include "ash/wm/toplevel_window_event_handler.h"
 
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/app_types.h"
@@ -14,6 +15,7 @@
 #include "ash/wm/back_gesture_affordance.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/resize_shadow_controller.h"
+#include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_resizer.h"
@@ -100,52 +102,6 @@ void OnDragCompleted(
     ToplevelWindowEventHandler::DragResult result) {
   *result_return_value = result;
   run_loop->Quit();
-}
-
-// True if we can start swiping from left edge to go to previous page.
-bool CanStartGoingBack() {
-  if (!features::IsSwipingFromLeftEdgeToGoBackEnabled())
-    return false;
-
-  Shell* shell = Shell::Get();
-  if (!shell->tablet_mode_controller()->InTabletMode())
-    return false;
-
-  // Do not enable back gesture if it is not in an ACTIVE session. e.g, login
-  // screen, lock screen.
-  if (shell->session_controller()->GetSessionState() !=
-      session_manager::SessionState::ACTIVE) {
-    return false;
-  }
-
-  // Do not enable back gesture if home screen is visible but not in
-  // |kFullscreenSearch| state.
-  if (shell->home_screen_controller()->IsHomeScreenVisible() &&
-      shell->app_list_controller()->GetAppListViewState() !=
-          AppListViewState::kFullscreenSearch) {
-    return false;
-  }
-
-  return true;
-}
-
-// True if |event| is scrolling away from the restricted left area of the
-// display.
-bool StartedAwayFromLeftArea(ui::GestureEvent* event) {
-  if (event->details().scroll_x_hint() < 0)
-    return false;
-
-  const gfx::Point location_in_screen =
-      event->target()->GetScreenLocation(*event);
-  const gfx::Rect work_area_bounds =
-      display::Screen::GetScreen()
-          ->GetDisplayNearestWindow(static_cast<aura::Window*>(event->target()))
-          .work_area();
-
-  gfx::Rect hit_bounds_in_screen(work_area_bounds);
-  hit_bounds_in_screen.set_width(
-      ToplevelWindowEventHandler::kStartGoingBackLeftEdgeInset);
-  return hit_bounds_in_screen.Contains(location_in_screen);
 }
 
 }  // namespace
@@ -529,8 +485,13 @@ void ToplevelWindowEventHandler::OnTouchEvent(ui::TouchEvent* event) {
     const gfx::Point current_location = event->location();
     x_drag_amount_ += (current_location.x() - last_touch_point_.x());
     y_drag_amount_ += (current_location.y() - last_touch_point_.y());
-    during_reverse_dragging_ =
-        current_location.x() < last_touch_point_.x() ? true : false;
+
+    // Do not update |during_reverse_dragging_| if touch point's location
+    // doesn't change.
+    if (current_location.x() < last_touch_point_.x())
+      during_reverse_dragging_ = true;
+    else if (current_location.x() > last_touch_point_.x())
+      during_reverse_dragging_ = false;
   }
 
   last_touch_point_ = event->location();
@@ -888,18 +849,15 @@ void ToplevelWindowEventHandler::UpdateGestureTarget(
 bool ToplevelWindowEventHandler::HandleGoingBackFromLeftEdge(
     ui::GestureEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  if (!CanStartGoingBack())
-    return false;
-
   gfx::Point screen_location = event->location();
   ::wm::ConvertPointToScreen(target, &screen_location);
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN: {
-      going_back_started_ = StartedAwayFromLeftArea(event);
+      going_back_started_ = CanStartGoingBack(event);
       if (!going_back_started_)
         break;
-      back_gesture_affordance_ =
-          std::make_unique<BackGestureAffordance>(screen_location);
+      back_gesture_affordance_ = std::make_unique<BackGestureAffordance>(
+          screen_location, dragged_from_splitview_divider_);
       return true;
     }
     case ui::ET_GESTURE_SCROLL_UPDATE:
@@ -917,11 +875,25 @@ bool ToplevelWindowEventHandler::HandleGoingBackFromLeftEdge(
       if (back_gesture_affordance_->IsActivated() ||
           (event->type() == ui::ET_SCROLL_FLING_START &&
            event->details().velocity_x() >= kFlingVelocityForGoingBack)) {
+        aura::Window* root_window =
+            window_util::GetRootWindowAt(screen_location);
+        auto* split_view_controller = SplitViewController::Get(root_window);
+        if (split_view_controller->InTabletSplitViewMode()) {
+          auto* left_window = split_view_controller->left_window();
+          auto* right_window = split_view_controller->right_window();
+          // Activate the snapped window that being swipped to make sure it is
+          // the window that will go back or be minimized later.
+          if (dragged_from_splitview_divider_) {
+            if (right_window)
+              WindowState::Get(right_window)->Activate();
+          } else if (left_window) {
+            WindowState::Get(left_window)->Activate();
+          }
+        }
+
         if (TabletModeWindowManager::ShouldMinimizeTopWindowOnBack()) {
           WindowState::Get(TabletModeWindowManager::GetTopWindow())->Minimize();
         } else {
-          aura::Window* root_window =
-              window_util::GetRootWindowAt(screen_location);
           ui::KeyEvent press_key_event(ui::ET_KEY_PRESSED,
                                        ui::VKEY_BROWSER_BACK, ui::EF_NONE);
           ignore_result(
@@ -943,6 +915,69 @@ bool ToplevelWindowEventHandler::HandleGoingBackFromLeftEdge(
   }
 
   return false;
+}
+
+bool ToplevelWindowEventHandler::CanStartGoingBack(ui::GestureEvent* event) {
+  if (!features::IsSwipingFromLeftEdgeToGoBackEnabled())
+    return false;
+
+  Shell* shell = Shell::Get();
+  if (!shell->tablet_mode_controller()->InTabletMode())
+    return false;
+
+  // Do not enable back gesture if it is not in an ACTIVE session. e.g, login
+  // screen, lock screen.
+  if (shell->session_controller()->GetSessionState() !=
+      session_manager::SessionState::ACTIVE) {
+    return false;
+  }
+
+  // Do not enable back gesture if home screen is visible but not in
+  // |kFullscreenSearch| state.
+  if (shell->home_screen_controller()->IsHomeScreenVisible() &&
+      shell->app_list_controller()->GetAppListViewState() !=
+          AppListViewState::kFullscreenSearch) {
+    return false;
+  }
+
+  if (event->details().scroll_x_hint() < 0)
+    return false;
+
+  dragged_from_splitview_divider_ = false;
+  const gfx::Point location_in_screen =
+      event->target()->GetScreenLocation(*event);
+  const gfx::Rect work_area_bounds =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(static_cast<aura::Window*>(event->target()))
+          .work_area();
+
+  gfx::Rect hit_bounds_in_screen(work_area_bounds);
+  hit_bounds_in_screen.set_width(
+      ToplevelWindowEventHandler::kStartGoingBackLeftEdgeInset);
+  if (hit_bounds_in_screen.Contains(location_in_screen))
+    return true;
+
+  if (!IsCurrentScreenOrientationLandscape())
+    return false;
+
+  auto* root_window = window_util::GetRootWindowAt(location_in_screen);
+  auto* split_view_controller = SplitViewController::Get(root_window);
+  if (!split_view_controller->InTabletSplitViewMode() ||
+      split_view_controller->split_view_divider()
+          ->IsInsideLandscapeResizableArea(location_in_screen)) {
+    return false;
+  }
+
+  gfx::Rect divider_bounds =
+      split_view_controller->split_view_divider()->GetDividerBoundsInScreen(
+          /*is_dragging=*/false);
+  divider_bounds.set_x(divider_bounds.x() -
+                       SplitViewDivider::kDividerEdgeInsetForTouch);
+  divider_bounds.set_width(
+      divider_bounds.width() + SplitViewDivider::kDividerEdgeInsetForTouch +
+      ToplevelWindowEventHandler::kStartGoingBackLeftEdgeInset);
+  dragged_from_splitview_divider_ = divider_bounds.Contains(location_in_screen);
+  return dragged_from_splitview_divider_;
 }
 
 }  // namespace ash

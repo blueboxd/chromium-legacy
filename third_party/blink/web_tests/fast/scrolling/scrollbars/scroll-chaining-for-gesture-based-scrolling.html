@@ -41,9 +41,6 @@ window.onload = () => {
   const SCROLL_DELTA = 50;
 
   promise_test (async () => {
-    // Since this test is specifically for non-animated scrolls, disable smooth scrolling.
-    if (window.internals)
-      internals.settings.setScrollAnimatorEnabled(false);
 
     await waitForCompositorCommit();
     resetScrollOffset(standardDivFast);
@@ -55,8 +52,8 @@ window.onload = () => {
     const max_div_offset = 915;
     standardDivFast.scrollTop = max_div_offset;
     await mouseClickOn(x, y);
-    assert_equals(standardDivFast.scrollTop, max_div_offset, "Not expected to scroll because already at max offset.");
-    assert_equals(window.scrollY, 0, "Root should scroll when a div (at max offset) is scrolled.");
+    await conditionHolds(() => { return standardDivFast.scrollTop == max_div_offset; }, "Not expected to scroll because already at max offset.");
+    await conditionHolds(() => { return window.scrollY == 0; }, "Root should scroll when a div (at max offset) is scrolled.");
   }, "Test that scroll chaining doesn't happen for scrollbar interactions.");
 }
 </script>

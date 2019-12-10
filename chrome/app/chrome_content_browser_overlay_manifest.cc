@@ -22,19 +22,12 @@
 #include "chrome/common/cache_stats_recorder.mojom.h"
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/common/net_benchmarking.mojom.h"
-#include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
-#include "components/contextual_search/content/common/mojom/contextual_search_js_api_service.mojom.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy.mojom.h"
 #include "components/metrics/public/mojom/call_stack_profile_collector.mojom.h"
-#include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 #include "components/rappor/public/mojom/rappor_recorder.mojom.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
-#include "components/translate/content/common/translate.mojom.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
-#include "third_party/blink/public/mojom/badging/badging.mojom.h"
-#include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
-#include "third_party/blink/public/mojom/webshare/webshare.mojom.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision.mojom.h"
@@ -117,8 +110,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         .ExposeInterfaceFilterCapability_Deprecated(
             "navigation:frame", "renderer",
             service_manager::Manifest::InterfaceList<
-                autofill::mojom::AutofillDriver,
-                autofill::mojom::PasswordManagerDriver,
 #if defined(OS_CHROMEOS)
                 chromeos_camera::mojom::CameraAppHelper,
                 chromeos::cellular_setup::mojom::CellularSetup,
@@ -134,7 +125,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
 #endif
                 media::mojom::MediaEngagementScoreDetailsProvider,
                 media_router::mojom::MediaRouter,
-                page_load_metrics::mojom::PageLoadMetrics,
 
                 // WebUI-only interfaces go below this line. These should be
                 // brokered through a dedicated interface, but they're here

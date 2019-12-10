@@ -611,6 +611,35 @@ TEST_P(StatisticsRecorderTest, CallbackUsedBeforeHistogramCreatedTest) {
   EXPECT_EQ(callback_wrapper.last_histogram_value, 1);
 }
 
+TEST_P(StatisticsRecorderTest, GlobalCallbackCalled) {
+  HistogramBase* histogram = Histogram::FactoryGet("TestHistogram", 1, 1000, 10,
+                                                   HistogramBase::kNoFlags);
+  EXPECT_TRUE(histogram);
+
+  // This is a static rather than passing the variable to the lambda
+  // as a reference capture, as only stateless lambdas can be cast to a raw
+  // function pointer.
+  static size_t callback_callcount;
+  callback_callcount = 0;
+  auto callback = [](const char* histogram_name, uint64_t name_hash,
+                     HistogramBase::Sample sample) {
+    EXPECT_STREQ(histogram_name, "TestHistogram");
+    EXPECT_EQ(sample, 1);
+    ++callback_callcount;
+  };
+
+  base::StatisticsRecorder::SetGlobalSampleCallback(callback);
+
+  // Test that adding a histogram sample calls our callback.
+  histogram->Add(1);
+  EXPECT_EQ(callback_callcount, 1u);
+
+  // Test that the callback gets correctly unregistered.
+  base::StatisticsRecorder::SetGlobalSampleCallback(nullptr);
+  histogram->Add(2);
+  EXPECT_EQ(callback_callcount, 1u);
+}
+
 TEST_P(StatisticsRecorderTest, LogOnShutdownNotInitialized) {
   ResetVLogInitialized();
   logging::SetMinLogLevel(logging::LOG_WARNING);

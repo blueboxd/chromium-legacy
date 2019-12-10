@@ -342,12 +342,19 @@ void PasswordFormMetricsRecorder::CalculateUserAction(
     return;
   }
 
-  // Lastly, in case the existing match is not a preferred match, or the form
-  // was not filled on page load, the user purposefully chose a credential.
-  // Otherwise the user either did not do anything, or re-selected the default
-  // option.
-  if (!existing_match->preferred ||
-      manager_action_ != kManagerActionAutofilled) {
+  // In case the existing match is not the most recently used one, then the
+  // user purposefully chose a credential.
+  for (auto* const match : best_matches) {
+    if (match->date_last_used > existing_match->date_last_used) {
+      user_action_ = UserAction::kChoose;
+      return;
+    }
+  }
+
+  // Lastly, if the form was not filled on page load, the user purposefully
+  // chose a credential. Otherwise the user either did not do anything, or
+  // re-selected the default option.
+  if (manager_action_ != kManagerActionAutofilled) {
     user_action_ = UserAction::kChoose;
     return;
   }

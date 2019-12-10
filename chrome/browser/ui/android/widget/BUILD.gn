@@ -26,7 +26,6 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/ui/widget/RadioButtonWithDescription.java",
     "java/src/org/chromium/chrome/browser/ui/widget/RadioButtonWithDescriptionLayout.java",
     "java/src/org/chromium/chrome/browser/ui/widget/RoundedCornerImageView.java",
-    "java/src/org/chromium/chrome/browser/ui/widget/RoundedIconGenerator.java",
     "java/src/org/chromium/chrome/browser/ui/widget/TintedDrawable.java",
     "java/src/org/chromium/chrome/browser/ui/widget/ViewResourceFrameLayout.java",
     "java/src/org/chromium/chrome/browser/ui/widget/WrappingLayout.java",
@@ -103,7 +102,6 @@ android_library("ui_widget_java_tests") {
     "java/src/org/chromium/chrome/browser/ui/widget/PromoDialogTest.java",
     "java/src/org/chromium/chrome/browser/ui/widget/RadioButtonLayoutTest.java",
     "java/src/org/chromium/chrome/browser/ui/widget/RadioButtonWithDescriptionLayoutTest.java",
-    "java/src/org/chromium/chrome/browser/ui/widget/RoundedIconGeneratorTest.java",
     "java/src/org/chromium/chrome/browser/ui/widget/highlight/ViewHighlighterTest.java",
     "java/src/org/chromium/chrome/browser/ui/widget/MoreProgressButtonTest.java",
   ]
@@ -113,12 +111,12 @@ android_library("ui_widget_java_tests") {
     ":ui_widget_java_resources",
     ":ui_widget_java_test_resources",
     "//base:base_java_test_support",
-    "//chrome/test/android:chrome_java_test_support",
     "//content/public/test/android:content_java_test_support",
     "//third_party/android_deps:com_android_support_support_compat_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/junit",
+    "//ui/android:ui_java_test_support",
   ]
 }
 

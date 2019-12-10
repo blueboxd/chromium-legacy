@@ -81,6 +81,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileWriterDelegate {
 
   WriteProgressStatus GetCompletionStatusOnError() const;
 
+  // Note: This object can be deleted after calling this callback.
   DelegateWriteCallback write_callback_;
   std::unique_ptr<FileStreamWriter> file_stream_writer_;
   base::Time last_progress_event_time_;

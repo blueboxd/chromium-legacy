@@ -10,7 +10,7 @@
 
   await ElementsTestRunner.selectNodeAndWaitForStylesPromise('inspected');
   var section = ElementsTestRunner.inlineStyleSection();
-  treeElement = section.addNewBlankProperty(0);
+  const treeElement = section.addNewBlankProperty(0);
   treeElement.startEditing();
   await TestRunner.addSnifferPromise(UI.TextPrompt.prototype, '_completionsReady');
 

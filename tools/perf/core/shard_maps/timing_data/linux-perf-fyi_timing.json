@@ -1,0 +1,62 @@
+[
+    {
+        "duration": "33.0",
+        "name": "power.desktop/TrivialAnimationPageSharedPageState"
+    },
+    {
+        "duration": "31.0",
+        "name": "power.desktop/TrivialBlinkingCursorPageSharedPageState"
+    },
+    {
+        "duration": "31.0",
+        "name": "power.desktop/TrivialBlurAnimationPageSharedPageState"
+    },
+    {
+        "duration": "32.0",
+        "name": "power.desktop/TrivialCanvasPageSharedPageState"
+    },
+    {
+        "duration": "32.0",
+        "name": "power.desktop/TrivialFullscreenVideoPageSharedPageState"
+    },
+    {
+        "duration": "32.0",
+        "name": "power.desktop/TrivialGifPageSharedPageState"
+    },
+    {
+        "duration": "33.0",
+        "name": "power.desktop/TrivialScrollingPageSharedPageState"
+    },
+    {
+        "duration": "32.0",
+        "name": "power.desktop/TrivialWebGLPageSharedPageState"
+    },
+    {
+        "duration": "39.0",
+        "name": "power.desktop/abcnews"
+    },
+    {
+        "duration": "32.0",
+        "name": "power.desktop/indiatimes"
+    },
+    {
+        "duration": "32.0",
+        "name": "power.desktop/instagram"
+    },
+    {
+        "duration": "32.0",
+        "name": "power.desktop/microsoft"
+    },
+    {
+        "duration": "32.0",
+        "name": "power.desktop/sina"
+    },
+    {
+        "duration": "32.0",
+        "name": "power.desktop/slideshare"
+    },
+    {
+        "duration": "34.0",
+        "name": "power.desktop/uol"
+    }
+]

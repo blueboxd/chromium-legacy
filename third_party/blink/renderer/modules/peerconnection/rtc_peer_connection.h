@@ -454,7 +454,7 @@ class MODULES_EXPORT RTCPeerConnection final
   // https://w3c.github.io/webrtc-pc/#set-associated-remote-streams
   void SetAssociatedMediaStreams(
       RTCRtpReceiver* receiver,
-      const WebVector<String>& stream_ids,
+      const Vector<String>& stream_ids,
       HeapVector<std::pair<Member<MediaStream>, Member<MediaStreamTrack>>>*
           remove_list,
       HeapVector<std::pair<Member<MediaStream>, Member<MediaStreamTrack>>>*

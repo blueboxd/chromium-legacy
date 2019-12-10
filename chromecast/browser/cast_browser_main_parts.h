@@ -36,6 +36,7 @@ class ViewsDelegate;
 
 namespace chromecast {
 class CastSystemMemoryPressureEvaluatorAdjuster;
+class ServiceConnector;
 class WaylandServerController;
 
 #if defined(USE_AURA)
@@ -94,6 +95,7 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   URLRequestContextFactory* const url_request_context_factory_;
   std::unique_ptr<media::VideoPlaneController> video_plane_controller_;
   std::unique_ptr<media::MediaCapsImpl> media_caps_;
+  std::unique_ptr<ServiceConnector> service_connector_;
 
 #if defined(USE_AURA)
   std::unique_ptr<views::ViewsDelegate> views_delegate_;

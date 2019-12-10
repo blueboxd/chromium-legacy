@@ -20,12 +20,17 @@ scoped_refptr<GpuFeatureChecker> GpuFeatureChecker::Create(
 
 GpuFeatureCheckerImpl::GpuFeatureCheckerImpl(gpu::GpuFeatureType feature,
                                              FeatureAvailableCallback callback)
-    : feature_(feature), callback_(callback) {}
+    : feature_(feature), callback_(std::move(callback)) {}
 
 GpuFeatureCheckerImpl::~GpuFeatureCheckerImpl() {}
 
 void GpuFeatureCheckerImpl::CheckGpuFeatureAvailability() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // May only call CheckGpuFeatureAvailability() once.
+  DCHECK(!checking_);
+  checking_ = true;
+
   AddRef();  // Matched with a Release in OnGpuInfoUpdate.
   GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
   manager->AddObserver(this);
@@ -38,7 +43,7 @@ void GpuFeatureCheckerImpl::OnGpuInfoUpdate() {
     manager->RemoveObserver(this);
     bool feature_allowed =
         manager->GetFeatureStatus(feature_) == gpu::kGpuFeatureStatusEnabled;
-    callback_.Run(feature_allowed);
+    std::move(callback_).Run(feature_allowed);
     Release();  // Matches the AddRef in CheckGpuFeatureAvailability().
   }
 }

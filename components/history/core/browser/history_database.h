@@ -90,6 +90,10 @@ class HistoryDatabase : public DownloadDatabase,
   // Counts the number of unique Hosts visited in the last month.
   int CountUniqueHostsVisitedLastMonth();
 
+  // Counts the number of unique domains (eLTD+1) visited within
+  // [|begin_time|, |end_time|).
+  int CountUniqueDomainsVisited(base::Time begin_time, base::Time end_time);
+
   // Call to set the mode on the database to exclusive. The default locking mode
   // is "normal" but we want to run in exclusive mode for slightly better
   // performance since we know nobody else is using the database. This is

@@ -56,13 +56,18 @@ void ResetPaddingKeyForTesting() {
 
 int64_t ComputeResponsePadding(const std::string& response_url,
                                const crypto::SymmetricKey* padding_key,
-                               bool has_metadata) {
+                               bool has_metadata,
+                               bool loaded_with_credentials) {
   DCHECK(!response_url.empty());
 
   crypto::HMAC hmac(crypto::HMAC::SHA256);
   CHECK(hmac.Init(padding_key));
 
-  std::string key = has_metadata ? response_url + "METADATA" : response_url;
+  std::string key = response_url;
+  if (has_metadata)
+    key += "METADATA";
+  if (loaded_with_credentials)
+    key += "CREDENTIALED";
   uint64_t digest_start;
   CHECK(hmac.Sign(key, reinterpret_cast<uint8_t*>(&digest_start),
                   sizeof(digest_start)));

@@ -5,13 +5,13 @@ specific_include_rules = {
   "IdentityManager.java": [
     "+components/signin/core/browser/android/java/src/org/chromium/components/signin/AccountManagerFacade.java",
   ],
-  "OAuth2TokenService.java": [
+  "ProfileOAuth2TokenServiceDelegate.java": [
     "+components/signin/core/browser/android/java/src/org/chromium/components/signin/AccountManagerFacade.java",
     "+components/signin/core/browser/android/java/src/org/chromium/components/signin/AccountTrackerService.java",
     "+components/signin/core/browser/android/java/src/org/chromium/components/signin/ChromeSigninController.java",
     "+components/signin/core/browser/android/java/src/org/chromium/components/signin/AuthException.java",
   ],
-  "OAuth2TokenServiceTest.java": [
+  "ProfileOAuth2TokenServiceDelegateTest.java": [
     "+components/signin/core/browser/android/java/src/org/chromium/components/signin/AccountManagerFacade.java",
     "+components/signin/core/browser/android/javatests/src/org/chromium/components/signin/test/util/AccountHolder.java",
     "+components/signin/core/browser/android/javatests/src/org/chromium/components/signin/test/util/AccountManagerTestRule.java",

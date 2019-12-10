@@ -63,13 +63,6 @@ using content::BrowserThread;
 namespace predictors {
 
 const char kChromiumUrl[] = "http://chromium.org";
-const char kInvalidLongUrl[] =
-    "http://"
-    "illegally-long-hostname-over-255-characters-should-not-send-an-ipc-"
-    "message-to-the-browser-"
-    "00000000000000000000000000000000000000000000000000000000000000000000000000"
-    "00000000000000000000000000000000000000000000000000000000000000000000000000"
-    "0000000000000000000000000000000000000000000000000000.org";
 
 const char kHtmlSubresourcesPath[] = "/predictors/html_subresources.html";
 // The embedded test server runs on test.com.
@@ -285,11 +278,15 @@ class TestPreconnectManagerObserver : public PreconnectManager::Observer {
     preconnect_url_attempts_.insert(url.GetOrigin());
   }
 
-  void OnPreresolveFinished(const GURL& url, bool success) override {
+  void OnPreresolveFinished(
+      const GURL& url,
+      const net::NetworkIsolationKey& network_isolation_key,
+      bool success) override {
+    ResolveHostRequestInfo preconnect_info{url.host(), network_isolation_key};
     if (success)
-      successful_dns_lookups_.insert(url.host());
+      successful_dns_lookups_.insert(preconnect_info);
     else
-      unsuccessful_dns_lookups_.insert(url.host());
+      unsuccessful_dns_lookups_.insert(preconnect_info);
     CheckForWaitingLoop();
   }
 
@@ -306,10 +303,12 @@ class TestPreconnectManagerObserver : public PreconnectManager::Observer {
     CheckForWaitingLoop();
   }
 
-  void WaitUntilHostLookedUp(const std::string& host) {
+  void WaitUntilHostLookedUp(
+      const std::string& host,
+      const net::NetworkIsolationKey& network_isolation_key) {
     wait_event_ = WaitEvent::kDns;
-    DCHECK(waiting_on_dns_.empty());
-    waiting_on_dns_ = host;
+    DCHECK(waiting_on_dns_.IsEmpty());
+    waiting_on_dns_ = ResolveHostRequestInfo{host, network_isolation_key};
     Wait();
   }
 
@@ -328,13 +327,18 @@ class TestPreconnectManagerObserver : public PreconnectManager::Observer {
     return base::Contains(preconnect_url_attempts_, origin);
   }
 
-  bool HasHostBeenLookedUp(const std::string& host) {
-    return base::Contains(successful_dns_lookups_, host) ||
-           base::Contains(unsuccessful_dns_lookups_, host);
+  bool HasHostBeenLookedUp(
+      const std::string& host,
+      const net::NetworkIsolationKey& network_isolation_key) {
+    ResolveHostRequestInfo preconnect_info{host, network_isolation_key};
+    return base::Contains(successful_dns_lookups_, preconnect_info) ||
+           base::Contains(unsuccessful_dns_lookups_, preconnect_info);
   }
 
-  bool HostFound(const std::string& host) {
-    return base::Contains(successful_dns_lookups_, host);
+  bool HostFound(const std::string& host,
+                 const net::NetworkIsolationKey& network_isolation_key) {
+    return base::Contains(successful_dns_lookups_,
+                          ResolveHostRequestInfo{host, network_isolation_key});
   }
 
   bool ProxyFound(const GURL& url,
@@ -346,6 +350,25 @@ class TestPreconnectManagerObserver : public PreconnectManager::Observer {
 
  private:
   enum class WaitEvent { kNone, kDns, kProxy };
+
+  struct ResolveHostRequestInfo {
+    bool operator<(const ResolveHostRequestInfo& other) const {
+      return std::tie(hostname, network_isolation_key) <
+             std::tie(other.hostname, other.network_isolation_key);
+    }
+
+    bool operator==(const ResolveHostRequestInfo& other) const {
+      return std::tie(hostname, network_isolation_key) ==
+             std::tie(other.hostname, other.network_isolation_key);
+    }
+
+    bool IsEmpty() const {
+      return hostname.empty() && network_isolation_key.IsEmpty();
+    }
+
+    std::string hostname;
+    net::NetworkIsolationKey network_isolation_key;
+  };
 
   struct ResolveProxyRequestInfo {
     bool operator<(const ResolveProxyRequestInfo& other) const {
@@ -384,9 +407,11 @@ class TestPreconnectManagerObserver : public PreconnectManager::Observer {
       case WaitEvent::kNone:
         return;
       case WaitEvent::kDns:
-        if (!HasHostBeenLookedUp(waiting_on_dns_))
+        if (!HasHostBeenLookedUp(waiting_on_dns_.hostname,
+                                 waiting_on_dns_.network_isolation_key)) {
           return;
-        waiting_on_dns_ = std::string();
+        }
+        waiting_on_dns_ = ResolveHostRequestInfo();
         break;
       case WaitEvent::kProxy:
         if (!HasProxyBeenLookedUp(waiting_on_proxy_))
@@ -403,9 +428,9 @@ class TestPreconnectManagerObserver : public PreconnectManager::Observer {
   WaitEvent wait_event_ = WaitEvent::kNone;
   base::RunLoop* run_loop_ = nullptr;
 
-  std::string waiting_on_dns_;
-  std::set<std::string> successful_dns_lookups_;
-  std::set<std::string> unsuccessful_dns_lookups_;
+  ResolveHostRequestInfo waiting_on_dns_;
+  std::set<ResolveHostRequestInfo> successful_dns_lookups_;
+  std::set<ResolveHostRequestInfo> unsuccessful_dns_lookups_;
 
   ResolveProxyRequestInfo waiting_on_proxy_;
   std::set<ResolveProxyRequestInfo> successful_proxy_lookups_;
@@ -667,11 +692,15 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
   std::string content = "<body>Hello world!</body>";
   GURL url = GetDataURLWithContent(content);
   ui_test_utils::NavigateToURL(browser(), url);
+  url::Origin origin = url::Origin::Create(url);
+  net::NetworkIsolationKey network_isolation_key(origin, origin);
   // Ensure that no backgound task would make a host lookup or attempt to
   // preconnect.
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(preconnect_manager_observer()->HasHostBeenLookedUp(url.host()));
-  EXPECT_FALSE(preconnect_manager_observer()->HasHostBeenLookedUp(""));
+  EXPECT_FALSE(preconnect_manager_observer()->HasHostBeenLookedUp(
+      url.host(), network_isolation_key));
+  EXPECT_FALSE(preconnect_manager_observer()->HasHostBeenLookedUp(
+      "", network_isolation_key));
   EXPECT_FALSE(preconnect_manager_observer()->HasOriginAttemptedToPreconnect(
       url.GetOrigin()));
   EXPECT_FALSE(
@@ -686,14 +715,18 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
   GURL url = embedded_test_server()->GetURL(
       "test.com", GetPathWithPortReplacement(kHtmlSubresourcesPath,
                                              embedded_test_server()->port()));
+  url::Origin origin = url::Origin::Create(url);
+  net::NetworkIsolationKey network_isolation_key(origin, origin);
   ui_test_utils::NavigateToURL(browser(), url);
   ResetNetworkState();
   ResetPredictorState();
 
   auto observer = NavigateToURLAsync(url);
   EXPECT_TRUE(observer->WaitForRequestStart());
-  preconnect_manager_observer()->WaitUntilHostLookedUp(url.host());
-  EXPECT_TRUE(preconnect_manager_observer()->HostFound(url.host()));
+  preconnect_manager_observer()->WaitUntilHostLookedUp(url.host(),
+                                                       network_isolation_key);
+  EXPECT_TRUE(preconnect_manager_observer()->HostFound(url.host(),
+                                                       network_isolation_key));
   // We should preconnect only 2 sockets for the main frame host.
   const size_t expected_connections = 2;
   connection_tracker()->WaitForAcceptedConnections(expected_connections);
@@ -833,6 +866,8 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
   GURL url = embedded_test_server()->GetURL(
       "test.com", GetPathWithPortReplacement(kHtmlSubresourcesPath,
                                              embedded_test_server()->port()));
+  url::Origin origin = url::Origin::Create(url);
+  net::NetworkIsolationKey network_isolation_key(origin, origin);
   ui_test_utils::NavigateToURL(browser(), url);
   ResetNetworkState();
 
@@ -840,8 +875,10 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
   EXPECT_TRUE(observer->WaitForRequestStart());
   for (auto* const host : kHtmlSubresourcesHosts) {
     GURL url(base::StringPrintf("http://%s", host));
-    preconnect_manager_observer()->WaitUntilHostLookedUp(url.host());
-    EXPECT_TRUE(preconnect_manager_observer()->HostFound(url.host()));
+    preconnect_manager_observer()->WaitUntilHostLookedUp(url.host(),
+                                                         network_isolation_key);
+    EXPECT_TRUE(preconnect_manager_observer()->HostFound(
+        url.host(), network_isolation_key));
   }
   // 2 connections to the main frame host + 1 connection per host for others.
   const size_t expected_connections = base::size(kHtmlSubresourcesHosts) + 1;
@@ -854,14 +891,14 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
 
 // Tests that a host requested by <link rel="dns-prefetch"> is looked up.
 IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, DnsPrefetch) {
-  ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL(
-                                              "/predictor/dns_prefetch.html"));
+  GURL url = embedded_test_server()->GetURL("/predictor/dns_prefetch.html");
+  url::Origin origin = url::Origin::Create(url);
+  net::NetworkIsolationKey network_isolation_key(origin, origin);
+  ui_test_utils::NavigateToURL(browser(), url);
   preconnect_manager_observer()->WaitUntilHostLookedUp(
-      GURL(kChromiumUrl).host());
-  EXPECT_FALSE(preconnect_manager_observer()->HasHostBeenLookedUp(
-      GURL(kInvalidLongUrl).host()));
-  EXPECT_TRUE(
-      preconnect_manager_observer()->HostFound(GURL(kChromiumUrl).host()));
+      GURL(kChromiumUrl).host(), network_isolation_key);
+  EXPECT_TRUE(preconnect_manager_observer()->HostFound(
+      GURL(kChromiumUrl).host(), network_isolation_key));
 }
 
 // Tests that preconnect warms up a socket connection to a test server.

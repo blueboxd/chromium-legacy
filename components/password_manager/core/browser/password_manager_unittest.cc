@@ -1366,7 +1366,6 @@ TEST_F(PasswordManagerTest, ReportFormLoginSuccessAndShouldSaveCalled) {
   EXPECT_CALL(*client_.GetStoreResultFilter(), ReportFormLoginSuccess(_));
 
   PasswordForm submitted_form = observed_form;
-  submitted_form.preferred = true;
   submitted_form.date_last_used = base::Time::Now();
   EXPECT_CALL(*client_.GetStoreResultFilter(),
               ShouldSave(FormMatches(submitted_form)));

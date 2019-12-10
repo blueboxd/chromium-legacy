@@ -91,6 +91,7 @@
 <translation id="209018056901015185">طلب موقع سطح المكتب</translation>
 <translation id="2103075008456228677">‏فتح history.google.com</translation>
 <translation id="2116625576999540962">تم نقل <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> من العناصر</translation>
+<translation id="2118594521750010466">الإصلاح الآن</translation>
 <translation id="213900355088104901">للتصفّح بخصوصية تامّة، افتح علامة تبويب للتصفُّح المتخفي</translation>
 <translation id="2139867232736819575">البحث عن النص الذي نسخته</translation>
 <translation id="2149973817440762519">تعديل الإشارة</translation>
@@ -98,6 +99,7 @@
 <translation id="2198757192731523470">‏قد تستخدم Google السجلّ لتخصيص "بحث Google" والإعلانات وخدمات Google الأخرى.</translation>
 <translation id="2230173723195178503">تم تحميل الصفحة المطلوبة</translation>
 <translation id="2239626343334228536">جارٍ محو بيانات التصفُّح...</translation>
+<translation id="2257567812274161158">المزامنة لا تعمل على نحو سليم</translation>
 <translation id="2267753748892043616">إضافة حساب</translation>
 <translation id="2268044343513325586">تحسين</translation>
 <translation id="2273327106802955778">قائمة "المزيد"</translation>
@@ -129,6 +131,7 @@
 <translation id="2691653761409724435">غير متاح بلا اتصال</translation>
 <translation id="2695507686909505111">تمت ترجمة الصفحة</translation>
 <translation id="2702801445560668637">قائمة القراءة</translation>
+<translation id="2704491540504985681">عمليات التنزيل</translation>
 <translation id="2704606927547763573">تم النسخ</translation>
 <translation id="2709516037105925701">الملء التلقائي</translation>
 <translation id="2712127207578915686">تعذر فتح الملف</translation>
@@ -218,6 +221,7 @@
 <translation id="3943492037546055397">كلمات المرور</translation>
 <translation id="3967822245660637423">اكتمل التنزيل</translation>
 <translation id="3989635538409502728">الخروج</translation>
+<translation id="399419089947468503">حدث خطأ أثناء مزامنة كلمات المرور</translation>
 <translation id="3995521777587992544">شريط تقدُّم تحميل الصفحة، تم تحميل <ph name="EMAIL" />.</translation>
 <translation id="4002066346123236978">العنوان</translation>
 <translation id="4004204301268239848">‏يتم حفظ كلمات المرور في حسابك على Google حتى تتمكَّن من استخدامها على أي جهاز.</translation>
@@ -238,6 +242,7 @@
 <translation id="424315890655130736">إدخال عبارة المرور</translation>
 <translation id="4263576668337963058">عرض الإجراءات المتاحة على الصفحة</translation>
 <translation id="4272631900155121838">لمسح رمز الاستجابة السريعة ضوئيًا، يمكنك تفعيل الكاميرا من الإعدادات</translation>
+<translation id="4276041135170112053">يُرجى الإصلاح الآن.</translation>
 <translation id="4281844954008187215">بنود الخدمة</translation>
 <translation id="430793432425771671">مزامنة كل شيء</translation>
 <translation id="430967081421617822">جميع الأوقات</translation>
@@ -286,6 +291,7 @@
 <translation id="4904877109095351937">وضع علامة كمقروءة</translation>
 <translation id="4930268273022498155">يمكنك حذف البيانات الحالية. يمكنك استرداد هذه البيانات بالتبديل مرة أخرى إلى <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">عذرًا، حدثت مشكلة أثناء مشاركة العنصر.</translation>
+<translation id="4944543191714094452">البحث في الصفحة…</translation>
 <translation id="4945756290001680296">الوصول إلى إعدادات كلمات المرور</translation>
 <translation id="4979397965658815378">‏سجّل الدخول إلى حسابك على Google للحصول على الإشارات المرجعية وكلمات المرور والسجلّ والإعدادات الأخرى واستخدامها على جميع أجهزتك.</translation>
 <translation id="5005498671520578047">نسخ كلمة المرور</translation>
@@ -317,6 +323,7 @@
 <translation id="5433691172869980887">تم نسخ اسم المستخدم</translation>
 <translation id="54401264925851789">معلومات أمان الصفحة</translation>
 <translation id="5443952882982198570">بطاقات الائتمان</translation>
+<translation id="5457907402803865181">حدث خطأ أثناء مزامنة كلمات المرور</translation>
 <translation id="5525269841082836315">إنشاء عبارة مرور</translation>
 <translation id="5548760955356983418">‏يتيح لك Handoff بدء تصفح موقع على هذا الجهاز ثم متابعة التصفح بسهولة على جهاز Mac. سيظهر الموقع المفتوح حاليًا على Dock بـ Mac.
 
@@ -408,6 +415,7 @@
 <translation id="6482629121755362506">تم حذف <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> من العناصر</translation>
 <translation id="6610002944194042868">خيارات الترجمة</translation>
 <translation id="6628106477656132239">تاريخ انتهاء الصلاحية غير صحيح</translation>
+<translation id="6638511529934826365">تصغير/تكبير النص…</translation>
 <translation id="6642362222295953972">التبديل إلى علامة تبويب حالية</translation>
 <translation id="6643016212128521049">محو</translation>
 <translation id="6656103420185847513">تعديل مجلد</translation>

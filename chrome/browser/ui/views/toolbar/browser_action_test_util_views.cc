@@ -155,6 +155,10 @@ ToolbarActionsBar* BrowserActionTestUtilViews::GetToolbarActionsBar() {
   return browser_actions_container_->toolbar_actions_bar();
 }
 
+ExtensionsContainer* BrowserActionTestUtilViews::GetExtensionsContainer() {
+  return GetToolbarActionsBar();
+}
+
 std::unique_ptr<BrowserActionTestUtil>
 BrowserActionTestUtilViews::CreateOverflowBar(Browser* browser) {
   CHECK(!GetToolbarActionsBar()->in_overflow_mode())
@@ -171,6 +175,10 @@ gfx::Size BrowserActionTestUtilViews::GetMinPopupSize() {
 
 gfx::Size BrowserActionTestUtilViews::GetMaxPopupSize() {
   return gfx::Size(ExtensionPopup::kMaxWidth, ExtensionPopup::kMaxHeight);
+}
+
+gfx::Size BrowserActionTestUtilViews::GetToolbarActionSize() {
+  return GetToolbarActionsBar()->GetViewSize();
 }
 
 bool BrowserActionTestUtilViews::CanBeResized() {
@@ -199,7 +207,7 @@ std::unique_ptr<BrowserActionTestUtil> BrowserActionTestUtil::Create(
   // If the ExtensionsMenu is enabled, then use a separate implementation of
   // the BrowserActionTestUtil.
   if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
-    return std::make_unique<ExtensionsMenuTestUtil>(browser);
+    return std::make_unique<ExtensionsMenuTestUtil>(browser, is_real_window);
 
   std::unique_ptr<BrowserActionTestUtil> browser_action_test_util;
 

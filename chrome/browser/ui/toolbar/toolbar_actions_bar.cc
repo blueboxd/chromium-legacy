@@ -133,6 +133,14 @@ ToolbarActionsBar::~ToolbarActionsBar() {
 }
 
 // static
+ToolbarActionsBar* ToolbarActionsBar::FromBrowserWindow(BrowserWindow* window) {
+  DCHECK(!base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
+  // The ToolbarActionsBar is the only implementation of the ExtensionsContainer
+  // if the ExtensionsMenu feature is disabled.
+  return static_cast<ToolbarActionsBar*>(window->GetExtensionsContainer());
+}
+
+// static
 void ToolbarActionsBar::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(

@@ -312,7 +312,7 @@ class InvalidIfDefinedMacroNamesTest(unittest.TestCase):
     self.assertEqual(0, len(errors))
 
 
-class CheckAddedDepsHaveTetsApprovalsTest(unittest.TestCase):
+class CheckAddedDepsHaveTestApprovalsTest(unittest.TestCase):
 
   def calculate(self, old_include_rules, old_specific_include_rules,
                 new_include_rules, new_specific_include_rules):

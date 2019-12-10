@@ -15,7 +15,12 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/http_request_headers.h"
+#include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server_connection_listener.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,7 +48,12 @@ class SubresourceLoadingPageLoadMetricsObserverBrowserTest
     ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
   }
 
-  void NavigateToPath(const std::string& path) {
+  void NavigateTo(const GURL& url) {
+    ui_test_utils::NavigateToURL(browser(), url);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void NavigateToOriginPath(const std::string& path) {
     ui_test_utils::NavigateToURL(
         browser(), embedded_test_server()->GetURL("origin.com", path));
     base::RunLoop().RunUntilIdle();
@@ -81,6 +91,10 @@ class SubresourceLoadingPageLoadMetricsObserverBrowserTest
     EXPECT_EQ(*value, expected_value.value());
   }
 
+  GURL GetOriginURL(const std::string& path) {
+    return embedded_test_server()->GetURL("origin.com", path);
+  }
+
  private:
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> ukm_recorder_;
 };
@@ -88,7 +102,7 @@ class SubresourceLoadingPageLoadMetricsObserverBrowserTest
 IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
                        BeforeFCPPlumbing) {
   base::HistogramTester histogram_tester;
-  NavigateToPath("/index.html");
+  NavigateToOriginPath("/index.html");
   NavigateAway();
 
   histogram_tester.ExpectUniqueSample(
@@ -105,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
 IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
                        MAYBE_HistoryPlumbing) {
   base::HistogramTester histogram_tester;
-  NavigateToPath("/index.html");
+  NavigateToOriginPath("/index.html");
   NavigateAway();
   histogram_tester.ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.HasPreviousVisitToOrigin", false, 1);
@@ -115,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
       "PageLoad.Clients.SubresourceLoading.HistoryQueryTime", 1);
 
   // Revisit and expect a 0 days-ago entry.
-  NavigateToPath("/index.html");
+  NavigateToOriginPath("/index.html");
   NavigateAway();
 
   histogram_tester.ExpectBucketCount(
@@ -131,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
 IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
                        MainFrameHadCookies_NoUKM) {
   base::HistogramTester histogram_tester;
-  NavigateToPath("/index.html");
+  NavigateToOriginPath("/index.html");
   NavigateAway();
 
   histogram_tester.ExpectUniqueSample(
@@ -147,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
   EnableDataSaver();
   base::HistogramTester histogram_tester;
 
-  NavigateToPath("/index.html");
+  NavigateToOriginPath("/index.html");
   NavigateAway();
 
   histogram_tester.ExpectUniqueSample(
@@ -161,11 +175,11 @@ IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
                        MainFrameHadCookies_CookiesOnNextPageLoad) {
-  NavigateToPath("/set_cookies.html");
+  NavigateToOriginPath("/set_cookies.html");
   base::HistogramTester histogram_tester;
 
   EnableDataSaver();
-  NavigateToPath("/index.html");
+  NavigateToOriginPath("/index.html");
   NavigateAway();
 
   using UkmEntry = ukm::builders::PrefetchProxy;
@@ -181,11 +195,58 @@ IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
                        MainFrameHadCookies_CookiesOnRedirect) {
-  NavigateToPath("/set_cookies.html");
+  NavigateToOriginPath("/set_cookies.html");
   base::HistogramTester histogram_tester;
 
   EnableDataSaver();
-  NavigateToPath("/redirect_to_index.html");
+  NavigateToOriginPath("/redirect_to_index.html");
+  NavigateAway();
+
+  using UkmEntry = ukm::builders::PrefetchProxy;
+  VerifyUKMEntry(UkmEntry::kmainpage_request_had_cookiesName, 1);
+  histogram_tester.ExpectBucketCount(
+      "PageLoad.Clients.SubresourceLoading.MainFrameHadCookies", true, 1);
+  // From the first page load.
+  histogram_tester.ExpectBucketCount(
+      "PageLoad.Clients.SubresourceLoading.MainFrameHadCookies", false, 1);
+  histogram_tester.ExpectTotalCount(
+      "PageLoad.Clients.SubresourceLoading.CookiesQueryTime", 3);
+}
+
+namespace {
+std::unique_ptr<net::test_server::HttpResponse> HandleRedirectRequest(
+    const GURL& redirect_to,
+    const net::test_server::HttpRequest& request) {
+  if (request.GetURL().spec().find("redirect_me") != std::string::npos) {
+    std::unique_ptr<net::test_server::BasicHttpResponse> response =
+        std::make_unique<net::test_server::BasicHttpResponse>();
+    response->set_code(net::HTTP_TEMPORARY_REDIRECT);
+    response->AddCustomHeader("Location", redirect_to.spec());
+    return std::move(response);
+  }
+  return nullptr;
+}
+}  // namespace
+
+// Regression test for crbug.com/1029959.
+IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
+                       MainFrameHadCookies_CrossOriginCookiesOnRedirect) {
+  net::EmbeddedTestServer redirect_server(net::EmbeddedTestServer::TYPE_HTTP);
+  redirect_server.RegisterRequestHandler(
+      base::BindRepeating(&HandleRedirectRequest, GetOriginURL("/index.html")));
+  ASSERT_TRUE(redirect_server.Start());
+
+  NavigateToOriginPath("/set_cookies.html");
+  base::HistogramTester histogram_tester;
+
+  EnableDataSaver();
+
+  NavigateTo(redirect_server.GetURL("redirect.com", "/redirect_me"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WaitForLoadStop(web_contents);
+  EXPECT_EQ(web_contents->GetLastCommittedURL(), GetOriginURL("/index.html"));
+
   NavigateAway();
 
   using UkmEntry = ukm::builders::PrefetchProxy;

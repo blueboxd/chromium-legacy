@@ -16,7 +16,7 @@
 namespace ui {
 
 AXTreeData::AXTreeData()
-    : sel_anchor_affinity(ax::mojom::TextAffinity::kUpstream),
+    : sel_anchor_affinity(ax::mojom::TextAffinity::kDownstream),
       sel_focus_affinity(ax::mojom::TextAffinity::kDownstream) {}
 
 AXTreeData::AXTreeData(const AXTreeData& other) = default;

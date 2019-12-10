@@ -870,6 +870,12 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
       "loading", "WebURLLoaderImpl::Context::OnReceivedResponse",
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
+  // These headers must be stripped off before entering into the renderer
+  // (see also https://crbug.com/1019732).
+  DCHECK(!head->headers || !head->headers->HasHeader("set-cookie"));
+  DCHECK(!head->headers || !head->headers->HasHeader("set-cookie2"));
+  DCHECK(!head->headers || !head->headers->HasHeader("clear-site-data"));
+
   WebURLResponse response;
   PopulateURLResponse(url_, *head, &response, report_raw_headers_, request_id_);
 

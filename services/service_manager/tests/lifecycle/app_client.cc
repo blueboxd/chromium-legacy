@@ -13,7 +13,7 @@ namespace test {
 
 AppClient::AppClient(service_manager::mojom::ServiceRequest request)
     : service_binding_(this, std::move(request)) {
-  bindings_.set_connection_error_handler(base::BindRepeating(
+  receivers_.set_disconnect_handler(base::BindRepeating(
       &AppClient::LifecycleControlBindingLost, base::Unretained(this)));
 
   registry_.AddInterface<mojom::LifecycleControl>(
@@ -34,8 +34,9 @@ void AppClient::OnDisconnected() {
   Terminate();
 }
 
-void AppClient::Create(mojom::LifecycleControlRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void AppClient::Create(
+    mojo::PendingReceiver<mojom::LifecycleControl> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void AppClient::Ping(PingCallback callback) {
@@ -62,7 +63,7 @@ void AppClient::CloseServiceManagerConnection() {
 }
 
 void AppClient::LifecycleControlBindingLost() {
-  if (!service_binding_.is_bound() && bindings_.empty())
+  if (!service_binding_.is_bound() && receivers_.empty())
     Terminate();
 }
 

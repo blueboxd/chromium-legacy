@@ -1244,6 +1244,10 @@ bool FrameSelection::IsDirectional() const {
   return is_directional_;
 }
 
+void FrameSelection::MarkCacheDirty() {
+  selection_editor_->MarkCacheDirty();
+}
+
 }  // namespace blink
 
 #if DCHECK_IS_ON()

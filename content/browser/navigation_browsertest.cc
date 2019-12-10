@@ -281,7 +281,7 @@ class NetworkIsolationNavigationBrowserTest
   base::test::ScopedFeatureList feature_list_;
 };
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          NetworkIsolationNavigationBrowserTest,
                          ::testing::Bool());
 
@@ -300,7 +300,7 @@ class NavigationBrowserTestReferrerPolicy
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     NavigationBrowserTestReferrerPolicy,
     ::testing::Values(network::mojom::ReferrerPolicy::kAlways,
                       network::mojom::ReferrerPolicy::kDefault,

@@ -170,6 +170,10 @@ class ASH_EXPORT ToplevelWindowEventHandler
   // True if the event is handled for swiping to previous page.
   bool HandleGoingBackFromLeftEdge(ui::GestureEvent* event);
 
+  // True if we can start swiping from left edge of the display or splitview
+  // divider to go back.
+  bool CanStartGoingBack(ui::GestureEvent* event);
+
   // The hittest result for the first finger at the time that it initially
   // touched the screen. |first_finger_hittest_| is one of ui/base/hit_test.h
   int first_finger_hittest_;
@@ -212,6 +216,9 @@ class ASH_EXPORT ToplevelWindowEventHandler
   // Used to show the affordance while swiping from left edge to go to the
   // previout page.
   std::unique_ptr<BackGestureAffordance> back_gesture_affordance_;
+
+  // True if back gesture dragged from splitview divider.
+  bool dragged_from_splitview_divider_ = false;
 
   base::WeakPtrFactory<ToplevelWindowEventHandler> weak_factory_{this};
 

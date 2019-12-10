@@ -200,19 +200,10 @@ struct PasswordForm {
   // attribute. This is only used in parsed HTML forms.
   bool new_password_marked_by_site = false;
 
-  // True if this PasswordForm represents the last username/password login the
-  // user selected to log in to the site. If there is only one saved entry for
-  // the site, this will always be true, but when there are multiple entries
-  // the PasswordManager ensures that only one of them has a preferred bit set
-  // to true. Default to false.
-  //
-  // When parsing an HTML form, this is not used.
-  bool preferred = false;
-
   // When the login was last used by the user to login to the site. Defaults to
-  // |date_created|, except for passwords that were migrated from the
-  // |preferred| flag. Their default is set when migrating the login database to
-  // have the "date_last_used" column.
+  // |date_created|, except for passwords that were migrated from the now
+  // deprecated |preferred| flag. Their default is set when migrating the login
+  // database to have the "date_last_used" column.
   //
   // When parsing an HTML form, this is not used.
   base::Time date_last_used;

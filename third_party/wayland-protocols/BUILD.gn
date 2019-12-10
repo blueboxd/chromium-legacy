@@ -148,3 +148,9 @@ wayland_protocol("wayland_drm_protocol") {
     "mesa/wayland-drm/wayland-drm.xml",
   ]
 }
+
+wayland_protocol("color_space_protocol") {
+  sources = [
+    "unstable/color-space/color-space-unstable-v1.xml",
+  ]
+}

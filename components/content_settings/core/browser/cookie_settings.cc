@@ -31,6 +31,7 @@ CookieSettings::CookieSettings(
       is_incognito_(is_incognito),
       extension_scheme_(extension_scheme),
       block_third_party_cookies_(false) {
+  content_settings_observer_.Add(host_content_settings_map_.get());
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(
       prefs::kBlockThirdPartyCookies,
@@ -201,8 +202,7 @@ void CookieSettings::GetCookieSettingInternal(
   *cookie_setting = block ? CONTENT_SETTING_BLOCK : setting;
 }
 
-CookieSettings::~CookieSettings() {
-}
+CookieSettings::~CookieSettings() = default;
 
 bool CookieSettings::IsCookieControlsEnabled() {
   if (base::FeatureList::IsEnabled(
@@ -227,6 +227,17 @@ bool CookieSettings::IsCookieControlsEnabled() {
       return false;
   }
   return false;
+}
+
+void CookieSettings::OnContentSettingChanged(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsType content_type,
+    const std::string& resource_identifier) {
+  if (content_type == ContentSettingsType::COOKIES) {
+    for (auto& observer : observers_)
+      observer.OnCookieSettingChanged();
+  }
 }
 
 void CookieSettings::OnCookiePreferencesChanged() {

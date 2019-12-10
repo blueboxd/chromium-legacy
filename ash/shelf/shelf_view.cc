@@ -2222,6 +2222,9 @@ void ShelfView::ShelfItemAdded(int model_index) {
   CalculateIdealBounds();
   view->SetBoundsRect(view_model_->ideal_bounds(model_index));
 
+  if (model_->is_current_mutation_user_triggered())
+    view->ScrollViewToVisible();
+
   // The first animation moves all the views to their target position. |view|
   // is hidden, so it visually appears as though we are providing space for
   // it. When done we'll fade the view in.

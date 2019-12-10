@@ -15,6 +15,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -30,6 +31,7 @@
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/resize_shadow.h"
 #include "ash/wm/resize_shadow_controller.h"
+#include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_state.h"
@@ -1267,6 +1269,65 @@ TEST_F(ToplevelWindowEventHandlerBackGestureTest, CancelOnScreenRotation) {
   // will not trigger actual going back.
   EXPECT_EQ(0, target_back_press.accelerator_count());
   EXPECT_EQ(0, target_back_release.accelerator_count());
+}
+
+// Tests back gesture while in split view mode.
+TEST_F(ToplevelWindowEventHandlerBackGestureTest, DragFromSplitViewDivider) {
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+  ui::TestAcceleratorTarget target_back_press, target_back_release;
+  gfx::Rect display_bounds =
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+          window1.get());
+  RegisterBackPressAndRelease(&target_back_press, &target_back_release);
+
+  auto* split_view_controller =
+      SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
+  ASSERT_TRUE(split_view_controller->InSplitViewMode());
+  ASSERT_EQ(SplitViewController::State::kBothSnapped,
+            split_view_controller->state());
+
+  gfx::Rect divider_bounds =
+      split_view_controller->split_view_divider()->GetDividerBoundsInScreen(
+          false);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  // Drag from the splitview divider's non-resizable area with larger than
+  // |kSwipingDistanceForGoingBack| distance should trigger back gesture. The
+  // snapped window should go to previous page and divider's position will not
+  // be changed.
+  gfx::Point start(divider_bounds.x(), 10);
+  gfx::Point end(start.x() + kSwipingDistanceForGoingBack + 10, 10);
+  EXPECT_GT(split_view_controller->divider_position(),
+            0.33f * display_bounds.width());
+  EXPECT_LE(split_view_controller->divider_position(),
+            0.5f * display_bounds.width());
+  generator->GestureScrollSequence(start, end,
+                                   base::TimeDelta::FromMilliseconds(100), 3);
+  EXPECT_EQ(SplitViewController::State::kBothSnapped,
+            split_view_controller->state());
+  EXPECT_EQ(1, target_back_press.accelerator_count());
+  EXPECT_EQ(1, target_back_release.accelerator_count());
+  EXPECT_GT(split_view_controller->divider_position(),
+            0.33f * display_bounds.width());
+  EXPECT_LE(split_view_controller->divider_position(),
+            0.5f * display_bounds.width());
+
+  // Drag from the divider's resizable area should trigger splitview resizing.
+  // Divider's position will be changed and back gesture should not be
+  // triggered.
+  start = divider_bounds.CenterPoint();
+  end = gfx::Point(0.67f * display_bounds.width(), start.y());
+  generator->GestureScrollSequence(start, end,
+                                   base::TimeDelta::FromMilliseconds(100), 3);
+  EXPECT_EQ(1, target_back_press.accelerator_count());
+  EXPECT_EQ(1, target_back_release.accelerator_count());
+  EXPECT_GT(split_view_controller->divider_position(),
+            0.5f * display_bounds.width());
+  EXPECT_LE(split_view_controller->divider_position(),
+            0.67f * display_bounds.width());
+  split_view_controller->EndSplitView();
 }
 
 namespace {

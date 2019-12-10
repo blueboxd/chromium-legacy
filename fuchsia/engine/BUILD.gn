@@ -207,10 +207,27 @@ executable("web_engine_exe") {
   visibility = [ ":*" ]
 }
 
-fuchsia_package("web_engine") {
+# Transitional package using old package/component names.
+# TODO(crbug.com/1029180): Remove this after CIPD consumers have transitioned
+#                          to using "web_engine.cmx" (from ":web_engine").
+fuchsia_package("web_engine_deprecated") {
   binary = ":web_engine_exe"
   package_name_override = "chromium"
-  manifest = "web_engine.cmx"
+  manifest = "chromium.cmx"
+  excluded_files = [
+    "lib/libswiftshader_libEGL.so",
+    "lib/libswiftshader_libGLESv2.so",
+    "lib/libEGL.so",
+    "lib/libGLESv2.so",
+    "lib/libfuchsia_egl.so",
+  ]
+}
+
+fuchsia_package("web_engine") {
+  binary = ":web_engine_exe"
+  manifest = "context_provider.cmx"
+  component_name_override = "context_provider"
+
   excluded_files = [
     "lib/libswiftshader_libEGL.so",
     "lib/libswiftshader_libGLESv2.so",
@@ -222,7 +239,6 @@ fuchsia_package("web_engine") {
 
 fuchsia_package_runner("web_engine_runner") {
   package = ":web_engine"
-  package_name_override = "chromium"
   install_only = true
 }
 
@@ -308,6 +324,8 @@ test("web_engine_unittests") {
 test("web_engine_integration_tests") {
   manifest = "web_engine_integration_tests.cmx"
   sources = [
+    "test/context_provider_test_connector.cc",
+    "test/context_provider_test_connector.h",
     "test_debug_listener.cc",
     "test_debug_listener.h",
     "web_engine_debug_integration_test.cc",
@@ -326,7 +344,7 @@ test("web_engine_integration_tests") {
   ]
   package_deps = [ [
         ":web_engine",
-        "chromium",
+        "web_engine",
       ] ]
 }
 
@@ -343,7 +361,7 @@ fuchsia_package_runner("web_engine_shell") {
   package_name_override = "web_engine_shell"
   package_deps = [ [
         ":web_engine",
-        "chromium",
+        "web_engine",
       ] ]
 }
 
@@ -372,8 +390,8 @@ if (is_official_build) {
     deps = [
       ":web_engine",
     ]
-    ids_txt = "$root_gen_dir/fuchsia/engine/chromium/ids.txt"
+    ids_txt = "$root_gen_dir/fuchsia/engine/web_engine/ids.txt"
     archive_name =
-        "$root_gen_dir/fuchsia/engine/chromium/chromium.symbols.tar.bz2"
+        "$root_gen_dir/fuchsia/engine/web_engine/web_engine.symbols.tar.bz2"
   }
 }  # is_official_build

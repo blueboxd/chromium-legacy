@@ -39,6 +39,7 @@
 #include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "components/password_manager/core/browser/sql_table_builder.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/safe_browsing/features.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -49,7 +50,6 @@
 #include "third_party/re2/src/re2/re2.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
-#include "components/safe_browsing/features.h"
 
 using autofill::PasswordForm;
 
@@ -112,6 +112,8 @@ enum LoginDatabaseTableColumns {
   COLUMN_PASSWORD_VALUE,
   COLUMN_SUBMIT_ELEMENT,
   COLUMN_SIGNON_REALM,
+  // TODO(crbug.com/999949): The "preferred" column isn't used anymore and
+  // should be dropped from the schema in M84.
   COLUMN_PREFERRED,
   COLUMN_DATE_CREATED,
   COLUMN_BLACKLISTED_BY_USER,
@@ -169,7 +171,8 @@ void BindAddStatement(const PasswordForm& form,
               static_cast<int>(encrypted_password.length()));
   s->BindString16(COLUMN_SUBMIT_ELEMENT, form.submit_element);
   s->BindString(COLUMN_SIGNON_REALM, form.signon_realm);
-  s->BindInt(COLUMN_PREFERRED, form.preferred);
+  // The "preferred" column has been deprecated in M81.
+  s->BindInt(COLUMN_PREFERRED, 0);
   s->BindInt64(COLUMN_DATE_CREATED, form.date_created.ToInternalValue());
   s->BindInt(COLUMN_BLACKLISTED_BY_USER, form.blacklisted_by_user);
   s->BindInt(COLUMN_SCHEME, static_cast<int>(form.scheme));
@@ -177,8 +180,7 @@ void BindAddStatement(const PasswordForm& form,
   s->BindInt(COLUMN_TIMES_USED, form.times_used);
   base::Pickle form_data_pickle;
   autofill::SerializeFormData(form.form_data, &form_data_pickle);
-  s->BindBlob(COLUMN_FORM_DATA,
-              form_data_pickle.data(),
+  s->BindBlob(COLUMN_FORM_DATA, form_data_pickle.data(),
               form_data_pickle.size());
   s->BindInt64(COLUMN_DATE_SYNCED, form.date_synced.ToInternalValue());
   s->BindString16(COLUMN_DISPLAY_NAME, form.display_name);
@@ -695,8 +697,7 @@ LoginDatabase::LoginDatabase(const base::FilePath& db_path,
                              IsAccountStore is_account_store)
     : db_path_(db_path), is_account_store_(is_account_store) {}
 
-LoginDatabase::~LoginDatabase() {
-}
+LoginDatabase::~LoginDatabase() = default;
 
 bool LoginDatabase::Init() {
   // Set pragmas for a small, private database (based on WebDatabase).
@@ -966,10 +967,10 @@ void LoginDatabase::ReportMetrics(const std::string& sync_username,
 
   bool syncing_account_saved = false;
   if (!sync_username.empty()) {
-    sql::Statement sync_statement(db_.GetCachedStatement(
-        SQL_FROM_HERE,
-        "SELECT username_value FROM logins "
-        "WHERE signon_realm == ?"));
+    sql::Statement sync_statement(
+        db_.GetCachedStatement(SQL_FROM_HERE,
+                               "SELECT username_value FROM logins "
+                               "WHERE signon_realm == ?"));
     sync_statement.BindString(
         0, GaiaUrls::GetInstance()->gaia_url().GetOrigin().spec());
 
@@ -989,8 +990,9 @@ void LoginDatabase::ReportMetrics(const std::string& sync_username,
                             4);
 
   sql::Statement empty_usernames_statement(db_.GetCachedStatement(
-      SQL_FROM_HERE, "SELECT COUNT(*) FROM logins "
-                     "WHERE blacklisted_by_user=0 AND username_value=''"));
+      SQL_FROM_HERE,
+      "SELECT COUNT(*) FROM logins "
+      "WHERE blacklisted_by_user=0 AND username_value=''"));
   if (empty_usernames_statement.Step()) {
     int empty_forms = empty_usernames_statement.ColumnInt(0);
     UMA_HISTOGRAM_COUNTS_100("PasswordManager.EmptyUsernames.CountInDatabase",
@@ -1248,7 +1250,8 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form,
   s.BindBlob(next_param++, encrypted_password.data(),
              static_cast<int>(encrypted_password.length()));
   s.BindString16(next_param++, form.submit_element);
-  s.BindInt(next_param++, form.preferred);
+  // This is the "preferred" column which has been deprecated in M81.
+  s.BindInt(next_param++, 0);
   s.BindInt64(next_param++, form.date_created.ToInternalValue());
   s.BindInt(next_param++, form.blacklisted_by_user);
   s.BindInt(next_param++, static_cast<int>(form.scheme));
@@ -1389,9 +1392,10 @@ bool LoginDatabase::RemoveLoginsCreatedBetween(
   }
 #endif
 
-  sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
-      "DELETE FROM logins WHERE "
-      "date_created >= ? AND date_created < ?"));
+  sql::Statement s(
+      db_.GetCachedStatement(SQL_FROM_HERE,
+                             "DELETE FROM logins WHERE "
+                             "date_created >= ? AND date_created < ?"));
   s.BindInt64(0, delete_begin.ToInternalValue());
   s.BindInt64(1, delete_end.is_null() ? std::numeric_limits<int64_t>::max()
                                       : delete_end.ToInternalValue());
@@ -1460,7 +1464,6 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
   form->submit_element = s.ColumnString16(COLUMN_SUBMIT_ELEMENT);
   tmp = s.ColumnString(COLUMN_SIGNON_REALM);
   form->signon_realm = tmp;
-  form->preferred = (s.ColumnInt(COLUMN_PREFERRED) > 0);
   form->date_created =
       base::Time::FromInternalValue(s.ColumnInt64(COLUMN_DATE_CREATED));
   form->blacklisted_by_user = (s.ColumnInt(COLUMN_BLACKLISTED_BY_USER) > 0);

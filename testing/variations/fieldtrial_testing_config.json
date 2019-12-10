@@ -1433,22 +1433,6 @@
             ]
         }
     ],
-    "BoostThreadPriorityOnLibraryLoadingAndBackgroundMode": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "BoostPriorityAndBackgroundThreadMode",
-                    "enable_features": [
-                        "BoostThreadPriorityOnLibraryLoading",
-                        "WindowsThreadModeBackground"
-                    ]
-                }
-            ]
-        }
-    ],
     "BrowserBlacklist": [
         {
             "platforms": [
@@ -3451,28 +3435,6 @@
             ]
         }
     ],
-    "LookalikeUrlNavigationSuggestionsUIV2": [
-        {
-            "platforms": [
-                "linux",
-                "mac",
-                "windows",
-                "android",
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "topsites": "true"
-                    },
-                    "enable_features": [
-                        "LookalikeUrlNavigationSuggestionsUI"
-                    ]
-                }
-            ]
-        }
-    ],
     "LowPriorityIframes2": [
         {
             "platforms": [
@@ -4134,8 +4096,10 @@
                     "enable_features": [
                         "OmniboxDisplayTitleForCurrentUrl",
                         "OmniboxDocumentProvider",
+                        "OmniboxEnableClipboardProviderTextSuggestions",
                         "OmniboxLocalEntitySuggestions",
                         "OmniboxMaxURLMatches",
+                        "OmniboxRemoveSuggestionsFromClipboard",
                         "OmniboxRichEntitySuggestions",
                         "OmniboxUIExperimentMaxAutocompleteMatches",
                         "QueryInOmnibox"
@@ -4222,7 +4186,7 @@
             ]
         }
     ],
-    "OmniboxSearchEngineLogoAndroid": [
+    "OmniboxSearchEngineLogo": [
         {
             "platforms": [
                 "android"

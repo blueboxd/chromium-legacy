@@ -691,7 +691,8 @@ WebInputEventResult InspectorOverlayAgent::HandleInputEvent(
 
   if (input_event.GetType() == WebInputEvent::kKeyUp &&
       swallow_next_escape_up_) {
-    auto keyboard_event = static_cast<const WebKeyboardEvent&>(input_event);
+    const auto& keyboard_event =
+        static_cast<const WebKeyboardEvent&>(input_event);
     if (keyboard_event.windows_key_code == VKEY_ESCAPE) {
       swallow_next_escape_up_ = false;
       return WebInputEventResult::kHandledSuppressed;

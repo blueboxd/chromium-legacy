@@ -170,6 +170,11 @@ class TestGpuService : public mojom::GpuService {
 
   void OnForegrounded() override {}
 
+#if !defined(OS_ANDROID)
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel level) override {}
+#endif
+
 #if defined(OS_MACOSX)
   void BeginCATransaction() override {}
 

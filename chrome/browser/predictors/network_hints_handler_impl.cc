@@ -5,6 +5,7 @@
 #include "chrome/browser/predictors/network_hints_handler_impl.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/predictors/preconnect_manager.h"
@@ -30,10 +31,14 @@ void NetworkHintsHandlerImpl::PrefetchDNS(
     const std::vector<std::string>& names) {
   if (!preconnect_manager_)
     return;
-  // TODO(https://crbug.com/997049): Pass in |render_frame_id| here and use it
-  // to create a NetworkIsolationKey, like Preconnect() does.
-  preconnect_manager_->StartPreresolveHosts(names,
-                                            net::NetworkIsolationKey::Todo());
+
+  content::RenderFrameHost* render_frame_host =
+      content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
+  if (!render_frame_host)
+    return;
+
+  preconnect_manager_->StartPreresolveHosts(
+      names, render_frame_host->GetNetworkIsolationKey());
 }
 
 void NetworkHintsHandlerImpl::Preconnect(const GURL& url,

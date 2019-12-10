@@ -6,9 +6,7 @@
 
 #include <utility>
 
-#include "content/public/browser/system_connector.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "content/public/browser/device_service.h"
 
 UsbInternalsPageHandler::UsbInternalsPageHandler(
     mojo::PendingReceiver<mojom::UsbInternalsPageHandler> receiver)
@@ -19,13 +17,11 @@ UsbInternalsPageHandler::~UsbInternalsPageHandler() {}
 void UsbInternalsPageHandler::BindTestInterface(
     mojo::PendingReceiver<device::mojom::UsbDeviceManagerTest> receiver) {
   // Forward the request to the DeviceService.
-  content::GetSystemConnector()->Connect(device::mojom::kServiceName,
-                                         std::move(receiver));
+  content::GetDeviceService().BindUsbDeviceManagerTest(std::move(receiver));
 }
 
 void UsbInternalsPageHandler::BindUsbDeviceManagerInterface(
     mojo::PendingReceiver<device::mojom::UsbDeviceManager> receiver) {
   // Forward the request to the DeviceService.
-  content::GetSystemConnector()->Connect(device::mojom::kServiceName,
-                                         std::move(receiver));
+  content::GetDeviceService().BindUsbDeviceManager(std::move(receiver));
 }

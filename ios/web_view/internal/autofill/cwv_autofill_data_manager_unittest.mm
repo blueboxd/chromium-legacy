@@ -109,7 +109,6 @@ class CWVAutofillDataManagerTest : public PlatformTest {
     password_form.password_value = base::SysNSStringToUTF16(@"test");
     password_form.submit_element = base::SysNSStringToUTF16(@"signIn");
     password_form.signon_realm = "http://www.example.com/";
-    password_form.preferred = false;
     password_form.scheme = autofill::PasswordForm::Scheme::kHtml;
     password_form.blacklisted_by_user = false;
     return password_form;

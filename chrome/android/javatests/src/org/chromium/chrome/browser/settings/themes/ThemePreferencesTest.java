@@ -33,9 +33,9 @@ import org.chromium.chrome.browser.settings.themes.ThemePreferences.ThemeSetting
 import org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription;
 import org.chromium.chrome.browser.ui.widget.RadioButtonWithDescriptionLayout;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
-import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.test.util.DummyUiActivityTestCase;
 
 import java.util.Arrays;
 import java.util.List;

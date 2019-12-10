@@ -45,7 +45,7 @@
     },
 
     function beforeFilter(next) {
-      TestRunner.addResult(arguments.callee.name);
+      TestRunner.addResult('beforeFilter');
       dumpVisibleMessages();
       next();
     },

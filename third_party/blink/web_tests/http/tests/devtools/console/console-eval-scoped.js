@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 (async function() {
+  'use strict';
   TestRunner.addResult(
     `Tests that evaluating 'console.log()' in the console will have access to its outer scope variables. Bug 60547.\n`
   );
@@ -32,14 +33,14 @@
     };
   `);
 
-  function snippet1() {
-    (function(obj) {
-      with (obj) {
-        console.log('with: ' + a);
-        eval("console.log('eval in with: ' + a)");
-      }
-    })({ a: 'Object property value' });
+  // Use `new Function` as with-statements are not allowed in strict-mode
+  const snippet1 = new Function(`
+(function(obj) {
+  with (obj) {
+    console.log('with: ' + a);
+    eval("console.log('eval in with: ' + a)");
   }
+})({ a: 'Object property value' });`);
 
   function snippet2() {
     (function(a) {

@@ -371,6 +371,8 @@ FetchResponseData* Response::CreateUnfilteredFetchResponseDataWithoutBody(
   response->SetCacheStorageCacheName(
       fetch_api_response.cache_storage_cache_name);
   response->SetSideDataBlob(fetch_api_response.side_data_blob);
+  response->SetLoadedWithCredentials(
+      fetch_api_response.loaded_with_credentials);
 
   for (const auto& header : fetch_api_response.headers)
     response->HeaderList()->Append(header.key, header.value);

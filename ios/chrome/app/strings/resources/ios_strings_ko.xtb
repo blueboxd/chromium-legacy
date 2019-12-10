@@ -91,6 +91,7 @@
 <translation id="209018056901015185">데스크톱 버전으로 보기</translation>
 <translation id="2103075008456228677">history.google.com 열기</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />개 항목 이동함</translation>
+<translation id="2118594521750010466">지금 해결하기</translation>
 <translation id="213900355088104901">비공개로 탐색하려면 시크릿 탭을 여세요.</translation>
 <translation id="2139867232736819575">복사한 텍스트 검색</translation>
 <translation id="2149973817440762519">북마크 수정</translation>
@@ -98,6 +99,7 @@
 <translation id="2198757192731523470">Google에서 검색, 광고 및 다른 Google 서비스를 맞춤설정하기 위하여 내 방문 기록을 사용할 수 있습니다.</translation>
 <translation id="2230173723195178503">웹페이지 로드됨</translation>
 <translation id="2239626343334228536">인터넷 사용 기록 삭제 중...</translation>
+<translation id="2257567812274161158">동기화가 작동하지 않습니다.</translation>
 <translation id="2267753748892043616">계정 추가</translation>
 <translation id="2268044343513325586">상세검색</translation>
 <translation id="2273327106802955778">더보기 메뉴</translation>
@@ -129,6 +131,7 @@
 <translation id="2691653761409724435">오프라인에서 사용할 수 없음</translation>
 <translation id="2695507686909505111">페이지 번역됨</translation>
 <translation id="2702801445560668637">읽기 목록</translation>
+<translation id="2704491540504985681">다운로드한 파일</translation>
 <translation id="2704606927547763573">복사됨</translation>
 <translation id="2709516037105925701">자동 완성</translation>
 <translation id="2712127207578915686">파일을 열 수 없음</translation>
@@ -218,6 +221,7 @@
 <translation id="3943492037546055397">비밀번호</translation>
 <translation id="3967822245660637423">다운로드 완료</translation>
 <translation id="3989635538409502728">로그아웃</translation>
+<translation id="399419089947468503">비밀번호 동기화 중 오류 발생</translation>
 <translation id="3995521777587992544">페이지 로드 진행률 표시줄입니다. <ph name="EMAIL" /> 이메일이 로드되어 있습니다.</translation>
 <translation id="4002066346123236978">제목</translation>
 <translation id="4004204301268239848">어느 기기에서나 사용할 수 있도록 비밀번호가 Google 계정에 저장됩니다.</translation>
@@ -238,6 +242,7 @@
 <translation id="424315890655130736">암호 입력</translation>
 <translation id="4263576668337963058">사용 가능한 페이지 작업 표시</translation>
 <translation id="4272631900155121838">QR 코드를 스캔하려면 설정에서 카메라를 사용하도록 설정하세요.</translation>
+<translation id="4276041135170112053">지금 문제를 해결하세요.</translation>
 <translation id="4281844954008187215">서비스 약관</translation>
 <translation id="430793432425771671">모두 동기화</translation>
 <translation id="430967081421617822">전체 기간</translation>
@@ -286,6 +291,7 @@
 <translation id="4904877109095351937">읽음으로 표시</translation>
 <translation id="4930268273022498155">기존 데이터를 삭제합니다. <ph name="USER_EMAIL1" />(으)로 전환하여 기존 데이터를 가져올 수 있습니다.</translation>
 <translation id="4941089862236492464">죄송합니다. 항목을 공유하는 중에 문제가 발생했습니다.</translation>
+<translation id="4944543191714094452">페이지에서 찾기…</translation>
 <translation id="4945756290001680296">비밀번호 설정 액세스</translation>
 <translation id="4979397965658815378">Google 계정으로 로그인하면 모든 기기에서 북마크, 비밀번호, 방문 기록 및 기타 설정을 사용할 수 있습니다.</translation>
 <translation id="5005498671520578047">비밀번호 복사</translation>
@@ -317,6 +323,7 @@
 <translation id="5433691172869980887">사용자 이름 복사됨</translation>
 <translation id="54401264925851789">페이지 보안 정보</translation>
 <translation id="5443952882982198570">신용카드</translation>
+<translation id="5457907402803865181">비밀번호 동기화 중에 오류가 발생했습니다.</translation>
 <translation id="5525269841082836315">암호 만들기</translation>
 <translation id="5548760955356983418">Handoff를 이용하면 이 기기에서 웹사이트를 탐색하다가 Mac에서 간편하게 보던 페이지부터 계속할 수 있습니다. 현재 열어놓은 웹사이트가 Mac의 Dock에 표시됩니다.
 
@@ -408,6 +415,7 @@
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />개 항목 삭제함</translation>
 <translation id="6610002944194042868">번역 옵션</translation>
 <translation id="6628106477656132239">유효기간이 잘못됨</translation>
+<translation id="6638511529934826365">텍스트 확대/축소…</translation>
 <translation id="6642362222295953972">기존 탭으로 전환</translation>
 <translation id="6643016212128521049">삭제</translation>
 <translation id="6656103420185847513">폴더 수정</translation>

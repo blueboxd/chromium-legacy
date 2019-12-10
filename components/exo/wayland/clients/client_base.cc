@@ -5,6 +5,7 @@
 #include "components/exo/wayland/clients/client_base.h"
 
 #include <aura-shell-client-protocol.h>
+#include <color-space-unstable-v1-client-protocol.h>
 #include <fcntl.h>
 #include <fullscreen-shell-unstable-v1-client-protocol.h>
 #include <linux-dmabuf-unstable-v1-client-protocol.h>
@@ -144,6 +145,9 @@ void RegistryHandler(void* data,
   } else if (strcmp(interface, "zcr_vsync_feedback_v1") == 0) {
     globals->vsync_feedback.reset(static_cast<zcr_vsync_feedback_v1*>(
         wl_registry_bind(registry, id, &zcr_vsync_feedback_v1_interface, 1)));
+  } else if (strcmp(interface, "zcr_color_space_v1") == 0) {
+    globals->color_space.reset(static_cast<zcr_color_space_v1*>(
+        wl_registry_bind(registry, id, &zcr_color_space_v1_interface, 1)));
   }
 }
 

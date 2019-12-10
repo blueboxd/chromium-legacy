@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="../appearance_page/appearance_page.html">
+<link rel="import" href="../privacy_page/privacy_page.html">
 <link rel="import" href="../autofill_page/autofill_page.html">
 <link rel="import" href="../change_password_page/change_password_page.html">
 <link rel="import" href="../controls/settings_idle_load.html">
@@ -175,6 +176,15 @@
             </settings-autofill-page>
           </settings-section>
         </template>
+        <template is="dom-if" if="[[showPrivacyPageAndRedesign_(
+            pageVisibility.privacy, 'BASIC')]]" restamp>
+          <settings-section page-title="$i18n{privacyPageTitle}"
+              section="privacy">
+            <settings-privacy-page prefs="{{prefs}}"
+                page-visibility="[[pageVisibility.privacy]]">
+            </settings-privacy-page>
+          </settings-section>
+        </template>
         <template is="dom-if" if="[[showPage_(pageVisibility.appearance)]]"
             restamp>
           <settings-section page-title="$i18n{appearancePageTitle}"
@@ -274,8 +284,8 @@
               </settings-section>
             </template>
 </if>
-            <template is="dom-if" if="[[showPage_(pageVisibility.privacy)]]"
-                restamp>
+            <template is="dom-if" if="[[showPrivacyPageAndRedesign_(
+                pageVisibility.privacy, 'ADVANCED')]]" restamp>
               <settings-section page-title="$i18n{privacyPageTitle}"
                   section="privacy">
                 <settings-privacy-page prefs="{{prefs}}"

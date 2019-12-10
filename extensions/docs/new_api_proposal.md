@@ -100,7 +100,7 @@ __API OWNERS:__ Usually, you will be responsible for ownership of the API.
 List appropriate usernames, team aliases, etc.
 
 __API Overview Doc:__ A link to your completed
-[API Overview document](https://docs.google.com/document/d/1mspntphE_vxwce4VNx08VtjsvgE9--ro3mg3lP1toeE/edit#).
+[API Overview document](https://docs.google.com/document/d/182XXEPwbh5dyMTO_Q3bZ9k4PYY19Woydu5b3XvPoSmc/edit#).
 
 __Design Doc(s):__ Any additional design docs.  Depending on the complexity of
 the API, this might not be necessary with the API Overview doc above.

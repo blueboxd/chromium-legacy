@@ -66,8 +66,6 @@ template("chromevox_strings") {
     ]
     output_dir = invoker.out_dir
 
-    # Don't polute the extension directory with stamp and .d files.
-    depfile_dir = target_out_dir
     resource_ids = ""
   }
 }

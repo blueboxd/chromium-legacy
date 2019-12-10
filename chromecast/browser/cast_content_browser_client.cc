@@ -46,6 +46,7 @@
 #include "chromecast/browser/general_audience_browsing_service.h"
 #include "chromecast/browser/media/media_caps_impl.h"
 #include "chromecast/browser/service/cast_service_simple.h"
+#include "chromecast/browser/service_connector.h"
 #include "chromecast/browser/tts/tts_controller.h"
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/common/cast_content_client.h"
@@ -174,6 +175,11 @@ CastContentBrowserClient::~CastContentBrowserClient() {
                    url_request_context_factory_.release());
 }
 
+std::unique_ptr<ServiceConnector>
+CastContentBrowserClient::CreateServiceConnector() {
+  return std::make_unique<ServiceConnector>();
+}
+
 std::unique_ptr<CastService> CastContentBrowserClient::CreateCastService(
     content::BrowserContext* browser_context,
     CastSystemMemoryPressureEvaluatorAdjuster*
@@ -257,7 +263,8 @@ CastContentBrowserClient::CreateAudioManager(
                           base::Unretained(this)),
       base::BindRepeating(&shell::CastSessionIdMap::GetSessionId),
       base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}),
-      GetMediaTaskRunner(), content::GetSystemConnector(),
+      GetMediaTaskRunner(),
+      ServiceConnector::MakeRemote(kBrowserProcessClientId),
       BUILDFLAG(ENABLE_CAST_AUDIO_MANAGER_MIXER));
 #else
   return std::make_unique<media::CastAudioManager>(
@@ -266,7 +273,8 @@ CastContentBrowserClient::CreateAudioManager(
                           base::Unretained(this)),
       base::BindRepeating(&shell::CastSessionIdMap::GetSessionId),
       base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}),
-      GetMediaTaskRunner(), content::GetSystemConnector(),
+      GetMediaTaskRunner(),
+      ServiceConnector::MakeRemote(kBrowserProcessClientId),
       BUILDFLAG(ENABLE_CAST_AUDIO_MANAGER_MIXER));
 #endif  // defined(USE_ALSA)
 }
@@ -918,8 +926,7 @@ void CastContentBrowserClient::BindMediaRenderer(
       std::make_unique<media::CastRenderer>(
           GetCmaBackendFactory(), std::move(media_task_runner),
           GetVideoModeSwitcher(), GetVideoResolutionPolicy(),
-          base::UnguessableToken::Create(), nullptr /* connector */,
-          nullptr /* host_interfaces */),
+          base::UnguessableToken::Create(), nullptr /* host_interfaces */),
       std::move(receiver));
 }
 

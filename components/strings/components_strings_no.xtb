@@ -9,7 +9,6 @@
 <translation id="1036348656032585052">Slå av</translation>
 <translation id="1038842779957582377">ukjent navn</translation>
 <translation id="1039626062703039346">Chrome kan hjelpe deg med å beskytte Google-kontoen din og endre passordet ditt. Dette varsler Google om dette nettstedet.</translation>
-<translation id="1044897699341250361">Hva betyr dette?</translation>
 <translation id="1050038467049342496">Lukk andre apper</translation>
 <translation id="1055184225775184556">&amp;Angre tilleggingen</translation>
 <translation id="1056898198331236512">Advarsel</translation>
@@ -184,7 +183,6 @@
 <translation id="1745880797583122200">Nettleseren din administreres</translation>
 <translation id="17513872634828108">Åpne faner</translation>
 <translation id="1753706481035618306">Sidenummer</translation>
-<translation id="175838129965056221">Chrome har oppdaget at tilkoblingen overvåkes</translation>
 <translation id="1763864636252898013">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren er ikke klarert av enhetens operativsystem. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Prøv å kjøre Windows Nettverksdiagnose<ph name="END_LINK" />.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -253,7 +251,6 @@
 <translation id="2119867082804433120">Hull nede til høyre</translation>
 <translation id="2129079103035905234">Bevegelsessensorer</translation>
 <translation id="2130448033692577677">Malene du har angitt, kan ikke tas i bruk fordi DnsOverHttpsMode-regelen ikke er angitt.</translation>
-<translation id="2131277894177304644">Chromium har oppdaget at tilkoblingen overvåkes</translation>
 <translation id="213826338245044447">Bokmerker for mobil</translation>
 <translation id="214556005048008348">Avbryt betalingen</translation>
 <translation id="2147827593068025794">Bakgrunnssynkronisering</translation>
@@ -301,7 +298,7 @@
 <translation id="2354001756790975382">Andre bokmerker</translation>
 <translation id="2354430244986887761">Google Safe Browsing har nylig <ph name="BEGIN_LINK" />funnet skadelige apper<ph name="END_LINK" /> på <ph name="SITE" />.</translation>
 <translation id="2355395290879513365">Angripere kan kanskje se bildene du ser på dette nettstedet, og lure deg ved å endre dem.</translation>
-<translation id="2355474962185559967">Du har nettopp skrevet inn passordet ditt på et bedragersk nettsted. Chromium anbefaler at du går til <ph name="WEBSITE_1" /> og bytter passord nå.</translation>
+<translation id="2355474962185559967">Du har nettopp skrevet inn passordet ditt på et villedende nettsted. Chromium anbefaler at du går til <ph name="WEBSITE_1" /> og bytter passord nå.</translation>
 <translation id="2356070529366658676">Spør</translation>
 <translation id="2359629602545592467">Flere</translation>
 <translation id="2359808026110333948">Fortsett</translation>
@@ -318,7 +315,7 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Tjenerens sikkerhetssertifikat kan være trukket tilbake. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="2438874542388153331">Fire hull høyre</translation>
-<translation id="245044156129055925">Du har nettopp skrevet inn passordet ditt på et bedragersk nettsted. Chromium anbefaler deg å bytte passord nå.</translation>
+<translation id="245044156129055925">Du har nettopp skrevet inn passordet ditt på et villedende nettsted. Chromium anbefaler deg å bytte passord nå.</translation>
 <translation id="2463193859425327265">Endre startsiden</translation>
 <translation id="2463739503403862330">Fyll ut</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -405,7 +402,6 @@ brukere av denne nettleseren.</translation>
 <translation id="2799020568854403057">Nettstedet du er på vei til, inneholder skadelige apper</translation>
 <translation id="2799223571221894425">Start på nytt</translation>
 <translation id="2803306138276472711">Google Safe Browsing oppdaget nylig <ph name="BEGIN_LINK" />skadelig programvare<ph name="END_LINK" /> på <ph name="SITE" />. Nettsteder som vanligvis er sikre, kan noen ganger være infisert av skadelig programvare.</translation>
-<translation id="281585763351939989">Chromium har oppdaget at tilkoblingen overvåkes.</translation>
 <translation id="2824775600643448204">Adresse- og søkefelt</translation>
 <translation id="2826760142808435982">Tilkoblingen er kryptert ved hjelp av <ph name="CIPHER" />, og bruker <ph name="KX" /> som mekanisme for nøkkelutveksling.</translation>
 <translation id="2835170189407361413">Slett skjemaet</translation>
@@ -450,7 +446,6 @@ brukere av denne nettleseren.</translation>
 <translation id="3024663005179499861">Feil type enhetsinnstillinger</translation>
 <translation id="3037605927509011580">Æsj!</translation>
 <translation id="3041612393474885105">Sertifikatinformasjon</translation>
-<translation id="304755864151473094">Hvorfor skjer dette?</translation>
 <translation id="3057676462092457419">DnsOverHttps-modusen <ph name="SECURE_DNS_MODE_SECURE" /> støttes ikke ennå. Modusen er satt til <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">C9 (konvolutt)</translation>
 <translation id="3061707000357573562">Feilrettingstjeneste</translation>
@@ -481,7 +476,6 @@ brukere av denne nettleseren.</translation>
 <translation id="320323717674993345">Avbryt betalingen</translation>
 <translation id="3207960819495026254">Bokmerket</translation>
 <translation id="3209034400446768650">Siden kan belaste deg for penger</translation>
-<translation id="3209080785413271048">Bruk Windows Hello til å bekrefte de lagrede betalingsmåtene dine.</translation>
 <translation id="3212581601480735796">Aktiviteten din på <ph name="HOSTNAME" /> overvåkes</translation>
 <translation id="3215092763954878852">Kunne ikke bruke WebAuthn</translation>
 <translation id="3225919329040284222">Tjeneren oppga et sertifikat som ikke samsvarte med innebygde forventninger. Disse forventningene benyttes for visse nettsteder med høy sikkerhet, og brukes for å beskytte deg.</translation>
@@ -490,12 +484,11 @@ brukere av denne nettleseren.</translation>
 <translation id="3228969707346345236">Oversettelsen mislyktes fordi siden allerede er på <ph name="LANGUAGE" />.</translation>
 <translation id="3229041911291329567">Versjonsinformasjon om enheten og nettleseren din</translation>
 <translation id="323107829343500871">Skriv inn verifiseringskoden for <ph name="CREDIT_CARD" /></translation>
-<translation id="3234392465377209614">Du har nettopp skrevet inn passordet ditt på et bedragersk nettsted. Chromium anbefaler at du går til <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> og <ph name="WEBSITE_3" /> og bytter passord nå.</translation>
+<translation id="3234392465377209614">Du har nettopp skrevet inn passordet ditt på et villedende nettsted. Chromium anbefaler at du går til <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> og <ph name="WEBSITE_3" /> og bytter passord nå.</translation>
 <translation id="3234666976984236645">Oppdag alltid viktig innhold på dette nettstedet</translation>
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> ligner på <ph name="SUGGESTED_DOMAIN" />. Noen ganger etterligner angripere nettsteder ved å bruke nettadresser som ligner.</translation>
 <translation id="3270847123878663523">&amp;Angre omorganiseringen</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
-<translation id="3281668902344226640">Bruk Touch ID til å bekrefte de lagrede betalingsmåtene dine.</translation>
 <translation id="3282497668470633863">Legg til navnet på kortet</translation>
 <translation id="3287510313208355388">Last ned når du er koblet til Internett</translation>
 <translation id="3293642807462928945">Finn ut mer om regelen <ph name="POLICY_NAME" /></translation>
@@ -523,7 +516,7 @@ brukere av denne nettleseren.</translation>
 <translation id="342781501876943858">Chromium anbefaler at du tilbakestiller passordet ditt hvis du også har brukt det på andre nettsteder.</translation>
 <translation id="3428151540071562330">Én eller flere av URI-ene for DnsOverHttpsTemplates-tjenermaler er ugyldige og blir ikke brukt.</translation>
 <translation id="3431636764301398940">Lagre dette kortet på denne enheten</translation>
-<translation id="3438790640050632698">Du har nettopp skrevet inn passordet ditt på et bedragersk nettsted. Chrome anbefaler at du går til <ph name="WEBSITE_1" /> og <ph name="WEBSITE_2" /> og bytter passord nå.</translation>
+<translation id="3438790640050632698">Du har nettopp skrevet inn passordet ditt på et villedende nettsted. Chrome anbefaler at du går til <ph name="WEBSITE_1" /> og <ph name="WEBSITE_2" /> og bytter passord nå.</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">Eieren av denne enheten har slått av dinosaurspillet.</translation>
 <translation id="3447884698081792621">Vis sertifikat (utstedt av <ph name="ISSUER" />)</translation>
@@ -538,7 +531,7 @@ brukere av denne nettleseren.</translation>
 <translation id="3495081129428749620">Finn på siden
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">Denne regelen ignoreres fordi en annen regel i den samme regelgruppen har høyere prioritet.</translation>
-<translation id="3525469219100414032">Du har nettopp skrevet inn passordet ditt på et bedragersk nettsted. Chrome anbefaler at du går til <ph name="WEBSITE_1" /> og bytter passord nå.</translation>
+<translation id="3525469219100414032">Du har nettopp skrevet inn passordet ditt på et villedende nettsted. Chrome anbefaler at du går til <ph name="WEBSITE_1" /> og bytter passord nå.</translation>
 <translation id="3528171143076753409">Tjenerens sertifikat er ikke pålitelig.</translation>
 <translation id="3528485271872257980">Mørk brun</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Minst 1 element på synkroniserte enheter}=1{1 element (og flere på synkroniserte enheter)}other{# elementer (og flere på synkroniserte enheter)}}</translation>
@@ -636,7 +629,6 @@ brukere av denne nettleseren.</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Ingen}=1{Fra 1 nettsted }other{Fra # nettsteder }}</translation>
 <translation id="397105322502079400">Beregner …</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> er blokkert</translation>
-<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> har slått på beskyttelsesfunksjoner for bedrifter i Chrome-nettleseren din. Beskyttelsesfunksjoner for bedrifter i Chrome har tilgang til noen av dataene dine.</translation>
 <translation id="3987405730340719549">Chrome har funnet ut at dette nettstedet kan være falskt eller prøve å svindle deg.
 
     Hvis du mener at dette er en feil, kan du gå til https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
@@ -701,7 +693,6 @@ brukere av denne nettleseren.</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Prøv å kjøre Nettverksdiagnose<ph name="END_LINK" />.</translation>
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" />Gå videre til <ph name="SITE" /><ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">Gyldig</translation>
-<translation id="4248776159690739358">Del data om sikkerhetshendelser som er rapportert av beskyttelsesfunksjoner for bedrifter i Chrome, med administratoren din. Dette kan omfatte nettadressene til sider du besøker, filnavn eller metadata samt brukernavnet du bruker når du logger på enheten din og Chrome.</translation>
 <translation id="4250431568374086873">Tilkoblingen til dette nettstedet er ikke helt sikker</translation>
 <translation id="4250680216510889253">Nei</translation>
 <translation id="425582637250725228">Det kan hende endringene dine ikke er lagret.</translation>
@@ -719,7 +710,7 @@ brukere av denne nettleseren.</translation>
 <translation id="4305817255990598646">Bytt</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Blokkér (standard)</translation>
-<translation id="4318312030194671742">Komposisjonstjeneste for forhåndsvisning av opptegning</translation>
+<translation id="4318312030194671742">Paint Preview-komposisjonstjeneste</translation>
 <translation id="4318566738941496689">Navnet og nettverksadressen til enheten din</translation>
 <translation id="4325863107915753736">Artikkelen ble ikke funnet</translation>
 <translation id="4326324639298822553">Kontrollér utløpsdatoen, og prøv igjen</translation>
@@ -736,8 +727,6 @@ brukere av denne nettleseren.</translation>
 <translation id="4372948949327679948">Forventet <ph name="VALUE_TYPE" />-verdi.</translation>
 <translation id="4377125064752653719">Du forsøkte å gå til <ph name="DOMAIN" />, men sertifikatet tjeneren presenterte har blitt trukket tilbake av utstederen. Dette innebærer at sikkerhetsinformasjonen tjeneren presenterte ikke er klarert. Det kan hende at du kommuniserer med en angriper.</translation>
 <translation id="4378154925671717803">Telefon</translation>
-<translation id="437847259914972036">Aktiviteten din på nettet og all informasjon du oppgir, blir overvåket, og innhold kan bli endret uten at du vet om det.</translation>
-<translation id="4398334096870680409">Denne funksjonen er ikke tilgjengelig på enheten din.</translation>
 <translation id="4406896451731180161">søkeresultater</translation>
 <translation id="4408413947728134509">Informasjonskapsler <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Henteadresse</translation>
@@ -776,7 +765,6 @@ brukere av denne nettleseren.</translation>
 <translation id="4594403342090139922">&amp;Angre slettingen</translation>
 <translation id="4597348597567598915">Størrelse 8</translation>
 <translation id="4600854749408232102">C6/C5 (konvolutt)</translation>
-<translation id="4613966523036881546">Sertifikatet for denne forbindelsen er ikke klarert av Google Chrome, da det er kjent at sertifikatet brukes til nettverksavlytting og -overvåking.</translation>
 <translation id="4635654612248442824">Nettstedet <ph name="ORIGIN" /> har bedt om at en opphavsregel
     skal gjelde hele forespørselen, men denne regelen kan ikke tas i bruk akkurat nå.</translation>
 <translation id="464342062220857295">Søkefunksjoner</translation>
@@ -972,7 +960,7 @@ brukere av denne nettleseren.</translation>
 <translation id="5565735124758917034">Aktiv</translation>
 <translation id="5570825185877910964">Beskytt kontoen</translation>
 <translation id="5571083550517324815">Kan ikke hente på denne adressen. Velg en annen adresse.</translation>
-<translation id="5572009199897554128">Du har nettopp skrevet inn passordet ditt på et bedragersk nettsted. Chromium anbefaler at du går til <ph name="WEBSITE_1" /> og <ph name="WEBSITE_2" /> og bytter passord nå.</translation>
+<translation id="5572009199897554128">Du har nettopp skrevet inn passordet ditt på et villedende nettsted. Chromium anbefaler at du går til <ph name="WEBSITE_1" /> og <ph name="WEBSITE_2" /> og bytter passord nå.</translation>
 <translation id="5580958916614886209">Kontrollér utløpsmåneden, og prøv igjen</translation>
 <translation id="5586446728396275693">Ingen adresser er lagret</translation>
 <translation id="5595485650161345191">Rediger adresse</translation>
@@ -1144,7 +1132,7 @@ brukere av denne nettleseren.</translation>
 <translation id="6401136357288658127">Denne regelen er avviklet. Du bør bruke den nye regelen <ph name="NEW_POLICY" /> i stedet.</translation>
 <translation id="6404511346730675251">Rediger bokmerket</translation>
 <translation id="6406765186087300643">C0 (konvolutt)</translation>
-<translation id="6409754798200046165">Du har nettopp skrevet inn passordet ditt på et bedragersk nettsted. Chrome anbefaler deg å bytte passord nå.</translation>
+<translation id="6409754798200046165">Du har nettopp skrevet inn passordet ditt på et villedende nettsted. Chrome anbefaler deg å bytte passord nå.</translation>
 <translation id="6410264514553301377">Skriv inn utløpsdatoen og verifiseringskoden for <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Chromium kan hjelpe deg med å beskytte Google-kontoen din og endre passordet ditt.</translation>
 <translation id="6427730057873428458">Vindusfals</translation>
@@ -1174,7 +1162,6 @@ brukere av denne nettleseren.</translation>
 <translation id="6547208576736763147">To hull venstre</translation>
 <translation id="6554795675067793129">Kontoen din administreres av <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Gjør om</translation>
-<translation id="6559565319173126218">Chrome stoler ikke på sertifikatet som ble presentert for denne tilkoblingen, da det er kjent at sertifikatet brukes til nettverksavlytting og -overvåking.</translation>
 <translation id="6569060085658103619">Du ser på en utvidelsesside</translation>
 <translation id="6573200754375280815">To hull høyre</translation>
 <translation id="6578796323535178455">C2 (konvolutt)</translation>
@@ -1203,12 +1190,10 @@ brukere av denne nettleseren.</translation>
 <translation id="6685834062052613830">Logg av og fullfør konfigurasjonen</translation>
 <translation id="6689271823431384964">Chrome tilbyr å lagre kort i Google-kontoen din fordi du er logget på. Du kan endre dette i innstillingene. Kortinnehaverens navn kommer fra kontoen din.</translation>
 <translation id="6704582573942289642">Er dette riktig nettsted?</translation>
-<translation id="6707256370811247129">Gjennomsøk innholdet i bufferen og filene du laster ned eller opp i Chrome.</translation>
 <translation id="6710213216561001401">Forrige</translation>
 <translation id="6710594484020273272">&lt;Skriv inn en søketerm&gt;</translation>
 <translation id="671076103358959139">Registreringstoken:</translation>
 <translation id="6711464428925977395">Det er noe galt med proxy-tjeneren, eller adressen er feil.</translation>
-<translation id="6721811549156553509">Enheten som overvåker nettverket, kan utgi seg for å være nettstedene du besøker, og kan se aktiviteten din og all informasjon du oppgir (for eksempel passord, meldinger eller kredittkort). Du bør være forsiktig når du gjør sensitive ting på nettet, siden aktiviteten er synlig for enheten som overvåker nettverket, og denne kan endre innholdet på nettstedene du besøker. Dette omfatter aktivitet i andre nettlesere og programmer som bruker internett.</translation>
 <translation id="6738516213925468394">Dataene dine ble kryptert med <ph name="BEGIN_LINK" />passordfrasen for synkronisering<ph name="END_LINK" /> <ph name="TIME" />. Skriv den inn for å starte synkroniseringen.</translation>
 <translation id="674375294223700098">Ukjent feil med tjenersertifikat.</translation>
 <translation id="6744009308914054259">Mens du venter på å koble til, kan du gå til Nedlastinger for å lese artikler uten nett.</translation>
@@ -1293,7 +1278,6 @@ brukere av denne nettleseren.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Mer informasjon<ph name="END_LINK" /> om dette problemet.</translation>
 <translation id="7219179957768738017">Tilkoblingen bruker <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Behandler</translation>
-<translation id="7239736667463137521">Chrome har oppdaget at tilkoblingen overvåkes.</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Nettstedet du er på vei til, inneholder skadelig programvare</translation>
 <translation id="724975217298816891">Skriv inn utløpsdatoen og verifiseringskoden for <ph name="CREDIT_CARD" /> for å oppdatere kortinformasjonen din. Når du bekrefter, deles denne informasjonen med dette nettstedet.</translation>
@@ -1319,7 +1303,6 @@ brukere av denne nettleseren.</translation>
 <translation id="7346048084945669753">Er tilknyttet:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Kommandolinje </translation>
-<translation id="7353776484425559055">Chromium stoler ikke på sertifikatet for denne tilkoblingen, da det er kjent at sertifikatet brukes til nettverksavlytting og -overvåking. Det kan hende at du får denne feilen på grunn av et sertifikat du har installert på enheten. Når du oppretter sikre tilkoblinger, stoler Chromium på sertifikater som er lokalt installert på brukerens datamaskin eller mobilenhet. Dette gjør at brukere kan kjøre verktøy for å inspisere og feilsøke tilkoblingene sine når de utvikler nettsteder, og at bedriftsmiljøer kan avlytte og overvåke intern trafikk. I tilfeller der dette blir misbrukt for å avlytte trafikk på det offentlige internettet, viser Chromium en advarsel.</translation>
 <translation id="7372973238305370288">søkeresultat</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> – <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Mediekontroller</translation>
@@ -1351,7 +1334,6 @@ brukere av denne nettleseren.</translation>
 <translation id="7460618730930299168">Fremvisningen er forskjellig fra den du har valgt. Vil du fortsette?</translation>
 <translation id="7473891865547856676">Nei takk</translation>
 <translation id="7481312909269577407">Frem</translation>
-<translation id="748406663033922918">Bruk skjermlås til å bekrefte de lagrede betalingsmåtene dine.</translation>
 <translation id="7485870689360869515">Ingen data ble funnet.</translation>
 <translation id="7495290002932347110">Et databrudd på et nettsted eller i en app har avdekket passordet ditt. Chrome anbefaler at du sjekker de lagrede passordene dine og endrer passordet på <ph name="ORIGIN" /> nå.</translation>
 <translation id="7498234416455752244">Fortsett å endre</translation>
@@ -1381,12 +1363,10 @@ brukere av denne nettleseren.</translation>
 <translation id="7592362899630581445">Tjenerens sertifikat bryter navnereglene.</translation>
 <translation id="7598391785903975535">Under <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> kan for øyeblikket ikke behandle denne forespørselen.</translation>
-<translation id="7599841999395223597">Chrome stoler ikke på sertifikatet for denne tilkoblingen, da det er kjent at sertifikatet brukes til nettverksavlytting og -overvåking. Det kan hende at du får denne feilen på grunn av et sertifikat du har installert på enheten. Når du oppretter sikre tilkoblinger, stoler Chrome på sertifikater som er lokalt installert på brukerens datamaskin eller mobilenhet. Dette gjør at brukere kan kjøre verktøy for å inspisere og feilsøke tilkoblingene sine når de utvikler nettsteder, og at bedriftsmiljøer kan avlytte og overvåke intern trafikk. I tilfeller der dette blir misbrukt for å avlytte trafikk på det offentlige internettet, viser Chrome en advarsel.</translation>
 <translation id="7600965453749440009">Oversett aldri <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Verdien er utenfor rekkevidden <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Utløpsdato: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Du har allerede data som er kryptert med en annen versjon av Google-kontopassordet ditt. Skriv det inn nedenfor.</translation>
-<translation id="7625784245512586808">Beskyttelsesfunksjoner for bedrifter i Chrome</translation>
 <translation id="7633909222644580952">Ytelsesdata og programstopprapporter</translation>
 <translation id="7637571805876720304">Vil du fjerne kredittkortet fra Chromium?</translation>
 <translation id="7638605456503525968">Serielle porter</translation>
@@ -1474,7 +1454,6 @@ brukere av denne nettleseren.</translation>
 <translation id="8041940743680923270">Bruk global standardinnstilling (Spør)</translation>
 <translation id="8042918947222776840">Velg hentemåte</translation>
 <translation id="8057711352706143257">«<ph name="SOFTWARE_NAME" />» er ikke riktig konfigurert. Avinstallering av «<ph name="SOFTWARE_NAME" />» løser vanligvis problemet. <ph name="FURTHER_EXPLANATION" /></translation>
-<translation id="8062224330780487419">Du kommer ikke til å trenge å skrive inn noen sikkerhetskode for kortet fremover</translation>
 <translation id="8066955247577885446">Beklager, noe gikk galt.</translation>
 <translation id="8074253406171541171">10x13 (konvolutt)</translation>
 <translation id="8078141288243656252">Kan ikke legge til annoteringer når dokumentet er rotert</translation>
@@ -1491,7 +1470,6 @@ brukere av denne nettleseren.</translation>
 <translation id="8103161714697287722">Betalingsmåte</translation>
 <translation id="8105368624971345109">Slå av</translation>
 <translation id="8118489163946903409">Betalingsmåte</translation>
-<translation id="8124023448510659215">Sertifikatet for denne forbindelsen er ikke klarert av Chromium, da det er kjent at sertifikatet brukes til nettverksavlytting og -overvåking.</translation>
 <translation id="8127301229239896662">«<ph name="SOFTWARE_NAME" />» er ikke riktig installert på datamaskinen eller på nettverket. Be IT-administratoren din om å løse problemet.</translation>
 <translation id="8131740175452115882">Bekreft</translation>
 <translation id="8149426793427495338">Datamaskinen din gikk inn i hvilemodus.</translation>
@@ -1536,6 +1514,7 @@ brukere av denne nettleseren.</translation>
 <translation id="8308427013383895095">Oversettelsen mislyktes på grunn av et problem med nettverksforbindelsen.</translation>
 <translation id="831207732689920588">Denne siden er mistenkelig (merket av Chrome).</translation>
 <translation id="8332188693563227489">Forsøket på å koble til <ph name="HOST_NAME" /> ble avvist</translation>
+<translation id="833262891116910667">Fremhev</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Hvis du forstår sikkerhetsrisikoen, kan du <ph name="BEGIN_LINK" />gå til det usikre nettstedet<ph name="END_LINK" /> før de farlige programmene er fjernet.</translation>
 <translation id="8349305172487531364">Bokmerkerad</translation>
@@ -1633,8 +1612,6 @@ Mer informasjon:
 <translation id="8957210676456822347">Captive Portal-autorisasjon</translation>
 <translation id="8962950042226115166">Mistenkelig nettsted</translation>
 <translation id="8968766641738584599">Lagre kortet</translation>
-<translation id="8969267497192857913">Alt du skriver, alle sider du besøker, og all annen aktivitet på nettet blir overvåket, og innholdet på nettsteder kan bli endret uten at du vet om det.
-    <ph name="BEGIN_LEARN_MORE_LINK" />Finn ut mer<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">Tjenerens sertifikat er utløpt.</translation>
 <translation id="8975012916872825179">Inkluderer informasjon som telefonnumre, e-postadresser og leveringsadresser</translation>
 <translation id="8975263830901772334">Navnene på filer du skriver ut</translation>
@@ -1668,7 +1645,6 @@ Mer informasjon:
 <translation id="9080712759204168376">Bestillingssammendrag</translation>
 <translation id="9089260154716455634">Regler for bruk utenom arbeidstiden:</translation>
 <translation id="9095388113577226029">Flere språk</translation>
-<translation id="9098981495403789647">Administratoren har slått på beskyttelsesfunksjoner for bedrifter i Chrome-nettleseren din. Beskyttelsesfunksjoner for bedrifter i Chrome har tilgang til noen av dataene dine.</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> bruker vanligvis kryptering for å beskytte informasjonen din. Da Chromium prøvde å koble til <ph name="SITE" /> denne gangen, sendte nettstedet tilbake uvanlig og feil legitimasjon. Dette kan skje hvis en angriper prøver å utgi seg for å være <ph name="SITE" />, eller hvis en Wi-Fi-påloggingsskjerm har avbrutt tilkoblingen. Informasjonen din er likevel sikker fordi Chromium stoppet tilkoblingen før det ble utvekslet noen data.</translation>
 <translation id="9106062320799175032">Legg til faktureringsadresse</translation>
 <translation id="9114524666733003316">Bekrefter kortet …</translation>
@@ -1698,7 +1674,7 @@ Mer informasjon:
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">Du kan miste tilgangen til Google-kontoen din. Chromium anbefaler at du endrer passordet ditt nå. Du blir bedt om å logge på.</translation>
 <translation id="939736085109172342">Ny mappe</translation>
-<translation id="940786960229275114">Du har nettopp skrevet inn passordet ditt på et bedragersk nettsted. Chrome anbefaler at du går til <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> og <ph name="WEBSITE_3" /> og bytter passord nå.</translation>
+<translation id="940786960229275114">Du har nettopp skrevet inn passordet ditt på et villedende nettsted. Chrome anbefaler at du går til <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> og <ph name="WEBSITE_3" /> og bytter passord nå.</translation>
 <translation id="945855313015696284">Gå gjennom informasjonen nedenfor, og slett eventuelle ugyldige kort</translation>
 <translation id="950736567201356821">Tre hull topp</translation>
 <translation id="951104842009476243">Godkjente debetkort og forhåndsbetalte kort</translation>

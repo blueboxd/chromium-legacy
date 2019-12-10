@@ -74,5 +74,4 @@ grit("resources_native") {
     "test_dummy_resources.pak",
   ]
   output_dir = "$root_gen_dir/chrome"
-  depfile_dir = target_gen_dir
 }

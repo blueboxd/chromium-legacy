@@ -16,6 +16,7 @@
 #include "base/callback.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
@@ -181,6 +182,12 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // Update GPU crash counters.  Disable GPU if crash limit is reached.
   void RecordProcessCrash();
 
+#if !defined(OS_ANDROID)
+  // Memory pressure handler, called by |memory_pressure_listener_|.
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel level);
+#endif
+
   // The serial number of the GpuProcessHost.
   int host_id_;
 
@@ -237,6 +244,12 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // received, assume all of these URLs are guilty, and block
   // automatic execution of 3D content from those domains.
   std::multiset<GURL> urls_with_live_offscreen_contexts_;
+
+#if !defined(OS_ANDROID)
+  // Responsible for forwarding the memory pressure notifications from the
+  // browser process to the GPU process.
+  std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
+#endif
 
   std::unique_ptr<viz::GpuHostImpl> gpu_host_;
 

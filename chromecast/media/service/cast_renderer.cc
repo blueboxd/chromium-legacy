@@ -31,8 +31,6 @@
 #include "media/base/media_log.h"
 #include "media/base/media_resource.h"
 #include "media/base/renderer_client.h"
-#include "services/service_manager/public/cpp/connect.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 
 namespace chromecast {
@@ -62,14 +60,12 @@ CastRenderer::CastRenderer(
     VideoModeSwitcher* video_mode_switcher,
     VideoResolutionPolicy* video_resolution_policy,
     const base::UnguessableToken& overlay_plane_id,
-    service_manager::Connector* connector,
     service_manager::mojom::InterfaceProvider* host_interfaces)
     : backend_factory_(backend_factory),
       task_runner_(task_runner),
       video_mode_switcher_(video_mode_switcher),
       video_resolution_policy_(video_resolution_policy),
       overlay_plane_id_(overlay_plane_id),
-      connector_(connector),
       host_interfaces_(host_interfaces),
       client_(nullptr),
       cast_cdm_context_(nullptr),
@@ -82,6 +78,12 @@ CastRenderer::CastRenderer(
 
   if (video_resolution_policy_)
     video_resolution_policy_->AddObserver(this);
+
+  if (host_interfaces_) {
+    host_interfaces_->GetInterface(
+        chromecast::mojom::ServiceConnector::Name_,
+        service_connector_.BindNewPipeAndPassReceiver().PassPipe());
+  }
 }
 
 CastRenderer::~CastRenderer() {
@@ -161,8 +163,8 @@ void CastRenderer::OnApplicationMediaInfoReceived(
                        chromecast::mojom::MultiroomInfo::New());
     return;
   }
-  connector_->Connect(chromecast::mojom::kChromecastServiceName,
-                      multiroom_manager_.BindNewPipeAndPassReceiver());
+  service_connector_->Connect(chromecast::mojom::kChromecastServiceName,
+                              multiroom_manager_.BindNewPipeAndPassReceiver());
   multiroom_manager_.set_disconnect_handler(
       base::BindOnce(&CastRenderer::OnGetMultiroomInfo, base::Unretained(this),
                      media_resource, client, application_media_info.Clone(),
@@ -202,7 +204,6 @@ void CastRenderer::OnGetMultiroomInfo(
   MediaPipelineDeviceParams params(
       sync_type, backend_task_runner_.get(), AudioContentType::kMedia,
       ::media::AudioDeviceDescription::kDefaultDeviceId);
-  params.connector = connector_;
   params.session_id = application_media_info->application_session_id;
   params.multiroom = multiroom_info->multiroom;
   params.audio_channel = multiroom_info->audio_channel;

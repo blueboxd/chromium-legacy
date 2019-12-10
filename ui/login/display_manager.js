@@ -814,12 +814,6 @@ cr.define('cr.ui.login', function() {
         if (screen.updateLocalizedContent)
           screen.updateLocalizedContent();
       }
-      var dynamicElements = document.getElementsByClassName('i18n-dynamic');
-      for (var child of dynamicElements) {
-        if (typeof(child.i18nUpdateLocale) === 'function') {
-          child.i18nUpdateLocale();
-        }
-      }
       var isInTabletMode = loadTimeData.getBoolean('isInTabletMode');
       this.setTabletModeState_(isInTabletMode);
 

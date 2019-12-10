@@ -5,6 +5,7 @@
 <translation id="1181037720776840403">Suprimeix</translation>
 <translation id="125153950246128346">Toca per veure una altra pestanya</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> pestanya}other{<ph name="TABS_COUNT_MANY" /> pestanyes}}</translation>
+<translation id="2569352796411618312">Suggeriment: <ph name="NUMBER_OF_TABS" /> de les teves pestanyes no s'han utilitzat últimament. Vols tancar-les?</translation>
 <translation id="257674075312929031">Grup</translation>
 <translation id="2613747923081026172">Crea un grup</translation>
 <translation id="2671423594960767771">Comparteix el grup</translation>
@@ -23,6 +24,9 @@
 <translation id="6840760312327750441">Per agrupar les pestanyes, mantén-ne una premuda. A continuació, arrossega-la fins a una altra.</translation>
 <translation id="7151209024774799310">Suprimeix les pestanyes</translation>
 <translation id="7559245342362162951">Mostra les pestanyes del grup en una quadrícula en pantalla completa</translation>
+<translation id="7792771145871471484">Revisa els suggeriments.</translation>
+<translation id="7966321538264951561">Ignora els suggeriments.</translation>
+<translation id="83556505225171773">{TABS_COUNT,plural, =1{Tanca <ph name="TABS_COUNT_ONE" /> pestanya seleccionada}other{Tanca les <ph name="TABS_COUNT_MANY" /> pestanyes seleccionades}}</translation>
 <translation id="9150694013019234766">Canvia de pestanya al grup de pestanyes de la part inferior de la pantalla</translation>
 <translation id="9169594135889675189">Afegeix una pestanya nova al grup</translation>
 <translation id="959682366969460160">Organitza el contingut</translation>

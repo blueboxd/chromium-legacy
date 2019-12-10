@@ -133,6 +133,27 @@ const char kPerfRecordInstructionTLBMissesCmd[] =
 const char kPerfRecordDataTLBMissesCmd[] =
     "perf record -a -e dTLB-misses -c 2003";
 
+// TLB miss cycles for IvyBridge, Haswell, Broadwell and SandyBridge.
+const char kPerfRecordITLBMissCyclesCmdIvyBridge[] =
+    "perf record -a -e itlb_misses.walk_duration -c 2003";
+
+const char kPerfRecordDTLBMissCyclesCmdIvyBridge[] =
+    "perf record -a -e dtlb_load_misses.walk_duration -c 2003";
+
+// TLB miss cycles for Skylake and Kabylake.
+const char kPerfRecordITLBMissCyclesCmdSkylake[] =
+    "perf record -a -e itlb_misses.walk_pending -c 2003";
+
+const char kPerfRecordDTLBMissCyclesCmdSkylake[] =
+    "perf record -a -e dtlb_load_misses.walk_pending -c 2003";
+
+// TLB miss cycles for Atom, including Silvermont, Airmont and Goldmont.
+const char kPerfRecordITLBMissCyclesCmdAtom[] =
+    "perf record -a -e page_walks.i_side_cycles -c 2003";
+
+const char kPerfRecordDTLBMissCyclesCmdAtom[] =
+    "perf record -a -e page_walks.d_side_cycles -c 2003";
+
 const char kPerfRecordCacheMissesCmd[] =
     "perf record -a -e cache-misses -c 10007";
 
@@ -154,32 +175,48 @@ const std::vector<RandomSelector::WeightAndValue> GetDefaultCommands_x86_64(
   }
 
   if (cpu_uarch == "IvyBridge" || cpu_uarch == "Haswell" ||
-      cpu_uarch == "Broadwell" || cpu_uarch == "SandyBridge" ||
-      cpu_uarch == "Skylake" || cpu_uarch == "Kabylake") {
-    cmds.push_back(WeightAndValue(50.0, kPerfRecordCyclesCmd));
+      cpu_uarch == "Broadwell" || cpu_uarch == "SandyBridge") {
+    cmds.push_back(WeightAndValue(40.0, kPerfRecordCyclesCmd));
     cmds.push_back(WeightAndValue(20.0, callgraph_cmd));
     cmds.push_back(WeightAndValue(15.0, kPerfRecordLBRCmd));
     cmds.push_back(WeightAndValue(5.0, kPerfRecordInstructionTLBMissesCmd));
     cmds.push_back(WeightAndValue(5.0, kPerfRecordDataTLBMissesCmd));
+    cmds.push_back(WeightAndValue(5.0, kPerfRecordITLBMissCyclesCmdIvyBridge));
+    cmds.push_back(WeightAndValue(5.0, kPerfRecordDTLBMissCyclesCmdIvyBridge));
+    cmds.push_back(WeightAndValue(5.0, kPerfRecordCacheMissesCmd));
+    return cmds;
+  }
+  if (cpu_uarch == "Skylake" || cpu_uarch == "Kabylake") {
+    cmds.push_back(WeightAndValue(40.0, kPerfRecordCyclesCmd));
+    cmds.push_back(WeightAndValue(20.0, callgraph_cmd));
+    cmds.push_back(WeightAndValue(15.0, kPerfRecordLBRCmd));
+    cmds.push_back(WeightAndValue(5.0, kPerfRecordInstructionTLBMissesCmd));
+    cmds.push_back(WeightAndValue(5.0, kPerfRecordDataTLBMissesCmd));
+    cmds.push_back(WeightAndValue(5.0, kPerfRecordITLBMissCyclesCmdSkylake));
+    cmds.push_back(WeightAndValue(5.0, kPerfRecordDTLBMissCyclesCmdSkylake));
     cmds.push_back(WeightAndValue(5.0, kPerfRecordCacheMissesCmd));
     return cmds;
   }
   if (cpu_uarch == "Silvermont" || cpu_uarch == "Airmont") {
-    cmds.push_back(WeightAndValue(50.0, kPerfRecordCyclesCmd));
+    cmds.push_back(WeightAndValue(40.0, kPerfRecordCyclesCmd));
     cmds.push_back(WeightAndValue(20.0, callgraph_cmd));
     cmds.push_back(WeightAndValue(15.0, kPerfRecordLBRCmdAtom));
     cmds.push_back(WeightAndValue(5.0, kPerfRecordInstructionTLBMissesCmd));
     cmds.push_back(WeightAndValue(5.0, kPerfRecordDataTLBMissesCmd));
+    cmds.push_back(WeightAndValue(5.0, kPerfRecordITLBMissCyclesCmdAtom));
+    cmds.push_back(WeightAndValue(5.0, kPerfRecordDTLBMissCyclesCmdAtom));
     cmds.push_back(WeightAndValue(5.0, kPerfRecordCacheMissesCmd));
     return cmds;
   }
   if (cpu_uarch == "Goldmont" || cpu_uarch == "GoldmontPlus") {
-    cmds.push_back(WeightAndValue(50.0, kPerfRecordCyclesCmd));
+    cmds.push_back(WeightAndValue(40.0, kPerfRecordCyclesCmd));
     cmds.push_back(WeightAndValue(20.0, callgraph_cmd));
     cmds.push_back(WeightAndValue(15.0, kPerfRecordLBRCmdAtom));
     // Use the Goldmont variants of iTLB and dTLB misses.
     cmds.push_back(WeightAndValue(5.0, kPerfRecordInstructionTLBMissesCmdGLM));
     cmds.push_back(WeightAndValue(5.0, kPerfRecordDataTLBMissesCmdGLM));
+    cmds.push_back(WeightAndValue(5.0, kPerfRecordITLBMissCyclesCmdAtom));
+    cmds.push_back(WeightAndValue(5.0, kPerfRecordDTLBMissCyclesCmdAtom));
     cmds.push_back(WeightAndValue(5.0, kPerfRecordCacheMissesCmd));
     return cmds;
   }

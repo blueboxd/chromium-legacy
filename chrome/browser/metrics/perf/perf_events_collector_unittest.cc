@@ -35,6 +35,10 @@ const char kPerfRecordLBRCmdAtom[] = "perf record -a -e rc4 -b -c 300001";
 const char kPerfRecordDataTLBMissesCmdGLM[] = "perf record -a -e r13d0 -c 2003";
 const char kPerfRecordDataTLBMissesCmd[] =
     "perf record -a -e dTLB-misses -c 2003";
+const char kPerfRecordITLBMissCyclesCmdIvyBridge[] =
+    "perf record -a -e itlb_misses.walk_duration -c 2003";
+const char kPerfRecordITLBMissCyclesCmdAtom[] =
+    "perf record -a -e page_walks.i_side_cycles -c 2003";
 const char kPerfRecordCacheMissesCmd[] =
     "perf record -a -e cache-misses -c 10007";
 
@@ -357,6 +361,12 @@ TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_IvyBridge) {
                          return cmd.value == kPerfRecordCacheMissesCmd;
                        });
   EXPECT_NE(cmds.end(), found);
+  found =
+      std::find_if(cmds.begin(), cmds.end(),
+                   [](const RandomSelector::WeightAndValue& cmd) -> bool {
+                     return cmd.value == kPerfRecordITLBMissCyclesCmdIvyBridge;
+                   });
+  EXPECT_NE(cmds.end(), found);
 }
 
 TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_SandyBridge) {
@@ -381,6 +391,12 @@ TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_SandyBridge) {
                        [](const RandomSelector::WeightAndValue& cmd) -> bool {
                          return cmd.value == kPerfRecordCacheMissesCmd;
                        });
+  EXPECT_NE(cmds.end(), found);
+  found =
+      std::find_if(cmds.begin(), cmds.end(),
+                   [](const RandomSelector::WeightAndValue& cmd) -> bool {
+                     return cmd.value == kPerfRecordITLBMissCyclesCmdIvyBridge;
+                   });
   EXPECT_NE(cmds.end(), found);
 }
 
@@ -415,6 +431,11 @@ TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_Goldmont) {
   found = std::find_if(cmds.begin(), cmds.end(),
                        [](const RandomSelector::WeightAndValue& cmd) -> bool {
                          return cmd.value == kPerfRecordDataTLBMissesCmdGLM;
+                       });
+  EXPECT_NE(cmds.end(), found);
+  found = std::find_if(cmds.begin(), cmds.end(),
+                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
+                         return cmd.value == kPerfRecordITLBMissCyclesCmdAtom;
                        });
   EXPECT_NE(cmds.end(), found);
 }

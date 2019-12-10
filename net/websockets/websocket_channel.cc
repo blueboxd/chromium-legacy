@@ -264,7 +264,7 @@ void WebSocketChannel::SendAddChannelRequest(
     const GURL& socket_url,
     const std::vector<std::string>& requested_subprotocols,
     const url::Origin& origin,
-    const GURL& site_for_cookies,
+    const SiteForCookies& site_for_cookies,
     const net::NetworkIsolationKey& network_isolation_key,
     const HttpRequestHeaders& additional_headers) {
   SendAddChannelRequestWithSuppliedCallback(
@@ -408,7 +408,7 @@ void WebSocketChannel::SendAddChannelRequestForTesting(
     const GURL& socket_url,
     const std::vector<std::string>& requested_subprotocols,
     const url::Origin& origin,
-    const GURL& site_for_cookies,
+    const SiteForCookies& site_for_cookies,
     const net::NetworkIsolationKey& network_isolation_key,
     const HttpRequestHeaders& additional_headers,
     const WebSocketStreamRequestCreationCallback& callback) {
@@ -431,7 +431,7 @@ void WebSocketChannel::SendAddChannelRequestWithSuppliedCallback(
     const GURL& socket_url,
     const std::vector<std::string>& requested_subprotocols,
     const url::Origin& origin,
-    const GURL& site_for_cookies,
+    const SiteForCookies& site_for_cookies,
     const net::NetworkIsolationKey& network_isolation_key,
     const HttpRequestHeaders& additional_headers,
     const WebSocketStreamRequestCreationCallback& callback) {

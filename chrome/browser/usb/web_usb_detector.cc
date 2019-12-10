@@ -25,13 +25,11 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/vector_icons/vector_icons.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/device_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/origin_util.h"
 #include "device/base/features.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -195,8 +193,7 @@ void WebUsbDetector::Initialize() {
   // Tests may set a fake manager.
   if (!device_manager_) {
     // Receive mojo::Remote<UsbDeviceManager> from DeviceService.
-    content::GetSystemConnector()->Connect(
-        device::mojom::kServiceName,
+    content::GetDeviceService().BindUsbDeviceManager(
         device_manager_.BindNewPipeAndPassReceiver());
   }
   DCHECK(device_manager_);

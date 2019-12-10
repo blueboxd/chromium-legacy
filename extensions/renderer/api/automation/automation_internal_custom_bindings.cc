@@ -2223,14 +2223,20 @@ void AutomationInternalCustomBindings::SendAutomationEvent(
       GetAutomationAXTreeWrapperFromTreeID(tree_id);
   if (!tree_wrapper)
     return;
+
+  // These events get used internally to trigger other behaviors in js.
+  ax::mojom::Event ax_event = event.event_type;
+  bool fire_event = ax_event == ax::mojom::Event::kNone ||
+                    ax_event == ax::mojom::Event::kHitTestResult ||
+                    ax_event == ax::mojom::Event::kMediaStartedPlaying ||
+                    ax_event == ax::mojom::Event::kMediaStoppedPlaying;
+
+  // If we don't explicitly recognize the event type, require a valid node
+  // target.
   ui::AXNode* node = tree_wrapper->tree()->GetFromId(event.id);
-  if (!node)
+  if (!fire_event && !node)
     return;
 
-  // Both the kNone| and |kHitTestResult| events get used internally to trigger
-  // other behaviors in js.
-  bool fire_event = event.event_type == ax::mojom::Event::kNone ||
-                    event.event_type == ax::mojom::Event::kHitTestResult;
   while (node && tree_wrapper && !fire_event) {
     if (tree_wrapper->HasEventListener(event.event_type, node))
       fire_event = true;

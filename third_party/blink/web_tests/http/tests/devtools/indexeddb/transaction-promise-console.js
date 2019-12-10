@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 (async function() {
+  'use strict';
   TestRunner.addResult(
       `Ensure transactions created within Promise callbacks are not deactivated due to console activity\n`);
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.loadModule('application_test_runner');
-    // Note: every test that uses a storage API must manually clean-up state from previous tests.
+  // Note: every test that uses a storage API must manually clean-up state from
+  // previous tests.
   await ApplicationTestRunner.resetState();
 
   var dbname = location.href;
@@ -20,7 +22,7 @@
     openRequest.onsuccess = function(event) {
       var db = event.target.result;
       Promise.resolve().then(function() {
-        tx = db.transaction('store');
+        const tx = db.transaction('store');
         ConsoleTestRunner.evaluateInConsole('1 + 2');
         try {
           tx.objectStore('store').get(0);

@@ -726,6 +726,23 @@ void HistoryService::CountUniqueHostsVisitedLastMonth(
       std::move(callback));
 }
 
+void HistoryService::GetDomainDiversity(
+    base::Time report_time,
+    int number_of_days_to_report,
+    DomainMetricBitmaskType metric_type_bitmask,
+    DomainDiversityCallback callback,
+    base::CancelableTaskTracker* tracker) {
+  DCHECK(backend_task_runner_) << "History service being called after cleanup";
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  tracker->PostTaskAndReplyWithResult(
+      backend_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&HistoryBackend::GetDomainDiversity, history_backend_,
+                     report_time, number_of_days_to_report,
+                     metric_type_bitmask),
+      std::move(callback));
+}
+
 base::CancelableTaskTracker::TaskId HistoryService::GetLastVisitToHost(
     const GURL& host,
     base::Time begin_time,

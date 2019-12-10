@@ -131,7 +131,6 @@ class MarginInfo {
   bool has_margin_after_quirk_ : 1;
   bool determined_margin_before_quirk_ : 1;
 
-  bool discard_margin_ : 1;
   bool last_child_is_self_collapsing_block_with_clearance_ : 1;
 
   // These flags track the previous maximal positive and negative margins.
@@ -155,26 +154,21 @@ class MarginInfo {
     determined_margin_before_quirk_ = b;
   }
   void SetPositiveMargin(LayoutUnit p) {
-    DCHECK(!discard_margin_);
     positive_margin_ = p;
   }
   void SetNegativeMargin(LayoutUnit n) {
-    DCHECK(!discard_margin_);
     negative_margin_ = n;
   }
   void SetPositiveMarginIfLarger(LayoutUnit p) {
-    DCHECK(!discard_margin_);
     if (p > positive_margin_)
       positive_margin_ = p;
   }
   void SetNegativeMarginIfLarger(LayoutUnit n) {
-    DCHECK(!discard_margin_);
     if (n > negative_margin_)
       negative_margin_ = n;
   }
 
   void SetMargin(LayoutUnit p, LayoutUnit n) {
-    DCHECK(!discard_margin_);
     positive_margin_ = p;
     negative_margin_ = n;
   }
@@ -184,7 +178,6 @@ class MarginInfo {
   void SetCanCollapseMarginAfterWithLastChild(bool collapse) {
     can_collapse_margin_after_with_last_child_ = collapse;
   }
-  void SetDiscardMargin(bool value) { discard_margin_ = value; }
 
   bool AtBeforeSideOfBlock() const { return at_before_side_of_block_; }
   bool CanCollapseWithMarginBefore() const {
@@ -211,7 +204,6 @@ class MarginInfo {
   bool HasMarginAfterQuirk() const { return has_margin_after_quirk_; }
   LayoutUnit PositiveMargin() const { return positive_margin_; }
   LayoutUnit NegativeMargin() const { return negative_margin_; }
-  bool DiscardMargin() const { return discard_margin_; }
   LayoutUnit Margin() const { return positive_margin_ - negative_margin_; }
   void SetLastChildIsSelfCollapsingBlockWithClearance(bool value) {
     last_child_is_self_collapsing_block_with_clearance_ = value;
@@ -387,9 +379,7 @@ bool LayoutBlockFlow::CheckIfIsSelfCollapsingBlock() const {
          (element && element->ShadowPseudoId() == "-webkit-input-placeholder"));
 
   if (LogicalHeight() > LayoutUnit() ||
-      StyleRef().LogicalMinHeight().IsPositive() ||
-      StyleRef().MarginBeforeCollapse() == EMarginCollapse::kSeparate ||
-      StyleRef().MarginAfterCollapse() == EMarginCollapse::kSeparate)
+      StyleRef().LogicalMinHeight().IsPositive())
     return false;
 
   const Length& logical_height_length = StyleRef().LogicalHeight();
@@ -898,8 +888,6 @@ void LayoutBlockFlow::LayoutBlockChild(LayoutBox& child,
   // Cache if we are at the top of the block right now.
   bool at_before_side_of_block = margin_info.AtBeforeSideOfBlock();
   bool child_is_self_collapsing = child.IsSelfCollapsingBlock();
-  bool child_discard_margin_before = MustDiscardMarginBeforeForChild(child);
-  bool child_discard_margin_after = MustDiscardMarginAfterForChild(child);
   bool paginated = View()->GetLayoutState()->IsPaginated();
 
   // If there should be a forced break before the child, we need to insert it
@@ -917,15 +905,12 @@ void LayoutBlockFlow::LayoutBlockChild(LayoutBox& child,
   // Now determine the correct ypos based off examination of collapsing margin
   // values.
   LayoutUnit logical_top_before_clear =
-      CollapseMargins(child, layout_info, child_is_self_collapsing,
-                      child_discard_margin_before, child_discard_margin_after);
+      CollapseMargins(child, layout_info, child_is_self_collapsing);
 
   // Now check for clear.
-  bool child_discard_margin =
-      child_discard_margin_before || child_discard_margin_after;
   LayoutUnit new_logical_top = ClearFloatsIfNeeded(
       child, margin_info, old_pos_margin_before, old_neg_margin_before,
-      logical_top_before_clear, child_is_self_collapsing, child_discard_margin);
+      logical_top_before_clear, child_is_self_collapsing);
 
   // If there's a forced break in front of this child, its final position has
   // already been determined. Otherwise, see if there are other reasons for
@@ -982,10 +967,7 @@ void LayoutBlockFlow::LayoutBlockChild(LayoutBox& child,
   // Update our height now that the child has been placed in the correct
   // position.
   SetLogicalHeight(LogicalHeight() + LogicalHeightForChild(child));
-  if (MustSeparateMarginAfterForChild(child)) {
-    SetLogicalHeight(LogicalHeight() + MarginAfterForChild(child));
-    margin_info.ClearMargin();
-  }
+
   // If the child has overhanging floats that intrude into following siblings
   // (or possibly out of this block), then the parent gets notified of the
   // floats now.
@@ -1620,7 +1602,6 @@ MarginInfo::MarginInfo(LayoutBlockFlow* block_flow,
       has_margin_before_quirk_(false),
       has_margin_after_quirk_(false),
       determined_margin_before_quirk_(false),
-      discard_margin_(false),
       last_child_is_self_collapsing_block_with_clearance_(false) {
   const ComputedStyle& block_style = block_flow->StyleRef();
   DCHECK(block_flow->IsLayoutView() || block_flow->Parent());
@@ -1629,8 +1610,7 @@ MarginInfo::MarginInfo(LayoutBlockFlow* block_flow,
                                 !block_flow->IsLayoutView();
 
   can_collapse_margin_before_with_children_ =
-      can_collapse_with_children_ && !before_border_padding &&
-      block_style.MarginBeforeCollapse() != EMarginCollapse::kSeparate;
+      can_collapse_with_children_ && !before_border_padding;
 
   // If any height other than auto is specified in CSS, then we don't collapse
   // our bottom margins with our children's margins. To do otherwise would be to
@@ -1640,20 +1620,14 @@ MarginInfo::MarginInfo(LayoutBlockFlow* block_flow,
   can_collapse_margin_after_with_children_ =
       can_collapse_with_children_ && !after_border_padding &&
       (block_style.LogicalHeight().IsAuto() &&
-       !block_style.LogicalHeight().Value()) &&
-      block_style.MarginAfterCollapse() != EMarginCollapse::kSeparate;
+       !block_style.LogicalHeight().Value());
 
   quirk_container_ = block_flow->IsTableCell() || block_flow->IsBody();
 
-  discard_margin_ = can_collapse_margin_before_with_children_ &&
-                    block_flow->MustDiscardMarginBefore();
-
-  positive_margin_ = (can_collapse_margin_before_with_children_ &&
-                      !block_flow->MustDiscardMarginBefore())
+  positive_margin_ = can_collapse_margin_before_with_children_
                          ? block_flow->MaxPositiveMarginBefore()
                          : LayoutUnit();
-  negative_margin_ = (can_collapse_margin_before_with_children_ &&
-                      !block_flow->MustDiscardMarginBefore())
+  negative_margin_ = can_collapse_margin_before_with_children_
                          ? block_flow->MaxNegativeMarginBefore()
                          : LayoutUnit();
 }
@@ -1766,16 +1740,8 @@ static LayoutBlockFlow* PreviousBlockFlowInFormattingContext(
 LayoutUnit LayoutBlockFlow::CollapseMargins(
     LayoutBox& child,
     BlockChildrenLayoutInfo& layout_info,
-    bool child_is_self_collapsing,
-    bool child_discard_margin_before,
-    bool child_discard_margin_after) {
+    bool child_is_self_collapsing) {
   MarginInfo& margin_info = layout_info.GetMarginInfo();
-
-  // The child discards the before margin when the the after margin has discard
-  // in the case of a self collapsing block.
-  child_discard_margin_before =
-      child_discard_margin_before ||
-      (child_discard_margin_after && child_is_self_collapsing);
 
   // Get the four margin values for the child and cache them.
   const LayoutBlockFlow::MarginValues child_margins =
@@ -1797,46 +1763,32 @@ LayoutUnit LayoutBlockFlow::CollapseMargins(
   bool top_quirk = HasMarginBeforeQuirk(&child);
 
   if (margin_info.CanCollapseWithMarginBefore()) {
-    if (!child_discard_margin_before && !margin_info.DiscardMargin()) {
-      // This child is collapsing with the top of the
-      // block. If it has larger margin values, then we need to update
-      // our own maximal values.
-      if (!GetDocument().InQuirksMode() || !margin_info.QuirkContainer() ||
-          !top_quirk)
-        SetMaxMarginBeforeValues(std::max(pos_top, MaxPositiveMarginBefore()),
-                                 std::max(neg_top, MaxNegativeMarginBefore()));
-
-      // The minute any of the margins involved isn't a quirk, don't
-      // collapse it away, even if the margin is smaller (www.webreference.com
-      // has an example of this, a <dt> with 0.8em author-specified inside
-      // a <dl> inside a <td>.
-      if (!margin_info.DeterminedMarginBeforeQuirk() && !top_quirk &&
-          (pos_top - neg_top)) {
-        SetHasMarginBeforeQuirk(false);
-        margin_info.SetDeterminedMarginBeforeQuirk(true);
-      }
-
-      if (!margin_info.DeterminedMarginBeforeQuirk() && top_quirk &&
-          !MarginBefore()) {
-        // We have no top margin and our top child has a quirky margin.
-        // We will pick up this quirky margin and pass it through.
-        // This deals with the <td><div><p> case.
-        // Don't do this for a block that split two inlines though. You do
-        // still apply margins in this case.
-        SetHasMarginBeforeQuirk(true);
-      }
-    } else {
-      // The before margin of the container will also discard all the margins it
-      // is collapsing with.
-      SetMustDiscardMarginBefore();
+    // This child is collapsing with the top of the block. If it has larger
+    // margin values, then we need to update our own maximal values.
+    if (!GetDocument().InQuirksMode() || !margin_info.QuirkContainer() ||
+        !top_quirk) {
+      SetMaxMarginBeforeValues(std::max(pos_top, MaxPositiveMarginBefore()),
+                               std::max(neg_top, MaxNegativeMarginBefore()));
     }
-  }
 
-  // Once we find a child with discardMarginBefore all the margins collapsing
-  // with us must also discard.
-  if (child_discard_margin_before) {
-    margin_info.SetDiscardMargin(true);
-    margin_info.ClearMargin();
+    // The minute any of the margins involved isn't a quirk, don't collapse it
+    // away, even if the margin is smaller (www.webreference.com has an example
+    // of this, a <dt> with 0.8em author-specified inside a <dl> inside a <td>).
+    if (!margin_info.DeterminedMarginBeforeQuirk() && !top_quirk &&
+        (pos_top - neg_top)) {
+      SetHasMarginBeforeQuirk(false);
+      margin_info.SetDeterminedMarginBeforeQuirk(true);
+    }
+
+    if (!margin_info.DeterminedMarginBeforeQuirk() && top_quirk &&
+        !MarginBefore()) {
+      // We have no top margin and our top child has a quirky margin.
+      // We will pick up this quirky margin and pass it through.
+      // This deals with the <td><div><p> case.
+      // Don't do this for a block that split two inlines though. You do still
+      // apply margins in this case.
+      SetHasMarginBeforeQuirk(true);
+    }
   }
 
   if (margin_info.QuirkContainer() && margin_info.AtBeforeSideOfBlock() &&
@@ -1866,71 +1818,46 @@ LayoutUnit LayoutBlockFlow::CollapseMargins(
         MarginValuesForChild(*previous_block_flow).PositiveMarginBefore());
 
   if (child_is_self_collapsing) {
-    // For a self collapsing block both the before and after margins get
-    // discarded. The block doesn't contribute anything to the height of the
-    // block. Also, the child's top position equals the logical height of the
-    // container.
-    if (!child_discard_margin_before && !margin_info.DiscardMargin()) {
-      // This child has no height. We need to compute our
-      // position before we collapse the child's margins together,
-      // so that we can get an accurate position for the zero-height block.
-      LayoutUnit collapsed_before_pos = std::max(
-          margin_info.PositiveMargin(), child_margins.PositiveMarginBefore());
-      LayoutUnit collapsed_before_neg = std::max(
-          margin_info.NegativeMargin(), child_margins.NegativeMarginBefore());
-      margin_info.SetMargin(collapsed_before_pos, collapsed_before_neg);
+    // The block doesn't contribute anything to the height of the block. Also,
+    // the child's top position equals the logical height of the container.
 
-      // Now collapse the child's margins together, which means examining our
-      // bottom margin values as well.
-      margin_info.SetPositiveMarginIfLarger(
-          child_margins.PositiveMarginAfter());
-      margin_info.SetNegativeMarginIfLarger(
-          child_margins.NegativeMarginAfter());
+    // This child has no height. We need to compute our position before we
+    // collapse the child's margins together, so that we can get an accurate
+    // position for the zero-height block.
+    LayoutUnit collapsed_before_pos = std::max(
+        margin_info.PositiveMargin(), child_margins.PositiveMarginBefore());
+    LayoutUnit collapsed_before_neg = std::max(
+        margin_info.NegativeMargin(), child_margins.NegativeMarginBefore());
+    margin_info.SetMargin(collapsed_before_pos, collapsed_before_neg);
 
-      if (!margin_info.CanCollapseWithMarginBefore()) {
-        // We need to make sure that the position of the self-collapsing block
-        // is correct, since it could have overflowing content
-        // that needs to be positioned correctly (e.g., a block that
-        // had a specified height of 0 but that actually had subcontent).
-        logical_top =
-            LogicalHeight() + collapsed_before_pos - collapsed_before_neg;
-      }
+    // Now collapse the child's margins together, which means examining our
+    // bottom margin values as well.
+    margin_info.SetPositiveMarginIfLarger(child_margins.PositiveMarginAfter());
+    margin_info.SetNegativeMarginIfLarger(child_margins.NegativeMarginAfter());
+
+    if (!margin_info.CanCollapseWithMarginBefore()) {
+      // We need to make sure that the position of the self-collapsing block is
+      // correct, since it could have overflowing content that needs to be
+      // positioned correctly (e.g., a block that had a specified height of 0
+      // but that actually had subcontent).
+      logical_top =
+          LogicalHeight() + collapsed_before_pos - collapsed_before_neg;
     }
   } else {
-    if (MustSeparateMarginBeforeForChild(child)) {
-      DCHECK(!margin_info.DiscardMargin() ||
-             (margin_info.DiscardMargin() && !margin_info.Margin()));
-      // If we are at the before side of the block and we collapse, ignore the
-      // computed margin and just add the child margin to the container height.
-      // This will correctly position the child inside the container.
-      LayoutUnit separate_margin = !margin_info.CanCollapseWithMarginBefore()
-                                       ? margin_info.Margin()
-                                       : LayoutUnit();
-      SetLogicalHeight(LogicalHeight() + separate_margin +
-                       MarginBeforeForChild(child));
-      logical_top = LogicalHeight();
-    } else if (!margin_info.DiscardMargin() &&
-               (!margin_info.AtBeforeSideOfBlock() ||
-                (!margin_info.CanCollapseMarginBeforeWithChildren() &&
-                 (!GetDocument().InQuirksMode() ||
-                  !margin_info.QuirkContainer() ||
-                  !margin_info.HasMarginBeforeQuirk())))) {
-      // We're collapsing with a previous sibling's margins and not
-      // with the top of the block.
+    if (!margin_info.AtBeforeSideOfBlock() ||
+        (!margin_info.CanCollapseMarginBeforeWithChildren() &&
+         (!GetDocument().InQuirksMode() || !margin_info.QuirkContainer() ||
+          !margin_info.HasMarginBeforeQuirk()))) {
+      // We're collapsing with a previous sibling's margins and not with the
+      // top of the block.
       SetLogicalHeight(LogicalHeight() +
                        std::max(margin_info.PositiveMargin(), pos_top) -
                        std::max(margin_info.NegativeMargin(), neg_top));
       logical_top = LogicalHeight();
     }
 
-    margin_info.SetDiscardMargin(child_discard_margin_after);
-
-    if (!margin_info.DiscardMargin()) {
-      margin_info.SetPositiveMargin(child_margins.PositiveMarginAfter());
-      margin_info.SetNegativeMargin(child_margins.NegativeMarginAfter());
-    } else {
-      margin_info.ClearMargin();
-    }
+    margin_info.SetPositiveMargin(child_margins.PositiveMarginAfter());
+    margin_info.SetNegativeMargin(child_margins.NegativeMarginAfter());
 
     if (margin_info.Margin())
       margin_info.SetHasMarginAfterQuirk(HasMarginAfterQuirk(&child));
@@ -2016,8 +1943,7 @@ LayoutUnit LayoutBlockFlow::ClearFloatsIfNeeded(LayoutBox& child,
                                                 LayoutUnit old_top_pos_margin,
                                                 LayoutUnit old_top_neg_margin,
                                                 LayoutUnit y_pos,
-                                                bool child_is_self_collapsing,
-                                                bool child_discard_margin) {
+                                                bool child_is_self_collapsing) {
   LayoutUnit height_increase = GetClearDelta(&child, y_pos);
   margin_info.SetLastChildIsSelfCollapsingBlockWithClearance(false);
 
@@ -2026,24 +1952,17 @@ LayoutUnit LayoutBlockFlow::ClearFloatsIfNeeded(LayoutBox& child,
 
   if (child_is_self_collapsing) {
     margin_info.SetLastChildIsSelfCollapsingBlockWithClearance(true);
-    margin_info.SetDiscardMargin(child_discard_margin);
 
     // For self-collapsing blocks that clear, they can still collapse their
     // margins with following siblings. Reset the current margins to represent
     // the self-collapsing block's margins only.
-    // If DISCARD is specified for -webkit-margin-collapse, reset the margin
-    // values.
     LayoutBlockFlow::MarginValues child_margins = MarginValuesForChild(child);
-    if (!child_discard_margin) {
-      margin_info.SetPositiveMargin(
-          std::max(child_margins.PositiveMarginBefore(),
-                   child_margins.PositiveMarginAfter()));
-      margin_info.SetNegativeMargin(
-          std::max(child_margins.NegativeMarginBefore(),
-                   child_margins.NegativeMarginAfter()));
-    } else {
-      margin_info.ClearMargin();
-    }
+    margin_info.SetPositiveMargin(
+        std::max(child_margins.PositiveMarginBefore(),
+                 child_margins.PositiveMarginAfter()));
+    margin_info.SetNegativeMargin(
+        std::max(child_margins.NegativeMarginBefore(),
+                 child_margins.NegativeMarginAfter()));
 
     // CSS2.1 states:
     // "If the top and bottom margins of an element with clearance are
@@ -2080,11 +1999,6 @@ LayoutUnit LayoutBlockFlow::ClearFloatsIfNeeded(LayoutBox& child,
     // occurred. The empty blocks collapse into the cleared block.
     SetMaxMarginBeforeValues(old_top_pos_margin, old_top_neg_margin);
     margin_info.SetAtBeforeSideOfBlock(false);
-
-    // In case the child discarded the before margin of the block we need to
-    // reset the mustDiscardMarginBefore flag to the initial value.
-    SetMustDiscardMarginBefore(StyleRef().MarginBeforeCollapse() ==
-                               EMarginCollapse::kDiscard);
   }
 
   return y_pos + height_increase;
@@ -2093,14 +2007,6 @@ LayoutUnit LayoutBlockFlow::ClearFloatsIfNeeded(LayoutBox& child,
 void LayoutBlockFlow::SetCollapsedBottomMargin(const MarginInfo& margin_info) {
   if (margin_info.CanCollapseWithMarginAfter() &&
       !margin_info.CanCollapseWithMarginBefore()) {
-    // Update the after side margin of the container to discard if the after
-    // margin of the last child also discards and we collapse with it.
-    // Don't update the max margin values because we won't need them anyway.
-    if (margin_info.DiscardMargin()) {
-      SetMustDiscardMarginAfter();
-      return;
-    }
-
     // Update our max pos/neg bottom margins, since we collapsed our bottom
     // margins with our children.
     SetMaxMarginAfterValues(
@@ -2123,27 +2029,13 @@ DISABLE_CFI_PERF
 void LayoutBlockFlow::MarginBeforeEstimateForChild(
     LayoutBox& child,
     LayoutUnit& positive_margin_before,
-    LayoutUnit& negative_margin_before,
-    bool& discard_margin_before) const {
+    LayoutUnit& negative_margin_before) const {
   // Give up if in quirks mode and we're a body/table cell and the top margin of
   // the child box is quirky.
-  // Give up if the child specified -webkit-margin-collapse: separate that
-  // prevents collapsing.
   // FIXME: Use writing mode independent accessor for marginBeforeCollapse.
-  if ((GetDocument().InQuirksMode() && HasMarginBeforeQuirk(&child) &&
-       (IsTableCell() || IsBody())) ||
-      child.StyleRef().MarginBeforeCollapse() == EMarginCollapse::kSeparate)
+  if (GetDocument().InQuirksMode() && HasMarginBeforeQuirk(&child) &&
+      (IsTableCell() || IsBody()))
     return;
-
-  // The margins are discarded by a child that specified
-  // -webkit-margin-collapse: discard.
-  // FIXME: Use writing mode independent accessor for marginBeforeCollapse.
-  if (child.StyleRef().MarginBeforeCollapse() == EMarginCollapse::kDiscard) {
-    positive_margin_before = LayoutUnit();
-    negative_margin_before = LayoutUnit();
-    discard_margin_before = true;
-    return;
-  }
 
   LayoutUnit before_child_margin = MarginBeforeForChild(child);
   positive_margin_before =
@@ -2200,8 +2092,7 @@ void LayoutBlockFlow::MarginBeforeEstimateForChild(
   // Collapse the margin of the grandchild box with our own to produce an
   // estimate.
   child_block_flow->MarginBeforeEstimateForChild(
-      *grandchild_box, positive_margin_before, negative_margin_before,
-      discard_margin_before);
+      *grandchild_box, positive_margin_before, negative_margin_before);
 }
 
 LayoutUnit LayoutBlockFlow::EstimateLogicalTopPosition(
@@ -2215,13 +2106,11 @@ LayoutUnit LayoutBlockFlow::EstimateLogicalTopPosition(
   LayoutUnit logical_top_estimate = LogicalHeight();
   LayoutUnit positive_margin_before;
   LayoutUnit negative_margin_before;
-  bool discard_margin_before = false;
   if (!margin_info.CanCollapseWithMarginBefore()) {
     if (child.SelfNeedsLayout()) {
       // Try to do a basic estimation of how the collapse is going to go.
       MarginBeforeEstimateForChild(child, positive_margin_before,
-                                   negative_margin_before,
-                                   discard_margin_before);
+                                   negative_margin_before);
     } else {
       // Use the cached collapsed margin values from a previous layout. Most of
       // the time they will be right.
@@ -2230,14 +2119,12 @@ LayoutUnit LayoutBlockFlow::EstimateLogicalTopPosition(
                                         margin_values.PositiveMarginBefore());
       negative_margin_before = std::max(negative_margin_before,
                                         margin_values.NegativeMarginBefore());
-      discard_margin_before = MustDiscardMarginBeforeForChild(child);
     }
 
     // Collapse the result with our current margins.
-    if (!discard_margin_before)
-      logical_top_estimate +=
-          std::max(margin_info.PositiveMargin(), positive_margin_before) -
-          std::max(margin_info.NegativeMargin(), negative_margin_before);
+    logical_top_estimate +=
+        std::max(margin_info.PositiveMargin(), positive_margin_before) -
+        std::max(margin_info.NegativeMargin(), negative_margin_before);
   }
 
   LayoutState* layout_state = View()->GetLayoutState();
@@ -2265,9 +2152,7 @@ LayoutUnit LayoutBlockFlow::EstimateLogicalTopPosition(
         // Disregard previous margins, since they will collapse with the
         // fragmentainer boundary, due to the forced break. Only apply margins
         // that have been specified on the child or its descendants.
-        if (!discard_margin_before)
-          logical_top_estimate +=
-              positive_margin_before - negative_margin_before;
+        logical_top_estimate += positive_margin_before - negative_margin_before;
 
         // Clearance may already have taken us past the beginning of the next
         // fragmentainer.
@@ -2325,11 +2210,10 @@ void LayoutBlockFlow::HandleAfterSideOfBlock(LayoutBox* last_child,
 
   // If we can't collapse with children then go ahead and add in the bottom
   // margin.
-  if (!margin_info.DiscardMargin() &&
-      (!margin_info.CanCollapseWithMarginAfter() &&
-       !margin_info.CanCollapseWithMarginBefore() &&
-       (!GetDocument().InQuirksMode() || !margin_info.QuirkContainer() ||
-        !margin_info.HasMarginAfterQuirk())))
+  if (!margin_info.CanCollapseWithMarginAfter() &&
+      !margin_info.CanCollapseWithMarginBefore() &&
+      (!GetDocument().InQuirksMode() || !margin_info.QuirkContainer() ||
+       !margin_info.HasMarginAfterQuirk()))
     SetLogicalHeight(LogicalHeight() + margin_info.Margin());
 
   // Now add in our bottom border/padding.
@@ -2352,91 +2236,6 @@ void LayoutBlockFlow::HandleAfterSideOfBlock(LayoutBox* last_child,
         JoinFragmentainerBreakValues(BreakAfter(), last_child->BreakAfter()));
 }
 
-void LayoutBlockFlow::SetMustDiscardMarginBefore(bool value) {
-  if (StyleRef().MarginBeforeCollapse() == EMarginCollapse::kDiscard) {
-    DCHECK(value);
-    return;
-  }
-
-  if (!rare_data_ && !value)
-    return;
-
-  if (!rare_data_)
-    rare_data_ = std::make_unique<LayoutBlockFlowRareData>(this);
-
-  rare_data_->discard_margin_before_ = value;
-}
-
-void LayoutBlockFlow::SetMustDiscardMarginAfter(bool value) {
-  if (StyleRef().MarginAfterCollapse() == EMarginCollapse::kDiscard) {
-    DCHECK(value);
-    return;
-  }
-
-  if (!rare_data_ && !value)
-    return;
-
-  if (!rare_data_)
-    rare_data_ = std::make_unique<LayoutBlockFlowRareData>(this);
-
-  rare_data_->discard_margin_after_ = value;
-}
-
-bool LayoutBlockFlow::MustDiscardMarginBefore() const {
-  return StyleRef().MarginBeforeCollapse() == EMarginCollapse::kDiscard ||
-         (rare_data_ && rare_data_->discard_margin_before_);
-}
-
-bool LayoutBlockFlow::MustDiscardMarginAfter() const {
-  return StyleRef().MarginAfterCollapse() == EMarginCollapse::kDiscard ||
-         (rare_data_ && rare_data_->discard_margin_after_);
-}
-
-bool LayoutBlockFlow::MustDiscardMarginBeforeForChild(
-    const LayoutBox& child) const {
-  DCHECK(!child.SelfNeedsLayout() ||
-         child.LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kSelf));
-  if (!child.IsWritingModeRoot()) {
-    auto* child_layout_block = DynamicTo<LayoutBlockFlow>(&child);
-    return child_layout_block ? child_layout_block->MustDiscardMarginBefore()
-                              : (child.StyleRef().MarginBeforeCollapse() ==
-                                 EMarginCollapse::kDiscard);
-  }
-  if (child.IsHorizontalWritingMode() == IsHorizontalWritingMode()) {
-    auto* child_layout_block = DynamicTo<LayoutBlockFlow>(&child);
-    return child_layout_block ? child_layout_block->MustDiscardMarginAfter()
-                              : (child.StyleRef().MarginAfterCollapse() ==
-                                 EMarginCollapse::kDiscard);
-  }
-
-  // FIXME: We return false here because the implementation is not geometrically
-  // complete. We have values only for before/after, not start/end.
-  // In case the boxes are perpendicular we assume the property is not
-  // specified.
-  return false;
-}
-
-bool LayoutBlockFlow::MustDiscardMarginAfterForChild(
-    const LayoutBox& child) const {
-  DCHECK(!child.SelfNeedsLayout() ||
-         child.LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kSelf));
-  if (!child.IsWritingModeRoot()) {
-    auto* child_layout_block = DynamicTo<LayoutBlockFlow>(&child);
-    return child_layout_block ? child_layout_block->MustDiscardMarginAfter()
-                              : (child.StyleRef().MarginAfterCollapse() ==
-                                 EMarginCollapse::kDiscard);
-  }
-  if (child.IsHorizontalWritingMode() == IsHorizontalWritingMode()) {
-    auto* child_layout_block = DynamicTo<LayoutBlockFlow>(&child);
-    return child_layout_block ? child_layout_block->MustDiscardMarginBefore()
-                              : (child.StyleRef().MarginBeforeCollapse() ==
-                                 EMarginCollapse::kDiscard);
-  }
-
-  // FIXME: See |mustDiscardMarginBeforeForChild| above.
-  return false;
-}
-
 void LayoutBlockFlow::SetMaxMarginBeforeValues(LayoutUnit pos, LayoutUnit neg) {
   if (!rare_data_) {
     if (pos == LayoutBlockFlowRareData::PositiveMarginBeforeDefault(this) &&
@@ -2457,34 +2256,6 @@ void LayoutBlockFlow::SetMaxMarginAfterValues(LayoutUnit pos, LayoutUnit neg) {
   }
   rare_data_->margins_.SetPositiveMarginAfter(pos);
   rare_data_->margins_.SetNegativeMarginAfter(neg);
-}
-
-bool LayoutBlockFlow::MustSeparateMarginBeforeForChild(
-    const LayoutBox& child) const {
-  DCHECK(!child.SelfNeedsLayout() ||
-         child.LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kSelf));
-  const ComputedStyle& child_style = child.StyleRef();
-  if (!child.IsWritingModeRoot())
-    return child_style.MarginBeforeCollapse() == EMarginCollapse::kSeparate;
-  if (child.IsHorizontalWritingMode() == IsHorizontalWritingMode())
-    return child_style.MarginAfterCollapse() == EMarginCollapse::kSeparate;
-
-  // FIXME: See |mustDiscardMarginBeforeForChild| above.
-  return false;
-}
-
-bool LayoutBlockFlow::MustSeparateMarginAfterForChild(
-    const LayoutBox& child) const {
-  DCHECK(!child.SelfNeedsLayout() ||
-         child.LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kSelf));
-  const ComputedStyle& child_style = child.StyleRef();
-  if (!child.IsWritingModeRoot())
-    return child_style.MarginAfterCollapse() == EMarginCollapse::kSeparate;
-  if (child.IsHorizontalWritingMode() == IsHorizontalWritingMode())
-    return child_style.MarginBeforeCollapse() == EMarginCollapse::kSeparate;
-
-  // FIXME: See |mustDiscardMarginBeforeForChild| above.
-  return false;
 }
 
 LayoutUnit LayoutBlockFlow::ApplyForcedBreak(LayoutUnit logical_offset,
@@ -4946,9 +4717,7 @@ LayoutBlockFlow::LayoutBlockFlowRareData::LayoutBlockFlowRareData(
       break_before_(static_cast<unsigned>(EBreakBetween::kAuto)),
       break_after_(static_cast<unsigned>(EBreakBetween::kAuto)),
       line_break_to_avoid_widow_(-1),
-      did_break_at_line_to_avoid_widow_(false),
-      discard_margin_before_(false),
-      discard_margin_after_(false) {}
+      did_break_at_line_to_avoid_widow_(false) {}
 
 LayoutBlockFlow::LayoutBlockFlowRareData::~LayoutBlockFlowRareData() = default;
 

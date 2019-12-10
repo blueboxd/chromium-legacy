@@ -29,7 +29,6 @@ import zipfile
 
 import symbol
 
-
 from pylib import constants
 
 UNKNOWN = '<unknown>'
@@ -518,11 +517,12 @@ def GetUncompressedSharedLibraryFromAPK(apkname, offset):
   return soname, sosize
 
 
-def _GetSharedLibraryInHost(soname, dirs):
+def _GetSharedLibraryInHost(soname, sosize, dirs):
   """Find a shared library by name in a list of directories.
 
   Args:
     soname: library name (e.g. libfoo.so)
+    sosize: library file size to match.
     dirs: list of directories to look for the corresponding file.
   Returns:
     host library path if found, or None
@@ -530,6 +530,8 @@ def _GetSharedLibraryInHost(soname, dirs):
   for dir in dirs:
     host_so_file = os.path.join(dir, os.path.basename(soname))
     if not os.path.isfile(host_so_file):
+      continue
+    if os.path.getsize(host_so_file) != sosize:
       continue
     logging.debug("%s match to the one in APK" % host_so_file)
     return host_so_file
@@ -587,17 +589,12 @@ def _FindSharedLibraryFromAPKs(output_directory, apks_directory, offset):
     soname, sosize = GetUncompressedSharedLibraryFromAPK(apk, offset)
     if soname == "":
       continue
-    # The relocation section of libraries in APK is packed, we can't
-    # detect library by its size, and have to rely on the order of lib
-    # directories; for a specific ARCH, the libraries are in either
-    # output_directory or output_directory/android_ARCH, and android_ARCH
-    # directory could exists or not, so having android_ARCH directory be in
-    # first, we will find the correct lib.
-    dirs = [
-        os.path.join(output_directory, "android_%s" % symbol.ARCH),
-        output_directory,
+    dirs = [output_directory] + [
+        os.path.join(output_directory, x)
+        for x in os.listdir(output_directory)
+        if os.path.exists(os.path.join(output_directory, x, 'lib.unstripped'))
     ]
-    host_so_file = _GetSharedLibraryInHost(soname, dirs)
+    host_so_file = _GetSharedLibraryInHost(soname, sosize, dirs)
     if host_so_file:
       shared_libraries += [(soname, host_so_file)]
   # If there are more than one libraries found, it means detecting

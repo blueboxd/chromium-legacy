@@ -180,7 +180,7 @@ class MediaServiceTest : public testing::Test {
   MOCK_METHOD3(OnCdmInitialized,
                void(mojom::CdmPromiseResultPtr result,
                     int cdm_id,
-                    mojom::DecryptorPtr decryptor));
+                    mojo::PendingRemote<mojom::Decryptor> decryptor));
   MOCK_METHOD0(OnCdmConnectionError, void());
 
   // Returns the CDM ID associated with the CDM.
@@ -193,9 +193,9 @@ class MediaServiceTest : public testing::Test {
 
     int cdm_id = CdmContext::kInvalidCdmId;
 
-    // The last parameter mojom::DecryptorPtr is move-only and not supported by
-    // DoAll. Hence use WithArg to only extract the "int cdm_id" out and then
-    // call DoAll.
+    // The last parameter mojo::PendingRemote<mojom::Decryptor> is move-only and
+    // not supported by DoAll. Hence use WithArg to only extract the "int
+    // cdm_id" out and then call DoAll.
     EXPECT_CALL(*this, OnCdmInitialized(MatchesResult(expected_result), _, _))
         .WillOnce(WithArg<1>(DoAll(SaveArg<0>(&cdm_id), QuitLoop(&run_loop))));
     cdm_->Initialize(key_system, url::Origin::Create(GURL(kSecurityOrigin)),

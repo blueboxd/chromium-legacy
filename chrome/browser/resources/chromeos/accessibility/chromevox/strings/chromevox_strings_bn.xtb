@@ -360,6 +360,7 @@
 <translation id="3462439746547587373"><ph name="NAME" />, বোতাম</translation>
 <translation id="3466530247399808663">একটি ভুল কী টেপা</translation>
 <translation id="3468959318854349468">কোনও শীর্ষক নেই</translation>
+<translation id="3469005380014336304">সারি গ্রুপ</translation>
 <translation id="3469413619751135069">ফ্যাকাশে সবুজ</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" />টি</translation>
 <translation id="3486232535569802404"><ph name="V1" /> থেকে <ph name="V2" /></translation>
@@ -767,7 +768,7 @@
 <translation id="6290434000785343030">কোনো পরবর্তী কম্বোবক্স ল্যান্ডমার্ক নেই৷</translation>
 <translation id="6305702903308659374">ChromeVox কথা বলতে থাকলেও সাধারণ ভলিউমে বাজান</translation>
 <translation id="6307969636681130414">টেপা হয়েছে</translation>
-<translation id="6315652249189065725">কীবোর্ডের শর্টকাট মেনু চালু করুন</translation>
+<translation id="6315652249189065725">কীবোর্ড শর্টকাট মেনুটি খুলুন</translation>
 <translation id="6322856989298155004">সাউন্ডগুলি</translation>
 <translation id="6324551002951139333">ব্যকরণগত ত্রুটি শনাক্ত হয়েছে</translation>
 <translation id="6325241889020214828"><ph name="TEXT" /> কপি করুন।</translation>

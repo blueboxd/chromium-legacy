@@ -491,7 +491,7 @@ class SSLClientSessionCacheMemoryDumpTest
           base::trace_event::MemoryDumpLevelOfDetail> {};
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     SSLClientSessionCacheMemoryDumpTest,
     ::testing::Values(base::trace_event::MemoryDumpLevelOfDetail::DETAILED,
                       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND));

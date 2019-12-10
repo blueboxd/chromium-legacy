@@ -360,6 +360,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="3462439746547587373"><ph name="NAME" />, botón</translation>
 <translation id="3466530247399808663">Una pulsación de tecla no válida</translation>
 <translation id="3468959318854349468">Sin título</translation>
+<translation id="3469005380014336304">Grupo de filas</translation>
 <translation id="3469413619751135069">Verde pálido</translation>
 <translation id="3473644018603298796"><ph name="COUNT" /> sld</translation>
 <translation id="3486232535569802404"><ph name="V1" /> a <ph name="V2" /></translation>
@@ -463,7 +464,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="4204126831294769023">Azul celeste</translation>
 <translation id="4204864733111726379">Blanco floral</translation>
 <translation id="4206289001967551965">Dentro de la tabla</translation>
-<translation id="4207770814752775793">Se restablecieron los valores predeterminados de la configuración de texto a voz.</translation>
+<translation id="4207770814752775793">Se restablecen los valores predeterminados de la configuración de texto a voz.</translation>
 <translation id="4209770650650780359">Presiona la flecha hacia arriba o abajo para seleccionar una opción de autocompletado.</translation>
 <translation id="4215733775853809057">Siguiente control deslizante</translation>
 <translation id="42164919740161077">Azul grisáceo</translation>

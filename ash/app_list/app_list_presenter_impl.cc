@@ -36,10 +36,11 @@
 namespace ash {
 namespace {
 
-constexpr std::array<int, 6> kIdsOfContainersThatWontHideAppList = {
-    kShellWindowId_AppListContainer,     kShellWindowId_HomeScreenContainer,
-    kShellWindowId_MenuContainer,        kShellWindowId_SettingBubbleContainer,
-    kShellWindowId_ShelfBubbleContainer, kShellWindowId_ShelfContainer,
+constexpr std::array<int, 8> kIdsOfContainersThatWontHideAppList = {
+    kShellWindowId_AppListContainer,      kShellWindowId_HomeScreenContainer,
+    kShellWindowId_MenuContainer,         kShellWindowId_SettingBubbleContainer,
+    kShellWindowId_ShelfBubbleContainer,  kShellWindowId_ShelfContainer,
+    kShellWindowId_ShelfControlContainer, kShellWindowId_StatusContainer,
 };
 
 inline ui::Layer* GetLayer(views::Widget* widget) {
@@ -164,7 +165,7 @@ void AppListPresenterImpl::Dismiss(base::TimeTicks event_time_stamp) {
   delegate_->OnClosing();
 
   OnVisibilityWillChange(GetTargetVisibility(), GetDisplayId());
-  view_->SetState(ash::AppListViewState::kClosed);
+  view_->SetState(AppListViewState::kClosed);
   base::RecordAction(base::UserMetricsAction("Launcher_Dismiss"));
 }
 
@@ -172,7 +173,7 @@ bool AppListPresenterImpl::HandleCloseOpenFolder() {
   return is_target_visibility_show_ && view_ && view_->HandleCloseOpenFolder();
 }
 
-ash::ShelfAction AppListPresenterImpl::ToggleAppList(
+ShelfAction AppListPresenterImpl::ToggleAppList(
     int64_t display_id,
     AppListShowSource show_source,
     base::TimeTicks event_time_stamp) {
@@ -182,21 +183,21 @@ ash::ShelfAction AppListPresenterImpl::ToggleAppList(
   // animation can be reversed.
   if (is_target_visibility_show_) {
     if (request_fullscreen) {
-      if (view_->app_list_state() == ash::AppListViewState::kPeeking) {
-        view_->SetState(ash::AppListViewState::kFullscreenAllApps);
-        return ash::SHELF_ACTION_APP_LIST_SHOWN;
-      } else if (view_->app_list_state() == ash::AppListViewState::kHalf) {
-        view_->SetState(ash::AppListViewState::kFullscreenSearch);
-        return ash::SHELF_ACTION_APP_LIST_SHOWN;
+      if (view_->app_list_state() == AppListViewState::kPeeking) {
+        view_->SetState(AppListViewState::kFullscreenAllApps);
+        return SHELF_ACTION_APP_LIST_SHOWN;
+      } else if (view_->app_list_state() == AppListViewState::kHalf) {
+        view_->SetState(AppListViewState::kFullscreenSearch);
+        return SHELF_ACTION_APP_LIST_SHOWN;
       }
     }
     Dismiss(event_time_stamp);
-    return ash::SHELF_ACTION_APP_LIST_DISMISSED;
+    return SHELF_ACTION_APP_LIST_DISMISSED;
   }
   Show(display_id, event_time_stamp);
   if (request_fullscreen)
-    view_->SetState(ash::AppListViewState::kFullscreenAllApps);
-  return ash::SHELF_ACTION_APP_LIST_SHOWN;
+    view_->SetState(AppListViewState::kFullscreenAllApps);
+  return SHELF_ACTION_APP_LIST_SHOWN;
 }
 
 bool AppListPresenterImpl::IsVisibleDeprecated() const {
@@ -222,8 +223,7 @@ void AppListPresenterImpl::UpdateYPositionAndOpacity(int y_position_in_screen,
     view_->UpdateYPositionAndOpacity(y_position_in_screen, background_opacity);
 }
 
-void AppListPresenterImpl::EndDragFromShelf(
-    ash::AppListViewState app_list_state) {
+void AppListPresenterImpl::EndDragFromShelf(AppListViewState app_list_state) {
   if (view_)
     view_->EndDragFromShelf(app_list_state);
 }
@@ -441,14 +441,20 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
       !base::Contains(kIdsOfContainersThatWontHideAppList,
                       gained_focus_container_id);
 
+  const bool app_list_gained_focus = applist_window->Contains(gained_focus);
   const bool app_list_lost_focus =
       gained_focus ? gained_focus_hides_app_list
                    : (lost_focus && applist_container->Contains(lost_focus));
+  // Either the app list has just gained focus, in which case it is already
+  // visible or will very soon be, or it has neither gained nor lost focus
+  // and it might still be partially visible just because the focused window
+  // doesn't occlude it completely.
+  const bool visible = app_list_gained_focus ||
+                       (IsAtLeastPartiallyVisible() && !app_list_lost_focus);
 
   if (delegate_->IsTabletMode()) {
-    const bool is_shown = !app_list_lost_focus;
-    if (is_shown != delegate_->IsVisible()) {
-      if (is_shown) {
+    if (visible != delegate_->IsVisible()) {
+      if (app_list_gained_focus) {
         view_->OnHomeLauncherGainingFocusWithoutAnimation();
       } else {
         // In tablet mode, when |AppList| lost focus after other new App window
@@ -457,12 +463,12 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
         view_->Back();
       }
 
-      OnVisibilityWillChange(is_shown, GetDisplayId());
-      OnVisibilityChanged(is_shown, GetDisplayId());
+      OnVisibilityWillChange(visible, GetDisplayId());
+      OnVisibilityChanged(visible, GetDisplayId());
     }
   }
 
-  if (applist_window->Contains(gained_focus))
+  if (app_list_gained_focus)
     base::RecordAction(base::UserMetricsAction("AppList_WindowFocused"));
 
   if (app_list_lost_focus && !switches::ShouldNotDismissOnBlur() &&

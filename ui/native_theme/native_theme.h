@@ -373,6 +373,8 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_TextfieldSelectionBackgroundFocused,
     // Tooltip
     kColorId_TooltipBackground,
+    kColorId_TooltipIcon,
+    kColorId_TooltipIconHovered,
     kColorId_TooltipText,
     // Tree
     kColorId_TreeBackground,

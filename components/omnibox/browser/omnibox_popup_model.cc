@@ -133,13 +133,10 @@ void OmniboxPopupModel::SetSelectedLine(size_t line,
   const size_t prev_selected_line = selected_line_;
   selected_line_state_ = NORMAL;
   selected_line_ = line;
-  if (prev_selected_line != kNoMatch) {
-    view_->InvalidateLine(prev_selected_line);
-  }
-  if (selected_line_ != kNoMatch) {
-    view_->InvalidateLine(selected_line_);
-    view_->OnLineSelected(selected_line_);
-  }
+  if (prev_selected_line != kNoMatch)
+    view_->OnSelectionStateChanged(prev_selected_line);
+  if (selected_line_ != kNoMatch)
+    view_->OnSelectionStateChanged(selected_line_);
 
   if (line == kNoMatch)
     return;

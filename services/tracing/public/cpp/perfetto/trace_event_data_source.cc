@@ -33,6 +33,7 @@
 #include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
 #include "components/tracing/common/tracing_switches.h"
+#include "services/tracing/public/cpp/perfetto/macros.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_producer.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/perfetto/traced_value_proto_writer.h"
@@ -48,6 +49,7 @@
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/clock_snapshot.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_histogram_sample.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/process_descriptor.pbzero.h"
 
 #if defined(OS_ANDROID)
@@ -718,6 +720,12 @@ void TraceEventDataSource::StartTracingInternal(
       TraceConfig(data_source_config.chrome_config().trace_config());
   TraceLog::GetInstance()->SetEnabled(trace_config, TraceLog::RECORDING_MODE);
   ResetHistograms(trace_config);
+
+  if (trace_config.IsCategoryGroupEnabled(
+          TRACE_DISABLED_BY_DEFAULT("histogram_samples"))) {
+    base::StatisticsRecorder::SetGlobalSampleCallback(
+        &TraceEventDataSource::OnMetricsSampleCallback);
+  }
 }
 
 void TraceEventDataSource::StopTracing(
@@ -789,6 +797,8 @@ void TraceEventDataSource::StopTracing(
     on_tracing_stopped_callback(this, scoped_refptr<base::RefCountedString>(),
                                 false);
   }
+
+  base::StatisticsRecorder::SetGlobalSampleCallback(nullptr);
 }
 
 void TraceEventDataSource::LogHistogram(base::HistogramBase* histogram) {
@@ -936,6 +946,22 @@ void TraceEventDataSource::FlushCurrentThread() {
     delete thread_local_event_sink;
     ThreadLocalEventSinkSlot()->Set(nullptr);
   }
+}
+
+// static
+void TraceEventDataSource::OnMetricsSampleCallback(
+    const char* histogram_name,
+    uint64_t name_hash,
+    base::HistogramBase::Sample sample) {
+  // TODO(oysteine): Write an interned histogram name during local dev tracing
+  // when we're less space constrained.
+  TRACE_EVENT(TRACE_DISABLED_BY_DEFAULT("histogram_samples"), "HistogramSample",
+              [&](perfetto::EventContext ctx) {
+                perfetto::protos::pbzero::ChromeHistogramSample* new_sample =
+                    ctx.event()->set_chrome_histogram_sample();
+                new_sample->set_name_hash(name_hash);
+                new_sample->set_sample(sample);
+              });
 }
 
 void TraceEventDataSource::ReturnTraceWriter(

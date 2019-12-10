@@ -1020,6 +1020,15 @@ TEST_F(LabelTest, IsDisplayTextTruncated) {
   EXPECT_FALSE(label()->IsDisplayTextTruncated());
 }
 
+TEST_F(LabelTest, TextChangedCallback) {
+  bool text_changed = false;
+  auto subscription = label()->AddTextChangedCallback(base::BindRepeating(
+      [](bool* text_changed) { *text_changed = true; }, &text_changed));
+
+  label()->SetText(ASCIIToUTF16("abc"));
+  EXPECT_TRUE(text_changed);
+}
+
 TEST_F(LabelSelectionTest, Selectable) {
   // By default, labels don't support text selection.
   EXPECT_FALSE(label()->GetSelectable());

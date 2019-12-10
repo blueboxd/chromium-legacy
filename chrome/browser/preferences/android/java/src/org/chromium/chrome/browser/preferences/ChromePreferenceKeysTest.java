@@ -108,7 +108,7 @@ public class ChromePreferenceKeysTest {
     @SmallTest
     public void testKeysConformToFormat() {
         doTestKeysConformToFormat(ChromePreferenceKeys.createKeysInUse(),
-                ChromePreferenceKeys.createGrandfatheredFormatKeysForTesting());
+                ChromePreferenceKeys.createGrandfatheredFormatKeys());
     }
 
     private void doTestKeysConformToFormat(List<String> usedList, List<String> grandfathered) {

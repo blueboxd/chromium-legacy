@@ -73,4 +73,17 @@ struct FetchAPIResponse {
   // parsed CSP.
   // TODO(lfg) Add support for multiple policies.
   network.mojom.ContentSecurityPolicy? content_security_policy;
+
+  // True if the response was loaded with a Request where the credentials mode
+  // would potentially send cookies to the server:
+  //
+  //  https://fetch.spec.whatwg.org/#requestcredentials
+  //
+  // For example, if RequestCredentials is 'include' this field will be true.
+  // If RequestCredentials is 'same-origin', but the Response was loaded
+  // cross-origin then this field will be false.
+  //
+  // This field may be true even if there were no cookies actually available
+  // to send.
+  bool loaded_with_credentials = false;
 };

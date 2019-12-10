@@ -91,6 +91,7 @@
 <translation id="209018056901015185">Толк верс талп кылнт</translation>
 <translation id="2103075008456228677">history.google.com сайтын ачуу</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> нерсе жылдырылды</translation>
+<translation id="2118594521750010466">Азыр оңдоо</translation>
 <translation id="213900355088104901">Купуя серептөө үчүн жашыруун өтмөктү ачыңыз</translation>
 <translation id="2139867232736819575">Көчүрүп алган текстти издеңиз</translation>
 <translation id="2149973817440762519">Кыстарманы түзөтүү</translation>
@@ -98,6 +99,7 @@
 <translation id="2198757192731523470">Издөө, жарнама жана башка Google кызматтарын жекечелештирүү үчүн, Google таржымалыңызды колдонушу мүмкүн.</translation>
 <translation id="2230173723195178503">Веб баракча жүктөлдү</translation>
 <translation id="2239626343334228536">Серептөө дайындары тазаланууда…</translation>
+<translation id="2257567812274161158">Шайкештирүү иштебей жатат.</translation>
 <translation id="2267753748892043616">Каттоо эсебин кошуу</translation>
 <translation id="2268044343513325586">Мыктылоо</translation>
 <translation id="2273327106802955778">"Дагы" менюсу</translation>
@@ -129,6 +131,7 @@
 <translation id="2691653761409724435">Оффлайнда жеткиликтүү эмес</translation>
 <translation id="2695507686909505111">Барак которулду</translation>
 <translation id="2702801445560668637">Окуу тизмеси</translation>
+<translation id="2704491540504985681">Жүктөлүп алынгандар</translation>
 <translation id="2704606927547763573">Көчүрүлдү</translation>
 <translation id="2709516037105925701">Автотолтуруу</translation>
 <translation id="2712127207578915686">Файлды ачуу мүмкүн эмес</translation>
@@ -218,6 +221,7 @@
 <translation id="3943492037546055397">Сырсөздөр</translation>
 <translation id="3967822245660637423">Жүктөп алуу аяктады</translation>
 <translation id="3989635538409502728">Чыгуу</translation>
+<translation id="399419089947468503">Сырсөздөрдү шайкештирүүдө ката кетти</translation>
 <translation id="3995521777587992544">Барактын жүктөлүшүн көрсөтүүчү тилке, <ph name="EMAIL" /> жүктөлдү.</translation>
 <translation id="4002066346123236978">Аталышы</translation>
 <translation id="4004204301268239848">Бардык түзмөктөрүңүздө колдонуу үчүн сырсөздөр Google аккаунтуңузда сакталат.</translation>
@@ -238,6 +242,7 @@
 <translation id="424315890655130736">Купуя сөз айкашын киргизиңиз</translation>
 <translation id="4263576668337963058">Жеткиликтүү барак аракеттерин көрсөтүү</translation>
 <translation id="4272631900155121838">QR кодун скандоо үчүн жөндөөлөрдөн камераны иштетиңиз</translation>
+<translation id="4276041135170112053">Азыр оңдоо.</translation>
 <translation id="4281844954008187215">Тейлөө шарттары</translation>
 <translation id="430793432425771671">Баарын шайкештештирүү</translation>
 <translation id="430967081421617822">Бардык мезгил</translation>
@@ -286,6 +291,7 @@
 <translation id="4904877109095351937">Окулган деп белгилөө</translation>
 <translation id="4930268273022498155">Учурдагы дайындарды жок кылуу. Аларга кайра кирүү үчүн <ph name="USER_EMAIL1" /> каттоо эсебине которулуу керек болот.</translation>
 <translation id="4941089862236492464">Кечиресиз, бул нерсени бөлүшүп жатканда көйгөй келип чыкты.</translation>
+<translation id="4944543191714094452">Барактан табуу…</translation>
 <translation id="4945756290001680296">Сырсөздүн жөндөөлөрүнө кирүү</translation>
 <translation id="4979397965658815378">Бардык түзмөктөрүңүздөн кыстармалар, сырсөздөр, таржымал жана башка жөндөөлөрүңүздү алуу үчүн каттоо эсебине кириңиз</translation>
 <translation id="5005498671520578047">Сырсөздү көчүрүү</translation>
@@ -317,6 +323,7 @@
 <translation id="5433691172869980887">Колдонуучунун аты көчүрүлдү</translation>
 <translation id="54401264925851789">Баракчанын коопсуздук маалыматы</translation>
 <translation id="5443952882982198570">Насыя карталары</translation>
+<translation id="5457907402803865181">Сырсөздөрдү шайкештирүүдө ката кетти.</translation>
 <translation id="5525269841082836315">Купя сөз айкшын тзүү</translation>
 <translation id="5548760955356983418">Handoff аркылуу вебсайтты ушул түзмөктөн серептеп баштап, Mac компьютериңизде улантып кете аласыз. Учурда ачылып турган вебсайт Мас компьютериңиздин Dock тактасында көрүнөт.
 
@@ -408,6 +415,7 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> нерсе жок кылынды</translation>
 <translation id="6610002944194042868">Которуу параметрлери</translation>
 <translation id="6628106477656132239">Мөөнөтү аяктай турган күн жараксыз</translation>
+<translation id="6638511529934826365">Текстти чоңойтуп/кичирейтүү…</translation>
 <translation id="6642362222295953972">Учурдагы өтмөккө которулуу</translation>
 <translation id="6643016212128521049">Тазалоо</translation>
 <translation id="6656103420185847513">Куржунду түзөтүү</translation>

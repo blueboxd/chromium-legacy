@@ -328,6 +328,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportOsSyncTest,
 
   // OS data types synced by the transport layer are active.
   syncer::ModelTypeSet active_types = service->GetActiveDataTypes();
+  EXPECT_TRUE(active_types.Has(syncer::APP_LIST));
   EXPECT_TRUE(active_types.Has(syncer::ARC_PACKAGE));
   EXPECT_TRUE(active_types.Has(syncer::OS_PREFERENCES));
   EXPECT_TRUE(active_types.Has(syncer::OS_PRIORITY_PREFERENCES));
@@ -360,6 +361,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportOsSyncTest,
 
   // OS data types synced by the transport layer are not active.
   syncer::ModelTypeSet active_types = service->GetActiveDataTypes();
+  EXPECT_FALSE(active_types.Has(syncer::APP_LIST));
   EXPECT_FALSE(active_types.Has(syncer::ARC_PACKAGE));
   EXPECT_FALSE(active_types.Has(syncer::OS_PREFERENCES));
   EXPECT_FALSE(active_types.Has(syncer::OS_PRIORITY_PREFERENCES));

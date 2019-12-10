@@ -4684,7 +4684,7 @@ Node* Element::InsertAdjacent(const String& where,
                               ExceptionState& exception_state) {
   if (DeprecatedEqualIgnoringCase(where, "beforeBegin")) {
     if (ContainerNode* parent = parentNode()) {
-      parent->insertBefore(new_child, this, exception_state);
+      parent->InsertBefore(new_child, this, exception_state);
       if (!exception_state.HadException())
         return new_child;
     }
@@ -4692,18 +4692,18 @@ Node* Element::InsertAdjacent(const String& where,
   }
 
   if (DeprecatedEqualIgnoringCase(where, "afterBegin")) {
-    insertBefore(new_child, firstChild(), exception_state);
+    InsertBefore(new_child, firstChild(), exception_state);
     return exception_state.HadException() ? nullptr : new_child;
   }
 
   if (DeprecatedEqualIgnoringCase(where, "beforeEnd")) {
-    appendChild(new_child, exception_state);
+    AppendChild(new_child, exception_state);
     return exception_state.HadException() ? nullptr : new_child;
   }
 
   if (DeprecatedEqualIgnoringCase(where, "afterEnd")) {
     if (ContainerNode* parent = parentNode()) {
-      parent->insertBefore(new_child, nextSibling(), exception_state);
+      parent->InsertBefore(new_child, nextSibling(), exception_state);
       if (!exception_state.HadException())
         return new_child;
     }

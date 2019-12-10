@@ -153,7 +153,8 @@ html[class*='col-resize'] #directory-tree {
 
 #directory-tree .tree-row > .file-row {
   align-items: center;
-  border-inline-start-width: 0;
+  border: 1px solid transparent;
+  border-inline-start-width: 0 !important;
   border-radius: 0 20px 20px 0;
   box-sizing: border-box;
   color: var(--google-grey-700);
@@ -302,7 +303,6 @@ html:not([class*='col-resize']) #directory-tree
 
 #directory-tree:focus .tree-row[selected] > .file-row {
   border: 1px solid var(--google-blue-600);
-  border-inline-start-width: 0;
 }
 
 #directory-tree .tree-row[active] > .file-row {

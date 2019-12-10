@@ -26,7 +26,7 @@
   function findStyleSheet() {
     var styleSheetHeaders = TestRunner.cssModel.styleSheetHeaders();
     for (var i = 0; i < styleSheetHeaders.length; ++i) {
-      styleSheetHeader = styleSheetHeaders[i];
+      const styleSheetHeader = styleSheetHeaders[i];
       if (styleSheetHeader.sourceURL.indexOf('get-set-stylesheet-text.css') >= 0) {
         foundStyleSheetHeader = styleSheetHeader;
         foundStyleSheetHeader.requestContent().then(callback);

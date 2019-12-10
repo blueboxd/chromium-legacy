@@ -77,6 +77,7 @@ class CTBenchmarks(unittest.TestCase):
       parser = OptionParser()
       parser.user_agent = 'mobile'
       parser.urls_list = self.urls_list
+      parser.use_live_sites = False
       benchmark.AddBenchmarkCommandLineArgs(parser)
 
       # Should fail due to missing archive_data_file.
@@ -93,6 +94,19 @@ class CTBenchmarks(unittest.TestCase):
       benchmark.ProcessCommandLineArgs(self.mock_parser, parser)
       self.assertEquals(
           'Please specify --archive-data-file.', self.mock_parser.err_msg)
+
+  def testCTBenchmarks_missingDataFileUseLiveSites(self):
+    for benchmark in self.ct_benchmarks:
+      parser = OptionParser()
+      parser.user_agent = 'mobile'
+      parser.urls_list = self.urls_list
+      parser.use_live_sites = True
+      parser.archive_data_file = None
+      benchmark.AddBenchmarkCommandLineArgs(parser)
+
+      # Should pass.
+      benchmark.ProcessCommandLineArgs(self.mock_parser, parser)
+      self.assertIsNone(self.mock_parser.err_msg)
 
   def testCTBenchmarks_missingUrlsList(self):
     for benchmark in self.ct_benchmarks:

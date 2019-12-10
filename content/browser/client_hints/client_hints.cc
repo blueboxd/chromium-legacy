@@ -522,6 +522,14 @@ void AddNavigationRequestClientHintsHeaders(
       AddUAHeader(headers, blink::mojom::WebClientHintsType::kUAModel,
                   ua.model);
     }
+
+    if (ShouldAddClientHint(
+            web_client_hints, feature_policy, resource_origin,
+            blink::mojom::WebClientHintsType::kUAMobile,
+            blink::mojom::FeaturePolicyFeature::kClientHintUAMobile)) {
+      AddUAHeader(headers, blink::mojom::WebClientHintsType::kUAMobile,
+                  ua.mobile ? "?1" : "?0");
+    }
   }
 
   // Static assert that triggers if a new client hint header is added. If a
@@ -529,7 +537,7 @@ void AddNavigationRequestClientHintsHeaders(
   // If possible, logic should be added above so that the request headers for
   // the newly added client hint can be added to the request.
   static_assert(
-      blink::mojom::WebClientHintsType::kUAModel ==
+      blink::mojom::WebClientHintsType::kUAMobile ==
           blink::mojom::WebClientHintsType::kMaxValue,
       "Consider adding client hint request headers from the browser process");
 

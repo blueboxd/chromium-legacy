@@ -214,6 +214,7 @@
 <translation id="2532336938189706096">Վեբ տարբերակ</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> տարր ջնջվեց</translation>
 <translation id="2536728043171574184">Դուք դիտում եք տվյալ էջի անցանց պատճենը</translation>
+<translation id="2537178555904266562">Չհաջողվեց համաժամացնել գաղտնաբառերը</translation>
 <translation id="2546283357679194313">Cookie ֆայլեր և կայքի տվյալներ</translation>
 <translation id="2567385386134582609">ՊԱՏԿԵՐ</translation>
 <translation id="257088987046510401">Թեմաներ</translation>
@@ -231,6 +232,7 @@
 <translation id="2650751991977523696">Նորի՞ց ներբեռնել ֆայլը</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# աուդիո ֆայլ}one{# աուդիո ֆայլ}other{# աուդիո ֆայլ}}</translation>
 <translation id="2653659639078652383">Ուղարկել</translation>
+<translation id="2669093958999339774">Արգելափակել շեղող ծանուցումները և դրանց փոխարեն օգտագործել անձայն հաղորդագրությունները</translation>
 <translation id="2677748264148917807">Դուրս գալ էջից</translation>
 <translation id="2704606927547763573">Պատճենվեց</translation>
 <translation id="2707726405694321444">Թարմացնել էջը</translation>
@@ -248,7 +250,6 @@
 <translation id="281504910091592009">Դիտեք և կառավարեք պահված գաղտնաբառերը ձեր <ph name="BEGIN_LINK" />Google հաշվում<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Ձեր էջանիշները բոլոր սարքերում օգտագործելու համար մտեք հաշիվ և միացրեք համաժամացումը</translation>
 <translation id="2822354292072154809">Վերակայե՞լ բոլոր կայքերի թույլտվությունները <ph name="CHOSEN_OBJECT_NAME" />-ի համար:</translation>
-<translation id="2836148919159985482">Լիաէկրան ռեժիմից դուրս գալու համար հպեք «Հետ» կոճակին:</translation>
 <translation id="2842985007712546952">Վերադաս պանակ</translation>
 <translation id="2858138569776157458">Կայքերի ընտրանի</translation>
 <translation id="2860954141821109167">Համոզվեք, որ «Հեռախոս» հավելվածը միացված է այս սարքում</translation>
@@ -358,14 +359,15 @@
 <translation id="3632295766818638029">Ցուցադրել գաղտնաբառը</translation>
 <translation id="363596933471559332">Ավտոմատ կերպով մուտք գործել կայքեր՝ պահված մուտքային տվյալների օգնությամբ: Եթե այս գործառույթն անջատված է, ապա ամեն անգամ կայք մտնելիս ձեզանից կպահանջվի հաստատում:</translation>
 <translation id="3658159451045945436">Վերակայման արդյունքում կջնջվի թրաֆիկի տնտեսման պատմությունը, ներառյալ այցելած կայքերի ցանկը:</translation>
-<translation id="3682730288090679318">Միացնել ծանուցումներ ուղարկելու հարցումների ավտոմատ արգելափակումը։ Եթե կայքը նման հարցում ուղարկի, էջի ներքևում կհայտնվի տեղեկագոտի։</translation>
 <translation id="3692944402865947621">Չհաջողվեց ներբեռնել «<ph name="FILE_NAME" />» ֆայլը, քանի որ պահեստն անհասանելի է։</translation>
+<translation id="3701167022068948696">Ուղղել</translation>
 <translation id="3714981814255182093">Բացել «Փնտրել» գոտին</translation>
 <translation id="3716182511346448902">Այս էջն օգտագործում էր չափազանց մեծ հիշողություն։ Chrome-ը դադարեցրեց այն։</translation>
 <translation id="3730075448226062617">Որպեսզի խոսափողը հասանելի դառնա Chrome-ին, միացրեք այն <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />։</translation>
 <translation id="3739899004075612870">Էջանշվեց <ph name="PRODUCT_NAME" />-ում</translation>
 <translation id="3744111561329211289">Ֆոնային համաժամացում</translation>
 <translation id="3749259744154402564">Չի աջակցվում</translation>
+<translation id="3767376082821709728">Ձեր այցելած նոր կայքերը չեն կարող ձեզ ծանուցումներ ուղարկել</translation>
 <translation id="3771001275138982843">Չհաջողվեց ներբեռնել թարմացումը</translation>
 <translation id="3771033907050503522">Ինկոգնիտո ներդիրներ</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Միացրեք Bluetooth-ը<ph name="END_LINK" />` զուգակցումը թույլատրելու համար</translation>
@@ -591,7 +593,6 @@
 <translation id="5414836363063783498">Ստուգում…</translation>
 <translation id="5423934151118863508">Ձեր հաճախակի այցելած էջերը կցուցադրվեն այստեղ</translation>
 <translation id="5424588387303617268">Ազատ տարածքը՝ <ph name="GIGABYTES" /> ԳԲ</translation>
-<translation id="5427766642345310212">Եղավ։ Ըստ կանխադրման՝ ծանուցումներ ուղարկելու նոր հարցումները կցուցադրվեն այստեղ։</translation>
 <translation id="543338862236136125">Փոխել գաղտնաբառը</translation>
 <translation id="5433691172869980887">Օգտանունը պատճենվեց</translation>
 <translation id="543509235395288790">Ներբեռնվում է <ph name="COUNT" /> ֆայլ (<ph name="MEGABYTES" />)։</translation>
@@ -678,7 +679,6 @@
 <translation id="5962718611393537961">Հպեք՝ կոծկելու համար</translation>
 <translation id="6000066717592683814">Օգտագործել Google-ը</translation>
 <translation id="6005538289190791541">Առաջարկվող գաղտնաբառ</translation>
-<translation id="6019358956729171834">Բեռնել ավելին…</translation>
 <translation id="6036057147555329831">Լրացուցիչ ICU մոդուլ</translation>
 <translation id="6039379616847168523">Անցնել հաջորդ ներդիր</translation>
 <translation id="6040143037577758943">Փակել</translation>
@@ -774,6 +774,7 @@
 <translation id="666731172850799929">Բացել <ph name="APP_NAME" /> հավելվածում</translation>
 <translation id="666981079809192359">Chrome-ի Գաղտնիության ծանուցում</translation>
 <translation id="6676840375528380067">Հեռացնե՞լ Chrome-ի տվյալները այս սարքից</translation>
+<translation id="6689172468748959065">Պրոֆիլի լուսանկարներ</translation>
 <translation id="6697492270171225480">Ցուցադրել նմանատիպ էջերի առաջարկներ, երբ որևէ էջ չհաջողվի գտնել</translation>
 <translation id="6697947395630195233">Chrome-ին այս կայքի համար անհրաժեշտ է ձեզ տեղորոշելու թույլտվություն։</translation>
 <translation id="6698801883190606802">Կառավարել համաժամացված տվյալները</translation>
@@ -956,6 +957,7 @@
 <translation id="8035133914807600019">Նոր պանակ...</translation>
 <translation id="8037750541064988519">Մնացել է <ph name="DAYS" /> օր</translation>
 <translation id="804335162455518893">SD քարտը չհաջողվեց գտնել</translation>
+<translation id="8046278916126163020">Ձեր այցելած նոր կայքերը կարող են թույլտվություն խնդրել՝ ձեզ ծանուցումներ ուղարկելու համար։</translation>
 <translation id="805047784848435650">Ձեր այցելությունների պատմության հիման վրա</translation>
 <translation id="8051695050440594747">Հասանելի է <ph name="MEGABYTES" /> ՄԲ</translation>
 <translation id="8058746566562539958">Բացել Chrome-ի նոր ներդիրում</translation>

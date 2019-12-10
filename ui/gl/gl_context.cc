@@ -133,17 +133,17 @@ void GLContext::SetUnbindFboOnMakeCurrent() {
 
 std::string GLContext::GetGLVersion() {
   DCHECK(IsCurrent(nullptr));
-  DCHECK(gl_api_ != nullptr);
-  const char* version =
-      reinterpret_cast<const char*>(gl_api_->glGetStringFn(GL_VERSION));
+  DCHECK(gl_api_wrapper_);
+  const char* version = reinterpret_cast<const char*>(
+      gl_api_wrapper_->api()->glGetStringFn(GL_VERSION));
   return std::string(version ? version : "");
 }
 
 std::string GLContext::GetGLRenderer() {
   DCHECK(IsCurrent(nullptr));
-  DCHECK(gl_api_ != nullptr);
-  const char* renderer =
-      reinterpret_cast<const char*>(gl_api_->glGetStringFn(GL_RENDERER));
+  DCHECK(gl_api_wrapper_);
+  const char* renderer = reinterpret_cast<const char*>(
+      gl_api_wrapper_->api()->glGetStringFn(GL_RENDERER));
   return std::string(renderer ? renderer : "");
 }
 
@@ -157,23 +157,13 @@ CurrentGL* GLContext::GetCurrentGL() {
     driver_gl_ = std::make_unique<DriverGL>();
     driver_gl_->InitializeStaticBindings();
 
-    gl_api_.reset(CreateGLApi(driver_gl_.get()));
-    GLApi* final_api = gl_api_.get();
-
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableGPUServiceTracing)) {
-      trace_gl_api_ = std::make_unique<TraceGLApi>(final_api);
-      final_api = trace_gl_api_.get();
-    }
-
-    if (GetDebugGLBindingsInitializedGL()) {
-      log_gl_api_ = std::make_unique<LogGLApi>(final_api);
-      final_api = log_gl_api_.get();
-    }
+    auto gl_api = base::WrapUnique<GLApi>(CreateGLApi(driver_gl_.get()));
+    gl_api_wrapper_ =
+        std::make_unique<GL_IMPL_WRAPPER_TYPE(GL)>(std::move(gl_api));
 
     current_gl_ = std::make_unique<CurrentGL>();
     current_gl_->Driver = driver_gl_.get();
-    current_gl_->Api = final_api;
+    current_gl_->Api = gl_api_wrapper_->api();
     current_gl_->Version = version_info_.get();
 
     static_bindings_initialized_ = true;

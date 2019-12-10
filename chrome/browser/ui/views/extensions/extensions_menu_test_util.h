@@ -20,7 +20,7 @@ class ExtensionsToolbarContainer;
 // (i.e., when features::kExtensionsToolbarMenu is enabled).
 class ExtensionsMenuTestUtil : public BrowserActionTestUtil {
  public:
-  explicit ExtensionsMenuTestUtil(Browser* browser);
+  ExtensionsMenuTestUtil(Browser* browser, bool is_real_window);
 
   ~ExtensionsMenuTestUtil() override;
 
@@ -40,6 +40,7 @@ class ExtensionsMenuTestUtil : public BrowserActionTestUtil {
   bool ActionButtonWantsToRun(size_t index) override;
   void SetWidth(int width) override;
   ToolbarActionsBar* GetToolbarActionsBar() override;
+  ExtensionsContainer* GetExtensionsContainer() override;
   std::unique_ptr<BrowserActionTestUtil> CreateOverflowBar(
       Browser* browser) override;
   // TODO(devlin): Some of these popup methods have a common implementation
@@ -48,9 +49,12 @@ class ExtensionsMenuTestUtil : public BrowserActionTestUtil {
   // implementation).
   gfx::Size GetMinPopupSize() override;
   gfx::Size GetMaxPopupSize() override;
+  gfx::Size GetToolbarActionSize() override;
   bool CanBeResized() override;
 
  private:
+  class Wrapper;
+
   // Returns the ExtensionsMenuItemView at the given |index| from the
   // |menu_view|.
   ExtensionsMenuItemView* GetMenuItemViewAtIndex(int index);
@@ -59,8 +63,10 @@ class ExtensionsMenuTestUtil : public BrowserActionTestUtil {
   // This has to be defined before |menu_view_| below.
   base::AutoReset<bool> scoped_allow_extensions_menu_instances_;
 
+  std::unique_ptr<Wrapper> wrapper_;
+
   Browser* const browser_;
-  ExtensionsToolbarContainer* const extensions_container_;
+  ExtensionsToolbarContainer* extensions_container_;
   std::unique_ptr<ExtensionsMenuView> menu_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsMenuTestUtil);

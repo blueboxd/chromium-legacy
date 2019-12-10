@@ -39,11 +39,12 @@ void RequirementsChecker::Start(ResultCallback callback) {
 
   callback_ = std::move(callback);
   if (requirements.webgl) {
-    webgl_checker_ = content::GpuFeatureChecker::Create(
-        gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL,
-        base::Bind(&RequirementsChecker::VerifyWebGLAvailability,
-                   weak_ptr_factory_.GetWeakPtr()));
-    webgl_checker_->CheckGpuFeatureAvailability();
+    scoped_refptr<content::GpuFeatureChecker> webgl_checker =
+        content::GpuFeatureChecker::Create(
+            gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL,
+            base::BindOnce(&RequirementsChecker::VerifyWebGLAvailability,
+                           weak_ptr_factory_.GetWeakPtr()));
+    webgl_checker->CheckGpuFeatureAvailability();
   } else {
     PostRunCallback();
   }

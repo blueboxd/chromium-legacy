@@ -34,9 +34,6 @@
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/service/display/display_resource_provider.h"
-#include "components/viz/service/display/overlay_candidate_validator_strategy.h"
-#include "components/viz/service/display/overlay_strategy_single_on_top.h"
-#include "components/viz/service/display/overlay_strategy_underlay.h"
 #include "components/viz/test/fake_output_surface.h"
 #include "components/viz/test/test_gles2_interface.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
@@ -50,6 +47,13 @@
 #include "ui/gfx/color_transform.h"
 #include "ui/gfx/transform.h"
 #include "ui/latency/latency_info.h"
+
+#if defined(OS_ANDROID) || defined(USE_OZONE)
+#include "components/viz/service/display/overlay_candidate_validator_strategy.h"
+#include "components/viz/service/display/overlay_processor_using_strategy.h"
+#include "components/viz/service/display/overlay_strategy_single_on_top.h"
+#include "components/viz/service/display/overlay_strategy_underlay.h"
+#endif
 
 using testing::_;
 using testing::AnyNumber;
@@ -2197,9 +2201,34 @@ TEST_F(MockOutputSurfaceTest, BackbufferDiscard) {
   Mock::VerifyAndClearExpectations(output_surface_.get());
 }
 
+#if defined(OS_WIN) || defined(OS_MACOSX)
+class TestOverlayCandidateValidator : public OverlayCandidateValidator {
+ public:
+  MOCK_CONST_METHOD0(AllowCALayerOverlays, bool());
+  MOCK_CONST_METHOD0(AllowDCLayerOverlays, bool());
+  MOCK_CONST_METHOD0(NeedsSurfaceOccludingDamageRect, bool());
+};
+
 class TestOverlayProcessor : public OverlayProcessor {
  public:
-  class Strategy : public OverlayProcessor::Strategy {
+  explicit TestOverlayProcessor(
+      std::unique_ptr<OverlayCandidateValidator> validator)
+      : OverlayProcessor(std::move(validator)) {}
+  TestOverlayProcessor()
+      : OverlayProcessor(std::make_unique<TestOverlayCandidateValidator>()) {}
+  ~TestOverlayProcessor() override = default;
+
+  const TestOverlayCandidateValidator* GetTestValidator() const {
+    return static_cast<const TestOverlayCandidateValidator*>(
+        GetOverlayCandidateValidator());
+  }
+};
+
+#elif defined(OS_ANDROID) || defined(USE_OZONE)
+
+class TestOverlayProcessor : public OverlayProcessorUsingStrategy {
+ public:
+  class Strategy : public OverlayProcessorUsingStrategy::Strategy {
    public:
     Strategy() = default;
     ~Strategy() override = default;
@@ -2215,23 +2244,6 @@ class TestOverlayProcessor : public OverlayProcessor {
              OverlayCandidateList* candidates,
              std::vector<gfx::Rect>* content_bounds));
   };
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  class Validator : public OverlayCandidateValidator {
-   public:
-    MOCK_CONST_METHOD0(AllowCALayerOverlays, bool());
-    MOCK_CONST_METHOD0(AllowDCLayerOverlays, bool());
-    MOCK_CONST_METHOD0(NeedsSurfaceOccludingDamageRect, bool());
-  };
-
-  const Validator* GetTestValidator() const {
-    return static_cast<const Validator*>(GetOverlayCandidateValidator());
-  }
-
-  explicit TestOverlayProcessor(
-      std::unique_ptr<OverlayCandidateValidator> overlay_validator)
-      : OverlayProcessor(std::move(overlay_validator)) {}
-
-#elif defined(OS_ANDROID) || defined(USE_OZONE)
   class Validator : public OverlayCandidateValidatorStrategy {
    public:
     void InitializeStrategies() override {
@@ -2261,15 +2273,19 @@ class TestOverlayProcessor : public OverlayProcessor {
     return const_cast<Validator*>(validator)->strategy();
   }
 
-  explicit TestOverlayProcessor(
-      std::unique_ptr<OverlayCandidateValidatorStrategy> overlay_validator)
-      : OverlayProcessor(std::move(overlay_validator)) {}
-#else  // Default to no overlay.
-  TestOverlayProcessor() : OverlayProcessor(nullptr) {}
-#endif
-
+  TestOverlayProcessor()
+      : OverlayProcessorUsingStrategy(
+            nullptr,
+            std::make_unique<TestOverlayProcessor::Validator>()) {}
   ~TestOverlayProcessor() override = default;
 };
+#else  // Default to no overlay.
+class TestOverlayProcessor : public OverlayProcessor {
+ public:
+  TestOverlayProcessor() : OverlayProcessor(nullptr) {}
+  ~TestOverlayProcessor() override = default;
+};
+#endif
 
 void MailboxReleased(const gpu::SyncToken& sync_token, bool lost_resource) {}
 
@@ -2330,16 +2346,10 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   renderer.Initialize();
   renderer.SetVisible(true);
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID) || \
-    defined(USE_OZONE)
-  TestOverlayProcessor* processor = new TestOverlayProcessor(
-      std::make_unique<TestOverlayProcessor::Validator>());
-#else  // Default to no overlay.
   TestOverlayProcessor* processor = new TestOverlayProcessor();
-#endif
   renderer.SetOverlayProcessor(processor);
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  const TestOverlayProcessor::Validator* validator =
+  const TestOverlayCandidateValidator* validator =
       processor->GetTestValidator();
 #endif
 
@@ -2382,7 +2392,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   Mock::VerifyAndClearExpectations(&processor->strategy());
 #elif defined(OS_WIN) || defined(OS_MACOSX)
   Mock::VerifyAndClearExpectations(
-      const_cast<TestOverlayProcessor::Validator*>(validator));
+      const_cast<TestOverlayCandidateValidator*>(validator));
 #endif
 
   // Without a copy request Attempt() should be called once.
@@ -2417,7 +2427,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
 }
 
 #if defined(OS_ANDROID) || defined(USE_OZONE)
-class SingleOverlayOnTopProcessor : public OverlayProcessor {
+class SingleOverlayOnTopProcessor : public OverlayProcessorUsingStrategy {
  public:
   class SingleOverlayValidator : public OverlayCandidateValidatorStrategy {
    public:
@@ -2445,7 +2455,9 @@ class SingleOverlayOnTopProcessor : public OverlayProcessor {
   };
 
   SingleOverlayOnTopProcessor()
-      : OverlayProcessor(std::make_unique<SingleOverlayValidator>()) {}
+      : OverlayProcessorUsingStrategy(
+            nullptr,
+            std::make_unique<SingleOverlayValidator>()) {}
 
   void AllowMultipleCandidates() {
     // Cast away const from the validator pointer to set on it.
@@ -3030,9 +3042,9 @@ TEST_F(GLRendererWithMockContextTest,
 }
 
 #if defined(USE_OZONE) || defined(OS_ANDROID)
-class ContentBoundsOverlayProcessor : public OverlayProcessor {
+class ContentBoundsOverlayProcessor : public OverlayProcessorUsingStrategy {
  public:
-  class Strategy : public OverlayProcessor::Strategy {
+  class Strategy : public OverlayProcessorUsingStrategy::Strategy {
    public:
     explicit Strategy(const std::vector<gfx::Rect>& content_bounds)
         : content_bounds_(content_bounds) {}
@@ -3085,7 +3097,9 @@ class ContentBoundsOverlayProcessor : public OverlayProcessor {
 
   explicit ContentBoundsOverlayProcessor(
       const std::vector<gfx::Rect>& content_bounds)
-      : OverlayProcessor(std::make_unique<Validator>(content_bounds)) {}
+      : OverlayProcessorUsingStrategy(
+            nullptr,
+            std::make_unique<Validator>(content_bounds)) {}
 
   Strategy& strategy() {
     DCHECK(overlay_validator_);

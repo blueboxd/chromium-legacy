@@ -87,9 +87,14 @@ class ScrollableShelfViewTest : public AshTestBase {
   }
 
  protected:
-  ShelfID AddAppShortcut() {
-    ShelfItem item = ShelfTestUtil::AddAppShortcut(base::NumberToString(id_++),
-                                                   TYPE_PINNED_APP);
+  void PopulateAppShortcut(int number) {
+    for (int i = 0; i < number; i++)
+      AddAppShortcut();
+  }
+
+  ShelfID AddAppShortcut(ShelfItemType item_type = TYPE_PINNED_APP) {
+    ShelfItem item =
+        ShelfTestUtil::AddAppShortcut(base::NumberToString(id_++), item_type);
 
     // Wait for shelf view's bounds animation to end. Otherwise the scrollable
     // shelf's bounds are not updated yet.
@@ -323,9 +328,13 @@ TEST_F(ScrollableShelfViewTest, VerifyTappableAppIndices) {
             scrollable_shelf_view_->layout_strategy_for_test());
   CheckFirstAndLastTappableIconsBounds();
 
+  // Pins enough apps to Shelf to ensure that layout strategy will be
+  // kShowButtons after pressing the right arrow button.
+  const int view_size =
+      scrollable_shelf_view_->shelf_view()->view_model()->view_size();
+  PopulateAppShortcut(view_size + 1);
   GetEventGenerator()->GestureTapAt(
       scrollable_shelf_view_->right_arrow()->GetBoundsInScreen().CenterPoint());
-  AddAppShortcutsUntilRightArrowIsShown();
 
   // Checks bounds when the layout strategy is kShowButtons.
   ASSERT_EQ(ScrollableShelfView::kShowButtons,
@@ -382,8 +391,7 @@ TEST_F(ScrollableShelfViewTest, DragIconToNewPage) {
   AddAppShortcutsUntilOverflow();
   GetEventGenerator()->GestureTapAt(
       scrollable_shelf_view_->right_arrow()->GetBoundsInScreen().CenterPoint());
-  AddAppShortcutsUntilRightArrowIsShown();
-  ASSERT_EQ(ScrollableShelfView::kShowButtons,
+  ASSERT_EQ(ScrollableShelfView::kShowLeftArrowButton,
             scrollable_shelf_view_->layout_strategy_for_test());
 
   views::ViewModel* view_model = shelf_view_->view_model();
@@ -412,7 +420,9 @@ TEST_F(ScrollableShelfViewTest, DragIconToNewPage) {
   // (2) The dragged view has the correct view index.
   EXPECT_EQ(ScrollableShelfView::kShowRightArrowButton,
             scrollable_shelf_view_->layout_strategy_for_test());
-  EXPECT_EQ(0, view_model->GetIndexOfView(dragged_view));
+  const int view_index = view_model->GetIndexOfView(dragged_view);
+  EXPECT_GE(view_index, scrollable_shelf_view_->first_tappable_app_index());
+  EXPECT_LE(view_index, scrollable_shelf_view_->last_tappable_app_index());
 }
 
 class HotseatScrollableShelfViewTest : public ScrollableShelfViewTest {
@@ -522,6 +532,35 @@ TEST_F(ScrollableShelfViewTest, ScrollWithMouseWheel) {
 
   GetEventGenerator()->MoveMouseWheel(0, -scroll_threshold);
   ASSERT_EQ(ScrollableShelfView::kShowRightArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+}
+
+// Verifies that the shelf is scrolled to show the pinned app after pinning.
+TEST_F(ScrollableShelfViewTest, FeedbackForAppPinning) {
+  AddAppShortcutsUntilOverflow();
+  ASSERT_EQ(ScrollableShelfView::kShowRightArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+
+  // Pins the icons of running apps to the shelf.
+  const int num = shelf_view_->view_model()->view_size();
+  for (int i = 0; i < 2 * num; i++)
+    AddAppShortcut(ShelfItemType::TYPE_APP);
+
+  // Emulates the process that user pins another app icon. Icons of pinned apps
+  // are placed before those of running apps. So the icon should be located on
+  // the second page.
+  ShelfModel::ScopedUserTriggeredMutation user_triggered(
+      scrollable_shelf_view_->shelf_view()->model());
+  ShelfID shelf_id = AddAppShortcut();
+  const int view_index =
+      shelf_view_->model()->ItemIndexByAppID(shelf_id.app_id);
+  ASSERT_EQ(view_index, num);
+
+  // Scrolls the shelf to show the pinned app. Expects that the shelf is
+  // scrolled to the correct page.
+  EXPECT_LT(view_index, scrollable_shelf_view_->last_tappable_app_index());
+  EXPECT_GT(view_index, scrollable_shelf_view_->first_tappable_app_index());
+  EXPECT_EQ(ScrollableShelfView::kShowButtons,
             scrollable_shelf_view_->layout_strategy_for_test());
 }
 

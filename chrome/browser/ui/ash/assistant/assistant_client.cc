@@ -23,12 +23,11 @@
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/audio_service.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/device_service.h"
 #include "content/public/browser/media_session_service.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/service_process_host.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/identity/public/mojom/identity_service.mojom.h"
 
 namespace {
@@ -171,14 +170,12 @@ void AssistantClient::RequestAssistantStateController(
 
 void AssistantClient::RequestBatteryMonitor(
     mojo::PendingReceiver<device::mojom::BatteryMonitor> receiver) {
-  content::GetSystemConnector()->Connect(device::mojom::kServiceName,
-                                         std::move(receiver));
+  content::GetDeviceService().BindBatteryMonitor(std::move(receiver));
 }
 
 void AssistantClient::RequestWakeLockProvider(
     mojo::PendingReceiver<device::mojom::WakeLockProvider> receiver) {
-  content::GetSystemConnector()->Connect(device::mojom::kServiceName,
-                                         std::move(receiver));
+  content::GetDeviceService().BindWakeLockProvider(std::move(receiver));
 }
 
 void AssistantClient::RequestAudioStreamFactory(

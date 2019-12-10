@@ -14,8 +14,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/thread_annotations.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -38,12 +40,69 @@ using extensions::APIPermission;
 using extensions::Extension;
 using storage::SpecialStoragePolicy;
 
+class ExtensionSpecialStoragePolicy::CookieSettingsObserver
+    : public content_settings::CookieSettings::Observer {
+ public:
+  CookieSettingsObserver(
+      scoped_refptr<content_settings::CookieSettings> cookie_settings,
+      ExtensionSpecialStoragePolicy* weak_policy)
+      : cookie_settings_(std::move(cookie_settings)),
+        weak_policy_(weak_policy) {
+    if (cookie_settings_)
+      cookie_settings_->AddObserver(this);
+  }
+
+  ~CookieSettingsObserver() override {
+    if (cookie_settings_)
+      cookie_settings_->RemoveObserver(this);
+  }
+
+  void WillDestroyPolicy() {
+    base::AutoLock lock(policy_lock_);
+    weak_policy_ = nullptr;
+  }
+
+ private:
+  // content_settings::CookieSettings::Observer:
+  void OnThirdPartyCookieBlockingChanged(bool) override {
+    NotifyPolicyChanged();
+  }
+
+  void OnCookieSettingChanged() override { NotifyPolicyChanged(); }
+
+  void NotifyPolicyChanged() {
+    // Post a task to avoid any potential re-entrancy issues with
+    // |NotifyPolicyChangedImpl()| since it holds a lock while calling back into
+    // ExtensionSpecialStoragePolicy.
+    base::PostTask(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&CookieSettingsObserver::NotifyPolicyChangedImpl,
+                       base::Unretained(this)));
+  }
+
+  void NotifyPolicyChangedImpl() {
+    base::AutoLock lock(policy_lock_);
+    if (weak_policy_)
+      weak_policy_->NotifyPolicyChanged();
+  }
+
+  const scoped_refptr<content_settings::CookieSettings> cookie_settings_;
+
+  base::Lock policy_lock_;
+  ExtensionSpecialStoragePolicy* weak_policy_ GUARDED_BY(policy_lock_);
+};
+
 ExtensionSpecialStoragePolicy::ExtensionSpecialStoragePolicy(
     content_settings::CookieSettings* cookie_settings)
-    : cookie_settings_(cookie_settings) {
-}
+    : cookie_settings_(cookie_settings),
+      cookie_settings_observer_(
+          new CookieSettingsObserver(cookie_settings_, this),
+          base::OnTaskRunnerDeleter(
+              base::CreateSequencedTaskRunner({BrowserThread::UI}))) {}
 
-ExtensionSpecialStoragePolicy::~ExtensionSpecialStoragePolicy() {}
+ExtensionSpecialStoragePolicy::~ExtensionSpecialStoragePolicy() {
+  cookie_settings_observer_->WillDestroyPolicy();
+}
 
 bool ExtensionSpecialStoragePolicy::IsStorageProtected(const GURL& origin) {
   if (origin.SchemeIs(extensions::kExtensionScheme))
@@ -68,14 +127,14 @@ bool ExtensionSpecialStoragePolicy::IsStorageUnlimited(const GURL& origin) {
 }
 
 bool ExtensionSpecialStoragePolicy::IsStorageSessionOnly(const GURL& origin) {
-  if (cookie_settings_.get() == NULL)
+  if (!cookie_settings_)
     return false;
   return cookie_settings_->IsCookieSessionOnly(origin);
 }
 
 network::SessionCleanupCookieStore::DeleteCookiePredicate
 ExtensionSpecialStoragePolicy::CreateDeleteCookieOnExitPredicate() {
-  if (cookie_settings_.get() == NULL)
+  if (!cookie_settings_)
     return network::SessionCleanupCookieStore::DeleteCookiePredicate();
   // Fetch the list of cookies related content_settings and bind it
   // to CookieSettings::ShouldDeleteCookieOnExit to avoid fetching it on
@@ -88,7 +147,7 @@ ExtensionSpecialStoragePolicy::CreateDeleteCookieOnExitPredicate() {
 }
 
 bool ExtensionSpecialStoragePolicy::HasSessionOnlyOrigins() {
-  if (cookie_settings_.get() == NULL)
+  if (!cookie_settings_)
     return false;
   if (cookie_settings_->GetDefaultCookieSetting(NULL) ==
       CONTENT_SETTING_SESSION_ONLY)

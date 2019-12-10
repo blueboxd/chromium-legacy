@@ -282,7 +282,8 @@ void Scheduler::CancelPendingBeginFrameTask() {
   if (pending_begin_frame_args_.IsValid()) {
     TRACE_EVENT_INSTANT0("cc", "Scheduler::BeginFrameDropped",
                          TRACE_EVENT_SCOPE_THREAD);
-    SendDidNotProduceFrame(pending_begin_frame_args_);
+    SendDidNotProduceFrame(pending_begin_frame_args_,
+                           FrameSkippedReason::kNoDamage);
     // Make pending begin frame invalid so that we don't accidentally use it.
     pending_begin_frame_args_ = viz::BeginFrameArgs();
   }
@@ -340,7 +341,7 @@ bool Scheduler::OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) {
     // Since we don't use the BeginFrame, we may later receive the same
     // BeginFrame again. Thus, we can't confirm it at this point, even though we
     // don't have any updates right now.
-    SendDidNotProduceFrame(args);
+    SendDidNotProduceFrame(args, FrameSkippedReason::kNoDamage);
     return false;
   }
 
@@ -368,7 +369,8 @@ bool Scheduler::OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) {
     if (pending_begin_frame_args_.IsValid()) {
       TRACE_EVENT_INSTANT0("cc", "Scheduler::BeginFrameDropped",
                            TRACE_EVENT_SCOPE_THREAD);
-      SendDidNotProduceFrame(pending_begin_frame_args_);
+      SendDidNotProduceFrame(pending_begin_frame_args_,
+                             FrameSkippedReason::kRecoverLatency);
     }
     pending_begin_frame_args_ = args;
     // ProcessScheduledActions() will post the previous frame's deadline if it
@@ -443,7 +445,7 @@ void Scheduler::BeginImplFrameWithDeadline(const viz::BeginFrameArgs& args) {
     TRACE_EVENT_INSTANT0("cc", "Scheduler::MissedBeginFrameDropped",
                          TRACE_EVENT_SCOPE_THREAD);
     skipped_last_frame_missed_exceeded_deadline_ = true;
-    SendDidNotProduceFrame(args);
+    SendDidNotProduceFrame(args, FrameSkippedReason::kRecoverLatency);
     return;
   }
   skipped_last_frame_missed_exceeded_deadline_ = false;
@@ -543,7 +545,7 @@ void Scheduler::BeginImplFrameWithDeadline(const viz::BeginFrameArgs& args) {
     TRACE_EVENT_INSTANT0("cc", "SkipBeginImplFrameToReduceLatency",
                          TRACE_EVENT_SCOPE_THREAD);
     skipped_last_frame_to_reduce_latency_ = true;
-    SendDidNotProduceFrame(args);
+    SendDidNotProduceFrame(args, FrameSkippedReason::kRecoverLatency);
     return;
   }
 
@@ -573,8 +575,10 @@ void Scheduler::FinishImplFrame() {
   // Send ack before calling ProcessScheduledActions() because it might send an
   // ack for any pending begin frame if we are going idle after this. This
   // ensures that the acks are sent in order.
-  if (!state_machine_.did_submit_in_last_frame())
-    SendDidNotProduceFrame(begin_impl_frame_tracker_.Current());
+  if (!state_machine_.did_submit_in_last_frame()) {
+    SendDidNotProduceFrame(begin_impl_frame_tracker_.Current(),
+                           FrameSkippedReason::kNoDamage);
+  }
 
   begin_impl_frame_tracker_.Finish();
 
@@ -589,12 +593,13 @@ void Scheduler::FinishImplFrame() {
     begin_frame_source_->DidFinishFrame(this);
 }
 
-void Scheduler::SendDidNotProduceFrame(const viz::BeginFrameArgs& args) {
+void Scheduler::SendDidNotProduceFrame(const viz::BeginFrameArgs& args,
+                                       FrameSkippedReason reason) {
   if (last_begin_frame_ack_.source_id == args.source_id &&
       last_begin_frame_ack_.sequence_number == args.sequence_number)
     return;
   last_begin_frame_ack_ = viz::BeginFrameAck(args, false /* has_damage */);
-  client_->DidNotProduceFrame(last_begin_frame_ack_);
+  client_->DidNotProduceFrame(last_begin_frame_ack_, reason);
 }
 
 // BeginImplFrame starts a compositor frame that will wait up until a deadline
@@ -667,8 +672,10 @@ void Scheduler::ScheduleBeginImplFrameDeadline() {
       // Send early DidNotProduceFrame if we don't expect to produce a frame
       // soon so that display scheduler doesn't wait unnecessarily.
       // Note: This will only send one DidNotProduceFrame ack per begin frame.
-      if (!state_machine_.NewActiveTreeLikely())
-        SendDidNotProduceFrame(begin_impl_frame_tracker_.Current());
+      if (!state_machine_.NewActiveTreeLikely()) {
+        SendDidNotProduceFrame(begin_impl_frame_tracker_.Current(),
+                               FrameSkippedReason::kNoDamage);
+      }
       break;
     }
     case DeadlineMode::REGULAR:

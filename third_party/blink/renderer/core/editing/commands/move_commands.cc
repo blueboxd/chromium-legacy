@@ -143,8 +143,8 @@ void MoveCommands::UpdateFocusForCaretBrowsing(LocalFrame& frame) {
   Element* new_focused_element = nullptr;
 
   while (node) {
-    if (node->IsElementNode() && ToElement(node)->IsFocusable()) {
-      new_focused_element = ToElement(node);
+    if (node->IsElementNode() && To<Element>(node)->IsFocusable()) {
+      new_focused_element = To<Element>(node);
       break;
     }
     node = node->ParentOrShadowHostNode();

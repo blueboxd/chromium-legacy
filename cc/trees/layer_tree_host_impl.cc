@@ -2724,9 +2724,11 @@ void LayerTreeHostImpl::DidFinishImplFrame() {
   current_begin_frame_tracker_.Finish();
 }
 
-void LayerTreeHostImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
+void LayerTreeHostImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack,
+                                           FrameSkippedReason reason) {
   if (layer_tree_frame_sink_)
     layer_tree_frame_sink_->DidNotProduceFrame(ack);
+  // TODO(sad): Notify |frame_trackers_| if |reason| is no-damage.
 }
 
 void LayerTreeHostImpl::SynchronouslyInitializeAllTiles() {

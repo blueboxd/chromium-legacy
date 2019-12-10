@@ -7,32 +7,29 @@
 
 #include <vector>
 
-#include "components/viz/service/display/overlay_candidate_validator.h"
+#include "components/viz/service/display/overlay_processor_using_strategy.h"
 
 namespace viz {
 class RendererSettings;
 
 // This class can be used to answer questions about possible overlay
 // configurations for a particular output device.
-class VIZ_SERVICE_EXPORT OverlayCandidateValidatorStrategy
-    : public OverlayCandidateValidator {
+class VIZ_SERVICE_EXPORT OverlayCandidateValidatorStrategy {
  public:
   static std::unique_ptr<OverlayCandidateValidatorStrategy> Create(
       gpu::SurfaceHandle surface_handle,
       const OutputSurface::Capabilities& capabilities,
       const RendererSettings& renderer_settings);
 
-  ~OverlayCandidateValidatorStrategy() override;
+  virtual ~OverlayCandidateValidatorStrategy();
+
+  // A primary plane is generated when the output surface's buffer is supplied
+  // by |BufferQueue|. This is considered as an overlay plane.
+  using PrimaryPlane = OverlayProcessor::OutputSurfaceOverlayPlane;
 
   // Populates a list of strategies that may work with this validator. Should be
   // called at most once.
   virtual void InitializeStrategies() = 0;
-
-  // Mac doesn't use strategies.
-  bool AllowCALayerOverlays() const final;
-
-  // Windows doesn't use strategies.
-  bool AllowDCLayerOverlays() const final;
 
   // A list of possible overlay candidates is presented to this function.
   // The expected result is that those candidates that can be in a separate
@@ -69,15 +66,35 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidatorStrategy
       OverlayCandidateList* candidates,
       std::vector<gfx::Rect>* content_bounds);
 
+  // Returns true if the platform supports hw overlays and surface occluding
+  // damage rect needs to be computed since it will be used by overlay
+  // processor.
+  virtual bool NeedsSurfaceOccludingDamageRect() const = 0;
+
+  // Set the overlay display transform and viewport size. Value only used for
+  // Android Surface Control.
+  virtual void SetDisplayTransform(gfx::OverlayTransform transform) {}
+  virtual void SetViewportSize(const gfx::Size& size) {}
+
+  // Disables overlays when software mirroring display. This only needs to be
+  // implemented for Chrome OS.
+  virtual void SetSoftwareMirrorMode(bool enabled) {}
+
+  // This is used to adjust properties of the |primary_plane|, which is the
+  // overlay candidate for the output surface. This is called after we process
+  // for overlay. Surface Control uses this function to adjust the display
+  // transform and display rect.
+  virtual void AdjustOutputSurfaceOverlay(PrimaryPlane* output_surface_plane) {}
+
   // If the full screen strategy is successful, we no longer need to overlay the
   // output surface since it will be fully covered.
-  bool StrategyNeedsOutputSurfacePlaneRemoved() override;
+  bool StrategyNeedsOutputSurfacePlaneRemoved();
 
  protected:
   OverlayCandidateValidatorStrategy();
 
-  OverlayProcessor::StrategyList strategies_;
-  OverlayProcessor::Strategy* last_successful_strategy_;
+  OverlayProcessorUsingStrategy::StrategyList strategies_;
+  OverlayProcessorUsingStrategy::Strategy* last_successful_strategy_;
 };
 
 }  // namespace viz

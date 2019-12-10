@@ -202,19 +202,21 @@ bool NetworkServiceNetworkDelegate::OnCanGetCookies(
     const net::URLRequest& request,
     const net::CookieList& cookie_list,
     bool allowed_from_caller) {
-  bool allowed = allowed_from_caller &&
-                 network_context_->cookie_manager()
-                     ->cookie_settings()
-                     .IsCookieAccessAllowed(
-                         request.url(), request.site_for_cookies(),
-                         request.network_isolation_key().GetTopFrameOrigin());
+  bool allowed =
+      allowed_from_caller &&
+      network_context_->cookie_manager()
+          ->cookie_settings()
+          .IsCookieAccessAllowed(
+              request.url(), request.site_for_cookies().RepresentativeUrl(),
+              request.network_isolation_key().GetTopFrameOrigin());
 
   if (!allowed)
     return false;
 
   URLLoader* url_loader = URLLoader::ForRequest(request);
   if (url_loader)
-    return url_loader->AllowCookies(request.url(), request.site_for_cookies());
+    return url_loader->AllowCookies(
+        request.url(), request.site_for_cookies().RepresentativeUrl());
 #if !defined(OS_IOS)
   WebSocket* web_socket = WebSocket::ForRequest(request);
   if (web_socket)
@@ -228,17 +230,19 @@ bool NetworkServiceNetworkDelegate::OnCanSetCookie(
     const net::CanonicalCookie& cookie,
     net::CookieOptions* options,
     bool allowed_from_caller) {
-  bool allowed = allowed_from_caller &&
-                 network_context_->cookie_manager()
-                     ->cookie_settings()
-                     .IsCookieAccessAllowed(
-                         request.url(), request.site_for_cookies(),
-                         request.network_isolation_key().GetTopFrameOrigin());
+  bool allowed =
+      allowed_from_caller &&
+      network_context_->cookie_manager()
+          ->cookie_settings()
+          .IsCookieAccessAllowed(
+              request.url(), request.site_for_cookies().RepresentativeUrl(),
+              request.network_isolation_key().GetTopFrameOrigin());
   if (!allowed)
     return false;
   URLLoader* url_loader = URLLoader::ForRequest(request);
   if (url_loader)
-    return url_loader->AllowCookies(request.url(), request.site_for_cookies());
+    return url_loader->AllowCookies(
+        request.url(), request.site_for_cookies().RepresentativeUrl());
 #if !defined(OS_IOS)
   WebSocket* web_socket = WebSocket::ForRequest(request);
   if (web_socket)
@@ -249,11 +253,12 @@ bool NetworkServiceNetworkDelegate::OnCanSetCookie(
 
 bool NetworkServiceNetworkDelegate::OnForcePrivacyMode(
     const GURL& url,
-    const GURL& site_for_cookies,
+    const net::SiteForCookies& site_for_cookies,
     const base::Optional<url::Origin>& top_frame_origin) const {
   return !network_context_->cookie_manager()
               ->cookie_settings()
-              .IsCookieAccessAllowed(url, site_for_cookies, top_frame_origin);
+              .IsCookieAccessAllowed(url, site_for_cookies.RepresentativeUrl(),
+                                     top_frame_origin);
 }
 
 bool NetworkServiceNetworkDelegate::

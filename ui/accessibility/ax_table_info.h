@@ -89,6 +89,9 @@ class AX_EXPORT AXTableInfo {
   // Map from each row's node ID to its row index.
   std::unordered_map<int32_t, size_t> row_id_to_index;
 
+  // List of ax nodes that represent the rows of the table.
+  std::vector<AXNode*> row_nodes;
+
   // The ARIA row count and column count, if any ARIA table or grid
   // attributes are used in the table at all.
   base::Optional<int> aria_row_count = 0;
@@ -99,7 +102,7 @@ class AX_EXPORT AXTableInfo {
 
   void ClearVectors();
   void BuildCellDataVectorFromRowAndCellNodes(
-      const std::vector<AXNode*>& row_nodes,
+      const std::vector<AXNode*>& row_node_list,
       const std::vector<std::vector<AXNode*>>& cell_nodes_per_row);
   void BuildCellAndHeaderVectorsFromCellData();
   void UpdateExtraMacNodes();

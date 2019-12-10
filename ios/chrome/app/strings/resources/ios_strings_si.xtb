@@ -91,6 +91,7 @@
 <translation id="209018056901015185">ඩෙක්ස්ටොප් අඩවිය ඉල්ලන්න</translation>
 <translation id="2103075008456228677">history.google.com විවෘත කරන්න</translation>
 <translation id="2116625576999540962">අයිතම <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ක් ගෙන යන ලදි</translation>
+<translation id="2118594521750010466">දැන් නිරාකරණ කරන්න</translation>
 <translation id="213900355088104901">රහසිගතව බ්‍රවුස් කිරීම සඳහා, අප්‍රසිද්ධ පටිත්තක් විවෘත කරන්න</translation>
 <translation id="2139867232736819575">ඔබ පිටපත් කළ පාඨය සොයන්න</translation>
 <translation id="2149973817440762519">පිටු සලකුණු සංස්කරණය කරන්න</translation>
@@ -98,6 +99,7 @@
 <translation id="2198757192731523470">Google විසින් සෙවීම, දැන්වීම් සහ වෙනත් Google සේවා පෞද්ගලීකරණය කිරීමට ඔබේ ඉතිහාසය භාවිතා කළ හැකිය.</translation>
 <translation id="2230173723195178503">වෙබ් පිටුව පූරණය කරන ලදී</translation>
 <translation id="2239626343334228536">බ්‍රවුස් කිරීමේ දත්ත හිස් කිරීම...</translation>
+<translation id="2257567812274161158">සමමුහූර්ත කිරීම ක්‍රියා නොකරයි.</translation>
 <translation id="2267753748892043616">ගිණුම එකතු කරන්න</translation>
 <translation id="2268044343513325586">පිරිපහදු කරන්න</translation>
 <translation id="2273327106802955778">තව මෙනුව</translation>
@@ -129,6 +131,7 @@
 <translation id="2691653761409724435">නොබැඳිව ලද නොහැකිය</translation>
 <translation id="2695507686909505111">පිටුව පරිවර්තන කළා</translation>
 <translation id="2702801445560668637">කියවීම් ලැයිස්තුව</translation>
+<translation id="2704491540504985681">බාගැනීම්</translation>
 <translation id="2704606927547763573">පිටපත් කරන ලදි</translation>
 <translation id="2709516037105925701">ස්වයං පිරවීම</translation>
 <translation id="2712127207578915686">ගොනුව විවෘත කිරීමට නොහැකිය</translation>
@@ -218,6 +221,7 @@
 <translation id="3943492037546055397">මුරපද</translation>
 <translation id="3967822245660637423">බාගැනීම සම්පූර්ණයි</translation>
 <translation id="3989635538409502728">වරන්න</translation>
+<translation id="399419089947468503">මුරපද සමමුහූර්ත කිරීමේ දෝෂයයි</translation>
 <translation id="3995521777587992544">පිටු පූරණ ප්‍රගති තීරුව, <ph name="EMAIL" /> පූරණ කළා.</translation>
 <translation id="4002066346123236978">සිරස්තලය</translation>
 <translation id="4004204301268239848">මුරපද ඔබගේ Google ගිණුමේ සුරකිනු ලබන අතර, එම නිසා ඔබට ඒවා ඕනෑම උපාංගයක භාවිත කළ හැක</translation>
@@ -238,6 +242,7 @@
 <translation id="424315890655130736">මුර-වැකිකඩ ඇතුළත් කරන්න</translation>
 <translation id="4263576668337963058">ලද හැකි පිටු ක්‍රියා පෙන්වන්න</translation>
 <translation id="4272631900155121838">QR කේතය ස්කෑන් කිරීමට සැකසීම් වෙතින් කැමරාව සබල කරන්න</translation>
+<translation id="4276041135170112053">දැන් නිරාකරණ කරන්න.</translation>
 <translation id="4281844954008187215">සේවා කොන්දේසි</translation>
 <translation id="430793432425771671">සියලු දේ සමමුහුර්ත කරන්න</translation>
 <translation id="430967081421617822">සියලු කාලය තුළ</translation>
@@ -286,6 +291,7 @@
 <translation id="4904877109095351937">කියවූ ලෙස ලකුණු කරන්න</translation>
 <translation id="4930268273022498155">පවතින දත්ත මකන්න. ඔබට <ph name="USER_EMAIL1" /> වෙත ආපසු මාරු වීම මඟින් එය ඔබට යළි ලබා ගත හැකිය.</translation>
 <translation id="4941089862236492464">කනගාටුයි, ඔබේ අයිතමය බෙදා ගැනීමේ ගැටලුවක් විය.</translation>
+<translation id="4944543191714094452">පිටුව තුළ සොයන්න…</translation>
 <translation id="4945756290001680296">මුරපද සැකසීම් වෙත ප්‍රවේශ වන්න</translation>
 <translation id="4979397965658815378">ඔබගේ සියලුම උපාංග මත පිටුසන්, මුරපද, ඉතිහාසය හා අනෙකුත් සැකසීම් ලබා ගැනීමට ඔබගේ Google ගිණුම සමඟ පුරනය වන්න</translation>
 <translation id="5005498671520578047">මුරපදය පිටපත් කරන්න</translation>
@@ -317,6 +323,7 @@
 <translation id="5433691172869980887">පරිශීලක නම පිටපත් කරන ලදී</translation>
 <translation id="54401264925851789">පිටු ආරක්ෂිත තතු</translation>
 <translation id="5443952882982198570">ණය කාඩ්පත්</translation>
+<translation id="5457907402803865181">මුරපද සමමුහූර්ත කිරීමේ දෝෂයයි.</translation>
 <translation id="5525269841082836315">මුර-වැකිකඩ සාදන්න</translation>
 <translation id="5548760955356983418">Handoff ඔබට මෙම උපාංගය මත වෙබ් අඩවියක් බ්‍රවුස් කිරීම ඇරඹීමට ඉඩ දෙන අතර අනතුරුව ඔබේ Mac එකේ දිගටම කරගෙන යාමට ඉඩ දෙයි. වත්මන් විවෘත යෙදුම ඔබේ Mac හි ඩොක් තුළ දිස් වනු ඇත.
 
@@ -408,6 +415,7 @@
 <translation id="6482629121755362506">අයිතම <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ක් මකන ලදි</translation>
 <translation id="6610002944194042868">පරිවර්තන විකල්ප</translation>
 <translation id="6628106477656132239">අවලංගු කල් ඉකුත් වීමේ දිනය</translation>
+<translation id="6638511529934826365">පාඨය විශාලන කරන්න…</translation>
 <translation id="6642362222295953972">පවතින පටිත්තට මාරු වන්න</translation>
 <translation id="6643016212128521049">මකන්න</translation>
 <translation id="6656103420185847513">ෆෝල්ඩරය සංස්කරණය කරන්න</translation>

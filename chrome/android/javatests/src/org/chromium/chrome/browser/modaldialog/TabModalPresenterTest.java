@@ -29,13 +29,13 @@ import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
@@ -51,7 +51,10 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
@@ -98,7 +101,7 @@ public class TabModalPresenterTest {
     private Integer mExpectedDismissalCause;
 
     @Before
-    public void setUp() throws InterruptedException {
+    public void setUp() {
         mActivityTestRule.startMainActivityOnBlankPage();
         mActivity = mActivityTestRule.getActivity();
         mManager = mActivity.getModalDialogManager();
@@ -125,9 +128,12 @@ public class TabModalPresenterTest {
         final View controlContainer = mActivity.findViewById(R.id.control_container);
         final ViewGroup containerParent = presenter.getContainerParentForTest();
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            assertTrue(containerParent.indexOfChild(dialogContainer)
-                    > containerParent.indexOfChild(controlContainer));
+        CriteriaHelper.pollUiThread(
+                Criteria.equals(View.VISIBLE, () -> dialogContainer.getVisibility()));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertThat(containerParent.indexOfChild(dialogContainer),
+                    Matchers.greaterThan(containerParent.indexOfChild(controlContainer)));
         });
 
         // When editing URL, it should be shown on top of the dialog.
@@ -135,18 +141,18 @@ public class TabModalPresenterTest {
         int callCount = mTestObserver.onUrlFocusChangedCallback.getCallCount();
         OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
         mTestObserver.onUrlFocusChangedCallback.waitForCallback(callCount);
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            assertTrue(containerParent.indexOfChild(dialogContainer)
-                    < containerParent.indexOfChild(controlContainer));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertThat(containerParent.indexOfChild(dialogContainer),
+                    Matchers.lessThan(containerParent.indexOfChild(controlContainer)));
         });
 
         // When URL bar is not focused, the dialog should be shown on top of the toolbar again.
         callCount = mTestObserver.onUrlFocusChangedCallback.getCallCount();
         OmniboxTestUtils.toggleUrlBarFocus(urlBar, false);
         mTestObserver.onUrlFocusChangedCallback.waitForCallback(callCount);
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            assertTrue(containerParent.indexOfChild(dialogContainer)
-                    > containerParent.indexOfChild(controlContainer));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertThat(containerParent.indexOfChild(dialogContainer),
+                    Matchers.greaterThan(containerParent.indexOfChild(controlContainer)));
         });
 
         // Dismiss the dialog by clicking OK.
@@ -480,6 +486,27 @@ public class TabModalPresenterTest {
         mTestObserver.onDialogDismissedCallback.waitForCallback(callCount);
 
         mExpectedDismissalCause = null;
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"ModalDialog"})
+    public void testBrowserControlContraints_ShowHide() {
+        PropertyModel dialog1 = createDialog(mActivity, "1", null);
+        Assert.assertEquals(BrowserControlsState.BOTH, getBrowserControlsConstraints());
+        showDialog(mManager, dialog1, ModalDialogType.TAB);
+        Assert.assertEquals(BrowserControlsState.SHOWN, getBrowserControlsConstraints());
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> mManager.dismissDialog(
+                                dialog1, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED));
+        Assert.assertEquals(BrowserControlsState.BOTH, getBrowserControlsConstraints());
+    }
+
+    @BrowserControlsState
+    private int getBrowserControlsConstraints() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> mTabModalPresenter.getBrowserControlsVisibilityDelegate().get());
     }
 
     private void checkBrowserControls(boolean restricted) {

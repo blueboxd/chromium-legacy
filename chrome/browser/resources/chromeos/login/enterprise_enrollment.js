@@ -32,7 +32,7 @@ var INJECTED_WEBVIEW_SCRIPT = String.raw`
 Polymer({
   is: 'enterprise-enrollment',
 
-  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
+  behaviors: [I18nBehavior, OobeDialogHostBehavior],
 
   properties: {
     /**

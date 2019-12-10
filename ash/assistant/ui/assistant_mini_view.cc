@@ -15,6 +15,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -89,6 +90,7 @@ void AssistantMiniView::InitLayout() {
                           .DeriveWithWeight(gfx::Font::Weight::MEDIUM));
   label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
   label_->SetLineHeight(kLineHeightDip);
+  label_->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
   AddChildView(label_);
 
   // Initialize the prompt.

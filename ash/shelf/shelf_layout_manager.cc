@@ -2650,7 +2650,7 @@ bool ShelfLayoutManager::MaybeStartDragWindowFromShelf(
     return false;
 
   window_drag_controller_ = std::make_unique<DragWindowFromShelfController>(
-      window, event_in_screen.location(), hotseat_state());
+      window, event_in_screen.location_f(), hotseat_state());
   return true;
 }
 
@@ -2665,7 +2665,8 @@ void ShelfLayoutManager::MaybeUpdateWindowDrag(
   }
 
   DCHECK_EQ(drag_status_, kDragInProgress);
-  window_drag_controller_->Drag(event_in_screen.location(), scroll_x, scroll_y);
+  window_drag_controller_->Drag(event_in_screen.location_f(), scroll_x,
+                                scroll_y);
 }
 
 base::Optional<ShelfWindowDragResult> ShelfLayoutManager::MaybeEndWindowDrag(
@@ -2680,7 +2681,7 @@ base::Optional<ShelfWindowDragResult> ShelfLayoutManager::MaybeEndWindowDrag(
         event_in_screen.AsGestureEvent()->details().velocity_y());
   }
 
-  return window_drag_controller_->EndDrag(event_in_screen.location(),
+  return window_drag_controller_->EndDrag(event_in_screen.location_f(),
                                           velocity_y);
 }
 

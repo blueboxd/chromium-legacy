@@ -56,7 +56,12 @@ class AppServiceInstanceRegistryHelper {
                    const std::string& launch_id,
                    apps::InstanceState state);
 
+  // Return true if the app is a Web app.
+  bool IsWebApp(const std::string& app_id) const;
+
  private:
+  aura::Window* GetWindow(content::WebContents* contents);
+
   apps::AppServiceProxy* proxy_ = nullptr;
 
   // Used to get app info for tabs.

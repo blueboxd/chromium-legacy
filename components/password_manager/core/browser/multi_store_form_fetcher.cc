@@ -20,9 +20,7 @@ MultiStoreFormFetcher::MultiStoreFormFetcher(
     PasswordStore::FormDigest form_digest,
     const PasswordManagerClient* client,
     bool should_migrate_http_passwords)
-    : FormFetcherImpl(form_digest, client, should_migrate_http_passwords) {
-  sort_matches_by_date_last_used_ = true;
-}
+    : FormFetcherImpl(form_digest, client, should_migrate_http_passwords) {}
 
 MultiStoreFormFetcher::~MultiStoreFormFetcher() = default;
 

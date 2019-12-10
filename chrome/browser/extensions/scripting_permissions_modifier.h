@@ -83,6 +83,11 @@ class ScriptingPermissionsModifier {
   // which CanAffectExtension() returns true). Anything else will DCHECK.
   bool HasGrantedHostPermission(const GURL& url) const;
 
+  // Returns true if the extension has runtime granted permission patterns that
+  // are sufficiently broad enough to be functionally similar to all sites
+  // access.
+  bool HasBroadGrantedHostPermissions();
+
   // Revokes permission to run on the origin of |url|, including any permissions
   // that match or overlap with the origin. For instance, removing access to
   // https://google.com will remove access to *://*.com/* as well.
@@ -90,6 +95,10 @@ class ScriptingPermissionsModifier {
   // This may only be called for extensions that can be affected (i.e., for
   // which CanAffectExtension() returns true). Anything else will DCHECK.
   void RemoveGrantedHostPermission(const GURL& url);
+
+  // Revokes host permission patterns granted to the extension that effectively
+  // grant access to all urls.
+  void RemoveBroadGrantedHostPermissions();
 
   // Revokes all host permissions granted to the extension. Note that this will
   // only withhold hosts explicitly granted to the extension; this will not

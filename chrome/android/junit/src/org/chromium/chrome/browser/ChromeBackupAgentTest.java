@@ -43,7 +43,6 @@ import org.robolectric.annotation.Implements;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.PathUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
@@ -442,11 +441,6 @@ public class ChromeBackupAgentTest {
         // Test that the status of the restore has been recorded.
         assertThat(ChromeBackupAgent.getRestoreStatus(),
                 equalTo(ChromeBackupAgent.RestoreStatus.RESTORE_COMPLETED));
-
-        // The test mocks out everything that forces the AsyncTask used by PathUtils setup to
-        // complete. If it isn't completed before the test exits Robolectric crashes with a null
-        // pointer exception (although the test passes). Force it to complete by getting some data.
-        PathUtils.getDataDirectory();
     }
 
     /**
@@ -478,11 +472,6 @@ public class ChromeBackupAgentTest {
         // Test that the status of the restore has been recorded.
         assertThat(ChromeBackupAgent.getRestoreStatus(),
                 equalTo(ChromeBackupAgent.RestoreStatus.NOT_SIGNED_IN));
-
-        // The test mocks out everything that forces the AsyncTask used by PathUtils setup to
-        // complete. If it isn't completed before the test exits Robolectric crashes with a null
-        // pointer exception (although the test passes). Force it to complete by getting some data.
-        PathUtils.getDataDirectory();
     }
 
     /**
@@ -508,11 +497,6 @@ public class ChromeBackupAgentTest {
         // Test that the status of the restore has been recorded.
         assertThat(ChromeBackupAgent.getRestoreStatus(),
                 equalTo(ChromeBackupAgent.RestoreStatus.BROWSER_STARTUP_FAILED));
-
-        // The test mocks out everything that forces the AsyncTask used by PathUtils setup to
-        // complete. If it isn't completed before the test exits Robolectric crashes with a null
-        // pointer exception (although the test passes). Force it to complete by getting some data.
-        PathUtils.getDataDirectory();
     }
 
     /**
@@ -538,11 +522,6 @@ public class ChromeBackupAgentTest {
         // Test that the status of the restore has been recorded.
         assertThat(ChromeBackupAgent.getRestoreStatus(),
                 equalTo(ChromeBackupAgent.RestoreStatus.RESTORE_AFTER_FIRST_RUN));
-
-        // The test mocks out everything that forces the AsyncTask used by PathUtils setup to
-        // complete. If it isn't completed before the test exits Robolectric crashes with a null
-        // pointer exception (although the test passes). Force it to complete by getting some data.
-        PathUtils.getDataDirectory();
     }
 
     /**

@@ -502,6 +502,7 @@ extern const char kNoWildCardsInPaths[];
 extern const char kNPAPIPluginsNotSupported[];
 extern const char kOneUISurfaceOnly[];
 extern const char kPageCaptureNeeded[];
+extern const char kPermissionCannotBeOptional[];
 extern const char kPermissionMarkedOptionalAndRequired[];
 extern const char kPermissionMustBeOptional[];
 extern const char kPermissionNotAllowed[];

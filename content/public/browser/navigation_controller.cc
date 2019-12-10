@@ -33,6 +33,9 @@ NavigationController::LoadURLParams::LoadURLParams(const OpenURLParams& input)
       blob_url_loader_factory(input.blob_url_loader_factory),
       href_translate(input.href_translate),
       reload_type(input.reload_type) {
+#if DCHECK_IS_ON()
+  DCHECK(input.Valid());
+#endif
   // A non-null |source_site_instance| is important for picking the right
   // renderer process for hosting about:blank and/or data: URLs (their origin's
   // precursor is based on |initiator_origin|).

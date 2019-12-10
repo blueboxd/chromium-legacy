@@ -172,7 +172,7 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
 
   // Sets the bounds of the window shadow. If |bounds_in_screen| is nullopt,
   // the shadow is hidden.
-  void SetShadowBounds(base::Optional<gfx::Rect> bounds_in_screen);
+  void SetShadowBounds(base::Optional<gfx::RectF> bounds_in_screen);
 
   // Updates the rounded corners and shadow on this overview window item.
   void UpdateRoundedCornersAndShadow();

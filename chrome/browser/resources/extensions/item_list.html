@@ -31,7 +31,6 @@
 
   .items-container {
     --grid-gutter: 12px;
-    --max-columns: 3;
     display: grid;
     grid-column-gap: var(--grid-gutter);
     grid-row-gap: var(--grid-gutter);
@@ -40,6 +39,12 @@
     margin: auto;
     max-width: calc(var(--extensions-card-width) * var(--max-columns) +
         var(--grid-gutter) * var(--max-columns));
+  }
+
+  #checkup-container {
+    grid-column: 1 / -1;
+    /* The checkup card should be at least as tall as an extensions item card.*/
+    min-height: var(--extensions-card-height);
   }
 
   extensions-item {
@@ -74,7 +79,7 @@
 </style>
 <div id="container">
   <managed-footnote hidden="[[filter]]"></managed-footnote>
-  <div id="content-wrapper">
+  <div id="content-wrapper" style="--max-columns: [[maxColumns_]];">
     <div id="no-items" class="empty-list-message"
         hidden$="[[!shouldShowEmptyItemsMessage_(
             apps.length, extensions.length)]]">
@@ -88,6 +93,10 @@
       <span>$i18n{noSearchResults}</span>
     </div>
     <div class="items-container" hidden="[[!shownExtensionsCount_]]">
+      <div id="checkup-container" hidden="[[!showCheckup_]]">
+        <extensions-checkup id="checkup" slot="view">
+        </extensions-checkup>
+      </div>
       <!-- Render only a few items first, to improve initial render time,
         then render the remaining items on a different frame. Value of 3
         was chosen by experimentation, and it is a good trade-off between

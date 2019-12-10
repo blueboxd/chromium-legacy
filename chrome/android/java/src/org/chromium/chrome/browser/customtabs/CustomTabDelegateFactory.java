@@ -48,6 +48,7 @@ import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.webapps.WebDisplayMode;
 import org.chromium.chrome.browser.webapps.WebappScopePolicy;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
@@ -338,8 +339,14 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
         TabStateBrowserControlsVisibilityDelegate tabDelegate =
                 new TabStateBrowserControlsVisibilityDelegate(tab) {
                     @Override
-                    public boolean canAutoHideBrowserControls() {
-                        return mShouldHideBrowserControls && super.canAutoHideBrowserControls();
+                    protected int calculateVisibilityConstraints() {
+                        @BrowserControlsState
+                        int constraints = super.calculateVisibilityConstraints();
+                        if (constraints == BrowserControlsState.BOTH
+                                && !mShouldHideBrowserControls) {
+                            return BrowserControlsState.SHOWN;
+                        }
+                        return constraints;
                     }
                 };
 

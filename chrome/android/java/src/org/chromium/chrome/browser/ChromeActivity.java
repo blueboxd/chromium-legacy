@@ -134,7 +134,6 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
 import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
@@ -817,10 +816,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                     // paused. Ensure that it's restored appropriately.
                     tab.loadIfNeeded();
                 }
-                // When resuming the activity, force an update to the fullscreen state to ensure a
-                // subactivity did not change the fullscreen configuration of this ChromeTab's
-                // renderer in the case where it was shared.
-                TabBrowserControlsConstraintsHelper.updateEnabledState(tab);
             }
             VrModuleProvider.getDelegate().onActivityShown(this);
         } else {
@@ -1438,9 +1433,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         mBottomSheetController = new BottomSheetController(getLifecycleDispatcher(),
                 mActivityTabProvider, mScrimView, sheetViewSupplier, panelManagerSupplier,
                 getFullscreenManager(), getWindow(), getWindowAndroid().getKeyboardDelegate());
-
-        ((BottomContainer) findViewById(R.id.bottom_container))
-                .setBottomSheetController(mBottomSheetController);
 
         ChromeFullscreenManager.FullscreenListener fullscreenListener =
                 new ChromeFullscreenManager.FullscreenListener() {

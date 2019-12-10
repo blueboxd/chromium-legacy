@@ -103,8 +103,15 @@ unsigned FakeOutputSurface::UpdateGpuFence() {
 void FakeOutputSurface::SetUpdateVSyncParametersCallback(
     UpdateVSyncParametersCallback callback) {}
 
+void FakeOutputSurface::SetDisplayTransformHint(
+    gfx::OverlayTransform transform) {
+  if (support_display_transform_hint_)
+    display_transform_hint_ = transform;
+}
+
 gfx::OverlayTransform FakeOutputSurface::GetDisplayTransform() {
-  return gfx::OVERLAY_TRANSFORM_NONE;
+  return support_display_transform_hint_ ? display_transform_hint_
+                                         : gfx::OVERLAY_TRANSFORM_NONE;
 }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)

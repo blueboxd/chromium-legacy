@@ -334,7 +334,7 @@ const base::FeatureParam<int> kForceDarkBackgroundLightnessThresholdParam{
 
 // Instructs WebRTC to honor the Min/Max Video Encode Accelerator dimensions.
 const base::Feature kWebRtcUseMinMaxVEADimensions{
-    "WebRtcUseMinMaxVEADimensions", base::FEATURE_ENABLED_BY_DEFAULT};
+    "WebRtcUseMinMaxVEADimensions", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Blink garbage collection.
 // Enables compaction of backing stores on Blink's heap.
@@ -353,13 +353,6 @@ const base::Feature kBlinkHeapIncrementalMarking{
 // also adds additional verification passes.
 const base::Feature kBlinkHeapIncrementalMarkingStress{
     "BlinkHeapIncrementalMarkingStress", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables a delay before BufferingBytesConsumer begins reading from its
-// underlying consumer when instantiated with CreateWithDelay().
-const base::Feature kBufferingBytesConsumerDelay{
-    "BufferingBytesConsumerDelay", base::FEATURE_ENABLED_BY_DEFAULT};
-const base::FeatureParam<int> kBufferingBytesConsumerDelayMilliseconds{
-    &kBufferingBytesConsumerDelay, "milliseconds", 50};
 
 // Enables removing AppCache delays when triggering requests when the HTML was
 // not fetched from AppCache.

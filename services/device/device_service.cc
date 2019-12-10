@@ -143,51 +143,45 @@ void DeviceService::SetPlatformSensorProviderForTesting(
 }
 
 void DeviceService::OnStart() {
-  registry_.AddInterface<mojom::Fingerprint>(base::Bind(
-      &DeviceService::BindFingerprintReceiver, base::Unretained(this)));
+  registry_.AddInterface<mojom::DeviceService>(base::BindRepeating(
+      &DeviceService::BindDeviceService, base::Unretained(this)));
+  registry_.AddInterface<mojom::Fingerprint>(
+      base::Bind(&DeviceService::BindFingerprint, base::Unretained(this)));
   registry_.AddInterface<mojom::GeolocationConfig>(base::BindRepeating(
-      &DeviceService::BindGeolocationConfigReceiver, base::Unretained(this)));
+      &DeviceService::BindGeolocationConfig, base::Unretained(this)));
   registry_.AddInterface<mojom::GeolocationContext>(base::Bind(
-      &DeviceService::BindGeolocationContextReceiver, base::Unretained(this)));
+      &DeviceService::BindGeolocationContext, base::Unretained(this)));
   registry_.AddInterface<mojom::GeolocationControl>(base::Bind(
-      &DeviceService::BindGeolocationControlReceiver, base::Unretained(this)));
-  registry_.AddInterface<mojom::PowerMonitor>(base::Bind(
-      &DeviceService::BindPowerMonitorReceiver, base::Unretained(this)));
+      &DeviceService::BindGeolocationControl, base::Unretained(this)));
+  registry_.AddInterface<mojom::PowerMonitor>(
+      base::Bind(&DeviceService::BindPowerMonitor, base::Unretained(this)));
   registry_.AddInterface<mojom::PublicIpAddressGeolocationProvider>(
-      base::Bind(&DeviceService::BindPublicIpAddressGeolocationProviderReceiver,
+      base::Bind(&DeviceService::BindPublicIpAddressGeolocationProvider,
                  base::Unretained(this)));
-  registry_.AddInterface<mojom::ScreenOrientationListener>(
-      base::Bind(&DeviceService::BindScreenOrientationListenerReceiver,
-                 base::Unretained(this)));
-  registry_.AddInterface<mojom::SensorProvider>(base::Bind(
-      &DeviceService::BindSensorProviderReceiver, base::Unretained(this)));
-  registry_.AddInterface<mojom::TimeZoneMonitor>(base::Bind(
-      &DeviceService::BindTimeZoneMonitorReceiver, base::Unretained(this)));
-  registry_.AddInterface<mojom::WakeLockProvider>(base::Bind(
-      &DeviceService::BindWakeLockProviderReceiver, base::Unretained(this)));
-  registry_.AddInterface<mojom::UsbDeviceManager>(base::Bind(
-      &DeviceService::BindUsbDeviceManagerReceiver, base::Unretained(this)));
-  registry_.AddInterface<mojom::UsbDeviceManagerTest>(
-      base::Bind(&DeviceService::BindUsbDeviceManagerTestReceiver,
-                 base::Unretained(this)));
+  registry_.AddInterface<mojom::ScreenOrientationListener>(base::Bind(
+      &DeviceService::BindScreenOrientationListener, base::Unretained(this)));
+  registry_.AddInterface<mojom::SensorProvider>(
+      base::Bind(&DeviceService::BindSensorProvider, base::Unretained(this)));
+  registry_.AddInterface<mojom::SerialPortManager>(base::BindRepeating(
+      &DeviceService::BindSerialPortManager, base::Unretained(this)));
+  registry_.AddInterface<mojom::TimeZoneMonitor>(
+      base::Bind(&DeviceService::BindTimeZoneMonitor, base::Unretained(this)));
+  registry_.AddInterface<mojom::WakeLockProvider>(
+      base::Bind(&DeviceService::BindWakeLockProvider, base::Unretained(this)));
+  registry_.AddInterface<mojom::UsbDeviceManager>(
+      base::Bind(&DeviceService::BindUsbDeviceManager, base::Unretained(this)));
+  registry_.AddInterface<mojom::UsbDeviceManagerTest>(base::Bind(
+      &DeviceService::BindUsbDeviceManagerTest, base::Unretained(this)));
+  registry_.AddInterface<mojom::BatteryMonitor>(
+      base::Bind(&DeviceService::BindBatteryMonitor, base::Unretained(this)));
+  registry_.AddInterface<mojom::NFCProvider>(
+      base::Bind(&DeviceService::BindNFCProvider, base::Unretained(this)));
+  registry_.AddInterface<mojom::VibrationManager>(
+      base::Bind(&DeviceService::BindVibrationManager, base::Unretained(this)));
 
-#if defined(OS_ANDROID)
-  registry_.AddInterface(GetJavaInterfaceProvider()
-                             ->CreateInterfaceFactory<mojom::BatteryMonitor>());
-  registry_.AddInterface(
-      GetJavaInterfaceProvider()->CreateInterfaceFactory<mojom::NFCProvider>());
-  registry_.AddInterface(
-      GetJavaInterfaceProvider()
-          ->CreateInterfaceFactory<mojom::VibrationManager>());
-#else
-  registry_.AddInterface<mojom::BatteryMonitor>(base::Bind(
-      &DeviceService::BindBatteryMonitorReceiver, base::Unretained(this)));
-  registry_.AddInterface<mojom::HidManager>(base::Bind(
-      &DeviceService::BindHidManagerReceiver, base::Unretained(this)));
-  registry_.AddInterface<mojom::NFCProvider>(base::Bind(
-      &DeviceService::BindNFCProviderReceiver, base::Unretained(this)));
-  registry_.AddInterface<mojom::VibrationManager>(base::Bind(
-      &DeviceService::BindVibrationManagerReceiver, base::Unretained(this)));
+#if !defined(OS_ANDROID)
+  registry_.AddInterface<mojom::HidManager>(
+      base::Bind(&DeviceService::BindHidManager, base::Unretained(this)));
 #endif
 
 #if (defined(OS_LINUX) && defined(USE_UDEV)) || defined(OS_WIN) || \
@@ -203,23 +197,18 @@ void DeviceService::OnStart() {
   serial_port_manager_task_runner_ = base::CreateSequencedTaskRunner(
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 #endif
-  registry_.AddInterface<mojom::SerialPortManager>(
-      base::BindRepeating(&SerialPortManagerImpl::Bind,
-                          base::Unretained(serial_port_manager_.get())),
-      serial_port_manager_task_runner_);
 #endif
 
 #if defined(OS_CHROMEOS)
-  registry_.AddInterface<mojom::BluetoothSystemFactory>(
-      base::BindRepeating(&DeviceService::BindBluetoothSystemFactoryReceiver,
-                          base::Unretained(this)));
+  registry_.AddInterface<mojom::BluetoothSystemFactory>(base::BindRepeating(
+      &DeviceService::BindBluetoothSystemFactory, base::Unretained(this)));
   registry_.AddInterface<mojom::MtpManager>(base::BindRepeating(
-      &DeviceService::BindMtpManagerReceiver, base::Unretained(this)));
+      &DeviceService::BindMtpManager, base::Unretained(this)));
 #endif
 
 #if defined(OS_LINUX) && defined(USE_UDEV)
   registry_.AddInterface<mojom::InputDeviceManager>(base::Bind(
-      &DeviceService::BindInputDeviceManagerReceiver, base::Unretained(this)));
+      &DeviceService::BindInputDeviceManager, base::Unretained(this)));
 #endif
 }
 
@@ -230,38 +219,58 @@ void DeviceService::OnBindInterface(
   registry_.BindInterface(interface_name, std::move(interface_pipe));
 }
 
-#if !defined(OS_ANDROID)
-void DeviceService::BindBatteryMonitorReceiver(
-    mojo::PendingReceiver<mojom::BatteryMonitor> receiver) {
-  BatteryMonitorImpl::Create(std::move(receiver));
+void DeviceService::BindDeviceService(
+    mojo::PendingReceiver<mojom::DeviceService> receiver) {
+  // This can only be bound by the browser and the browser and the browser only
+  // maintains a single connection to the service at a time.
+  receiver_.reset();
+  receiver_.Bind(std::move(receiver));
 }
 
-void DeviceService::BindHidManagerReceiver(
+void DeviceService::BindBatteryMonitor(
+    mojo::PendingReceiver<mojom::BatteryMonitor> receiver) {
+#if defined(OS_ANDROID)
+  GetJavaInterfaceProvider()->GetInterface(std::move(receiver));
+#else
+  BatteryMonitorImpl::Create(std::move(receiver));
+#endif
+}
+
+void DeviceService::BindNFCProvider(
+    mojo::PendingReceiver<mojom::NFCProvider> receiver) {
+#if defined(OS_ANDROID)
+  GetJavaInterfaceProvider()->GetInterface(std::move(receiver));
+#else
+  LOG(ERROR) << "NFC is only supported on Android";
+  NOTREACHED();
+#endif
+}
+
+void DeviceService::BindVibrationManager(
+    mojo::PendingReceiver<mojom::VibrationManager> receiver) {
+#if defined(OS_ANDROID)
+  GetJavaInterfaceProvider()->GetInterface(std::move(receiver));
+#else
+  VibrationManagerImpl::Create(std::move(receiver));
+#endif
+}
+
+#if !defined(OS_ANDROID)
+void DeviceService::BindHidManager(
     mojo::PendingReceiver<mojom::HidManager> receiver) {
   if (!hid_manager_)
     hid_manager_ = std::make_unique<HidManagerImpl>();
   hid_manager_->AddReceiver(std::move(receiver));
 }
-
-void DeviceService::BindNFCProviderReceiver(
-    mojo::PendingReceiver<mojom::NFCProvider> receiver) {
-  LOG(ERROR) << "NFC is only supported on Android";
-  NOTREACHED();
-}
-
-void DeviceService::BindVibrationManagerReceiver(
-    mojo::PendingReceiver<mojom::VibrationManager> receiver) {
-  VibrationManagerImpl::Create(std::move(receiver));
-}
 #endif
 
 #if defined(OS_CHROMEOS)
-void DeviceService::BindBluetoothSystemFactoryReceiver(
+void DeviceService::BindBluetoothSystemFactory(
     mojo::PendingReceiver<mojom::BluetoothSystemFactory> receiver) {
   BluetoothSystemFactory::CreateFactory(std::move(receiver));
 }
 
-void DeviceService::BindMtpManagerReceiver(
+void DeviceService::BindMtpManager(
     mojo::PendingReceiver<mojom::MtpManager> receiver) {
   if (!mtp_device_manager_)
     mtp_device_manager_ = MtpDeviceManager::Initialize();
@@ -270,7 +279,7 @@ void DeviceService::BindMtpManagerReceiver(
 #endif
 
 #if defined(OS_LINUX) && defined(USE_UDEV)
-void DeviceService::BindInputDeviceManagerReceiver(
+void DeviceService::BindInputDeviceManager(
     mojo::PendingReceiver<mojom::InputDeviceManager> receiver) {
   file_task_runner_->PostTask(
       FROM_HERE,
@@ -278,28 +287,28 @@ void DeviceService::BindInputDeviceManagerReceiver(
 }
 #endif
 
-void DeviceService::BindFingerprintReceiver(
+void DeviceService::BindFingerprint(
     mojo::PendingReceiver<mojom::Fingerprint> receiver) {
   Fingerprint::Create(std::move(receiver));
 }
 
-void DeviceService::BindGeolocationConfigReceiver(
+void DeviceService::BindGeolocationConfig(
     mojo::PendingReceiver<mojom::GeolocationConfig> receiver) {
   GeolocationConfig::Create(std::move(receiver));
 }
 
-void DeviceService::BindGeolocationContextReceiver(
+void DeviceService::BindGeolocationContext(
     mojo::PendingReceiver<mojom::GeolocationContext> receiver) {
   GeolocationContext::Create(std::move(receiver));
 }
 
-void DeviceService::BindGeolocationControlReceiver(
+void DeviceService::BindGeolocationControl(
     mojo::PendingReceiver<mojom::GeolocationControl> receiver) {
   GeolocationProviderImpl::GetInstance()->BindGeolocationControlReceiver(
       std::move(receiver));
 }
 
-void DeviceService::BindPowerMonitorReceiver(
+void DeviceService::BindPowerMonitor(
     mojo::PendingReceiver<mojom::PowerMonitor> receiver) {
   if (!power_monitor_message_broadcaster_) {
     power_monitor_message_broadcaster_ =
@@ -308,7 +317,7 @@ void DeviceService::BindPowerMonitorReceiver(
   power_monitor_message_broadcaster_->Bind(std::move(receiver));
 }
 
-void DeviceService::BindPublicIpAddressGeolocationProviderReceiver(
+void DeviceService::BindPublicIpAddressGeolocationProvider(
     mojo::PendingReceiver<mojom::PublicIpAddressGeolocationProvider> receiver) {
   if (!public_ip_address_geolocation_provider_) {
     public_ip_address_geolocation_provider_ =
@@ -319,7 +328,7 @@ void DeviceService::BindPublicIpAddressGeolocationProviderReceiver(
   public_ip_address_geolocation_provider_->Bind(std::move(receiver));
 }
 
-void DeviceService::BindScreenOrientationListenerReceiver(
+void DeviceService::BindScreenOrientationListener(
     mojo::PendingReceiver<mojom::ScreenOrientationListener> receiver) {
 #if defined(OS_ANDROID)
   if (io_task_runner_) {
@@ -330,7 +339,7 @@ void DeviceService::BindScreenOrientationListenerReceiver(
 #endif
 }
 
-void DeviceService::BindSensorProviderReceiver(
+void DeviceService::BindSensorProvider(
     mojo::PendingReceiver<mojom::SensorProvider> receiver) {
   if (!sensor_provider_) {
     auto platform_provider = PlatformSensorProvider::Create();
@@ -342,19 +351,33 @@ void DeviceService::BindSensorProviderReceiver(
   sensor_provider_->Bind(std::move(receiver));
 }
 
-void DeviceService::BindTimeZoneMonitorReceiver(
+void DeviceService::BindSerialPortManager(
+    mojo::PendingReceiver<mojom::SerialPortManager> receiver) {
+#if (defined(OS_LINUX) && defined(USE_UDEV)) || defined(OS_WIN) || \
+    defined(OS_MACOSX)
+  DCHECK(serial_port_manager_task_runner_);
+  serial_port_manager_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&SerialPortManagerImpl::Bind,
+                                base::Unretained(serial_port_manager_.get()),
+                                std::move(receiver)));
+#else
+  NOTREACHED() << "Serial devices not supported on this platform.";
+#endif
+}
+
+void DeviceService::BindTimeZoneMonitor(
     mojo::PendingReceiver<mojom::TimeZoneMonitor> receiver) {
   if (!time_zone_monitor_)
     time_zone_monitor_ = TimeZoneMonitor::Create(file_task_runner_);
   time_zone_monitor_->Bind(std::move(receiver));
 }
 
-void DeviceService::BindWakeLockProviderReceiver(
+void DeviceService::BindWakeLockProvider(
     mojo::PendingReceiver<mojom::WakeLockProvider> receiver) {
   wake_lock_provider_.AddBinding(std::move(receiver));
 }
 
-void DeviceService::BindUsbDeviceManagerReceiver(
+void DeviceService::BindUsbDeviceManager(
     mojo::PendingReceiver<mojom::UsbDeviceManager> receiver) {
   if (!usb_device_manager_)
     usb_device_manager_ = std::make_unique<usb::DeviceManagerImpl>();
@@ -362,7 +385,7 @@ void DeviceService::BindUsbDeviceManagerReceiver(
   usb_device_manager_->AddReceiver(std::move(receiver));
 }
 
-void DeviceService::BindUsbDeviceManagerTestReceiver(
+void DeviceService::BindUsbDeviceManagerTest(
     mojo::PendingReceiver<mojom::UsbDeviceManagerTest> receiver) {
   if (!usb_device_manager_)
     usb_device_manager_ = std::make_unique<usb::DeviceManagerImpl>();

@@ -11,4 +11,5 @@ struct UserAgentMetadata {
   string platform;
   string architecture;
   string model;
+  bool mobile;
 };

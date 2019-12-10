@@ -175,7 +175,7 @@ std::unique_ptr<URLRequest> TestURLRequestContext::CreateFirstPartyRequest(
     URLRequest::Delegate* delegate,
     NetworkTrafficAnnotationTag traffic_annotation) const {
   auto req = CreateRequest(url, priority, delegate, traffic_annotation);
-  req->set_site_for_cookies(url);
+  req->set_site_for_cookies(SiteForCookies::FromUrl(url));
   return req;
 }
 

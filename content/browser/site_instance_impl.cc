@@ -237,7 +237,8 @@ bool SiteInstanceImpl::HasProcess() {
   if (has_site_ &&
       RenderProcessHost::ShouldUseProcessPerSite(browser_context, site_) &&
       RenderProcessHostImpl::GetSoleProcessHostForSite(
-          browser_context, GetIsolationContext(), site_, lock_url_)) {
+          browser_context, GetIsolationContext(), site_, lock_url_,
+          IsGuest())) {
     return true;
   }
 
@@ -458,7 +459,7 @@ bool SiteInstanceImpl::IsSuitableForURL(const GURL& url) {
 
   return RenderProcessHostImpl::IsSuitableHost(
       GetProcess(), browsing_instance_->GetBrowserContext(),
-      GetIsolationContext(), site_url, origin_lock);
+      GetIsolationContext(), site_url, origin_lock, IsGuest());
 }
 
 bool SiteInstanceImpl::RequiresDedicatedProcess() {
@@ -941,7 +942,8 @@ bool SiteInstanceImpl::DoesSiteURLRequireDedicatedProcess(
 // static
 bool SiteInstanceImpl::ShouldLockToOrigin(
     const IsolationContext& isolation_context,
-    GURL site_url) {
+    const GURL& site_url,
+    const bool is_guest) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserContext* browser_context =
       isolation_context.browser_or_resource_context().ToBrowserContext();
@@ -960,7 +962,7 @@ bool SiteInstanceImpl::ShouldLockToOrigin(
   // SiteInstance. So we skip locking the guest process to the site.
   // TODO(ncarter): Remove this exclusion once we can make origin lock per
   // RenderFrame routing id.
-  if (site_url.SchemeIs(content::kGuestScheme))
+  if (is_guest)
     return false;
 
   // TODO(creis, nick): Until we can handle sites with effective URLs at the
@@ -1021,7 +1023,7 @@ void SiteInstanceImpl::LockToOriginIfNeeded() {
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   GURL process_lock = policy->GetOriginLock(process_->GetID());
-  if (ShouldLockToOrigin(GetIsolationContext(), site_)) {
+  if (ShouldLockToOrigin(GetIsolationContext(), site_, IsGuest())) {
     // Sanity check that this won't try to assign an origin lock to a <webview>
     // process, which can't be locked.
     CHECK(!process_->IsForGuestsOnly());

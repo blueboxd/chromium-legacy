@@ -18,6 +18,7 @@ struct BLINK_COMMON_EXPORT UserAgentMetadata {
   std::string platform;
   std::string architecture;
   std::string model;
+  bool mobile = false;
 };
 
 }  // namespace blink

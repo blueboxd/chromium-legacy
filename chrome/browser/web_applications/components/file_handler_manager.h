@@ -37,9 +37,15 @@ class FileHandlerManager : public AppRegistrarObserver {
   // systems.
   void DisableOsIntegrationForTesting();
 
-  // Enables and registers OS specific file handlers for OSs that need them. On
-  // Chrome OS file handlers are registered separately but they are
-  // still enabled and disabled here.
+  // Returns |app_id|'s URL registered to handle |launch_files|'s extensions, or
+  // nullopt otherwise.
+  const base::Optional<GURL> GetMatchingFileHandlerURL(
+      const AppId& app_id,
+      const std::vector<base::FilePath>& launch_files);
+
+  // Enables and registers OS specific file handlers for OSs that need them.
+  // Currently on Chrome OS, file handlers are enabled and registered as long as
+  // the app is installed.
   void EnableAndRegisterOsFileHandlers(const AppId& app_id);
 
   // Disables file handlers for all OSs and unregisters OS specific file

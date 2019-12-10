@@ -456,7 +456,6 @@ TEST_F(CredentialManagerImplTest, StoreFederatedAfterPassword) {
   autofill::PasswordForm federated = form_;
   federated.password_value.clear();
   federated.type = autofill::PasswordForm::Type::kApi;
-  federated.preferred = true;
   federated.federation_origin =
       url::Origin::Create(GURL("https://google.com/"));
   federated.signon_realm = "federation://example.com/google.com";
@@ -487,10 +486,8 @@ TEST_F(CredentialManagerImplTest, StoreFederatedAfterPassword) {
 
 TEST_F(CredentialManagerImplTest, CredentialManagerStoreOverwrite) {
   // Add an unrelated form to complicate the task.
-  origin_path_form_.preferred = true;
   store_->AddLogin(origin_path_form_);
   // Populate the PasswordStore with a form.
-  form_.preferred = false;
   form_.display_name = base::ASCIIToUTF16("Old Name");
   form_.icon_url = GURL();
   store_->AddLogin(form_);
@@ -516,7 +513,6 @@ TEST_F(CredentialManagerImplTest, CredentialManagerStoreOverwrite) {
   TestPasswordStore::PasswordMap passwords = store_->stored_passwords();
   EXPECT_EQ(1U, passwords.size());
   EXPECT_EQ(2U, passwords[form_.signon_realm].size());
-  origin_path_form_.preferred = false;
   EXPECT_EQ(origin_path_form_, passwords[form_.signon_realm][0]);
   EXPECT_EQ(base::ASCIIToUTF16("Totally new password."),
             passwords[form_.signon_realm][1].password_value);
@@ -882,7 +878,6 @@ TEST_F(CredentialManagerImplTest,
        CredentialManagerOnRequestCredentialWithDuplicates) {
   // Add 6 credentials. Two buckets of duplicates, one empty username and one
   // federated one. There should be just 3 in the account chooser.
-  form_.preferred = true;
   form_.username_element = base::ASCIIToUTF16("username_element");
   store_->AddLogin(form_);
   autofill::PasswordForm empty = form_;
@@ -890,14 +885,11 @@ TEST_F(CredentialManagerImplTest,
   store_->AddLogin(empty);
   autofill::PasswordForm duplicate = form_;
   duplicate.username_element = base::ASCIIToUTF16("username_element2");
-  duplicate.preferred = false;
   store_->AddLogin(duplicate);
 
-  origin_path_form_.preferred = true;
   store_->AddLogin(origin_path_form_);
   duplicate = origin_path_form_;
   duplicate.username_element = base::ASCIIToUTF16("username_element4");
-  duplicate.preferred = false;
   store_->AddLogin(duplicate);
   autofill::PasswordForm federated = origin_path_form_;
   federated.password_value.clear();

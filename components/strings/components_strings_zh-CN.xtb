@@ -9,7 +9,6 @@
 <translation id="1036348656032585052">关闭</translation>
 <translation id="1038842779957582377">未知名称</translation>
 <translation id="1039626062703039346">Chrome 可以帮助您保护您的 Google 帐号和更改密码。这会将此网站的相关信息告知 Google。</translation>
-<translation id="1044897699341250361">这意味着什么</translation>
 <translation id="1050038467049342496">关闭其他应用</translation>
 <translation id="1055184225775184556">撤消添加(&amp;U)</translation>
 <translation id="1056898198331236512">警告</translation>
@@ -184,7 +183,6 @@
 <translation id="1745880797583122200">您的浏览器受管理</translation>
 <translation id="17513872634828108">目前打开的标签页</translation>
 <translation id="1753706481035618306">页码</translation>
-<translation id="175838129965056221">Chrome 检测到，您的网络连接正被监控</translation>
 <translation id="1763864636252898013">此服务器无法证明它是<ph name="DOMAIN" />；您设备的操作系统不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />尝试运行 Windows 网络诊断<ph name="END_LINK" />。</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -253,7 +251,6 @@
 <translation id="2119867082804433120">打孔（右下角）</translation>
 <translation id="2129079103035905234">动态传感器</translation>
 <translation id="2130448033692577677">您指定的模板未必会被应用，因为 DnsOverHttpsMode 政策未设置。</translation>
-<translation id="2131277894177304644">Chromium 检测到，您的网络连接正被监控</translation>
 <translation id="213826338245044447">移动设备书签</translation>
 <translation id="214556005048008348">取消付款</translation>
 <translation id="2147827593068025794">后台同步</translation>
@@ -301,7 +298,7 @@
 <translation id="2354001756790975382">其他书签</translation>
 <translation id="2354430244986887761">Google 安全浏览功能最近在 <ph name="SITE" /> 上<ph name="BEGIN_LINK" />发现了有害应用<ph name="END_LINK" />。</translation>
 <translation id="2355395290879513365">攻击者可能能够看到您正在此网站上浏览的图片，并通过编辑这些图片让您受骗。</translation>
-<translation id="2355474962185559967">您刚刚在一个欺骗性网站中输入了密码。Chromium 建议您立即前往 <ph name="WEBSITE_1" /> 并更改您的密码。</translation>
+<translation id="2355474962185559967">您刚刚在一个欺骗性网站中输入了密码。Chromium 建议您立即前往 <ph name="WEBSITE_1" /> 更改您的密码。</translation>
 <translation id="2356070529366658676">询问</translation>
 <translation id="2359629602545592467">多种货币</translation>
 <translation id="2359808026110333948">继续</translation>
@@ -395,7 +392,6 @@
 <translation id="2799020568854403057">您要访问的网站包含有害应用</translation>
 <translation id="2799223571221894425">重新启动</translation>
 <translation id="2803306138276472711">Google安全浏览功能最近在<ph name="SITE" />上<ph name="BEGIN_LINK" />检测到了恶意软件<ph name="END_LINK" />。平常非常安全的网站有时也会感染恶意软件。</translation>
-<translation id="281585763351939989">Chromium 检测到，您的网络连接正被监控。</translation>
 <translation id="2824775600643448204">地址和搜索栏</translation>
 <translation id="2826760142808435982">该连接使用 <ph name="CIPHER" /> 进行加密和身份验证，并使用 <ph name="KX" /> 作为密钥交换机制。</translation>
 <translation id="2835170189407361413">清除表单</translation>
@@ -440,7 +436,6 @@
 <translation id="3024663005179499861">策略类型有误</translation>
 <translation id="3037605927509011580">喔唷，崩溃啦！</translation>
 <translation id="3041612393474885105">证书信息</translation>
-<translation id="304755864151473094">为何会显示此警告</translation>
 <translation id="3057676462092457419">尚不支持 DnsOverHttps 模式“<ph name="SECURE_DNS_MODE_SECURE" />”，该模式现已设为“<ph name="SECURE_DNS_MODE_OFF" />”。</translation>
 <translation id="3060227939791841287">C9 (Envelope)</translation>
 <translation id="3061707000357573562">修补服务</translation>
@@ -469,7 +464,6 @@
 <translation id="320323717674993345">取消付款</translation>
 <translation id="3207960819495026254">已加书签</translation>
 <translation id="3209034400446768650">此网页可能会收取费用</translation>
-<translation id="3209080785413271048">使用 Windows Hello 验证您保存的付款方式。</translation>
 <translation id="3212581601480735796">您在 <ph name="HOSTNAME" /> 上的活动正被监控</translation>
 <translation id="3215092763954878852">无法使用 WebAuthn</translation>
 <translation id="3225919329040284222">服务器提供的证书与内置预期证书不匹配。这些预期证书是针对某些高安全性网站提供的，以便为您提供保护。</translation>
@@ -478,12 +472,11 @@
 <translation id="3228969707346345236">此网页已经是<ph name="LANGUAGE" />网页，因此无法翻译。</translation>
 <translation id="3229041911291329567">与您的设备和浏览器相关的版本信息</translation>
 <translation id="323107829343500871">输入“<ph name="CREDIT_CARD" />”的银行卡验证码 (CVC)</translation>
-<translation id="3234392465377209614">您刚刚在一个欺骗性网站中输入了密码。Chromium 建议您立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 和 <ph name="WEBSITE_3" /> 并更改您的密码。</translation>
+<translation id="3234392465377209614">您刚刚在一个欺骗性网站中输入了密码。Chromium 建议您立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 和 <ph name="WEBSITE_3" /> 更改您的密码。</translation>
 <translation id="3234666976984236645">始终检测此网站上的重要内容</translation>
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> 看起来和 <ph name="SUGGESTED_DOMAIN" /> 很相似。攻击者有时会使用类似的网址来仿冒网站。</translation>
 <translation id="3270847123878663523">撤消顺序调整(&amp;U)</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
-<translation id="3281668902344226640">使用 Touch ID 验证您保存的付款方式。</translation>
 <translation id="3282497668470633863">添加持卡人姓名</translation>
 <translation id="3287510313208355388">联网时下载</translation>
 <translation id="3293642807462928945">详细了解“<ph name="POLICY_NAME" />”政策</translation>
@@ -511,7 +504,7 @@
 <translation id="342781501876943858">如果您在其他网站上重复使用了您的密码，Chromium 建议您重置该密码。</translation>
 <translation id="3428151540071562330">一个或多个 DnsOverHttpsTemplates 服务器模板 URI 无效，因此不会被使用。</translation>
 <translation id="3431636764301398940">将此卡的信息保存到该设备</translation>
-<translation id="3438790640050632698">您刚刚在一个欺骗性网站中输入了密码。Chrome 建议您立即前往 <ph name="WEBSITE_1" /> 和 <ph name="WEBSITE_2" /> 并更改您的密码。</translation>
+<translation id="3438790640050632698">您刚刚在一个欺骗性网站中输入了密码。Chrome 建议您立即前往 <ph name="WEBSITE_1" /> 和 <ph name="WEBSITE_2" /> 更改您的密码。</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">此设备的所有者已关闭恐龙游戏。</translation>
 <translation id="3447884698081792621">显示证书（由<ph name="ISSUER" />签发）</translation>
@@ -525,7 +518,7 @@
 <translation id="3484560055331845446">您可能会无法再访问自己的 Google 帐号。Chrome 建议您立即更改密码。系统会要求您登录。</translation>
 <translation id="3495081129428749620">在网页“<ph name="PAGE_TITLE" />”中查找</translation>
 <translation id="3512163584740124171">此政策会被忽略，因为同一政策组中的另一个政策具有更高的优先级。</translation>
-<translation id="3525469219100414032">您刚刚在一个欺骗性网站中输入了密码。Chrome 建议您立即前往 <ph name="WEBSITE_1" /> 并更改您的密码。</translation>
+<translation id="3525469219100414032">您刚刚在一个欺骗性网站中输入了密码。Chrome 建议您立即前往 <ph name="WEBSITE_1" /> 更改您的密码。</translation>
 <translation id="3528171143076753409">服务器的证书不受信任。</translation>
 <translation id="3528485271872257980">深棕色</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{在已同步的设备上至少有 1 项内容}=1{1 项内容（在已同步的设备上还有更多内容）}other{# 项内容（在已同步的设备上还有更多内容）}}</translation>
@@ -617,7 +610,6 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{无}=1{来自 1 个网站}other{来自 # 个网站}}</translation>
 <translation id="397105322502079400">正在计算...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> 已被屏蔽</translation>
-<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> 已在您的浏览器中启用了 Chrome 企业版威胁防护功能。Chrome 企业版威胁防护功能可以访问您的部分数据。</translation>
 <translation id="3987405730340719549">Chrome 已确定此网站可能是虚假网站或欺诈性网站。
 
     如果您认为系统不该向您显示这条提示，请访问 https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals。</translation>
@@ -682,7 +674,6 @@
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />尝试运行网络诊断<ph name="END_LINK" />。</translation>
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" />继续前往 <ph name="SITE" /><ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">有效</translation>
-<translation id="4248776159690739358">与您的管理员分享 Chrome 企业级威胁防护功能所报告的安全性事件的相关数据。这可能包括您所访问的网页的网址、文件名或元数据，以及您在登录设备和 Chrome 时使用的用户名。</translation>
 <translation id="4250431568374086873">您与此网站之间建立的连接并非完全安全</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="425582637250725228">系统可能不会保存您所做的更改。</translation>
@@ -717,8 +708,6 @@
 <translation id="4372948949327679948">应使用<ph name="VALUE_TYPE" />值。</translation>
 <translation id="4377125064752653719">您尝试访问的是 <ph name="DOMAIN" />，但服务器出示的证书已被其颁发者吊销。这表明绝对不应该信任此服务器出示的安全凭据。您可能正在与攻击者进行通信。</translation>
 <translation id="4378154925671717803">电话机</translation>
-<translation id="437847259914972036">您从事的任何网络活动和输入的任何信息都正被监视，而且内容可能会在您不知情的情况下被改动。</translation>
-<translation id="4398334096870680409">您的设备不支持此功能。</translation>
 <translation id="4406896451731180161">搜索结果</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" />Cookie</translation>
 <translation id="4415426530740016218">取货地址</translation>
@@ -757,7 +746,6 @@
 <translation id="4594403342090139922">撤消删除(&amp;U)</translation>
 <translation id="4597348597567598915">大小：8</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
-<translation id="4613966523036881546">Google Chrome 不信任此连接的证书，因为该证书的已知用途是网络拦截和监控。</translation>
 <translation id="4635654612248442824">网站 <ph name="ORIGIN" /> 已要求其所有请求都应用一项来源政策，但此政策目前无法应用。</translation>
 <translation id="464342062220857295">搜索功能</translation>
 <translation id="4646534391647090355">立即前往</translation>
@@ -952,7 +940,7 @@
 <translation id="5565735124758917034">主动</translation>
 <translation id="5570825185877910964">保护帐号</translation>
 <translation id="5571083550517324815">无法从此地址取货。请另选一个地址。</translation>
-<translation id="5572009199897554128">您刚刚在一个欺骗性网站中输入了密码。Chromium 建议您立即前往 <ph name="WEBSITE_1" /> 和 <ph name="WEBSITE_2" /> 并更改您的密码。</translation>
+<translation id="5572009199897554128">您刚刚在一个欺骗性网站中输入了密码。Chromium 建议您立即前往 <ph name="WEBSITE_1" /> 和 <ph name="WEBSITE_2" /> 更改您的密码。</translation>
 <translation id="5580958916614886209">请检查您的信用卡到期月份，然后重试</translation>
 <translation id="5586446728396275693">没有已保存的地址</translation>
 <translation id="5595485650161345191">修改地址</translation>
@@ -1134,7 +1122,7 @@
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">添加更多信息</translation>
 <translation id="6447842834002726250">Cookie</translation>
-<translation id="644931407731409778">包含 {COUNT,plural, =1{1 页}other{# 页}}的 PDF 文档</translation>
+<translation id="644931407731409778">包含 {COUNT,plural, =1{1 页}other{# 页}}内容的 PDF 文档</translation>
 <translation id="6451458296329894277">确认重新提交表单</translation>
 <translation id="6457206614190510200">鞍式装订</translation>
 <translation id="6465306955648956876">管理密码…</translation>
@@ -1153,7 +1141,6 @@
 <translation id="6547208576736763147">双孔（左侧）</translation>
 <translation id="6554795675067793129">您的帐号由 <ph name="ENROLLMENT_DOMAIN" /> 管理。</translation>
 <translation id="6556866813142980365">重做</translation>
-<translation id="6559565319173126218">Chrome 不信任相关方为此连接出示的证书，因为该证书的已知用途是网络拦截和监控。</translation>
 <translation id="6569060085658103619">您正在查看扩展程序页面</translation>
 <translation id="6573200754375280815">双孔（右侧）</translation>
 <translation id="6578796323535178455">C2 (Envelope)</translation>
@@ -1182,12 +1169,10 @@
 <translation id="6685834062052613830">请退出并完成设置</translation>
 <translation id="6689271823431384964">Chrome 正在询问是否要将卡保存到您的 Google 帐号中，因为您已登录。您可在“设置”中更改此行为。持卡人姓名来自您的帐号。</translation>
 <translation id="6704582573942289642">确定是这个网站吗？</translation>
-<translation id="6707256370811247129">扫描您在 Chrome 中下载或上传的缓存和文件的内容。</translation>
 <translation id="6710213216561001401">上一个</translation>
 <translation id="6710594484020273272">&lt;输入搜索字词&gt;</translation>
 <translation id="671076103358959139">注册令牌：</translation>
 <translation id="6711464428925977395">代理服务器出现问题，或者地址有误。</translation>
-<translation id="6721811549156553509">网络监控器可能会冒充您访问的网站，并可能会看到您从事的任何活动和输入的任何信息（例如密码、通讯内容或信用卡信息）。您在网络上从事涉及敏感信息的活动时应格外谨慎，因为网络监控器不仅可能会看到您从事的活动或输入的信息，还可能会更改您访问的网页中的内容。这包括在其他已连接互联网的浏览器和程序中发生的活动。</translation>
 <translation id="6738516213925468394">您的数据已于 <ph name="TIME" />使用您的<ph name="BEGIN_LINK" />同步密码<ph name="END_LINK" />加密。输入该密码即可开始同步。</translation>
 <translation id="674375294223700098">未知的服务器证书错误。</translation>
 <translation id="6744009308914054259">在等待连接时，您可以前往“下载内容”页面阅读离线文章。</translation>
@@ -1272,7 +1257,6 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />详细了解<ph name="END_LINK" />此问题。</translation>
 <translation id="7219179957768738017">该连接使用 <ph name="SSL_VERSION" />。</translation>
 <translation id="7220786058474068424">正在处理</translation>
-<translation id="7239736667463137521">Chrome 检测到，您的网络连接正被监控。</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />；<ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">您要访问的网站包含恶意软件</translation>
 <translation id="724975217298816891">输入“<ph name="CREDIT_CARD" />”的过期日期和银行卡验证码 (CVC) 以更新您的信用卡详情。在您确认后，您的信用卡详情将与此网站共享。</translation>
@@ -1299,7 +1283,6 @@
 <translation id="7346048084945669753">有无关联：</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">命令行</translation>
-<translation id="7353776484425559055">Chromium 不信任此连接的证书，因为该证书的已知用途是网络拦截和监控。这条错误消息可能是由您设备上安装的某个证书触发的。在建立安全连接时，Chromium 只信任用户的计算机或移动设备上的本地安装证书。这使得用户能够在网站开发期间使用工具检查和调试网络连接，或在企业环境中拦截和监控内部流量。如果出现了在公共互联网上滥用此功能拦截流量的情况，Chromium 会显示警告。</translation>
 <translation id="7372973238305370288">搜索结果</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">媒体控件</translation>
@@ -1331,7 +1314,6 @@
 <translation id="7460618730930299168">此处显示的放映时间不同于您的选择。继续？</translation>
 <translation id="7473891865547856676">不，谢谢</translation>
 <translation id="7481312909269577407">前进</translation>
-<translation id="748406663033922918">使用“屏幕锁定”功能验证您保存的付款方式。</translation>
 <translation id="7485870689360869515">找不到数据。</translation>
 <translation id="7495290002932347110">某个网站或应用发生了数据泄露，导致您的密码外泄。Chrome 建议您立即检查并更改您在<ph name="ORIGIN" />上保存的密码。</translation>
 <translation id="7498234416455752244">继续修改</translation>
@@ -1361,12 +1343,10 @@
 <translation id="7592362899630581445">服务器的证书违反了域名限制。</translation>
 <translation id="7598391785903975535">少于 <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> 目前无法处理此请求。</translation>
-<translation id="7599841999395223597">Chrome 不信任此连接的证书，因为该证书的已知用途是网络拦截和监控。这条错误消息可能是由您设备上安装的某个证书触发的。在建立安全连接时，Chrome 只信任用户的计算机或移动设备上的本地安装证书。这使得用户能够在网站开发期间使用工具检查和调试网络连接，或在企业环境中拦截和监控内部流量。如果出现了在公共互联网上滥用此功能拦截流量的情况，Chrome 会显示警告。</translation>
 <translation id="7600965453749440009">一律不翻译<ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">值超出了范围 (<ph name="VALUE" />)。</translation>
 <translation id="7613889955535752492">过期时间：<ph name="EXPIRATION_YEAR" /> 年 <ph name="EXPIRATION_MONTH" /> 月</translation>
 <translation id="7615602087246926389">您已经使用不同版本的 Google 帐号密码加密了数据。请在下方输入。</translation>
-<translation id="7625784245512586808">Chrome 企业版威胁防护</translation>
 <translation id="7633909222644580952">性能数据和崩溃报告</translation>
 <translation id="7637571805876720304">要从 Chromium 中移除信用卡吗？</translation>
 <translation id="7638605456503525968">串行端口</translation>
@@ -1454,7 +1434,6 @@
 <translation id="8041940743680923270">使用全局默认设置（询问）</translation>
 <translation id="8042918947222776840">选择取货方式</translation>
 <translation id="8057711352706143257">“<ph name="SOFTWARE_NAME" />”的配置有误。卸载“<ph name="SOFTWARE_NAME" />”通常可解决此问题。<ph name="FURTHER_EXPLANATION" /></translation>
-<translation id="8062224330780487419">从现在起您无需再输入银行卡的安全码了</translation>
 <translation id="8066955247577885446">抱歉，出了点问题。</translation>
 <translation id="8074253406171541171">10x13 (Envelope)</translation>
 <translation id="8078141288243656252">无法在旋转后添加注释</translation>
@@ -1471,7 +1450,6 @@
 <translation id="8103161714697287722">付款方式</translation>
 <translation id="8105368624971345109">关闭</translation>
 <translation id="8118489163946903409">付款方式</translation>
-<translation id="8124023448510659215">Chromium 不信任此连接的证书，因为该证书曾用于网络拦截和监控。</translation>
 <translation id="8127301229239896662">“<ph name="SOFTWARE_NAME" />”没有正确地安装到您的计算机或网络上。请让您的 IT 管理员解决此问题。</translation>
 <translation id="8131740175452115882">确认</translation>
 <translation id="8149426793427495338">您的计算机已进入休眠模式。</translation>
@@ -1516,6 +1494,7 @@
 <translation id="8308427013383895095">由于网络连接问题，翻译失败。</translation>
 <translation id="831207732689920588">此网页可疑（已被 Chrome 标记）。</translation>
 <translation id="8332188693563227489">访问 <ph name="HOST_NAME" /> 的请求遭到拒绝</translation>
+<translation id="833262891116910667">突出显示</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">如果您了解自己将面临的安全风险，则可以在有害程序被清除之前<ph name="BEGIN_LINK" />访问此网站<ph name="END_LINK" />。</translation>
 <translation id="8349305172487531364">书签栏</translation>
@@ -1614,8 +1593,6 @@
 <translation id="8957210676456822347">强制门户授权</translation>
 <translation id="8962950042226115166">可疑网站</translation>
 <translation id="8968766641738584599">保存卡片</translation>
-<translation id="8969267497192857913">您输入的任何内容、查看的任何网页或从事的任何其他网络活动都正被监视，而且网站上的任何内容都可能会在您不知情的情况下被改动。
-    <ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">服务器的证书已过期。</translation>
 <translation id="8975012916872825179">包括电话号码、电子邮件地址和送货地址等信息</translation>
 <translation id="8975263830901772334">已打印的文件的名称</translation>
@@ -1649,7 +1626,6 @@
 <translation id="9080712759204168376">订单摘要</translation>
 <translation id="9089260154716455634">“非工作时间”政策：</translation>
 <translation id="9095388113577226029">更多语言…</translation>
-<translation id="9098981495403789647">您的管理员已在您的浏览器中启用了 Chrome 企业版威胁防护功能。Chrome 企业版威胁防护功能可以访问您的部分数据。</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> 通常会使用加密技术来保护您的信息。Chromium 此次尝试连接到 <ph name="SITE" /> 时，此网站发回了异常的错误凭据。这可能是因为有攻击者在试图冒充 <ph name="SITE" />，或 Wi-Fi 登录屏幕中断了此次连接。请放心，您的信息仍然是安全的，因为 Chromium 尚未进行任何数据交换便停止了连接。</translation>
 <translation id="9106062320799175032">添加帐单邮寄地址</translation>
 <translation id="9114524666733003316">正在确认信用卡…</translation>
@@ -1679,7 +1655,7 @@
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">您可能会无法再访问自己的 Google 帐号。Chromium 建议您立即更改密码。系统会要求您登录。</translation>
 <translation id="939736085109172342">新建文件夹</translation>
-<translation id="940786960229275114">您刚刚在一个欺骗性网站中输入了密码。Chrome 建议您立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 和 <ph name="WEBSITE_3" /> 并更改您的密码。</translation>
+<translation id="940786960229275114">您刚刚在一个欺骗性网站中输入了密码。Chrome 建议您立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 和 <ph name="WEBSITE_3" /> 更改您的密码。</translation>
 <translation id="945855313015696284">请查看下面的信息，并删除所有无效卡片</translation>
 <translation id="950736567201356821">三孔（顶部）</translation>
 <translation id="951104842009476243">接受的借记卡和预付卡</translation>

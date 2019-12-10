@@ -31,6 +31,7 @@ class CONTENT_EXPORT GpuFeatureCheckerImpl : public GpuFeatureChecker,
 
   gpu::GpuFeatureType feature_;
   FeatureAvailableCallback callback_;
+  bool checking_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(GpuFeatureCheckerImpl);
 };

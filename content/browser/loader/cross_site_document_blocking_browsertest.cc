@@ -829,7 +829,8 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
   EXPECT_EQ("CORB WORKED", result);
 }
 
-IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockHeaders) {
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
+                       HeadersBlockedInResponseBlockedByCorb) {
   embedded_test_server()->StartAcceptingConnections();
 
   // Prepare to intercept the network request at the IPC layer.
@@ -881,6 +882,134 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockHeaders) {
 
   // Verify that other response parts have been sanitized.
   EXPECT_EQ(0u, interceptor.response_head()->content_length);
+}
+
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
+                       HeadersSanitizedInCrossOriginResponseAllowedByCorb) {
+  embedded_test_server()->StartAcceptingConnections();
+
+  // Prepare to intercept the network request at the IPC layer.
+  // This has to be done before the RenderFrameHostImpl is created.
+  //
+  // Note: we want to verify that the blocking prevents the data from being sent
+  // over IPC.  Testing later (e.g. via Response/Headers Web APIs) might give a
+  // false sense of security, since some sanitization happens inside the
+  // renderer (e.g. via FetchResponseData::CreateCorsFilteredResponse).
+  GURL bar_url("http://bar.com/cross_site_document_blocking/headers-test.png");
+  RequestInterceptor interceptor(bar_url);
+  std::string png_body =
+      GetTestFileContents("cross_site_document_blocking", "headers-test.png");
+
+  // Navigate to the test page.
+  GURL foo_url("http://foo.com/title1.html");
+  EXPECT_TRUE(NavigateToURL(shell(), foo_url));
+
+  // Issue the request that will be intercepted.
+  const char kScriptTemplate[] = R"(
+      var img = document.createElement('img');
+      img.src = $1;
+      document.body.appendChild(img); )";
+  EXPECT_TRUE(ExecJs(shell(), JsReplace(kScriptTemplate, bar_url)));
+  interceptor.WaitForRequestCompletion();
+
+  // Verify that the response completed successfully, was blocked and was logged
+  // as having initially a non-empty body.
+  interceptor.Verify(kShouldBeSniffedAndAllowed, png_body);
+
+  // Verify that most response headers have been allowed by CORB.
+  const std::string& headers =
+      interceptor.response_head()->headers->raw_headers();
+  EXPECT_THAT(headers, HasSubstr("Cache-Control"));
+  EXPECT_THAT(headers, HasSubstr("Content-Length"));
+  EXPECT_THAT(headers, HasSubstr("Content-Type"));
+  EXPECT_THAT(headers, HasSubstr("Expires"));
+  EXPECT_THAT(headers, HasSubstr("Last-Modified"));
+  EXPECT_THAT(headers, HasSubstr("Pragma"));
+  EXPECT_THAT(headers, HasSubstr("X-Content-Type-Options"));
+  EXPECT_THAT(headers, HasSubstr("X-My-Secret-Header"));
+
+  // Verify that the body has been allowed by CORB.
+  EXPECT_EQ(png_body, interceptor.response_body());
+  EXPECT_EQ(static_cast<int64_t>(png_body.size()),
+            interceptor.completion_status().decoded_body_length);
+  EXPECT_EQ(static_cast<int64_t>(png_body.size()),
+            interceptor.response_head()->content_length);
+
+  // MAIN VERIFICATION: Verify that despite allowing the response in CORB, we
+  // stripped out the cookies (i.e. the cookies present in
+  // cross_site_document_blocking/headers-test.png.mock-http-headers).
+  //
+  // This verification helps ensure that no cross-origin secrets are disclosed
+  // in no-cors responses.
+  EXPECT_THAT(headers, Not(HasSubstr("MySecretPlainCookieKey")));
+  EXPECT_THAT(headers, Not(HasSubstr("MySecretCookieValue1")));
+  EXPECT_THAT(headers, Not(HasSubstr("MySecretHttpOnlyCookieKey")));
+  EXPECT_THAT(headers, Not(HasSubstr("MySecretCookieValue2")));
+}
+
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
+                       HeadersSanitizedInSameOriginResponseAllowedByCorb) {
+  embedded_test_server()->StartAcceptingConnections();
+
+  // Prepare to intercept the network request at the IPC layer.
+  // This has to be done before the RenderFrameHostImpl is created.
+  //
+  // Note: we want to verify that the blocking prevents the data from being sent
+  // over IPC.  Testing later (e.g. via Response/Headers Web APIs) might give a
+  // false sense of security, since some sanitization happens inside the
+  // renderer (e.g. via FetchResponseData::CreateCorsFilteredResponse).
+  GURL foo_resource_url(
+      "http://foo.com/cross_site_document_blocking/headers-test.png");
+  RequestInterceptor interceptor(foo_resource_url);
+  std::string png_body =
+      GetTestFileContents("cross_site_document_blocking", "headers-test.png");
+
+  // Navigate to the test page.
+  GURL foo_url("http://foo.com/title1.html");
+  EXPECT_TRUE(NavigateToURL(shell(), foo_url));
+
+  // Issue the request that will be intercepted.
+  const char kScriptTemplate[] = R"(
+      var img = document.createElement('img');
+      img.src = $1;
+      document.body.appendChild(img); )";
+  EXPECT_TRUE(ExecJs(shell(), JsReplace(kScriptTemplate, foo_resource_url)));
+  interceptor.WaitForRequestCompletion();
+
+  // Verify that the response completed successfully, was blocked and was logged
+  // as having initially a non-empty body.
+  interceptor.Verify(kShouldBeSniffedAndAllowed, png_body);
+
+  // Verify that most response headers have been allowed by CORB.
+  const std::string& headers =
+      interceptor.response_head()->headers->raw_headers();
+  EXPECT_THAT(headers, HasSubstr("Cache-Control"));
+  EXPECT_THAT(headers, HasSubstr("Content-Length"));
+  EXPECT_THAT(headers, HasSubstr("Content-Type"));
+  EXPECT_THAT(headers, HasSubstr("Expires"));
+  EXPECT_THAT(headers, HasSubstr("Last-Modified"));
+  EXPECT_THAT(headers, HasSubstr("Pragma"));
+  EXPECT_THAT(headers, HasSubstr("X-Content-Type-Options"));
+  EXPECT_THAT(headers, HasSubstr("X-My-Secret-Header"));
+
+  // Verify that the body has been allowed by CORB.
+  EXPECT_EQ(png_body, interceptor.response_body());
+  EXPECT_EQ(static_cast<int64_t>(png_body.size()),
+            interceptor.completion_status().decoded_body_length);
+  EXPECT_EQ(static_cast<int64_t>(png_body.size()),
+            interceptor.response_head()->content_length);
+
+  // MAIN VERIFICATION: Verify that despite allowing the response in CORB, we
+  // stripped out the cookies (i.e. the cookies present in
+  // cross_site_document_blocking/headers-test.png.mock-http-headers).
+  //
+  // No security boundary is crossed in this test case (since this is a
+  // same-origin response), but for consistency we want to ensure that cookies
+  // are stripped in all IPCs.
+  EXPECT_THAT(headers, Not(HasSubstr("MySecretPlainCookieKey")));
+  EXPECT_THAT(headers, Not(HasSubstr("MySecretCookieValue1")));
+  EXPECT_THAT(headers, Not(HasSubstr("MySecretHttpOnlyCookieKey")));
+  EXPECT_THAT(headers, Not(HasSubstr("MySecretCookieValue2")));
 }
 
 // TODO(lukasza): https://crbug.com/154571: Enable this test on Android once
@@ -972,8 +1101,9 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, SharedWorker) {
 // web page that get proxied by the AppCache to the network (falling back to the
 // network because they are not covered by the AppCache manifest) should still
 // be subject to CORB.
+// TODO(crbug.com/1030837): re-enable test once flakiness is addressed.
 IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
-                       AppCache_NetworkFallback) {
+                       DISABLED_AppCache_NetworkFallback) {
   embedded_test_server()->StartAcceptingConnections();
 
   // Prepare to intercept the network request at the IPC layer.
@@ -1046,7 +1176,9 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
 // subject to CORB.
 //
 // This is a regression test for https://crbug.com/927471.
-IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, AppCache_InManifest) {
+// TODO(crbug.com/1030837): re-enable test once flakiness is addressed.
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
+                       DISABLED_AppCache_InManifest) {
   embedded_test_server()->StartAcceptingConnections();
 
   // Load the AppCached page and wait until the AppCache is populated (this will
@@ -1070,8 +1202,9 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, AppCache_InManifest) {
 
 // Tests that renderer will be terminated if it asks AppCache to initiate a
 // request with an invalid |request_initiator|.
+// TODO(crbug.com/1030837): re-enable test once flakiness is addressed.
 IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
-                       AppCache_InitiatorEnforcement) {
+                       DISABLED_AppCache_InitiatorEnforcement) {
   embedded_test_server()->StartAcceptingConnections();
 
   // No kills are expected unless the fetch requesting process is locked to a
@@ -1125,8 +1258,9 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
 
 // Tests that renderer will be terminated if it asks AppCache to initiate a
 // cross-origin request with network::mojom::RequestMode::kNavigate.
+// TODO(crbug.com/1030837): re-enable test once flakiness is addressed.
 IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
-                       AppCache_NoNavigationsEnforcement) {
+                       DISABLED_AppCache_NoNavigationsEnforcement) {
   embedded_test_server()->StartAcceptingConnections();
 
   // No kills are expected unless the fetch requesting process is locked to a

@@ -21,7 +21,7 @@ class OmniboxPopupModel;
 class OmniboxPopupViewSuggestionsDelegate;
 struct AutocompleteMatch;
 
-// iOS implementation of AutocompletePopupView.
+// iOS implementation of OmniboxPopupView.
 class OmniboxPopupViewIOS : public OmniboxPopupView,
                             public OmniboxPopupMediatorDelegate,
                             public OmniboxPopupProvider {
@@ -33,10 +33,10 @@ class OmniboxPopupViewIOS : public OmniboxPopupView,
   // Popup model used for this.
   OmniboxPopupModel* model() const;
 
-  // AutocompletePopupView implementation.
+  // OmniboxPopupView implementation.
   bool IsOpen() const override;
   void InvalidateLine(size_t line) override {}
-  void OnLineSelected(size_t line) override {}
+  void OnSelectionStateChanged(size_t line) override {}
   void UpdatePopupAppearance() override;
   void ProvideButtonFocusHint(size_t line) override {}
   void OnMatchIconUpdated(size_t match_index) override {}

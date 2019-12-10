@@ -23,6 +23,7 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -168,23 +169,13 @@ views::View* AppListAssistantMainStage::CreateContentLayoutContainer() {
   // The content layout container stacks two views.
   // On top is a main content container including the line separator, progress
   // indicator query view and |ui_element_container_|.
-  // |greeting_label_| is laid out beneath of the main content container. As
-  // such, it appears underneath and does not cause repositioning to any of
-  // content layout's underlying views.
+  // |greeting_label_| is laid out above of the main content container. As
+  // such, it floats above and does not cause repositioning to any of content
+  // layout's underlying views.
   views::View* content_layout_container = new views::View();
 
-  InitGreetingLabel();
-  content_layout_container->AddChildView(greeting_label_);
   auto* stack_layout = content_layout_container->SetLayoutManager(
       std::make_unique<StackLayout>());
-
-  // We need to stretch |greeting_label_| to match its parent so that it
-  // won't use heuristics in Label to infer line breaking, which seems to cause
-  // text clipping with DPI adjustment. See b/112843496.
-  stack_layout->SetRespectDimensionForView(
-      greeting_label_, StackLayout::RespectDimension::kHeight);
-  stack_layout->SetVerticalAlignmentForView(
-      greeting_label_, StackLayout::VerticalAlignment::kCenter);
 
   auto* main_content_layout_container = CreateMainContentLayoutContainer();
   content_layout_container->AddChildView(main_content_layout_container);
@@ -193,6 +184,17 @@ views::View* AppListAssistantMainStage::CreateContentLayoutContainer() {
   // scrolling.
   stack_layout->SetRespectDimensionForView(
       main_content_layout_container, StackLayout::RespectDimension::kWidth);
+
+  InitGreetingLabel();
+  content_layout_container->AddChildView(greeting_label_);
+
+  // We need to stretch |greeting_label_| to match its parent so that it
+  // won't use heuristics in Label to infer line breaking, which seems to cause
+  // text clipping with DPI adjustment. See b/112843496.
+  stack_layout->SetRespectDimensionForView(
+      greeting_label_, StackLayout::RespectDimension::kHeight);
+  stack_layout->SetVerticalAlignmentForView(
+      greeting_label_, StackLayout::VerticalAlignment::kCenter);
 
   return content_layout_container;
 }
@@ -212,7 +214,7 @@ void AppListAssistantMainStage::InitGreetingLabel() {
       gfx::HorizontalAlignment::ALIGN_CENTER);
   greeting_label_->SetMultiLine(true);
   greeting_label_->SetPaintToLayer();
-  greeting_label_->layer()->SetFillsBoundsOpaquely(false);
+  greeting_label_->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
 }
 
 views::View* AppListAssistantMainStage::CreateMainContentLayoutContainer() {
@@ -230,7 +232,7 @@ views::View* AppListAssistantMainStage::CreateMainContentLayoutContainer() {
   // Query view. Will be animated on its own layer.
   query_view_ = new AssistantQueryView();
   query_view_->SetPaintToLayer();
-  query_view_->layer()->SetFillsBoundsOpaquely(false);
+  query_view_->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
   query_view_->AddObserver(this);
   content_layout_container->AddChildView(query_view_);
 

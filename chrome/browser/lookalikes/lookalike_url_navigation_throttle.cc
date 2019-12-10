@@ -34,7 +34,7 @@
 namespace {
 
 const base::FeatureParam<bool> kEnableInterstitialForTopSites{
-    &features::kLookalikeUrlNavigationSuggestionsUI, "topsites", false};
+    &features::kLookalikeUrlNavigationSuggestionsUI, "topsites", true};
 
 using MatchType = LookalikeUrlInterstitialPage::MatchType;
 using UserAction = LookalikeUrlInterstitialPage::UserAction;

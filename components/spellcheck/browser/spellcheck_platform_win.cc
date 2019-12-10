@@ -545,18 +545,32 @@ void WindowsSpellChecker::
       // (zh-Hans-CN e.g.) need to be converted to locale names via
       // ResolveLocaleName before being passed to spell checker API.
       wchar_t locale_name[LOCALE_NAME_MAX_LENGTH];
-      // ResolveLocaleName can only fail if buffer size insufficient.
-      ::ResolveLocaleName(
-          base::as_wcstr(base::AsStringPiece16(language_scoped.Get())),
-          locale_name, LOCALE_NAME_MAX_LENGTH);
+      const wchar_t* preferred_language =
+          base::as_wcstr(base::AsStringPiece16(language_scoped.Get()));
+      // ResolveLocaleName should only fail if buffer size insufficient, but
+      // it can succeed yet return an empty string for certain language tags
+      // such as ht.
+      if (!::ResolveLocaleName(preferred_language, locale_name,
+                               LOCALE_NAME_MAX_LENGTH) ||
+          !*locale_name) {
+        DVLOG(1) << "ResolveLocaleName failed or returned empty string for "
+                    "preferred language "
+                 << preferred_language
+                 << ", will try unresolved language name.";
+        base::wcslcpy(locale_name, preferred_language, LOCALE_NAME_MAX_LENGTH);
+      }
       // See if the language has a dictionary available. Some preferred
       // languages have no spellchecking support (zh-CN e.g.).
       BOOL is_language_supported = FALSE;
       hr = spell_checker_factory_->IsSupported(locale_name,
                                                &is_language_supported);
       DCHECK(SUCCEEDED(hr));
-      if (is_language_supported)
+      if (is_language_supported) {
         supported_languages.push_back(base::WideToUTF8(locale_name));
+      } else {
+        DVLOG(2) << "No platform spellchecking support for locale name "
+                 << locale_name;
+      }
     }
   }
 

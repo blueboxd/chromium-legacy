@@ -8,10 +8,10 @@
 #include <memory>
 
 #include "base/optional.h"
-#include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/webrtc/api/dtls_transport_interface.h"
 #include "third_party/webrtc/api/rtp_parameters.h"
 #include "third_party/webrtc/api/stats/rtc_stats.h"
@@ -25,7 +25,7 @@ class WebMediaStreamTrack;
 // receiver alive through reference counting. Multiple |RTCRtpReceiverPlatform|s
 // could reference the same receiver, see |id|.
 // https://w3c.github.io/webrtc-pc/#rtcrtpreceiver-interface
-class BLINK_PLATFORM_EXPORT RTCRtpReceiverPlatform {
+class PLATFORM_EXPORT RTCRtpReceiverPlatform {
  public:
   virtual ~RTCRtpReceiverPlatform();
 
@@ -39,10 +39,10 @@ class BLINK_PLATFORM_EXPORT RTCRtpReceiverPlatform {
   // The information is only interesting if DtlsTransport() is non-null.
   virtual webrtc::DtlsTransportInformation DtlsTransportInformation() = 0;
   virtual const WebMediaStreamTrack& Track() const = 0;
-  virtual WebVector<String> StreamIds() const = 0;
-  virtual WebVector<std::unique_ptr<RTCRtpSource>> GetSources() = 0;
+  virtual Vector<String> StreamIds() const = 0;
+  virtual Vector<std::unique_ptr<RTCRtpSource>> GetSources() = 0;
   virtual void GetStats(RTCStatsReportCallback,
-                        const WebVector<webrtc::NonStandardGroupId>&) = 0;
+                        const Vector<webrtc::NonStandardGroupId>&) = 0;
   virtual std::unique_ptr<webrtc::RtpParameters> GetParameters() const = 0;
   virtual void SetJitterBufferMinimumDelay(
       base::Optional<double> delay_seconds) = 0;

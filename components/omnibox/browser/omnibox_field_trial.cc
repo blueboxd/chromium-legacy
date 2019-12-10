@@ -769,6 +769,9 @@ const char OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam[] =
 const char OmniboxFieldTrial::kUIMaxAutocompleteMatchesByProviderParam[] =
     "UIMaxAutocompleteMatchesByProvider";
 
+const char OmniboxFieldTrial::kOnDeviceHeadSuggestIncognitoServeMode[] =
+    "IncognitoServeMode";
+
 // static
 int OmniboxFieldTrial::kDefaultMinimumTimeBetweenSuggestQueriesMs = 100;
 

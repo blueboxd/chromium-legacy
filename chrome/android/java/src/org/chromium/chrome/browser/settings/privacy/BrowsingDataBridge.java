@@ -15,7 +15,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 
 /**
  * Communicates between ClearBrowsingData, ImportantSitesUtils (C++) and
- * ClearBrowsingDataPreferences (Java UI).
+ * ClearBrowsingDataFragment (Java UI).
  */
 public final class BrowsingDataBridge {
     private static BrowsingDataBridge sInstance;

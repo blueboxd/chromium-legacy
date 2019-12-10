@@ -385,6 +385,7 @@ AppCacheManifest::~AppCacheManifest() = default;
 
 bool ParseManifest(const GURL& manifest_url,
                    const std::string& manifest_scope,
+                   const bool manifest_scope_checks_enabled,
                    const char* manifest_bytes,
                    int manifest_size,
                    ParseMode parse_mode,
@@ -397,6 +398,7 @@ bool ParseManifest(const GURL& manifest_url,
   DCHECK(manifest.online_whitelist_namespaces.empty());
   DCHECK_EQ(manifest.parser_version, -1);
   DCHECK_EQ(manifest.scope, "");
+  DCHECK_EQ(manifest.scope_checks_enabled, true);
   DCHECK(!manifest.online_whitelist_all);
   DCHECK(!manifest.did_ignore_intercept_namespaces);
   DCHECK(!manifest.did_ignore_fallback_namespaces);
@@ -468,8 +470,14 @@ bool ParseManifest(const GURL& manifest_url,
   // Changing the manifest, the scope, or the version of the manifest will
   // trigger a refetch of the manifest.
   //
-  // This code generates manifests with parser version 1.
-  manifest.parser_version = 1;
+  // If scope checking is enabled, this code generates manifests with parser
+  // version 1.
+  manifest.scope_checks_enabled = manifest_scope_checks_enabled;
+  if (manifest.scope_checks_enabled) {
+    manifest.parser_version = 1;
+  } else {
+    manifest.parser_version = 0;
+  }
   manifest.scope = manifest_scope;
 
   const GURL manifest_scope_url = manifest_url.Resolve(manifest_scope);
@@ -568,7 +576,8 @@ bool ParseManifest(const GURL& manifest_url,
       if (namespace_url.GetOrigin() != manifest_url.GetOrigin())
         continue;
 
-      if (!IsUrlWithinScope(namespace_url, manifest_scope_url))
+      if (manifest.scope_checks_enabled &&
+          !IsUrlWithinScope(namespace_url, manifest_scope_url))
         continue;
 
       // The only supported verb is "return".
@@ -611,7 +620,8 @@ bool ParseManifest(const GURL& manifest_url,
         }
       }
 
-      if (!IsUrlWithinScope(namespace_url, manifest_scope_url))
+      if (manifest.scope_checks_enabled &&
+          !IsUrlWithinScope(namespace_url, manifest_scope_url))
         continue;
 
       base::StringPiece fallback_url_token;

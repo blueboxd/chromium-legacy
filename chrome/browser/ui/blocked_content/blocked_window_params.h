@@ -20,6 +20,7 @@ class BlockedWindowParams {
  public:
   BlockedWindowParams(const GURL& target_url,
                       const url::Origin& initiator_origin,
+                      content::SiteInstance* source_site_instance,
                       const content::Referrer& referrer,
                       const std::string& frame_name_,
                       WindowOpenDisposition disposition,
@@ -36,6 +37,7 @@ class BlockedWindowParams {
  private:
   GURL target_url_;
   url::Origin initiator_origin_;
+  scoped_refptr<content::SiteInstance> source_site_instance_;
   content::Referrer referrer_;
   std::string frame_name_;
   WindowOpenDisposition disposition_;

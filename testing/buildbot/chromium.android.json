@@ -21362,6 +21362,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -21396,6 +21404,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -21434,6 +21450,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -21468,6 +21492,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -21506,6 +21538,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -21540,6 +21580,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -21578,6 +21626,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -21612,6 +21668,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -21651,6 +21715,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -21686,6 +21758,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -21724,6 +21804,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -21760,6 +21848,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -21794,6 +21890,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -21833,6 +21937,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -21867,6 +21979,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -21905,6 +22025,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -21939,6 +22067,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -21977,6 +22113,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -22011,6 +22155,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -22049,6 +22201,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -22083,6 +22243,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -22124,6 +22292,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -22163,6 +22339,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -22198,6 +22382,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -22238,6 +22430,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -22272,6 +22472,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -22309,6 +22517,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -22350,6 +22566,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -22385,6 +22609,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -22426,6 +22658,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -22461,6 +22701,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -22500,6 +22748,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -22534,6 +22790,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -22572,6 +22836,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -22606,6 +22878,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -22644,6 +22924,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -22678,6 +22966,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -22716,6 +23012,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -22750,6 +23054,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -22788,6 +23100,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -22822,6 +23142,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -22860,6 +23188,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -22894,6 +23230,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -22932,6 +23276,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -22966,6 +23318,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -23004,6 +23364,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -23038,6 +23406,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -23076,6 +23452,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -23110,6 +23494,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -23148,6 +23540,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -23182,6 +23582,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -23220,6 +23628,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -23256,6 +23672,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -23290,6 +23714,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -23329,6 +23761,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -23363,6 +23803,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -23401,6 +23849,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -23435,6 +23891,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -23473,6 +23937,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -23507,6 +23979,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -23545,6 +24025,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -23579,6 +24067,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -23617,6 +24113,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -23653,6 +24157,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -23687,6 +24199,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -23726,6 +24246,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -23760,6 +24288,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -23798,6 +24334,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -23832,6 +24376,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -23870,6 +24422,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -23904,6 +24464,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -23942,6 +24510,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -23976,6 +24552,14 @@
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
               "location": "bin",
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -24018,6 +24602,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -24055,6 +24647,14 @@
               "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
           "output_links": [
             {
               "link": [
@@ -24071,148 +24671,149 @@
     ],
     "isolated_scripts": [
       {
-        "args": [
-          "--gtest-benchmark-name=components_perftests"
-        ],
-        "isolate_name": "components_perftests",
-        "merge": {
-          "args": [
-            "--smoke-test-mode"
-          ],
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "name": "components_perftests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
-      {
-        "args": [
-          "--platform=android"
-        ],
-        "isolate_name": "content_shell_crash_test",
+        "isolate_name": "monochrome_apk_checker",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "content_shell_crash_test",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
-      {
-        "isolate_name": "telemetry_perf_unittests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "telemetry_perf_unittests",
+        "name": "monochrome_apk_checker",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "idempotent": false,
-          "shards": 12
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ]
         }
       }
     ],
     "junit_tests": [
       {
         "name": "android_webview_junit_tests",
+        "swarming": {},
         "test": "android_webview_junit_tests"
       },
       {
         "name": "base_junit_tests",
+        "swarming": {},
         "test": "base_junit_tests"
       },
       {
         "name": "chrome_java_test_pagecontroller_junit_tests",
+        "swarming": {},
         "test": "chrome_java_test_pagecontroller_junit_tests"
       },
       {
         "name": "chrome_junit_tests",
+        "swarming": {},
         "test": "chrome_junit_tests"
       },
       {
         "name": "components_background_task_scheduler_junit_tests",
+        "swarming": {},
         "test": "components_background_task_scheduler_junit_tests"
       },
       {
         "name": "components_gcm_driver_junit_tests",
+        "swarming": {},
         "test": "components_gcm_driver_junit_tests"
       },
       {
         "name": "components_invalidation_impl_junit_tests",
+        "swarming": {},
         "test": "components_invalidation_impl_junit_tests"
       },
       {
         "name": "components_policy_junit_tests",
+        "swarming": {},
         "test": "components_policy_junit_tests"
       },
       {
         "name": "components_signin_junit_tests",
+        "swarming": {},
         "test": "components_signin_junit_tests"
       },
       {
         "name": "components_variations_junit_tests",
+        "swarming": {},
         "test": "components_variations_junit_tests"
       },
       {
         "name": "content_junit_tests",
+        "swarming": {},
         "test": "content_junit_tests"
       },
       {
         "name": "device_junit_tests",
+        "swarming": {},
         "test": "device_junit_tests"
       },
       {
         "name": "junit_unit_tests",
+        "swarming": {},
         "test": "junit_unit_tests"
       },
       {
         "name": "keyboard_accessory_junit_tests",
+        "swarming": {},
         "test": "keyboard_accessory_junit_tests"
       },
       {
         "name": "media_base_junit_tests",
+        "swarming": {},
         "test": "media_base_junit_tests"
       },
       {
         "name": "media_router_junit_tests",
+        "swarming": {},
         "test": "media_router_junit_tests"
       },
       {
         "name": "module_installer_junit_tests",
+        "swarming": {},
         "test": "module_installer_junit_tests"
       },
       {
         "name": "net_junit_tests",
+        "swarming": {},
         "test": "net_junit_tests"
       },
       {
         "name": "paint_preview_junit_tests",
+        "swarming": {},
         "test": "paint_preview_junit_tests"
       },
       {
         "name": "service_junit_tests",
+        "swarming": {},
         "test": "service_junit_tests"
       },
       {
         "name": "touch_to_fill_junit_tests",
+        "swarming": {},
         "test": "touch_to_fill_junit_tests"
       },
       {
         "name": "ui_junit_tests",
+        "swarming": {},
         "test": "ui_junit_tests"
       },
       {
         "name": "webapk_client_junit_tests",
+        "swarming": {},
         "test": "webapk_client_junit_tests"
       },
       {
         "name": "webapk_shell_apk_h2o_junit_tests",
+        "swarming": {},
         "test": "webapk_shell_apk_h2o_junit_tests"
       },
       {
         "name": "webapk_shell_apk_junit_tests",
+        "swarming": {},
         "test": "webapk_shell_apk_junit_tests"
       }
     ]

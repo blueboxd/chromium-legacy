@@ -10,7 +10,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
@@ -32,7 +33,7 @@ class AppClient : public Service,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
   void OnDisconnected() override;
 
-  void Create(mojom::LifecycleControlRequest request);
+  void Create(mojo::PendingReceiver<mojom::LifecycleControl> receiver);
 
   // LifecycleControl:
   void Ping(PingCallback callback) override;
@@ -45,7 +46,7 @@ class AppClient : public Service,
 
   ServiceBinding service_binding_;
   BinderRegistry registry_;
-  mojo::BindingSet<mojom::LifecycleControl> bindings_;
+  mojo::ReceiverSet<mojom::LifecycleControl> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(AppClient);
 };

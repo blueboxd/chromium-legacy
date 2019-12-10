@@ -7,6 +7,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -40,6 +41,7 @@ NSError* SetAutofillAutomationProfile(const std::string& profile_json_string) {
 
 // Loads the recipe file and reads it into std::string.
 std::string ReadRecipeJsonFromPath(const base::FilePath& path) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
   std::string json_text;
   bool read_success = base::ReadFileToString(path, &json_text);
   GREYAssert(read_success, @"Unable to read JSON file.");
@@ -70,6 +72,7 @@ base::Value RecipeJsonToValue(const std::string& recipe_json) {
 
 // Retrieves the path to the recipe file from the command line.
 + (const base::FilePath)recipePath {
+  base::ScopedAllowBlockingForTesting allow_blocking;
   base::CommandLine* commandLine(base::CommandLine::ForCurrentProcess());
   GREYAssert(commandLine->HasSwitch(kAutofillAutomationSwitch),
              @"Missing command line switch %s.", kAutofillAutomationSwitch);

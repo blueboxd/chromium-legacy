@@ -7145,7 +7145,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestDataGenerationBrowserTest,
 #if !defined(MEMORY_SANITIZER)
 #if defined(USE_AURA)
 static const float kMultiScale[] = {1.f, 1.5f, 2.f};
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          SitePerProcessInternalsHitTestBrowserTest,
                          testing::Combine(testing::ValuesIn(kMultiScale)));
 #endif  // defined(USE_AURA)

@@ -10,10 +10,10 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "components/viz/common/display/overlay_strategy.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/overlay_candidate.h"
+#include "components/viz/service/display/overlay_candidate_validator.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/ipc/common/surface_handle.h"
 
@@ -30,38 +30,31 @@ class DisplayResourceProvider;
 }
 
 namespace viz {
-class OutputSurface;
 class OverlayCandidateList;
 class OverlayCandidateValidator;
-class OverlayCandidateValidatorStrategy;
 class RendererSettings;
 
+// This class is called inside the DirectRenderer to separate the contents that
+// should be send into the overlay system and the contents that requires
+// compositing from the DirectRenderer. This class has different subclass
+// implemented by different platforms.
 class VIZ_SERVICE_EXPORT OverlayProcessor {
  public:
-#if defined(OS_ANDROID)
-  using CandidateList = OverlayCandidateList;
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   using CandidateList = CALayerOverlayList;
 #elif defined(OS_WIN)
   using CandidateList = DCLayerOverlayList;
-#elif defined(USE_OZONE)
-  using CandidateList = OverlayCandidateList;
 #else
   // Default.
   using CandidateList = OverlayCandidateList;
 #endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
   using OverlayValidator = OverlayCandidateValidator;
-#elif defined(OS_ANDROID) || defined(USE_OZONE)
-  using OverlayValidator = OverlayCandidateValidatorStrategy;
-#else  // Default
-  using OverlayValidator = OverlayCandidateValidatorStrategy;
-#endif
 
   using FilterOperationsMap =
       base::flat_map<RenderPassId, cc::FilterOperations*>;
 
+  // Used by Window's DCLayerOverlay system and OverlayProcessorUsingStrategy.
   static void RecordOverlayDamageRectHistograms(
       bool is_overlay,
       bool has_occluding_surface_damage,
@@ -89,38 +82,14 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
     unsigned gpu_fence_id;
   };
 
-  class VIZ_SERVICE_EXPORT Strategy {
-   public:
-    virtual ~Strategy() {}
-    using PrimaryPlane = OverlayProcessor::OutputSurfaceOverlayPlane;
-    // Returns false if the strategy cannot be made to work with the
-    // current set of render passes. Returns true if the strategy was successful
-    // and adds any additional passes necessary to represent overlays to
-    // |render_pass_list|. Most strategies should look at the primary
-    // RenderPass, the last element.
-    virtual bool Attempt(
-        const SkMatrix44& output_color_matrix,
-        const FilterOperationsMap& render_pass_backdrop_filters,
-        DisplayResourceProvider* resource_provider,
-        RenderPassList* render_pass_list,
-        const PrimaryPlane* primary_plane,
-        OverlayCandidateList* candidates,
-        std::vector<gfx::Rect>* content_bounds) = 0;
-
-    // Currently this is only overridden by the Underlay strategy: the underlay
-    // strategy needs to enable blending for the primary plane in order to show
-    // content underneath.
-    virtual void AdjustOutputSurfaceOverlay(
-        OutputSurfaceOverlayPlane* output_surface_plane) {}
-
-    // Currently this is only overridden by the Fullscreen strategy: the
-    // fullscreen strategy covers the entire screen and there is no need to use
-    // the primary plane.
-    virtual bool RemoveOutputSurfaceAsOverlay();
-
-    virtual OverlayStrategy GetUMAEnum() const;
-  };
-  using StrategyList = std::vector<std::unique_ptr<Strategy>>;
+  // TODO(weiliangc): Eventually the asymmetry between primary plane and
+  // non-primary places should be internalized and should not have a special
+  // API.
+  static OutputSurfaceOverlayPlane ProcessOutputSurfaceAsOverlay(
+      const gfx::Size& viewport_size,
+      const gfx::BufferFormat& buffer_format,
+      const gfx::ColorSpace& color_space,
+      bool has_alpha);
 
   static std::unique_ptr<OverlayProcessor> CreateOverlayProcessor(
       SkiaOutputSurface* skia_output_surface,
@@ -130,24 +99,18 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
 
   virtual ~OverlayProcessor();
 
-  gfx::Rect GetAndResetOverlayDamage();
-  void SetSoftwareMirrorMode(bool software_mirror_mode);
+  virtual bool IsOverlaySupported() const;
 
-  const OverlayValidator* GetOverlayCandidateValidator() const {
-    return overlay_validator_.get();
-  }
+  virtual gfx::Rect GetAndResetOverlayDamage();
 
   // Returns true if the platform supports hw overlays and surface occluding
   // damage rect needs to be computed since it will be used by overlay
-  // processor (currently Windows only).
-  bool NeedsSurfaceOccludingDamageRect() const;
-
-  void SetDisplayTransformHint(gfx::OverlayTransform transform);
-  void SetValidatorViewportSize(const gfx::Size& size);
+  // processor.
+  virtual bool NeedsSurfaceOccludingDamageRect() const;
 
   // Attempt to replace quads from the specified root render pass with overlays
   // or CALayers. This must be called every frame.
-  void ProcessForOverlays(
+  virtual void ProcessForOverlays(
       DisplayResourceProvider* resource_provider,
       RenderPassList* render_passes,
       const SkMatrix44& output_color_matrix,
@@ -158,15 +121,6 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
       gfx::Rect* damage_rect,
       std::vector<gfx::Rect>* content_bounds);
 
-  // TODO(weiliangc): Eventually the asymmetry between primary plane and
-  // non-primary places should be internalized and should not have a special
-  // API.
-  OutputSurfaceOverlayPlane ProcessOutputSurfaceAsOverlay(
-      const gfx::Size& viewport_size,
-      const gfx::BufferFormat& buffer_format,
-      const gfx::ColorSpace& color_space,
-      bool has_alpha) const;
-
   // For Mac, if we successfully generated a candidate list for CALayerOverlay,
   // we no longer need the |output_surface_plane|. This function takes a pointer
   // to the base::Optional instance so the instance can be reset. This is also
@@ -175,25 +129,27 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
   // function to adjust the rotation.
   // TODO(weiliangc): Internalize the |output_surface_plane| inside the overlay
   // processor.
-  void AdjustOutputSurfaceOverlay(
+  virtual void AdjustOutputSurfaceOverlay(
       base::Optional<OutputSurfaceOverlayPlane>* output_surface_plane);
 
+  // These two functions are used by Android SurfaceControl.
+  virtual void SetDisplayTransformHint(gfx::OverlayTransform transform) {}
+  virtual void SetValidatorViewportSize(const gfx::Size& size) {}
+  // TODO(weiliangc): Delete this function once software mirror (non-OOPD) is
+  // deleted.
+  virtual void SetSoftwareMirrorMode(bool software_mirror_mode) {}
+
  protected:
-  // For testing.
   explicit OverlayProcessor(
       std::unique_ptr<OverlayValidator> overlay_validator);
 
-  StrategyList strategies_;
+  // For testing.
+  const OverlayValidator* GetOverlayCandidateValidator() const {
+    return overlay_validator_.get();
+  }
   std::unique_ptr<OverlayValidator> overlay_validator_;
 
-  gfx::Rect overlay_damage_rect_;
-  gfx::Rect previous_frame_underlay_rect_;
-  bool previous_frame_underlay_was_unoccluded_ = false;
-
  private:
-  OverlayProcessor(SkiaOutputSurface* skia_output_surface,
-                   std::unique_ptr<OverlayValidator> overlay_validator);
-
 #if defined(OS_WIN)
   void InitializeDCOverlayProcessor(
       std::unique_ptr<DCLayerOverlayProcessor> dc_layer_overlay_processor);
@@ -213,22 +169,11 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
       const FilterOperationsMap& render_pass_backdrop_filters,
       CandidateList* overlay_candidates,
       gfx::Rect* damage_rect);
-#if defined(OS_ANDROID) || defined(USE_OZONE)
-  // Update |damage_rect| by removing damage casued by |candidates|.
-  void UpdateDamageRect(OverlayCandidateList* candidates,
-                        const gfx::Rect& previous_frame_underlay_rect,
-                        bool previous_frame_underlay_was_unoccluded,
-                        const QuadList* quad_list,
-                        gfx::Rect* damage_rect);
-#endif
 
 #if defined(OS_WIN)
   std::unique_ptr<DCLayerOverlayProcessor> dc_layer_overlay_processor_;
 #endif
 
-#if defined(OS_ANDROID)
-  SkiaOutputSurface* skia_output_surface_;
-#endif
   bool output_surface_already_handled_;
   DISALLOW_COPY_AND_ASSIGN(OverlayProcessor);
 };

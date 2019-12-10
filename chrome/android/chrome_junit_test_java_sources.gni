@@ -1,10 +1,3 @@
-# Copyright 2019 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
-
-# Java unit test file for clank components. all test sources that are not
-# conditionally added. See java_source.gni for conditionally added files.
-
 chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/AppIndexingUtilTest.java",
   "junit/src/org/chromium/chrome/browser/ChromeActionModeCallbackTest.java",
@@ -86,6 +79,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/firstrun/FirstRunIntegrationUnitTest.java",
   "junit/src/org/chromium/chrome/browser/firstrun/ToSAckedReceiverTest.java",
   "junit/src/org/chromium/chrome/browser/fullscreen/BrowserStateBrowserControlsVisibilityDelegateTest.java",
+  "junit/src/org/chromium/chrome/browser/fullscreen/ComposedBrowserControlsVisibilityDelegateTest.java",
   "junit/src/org/chromium/chrome/browser/gcore/GoogleApiClientHelperTest.java",
   "junit/src/org/chromium/chrome/browser/history/HistoryAdapterAccessibilityTest.java",
   "junit/src/org/chromium/chrome/browser/history/HistoryAdapterTest.java",
@@ -199,6 +193,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/suggestions/tile/TileGroupUnitTest.java",
   "junit/src/org/chromium/chrome/browser/survey/ChromeSurveyControllerTest.java",
   "junit/src/org/chromium/chrome/browser/tab/TabAttributesTest.java",
+  "junit/src/org/chromium/chrome/browser/tab/TabBrowserControlsConstraintsHelperTest.java",
   "junit/src/org/chromium/chrome/browser/tab/TabBrowserControlsOffsetHelperTest.java",
   "junit/src/org/chromium/chrome/browser/tab/TabUnitTest.java",
   "junit/src/org/chromium/chrome/browser/tabmodel/TabPersistentStoreUnitTest.java",

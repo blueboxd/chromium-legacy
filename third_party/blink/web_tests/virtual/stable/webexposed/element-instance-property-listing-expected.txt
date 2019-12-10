@@ -1070,6 +1070,7 @@ html element video
     property duration
     property ended
     property error
+    property getVideoPlaybackQuality
     property height
     property load
     property loop

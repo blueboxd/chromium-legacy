@@ -10,7 +10,9 @@
 
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "chromecast/common/mojom/service_connector.mojom.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace media {
 class AlsaWrapper;
@@ -34,7 +36,7 @@ class CastAudioManagerAlsa : public CastAudioManager {
       GetSessionIdCallback get_session_id_callback,
       scoped_refptr<base::SingleThreadTaskRunner> browser_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
-      service_manager::Connector* connector,
+      mojo::PendingRemote<chromecast::mojom::ServiceConnector> connector,
       bool use_mixer);
   ~CastAudioManagerAlsa() override;
 

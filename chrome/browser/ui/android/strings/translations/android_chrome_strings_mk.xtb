@@ -214,6 +214,7 @@
 <translation id="2532336938189706096">Преглед на веб</translation>
 <translation id="2534155362429831547">Избришани се <ph name="NUMBER_OF_ITEMS" /> ставки</translation>
 <translation id="2536728043171574184">Се прикажува офлајн копија на страницата</translation>
+<translation id="2537178555904266562">Грешка при синхронизирање на лозинките</translation>
 <translation id="2546283357679194313">Колачиња и податоци од сајтот</translation>
 <translation id="2567385386134582609">СЛИКА</translation>
 <translation id="257088987046510401">Теми</translation>
@@ -231,6 +232,7 @@
 <translation id="2650751991977523696">Дали да се преземе датотеката повторно?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# аудиодатотека}one{# аудиодатотека}other{# аудиодатотеки}}</translation>
 <translation id="2653659639078652383">Поднеси</translation>
+<translation id="2669093958999339774">Блокирај ги потсетниците за известувања за да не ме прекинуваат и користи потивки пораки</translation>
 <translation id="2677748264148917807">Напушти</translation>
 <translation id="2704606927547763573">Копирано</translation>
 <translation id="2707726405694321444">Освежи ја страницата</translation>
@@ -248,7 +250,6 @@
 <translation id="281504910091592009">Прегледајте ги и управувајте со зачуваните лозинки во вашата <ph name="BEGIN_LINK" />сметка на Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">За да ги добиете обележувачите на сите ваши уреди, најавете се и вклучете ја синхронизацијата</translation>
 <translation id="2822354292072154809">Сигурно ли сакате да ги ресетирате сите дозволи на сајтот за <ph name="CHOSEN_OBJECT_NAME" />?</translation>
-<translation id="2836148919159985482">Допрете го копчето Назад за да излезете од цел екран.</translation>
 <translation id="2842985007712546952">Надредена папка</translation>
 <translation id="2858138569776157458">Популарни</translation>
 <translation id="2860954141821109167">Проверете дали е овозможена апликација за телефон на уредов</translation>
@@ -358,14 +359,15 @@
 <translation id="3632295766818638029">Прикажи ја лозинката</translation>
 <translation id="363596933471559332">Автоматски најавувајте се на веб-сајтови со складирани акредитиви. Кога функцијата е исклучена, ќе се бара проверка од вас секогаш пред најавување на веб-сајт.</translation>
 <translation id="3658159451045945436">Ако се ресетира, ќе се избрише историјата на заштеден интернет, заедно со списокот со посетени сајтови.</translation>
-<translation id="3682730288090679318">Овозможете за автоматско спречување на сајтовите да ве прашуваат дали да ви прикажуваат известувања. Ако сајтот побара известувања, ќе се појави лента со информации најдолу на страницата.</translation>
 <translation id="3692944402865947621">Преземањето на <ph name="FILE_NAME" /> не успеа бидејќи локацијата за складирање не е достапна.</translation>
+<translation id="3701167022068948696">Поправи сега</translation>
 <translation id="3714981814255182093">Отворете ја Лентата за пребарување</translation>
 <translation id="3716182511346448902">Страницава користи премногу меморија, па Chrome ја паузираше.</translation>
 <translation id="3730075448226062617">За да може Chrome да пристапува до вашиот микрофон, вклучете ја дозволата за микрофон и во <ph name="BEGIN_LINK" />Поставките за Android<ph name="END_LINK" />.</translation>
 <translation id="3739899004075612870">Обележано во <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Синхронизација во заднина</translation>
 <translation id="3749259744154402564">Неподдржано</translation>
+<translation id="3767376082821709728">Новите сајтови што ги посетувате не може да ви испраќаат известувања</translation>
 <translation id="3771001275138982843">Не можеше да се преземе ажурирањето</translation>
 <translation id="3771033907050503522">Инкогнито картички</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Вклучете Bluetooth<ph name="END_LINK" /> за да овозможите спарување</translation>
@@ -491,7 +493,7 @@
 <translation id="4719927025381752090">Понудувај превод</translation>
 <translation id="4720023427747327413">Отвори во <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Помогнете да се подобри Chrome. <ph name="BEGIN_LINK" />Учествувајте во анкетата<ph name="END_LINK" /></translation>
-<translation id="4732120983431207637">Stack Unwinder</translation>
+<translation id="4732120983431207637">Модул за продолжување претходни задачи</translation>
 <translation id="473775607612524610">Ажурирај</translation>
 <translation id="4738836084190194332">Последна синхронизација: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Отворете нова картичка</translation>
@@ -591,7 +593,6 @@
 <translation id="5414836363063783498">Се проверува…</translation>
 <translation id="5423934151118863508">Најпосетуваните страници ќе се појават тука</translation>
 <translation id="5424588387303617268">Достапни се <ph name="GIGABYTES" /> ГБ</translation>
-<translation id="5427766642345310212">Сфатив. Стандардно, новите барања за известувања ќе се прикажуваат тука.</translation>
 <translation id="543338862236136125">Измени ја лозинката</translation>
 <translation id="5433691172869980887">Корисничкото име е копирано</translation>
 <translation id="543509235395288790">Се преземаат <ph name="COUNT" /> датотеки (<ph name="MEGABYTES" />).</translation>
@@ -678,7 +679,6 @@
 <translation id="5962718611393537961">Допрете за да се собере</translation>
 <translation id="6000066717592683814">Задржи го Google</translation>
 <translation id="6005538289190791541">Предложена лозинка</translation>
-<translation id="6019358956729171834">Вчитај повеќе…</translation>
 <translation id="6036057147555329831">Дополнителен ICU</translation>
 <translation id="6039379616847168523">Скокнете на следната картичка</translation>
 <translation id="6040143037577758943">Затвори</translation>
@@ -774,6 +774,7 @@
 <translation id="666731172850799929">Отвори во <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Известување за приватност на Chrome</translation>
 <translation id="6676840375528380067">Да се избришат податоците на Chrome од уредов?</translation>
+<translation id="6689172468748959065">Фотографии на профилот</translation>
 <translation id="6697492270171225480">Прикажувај предлози за слични страници кога страницата не може да се најде</translation>
 <translation id="6697947395630195233">На Chrome му треба пристап до вашата локација за да ја сподели со сајтов.</translation>
 <translation id="6698801883190606802">Управувајте со синхронизираните податоци</translation>
@@ -956,6 +957,7 @@
 <translation id="8035133914807600019">Нова папка…</translation>
 <translation id="8037750541064988519">Останаа <ph name="DAYS" /> дена</translation>
 <translation id="804335162455518893">SD-картичката не е најдена</translation>
+<translation id="8046278916126163020">Новите сајтови што ги посетувате може да побараат ваша дозвола за испраќање известувања</translation>
 <translation id="805047784848435650">Врз основа на вашата историја на прелистување</translation>
 <translation id="8051695050440594747">Достапни се <ph name="MEGABYTES" /> МБ</translation>
 <translation id="8058746566562539958">Отвори во нова Chrome картичка</translation>

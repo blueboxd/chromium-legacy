@@ -4,10 +4,12 @@
 
 package org.chromium.chrome.browser;
 
+import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.fullscreen.ComposedBrowserControlsVisibilityDelegate;
+import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabContextMenuItemDelegate;
@@ -16,6 +18,7 @@ import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tab_activity_glue.ActivityTabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
+import org.chromium.content_public.common.BrowserControlsState;
 
 /**
  * {@link TabDelegateFactory} class to be used in all {@link Tab} instances owned by a
@@ -29,22 +32,22 @@ public class TabbedModeTabDelegateFactory implements TabDelegateFactory {
         }
 
         @Override
-        public boolean canShowBrowserControls() {
-            if (VrModuleProvider.getDelegate().isInVr()) return false;
-            return super.canShowBrowserControls();
-        }
-
-        @Override
-        public boolean canAutoHideBrowserControls() {
-            if (VrModuleProvider.getDelegate().isInVr()) return true;
-            return super.canAutoHideBrowserControls();
+        protected int calculateVisibilityConstraints() {
+            if (VrModuleProvider.getDelegate().isInVr()) return BrowserControlsState.HIDDEN;
+            return super.calculateVisibilityConstraints();
         }
     }
 
     private final ChromeActivity mActivity;
+    private final BrowserControlsVisibilityDelegate mAppBrowserControlsVisibilityDelegate;
+    private final Supplier<ShareDelegate> mShareDelegateSupplier;
 
-    public TabbedModeTabDelegateFactory(ChromeActivity activity) {
+    public TabbedModeTabDelegateFactory(ChromeActivity activity,
+            BrowserControlsVisibilityDelegate appBrowserControlsVisibilityDelegate,
+            Supplier<ShareDelegate> shareDelegateSupplier) {
         mActivity = activity;
+        mAppBrowserControlsVisibilityDelegate = appBrowserControlsVisibilityDelegate;
+        mShareDelegateSupplier = shareDelegateSupplier;
     }
 
     @Override
@@ -60,13 +63,13 @@ public class TabbedModeTabDelegateFactory implements TabDelegateFactory {
     @Override
     public ContextMenuPopulator createContextMenuPopulator(Tab tab) {
         return new ChromeContextMenuPopulator(new TabContextMenuItemDelegate(tab),
-                mActivity.getShareDelegate(), ChromeContextMenuPopulator.ContextMenuMode.NORMAL);
+                mShareDelegateSupplier.get(), ChromeContextMenuPopulator.ContextMenuMode.NORMAL);
     }
 
     @Override
     public BrowserControlsVisibilityDelegate createBrowserControlsVisibilityDelegate(Tab tab) {
         return new ComposedBrowserControlsVisibilityDelegate(
                 new TabbedModeBrowserControlsVisibilityDelegate(tab),
-                mActivity.getFullscreenManager().getBrowserVisibilityDelegate());
+                mAppBrowserControlsVisibilityDelegate);
     }
 }

@@ -213,8 +213,6 @@ Display::~Display() {
       context->RemoveObserver(this);
     if (skia_output_surface_)
       skia_output_surface_->RemoveContextLostObserver(this);
-    if (scheduler_)
-      surface_manager_->RemoveObserver(scheduler_.get());
   }
 
   // Un-register as DisplaySchedulerClient to prevent us from being called in a
@@ -222,7 +220,7 @@ Display::~Display() {
   if (scheduler_)
     scheduler_->SetClient(nullptr);
 
-  RunDrawCallbacks();
+  damage_tracker_->RunDrawCallbacks();
 }
 
 void Display::Initialize(DisplayClient* client,
@@ -233,8 +231,6 @@ void Display::Initialize(DisplayClient* client,
   gpu::ScopedAllowScheduleGpuTask allow_schedule_gpu_task;
   client_ = client;
   surface_manager_ = surface_manager;
-  if (scheduler_)
-    surface_manager_->AddObserver(scheduler_.get());
 
   output_surface_->BindToClient(this);
   if (output_surface_->software_device())
@@ -244,6 +240,11 @@ void Display::Initialize(DisplayClient* client,
       std::make_unique<FrameRateDecider>(surface_manager_, this);
 
   InitializeRenderer(enable_shared_images);
+
+  damage_tracker_ = std::make_unique<DisplayDamageTracker>(surface_manager_,
+                                                           aggregator_.get());
+  if (scheduler_)
+    scheduler_->SetDamageTracker(damage_tracker_.get());
 
   // This depends on assumptions that Display::Initialize will happen on the
   // same callstack as the ContextProvider being created/initialized or else
@@ -274,9 +275,7 @@ void Display::SetLocalSurfaceId(const LocalSurfaceId& id,
   current_surface_id_ = SurfaceId(frame_sink_id_, id);
   device_scale_factor_ = device_scale_factor;
 
-  UpdateRootFrameMissing();
-  if (scheduler_)
-    scheduler_->SetNewRootSurface(current_surface_id_);
+  damage_tracker_->SetNewRootSurface(current_surface_id_);
 }
 
 void Display::SetVisible(bool visible) {
@@ -307,8 +306,8 @@ void Display::Resize(const gfx::Size& size) {
 
   swapped_since_resize_ = false;
   current_surface_size_ = size;
-  if (scheduler_)
-    scheduler_->DisplayResized();
+
+  damage_tracker_->DisplayResized();
 }
 
 void Display::DisableSwapUntilResize(
@@ -346,11 +345,7 @@ void Display::SetColorMatrix(const SkMatrix44& matrix) {
       aggregator_->SetFullDamageForSurface(current_surface_id_);
   }
 
-  if (scheduler_) {
-    BeginFrameAck ack;
-    ack.has_damage = true;
-    scheduler_->ProcessSurfaceDamage(current_surface_id_, ack, true);
-  }
+  damage_tracker_->SetRootSurfaceDamaged();
 }
 
 void Display::SetColorSpace(const gfx::ColorSpace& device_color_space,
@@ -436,13 +431,7 @@ void Display::InitializeRenderer(bool enable_shared_images) {
 }
 
 bool Display::IsRootFrameMissing() const {
-  Surface* surface = surface_manager_->GetSurfaceForId(current_surface_id_);
-  return !surface || !surface->HasActiveFrame();
-}
-
-void Display::UpdateRootFrameMissing() {
-  if (scheduler_)
-    scheduler_->SetRootFrameMissing(IsRootFrameMissing());
+  return damage_tracker_->root_frame_missing();
 }
 
 void Display::OnContextLost() {
@@ -523,7 +512,7 @@ bool Display::DrawAndSwap() {
                            swapped_trace_id_);
 
   // Run callbacks early to allow pipelining and collect presented callbacks.
-  RunDrawCallbacks();
+  damage_tracker_->RunDrawCallbacks();
 
   frame.metadata.latency_info.insert(frame.metadata.latency_info.end(),
                                      stored_latency_info_.begin(),
@@ -779,46 +768,7 @@ void Display::DidReceivePresentationFeedback(
 
 void Display::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
   aggregator_->SetFullDamageForSurface(current_surface_id_);
-  if (scheduler_) {
-    BeginFrameAck ack;
-    ack.has_damage = true;
-    scheduler_->ProcessSurfaceDamage(current_surface_id_, ack, true);
-  }
-}
-
-bool Display::SurfaceDamaged(const SurfaceId& surface_id,
-                             const BeginFrameAck& ack) {
-  if (!ack.has_damage)
-    return false;
-  bool display_damaged = false;
-  if (aggregator_) {
-    display_damaged |=
-        aggregator_->NotifySurfaceDamageAndCheckForDisplayDamage(surface_id);
-  }
-  if (surface_id == current_surface_id_) {
-    display_damaged = true;
-    UpdateRootFrameMissing();
-  }
-  if (display_damaged)
-    surfaces_to_ack_on_next_draw_.push_back(surface_id);
-  return display_damaged;
-}
-
-void Display::SurfaceDestroyed(const SurfaceId& surface_id) {
-  TRACE_EVENT0("viz", "Display::SurfaceDestroyed");
-  if (aggregator_)
-    aggregator_->ReleaseResources(surface_id);
-}
-
-bool Display::SurfaceHasUnackedFrame(const SurfaceId& surface_id) const {
-  if (!surface_manager_)
-    return false;
-
-  Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
-  if (!surface)
-    return false;
-
-  return surface->HasUnackedActiveFrame();
+  damage_tracker_->SetRootSurfaceDamaged();
 }
 
 void Display::DidFinishFrame(const BeginFrameAck& ack) {
@@ -1003,24 +953,6 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
       } else {
         ++quad;
       }
-    }
-  }
-}
-
-void Display::RunDrawCallbacks() {
-  for (const auto& surface_id : surfaces_to_ack_on_next_draw_) {
-    Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
-    if (surface)
-      surface->SendAckToClient();
-  }
-  surfaces_to_ack_on_next_draw_.clear();
-  // |surfaces_to_ack_on_next_draw_| does not cover surfaces that are being
-  // embedded for the first time, so also go through SurfaceAggregator's list.
-  if (aggregator_) {
-    for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
-      Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
-      if (surface)
-        surface->SendAckToClient();
     }
   }
 }

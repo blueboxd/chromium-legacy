@@ -199,12 +199,8 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 // Tests that when tapping a suggestion, it is opened. When going back, the
 // disposition of the collection takes into account the previous scroll, even
 // when more is tapped.
-- (void)testOpenPageAndGoBackWithMoreContent {
-// TODO(crbug.com/786960): re-enable when fixed. Tests may pass on EG2
-#if defined(CHROME_EARL_GREY_1)
-  EARL_GREY_TEST_DISABLED(@"Fails on iOS 11.0.");
-#endif
-
+// TODO(crbug.com/1032191): re-enable when fixed.
+- (void)DISABLED_testOpenPageAndGoBackWithMoreContent {
   // Set server up.
   self.testServer->RegisterRequestHandler(base::Bind(&StandardResponse));
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");

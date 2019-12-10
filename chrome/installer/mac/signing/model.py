@@ -141,6 +141,7 @@ These options are passed to `codesign --verify` after the
 VerifyOptions = make_enum(
     'signing.model.VerifyOptions', {
         'DEEP': '--deep',
+        'STRICT': '--strict',
         'NO_STRICT': '--no-strict',
         'IGNORE_RESOURCES': '--ignore-resources',
     })

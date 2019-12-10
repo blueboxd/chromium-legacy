@@ -620,13 +620,6 @@
     // none
 
     //
-    // -webkit-margin-collapse
-    //
-    // collapse
-    // separate
-    "discard",
-
-    //
     // word-break
     //
     "break-all",

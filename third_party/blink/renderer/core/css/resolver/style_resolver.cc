@@ -1491,11 +1491,6 @@ static inline bool IsValidFirstLetterStyleProperty(CSSPropertyID id) {
     case CSSPropertyID::kWebkitBorderImage:
     case CSSPropertyID::kWebkitBorderVerticalSpacing:
     case CSSPropertyID::kWebkitFontSmoothing:
-    case CSSPropertyID::kWebkitMarginAfterCollapse:
-    case CSSPropertyID::kWebkitMarginBeforeCollapse:
-    case CSSPropertyID::kWebkitMarginBottomCollapse:
-    case CSSPropertyID::kWebkitMarginCollapse:
-    case CSSPropertyID::kWebkitMarginTopCollapse:
     case CSSPropertyID::kWordSpacing:
       return true;
 

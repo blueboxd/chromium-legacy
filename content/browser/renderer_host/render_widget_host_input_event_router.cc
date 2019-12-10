@@ -1784,7 +1784,8 @@ RenderWidgetHostInputEventRouter::FindTargetSynchronously(
         root_view, static_cast<const blink::WebTouchEvent&>(event));
   }
   if (blink::WebInputEvent::IsGestureEventType(event.GetType())) {
-    auto gesture_event = static_cast<const blink::WebGestureEvent&>(event);
+    const auto& gesture_event =
+        static_cast<const blink::WebGestureEvent&>(event);
     if (gesture_event.SourceDevice() == blink::WebGestureDevice::kTouchscreen) {
       return FindTouchscreenGestureEventTarget(root_view, gesture_event);
     }

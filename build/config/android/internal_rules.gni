@@ -3509,6 +3509,7 @@ if (enable_java_templates) {
         generate_interface_jar(target_name) {
           forward_variables_from(invoker,
                                  [
+                                   "assert_no_deps",
                                    "data",
                                    "data_deps",
                                    "deps",
@@ -3571,6 +3572,7 @@ if (enable_java_templates) {
       group(target_name) {
         forward_variables_from(invoker,
                                [
+                                 "assert_no_deps",
                                  "data",
                                  "deps",
                                  "data_deps",

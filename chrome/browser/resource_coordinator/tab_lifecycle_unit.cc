@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/usb/usb_tab_helper.h"
 #include "components/device_event_log/device_event_log.h"
+#include "components/performance_manager/public/decorators/page_live_state_decorator.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
@@ -811,6 +812,10 @@ void TabLifecycleUnitSource::TabLifecycleUnit::SetAutoDiscardable(
   if (auto_discardable_ == auto_discardable)
     return;
   auto_discardable_ = auto_discardable;
+
+  performance_manager::PageLiveStateDecorator::SetIsAutoDiscardable(
+      web_contents(), auto_discardable_);
+
   for (auto& observer : *observers_)
     observer.OnAutoDiscardableStateChange(web_contents(), auto_discardable_);
 }

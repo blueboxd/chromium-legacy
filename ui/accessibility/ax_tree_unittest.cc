@@ -2317,13 +2317,11 @@ TEST(AXTreeTest, UnignoredSelection) {
 
   tree_update.nodes[2].id = 3;
   tree_update.nodes[2].role = ax::mojom::Role::kStaticText;
-  tree_update.nodes[2].AddStringAttribute(ax::mojom::StringAttribute::kName,
-                                          "text");
+  tree_update.nodes[2].SetName("text");
 
   tree_update.nodes[3].id = 4;
   tree_update.nodes[3].role = ax::mojom::Role::kStaticText;
-  tree_update.nodes[3].AddStringAttribute(ax::mojom::StringAttribute::kName,
-                                          "text");
+  tree_update.nodes[3].SetName("text");
 
   tree_update.nodes[4].id = 5;
   tree_update.nodes[4].role = ax::mojom::Role::kGenericContainer;
@@ -2344,8 +2342,7 @@ TEST(AXTreeTest, UnignoredSelection) {
 
   tree_update.nodes[8].id = 9;
   tree_update.nodes[8].role = ax::mojom::Role::kStaticText;
-  tree_update.nodes[8].AddStringAttribute(ax::mojom::StringAttribute::kName,
-                                          "text");
+  tree_update.nodes[8].SetName("text");
 
   tree_update.nodes[9].id = 10;
   tree_update.nodes[9].child_ids = {13};
@@ -2359,8 +2356,7 @@ TEST(AXTreeTest, UnignoredSelection) {
 
   tree_update.nodes[11].id = 12;
   tree_update.nodes[11].role = ax::mojom::Role::kStaticText;
-  tree_update.nodes[11].AddStringAttribute(ax::mojom::StringAttribute::kName,
-                                           "text");
+  tree_update.nodes[11].SetName("text");
 
   tree_update.nodes[12].id = 13;
   tree_update.nodes[12].child_ids = {16};
@@ -2369,18 +2365,15 @@ TEST(AXTreeTest, UnignoredSelection) {
 
   tree_update.nodes[13].id = 14;
   tree_update.nodes[13].role = ax::mojom::Role::kStaticText;
-  tree_update.nodes[13].AddStringAttribute(ax::mojom::StringAttribute::kName,
-                                           "text");
+  tree_update.nodes[13].SetName("text");
 
   tree_update.nodes[14].id = 15;
   tree_update.nodes[14].role = ax::mojom::Role::kStaticText;
-  tree_update.nodes[14].AddStringAttribute(ax::mojom::StringAttribute::kName,
-                                           "text");
+  tree_update.nodes[14].SetName("text");
 
   tree_update.nodes[15].id = 16;
   tree_update.nodes[15].role = ax::mojom::Role::kStaticText;
-  tree_update.nodes[15].AddStringAttribute(ax::mojom::StringAttribute::kName,
-                                           "text");
+  tree_update.nodes[15].SetName("text");
 
   AXTree tree(tree_update);
   AXNodePosition::SetTree(&tree);

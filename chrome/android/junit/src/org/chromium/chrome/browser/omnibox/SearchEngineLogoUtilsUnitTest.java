@@ -37,7 +37,7 @@ import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils.Delegate;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
-import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
+import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.components.search_engines.TemplateUrlService;
 
 /**

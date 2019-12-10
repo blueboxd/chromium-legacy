@@ -271,7 +271,7 @@ TEST_P(MdIconNormalizerTestWithColorType, SquareIcon) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     MdIconNormalizerTestWithColorType,
     ::testing::Values(kAlpha_8_SkColorType,
                       kARGB_4444_SkColorType,
@@ -312,7 +312,7 @@ TEST_P(MdIconNormalizerTestWithNoAlpha, NoScaling) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     MdIconNormalizerTestWithNoAlpha,
     ::testing::Values(kGray_8_SkColorType,
                       kRGB_565_SkColorType,

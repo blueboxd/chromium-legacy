@@ -552,9 +552,10 @@ void ProxyImpl::DidFinishImplFrame() {
   host_impl_->DidFinishImplFrame();
 }
 
-void ProxyImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
+void ProxyImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack,
+                                   FrameSkippedReason reason) {
   DCHECK(IsImplThread());
-  host_impl_->DidNotProduceFrame(ack);
+  host_impl_->DidNotProduceFrame(ack, reason);
 }
 
 void ProxyImpl::WillNotReceiveBeginFrame() {

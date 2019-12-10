@@ -252,5 +252,5 @@
 <translation id="9178475906033259337">ნაჩვენებია 1 შედეგი მოთხოვნაზე <ph name="QUERY" /></translation>
 <translation id="932327136139879170">საწყისი გვერდი</translation>
 <translation id="944069440740578670">წაუკითხავი შეტყობინებები</translation>
-<translation id="974545358917229949">ნაჩვენებია <ph name="QUERY" /> შედეგი მოთხოვნაზე <ph name="RESULT_COUNT" /></translation>
+<translation id="974545358917229949">ნაჩვენებია <ph name="RESULT_COUNT" /> შედეგი მოთხოვნაზე: <ph name="QUERY" /></translation>
 </translationbundle>

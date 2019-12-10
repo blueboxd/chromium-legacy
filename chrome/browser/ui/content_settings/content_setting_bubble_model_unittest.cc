@@ -1208,7 +1208,7 @@ TEST_F(ContentSettingBubbleModelTest, PopupBubbleModelListItems) {
       content_setting_bubble_model->bubble_content().list_items;
   EXPECT_EQ(0U, list_items.size());
 
-  BlockedWindowParams params(GURL("about:blank"), url::Origin(),
+  BlockedWindowParams params(GURL("about:blank"), url::Origin(), nullptr,
                              content::Referrer(), std::string(),
                              WindowOpenDisposition::NEW_POPUP,
                              blink::mojom::WindowFeatures(), false, true);

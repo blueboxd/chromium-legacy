@@ -5,6 +5,7 @@
 <translation id="1181037720776840403">Выдаліць</translation>
 <translation id="125153950246128346">Націсніце, каб паглядзець іншую ўкладку</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> укладка}one{<ph name="TABS_COUNT_MANY" /> укладка}few{<ph name="TABS_COUNT_MANY" /> укладкі}many{<ph name="TABS_COUNT_MANY" /> укладак}other{<ph name="TABS_COUNT_MANY" /> укладкі}}</translation>
+<translation id="2569352796411618312">Прапанова: некалькі (<ph name="NUMBER_OF_TABS" />) укладак пэўны час не выкарыстоўваліся. Закрыць іх?</translation>
 <translation id="257674075312929031">Група</translation>
 <translation id="2613747923081026172">Стварыць групу</translation>
 <translation id="2671423594960767771">Абагуліць групу</translation>
@@ -23,6 +24,9 @@
 <translation id="6840760312327750441">Каб згрупаваць укладкі, дакраніцеся да адной укладкі і ўтрымлівайце яе, затым перацягніце на іншую.</translation>
 <translation id="7151209024774799310">Выдаліць укладкі з групы</translation>
 <translation id="7559245342362162951">Паказваць укладкі групы ў поўнаэкраннай сетцы</translation>
+<translation id="7792771145871471484">Праглядзець прапановы.</translation>
+<translation id="7966321538264951561">Адхіліць прапановы.</translation>
+<translation id="83556505225171773">{TABS_COUNT,plural, =1{Закрыць <ph name="TABS_COUNT_ONE" /> выбраную ўкладку}one{Закрыць <ph name="TABS_COUNT_MANY" /> выбраную ўкладку}few{Закрыць <ph name="TABS_COUNT_MANY" /> выбраныя ўкладкі}many{Закрыць <ph name="TABS_COUNT_MANY" /> выбраных укладак}other{Закрыць <ph name="TABS_COUNT_MANY" /> выбранай укладкі}}</translation>
 <translation id="9150694013019234766">Пераключайцеся паміж укладкамі групы ў ніжняй частцы экрана</translation>
 <translation id="9169594135889675189">Дадаць у групу новую ўкладку</translation>
 <translation id="959682366969460160">Навядзіце парадак</translation>

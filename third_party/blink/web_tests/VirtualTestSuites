@@ -289,6 +289,14 @@
              "--disable-smooth-scrolling"]
   },
   {
+    "prefix": "smooth_compositor_threaded_scrollbar_scrolling",
+    "bases": ["fast/scrolling/scrollbars/scroll-chaining-for-gesture-based-scrolling.html"],
+    "args": ["--enable-features=CompositorThreadedScrollbarScrolling",
+             "--enable-threaded-compositing",
+             "--enable-prefer-compositing-to-lcd-text",
+             "--enable-smooth-scrolling"]
+  },
+  {
     "prefix": "hidpi",
     "bases": ["fast/scrolling/scrollbars/dsf-ready"],
     "args": ["--disable-smooth-scrolling",

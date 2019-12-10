@@ -312,6 +312,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            kEnableOnly},
           {wf::EnableHTMLImports, blink::features::kWebComponentsV0Enabled,
            kEnableOnly},
+          {wf::EnableVideoPlaybackQuality, features::kVideoPlaybackQuality,
+           kUseFeatureState},
       };
   for (const auto& mapping : blinkFeatureToBaseFeatureMapping) {
     const bool featureEnabled =

@@ -222,17 +222,11 @@ public class ChromeFullscreenManager extends FullscreenManager
         mActivity = activity;
         mControlsPosition = controlsPosition;
         mExitFullscreenOnStop = exitFullscreenOnStop;
-        mBrowserVisibilityDelegate =
-                new BrowserStateBrowserControlsVisibilityDelegate(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (getTab() != null) {
-                            TabBrowserControlsConstraintsHelper.updateEnabledState(getTab());
-                        } else if (!mBrowserVisibilityDelegate.canAutoHideBrowserControls()) {
-                            setPositionsForTabToNonFullscreen();
-                        }
-                    }
-                }, this::getPersistentFullscreenMode);
+        mBrowserVisibilityDelegate = new BrowserStateBrowserControlsVisibilityDelegate(
+                getHtmlApiHandler().getPersistentFullscreenModeSupplier());
+        mBrowserVisibilityDelegate.addObserver((constraints) -> {
+            if (constraints == BrowserControlsState.SHOWN) setPositionsForTabToNonFullscreen();
+        });
         VrModuleProvider.registerVrModeObserver(this);
         if (isInVr()) onEnterVr();
     }
@@ -367,7 +361,7 @@ public class ChromeFullscreenManager extends FullscreenManager
             }
         }
 
-        if (tab == null && !mBrowserVisibilityDelegate.canAutoHideBrowserControls()) {
+        if (tab == null && mBrowserVisibilityDelegate.get() == BrowserControlsState.SHOWN) {
             setPositionsForTabToNonFullscreen();
         }
     }
@@ -468,7 +462,6 @@ public class ChromeFullscreenManager extends FullscreenManager
                     // We should hide browser controls first.
                     mPendingFullscreenOptions = options;
                     mIsEnteringPersistentModeState = true;
-                    TabBrowserControlsConstraintsHelper.updateEnabledState(tab);
                 }
             }
 
@@ -860,7 +853,9 @@ public class ChromeFullscreenManager extends FullscreenManager
     @Override
     public void setPositionsForTabToNonFullscreen() {
         Tab tab = getTab();
-        if (tab == null || TabBrowserControlsConstraintsHelper.get(tab).canShow()) {
+        if (tab == null
+                || TabBrowserControlsConstraintsHelper.getConstraints(tab)
+                        != BrowserControlsState.HIDDEN) {
             setPositionsForTab(0, 0, getTopControlsHeight());
         } else {
             setPositionsForTab(-getTopControlsHeight(), getBottomControlsHeight(), 0);
@@ -1022,8 +1017,6 @@ public class ChromeFullscreenManager extends FullscreenManager
     private void runBrowserDrivenShowAnimation() {
         if (mControlsAnimator != null) return;
 
-        TabBrowserControlsConstraintsHelper controlState =
-                TabBrowserControlsConstraintsHelper.get(getTab());
         setOffsetOverridden(true);
 
         final float hiddenRatio = getBrowserControlHiddenRatio();

@@ -214,6 +214,7 @@
 <translation id="2532336938189706096">Веб-көрініс</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> элемент жойылды.</translation>
 <translation id="2536728043171574184">Бұл беттің желіден тыс күйдегі көшірмесі көрсетілуде</translation>
+<translation id="2537178555904266562">Құпия сөздерді синхрондау кезінде қате шықты</translation>
 <translation id="2546283357679194313">Cookie файлдары және торап деректері</translation>
 <translation id="2567385386134582609">КЕСКІН</translation>
 <translation id="257088987046510401">Тақырыптар</translation>
@@ -231,6 +232,7 @@
 <translation id="2650751991977523696">Файл қайта жүктеп алынсын ба?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# аудиофайл}other{# аудиофайл}}</translation>
 <translation id="2653659639078652383">Жіберу</translation>
+<translation id="2669093958999339774">Кедергі келтіретін хабарландыруларды бөгеу және хабарларды дыбыссыз алу</translation>
 <translation id="2677748264148917807">Шығу</translation>
 <translation id="2704606927547763573">Көшірілген</translation>
 <translation id="2707726405694321444">Бетті жаңарту</translation>
@@ -248,7 +250,6 @@
 <translation id="281504910091592009"><ph name="BEGIN_LINK" />Google есептік жазбаңызда<ph name="END_LINK" /> сақталған құпия сөздерді көру және басқару</translation>
 <translation id="2818669890320396765">Бетбелгілерді барлық құрылғылардан пайдалану үшін есептік жазбаға кіріп, синхрондау функциясын қосыңыз</translation>
 <translation id="2822354292072154809"><ph name="CHOSEN_OBJECT_NAME" /> үшін барлық сайт рұқсаттары шынымен бастапқы күйіне қайтарылсын ба?</translation>
-<translation id="2836148919159985482">Толық экраннан шығу үшін "Артқа" түймесін түртіңіз.</translation>
 <translation id="2842985007712546952">Түпкі қалта</translation>
 <translation id="2858138569776157458">Танымал сайт</translation>
 <translation id="2860954141821109167">Бұл құрылғыда телефон қолданбасы қосулы екенін тексеріңіз.</translation>
@@ -358,14 +359,15 @@
 <translation id="3632295766818638029">Құпия сөзді көрсету</translation>
 <translation id="363596933471559332">Сақталған тіркелгі деректері арқылы веб-сайттарға автоматты түрде кіріңіз. Функция өшірулі кезде, әрқашан веб-сайтқа кіруден бұрын сізден растау сұралады.</translation>
 <translation id="3658159451045945436">Бастапқы күйге қайтарылған кезде, деректерді үнемдеу тарихы, сонымен қатар кірген сайттардың тізімі өшіріледі.</translation>
-<translation id="3682730288090679318">Сайттардың сізге хабарландырулар көрсету туралы сұрауларына автоматты түрде тыйым салуға мүмкіндік береді. Сайт хабарландырулар сұраса, беттің төменгі жағында ақпараттық тақта көрсетіледі.</translation>
 <translation id="3692944402865947621"><ph name="FILE_NAME" /> жүктеп алынбады, себебі оны сақтайтын орын жоқ.</translation>
+<translation id="3701167022068948696">Қазір түзету</translation>
 <translation id="3714981814255182093">Іздеу жолағын ашу</translation>
 <translation id="3716182511346448902">Бұл парақша тым көп жадты пайдаланатындықтан, Chromе оны тоқтатып қойды.</translation>
 <translation id="3730075448226062617">Chrome браузері микрофонды пайдалануы үшін, оны <ph name="BEGIN_LINK" />Android параметрлерінде<ph name="END_LINK" /> де іске қосыңыз.</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> қолданбасында бетбелгі қойылды</translation>
 <translation id="3744111561329211289">Фондық синхрондау</translation>
 <translation id="3749259744154402564">Қолдау көрсетілмейді</translation>
+<translation id="3767376082821709728">Сіз кірген жаңа сайттар хабарландырулар жібереді.</translation>
 <translation id="3771001275138982843">Жаңартылған нұсқа жүктеп алынбады.</translation>
 <translation id="3771033907050503522">Инкогнито қойындылары</translation>
 <translation id="3773755127849930740">Жұптау үшін <ph name="BEGIN_LINK" />Bluetooth қосыңыз<ph name="END_LINK" /></translation>
@@ -591,7 +593,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="5414836363063783498">Расталуда…</translation>
 <translation id="5423934151118863508">Ең көп кірген беттеріңіз мына жерде пайда болады</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> ГБ қолжетімді</translation>
-<translation id="5427766642345310212">Түсінікті. Әдепкісінше хабарландыру туралы жаңа сұраулар осы жерде көрсетіледі.</translation>
 <translation id="543338862236136125">Құпия сөзді өзгерту</translation>
 <translation id="5433691172869980887">Пайдаланушының аты көшірілді</translation>
 <translation id="543509235395288790"><ph name="COUNT" /> файл (<ph name="MEGABYTES" />) жүктеп алынуда.</translation>
@@ -678,7 +679,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="5962718611393537961">Жию үшін түртіңіз</translation>
 <translation id="6000066717592683814">Google қызметін әдепкісінше пайдалану</translation>
 <translation id="6005538289190791541">Ұсынылған құпия сөз</translation>
-<translation id="6019358956729171834">Көбірек жүктеу…</translation>
 <translation id="6036057147555329831">Қосымша ICU</translation>
 <translation id="6039379616847168523">Келесі қойындыға өту</translation>
 <translation id="6040143037577758943">Жабу</translation>
@@ -774,6 +774,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="666731172850799929"><ph name="APP_NAME" /> арқылы ашу</translation>
 <translation id="666981079809192359">Chrome құпиялылық ескертпесі</translation>
 <translation id="6676840375528380067">Chrome деректері осы құрылғыдан жойылсын ба?</translation>
+<translation id="6689172468748959065">Профиль фотосуреттері</translation>
 <translation id="6697492270171225480">Бет табылмағанда, ұқсас нұсқаларды ұсыну</translation>
 <translation id="6697947395630195233">Chrome браузері осы сайтта орныңызды бөлісу үшін орныңызға кіруді қажет етеді.</translation>
 <translation id="6698801883190606802">Синхрондалған деректерді басқару</translation>
@@ -956,6 +957,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="8035133914807600019">Жаңа қалта…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> күн қалды</translation>
 <translation id="804335162455518893">SD картасы табылмады</translation>
+<translation id="8046278916126163020">Сіз кірген жаңа сайттар хабарландырулар жіберуге рұқсат сұрайды.</translation>
 <translation id="805047784848435650">Шолу тарихы негізінде</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> МБ бос орын бар</translation>
 <translation id="8058746566562539958">Жаңа Chrome қойындысынан ашу</translation>

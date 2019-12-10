@@ -328,6 +328,10 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
           NativeTheme::kColorId_WindowBackground, color_scheme);
       return SkColorSetA(bg, 0xCC);
     }
+    case NativeTheme::kColorId_TooltipIcon:
+      return SkColorSetARGB(0xBD, 0x44, 0x44, 0x44);
+    case NativeTheme::kColorId_TooltipIconHovered:
+      return SkColorSetARGB(0xBD, 0, 0, 0);
     case NativeTheme::kColorId_TooltipText:
       return SkColorSetA(kPrimaryTextColor, 0xDE);
 

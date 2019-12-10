@@ -20,7 +20,6 @@ import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.settings.privacy.PrivacyPreferencesManager;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.minidump_uploader.CrashFileManager;
@@ -120,7 +119,7 @@ public class MinidumpUploadService extends IntentService {
     /**
      * Stores the successes and failures from uploading crash to UMA,
      */
-    public static void storeBreakpadUploadStatsInUma(ChromePreferenceManager pref) {
+    public static void storeBreakpadUploadStatsInUma(CrashUploadCountStore pref) {
         sBrowserCrashMetricsInitialized.set(true);
         for (String type : TYPES) {
             for (int success = pref.getCrashSuccessUploadCount(type); success > 0; success--) {
@@ -134,8 +133,7 @@ public class MinidumpUploadService extends IntentService {
                 if (ProcessType.BROWSER.equals(type)) sDidBrowserCrashRecently.set(true);
             }
 
-            pref.setCrashSuccessUploadCount(type, 0);
-            pref.setCrashFailureUploadCount(type, 0);
+            pref.resetCrashUploadCounts(type);
         }
     }
 
@@ -286,7 +284,7 @@ public class MinidumpUploadService extends IntentService {
         if (ProcessType.BROWSER.equals(process_type)) {
             sDidBrowserCrashRecently.set(true);
         }
-        ChromePreferenceManager.getInstance().incrementCrashSuccessUploadCount(process_type);
+        CrashUploadCountStore.getInstance().incrementCrashSuccessUploadCount(process_type);
     }
 
     /**
@@ -302,7 +300,7 @@ public class MinidumpUploadService extends IntentService {
         if (ProcessType.BROWSER.equals(process_type)) {
             sDidBrowserCrashRecently.set(true);
         }
-        ChromePreferenceManager.getInstance().incrementCrashFailureUploadCount(process_type);
+        CrashUploadCountStore.getInstance().incrementCrashFailureUploadCount(process_type);
     }
 
     /**

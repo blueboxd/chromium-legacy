@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
+#include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
@@ -57,11 +58,18 @@ void SetWebAppPrefsForWebContents(content::WebContents* web_contents) {
 content::WebContents* ShowWebApplicationWindow(
     const apps::AppLaunchParams& params,
     const std::string& app_id,
-    const GURL& launch_url,
+    const GURL& default_url,
     Browser* browser,
     WindowOpenDisposition disposition) {
-  NavigateParams nav_params(browser, launch_url,
-                            ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+  web_app::FileHandlerManager& file_handler_manager =
+      web_app::WebAppProviderBase::GetProviderBase(browser->profile())
+          ->file_handler_manager();
+  const GURL url =
+      file_handler_manager
+          .GetMatchingFileHandlerURL(params.app_id, params.launch_files)
+          .value_or(default_url);
+
+  NavigateParams nav_params(browser, url, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
   nav_params.disposition = disposition;
   Navigate(&nav_params);
 
@@ -78,7 +86,7 @@ content::WebContents* ShowWebApplicationWindow(
   web_contents->SetInitialFocus();
 
   if (base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI)) {
-    web_launch::WebLaunchFilesHelper::SetLaunchPaths(web_contents, launch_url,
+    web_launch::WebLaunchFilesHelper::SetLaunchPaths(web_contents, url,
                                                      params.launch_files);
   }
 

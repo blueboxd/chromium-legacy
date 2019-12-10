@@ -71,6 +71,11 @@ static const size_t kMaxFaviconBitmapsPerIconURL = 8;
 // username/password, and any trivial subdomains (e.g., "www.", "m.") removed.
 base::string16 FormatUrlForRedirectComparison(const GURL& url);
 
+// Advances (if |day| >= 0) or backtracks (if |day| < 0) from |time| by
+// abs(|day|) calendar days in local timezone and returns the midnight of the
+// resulting day.
+base::Time MidnightNDaysLater(base::Time time, int days);
+
 // Keeps track of a queued HistoryDBTask. This class lives solely on the
 // DB thread.
 class QueuedHistoryDBTask {
@@ -274,6 +279,35 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Returns the number of hosts visited in the last month.
   HistoryCountResult CountUniqueHostsVisitedLastMonth();
+
+  // Returns a collection of domain diversity metrics. Each metric is an
+  // unsigned integer representing the number of unique domains (effective
+  // top-level domain (eTLD) + 1, e.g. "foo.com", "bar.co.uk") visited within
+  // the 1-day, 7-day or 28-day span that ends at a midnight in local timezone.
+  //
+  // For each of the most recent |number_of_days_to_report| midnights before
+  // |report_time|(inclusive), this function computes a subset of
+  // {1-day, 7-day, 28-day} metrics whose spanning periods all end on that
+  // midnight. This subset of metrics to compute is specified by a bitmask
+  // |metric_type_bitmask|, which takes a bitwise combination of
+  // kEnableLast1DayMetric, kEnableLast7DayMetric and kEnableLast28DayMetric.
+  //
+  // All computed metrics are stored in DomainDiversityResults, which represents
+  // a collection of DomainMetricSet's. Each DomainMetricSet contains up to 3
+  // metrics ending at one unique midnight in the time range of
+  // |number_of_days_to_report| days before |report_time|. The collection of
+  // DomainMetricSet is sorted reverse chronologically by the ending midnight.
+  //
+  // For example, when |report_time| = 2019/11/01 00:01am, |number_of_days| = 3,
+  // |metric_type_bitmask| = kEnableLast28DayMetric | kEnableLast1DayMetric,
+  // DomainDiversityResults will hold 3 DomainMetricSets, each containing 2
+  // metrics measuring domain visit counts spanning the following date ranges
+  // (all dates are inclusive):
+  // {{10/30, 10/3~10/30}, {10/29, 10/2~10/29}, {10/28, 10/1~10/28}}
+  DomainDiversityResults GetDomainDiversity(
+      base::Time report_time,
+      int number_of_days_to_report,
+      DomainMetricBitmaskType metric_type_bitmask);
 
   // Gets the last time any webpage on the given host was visited within the
   // time range [|begin_time|, |end_time|). If the given host has not been

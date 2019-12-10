@@ -30,6 +30,9 @@
       <include name="IDR_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_STREAM_ITEM_JS"
                file="${root_gen_dir}/chrome/browser/resources/extensions/activity_log/activity_log_stream_item.js"
                use_base_dir="false" type ="BINDATA" />
+      <include name="IDR_EXTENSIONS_CHECKUP_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/checkup.js"
+               use_base_dir="false" type ="BINDATA" />
       <include name="IDR_EXTENSIONS_DETAIL_VIEW_JS"
                file="${root_gen_dir}/chrome/browser/resources/extensions/detail_view.js"
                use_base_dir="false" type ="BINDATA" />

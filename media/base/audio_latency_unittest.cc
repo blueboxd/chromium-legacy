@@ -165,7 +165,7 @@ TEST_P(AudioLatencyTest, ExactBufferSizes) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     AudioLatencyTest,
 #if defined(OS_WIN)
     // Windows 10 with supported driver will have valid min and max buffer sizes

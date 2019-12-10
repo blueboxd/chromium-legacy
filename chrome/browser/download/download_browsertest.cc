@@ -1213,7 +1213,7 @@ class DownloadReferrerPolicyTest
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     DownloadReferrerPolicyTest,
     ::testing::Values(network::mojom::ReferrerPolicy::kAlways,
                       network::mojom::ReferrerPolicy::kDefault,
@@ -4018,7 +4018,7 @@ IN_PROC_BROWSER_TEST_P(DownloadTestWithOptionalSafetyTipsFeature, SafetyTips) {
       security_state::SafetyTipStatus::kBadReputation, 1);
 }
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          DownloadTestWithOptionalSafetyTipsFeature,
                          ::testing::Bool());
 

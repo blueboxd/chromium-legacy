@@ -33,7 +33,7 @@ bool IsBetterMatch(const autofill::PasswordForm& form1,
                    const autofill::PasswordForm& form2) {
   if (!form1.is_public_suffix_match && form2.is_public_suffix_match)
     return true;
-  if (form1.preferred && !form2.preferred)
+  if (form1.date_last_used > form2.date_last_used)
     return true;
   return form1.date_created > form2.date_created;
 }

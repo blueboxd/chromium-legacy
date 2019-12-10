@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.text.TextUtils;
 
 import com.google.android.gms.gcm.GcmListenerService;
@@ -133,7 +132,6 @@ public class ChromeGcmListenerService extends GcmListenerService {
 
         final String subscriptionId = LazySubscriptionsManager.buildSubscriptionUniqueId(
                 message.getAppId(), message.getSenderId());
-        long time = SystemClock.elapsedRealtime();
 
         boolean isSubscriptionLazy = LazySubscriptionsManager.isSubscriptionLazy(subscriptionId);
         boolean isHighPriority = message.getOriginalPriority() == GCMMessage.Priority.HIGH;
@@ -142,8 +140,6 @@ public class ChromeGcmListenerService extends GcmListenerService {
         if (shouldPersistMessage) {
             LazySubscriptionsManager.persistMessage(subscriptionId, message);
         }
-
-        GcmUma.recordSubscriptionLazyCheckTime(SystemClock.elapsedRealtime() - time);
 
         return shouldPersistMessage;
     }

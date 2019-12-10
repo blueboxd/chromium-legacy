@@ -13,11 +13,15 @@ from .code_node import ListNode
 from .code_node import SymbolScopeNode
 from .code_node import TextNode
 from .codegen_expr import CodeGenExpr
+from .codegen_format import format_template
 
 
 class CxxBlockNode(CompositeNode):
     def __init__(self, body):
-        template_format = ("{{\n" "  {body}\n" "}}")
+        template_format = (
+            "{{\n"  #
+            "  {body}\n"  #
+            "}}")
 
         CompositeNode.__init__(
             self,
@@ -27,7 +31,10 @@ class CxxBlockNode(CompositeNode):
 
 class CxxIfNode(CompositeNode):
     def __init__(self, cond, body, likeliness):
-        template_format = ("if ({cond}) {{\n" "  {body}\n" "}}")
+        template_format = (
+            "if ({cond}) {{\n"  #
+            "  {body}\n"  #
+            "}}")
 
         CompositeNode.__init__(
             self,
@@ -38,11 +45,12 @@ class CxxIfNode(CompositeNode):
 
 class CxxIfElseNode(CompositeNode):
     def __init__(self, cond, then, then_likeliness, else_, else_likeliness):
-        template_format = ("if ({cond}) {{\n"
-                           "  {then}\n"
-                           "}} else {{\n"
-                           "  {else_}\n"
-                           "}}")
+        template_format = (
+            "if ({cond}) {{\n"  #
+            "  {then}\n"  #
+            "}} else {{\n"  #
+            "  {else_}\n"  #
+            "}}")
 
         CompositeNode.__init__(
             self,
@@ -60,6 +68,65 @@ class CxxLikelyIfNode(CxxIfNode):
 class CxxUnlikelyIfNode(CxxIfNode):
     def __init__(self, cond, body):
         CxxIfNode.__init__(self, cond, body, Likeliness.UNLIKELY)
+
+
+class CxxMultiBranchesNode(CodeNode):
+    class _Clause(object):
+        def __init__(self, cond, body):
+            assert isinstance(cond, (CodeNode, bool))
+            assert isinstance(body, SymbolScopeNode)
+            self.cond = cond
+            self.body = body
+
+    def __init__(self):
+        clauses_gensym = CodeNode.gensym()
+        clauses = []
+        template_text = format_template(
+            """\
+% for {clause} in {clauses}:
+% if not loop.first:
+ else \\
+% endif
+% if {clause}.cond is not False:
+% if {clause}.cond is not True:
+if (${{{clause}.cond}}) \\
+% endif
+{{
+  ${{{clause}.body}}
+}}\\
+% if {clause}.cond is True:
+  <% break %>
+% endif
+% endif
+% endfor\
+""",
+            clause=CodeNode.gensym(),
+            clauses=clauses_gensym)
+        template_vars = {clauses_gensym: clauses}
+
+        CodeNode.__init__(
+            self, template_text=template_text, template_vars=template_vars)
+
+        self._clauses = clauses
+
+    def append(self, cond, body, likeliness=Likeliness.LIKELY):
+        if cond is None:
+            cond = False
+        elif isinstance(cond, CodeGenExpr):
+            if cond.is_always_true:
+                cond = True
+            elif cond.is_always_false:
+                cond = False
+
+        if not isinstance(cond, bool):
+            cond = _to_conditional_node(cond)
+        body = _to_symbol_scope_node(body, likeliness)
+
+        if isinstance(cond, CodeNode):
+            cond.set_outer(self)
+        body.set_outer(self)
+
+        self._clauses.append(self._Clause(cond, body))
 
 
 class CxxBreakableBlockNode(CompositeNode):

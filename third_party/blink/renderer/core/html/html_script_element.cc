@@ -134,7 +134,11 @@ void HTMLScriptElement::setInnerText(
   String value = GetStringFromTrustedScript(string_or_trusted_script,
                                             &GetDocument(), exception_state);
   if (!exception_state.HadException()) {
+    // https://w3c.github.io/webappsec-trusted-types/dist/spec/#setting-slot-values
+    // On setting, the innerText [...] perform the regular steps, and then set
+    // content object's [[ScriptText]] internal slot value [...].
     HTMLElement::setInnerText(value, exception_state);
+    script_text_internal_slot_ = value;
   }
 }
 
@@ -144,13 +148,23 @@ void HTMLScriptElement::setTextContent(
   String value = GetStringFromTrustedScript(string_or_trusted_script,
                                             &GetDocument(), exception_state);
   if (!exception_state.HadException()) {
+    // https://w3c.github.io/webappsec-trusted-types/dist/spec/#setting-slot-values
+    // On setting, [..] textContent [..] perform the regular steps, and then set
+    // content object's [[ScriptText]] internal slot value [...].
     Node::setTextContent(value);
+    script_text_internal_slot_ = value;
   }
 }
 
 void HTMLScriptElement::setAsync(bool async) {
   SetBooleanAttribute(html_names::kAsyncAttr, async);
   loader_->HandleAsyncAttribute();
+}
+
+void HTMLScriptElement::FinishParsingChildren() {
+  Element::FinishParsingChildren();
+  DCHECK(script_text_internal_slot_.IsEmpty());
+  script_text_internal_slot_ = TextFromChildren();
 }
 
 bool HTMLScriptElement::async() const {
@@ -201,8 +215,12 @@ String HTMLScriptElement::ImportanceAttributeValue() const {
   return FastGetAttribute(html_names::kImportanceAttr);
 }
 
-String HTMLScriptElement::TextFromChildren() {
-  return Element::TextFromChildren();
+String HTMLScriptElement::ChildTextContent() {
+  return TextFromChildren();
+}
+
+String HTMLScriptElement::ScriptTextInternalSlot() const {
+  return script_text_internal_slot_;
 }
 
 bool HTMLScriptElement::AsyncAttributeValue() const {

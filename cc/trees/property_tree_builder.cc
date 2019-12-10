@@ -467,7 +467,6 @@ bool PropertyTreeBuilderContext::AddEffectNodeIfNeeded(
     node->backdrop_mask_element_id = layer->mask_layer()->element_id();
     layer->mask_layer()->SetIsBackdropFilterMask(true);
   }
-  node->filters_origin = layer->filters_origin();
   node->trilinear_filtering = layer->trilinear_filtering();
   node->has_potential_opacity_animation = has_potential_opacity_animation;
   node->has_potential_filter_animation = has_potential_filter_animation;

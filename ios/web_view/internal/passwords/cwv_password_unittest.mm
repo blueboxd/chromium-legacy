@@ -30,7 +30,6 @@ TEST_F(CWVPasswordTest, Blacklisted) {
   password_form.password_value = base::SysNSStringToUTF16(@"test");
   password_form.submit_element = base::SysNSStringToUTF16(@"signIn");
   password_form.signon_realm = "http://www.example.com/";
-  password_form.preferred = false;
   password_form.scheme = autofill::PasswordForm::Scheme::kHtml;
   password_form.blacklisted_by_user = true;
   auto name_and_link =
@@ -59,7 +58,6 @@ TEST_F(CWVPasswordTest, NonBlacklisted) {
   password_form.password_value = base::SysNSStringToUTF16(@"test");
   password_form.submit_element = base::SysNSStringToUTF16(@"signIn");
   password_form.signon_realm = "http://www.example.com/";
-  password_form.preferred = false;
   password_form.scheme = autofill::PasswordForm::Scheme::kHtml;
   password_form.blacklisted_by_user = false;
   auto name_and_link =

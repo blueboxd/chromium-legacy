@@ -6,12 +6,14 @@
 
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
+#include "ash/public/cpp/view_shadow.h"
 #include "base/base64.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "ui/aura/window.h"
 #include "ui/views/event_monitor.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/shadow_types.h"
 
 namespace ash {
 
@@ -30,6 +32,13 @@ const char* ProactiveSuggestionsRichView::GetClassName() const {
 
 void ProactiveSuggestionsRichView::InitLayout() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
+
+  // Initialize shadow.
+  view_shadow_ =
+      std::make_unique<ViewShadow>(this, wm::kShadowElevationActiveWindow);
+  view_shadow_->SetRoundedCornerRadius(
+      chromeos::assistant::features::
+          GetProactiveSuggestionsRichEntryPointCornerRadius());
 
   // Initialize NavigableContentsFactory.
   delegate()->GetNavigableContentsFactoryForView(

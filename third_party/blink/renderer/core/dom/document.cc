@@ -2465,6 +2465,11 @@ void Document::ScheduleLayoutTreeUpdate() {
 
   if (!View()->CanThrottleRendering())
     GetPage()->Animator().ScheduleVisualUpdate(GetFrame());
+
+  // FrameSelection caches visual selection information, which must be
+  // invalidated on dirty layout tree.
+  GetFrame()->Selection().MarkCacheDirty();
+
   lifecycle_.EnsureStateAtMost(DocumentLifecycle::kVisualUpdatePending);
 
   TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),

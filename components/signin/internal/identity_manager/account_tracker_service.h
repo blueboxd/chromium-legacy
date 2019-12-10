@@ -150,6 +150,10 @@ class AccountTrackerService {
   // valid GaiaId gets removed from |accounts_| (i.e. stops being tracked).
   void SetOnAccountRemovedCallback(AccountInfoCallback callback);
 
+  // Flushes the account changes to disk. The flush happens asynchronously and
+  // this function does not block on disk IO.
+  void CommitPendingAccountChanges();
+
  protected:
   // Available to be called in tests.
   void SetAccountInfoFromUserInfo(const CoreAccountId& account_id,

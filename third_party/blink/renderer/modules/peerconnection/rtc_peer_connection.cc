@@ -2995,7 +2995,7 @@ void RTCPeerConnection::DidModifyTransceivers(
 
 void RTCPeerConnection::SetAssociatedMediaStreams(
     RTCRtpReceiver* receiver,
-    const WebVector<String>& stream_ids,
+    const Vector<String>& stream_ids,
     HeapVector<std::pair<Member<MediaStream>, Member<MediaStreamTrack>>>*
         remove_list,
     HeapVector<std::pair<Member<MediaStream>, Member<MediaStreamTrack>>>*

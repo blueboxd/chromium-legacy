@@ -169,7 +169,7 @@ Baimen hori emateko, sakatu beheko "<ph name="BUTTON_NAME" />" botoia pantailare
 <translation id="4913529628896049296">konexioaren zain…</translation>
 <translation id="4918086044614829423">Onartu</translation>
 <translation id="492843737083352574">Arazoak ditut teklatuarekin edo saguarekin.</translation>
-<translation id="4973800994433240357">Chromoting ostalariaren instalatzailea deskargatzen baduzu, Google <ph name="LINK_BEGIN" />Zerbitzu-baldintzak<ph name="LINK_END" /> onartuko dituzu.</translation>
+<translation id="4973800994433240357">Chromoting ostalariaren instalatzailea deskargatzen baduzu, Google-ren <ph name="LINK_BEGIN" />Zerbitzu-baldintzak<ph name="LINK_END" /> onartuko dituzu.</translation>
 <translation id="4974476491460646149"><ph name="HOSTNAME" /> ostalaritik deskonektatu da</translation>
 <translation id="4985296110227979402">Lehenik, ordenagailua konfiguratu behar duzu urrunetik atzitu ahal izateko</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (konexiorik gabe)</translation>

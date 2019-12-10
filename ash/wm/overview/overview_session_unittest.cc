@@ -214,7 +214,7 @@ class OverviewSessionTest : public MultiDisplayOverviewAndSplitViewTest {
     gfx::Transform transform(gfx::TransformAboutPivot(
         gfx::ToFlooredPoint(bounds.origin()), window->layer()->transform()));
     transform.TransformRect(&bounds);
-    return gfx::ToEnclosingRect(bounds);
+    return ToStableSizeRoundedRect(bounds);
   }
 
   gfx::Rect GetTransformedTargetBounds(aura::Window* window) {
@@ -225,7 +225,7 @@ class OverviewSessionTest : public MultiDisplayOverviewAndSplitViewTest {
         gfx::TransformAboutPivot(gfx::ToFlooredPoint(bounds.origin()),
                                  window->layer()->GetTargetTransform()));
     transform.TransformRect(&bounds);
-    return gfx::ToEnclosingRect(bounds);
+    return ToStableSizeRoundedRect(bounds);
   }
 
   gfx::Rect GetTransformedBoundsInRootWindow(aura::Window* window) {
@@ -1664,6 +1664,42 @@ TEST_P(OverviewSessionTest, NoWindowsIndicatorPosition) {
             no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
 }
 
+// Tests that toggling overview on removes any resize shadows that may have been
+// present.
+TEST_P(OverviewSessionTest, DragMinimizedWindowHasStableSize) {
+  UpdateDisplay("1920x1200*1.7777777");
+  EnterTabletMode();
+  std::unique_ptr<aura::Window> window(CreateTestWindow());
+
+  WindowState::Get(window.get())->Minimize();
+  ToggleOverview();
+  OverviewItem* overview_item = GetOverviewItemForWindow(window.get());
+  auto* widget = overview_item->item_widget();
+
+  gfx::Rect workarea =
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+
+  gfx::PointF drag_point(workarea.CenterPoint());
+  overview_session()->InitiateDrag(overview_item, drag_point,
+                                   /*is_touch_dragging=*/true);
+  gfx::Size target_size =
+      GetTransformedTargetBounds(widget->GetNativeWindow()).size();
+
+  drag_point.Offset(0, 10.5f);
+  overview_session()->Drag(overview_item, drag_point);
+  gfx::Size new_target_size =
+      GetTransformedTargetBounds(widget->GetNativeWindow()).size();
+  EXPECT_EQ(target_size, new_target_size);
+  target_size = new_target_size;
+
+  drag_point.Offset(0, 10.5f);
+  overview_session()->Drag(overview_item, drag_point);
+  EXPECT_EQ(target_size,
+            GetTransformedTargetBounds(widget->GetNativeWindow()).size());
+
+  overview_session()->CompleteDrag(overview_item, drag_point);
+}
+
 class HotseatDisabledOverviewSessionTest : public OverviewSessionTest {
  public:
   HotseatDisabledOverviewSessionTest() = default;
@@ -2610,7 +2646,7 @@ TEST_P(OverviewSessionTest, ShadowBounds) {
   // Add three windows which in overview mode will be considered wide, tall and
   // normal. Set top view insets to 0 so it is easy to check the ratios of the
   // shadows match the ratios of the untransformed windows.
-  UpdateDisplay("400x400");
+  UpdateDisplay("800x800");
   std::unique_ptr<aura::Window> wide(
       CreateTestWindowInShellWithDelegate(nullptr, -1, gfx::Rect(400, 100)));
   std::unique_ptr<aura::Window> tall(
@@ -2635,7 +2671,7 @@ TEST_P(OverviewSessionTest, ShadowBounds) {
 
   // Verify all the shadows are within the bounds of their respective item
   // widgets when the overview windows are positioned without animations.
-  SetGridBounds(grid, gfx::Rect(200, 400));
+  SetGridBounds(grid, gfx::Rect(400, 800));
   grid->PositionWindows(false);
   EXPECT_TRUE(contains(wide_widget, wide_item));
   EXPECT_TRUE(contains(tall_widget, tall_item));
@@ -2648,7 +2684,7 @@ TEST_P(OverviewSessionTest, ShadowBounds) {
 
   // Verify all the shadows are within the bounds of their respective item
   // widgets when the overview windows are positioned with animations.
-  SetGridBounds(grid, gfx::Rect(200, 400));
+  SetGridBounds(grid, gfx::Rect(400, 800));
   grid->PositionWindows(true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(contains(wide_widget, wide_item));

@@ -263,7 +263,8 @@ void BrowserNonClientFrameViewMac::UpdateWindowIcon() {
 }
 
 void BrowserNonClientFrameViewMac::UpdateWindowTitle() {
-  if (window_title_ && !frame()->IsFullscreen()) {
+  if (window_title_) {
+    DCHECK(browser_view()->IsBrowserTypeWebApp());
     window_title_->SetText(browser_view()->GetWindowTitle());
     Layout();
   }

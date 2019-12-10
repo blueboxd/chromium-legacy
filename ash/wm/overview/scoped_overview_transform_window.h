@@ -119,8 +119,7 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // Returns |rect| having been shrunk to fit within |bounds| (preserving the
   // aspect ratio). Takes into account a window header that is |top_view_inset|
   // tall in the original window getting replaced by a window caption that is
-  // |title_height| tall in the transformed window. If |type_| is not normal,
-  // write |overview_bounds_|, which would differ than the return bounds.
+  // |title_height| tall in the transformed window.
   gfx::RectF ShrinkRectToFitPreservingAspectRatio(const gfx::RectF& rect,
                                                   const gfx::RectF& bounds,
                                                   int top_view_inset,
@@ -158,10 +157,6 @@ class ASH_EXPORT ScopedOverviewTransformWindow
 
   GridWindowFillMode type() const { return type_; }
 
-  base::Optional<gfx::RectF> overview_bounds() const {
-    return overview_bounds_;
-  }
-
  private:
   friend class OverviewHighlightControllerTest;
   friend class OverviewSessionTest;
@@ -190,10 +185,6 @@ class ASH_EXPORT ScopedOverviewTransformWindow
 
   // Specifies how the window is laid out in the grid.
   GridWindowFillMode type_ = GridWindowFillMode::kNormal;
-
-  // Empty if window is of type normal. Contains the bounds the overview item
-  // should be if the window is too wide or too tall.
-  base::Optional<gfx::RectF> overview_bounds_;
 
   // The observers associated with the layers we requested caching render
   // surface and trilinear filtering. The requests will be removed in dtor if

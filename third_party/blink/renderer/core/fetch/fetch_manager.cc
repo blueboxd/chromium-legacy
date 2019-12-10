@@ -66,6 +66,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
+using network::mojom::CredentialsMode;
 using network::mojom::FetchResponseType;
 using network::mojom::RedirectMode;
 using network::mojom::RequestMode;
@@ -446,6 +447,12 @@ void FetchManager::Loader::DidReceiveResponse(
     response_data->SetResponseSource(
         network::mojom::FetchResponseSource::kNetwork);
   }
+
+  // Note if the response was loaded with credentials enabled.
+  response_data->SetLoadedWithCredentials(
+      fetch_request_data_->Credentials() == CredentialsMode::kInclude ||
+      (fetch_request_data_->Credentials() == CredentialsMode::kSameOrigin &&
+       tainting == FetchRequestData::kBasicTainting));
 
   FetchResponseData* tainted_response = nullptr;
 

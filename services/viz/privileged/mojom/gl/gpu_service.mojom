@@ -25,6 +25,7 @@ import "media/mojo/mojom/video_encode_accelerator.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/gfx/mojom/buffer_types.mojom";
 import "ui/gl/mojom/gpu_preference.mojom";
+import "mojo/public/mojom/base/memory_pressure_level.mojom";
 
 interface GpuService {
   // Tells the GPU service to create a new channel for communication with a
@@ -131,6 +132,10 @@ interface GpuService {
   OnBackgrounded();
   // Called by the browser immediately after the application is foregrounded.
   OnForegrounded();
+
+  // Called by the browser when the system is under memory pressure.
+  [EnableIf=is_not_android]
+  OnMemoryPressure(mojo_base.mojom.MemoryPressureLevel level);
 
   // Begin a batch of layer tree changes.
   [EnableIf=is_mac]

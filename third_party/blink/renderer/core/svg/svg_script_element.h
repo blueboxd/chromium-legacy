@@ -81,7 +81,8 @@ class SVGScriptElement final : public SVGElement,
   bool NomoduleAttributeValue() const override { return false; }
   String SourceAttributeValue() const override;
   String TypeAttributeValue() const override;
-  String TextFromChildren() override;
+  String ChildTextContent() override;
+  String ScriptTextInternalSlot() const override;
   bool HasSourceAttribute() const override;
   bool IsConnected() const override;
   bool HasChildren() const override;
@@ -104,6 +105,8 @@ class SVGScriptElement final : public SVGElement,
   }
 
   bool have_fired_load_ = false;
+
+  String script_text_internal_slot_;
 
   Member<ScriptLoader> loader_;
 };

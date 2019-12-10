@@ -34,7 +34,6 @@
 #include "content/public/browser/download_manager.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/animation/animation_delegate_views.h"
-#include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 
@@ -60,7 +59,7 @@ class StyledLabel;
 
 // Represents a single download item on the download shelf. Encompasses an icon,
 // text, malicious download warnings, etc.
-class DownloadItemView : public views::InkDropHostView,
+class DownloadItemView : public views::View,
                          public views::ButtonListener,
                          public views::ContextMenuController,
                          public DownloadUIModel::Observer,
@@ -102,10 +101,6 @@ class DownloadItemView : public views::InkDropHostView,
   void OnMouseCaptureLost() override;
   base::string16 GetTooltipText(const gfx::Point& p) const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-
-  // view::InkDropHostView:
-  void OnInkDropCreated() override;
-  SkColor GetInkDropBaseColor() const override;
 
   // views::ContextMenuController.
   void ShowContextMenuForViewImpl(View* source,
@@ -200,9 +195,6 @@ class DownloadItemView : public views::InkDropHostView,
 
   // Sets the state and triggers a repaint.
   void SetDropdownState(State new_state);
-
-  // Configures the InkDrop. e.g. disables highlight when in dangerous mode.
-  void ConfigureInkDrop();
 
   void SetMode(Mode mode);
 

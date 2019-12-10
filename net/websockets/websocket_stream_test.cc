@@ -85,8 +85,8 @@ static url::Origin Origin() {
   return url::Origin::Create(GURL(kOrigin));
 }
 
-static GURL SiteForCookies() {
-  return GURL(kOrigin);
+static net::SiteForCookies SiteForCookies() {
+  return net::SiteForCookies::FromOrigin(Origin());
 }
 
 static net::NetworkIsolationKey CreateNetworkIsolationKey() {

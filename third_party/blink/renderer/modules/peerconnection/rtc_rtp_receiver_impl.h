@@ -128,10 +128,10 @@ class MODULES_EXPORT RTCRtpReceiverImpl : public RTCRtpReceiverPlatform {
   webrtc::DtlsTransportInformation DtlsTransportInformation() override;
 
   const blink::WebMediaStreamTrack& Track() const override;
-  WebVector<String> StreamIds() const override;
-  WebVector<std::unique_ptr<RTCRtpSource>> GetSources() override;
+  Vector<String> StreamIds() const override;
+  Vector<std::unique_ptr<RTCRtpSource>> GetSources() override;
   void GetStats(RTCStatsReportCallback,
-                const blink::WebVector<webrtc::NonStandardGroupId>&) override;
+                const Vector<webrtc::NonStandardGroupId>&) override;
   std::unique_ptr<webrtc::RtpParameters> GetParameters() const override;
   void SetJitterBufferMinimumDelay(
       base::Optional<double> delay_seconds) override;

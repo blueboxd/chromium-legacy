@@ -30,7 +30,7 @@
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display/overlay_candidate_validator_strategy.h"
-#include "components/viz/service/display/overlay_processor.h"
+#include "components/viz/service/display/overlay_processor_using_strategy.h"
 #include "components/viz/service/display/overlay_strategy_fullscreen.h"
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
@@ -180,10 +180,12 @@ class UnderlayCastOverlayValidator : public SingleOverlayValidator {
   }
 };
 
-class DefaultOverlayProcessor : public OverlayProcessor {
+class DefaultOverlayProcessor : public OverlayProcessorUsingStrategy {
  public:
   DefaultOverlayProcessor()
-      : OverlayProcessor(std::make_unique<SingleOverlayValidator>()) {}
+      : OverlayProcessorUsingStrategy(
+            nullptr,
+            std::make_unique<SingleOverlayValidator>()) {}
 
   size_t GetStrategyCount() const {
     if (auto* validator = overlay_validator_.get()) {
@@ -248,19 +250,19 @@ class OverlayOutputSurface : public OutputSurface {
 };
 
 template <typename OverlayCandidateValidatorType>
-class TypedOverlayProcessor : public OverlayProcessor {
+class TypedOverlayProcessor : public OverlayProcessorUsingStrategy {
  public:
   explicit TypedOverlayProcessor(
       std::unique_ptr<OverlayCandidateValidatorType> validator)
-      : OverlayProcessor(std::move(validator)) {}
+      : OverlayProcessorUsingStrategy(nullptr, std::move(validator)) {}
 
   OverlayCandidateValidatorType* GetTypedOverlayCandidateValidator() {
-    const OverlayCandidateValidator* const_base_validator =
+    const OverlayCandidateValidatorStrategy* const_base_validator =
         GetOverlayCandidateValidator();
     // This function is used to modify the expectation of the validator, so
     // first need to cast away the const.
     auto* base_validator =
-        const_cast<OverlayCandidateValidator*>(const_base_validator);
+        const_cast<OverlayCandidateValidatorStrategy*>(const_base_validator);
     // Then cast to the test only types so the add expectation function exists.
     return static_cast<OverlayCandidateValidatorType*>(base_validator);
   }

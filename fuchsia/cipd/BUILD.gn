@@ -115,11 +115,13 @@ cipd_archive("webrunner") {
 
   deps = [
     "//fuchsia/engine:web_engine",
+    "//fuchsia/engine:web_engine_deprecated",
     "//fuchsia/runners:web_runner_pkg",
   ]
 
   sources = [
     "${root_gen_dir}/fuchsia/engine/chromium/chromium.far",
+    "${root_gen_dir}/fuchsia/engine/web_engine/web_engine.far",
     "${root_gen_dir}/fuchsia/runners/web_runner/web_runner.far",
   ]
 }
@@ -246,7 +248,7 @@ cipd_archive("debug_symbols") {
   cipd_description = "Debugging symbols for prebuilt binaries from Chromium."
 
   _symbol_tarballs = [
-    "${root_gen_dir}/fuchsia/engine/chromium/chromium.symbols.tar.bz2",
+    "${root_gen_dir}/fuchsia/engine/web_engine/web_engine.symbols.tar.bz2",
     "${root_gen_dir}/fuchsia/runners/cast_runner/cast_runner.symbols.tar.bz2",
     "${root_gen_dir}/fuchsia/runners/web_runner/web_runner.symbols.tar.bz2",
   ]

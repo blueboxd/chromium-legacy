@@ -16,6 +16,7 @@
 #include "chromecast/browser/cast_browser_main_parts.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/media/media_caps_impl.h"
+#include "chromecast/browser/service_connector.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "chromecast/media/cdm/cast_cdm_factory.h"
 #include "components/network_hints/browser/simple_network_hints_handler_impl.h"
@@ -128,6 +129,9 @@ void CastContentBrowserClient::ExposeInterfacesToMediaService(
   registry->AddInterface(
       base::BindRepeating(&CreateMediaDrmStorage, render_frame_host));
 #endif  // defined(OS_ANDROID)
+
+  registry->AddInterface(base::BindRepeating(&ServiceConnector::BindReceiver,
+                                             kMediaServiceClientId));
 
   std::string application_session_id;
   bool mixer_audio_enabled;

@@ -94,6 +94,12 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
   static bool AtStartOfLinePredicate(const AXPositionInstance& position);
   static bool AtEndOfLinePredicate(const AXPositionInstance& position);
 
+  static AXPositionInstance GetNextTextBoundaryPosition(
+      const AXPositionInstance& position,
+      AXTextBoundary boundary_type,
+      AXBoundaryBehavior boundary_behavior,
+      AXTextBoundaryDirection boundary_direction);
+
   base::string16 GetString(int max_count,
                            size_t* appended_newlines_count = nullptr);
   AXPlatformNodeWin* owner() const;
@@ -116,7 +122,7 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
                                         const int count,
                                         int* units_moved);
   AXPositionInstance MoveEndpointByLine(const AXPositionInstance& endpoint,
-                                        bool endpoint_is_start,
+                                        bool is_start_endpoint,
                                         const int count,
                                         int* units_moved);
   AXPositionInstance MoveEndpointByParagraph(const AXPositionInstance& endpoint,

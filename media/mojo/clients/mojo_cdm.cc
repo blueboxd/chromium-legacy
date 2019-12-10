@@ -90,8 +90,8 @@ MojoCdm::~MojoCdm() {
   base::AutoLock auto_lock(lock_);
 
   // Release |decryptor_| on the correct thread. If GetDecryptor() is never
-  // called but |decryptor_ptr_info_| is not null, it is not bound to any thread
-  // and is safe to be released on the current thread.
+  // called but |decryptor_remote_| is not null, it is not bound to any
+  // thread and is safe to be released on the current thread.
   if (decryptor_task_runner_ &&
       !decryptor_task_runner_->BelongsToCurrentThread() && decryptor_) {
     decryptor_task_runner_->DeleteSoon(FROM_HERE, decryptor_.release());
@@ -306,9 +306,9 @@ Decryptor* MojoCdm::GetDecryptor() {
   mojo::PendingRemote<mojom::Decryptor> decryptor_remote;
 
   // Can be called on a different thread.
-  if (decryptor_ptr_info_.is_valid()) {
+  if (decryptor_remote_.is_valid()) {
     DVLOG(1) << __func__ << ": Using Decryptor exposed by the CDM directly";
-    decryptor_remote = std::move(decryptor_ptr_info_);
+    decryptor_remote = std::move(decryptor_remote_);
   } else if (interface_factory_ && cdm_id_ != CdmContext::kInvalidCdmId) {
 #if BUILDFLAG(ENABLE_CDM_PROXY)
     // TODO(xhwang): Pass back info on whether Decryptor is supported by the
@@ -382,9 +382,10 @@ void MojoCdm::OnSessionExpirationUpdate(const std::string& session_id,
       session_id, base::Time::FromDoubleT(new_expiry_time_sec));
 }
 
-void MojoCdm::OnCdmInitialized(mojom::CdmPromiseResultPtr result,
-                               int cdm_id,
-                               mojom::DecryptorPtr decryptor) {
+void MojoCdm::OnCdmInitialized(
+    mojom::CdmPromiseResultPtr result,
+    int cdm_id,
+    mojo::PendingRemote<mojom::Decryptor> decryptor) {
   DVLOG(2) << __func__ << " cdm_id: " << cdm_id;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(pending_init_promise_);
@@ -400,7 +401,7 @@ void MojoCdm::OnCdmInitialized(mojom::CdmPromiseResultPtr result,
     base::AutoLock auto_lock(lock_);
     DCHECK_NE(CdmContext::kInvalidCdmId, cdm_id);
     cdm_id_ = cdm_id;
-    decryptor_ptr_info_ = decryptor.PassInterface();
+    decryptor_remote_ = std::move(decryptor);
   }
 
   pending_init_promise_->resolve();

@@ -8,6 +8,7 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1分}other{#分}}</translation>
 <translation id="1181037720776840403">削除</translation>
 <translation id="1201402288615127009">次へ</translation>
+<translation id="1218444235442067213"><ph name="APP_NAME" />、Play ストア アプリ</translation>
 <translation id="1243314992276662751">アップロード</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> を共有できませんでした</translation>
 <translation id="1269641567813814718">Win</translation>
@@ -18,6 +19,7 @@
 <translation id="1368832886055348810">左から右</translation>
 <translation id="1383876407941801731">検索</translation>
 <translation id="1398853756734560583">最大化</translation>
+<translation id="1414271762428216854"><ph name="APP_NAME" />、インストール済みアプリ</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> を共有できません</translation>
 <translation id="1498028757988366001">このキーワードは以前に検索したことがあります。「<ph name="QUERY" />」を履歴から削除すると、アカウントから完全に（つまりすべてのデバイスから）削除されます。</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 分 }other{# 分 }}</translation>
@@ -30,6 +32,7 @@
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 か月}other{# か月}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/秒</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 時間 }other{# 時間 }}</translation>
+<translation id="1830308660060964064"><ph name="ITEM_TITLE" /> の固定を解除しました</translation>
 <translation id="1842960171412779397">選択</translation>
 <translation id="1859234291848436338">文章の方向</translation>
 <translation id="1860796786778352021">通知を閉じる</translation>
@@ -66,10 +69,12 @@
 <translation id="2666092431469916601">一番上</translation>
 <translation id="2701330563083355633"><ph name="DEVICE_NAME" /> から共有しました</translation>
 <translation id="2743387203779672305">クリップボードにコピー</translation>
+<translation id="2749082172777216925"><ph name="APP_NAME_INFO" />、<ph name="PRICE" /></translation>
 <translation id="2803313416453193357">フォルダを開く</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 年前}other{# 年前}}</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1日}other{#日}}</translation>
 <translation id="2931838996092594335">クリック</translation>
+<translation id="2981684127883932071">候補を表示しています</translation>
 <translation id="3036649622769666520">ファイルを開く</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3068711042108640621">シェルフは左側にあります</translation>
@@ -84,6 +89,7 @@
 <translation id="3389286852084373014">テキストが大きすぎます</translation>
 <translation id="3479552764303398839">後で</translation>
 <translation id="348799646910989694">シェルフは自動的に非表示になります</translation>
+<translation id="3554637740840164787"><ph name="ITEM_TITLE" /> を固定しました</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{残り 1 日}other{残り # 日}}</translation>
 <translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" /> ファイル</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />～</translation>
@@ -105,8 +111,11 @@
 <translation id="4250229828105606438">スクリーンショット</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 か月前}other{# か月前}}</translation>
 <translation id="4289300219472526559">読み上げを開始</translation>
+<translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> をフォルダ <ph name="FOLDER_NAME" /> に移動しました。</translation>
 <translation id="4316910396681052118">すべてのアプリ</translation>
 <translation id="4588090240171750605">右にスクロール</translation>
+<translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />、評価 <ph name="RATING_SCORE" /></translation>
+<translation id="4648249871170053485"><ph name="APP_NAME" />、おすすめのアプリ</translation>
 <translation id="4690510401873698237">シェルフは一番下にあります</translation>
 <translation id="4724120544754982507">通知センター: <ph name="UNREAD_NOTIFICATION_COUNT" /> 件の未読通知</translation>
 <translation id="4730374152663651037">よく使用するアプリ</translation>
@@ -116,6 +125,7 @@
 <translation id="4971687151119236543">メディアの前のトラック</translation>
 <translation id="5046499563572181734">ここをタップしてください</translation>
 <translation id="5076340679995252485">貼り付け(&amp;P)</translation>
+<translation id="5198715732953550718"><ph name="MOVED_APP_NAME" /> で <ph name="IN_PLACE_APP" /> を使用して新しいフォルダが作成されました。</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">三角形の展開ボタン</translation>
 <translation id="5278860589123563674">送信できませんでした</translation>
@@ -129,6 +139,7 @@
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> システム</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">左矢印キー</translation>
+<translation id="5675363643668471212">シェルフ アイテム</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 分}other{# 分}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{アクティブ: 今日}=1{アクティブ: 1 日前}other{アクティブ: # 日前}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 日と }other{# 日と }}</translation>
@@ -208,6 +219,7 @@
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">次のページへ</translation>
 <translation id="8245914219290430011">タブ</translation>
+<translation id="8247998213073982446"><ph name="APP_NAME" />、アプリ</translation>
 <translation id="8259556432390118667">16 進数色コード</translation>
 <translation id="8328145009876646418">左端</translation>
 <translation id="8331626408530291785">上にスクロール</translation>
@@ -237,6 +249,8 @@
 <translation id="9150735707954472829">タブ</translation>
 <translation id="9161053988251441839">おすすめのアプリ</translation>
 <translation id="9170848237812810038">取消(&amp;U)</translation>
+<translation id="9178475906033259337"><ph name="QUERY" /> の結果 1 件を表示しています</translation>
 <translation id="932327136139879170">ホーム</translation>
 <translation id="944069440740578670">未読のお知らせ</translation>
+<translation id="974545358917229949"><ph name="QUERY" /> の検索結果 <ph name="RESULT_COUNT" /> 件を表示しています</translation>
 </translationbundle>

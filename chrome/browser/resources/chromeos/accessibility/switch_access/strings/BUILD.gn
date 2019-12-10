@@ -68,7 +68,5 @@ grit("switch_access_strings") {
   ]
   output_dir = switch_access_out_dir
 
-  # Don't pollute the extension directory with stamp and .d files.
-  depfile_dir = target_out_dir
   resource_ids = ""
 }

@@ -52,14 +52,14 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
                                          public SessionObserver,
                                          public AppListModelObserver,
                                          public AppListViewDelegate,
-                                         public ash::ShellObserver,
+                                         public ShellObserver,
                                          public OverviewObserver,
                                          public TabletModeObserver,
                                          public KeyboardControllerObserver,
                                          public WallpaperControllerObserver,
                                          public AssistantStateObserver,
                                          public WindowTreeHostManager::Observer,
-                                         public ash::MruWindowTracker::Observer,
+                                         public MruWindowTracker::Observer,
                                          public AssistantControllerObserver,
                                          public AssistantUiModelObserver,
                                          public HomeScreenDelegate {
@@ -80,15 +80,15 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   // AppListController:
   void SetClient(AppListClient* client) override;
   AppListClient* GetClient() override;
-  void AddItem(std::unique_ptr<ash::AppListItemMetadata> app_item) override;
-  void AddItemToFolder(std::unique_ptr<ash::AppListItemMetadata> app_item,
+  void AddItem(std::unique_ptr<AppListItemMetadata> app_item) override;
+  void AddItemToFolder(std::unique_ptr<AppListItemMetadata> app_item,
                        const std::string& folder_id) override;
   void RemoveItem(const std::string& id) override;
   void RemoveUninstalledItem(const std::string& id) override;
   void MoveItemToFolder(const std::string& id,
                         const std::string& folder_id) override;
-  void SetStatus(ash::AppListModelStatus status) override;
-  void SetState(ash::AppListState state) override;
+  void SetStatus(AppListModelStatus status) override;
+  void SetState(AppListState state) override;
   void HighlightItemInstalledFromUI(const std::string& id) override;
   void SetSearchEngineIsGoogle(bool is_google) override;
   void SetSearchTabletAndClamshellAccessibleName(
@@ -98,19 +98,19 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   void UpdateSearchBox(const base::string16& text,
                        bool initiated_by_user) override;
   void PublishSearchResults(
-      std::vector<std::unique_ptr<ash::SearchResultMetadata>> results) override;
+      std::vector<std::unique_ptr<SearchResultMetadata>> results) override;
   void SetItemMetadata(const std::string& id,
-                       std::unique_ptr<ash::AppListItemMetadata> data) override;
+                       std::unique_ptr<AppListItemMetadata> data) override;
   void SetItemIcon(const std::string& id, const gfx::ImageSkia& icon) override;
   void SetItemIsInstalling(const std::string& id, bool is_installing) override;
   void SetItemPercentDownloaded(const std::string& id,
                                 int32_t percent_downloaded) override;
   void SetModelData(int profile_id,
-                    std::vector<std::unique_ptr<ash::AppListItemMetadata>> apps,
+                    std::vector<std::unique_ptr<AppListItemMetadata>> apps,
                     bool is_search_engine_google) override;
 
   void SetSearchResultMetadata(
-      std::unique_ptr<ash::SearchResultMetadata> metadata) override;
+      std::unique_ptr<SearchResultMetadata> metadata) override;
   void SetSearchResultIsInstalling(const std::string& id,
                                    bool is_installing) override;
   void SetSearchResultPercentDownloaded(const std::string& id,
@@ -135,8 +135,8 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   void OnAppListItemAdded(AppListItem* item) override;
   void OnAppListItemWillBeDeleted(AppListItem* item) override;
   void OnAppListItemUpdated(AppListItem* item) override;
-  void OnAppListStateChanged(ash::AppListState new_state,
-                             ash::AppListState old_state) override;
+  void OnAppListStateChanged(AppListState new_state,
+                             AppListState old_state) override;
 
   // SessionObserver:
   void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
@@ -148,12 +148,12 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
             base::TimeTicks event_time_stamp);
   void UpdateYPositionAndOpacity(int y_position_in_screen,
                                  float background_opacity);
-  void EndDragFromShelf(ash::AppListViewState app_list_state);
+  void EndDragFromShelf(AppListViewState app_list_state);
   void ProcessMouseWheelEvent(const ui::MouseWheelEvent& event);
-  ash::ShelfAction ToggleAppList(int64_t display_id,
-                                 AppListShowSource show_source,
-                                 base::TimeTicks event_time_stamp);
-  ash::AppListViewState GetAppListViewState();
+  ShelfAction ToggleAppList(int64_t display_id,
+                            AppListShowSource show_source,
+                            base::TimeTicks event_time_stamp);
+  AppListViewState GetAppListViewState();
   // Returns whether the home launcher should be visible.
   bool ShouldHomeLauncherBeVisible() const;
 
@@ -189,7 +189,7 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   void GetContextMenuModel(const std::string& id,
                            GetContextMenuModelCallback callback) override;
   ui::ImplicitAnimationObserver* GetAnimationObserver(
-      ash::AppListViewState target_state) override;
+      AppListViewState target_state) override;
   void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
                                 ui::MenuSourceType source_type) override;
   bool ProcessHomeLauncherGesture(ui::GestureEvent* event) override;
@@ -200,19 +200,18 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
       mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)
       override;
   int GetTargetYForAppListHide(aura::Window* root_window) override;
-  ash::AssistantViewDelegate* GetAssistantViewDelegate() override;
+  AssistantViewDelegate* GetAssistantViewDelegate() override;
   void OnSearchResultVisibilityChanged(const std::string& id,
                                        bool visibility) override;
   void NotifySearchResultsForLogging(
       const base::string16& raw_query,
-      const ash::SearchResultIdWithPositionIndices& results,
+      const SearchResultIdWithPositionIndices& results,
       int position_index) override;
   bool IsAssistantAllowedAndEnabled() const override;
   bool ShouldShowAssistantPrivacyInfo() const override;
   void MaybeIncreaseAssistantPrivacyInfoShownCount() override;
   void MarkAssistantPrivacyInfoDismissed() override;
-  void OnStateTransitionAnimationCompleted(
-      ash::AppListViewState state) override;
+  void OnStateTransitionAnimationCompleted(AppListViewState state) override;
   void GetAppLaunchedMetricParams(
       AppLaunchedMetricParams* metric_params) override;
   gfx::Rect SnapBoundsToDisplayEdge(const gfx::Rect& bounds) override;
@@ -304,22 +303,22 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   // |display_id| is the id of display where app list should toggle.
   // |show_source| is the source of the event. |event_time_stamp| records the
   // event timestamp.
-  ash::ShelfAction OnHomeButtonPressed(int64_t display_id,
-                                       AppListShowSource show_source,
-                                       base::TimeTicks event_time_stamp);
+  ShelfAction OnHomeButtonPressed(int64_t display_id,
+                                  AppListShowSource show_source,
+                                  base::TimeTicks event_time_stamp);
 
   // Returns current visibility of the Assistant page.
   bool IsShowingEmbeddedAssistantUI() const;
 
   // Get updated app list view state after dragging from shelf.
-  ash::AppListViewState CalculateStateAfterShelfDrag(
+  AppListViewState CalculateStateAfterShelfDrag(
       const ui::LocatedEvent& event_in_screen,
       float launcher_above_shelf_bottom_amount) const;
 
   void SetAppListModelForTest(std::unique_ptr<AppListModel> model);
 
   using StateTransitionAnimationCallback =
-      base::RepeatingCallback<void(ash::AppListViewState)>;
+      base::RepeatingCallback<void(AppListViewState)>;
 
   void SetStateTransitionAnimationCallbackForTesting(
       StateTransitionAnimationCallback callback);
@@ -355,7 +354,7 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
 
   syncer::StringOrdinal GetOemFolderPos();
   std::unique_ptr<AppListItem> CreateAppListItem(
-      std::unique_ptr<ash::AppListItemMetadata> metadata);
+      std::unique_ptr<AppListItemMetadata> metadata);
   AppListFolderItem* FindFolderItem(const std::string& folder_id);
 
   // Update the visibility of Assistant functionality.

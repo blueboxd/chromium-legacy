@@ -16,9 +16,6 @@ var NOT_OPTIONAL_ERROR =
 var REQUIRED_ERROR =
     "You cannot remove required permissions.";
 
-var NOT_ALLOWLISTED_ERROR =
-    "The optional permissions API does not support '*'.";
-
 var UNKNOWN_PERMISSIONS_ERROR =
     "'*' is not a recognized permission.";
 
@@ -202,16 +199,6 @@ chrome.test.getConfig(function(config) {
             {permissions: ['cookies']},
             pass(function(removed) { assertTrue(removed); }));
       }));
-    },
-
-    // Make sure you can only access the allowlisted permissions.
-    function allowlist() {
-      const kPermission = 'fontSettings';
-      var error_msg = NOT_ALLOWLISTED_ERROR.replace('*', kPermission);
-      chrome.permissions.request(
-          {permissions: [kPermission]}, fail(error_msg));
-      chrome.permissions.remove(
-          {permissions: [kPermission]}, fail(error_msg));
     },
 
     function unknownPermission() {

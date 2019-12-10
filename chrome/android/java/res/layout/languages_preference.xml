@@ -17,7 +17,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="@dimen/draggable_list_item_padding"
-        android:text="@string/languages_list_prefs_description" />
+        android:text="@string/languages_list_description" />
 
     <FrameLayout
         android:id="@android:id/widget_frame"
@@ -34,7 +34,7 @@
         android:padding="@dimen/draggable_list_item_padding"
         android:paddingStart="@dimen/pref_languages_add_button_padding"
         android:drawablePadding="@dimen/pref_languages_add_button_padding"
-        android:text="@string/prefs_add_language"
+        android:text="@string/add_language"
         style="@style/PreferenceTitle" />
 
 </LinearLayout>

@@ -23,23 +23,30 @@ namespace content {
 // static
 bool AppCache::CheckValidManifestScope(const GURL& manifest_url,
                                        const std::string& manifest_scope) {
+  if (manifest_scope.empty())
+    return false;
   const GURL url = manifest_url.Resolve(manifest_scope);
-  return url.is_valid() && url.path() == manifest_scope && !url.has_ref() &&
-         !url.has_query() && url.spec().back() == '/';
+  return url.is_valid() && !url.has_ref() && !url.has_query() &&
+         url.spec().back() == '/';
 }
 
 // static
 std::string AppCache::GetManifestScope(const GURL& manifest_url,
                                        std::string optional_scope) {
+  DCHECK(manifest_url.is_valid());
   if (!optional_scope.empty()) {
     std::string scope = manifest_url.Resolve(optional_scope).path();
     if (CheckValidManifestScope(manifest_url, scope)) {
-      return scope;
+      return optional_scope;
     }
   }
 
-  // For now, assume the default manifest scope is the entire origin.
-  return "/";
+  // The default manifest scope is the path to the manifest URL's containing
+  // directory.
+  const GURL manifest_scope_url = manifest_url.GetWithoutFilename();
+  DCHECK(manifest_scope_url.is_valid());
+  DCHECK(CheckValidManifestScope(manifest_url, manifest_scope_url.path()));
+  return manifest_scope_url.path();
 }
 
 AppCache::AppCache(AppCacheStorage* storage, int64_t cache_id)

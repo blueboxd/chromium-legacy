@@ -14,6 +14,7 @@
 #include "ash/public/cpp/assistant/proactive_suggestions_client.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace ash {
 
@@ -33,7 +34,8 @@ class AssistantProactiveSuggestionsController
     : public AssistantControllerObserver,
       public ProactiveSuggestionsClient::Delegate,
       public AssistantSuggestionsModelObserver,
-      public AssistantViewDelegateObserver {
+      public AssistantViewDelegateObserver,
+      public views::WidgetObserver {
  public:
   using ProactiveSuggestionsShowAttempt =
       assistant::metrics::ProactiveSuggestionsShowAttempt;
@@ -69,6 +71,10 @@ class AssistantProactiveSuggestionsController
   void OnProactiveSuggestionsCloseButtonPressed() override;
   void OnProactiveSuggestionsViewHoverChanged(bool is_hovering) override;
   void OnProactiveSuggestionsViewPressed() override;
+
+  // views::WidgetObserver:
+  void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
+  void OnWidgetDestroying(views::Widget* widget) override;
 
  private:
   void OnCardClickDeepLinkReceived(

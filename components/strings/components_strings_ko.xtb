@@ -9,7 +9,6 @@
 <translation id="1036348656032585052">사용 중지</translation>
 <translation id="1038842779957582377">알 수 없는 이름</translation>
 <translation id="1039626062703039346">Chrome을 통해 Google 계정을 보호하고 비밀번호를 변경할 수 있습니다. Google에 이 사이트에 관해 알리게 됩니다.</translation>
-<translation id="1044897699341250361">의미</translation>
 <translation id="1050038467049342496">다른 앱 닫기</translation>
 <translation id="1055184225775184556">추가 실행 취소(&amp;U)</translation>
 <translation id="1056898198331236512">경고</translation>
@@ -184,7 +183,6 @@
 <translation id="1745880797583122200">관리 대상 브라우저입니다</translation>
 <translation id="17513872634828108">열린 탭</translation>
 <translation id="1753706481035618306">페이지 번호</translation>
-<translation id="175838129965056221">Chrome에서 연결이 모니터링되고 있음을 감지했습니다</translation>
 <translation id="1763864636252898013">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 기기의 운영체제에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows 네트워크 진단 프로그램을 실행<ph name="END_LINK" />해 보세요.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -253,7 +251,6 @@
 <translation id="2119867082804433120">오른쪽 하단 펀칭</translation>
 <translation id="2129079103035905234">움직임 감지 센서</translation>
 <translation id="2130448033692577677">DnsOverHttpsMode 정책이 설정되지 않았기 때문에 지정한 템플릿이 적용되지 않을 수 있습니다.</translation>
-<translation id="2131277894177304644">Chromium에서 연결이 모니터링되고 있음을 감지했습니다</translation>
 <translation id="213826338245044447">모바일 북마크</translation>
 <translation id="214556005048008348">결제 취소</translation>
 <translation id="2147827593068025794">백그라운드 동기화</translation>
@@ -403,7 +400,6 @@
 <translation id="2799020568854403057">방문하려는 사이트에 유해한 앱이 있습니다.</translation>
 <translation id="2799223571221894425">다시 시작</translation>
 <translation id="2803306138276472711">최근 Google 세이프 브라우징이 <ph name="SITE" />에서 <ph name="BEGIN_LINK" />멀웨어를 감지<ph name="END_LINK" />했습니다. 평소에 안전한 웹사이트도 멀웨어에 감염될 때가 있습니다.</translation>
-<translation id="281585763351939989">Chromium에서 연결이 모니터링되고 있음을 감지했습니다.</translation>
 <translation id="2824775600643448204">주소창 및 검색창</translation>
 <translation id="2826760142808435982">이 연결은 <ph name="CIPHER" />을(를) 사용하여 암호화되고 인증되며 <ph name="KX" />을(를) 키 교환 매커니즘으로 사용합니다.</translation>
 <translation id="2835170189407361413">서식 지우기</translation>
@@ -448,7 +444,6 @@
 <translation id="3024663005179499861">잘못된 정책 유형</translation>
 <translation id="3037605927509011580">앗, 이런!</translation>
 <translation id="3041612393474885105">인증서 정보</translation>
-<translation id="304755864151473094">경고가 표시된 이유</translation>
 <translation id="3057676462092457419">DnsOverHttps 모드(<ph name="SECURE_DNS_MODE_SECURE" />)는 아직 지원되지 않으며 <ph name="SECURE_DNS_MODE_OFF" />(으)로 설정되었습니다.</translation>
 <translation id="3060227939791841287">C9(봉투)</translation>
 <translation id="3061707000357573562">서비스 패치</translation>
@@ -479,7 +474,6 @@
 <translation id="320323717674993345">결제 취소</translation>
 <translation id="3207960819495026254">북마크에 추가됨</translation>
 <translation id="3209034400446768650">페이지에서 요금을 청구할 수 있음</translation>
-<translation id="3209080785413271048">Windows Hello를 사용하여 저장된 결제 수단을 확인합니다.</translation>
 <translation id="3212581601480735796"><ph name="HOSTNAME" />에서의 활동이 모니터링되고 있음</translation>
 <translation id="3215092763954878852">WebAuthn을 사용할 수 없음</translation>
 <translation id="3225919329040284222">서버가 내장된 기대치와 일치하지 않는 인증서를 전달했습니다. 이러한 기대치는 사용자를 보호하기 위해 보안이 엄격한 특정 웹사이트에 포함됩니다.</translation>
@@ -493,7 +487,6 @@
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" />은(는) <ph name="SUGGESTED_DOMAIN" />과(와) 유사합니다. 일부 공격자는 비슷한 URL을 사용하여 다른 사이트를 모방합니다.</translation>
 <translation id="3270847123878663523">재정렬 실행 취소(&amp;U)</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
-<translation id="3281668902344226640">Touch ID를 사용해 저장된 결제 수단을 확인합니다.</translation>
 <translation id="3282497668470633863">카드 명의 추가</translation>
 <translation id="3287510313208355388">온라인 상태일 때 다운로드</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> 정책에 관해 자세히 알아보기</translation>
@@ -634,7 +627,6 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{없음}=1{사이트 1개 }other{사이트 #개 }}</translation>
 <translation id="397105322502079400">계산 중...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" />이(가) 차단됨</translation>
-<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" />에서 브라우저의 Chrome Enterprise Threat Protection을 사용 설정했습니다. Chrome Enterprise Threat Protection에서 내 데이터 중 일부에 액세스할 권한이 있습니다.</translation>
 <translation id="3987405730340719549">Chrome에서 이 사이트가 허위 또는 사기성 사이트일 수 있다고 판단했습니다.
 
     이 메시지가 실수로 표시되었다고 생각된다면 다음 페이지를 방문해 주시기 바랍니다. https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
@@ -699,7 +691,6 @@
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />네트워크 진단 프로그램을 실행<ph name="END_LINK" />해 보세요.</translation>
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" /><ph name="SITE" />(으)로 이동<ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">유효</translation>
-<translation id="4248776159690739358">Chrome 기업 보안 위협 대응에서 보고한 보안 이슈에 관한 데이터를 관리자와 공유합니다. 여기에는 방문한 페이지 URL, 파일 이름 또는 메타데이터 및 기기와 Chrome 로그인에 사용한 사용자 이름이 포함될 수 있습니다.</translation>
 <translation id="4250431568374086873">이 사이트의 보안 연결(HTTPS)은 완벽하지 않습니다.</translation>
 <translation id="4250680216510889253">아니요</translation>
 <translation id="425582637250725228">변경사항이 저장되지 않을 수 있습니다.</translation>
@@ -734,8 +725,6 @@
 <translation id="4372948949327679948">예상 <ph name="VALUE_TYPE" /> 값입니다.</translation>
 <translation id="4377125064752653719"><ph name="DOMAIN" />에 접속하려 했으나 발행기관에서 서버가 전달한 인증서를 폐기했습니다. 이는 서버가 제시한 보안 자격증명 정보를 신뢰할 수 없음을 의미합니다. 사용자는 현재 공격자와 통신 중일 수도 있습니다.</translation>
 <translation id="4378154925671717803">전화기</translation>
-<translation id="437847259914972036">웹에서의 내 활동 및 내가 입력하는 모든 정보가 감시되며, 콘텐츠가 눈치채지 못하게 변경될 수 있습니다.</translation>
-<translation id="4398334096870680409">기기에서 지원하지 않는 기능입니다.</translation>
 <translation id="4406896451731180161">검색결과</translation>
 <translation id="4408413947728134509">쿠키 <ph name="NUM_COOKIES" />개</translation>
 <translation id="4415426530740016218">픽업 주소</translation>
@@ -774,7 +763,6 @@
 <translation id="4594403342090139922">삭제 실행 취소(&amp;U)</translation>
 <translation id="4597348597567598915">크기 8</translation>
 <translation id="4600854749408232102">C6/C5(봉투)</translation>
-<translation id="4613966523036881546">이 연결의 인증서는 네트워크 가로채기와 모니터링에 사용되는 것으로 알려져 Chrome에서 신뢰하지 않습니다.</translation>
 <translation id="4635654612248442824">사이트 <ph name="ORIGIN" />이(가) 모든 요청에 기존 정책 적용을
     요청했으나 이 정책은 현재 적용할 수 없습니다.</translation>
 <translation id="464342062220857295">검색 기능</translation>
@@ -1172,7 +1160,6 @@
 <translation id="6547208576736763147">왼쪽 2공 펀칭</translation>
 <translation id="6554795675067793129">사용자의 계정은 <ph name="ENROLLMENT_DOMAIN" />에서 관리합니다.</translation>
 <translation id="6556866813142980365">다시실행</translation>
-<translation id="6559565319173126218">이 연결에서 확인된 인증서는 네트워크 가로채기와 모니터링에 사용되는 것으로 알려져 Chrome에서 신뢰하지 않습니다.</translation>
 <translation id="6569060085658103619">확장 프로그램 페이지를 보는 중</translation>
 <translation id="6573200754375280815">오른쪽 2공 펀칭</translation>
 <translation id="6578796323535178455">C2(봉투)</translation>
@@ -1201,12 +1188,10 @@
 <translation id="6685834062052613830">로그아웃 후 설정 완료</translation>
 <translation id="6689271823431384964">Google 계정에 로그인되어 있기 때문에 Chrome에서 계정에 카드를 저장할지 묻는 메시지가 표시됩니다. 설정에서 이 동작을 변경할 수 있습니다. 카드 소지자 이름은 계정에서 가져온 것입니다.</translation>
 <translation id="6704582573942289642">이 사이트가 맞나요?</translation>
-<translation id="6707256370811247129">Chrome에서 다운로드 또는 업로드하는 캐시와 파일의 내용을 검사합니다.</translation>
 <translation id="6710213216561001401">이전</translation>
 <translation id="6710594484020273272">&lt;검색어 입력&gt;</translation>
 <translation id="671076103358959139">등록 토큰:</translation>
 <translation id="6711464428925977395">프록시 서버에 문제가 발생했거나 주소가 잘못되었습니다.</translation>
-<translation id="6721811549156553509">네트워크 감시자가 내가 방문하는 사이트로 가장하고 내 활동 및 입력하는 모든 정보를 볼 수 있습니다(예: 비밀번호, 메시지, 신용카드). 네트워크 감시자가 활동을 보고 방문하는 페이지의 콘텐츠를 변경할 수 있으니 온라인에서 민감한 활동을 할 때는 항상 주의해야 합니다. 인터넷에 액세스하는 다른 브라우저 및 프로그램의 활동도 포함됩니다.</translation>
 <translation id="6738516213925468394"><ph name="TIME" />자로 <ph name="BEGIN_LINK" />동기화 암호<ph name="END_LINK" />를 통해 데이터가 암호화되었습니다. 동기화를 시작하려면 암호를 입력하세요.</translation>
 <translation id="674375294223700098">알 수 없는 서버 인증서 오류입니다.</translation>
 <translation id="6744009308914054259">연결을 기다리는 동안 다운로드에서 오프라인 기사를 읽을 수 있습니다.</translation>
@@ -1291,7 +1276,6 @@
 <translation id="721197778055552897">이 문제에 대해 <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="7219179957768738017"><ph name="SSL_VERSION" /> 연결입니다.</translation>
 <translation id="7220786058474068424">처리 중</translation>
-<translation id="7239736667463137521">Chrome에서 연결이 모니터링되고 있음을 감지했습니다.</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">다음 사이트에 멀웨어가 있습니다.</translation>
 <translation id="724975217298816891">카드 세부정보를 업데이트하려면 <ph name="CREDIT_CARD" /> 카드의 만료일과 CVC를 입력하세요. 카드를 확인하면 카드 세부정보가 이 사이트와 공유됩니다.</translation>
@@ -1318,7 +1302,6 @@
 <translation id="7346048084945669753">연결됨:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">명령줄</translation>
-<translation id="7353776484425559055">이 연결의 인증서는 네트워크 가로채기와 모니터링에 사용되는 것으로 알려져 Chromium에서 신뢰하지 않습니다. 기기에 설치한 인증서로 인해 이 오류가 표시될 수 있습니다. 보안 연결이 이루어지면 Chromium에서 사용자의 컴퓨터나 휴대기기에 로컬로 저장된 인증서를 신뢰합니다. 이렇게 하면 사용자가 웹사이트 개발 중에 도구를 실행하여 연결을 검사 및 디버그하거나 기업 환경에서 내부 트래픽을 가로채고 모니터링할 수 있습니다. 공개 인터넷에서 트래픽을 가로채기 위해 악용되는 경우 Chromium에서 경고를 표시합니다.</translation>
 <translation id="7372973238305370288">검색결과</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">미디어 컨트롤</translation>
@@ -1349,7 +1332,6 @@
 <translation id="7460618730930299168">선택한 영화와 상영 영화가 다릅니다. 계속하시겠습니까?</translation>
 <translation id="7473891865547856676">건너뛰기</translation>
 <translation id="7481312909269577407">앞으로</translation>
-<translation id="748406663033922918">화면 잠금을 사용해 저장된 결제 수단을 확인합니다.</translation>
 <translation id="7485870689360869515">데이터 없음</translation>
 <translation id="7495290002932347110">사이트 또는 앱의 정보 유출로 인해 비밀번호가 노출되었습니다. 지금 저장된 비밀번호를 확인하고 <ph name="ORIGIN" />의 비밀번호를 변경하는 것이 좋습니다.</translation>
 <translation id="7498234416455752244">계속 수정</translation>
@@ -1379,12 +1361,10 @@
 <translation id="7592362899630581445">서버의 인증서가 이름 제약 조건을 위반합니다.</translation>
 <translation id="7598391785903975535"><ph name="UPPER_ESTIMATE" /> 미만</translation>
 <translation id="759889825892636187">현재 <ph name="HOST_NAME" />에서 요청을 처리할 수 없습니다.</translation>
-<translation id="7599841999395223597">이 연결의 인증서는 네트워크 가로채기와 모니터링에 사용되는 것으로 알려져 Chrome에서 신뢰하지 않습니다. 기기에 설치한 인증서로 인해 이 오류가 표시될 수 있습니다. 보안 연결이 이루어지면 Chrome에서 사용자의 컴퓨터나 휴대기기에 로컬로 저장된 인증서를 신뢰합니다. 이렇게 하면 사용자가 웹사이트 개발 중에 도구를 실행하여 연결을 검사 및 디버그하거나 기업 환경에서 내부 트래픽을 가로채고 모니터링할 수 있습니다. 공개 인터넷에서 트래픽을 가로채기 위해 악용되는 경우 Chrome에서 경고를 표시합니다.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> 번역 안함</translation>
 <translation id="7610193165460212391">값(<ph name="VALUE" />)이 범위를 벗어났습니다.</translation>
 <translation id="7613889955535752492">만료일: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">다른 Google 계정 비밀번호 버전을 사용하여 암호화된 데이터가 이미 있습니다. 아래에 암호를 입력하시기 바랍니다.</translation>
-<translation id="7625784245512586808">Chrome Enterprise Threat Protection</translation>
 <translation id="7633909222644580952">성능 데이터 및 비정상 종료 보고서</translation>
 <translation id="7637571805876720304">Chromium에서 신용카드를 삭제하시겠습니까?</translation>
 <translation id="7638605456503525968">직렬 포트</translation>
@@ -1472,7 +1452,6 @@
 <translation id="8041940743680923270">전체 기본값 사용(요청)</translation>
 <translation id="8042918947222776840">수령 방법 선택</translation>
 <translation id="8057711352706143257">'<ph name="SOFTWARE_NAME" />이(가) 올바르게 설정되지 않았습니다. 일반적으로 '<ph name="SOFTWARE_NAME" />'을(를) 제거하면 문제가 해결됩니다. <ph name="FURTHER_EXPLANATION" /></translation>
-<translation id="8062224330780487419">지금부터 카드의 보안 코드를 입력하지 않아도 됩니다.</translation>
 <translation id="8066955247577885446">문제 발생</translation>
 <translation id="8074253406171541171">10x13(봉투)</translation>
 <translation id="8078141288243656252">회전 시 주석을 달 수 없습니다.</translation>
@@ -1489,7 +1468,6 @@
 <translation id="8103161714697287722">결제 수단</translation>
 <translation id="8105368624971345109">사용 중지</translation>
 <translation id="8118489163946903409">결제 수단</translation>
-<translation id="8124023448510659215">이 연결의 인증서는 네트워크 가로채기와 모니터링에 사용되는 것으로 알려져 Chromium에서 신뢰하지 않습니다.</translation>
 <translation id="8127301229239896662">'<ph name="SOFTWARE_NAME" />'이(가) 컴퓨터 또는 네트워크에 제대로 설치되지 않았습니다. IT 관리자에게 문제 해결을 요청해 보세요.</translation>
 <translation id="8131740175452115882">확인</translation>
 <translation id="8149426793427495338">컴퓨터가 절전 모드 상태입니다.</translation>
@@ -1534,6 +1512,7 @@
 <translation id="8308427013383895095">네트워크 연결 문제로 인해 번역에 실패했습니다.</translation>
 <translation id="831207732689920588">의심스러운 페이지(Chrome에서 보고함)</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" />에 대한 액세스가 거부됨</translation>
+<translation id="833262891116910667">강조표시</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_YEAR" />/<ph name="EXPIRATION_MONTH" /></translation>
 <translation id="834457929814110454">보안 관련 위험을 이해한다면 악성 프로그램이 삭제되기 전에 <ph name="BEGIN_LINK" />이 사이트를 방문<ph name="END_LINK" />해도 됩니다.</translation>
 <translation id="8349305172487531364">북마크바</translation>
@@ -1631,8 +1610,6 @@
 <translation id="8957210676456822347">캡티브 포털 승인</translation>
 <translation id="8962950042226115166">의심스러운 사이트</translation>
 <translation id="8968766641738584599">카드 저장</translation>
-<translation id="8969267497192857913">내가 입력하는 내용, 접속하는 페이지, 웹상의 기타 모든 활동이 감시되며, 사이트의 콘텐츠가 눈치채지 못하게 변경될 수 있습니다.
-    <ph name="BEGIN_LEARN_MORE_LINK" />자세히 알아보기<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">서버 인증서가 만료되었습니다.</translation>
 <translation id="8975012916872825179">전화번호, 이메일 주소, 배송지 주소 등의 정보를 포함합니다.</translation>
 <translation id="8975263830901772334">인쇄하는 파일의 이름</translation>
@@ -1666,7 +1643,6 @@
 <translation id="9080712759204168376">주문 요약</translation>
 <translation id="9089260154716455634">제한 완화 시간 정책:</translation>
 <translation id="9095388113577226029">다른 언어...</translation>
-<translation id="9098981495403789647">관리자가 브라우저에서 Chrome Enterprise Threat Protection을 사용 설정했습니다. Chrome Enterprise Threat Protection에서 내 데이터 중 일부에 액세스할 권한이 있습니다.</translation>
 <translation id="9103872766612412690"><ph name="SITE" />에서는 사용자 정보를 보호하기 위해 일반적으로 암호화를 사용합니다. 이번에 Chromium에서 <ph name="SITE" />에 연결을 시도했을 때 웹사이트에서 비정상적이고 잘못된 사용자 인증 정보를 반환했습니다. 이는 공격자가 <ph name="SITE" />인 것처럼 가장하려고 하거나 Wi-Fi 로그인 화면이 연결을 방해했기 때문일 수 있습니다. 데이터 교환이 발생하기 전에 Chromium에서 연결을 중단했으므로 사용자 정보는 안전합니다.</translation>
 <translation id="9106062320799175032">청구서 주소 추가</translation>
 <translation id="9114524666733003316">카드 확인 중...</translation>

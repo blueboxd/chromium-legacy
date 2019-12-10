@@ -359,6 +359,9 @@ android_library("ui_full_java") {
 android_library("ui_java_test_support") {
   testonly = true
   java_files = [
+    "javatests/src/org/chromium/ui/test/util/DisableAnimationsTestRule.java",
+    "javatests/src/org/chromium/ui/test/util/DummyUiActivity.java",
+    "javatests/src/org/chromium/ui/test/util/DummyUiActivityTestCase.java",
     "javatests/src/org/chromium/ui/test/util/UiDisableIf.java",
     "javatests/src/org/chromium/ui/test/util/UiDisableIfSkipCheck.java",
     "javatests/src/org/chromium/ui/test/util/UiRestriction.java",
@@ -369,6 +372,8 @@ android_library("ui_java_test_support") {
     ":ui_java",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_support_test_runner:rules_java",
     "//third_party/junit",
   ]
 }

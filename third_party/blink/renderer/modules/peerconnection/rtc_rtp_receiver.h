@@ -70,7 +70,7 @@ class RTCRtpReceiver final : public ScriptWrappable {
 
   // The current SSRCs and CSRCs. getSynchronizationSources() returns the SSRCs
   // and getContributingSources() returns the CSRCs.
-  WebVector<std::unique_ptr<RTCRtpSource>> web_sources_;
+  Vector<std::unique_ptr<RTCRtpSource>> web_sources_;
   bool web_sources_needs_updating_ = true;
   Member<RTCRtpTransceiver> transceiver_;
 

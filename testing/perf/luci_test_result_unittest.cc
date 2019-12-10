@@ -208,7 +208,7 @@ TYPED_TEST_P(LuciTestResultTypedTest, Variant) {
            "testResult":{
              "expected":true,
              "status":"PASS",
-             "testPath":"LuciTestResultTypedTest/%s.Variant",
+             "testPath":"SomeTypes/LuciTestResultTypedTest/%s.Variant",
              "variant":{"param/instantiation":"%s"}
            }
          })";
@@ -223,6 +223,6 @@ TYPED_TEST_P(LuciTestResultTypedTest, Variant) {
 REGISTER_TYPED_TEST_SUITE_P(LuciTestResultTypedTest, Variant);
 
 using SomeTypes = testing::Types<int, double>;
-INSTANTIATE_TYPED_TEST_SUITE_P(, LuciTestResultTypedTest, SomeTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(SomeTypes, LuciTestResultTypedTest, SomeTypes);
 
 }  // namespace perf_test

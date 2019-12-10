@@ -34,8 +34,9 @@ bool ShouldBoostThreadPriorityForLocation(const Location& from_here) {
 // Enable the boost of thread priority when the code may load a library. The
 // thread priority boost is required to avoid priority inversion on the loader
 // lock.
+// TODO(https://crbug.com/872820): Cleanup this experiment after M80 branch.
 constexpr base::Feature kBoostThreadPriorityOnLibraryLoading{
-    "BoostThreadPriorityOnLibraryLoading", base::FEATURE_DISABLED_BY_DEFAULT};
+    "BoostThreadPriorityOnLibraryLoading", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // OS_WIN
 
 ScopedThreadMayLoadLibraryOnBackgroundThread::

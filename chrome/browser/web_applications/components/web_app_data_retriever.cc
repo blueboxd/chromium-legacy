@@ -170,9 +170,12 @@ void WebAppDataRetriever::OnDidPerformInstallableCheck(
   const bool is_installable = data.errors.empty();
   DCHECK(!is_installable || data.valid_manifest);
   DCHECK(!data.valid_manifest || !data.manifest->IsEmpty());
+  base::Optional<blink::Manifest> opt_manifest;
+  if (data.valid_manifest)
+    opt_manifest = *data.manifest;
 
   std::move(check_installability_callback_)
-      .Run(*data.manifest, data.valid_manifest, is_installable);
+      .Run(opt_manifest, data.valid_manifest, is_installable);
 }
 
 void WebAppDataRetriever::OnIconsDownloaded(bool success, IconsMap icons_map) {

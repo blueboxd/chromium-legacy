@@ -481,7 +481,7 @@ TEST_P(WebRtcSetDescriptionObserverHandlerTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     WebRtcSetDescriptionObserverHandlerTest,
     ::testing::Values(std::make_tuple(ObserverHandlerType::kLocal,
                                       StateSurfacerType::kTransceivers),

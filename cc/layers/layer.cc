@@ -58,7 +58,6 @@ struct SameSizeAsLayer : public base::RefCounted<SameSizeAsLayer> {
     SkColor background_color;
     FilterOperations filters[2];
     base::Optional<gfx::RRectF> backdrop_filter_bounds;
-    gfx::PointF filters_origin;
     float backdrop_filter_quality;
     gfx::RoundedCornersF corner_radii;
     gfx::ScrollOffset scroll_offset;
@@ -634,16 +633,6 @@ void Layer::ClearBackdropFilterBounds() {
 
 void Layer::SetBackdropFilterQuality(const float quality) {
   inputs_.backdrop_filter_quality = quality;
-}
-
-void Layer::SetFiltersOrigin(const gfx::PointF& filters_origin) {
-  DCHECK(IsPropertyChangeAllowed());
-  if (inputs_.filters_origin == filters_origin)
-    return;
-  inputs_.filters_origin = filters_origin;
-  SetSubtreePropertyChanged();
-  SetPropertyTreesNeedRebuild();
-  SetNeedsCommit();
 }
 
 void Layer::SetRoundedCorner(const gfx::RoundedCornersF& corner_radii) {

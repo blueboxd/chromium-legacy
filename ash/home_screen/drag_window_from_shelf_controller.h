@@ -17,10 +17,13 @@
 #include "base/optional.h"
 #include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
-#include "ui/gfx/geometry/point.h"
 
 namespace aura {
 class Window;
+}
+
+namespace gfx {
+class PointF;
 }
 
 namespace ash {
@@ -83,16 +86,16 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
   };
 
   DragWindowFromShelfController(aura::Window* window,
-                                const gfx::Point& location_in_screen,
+                                const gfx::PointF& location_in_screen,
                                 HotseatState hotseat_state);
   ~DragWindowFromShelfController() override;
 
   // Called during swiping up on the shelf.
-  void Drag(const gfx::Point& location_in_screen,
+  void Drag(const gfx::PointF& location_in_screen,
             float scroll_x,
             float scroll_y);
   base::Optional<ShelfWindowDragResult> EndDrag(
-      const gfx::Point& location_in_screen,
+      const gfx::PointF& location_in_screen,
       base::Optional<float> velocity_y);
   void CancelDrag();
 
@@ -111,39 +114,39 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
  private:
   class WindowsHider;
 
-  void OnDragStarted(const gfx::Point& location_in_screen);
-  void OnDragEnded(const gfx::Point& location_in_screen,
+  void OnDragStarted(const gfx::PointF& location_in_screen);
+  void OnDragEnded(const gfx::PointF& location_in_screen,
                    bool should_drop_window_in_overview,
                    SplitViewController::SnapPosition snap_position);
 
   // Updates the dragged window's transform during dragging.
-  void UpdateDraggedWindow(const gfx::Point& location_in_screen);
+  void UpdateDraggedWindow(const gfx::PointF& location_in_screen);
 
   // Returns the desired snap position on |location_in_screen| during dragging.
   SplitViewController::SnapPosition GetSnapPosition(
-      const gfx::Point& location_in_screen) const;
+      const gfx::PointF& location_in_screen) const;
 
   // Returns true if the dragged window should restore to its original bounds
   // after drag ends. Happens when |location_in_screen| is within
   // GetReturnToMaximizedThreshold() threshold.
   bool ShouldRestoreToOriginalBounds(
-      const gfx::Point& location_in_screen) const;
+      const gfx::PointF& location_in_screen) const;
 
   // Returns true if we should go to home screen after drag ends. Happens when
   // the upward vertical velocity is larger than kVelocityToHomeScreenThreshold
   // and splitview is not active. Note when splitview is active, we do not allow
   // to go to home screen by fling.
-  bool ShouldGoToHomeScreen(const gfx::Point& location_in_screen,
+  bool ShouldGoToHomeScreen(const gfx::PointF& location_in_screen,
                             base::Optional<float> velocity_y) const;
 
   // Returns the desired snap position on |location_in_screen| when drag ends.
   SplitViewController::SnapPosition GetSnapPositionOnDragEnd(
-      const gfx::Point& location_in_screen,
+      const gfx::PointF& location_in_screen,
       base::Optional<float> velocity_y) const;
 
   // Returns true if we should drop the dragged window in overview after drag
   // ends.
-  bool ShouldDropWindowInOverview(const gfx::Point& location_in_screen,
+  bool ShouldDropWindowInOverview(const gfx::PointF& location_in_screen,
                                   base::Optional<float> velocity_y) const;
 
   // Reshows the windows that were hidden before drag starts.
@@ -177,8 +180,8 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
   void OnWindowDragStartedInOverview();
 
   aura::Window* window_ = nullptr;
-  gfx::Point initial_location_in_screen_;
-  gfx::Point previous_location_in_screen_;
+  gfx::PointF initial_location_in_screen_;
+  gfx::PointF previous_location_in_screen_;
   bool drag_started_ = false;
   BackdropWindowMode original_backdrop_mode_ = BackdropWindowMode::kAutoOpaque;
 

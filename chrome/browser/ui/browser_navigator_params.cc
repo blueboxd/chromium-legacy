@@ -50,6 +50,10 @@ NavigateParams::~NavigateParams() {}
 
 void NavigateParams::FillNavigateParamsFromOpenURLParams(
     const content::OpenURLParams& params) {
+#if DCHECK_IS_ON()
+  DCHECK(params.Valid());
+#endif
+
   this->initiator_origin = params.initiator_origin;
   this->referrer = params.referrer;
   this->reload_type = params.reload_type;

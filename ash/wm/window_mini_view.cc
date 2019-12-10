@@ -99,22 +99,10 @@ WindowMiniView::WindowMiniView(aura::Window* source_window,
           kHorizontalLabelPaddingDp));
   AddChildViewOf(this, header_view_);
 
-  // Display the icon and title of the transient root.
-  aura::Window* transient_root = wm::GetTransientRoot(source_window);
+  UpdateIconView();
 
-  // Prefer kAppIconKey over kWindowIconKey as the app icon is typically larger.
-  gfx::ImageSkia* icon = transient_root->GetProperty(aura::client::kAppIconKey);
-  if (!icon || icon->size().IsEmpty())
-    icon = transient_root->GetProperty(aura::client::kWindowIconKey);
-  if (icon && !icon->size().IsEmpty()) {
-    image_view_ = new views::ImageView();
-    image_view_->SetImage(gfx::ImageSkiaOperations::CreateResizedImage(
-        *icon, skia::ImageOperations::RESIZE_BEST, kIconSize));
-    image_view_->SetSize(kIconSize);
-    AddChildViewOf(header_view_, image_view_);
-  }
-
-  title_label_ = new views::Label(transient_root->GetTitle());
+  title_label_ =
+      new views::Label(wm::GetTransientRoot(source_window_)->GetTitle());
   title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label_->SetAutoColorReadabilityEnabled(false);
   title_label_->SetEnabledColor(kLabelColor);
@@ -159,6 +147,17 @@ void WindowMiniView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(title_label_->GetText());
 }
 
+void WindowMiniView::OnWindowPropertyChanged(aura::Window* window,
+                                             const void* key,
+                                             intptr_t old) {
+  // Update the icon if it changes in the middle of an overview or alt tab
+  // session (due to device scale factor change or other).
+  if (key != aura::client::kAppIconKey && key != aura::client::kWindowIconKey)
+    return;
+
+  UpdateIconView();
+}
+
 void WindowMiniView::OnWindowDestroying(aura::Window* window) {
   if (window != source_window_)
     return;
@@ -170,6 +169,25 @@ void WindowMiniView::OnWindowDestroying(aura::Window* window) {
 
 void WindowMiniView::OnWindowTitleChanged(aura::Window* window) {
   title_label_->SetText(wm::GetTransientRoot(window)->GetTitle());
+}
+
+void WindowMiniView::UpdateIconView() {
+  aura::Window* transient_root = wm::GetTransientRoot(source_window_);
+  // Prefer kAppIconKey over kWindowIconKey as the app icon is typically larger.
+  gfx::ImageSkia* icon = transient_root->GetProperty(aura::client::kAppIconKey);
+  if (!icon || icon->size().IsEmpty())
+    icon = transient_root->GetProperty(aura::client::kWindowIconKey);
+  if (!icon)
+    return;
+
+  if (!icon_view_) {
+    icon_view_ = new views::ImageView();
+    icon_view_->SetSize(kIconSize);
+    AddChildViewOf(header_view_, icon_view_);
+  }
+
+  icon_view_->SetImage(gfx::ImageSkiaOperations::CreateResizedImage(
+      *icon, skia::ImageOperations::RESIZE_BEST, kIconSize));
 }
 
 }  // namespace ash

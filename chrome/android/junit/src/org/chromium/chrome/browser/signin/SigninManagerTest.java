@@ -30,8 +30,8 @@ import org.mockito.Mock;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.DisableNativeTestRule;
 import org.chromium.base.test.util.JniMocker;
-import org.chromium.chrome.test.DisableNativeTestRule;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.identitymanager.CoreAccountId;

@@ -21,8 +21,6 @@
     'x', 'y.foo'
   ]);
   await SourcesTestRunner.startDebuggerTestPromise();
-  watchExpressionsPane =
-      self.runtime.sharedInstance(Sources.WatchExpressionsSidebarPane);
   UI.panels.sources._sidebarPaneStack.showView(
       UI.panels.sources._watchSidebarPane);
   TestRunner.addResult('Watches before running testFunction:');

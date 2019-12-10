@@ -4,8 +4,7 @@
 
 package org.chromium.chrome.browser.fullscreen;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -17,12 +16,16 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
+import org.chromium.base.Callback;
+import org.chromium.base.ObservableSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.content_public.common.BrowserControlsState;
 
 /**
  * Unit tests for the BrowserStateBrowserControlsVisibilityDelegate.
@@ -30,133 +33,156 @@ import org.chromium.base.test.util.Feature;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class BrowserStateBrowserControlsVisibilityDelegateTest {
-    @Mock private Runnable mCallback;
+    @Mock
+    private Callback<Integer> mCallback;
 
     private BrowserStateBrowserControlsVisibilityDelegate mDelegate;
+    private ObservableSupplierImpl<Boolean> mPersistentModeSupplier;
 
     @Before
     public void beforeTest() {
         MockitoAnnotations.initMocks(this);
 
-        mDelegate = new BrowserStateBrowserControlsVisibilityDelegate(mCallback, () -> true);
+        mPersistentModeSupplier = new ObservableSupplierImpl<>();
+        mPersistentModeSupplier.set(false);
+
+        mDelegate = new BrowserStateBrowserControlsVisibilityDelegate(mPersistentModeSupplier);
+        mDelegate.addObserver(mCallback);
+        Mockito.reset(mCallback);
     }
 
     private void advanceTime(long amount) {
         SystemClock.setCurrentTimeMillis(SystemClock.elapsedRealtime() + amount);
     }
 
+    private int constraints() {
+        return mDelegate.get();
+    }
+
     @Test
     @Feature("Fullscreen")
     public void testTransientShow() {
-        assertTrue(mDelegate.canAutoHideBrowserControls());
+        assertEquals(BrowserControlsState.BOTH, constraints());
         mDelegate.showControlsTransient();
-        assertFalse(mDelegate.canAutoHideBrowserControls());
+        assertEquals(BrowserControlsState.SHOWN, constraints());
 
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
-        assertTrue(mDelegate.canAutoHideBrowserControls());
+        assertEquals(BrowserControlsState.BOTH, constraints());
 
-        verify(mCallback, times(2)).run();
+        verify(mCallback, times(2)).onResult(Mockito.anyInt());
     }
 
     @Test
     @Feature("Fullscreen")
     public void testShowPersistentTokenWithDelayedHide() {
-        assertTrue(mDelegate.canAutoHideBrowserControls());
+        assertEquals(BrowserControlsState.BOTH, constraints());
         int token = mDelegate.showControlsPersistent();
-        assertFalse(mDelegate.canAutoHideBrowserControls());
+        assertEquals(BrowserControlsState.SHOWN, constraints());
         // Advance the clock to exceed the minimum show time.
         advanceTime(2 * MINIMUM_SHOW_DURATION_MS);
-        assertFalse(mDelegate.canAutoHideBrowserControls());
+        assertEquals(BrowserControlsState.SHOWN, constraints());
         mDelegate.releasePersistentShowingToken(token);
-        assertTrue(mDelegate.canAutoHideBrowserControls());
+        assertEquals(BrowserControlsState.BOTH, constraints());
 
-        verify(mCallback, times(2)).run();
+        verify(mCallback, times(2)).onResult(Mockito.anyInt());
     }
 
     @Test
     @Feature("Fullscreen")
     public void testShowPersistentTokenWithImmediateHide() {
-        assertTrue(mDelegate.canAutoHideBrowserControls());
+        assertEquals(BrowserControlsState.BOTH, constraints());
         int token = mDelegate.showControlsPersistent();
-        assertFalse(mDelegate.canAutoHideBrowserControls());
+        assertEquals(BrowserControlsState.SHOWN, constraints());
         mDelegate.releasePersistentShowingToken(token);
 
         // If the controls are not shown for the mimimum allowed time, then a task is posted to
         // keep them shown for longer.  Ensure the controls can not be hidden until this delayed
         // task has been run.
-        assertFalse(mDelegate.canAutoHideBrowserControls());
+        assertEquals(BrowserControlsState.SHOWN, constraints());
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
-        assertTrue(mDelegate.canAutoHideBrowserControls());
+        assertEquals(BrowserControlsState.BOTH, constraints());
 
-        verify(mCallback, times(2)).run();
+        verify(mCallback, times(2)).onResult(Mockito.anyInt());
     }
 
     @Test
     @Feature("Fullscreen")
     public void testShowPersistentBeyondRequiredMinDurationAndShowTransient() {
-        assertTrue(mDelegate.canAutoHideBrowserControls());
+        assertEquals(BrowserControlsState.BOTH, constraints());
         int token = mDelegate.showControlsPersistent();
-        assertFalse(mDelegate.canAutoHideBrowserControls());
+        assertEquals(BrowserControlsState.SHOWN, constraints());
 
         // Advance the clock to exceed the minimum show time.
         advanceTime(2 * MINIMUM_SHOW_DURATION_MS);
-        assertFalse(mDelegate.canAutoHideBrowserControls());
+        assertEquals(BrowserControlsState.SHOWN, constraints());
         // At this point, the controls have been shown long enough that the transient request will
         // be a no-op.
         mDelegate.showControlsTransient();
         mDelegate.releasePersistentShowingToken(token);
-        assertTrue(mDelegate.canAutoHideBrowserControls());
+        assertEquals(BrowserControlsState.BOTH, constraints());
 
-        verify(mCallback, times(2)).run();
+        verify(mCallback, times(2)).onResult(Mockito.anyInt());
     }
 
     @Test
     @Feature("Fullscreen")
     public void testShowPersistentBelowRequiredMinDurationAndShowTransient() {
-        assertTrue(mDelegate.canAutoHideBrowserControls());
+        assertEquals(BrowserControlsState.BOTH, constraints());
         int token = mDelegate.showControlsPersistent();
-        assertFalse(mDelegate.canAutoHideBrowserControls());
+        assertEquals(BrowserControlsState.SHOWN, constraints());
 
         // Advance the clock but not beyond the min show duration.
         advanceTime((long) (0.5 * MINIMUM_SHOW_DURATION_MS));
-        assertFalse(mDelegate.canAutoHideBrowserControls());
+        assertEquals(BrowserControlsState.SHOWN, constraints());
         // At this point, the controls have not been shown long enough, so the transient request
         // will delay the ability to hide.
         mDelegate.showControlsTransient();
         mDelegate.releasePersistentShowingToken(token);
-        assertFalse(mDelegate.canAutoHideBrowserControls());
+        assertEquals(BrowserControlsState.SHOWN, constraints());
 
         // Run the pending tasks on the UI thread, which will include the transient delayed task.
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
-        assertTrue(mDelegate.canAutoHideBrowserControls());
+        assertEquals(BrowserControlsState.BOTH, constraints());
 
-        verify(mCallback, times(2)).run();
+        verify(mCallback, times(2)).onResult(Mockito.anyInt());
     }
 
     @Test
     @Feature("Fullscreen")
     public void testShowPersistentMultipleTimes() {
-        assertTrue(mDelegate.canAutoHideBrowserControls());
+        assertEquals(BrowserControlsState.BOTH, constraints());
         int firstToken = mDelegate.showControlsPersistent();
-        assertFalse(mDelegate.canAutoHideBrowserControls());
+        assertEquals(BrowserControlsState.SHOWN, constraints());
 
         int secondToken = mDelegate.showControlsPersistent();
-        assertFalse(mDelegate.canAutoHideBrowserControls());
+        assertEquals(BrowserControlsState.SHOWN, constraints());
 
         int thirdToken = mDelegate.showControlsPersistent();
-        assertFalse(mDelegate.canAutoHideBrowserControls());
+        assertEquals(BrowserControlsState.SHOWN, constraints());
 
         // Advance the clock to exceed the minimum show time.
         advanceTime(2 * MINIMUM_SHOW_DURATION_MS);
-        assertFalse(mDelegate.canAutoHideBrowserControls());
+        assertEquals(BrowserControlsState.SHOWN, constraints());
 
         mDelegate.releasePersistentShowingToken(secondToken);
-        assertFalse(mDelegate.canAutoHideBrowserControls());
+        assertEquals(BrowserControlsState.SHOWN, constraints());
         mDelegate.releasePersistentShowingToken(firstToken);
-        assertFalse(mDelegate.canAutoHideBrowserControls());
+        assertEquals(BrowserControlsState.SHOWN, constraints());
         mDelegate.releasePersistentShowingToken(thirdToken);
-        assertTrue(mDelegate.canAutoHideBrowserControls());
+        assertEquals(BrowserControlsState.BOTH, constraints());
 
-        verify(mCallback, times(2)).run();
+        verify(mCallback, times(2)).onResult(Mockito.anyInt());
+    }
+
+    @Test
+    @Feature("Fullscreen")
+    public void testGlobalPersistentMode() {
+        assertEquals(BrowserControlsState.BOTH, constraints());
+        mPersistentModeSupplier.set(true);
+        assertEquals(BrowserControlsState.HIDDEN, constraints());
+        mPersistentModeSupplier.set(false);
+        assertEquals(BrowserControlsState.BOTH, constraints());
+
+        verify(mCallback, times(2)).onResult(Mockito.anyInt());
     }
 }

@@ -566,8 +566,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, RemovePoppedOutAction) {
 
   // Pop out Extension 3 (index 3).
   base::Closure closure = base::DoNothing();
-  ToolbarActionsBar* toolbar_actions_bar =
-      browser()->window()->GetToolbarActionsBar();
+  ToolbarActionsBar* const toolbar_actions_bar =
+      ToolbarActionsBar::FromBrowserWindow(browser()->window());
   EXPECT_EQ(extension3->id(), toolbar_actions_bar->GetActions()[2]->GetId());
   toolbar_actions_bar->PopOutAction(toolbar_actions_bar->GetActions()[2], false,
                                     closure);
@@ -647,12 +647,14 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarIncognitoTest, IncognitoMode) {
 
   CloseBrowserSynchronously(browser());
 
+  ToolbarActionsBar* const toolbar_actions_bar =
+      ToolbarActionsBar::FromBrowserWindow(second_browser->window());
   std::vector<ToolbarActionViewController*> actions =
-      second_browser->window()->GetToolbarActionsBar()->GetActions();
+      toolbar_actions_bar->GetActions();
   ASSERT_EQ(1u, actions.size());
   gfx::Image icon = actions[0]->GetIcon(
       second_browser->tab_strip_model()->GetActiveWebContents(),
-      second_browser->window()->GetToolbarActionsBar()->GetViewSize());
+      toolbar_actions_bar->GetViewSize());
   const gfx::ImageSkia* skia = icon.ToImageSkia();
   ASSERT_TRUE(skia);
   // Force the image to try and load a representation.
@@ -754,7 +756,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarRuntimeHostPermissionsBrowserTest,
   EXPECT_TRUE(action_runner->WantsToRun(extension()));
   EXPECT_FALSE(injection_listener.was_satisfied());
 
-  ToolbarActionsBar* actions_bar = browser()->window()->GetToolbarActionsBar();
+  ToolbarActionsBar* const actions_bar =
+      ToolbarActionsBar::FromBrowserWindow(browser()->window());
   std::vector<ToolbarActionViewController*> actions = actions_bar->GetActions();
   ASSERT_EQ(1u, actions.size());
 
@@ -936,8 +939,8 @@ class BrowserActionsBarUiBrowserTest
       return false;
     }
 
-    ToolbarActionsBar* actions_bar =
-        browser()->window()->GetToolbarActionsBar();
+    ToolbarActionsBar* const actions_bar =
+        ToolbarActionsBar::FromBrowserWindow(browser()->window());
     std::vector<ToolbarActionViewController*> actions =
         actions_bar->GetActions();
     if (actions.size() != 1) {

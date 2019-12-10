@@ -11,10 +11,11 @@
     <link rel="stylesheet" href="oobe_dialog_host.css">
     <link rel="stylesheet" href="oobe_flex_layout.css">
 
-    <oobe-dialog id="dialog" role="dialog"
-        title-key="kioskEnableWarningText"
-        aria-label$="[[i18nDynamic(locale, 'kioskEnableWarningText')]]"
+    <oobe-dialog id="dialog" role="dialog" aria-labelledby="title"
         has-buttons footer-shrinkable>
+      <h1 id="title" slot="title">
+        [[i18nDynamic(locale,'kioskEnableWarningText')]]
+      </h1>
       <div slot="subtitle">
         <span hidden="[[!eq_(state_, 'confirm')]]">
           [[i18nDynamic(locale,'kioskEnableWarningDetails')]]
@@ -31,11 +32,13 @@
       </div>  
       <div slot="bottom-buttons" class="flex layout horizontal end-justified">
         <oobe-text-button id="enable" hidden="[[!eq_(state_, 'confirm')]]"
-            inverse on-tap="onEnableButton_" text-key="kioskEnableButton">
+            inverse on-tap="onEnableButton_">
+          <div>[[i18nDynamic(locale, 'kioskEnableButton')]]</div>
         </oobe-text-button>
         <oobe-text-button id="close" class="focus-on-show" inverse
-            text-key="[[primaryButtonTextKey_(state_)]]"
-            on-tap="closeDialog_"></oobe-text-button>
+            on-tap="closeDialog_">
+          <div>[[primaryButtonText_(locale, state_)]]</div>
+        </oobe-text-button>
       </div>
     </oobe-dialog>
   </template>

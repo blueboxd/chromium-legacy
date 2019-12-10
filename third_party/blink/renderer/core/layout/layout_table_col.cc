@@ -72,10 +72,9 @@ void LayoutTableCol::StyleDidChange(StyleDifference diff,
 
 void LayoutTableCol::UpdateFromElement() {
   unsigned old_span = span_;
-  Node* n = GetNode();
-  if (IsHTMLTableColElement(n)) {
-    HTMLTableColElement& tc = ToHTMLTableColElement(*n);
-    span_ = tc.span();
+
+  if (auto* tc = DynamicTo<HTMLTableColElement>(GetNode())) {
+    span_ = tc->span();
   } else {
     span_ = 1;
   }

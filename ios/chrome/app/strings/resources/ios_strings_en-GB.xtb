@@ -91,6 +91,7 @@
 <translation id="209018056901015185">Request Desktop Site</translation>
 <translation id="2103075008456228677">Open history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> items moved</translation>
+<translation id="2118594521750010466">Fix now</translation>
 <translation id="213900355088104901">To browse privately, open an incognito tab</translation>
 <translation id="2139867232736819575">Search for text that you copied</translation>
 <translation id="2149973817440762519">Edit Bookmark</translation>
@@ -98,6 +99,7 @@
 <translation id="2198757192731523470">Google may use your history to personalise Search, ads and other Google services.</translation>
 <translation id="2230173723195178503">Web page loaded</translation>
 <translation id="2239626343334228536">Clearing browsing data…</translation>
+<translation id="2257567812274161158">Sync isn't working.</translation>
 <translation id="2267753748892043616">Add Account</translation>
 <translation id="2268044343513325586">Refine</translation>
 <translation id="2273327106802955778">More menu</translation>
@@ -129,6 +131,7 @@
 <translation id="2691653761409724435">Not available offline</translation>
 <translation id="2695507686909505111">Page translated</translation>
 <translation id="2702801445560668637">Reading List</translation>
+<translation id="2704491540504985681">Downloads</translation>
 <translation id="2704606927547763573">Copied</translation>
 <translation id="2709516037105925701">Auto-fill</translation>
 <translation id="2712127207578915686">Unable to Open File</translation>
@@ -218,6 +221,7 @@
 <translation id="3943492037546055397">Passwords</translation>
 <translation id="3967822245660637423">Download complete</translation>
 <translation id="3989635538409502728">Sign Out</translation>
+<translation id="399419089947468503">Error syncing passwords</translation>
 <translation id="3995521777587992544">Page load progress bar, <ph name="EMAIL" /> loaded.</translation>
 <translation id="4002066346123236978">Title</translation>
 <translation id="4004204301268239848">Passwords are saved in your Google Account so that you can use them on any device.</translation>
@@ -238,6 +242,7 @@
 <translation id="424315890655130736">Enter Passphrase</translation>
 <translation id="4263576668337963058">Show available page actions</translation>
 <translation id="4272631900155121838">To scan a QR code, enable the camera from settings</translation>
+<translation id="4276041135170112053">Fix now.</translation>
 <translation id="4281844954008187215">Terms of Service</translation>
 <translation id="430793432425771671">Sync Everything</translation>
 <translation id="430967081421617822">All time</translation>
@@ -286,6 +291,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="4904877109095351937">Mark Read</translation>
 <translation id="4930268273022498155">Delete existing data. You can retrieve it by switching back to <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Sorry, there was a problem sharing your item.</translation>
+<translation id="4944543191714094452">Find in page…</translation>
 <translation id="4945756290001680296">Access password settings</translation>
 <translation id="4979397965658815378">Sign in with your Google Account to get your bookmarks, passwords, history and other settings on all your devices</translation>
 <translation id="5005498671520578047">Copy password</translation>
@@ -317,6 +323,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5433691172869980887">Username copied</translation>
 <translation id="54401264925851789">Page Security Info</translation>
 <translation id="5443952882982198570">Credit cards</translation>
+<translation id="5457907402803865181">Error syncing passwords.</translation>
 <translation id="5525269841082836315">Create a Pass phrase</translation>
 <translation id="5548760955356983418">Handoff lets you start browsing a website on this device and then easily continue on your Mac. The current open website will appear in the Dock of your Mac.
 
@@ -408,6 +415,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> items deleted</translation>
 <translation id="6610002944194042868">Translate Options</translation>
 <translation id="6628106477656132239">Invalid Expiry Date</translation>
+<translation id="6638511529934826365">Zoom text…</translation>
 <translation id="6642362222295953972">Switch to existing tab</translation>
 <translation id="6643016212128521049">Clear</translation>
 <translation id="6656103420185847513">Edit Folder</translation>

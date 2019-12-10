@@ -1149,7 +1149,7 @@ IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceJsRequestInterstitialTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     V4SafeBrowsingServiceJsRequestInterstitialTest,
     ::testing::Values(
         JsRequestTestParam(ContextType::kWindow, JsRequestType::kWebSocket),
@@ -1179,7 +1179,7 @@ IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceJsRequestNoInterstitialTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     V4SafeBrowsingServiceJsRequestNoInterstitialTest,
     ::testing::Values(JsRequestTestParam(ContextType::kSharedWorker,
                                          JsRequestType::kWebSocket),
@@ -1207,7 +1207,7 @@ IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceJsRequestSafeTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     V4SafeBrowsingServiceJsRequestSafeTest,
     ::testing::Values(
         JsRequestTestParam(ContextType::kWindow, JsRequestType::kWebSocket),
@@ -1287,7 +1287,7 @@ IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceTestCommittedInterstitials,
 ///////////////////////////////////////////////////////////////////////////////
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     V4SafeBrowsingServiceTestCommittedInterstitials,
     testing::Bool());
 

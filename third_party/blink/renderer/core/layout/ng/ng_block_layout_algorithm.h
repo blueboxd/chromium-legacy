@@ -102,11 +102,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
                               bool is_new_fc,
                               bool* margins_fully_resolved);
 
-  void StopMarginCollapsing(EMarginCollapse collapse_value,
-                            LayoutUnit this_margin,
-                            LayoutUnit* logical_block_offset,
-                            NGMarginStrut* margin_strut);
-
   // Creates a new constraint space for the current child.
   NGConstraintSpace CreateConstraintSpaceForChild(
       const NGLayoutInputNode child,

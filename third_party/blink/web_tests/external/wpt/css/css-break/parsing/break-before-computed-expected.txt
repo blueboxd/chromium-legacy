@@ -1,15 +1,15 @@
 This is a testharness.js-based test.
-PASS Property break-before value 'auto' computes to 'auto'
-PASS Property break-before value 'avoid' computes to 'avoid'
-PASS Property break-before value 'avoid-page' computes to 'avoid-page'
-PASS Property break-before value 'page' computes to 'page'
-PASS Property break-before value 'left' computes to 'left'
-PASS Property break-before value 'right' computes to 'right'
-PASS Property break-before value 'recto' computes to 'recto'
-PASS Property break-before value 'verso' computes to 'verso'
-PASS Property break-before value 'avoid-column' computes to 'avoid-column'
-PASS Property break-before value 'column' computes to 'column'
-FAIL Property break-before value 'avoid-region' computes to 'avoid-region' assert_true: 'avoid-region' is a supported value for break-before. expected true got false
-FAIL Property break-before value 'region' computes to 'region' assert_true: 'region' is a supported value for break-before. expected true got false
+PASS Property break-before value 'auto'
+PASS Property break-before value 'avoid'
+PASS Property break-before value 'avoid-page'
+PASS Property break-before value 'page'
+PASS Property break-before value 'left'
+PASS Property break-before value 'right'
+PASS Property break-before value 'recto'
+PASS Property break-before value 'verso'
+PASS Property break-before value 'avoid-column'
+PASS Property break-before value 'column'
+FAIL Property break-before value 'avoid-region' assert_true: 'avoid-region' is a supported value for break-before. expected true got false
+FAIL Property break-before value 'region' assert_true: 'region' is a supported value for break-before. expected true got false
 Harness: the test ran to completion.
 

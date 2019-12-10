@@ -753,6 +753,19 @@ void FrameFetchContext::AddClientHintsIfNecessary(
             mojom::WebClientHintsType::kUAModel)],
         AddQuotes(ua.model));
   }
+
+  if ((can_always_send_hints ||
+       (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() &&
+        policy->IsFeatureEnabledForOrigin(
+            mojom::FeaturePolicyFeature::kClientHintUAMobile,
+            resource_origin))) &&
+      ShouldSendClientHint(mojom::WebClientHintsType::kUAMobile,
+                           hints_preferences, enabled_hints)) {
+    request.SetHttpHeaderField(
+        blink::kClientHintsHeaderMapping[static_cast<size_t>(
+            mojom::WebClientHintsType::kUAMobile)],
+        ua.mobile ? "?1" : "?0");
+  }
 }
 
 void FrameFetchContext::PopulateResourceRequest(

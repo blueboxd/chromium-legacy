@@ -10,10 +10,12 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/chrome_extension_browser_constants.h"
+#include "chrome/browser/extensions/extension_checkup.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
@@ -35,6 +37,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_urls.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -308,6 +311,39 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
   source->AddBoolean(kShowActivityLogKey,
                      base::CommandLine::ForCurrentProcess()->HasSwitch(
                          ::switches::kEnableExtensionActivityLogging));
+
+  bool checkup_enabled =
+      base::FeatureList::IsEnabled(extensions_features::kExtensionsCheckup);
+  source->AddBoolean("showCheckup", checkup_enabled);
+  if (checkup_enabled) {
+    int title_id = 0;
+    int body1_id = 0;
+    int body2_id = 0;
+    switch (GetCheckupMessageFocus()) {
+      case CheckupMessage::PERFORMANCE:
+        title_id = IDS_EXTENSIONS_CHECKUP_BANNER_PERFORMANCE_TITLE;
+        body1_id = IDS_EXTENSIONS_CHECKUP_BANNER_PERFORMANCE_BODY1;
+        body2_id = IDS_EXTENSIONS_CHECKUP_BANNER_PERFORMANCE_BODY2;
+        break;
+      case CheckupMessage::PRIVACY:
+        title_id = IDS_EXTENSIONS_CHECKUP_BANNER_PRIVACY_TITLE;
+        body1_id = IDS_EXTENSIONS_CHECKUP_BANNER_PRIVACY_BODY1;
+        body2_id = IDS_EXTENSIONS_CHECKUP_BANNER_PRIVACY_BODY2;
+        break;
+      case CheckupMessage::NEUTRAL:
+        title_id = IDS_EXTENSIONS_CHECKUP_BANNER_NEUTRAL_TITLE;
+        body1_id = IDS_EXTENSIONS_CHECKUP_BANNER_NEUTRAL_BODY1;
+        body2_id = IDS_EXTENSIONS_CHECKUP_BANNER_NEUTRAL_BODY2;
+        break;
+    }
+    source->AddLocalizedString("checkupTitle", title_id);
+    source->AddLocalizedString("checkupBody1", body1_id);
+    source->AddLocalizedString("checkupBody2", body2_id);
+  } else {
+    source->AddString("checkupTitle", "");
+    source->AddString("checkupBody1", "");
+    source->AddString("checkupBody2", "");
+  }
   source->AddString(kLoadTimeClassesKey, GetLoadTimeClasses(in_dev_mode));
 
   return source;

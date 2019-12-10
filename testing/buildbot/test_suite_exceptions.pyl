@@ -115,6 +115,13 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.browser_tests.filter',
         ],
       },
+      'linux-chromeos-chrome': {
+        # TODO(https://crbug.com/932269): Promote out of experiment when the
+        # tests are green.
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.browser_tests.filter',
+        ],
+      },
       # chromium.chromiumos
       'linux-chromeos-dbg': {
         'swarming': {
@@ -890,6 +897,12 @@
           '--gtest_filter=-SadTabViewInteractiveUITest.ReloadMultipleSadTabs',
         ],
       },
+      'linux-chromeos-chrome': {
+        # TODO(crbug.com/970649): Remove this filter.
+        'args': [
+          '--gtest_filter=-SadTabViewInteractiveUITest.ReloadMultipleSadTabs',
+        ],
+      },
     },
   },
   'ipc_tests': {
@@ -1060,6 +1073,12 @@
         },
       },
       'chromeos-betty-google-rel': {
+        # TODO(crbug.com/986904): Remove this filter.
+        'args': [
+          '--gtest_filter=-NetworkQualityEstimatorTest.TestTCPSocketRTT',
+        ],
+      },
+      'chromeos-betty-chrome': {
         # TODO(crbug.com/986904): Remove this filter.
         'args': [
           '--gtest_filter=-NetworkQualityEstimatorTest.TestTCPSocketRTT',
@@ -1310,6 +1329,13 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.browser_tests.filter',
         ],
       },
+      'linux-chromeos-chrome': {
+        # TODO(https://crbug.com/932269): Promote out of experiment when the
+        # tests are green.
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.browser_tests.filter',
+        ],
+      },
       # chromium.chromiumos
       'linux-chromeos-dbg': {
         'swarming': {
@@ -1401,6 +1427,21 @@
         ],
       },
       'linux-chromeos-google-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.ozone_unittests.filter',
+        ],
+      },
+      'chromeos-betty-chrome': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.ozone_unittests.filter',
+        ],
+      },
+      'chromeos-betty-pi-arc-chrome': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.ozone_unittests.filter',
+        ],
+      },
+      'linux-chromeos-chrome': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.ozone_unittests.filter',
         ],
@@ -1812,6 +1853,11 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.unit_tests.filter',
         ],
       },
+      'linux-chromeos-chrome': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.unit_tests.filter',
+        ],
+      },
       'android-pie-arm64-rel': {
         'experiment_percentage': 100, # https://crbug.com/1010211
       },
@@ -2009,7 +2055,7 @@
       'linux-oor-cors-rel': {
         'args': [
           '--additional-driver-flag=--enable-features=OutOfBlinkCors',
-          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=OutOfBlinkCors'
+          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=OutOfBlinkCors',
           '--fuzzy-diff',
         ],
       },

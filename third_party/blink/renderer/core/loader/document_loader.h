@@ -111,6 +111,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
  public:
   DocumentLoader(LocalFrame*,
                  WebNavigationType navigation_type,
+                 base::Optional<ContentSecurityPolicy*> content_security_policy,
                  std::unique_ptr<WebNavigationParams> navigation_params);
   ~DocumentLoader() override;
 

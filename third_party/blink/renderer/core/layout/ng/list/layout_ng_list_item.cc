@@ -151,7 +151,8 @@ void LayoutNGListItem::UpdateMarker() {
   const ComputedStyle* cached_marker_style =
       list_item->IsPseudoElement()
           ? nullptr
-          : ToElement(list_item)->CachedStyleForPseudoElement(kPseudoIdMarker);
+          : To<Element>(list_item)->CachedStyleForPseudoElement(
+                kPseudoIdMarker);
   if (cached_marker_style && cached_marker_style->GetContentData()) {
     // Don't create an anonymous layout for the marker, it will be generated
     // by the ::marker pseudo-element.

@@ -60,8 +60,7 @@ TEST_F(VideoFillingViewportTest, MostlyFillingViewport) {
   )HTML");
   Compositor().BeginFrame();
 
-  HTMLVideoElement* element =
-      ToElement<HTMLVideoElement>(GetDocument().getElementById("video"));
+  auto* element = To<HTMLVideoElement>(GetDocument().getElementById("video"));
 
   ActivateViewportIntersectionMonitoring(element, true);
   DoCompositeAndPropagate();
@@ -85,8 +84,7 @@ TEST_F(VideoFillingViewportTest, NotMostlyFillingViewport) {
   )HTML");
   Compositor().BeginFrame();
 
-  HTMLVideoElement* element =
-      ToElement<HTMLVideoElement>(GetDocument().getElementById("video"));
+  auto* element = To<HTMLVideoElement>(GetDocument().getElementById("video"));
   ActivateViewportIntersectionMonitoring(element, true);
   DoCompositeAndPropagate();
   EXPECT_FALSE(IsMostlyFillingViewport(element));
@@ -105,8 +103,7 @@ TEST_F(VideoFillingViewportTest, FillingViewportChanged) {
   )HTML");
   Compositor().BeginFrame();
 
-  HTMLVideoElement* element =
-      ToElement<HTMLVideoElement>(GetDocument().getElementById("video"));
+  auto* element = To<HTMLVideoElement>(GetDocument().getElementById("video"));
 
   ActivateViewportIntersectionMonitoring(element, true);
   DoCompositeAndPropagate();
@@ -132,8 +129,7 @@ TEST_F(VideoFillingViewportTest, LargeVideo) {
   )HTML");
   Compositor().BeginFrame();
 
-  HTMLVideoElement* element =
-      ToElement<HTMLVideoElement>(GetDocument().getElementById("video"));
+  auto* element = To<HTMLVideoElement>(GetDocument().getElementById("video"));
 
   ActivateViewportIntersectionMonitoring(element, true);
   DoCompositeAndPropagate();
@@ -153,8 +149,7 @@ TEST_F(VideoFillingViewportTest, VideoScrollOutHalf) {
   )HTML");
   Compositor().BeginFrame();
 
-  HTMLVideoElement* element =
-      ToElement<HTMLVideoElement>(GetDocument().getElementById("video"));
+  auto* element = To<HTMLVideoElement>(GetDocument().getElementById("video"));
 
   ActivateViewportIntersectionMonitoring(element, true);
   DoCompositeAndPropagate();

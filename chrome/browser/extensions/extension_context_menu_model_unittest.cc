@@ -1172,6 +1172,131 @@ TEST_F(ExtensionContextMenuModelTest, PageAccessMenuOptions) {
   }
 }
 
+// Test that changing to 'run on site' while already having an all_url like
+// pattern actually removes the broad pattern to restrict to the site.
+TEST_F(ExtensionContextMenuModelTest, PageAccessSubmenu_OnSiteWithAllURLs) {
+  InitializeEmptyExtensionService();
+
+  // For laziness.
+  using Entries = ExtensionContextMenuModel::MenuEntries;
+  const Entries kOnClick = Entries::PAGE_ACCESS_RUN_ON_CLICK;
+  const Entries kOnSite = Entries::PAGE_ACCESS_RUN_ON_SITE;
+  const Entries kOnAllSites = Entries::PAGE_ACCESS_RUN_ON_ALL_SITES;
+
+  // Add an extension with all urls, and withhold permissions.
+  const Extension* extension =
+      AddExtensionWithHostPermission("extension", manifest_keys::kBrowserAction,
+                                     Manifest::INTERNAL, "<all_urls>");
+  ScriptingPermissionsModifier(profile(), extension)
+      .SetWithholdHostPermissions(true);
+
+  // Grant the extension the all_urls pattern.
+  URLPattern pattern(UserScript::ValidUserScriptSchemes(false), "<all_urls>");
+  permissions_test_util::GrantRuntimePermissionsAndWaitForCompletion(
+      profile(), *extension,
+      PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
+                    URLPatternSet({pattern}), URLPatternSet()));
+  ScriptingPermissionsModifier modifier(profile(), extension);
+  EXPECT_TRUE(modifier.HasWithheldHostPermissions());
+
+  const GURL kActiveUrl("http://www.example.com/");
+  const GURL kOtherUrl("http://www.google.com/");
+
+  // Now it should look like it can run on all sites and have access to both
+  // urls.
+  AddTab(kActiveUrl);
+  ExtensionContextMenuModel menu(extension, GetBrowser(),
+                                 ExtensionContextMenuModel::VISIBLE, nullptr,
+                                 true);
+  EXPECT_TRUE(HasPageAccessSubmenu(menu));
+  EXPECT_FALSE(menu.IsCommandIdChecked(kOnClick));
+  EXPECT_FALSE(menu.IsCommandIdChecked(kOnSite));
+  EXPECT_TRUE(menu.IsCommandIdChecked(kOnAllSites));
+
+  EXPECT_TRUE(modifier.HasGrantedHostPermission(kActiveUrl));
+  EXPECT_TRUE(modifier.HasGrantedHostPermission(kOtherUrl));
+
+  // Change mode to "Run on site".
+  menu.ExecuteCommand(kOnSite, 0);
+  EXPECT_FALSE(menu.IsCommandIdChecked(kOnClick));
+  EXPECT_TRUE(menu.IsCommandIdChecked(kOnSite));
+  EXPECT_FALSE(menu.IsCommandIdChecked(kOnAllSites));
+
+  // The extension should have access to the active url, but not to another
+  // arbitrary url.
+  EXPECT_TRUE(modifier.HasGrantedHostPermission(kActiveUrl));
+  EXPECT_FALSE(modifier.HasGrantedHostPermission(kOtherUrl));
+}
+
+// Test that changing to 'run on click' while having a broad pattern which
+// doesn't actually overlap the current url, still actually removes that broad
+// pattern and stops showing that the extension can run on all sites.
+// TODO(tjudkins): This test is kind of bizarre in that it highlights a case
+// where the submenu is displaying that extension can read data on all sites,
+// when it can't actually read the site it is currently on. We should revisit
+// what exactly the submenu should be conveying to the user about the current
+// page and how that relates to the similar set of information on the Extension
+// Settings page.
+TEST_F(ExtensionContextMenuModelTest,
+       PageAccessSubmenu_OnClickWithBroadPattern) {
+  InitializeEmptyExtensionService();
+
+  // For laziness.
+  using Entries = ExtensionContextMenuModel::MenuEntries;
+  const Entries kOnClick = Entries::PAGE_ACCESS_RUN_ON_CLICK;
+  const Entries kOnSite = Entries::PAGE_ACCESS_RUN_ON_SITE;
+  const Entries kOnAllSites = Entries::PAGE_ACCESS_RUN_ON_ALL_SITES;
+
+  // Add an extension with all urls, and withhold permissions.
+  const Extension* extension =
+      AddExtensionWithHostPermission("extension", manifest_keys::kBrowserAction,
+                                     Manifest::INTERNAL, "<all_urls>");
+  ScriptingPermissionsModifier modifier(profile(), extension);
+  modifier.SetWithholdHostPermissions(true);
+
+  // Grant the extension a broad pattern which doesn't overlap the active url.
+  URLPattern pattern(UserScript::ValidUserScriptSchemes(false), "*://*.org/*");
+  permissions_test_util::GrantRuntimePermissionsAndWaitForCompletion(
+      profile(), *extension,
+      PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
+                    URLPatternSet({pattern}), URLPatternSet()));
+
+  const GURL kActiveUrl("http://www.example.com/");
+  const GURL kOrgUrl("http://chromium.org/");
+  const GURL kOtherUrl("http://www.google.com/");
+
+  // Also explicitly grant google.com.
+  modifier.GrantHostPermission(kOtherUrl);
+  EXPECT_TRUE(modifier.HasWithheldHostPermissions());
+
+  // The extension will now look like it can run on all sites even though it
+  // can't access the active url.
+  AddTab(kActiveUrl);
+  ExtensionContextMenuModel menu(extension, GetBrowser(),
+                                 ExtensionContextMenuModel::VISIBLE, nullptr,
+                                 true);
+  EXPECT_TRUE(HasPageAccessSubmenu(menu));
+  EXPECT_FALSE(menu.IsCommandIdChecked(kOnClick));
+  EXPECT_FALSE(menu.IsCommandIdChecked(kOnSite));
+  EXPECT_TRUE(menu.IsCommandIdChecked(kOnAllSites));
+
+  EXPECT_FALSE(modifier.HasGrantedHostPermission(kActiveUrl));
+  EXPECT_TRUE(modifier.HasGrantedHostPermission(kOrgUrl));
+  EXPECT_TRUE(modifier.HasGrantedHostPermission(kOtherUrl));
+
+  // Change mode to "Run on click".
+  menu.ExecuteCommand(kOnClick, 0);
+  EXPECT_TRUE(menu.IsCommandIdChecked(kOnClick));
+  EXPECT_FALSE(menu.IsCommandIdChecked(kOnSite));
+  EXPECT_FALSE(menu.IsCommandIdChecked(kOnAllSites));
+
+  // The broad org pattern should have been removed, but the explicit google
+  // pattern should still remain.
+  EXPECT_FALSE(modifier.HasGrantedHostPermission(kActiveUrl));
+  EXPECT_FALSE(modifier.HasGrantedHostPermission(kOrgUrl));
+  EXPECT_TRUE(modifier.HasGrantedHostPermission(kOtherUrl));
+}
+
 TEST_F(ExtensionContextMenuModelTest, PageAccessWithActiveTab) {
   InitializeEmptyExtensionService();
 

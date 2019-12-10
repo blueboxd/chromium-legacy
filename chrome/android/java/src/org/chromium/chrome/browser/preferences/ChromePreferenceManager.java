@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.preferences;
 
-import org.chromium.chrome.browser.crash.MinidumpUploadService.ProcessType;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -37,68 +35,6 @@ public class ChromePreferenceManager {
      */
     public static ChromePreferenceManager getInstance() {
         return LazyHolder.INSTANCE;
-    }
-
-    /**
-     * @return Number of times of successful crash upload.
-     */
-    public int getCrashSuccessUploadCount(@ProcessType String process) {
-        // Convention to keep all the key in preference lower case.
-        return mManager.readInt(successUploadKey(process));
-    }
-
-    public void setCrashSuccessUploadCount(@ProcessType String process, int count) {
-        // Convention to keep all the key in preference lower case.
-        mManager.writeInt(successUploadKey(process), count);
-    }
-
-    public void incrementCrashSuccessUploadCount(@ProcessType String process) {
-        setCrashSuccessUploadCount(process, getCrashSuccessUploadCount(process) + 1);
-    }
-
-    private String successUploadKey(@ProcessType String process) {
-        switch (process) {
-            case ProcessType.BROWSER:
-                return ChromePreferenceKeys.CRASH_UPLOAD_SUCCESS_BROWSER;
-            case ProcessType.RENDERER:
-                return ChromePreferenceKeys.CRASH_UPLOAD_SUCCESS_RENDERER;
-            case ProcessType.GPU:
-                return ChromePreferenceKeys.CRASH_UPLOAD_SUCCESS_GPU;
-            case ProcessType.OTHER:
-                return ChromePreferenceKeys.CRASH_UPLOAD_SUCCESS_OTHER;
-            default:
-                throw new IllegalArgumentException("Process type unknown: " + process);
-        }
-    }
-
-    /**
-     * @return Number of times of failure crash upload after reaching the max number of tries.
-     */
-    public int getCrashFailureUploadCount(@ProcessType String process) {
-        return mManager.readInt(failureUploadKey(process));
-    }
-
-    public void setCrashFailureUploadCount(@ProcessType String process, int count) {
-        mManager.writeInt(failureUploadKey(process), count);
-    }
-
-    public void incrementCrashFailureUploadCount(@ProcessType String process) {
-        setCrashFailureUploadCount(process, getCrashFailureUploadCount(process) + 1);
-    }
-
-    private String failureUploadKey(@ProcessType String process) {
-        switch (process) {
-            case ProcessType.BROWSER:
-                return ChromePreferenceKeys.CRASH_UPLOAD_FAILURE_BROWSER;
-            case ProcessType.RENDERER:
-                return ChromePreferenceKeys.CRASH_UPLOAD_FAILURE_RENDERER;
-            case ProcessType.GPU:
-                return ChromePreferenceKeys.CRASH_UPLOAD_FAILURE_GPU;
-            case ProcessType.OTHER:
-                return ChromePreferenceKeys.CRASH_UPLOAD_FAILURE_OTHER;
-            default:
-                throw new IllegalArgumentException("Process type unknown: " + process);
-        }
     }
 
     /**

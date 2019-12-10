@@ -953,6 +953,13 @@ static void UpdateCompositorViewportProperties(
     const PaintArtifactCompositor::ViewportProperties& properties,
     PropertyTreeManager& property_tree_manager,
     cc::LayerTreeHost* layer_tree_host) {
+  // The inner and outer viewports' existence is linked. That is, either they're
+  // both null or they both exist.
+  DCHECK_EQ(static_cast<bool>(properties.outer_scroll_translation),
+            static_cast<bool>(properties.inner_scroll_translation));
+  DCHECK(!properties.outer_clip ||
+         static_cast<bool>(properties.inner_scroll_translation));
+
   cc::LayerTreeHost::ViewportPropertyIds ids;
   if (properties.overscroll_elasticity_transform) {
     ids.overscroll_elasticity_transform =
@@ -975,11 +982,8 @@ static void UpdateCompositorViewportProperties(
       ids.outer_scroll = property_tree_manager.EnsureCompositorScrollNode(
           *properties.outer_scroll_translation);
     }
-  } else {
-    // Outer viewport properties exist only if inner viewport property exists.
-    DCHECK(!properties.outer_clip);
-    DCHECK(!properties.outer_scroll_translation);
   }
+
   layer_tree_host->RegisterViewportPropertyIds(ids);
 }
 

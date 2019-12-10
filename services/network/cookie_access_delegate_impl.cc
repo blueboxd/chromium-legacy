@@ -28,10 +28,10 @@ net::CookieAccessSemantics CookieAccessDelegateImpl::GetAccessSemantics(
 
 bool CookieAccessDelegateImpl::ShouldIgnoreSameSiteRestrictions(
     const GURL& url,
-    const GURL& site_for_cookies) const {
+    const net::SiteForCookies& site_for_cookies) const {
   if (cookie_settings_) {
-    return cookie_settings_->ShouldIgnoreSameSiteRestrictions(url,
-                                                              site_for_cookies);
+    return cookie_settings_->ShouldIgnoreSameSiteRestrictions(
+        url, site_for_cookies.RepresentativeUrl());
   }
   return false;
 }

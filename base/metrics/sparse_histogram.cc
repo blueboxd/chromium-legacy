@@ -117,7 +117,8 @@ void SparseHistogram::AddCount(Sample value, int count) {
     unlogged_samples_->Accumulate(value, count);
   }
 
-  FindAndRunCallback(value);
+  if (UNLIKELY(StatisticsRecorder::have_active_callbacks()))
+    FindAndRunCallback(value);
 }
 
 std::unique_ptr<HistogramSamples> SparseHistogram::SnapshotSamples() const {

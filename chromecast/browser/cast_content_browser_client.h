@@ -62,6 +62,7 @@ class CastWindowManager;
 class CastFeatureListCreator;
 class GeneralAudienceBrowsingService;
 class MemoryPressureControllerImpl;
+class ServiceConnector;
 
 namespace media {
 class MediaCapsImpl;
@@ -94,6 +95,11 @@ class CastContentBrowserClient
   static std::vector<std::string> GetCorsExemptHeadersList();
 
   ~CastContentBrowserClient() override;
+
+  // Creates a ServiceConnector for routing Cast-related service interface
+  // binding requests.
+  virtual std::unique_ptr<chromecast::ServiceConnector>
+  CreateServiceConnector();
 
   // Creates and returns the CastService instance for the current process.
   virtual std::unique_ptr<CastService> CreateCastService(

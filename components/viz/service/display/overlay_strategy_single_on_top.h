@@ -7,15 +7,13 @@
 
 #include "base/macros.h"
 #include "components/viz/service/display/overlay_candidate.h"
-#include "components/viz/service/display/overlay_processor.h"
+#include "components/viz/service/display/overlay_processor_using_strategy.h"
 #include "components/viz/service/viz_service_export.h"
 
 namespace viz {
 
-class OverlayCandidateValidatorStrategy;
-
 class VIZ_SERVICE_EXPORT OverlayStrategySingleOnTop
-    : public OverlayProcessor::Strategy {
+    : public OverlayProcessorUsingStrategy::Strategy {
  public:
   explicit OverlayStrategySingleOnTop(
       OverlayCandidateValidatorStrategy* capability_checker);

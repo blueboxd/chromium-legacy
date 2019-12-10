@@ -44,7 +44,7 @@ class WebSocketStreamCreateTestBase : public WithTaskEnvironment {
       const GURL& socket_url,
       const std::vector<std::string>& sub_protocols,
       const url::Origin& origin,
-      const GURL& site_for_cookies,
+      const SiteForCookies& site_for_cookies,
       const net::NetworkIsolationKey& network_isolation_key,
       const HttpRequestHeaders& additional_headers,
       std::unique_ptr<base::OneShotTimer> timer);

@@ -12,7 +12,7 @@ import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.settings.themes.ThemePreferences;
-import org.chromium.chrome.test.ui.DummyUiActivity;
+import org.chromium.ui.test.util.DummyUiActivity;
 
 import java.util.Arrays;
 import java.util.List;

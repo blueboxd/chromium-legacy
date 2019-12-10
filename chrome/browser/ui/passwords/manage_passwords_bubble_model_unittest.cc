@@ -252,7 +252,6 @@ ManagePasswordsBubbleModelTest::GetCurrentForms() const {
   autofill::PasswordForm preferred_form(pending_password());
   preferred_form.username_value = base::ASCIIToUTF16("preferred_username");
   preferred_form.password_value = base::ASCIIToUTF16("654321");
-  preferred_form.preferred = true;
 
   std::vector<std::unique_ptr<autofill::PasswordForm>> forms;
   forms.push_back(std::make_unique<autofill::PasswordForm>(form));

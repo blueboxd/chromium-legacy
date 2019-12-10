@@ -277,6 +277,7 @@ void FidoBleConnection::WriteControlPoint(const std::vector<uint8_t>& data,
 
 void FidoBleConnection::OnCreateGattConnection(
     std::unique_ptr<BluetoothGattConnection> connection) {
+  FIDO_LOG(DEBUG) << "GATT connection created";
   DCHECK(pending_connection_callback_);
   connection_ = std::move(connection);
 
@@ -289,10 +290,13 @@ void FidoBleConnection::OnCreateGattConnection(
     return;
   }
 
-  if (device->IsGattServicesDiscoveryComplete())
-    ConnectToFidoService();
-  else
+  if (!device->IsGattServicesDiscoveryComplete()) {
+    FIDO_LOG(DEBUG) << "Waiting for GATT service discovery to complete";
     waiting_for_gatt_discovery_ = true;
+    return;
+  }
+
+  ConnectToFidoService();
 }
 
 void FidoBleConnection::OnCreateGattConnectionError(
@@ -481,8 +485,11 @@ void FidoBleConnection::GattCharacteristicValueChanged(
 
 void FidoBleConnection::GattServicesDiscovered(BluetoothAdapter* adapter,
                                                BluetoothDevice* device) {
-  if (adapter != adapter_ || device->GetAddress() != address_)
+  if (adapter != adapter_ || device->GetAddress() != address_) {
     return;
+  }
+
+  FIDO_LOG(DEBUG) << "GATT services discovered for " << device->GetAddress();
 
   if (waiting_for_gatt_discovery_) {
     waiting_for_gatt_discovery_ = false;

@@ -68,6 +68,11 @@ void ParseAcceptChHeader(const String& header_value,
       mojom::WebClientHintsType::kUAModel,
       enabled_hints.IsEnabled(mojom::WebClientHintsType::kUAModel) &&
           RuntimeEnabledFeatures::UserAgentClientHintEnabled());
+
+  enabled_hints.SetIsEnabled(
+      mojom::WebClientHintsType::kUAMobile,
+      enabled_hints.IsEnabled(mojom::WebClientHintsType::kUAMobile) &&
+          RuntimeEnabledFeatures::UserAgentClientHintEnabled());
 }
 
 }  // namespace

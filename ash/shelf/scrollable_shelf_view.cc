@@ -249,6 +249,13 @@ class ScrollableShelfView::ScrollableShelfArrowView
     bounds.Inset(gfx::Insets(-verticalPadding, -horizontalPadding));
     return bounds.Intersects(rect);
   }
+
+  // Make ScrollRectToVisible a no-op because ScrollableShelfArrowView is
+  // always visible/invisible depending on the layout strategy at fixed
+  // locations. So it does not need to be scrolled to show.
+  // TODO (andrewxu): Moves all of functions related with scrolling into
+  // ScrollableShelfContainerView. Then erase this empty function.
+  void ScrollRectToVisible(const gfx::Rect& rect) override {}
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -300,6 +307,9 @@ class ScrollableShelfContainerView : public ShelfContainerView,
   }
   ~ScrollableShelfContainerView() override = default;
 
+  // ShelfContainerView:
+  void TranslateShelfView(const gfx::Vector2dF& offset) override;
+
  private:
   // views::View:
   void Layout() override;
@@ -312,6 +322,12 @@ class ScrollableShelfContainerView : public ShelfContainerView,
 
   DISALLOW_COPY_AND_ASSIGN(ScrollableShelfContainerView);
 };
+
+void ScrollableShelfContainerView::TranslateShelfView(
+    const gfx::Vector2dF& offset) {
+  ShelfContainerView::TranslateShelfView(
+      scrollable_shelf_view_->ShouldAdaptToRTL() ? -offset : offset);
+}
 
 void ScrollableShelfContainerView::Layout() {
   // Should not use ShelfView::GetPreferredSize in replace of
@@ -519,12 +535,17 @@ gfx::Rect ScrollableShelfView::GetHotseatBackgroundBounds() const {
   return available_space_;
 }
 
+bool ScrollableShelfView::ShouldAdaptToRTL() const {
+  return base::i18n::IsRTL() && GetShelf()->IsHorizontalAlignment();
+}
+
 views::View* ScrollableShelfView::GetShelfContainerViewForTest() {
   return shelf_container_view_;
 }
 
 bool ScrollableShelfView::ShouldAdjustForTest() const {
-  return CalculateAdjustedOffset();
+  return CalculateAdjustmentOffset(CalculateMainAxisScrollDistance(),
+                                   layout_strategy_);
 }
 
 void ScrollableShelfView::SetTestObserver(TestObserver* test_observer) {
@@ -575,8 +596,7 @@ void ScrollableShelfView::StartShelfScrollAnimation(float scroll_distance) {
   animation_settings.SetAnimationMetricsReporter(
       animation_metrics_reporter_.get());
   animation_settings.AddObserver(this);
-  shelf_container_view_->TranslateShelfView(
-      ShouldAdaptToRTL() ? -scroll_offset_ : scroll_offset_);
+  shelf_container_view_->TranslateShelfView(scroll_offset_);
 }
 
 ScrollableShelfView::LayoutStrategy
@@ -598,10 +618,6 @@ ScrollableShelfView::CalculateLayoutStrategy(
 
   // There are invisible shelf buttons at both sides. So show two buttons.
   return kShowButtons;
-}
-
-bool ScrollableShelfView::ShouldAdaptToRTL() const {
-  return base::i18n::IsRTL() && GetShelf()->IsHorizontalAlignment();
 }
 
 bool ScrollableShelfView::ShouldApplyDisplayCentering() const {
@@ -779,8 +795,14 @@ void ScrollableShelfView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void ScrollableShelfView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  const gfx::Vector2dF old_scroll_offset = scroll_offset_;
+
   // The changed view bounds may lead to update on the available space.
   UpdateAvailableSpaceAndScroll();
+
+  // When AdjustOffset() returns true, shelf view is scrolled by animation.
+  if (!AdjustOffset() && old_scroll_offset != scroll_offset_)
+    shelf_container_view_->TranslateShelfView(scroll_offset_);
 }
 
 void ScrollableShelfView::ViewHierarchyChanged(
@@ -794,9 +816,87 @@ void ScrollableShelfView::ViewHierarchyChanged(
   if (!shelf_view_->UpdateVisibleIndices())
     return;
 
+  const gfx::Vector2dF old_scroll_offset = scroll_offset_;
+
   // Adding/removing an icon may change the padding then affect the available
   // space.
   UpdateAvailableSpaceAndScroll();
+
+  if (old_scroll_offset != scroll_offset_)
+    shelf_container_view_->TranslateShelfView(scroll_offset_);
+}
+
+void ScrollableShelfView::ScrollRectToVisible(const gfx::Rect& rect) {
+  // Transform |rect| to local view coordinates taking |scroll_offset_| into
+  // consideration.
+  const bool is_horizontal_alignment = GetShelf()->IsHorizontalAlignment();
+  gfx::Rect rect_after_adjustment = rect;
+  if (is_horizontal_alignment)
+    rect_after_adjustment.Offset(-scroll_offset_.x(), 0);
+  else
+    rect_after_adjustment.Offset(0, -scroll_offset_.y());
+
+  // |rect_after_adjustment| is already shown completely. So scroll is not
+  // needed.
+  if (visible_space_.Contains(rect_after_adjustment)) {
+    AdjustOffset();
+    return;
+  }
+
+  const int original_offset = CalculateMainAxisScrollDistance();
+
+  // |forward| indicates the scroll direction.
+  const bool forward =
+      is_horizontal_alignment
+          ? rect_after_adjustment.right() > visible_space_.right()
+          : rect_after_adjustment.bottom() > visible_space_.bottom();
+
+  // Scrolling |shelf_view_| has the following side-effects:
+  // (1) May change the layout strategy.
+  // (2) May change the visible space.
+  // (3) Must change the scrolling offset.
+  // (4) Must change |rect_after_adjustment|'s coordinates after adjusting the
+  // scroll.
+  LayoutStrategy layout_strategy_after_scroll = layout_strategy_;
+  int main_axis_offset_after_scroll = original_offset;
+  gfx::Rect visible_space_after_scroll = visible_space_;
+  gfx::Rect rect_after_scroll = rect_after_adjustment;
+
+  // In each iteration, it scrolls |shelf_view_| to the neighboring page.
+  // Terminating the loop iteration if:
+  // (1) Find the suitable page which shows |rect| completely.
+  // (2) Cannot scroll |shelf_view_| anymore (it may happen with ChromeVox
+  // enabled).
+  while (!visible_space_after_scroll.Contains(rect_after_scroll)) {
+    int page_scroll_distance =
+        CalculatePageScrollingOffset(forward, layout_strategy_after_scroll);
+
+    // Breaking the while loop if it cannot scroll anymore.
+    if (!page_scroll_distance)
+      break;
+
+    main_axis_offset_after_scroll += page_scroll_distance;
+    main_axis_offset_after_scroll =
+        CalculateClampedScrollOffset(main_axis_offset_after_scroll);
+    layout_strategy_after_scroll =
+        CalculateLayoutStrategy(main_axis_offset_after_scroll);
+    main_axis_offset_after_scroll = CalculateScrollDistanceAfterAdjustment(
+        main_axis_offset_after_scroll, layout_strategy_after_scroll);
+    visible_space_after_scroll =
+        CalculateVisibleSpace(layout_strategy_after_scroll);
+
+    rect_after_scroll = rect_after_adjustment;
+    const int offset_delta = main_axis_offset_after_scroll - original_offset;
+    if (is_horizontal_alignment)
+      rect_after_scroll.Offset(-offset_delta, 0);
+    else
+      rect_after_scroll.Offset(0, -offset_delta);
+  }
+
+  if (!visible_space_after_scroll.Contains(rect_after_scroll))
+    return;
+
+  ScrollToMainOffset(main_axis_offset_after_scroll, /*animating=*/true);
 }
 
 const char* ScrollableShelfView::GetClassName() const {
@@ -837,19 +937,6 @@ void ScrollableShelfView::HandleAccessibleActionScrollToMakeVisible(
     // Only in tablet mode with hotseat enabled, may scrollable shelf be hidden.
     GetShelf()->shelf_widget()->ForceToShowHotseat();
   }
-
-  const int index = shelf_view_->view_model()->GetIndexOfView(button);
-  DCHECK_NE(-1, index);
-
-  // Translates the shelf view if |button| is hidden under the current layout.
-  if (index == 0)
-    ScrollToMainOffset(0, /*animating=*/true);
-  else if (index == shelf_view_->last_visible_index())
-    ScrollToMainOffset(CalculateScrollUpperBound(), /*animating=*/true);
-  else if (index < first_tappable_app_index_)
-    ScrollToNewPage(/*forward=*/false);
-  else if (index > last_tappable_app_index_)
-    ScrollToNewPage(/*forward=*/true);
 }
 
 void ScrollableShelfView::ShowContextMenuForViewImpl(
@@ -983,6 +1070,10 @@ bool ScrollableShelfView::Drag(
 void ScrollableShelfView::OnImplicitAnimationsCompleted() {
   during_scroll_animation_ = false;
   Layout();
+
+  // Notifies ChromeVox of the changed location at the end of animation.
+  shelf_view_->NotifyAccessibilityEvent(ax::mojom::Event::kLocationChanged,
+                                        /*send_native_event=*/true);
 
   if (!drag_icon_.get())
     return;
@@ -1262,8 +1353,7 @@ void ScrollableShelfView::ScrollToMainOffset(float target_offset,
     StartShelfScrollAnimation(target_offset);
   } else {
     UpdateScrollOffset(target_offset);
-    shelf_container_view_->TranslateShelfView(
-        ShouldAdaptToRTL() ? -scroll_offset_ : scroll_offset_);
+    shelf_container_view_->TranslateShelfView(scroll_offset_);
   }
 }
 
@@ -1440,13 +1530,14 @@ void ScrollableShelfView::MaybeUpdateGradientZone(bool is_left_arrow_changed,
     UpdateGradientZone();
 }
 
-int ScrollableShelfView::GetActualScrollOffset() const {
-  int scroll_distance = CalculateMainAxisScrollDistance();
-  if (layout_strategy_ == kShowButtons ||
-      layout_strategy_ == kShowLeftArrowButton) {
-    scroll_distance += (kArrowButtonGroupWidth - GetAppIconEndPadding());
-  }
-  return scroll_distance;
+int ScrollableShelfView::GetActualScrollOffset(
+    int main_axis_scroll_distance,
+    LayoutStrategy layout_strategy) const {
+  return (layout_strategy == kShowButtons ||
+          layout_strategy == kShowLeftArrowButton)
+             ? (main_axis_scroll_distance + kArrowButtonGroupWidth -
+                GetAppIconEndPadding())
+             : main_axis_scroll_distance;
 }
 
 void ScrollableShelfView::UpdateTappableIconIndices() {
@@ -1547,7 +1638,8 @@ bool ScrollableShelfView::ShouldHandleScroll(const gfx::Vector2dF& offset,
 }
 
 bool ScrollableShelfView::AdjustOffset() {
-  const int offset = CalculateAdjustedOffset();
+  const int offset = CalculateAdjustmentOffset(
+      CalculateMainAxisScrollDistance(), layout_strategy_);
 
   // Returns early when it does not need to adjust the shelf view's location.
   if (!offset)
@@ -1561,17 +1653,29 @@ bool ScrollableShelfView::AdjustOffset() {
   return true;
 }
 
-int ScrollableShelfView::CalculateAdjustedOffset() const {
+int ScrollableShelfView::CalculateAdjustmentOffset(
+    int main_axis_scroll_distance,
+    LayoutStrategy layout_strategy) const {
   // Returns early when it does not need to adjust the shelf view's location.
-  const int scroll_distance = CalculateMainAxisScrollDistance();
-  if (scroll_distance >= CalculateScrollUpperBound())
+  if (layout_strategy == kNotShowArrowButtons ||
+      main_axis_scroll_distance >= CalculateScrollUpperBound()) {
     return 0;
+  }
 
-  const int remainder = GetActualScrollOffset() % GetUnit();
+  const int remainder =
+      GetActualScrollOffset(main_axis_scroll_distance, layout_strategy) %
+      GetUnit();
   int offset = remainder > GetGestureDragThreshold() ? GetUnit() - remainder
                                                      : -remainder;
 
   return offset;
+}
+
+int ScrollableShelfView::CalculateScrollDistanceAfterAdjustment(
+    int main_axis_scroll_distance,
+    LayoutStrategy layout_strategy) const {
+  return main_axis_scroll_distance +
+         CalculateAdjustmentOffset(main_axis_scroll_distance, layout_strategy);
 }
 
 void ScrollableShelfView::UpdateAvailableSpace() {
@@ -1593,18 +1697,24 @@ void ScrollableShelfView::UpdateAvailableSpace() {
                                                : padding_insets_.top());
 }
 
-void ScrollableShelfView::UpdateVisibleSpace() {
+gfx::Rect ScrollableShelfView::CalculateVisibleSpace(
+    LayoutStrategy layout_strategy) const {
   const bool in_hotseat_tablet =
       chromeos::switches::ShouldShowShelfHotseat() && IsInTabletMode();
-  if (layout_strategy_ == kNotShowArrowButtons && !in_hotseat_tablet) {
-    visible_space_ = GetLocalBounds();
-    return;
-  }
+  if (layout_strategy == kNotShowArrowButtons && !in_hotseat_tablet)
+    return GetLocalBounds();
+
+  const bool should_show_left_arrow =
+      (layout_strategy == kShowLeftArrowButton) ||
+      (layout_strategy == kShowButtons);
+  const bool should_show_right_arrow =
+      (layout_strategy == kShowRightArrowButton) ||
+      (layout_strategy == kShowButtons);
 
   const int before_padding =
-      (ShouldShowLeftArrow() ? kArrowButtonGroupWidth : 0);
+      (should_show_left_arrow ? kArrowButtonGroupWidth : 0);
   const int after_padding =
-      (ShouldShowRightArrow() ? kArrowButtonGroupWidth : 0);
+      (should_show_right_arrow ? kArrowButtonGroupWidth : 0);
 
   gfx::Insets visible_space_insets;
   if (ShouldAdaptToRTL()) {
@@ -1617,10 +1727,10 @@ void ScrollableShelfView::UpdateVisibleSpace() {
   }
   visible_space_insets -= CalculateRipplePaddingInsets();
 
-  visible_space_ = available_space_;
-  visible_space_.Inset(visible_space_insets);
+  gfx::Rect visible_space = available_space_;
+  visible_space.Inset(visible_space_insets);
 
-  shelf_container_view_->layer()->SetClipRect(visible_space_);
+  return visible_space;
 }
 
 gfx::Insets ScrollableShelfView::CalculateRipplePaddingInsets() const {
@@ -1742,7 +1852,9 @@ bool ScrollableShelfView::UpdateScrollOffset(float target_offset) {
     InvalidateLayout();
   }
 
-  UpdateVisibleSpace();
+  visible_space_ = CalculateVisibleSpace(layout_strategy_);
+  shelf_container_view_->layer()->SetClipRect(visible_space_);
+
   UpdateTappableIconIndices();
 
   return strategy_needs_update;
@@ -1751,10 +1863,6 @@ bool ScrollableShelfView::UpdateScrollOffset(float target_offset) {
 void ScrollableShelfView::UpdateAvailableSpaceAndScroll() {
   UpdateAvailableSpace();
   UpdateScrollOffset(CalculateMainAxisScrollDistance());
-
-  // If scroll animation is not generated, translates the shelf view explicitly.
-  if (!AdjustOffset())
-    shelf_container_view_->TranslateShelfView(scroll_offset_);
 }
 
 }  // namespace ash

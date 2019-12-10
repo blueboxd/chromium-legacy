@@ -129,7 +129,7 @@ bool NetworkDelegate::CanSetCookie(const URLRequest& request,
 
 bool NetworkDelegate::ForcePrivacyMode(
     const GURL& url,
-    const GURL& site_for_cookies,
+    const SiteForCookies& site_for_cookies,
     const base::Optional<url::Origin>& top_frame_origin) const {
   TRACE_EVENT0(NetTracingCategory(), "NetworkDelegate::ForcePrivacyMode");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

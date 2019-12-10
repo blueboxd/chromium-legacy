@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "chromecast/external_mojo/public/mojom/connector.mojom.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
@@ -37,7 +37,7 @@ class ExternalService : public external_mojo::mojom::ExternalService {
   // will not be called after this ExternalService instance is destroyed.
   template <typename Interface>
   void AddInterface(
-      base::RepeatingCallback<void(mojo::InterfaceRequest<Interface>)>
+      base::RepeatingCallback<void(mojo::PendingReceiver<Interface>)>
           bind_callback) {
     RemoveInterface<Interface>();
     AddInterface(Interface::Name_, std::make_unique<CallbackBinder<Interface>>(
@@ -67,7 +67,7 @@ class ExternalService : public external_mojo::mojom::ExternalService {
   class CallbackBinder : public Binder {
    public:
     CallbackBinder(
-        base::RepeatingCallback<void(mojo::InterfaceRequest<Interface>)>
+        base::RepeatingCallback<void(mojo::PendingReceiver<Interface>)>
             bind_callback)
         : bind_callback_(bind_callback) {}
 
@@ -75,11 +75,11 @@ class ExternalService : public external_mojo::mojom::ExternalService {
     // Binder implementation:
     void BindInterface(const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
-      mojo::InterfaceRequest<Interface> request(std::move(interface_pipe));
-      bind_callback_.Run(std::move(request));
+      mojo::PendingReceiver<Interface> receiver(std::move(interface_pipe));
+      bind_callback_.Run(std::move(receiver));
     }
 
-    base::RepeatingCallback<void(mojo::InterfaceRequest<Interface>)>
+    base::RepeatingCallback<void(mojo::PendingReceiver<Interface>)>
         bind_callback_;
 
     DISALLOW_COPY_AND_ASSIGN(CallbackBinder);

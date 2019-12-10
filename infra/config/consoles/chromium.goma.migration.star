@@ -861,6 +861,50 @@ luci.console_view(
             short_name = 'rel',
         ),
         luci.console_view_entry(
+            builder = 'ci/Dawn Win10 x64 Builder',
+            category = 'win|week2|dawn',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Dawn Win10 x64 DEPS Builder',
+            category = 'win|week2|dawn',
+            short_name = 'deps',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/GPU Win x64 Builder (dbg)',
+            category = 'win|week2|gpu',
+            short_name = 'dbg',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/GPU FYI XR Win x64 Builder',
+            category = 'win|week2|gpu|fyi',
+            short_name = 'xr',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/GPU FYI Win x64 dEQP Builder',
+            category = 'win|week2|gpu|fyi',
+            short_name = 'deqp',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/GPU FYI Win x64 DX12 Vulkan Builder',
+            category = 'win|week2|gpu|fyi|dx12',
+            short_name = 'rel',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/GPU FYI Win x64 DX12 Vulkan Builder (dbg)',
+            category = 'win|week2|gpu|fyi|dx12',
+            short_name = 'dbg',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/GPU FYI Win x64 Builder',
+            category = 'win|week2|gpu|fyi',
+            short_name = 'rel',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/GPU FYI Win x64 Builder (dbg)',
+            category = 'win|week2|gpu|fyi',
+            short_name = 'dbg',
+        ),
+        luci.console_view_entry(
             builder = 'ci/linux-chromeos-dbg',
             category = 'cros|week1',
             short_name = 'dbg',

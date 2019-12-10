@@ -67,6 +67,34 @@ const char kManifest1Contents[] =
     "NETWORK:\n"
     "*\n";
 
+// By default, kManifest2Contents is served from a path in /files/, so any
+// resource listing in it that references outside of that path will require a
+// scope override to be stored.
+const char kManifest2Contents[] =
+    "CACHE MANIFEST\n"
+    "explicit1\n"
+    "CHROMIUM-INTERCEPT:\n"
+    "intercept1 return intercept1a\n"
+    "/bar/intercept2 return intercept2a\n"
+    "FALLBACK:\n"
+    "fallback1 fallback1a\n"
+    "/bar/fallback2 fallback2a\n"
+    "NETWORK:\n"
+    "*\n";
+
+const char kScopeManifestContents[] =
+    "CACHE MANIFEST\n"
+    "CHROMIUM-INTERCEPT:\n"
+    "/bar/foo return /intercept-newbar/foo\n"
+    "/bar/baz/foo return /intercept-newbar/newbaz/foo\n"
+    "/other/foo return /intercept-newother/foo\n"
+    "/ return /intercept-newroot/foo\n"
+    "FALLBACK:\n"
+    "/bar/foo /fallback-newbar/foo\n"
+    "/bar/baz/foo /fallback-newbar/newbaz/foo\n"
+    "/other/foo /fallback-newother/foo\n"
+    "/ /fallback-newroot/foo\n";
+
 // There are a handful of http accessible resources that we need to conduct
 // these tests. Instead of running a seperate server to host these resources,
 // we mock them up.
@@ -82,6 +110,15 @@ class MockHttpServer {
 
   static GURL GetMockCrossOriginHttpsUrl(const std::string& path) {
     return GURL("https://cross_origin_host/" + path);
+  }
+
+  static std::string GetManifestHeadersWithScope(std::string scope) {
+    return "HTTP/1.1 200 OK\n"
+           "Content-type: text/cache-manifest\n"
+           "X-AppCache-Allowed: " +
+           scope +
+           "\n"
+           "\n";
   }
 
   static void GetMockResponse(const std::string& path,
@@ -137,15 +174,27 @@ class MockHttpServer {
     } else if (path == "/files/fallback1a") {
       (*headers) = std::string(ok_headers, base::size(ok_headers));
       (*body) = "fallback1a";
+    } else if (path == "/files/fallback2a") {
+      (*headers) = std::string(ok_headers, base::size(ok_headers));
+      (*body) = "fallback2a";
     } else if (path == "/files/intercept1a") {
       (*headers) = std::string(ok_headers, base::size(ok_headers));
       (*body) = "intercept1a";
+    } else if (path == "/files/intercept2a") {
+      (*headers) = std::string(ok_headers, base::size(ok_headers));
+      (*body) = "intercept2a";
     } else if (path == "/files/gone") {
       (*headers) = std::string(gone_headers, base::size(gone_headers));
       (*body) = "";
     } else if (path == "/files/manifest1") {
       (*headers) = std::string(manifest_headers, base::size(manifest_headers));
       (*body) = kManifest1Contents;
+    } else if (path == "/files/manifest2") {
+      (*headers) = std::string(manifest_headers, base::size(manifest_headers));
+      (*body) = kManifest2Contents;
+    } else if (path == "/files/manifest2-with-root-override") {
+      (*headers) = GetManifestHeadersWithScope("/");
+      (*body) = kManifest2Contents;
     } else if (path == "/files/manifest1-with-notmodified") {
       (*headers) = std::string(manifest_headers, base::size(manifest_headers));
       (*body) = kManifest1Contents;
@@ -212,6 +261,34 @@ class MockHttpServer {
     } else if (path == "/files/no-store-headers") {
       (*headers) = std::string(no_store_headers, base::size(no_store_headers));
       (*body) = "no-store";
+    } else if (path == "/intercept-newbar/foo" ||
+               path == "/intercept-newbar/newbaz/foo" ||
+               path == "/intercept-newother/foo" ||
+               path == "/intercept-newroot/foo" ||
+               path == "/fallback-newbar/foo" ||
+               path == "/fallback-newbar/newbaz/foo" ||
+               path == "/fallback-newother/foo" ||
+               path == "/fallback-newroot/foo") {
+      // Store mock responses for fallback resources needed by
+      // kScopeManifestContents.
+      (*headers) = std::string(ok_headers, base::size(ok_headers));
+      (*body) = "intercept/fallback contents";
+    } else if (path == "/manifest-no-override" ||
+               path == "/bar/manifest-no-override") {
+      (*headers) = std::string(manifest_headers, base::size(manifest_headers));
+      (*body) = kScopeManifestContents;
+    } else if (path == "/manifest-root-override" ||
+               path == "/bar/manifest-root-override") {
+      (*headers) = GetManifestHeadersWithScope("/");
+      (*body) = kScopeManifestContents;
+    } else if (path == "/manifest-bar-override" ||
+               path == "/bar/manifest-bar-override") {
+      (*headers) = GetManifestHeadersWithScope("/bar/");
+      (*body) = kScopeManifestContents;
+    } else if (path == "/manifest-other-override" ||
+               path == "/bar/manifest-other-override") {
+      (*headers) = GetManifestHeadersWithScope("/other/");
+      (*body) = kScopeManifestContents;
     } else {
       (*headers) =
           std::string(not_found_headers, base::size(not_found_headers));
@@ -555,6 +632,12 @@ bool InterceptRequest(URLLoaderInterceptor::RequestParams* params) {
 class AppCacheUpdateJobTest : public testing::Test,
                               public AppCacheGroup::UpdateObserver {
  public:
+  enum class ScopeType {
+    kScopeRoot,
+    kScopeBar,
+    kScopeOther,
+  };
+
   AppCacheUpdateJobTest()
       : do_checks_after_update_finished_(false),
         expect_group_obsolete_(false),
@@ -951,10 +1034,14 @@ class AppCacheUpdateJobTest : public testing::Test,
     WaitForUpdateToFinish();
   }
 
-  void UpgradeManifestDataUnchangedTest() {
+  void UpgradeManifestDataChangedScopeUnchangedTest() {
     MakeService();
+    // URL path /files/manifest2-with-root-override has a cached scope of "/".
+    // The path has a scope override of "/", so the fetched scope will be "/"
+    // and no scope change will occur.
     group_ = base::MakeRefCounted<AppCacheGroup>(
-        service_->storage(), MockHttpServer::GetMockUrl("files/manifest1"),
+        service_->storage(),
+        MockHttpServer::GetMockUrl("files/manifest2-with-root-override"),
         service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
@@ -964,7 +1051,169 @@ class AppCacheUpdateJobTest : public testing::Test,
     response_writer_ =
         service_->storage()->CreateResponseWriter(group_->manifest_url());
 
-    AppCache* cache = MakeCacheForGroup(1, response_writer_->response_id());
+    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(),
+                                        response_writer_->response_id());
+    MockFrontend* frontend1 = MakeMockFrontend();
+    MockFrontend* frontend2 = MakeMockFrontend();
+    AppCacheHost* host1 = MakeHost(frontend1);
+    AppCacheHost* host2 = MakeHost(frontend2);
+    host1->AssociateCompleteCache(cache);
+    host2->AssociateCompleteCache(cache);
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = true;
+    expect_old_cache_ = cache;
+    tested_manifest_ = MANIFEST2_WITH_ROOT_SCOPE;
+
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+
+    // Seed storage with manifest1 contents.  The result should be that the
+    // manifest2 fetch results in different byte-for-byte data.
+    const std::string seed_data(kManifest1Contents);
+    scoped_refptr<net::StringIOBuffer> io_buffer =
+        base::MakeRefCounted<net::StringIOBuffer>(seed_data);
+    response_writer_->WriteData(
+        io_buffer.get(), seed_data.length(),
+        base::BindOnce(
+            &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
+            base::Unretained(this)));
+
+    // Start update after data write completes asynchronously.
+  }
+
+  void UpgradeManifestDataChangedScopeChangedTest() {
+    MakeService();
+    // URL path /files/manifest2 has a cached scope of "/".  The path has no
+    // scope override, so the fetched scope will be "/files/" and a scope change
+    // will occur.
+    group_ = base::MakeRefCounted<AppCacheGroup>(
+        service_->storage(), MockHttpServer::GetMockUrl("files/manifest2"),
+        service_->storage()->NewGroupId());
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
+    group_->update_job_ = update;
+
+    // Create response writer to get a response id.
+    response_writer_ =
+        service_->storage()->CreateResponseWriter(group_->manifest_url());
+
+    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(),
+                                        response_writer_->response_id());
+    MockFrontend* frontend1 = MakeMockFrontend();
+    MockFrontend* frontend2 = MakeMockFrontend();
+    AppCacheHost* host1 = MakeHost(frontend1);
+    AppCacheHost* host2 = MakeHost(frontend2);
+    host1->AssociateCompleteCache(cache);
+    host2->AssociateCompleteCache(cache);
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = true;
+    expect_old_cache_ = cache;
+    tested_manifest_ = MANIFEST2_WITH_FILES_SCOPE;
+
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+
+    // Seed storage with manifest1 contents.  The result should be that the
+    // manifest2 fetch results in different byte-for-byte data.
+    const std::string seed_data(kManifest1Contents);
+    scoped_refptr<net::StringIOBuffer> io_buffer =
+        base::MakeRefCounted<net::StringIOBuffer>(seed_data);
+    response_writer_->WriteData(
+        io_buffer.get(), seed_data.length(),
+        base::BindOnce(
+            &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
+            base::Unretained(this)));
+
+    // Start update after data write completes asynchronously.
+  }
+
+  void UpgradeManifestDataUnchangedScopeUnchangedTest() {
+    MakeService();
+    // URL path /files/manifest2-with-root-override has a cached scope of "/".
+    // The path has a scope override of "/", so the fetched scope will be "/"
+    // and no scope change will occur.
+    group_ = base::MakeRefCounted<AppCacheGroup>(
+        service_->storage(),
+        MockHttpServer::GetMockUrl("files/manifest2-with-root-override"),
+        service_->storage()->NewGroupId());
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
+    group_->update_job_ = update;
+
+    // Create response writer to get a response id.
+    response_writer_ =
+        service_->storage()->CreateResponseWriter(group_->manifest_url());
+
+    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(),
+                                        response_writer_->response_id());
     MockFrontend* frontend1 = MakeMockFrontend();
     MockFrontend* frontend2 = MakeMockFrontend();
     AppCacheHost* host1 = MakeHost(frontend1);
@@ -987,7 +1236,82 @@ class AppCacheUpdateJobTest : public testing::Test,
         blink::mojom::AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
 
     // Seed storage with expected manifest data.
-    const std::string seed_data(kManifest1Contents);
+    const std::string seed_data(kManifest2Contents);
+    scoped_refptr<net::StringIOBuffer> io_buffer =
+        base::MakeRefCounted<net::StringIOBuffer>(seed_data);
+    response_writer_->WriteData(
+        io_buffer.get(), seed_data.length(),
+        base::BindOnce(
+            &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
+            base::Unretained(this)));
+
+    // Start update after data write completes asynchronously.
+  }
+
+  void UpgradeManifestDataUnchangedScopeChangedTest() {
+    MakeService();
+    // URL path /files/manifest2 has a cached scope of "/".  The path has no
+    // scope override, so the fetched scope will be "/files/" and a scope change
+    // will occur.
+    group_ = base::MakeRefCounted<AppCacheGroup>(
+        service_->storage(), MockHttpServer::GetMockUrl("files/manifest2"),
+        service_->storage()->NewGroupId());
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
+    group_->update_job_ = update;
+
+    // Create response writer to get a response id.
+    response_writer_ =
+        service_->storage()->CreateResponseWriter(group_->manifest_url());
+
+    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(),
+                                        response_writer_->response_id());
+    MockFrontend* frontend1 = MakeMockFrontend();
+    MockFrontend* frontend2 = MakeMockFrontend();
+    AppCacheHost* host1 = MakeHost(frontend1);
+    AppCacheHost* host2 = MakeHost(frontend2);
+    host1->AssociateCompleteCache(cache);
+    host2->AssociateCompleteCache(cache);
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = true;
+    expect_old_cache_ = cache;
+    tested_manifest_ = MANIFEST2_WITH_FILES_SCOPE;
+
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+
+    // Seed storage with expected manifest data.
+    const std::string seed_data(kManifest2Contents);
     scoped_refptr<net::StringIOBuffer> io_buffer =
         base::MakeRefCounted<net::StringIOBuffer>(seed_data);
     response_writer_->WriteData(
@@ -1068,6 +1392,42 @@ class AppCacheUpdateJobTest : public testing::Test,
         blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
+  }
+
+  void ScopeManifestRootWithNoOverrideTest() {
+    ScopeTest("manifest-no-override", SCOPE_MANIFEST_ROOT_WITH_NO_OVERRIDE);
+  }
+
+  void ScopeManifestBarWithNoOverrideTest() {
+    ScopeTest("bar/manifest-no-override", SCOPE_MANIFEST_BAR_WITH_NO_OVERRIDE);
+  }
+
+  void ScopeManifestRootWithRootOverrideTest() {
+    ScopeTest("manifest-root-override", SCOPE_MANIFEST_ROOT_WITH_ROOT_OVERRIDE);
+  }
+
+  void ScopeManifestBarWithRootOverrideTest() {
+    ScopeTest("bar/manifest-root-override",
+              SCOPE_MANIFEST_BAR_WITH_ROOT_OVERRIDE);
+  }
+
+  void ScopeManifestRootWithBarOverrideTest() {
+    ScopeTest("manifest-bar-override", SCOPE_MANIFEST_ROOT_WITH_BAR_OVERRIDE);
+  }
+
+  void ScopeManifestBarWithBarOverrideTest() {
+    ScopeTest("bar/manifest-bar-override",
+              SCOPE_MANIFEST_BAR_WITH_BAR_OVERRIDE);
+  }
+
+  void ScopeManifestRootWithOtherOverrideTest() {
+    ScopeTest("manifest-other-override",
+              SCOPE_MANIFEST_ROOT_WITH_OTHER_OVERRIDE);
+  }
+
+  void ScopeManifestBarWithOtherOverrideTest() {
+    ScopeTest("bar/manifest-other-override",
+              SCOPE_MANIFEST_BAR_WITH_OTHER_OVERRIDE);
   }
 
   void DownloadInterceptEntriesTest() {
@@ -3523,6 +3883,12 @@ class AppCacheUpdateJobTest : public testing::Test,
         case MANIFEST1:
           VerifyManifest1(cache);
           break;
+        case MANIFEST2_WITH_ROOT_SCOPE:
+          VerifyManifest2WithRootScope(cache);
+          break;
+        case MANIFEST2_WITH_FILES_SCOPE:
+          VerifyManifest2WithFilesScope(cache);
+          break;
         case MANIFEST_MERGED_TYPES:
           VerifyManifestMergedTypes(cache);
           break;
@@ -3537,6 +3903,38 @@ class AppCacheUpdateJobTest : public testing::Test,
           break;
         case MANIFEST_WITH_INTERCEPT:
           VerifyManifestWithIntercept(cache);
+          break;
+        case SCOPE_MANIFEST_ROOT_WITH_NO_OVERRIDE:
+          VerifyScopeManifest(cache, ScopeType::kScopeRoot,
+                              "manifest-no-override");
+          break;
+        case SCOPE_MANIFEST_BAR_WITH_NO_OVERRIDE:
+          VerifyScopeManifest(cache, ScopeType::kScopeBar,
+                              "bar/manifest-no-override");
+          break;
+        case SCOPE_MANIFEST_ROOT_WITH_ROOT_OVERRIDE:
+          VerifyScopeManifest(cache, ScopeType::kScopeRoot,
+                              "manifest-root-override");
+          break;
+        case SCOPE_MANIFEST_BAR_WITH_ROOT_OVERRIDE:
+          VerifyScopeManifest(cache, ScopeType::kScopeRoot,
+                              "bar/manifest-root-override");
+          break;
+        case SCOPE_MANIFEST_ROOT_WITH_BAR_OVERRIDE:
+          VerifyScopeManifest(cache, ScopeType::kScopeBar,
+                              "manifest-bar-override");
+          break;
+        case SCOPE_MANIFEST_BAR_WITH_BAR_OVERRIDE:
+          VerifyScopeManifest(cache, ScopeType::kScopeBar,
+                              "bar/manifest-bar-override");
+          break;
+        case SCOPE_MANIFEST_ROOT_WITH_OTHER_OVERRIDE:
+          VerifyScopeManifest(cache, ScopeType::kScopeOther,
+                              "manifest-other-override");
+          break;
+        case SCOPE_MANIFEST_BAR_WITH_OTHER_OVERRIDE:
+          VerifyScopeManifest(cache, ScopeType::kScopeOther,
+                              "bar/manifest-other-override");
           break;
         case NONE:
         default:
@@ -3561,6 +3959,98 @@ class AppCacheUpdateJobTest : public testing::Test,
     entry = cache->GetEntry(MockHttpServer::GetMockUrl("files/fallback1a"));
     ASSERT_TRUE(entry);
     EXPECT_EQ(AppCacheEntry::FALLBACK, entry->types());
+
+    for (const auto& pair : expect_extra_entries_) {
+      entry = cache->GetEntry(pair.first);
+      ASSERT_TRUE(entry);
+      EXPECT_EQ(pair.second.types(), entry->types());
+    }
+
+    expected = 1;
+    ASSERT_EQ(expected, cache->fallback_namespaces_.size());
+    EXPECT_TRUE(cache->fallback_namespaces_[0] ==
+                AppCacheNamespace(
+                    APPCACHE_FALLBACK_NAMESPACE,
+                    MockHttpServer::GetMockUrl("files/fallback1"),
+                    MockHttpServer::GetMockUrl("files/fallback1a"), false));
+
+    EXPECT_TRUE(cache->online_whitelist_namespaces_.empty());
+    EXPECT_TRUE(cache->online_whitelist_all_);
+
+    EXPECT_TRUE(cache->update_time_ > base::Time());
+  }
+
+  void VerifyManifest2WithRootScope(AppCache* cache) {
+    size_t expected = 6 + expect_extra_entries_.size();
+    EXPECT_EQ(expected, cache->entries().size());
+    const char* kManifestPath = tested_manifest_path_override_
+                                    ? tested_manifest_path_override_
+                                    : "files/manifest2-with-root-override";
+    AppCacheEntry* entry =
+        cache->GetEntry(MockHttpServer::GetMockUrl(kManifestPath));
+    ASSERT_TRUE(entry);
+    EXPECT_TRUE(entry->IsManifest());
+    entry = cache->GetEntry(MockHttpServer::GetMockUrl("files/explicit1"));
+    ASSERT_TRUE(entry);
+    EXPECT_TRUE(entry->IsExplicit());
+    entry = cache->GetEntry(MockHttpServer::GetMockUrl("files/fallback1a"));
+    ASSERT_TRUE(entry);
+    EXPECT_TRUE(entry->IsFallback());
+    entry = cache->GetEntry(MockHttpServer::GetMockUrl("files/fallback2a"));
+    ASSERT_TRUE(entry);
+    EXPECT_TRUE(entry->IsFallback());
+    entry = cache->GetEntry(MockHttpServer::GetMockUrl("files/intercept1a"));
+    ASSERT_TRUE(entry);
+    EXPECT_TRUE(entry->IsIntercept());
+    entry = cache->GetEntry(MockHttpServer::GetMockUrl("files/intercept2a"));
+    ASSERT_TRUE(entry);
+    EXPECT_TRUE(entry->IsIntercept());
+
+    for (const auto& pair : expect_extra_entries_) {
+      entry = cache->GetEntry(pair.first);
+      ASSERT_TRUE(entry);
+      EXPECT_EQ(pair.second.types(), entry->types());
+    }
+
+    expected = 2;
+    ASSERT_EQ(expected, cache->fallback_namespaces_.size());
+    EXPECT_TRUE(cache->fallback_namespaces_[0] ==
+                AppCacheNamespace(
+                    APPCACHE_FALLBACK_NAMESPACE,
+                    MockHttpServer::GetMockUrl("files/fallback1"),
+                    MockHttpServer::GetMockUrl("files/fallback1a"), false));
+    EXPECT_TRUE(cache->fallback_namespaces_[1] ==
+                AppCacheNamespace(
+                    APPCACHE_FALLBACK_NAMESPACE,
+                    MockHttpServer::GetMockUrl("bar/fallback2"),
+                    MockHttpServer::GetMockUrl("files/fallback2a"), false));
+
+    EXPECT_TRUE(cache->online_whitelist_namespaces_.empty());
+    EXPECT_TRUE(cache->online_whitelist_all_);
+
+    EXPECT_TRUE(cache->update_time_ > base::Time());
+  }
+
+  void VerifyManifest2WithFilesScope(AppCache* cache) {
+    size_t expected = 4 + expect_extra_entries_.size();
+    EXPECT_EQ(expected, cache->entries().size());
+    const char* kManifestPath = tested_manifest_path_override_
+                                    ? tested_manifest_path_override_
+                                    : "files/manifest2";
+    AppCacheEntry* entry =
+        cache->GetEntry(MockHttpServer::GetMockUrl(kManifestPath));
+    ASSERT_TRUE(entry);
+    EXPECT_EQ(AppCacheEntry::MANIFEST, entry->types());
+    EXPECT_TRUE(entry->IsManifest());
+    entry = cache->GetEntry(MockHttpServer::GetMockUrl("files/explicit1"));
+    ASSERT_TRUE(entry);
+    EXPECT_TRUE(entry->IsExplicit());
+    entry = cache->GetEntry(MockHttpServer::GetMockUrl("files/intercept1a"));
+    ASSERT_TRUE(entry);
+    EXPECT_TRUE(entry->IsIntercept());
+    entry = cache->GetEntry(MockHttpServer::GetMockUrl("files/fallback1a"));
+    ASSERT_TRUE(entry);
+    EXPECT_TRUE(entry->IsFallback());
 
     for (const auto& pair : expect_extra_entries_) {
       entry = cache->GetEntry(pair.first);
@@ -3685,9 +4175,156 @@ class AppCacheUpdateJobTest : public testing::Test,
     entry = cache->GetEntry(MockHttpServer::GetMockUrl("files/intercept1a"));
     ASSERT_TRUE(entry);
     EXPECT_TRUE(entry->IsIntercept());
+  }
+
+  bool CheckNamespaceExists(const std::vector<AppCacheNamespace>& namespaces,
+                            const AppCacheNamespace& namespace_entry) {
+    for (auto it = namespaces.begin(); it != namespaces.end(); ++it) {
+      if (*it == namespace_entry)
+        return true;
+    }
+    return false;
+  }
+
+  void GetExpectedScopeIntercepts(std::vector<AppCacheNamespace>* expected,
+                                  const enum ScopeType& scope_type) {
+    // Set up the expected intercepts.
+    std::vector<AppCacheNamespace> expected_root = {
+        AppCacheNamespace(
+            APPCACHE_INTERCEPT_NAMESPACE, MockHttpServer::GetMockUrl(""),
+            MockHttpServer::GetMockUrl("intercept-newroot/foo"), false),
+    };
+    std::vector<AppCacheNamespace> expected_bar = {
+        AppCacheNamespace(
+            APPCACHE_INTERCEPT_NAMESPACE, MockHttpServer::GetMockUrl("bar/foo"),
+            MockHttpServer::GetMockUrl("intercept-newbar/foo"), false),
+        AppCacheNamespace(
+            APPCACHE_INTERCEPT_NAMESPACE,
+            MockHttpServer::GetMockUrl("bar/baz/foo"),
+            MockHttpServer::GetMockUrl("intercept-newbar/newbaz/foo"), false),
+    };
+    std::vector<AppCacheNamespace> expected_other = {
+        AppCacheNamespace(APPCACHE_INTERCEPT_NAMESPACE,
+                          MockHttpServer::GetMockUrl("other/foo"),
+                          MockHttpServer::GetMockUrl("intercept-newother/foo"),
+                          false),
+    };
+
+    switch (scope_type) {
+      case ScopeType::kScopeRoot:
+        expected->insert(expected->end(), std::begin(expected_root),
+                         std::end(expected_root));
+        expected->insert(expected->end(), std::begin(expected_bar),
+                         std::end(expected_bar));
+        expected->insert(expected->end(), std::begin(expected_other),
+                         std::end(expected_other));
+        break;
+      case ScopeType::kScopeBar:
+        expected->insert(expected->end(), std::begin(expected_bar),
+                         std::end(expected_bar));
+        break;
+      case ScopeType::kScopeOther:
+        expected->insert(expected->end(), std::begin(expected_other),
+                         std::end(expected_other));
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  void GetExpectedScopeFallbacks(std::vector<AppCacheNamespace>* expected,
+                                 const enum ScopeType& scope_type) {
+    // Set up the expected fallbacks.
+    std::vector<AppCacheNamespace> expected_root = {
+        AppCacheNamespace(
+            APPCACHE_FALLBACK_NAMESPACE, MockHttpServer::GetMockUrl(""),
+            MockHttpServer::GetMockUrl("fallback-newroot/foo"), false),
+    };
+    std::vector<AppCacheNamespace> expected_bar = {
+        AppCacheNamespace(
+            APPCACHE_FALLBACK_NAMESPACE, MockHttpServer::GetMockUrl("bar/foo"),
+            MockHttpServer::GetMockUrl("fallback-newbar/foo"), false),
+        AppCacheNamespace(
+            APPCACHE_FALLBACK_NAMESPACE,
+            MockHttpServer::GetMockUrl("bar/baz/foo"),
+            MockHttpServer::GetMockUrl("fallback-newbar/newbaz/foo"), false),
+    };
+    std::vector<AppCacheNamespace> expected_other = {
+        AppCacheNamespace(APPCACHE_FALLBACK_NAMESPACE,
+                          MockHttpServer::GetMockUrl("other/foo"),
+                          MockHttpServer::GetMockUrl("fallback-newother/foo"),
+                          false),
+    };
+
+    switch (scope_type) {
+      case ScopeType::kScopeRoot:
+        expected->insert(expected->end(), std::begin(expected_root),
+                         std::end(expected_root));
+        expected->insert(expected->end(), std::begin(expected_bar),
+                         std::end(expected_bar));
+        expected->insert(expected->end(), std::begin(expected_other),
+                         std::end(expected_other));
+        break;
+      case ScopeType::kScopeBar:
+        expected->insert(expected->end(), std::begin(expected_bar),
+                         std::end(expected_bar));
+        break;
+      case ScopeType::kScopeOther:
+        expected->insert(expected->end(), std::begin(expected_other),
+                         std::end(expected_other));
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  void VerifyScopeManifest(AppCache* cache,
+                           const enum ScopeType& scope_type,
+                           std::string manifest_path) {
+    std::vector<AppCacheNamespace> expected_intercepts;
+    GetExpectedScopeIntercepts(&expected_intercepts, scope_type);
+    std::vector<AppCacheNamespace> expected_fallbacks;
+    GetExpectedScopeFallbacks(&expected_fallbacks, scope_type);
+
+    // Verify the number of cache entries.  There should be cache entries for
+    // the manifest, all of the expected intercepts (because each defines a
+    // separate target), and all of the expected fallbacks (because each also
+    // defines a separate target).
+    size_t expected_size =
+        1 + expected_intercepts.size() + expected_fallbacks.size();
+    EXPECT_EQ(expected_size, cache->entries().size());
+
+    // Verify basic cache details.
     EXPECT_TRUE(cache->online_whitelist_namespaces_.empty());
     EXPECT_FALSE(cache->online_whitelist_all_);
     EXPECT_TRUE(cache->update_time_ > base::Time());
+
+    // Verify manifest.
+    AppCacheEntry* entry =
+        cache->GetEntry(MockHttpServer::GetMockUrl(manifest_path));
+    ASSERT_TRUE(entry);
+    EXPECT_EQ(AppCacheEntry::MANIFEST, entry->types());
+
+    // Verify intercepts.
+    ASSERT_EQ(expected_intercepts.size(), cache->intercept_namespaces_.size());
+    for (auto it = expected_intercepts.begin(); it != expected_intercepts.end();
+         ++it) {
+      EXPECT_EQ(it->type, APPCACHE_INTERCEPT_NAMESPACE);
+      entry = cache->GetEntry(it->target_url);
+      ASSERT_TRUE(entry);
+      EXPECT_TRUE(entry->IsIntercept());
+      EXPECT_TRUE(CheckNamespaceExists(cache->intercept_namespaces_, *it));
+    }
+
+    // Verify fallbacks.
+    for (auto it = expected_fallbacks.begin(); it != expected_fallbacks.end();
+         ++it) {
+      EXPECT_EQ(it->type, APPCACHE_FALLBACK_NAMESPACE);
+      entry = cache->GetEntry(it->target_url);
+      ASSERT_TRUE(entry);
+      EXPECT_TRUE(entry->IsFallback());
+      EXPECT_TRUE(CheckNamespaceExists(cache->fallback_namespaces_, *it));
+    }
   }
 
  private:
@@ -3695,12 +4332,50 @@ class AppCacheUpdateJobTest : public testing::Test,
   enum TestedManifest {
     NONE,
     MANIFEST1,
+    MANIFEST2_WITH_ROOT_SCOPE,
+    MANIFEST2_WITH_FILES_SCOPE,
     MANIFEST_MERGED_TYPES,
     EMPTY_MANIFEST,
     EMPTY_FILE_MANIFEST,
     PENDING_MASTER_NO_UPDATE,
-    MANIFEST_WITH_INTERCEPT
+    MANIFEST_WITH_INTERCEPT,
+    SCOPE_MANIFEST_ROOT_WITH_NO_OVERRIDE,
+    SCOPE_MANIFEST_BAR_WITH_NO_OVERRIDE,
+    SCOPE_MANIFEST_ROOT_WITH_ROOT_OVERRIDE,
+    SCOPE_MANIFEST_BAR_WITH_ROOT_OVERRIDE,
+    SCOPE_MANIFEST_ROOT_WITH_BAR_OVERRIDE,
+    SCOPE_MANIFEST_BAR_WITH_BAR_OVERRIDE,
+    SCOPE_MANIFEST_ROOT_WITH_OTHER_OVERRIDE,
+    SCOPE_MANIFEST_BAR_WITH_OTHER_OVERRIDE,
   };
+
+  void ScopeTest(const std::string& manifest_path,
+                 const TestedManifest& tested_manifest) {
+    GURL manifest_url = MockHttpServer::GetMockUrl(manifest_path);
+
+    MakeService();
+    group_ = base::MakeRefCounted<AppCacheGroup>(
+        service_->storage(), manifest_url, service_->storage()->NewGroupId());
+    ASSERT_TRUE(group_->last_full_update_check_time().is_null());
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
+    group_->update_job_ = update;
+
+    MockFrontend* frontend = MakeMockFrontend();
+    AppCacheHost* host = MakeHost(frontend);
+    update->StartUpdate(host, GURL());
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = true;
+    expect_full_update_time_newer_than_ = base::Time::Now() - kOneHour;
+    tested_manifest_ = tested_manifest;
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+
+    WaitForUpdateToFinish();
+  }
 
   content::BrowserTaskEnvironment task_environment_;
 
@@ -3843,8 +4518,24 @@ TEST_F(AppCacheUpdateJobTest, UpgradeNotModified) {
   RunTestOnUIThread(&AppCacheUpdateJobTest::UpgradeNotModifiedTest);
 }
 
-TEST_F(AppCacheUpdateJobTest, UpgradeManifestDataUnchanged) {
-  RunTestOnUIThread(&AppCacheUpdateJobTest::UpgradeManifestDataUnchangedTest);
+TEST_F(AppCacheUpdateJobTest, UpgradeManifestDataChangedScopeUnchanged) {
+  RunTestOnUIThread(
+      &AppCacheUpdateJobTest::UpgradeManifestDataChangedScopeUnchangedTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, UpgradeManifestDataChangedScopeChanged) {
+  RunTestOnUIThread(
+      &AppCacheUpdateJobTest::UpgradeManifestDataChangedScopeChangedTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, UpgradeManifestDataUnchangedScopeUnchanged) {
+  RunTestOnUIThread(
+      &AppCacheUpdateJobTest::UpgradeManifestDataUnchangedScopeUnchangedTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, UpgradeManifestDataUnchangedScopeChanged) {
+  RunTestOnUIThread(
+      &AppCacheUpdateJobTest::UpgradeManifestDataUnchangedScopeChangedTest);
 }
 
 TEST_F(AppCacheUpdateJobTest, Bug95101Test) {
@@ -3853,6 +4544,45 @@ TEST_F(AppCacheUpdateJobTest, Bug95101Test) {
 
 TEST_F(AppCacheUpdateJobTest, BasicCacheAttemptSuccess) {
   RunTestOnUIThread(&AppCacheUpdateJobTest::BasicCacheAttemptSuccessTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, ScopeManifestRootWithNoOverrideTest) {
+  RunTestOnUIThread(
+      &AppCacheUpdateJobTest::ScopeManifestRootWithNoOverrideTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, ScopeManifestBarWithNoOverrideTest) {
+  RunTestOnUIThread(&AppCacheUpdateJobTest::ScopeManifestBarWithNoOverrideTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, ScopeManifestRootWithRootOverrideTest) {
+  RunTestOnUIThread(
+      &AppCacheUpdateJobTest::ScopeManifestRootWithRootOverrideTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, ScopeManifestBarWithRootOverrideTest) {
+  RunTestOnUIThread(
+      &AppCacheUpdateJobTest::ScopeManifestBarWithRootOverrideTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, ScopeManifestRootWithBarOverrideTest) {
+  RunTestOnUIThread(
+      &AppCacheUpdateJobTest::ScopeManifestRootWithBarOverrideTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, ScopeManifestBarWithBarOverrideTest) {
+  RunTestOnUIThread(
+      &AppCacheUpdateJobTest::ScopeManifestBarWithBarOverrideTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, ScopeManifestRootWithOtherOverrideTest) {
+  RunTestOnUIThread(
+      &AppCacheUpdateJobTest::ScopeManifestRootWithOtherOverrideTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, ScopeManifestBarWithOtherOverrideTest) {
+  RunTestOnUIThread(
+      &AppCacheUpdateJobTest::ScopeManifestBarWithOtherOverrideTest);
 }
 
 TEST_F(AppCacheUpdateJobTest, DownloadInterceptEntriesTest) {

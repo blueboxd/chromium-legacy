@@ -322,30 +322,24 @@ gfx::RectF ScopedOverviewTransformWindow::ShrinkRectToFitPreservingAspectRatio(
     case ScopedOverviewTransformWindow::GridWindowFillMode::kLetterBoxed:
     case ScopedOverviewTransformWindow::GridWindowFillMode::kPillarBoxed: {
       // Attempt to scale |rect| to fit |bounds|. Maintain the aspect ratio of
-      // |rect|. Letter boxed windows' width will match |bounds|'s height and
+      // |rect|. Letter boxed windows' width will match |bounds|'s width and
       // pillar boxed windows' height will match |bounds|'s height.
       const bool is_pillar =
           type() ==
           ScopedOverviewTransformWindow::GridWindowFillMode::kPillarBoxed;
-      gfx::RectF src = rect;
-      new_bounds = bounds;
-      src.Inset(0, top_view_inset, 0, 0);
-      new_bounds.Inset(0, title_height, 0, 0);
-      float scale = is_pillar ? new_bounds.height() / src.height()
-                              : new_bounds.width() / src.width();
-      gfx::SizeF size(is_pillar ? src.width() * scale : new_bounds.width(),
-                      is_pillar ? new_bounds.height() : src.height() * scale);
-      new_bounds.ClampToCenteredSize(size);
-
-      // Extend |new_bounds| in the vertical direction to account for the header
-      // that will be hidden.
-      if (top_view_inset > 0)
-        new_bounds.Inset(0, -(scale * top_view_inset), 0, 0);
-
-      // Save the original bounds minus the title into |overview_bounds_|
-      // so a larger backdrop can be drawn behind the window after.
-      overview_bounds_ = bounds;
-      overview_bounds_->Inset(0, title_height, 0, 0);
+      const gfx::Rect window_bounds =
+          ::wm::GetTransientRoot(window_)->GetBoundsInScreen();
+      const float window_ratio =
+          float{window_bounds.width()} / window_bounds.height();
+      if (is_pillar) {
+        const float new_x = height * window_ratio;
+        new_bounds.set_width(new_x);
+      } else {
+        const float new_y = bounds.width() / window_ratio;
+        new_bounds = bounds;
+        new_bounds.Inset(0, title_height, 0, 0);
+        new_bounds.ClampToCenteredSize(gfx::SizeF(bounds.width(), new_y));
+      }
       break;
     }
     default:
@@ -402,7 +396,6 @@ void ScopedOverviewTransformWindow::EnsureVisible() {
 
 void ScopedOverviewTransformWindow::UpdateWindowDimensionsType() {
   type_ = GetWindowDimensionsType(window_);
-  overview_bounds_.reset();
 }
 
 void ScopedOverviewTransformWindow::UpdateRoundedCorners(bool show,

@@ -45,7 +45,7 @@ _gtest_flag() {
     local cur gtest_flags launcher_flags
     cur="${COMP_WORDS[COMP_CWORD]}"
     gtest_flags=$(sed -ne 's/^.*FromGTestEnv("\([^" /]\+\)".*$/--gtest_\1/p' \
-      "$chrome_source/testing/gtest/src/gtest.cc")
+      "$chrome_source/third_party/googletest/src/googletest/src/gtest.cc")
     chrome_test_launcher_flags=$(sed -ne 's/^[^/]*"\([^" /]\{1,\}\)".*/--\1/p' \
       "$chrome_source/base/test/test_switches.cc")
     COMPREPLY=($(

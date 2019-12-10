@@ -975,9 +975,9 @@ public class CookieManagerTest {
         mAwContents.getSettings().setAllowFileAccess(true);
 
         mAwContents.getSettings().setAcceptThirdPartyCookies(true);
-        Assert.assertTrue(fileURLCanSetCookie("1"));
+        Assert.assertTrue(fileURLCanSetCookie("1", ""));
         mAwContents.getSettings().setAcceptThirdPartyCookies(false);
-        Assert.assertTrue(fileURLCanSetCookie("2"));
+        Assert.assertTrue(fileURLCanSetCookie("2", ""));
     }
 
     @Test
@@ -991,9 +991,9 @@ public class CookieManagerTest {
         mAwContents.getSettings().setAllowFileAccess(true);
 
         mAwContents.getSettings().setAcceptThirdPartyCookies(true);
-        Assert.assertFalse(fileURLCanSetCookie("3"));
+        Assert.assertFalse(fileURLCanSetCookie("3", ""));
         mAwContents.getSettings().setAcceptThirdPartyCookies(false);
-        Assert.assertFalse(fileURLCanSetCookie("4"));
+        Assert.assertFalse(fileURLCanSetCookie("4", ""));
     }
 
     @Test
@@ -1015,14 +1015,27 @@ public class CookieManagerTest {
         mAwContents.getSettings().setAllowFileAccess(true);
 
         mAwContents.getSettings().setAcceptThirdPartyCookies(true);
-        Assert.assertFalse(fileURLCanSetCookie("5"));
+        Assert.assertFalse(fileURLCanSetCookie("5", ""));
         mAwContents.getSettings().setAcceptThirdPartyCookies(false);
-        Assert.assertFalse(fileURLCanSetCookie("6"));
+        Assert.assertFalse(fileURLCanSetCookie("6", ""));
     }
 
-    private boolean fileURLCanSetCookie(String suffix) throws Throwable {
-        String value = "value" + suffix;
-        String url = "file:///android_asset/cookie_test.html?value=" + value;
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "Privacy"})
+    public void testAcceptFileSchemeCookiesExplicitSameSite() throws Throwable {
+        mCookieManager.setAcceptFileSchemeCookies(true);
+        Assert.assertTrue("allowFileSchemeCookies() should return true after "
+                        + "setAcceptFileSchemeCookies(true)",
+                mCookieManager.allowFileSchemeCookies());
+        mAwContents.getSettings().setAllowFileAccess(true);
+        mAwContents.getSettings().setAcceptThirdPartyCookies(false);
+        Assert.assertTrue(fileURLCanSetCookie("7", ";SameSite=Lax"));
+    }
+
+    private boolean fileURLCanSetCookie(String valueSuffix, String settings) throws Throwable {
+        String value = "value" + valueSuffix;
+        String url = "file:///android_asset/cookie_test.html?value=" + value + settings;
         mActivityTestRule.loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
         String cookie = mCookieManager.getCookie(url);
         return cookie != null && cookie.contains("test=" + value);

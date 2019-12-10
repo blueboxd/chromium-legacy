@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/containers/mru_cache.h"
-#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/safe_math.h"
 #include "base/thread_annotations.h"
@@ -112,9 +111,6 @@ class CC_EXPORT SoftwareImageDecodeCache
   void ReduceCacheUsageUntilWithinLimit(size_t limit)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
-  void OnMemoryPressure(base::MemoryPressureListener::MemoryPressureLevel level)
-      LOCKS_EXCLUDED(lock_);
-
   // Helper method to get the different tasks. Note that this should be used as
   // if it was public (ie, all of the locks need to be properly acquired).
   TaskResult GetTaskForImageAndRefInternal(const DrawImage& image,
@@ -141,9 +137,6 @@ class CC_EXPORT SoftwareImageDecodeCache
   base::Lock lock_;
   // Decoded images and ref counts (predecode path).
   ImageMRUCache decoded_images_ GUARDED_BY(lock_);
-
-  std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_
-      GUARDED_BY(lock_);
 
   // A map of PaintImage::FrameKey to the ImageKeys for cached decodes of this
   // PaintImage.

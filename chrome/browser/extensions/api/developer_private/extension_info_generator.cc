@@ -368,10 +368,15 @@ void AddPermissionsInfo(content::BrowserContext* browser_context,
   } else {
     granted_permissions =
         extension_prefs->GetRuntimeGrantedPermissions(extension.id());
-    runtime_host_permissions->host_access =
-        granted_permissions->effective_hosts().is_empty()
-            ? developer::HOST_ACCESS_ON_CLICK
-            : developer::HOST_ACCESS_ON_SPECIFIC_SITES;
+    if (granted_permissions->effective_hosts().is_empty()) {
+      runtime_host_permissions->host_access = developer::HOST_ACCESS_ON_CLICK;
+    } else if (granted_permissions->ShouldWarnAllHosts(false)) {
+      runtime_host_permissions->host_access =
+          developer::HOST_ACCESS_ON_ALL_SITES;
+    } else {
+      runtime_host_permissions->host_access =
+          developer::HOST_ACCESS_ON_SPECIFIC_SITES;
+    }
   }
 
   runtime_host_permissions->hosts = GetSpecificSiteControls(

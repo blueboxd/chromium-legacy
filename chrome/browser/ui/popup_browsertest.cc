@@ -41,7 +41,7 @@ class PopupBrowserTest : public InProcessBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(PopupBrowserTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */, PopupBrowserTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, PopupBrowserTest, ::testing::Bool());
 
 // Ensure that popup windows are clamped within the available screen space.
 IN_PROC_BROWSER_TEST_P(PopupBrowserTest, WindowClampedToScreenSpace) {

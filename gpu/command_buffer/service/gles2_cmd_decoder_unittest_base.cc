@@ -2430,7 +2430,7 @@ void GLES2DecoderPassthroughTestBase::SetUp() {
 
   gl::init::InitializeStaticGLBindingsImplementation(
       gl::kGLImplementationEGLANGLE, false);
-  gl::init::InitializeGLOneOffPlatformImplementation(false, false, false, true);
+  gl::init::InitializeGLOneOffPlatformImplementation(false, false, true);
 
   scoped_refptr<gles2::FeatureInfo> feature_info = new gles2::FeatureInfo();
   group_ = new gles2::ContextGroup(

@@ -542,7 +542,7 @@ IN_PROC_BROWSER_TEST_P(ParameterizedArcTermsOfServiceScreenTest, ClickSkip) {
   EXPECT_EQ(screen_exit_result(), ArcTermsOfServiceScreen::Result::SKIPPED);
 }
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          ParameterizedArcTermsOfServiceScreenTest,
                          testing::Combine(testing::Bool(), testing::Bool()));
 

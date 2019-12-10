@@ -47,8 +47,8 @@
   TestRunner.completeTest();
 
   function initLayers() {
-    layerA = LayersTestRunner.findLayerByNodeIdAttribute('a');
-    layerB = LayersTestRunner.findLayerByNodeIdAttribute('b');
+    const layerA = LayersTestRunner.findLayerByNodeIdAttribute('a');
+    const layerB = LayersTestRunner.findLayerByNodeIdAttribute('b');
     contentRoot = LayersTestRunner.layerTreeModel().layerTree().contentRoot();
     layers = [
       {layer: layerA, name: 'layer a'}, {layer: layerB, name: 'layer b'}, {layer: contentRoot, name: 'content root'}

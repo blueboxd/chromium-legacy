@@ -31,6 +31,7 @@
       ],
       "device type": "iPhone 6s",
       "os": "12.2",
+      "xcode parallelization": true,
       "xctest": true,
       "host os": "Mac-10.14.6",
       "pool":"chromium.tests"
@@ -42,6 +43,7 @@
       ],
       "device type": "iPad Air 2",
       "os": "12.2",
+      "xcode parallelization": true,
       "xctest": true,
       "host os": "Mac-10.14.6",
       "pool":"chromium.tests"
@@ -53,6 +55,7 @@
       ],
       "device type": "iPhone 6s",
       "os": "12.2",
+      "xcode parallelization": true,
       "xctest": true,
       "host os": "Mac-10.14.6",
       "pool":"chromium.tests"
@@ -64,6 +67,7 @@
       ],
       "device type": "iPhone 6s",
       "os": "12.2",
+      "xcode parallelization": true,
       "xctest": true,
       "host os": "Mac-10.14.6",
       "pool":"chromium.tests"
@@ -75,6 +79,7 @@
       ],
       "device type": "iPhone 6s",
       "os": "12.2",
+      "xcode parallelization": true,
       "xctest": true,
       "host os": "Mac-10.14.6",
       "pool":"chromium.tests"
@@ -86,6 +91,7 @@
       ],
       "device type": "iPhone 6s",
       "os": "12.2",
+      "xcode parallelization": true,
       "xctest": true,
       "host os": "Mac-10.14.6",
       "pool":"chromium.tests"
@@ -97,6 +103,7 @@
       ],
       "device type": "iPhone 6s",
       "os": "12.2",
+      "xcode parallelization": true,
       "xctest": true,
       "host os": "Mac-10.14.6",
       "pool":"chromium.tests"

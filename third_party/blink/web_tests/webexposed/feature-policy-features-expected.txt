@@ -13,6 +13,7 @@ ch-lang
 ch-rtt
 ch-ua
 ch-ua-arch
+ch-ua-mobile
 ch-ua-model
 ch-ua-platform
 ch-viewport-width

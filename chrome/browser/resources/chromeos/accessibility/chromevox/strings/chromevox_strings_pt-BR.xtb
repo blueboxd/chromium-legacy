@@ -360,6 +360,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="3462439746547587373">Botão <ph name="NAME" /></translation>
 <translation id="3466530247399808663">Um pressionamento de teclas inválido</translation>
 <translation id="3468959318854349468">Sem título</translation>
+<translation id="3469005380014336304">grupo de linha</translation>
 <translation id="3469413619751135069">Verde-pálido</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" /> a <ph name="V2" /></translation>
@@ -463,7 +464,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="4204126831294769023">Azul-fino</translation>
 <translation id="4204864733111726379">Branco-floral</translation>
 <translation id="4206289001967551965">Dentro da tabela</translation>
-<translation id="4207770814752775793">Redefinir configurações da conversão de texto e voz para valores padrões.</translation>
+<translation id="4207770814752775793">Redefinir configurações da conversão de texto em voz para valores padrões.</translation>
 <translation id="4209770650650780359">Pressione a seta para cima ou para baixo para ver opções de preenchimento automático.</translation>
 <translation id="4215733775853809057">Próximo controle deslizante</translation>
 <translation id="42164919740161077">Azul-cadete</translation>

@@ -38,6 +38,7 @@ class TracedValue;
 }  // namespace base
 
 namespace gfx {
+class ColorSpace;
 class GpuFence;
 }
 
@@ -162,6 +163,9 @@ class Surface final : public ui::PropertyHandler {
 
   // Request that surface should have a specific application ID string.
   void SetApplicationId(const char* application_id);
+
+  // This sets the color space for the buffer for this surface.
+  void SetColorSpace(gfx::ColorSpace color_space);
 
   // Request "parent" for surface.
   void SetParent(Surface* parent, const gfx::Point& position);
@@ -300,6 +304,7 @@ class Surface final : public ui::PropertyHandler {
     SkBlendMode blend_mode = SkBlendMode::kSrcOver;
     float alpha = 1.0f;
     gfx::Vector2d offset;
+    gfx::ColorSpace color_space;
   };
   class BufferAttachment {
    public:

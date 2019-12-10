@@ -100,17 +100,15 @@ unsigned LayoutTableCell::ParseColSpanFromDOM() const {
   DCHECK(GetNode());
   // TODO(dgrogan): HTMLTableCellElement::colSpan() already clamps to something
   // smaller than maxColumnIndex; can we just DCHECK here?
-  if (IsHTMLTableCellElement(*GetNode()))
-    return std::min<unsigned>(ToHTMLTableCellElement(*GetNode()).colSpan(),
-                              kMaxColumnIndex);
+  if (auto* cell_element = DynamicTo<HTMLTableCellElement>(GetNode()))
+    return std::min<unsigned>(cell_element->colSpan(), kMaxColumnIndex);
   return 1;
 }
 
 unsigned LayoutTableCell::ParseRowSpanFromDOM() const {
   DCHECK(GetNode());
-  if (IsHTMLTableCellElement(*GetNode()))
-    return std::min<unsigned>(ToHTMLTableCellElement(*GetNode()).rowSpan(),
-                              kMaxRowIndex);
+  if (auto* cell_element = DynamicTo<HTMLTableCellElement>(GetNode()))
+    return std::min<unsigned>(cell_element->rowSpan(), kMaxRowIndex);
   return 1;
 }
 
@@ -123,7 +121,7 @@ void LayoutTableCell::UpdateColAndRowSpanFlags() {
 
 void LayoutTableCell::ColSpanOrRowSpanChanged() {
   DCHECK(GetNode());
-  DCHECK(IsHTMLTableCellElement(*GetNode()));
+  DCHECK(IsA<HTMLTableCellElement>(*GetNode()));
 
   UpdateColAndRowSpanFlags();
 

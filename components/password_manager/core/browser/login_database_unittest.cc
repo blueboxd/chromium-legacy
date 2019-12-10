@@ -78,7 +78,6 @@ void GenerateExamplePasswordForm(PasswordForm* form) {
   form->password_value = ASCIIToUTF16("test");
   form->submit_element = ASCIIToUTF16("signIn");
   form->signon_realm = "http://www.google.com/";
-  form->preferred = false;
   form->scheme = PasswordForm::Scheme::kHtml;
   form->times_used = 1;
   form->form_data.name = ASCIIToUTF16("form_name");
@@ -373,7 +372,6 @@ TEST_F(LoginDatabaseTest, Logins) {
   // User changes their password.
   PasswordForm form5(form4);
   form5.password_value = ASCIIToUTF16("test6");
-  form5.preferred = true;
   const base::Time kNow = base::Time::Now();
   form5.date_last_used = kNow;
 
@@ -390,8 +388,6 @@ TEST_F(LoginDatabaseTest, Logins) {
   EXPECT_EQ(1U, result.size());
   // Password element was updated.
   EXPECT_EQ(form5.password_value, result[0]->password_value);
-  // Preferred login.
-  EXPECT_TRUE(form5.preferred);
   // Date last used.
   EXPECT_EQ(kNow, form5.date_last_used);
   result.clear();
@@ -493,7 +489,6 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatching) {
   form.password_value = ASCIIToUTF16("test");
   form.submit_element = ASCIIToUTF16("");
   form.signon_realm = "https://foo.com/";
-  form.preferred = false;
   form.scheme = PasswordForm::Scheme::kHtml;
 
   // Add it and make sure it is there.
@@ -538,7 +533,6 @@ TEST_F(LoginDatabaseTest, TestFederatedMatching) {
   form.username_value = ASCIIToUTF16("test@gmail.com");
   form.password_value = ASCIIToUTF16("test");
   form.signon_realm = "https://foo.com/";
-  form.preferred = false;
   form.scheme = PasswordForm::Scheme::kHtml;
 
   // We go to the mobile site.
@@ -694,7 +688,6 @@ TEST_F(LoginDatabaseTest, TestFederatedMatchingWithoutPSLMatching) {
   form.username_value = ASCIIToUTF16("test@gmail.com");
   form.password_value = ASCIIToUTF16("test");
   form.signon_realm = "https://accounts.google.com/";
-  form.preferred = false;
   form.scheme = PasswordForm::Scheme::kHtml;
 
   // We go to a different site on the same domain where PSL is disabled.
@@ -777,7 +770,6 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingDifferentSites) {
   form.password_value = ASCIIToUTF16("test");
   form.submit_element = ASCIIToUTF16("");
   form.signon_realm = "https://foo.com/";
-  form.preferred = false;
   form.scheme = PasswordForm::Scheme::kHtml;
 
   // Add it and make sure it is there.
@@ -812,7 +804,6 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingDifferentSites) {
   form.password_value = ASCIIToUTF16("test");
   form.submit_element = ASCIIToUTF16("");
   form.signon_realm = "https://baz.com/";
-  form.preferred = false;
   form.scheme = PasswordForm::Scheme::kHtml;
 
   // Add it and make sure it is there.
@@ -860,7 +851,6 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingRegexp) {
   form.password_value = ASCIIToUTF16("test");
   form.submit_element = ASCIIToUTF16("");
   form.signon_realm = "http://foo.com/";
-  form.preferred = false;
   form.scheme = PasswordForm::Scheme::kHtml;
 
   // Add it and make sure it is there.
@@ -1118,7 +1108,6 @@ TEST_F(LoginDatabaseTest, BlacklistedLogins) {
   form.password_element = ASCIIToUTF16("Passwd");
   form.submit_element = ASCIIToUTF16("signIn");
   form.signon_realm = "http://www.google.com/";
-  form.preferred = true;
   form.blacklisted_by_user = true;
   form.scheme = PasswordForm::Scheme::kHtml;
   form.date_synced = base::Time::Now();
@@ -1182,7 +1171,6 @@ TEST_F(LoginDatabaseTest, UpdateIncompleteCredentials) {
   incomplete_form.signon_realm = "http://accounts.google.com/";
   incomplete_form.username_value = ASCIIToUTF16("my_username");
   incomplete_form.password_value = ASCIIToUTF16("my_password");
-  incomplete_form.preferred = true;
   incomplete_form.date_last_used = base::Time::Now();
   incomplete_form.blacklisted_by_user = false;
   incomplete_form.scheme = PasswordForm::Scheme::kHtml;
@@ -1205,7 +1193,6 @@ TEST_F(LoginDatabaseTest, UpdateIncompleteCredentials) {
   EXPECT_EQ(incomplete_form.signon_realm, result[0]->signon_realm);
   EXPECT_EQ(incomplete_form.username_value, result[0]->username_value);
   EXPECT_EQ(incomplete_form.password_value, result[0]->password_value);
-  EXPECT_TRUE(result[0]->preferred);
   EXPECT_EQ(incomplete_form.date_last_used, result[0]->date_last_used);
 
   // We should return empty 'action', 'username_element', 'password_element'
@@ -1251,7 +1238,6 @@ TEST_F(LoginDatabaseTest, UpdateOverlappingCredentials) {
   incomplete_form.signon_realm = "http://accounts.google.com/";
   incomplete_form.username_value = ASCIIToUTF16("my_username");
   incomplete_form.password_value = ASCIIToUTF16("my_password");
-  incomplete_form.preferred = true;
   incomplete_form.date_last_used = base::Time::Now();
   incomplete_form.blacklisted_by_user = false;
   incomplete_form.scheme = PasswordForm::Scheme::kHtml;
@@ -1302,7 +1288,6 @@ TEST_F(LoginDatabaseTest, DoubleAdd) {
   form.signon_realm = "http://accounts.google.com/";
   form.username_value = ASCIIToUTF16("my_username");
   form.password_value = ASCIIToUTF16("my_password");
-  form.preferred = true;
   form.blacklisted_by_user = false;
   form.scheme = PasswordForm::Scheme::kHtml;
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
@@ -1322,7 +1307,6 @@ TEST_F(LoginDatabaseTest, AddWrongForm) {
   form.signon_realm = "http://accounts.google.com/";
   form.username_value = ASCIIToUTF16("my_username");
   form.password_value = ASCIIToUTF16("my_password");
-  form.preferred = true;
   form.blacklisted_by_user = false;
   form.scheme = PasswordForm::Scheme::kHtml;
   EXPECT_EQ(PasswordStoreChangeList(), db().AddLogin(form));
@@ -1339,7 +1323,6 @@ TEST_F(LoginDatabaseTest, UpdateLogin) {
   form.signon_realm = "http://accounts.google.com/";
   form.username_value = ASCIIToUTF16("my_username");
   form.password_value = ASCIIToUTF16("my_password");
-  form.preferred = true;
   form.blacklisted_by_user = false;
   form.scheme = PasswordForm::Scheme::kHtml;
   form.date_last_used = base::Time::Now();
@@ -1347,7 +1330,6 @@ TEST_F(LoginDatabaseTest, UpdateLogin) {
 
   form.action = GURL("http://accounts.google.com/login");
   form.password_value = ASCIIToUTF16("my_new_password");
-  form.preferred = false;
   form.all_possible_usernames.push_back(autofill::ValueElementPair(
       ASCIIToUTF16("my_new_username"), ASCIIToUTF16("new_username_id")));
   form.times_used = 20;
@@ -1385,7 +1367,6 @@ TEST_F(LoginDatabaseTest, RemoveWrongForm) {
   form.signon_realm = "http://accounts.google.com/";
   form.username_value = ASCIIToUTF16("my_username");
   form.password_value = ASCIIToUTF16("my_password");
-  form.preferred = true;
   form.blacklisted_by_user = false;
   form.scheme = PasswordForm::Scheme::kHtml;
   // The form isn't in the database.

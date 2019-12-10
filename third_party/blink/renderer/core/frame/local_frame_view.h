@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
 #include "third_party/blink/renderer/platform/graphics/subtree_paint_property_update_reason.h"
+#include "third_party/blink/renderer/platform/instrumentation/memory_pressure_listener.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -114,7 +115,8 @@ struct LifecycleData {
 
 class CORE_EXPORT LocalFrameView final
     : public GarbageCollected<LocalFrameView>,
-      public FrameView {
+      public FrameView,
+      public MemoryPressureListener {
   USING_GARBAGE_COLLECTED_MIXIN(LocalFrameView);
 
   friend class PaintControllerPaintTestBase;
@@ -823,6 +825,9 @@ class CORE_EXPORT LocalFrameView final
 
   void UpdateLayerDebugInfoEnabled();
 
+  // MemoryPressureListener
+  void OnPurgeMemory() override;
+
   LayoutSize size_;
 
   typedef HashSet<scoped_refptr<LayoutEmbeddedObject>> EmbeddedObjectSet;
@@ -942,6 +947,8 @@ class CORE_EXPORT LocalFrameView final
 
   // For testing.
   bool is_tracking_raster_invalidations_ = false;
+
+  bool received_memory_pressure_purge_signal_ = false;
 
   // Currently used in PushPaintArtifactToCompositor() to collect composited
   // layers as foreign layers. It's transient, but may live across frame updates

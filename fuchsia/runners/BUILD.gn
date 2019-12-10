@@ -110,7 +110,7 @@ fuchsia_package_runner("cast_runner") {
   install_only = true
   package_deps = [ [
         "//fuchsia/engine:web_engine",
-        "chromium",
+        "web_engine",
       ] ]
 }
 
@@ -172,7 +172,7 @@ test("cast_runner_integration_tests") {
   ]
   package_deps = [ [
         "//fuchsia/engine:web_engine",
-        "chromium",
+        "web_engine",
       ] ]
 }
 
@@ -224,7 +224,7 @@ fuchsia_package_runner("web_runner") {
   install_only = true
   package_deps = [ [
         "//fuchsia/engine:web_engine",
-        "chromium",
+        "web_engine",
       ] ]
 }
 
@@ -244,7 +244,7 @@ test("web_runner_integration_tests") {
   package_deps = [
     [
       "//fuchsia/engine:web_engine",
-      "chromium",
+      "web_engine",
     ],
     [
       ":web_runner_pkg",

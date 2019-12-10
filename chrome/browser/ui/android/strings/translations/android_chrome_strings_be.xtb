@@ -214,6 +214,7 @@
 <translation id="2532336938189706096">Прагляд вэб-змесціва</translation>
 <translation id="2534155362429831547">Выдалена элементаў: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="2536728043171574184">Вы праглядаеце пазасеткавую копію гэтай старонкі</translation>
+<translation id="2537178555904266562">Памылка пры сінхранізацыі пароляў</translation>
 <translation id="2546283357679194313">Файлы сookie і даныя сайтаў</translation>
 <translation id="2567385386134582609">ВІДАРЫС</translation>
 <translation id="257088987046510401">Тэмы</translation>
@@ -231,6 +232,7 @@
 <translation id="2650751991977523696">Спампаваць файл зноў?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# аўдыяфайл}one{# аўдыяфайл}few{# аўдыяфайлы}many{# аўдыяфайлаў}other{# аўдыяфайла}}</translation>
 <translation id="2653659639078652383">Адправіць</translation>
+<translation id="2669093958999339774">Забараніць сайтам адцягваць вашу ўвагу запытамі дазволу на паказ апавяшчэнняў. Паказваць замест іх індыкатар блакіроўкі ў адрасным радку.</translation>
 <translation id="2677748264148917807">Выйсці</translation>
 <translation id="2704606927547763573">Скапіравана</translation>
 <translation id="2707726405694321444">Абнавіць старонку</translation>
@@ -248,7 +250,6 @@
 <translation id="281504910091592009">Праглядайце захаваныя паролі і кіруйце імі праз <ph name="BEGIN_LINK" />Уліковы запіс Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Каб перанесці закладкі на ўсе прылады, увайдзіце ва ўліковы запіс і ўключыце сінхранізацыю</translation>
 <translation id="2822354292072154809">Сапраўды скінуць усе дазволы сайта для <ph name="CHOSEN_OBJECT_NAME" />?</translation>
-<translation id="2836148919159985482">Каб выйсці з поўнаэкраннага рэжыму, націсніце кнопку "Назад".</translation>
 <translation id="2842985007712546952">Бацькоўская папка</translation>
 <translation id="2858138569776157458">Топ сайтаў</translation>
 <translation id="2860954141821109167">Праверце, ці ўключана на гэтай прыладзе праграма для тэлефона</translation>
@@ -358,14 +359,15 @@
 <translation id="3632295766818638029">Паказаць пароль</translation>
 <translation id="363596933471559332">Аўтаматычна ўваходзіць на вэб-сайты, выкарыстоўваючы захаваныя ўліковыя даныя. Калі функцыя выключана, кожны раз пры ўваходзе на вэб-сайт у вас будуць патрабаваць спраўджання.</translation>
 <translation id="3658159451045945436">Скід прывядзе да выдалення захаваных даных, у тым ліку спіса наведаных сайтаў.</translation>
-<translation id="3682730288090679318">Уключыце гэту наладу, каб запыты дазволу на паказ апавяшчэнняў ад сайтаў аўтаматычна блакіраваліся. Калі сайт запытае дазвол на паказ апавяшчэнняў, унізе старонкі з'явіцца панэль інфармацыі.</translation>
 <translation id="3692944402865947621">Не ўдалося спампаваць файл "<ph name="FILE_NAME" />": месца захоўвання недаступнае.</translation>
+<translation id="3701167022068948696">Выправіць</translation>
 <translation id="3714981814255182093">Адкрыць панэль пошуку</translation>
 <translation id="3716182511346448902">Гэта старонка выкарыстоўвае занадта многа памяці, таму Chrome прыпыніў яе.</translation>
 <translation id="3730075448226062617">Каб даць браўзеру Chrome доступ да мікрафона, уключыце апошні ў <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
 <translation id="3739899004075612870">Закладка дададзена ў <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Фонавая сінхранізацыя</translation>
 <translation id="3749259744154402564">Не падтрымлiваецца</translation>
+<translation id="3767376082821709728">Новыя сайты, якія вы наведваеце, не могуць адпраўляць вам апавяшчэнні</translation>
 <translation id="3771001275138982843">Не ўдалося спампаваць абнаўленне</translation>
 <translation id="3771033907050503522">Укладкі інкогніта</translation>
 <translation id="3773755127849930740">Каб дазволіць спалучэнне, <ph name="BEGIN_LINK" />уключыце Bluetooth<ph name="END_LINK" /></translation>
@@ -591,7 +593,6 @@
 <translation id="5414836363063783498">Ідзе праверка…</translation>
 <translation id="5423934151118863508">Тут будуць паказвацца старонкі, якія вы найчасцей наведваеце</translation>
 <translation id="5424588387303617268">Даступна <ph name="GIGABYTES" /> ГБ</translation>
-<translation id="5427766642345310212">Зразумела. Пакуль вы не зменіце налады, новыя запыты на паказ апавяшчэнняў будуць з'яўляцца тут.</translation>
 <translation id="543338862236136125">Змяніць пароль</translation>
 <translation id="5433691172869980887">Імя карыстальніка скапіравана</translation>
 <translation id="543509235395288790">Спампоўваюцца файлы ў колькасці <ph name="COUNT" /> (<ph name="MEGABYTES" />).</translation>
@@ -678,7 +679,6 @@
 <translation id="5962718611393537961">Каб згарнуць, націсніце тут</translation>
 <translation id="6000066717592683814">Пакінуць Google</translation>
 <translation id="6005538289190791541">Прапанаваны пароль</translation>
-<translation id="6019358956729171834">Загрузіць больш…</translation>
 <translation id="6036057147555329831">Дадатковы модуль ICU</translation>
 <translation id="6039379616847168523">Перайсці на наступную ўкладку</translation>
 <translation id="6040143037577758943">Закрыць</translation>
@@ -774,6 +774,7 @@
 <translation id="666731172850799929">Адкрыць у праграме <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Паведамленне аб прыватнасці Chrome</translation>
 <translation id="6676840375528380067">Выдаліць даныя Chrome з гэтай прылады?</translation>
+<translation id="6689172468748959065">Фота профілю</translation>
 <translation id="6697492270171225480">Паказваць прапановы падобных старонак, калі старонку не ўдаецца знайсці</translation>
 <translation id="6697947395630195233">Chrome патрабуе доступу да вашага месцазнаходжання, каб абагуліць яго з гэтым сайтам.</translation>
 <translation id="6698801883190606802">Кіраванне сінхранізаванымі данымі</translation>
@@ -956,6 +957,7 @@
 <translation id="8035133914807600019">Новая папка…</translation>
 <translation id="8037750541064988519">Засталося дзён: <ph name="DAYS" /></translation>
 <translation id="804335162455518893">SD-карта не знойдзена</translation>
+<translation id="8046278916126163020">Новыя сайты, якія вы наведваеце, могуць запытваць у вас дазвол на паказ апавяшчэнняў</translation>
 <translation id="805047784848435650">На падставе гісторыі прагляду сайтаў</translation>
 <translation id="8051695050440594747">Даступна <ph name="MEGABYTES" /> МБ</translation>
 <translation id="8058746566562539958">Адкрыць у новай укладцы Chrome</translation>

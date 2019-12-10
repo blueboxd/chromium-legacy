@@ -76,8 +76,9 @@ bool IOSChromeNetworkDelegate::OnCanGetCookies(
   if (!cookie_settings_)
     return allowed_from_caller;
 
-  return allowed_from_caller && cookie_settings_->IsCookieAccessAllowed(
-                                    request.url(), request.site_for_cookies());
+  return allowed_from_caller &&
+         cookie_settings_->IsCookieAccessAllowed(
+             request.url(), request.site_for_cookies().RepresentativeUrl());
 }
 
 bool IOSChromeNetworkDelegate::OnCanSetCookie(
@@ -89,20 +90,21 @@ bool IOSChromeNetworkDelegate::OnCanSetCookie(
   if (!cookie_settings_)
     return allowed_from_caller;
 
-  return allowed_from_caller && cookie_settings_->IsCookieAccessAllowed(
-                                    request.url(), request.site_for_cookies());
+  return allowed_from_caller &&
+         cookie_settings_->IsCookieAccessAllowed(
+             request.url(), request.site_for_cookies().RepresentativeUrl());
 }
 
 bool IOSChromeNetworkDelegate::OnForcePrivacyMode(
     const GURL& url,
-    const GURL& site_for_cookies,
+    const net::SiteForCookies& site_for_cookies,
     const base::Optional<url::Origin>& top_frame_origin) const {
   // Null during tests, or when we're running in the system context.
   if (!cookie_settings_.get())
     return false;
 
-  return !cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies,
-                                                  top_frame_origin);
+  return !cookie_settings_->IsCookieAccessAllowed(
+      url, site_for_cookies.RepresentativeUrl(), top_frame_origin);
 }
 
 bool IOSChromeNetworkDelegate::

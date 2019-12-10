@@ -78,7 +78,8 @@
       "os": "13.2.2",
       "xcode build version": "11b53",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests"
+      "pool":"chromium.tests",
+      "xcode parallelization": true
     },
     {
       "include": "eg_cq_tests.json",
@@ -86,7 +87,8 @@
       "os": "13.2.2",
       "xcode build version": "11b53",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests"
+      "pool":"chromium.tests",
+      "xcode parallelization": true
     },
     {
       "include": "eg_tests.json",
@@ -94,7 +96,8 @@
       "os": "13.2.2",
       "xcode build version": "11b53",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests"
+      "pool":"chromium.tests",
+      "xcode parallelization": true
     },
     {
       "include": "eg_tests.json",
@@ -102,7 +105,8 @@
       "os": "13.2.2",
       "xcode build version": "11b53",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests"
+      "pool":"chromium.tests",
+      "xcode parallelization": true
     },
     {
       "include": "screen_size_dependent_tests.json",

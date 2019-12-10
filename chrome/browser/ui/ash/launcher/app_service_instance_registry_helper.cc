@@ -12,6 +12,9 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/services/app_service/public/cpp/instance_update.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
@@ -49,7 +52,7 @@ void AppServiceInstanceRegistryHelper::OnActiveTabChanged(
     state =
         static_cast<apps::InstanceState>(state & ~apps::InstanceState::kActive);
     OnInstances(launcher_controller_helper_->GetAppID(old_contents),
-                old_contents->GetNativeView(), std::string(), state);
+                GetWindow(old_contents), std::string(), state);
   }
 
   if (new_contents) {
@@ -62,7 +65,7 @@ void AppServiceInstanceRegistryHelper::OnActiveTabChanged(
     state =
         static_cast<apps::InstanceState>(state | apps::InstanceState::kActive);
     OnInstances(launcher_controller_helper_->GetAppID(new_contents),
-                new_contents->GetNativeView(), std::string(), state);
+                GetWindow(new_contents), std::string(), state);
   }
 }
 
@@ -85,7 +88,7 @@ void AppServiceInstanceRegistryHelper::OnTabInserted(
       apps::InstanceState::kStarted | apps::InstanceState::kRunning |
       apps::InstanceState::kActive | apps::InstanceState::kVisible);
   OnInstances(launcher_controller_helper_->GetAppID(contents),
-              contents->GetNativeView(), std::string(), state);
+              GetWindow(contents), std::string(), state);
 }
 
 void AppServiceInstanceRegistryHelper::OnTabClosing(
@@ -94,7 +97,7 @@ void AppServiceInstanceRegistryHelper::OnTabClosing(
     return;
 
   OnInstances(launcher_controller_helper_->GetAppID(contents),
-              contents->GetNativeView(), std::string(),
+              GetWindow(contents), std::string(),
               apps::InstanceState::kDestroyed);
 }
 
@@ -102,10 +105,8 @@ void AppServiceInstanceRegistryHelper::OnInstances(const std::string& app_id,
                                                    aura::Window* window,
                                                    const std::string& launch_id,
                                                    apps::InstanceState state) {
-  if (proxy_->AppRegistryCache().GetAppType(app_id) ==
-      apps::mojom::AppType::kUnknown) {
+  if (app_id.empty())
     return;
-  }
 
   std::unique_ptr<apps::Instance> instance =
       std::make_unique<apps::Instance>(app_id, window);
@@ -115,4 +116,30 @@ void AppServiceInstanceRegistryHelper::OnInstances(const std::string& app_id,
   std::vector<std::unique_ptr<apps::Instance>> deltas;
   deltas.push_back(std::move(instance));
   proxy_->InstanceRegistry().OnInstances(std::move(deltas));
+}
+
+bool AppServiceInstanceRegistryHelper::IsWebApp(
+    const std::string& app_id) const {
+  apps::mojom::AppType app_type = proxy_->AppRegistryCache().GetAppType(app_id);
+  if (app_type != apps::mojom::AppType::kExtension &&
+      app_type != apps::mojom::AppType::kWeb)
+    return false;
+
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (!browser->is_type_app()) {
+      continue;
+    }
+    if (web_app::GetAppIdFromApplicationName(browser->app_name()) == app_id)
+      return true;
+  }
+  return false;
+}
+
+aura::Window* AppServiceInstanceRegistryHelper::GetWindow(
+    content::WebContents* contents) {
+  std::string app_id = launcher_controller_helper_->GetAppID(contents);
+  aura::Window* window = contents->GetNativeView();
+  if (IsWebApp(app_id))
+    window = window->GetToplevelWindow();
+  return window;
 }

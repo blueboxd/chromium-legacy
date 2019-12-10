@@ -2537,11 +2537,11 @@ bool AXLayoutObject::IsDataTable() const {
 
       // In this case, the developer explicitly assigned a "data" table
       // attribute.
-      if (IsHTMLTableCellElement(*cell_node)) {
-        HTMLTableCellElement& cell_element = ToHTMLTableCellElement(*cell_node);
-        if (!cell_element.Headers().IsEmpty() ||
-            !cell_element.Abbr().IsEmpty() || !cell_element.Axis().IsEmpty() ||
-            !cell_element.FastGetAttribute(html_names::kScopeAttr).IsEmpty())
+      if (auto* cell_element = DynamicTo<HTMLTableCellElement>(*cell_node)) {
+        if (!cell_element->Headers().IsEmpty() ||
+            !cell_element->Abbr().IsEmpty() ||
+            !cell_element->Axis().IsEmpty() ||
+            !cell_element->FastGetAttribute(html_names::kScopeAttr).IsEmpty())
           return true;
       }
 

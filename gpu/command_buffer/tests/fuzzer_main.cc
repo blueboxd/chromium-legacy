@@ -322,15 +322,15 @@ class CommandBufferSetup {
 
     CHECK(gl::init::InitializeStaticGLBindingsImplementation(
         gl::kGLImplementationEGLANGLE, false));
-    CHECK(gl::init::InitializeGLOneOffPlatformImplementation(false, false,
-                                                             false, true));
+    CHECK(
+        gl::init::InitializeGLOneOffPlatformImplementation(false, false, true));
 #elif defined(GPU_FUZZER_USE_SWIFTSHADER)
     command_line->AppendSwitchASCII(switches::kUseGL,
                                     gl::kGLImplementationSwiftShaderName);
     CHECK(gl::init::InitializeStaticGLBindingsImplementation(
         gl::kGLImplementationSwiftShaderGL, false));
-    CHECK(gl::init::InitializeGLOneOffPlatformImplementation(false, false,
-                                                             false, true));
+    CHECK(
+        gl::init::InitializeGLOneOffPlatformImplementation(false, false, true));
 #elif defined(GPU_FUZZER_USE_STUB)
     gl::GLSurfaceTestSupport::InitializeOneOffWithStubBindings();
     // Because the context depends on configuration bits, we want to recreate

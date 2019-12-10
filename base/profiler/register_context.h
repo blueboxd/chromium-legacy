@@ -120,8 +120,21 @@ inline uintptr_t& RegisterContextInstructionPointer(mcontext_t* context) {
   return AsUintPtr(&context->pc);
 }
 
-#elif defined(ARCH_CPU_X86_64)  // #if defined(ARCH_CPU_ARM_FAMILY) &&
-                                // defined(ARCH_CPU_32_BITS)
+#elif defined(ARCH_CPU_X86_FAMILY) && defined(ARCH_CPU_32_BITS)
+
+inline uintptr_t& RegisterContextStackPointer(mcontext_t* context) {
+  return AsUintPtr(&context->gregs[REG_ESP]);
+}
+
+inline uintptr_t& RegisterContextFramePointer(mcontext_t* context) {
+  return AsUintPtr(&context->gregs[REG_EBP]);
+}
+
+inline uintptr_t& RegisterContextInstructionPointer(mcontext_t* context) {
+  return AsUintPtr(&context->gregs[REG_EIP]);
+}
+
+#elif defined(ARCH_CPU_X86_FAMILY) && defined(ARCH_CPU_64_BITS)
 
 inline uintptr_t& RegisterContextStackPointer(mcontext_t* context) {
   return AsUintPtr(&context->gregs[REG_RSP]);

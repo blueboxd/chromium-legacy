@@ -24,17 +24,48 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-ExtensionsMenuTestUtil::ExtensionsMenuTestUtil(Browser* browser)
+// A view wrapper class that owns the ExtensionsToolbarContainer.
+// This is used when we don't have a "real" browser window, because the
+// TestBrowserWindow does not have a view instantiated for the container.
+class ExtensionsMenuTestUtil::Wrapper {
+ public:
+  explicit Wrapper(Browser* browser)
+      : extensions_container_(new ExtensionsToolbarContainer(browser)) {
+    container_parent_.set_owned_by_client();
+    container_parent_.SetSize(gfx::Size(1000, 1000));
+    container_parent_.Layout();
+    container_parent_.AddChildView(extensions_container_);
+  }
+  ~Wrapper() = default;
+
+  Wrapper(const Wrapper& other) = delete;
+  Wrapper& operator=(const Wrapper& other) = delete;
+
+  ExtensionsToolbarContainer* extensions_container() {
+    return extensions_container_;
+  }
+
+ private:
+  views::View container_parent_;
+  ExtensionsToolbarContainer* extensions_container_ = nullptr;
+};
+
+ExtensionsMenuTestUtil::ExtensionsMenuTestUtil(Browser* browser,
+                                               bool is_real_window)
     : scoped_allow_extensions_menu_instances_(
           ExtensionsMenuView::AllowInstancesForTesting()),
-      browser_(browser),
-      extensions_container_(BrowserView::GetBrowserViewForBrowser(browser_)
+      browser_(browser) {
+  if (is_real_window) {
+    extensions_container_ = BrowserView::GetBrowserViewForBrowser(browser_)
                                 ->toolbar()
-                                ->extensions_container()),
-      menu_view_(std::make_unique<ExtensionsMenuView>(
-          extensions_container_->extensions_button(),
-          browser_,
-          extensions_container_)) {
+                                ->extensions_container();
+  } else {
+    wrapper_ = std::make_unique<Wrapper>(browser);
+    extensions_container_ = wrapper_->extensions_container();
+  }
+  menu_view_ = std::make_unique<ExtensionsMenuView>(
+      extensions_container_->extensions_button(), browser_,
+      extensions_container_);
   menu_view_->set_owned_by_client();
 }
 ExtensionsMenuTestUtil::~ExtensionsMenuTestUtil() = default;
@@ -143,6 +174,10 @@ ToolbarActionsBar* ExtensionsMenuTestUtil::GetToolbarActionsBar() {
   return nullptr;
 }
 
+ExtensionsContainer* ExtensionsMenuTestUtil::GetExtensionsContainer() {
+  return extensions_container_;
+}
+
 std::unique_ptr<BrowserActionTestUtil>
 ExtensionsMenuTestUtil::CreateOverflowBar(Browser* browser) {
   // There is no overflow bar with the ExtensionsMenu implementation.
@@ -156,6 +191,10 @@ gfx::Size ExtensionsMenuTestUtil::GetMinPopupSize() {
 
 gfx::Size ExtensionsMenuTestUtil::GetMaxPopupSize() {
   return gfx::Size(ExtensionPopup::kMaxWidth, ExtensionPopup::kMaxHeight);
+}
+
+gfx::Size ExtensionsMenuTestUtil::GetToolbarActionSize() {
+  return extensions_container_->GetToolbarActionSize();
 }
 
 bool ExtensionsMenuTestUtil::CanBeResized() {

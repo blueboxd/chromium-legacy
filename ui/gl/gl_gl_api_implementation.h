@@ -23,9 +23,6 @@ GL_EXPORT GLenum GetInternalFormat(const GLVersionInfo* version,
 GL_EXPORT void InitializeStaticGLBindingsGL();
 GL_EXPORT void ClearBindingsGL();
 
-GL_EXPORT void InitializeLogGLBindingsGL();
-bool GetDebugGLBindingsInitializedGL();
-
 bool SetNullDrawGLBindingsEnabled(bool enabled);
 bool GetNullDrawBindingsEnabled();
 

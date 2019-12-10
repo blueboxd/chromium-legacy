@@ -241,6 +241,9 @@ class VIEWS_EXPORT Label : public View,
   // |range| endpoints don't lie on grapheme boundaries.
   void SelectRange(const gfx::Range& range);
 
+  views::PropertyChangedSubscription AddTextChangedCallback(
+      views::PropertyChangedCallback callback);
+
   // View:
   int GetBaseline() const override;
   gfx::Size CalculatePreferredSize() const override;

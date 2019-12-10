@@ -9,7 +9,6 @@
 <translation id="1036348656032585052">Dezactivează</translation>
 <translation id="1038842779957582377">nume necunoscut</translation>
 <translation id="1039626062703039346">Chrome te poate ajuta să îți protejezi Contul Google și să îți schimbi parola. Se va genera o notificare către Google despre acest site.</translation>
-<translation id="1044897699341250361">Ce înseamnă aceasta</translation>
 <translation id="1050038467049342496">închide celelalte aplicații;</translation>
 <translation id="1055184225775184556">&amp;Anulați adăugarea</translation>
 <translation id="1056898198331236512">Avertisment</translation>
@@ -184,7 +183,6 @@
 <translation id="1745880797583122200">Browserul tău este gestionat</translation>
 <translation id="17513872634828108">File deschise</translation>
 <translation id="1753706481035618306">Numărul paginii</translation>
-<translation id="175838129965056221">Chrome a detectat că folosești o conexiune monitorizată</translation>
 <translation id="1763864636252898013">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; sistemul de operare al dispozitivului nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Rulează Diagnostice rețea Windows<ph name="END_LINK" />.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -253,7 +251,6 @@
 <translation id="2119867082804433120">Perforare în dreapta jos</translation>
 <translation id="2129079103035905234">Senzori de mișcare</translation>
 <translation id="2130448033692577677">Șabloanele specificate nu pot fi aplicate, deoarece politica DnsOverHttpsMode nu este setată.</translation>
-<translation id="2131277894177304644">Chromium a detectat că folosești o conexiune monitorizată</translation>
 <translation id="213826338245044447">Marcaje mobile</translation>
 <translation id="214556005048008348">Anulează plata</translation>
 <translation id="2147827593068025794">Sincronizare în fundal</translation>
@@ -403,7 +400,6 @@
 <translation id="2799020568854403057">Site-ul pe care urmează să îl accesezi conține aplicații dăunătoare</translation>
 <translation id="2799223571221894425">Repornește</translation>
 <translation id="2803306138276472711">Navigarea sigură Google <ph name="BEGIN_LINK" />a detectat recent programe malware<ph name="END_LINK" /> pe <ph name="SITE" />. Site-urile care sunt de obicei sigure sunt uneori infectate cu programe malware.</translation>
-<translation id="281585763351939989">Chromium a detectat că folosești o conexiune monitorizată.</translation>
 <translation id="2824775600643448204">Bara de adrese și de căutare</translation>
 <translation id="2826760142808435982">Conexiunea este criptată și autentificată utilizând <ph name="CIPHER" /> și folosește <ph name="KX" /> ca mecanism de schimb al cheii.</translation>
 <translation id="2835170189407361413">Golește formularul</translation>
@@ -448,7 +444,6 @@
 <translation id="3024663005179499861">Tip de politică greșit</translation>
 <translation id="3037605927509011580">Of, nu mai merge!</translation>
 <translation id="3041612393474885105">Informații despre certificat</translation>
-<translation id="304755864151473094">De ce se întâmplă acest lucru</translation>
 <translation id="3057676462092457419">Modul DnsOverHttps <ph name="SECURE_DNS_MODE_SECURE" /> nu este încă acceptat. Modul a fost setat la <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">C9 (Plic)</translation>
 <translation id="3061707000357573562">Serviciu de corecție</translation>
@@ -479,7 +474,6 @@
 <translation id="320323717674993345">Anulează plata</translation>
 <translation id="3207960819495026254">Marcată</translation>
 <translation id="3209034400446768650">Pagina poate percepe o taxă</translation>
-<translation id="3209080785413271048">Folosește Windows Hello pentru a confirma metodele de plată salvate.</translation>
 <translation id="3212581601480735796">Activitatea ta de pe <ph name="HOSTNAME" /> este monitorizată</translation>
 <translation id="3215092763954878852">Nu s-a putut folosi WebAuthn</translation>
 <translation id="3225919329040284222">Serverul a prezentat un certificat care nu se potrivește cu așteptările încorporate. Aceste așteptări sunt incluse pentru anumite site-uri web, cu un grad sporit de securitate, pentru a vă proteja.</translation>
@@ -493,7 +487,6 @@
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> este similar cu <ph name="SUGGESTED_DOMAIN" />. Uneori, atacatorii imită site-uri folosind adrese URL similare.</translation>
 <translation id="3270847123878663523">&amp;Anulați reordonarea</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
-<translation id="3281668902344226640">Folosește Touch ID pentru a confirma metodele de plată salvate.</translation>
 <translation id="3282497668470633863">Adaugă numele de pe card</translation>
 <translation id="3287510313208355388">Descarcă când ești online</translation>
 <translation id="3293642807462928945">Află mai multe despre politica <ph name="POLICY_NAME" /></translation>
@@ -634,7 +627,6 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Niciunul}=1{De la 1 site }few{De la # site-uri }other{De la # de site-uri }}</translation>
 <translation id="397105322502079400">Se calculează...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> este blocat</translation>
-<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> a activat în browser Protecția Chrome împotriva amenințărilor la adresa întreprinderilor. Protecția Chrome împotriva amenințărilor la adresa întreprinderilor are acces la o parte din datele tale.</translation>
 <translation id="3987405730340719549">Chrome a identificat acest site ca fiind potențial fals sau fraudulos.
 
     În cazul în care consideri că este o greșeală, accesează https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
@@ -699,7 +691,6 @@
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Rulează Diagnostice rețea<ph name="END_LINK" />.</translation>
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" />Accesează <ph name="SITE" /><ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">Valid</translation>
-<translation id="4248776159690739358">Permite administratorului accesul la datele despre evenimentele de securitate semnalate de Protecția Chrome împotriva amenințărilor la adresa întreprinderilor. Acestea pot include adresele URL ale paginilor pe care le accesezi, nume de fișiere sau metadate și numele de utilizator cu care te conectezi pe dispozitiv și la Chrome.</translation>
 <translation id="4250431568374086873">Conexiunea la acest site nu este complet sigură</translation>
 <translation id="4250680216510889253">Nu</translation>
 <translation id="425582637250725228">Este posibil ca modificările să nu se salveze.</translation>
@@ -734,8 +725,6 @@
 <translation id="4372948949327679948">Se aștepta valoarea <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">Ați încercat să accesați <ph name="DOMAIN" />, dar certificatul furnizat de server a fost revocat de emitentul său. Aceasta înseamnă că acreditările de securitate furnizate de server nu sunt deloc de încredere. Este posibil să comunicați cu un atacator.</translation>
 <translation id="4378154925671717803">Telefon</translation>
-<translation id="437847259914972036">Activitatea ta pe web și toate informațiile pe care le introduci sunt urmărite, iar conținutul poate fi modificat fără știrea ta.</translation>
-<translation id="4398334096870680409">Această funcție nu este disponibilă pe dispozitivul tău.</translation>
 <translation id="4406896451731180161">rezultate ale căutării</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" /> cookie-uri</translation>
 <translation id="4415426530740016218">Adresă de preluare</translation>
@@ -774,7 +763,6 @@
 <translation id="4594403342090139922">&amp;Anulați ștergerea</translation>
 <translation id="4597348597567598915">Mărimea 8</translation>
 <translation id="4600854749408232102">C6/C5 (Plic)</translation>
-<translation id="4613966523036881546">Google Chrome nu are încredere în certificatul pentru această conexiune, deoarece el se folosește pentru interceptarea și monitorizarea rețelelor.</translation>
 <translation id="4635654612248442824">Site-ul <ph name="ORIGIN" /> a solicitat ca o politică de origine
     să se aplice tuturor solicitărilor, dar această politică nu poate fi aplicată momentan.</translation>
 <translation id="464342062220857295">Funcții de căutare</translation>
@@ -1172,7 +1160,6 @@
 <translation id="6547208576736763147">Perforare dublă în stânga</translation>
 <translation id="6554795675067793129">Contul tău este administrat de <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Repetă</translation>
-<translation id="6559565319173126218">Chrome nu are încredere în certificatul afișat pentru această conexiune, deoarece el se folosește pentru interceptarea și monitorizarea rețelelor.</translation>
 <translation id="6569060085658103619">Se afișează pagina unei extensii</translation>
 <translation id="6573200754375280815">Perforare dublă în dreapta</translation>
 <translation id="6578796323535178455">C2 (Plic)</translation>
@@ -1201,12 +1188,10 @@
 <translation id="6685834062052613830">Deconectează-te și finalizează configurarea</translation>
 <translation id="6689271823431384964">Chrome oferă salvarea cardurilor în Contul Google pentru că te-ai conectat. Poți schimba acest comportament în setări. Numele titularului de card vine din contul tău.</translation>
 <translation id="6704582573942289642">Acesta este site-ul corect?</translation>
-<translation id="6707256370811247129">Scanează conținutul memoriei cache și fișierele pe care le descarci sau le încarci în Chrome.</translation>
 <translation id="6710213216561001401">Înapoi</translation>
 <translation id="6710594484020273272">&lt;Introdu termenul de căutare&gt;</translation>
 <translation id="671076103358959139">Indicativ de înregistrare:</translation>
 <translation id="6711464428925977395">A apărut o problemă la serverul proxy sau adresa nu este corectă.</translation>
-<translation id="6721811549156553509">Instrumentul de monitorizare a rețelei își asumă identitatea site-urilor pe care le accesezi și îți poate vedea activitatea și toate informațiile pe care le introduci (de exemplu, parole, mesaje sau carduri de credit). Ai grijă când faci acțiuni delicate online, deoarece acestea vor fi vizibile pentru instrumentul de monitorizare a rețelei, care poate să modifice conținutul paginilor pe care le accesezi. Aici sunt incluse activitățile în alte browsere și programe care au acces la internet.</translation>
 <translation id="6738516213925468394">Datele au fost criptate cu <ph name="BEGIN_LINK" />expresia de acces pentru sincronizare<ph name="END_LINK" /> la <ph name="TIME" />. Introdu expresia de acces pentru a începe sincronizarea.</translation>
 <translation id="674375294223700098">Eroare de certificat de server necunoscută.</translation>
 <translation id="6744009308914054259">În timp ce aștepți o conexiune, poți accesa Descărcările pentru a citi articole offline.</translation>
@@ -1291,7 +1276,6 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /> despre această problemă.</translation>
 <translation id="7219179957768738017">Conexiunea utilizează <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Se procesează</translation>
-<translation id="7239736667463137521">Chrome a detectat că folosești o conexiune monitorizată.</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Site-ul pe care urmează să îl accesezi conține programe malware</translation>
 <translation id="724975217298816891">Introdu data de expirare și codul CVC pentru <ph name="CREDIT_CARD" />, pentru a actualiza detaliile cardului. După ce confirmi, acest site va avea acces la detaliile cardului tău.</translation>
@@ -1318,7 +1302,6 @@ Detalii suplimentare:
 <translation id="7346048084945669753">Este afiliat:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Linie de comandă</translation>
-<translation id="7353776484425559055">Chromium nu are încredere în certificatul pentru această conexiune, deoarece el se folosește pentru interceptarea și monitorizarea rețelelor. Este posibil ca această eroare să apară din cauza unui certificat instalat pe dispozitiv. Când stabilește conexiuni securizate, Chromium are încredere în certificatele instalate local pe computerul sau dispozitivul mobil al utilizatorului. Astfel, utilizatorii pot rula instrumente pentru verificarea conexiunilor și remedierea erorilor legate de acestea în timpul dezvoltării site-ului sau pentru ca mediile corporative să intercepteze și monitorizeze traficul intern. În cazul în care această funcție este folosită abuziv pentru a intercepta traficul de pe internetul public, Chromium afișează un avertisment.</translation>
 <translation id="7372973238305370288">rezultat al căutării</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Comenzi media</translation>
@@ -1350,7 +1333,6 @@ Detalii suplimentare:
 <translation id="7460618730930299168">Proiecția este diferită de ce ai selectat. Continui?</translation>
 <translation id="7473891865547856676">Nu, mulțumesc</translation>
 <translation id="7481312909269577407">Înainte</translation>
-<translation id="748406663033922918">Folosește blocarea ecranului pentru a confirma metodele de plată salvate.</translation>
 <translation id="7485870689360869515">Nu s-au găsit date.</translation>
 <translation id="7495290002932347110">O încălcare a securității datelor de pe un site sau dintr-o aplicație ți-a expus parola. Chrome recomandă să verifici parolele salvate și să-ți schimbi acum parola de pe <ph name="ORIGIN" />.</translation>
 <translation id="7498234416455752244">Continuați editarea</translation>
@@ -1380,12 +1362,10 @@ Detalii suplimentare:
 <translation id="7592362899630581445">Certificatul serverului încalcă limitările privind numele.</translation>
 <translation id="7598391785903975535">Mai puțin de <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187">Momentan, <ph name="HOST_NAME" /> nu poate procesa această solicitare.</translation>
-<translation id="7599841999395223597">Chrome nu are încredere în certificatul pentru această conexiune, deoarece el se folosește pentru interceptarea și monitorizarea rețelelor. Este posibil ca această eroare să apară din cauza unui certificat instalat pe dispozitiv. Când stabilește conexiuni securizate, Chrome are încredere în certificatele instalate local pe computerul sau dispozitivul mobil al utilizatorului. Astfel, utilizatorii pot rula instrumente pentru verificarea conexiunilor și remedierea erorilor legate de acestea în timpul dezvoltării site-ului sau pentru ca mediile corporative să intercepteze și monitorizeze traficul intern. În cazul în care această funcție este folosită abuziv pentru a intercepta traficul de pe internetul public, Chrome afișează un avertisment.</translation>
 <translation id="7600965453749440009">Nu traduce niciodată din <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Valoarea este în afara intervalului <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Expiră pe: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Aveți deja date criptate utilizând o versiune diferită a parolei pentru Contul dvs. Google. Introduceți-o mai jos.</translation>
-<translation id="7625784245512586808">Protecția Chrome împotriva amenințărilor la adresa întreprinderilor</translation>
 <translation id="7633909222644580952">Date privind performanța și rapoarte de blocare</translation>
 <translation id="7637571805876720304">Elimini cardul de credit din Chromium?</translation>
 <translation id="7638605456503525968">Porturi seriale</translation>
@@ -1473,7 +1453,6 @@ Detalii suplimentare:
 <translation id="8041940743680923270">Utilizați setarea prestabilită la nivel global (Întrebați)</translation>
 <translation id="8042918947222776840">Alege metoda de preluare</translation>
 <translation id="8057711352706143257">„<ph name="SOFTWARE_NAME" />” nu este configurat corect. De obicei, problema se remediază dezinstalând „<ph name="SOFTWARE_NAME" />” <ph name="FURTHER_EXPLANATION" /></translation>
-<translation id="8062224330780487419">De acum înainte, nu va mai fi nevoie să introduci codul de securitate al cardului</translation>
 <translation id="8066955247577885446">A apărut o eroare.</translation>
 <translation id="8074253406171541171">10x13 (Plic)</translation>
 <translation id="8078141288243656252">Nu se poate adnota când este rotit</translation>
@@ -1490,7 +1469,6 @@ Detalii suplimentare:
 <translation id="8103161714697287722">Metodă de plată</translation>
 <translation id="8105368624971345109">Dezactivează</translation>
 <translation id="8118489163946903409">Metodă de plată</translation>
-<translation id="8124023448510659215">Chromium nu are încredere în certificatul pentru această conexiune, deoarece el se folosește pentru interceptarea și monitorizarea rețelelor.</translation>
 <translation id="8127301229239896662">„<ph name="SOFTWARE_NAME" />” nu a fost instalat corect pe computer sau în rețea. Contactează administratorul IT pentru a remedia această problemă.</translation>
 <translation id="8131740175452115882">Confirmați</translation>
 <translation id="8149426793427495338">Computerul este inactiv.</translation>
@@ -1535,6 +1513,7 @@ Detalii suplimentare:
 <translation id="8308427013383895095">Traducerea nu a reușit din cauza unei probleme cu conexiunea la rețea.</translation>
 <translation id="831207732689920588">Această pagină este suspectă (semnalată de Chrome).</translation>
 <translation id="8332188693563227489">Accesul la <ph name="HOST_NAME" /> nu este permis</translation>
+<translation id="833262891116910667">Evidențiază</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Dacă îți asumi riscurile de securitate, poți să <ph name="BEGIN_LINK" />accesezi acest site<ph name="END_LINK" /> înainte ca programele periculoase să fie eliminate.</translation>
 <translation id="8349305172487531364">Bara de marcaje</translation>
@@ -1633,8 +1612,6 @@ Detalii suplimentare:
 <translation id="8957210676456822347">Autorizarea prin portalul captiv</translation>
 <translation id="8962950042226115166">Site suspect</translation>
 <translation id="8968766641738584599">Salvează cardul</translation>
-<translation id="8969267497192857913">Orice tastezi, orice pagini afișezi și orice altă activitate de pe web este urmărită, iar conținutul de pe site-uri poate fi modificat fără știrea ta.
-    <ph name="BEGIN_LEARN_MORE_LINK" />Află mai multe<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">Certificatul serverului a expirat.</translation>
 <translation id="8975012916872825179">Include informații precum numerele de telefon, adresele de e-mail și adresele de expediere</translation>
 <translation id="8975263830901772334">Numele fișierelor pe care le printezi</translation>
@@ -1668,7 +1645,6 @@ Detalii suplimentare:
 <translation id="9080712759204168376">Rezumatul comenzii</translation>
 <translation id="9089260154716455634">Politica privind intervalele de inactivitate:</translation>
 <translation id="9095388113577226029">Mai multe limbi...</translation>
-<translation id="9098981495403789647">Administratorul a activat în browser Protecția Chrome împotriva amenințărilor la adresa întreprinderilor. Protecția Chrome împotriva amenințărilor la adresa întreprinderilor are acces la o parte din datele tale.</translation>
 <translation id="9103872766612412690">Site-ul <ph name="SITE" /> folosește în mod obișnuit criptarea pentru a-ți proteja informațiile. Când Chromium a încercat să se conecteze la <ph name="SITE" /> de această dată, site-ul a returnat date de conectare neobișnuite și incorecte. Acest lucru s-a întâmplat fie pentru că un atacator încearcă să falsifice site-ul <ph name="SITE" />, fie pentru că un ecran de conectare Wi-Fi a întrerupt conexiunea. Securitatea informațiilor tale nu a fost afectată, deoarece Chromium a oprit conexiunea înainte ca datele să fie transferate.</translation>
 <translation id="9106062320799175032">Adaugă o adresă de facturare</translation>
 <translation id="9114524666733003316">Se confirmă cardul…</translation>

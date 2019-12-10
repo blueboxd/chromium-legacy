@@ -76,4 +76,10 @@ bool ShouldShowExtensionsCheckupPromo(content::BrowserContext* context) {
              extensions_features::kNtpPromoEntryPoint;
 }
 
+CheckupMessage GetCheckupMessageFocus() {
+  return static_cast<CheckupMessage>(base::GetFieldTrialParamByFeatureAsInt(
+      extensions_features::kExtensionsCheckup,
+      extensions_features::kExtensionsCheckupBannerMessageParameter, 2));
+}
+
 }  // namespace extensions

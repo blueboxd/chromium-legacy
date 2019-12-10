@@ -568,9 +568,9 @@ TEST_F(AppCacheTest, ToFromDatabaseRecords) {
   auto group = base::MakeRefCounted<AppCacheGroup>(service.storage(),
                                                    kManifestUrl, kGroupId);
   AppCacheManifest manifest;
-  EXPECT_TRUE(
-      ParseManifest(kManifestUrl, kManifestScope, kData.c_str(), kData.length(),
-                    PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES, manifest));
+  EXPECT_TRUE(ParseManifest(
+      kManifestUrl, kManifestScope, true, kData.c_str(), kData.length(),
+      PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES, manifest));
   cache->InitializeWithManifest(&manifest);
   EXPECT_EQ(APPCACHE_NETWORK_NAMESPACE,
             cache->online_whitelist_namespaces_[0].type);
@@ -707,6 +707,82 @@ TEST_F(AppCacheTest, IsNamespaceMatch) {
   EXPECT_TRUE(star_greediness.IsMatch(
       GURL("http://foo.com/a/b/01234567890abcdef_eat_some_more_characters_"
            "/and_even_more_for_the_heck_of_it/01234567890abcdef/b")));
+}
+
+TEST_F(AppCacheTest, CheckValidManifestScopeTests) {
+  EXPECT_TRUE(
+      AppCache::CheckValidManifestScope(GURL("http://mockhost/manifest"), "/"));
+  EXPECT_TRUE(AppCache::CheckValidManifestScope(
+      GURL("http://mockhost/manifest"), "/foo/"));
+
+  // Check that a relative scope is allowed.
+  EXPECT_TRUE(AppCache::CheckValidManifestScope(
+      GURL("http://mockhost/manifest"), "bar/"));
+  EXPECT_TRUE(AppCache::CheckValidManifestScope(
+      GURL("http://mockhost/manifest"), "../"));
+  EXPECT_TRUE(AppCache::CheckValidManifestScope(
+      GURL("http://mockhost/manifest"), "../foo/"));
+  // Relative past the top of the path should be equal to both "../" and "/"
+  // (and hence valid).
+  EXPECT_TRUE(AppCache::CheckValidManifestScope(
+      GURL("http://mockhost/manifest"), "../../"));
+
+  // A scope must be non-empty.
+  EXPECT_FALSE(
+      AppCache::CheckValidManifestScope(GURL("http://mockhost/manifest"), ""));
+
+  // Check that scope must end in a slash.
+  EXPECT_FALSE(AppCache::CheckValidManifestScope(
+      GURL("http://mockhost/manifest"), "/foo"));
+  EXPECT_FALSE(AppCache::CheckValidManifestScope(
+      GURL("http://mockhost/manifest"), "bar"));
+  EXPECT_TRUE(AppCache::CheckValidManifestScope(
+      GURL("http://mockhost/manifest"), ".."));
+
+  // Test invalid scopes.
+  EXPECT_FALSE(
+      AppCache::CheckValidManifestScope(GURL("http://mockhost/manifest"), " "));
+  EXPECT_FALSE(AppCache::CheckValidManifestScope(
+      GURL("http://mockhost/manifest"), "\t"));
+  EXPECT_FALSE(AppCache::CheckValidManifestScope(
+      GURL("http://mockhost/manifest"), "\n"));
+  EXPECT_FALSE(AppCache::CheckValidManifestScope(
+      GURL("http://mockhost/manifest"), "?foo"));
+  EXPECT_FALSE(AppCache::CheckValidManifestScope(
+      GURL("http://mockhost/manifest"), "/?foo"));
+  EXPECT_FALSE(AppCache::CheckValidManifestScope(
+      GURL("http://mockhost/manifest"), "../?foo"));
+  EXPECT_FALSE(AppCache::CheckValidManifestScope(
+      GURL("http://mockhost/manifest"), "#foo"));
+  EXPECT_FALSE(AppCache::CheckValidManifestScope(
+      GURL("http://mockhost/manifest"), "/#foo"));
+  EXPECT_FALSE(AppCache::CheckValidManifestScope(
+      GURL("http://mockhost/manifest"), "../#foo"));
+}
+
+TEST_F(AppCacheTest, GetManifestScopeTests) {
+  // Test the defaults.
+  EXPECT_EQ(AppCache::GetManifestScope(GURL("http://mockhost/manifest"), ""),
+            "/");
+  EXPECT_EQ(
+      AppCache::GetManifestScope(GURL("http://mockhost/foo/manifest"), ""),
+      "/foo/");
+
+  // Test the overrides.
+  EXPECT_EQ(AppCache::GetManifestScope(GURL("http://mockhost/manifest"), "/"),
+            "/");
+  EXPECT_EQ(
+      AppCache::GetManifestScope(GURL("http://mockhost/foo/manifest"), "/"),
+      "/");
+  EXPECT_EQ(
+      AppCache::GetManifestScope(GURL("http://mockhost/foo/manifest"), "../"),
+      "../");
+
+  // Relative past the top of the path should be equal to both "../" and "/"
+  // (and hence valid), so we keep it as it was passed to us.
+  EXPECT_EQ(
+      AppCache::GetManifestScope(GURL("http://mockhost/manifest"), "../../"),
+      "../../");
 }
 
 }  // namespace content

@@ -35,6 +35,10 @@ CONTENT_EXPORT std::string GetWebKitVersion();
 
 CONTENT_EXPORT std::string GetWebKitRevision();
 
+// Builds a string that describes the CPU type when available (or blank
+// otherwise).
+CONTENT_EXPORT std::string BuildCpuInfo();
+
 // Builds a User-agent compatible string that describes the OS and CPU type.
 // On Android, the string will only include the build number if true is passed
 // as an argument.
@@ -48,6 +52,10 @@ CONTENT_EXPORT base::StringPiece GetFrozenUserAgent(bool mobile);
 // product name.
 CONTENT_EXPORT std::string BuildUserAgentFromProduct(
     const std::string& product);
+
+// Returns the model information. Returns a blank string if not on Android or
+// if on a codenamed (i.e. not a release) build of an Android.
+CONTENT_EXPORT std::string BuildModelInfo();
 
 #if defined(OS_ANDROID)
 // Helper function to generate a full user agent string given a short

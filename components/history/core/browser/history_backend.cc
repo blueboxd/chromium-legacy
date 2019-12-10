@@ -28,6 +28,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/favicon_base/favicon_util.h"
@@ -144,6 +145,19 @@ const int kMaxRedirectCount = 32;
 // and is deleted.
 const int kExpireDaysThreshold = 90;
 
+// The maximum number of days for which domain visit metrics are computed
+// each time HistoryBackend::GetDomainDiversity() is called.
+constexpr int kDomainDiversityBacktrackMaxDays = 7;
+
+// An offset that corrects possible error in date/time arithmetic caused by
+// fluctuation of day length due to Daylight Saving Time (DST). For example,
+// given midnight M, its next midnight can be computed as (M + 24 hour
+// + offset).LocalMidnight(). In most modern DST systems, the DST shift is
+// typically 1 hour. However, a larger value of 4 is chosen here to
+// accommodate larger DST shifts that have been used historically and to
+// avoid other potential issues.
+constexpr int kDSTRoundingOffsetHours = 4;
+
 bool IsFaviconBitmapExpired(base::Time last_updated) {
   return (Time::Now() - last_updated) >
          TimeDelta::FromDays(kFaviconRefetchDays);
@@ -179,6 +193,12 @@ base::string16 FormatUrlForRedirectComparison(const GURL& url) {
           url_formatter::kFormatUrlOmitUsernamePassword |
           url_formatter::kFormatUrlOmitTrivialSubdomains,
       net::UnescapeRule::NONE, nullptr, nullptr, nullptr);
+}
+
+base::Time MidnightNDaysLater(base::Time time, int days) {
+  return (time.LocalMidnight() + base::TimeDelta::FromDays(days) +
+          base::TimeDelta::FromHours(kDSTRoundingOffsetHours))
+      .LocalMidnight();
 }
 
 QueuedHistoryDBTask::QueuedHistoryDBTask(
@@ -1199,6 +1219,59 @@ HistoryCountResult HistoryBackend::GetHistoryCount(const Time& begin_time,
 
 HistoryCountResult HistoryBackend::CountUniqueHostsVisitedLastMonth() {
   return {!!db_, db_ ? db_->CountUniqueHostsVisitedLastMonth() : 0};
+}
+
+DomainDiversityResults HistoryBackend::GetDomainDiversity(
+    base::Time report_time,
+    int number_of_days_to_report,
+    DomainMetricBitmaskType metric_type_bitmask) {
+  DCHECK_GE(number_of_days_to_report, 0);
+  DCHECK_LE(number_of_days_to_report, kDomainDiversityBacktrackMaxDays);
+  DomainDiversityResults result;
+
+  if (!db_)
+    return result;
+
+  number_of_days_to_report =
+      std::min(number_of_days_to_report, kDomainDiversityBacktrackMaxDays);
+
+  base::Time current_midnight = report_time.LocalMidnight();
+  base::ElapsedTimer db_timer;
+
+  for (int days_back = 0; days_back < number_of_days_to_report; ++days_back) {
+    DomainMetricSet single_metric_set;
+    single_metric_set.end_time = current_midnight;
+
+    if (metric_type_bitmask & kEnableLast1DayMetric) {
+      base::Time last_midnight = MidnightNDaysLater(current_midnight, -1);
+      single_metric_set.one_day_metric = DomainMetricCountType(
+          db_->CountUniqueDomainsVisited(last_midnight, current_midnight),
+          last_midnight);
+    }
+
+    if (metric_type_bitmask & kEnableLast7DayMetric) {
+      base::Time seven_midnights_ago = MidnightNDaysLater(current_midnight, -7);
+      single_metric_set.seven_day_metric = DomainMetricCountType(
+          db_->CountUniqueDomainsVisited(seven_midnights_ago, current_midnight),
+          seven_midnights_ago);
+    }
+
+    if (metric_type_bitmask & kEnableLast28DayMetric) {
+      base::Time twenty_eight_midnights_ago =
+          MidnightNDaysLater(current_midnight, -28);
+      single_metric_set.twenty_eight_day_metric = DomainMetricCountType(
+          db_->CountUniqueDomainsVisited(twenty_eight_midnights_ago,
+                                         current_midnight),
+          twenty_eight_midnights_ago);
+    }
+    result.push_back(single_metric_set);
+
+    current_midnight = MidnightNDaysLater(current_midnight, -1);
+  }
+
+  UMA_HISTOGRAM_COUNTS_10000("History.DomainCountQueryTime",
+                             db_timer.Elapsed().InMilliseconds());
+  return result;
 }
 
 HistoryLastVisitToHostResult HistoryBackend::GetLastVisitToHost(

@@ -5,6 +5,7 @@
 <translation id="1181037720776840403">ამოშლა</translation>
 <translation id="125153950246128346">შეეხეთ სხვა ჩანართის სანახავად</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> ჩანართი}other{<ph name="TABS_COUNT_MANY" /> ჩანართი}}</translation>
+<translation id="2569352796411618312">შემოთავაზება: თქვენი <ph name="NUMBER_OF_TABS" /> ჩანართი ბოლო დროს არ გამოგიყენებიათ. გსურთ მათი დახურვა?</translation>
 <translation id="257674075312929031">ჯგუფი</translation>
 <translation id="2613747923081026172">ჯგუფის შექმნა</translation>
 <translation id="2671423594960767771">ჯგუფის გაზიარება</translation>
@@ -23,6 +24,9 @@
 <translation id="6840760312327750441">ჩანართების დასაჯგუფებლად ხანგრძლივად შეეხეთ ჩანართს. შემდეგ კი ჩავლებით გადაიტანეს ის სხვა ჩანართზე.</translation>
 <translation id="7151209024774799310">ჩანართების წაშლა ჯგუფიდან</translation>
 <translation id="7559245342362162951">ჯგუფის ჩანართების სრულეკრანიან ბადეში ჩვენება</translation>
+<translation id="7792771145871471484">შემოთავაზებების გადახედვა.</translation>
+<translation id="7966321538264951561">შემოთავაზებების დახურვა.</translation>
+<translation id="83556505225171773">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> არჩეული ჩანართის დახურვა}other{<ph name="TABS_COUNT_MANY" /> არჩეული ჩანართის დახურვა}}</translation>
 <translation id="9150694013019234766">გადაერთეთ ჩანართებს შორის თქვენს ჩანართების ჯგუფში, ეკრანის ქვედა ნაწილში</translation>
 <translation id="9169594135889675189">ჯგუფში ახალი ჩანართის დამატება</translation>
 <translation id="959682366969460160">იყავით ორგანიზებული</translation>

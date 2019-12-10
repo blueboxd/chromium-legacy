@@ -5385,7 +5385,6 @@ interface Navigator
     getter product
     getter productSub
     getter scheduling
-    getter screen
     getter serial
     getter serviceWorker
     getter sms
@@ -7753,10 +7752,6 @@ interface Screen
     getter top
     getter width
     method constructor
-interface ScreenManager
-    attribute @@toStringTag
-    method constructor
-    method getScreens
 interface ScreenOrientation : EventTarget
     attribute @@toStringTag
     getter angle
@@ -11623,6 +11618,7 @@ interface webkitURL
     method gc
     method getComputedAccessibleNode
     method getComputedStyle
+    method getScreens
     method getSelection
     method matchMedia
     method moveBy

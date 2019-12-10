@@ -91,6 +91,7 @@
 <translation id="209018056901015185">Αίτηση ιστότ. για υπολογ.</translation>
 <translation id="2103075008456228677">Ανοίξτε το history.google.com</translation>
 <translation id="2116625576999540962">Μετακινήθηκαν <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> στοιχεία</translation>
+<translation id="2118594521750010466">Άμεση επιδιόρθωση</translation>
 <translation id="213900355088104901">Για να περιηγηθείτε ιδιωτικά, ανοίξτε μια καρτέλα για ανώνυμη περιήγηση</translation>
 <translation id="2139867232736819575">Αναζήτηση του κειμένου που αντιγράψατε</translation>
 <translation id="2149973817440762519">Επεξεργασία σελιδοδείκτη</translation>
@@ -98,6 +99,7 @@
 <translation id="2198757192731523470">Η Google μπορεί να χρησιμοποιεί το ιστορικό σας για την εξατομίκευση της Αναζήτησης, των διαφημίσεων και άλλων υπηρεσιών Google.</translation>
 <translation id="2230173723195178503">Η ιστοσελίδα φορτώθηκε</translation>
 <translation id="2239626343334228536">Διαγραφή δεδομένων περιήγησης…</translation>
+<translation id="2257567812274161158">Ο συγχρονισμός δεν λειτουργεί.</translation>
 <translation id="2267753748892043616">Προσθήκη λογαριασμού</translation>
 <translation id="2268044343513325586">Περιορισμός</translation>
 <translation id="2273327106802955778">Μενού "Περισσότερα"</translation>
@@ -129,6 +131,7 @@
 <translation id="2691653761409724435">Μη διαθέσιμο εκτός σύνδεσης</translation>
 <translation id="2695507686909505111">Μεταφρασμένη σελίδα</translation>
 <translation id="2702801445560668637">Λίστα ανάγνωσης</translation>
+<translation id="2704491540504985681">Λήψεις</translation>
 <translation id="2704606927547763573">Αντιγράφ.</translation>
 <translation id="2709516037105925701">Αυτόματη συμπλήρωση</translation>
 <translation id="2712127207578915686">Αδύνατο άνοιγμα αρχείου</translation>
@@ -218,6 +221,7 @@
 <translation id="3943492037546055397">Κωδικοί πρόσβασης</translation>
 <translation id="3967822245660637423">Ολοκλήρωση λήψης</translation>
 <translation id="3989635538409502728">Έξοδος</translation>
+<translation id="399419089947468503">Σφάλμα κατά τον συγχρονισμό των κωδικών πρόσβασης</translation>
 <translation id="3995521777587992544">Γραμμή προόδου φόρτωσης σελίδας, φορτώθηκε το <ph name="EMAIL" />.</translation>
 <translation id="4002066346123236978">Τίτλος</translation>
 <translation id="4004204301268239848">Οι κωδικοί πρόσβασης αποθηκεύονται στον Λογαριασμό σας Google, ώστε να μπορείτε να τους χρησιμοποιήσετε σε οποιαδήποτε συσκευή.</translation>
@@ -238,6 +242,7 @@
 <translation id="424315890655130736">Εισαγωγή φράσης πρόσβασης</translation>
 <translation id="4263576668337963058">Εμφάνιση διαθέσιμων ενεργειών σελίδας</translation>
 <translation id="4272631900155121838">Για να σαρώσετε έναν κώδικα QR, ενεργοποιήστε την κάμερα από τις ρυθμίσεις</translation>
+<translation id="4276041135170112053">Άμεση επιδιόρθωση.</translation>
 <translation id="4281844954008187215">Όροι Παροχής Υπηρεσιών</translation>
 <translation id="430793432425771671">Συγχρονισμός όλων</translation>
 <translation id="430967081421617822">Από την αρχή</translation>
@@ -286,6 +291,7 @@
 <translation id="4904877109095351937">Επισήμ. ως αναγνωσμένων</translation>
 <translation id="4930268273022498155">Διαγραφή υπαρχόντων δεδομένων. Μπορείτε να τα επαναφέρετε επιστρέφοντας στον λογαριασμό <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Παρουσιάστηκε πρόβλημα με την κοινοποίηση του στοιχείου σας.</translation>
+<translation id="4944543191714094452">Εύρεση στη σελίδα…</translation>
 <translation id="4945756290001680296">Πρόσβαση στις ρυθμίσεις κωδικού πρόσβασης</translation>
 <translation id="4979397965658815378">Συνδεθείτε στον Λογαριασμό σας Google για να λάβετε τους σελιδοδείκτες, τους κωδικούς πρόσβασης, το ιστορικό και άλλες ρυθμίσεις σε όλες τις συσκευές σας.</translation>
 <translation id="5005498671520578047">Αντιγραφή κωδικού πρόσβασης</translation>
@@ -317,6 +323,7 @@
 <translation id="5433691172869980887">Το όνομα χρήστη αντιγράφηκε</translation>
 <translation id="54401264925851789">Πληροφορίες ασφάλειας σελίδας</translation>
 <translation id="5443952882982198570">Πιστωτικές κάρτες</translation>
+<translation id="5457907402803865181">Σφάλμα κατά τον συγχρονισμό των κωδικών πρόσβασης.</translation>
 <translation id="5525269841082836315">Δημ. φράσης πρόσβ.</translation>
 <translation id="5548760955356983418">Το Handoff σάς δίνει τη δυνατότητα να ξεκινήσετε την περιήγηση σε έναν ιστότοπο σε αυτήν τη συσκευή και, στη συνέχεια, να συνεχίσετε εύκολα σε Mac. Ο ιστότοπος που είναι ανοικτός αυτήν τη στιγμή θα εμφανίζεται στο Dock του Mac.
 
@@ -409,6 +416,7 @@
 <translation id="6482629121755362506">Διαγράφηκαν <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> στοιχεία</translation>
 <translation id="6610002944194042868">Μετάφραση επιλογών</translation>
 <translation id="6628106477656132239">Μη έγκυρη ημερομηνία λήξης</translation>
+<translation id="6638511529934826365">Εστίαση στο κείμενο…</translation>
 <translation id="6642362222295953972">Εναλλαγή στην υπάρχουσα καρτέλα</translation>
 <translation id="6643016212128521049">Διαγραφή</translation>
 <translation id="6656103420185847513">Επεξεργασία φακέλου</translation>

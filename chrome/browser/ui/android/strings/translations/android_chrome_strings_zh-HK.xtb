@@ -214,6 +214,7 @@
 <translation id="2532336938189706096">網頁檢視</translation>
 <translation id="2534155362429831547">已刪除 <ph name="NUMBER_OF_ITEMS" /> 個項目</translation>
 <translation id="2536728043171574184">正在瀏覽此網頁的離線版本</translation>
+<translation id="2537178555904266562">同步處理密碼時發生錯誤</translation>
 <translation id="2546283357679194313">Cookie 和網站數據</translation>
 <translation id="2567385386134582609">圖片</translation>
 <translation id="257088987046510401">主題背景</translation>
@@ -231,6 +232,7 @@
 <translation id="2650751991977523696">要重新下載檔案嗎？</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# 個音訊檔案}other{# 個音訊檔案}}</translation>
 <translation id="2653659639078652383">提交</translation>
+<translation id="2669093958999339774">使用較靜態的訊息功能，免受通知提示打擾</translation>
 <translation id="2677748264148917807">離開</translation>
 <translation id="2704606927547763573">已複製</translation>
 <translation id="2707726405694321444">重新整理網頁</translation>
@@ -248,7 +250,6 @@
 <translation id="281504910091592009">查看和管理儲存在 <ph name="BEGIN_LINK" />Google 帳戶<ph name="END_LINK" />中的密碼</translation>
 <translation id="2818669890320396765">如要將書籤同步到所有裝置，請登入並開啟同步處理功能</translation>
 <translation id="2822354292072154809">確定要重設「<ph name="CHOSEN_OBJECT_NAME" />」的所有網站權限嗎？</translation>
-<translation id="2836148919159985482">輕觸返回按鈕即可退出全螢幕。</translation>
 <translation id="2842985007712546952">上層資料夾</translation>
 <translation id="2858138569776157458">熱門網站</translation>
 <translation id="2860954141821109167">請確認此裝置已啟用手機應用程式</translation>
@@ -358,14 +359,15 @@
 <translation id="3632295766818638029">顯示密碼</translation>
 <translation id="363596933471559332">使用儲存的憑證自動登入網站。關閉功能時，每次登入網站之前都會要求您驗證。</translation>
 <translation id="3658159451045945436">重設將會清除您儲存資料的記錄，包括瀏覽過的網站清單。</translation>
-<translation id="3682730288090679318">允許系統自動禁止網站要求顯示通知。如果網站要求顯示通知，頁面底部會顯示資料列。</translation>
 <translation id="3692944402865947621">無法存取儲存位置，因此無法下載 <ph name="FILE_NAME" />。</translation>
+<translation id="3701167022068948696">立即修正</translation>
 <translation id="3714981814255182093">開啟搜尋列</translation>
 <translation id="3716182511346448902">這個網頁使用過多記憶體，因此 Chrome 已暫停顯示這個網頁。</translation>
 <translation id="3730075448226062617">如要讓 Chrome 存取您的麥克風，請一併在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中開啟麥克風。</translation>
 <translation id="3739899004075612870">已在 <ph name="PRODUCT_NAME" /> 中新增書籤</translation>
 <translation id="3744111561329211289">背景同步處理</translation>
 <translation id="3749259744154402564">不支援</translation>
+<translation id="3767376082821709728">最新瀏覽的網站將無法向您傳送通知</translation>
 <translation id="3771001275138982843">無法下載更新</translation>
 <translation id="3771033907050503522">無痕式分頁</translation>
 <translation id="3773755127849930740">請<ph name="BEGIN_LINK" />開啟藍牙功能<ph name="END_LINK" />以允許配對</translation>
@@ -379,7 +381,7 @@
 <translation id="3822502789641063741">要清除網站儲存空間的資料嗎？</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3859306556332390985">向前快轉</translation>
-<translation id="388596076286380598">即使離線或連線速度欠佳，仍可從您喜歡的網站取得文章、影片和其他內容。</translation>
+<translation id="388596076286380598">即使離線或連線速度欠佳，您仍可從喜歡的網站取得文章、影片和其他內容。</translation>
 <translation id="3894427358181296146">新增資料夾</translation>
 <translation id="3895926599014793903">強制啟用縮放功能</translation>
 <translation id="3912508018559818924">正在網上搜尋最佳結果…</translation>
@@ -591,7 +593,6 @@
 <translation id="5414836363063783498">正在驗證…</translation>
 <translation id="5423934151118863508">您最常瀏覽的網頁會在此顯示</translation>
 <translation id="5424588387303617268">可用空間：<ph name="GIGABYTES" /> GB</translation>
-<translation id="5427766642345310212">知道了。根據預設，新的通知要求會在這裡顯示。</translation>
 <translation id="543338862236136125">修改密碼</translation>
 <translation id="5433691172869980887">已複製使用者名稱</translation>
 <translation id="543509235395288790">正在下載 <ph name="COUNT" /> 個檔案 (<ph name="MEGABYTES" />)。</translation>
@@ -637,7 +638,7 @@
 <translation id="5684874026226664614">糟糕！系統無法翻譯這個網頁的內容。</translation>
 <translation id="5686790454216892815">檔案名稱過長</translation>
 <translation id="5689516760719285838">位置</translation>
-<translation id="5694049548840660018">輕易返回首頁</translation>
+<translation id="5694049548840660018">鬆輕返回首頁</translation>
 <translation id="569536719314091526">透過「更多選項」掣，將呢個網頁翻譯成任何語言</translation>
 <translation id="5710871682236653961">系統需要先詢問您，才能允許網站在您輕按 NFC 裝置時傳送及接收資訊 (建議)</translation>
 <translation id="572328651809341494">最近開啟的分頁</translation>
@@ -678,7 +679,6 @@
 <translation id="5962718611393537961">輕按即可收合</translation>
 <translation id="6000066717592683814">繼續使用 Google</translation>
 <translation id="6005538289190791541">建議的密碼</translation>
-<translation id="6019358956729171834">載入更多…</translation>
 <translation id="6036057147555329831">其他 ICU</translation>
 <translation id="6039379616847168523">跳至下一個分頁</translation>
 <translation id="6040143037577758943">關閉</translation>
@@ -774,6 +774,7 @@
 <translation id="666731172850799929">在「<ph name="APP_NAME" />」中開啟</translation>
 <translation id="666981079809192359">Chrome 私隱聲明</translation>
 <translation id="6676840375528380067">要清除此裝置上的 Chrome 資料嗎？</translation>
+<translation id="6689172468748959065">個人檔案相片</translation>
 <translation id="6697492270171225480">找不到網頁時，顯示類似的網頁建議</translation>
 <translation id="6697947395630195233">Chrome 需要位置資訊存取權，才能與這個網站分享您的位置資訊。</translation>
 <translation id="6698801883190606802">管理同步資料</translation>
@@ -955,6 +956,7 @@
 <translation id="8035133914807600019">新增資料夾…</translation>
 <translation id="8037750541064988519">尚餘 <ph name="DAYS" /> 天</translation>
 <translation id="804335162455518893">找不到 SD 卡</translation>
+<translation id="8046278916126163020">最新瀏覽的網站可以要求向您傳送通知</translation>
 <translation id="805047784848435650">根據您的瀏覽記錄</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB 可用空間</translation>
 <translation id="8058746566562539958">在 Chrome 新分頁中開啟</translation>
@@ -1039,7 +1041,7 @@
 <translation id="8636825310635137004">如要取得其他裝置上的分頁，請開啟同步處理功能。</translation>
 <translation id="8641930654639604085">嘗試封鎖成人網站</translation>
 <translation id="8655129584991699539">您可以在 Chrome 設定中清除資料</translation>
-<translation id="8655599981421006542">輕按這裡即可以建立新分頁和返回上一個分頁</translation>
+<translation id="8655599981421006542">輕按這裡即可建立新分頁和返回上一個分頁</translation>
 <translation id="8662811608048051533">您會從大部分網站登出。</translation>
 <translation id="8664979001105139458">檔案名稱已存在</translation>
 <translation id="8676374126336081632">清除輸入</translation>

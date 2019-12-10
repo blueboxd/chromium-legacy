@@ -91,6 +91,7 @@
 <translation id="209018056901015185">Biðja um tölvuvefsvæði</translation>
 <translation id="2103075008456228677">Opna history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> atriði færð</translation>
+<translation id="2118594521750010466">Laga núna</translation>
 <translation id="213900355088104901">Opnaðu huliðsflipa til að vafra í leyni</translation>
 <translation id="2139867232736819575">Leita að texta sem þú afritaðir</translation>
 <translation id="2149973817440762519">Breyta bókamerki</translation>
@@ -98,6 +99,7 @@
 <translation id="2198757192731523470">Google notar hugsanlega ferilinn þinn til að sérsníða leitina, auglýsingar og aðra þjónustu Google.</translation>
 <translation id="2230173723195178503">Vefsíða sótt</translation>
 <translation id="2239626343334228536">Hreinsar vefskoðunargögn...</translation>
+<translation id="2257567812274161158">Samstilling virkar ekki.</translation>
 <translation id="2267753748892043616">Bæta reikningi við</translation>
 <translation id="2268044343513325586">Þrengja</translation>
 <translation id="2273327106802955778">Valmynd fyrir meira</translation>
@@ -129,6 +131,7 @@
 <translation id="2691653761409724435">Ekki í boði án nettengingar</translation>
 <translation id="2695507686909505111">Síða þýdd</translation>
 <translation id="2702801445560668637">Leslisti</translation>
+<translation id="2704491540504985681">Niðurhal</translation>
 <translation id="2704606927547763573">Afritað</translation>
 <translation id="2709516037105925701">Sjálfvirk útfylling</translation>
 <translation id="2712127207578915686">Ekki er hægt að opna skrá</translation>
@@ -218,6 +221,7 @@
 <translation id="3943492037546055397">Aðgangsorð</translation>
 <translation id="3967822245660637423">Niðurhali lokið</translation>
 <translation id="3989635538409502728">Skrá út</translation>
+<translation id="399419089947468503">Villa við að samstilla aðgangsorð</translation>
 <translation id="3995521777587992544">Framvindustika fyrir hleðslu á síðu, <ph name="EMAIL" /> hlaðið.</translation>
 <translation id="4002066346123236978">Heiti</translation>
 <translation id="4004204301268239848">Aðgangsorð eru vistuð á Google reikningnum þínum til að þú getir notað þau í hvaða tæki sem er.</translation>
@@ -238,6 +242,7 @@
 <translation id="424315890655130736">Sláðu inn aðgangsorð</translation>
 <translation id="4263576668337963058">Sýna tiltækar aðgerðir fyrir síðu</translation>
 <translation id="4272631900155121838">Til að skanna QR-kóða skaltu virkja myndavélina í stillingunum</translation>
+<translation id="4276041135170112053">Laga núna.</translation>
 <translation id="4281844954008187215">Þjónustuskilmálar</translation>
 <translation id="430793432425771671">Samstilla allt</translation>
 <translation id="430967081421617822">Frá upphafi</translation>
@@ -286,6 +291,7 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="4904877109095351937">Merkja sem lesið</translation>
 <translation id="4930268273022498155">Eyða fyrirliggjandi gögnum. Þú getur sótt þau með því að skipta aftur yfir í <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Því miður kom upp vandamál við að deila atriðinu.</translation>
+<translation id="4944543191714094452">Finna á síðu…</translation>
 <translation id="4945756290001680296">Opna stillingar fyrir aðgangsorð</translation>
 <translation id="4979397965658815378">Skráðu þig inn með Google reikningnum þínum til að fá bókamerkin þín, ferilinn, aðgangsorð og aðrar stillingar í öll tækin þín</translation>
 <translation id="5005498671520578047">Afrita aðgangsorð</translation>
@@ -317,6 +323,7 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="5433691172869980887">Notandanafn afritað</translation>
 <translation id="54401264925851789">Öryggisupplýsingar síðu</translation>
 <translation id="5443952882982198570">Kreditkort</translation>
+<translation id="5457907402803865181">Villa við að samstilla aðgangsorð.</translation>
 <translation id="5525269841082836315">Búa til aðgangsorð</translation>
 <translation id="5548760955356983418">Handoff gerir þér kleift að byrja að skoða vefsvæði í þessu tæki og halda því síðan áfram á einfaldan hátt í Mac-tölvunni. Vefsvæðið sem er opið birtist í kvínni í Mac-tölvunni.
 
@@ -408,6 +415,7 @@ Gögnin þín voru dulkóðuð með aðgangsorði samstillingar <ph name="TIME" 
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> atriðum eytt</translation>
 <translation id="6610002944194042868">Valkostir þýðinga</translation>
 <translation id="6628106477656132239">Ógildur gildistími</translation>
+<translation id="6638511529934826365">Stækka/minnka texta…</translation>
 <translation id="6642362222295953972">Skipta yfir í núverandi flipa</translation>
 <translation id="6643016212128521049">Hreinsa</translation>
 <translation id="6656103420185847513">Breyta möppu</translation>

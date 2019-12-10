@@ -64,9 +64,10 @@ class SandboxedShortcutParserTest : public base::MultiProcessTest {
     ASSERT_TRUE(child_process_logger_.Initialize());
 
     mojo_task_runner_ = MojoTaskRunner::Create();
-    ParserSandboxSetupHooks setup_hooks(
+    LoggedParserSandboxSetupHooks setup_hooks(
         mojo_task_runner_.get(),
-        base::BindOnce([] { FAIL() << "Parser sandbox connection error"; }));
+        base::BindOnce([] { FAIL() << "Parser sandbox connection error"; }),
+        &child_process_logger_);
 
     ResultCode result_code =
         StartSandboxTarget(MakeCmdLine("SandboxedShortcutParserTargetMain"),

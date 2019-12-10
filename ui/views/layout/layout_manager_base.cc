@@ -111,7 +111,11 @@ void LayoutManagerBase::ApplyLayout(const ProposedLayout& layout) {
     View* const child_view = child_layout.child_view;
     if (child_view->GetVisible() != child_layout.visible)
       SetViewVisibility(child_view, child_layout.visible);
-    if (child_layout.visible)
+
+    // If the child view is not visible and we haven't bothered to specify
+    // bounds, don't bother setting them (which would cause another cascade of
+    // events that wouldn't do anything useful).
+    if (child_layout.visible || !child_layout.bounds.IsEmpty())
       child_view->SetBoundsRect(child_layout.bounds);
   }
 }

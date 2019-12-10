@@ -39,6 +39,7 @@ def get_parts(config):
     full_hardened_runtime_options = (
         CodeSignOptions.HARDENED_RUNTIME + CodeSignOptions.RESTRICT +
         CodeSignOptions.LIBRARY_VALIDATION + CodeSignOptions.KILL)
+    verify_options = VerifyOptions.DEEP + VerifyOptions.STRICT
 
     parts = {
         'app':
@@ -49,13 +50,13 @@ def get_parts(config):
                 requirements=config.codesign_requirements_outer_app,
                 identifier_requirement=False,
                 entitlements='app-entitlements.plist',
-                verify_options=VerifyOptions.DEEP + VerifyOptions.NO_STRICT),
+                verify_options=verify_options),
         'framework':
             CodeSignedProduct(
                 # The framework is a dylib, so options= flags are meaningless.
                 config.framework_dir,
                 '{}.framework'.format(uncustomized_bundle_id),
-                verify_options=VerifyOptions.DEEP + VerifyOptions.NO_STRICT),
+                verify_options=verify_options),
         'notification-xpc':
             CodeSignedProduct(
                 '{.framework_dir}/XPCServices/AlertNotificationService.xpc'
@@ -63,21 +64,21 @@ def get_parts(config):
                 '{}.framework.AlertNotificationService'.format(
                     config.base_bundle_id),
                 options=full_hardened_runtime_options,
-                verify_options=VerifyOptions.DEEP),
+                verify_options=verify_options),
         'crashpad':
             CodeSignedProduct(
                 '{.framework_dir}/Helpers/chrome_crashpad_handler'.format(
                     config),
                 'chrome_crashpad_handler',
                 options=full_hardened_runtime_options,
-                verify_options=VerifyOptions.DEEP),
+                verify_options=verify_options),
         'helper-app':
             CodeSignedProduct(
                 '{0.framework_dir}/Helpers/{0.product} Helper.app'.format(
                     config),
                 '{}.helper'.format(uncustomized_bundle_id),
                 options=full_hardened_runtime_options,
-                verify_options=VerifyOptions.DEEP),
+                verify_options=verify_options),
         'helper-renderer-app':
             CodeSignedProduct(
                 '{0.framework_dir}/Helpers/{0.product} Helper (Renderer).app'
@@ -88,7 +89,7 @@ def get_parts(config):
                 options=CodeSignOptions.RESTRICT + CodeSignOptions.KILL +
                 CodeSignOptions.HARDENED_RUNTIME,
                 entitlements='helper-renderer-entitlements.plist',
-                verify_options=VerifyOptions.DEEP),
+                verify_options=verify_options),
         'helper-gpu-app':
             CodeSignedProduct(
                 '{0.framework_dir}/Helpers/{0.product} Helper (GPU).app'
@@ -100,7 +101,7 @@ def get_parts(config):
                 options=CodeSignOptions.RESTRICT + CodeSignOptions.KILL +
                 CodeSignOptions.HARDENED_RUNTIME,
                 entitlements='helper-gpu-entitlements.plist',
-                verify_options=VerifyOptions.DEEP),
+                verify_options=verify_options),
         'helper-plugin-app':
             CodeSignedProduct(
                 '{0.framework_dir}/Helpers/{0.product} Helper (Plugin).app'
@@ -112,13 +113,13 @@ def get_parts(config):
                 options=CodeSignOptions.RESTRICT + CodeSignOptions.KILL +
                 CodeSignOptions.HARDENED_RUNTIME,
                 entitlements='helper-plugin-entitlements.plist',
-                verify_options=VerifyOptions.DEEP),
+                verify_options=verify_options),
         'app-mode-app':
             CodeSignedProduct(
                 '{.framework_dir}/Helpers/app_mode_loader'.format(config),
                 'app_mode_loader',
                 options=full_hardened_runtime_options,
-                verify_options=VerifyOptions.IGNORE_RESOURCES),
+                verify_options=verify_options),
     }
 
     dylibs = (
@@ -134,7 +135,7 @@ def get_parts(config):
             '{.framework_dir}/Libraries/{library}'.format(
                 config, library=library),
             library_basename.replace('.dylib', ''),
-            verify_options=VerifyOptions.DEEP)
+            verify_options=verify_options)
 
     return parts
 
@@ -166,7 +167,7 @@ def get_installer_tools(config):
             '{.packaging_dir}/{binary}'.format(config, binary=binary),
             binary.replace('.dylib', ''),
             options=options if not binary.endswith('dylib') else None,
-            verify_options=VerifyOptions.DEEP)
+            verify_options=VerifyOptions.DEEP + VerifyOptions.STRICT)
 
     return tools
 

@@ -773,6 +773,8 @@ dawn_builder(
 
 dawn_builder(
     name = 'Dawn Win10 x64 Builder',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 
@@ -809,6 +811,8 @@ dawn_builder(
 
 dawn_builder(
     name = 'Dawn Win10 x64 DEPS Builder',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 
@@ -1766,26 +1770,38 @@ gpu_fyi_windows_builder(
 
 gpu_fyi_windows_builder(
     name = 'GPU FYI Win x64 Builder',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 gpu_fyi_windows_builder(
     name = 'GPU FYI Win x64 Builder (dbg)',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 gpu_fyi_windows_builder(
     name = 'GPU FYI Win x64 dEQP Builder',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 gpu_fyi_windows_builder(
     name = 'GPU FYI Win x64 DX12 Vulkan Builder',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 gpu_fyi_windows_builder(
     name = 'GPU FYI Win x64 DX12 Vulkan Builder (dbg)',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 gpu_fyi_windows_builder(
     name = 'GPU FYI XR Win x64 Builder',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 
@@ -1811,6 +1827,8 @@ gpu_builder(
 gpu_builder(
     name = 'GPU Win x64 Builder (dbg)',
     builderless = True,
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 

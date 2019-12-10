@@ -26,13 +26,11 @@ source_set("lib") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   deps = [
-    "//base",
     "//services/device/fingerprint",
     "//services/device/generic_sensor",
     "//services/device/geolocation",
     "//services/device/power_monitor",
     "//services/device/public/cpp:device_features",
-    "//services/device/public/mojom",
     "//services/device/public/mojom:usb",
     "//services/device/public/mojom:usb_test",
     "//services/device/screen_orientation",
@@ -41,6 +39,13 @@ source_set("lib") {
     "//services/device/wake_lock",
     "//services/service_manager/public/cpp",
     "//ui/gfx",
+  ]
+
+  public_deps = [
+    "//base",
+    "//mojo/public/cpp/bindings",
+    "//services/device/public/mojom",
+    "//services/device/public/mojom:device_service",
   ]
 
   if (is_android) {

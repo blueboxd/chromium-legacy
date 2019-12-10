@@ -35,7 +35,7 @@ const base::FeatureParam<int> kAssistantProactiveSuggestionsMaxWidth{
 // dynamically modified later.
 const base::FeatureParam<int>
     kAssistantProactiveSuggestionsRichEntryPointCornerRadius{
-        &kAssistantProactiveSuggestions, "rich-entry-point-corner-radius", 16};
+        &kAssistantProactiveSuggestions, "rich-entry-point-corner-radius", 4};
 
 const base::FeatureParam<std::string>
     kAssistantProactiveSuggestionsServerExperimentIds{

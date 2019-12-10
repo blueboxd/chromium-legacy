@@ -54,13 +54,15 @@ void ResetPaddingKeyForTesting();
 // |has_metadata| will always be false.
 //
 // For CacheStorage, the padding size of an entry depends on whether it contains
-// metadata (a.k.a. "side data"). If metadata is added to the entry, the entry
-// must be assigned a new padding size. Otherwise, the growth in the entry's
-// size would leak the exact size of the added metadata.
+// metadata (a.k.a. "side data") and if the response was loaded with
+// credentials. If metadata is added to the entry, the entry must be assigned a
+// new padding size. Otherwise, the growth in the entry's size would leak the
+// exact size of the added metadata.
 COMPONENT_EXPORT(STORAGE_BROWSER)
 int64_t ComputeResponsePadding(const std::string& response_url,
                                const crypto::SymmetricKey* padding_key,
-                               bool has_metadata);
+                               bool has_metadata,
+                               bool loaded_with_credentials);
 
 }  // namespace storage
 

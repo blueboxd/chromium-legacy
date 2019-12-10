@@ -298,10 +298,59 @@ TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterBlurOutsets) {
       base::FilePath(FILE_PATH_LITERAL("backdrop_filter_blur_outsets.png")));
 }
 
-class LayerTreeHostFiltersPixelTestGPULayerList
+class LayerTreeHostImageFiltersPixelTestLayerList
     : public LayerTreeHostFiltersPixelTest {
  public:
-  LayerTreeHostFiltersPixelTestGPULayerList() { SetUseLayerLists(); }
+  LayerTreeHostImageFiltersPixelTestLayerList() { SetUseLayerLists(); }
+
+  void SetupTree() override {
+    SetInitialRootBounds(gfx::Size(200, 200));
+    LayerTreePixelTest::SetupTree();
+
+    Layer* root = layer_tree_host()->root_layer();
+    scoped_refptr<SolidColorLayer> background =
+        CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorYELLOW);
+    CopyProperties(root, background.get());
+    root->AddChild(background);
+
+    scoped_refptr<SolidColorLayer> foreground =
+        CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorRED);
+    CopyProperties(root, foreground.get());
+    root->AddChild(foreground);
+
+    EffectNode& effect_node = CreateEffectNode(foreground.get());
+    float matrix[20] = {0};
+    // This filter does a red-blue swap, so the foreground becomes blue.
+    matrix[2] = matrix[6] = matrix[10] = matrix[18] = 1.0f;
+    // Set up a crop rect to filter the bottom 200x100 pixels of the foreground.
+    SkImageFilter::CropRect crop_rect(SkRect::MakeXYWH(0, 100, 200, 100));
+    FilterOperations filters;
+    filters.Append(FilterOperation::CreateReferenceFilter(
+        sk_make_sp<ColorFilterPaintFilter>(SkColorFilters::Matrix(matrix),
+                                           nullptr, &crop_rect)));
+
+    effect_node.filters = filters;
+    effect_node.render_surface_reason = RenderSurfaceReason::kFilter;
+
+    // Move the filters origin up by 100 pixels so the crop rect is applied
+    // only to the top 100 pixels, not the bottom.
+    effect_node.filters_origin = gfx::PointF(0.0f, -100.0f);
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         LayerTreeHostImageFiltersPixelTestLayerList,
+                         ::testing::ValuesIn(kRendererTypes));
+
+TEST_P(LayerTreeHostImageFiltersPixelTestLayerList, NonZeroOrigin) {
+  RunPixelTestWithLayerList(
+      renderer_type(), base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")));
+}
+
+class LayerTreeHostBlurFiltersPixelTestGPULayerList
+    : public LayerTreeHostFiltersPixelTest {
+ public:
+  LayerTreeHostBlurFiltersPixelTestGPULayerList() { SetUseLayerLists(); }
 
   void SetupTree() override {
     SetInitialRootBounds(gfx::Size(200, 200));
@@ -370,10 +419,11 @@ class LayerTreeHostFiltersPixelTestGPULayerList
 };
 
 INSTANTIATE_TEST_SUITE_P(PixelResourceTest,
-                         LayerTreeHostFiltersPixelTestGPULayerList,
+                         LayerTreeHostBlurFiltersPixelTestGPULayerList,
                          ::testing::ValuesIn(kRendererTypesGpu));
 
-TEST_P(LayerTreeHostFiltersPixelTestGPULayerList, BackdropFilterBlurOffAxis) {
+TEST_P(LayerTreeHostBlurFiltersPixelTestGPULayerList,
+       BackdropFilterBlurOffAxis) {
 #if defined(OS_WIN) || defined(ARCH_CPU_ARM64)
 #if defined(OS_WIN)
   // Windows has 116 pixels off by at most 2: crbug.com/225027
@@ -516,8 +566,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterClipped) {
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorRED);
   background->AddChild(foreground);
 
-  float matrix[20];
-  memset(matrix, 0, 20 * sizeof(matrix[0]));
+  float matrix[20] = {0};
   // This filter does a red-blue swap, so the foreground becomes blue.
   matrix[2] = matrix[6] = matrix[10] = matrix[18] = 1.0f;
   // We filter only the bottom 200x100 pixels of the foreground.
@@ -539,38 +588,6 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterClipped) {
   gfx::Transform transform;
   transform.Translate(0.0, -100.0);
   foreground->SetTransform(transform);
-
-  RunPixelTest(renderer_type(), background,
-               base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")));
-}
-
-TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterNonZeroOrigin) {
-  scoped_refptr<SolidColorLayer> background =
-      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorYELLOW);
-
-  scoped_refptr<SolidColorLayer> foreground =
-      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorRED);
-  background->AddChild(foreground);
-
-  float matrix[20];
-  memset(matrix, 0, 20 * sizeof(matrix[0]));
-  // This filter does a red-blue swap, so the foreground becomes blue.
-  matrix[2] = matrix[6] = matrix[10] = matrix[18] = 1.0f;
-  // Set up a crop rec to filter the bottom 200x100 pixels of the foreground.
-  SkImageFilter::CropRect crop_rect(SkRect::MakeXYWH(0, 100, 200, 100));
-  FilterOperations filters;
-  filters.Append(
-      FilterOperation::CreateReferenceFilter(sk_make_sp<ColorFilterPaintFilter>(
-          SkColorFilters::Matrix(matrix), nullptr, &crop_rect)));
-
-  // Make the foreground layer's render surface be clipped by the background
-  // layer.
-  background->SetMasksToBounds(true);
-  foreground->SetFilters(filters);
-
-  // Now move the filters origin up by 100 pixels, so the crop rect is
-  // applied only to the top 100 pixels, not the bottom.
-  foreground->SetFiltersOrigin(gfx::PointF(0.0f, -100.0f));
 
   RunPixelTest(renderer_type(), background,
                base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")));

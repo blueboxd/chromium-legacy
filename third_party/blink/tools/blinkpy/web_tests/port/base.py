@@ -994,7 +994,7 @@ class Port(object):
     def web_tests_dir(self):
         custom_web_tests_dir = self.get_option('layout_tests_directory')
         if custom_web_tests_dir:
-            return custom_web_tests_dir
+            return  self._filesystem.abspath(custom_web_tests_dir)
         return self._path_finder.web_tests_dir()
 
     def skips_test(self, test):

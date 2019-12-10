@@ -106,7 +106,7 @@ class CdmServiceTest : public testing::Test {
   MOCK_METHOD3(OnCdmInitialized,
                void(mojom::CdmPromiseResultPtr result,
                     int cdm_id,
-                    mojom::DecryptorPtr decryptor));
+                    mojo::PendingRemote<mojom::Decryptor> decryptor));
 
   void InitializeCdm(const std::string& key_system, bool expected_result) {
     base::RunLoop run_loop;

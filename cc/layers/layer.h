@@ -273,14 +273,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetFilters(const FilterOperations& filters);
   const FilterOperations& filters() const { return inputs_.filters; }
 
-  // Set or get the origin to be used when applying the filters given to
-  // SetFilters(). By default the origin is at the origin of this layer, but
-  // may be moved positively or negatively relative to that. The origin effects
-  // any filters which do not apply uniformly to the entire layer and its
-  // subtree.
-  void SetFiltersOrigin(const gfx::PointF& origin);
-  gfx::PointF filters_origin() const { return inputs_.filters_origin; }
-
   // Set or get the list of filters that should be applied to the content this
   // layer and its subtree will be drawn into. The effect is clipped by
   // backdrop_filter_bounds.
@@ -832,7 +824,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     FilterOperations filters;
     FilterOperations backdrop_filters;
     base::Optional<gfx::RRectF> backdrop_filter_bounds;
-    gfx::PointF filters_origin;
     float backdrop_filter_quality;
 
     // Corner clip radius for the 4 corners of the layer in the following order:

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 (async function() {
+  'use strict';
   TestRunner.addResult(`Verify that tabs get merged when binding is added and removed.\n`);
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.loadModule('bindings_test_runner');
@@ -80,7 +81,7 @@
     var openedUISourceCodes = editorContainer._tabIds.keysArray();
     openedUISourceCodes.sort((a, b) => a.url().compareTo(b.url()));
     TestRunner.addResult('Opened tabs: ');
-    for (code of openedUISourceCodes)
+    for (const code of openedUISourceCodes)
       TestRunner.addResult('    ' + code.url());
   }
 

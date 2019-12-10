@@ -20,6 +20,8 @@ class RendererSettings;
 // implementations, this class has enough API to answer questions. Android and
 // Ozone validators requires a list of overlay strategies for their
 // implementations.
+// TODO(weiliangc): Its functionalities should be merged into subclass of
+// OverlayProcessor.
 class VIZ_SERVICE_EXPORT OverlayCandidateValidator {
  public:
   static std::unique_ptr<OverlayCandidateValidator> Create(
@@ -40,32 +42,6 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidator {
   // damage rect needs to be computed since it will be used by overlay
   // processor.
   virtual bool NeedsSurfaceOccludingDamageRect() const = 0;
-
-  // The following functions are only override by
-  // OverlayCandidateValidatorStrategy, but is here to provide the correct
-  // interface.
-  // A primary plane is generated when the output surface's buffer is supplied
-  // by |BufferQueue|. This is considered as an overlay plane.
-  using PrimaryPlane = OverlayProcessor::OutputSurfaceOverlayPlane;
-
-  // Set the overlay display transform and viewport size. Value only used for
-  // Android Surface Control.
-  virtual void SetDisplayTransform(gfx::OverlayTransform transform) {}
-  virtual void SetViewportSize(const gfx::Size& size) {}
-
-  // Disables overlays when software mirroring display. This only needs to be
-  // implemented for Chrome OS.
-  virtual void SetSoftwareMirrorMode(bool enabled) {}
-
-  // This is used to adjust properties of the |primary_plane|, which is the
-  // overlay candidate for the output surface. This is called after we process
-  // for overlay. Surface Control uses this function to adjust the display
-  // transform and display rect.
-  virtual void AdjustOutputSurfaceOverlay(PrimaryPlane* output_surface_plane) {}
-
-  // If the full screen strategy is successful, we no longer need to overlay the
-  // output surface since it will be fully covered.
-  virtual bool StrategyNeedsOutputSurfacePlaneRemoved();
 
  protected:
   OverlayCandidateValidator();

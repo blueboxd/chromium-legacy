@@ -91,6 +91,7 @@
 <translation id="209018056901015185">Voir version ordinateur</translation>
 <translation id="2103075008456228677">Ouvrir history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> éléments déplacés.</translation>
+<translation id="2118594521750010466">Corriger maintenant</translation>
 <translation id="213900355088104901">Pour parcourir le Web en mode privé, ouvrez un onglet de navigation privée</translation>
 <translation id="2139867232736819575">Rechercher le texte copié</translation>
 <translation id="2149973817440762519">Modifier le favori</translation>
@@ -98,6 +99,7 @@
 <translation id="2198757192731523470">Google peut utiliser votre historique pour personnaliser la recherche, les annonces et d'autres services Google.</translation>
 <translation id="2230173723195178503">Page Web chargée</translation>
 <translation id="2239626343334228536">Effacement des données de navigation…</translation>
+<translation id="2257567812274161158">La synchronisation ne fonctionne pas.</translation>
 <translation id="2267753748892043616">Ajouter un compte</translation>
 <translation id="2268044343513325586">Affiner</translation>
 <translation id="2273327106802955778">Menu Plus</translation>
@@ -129,6 +131,7 @@
 <translation id="2691653761409724435">Indisponible hors connexion</translation>
 <translation id="2695507686909505111">Page traduite</translation>
 <translation id="2702801445560668637">Liste de lecture</translation>
+<translation id="2704491540504985681">Téléchargements</translation>
 <translation id="2704606927547763573">Copié</translation>
 <translation id="2709516037105925701">Saisie automatique</translation>
 <translation id="2712127207578915686">Impossible ouvrir fichier</translation>
@@ -218,6 +221,7 @@
 <translation id="3943492037546055397">Mots de passe</translation>
 <translation id="3967822245660637423">Téléchargement terminé</translation>
 <translation id="3989635538409502728">Déconnexion</translation>
+<translation id="399419089947468503">Erreur lors de la synchronisation des mots de passe</translation>
 <translation id="3995521777587992544">Barre de progression du chargement de page, <ph name="EMAIL" /> chargé(s).</translation>
 <translation id="4002066346123236978">Titre</translation>
 <translation id="4004204301268239848">Les mots de passe sont enregistrés dans votre compte Google, afin que vous puissiez les utiliser sur tous vos appareils.</translation>
@@ -238,6 +242,7 @@
 <translation id="424315890655130736">Saisir la phrase secrète</translation>
 <translation id="4263576668337963058">Afficher les actions de page disponibles</translation>
 <translation id="4272631900155121838">Pour scanner un code QR, activez l'appareil photo depuis les paramètres</translation>
+<translation id="4276041135170112053">Corriger maintenant.</translation>
 <translation id="4281844954008187215">Conditions d'utilisation</translation>
 <translation id="430793432425771671">Tout synchroniser</translation>
 <translation id="430967081421617822">Toutes les périodes</translation>
@@ -286,6 +291,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="4904877109095351937">Marquer comme lues</translation>
 <translation id="4930268273022498155">Supprimer les données actuelles. Vous pouvez les récupérer en repassant sur le compte <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Désolé, un problème est survenu lors du partage de l'élément.</translation>
+<translation id="4944543191714094452">Rechercher sur la page…</translation>
 <translation id="4945756290001680296">Accéder aux paramètres des mots de passe</translation>
 <translation id="4979397965658815378">Connectez-vous à votre compte Google pour synchroniser favoris, mots de passe, historique et autres paramètres sur tous vos appareils.</translation>
 <translation id="5005498671520578047">Copier mot de passe</translation>
@@ -317,6 +323,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5433691172869980887">Nom d'utilisateur copié</translation>
 <translation id="54401264925851789">Informations sur la sécurité de cette page</translation>
 <translation id="5443952882982198570">Cartes de crédit</translation>
+<translation id="5457907402803865181">Erreur lors de la synchronisation des mots de passe.</translation>
 <translation id="5525269841082836315">Créer une phrase secrète</translation>
 <translation id="5548760955356983418">Avec Handoff, vous pouvez commencer à consulter un site Web sur cet appareil et poursuivre votre lecture facilement sur votre Mac. Le site Web actuellement ouvert apparaît alors dans le Dock.
 
@@ -408,6 +415,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> éléments supprimés.</translation>
 <translation id="6610002944194042868">Options de traduction</translation>
 <translation id="6628106477656132239">Date d'expiration non valide</translation>
+<translation id="6638511529934826365">Agrandir le texte…</translation>
 <translation id="6642362222295953972">Passer à un onglet existant</translation>
 <translation id="6643016212128521049">Effacer</translation>
 <translation id="6656103420185847513">Modifier le dossier</translation>

@@ -1,8 +1,8 @@
 This is a testharness.js-based test.
-PASS Property user-select value 'auto' computes to 'auto'
-PASS Property user-select value 'text' computes to 'text'
-PASS Property user-select value 'none' computes to 'none'
-FAIL Property user-select value 'contain' computes to 'contain' assert_true: 'contain' is a supported value for user-select. expected true got false
-PASS Property user-select value 'all' computes to 'all'
+PASS Property user-select value 'auto'
+PASS Property user-select value 'text'
+PASS Property user-select value 'none'
+FAIL Property user-select value 'contain' assert_true: 'contain' is a supported value for user-select. expected true got false
+PASS Property user-select value 'all'
 Harness: the test ran to completion.
 

@@ -616,6 +616,11 @@ junit_binary("chrome_junit_tests") {
   # From java_sources.gni.
   java_files = chrome_junit_test_java_sources
 
+  assert_no_deps = [
+    "//content",
+    "//mojo/public/mojom/base",
+  ]
+
   deps = [
     ":app_hooks_java",
     ":chrome_app_java_resources",

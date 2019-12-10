@@ -359,6 +359,7 @@ Tutoriala amaitzen duzunean, erabili ChromeVox Itxi botoira joateko, eta saka ez
 <translation id="3462439746547587373"><ph name="NAME" /> botoia</translation>
 <translation id="3466530247399808663">Balio ez duen tekla-sakatze bat</translation>
 <translation id="3468959318854349468">Izengabea</translation>
+<translation id="3469005380014336304">Errenkada taldea</translation>
 <translation id="3469413619751135069">Berde oso argia</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" /> - <ph name="V2" /></translation>
@@ -462,6 +463,7 @@ Tutoriala amaitzen duzunean, erabili ChromeVox Itxi botoira joateko, eta saka ez
 <translation id="4204126831294769023">Urdin argia</translation>
 <translation id="4204864733111726379">Lore-zuria</translation>
 <translation id="4206289001967551965">Taularen barnean</translation>
+<translation id="4207770814752775793">Berrezarri testua ahots bihurtzeko eginbidearen ezarpenen balio lehenetsiak.</translation>
 <translation id="4209770650650780359">Osatze automatikoak ikusteko, sakatu Gora edo Behera gezi-tekla.</translation>
 <translation id="4215733775853809057">Hurrengo graduatzailea</translation>
 <translation id="42164919740161077">Kadete-urdina</translation>
@@ -765,6 +767,7 @@ Tutoriala amaitzen duzunean, erabili ChromeVox Itxi botoira joateko, eta saka ez
 <translation id="6290434000785343030">Ez dago "Konbo" kutxarik ondoren.</translation>
 <translation id="6305702903308659374">Erreproduzitu bolumen normalean ChromeVox hitz egiten ari bada ere</translation>
 <translation id="6307969636681130414">Sakatuta</translation>
+<translation id="6315652249189065725">Ireki lasterbideen menua</translation>
 <translation id="6322856989298155004">Soinuak</translation>
 <translation id="6324551002951139333">Gramatika-akatsa hauteman da</translation>
 <translation id="6325241889020214828">kopiatu <ph name="TEXT" />.</translation>
@@ -958,6 +961,7 @@ Chrome arakatzaileko menua irekitzeko, sakatu Alt + F.</translation>
 <translation id="7668307052366682650">{COUNT,plural, =1{ordu}other{ordu}}</translation>
 <translation id="7674576868851035240">Hurrengo esteka</translation>
 <translation id="7674768236845044097">marka</translation>
+<translation id="7676847077928500578">Berrezarri testua ahots bihurtzeko eginbidearen ezarpenak</translation>
 <translation id="7684431668231950609">Editatu testua. URLa idazteko eremua.</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">Aurreko irrati-botoia</translation>

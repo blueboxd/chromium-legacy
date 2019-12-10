@@ -9,7 +9,7 @@
 Polymer({
   is: 'oobe-welcome-md',
 
-  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
+  behaviors: [I18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
 
   properties: {
     /**

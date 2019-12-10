@@ -20,7 +20,7 @@ android_library("java") {
     "java/src/org/chromium/components/signin/identitymanager/CoreAccountInfo.java",
     "java/src/org/chromium/components/signin/identitymanager/IdentityManager.java",
     "java/src/org/chromium/components/signin/identitymanager/IdentityMutator.java",
-    "java/src/org/chromium/components/signin/identitymanager/OAuth2TokenService.java",
+    "java/src/org/chromium/components/signin/identitymanager/ProfileOAuth2TokenServiceDelegate.java",
   ]
 
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
@@ -41,5 +41,5 @@ android_library("javatests") {
     "//third_party/junit",
   ]
 
-  java_files = [ "javatests/src/org/chromium/components/signin/identitymanager/OAuth2TokenServiceTest.java" ]
+  java_files = [ "javatests/src/org/chromium/components/signin/identitymanager/ProfileOAuth2TokenServiceDelegateTest.java" ]
 }

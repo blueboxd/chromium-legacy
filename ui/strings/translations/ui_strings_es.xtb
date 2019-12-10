@@ -8,7 +8,7 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="1181037720776840403">Quitar</translation>
 <translation id="1201402288615127009">Siguiente</translation>
-<translation id="1218444235442067213"><ph name="APP_NAME" />: aplicación de Play Store</translation>
+<translation id="1218444235442067213"><ph name="APP_NAME" />, aplicación de Play Store</translation>
 <translation id="1243314992276662751">Subir</translation>
 <translation id="1266864766717917324">No se ha podido compartir: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
@@ -19,7 +19,7 @@
 <translation id="1368832886055348810">De izquierda a derecha</translation>
 <translation id="1383876407941801731">Buscar</translation>
 <translation id="1398853756734560583">Maximizar</translation>
-<translation id="1414271762428216854"><ph name="APP_NAME" />: aplicación instalada</translation>
+<translation id="1414271762428216854"><ph name="APP_NAME" />, aplicación instalada</translation>
 <translation id="1450753235335490080">No se ha podido compartir: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">Ya has buscado esto antes. Si eliminas "<ph name="QUERY" />" de tu historial, se eliminará de tu cuenta de forma permanente en todos tus dispositivos.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuto y }other{# minutos y }}</translation>
@@ -69,7 +69,7 @@
 <translation id="2666092431469916601">Superior</translation>
 <translation id="2701330563083355633">Compartido desde <ph name="DEVICE_NAME" /></translation>
 <translation id="2743387203779672305">Copiar en el portapapeles</translation>
-<translation id="2749082172777216925"><ph name="APP_NAME_INFO" />: <ph name="PRICE" /></translation>
+<translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Abrir carpeta</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Hace 1 año}other{Hace # años}}</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{en 1 día}other{en # días}}</translation>
@@ -114,8 +114,8 @@
 <translation id="430191667033048642">Se ha movido <ph name="MOVED_APP_NAME" /> a la carpeta <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">TODAS LAS APLICACIONES</translation>
 <translation id="4588090240171750605">Desplazar a la derecha</translation>
-<translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />: valoración por estrellas de <ph name="RATING_SCORE" /></translation>
-<translation id="4648249871170053485"><ph name="APP_NAME" />: aplicación recomendada</translation>
+<translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, valoración por estrellas de <ph name="RATING_SCORE" /></translation>
+<translation id="4648249871170053485"><ph name="APP_NAME" />, aplicación recomendada</translation>
 <translation id="4690510401873698237">La estantería está en la parte inferior</translation>
 <translation id="4724120544754982507">Centro de notificaciones: <ph name="UNREAD_NOTIFICATION_COUNT" /> notificaciones sin leer</translation>
 <translation id="4730374152663651037">UTILIZADAS CON FRECUENCIA</translation>
@@ -125,7 +125,7 @@
 <translation id="4971687151119236543">Pista anterior multimedia</translation>
 <translation id="5046499563572181734">Toca aquí</translation>
 <translation id="5076340679995252485">&amp;Pegar</translation>
-<translation id="5198715732953550718">Se ha combinado <ph name="MOVED_APP_NAME" /> con <ph name="IN_PLACE_APP" /> para crear una nueva carpeta.</translation>
+<translation id="5198715732953550718">Se ha combinado <ph name="MOVED_APP_NAME" /> con <ph name="IN_PLACE_APP" /> para crear una carpeta.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Triángulo de expansión</translation>
 <translation id="5278860589123563674">No se ha podido enviar</translation>
@@ -219,7 +219,7 @@
 <translation id="8179976553408161302">Intro</translation>
 <translation id="8210608804940886430">Avanzar página</translation>
 <translation id="8245914219290430011">Tabulador</translation>
-<translation id="8247998213073982446"><ph name="APP_NAME" />: aplicación</translation>
+<translation id="8247998213073982446"><ph name="APP_NAME" />, aplicación</translation>
 <translation id="8259556432390118667">Valor de color hexadecimal</translation>
 <translation id="8328145009876646418">Borde izquierdo</translation>
 <translation id="8331626408530291785">Desplazar hacia arriba</translation>

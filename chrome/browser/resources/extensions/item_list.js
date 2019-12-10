@@ -4,9 +4,11 @@
 
 import 'chrome://resources/cr_components/managed_footnote/managed_footnote.m.js';
 import './shared_style.js';
+import './checkup.js';
 
 import {CrContainerShadowBehavior} from 'chrome://resources/cr_elements/cr_container_shadow_behavior.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -46,13 +48,25 @@ Polymer({
     },
 
     /** @private */
-    shownExtensionsCount_: {
+    maxColumns_: {
+      type: Number,
+      value: () => loadTimeData.getBoolean('showCheckup') ? 2 : 3,
+    },
+
+    /** @private */
+    showCheckup_: {
+      type: Boolean,
+      value: () => loadTimeData.getBoolean('showCheckup'),
+    },
+
+    /** @private */
+    shownAppsCount_: {
       type: Number,
       value: 0,
     },
 
     /** @private */
-    shownAppsCount_: {
+    shownExtensionsCount_: {
       type: Number,
       value: 0,
     },

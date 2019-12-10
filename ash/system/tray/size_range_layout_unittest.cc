@@ -113,11 +113,12 @@ TEST_F(SizeRangeLayoutTest, InternalLayoutManagerPreferredSizeIsUsed) {
       std::make_unique<views::test::TestLayoutManager>();
   child_layout->SetPreferredSize(kSize);
 
-  SizeRangeLayout layout;
-  EXPECT_NE(kSize, layout.GetPreferredSize(&host_));
+  SizeRangeLayout* const layout =
+      host_.SetLayoutManager(std::make_unique<SizeRangeLayout>());
+  EXPECT_NE(kSize, layout->GetPreferredSize(&host_));
 
-  layout.SetLayoutManager(std::move(child_layout));
-  EXPECT_EQ(kSize, layout.GetPreferredSize(&host_));
+  layout->SetLayoutManager(std::move(child_layout));
+  EXPECT_EQ(kSize, layout->GetPreferredSize(&host_));
 }
 
 TEST_F(SizeRangeLayoutTest, SmallPreferredSizeIsClamped) {
@@ -180,11 +181,12 @@ TEST_F(SizeRangeLayoutTest,
       std::make_unique<views::test::TestLayoutManager>();
   child_layout->set_preferred_height_for_width(kHeight);
 
-  SizeRangeLayout layout;
-  EXPECT_NE(kHeight, layout.GetPreferredHeightForWidth(&host_, kWidth));
+  SizeRangeLayout* const layout =
+      host_.SetLayoutManager(std::make_unique<SizeRangeLayout>());
+  EXPECT_NE(kHeight, layout->GetPreferredHeightForWidth(&host_, kWidth));
 
-  layout.SetLayoutManager(std::move(child_layout));
-  EXPECT_EQ(kHeight, layout.GetPreferredHeightForWidth(&host_, kWidth));
+  layout->SetLayoutManager(std::move(child_layout));
+  EXPECT_EQ(kHeight, layout->GetPreferredHeightForWidth(&host_, kWidth));
 }
 
 }  // namespace ash

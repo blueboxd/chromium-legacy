@@ -525,7 +525,8 @@ void Histogram::AddCount(int value, int count) {
   }
   unlogged_samples_->Accumulate(value, count);
 
-  FindAndRunCallback(value);
+  if (UNLIKELY(StatisticsRecorder::have_active_callbacks()))
+    FindAndRunCallback(value);
 }
 
 std::unique_ptr<HistogramSamples> Histogram::SnapshotSamples() const {

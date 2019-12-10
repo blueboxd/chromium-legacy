@@ -3855,9 +3855,10 @@ TEST_F(URLLoaderTest, CookieReportingRedirect) {
   // Make sure that this has the pre-redirect URL, not the post-redirect one.
   EXPECT_EQ(redirecting_url,
             network_context_client.reported_response_cookies()[0].url);
-  EXPECT_EQ(
-      redirecting_url,
-      network_context_client.reported_response_cookies()[0].site_for_cookies);
+  EXPECT_TRUE(net::SiteForCookies::FromUrl(redirecting_url)
+                  .IsEquivalent(net::SiteForCookies::FromUrl(
+                      network_context_client.reported_response_cookies()[0]
+                          .site_for_cookies)));
   EXPECT_EQ(
       "true",
       network_context_client.reported_response_cookies()[0].cookie.Value());

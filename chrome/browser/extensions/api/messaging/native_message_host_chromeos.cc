@@ -111,13 +111,6 @@ std::unique_ptr<NativeMessageHost> CreateIt2MeHost(
 // chrome and fetch the list of allowed_origins from the manifest (see
 // crbug/424743).
 const char* const kRemotingIt2MeOrigins[] = {
-    "chrome-extension://ljacajndfccfgnfohlgkdphmbnpkjflk/",
-    "chrome-extension://gbchcmhmhahfdphkhkmpfmihenigjmpp/",
-    "chrome-extension://kgngmbheleoaphbjbaiobfdepmghbfah/",
-    "chrome-extension://odkaodonbgfohohmklejpjiejmcipmib/",
-    "chrome-extension://dokpleeekgeeiehdhmdkeimnkmoifgdd/",
-    "chrome-extension://ajoainacpilcemgiakehflpbkbfipojk/",
-    "chrome-extension://hmboipgjngjoiaeicfdifdoeacilalgc/",
     "chrome-extension://inomeogfingihgjfjlpeplalcfajhgai/",
     "chrome-extension://hpodccmdligbeohchckkeajbfohibipg/"};
 

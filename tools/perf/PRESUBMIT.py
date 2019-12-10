@@ -137,7 +137,7 @@ def _CheckShardMaps(input_api, output_api, block_on_failure):
   return _RunValidationScript(
       input_api,
       output_api,
-      'generate_perf_sharding',
+      'generate_perf_sharding.py',
       ['validate'],
       block_on_failure
   )

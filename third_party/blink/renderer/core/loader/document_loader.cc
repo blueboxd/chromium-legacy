@@ -93,7 +93,6 @@
 #include "third_party/blink/renderer/platform/loader/static_data_navigation_body_loader.h"
 #include "third_party/blink/renderer/platform/mhtml/archive_resource.h"
 #include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
-#include "third_party/blink/renderer/platform/network/content_security_policy_response_headers.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
@@ -112,6 +111,7 @@ namespace blink {
 DocumentLoader::DocumentLoader(
     LocalFrame* frame,
     WebNavigationType navigation_type,
+    base::Optional<ContentSecurityPolicy*> content_security_policy,
     std::unique_ptr<WebNavigationParams> navigation_params)
     : params_(std::move(navigation_params)),
       frame_(frame),
@@ -215,18 +215,11 @@ DocumentLoader::DocumentLoader(
       !params_->is_static_data && WillLoadUrlAsEmpty(url_);
   loading_srcdoc_ = url_.IsAboutSrcdocURL();
 
-  if (loading_srcdoc_) {
-    // about:srcdoc always inherits CSP from its parent.
-    ContentSecurityPolicy* parent_csp = frame_->Tree()
-                                            .Parent()
-                                            ->GetSecurityContext()
-                                            ->GetContentSecurityPolicy();
-    content_security_policy_ = MakeGarbageCollected<ContentSecurityPolicy>();
-    content_security_policy_->CopyStateFrom(parent_csp);
-    content_security_policy_->CopyPluginTypesFrom(parent_csp);
-  } else if (!loading_url_as_empty_document_) {
-    content_security_policy_ =
-        CreateCSP(params_->response.ToResourceResponse(), origin_policy_);
+  DCHECK(content_security_policy.has_value() || loading_url_as_empty_document_);
+  // Take into account the CSP for this document load if applicable.
+  if (content_security_policy.has_value()) {
+    content_security_policy_ = content_security_policy.value();
+    // The CSP are null when the CSP check done in the FrameLoader failed.
     if (!content_security_policy_) {
       // Loading the document was blocked by the CSP check. Pretend that
       // this was an empty document instead and don't reuse the
@@ -790,71 +783,6 @@ bool DocumentLoader::ShouldReportTimingInfoToParent() {
   return true;
 }
 
-ContentSecurityPolicy* DocumentLoader::CreateCSP(
-    const ResourceResponse& response,
-    const base::Optional<WebOriginPolicy>& origin_policy) {
-  auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
-  csp->SetOverrideURLForSelf(response.CurrentRequestUrl());
-
-  if (!frame_->GetSettings()->BypassCSP()) {
-    csp->DidReceiveHeaders(ContentSecurityPolicyResponseHeaders(response));
-
-    // Handle OriginPolicy. We can skip the entire block if the OP policies have
-    // already been passed down.
-    if (origin_policy.has_value() &&
-        !csp->HasPolicyFromSource(
-            kContentSecurityPolicyHeaderSourceOriginPolicy)) {
-      for (const auto& policy : origin_policy->content_security_policies) {
-        csp->DidReceiveHeader(policy, kContentSecurityPolicyHeaderTypeEnforce,
-                              kContentSecurityPolicyHeaderSourceOriginPolicy);
-      }
-
-      for (const auto& policy :
-           origin_policy->content_security_policies_report_only) {
-        csp->DidReceiveHeader(policy, kContentSecurityPolicyHeaderTypeReport,
-                              kContentSecurityPolicyHeaderSourceOriginPolicy);
-      }
-    }
-  }
-  if (!base::FeatureList::IsEnabled(
-          network::features::kOutOfBlinkFrameAncestors)) {
-    if (!csp->AllowAncestors(frame_, response.CurrentRequestUrl()))
-      return nullptr;
-  }
-
-  if (!frame_->GetSettings()->BypassCSP() &&
-      !GetFrameLoader().RequiredCSP().IsEmpty()) {
-    const SecurityOrigin* parent_security_origin =
-        frame_->Tree().Parent()->GetSecurityContext()->GetSecurityOrigin();
-    if (ContentSecurityPolicy::ShouldEnforceEmbeddersPolicy(
-            response, parent_security_origin)) {
-      csp->AddPolicyFromHeaderValue(GetFrameLoader().RequiredCSP(),
-                                    kContentSecurityPolicyHeaderTypeEnforce,
-                                    kContentSecurityPolicyHeaderSourceHTTP);
-    } else {
-      auto* required_csp = MakeGarbageCollected<ContentSecurityPolicy>();
-      required_csp->AddPolicyFromHeaderValue(
-          GetFrameLoader().RequiredCSP(),
-          kContentSecurityPolicyHeaderTypeEnforce,
-          kContentSecurityPolicyHeaderSourceHTTP);
-      if (!required_csp->Subsumes(*csp)) {
-        String message = "Refused to display '" +
-                         response.CurrentRequestUrl().ElidedString() +
-                         "' because it has not opted-into the following policy "
-                         "required by its embedder: '" +
-                         GetFrameLoader().RequiredCSP() + "'.";
-        ConsoleMessage* console_message = ConsoleMessage::CreateForRequest(
-            mojom::ConsoleMessageSource::kSecurity,
-            mojom::ConsoleMessageLevel::kError, message,
-            response.CurrentRequestUrl(), this, MainResourceIdentifier());
-        frame_->GetDocument()->AddConsoleMessage(console_message);
-        return nullptr;
-      }
-    }
-  }
-  return csp;
-}
-
 void DocumentLoader::HandleResponse() {
   DCHECK(frame_);
   application_cache_host_->DidReceiveResponseForMainResource(response_);
@@ -1256,8 +1184,6 @@ void DocumentLoader::StartLoadingInternal() {
   probe::DidReceiveResourceResponse(probe::ToCoreProbeSink(GetFrame()),
                                     main_resource_identifier_, this, response_,
                                     nullptr /* resource */);
-  frame_->Console().ReportResourceResponseReceived(
-      this, main_resource_identifier_, response_);
 
   HandleResponse();
 
@@ -1602,6 +1528,26 @@ void DocumentLoader::InstallNewDocument(
   } else {
     document->SetDeferredCompositorCommitIsAllowed(false);
   }
+
+  // Log if the document was blocked by CSP checks now that the new Document has
+  // been created and console messages will be properly displayed.
+  if (was_blocked_by_csp_) {
+    String message = "Refused to display '" +
+                     response_.CurrentRequestUrl().ElidedString() +
+                     "' because it has not opted-into the following policy "
+                     "required by its embedder: '" +
+                     GetFrameLoader().RequiredCSP() + "'.";
+    ConsoleMessage* console_message = ConsoleMessage::CreateForRequest(
+        mojom::ConsoleMessageSource::kSecurity,
+        mojom::ConsoleMessageLevel::kError, message,
+        response_.CurrentRequestUrl(), this, MainResourceIdentifier());
+    frame_->GetDocument()->AddConsoleMessage(console_message);
+  }
+
+  // Report the ResourceResponse now that the new Document has been created and
+  // console messages will be properly displayed.
+  frame_->Console().ReportResourceResponseReceived(
+      this, main_resource_identifier_, response_);
 }
 
 void DocumentLoader::CreateParserPostCommit() {

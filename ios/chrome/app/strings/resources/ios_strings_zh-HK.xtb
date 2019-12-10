@@ -91,6 +91,7 @@
 <translation id="209018056901015185">切換為電腦版網站</translation>
 <translation id="2103075008456228677">開啟 history.google.com</translation>
 <translation id="2116625576999540962">已移動 <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> 個項目</translation>
+<translation id="2118594521750010466">立即修正</translation>
 <translation id="213900355088104901">如要私密瀏覽，請開啟無痕式分頁</translation>
 <translation id="2139867232736819575">搜尋您複製的文字</translation>
 <translation id="2149973817440762519">編輯書籤</translation>
@@ -98,6 +99,7 @@
 <translation id="2198757192731523470">Google 可能會使用您的記錄，為您提供個人化的搜尋服務、廣告和其他 Google 服務。</translation>
 <translation id="2230173723195178503">已載入網頁</translation>
 <translation id="2239626343334228536">正在清除瀏覽資料…</translation>
+<translation id="2257567812274161158">同步功能無法正常運作。</translation>
 <translation id="2267753748892043616">新增帳戶</translation>
 <translation id="2268044343513325586">修正搜尋</translation>
 <translation id="2273327106802955778">[更多] 選單</translation>
@@ -129,6 +131,7 @@
 <translation id="2691653761409724435">無法離線查看</translation>
 <translation id="2695507686909505111">已翻譯網頁</translation>
 <translation id="2702801445560668637">閱讀清單</translation>
+<translation id="2704491540504985681">下載</translation>
 <translation id="2704606927547763573">已複製</translation>
 <translation id="2709516037105925701">自動填入</translation>
 <translation id="2712127207578915686">無法開啟檔案</translation>
@@ -218,6 +221,7 @@
 <translation id="3943492037546055397">密碼</translation>
 <translation id="3967822245660637423">下載完成</translation>
 <translation id="3989635538409502728">登出</translation>
+<translation id="399419089947468503">同步處理密碼時發生錯誤</translation>
 <translation id="3995521777587992544">網頁載入進度列，已經載入咗 <ph name="EMAIL" />。</translation>
 <translation id="4002066346123236978">標題</translation>
 <translation id="4004204301268239848">密碼會儲存在您的 Google 帳戶中，讓您在任何裝置上使用。</translation>
@@ -238,6 +242,7 @@
 <translation id="424315890655130736">輸入密碼短語</translation>
 <translation id="4263576668337963058">顯示可用的網頁動作</translation>
 <translation id="4272631900155121838">如要掃描二維條碼，請在設定中啟用相機</translation>
+<translation id="4276041135170112053">請立即修正。</translation>
 <translation id="4281844954008187215">服務條款</translation>
 <translation id="430793432425771671">同步處理所有資料</translation>
 <translation id="430967081421617822">不限時間</translation>
@@ -286,6 +291,7 @@
 <translation id="4904877109095351937">標示為已閱讀</translation>
 <translation id="4930268273022498155">刪除現有資料。您可以切換回 <ph name="USER_EMAIL1" /> 以擷取現有資料。</translation>
 <translation id="4941089862236492464">很抱歉，分享您的項目時發生問題。</translation>
+<translation id="4944543191714094452">從網頁中尋找…</translation>
 <translation id="4945756290001680296">存取密碼設定</translation>
 <translation id="4979397965658815378">登入 Google 帳戶後，您即可在任何裝置上存取自己的書籤、密碼、記錄和其他設定</translation>
 <translation id="5005498671520578047">複製密碼</translation>
@@ -317,6 +323,7 @@
 <translation id="5433691172869980887">已複製使用者名稱</translation>
 <translation id="54401264925851789">網頁安全性資料</translation>
 <translation id="5443952882982198570">信用卡</translation>
+<translation id="5457907402803865181">同步處理密碼時發生錯誤。</translation>
 <translation id="5525269841082836315">建立通關密語</translation>
 <translation id="5548760955356983418">有了 Handoff，您使用這個裝置開始瀏覽網站後，可輕鬆改用 Mac 繼續瀏覽。目前開啟的網站會自動顯示在 Mac 的 Dock 中。
 
@@ -408,6 +415,7 @@
 <translation id="6482629121755362506">已刪除 <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> 個項目</translation>
 <translation id="6610002944194042868">翻譯選項</translation>
 <translation id="6628106477656132239">到期日無效</translation>
+<translation id="6638511529934826365">縮放文字…</translation>
 <translation id="6642362222295953972">切換至現有的分頁</translation>
 <translation id="6643016212128521049">清除</translation>
 <translation id="6656103420185847513">編輯資料夾</translation>

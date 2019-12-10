@@ -27,6 +27,7 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
+class BrowserWindow;
 class ToolbarActionsBarDelegate;
 class ToolbarActionsBarObserver;
 class ToolbarActionViewController;
@@ -84,6 +85,10 @@ class ToolbarActionsBar : public ExtensionsContainer,
                     Browser* browser,
                     ToolbarActionsBar* main_bar);
   ~ToolbarActionsBar() override;
+
+  // Gets the ToolbarActionsBar from the given BrowserWindow. This method is
+  // essentially deprecated. Use BrowserWindow::GetExtensionsContainer instead.
+  static ToolbarActionsBar* FromBrowserWindow(BrowserWindow* window);
 
   // Registers profile preferences.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);

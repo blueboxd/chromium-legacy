@@ -76,7 +76,7 @@
 
   TestRunner.runTestSuite([
     function beforeFilter(next) {
-      TestRunner.addResult(arguments.callee.name);
+      TestRunner.addResult('beforeFilter');
       dumpVisibleMessages();
       next();
     },
@@ -109,50 +109,43 @@
       dumpVisibleMessages();
       next();
     },
-    function checkMultiTextFilter(next)
-    {
+    function checkMultiTextFilter(next) {
       Console.ConsoleView.instance()._filter._textFilterUI.setValue("Group /[2-3]top/");
       Console.ConsoleView.instance()._filter._onFilterChanged();
       dumpVisibleMessages();
       next();
     },
-    function checkTextUrlFilter(next)
-    {
+    function checkTextUrlFilter(next) {
       Console.ConsoleView.instance()._filter._textFilterUI.setValue("url:log-source");
       Console.ConsoleView.instance()._filter._onFilterChanged();
       dumpVisibleMessages();
       next();
     },
-    function checkNegativeTextUrlFilter(next)
-    {
+    function checkNegativeTextUrlFilter(next) {
       Console.ConsoleView.instance()._filter._textFilterUI.setValue("-url:log-source");
       Console.ConsoleView.instance()._filter._onFilterChanged();
       dumpVisibleMessages();
       next();
     },
-    function checkSourceFilter(next)
-    {
+    function checkSourceFilter(next) {
       Console.ConsoleView.instance()._filter._textFilterUI.setValue("source:violation");
       Console.ConsoleView.instance()._filter._onFilterChanged();
       dumpVisibleMessages();
       next();
     },
-    function checkContextTextFilter(next)
-    {
+    function checkContextTextFilter(next) {
       Console.ConsoleView.instance()._filter._textFilterUI.setValue("context:context");
       Console.ConsoleView.instance()._filter._onFilterChanged();
       dumpVisibleMessages();
       next();
     },
-    function checkStartEndLineRegex(next)
-    {
+    function checkStartEndLineRegex(next) {
       Console.ConsoleView.instance()._filter._textFilterUI.setValue("/^Hello\\s\\d$/");
       Console.ConsoleView.instance()._filter._onFilterChanged();
       dumpVisibleMessages();
       next();
     },
-    function checkStartEndLineRegexForAnchor(next)
-    {
+    function checkStartEndLineRegexForAnchor(next) {
       Console.ConsoleView.instance()._filter._textFilterUI.setValue("/^log-source\\.js:\\d+$/");
       Console.ConsoleView.instance()._filter._onFilterChanged();
       dumpVisibleMessages();

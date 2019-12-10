@@ -61,8 +61,15 @@ void PolicyLoaderMac::InitOnBackgroundThread() {
         base::Bind(&PolicyLoaderMac::OnFileUpdated, base::Unretained(this)));
   }
 
+  base::File::Info file_info;
+  bool managed_policy_file_exists = false;
+  if (base::GetFileInfo(managed_policy_path_, &file_info) &&
+      !file_info.is_directory) {
+    managed_policy_file_exists = true;
+  }
+
   base::UmaHistogramBoolean("EnterpriseCheck.IsManaged",
-                            !managed_policy_path_.empty());
+                            managed_policy_file_exists);
   base::UmaHistogramBoolean("EnterpriseCheck.IsEnterpriseUser",
                             base::IsMachineExternallyManaged());
 }

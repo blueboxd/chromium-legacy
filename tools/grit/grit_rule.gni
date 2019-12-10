@@ -64,10 +64,6 @@
 #       output_dir, but if multiple targets with the same name end up in
 #       the same output_dir, they can collide.
 #
-#   depfile_dir (optional)
-#       If set, used to store the depfile and corresponding stamp file.
-#       Defaults to output_dir
-#
 #   configs (optional)
 #       List of additional configs to be applied to the generated target.
 #
@@ -263,12 +259,6 @@ template("grit") {
     grit_output_name = target_name
   }
 
-  if (defined(invoker.depfile_dir)) {
-    depfile_dir = invoker.depfile_dir
-  } else {
-    depfile_dir = output_dir
-  }
-
   # These are all passed as arguments to the script so have to be relative to
   # the build directory.
   rebased_output_dir = rebase_path(output_dir, root_build_dir)
@@ -342,7 +332,7 @@ template("grit") {
       inputs += [ grit_predetermined_resource_ids_file ]
     }
 
-    depfile = "$depfile_dir/${grit_output_name}_stamp.d"
+    depfile = "$target_gen_dir/$target_name.d"
     outputs = [ "${depfile}.stamp" ] + grit_outputs + pak_info_outputs
 
     args = [

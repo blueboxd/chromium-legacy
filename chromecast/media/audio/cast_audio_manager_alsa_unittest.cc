@@ -10,11 +10,12 @@
 #include "base/bind.h"
 #include "base/test/test_message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chromecast/common/mojom/service_connector.mojom.h"
 #include "chromecast/media/cma/test/mock_cma_backend_factory.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/audio/test_audio_thread.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromecast {
@@ -31,9 +32,10 @@ const ::media::AudioParameters kDefaultAudioParams(
 
 void OnLogMessage(const std::string& message) {}
 
-std::unique_ptr<service_manager::Connector> CreateConnector() {
-  mojo::PendingReceiver<service_manager::mojom::Connector> receiver;
-  return service_manager::Connector::Create(&receiver);
+mojo::PendingRemote<chromecast::mojom::ServiceConnector> CreateConnector() {
+  mojo::PendingRemote<chromecast::mojom::ServiceConnector> remote;
+  ignore_result(remote.InitWithNewPipeAndPassReceiver());
+  return remote;
 }
 
 std::string DummyGetSessionId(std::string /* audio_group_id */) {
@@ -42,8 +44,7 @@ std::string DummyGetSessionId(std::string /* audio_group_id */) {
 
 class CastAudioManagerAlsaTest : public testing::Test {
  public:
-  CastAudioManagerAlsaTest()
-      : media_thread_("CastMediaThread"), connector_(CreateConnector()) {
+  CastAudioManagerAlsaTest() : media_thread_("CastMediaThread") {
     CHECK(media_thread_.Start());
 
     backend_factory_ = std::make_unique<MockCmaBackendFactory>();
@@ -53,7 +54,7 @@ class CastAudioManagerAlsaTest : public testing::Test {
                             base::Unretained(this)),
         base::BindRepeating(&DummyGetSessionId),
         base::ThreadTaskRunnerHandle::Get(), media_thread_.task_runner(),
-        connector_.get(), false);
+        CreateConnector(), false);
   }
 
   ~CastAudioManagerAlsaTest() override { audio_manager_->Shutdown(); }
@@ -63,7 +64,6 @@ class CastAudioManagerAlsaTest : public testing::Test {
   base::TestMessageLoop message_loop_;
   std::unique_ptr<MockCmaBackendFactory> backend_factory_;
   base::Thread media_thread_;
-  std::unique_ptr<service_manager::Connector> connector_;
   ::media::FakeAudioLogFactory audio_log_factory_;
   std::unique_ptr<CastAudioManagerAlsa> audio_manager_;
 };

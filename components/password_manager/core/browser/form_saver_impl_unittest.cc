@@ -49,7 +49,6 @@ PasswordForm CreatePending(StringPiece username, StringPiece password) {
   PasswordForm form = CreateObserved();
   form.username_value = ASCIIToUTF16(username);
   form.password_value = ASCIIToUTF16(password);
-  form.preferred = true;
   return form;
 }
 
@@ -140,37 +139,6 @@ TEST_P(FormSaverImplSaveTest, Write_EmptyStoreWithPendingOldPassword) {
                  {&pending} /* matches */, pending.password_value);
 }
 
-// Check that the "preferred" bit of the matches is updated accordingly in the
-// store.
-TEST_P(FormSaverImplSaveTest, Write_AndUpdatePreferredLoginState) {
-  PasswordForm pending = CreatePending("nameofuser", "wordToP4a55");
-  pending.preferred = true;
-
-  // |best_matches| will contain 4 forms
-  // - non-PSL matched with a different username.
-  // - another non-PSL that is not preferred.
-  // - PSL-matched with the same username
-  // - PSL-matched with another username
-  // FormSaver should ignore the pending and PSL-matched one, but should update
-  // the non-PSL matched form (with different username) to no longer be
-  // preferred.
-  PasswordForm other = pending;
-  other.username_value = ASCIIToUTF16("othername");
-  PasswordForm other_non_preferred = CreatePending("other", "wordToP4a55");
-  other_non_preferred.preferred = false;
-  PasswordForm psl_match = pending;
-  psl_match.is_public_suffix_match = true;
-  PasswordForm other_psl_match = psl_match;
-  other_psl_match.username_value = ASCIIToUTF16("othername");
-  const std::vector<const PasswordForm*> matches = {
-      &other, &psl_match, &other_non_preferred, &other_psl_match};
-
-  PasswordForm updated = other;
-  updated.preferred = false;
-  EXPECT_CALL(*mock_store_, UpdateLogin(updated));
-  SaveCredential(pending, matches, base::string16());
-}
-
 // Check that storing credentials with a non-empty username results in deleting
 // credentials with the same password but empty username, if present in matches.
 TEST_P(FormSaverImplSaveTest, Write_AndDeleteEmptyUsernameCredentials) {
@@ -178,11 +146,9 @@ TEST_P(FormSaverImplSaveTest, Write_AndDeleteEmptyUsernameCredentials) {
 
   PasswordForm non_empty_username = pending;
   non_empty_username.username_value = ASCIIToUTF16("othername");
-  non_empty_username.preferred = false;
 
   PasswordForm no_username = pending;
   no_username.username_value.clear();
-  no_username.preferred = false;
   const std::vector<const PasswordForm*> matches = {&non_empty_username,
                                                     &no_username};
 
@@ -199,7 +165,6 @@ TEST_P(FormSaverImplSaveTest,
 
   PasswordForm no_username = pending;
   no_username.username_value.clear();
-  no_username.preferred = false;
   no_username.password_value = ASCIIToUTF16("abcd");
 
   EXPECT_CALL(*mock_store_, RemoveLogin(_)).Times(0);
@@ -214,7 +179,6 @@ TEST_P(FormSaverImplSaveTest, Write_EmptyUsernameWillNotCauseDeletion) {
 
   PasswordForm with_username = pending;
   with_username.username_value = ASCIIToUTF16("nameofuser");
-  with_username.preferred = false;
 
   EXPECT_CALL(*mock_store_, RemoveLogin(_)).Times(0);
   SaveCredential(pending, {&with_username}, base::string16());
@@ -243,7 +207,6 @@ TEST_P(FormSaverImplSaveTest, Write_AndDoNotDeleteNonEmptyUsernameCredentials) {
 
   PasswordForm other_username = pending;
   other_username.username_value = ASCIIToUTF16("other username");
-  other_username.preferred = false;
 
   EXPECT_CALL(*mock_store_, RemoveLogin(_)).Times(0);
   SaveCredential(pending, {&other_username}, base::string16());
@@ -290,15 +253,12 @@ TEST_P(FormSaverImplSaveTest, Write_AndUpdatePasswordValues_IgnoreNonMatches) {
 
   PasswordForm different_username = pending;
   different_username.username_value = ASCIIToUTF16("someuser");
-  different_username.preferred = false;
 
   PasswordForm different_password = pending;
   different_password.password_value = ASCIIToUTF16("some_password");
-  different_password.preferred = false;
 
   PasswordForm empty_username = pending;
   empty_username.username_value.clear();
-  empty_username.preferred = false;
   const std::vector<const PasswordForm*> matches = {
       &different_username, &different_password, &empty_username};
 
@@ -362,7 +322,6 @@ INSTANTIATE_TEST_SUITE_P(All,
 TEST_F(FormSaverImplTest, PermanentlyBlacklist) {
   PasswordForm observed = CreateObserved();
   observed.blacklisted_by_user = false;
-  observed.preferred = true;
   observed.username_value = ASCIIToUTF16("user1");
   observed.username_element = ASCIIToUTF16("user");
   observed.password_value = ASCIIToUTF16("12345");

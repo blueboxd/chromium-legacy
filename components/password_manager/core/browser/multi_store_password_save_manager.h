@@ -16,14 +16,10 @@ namespace password_manager {
 // difference to the PasswordSaveManagerImpl base class. After the launch of the
 // account store feature, this class should be merged with
 // PasswordSaveManagerImpl.
-// TODO(crbug.com/1012203): It currently has the following limitations:
-// 1. When a PSL matched entry exists, a non-PSL matched entry is silently added
-//    to the correpsonding store. However, if a PSL matched entry exists in both
-//    stores, it's only added to the account store.
-// 2. There is no API to set the destination store from the PasswordFormManager.
-//    This will be eventually required in order to communicate the user choice
-//    from the UI.
-// 3. (Un)Blacklisting is done always against the profile store.
+// TODO(crbug.com/1012203): It currently has the limitation that when a PSL
+// matched entry exists, a non-PSL matched entry is silently added to the
+// correpsonding store. However, if a PSL matched entry exists in both stores,
+// it's only added to the account store.
 
 class MultiStorePasswordSaveManager : public PasswordSaveManagerImpl {
  public:

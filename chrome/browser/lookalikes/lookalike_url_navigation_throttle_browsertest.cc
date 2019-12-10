@@ -42,9 +42,13 @@ using MatchType = LookalikeUrlInterstitialPage::MatchType;
 using UserAction = LookalikeUrlInterstitialPage::UserAction;
 
 enum class UIStatus {
+  // Enabled for all heuristics.
+  kEnabled,
+  // Disabled for all heuristics. Simulates the feature being disabled.
   kDisabled,
-  kEnabledForSiteEngagement,
-  kEnabledForSiteEngagementAndTopDomains
+  // Disabled for only top 500 domains. Still enabled for all other heuristics.
+  // Simulates "topsites" parameter being set to false.
+  kDisabledForTop500Domains
 };
 
 // An engagement score above MEDIUM.
@@ -178,15 +182,14 @@ class LookalikeUrlNavigationThrottleBrowserTest
             features::kLookalikeUrlNavigationSuggestionsUI);
         break;
 
-      case UIStatus::kEnabledForSiteEngagement:
-        feature_list_.InitAndEnableFeature(
-            features::kLookalikeUrlNavigationSuggestionsUI);
-        break;
-
-      case UIStatus::kEnabledForSiteEngagementAndTopDomains:
+      case UIStatus::kDisabledForTop500Domains:
         feature_list_.InitAndEnableFeatureWithParameters(
             features::kLookalikeUrlNavigationSuggestionsUI,
-            {{"topsites", "true"}});
+            {{"topsites", "false"}});
+        break;
+
+      case UIStatus::kEnabled:
+        break;
     }
     InProcessBrowserTest::SetUp();
   }
@@ -251,19 +254,15 @@ class LookalikeUrlNavigationThrottleBrowserTest
   bool ShouldExpectInterstitial(
       LookalikeUrlNavigationThrottle::NavigationSuggestionEvent expected_event)
       const {
-    if (!ui_enabled()) {
+    if (ui_status() == UIStatus::kDisabled) {
       return false;
     }
     if (expected_event == LookalikeUrlNavigationThrottle::
-                              NavigationSuggestionEvent::kMatchSiteEngagement) {
-      return true;
-    }
-    if (expected_event == LookalikeUrlNavigationThrottle::
                               NavigationSuggestionEvent::kMatchTopSite &&
-        ui_status() == UIStatus::kEnabledForSiteEngagementAndTopDomains) {
-      return true;
+        ui_status() == UIStatus::kDisabledForTop500Domains) {
+      return false;
     }
-    return false;
+    return true;
   }
 
   // Tests that the histogram event |expected_event| is recorded. If the UI is
@@ -327,7 +326,7 @@ class LookalikeUrlNavigationThrottleBrowserTest
       const GURL& navigated_url,
       LookalikeUrlNavigationThrottle::NavigationSuggestionEvent
           expected_event) {
-    if (!ui_enabled()) {
+    if (ui_status() == UIStatus::kDisabled) {
       TestInterstitialNotShown(browser, navigated_url);
       histograms->ExpectTotalCount(
           LookalikeUrlNavigationThrottle::kHistogramName, 1);
@@ -377,7 +376,6 @@ class LookalikeUrlNavigationThrottleBrowserTest
 
   base::SimpleTestClock* test_clock() { return &test_clock_; }
 
-  virtual bool ui_enabled() const { return GetParam() != UIStatus::kDisabled; }
   virtual UIStatus ui_status() const { return GetParam(); }
 
  private:
@@ -389,18 +387,14 @@ class LookalikeUrlNavigationThrottleBrowserTest
 class LookalikeUrlInterstitialPageBrowserTest
     : public LookalikeUrlNavigationThrottleBrowserTest {
  protected:
-  bool ui_enabled() const override { return true; }
-  UIStatus ui_status() const override {
-    return UIStatus::kEnabledForSiteEngagementAndTopDomains;
-  }
+  UIStatus ui_status() const override { return UIStatus::kEnabled; }
 };
 
 INSTANTIATE_TEST_SUITE_P(
     All,
     LookalikeUrlNavigationThrottleBrowserTest,
     ::testing::Values(UIStatus::kDisabled,
-                      UIStatus::kEnabledForSiteEngagement,
-                      UIStatus::kEnabledForSiteEngagementAndTopDomains));
+                      UIStatus::kDisabledForTop500Domains));
 
 // Navigating to a non-IDN shouldn't show an interstitial or record metrics.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
@@ -952,11 +946,12 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
 }
 
 // Verify that the user action in UKM is recorded properly when the interstitial
-// is not shown.
+// is not shown because the feature parameter for matching against top 500
+// sites ("topsites") is false.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
                        UkmRecordedWhenNoInterstitialShown) {
   // UI tests are handled explicitly below.
-  if (ui_enabled())
+  if (ui_status() != UIStatus::kDisabledForTop500Domains)
     return;
 
   const GURL navigated_url = GetURL("googlé.com");

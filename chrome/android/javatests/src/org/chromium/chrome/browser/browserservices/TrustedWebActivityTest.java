@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.browserservices;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -47,6 +48,7 @@ import org.chromium.chrome.test.util.browser.ThemeTestUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServerRule;
 import org.chromium.ui.test.util.UiRestriction;
@@ -234,17 +236,14 @@ public class TrustedWebActivityTest {
         addTrustedOriginToIntent(intent, pageWithCertError);
         launchCustomTabActivity(createTrustedWebActivityIntent(pageWithoutCertError));
         Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-        assertFalse(getCanShowToolbarState(tab));
+        assertEquals(BrowserControlsState.HIDDEN, getBrowserControlConstraints(tab));
 
         spoofVerification(PACKAGE_NAME, pageWithCertError);
         ChromeTabUtils.loadUrlOnUiThread(tab, pageWithCertError);
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return getCanShowToolbarState(tab);
-            }
-        }, 10000, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        CriteriaHelper.pollUiThread(Criteria.equals(BrowserControlsState.SHOWN,
+                                            () -> getBrowserControlConstraints(tab)),
+                10000, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
     public void addTrustedOriginToIntent(Intent intent, String trustedOrigin) {
@@ -254,8 +253,9 @@ public class TrustedWebActivityTest {
                 additionalTrustedOrigins);
     }
 
-    public boolean getCanShowToolbarState(Tab tab) {
+    @BrowserControlsState
+    private int getBrowserControlConstraints(Tab tab) {
         return TestThreadUtils.runOnUiThreadBlockingNoException(
-                () -> TabBrowserControlsConstraintsHelper.get(tab).canShow());
+                () -> TabBrowserControlsConstraintsHelper.getConstraints(tab));
     }
 }

@@ -23,20 +23,37 @@ b) Firebase project support (used by official builders) requires unique
 WEBVIEW_STABLE, WEBVIEW_BETA, WEBVIEW_DEV are all used for standalone webview,
 whereas the others are used for various chrome APKs.
 
-Note that a final digit of '3' for Webview is reserved for Trichrome Webview.
+Note that a package digit of '3' for Webview is reserved for Trichrome Webview.
 The same versionCode is used for both Trichrome Chrome and Trichrome Webview.
+
+Version code values are constructed like this:
+
+  {full BUILD number}{3 digits: PATCH}{1 digit: package}{1 digit: ABIs}.
+
+For example:
+
+  Build 3721, patch 0, ChromeModern (1), on ARM64 (5): 372100015
+  Build 3721, patch 9, Monochrome (2), on ARM (0): 372100920
+
 """
 
 # Package name version bits.
 _PACKAGE_NAMES = {
     'CHROME': 0,
-    'CHROME_MODERN': 1,
-    'MONOCHROME': 2,
-    'TRICHROME': 3,
+    'CHROME_MODERN': 10,
+    'MONOCHROME': 20,
+    'TRICHROME': 30,
     'WEBVIEW_STABLE': 0,
-    'WEBVIEW_BETA': 1,
-    'WEBVIEW_DEV': 2,
+    'WEBVIEW_BETA': 10,
+    'WEBVIEW_DEV': 20,
 }
+
+""" "Next" builds get +5 on their package version code digit.
+
+We choose 5 because it won't conflict with values in _PACKAGE_NAMES.
+"""
+_NEXT_BUILD_VERSION_CODE_DIFF = 50
+
 """List of version numbers to be created for each build configuration.
 Tuple format:
 
@@ -58,12 +75,8 @@ _APKS = {
         ('WEBVIEW_DEV', 'WEBVIEW_DEV', '32'),
     ],
     '64': [
-        # Pure 64-bit Chrome variants have traditionally used the first
-        # available 64-bit architecture digit, which is now used for
-        # Monochrome/Trichrome's "32+64" variant. It could be changed to "64",
-        # but there's no reason to.
-        ('CHROME', 'CHROME', '32_64'),
-        ('CHROME_MODERN', 'CHROME_MODERN', '32_64'),
+        ('CHROME', 'CHROME', '64'),
+        ('CHROME_MODERN', 'CHROME_MODERN', '64'),
         ('MONOCHROME', 'MONOCHROME', '32_64'),
         ('MONOCHROME_32', 'MONOCHROME', '32'),
         ('MONOCHROME_32_64', 'MONOCHROME', '32_64'),
@@ -135,27 +148,20 @@ things here:
 _ABIS_TO_BIT_MASK = {
     'arm': {
         '32': 0,
-        '32_64': 30,
-        '64_32': 40,
-        '64': 50,
+        '32_64': 3,
+        '64_32': 4,
+        '64': 5,
     },
     'intel': {
-        '32': 10,
-        '32_64': 60,
-        '64_32': 70,
-        '64': 80,
+        '32': 1,
+        '32_64': 6,
+        '64_32': 7,
+        '64': 8,
     },
     'mipsel': {
-        '32': 20,
+        '32': 2,
     }
 }
-""" "Next" builds get +5 last version code digit.
-
-We choose 5 because it won't conflict with values in
-ANDROID_CHROME_APK_VERSION_CODE_DIFFS
-"""
-_NEXT_BUILD_VERSION_CODE_DIFF = 5
-
 
 def GenerateVersionCodes(version_values, arch, is_next_build):
   """Build dict of version codes for the specified build architecture. Eg:
@@ -167,7 +173,7 @@ def GenerateVersionCodes(version_values, arch, is_next_build):
   }
 
   versionCode values are built like this:
-  {full BUILD int}{3 digits for PATCH}{1 digit for architecture}{final digit}.
+  {full BUILD int}{3 digits: PATCH}{1 digit: package}{1 digit: ABIs}.
 
   MAJOR and MINOR values are not used for generating versionCode.
   - MINOR is always 0. It was used for something long ago in Chrome's history

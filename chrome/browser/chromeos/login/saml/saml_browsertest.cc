@@ -742,6 +742,47 @@ IN_PROC_BROWSER_TEST_F(SamlTest, MAYBE_CredentialPassingAPI) {
 
 // Flakily times out in debug builds. crbug.com/1021594
 #if !defined(NDEBUG)
+#define MAYBE_CredentialPassingAPIWithoutConfirm \
+  DISABLED_CredentialPassingAPIWithoutConfirm
+#else
+#define MAYBE_CredentialPassingAPIWithoutConfirm \
+  CredentialPassingAPIWithoutConfirm
+#endif
+// Tests the sign-in flow when the credentials passing API is used w/o 'confirm'
+// call. The password from the last 'add' should be used.
+IN_PROC_BROWSER_TEST_F(SamlTest, MAYBE_CredentialPassingAPIWithoutConfirm) {
+  base::HistogramTester histogram_tester;
+  fake_saml_idp()->SetLoginHTMLTemplate("saml_api_login.html");
+  fake_saml_idp()->SetLoginAuthHTMLTemplate(
+      "saml_api_login_auth_without_confirm.html");
+  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
+
+  // Fill-in the SAML IdP form and submit.
+  SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
+  SigninFrameJS().TypeIntoPath("last_password", {"Dummy"});
+  SigninFrameJS().TypeIntoPath("not_confirmed_password", {"Password"});
+
+  SigninFrameJS().TapOn("Submit");
+
+  // Login should finish login and a session should start.
+  test::WaitForPrimaryUserSessionStart();
+
+  // Verify that last password sent by 'add' used.
+  Key key("last_password");
+  key.Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF,
+                SystemSaltGetter::ConvertRawSaltToHexString(
+                    FakeCryptohomeClient::GetStubSystemSalt()));
+  EXPECT_EQ(key.GetSecret(), cryptohome_client_->salted_hashed_secret());
+
+  EXPECT_TRUE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
+      AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
+                                     kFirstSAMLUserGaiaId)));
+
+  histogram_tester.ExpectUniqueSample("ChromeOS.SAML.APILogin", 1, 1);
+}
+
+// Flakily times out in debug builds. crbug.com/1021594
+#if !defined(NDEBUG)
 #define MAYBE_ScrapedSingle DISABLED_ScrapedSingle
 #else
 #define MAYBE_ScrapedSingle ScrapedSingle

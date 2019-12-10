@@ -59,7 +59,10 @@ class NavigationPredictorPreconnectClientBrowserTest
     return https_server_->GetURL(file);
   }
 
-  void OnPreresolveFinished(const GURL& url, bool success) override {
+  void OnPreresolveFinished(
+      const GURL& url,
+      const net::NetworkIsolationKey& network_isolation_key,
+      bool success) override {
     EXPECT_TRUE(success);
     preresolve_done_count_++;
     if (run_loop_)

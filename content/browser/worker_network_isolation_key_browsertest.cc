@@ -242,7 +242,7 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     WorkerImportScriptsAndFetchRequestNetworkIsolationKeyBrowserTest,
     ::testing::Combine(testing::Bool(),
                        testing::Bool(),
@@ -337,7 +337,7 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     ServiceWorkerMainScriptRequestNetworkIsolationKeyBrowserTest,
     testing::Bool());
 
@@ -414,7 +414,7 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     SharedWorkerMainScriptRequestNetworkIsolationKeyBrowserTest,
     testing::Bool());
 

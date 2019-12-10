@@ -18,7 +18,8 @@ int64_t ComputeEntryPaddingSize(std::string response_url,
   if (GURL(response_url).GetOrigin() == GURL(manifest_url).GetOrigin())
     return 0;
   return storage::ComputeResponsePadding(
-      response_url, storage::GetDefaultPaddingKey(), /*has_metadata=*/false);
+      response_url, storage::GetDefaultPaddingKey(), /*has_metadata=*/false,
+      /*loaded_with_credentials=*/false);
 }
 
 // Iterates over each Cache record; execute |callable| on each iteration.

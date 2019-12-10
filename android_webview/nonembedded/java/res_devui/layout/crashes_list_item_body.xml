@@ -35,6 +35,16 @@
             android:text="File bug report"
             android:textAllCaps="false" />
 
+        <!--suppress HardcodedText -->
+        <Button
+            android:id="@+id/crash_upload_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:text="Upload this crash report"
+            android:textAllCaps="false" />
+
     </LinearLayout>
 
     <!-- horizontal divider -->

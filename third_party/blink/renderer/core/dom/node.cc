@@ -674,10 +674,6 @@ void Node::DidEndCustomizedScrollPhase() {
 Node* Node::insertBefore(Node* new_child,
                          Node* ref_child,
                          ExceptionState& exception_state) {
-  new_child = TrustedTypesCheckForScriptNode(new_child, exception_state);
-  if (!new_child)
-    return nullptr;
-
   auto* this_node = DynamicTo<ContainerNode>(this);
   if (this_node)
     return this_node->InsertBefore(new_child, ref_child, exception_state);
@@ -695,10 +691,6 @@ Node* Node::insertBefore(Node* new_child, Node* ref_child) {
 Node* Node::replaceChild(Node* new_child,
                          Node* old_child,
                          ExceptionState& exception_state) {
-  new_child = TrustedTypesCheckForScriptNode(new_child, exception_state);
-  if (!new_child)
-    return nullptr;
-
   auto* this_node = DynamicTo<ContainerNode>(this);
   if (this_node)
     return this_node->ReplaceChild(new_child, old_child, exception_state);
@@ -729,10 +721,6 @@ Node* Node::removeChild(Node* old_child) {
 }
 
 Node* Node::appendChild(Node* new_child, ExceptionState& exception_state) {
-  new_child = TrustedTypesCheckForScriptNode(new_child, exception_state);
-  if (!new_child)
-    return nullptr;
-
   auto* this_node = DynamicTo<ContainerNode>(this);
   if (this_node)
     return this_node->AppendChild(new_child, exception_state);
@@ -2871,7 +2859,7 @@ DispatchEventResult Node::DispatchDOMActivateEvent(int detail,
 void Node::DispatchSimulatedClick(Event* underlying_event,
                                   SimulatedClickMouseEventOptions event_options,
                                   SimulatedClickCreationScope scope) {
-  if (auto* element = IsElementNode() ? ToElement(this) : parentElement()) {
+  if (auto* element = IsElementNode() ? To<Element>(this) : parentElement()) {
     element->ActivateDisplayLockIfNeeded(
         DisplayLockActivationReason::kSimulatedClick);
   }
@@ -3290,21 +3278,6 @@ void Node::RemovedFromFlatTree() {
   // the StyleEngine in case the StyleRecalcRoot is removed from the flat tree.
   DetachLayoutTree();
   GetDocument().GetStyleEngine().RemovedFromFlatTree(*this);
-}
-
-Node* Node::TrustedTypesCheckForScriptNode(
-    Node* child,
-    ExceptionState& exception_state) const {
-  DCHECK(child);
-  bool needs_check = IsA<HTMLScriptElement>(this) && child->IsTextNode() &&
-                     GetDocument().IsTrustedTypesEnabledForDoc();
-  if (!needs_check)
-    return child;
-
-  child = TrustedTypesCheckForHTMLScriptElement(child, &GetDocument(),
-                                                exception_state);
-  DCHECK_EQ(!child, exception_state.HadException());
-  return child;
 }
 
 void Node::Trace(Visitor* visitor) {

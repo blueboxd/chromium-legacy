@@ -12,7 +12,6 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.Space;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.LayoutRes;
@@ -69,16 +68,6 @@ public class BaseSuggestionView extends SimpleHorizontalLayoutView {
                 getResources().getDimensionPixelSize(R.dimen.omnibox_suggestion_refine_width),
                 LayoutParams.MATCH_PARENT));
         addView(mActionView);
-
-        // TODO(ender): Drop this view and expand the last icon size by 8dp to ensure it remains
-        // centered with the omnibox "Clear" button.
-        Space space = new Space(getContext());
-        space.setLayoutParams(
-                new LayoutParams(getResources().getDimensionPixelSize(
-                                         R.dimen.omnibox_suggestion_refine_view_modern_end_padding),
-                        LayoutParams.MATCH_PARENT));
-        addView(space);
-
         setContentView(view);
     }
 

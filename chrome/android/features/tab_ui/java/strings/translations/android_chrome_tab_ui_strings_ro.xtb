@@ -5,6 +5,7 @@
 <translation id="1181037720776840403">Elimină</translation>
 <translation id="125153950246128346">Atinge pentru a vedea altă filă</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> filă}few{<ph name="TABS_COUNT_MANY" /> file}other{<ph name="TABS_COUNT_MANY" /> de file}}</translation>
+<translation id="2569352796411618312">Sugestie: <ph name="NUMBER_OF_TABS" /> dintre file nu au fost folosite în ultima vreme. Vrei să le închizi?</translation>
 <translation id="257674075312929031">Grup</translation>
 <translation id="2613747923081026172">Creează grupul</translation>
 <translation id="2671423594960767771">Distribuie grupul</translation>
@@ -23,6 +24,9 @@
 <translation id="6840760312327750441">Pentru a grupa filele, atinge lung o filă. Apoi trage-o peste o altă filă.</translation>
 <translation id="7151209024774799310">Elimină file din grup</translation>
 <translation id="7559245342362162951">Arată filele grupului în grilă pe ecran complet</translation>
+<translation id="7792771145871471484">Examinează sugestiile.</translation>
+<translation id="7966321538264951561">Închide sugestiile.</translation>
+<translation id="83556505225171773">{TABS_COUNT,plural, =1{Închide <ph name="TABS_COUNT_ONE" /> filă selectată}few{Închide <ph name="TABS_COUNT_MANY" /> file selectate}other{Închide <ph name="TABS_COUNT_MANY" /> de file selectate}}</translation>
 <translation id="9150694013019234766">Comută între filele din grupul de file în partea de jos a ecranului</translation>
 <translation id="9169594135889675189">Adaugă o filă nouă în grup</translation>
 <translation id="959682366969460160">Organizează-te</translation>

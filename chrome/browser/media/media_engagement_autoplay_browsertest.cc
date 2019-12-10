@@ -385,10 +385,10 @@ IN_PROC_BROWSER_TEST_P(MediaEngagementAutoplayBrowserTestHttpsOnly,
   ExpectAutoplayDenied();
 }
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          MediaEngagementAutoplayBrowserTest,
                          testing::Bool());
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          MediaEngagementAutoplayBrowserTestHttpsOnly,
                          testing::Bool());

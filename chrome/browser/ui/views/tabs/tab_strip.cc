@@ -2024,13 +2024,33 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
   for (Tab* tab : selected_and_hovered_tabs)
     tab->Paint(paint_info);
 
-  // Paint group headers, highlights, and underlines. The highlight is painted
-  // here because it only shows during group drag, so it should appear above
-  // normal tabs but below dragging ones.
+  // Keep track of the dragging group if dragging by the group header, or
+  // the current group if just dragging tabs into a group. At most one of these
+  // will have a value, since a drag is either a group drag or a tab drag.
+  base::Optional<TabGroupId> dragging_group = base::nullopt;
+  base::Optional<TabGroupId> current_group = base::nullopt;
+
+  // Paint group headers and underlines.
   for (const auto& group_view_pair : group_views_) {
-    group_view_pair.second->highlight()->Paint(paint_info);
-    group_view_pair.second->header()->Paint(paint_info);
-    group_view_pair.second->underline()->Paint(paint_info);
+    if (group_view_pair.second->header()->dragging()) {
+      // If the whole group is dragging, defer painting both the header and the
+      // underline, since they should appear above non-dragging tabs and groups.
+      // Instead, just track the dragging group.
+      dragging_group = group_view_pair.first;
+    } else {
+      group_view_pair.second->header()->Paint(paint_info);
+
+      if (tabs_dragging.size() > 0 &&
+          tabs_dragging[0]->group() == group_view_pair.first) {
+        // If tabs are being dragged into a group, defer painting just the
+        // underline, which should appear above non-active dragging tabs as well
+        // as all non-dragging tabs and groups. Instead, just track the group
+        // that the tabs are being dragged into.
+        current_group = group_view_pair.first;
+      } else {
+        group_view_pair.second->underline()->Paint(paint_info);
+      }
+    }
   }
 
   // Always paint the active tab over all the inactive tabs.
@@ -2041,18 +2061,24 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
   if (!new_tab_button_->layer())
     new_tab_button_->Paint(paint_info);
 
-  // And the dragged tabs.
+  // If dragging a group, paint the group highlight and header above all
+  // non-dragging tabs and groups.
+  if (dragging_group.has_value()) {
+    group_views_[dragging_group.value()]->highlight()->Paint(paint_info);
+    group_views_[dragging_group.value()]->header()->Paint(paint_info);
+  }
+
+  // Paint the dragged tabs.
   for (size_t i = 0; i < tabs_dragging.size(); ++i)
     tabs_dragging[i]->Paint(paint_info);
 
-  // If dragging more than one grouped tab, paint the group underline above
-  // those tabs. Otherwise, the non-active tabs will not get an underline.
-  // All dragging tabs should belong to the same group, per TabDragController.
-  if (tabs_dragging.size() > 0) {
-    const base::Optional<TabGroupId> dragged_group = tabs_dragging[0]->group();
-    if (dragged_group.has_value())
-      group_views_[dragged_group.value()]->underline()->Paint(paint_info);
-  }
+  // If dragging a group, or dragging tabs into a group, paint the group
+  // underline above the dragging tabs. Otherwise, any non-active dragging tabs
+  // will not get an underline.
+  if (dragging_group.has_value())
+    group_views_[dragging_group.value()]->underline()->Paint(paint_info);
+  if (current_group.has_value())
+    group_views_[current_group.value()]->underline()->Paint(paint_info);
 
   // If the active tab is being dragged, it goes last.
   if (active_tab && is_dragging)

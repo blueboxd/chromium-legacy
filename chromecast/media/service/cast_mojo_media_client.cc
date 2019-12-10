@@ -19,8 +19,7 @@ CastMojoMediaClient::CastMojoMediaClient(
     const CreateCdmFactoryCB& create_cdm_factory_cb,
     VideoModeSwitcher* video_mode_switcher,
     VideoResolutionPolicy* video_resolution_policy)
-    : connector_(nullptr),
-      backend_factory_(backend_factory),
+    : backend_factory_(backend_factory),
       create_cdm_factory_cb_(create_cdm_factory_cb),
       video_mode_switcher_(video_mode_switcher),
       video_resolution_policy_(video_resolution_policy) {
@@ -29,11 +28,7 @@ CastMojoMediaClient::CastMojoMediaClient(
 
 CastMojoMediaClient::~CastMojoMediaClient() {}
 
-void CastMojoMediaClient::Initialize(service_manager::Connector* connector) {
-  DCHECK(!connector_);
-  DCHECK(connector);
-  connector_ = connector;
-}
+void CastMojoMediaClient::Initialize(service_manager::Connector* connector) {}
 
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
 void CastMojoMediaClient::SetVideoGeometrySetterService(
@@ -49,7 +44,7 @@ std::unique_ptr<::media::Renderer> CastMojoMediaClient::CreateCastRenderer(
   DCHECK(video_geometry_setter_);
   auto cast_renderer = std::make_unique<CastRenderer>(
       backend_factory_, task_runner, video_mode_switcher_,
-      video_resolution_policy_, overlay_plane_id, connector_, host_interfaces);
+      video_resolution_policy_, overlay_plane_id, host_interfaces);
   cast_renderer->SetVideoGeometrySetterService(video_geometry_setter_);
   return cast_renderer;
 }

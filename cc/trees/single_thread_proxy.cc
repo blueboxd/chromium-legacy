@@ -967,9 +967,10 @@ void SingleThreadProxy::DidFinishImplFrame() {
 #endif
 }
 
-void SingleThreadProxy::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
+void SingleThreadProxy::DidNotProduceFrame(const viz::BeginFrameAck& ack,
+                                           FrameSkippedReason reason) {
   DebugScopedSetImplThread impl(task_runner_provider_);
-  host_impl_->DidNotProduceFrame(ack);
+  host_impl_->DidNotProduceFrame(ack, reason);
 }
 
 void SingleThreadProxy::WillNotReceiveBeginFrame() {

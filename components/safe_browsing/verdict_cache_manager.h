@@ -80,13 +80,15 @@ class VerdictCacheManager : public history::HistoryServiceObserver {
   // Removes all the expired verdicts from cache.
   void CleanUpExpiredVerdicts();
 
+  void CleanUpExpiredPhishGuardVerdicts();
+
   // Helper method to remove content settings when URLs are deleted. If
   // |all_history| is true, removes all cached verdicts. Otherwise it removes
   // all verdicts associated with the deleted URLs in |deleted_rows|.
   void RemoveContentSettingsOnURLsDeleted(bool all_history,
                                           const history::URLRows& deleted_rows);
 
-  bool RemoveExpiredVerdicts(
+  bool RemoveExpiredPhishGuardVerdicts(
       LoginReputationClientRequest::TriggerType trigger_type,
       base::DictionaryValue* cache_dictionary);
 

@@ -109,6 +109,7 @@ jumbo_component("gl") {
     "gl_image_stub.h",
     "gl_implementation.cc",
     "gl_implementation.h",
+    "gl_implementation_wrapper.h",
     "gl_share_group.cc",
     "gl_share_group.h",
     "gl_state_restorer.cc",

@@ -634,10 +634,6 @@ const char* const kPredefinedAllowedSocketOrigins[] = {
     "algkcnfjnajfhgimadimbjhmpaeohhln",  // Secure Shell Extension (dev)
     "iodihamcpbpeioajjeobimgagajmlibd",  // Secure Shell Extension (stable)
     "bglhmjfplikpjnfoegeomebmfnkjomhe",  // see crbug.com/122126
-    "gbchcmhmhahfdphkhkmpfmihenigjmpp",  // Chrome Remote Desktop
-    "kgngmbheleoaphbjbaiobfdepmghbfah",  // Pre-release Chrome Remote Desktop
-    "odkaodonbgfohohmklejpjiejmcipmib",  // Dogfood Chrome Remote Desktop
-    "ojoimpklfciegopdfgeenehpalipignm",  // Chromoting canary
     "cbkkbcmdlboombapidmoeolnmdacpkch",  // see crbug.com/129089
     "hhnbmknkdabfoieppbbljkhkfjcmcbjh",  // see crbug.com/134099
     "mablfbjkhmhkmefkjjacnbaikjkipphg",  // see crbug.com/134099
@@ -1116,10 +1112,15 @@ blink::UserAgentMetadata GetUserAgentMetadata() {
   metadata.full_version = version_info::GetVersionNumber();
   metadata.major_version = version_info::GetMajorVersionNumber();
   metadata.platform = version_info::GetOSType();
+  metadata.architecture = content::BuildCpuInfo();
+  metadata.model = content::BuildModelInfo();
 
-  // TODO(mkwst): Poke at BuildUserAgentFromProduct to split out these pieces.
-  metadata.architecture = "";
-  metadata.model = "";
+  // TODO(crbug.com/1031511): Integrate DevTools and "Request Desktop Site"
+  metadata.mobile = false;
+#if defined(OS_ANDROID)
+  metadata.mobile = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseMobileUserAgent);
+#endif
 
   return metadata;
 }
@@ -2967,9 +2968,9 @@ bool ChromeContentBrowserClient::CanCreateWindow(
     return false;
   }
 
-  BlockedWindowParams blocked_params(target_url, source_origin, referrer,
-                                     frame_name, disposition, features,
-                                     user_gesture, opener_suppressed);
+  BlockedWindowParams blocked_params(
+      target_url, source_origin, opener->GetSiteInstance(), referrer,
+      frame_name, disposition, features, user_gesture, opener_suppressed);
   NavigateParams nav_params = blocked_params.CreateNavigateParams(web_contents);
   return !MaybeBlockPopup(web_contents, &opener_top_level_frame_url,
                           &nav_params, nullptr /*=open_url_params*/,

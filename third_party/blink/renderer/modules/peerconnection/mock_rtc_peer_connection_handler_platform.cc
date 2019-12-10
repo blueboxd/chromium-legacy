@@ -132,12 +132,12 @@ class DummyRTCRtpReceiverPlatform : public RTCRtpReceiverPlatform {
     return dummy;
   }
   const WebMediaStreamTrack& Track() const override { return track_; }
-  WebVector<String> StreamIds() const override { return WebVector<String>(); }
-  WebVector<std::unique_ptr<RTCRtpSource>> GetSources() override {
-    return WebVector<std::unique_ptr<RTCRtpSource>>();
+  Vector<String> StreamIds() const override { return Vector<String>(); }
+  Vector<std::unique_ptr<RTCRtpSource>> GetSources() override {
+    return Vector<std::unique_ptr<RTCRtpSource>>();
   }
   void GetStats(RTCStatsReportCallback,
-                const WebVector<webrtc::NonStandardGroupId>&) override {}
+                const Vector<webrtc::NonStandardGroupId>&) override {}
   std::unique_ptr<webrtc::RtpParameters> GetParameters() const override {
     return nullptr;
   }

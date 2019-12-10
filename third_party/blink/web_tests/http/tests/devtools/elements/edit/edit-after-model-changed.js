@@ -13,7 +13,7 @@
   await ElementsTestRunner.selectNodeAndWaitForStylesPromise('inspected');
 
   var section = ElementsTestRunner.inlineStyleSection();
-  treeElement = section.addNewBlankProperty(0);
+  const treeElement = section.addNewBlankProperty(0);
 
   // Flush the pane's throttler and then stall it.
   const originalDoUpdate = () => treeElement._parentPane.doUpdate();

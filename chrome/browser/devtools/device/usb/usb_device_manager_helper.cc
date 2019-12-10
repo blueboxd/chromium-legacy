@@ -13,13 +13,11 @@
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/device_service.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 using device::mojom::UsbTransferDirection;
 using device::mojom::UsbTransferType;
@@ -109,8 +107,7 @@ void BindDeviceServiceOnUIThread(
     mojo::PendingReceiver<device::mojom::UsbDeviceManager> receiver) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Bind to the DeviceService for USB device manager.
-  content::GetSystemConnector()->Connect(device::mojom::kServiceName,
-                                         std::move(receiver));
+  content::GetDeviceService().BindUsbDeviceManager(std::move(receiver));
 }
 
 }  // namespace

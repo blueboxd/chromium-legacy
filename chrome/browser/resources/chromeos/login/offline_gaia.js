@@ -11,7 +11,7 @@
   Polymer({
     is: 'offline-gaia',
 
-    behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
+    behaviors: [I18nBehavior, OobeDialogHostBehavior],
 
     properties: {
       disabled: {

@@ -10,7 +10,7 @@
 Polymer({
   is: 'sync-consent',
 
-  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
+  behaviors: [I18nBehavior, OobeDialogHostBehavior],
 
   /** @override */
   ready: function() {

@@ -157,7 +157,7 @@ class SocketBIOAdapterTest : public testing::TestWithParam<ReadIfReadySupport>,
   std::unique_ptr<SocketBIOAdapter>* reset_on_write_ready_ = nullptr;
 };
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          SocketBIOAdapterTest,
                          testing::Values(READ_IF_READY_SUPPORTED,
                                          READ_IF_READY_NOT_SUPPORTED));

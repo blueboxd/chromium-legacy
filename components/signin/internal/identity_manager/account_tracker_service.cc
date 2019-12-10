@@ -310,6 +310,10 @@ void AccountTrackerService::SetOnAccountRemovedCallback(
   on_account_removed_callback_ = callback;
 }
 
+void AccountTrackerService::CommitPendingAccountChanges() {
+  pref_service_->CommitPendingWrite();
+}
+
 void AccountTrackerService::MigrateToGaiaId() {
   DCHECK_EQ(GetMigrationState(), MIGRATION_IN_PROGRESS);
 

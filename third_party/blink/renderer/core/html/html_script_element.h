@@ -62,6 +62,8 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
 
   void Trace(Visitor*) override;
 
+  void FinishParsingChildren() override;
+
  private:
   void ParseAttribute(const AttributeModificationParams&) override;
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
@@ -72,6 +74,9 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   bool IsURLAttribute(const Attribute&) const override;
   bool HasLegalLinkAttribute(const QualifiedName&) const override;
   const QualifiedName& SubResourceAttributeName() const override;
+
+  void SetTrustedTextContent(const String&);
+  void SetTrustedInnerText(const String&, ExceptionState&);
 
   // ScriptElementBase overrides:
   String SourceAttributeValue() const override;
@@ -85,7 +90,8 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   String IntegrityAttributeValue() const override;
   String ReferrerPolicyAttributeValue() const override;
   String ImportanceAttributeValue() const override;
-  String TextFromChildren() override;
+  String ChildTextContent() override;
+  String ScriptTextInternalSlot() const override;
   bool AsyncAttributeValue() const override;
   bool DeferAttributeValue() const override;
   bool HasSourceAttribute() const override;
@@ -104,6 +110,9 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
       HTMLScriptElementOrSVGScriptElement&) override;
 
   Element& CloneWithoutAttributesAndChildren(Document&) const override;
+
+  // https://w3c.github.io/webappsec-trusted-types/dist/spec/#script-scripttext
+  String script_text_internal_slot_;
 
   Member<ScriptLoader> loader_;
 };

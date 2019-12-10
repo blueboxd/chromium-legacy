@@ -1,5 +1,8 @@
 include_rules = [
   "+chrome/browser/notifications",
+  "+chrome/browser/preferences/android/java",
+  "+chrome/browser/ui/android/widget",
+  "+chrome/browser/util/android/java",
   "+components/content_capture",
   "+components/download",
   "+components/favicon_base",

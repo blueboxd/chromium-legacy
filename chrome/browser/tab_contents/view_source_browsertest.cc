@@ -512,7 +512,7 @@ IN_PROC_BROWSER_TEST_P(ViewSourceWithSplitCacheTest, HttpPostInSubframe) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     ViewSourceWithSplitCacheTest,
     testing::Bool());
 
@@ -604,7 +604,7 @@ IN_PROC_BROWSER_TEST_P(ViewSourceWithSplitCacheEnabledTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     ViewSourceWithSplitCacheEnabledTest,
     ::testing::Values(true));
 

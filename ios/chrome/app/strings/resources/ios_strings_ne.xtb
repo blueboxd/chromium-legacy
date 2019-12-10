@@ -91,6 +91,7 @@
 <translation id="209018056901015185">डेस्कटप साइट अनुरोध गर्नुहोस्</translation>
 <translation id="2103075008456228677">history.google.com लाई खोल्नुहोस्</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> वस्तुहरू सारियो</translation>
+<translation id="2118594521750010466">अहिले नै समाधान गर्नुहोस्</translation>
 <translation id="213900355088104901">निजी रूपमा ब्राउज गर्नका लागि कुनै इन्कोग्निटो ट्याब खोल्नुहोस्</translation>
 <translation id="2139867232736819575">तपाईंले प्रतिलिपि गरेको पाठको खोजी गर्नुहोस्</translation>
 <translation id="2149973817440762519">बुकमार्क सम्पादन गर्नुहोस्</translation>
@@ -98,6 +99,7 @@
 <translation id="2198757192731523470">Google ले खोज, विज्ञापनहरू र Google का अन्य सेवाहरूलाई वैयक्तीकृत गर्न तपाईंको इतिहाससम्बन्धी जानकारी प्रयोग गर्न सक्छ।</translation>
 <translation id="2230173723195178503">वेबपृष्ठ लोड गरियो</translation>
 <translation id="2239626343334228536">ब्राउजिङ डेटा खाली गर्दै...</translation>
+<translation id="2257567812274161158">सिंक गर्ने सुविधाले काम गरिरहेको छैन</translation>
 <translation id="2267753748892043616">खाता थप्नुहोस्...</translation>
 <translation id="2268044343513325586">परिशुद्ध</translation>
 <translation id="2273327106802955778">थप मेनु</translation>
@@ -129,6 +131,7 @@
 <translation id="2691653761409724435">अफलाइन उपलब्ध छैन</translation>
 <translation id="2695507686909505111">पृष्ठ अनुवाद गरियो</translation>
 <translation id="2702801445560668637">पाठ्य सूची</translation>
+<translation id="2704491540504985681">डाउनलोडहरू</translation>
 <translation id="2704606927547763573">प्रतिलिपि गरियो</translation>
 <translation id="2709516037105925701">स्वत:भर्नुहोस्</translation>
 <translation id="2712127207578915686">फाइल खोल्न असमर्थ</translation>
@@ -218,6 +221,7 @@
 <translation id="3943492037546055397">पासवर्डहरू</translation>
 <translation id="3967822245660637423">डाउनलोड पूर्ण भयो</translation>
 <translation id="3989635538409502728">साइन आउट गर्नुहोस्</translation>
+<translation id="399419089947468503">पासवर्डहरू सिंक गर्ने क्रममा त्रुटि भयो</translation>
 <translation id="3995521777587992544">पृष्ठ लोडसम्बन्धी प्रगति पट्टी, <ph name="EMAIL" /> लोड गरियो।</translation>
 <translation id="4002066346123236978">शीर्षक</translation>
 <translation id="4004204301268239848">तपाईं आफ्ना पासवर्डहरू जुनसुकै यन्त्रमा प्रयोग गर्न सक्नुहोस् भन्नाका खातिर तिनलाई तपाईंको Google खातामा सुरक्षित गरिन्छ।</translation>
@@ -238,6 +242,7 @@
 <translation id="424315890655130736">पासफ्रेज प्रविष्टि गर्नुहोस्</translation>
 <translation id="4263576668337963058">पृष्ठमा गर्न सकिने उपलब्ध कारबाहीहरू देखाउनुहोस्</translation>
 <translation id="4272631900155121838">QR कोड स्क्यान गर्न, सेटिङहरूबाट क्यामेरालाई सक्षम गर्नुहोस्</translation>
+<translation id="4276041135170112053">अहिले नै समाधान गर्नुहोस्</translation>
 <translation id="4281844954008187215">सेवाका सर्तहरू</translation>
 <translation id="430793432425771671">सबैकुरा सिंक गर्नुहोस्</translation>
 <translation id="430967081421617822">सर्वकालीन</translation>
@@ -286,6 +291,7 @@
 <translation id="4904877109095351937">पढिसकिएको भनी चिन्ह लगाउनुहोस्</translation>
 <translation id="4930268273022498155">विद्यमान डेटा मेट्नुहोस्। तपाईं फेरि <ph name="USER_EMAIL1" /> मा बदलेर त्यो डेटा प्राप्त गर्न सक्नुहुन्छ।</translation>
 <translation id="4941089862236492464">माफ गर्नुहोस्, तपाईंको वस्तु साझेदारी गर्दा समस्या भयो।</translation>
+<translation id="4944543191714094452">पृष्ठमा फेला पार्नुहोस्…</translation>
 <translation id="4945756290001680296">पासवर्डका सेटिङहरूमाथि पहुँच राख्नुहोस्</translation>
 <translation id="4979397965658815378">आफ्ना सबै यन्त्रहरूमा आफ्ना पुस्तक चिन्ह, इतिहास, पासवर्ड र अन्य सेटिङहरू प्राप्त गर्न आफ्नो Google खाता मार्फत साइन इन गर्नुहोस्।</translation>
 <translation id="5005498671520578047">पासवर्ड प्रतिलिपि गर्नुहोस्</translation>
@@ -317,6 +323,7 @@
 <translation id="5433691172869980887">प्रयोगकर्ताको नाम प्रतिलिपि गरियो</translation>
 <translation id="54401264925851789">पृष्ठ सुरक्षा जानकारी</translation>
 <translation id="5443952882982198570">क्रेडिट कार्डहरू</translation>
+<translation id="5457907402803865181">पासवर्डहरू सिंक गर्ने क्रममा त्रुटि भयो।</translation>
 <translation id="5525269841082836315">पासफ्रेज सिर्जना गर्नुहोस्</translation>
 <translation id="5548760955356983418">ह्यानडअफले तपाईंलाई यस यन्त्रमा ब्राउजिङ सुरु गर्न र तपाईंको Mac मा सजिलै जारी गर्न दिन्छ। हाल खोलिएको वेबसाइट तपाईंको Mac को डकमा प्रकट हुनेछ।
 
@@ -408,6 +415,7 @@
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> वस्तुहरू मेटाइयो</translation>
 <translation id="6610002944194042868">अनुवादसम्बन्धी विकल्पहरू</translation>
 <translation id="6628106477656132239">म्याद सकिने मिति अमान्य छ</translation>
+<translation id="6638511529934826365">पाठ जुम गर्नुहोस्…</translation>
 <translation id="6642362222295953972">विद्यमान ट्याबमा जानुहोस्</translation>
 <translation id="6643016212128521049">खालि गर्नुहोस्</translation>
 <translation id="6656103420185847513">फोल्डर सम्पादन गर्नुहोस्</translation>

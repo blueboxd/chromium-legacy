@@ -27,6 +27,8 @@ viz_component("service") {
     "display/display.cc",
     "display/display.h",
     "display/display_client.h",
+    "display/display_damage_tracker.cc",
+    "display/display_damage_tracker.h",
     "display/display_resource_provider.cc",
     "display/display_resource_provider.h",
     "display/display_scheduler.cc",
@@ -60,18 +62,8 @@ viz_component("service") {
     "display/overlay_candidate_list.h",
     "display/overlay_candidate_validator.cc",
     "display/overlay_candidate_validator.h",
-    "display/overlay_candidate_validator_strategy.cc",
-    "display/overlay_candidate_validator_strategy.h",
     "display/overlay_processor.cc",
     "display/overlay_processor.h",
-    "display/overlay_strategy_fullscreen.cc",
-    "display/overlay_strategy_fullscreen.h",
-    "display/overlay_strategy_single_on_top.cc",
-    "display/overlay_strategy_single_on_top.h",
-    "display/overlay_strategy_underlay.cc",
-    "display/overlay_strategy_underlay.h",
-    "display/overlay_strategy_underlay_cast.cc",
-    "display/overlay_strategy_underlay_cast.h",
     "display/program_binding.cc",
     "display/program_binding.h",
     "display/renderer_utils.cc",
@@ -259,6 +251,28 @@ viz_component("service") {
     libs = [ "IOSurface.framework" ]
   }
 
+  if (is_linux || is_android || use_ozone) {
+    sources += [
+      "display/overlay_candidate_validator_strategy.cc",
+      "display/overlay_candidate_validator_strategy.h",
+      "display/overlay_processor_using_strategy.cc",
+      "display/overlay_processor_using_strategy.h",
+    ]
+  }
+
+  if (is_android || use_ozone) {
+    sources += [
+      "display/overlay_strategy_fullscreen.cc",
+      "display/overlay_strategy_fullscreen.h",
+      "display/overlay_strategy_single_on_top.cc",
+      "display/overlay_strategy_single_on_top.h",
+      "display/overlay_strategy_underlay.cc",
+      "display/overlay_strategy_underlay.h",
+      "display/overlay_strategy_underlay_cast.cc",
+      "display/overlay_strategy_underlay_cast.h",
+    ]
+  }
+
   if (is_android) {
     sources += [
       "display_embedder/gl_output_surface_android.cc",
@@ -421,6 +435,7 @@ viz_source_set("unit_tests") {
   sources = [
     "display/bsp_tree_unittest.cc",
     "display/copy_output_scaling_pixeltest.cc",
+    "display/display_damage_tracker_unittest.cc",
     "display/display_resource_provider_unittest.cc",
     "display/display_scheduler_unittest.cc",
     "display/display_unittest.cc",

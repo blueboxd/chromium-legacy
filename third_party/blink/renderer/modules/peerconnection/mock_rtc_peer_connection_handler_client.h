@@ -28,7 +28,7 @@ class MockRTCPeerConnectionHandlerClient
   // RTCPeerConnectionHandlerClient implementation.
   MOCK_METHOD0(NegotiationNeeded, void());
   MOCK_METHOD1(DidGenerateICECandidate,
-               void(scoped_refptr<RTCIceCandidatePlatform> candidate));
+               void(RTCIceCandidatePlatform* candidate));
   MOCK_METHOD4(DidFailICECandidate,
                void(const String& host_candidate,
                     const String& url,
@@ -76,8 +76,7 @@ class MockRTCPeerConnectionHandlerClient
       void(blink::WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>>*,
            bool));
 
-  void didGenerateICECandidateWorker(
-      scoped_refptr<RTCIceCandidatePlatform> candidate);
+  void didGenerateICECandidateWorker(RTCIceCandidatePlatform* candidate);
   void didAddReceiverWorker(
       std::unique_ptr<RTCRtpReceiverPlatform>* stream_web_rtp_receivers);
   void didRemoveReceiverWorker(

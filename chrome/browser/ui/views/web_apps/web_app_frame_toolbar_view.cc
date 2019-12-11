@@ -503,6 +503,7 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
   web_app_menu_button_ = right_container_->AddChildView(
       std::make_unique<WebAppMenuButton>(browser_view_));
 #endif
+  web_app_menu_button_->SetID(VIEW_ID_APP_MENU);
   const bool is_browser_focus_mode = browser_view_->browser()->is_focus_mode();
   SetInsetsForWebAppToolbarButton(web_app_menu_button_, is_browser_focus_mode);
   right_container_->SetChildControllingHeight(web_app_menu_button_);

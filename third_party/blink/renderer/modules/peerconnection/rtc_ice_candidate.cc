@@ -70,13 +70,12 @@ RTCIceCandidate* RTCIceCandidate::Create(
 }
 
 RTCIceCandidate* RTCIceCandidate::Create(
-    scoped_refptr<RTCIceCandidatePlatform> platform_candidate) {
-  return MakeGarbageCollected<RTCIceCandidate>(std::move(platform_candidate));
+    RTCIceCandidatePlatform* platform_candidate) {
+  return MakeGarbageCollected<RTCIceCandidate>(platform_candidate);
 }
 
-RTCIceCandidate::RTCIceCandidate(
-    scoped_refptr<RTCIceCandidatePlatform> platform_candidate)
-    : platform_candidate_(std::move(platform_candidate)) {}
+RTCIceCandidate::RTCIceCandidate(RTCIceCandidatePlatform* platform_candidate)
+    : platform_candidate_(platform_candidate) {}
 
 String RTCIceCandidate::candidate() const {
   return platform_candidate_->Candidate();
@@ -91,9 +90,13 @@ uint16_t RTCIceCandidate::sdpMLineIndex(bool& is_null) const {
   return platform_candidate_->SdpMLineIndex().value_or(0);
 }
 
-scoped_refptr<RTCIceCandidatePlatform> RTCIceCandidate::PlatformCandidate()
-    const {
+RTCIceCandidatePlatform* RTCIceCandidate::PlatformCandidate() const {
   return platform_candidate_;
+}
+
+void RTCIceCandidate::Trace(Visitor* visitor) {
+  visitor->Trace(platform_candidate_);
+  ScriptWrappable::Trace(visitor);
 }
 
 String RTCIceCandidate::foundation() const {

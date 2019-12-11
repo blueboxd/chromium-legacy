@@ -8,14 +8,10 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
-
-import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -49,10 +45,6 @@ public class ConfirmImportSyncDataDialog extends DialogFragment
         void onCancel();
     }
 
-    @VisibleForTesting
-    public static final String CONFIRM_IMPORT_SYNC_DATA_DIALOG_TAG =
-            "sync_account_switch_import_data_tag";
-
     private static final String KEY_OLD_ACCOUNT_NAME = "lastAccountName";
     private static final String KEY_NEW_ACCOUNT_NAME = "newAccountName";
 
@@ -62,34 +54,29 @@ public class ConfirmImportSyncDataDialog extends DialogFragment
     private Listener mListener;
     private boolean mListenerCalled;
 
-    private static ConfirmImportSyncDataDialog newInstance(
-            String oldAccountName, String newAccountName) {
+    /**
+     * Creates a new instance of ConfirmImportSyncDataDialog, a dialog that gives the
+     * user the option to merge data between the account they are attempting to sign in to and the
+     * account they were previously signed into, or to keep the data separate.
+     * @param listener        Callback to be called if the user completes the dialog (as opposed to
+     *                        hitting cancel).
+     * @param oldAccountName  The previous sync account name.
+     * @param newAccountName  The potential next sync account name.
+     */
+    static ConfirmImportSyncDataDialog create(
+            Listener listener, String oldAccountName, String newAccountName) {
         ConfirmImportSyncDataDialog fragment = new ConfirmImportSyncDataDialog();
         Bundle args = new Bundle();
         args.putString(KEY_OLD_ACCOUNT_NAME, oldAccountName);
         args.putString(KEY_NEW_ACCOUNT_NAME, newAccountName);
         fragment.setArguments(args);
+        fragment.setListener(listener);
         return fragment;
     }
 
-    /**
-     * Creates and shows a new instance of ConfirmImportSyncDataFragment, a dialog that gives the
-     * user the option to merge data between the account they are attempting to sign in to and the
-     * account they were previously signed into, or to keep the data separate.
-     * @param oldAccountName  The previous sync account name.
-     * @param newAccountName  The potential next sync account name.
-     * @param fragmentManager FragmentManager to attach the dialog to.
-     * @param callback        Callback to be called if the user completes the dialog (as opposed to
-     *                        hitting cancel).
-     */
-    public static void showNewInstance(String oldAccountName, String newAccountName,
-            FragmentManager fragmentManager, Listener callback) {
-        ConfirmImportSyncDataDialog confirmSync = newInstance(oldAccountName, newAccountName);
-
-        confirmSync.setListener(callback);
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-        transaction.add(confirmSync, CONFIRM_IMPORT_SYNC_DATA_DIALOG_TAG);
-        transaction.commitAllowingStateLoss();
+    private void setListener(Listener listener) {
+        assert mListener == null;
+        mListener = listener;
     }
 
     @Override
@@ -135,11 +122,6 @@ public class ConfirmImportSyncDataDialog extends DialogFragment
                 .setNegativeButton(R.string.cancel, this)
                 .setView(v)
                 .create();
-    }
-
-    private void setListener(Listener listener) {
-        assert mListener == null;
-        mListener = listener;
     }
 
     @Override

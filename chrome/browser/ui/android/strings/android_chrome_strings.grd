@@ -2500,8 +2500,11 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_DOWNLOAD_MANAGER_UI_IMAGES" desc="Indicates that clicking on this button shows only downloaded images.">
         Images
       </message>
-      <message name="IDS_DOWNLOAD_MANAGER_UI_PAGINATION" desc="Indicates that clicking on this button will show more items in the list.">
+      <message name="IDS_DOWNLOAD_MANAGER_UI_CARD_PAGINATION" desc="Indicates that clicking on this button will show more items in the card.">
         See more
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_UI_LIST_PAGINATION" desc="Indicates that clicking on this button will show more items in the list.">
+        More
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_UI_DOCUMENTS" desc="Indicates that clicking on this button shows only documents.">
         Documents

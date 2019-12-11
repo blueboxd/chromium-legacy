@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "components/arc/session/arc_bridge_service.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
 
 namespace arc {
 
@@ -48,14 +49,19 @@ void ArcInputMethodManagerBridgeImpl::SendSwitchImeTo(
 }
 
 void ArcInputMethodManagerBridgeImpl::SendFocus(
-    mojom::InputConnectionPtr connection,
+    mojo::PendingRemote<mojom::InputConnection> connection,
     mojom::TextInputStatePtr state) {
   auto* imm_instance = ARC_GET_INSTANCE_FOR_METHOD(
       bridge_service_->input_method_manager(), Focus);
   if (!imm_instance)
     return;
 
-  imm_instance->Focus(std::move(connection), std::move(state));
+  // TODO(crbug.com/955171): Remove this temporary conversion to InterfacePtr
+  // once the 'Focus' method from
+  // //components/arc/mojom/input_method_manager.mojom could take pending_remote
+  // directly. Refer to crrev.com/c/1868870.
+  mojo::InterfacePtr<mojom::InputConnection> ptr(std::move(connection));
+  imm_instance->Focus(std::move(ptr), std::move(state));
 }
 
 void ArcInputMethodManagerBridgeImpl::SendUpdateTextInputState(

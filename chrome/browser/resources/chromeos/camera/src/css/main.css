@@ -50,6 +50,11 @@ body.tab-navigation input:focus::after {
   top: -3px;
 }
 
+.cancel-animate {
+  animation: none !important;
+  transition: none !important;
+}
+
 .circle button,
 body.tab-navigation .circle button:focus::after,
 body.tab-navigation .circle input:focus::after {

@@ -515,6 +515,16 @@
     "expiry_milestone": 90
   },
   {
+    "name": "content-indexing-download-home",
+    "owners": [ "shaktisahu", "dtrainor"],
+    "expiry_milestone": 85
+  },
+  {
+    "name": "content-indexing-ntp",
+    "owners": [ "shaktisahu", "dtrainor"],
+    "expiry_milestone": 85
+  },
+  {
     "name": "context-menu-search-with-google-lens",
     "owners": [ "benwgold", "lens-chrome" ],
     "expiry_milestone": 88
@@ -2679,11 +2689,6 @@
     "name": "oculus-vr",
     "owners": [ "//device/vr/OWNERS", "xr-dev@chromium.org" ],
     "expiry_milestone": 82
-  },
-  {
-    "name": "offline-home",
-    "owners": [ "shaktisahu", "dtrainor"],
-    "expiry_milestone": 85
   },
   {
     "name": "offline-indicator-always-http-probe",

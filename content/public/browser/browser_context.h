@@ -138,7 +138,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   using StoragePartitionCallback =
       base::RepeatingCallback<void(StoragePartition*)>;
   static void ForEachStoragePartition(BrowserContext* browser_context,
-                                      const StoragePartitionCallback& callback);
+                                      StoragePartitionCallback callback);
   static void AsyncObliterateStoragePartition(
       BrowserContext* browser_context,
       const std::string& partition_domain,

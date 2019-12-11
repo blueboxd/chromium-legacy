@@ -74,11 +74,6 @@ void DesktopMediaPickerController::Show(
 
 void DesktopMediaPickerController::WebContentsDestroyed() {
   OnPickerDialogResults(std::string(), content::DesktopMediaID());
-
-  // This ensures that OnPickerDialogResults() won't be called again as a result
-  // of previously registered callbacks.
-  picker_.reset();
-  source_lists_.clear();
 }
 
 void DesktopMediaPickerController::OnInitialMediaListFound() {

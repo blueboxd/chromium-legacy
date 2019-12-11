@@ -26,7 +26,6 @@
 #include "chromeos/network/onc/onc_translator.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
-#include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "components/onc/onc_constants.h"
 #include "components/proxy_config/proxy_prefs.h"
 #include "content/public/browser/browser_context.h"
@@ -761,8 +760,6 @@ void NetworkingPrivateChromeOS::GetPropertiesCallback(
   std::unique_ptr<base::DictionaryValue> dictionary_copy =
       dictionary.CreateDeepCopy();
   AppendThirdPartyProviderName(dictionary_copy.get());
-  if (managed)
-    SetManagedActiveProxyValues(guid, dictionary_copy.get());
   callback.Run(std::move(dictionary_copy));
 }
 
@@ -786,25 +783,6 @@ void NetworkingPrivateChromeOS::AppendThirdPartyProviderName(
       break;
     }
   }
-}
-
-void NetworkingPrivateChromeOS::SetManagedActiveProxyValues(
-    const std::string& guid,
-    base::DictionaryValue* dictionary) {
-  const std::string proxy_settings_key = ::onc::network_config::kProxySettings;
-  base::Value* proxy_settings = dictionary->FindKeyOfType(
-      proxy_settings_key, base::Value::Type::DICTIONARY);
-
-  if (!proxy_settings) {
-    proxy_settings = dictionary->SetKey(
-        proxy_settings_key, base::Value(base::Value::Type::DICTIONARY));
-  }
-
-  NetworkHandler::Get()->ui_proxy_config_service()->MergeEnforcedProxyConfig(
-      guid, proxy_settings);
-
-  if (proxy_settings->DictEmpty())
-    dictionary->RemoveKey(proxy_settings_key);
 }
 
 }  // namespace extensions

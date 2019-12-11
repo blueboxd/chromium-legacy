@@ -214,28 +214,29 @@ void CheckSubmenu(const RootModel& model,
     // Check type.
     switch (model_item.type) {
       case ui::MenuModel::TYPE_TITLE:
-        EXPECT_EQ(views::MenuItemView::TITLE, item->GetType());
+        EXPECT_EQ(views::MenuItemView::Type::kTitle, item->GetType());
         break;
       case ui::MenuModel::TYPE_COMMAND:
-        EXPECT_EQ(views::MenuItemView::NORMAL, item->GetType());
+        EXPECT_EQ(views::MenuItemView::Type::kNormal, item->GetType());
         break;
       case ui::MenuModel::TYPE_CHECK:
-        EXPECT_EQ(views::MenuItemView::CHECKBOX, item->GetType());
+        EXPECT_EQ(views::MenuItemView::Type::kCheckbox, item->GetType());
         break;
       case ui::MenuModel::TYPE_RADIO:
-        EXPECT_EQ(views::MenuItemView::RADIO, item->GetType());
+        EXPECT_EQ(views::MenuItemView::Type::kRadio, item->GetType());
         break;
       case ui::MenuModel::TYPE_SEPARATOR:
       case ui::MenuModel::TYPE_BUTTON_ITEM:
         break;
       case ui::MenuModel::TYPE_SUBMENU:
-        EXPECT_EQ(views::MenuItemView::SUBMENU, item->GetType());
+        EXPECT_EQ(views::MenuItemView::Type::kSubMenu, item->GetType());
         break;
       case ui::MenuModel::TYPE_ACTIONABLE_SUBMENU:
-        EXPECT_EQ(views::MenuItemView::ACTIONABLE_SUBMENU, item->GetType());
+        EXPECT_EQ(views::MenuItemView::Type::kActionableSubMenu,
+                  item->GetType());
         break;
       case ui::MenuModel::TYPE_HIGHLIGHTED:
-        EXPECT_EQ(views::MenuItemView::HIGHLIGHTED, item->GetType());
+        EXPECT_EQ(views::MenuItemView::Type::kHighlighted, item->GetType());
         break;
     }
 
@@ -291,28 +292,29 @@ TEST_F(MenuModelAdapterTest, BasicTest) {
     // Check type.
     switch (model_item.type) {
       case ui::MenuModel::TYPE_TITLE:
-        EXPECT_EQ(views::MenuItemView::TITLE, item->GetType());
+        EXPECT_EQ(views::MenuItemView::Type::kTitle, item->GetType());
         break;
       case ui::MenuModel::TYPE_COMMAND:
-        EXPECT_EQ(views::MenuItemView::NORMAL, item->GetType());
+        EXPECT_EQ(views::MenuItemView::Type::kNormal, item->GetType());
         break;
       case ui::MenuModel::TYPE_CHECK:
-        EXPECT_EQ(views::MenuItemView::CHECKBOX, item->GetType());
+        EXPECT_EQ(views::MenuItemView::Type::kCheckbox, item->GetType());
         break;
       case ui::MenuModel::TYPE_RADIO:
-        EXPECT_EQ(views::MenuItemView::RADIO, item->GetType());
+        EXPECT_EQ(views::MenuItemView::Type::kRadio, item->GetType());
         break;
       case ui::MenuModel::TYPE_SEPARATOR:
       case ui::MenuModel::TYPE_BUTTON_ITEM:
         break;
       case ui::MenuModel::TYPE_SUBMENU:
-        EXPECT_EQ(views::MenuItemView::SUBMENU, item->GetType());
+        EXPECT_EQ(views::MenuItemView::Type::kSubMenu, item->GetType());
         break;
       case ui::MenuModel::TYPE_ACTIONABLE_SUBMENU:
-        EXPECT_EQ(views::MenuItemView::ACTIONABLE_SUBMENU, item->GetType());
+        EXPECT_EQ(views::MenuItemView::Type::kActionableSubMenu,
+                  item->GetType());
         break;
       case ui::MenuModel::TYPE_HIGHLIGHTED:
-        EXPECT_EQ(views::MenuItemView::HIGHLIGHTED, item->GetType());
+        EXPECT_EQ(views::MenuItemView::Type::kHighlighted, item->GetType());
         break;
     }
 

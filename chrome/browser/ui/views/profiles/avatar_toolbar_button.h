@@ -30,6 +30,7 @@ class AvatarToolbarButton : public ToolbarButton,
     kAnimatedUserIdentity,
     kSyncPaused,
     kSyncError,
+    kPasswordsOnlySyncError,
     kNormal
   };
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/captive_portal_blocking_page.h"
+#include "components/security_interstitials/content/captive_portal_blocking_page.h"
 
 #include <utility>
 
@@ -168,8 +168,7 @@ void CaptivePortalBlockingPage::PopulateInterstitialStrings(
   } else {
     // Portal redirection was done with HTTP redirects, so show the login URL.
     // If |languages| is empty, punycode in |login_host| will always be decoded.
-    base::string16 login_host =
-        url_formatter::IDNToUnicode(login_url_.host());
+    base::string16 login_host = url_formatter::IDNToUnicode(login_url_.host());
     if (base::i18n::IsRTL())
       base::i18n::WrapStringWithLTRFormatting(&login_host);
 

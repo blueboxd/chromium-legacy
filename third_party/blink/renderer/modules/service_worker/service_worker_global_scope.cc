@@ -108,6 +108,7 @@
 #include "third_party/blink/renderer/modules/service_worker/wait_until_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
@@ -800,8 +801,8 @@ SingleCachedMetadataHandler*
 ServiceWorkerGlobalScope::CreateWorkerScriptCachedMetadataHandler(
     const KURL& script_url,
     std::unique_ptr<Vector<uint8_t>> meta_data) {
-  return ServiceWorkerScriptCachedMetadataHandler::Create(this, script_url,
-                                                          std::move(meta_data));
+  return MakeGarbageCollected<ServiceWorkerScriptCachedMetadataHandler>(
+      this, script_url, std::move(meta_data));
 }
 
 ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* script_state,
@@ -1324,8 +1325,8 @@ void ServiceWorkerGlobalScope::DispatchExtendableMessageEventInternal(
   String origin;
   if (!event->source_origin->IsOpaque())
     origin = event->source_origin->ToString();
-  WaitUntilObserver* observer =
-      WaitUntilObserver::Create(this, WaitUntilObserver::kMessage, event_id);
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
+      this, WaitUntilObserver::kMessage, event_id);
 
   if (event->source_info_for_client) {
     mojom::blink::ServiceWorkerClientInfoPtr client_info =
@@ -1333,9 +1334,9 @@ void ServiceWorkerGlobalScope::DispatchExtendableMessageEventInternal(
     DCHECK(!client_info->client_uuid.IsEmpty());
     ServiceWorkerClient* source = nullptr;
     if (client_info->client_type == mojom::ServiceWorkerClientType::kWindow)
-      source = ServiceWorkerWindowClient::Create(*client_info);
+      source = MakeGarbageCollected<ServiceWorkerWindowClient>(*client_info);
     else
-      source = ServiceWorkerClient::Create(*client_info);
+      source = MakeGarbageCollected<ServiceWorkerClient>(*client_info);
     Event* event_to_dispatch = ExtendableMessageEvent::Create(
         std::move(msg.message), origin, ports, source, observer);
     DispatchExtendableEvent(event_to_dispatch, observer);
@@ -1383,11 +1384,10 @@ void ServiceWorkerGlobalScope::StartFetchEvent(
 
   mojom::blink::FetchAPIRequest& fetch_request = *params->request;
   ScriptState::Scope scope(ScriptController()->GetScriptState());
-  WaitUntilObserver* wait_until_observer =
-      WaitUntilObserver::Create(this, WaitUntilObserver::kFetch, event_id);
-  FetchRespondWithObserver* respond_with_observer =
-      FetchRespondWithObserver::Create(this, event_id, requestor_coep,
-                                       fetch_request, wait_until_observer);
+  auto* wait_until_observer = MakeGarbageCollected<WaitUntilObserver>(
+      this, WaitUntilObserver::kFetch, event_id);
+  auto* respond_with_observer = MakeGarbageCollected<FetchRespondWithObserver>(
+      this, event_id, requestor_coep, fetch_request, wait_until_observer);
   Request* request =
       Request::Create(ScriptController()->GetScriptState(), fetch_request,
                       Request::ForServiceWorkerFetchEvent::kTrue);
@@ -1539,8 +1539,8 @@ void ServiceWorkerGlobalScope::StartInstallEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* observer =
-      WaitUntilObserver::Create(this, WaitUntilObserver::kInstall, event_id);
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
+      this, WaitUntilObserver::kInstall, event_id);
   Event* event =
       InstallEvent::Create(event_type_names::kInstall,
                            ExtendableEventInit::Create(), event_id, observer);
@@ -1568,8 +1568,8 @@ void ServiceWorkerGlobalScope::StartActivateEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* observer =
-      WaitUntilObserver::Create(this, WaitUntilObserver::kActivate, event_id);
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
+      this, WaitUntilObserver::kActivate, event_id);
   Event* event = ExtendableEvent::Create(
       event_type_names::kActivate, ExtendableEventInit::Create(), observer);
   DispatchExtendableEvent(event, observer);
@@ -1600,7 +1600,7 @@ void ServiceWorkerGlobalScope::StartBackgroundFetchAbortEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* observer = WaitUntilObserver::Create(
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
       this, WaitUntilObserver::kBackgroundFetchAbort, event_id);
   ScriptState* script_state = ScriptController()->GetScriptState();
 
@@ -1643,7 +1643,7 @@ void ServiceWorkerGlobalScope::StartBackgroundFetchClickEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* observer = WaitUntilObserver::Create(
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
       this, WaitUntilObserver::kBackgroundFetchClick, event_id);
 
   BackgroundFetchEventInit* init = BackgroundFetchEventInit::Create();
@@ -1681,7 +1681,7 @@ void ServiceWorkerGlobalScope::StartBackgroundFetchFailEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* observer = WaitUntilObserver::Create(
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
       this, WaitUntilObserver::kBackgroundFetchFail, event_id);
 
   ScriptState* script_state = ScriptController()->GetScriptState();
@@ -1724,7 +1724,7 @@ void ServiceWorkerGlobalScope::StartBackgroundFetchSuccessEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* observer = WaitUntilObserver::Create(
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
       this, WaitUntilObserver::kBackgroundFetchSuccess, event_id);
 
   ScriptState* script_state = ScriptController()->GetScriptState();
@@ -1815,7 +1815,7 @@ void ServiceWorkerGlobalScope::StartNotificationClickEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* observer = WaitUntilObserver::Create(
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
       this, WaitUntilObserver::kNotificationClick, event_id);
   NotificationEventInit* event_init = NotificationEventInit::Create();
   if (notification_data->actions.has_value() && 0 <= action_index &&
@@ -1855,7 +1855,7 @@ void ServiceWorkerGlobalScope::StartNotificationCloseEvent(
       TRACE_ID_WITH_SCOPE(kServiceWorkerGlobalScopeTraceScope,
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
-  WaitUntilObserver* observer = WaitUntilObserver::Create(
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
       this, WaitUntilObserver::kNotificationClose, event_id);
   NotificationEventInit* event_init = NotificationEventInit::Create();
   event_init->setAction(WTF::String());  // initialize as null.
@@ -1891,8 +1891,8 @@ void ServiceWorkerGlobalScope::StartPushEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* observer =
-      WaitUntilObserver::Create(this, WaitUntilObserver::kPush, event_id);
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
+      this, WaitUntilObserver::kPush, event_id);
   Event* event = PushEvent::Create(event_type_names::kPush,
                                    PushMessageData::Create(payload), observer);
   DispatchExtendableEvent(event, observer);
@@ -1925,7 +1925,7 @@ void ServiceWorkerGlobalScope::StartPushSubscriptionChangeEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* observer = WaitUntilObserver::Create(
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
       this, WaitUntilObserver::kPushSubscriptionChange, event_id);
   Event* event = PushSubscriptionChangeEvent::Create(
       event_type_names::kPushsubscriptionchange, nullptr /* new_subscription */,
@@ -1959,8 +1959,8 @@ void ServiceWorkerGlobalScope::StartSyncEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* observer =
-      WaitUntilObserver::Create(this, WaitUntilObserver::kSync, event_id);
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
+      this, WaitUntilObserver::kSync, event_id);
   Event* event =
       SyncEvent::Create(event_type_names::kSync, tag, last_chance, observer);
   DispatchExtendableEvent(event, observer);
@@ -1989,7 +1989,7 @@ void ServiceWorkerGlobalScope::StartPeriodicSyncEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* observer = WaitUntilObserver::Create(
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
       this, WaitUntilObserver::kPeriodicSync, event_id);
   Event* event =
       PeriodicSyncEvent::Create(event_type_names::kPeriodicsync, tag, observer);
@@ -2025,7 +2025,7 @@ void ServiceWorkerGlobalScope::StartAbortPaymentEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* wait_until_observer = WaitUntilObserver::Create(
+  auto* wait_until_observer = MakeGarbageCollected<WaitUntilObserver>(
       this, WaitUntilObserver::kAbortPayment, event_id);
   AbortPaymentRespondWithObserver* respond_with_observer =
       MakeGarbageCollected<AbortPaymentRespondWithObserver>(
@@ -2070,7 +2070,7 @@ void ServiceWorkerGlobalScope::StartCanMakePaymentEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* wait_until_observer = WaitUntilObserver::Create(
+  auto* wait_until_observer = MakeGarbageCollected<WaitUntilObserver>(
       this, WaitUntilObserver::kCanMakePayment, event_id);
   CanMakePaymentRespondWithObserver* respond_with_observer =
       MakeGarbageCollected<CanMakePaymentRespondWithObserver>(
@@ -2117,7 +2117,7 @@ void ServiceWorkerGlobalScope::StartPaymentRequestEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* wait_until_observer = WaitUntilObserver::Create(
+  auto* wait_until_observer = MakeGarbageCollected<WaitUntilObserver>(
       this, WaitUntilObserver::kPaymentRequest, event_id);
   PaymentRequestRespondWithObserver* respond_with_observer =
       PaymentRequestRespondWithObserver::Create(this, event_id,
@@ -2171,7 +2171,7 @@ void ServiceWorkerGlobalScope::StartCookieChangeEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* observer = WaitUntilObserver::Create(
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
       this, WaitUntilObserver::kCookieChange, event_id);
 
   HeapVector<Member<CookieListItem>> changed;
@@ -2210,7 +2210,7 @@ void ServiceWorkerGlobalScope::StartContentDeleteEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* observer = WaitUntilObserver::Create(
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
       this, WaitUntilObserver::kContentDelete, event_id);
 
   auto* init = ContentIndexEventInit::Create();

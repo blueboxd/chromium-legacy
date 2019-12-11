@@ -2563,7 +2563,7 @@ bool WebLocalFrameImpl::ShouldSuppressKeyboardForFocusedElement() {
     return false;
 
   DCHECK(GetFrame()->GetDocument());
-  auto* focused_form_control_element = DynamicTo<HTMLFormControlElement>(
+  auto* focused_form_control_element = ToHTMLFormControlElementOrNull(
       GetFrame()->GetDocument()->FocusedElement());
   return focused_form_control_element &&
          autofill_client_->ShouldSuppressKeyboard(focused_form_control_element);
@@ -2577,7 +2577,7 @@ void WebLocalFrameImpl::PerformMediaPlayerAction(
   if (!IsA<HTMLVideoElement>(*node) && !IsA<HTMLAudioElement>(*node))
     return;
 
-  auto* media_element = To<HTMLMediaElement>(node);
+  HTMLMediaElement* media_element = ToHTMLMediaElement(node);
   switch (action.type) {
     case MediaPlayerAction::Type::kPlay:
       if (action.enable)

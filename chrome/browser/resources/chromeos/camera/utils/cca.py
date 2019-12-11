@@ -221,6 +221,14 @@ def Pack(args):
   # TODO(shik): Add an option to deploy/install the packed crx on device
 
 
+def Lint(args):
+  root = GetChromiumRoot()
+  node = os.path.join(root, 'third_party/node/linux/node-linux-x64/bin/node')
+  eslint = os.path.join(root,
+                        'third_party/node/node_modules/eslint/bin/eslint.js')
+  subprocess.call([node, eslint, 'src/js'])
+
+
 def ParseArgs(args):
   parser = argparse.ArgumentParser(description='CCA developer tools.')
   parser.add_argument('--debug', action='store_true')
@@ -255,7 +263,10 @@ def ParseArgs(args):
       default='camera.pem')
   pack_parser.set_defaults(func=Pack)
 
-  parser.set_defaults(func=lambda _args: parser.print_help())
+  lint_parser = subparsers.add_parser(
+      'lint', help='check code', description='Check coding styles.')
+  lint_parser.set_defaults(func=Lint)
+  parser.set_defaults(func=lambda _args: lint.print_help())
 
   return parser.parse_args(args)
 

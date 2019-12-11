@@ -189,7 +189,9 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
     case kPseudoAfter:
       return kPseudoIdAfter;
     case kPseudoMarker:
-      return kPseudoIdMarker;
+      return RuntimeEnabledFeatures::CSSMarkerPseudoElementEnabled()
+                 ? kPseudoIdMarker
+                 : kPseudoIdNone;
     case kPseudoBackdrop:
       return kPseudoIdBackdrop;
     case kPseudoScrollbar:

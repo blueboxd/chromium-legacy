@@ -357,7 +357,8 @@ void ProfileMenuView::OnSyncErrorButtonClicked(
     case sync_ui_util::UPGRADE_CLIENT_ERROR:
       chrome::OpenUpdateChromeDialog(browser());
       break;
-    case sync_ui_util::TRUSTED_VAULT_KEY_MISSING_ERROR:
+    case sync_ui_util::TRUSTED_VAULT_KEY_MISSING_FOR_EVERYTHING_ERROR:
+    case sync_ui_util::TRUSTED_VAULT_KEY_MISSING_FOR_PASSWORDS_ERROR:
       sync_ui_util::OpenTabForSyncKeyRetrieval(browser());
       break;
     case sync_ui_util::PASSPHRASE_ERROR:
@@ -514,7 +515,8 @@ gfx::ImageSkia ProfileMenuView::GetSyncIcon() {
     case sync_ui_util::UNRECOVERABLE_ERROR:
     case sync_ui_util::UPGRADE_CLIENT_ERROR:
     case sync_ui_util::PASSPHRASE_ERROR:
-    case sync_ui_util::TRUSTED_VAULT_KEY_MISSING_ERROR:
+    case sync_ui_util::TRUSTED_VAULT_KEY_MISSING_FOR_EVERYTHING_ERROR:
+    case sync_ui_util::TRUSTED_VAULT_KEY_MISSING_FOR_PASSWORDS_ERROR:
     case sync_ui_util::SETTINGS_UNCONFIRMED_ERROR:
       icon = &kSyncPausedCircleIcon;
       color_id = ui::NativeTheme::kColorId_AlertSeverityHigh;
@@ -569,10 +571,17 @@ void ProfileMenuView::BuildSyncInfo() {
           base::BindRepeating(&ProfileMenuView::OnSyncSettingsButtonClicked,
                               base::Unretained(this)));
     } else {
-      bool sync_paused = (error == sync_ui_util::AUTH_ERROR);
+      const bool sync_paused = (error == sync_ui_util::AUTH_ERROR);
+      const bool passwords_only_error =
+          (error ==
+           sync_ui_util::TRUSTED_VAULT_KEY_MISSING_FOR_PASSWORDS_ERROR);
+
       // Overwrite error description with short version for the menu.
-      description_string_id = sync_paused ? IDS_PROFILES_DICE_SYNC_PAUSED_TITLE
-                                          : IDS_SYNC_ERROR_USER_MENU_TITLE;
+      description_string_id =
+          sync_paused
+              ? IDS_PROFILES_DICE_SYNC_PAUSED_TITLE
+              : passwords_only_error ? IDS_SYNC_ERROR_PASSWORDS_USER_MENU_TITLE
+                                     : IDS_SYNC_ERROR_USER_MENU_TITLE;
 
       SetSyncInfo(
           GetSyncIcon(), l10n_util::GetStringUTF16(description_string_id),
@@ -771,15 +780,21 @@ void ProfileMenuView::AddPreDiceSyncErrorView(
     sync_ui_util::AvatarSyncErrorType error,
     int button_string_id,
     int content_string_id) {
+  const bool passwords_only_error =
+      error == sync_ui_util::TRUSTED_VAULT_KEY_MISSING_FOR_PASSWORDS_ERROR;
+
   AddMenuGroup();
   auto sync_problem_icon = std::make_unique<views::ImageView>();
   sync_problem_icon->SetImage(
       gfx::CreateVectorIcon(kSyncProblemIcon, BadgedProfilePhoto::kImageSize,
                             GetNativeTheme()->GetSystemColor(
                                 ui::NativeTheme::kColorId_AlertSeverityHigh)));
+
   views::Button* button = CreateAndAddTitleCard(
       std::move(sync_problem_icon),
-      l10n_util::GetStringUTF16(IDS_SYNC_ERROR_USER_MENU_TITLE),
+      l10n_util::GetStringUTF16(passwords_only_error
+                                    ? IDS_SYNC_ERROR_PASSWORDS_USER_MENU_TITLE
+                                    : IDS_SYNC_ERROR_USER_MENU_TITLE),
       l10n_util::GetStringUTF16(content_string_id), base::RepeatingClosure());
   static_cast<HoverButton*>(button)->SetStyle(HoverButton::STYLE_ERROR);
 
@@ -802,6 +817,8 @@ void ProfileMenuView::AddDiceSyncErrorView(
   // not disabled there is a blue button to resolve the error.
   const bool show_sync_paused_ui = error == sync_ui_util::AUTH_ERROR;
   const bool sync_disabled = !browser()->profile()->IsSyncAllowed();
+  const bool passwords_only_error =
+      error == sync_ui_util::TRUSTED_VAULT_KEY_MISSING_FOR_PASSWORDS_ERROR;
 
   AddMenuGroup();
 
@@ -824,7 +841,9 @@ void ProfileMenuView::AddDiceSyncErrorView(
           show_sync_paused_ui
               ? IDS_PROFILES_DICE_SYNC_PAUSED_TITLE
               : sync_disabled ? IDS_PROFILES_DICE_SYNC_DISABLED_TITLE
-                              : IDS_SYNC_ERROR_USER_MENU_TITLE),
+                              : passwords_only_error
+                                    ? IDS_SYNC_ERROR_PASSWORDS_USER_MENU_TITLE
+                                    : IDS_SYNC_ERROR_USER_MENU_TITLE),
       avatar_item.username,
       base::BindRepeating(&ProfileMenuView::OnCurrentProfileCardClicked,
                           base::Unretained(this)));

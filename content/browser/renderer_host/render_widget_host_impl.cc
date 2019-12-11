@@ -2694,10 +2694,13 @@ void RenderWidgetHostImpl::SetNeedsBeginFrameForFlingProgress() {
 
 void RenderWidgetHostImpl::AddPendingUserActivation(
     const WebInputEvent& event) {
-  if (base::FeatureList::IsEnabled(features::kBrowserVerifiedUserActivation) &&
-      (event.GetType() == WebInputEvent::kMouseDown ||
-       event.GetType() == WebInputEvent::kKeyDown ||
-       event.GetType() == WebInputEvent::kRawKeyDown)) {
+  if ((base::FeatureList::IsEnabled(
+           features::kBrowserVerifiedUserActivationMouse) &&
+       event.GetType() == WebInputEvent::kMouseDown) ||
+      (base::FeatureList::IsEnabled(
+           features::kBrowserVerifiedUserActivationKeyboard) &&
+       (event.GetType() == WebInputEvent::kKeyDown ||
+        event.GetType() == WebInputEvent::kRawKeyDown))) {
     pending_user_activation_timer_.Start(
         FROM_HERE, kActivationNotificationExpireTime,
         base::BindOnce(&RenderWidgetHostImpl::ClearPendingUserActivation,

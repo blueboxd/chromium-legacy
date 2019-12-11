@@ -1404,6 +1404,16 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypesStar) {
                         kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
   EXPECT_TRUE(csp->AllowTrustedTypePolicy("somepolicy", false));
+  EXPECT_FALSE(csp->AllowTrustedTypePolicy("somepolicy", true));
+}
+
+TEST_F(ContentSecurityPolicyTest, TrustedTypeDupeStar) {
+  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
+  csp->DidReceiveHeader("trusted-types * 'allow-duplicates'",
+                        kContentSecurityPolicyHeaderTypeEnforce,
+                        kContentSecurityPolicyHeaderSourceHTTP);
+  EXPECT_TRUE(csp->AllowTrustedTypePolicy("somepolicy", false));
   EXPECT_TRUE(csp->AllowTrustedTypePolicy("somepolicy", true));
 }
 

@@ -74,9 +74,10 @@ blink::WebMediaStreamTrack FakeRTCRtpSenderImpl::Track() const {
                    : blink::WebMediaStreamTrack();  // null
 }
 
-WebVector<String> FakeRTCRtpSenderImpl::StreamIds() const {
-  WebVector<String> wtf_stream_ids(stream_ids_.size());
-  for (size_t i = 0; i < stream_ids_.size(); ++i) {
+Vector<String> FakeRTCRtpSenderImpl::StreamIds() const {
+  Vector<String> wtf_stream_ids(
+      static_cast<WTF::wtf_size_t>(stream_ids_.size()));
+  for (wtf_size_t i = 0; i < stream_ids_.size(); ++i) {
     wtf_stream_ids[i] = String::FromUTF8(stream_ids_[i]);
   }
   return wtf_stream_ids;
@@ -99,20 +100,18 @@ std::unique_ptr<webrtc::RtpParameters> FakeRTCRtpSenderImpl::GetParameters()
   return nullptr;
 }
 
-void FakeRTCRtpSenderImpl::SetParameters(
-    blink::WebVector<webrtc::RtpEncodingParameters>,
-    webrtc::DegradationPreference,
-    blink::RTCVoidRequest*) {
+void FakeRTCRtpSenderImpl::SetParameters(Vector<webrtc::RtpEncodingParameters>,
+                                         webrtc::DegradationPreference,
+                                         blink::RTCVoidRequest*) {
   NOTIMPLEMENTED();
 }
 
-void FakeRTCRtpSenderImpl::GetStats(
-    RTCStatsReportCallback,
-    const blink::WebVector<webrtc::NonStandardGroupId>&) {
+void FakeRTCRtpSenderImpl::GetStats(RTCStatsReportCallback,
+                                    const Vector<webrtc::NonStandardGroupId>&) {
   NOTIMPLEMENTED();
 }
 
-void FakeRTCRtpSenderImpl::SetStreams(const WebVector<String>& stream_ids) {
+void FakeRTCRtpSenderImpl::SetStreams(const Vector<String>& stream_ids) {
   NOTIMPLEMENTED();
 }
 

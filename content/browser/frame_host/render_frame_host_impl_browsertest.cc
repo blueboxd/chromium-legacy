@@ -60,8 +60,8 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
-#include "services/service_manager/public/mojom/interface_provider.mojom-test-utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/mojom/browser_interface_broker.mojom-test-utils.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -1470,27 +1470,30 @@ IN_PROC_BROWSER_TEST_F(
 
 namespace {
 
-// Allows injecting a fake, test-provided |interface_provider_receiver| into
+// Allows injecting a fake, test-provided |interface_broker_receiver| into
 // DidCommitProvisionalLoad messages in a given |web_contents| instead of the
 // real one coming from the renderer process.
-class ScopedFakeInterfaceProviderRequestInjector
+class ScopedFakeInterfaceBrokerRequestInjector
     : public DidCommitNavigationInterceptor {
  public:
-  explicit ScopedFakeInterfaceProviderRequestInjector(WebContents* web_contents)
+  explicit ScopedFakeInterfaceBrokerRequestInjector(WebContents* web_contents)
       : DidCommitNavigationInterceptor(web_contents) {}
-  ~ScopedFakeInterfaceProviderRequestInjector() override = default;
+  ~ScopedFakeInterfaceBrokerRequestInjector() override = default;
+  ScopedFakeInterfaceBrokerRequestInjector(
+      const ScopedFakeInterfaceBrokerRequestInjector&) = delete;
+  ScopedFakeInterfaceBrokerRequestInjector& operator=(
+      const ScopedFakeInterfaceBrokerRequestInjector&) = delete;
 
-  // Sets the fake InterfaceProvider |receiver| to inject into the next incoming
-  // DidCommitProvisionalLoad message.
+  // Sets the fake BrowserInterfaceBroker |receiver| to inject into the next
+  // incoming DidCommitProvisionalLoad message.
   void set_fake_receiver_for_next_commit(
-      mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
-          receiver) {
+      mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker> receiver) {
     next_fake_receiver_ = std::move(receiver);
   }
 
   const GURL& url_of_last_commit() const { return url_of_last_commit_; }
 
-  const mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>&
+  const mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>&
   original_receiver_of_last_commit() const {
     return original_receiver_of_last_commit_;
   }
@@ -1505,29 +1508,26 @@ class ScopedFakeInterfaceProviderRequestInjector
     url_of_last_commit_ = params->url;
     if (*interface_params) {
       original_receiver_of_last_commit_ =
-          std::move((*interface_params)->interface_provider_receiver);
-      (*interface_params)->interface_provider_receiver =
+          std::move((*interface_params)->browser_interface_broker_receiver);
+      (*interface_params)->browser_interface_broker_receiver =
           std::move(next_fake_receiver_);
     }
     return true;
   }
 
  private:
-  mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+  mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
       next_fake_receiver_;
-  mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+  mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
       original_receiver_of_last_commit_;
   GURL url_of_last_commit_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedFakeInterfaceProviderRequestInjector);
 };
 
-// Monitors the |document_scoped_interface_provider_receiver_| of the given
-// |render_frame_host| for incoming interface requests for |interface_name|, and
-// invokes |callback| synchronously just before such a request would be
-// dispatched.
+// Monitors the |broker_receiver_| of the given |render_frame_host| for incoming
+// interface requests for |interface_name|, and invokes |callback| synchronously
+// just before such a request would be dispatched.
 class ScopedInterfaceRequestMonitor
-    : public service_manager::mojom::InterfaceProviderInterceptorForTesting {
+    : public blink::mojom::BrowserInterfaceBrokerInterceptorForTesting {
  public:
   ScopedInterfaceRequestMonitor(RenderFrameHost* render_frame_host,
                                 base::StringPiece interface_name,
@@ -1543,25 +1543,24 @@ class ScopedInterfaceRequestMonitor
   }
 
  protected:
-  // service_manager::mojom::InterfaceProviderInterceptorForTesting:
-  service_manager::mojom::InterfaceProvider* GetForwardingInterface() override {
+  // blink::mojom::BrowserInterfaceBrokerInterceptorForTesting:
+  blink::mojom::BrowserInterfaceBroker* GetForwardingInterface() override {
     return impl_;
   }
 
-  void GetInterface(const std::string& interface_name,
-                    mojo::ScopedMessagePipeHandle pipe) override {
-    if (interface_name == interface_name_)
+  void GetInterface(mojo::GenericPendingReceiver receiver) override {
+    if (receiver.interface_name() == interface_name_)
       request_callback_.Run();
-    GetForwardingInterface()->GetInterface(interface_name, std::move(pipe));
+    GetForwardingInterface()->GetInterface(std::move(receiver));
   }
 
  private:
-  mojo::Receiver<service_manager::mojom::InterfaceProvider>& receiver() {
-    return rfhi_->document_scoped_interface_provider_receiver_for_testing();
+  mojo::Receiver<blink::mojom::BrowserInterfaceBroker>& receiver() {
+    return rfhi_->browser_interface_broker_receiver_for_testing();
   }
 
   RenderFrameHostImpl* rfhi_;
-  service_manager::mojom::InterfaceProvider* impl_;
+  blink::mojom::BrowserInterfaceBroker* impl_;
 
   std::string interface_name_;
   base::RepeatingClosure request_callback_;
@@ -1592,14 +1591,14 @@ class DidFinishNavigationObserver : public WebContentsObserver {
 }  // namespace
 
 // For cross-document navigations, the DidCommitProvisionalLoad message from
-// the renderer process will have its |interface_provider_receiver| argument set
-// to the receiver end of a new InterfaceProvider interface connection that will
-// be used by the newly committed document to access services exposed by the
-// RenderFrameHost.
+// the renderer process will have its |interface_broker_receiver| argument set
+// to the receiver end of a new BrowserInterfaceBroker interface connection that
+// will be used by the newly committed document to access services exposed by
+// the RenderFrameHost.
 //
-// This test verifies that even if that |interface_provider_receiver| already
+// This test verifies that even if that |interface_broker_receiver| already
 // has pending interface receivers, the RenderFrameHost binds the
-// InterfaceProvider receiver in such a way that these pending interface
+// BrowserInterfaceBroker receiver in such a way that these pending interface
 // receivers are dispatched strictly after
 // WebContentsObserver::DidFinishNavigation has fired, so that the receivers
 // will be served correctly in the security context of the newly committed
@@ -1614,24 +1613,23 @@ IN_PROC_BROWSER_TEST_F(
   // sure the second navigation will not be cross-process.
   ASSERT_TRUE(NavigateToURL(shell(), first_url));
 
-  // Prepare an PendingReceiver<InterfaceProvider> with pending interface
+  // Prepare an PendingReceiver<BrowserInterfaceBroker> with pending interface
   // requests.
-  mojo::Remote<service_manager::mojom::InterfaceProvider>
-      interface_provider_with_pending_requests;
-  mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
-      interface_provider_receiver_with_pending_receiver =
-          interface_provider_with_pending_requests.BindNewPipeAndPassReceiver();
+  mojo::Remote<blink::mojom::BrowserInterfaceBroker>
+      interface_broker_with_pending_requests;
+  mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+      interface_broker_receiver_with_pending_receiver =
+          interface_broker_with_pending_requests.BindNewPipeAndPassReceiver();
   mojo::Remote<mojom::FrameHostTestInterface> test_interface;
-  interface_provider_with_pending_requests->GetInterface(
-      mojom::FrameHostTestInterface::Name_,
-      test_interface.BindNewPipeAndPassReceiver().PassPipe());
+  interface_broker_with_pending_requests->GetInterface(
+      test_interface.BindNewPipeAndPassReceiver());
 
-  // Replace the |interface_provider_receiver| argument in the next
+  // Replace the |interface_broker_receiver| argument in the next
   // DidCommitProvisionalLoad message coming from the renderer with the
-  // rigged |interface_provider_with_pending_requests| from above.
-  ScopedFakeInterfaceProviderRequestInjector injector(shell()->web_contents());
+  // rigged |interface_broker_with_pending_requests| from above.
+  ScopedFakeInterfaceBrokerRequestInjector injector(shell()->web_contents());
   injector.set_fake_receiver_for_next_commit(
-      std::move(interface_provider_receiver_with_pending_receiver));
+      std::move(interface_broker_receiver_with_pending_receiver));
 
   // Expect that by the time the interface request for FrameHostTestInterface is
   // dispatched to the RenderFrameHost, WebContentsObserver::DidFinishNavigation
@@ -1662,13 +1660,13 @@ IN_PROC_BROWSER_TEST_F(
   wait_until_interface_request_is_dispatched.Run();
 }
 
-// The InterfaceProvider interface, which is used by the RenderFrame to access
-// Mojo services exposed by the RenderFrameHost, is not Channel-associated,
-// thus not synchronized with navigation IPC messages. As a result, when the
-// renderer commits a load, the DidCommitProvisional message might be at race
-// with GetInterface messages, for example, an interface request issued by the
-// previous document in its unload handler might arrive to the browser process
-// just a moment after DidCommitProvisionalLoad.
+// The BrowserInterfaceBroker interface, which is used by the RenderFrame to
+// access Mojo services exposed by the RenderFrameHost, is not
+// Channel-associated, thus not synchronized with navigation IPC messages. As a
+// result, when the renderer commits a load, the DidCommitProvisional message
+// might be at race with GetInterface messages, for example, an interface
+// request issued by the previous document in its unload handler might arrive to
+// the browser process just a moment after DidCommitProvisionalLoad.
 //
 // This test verifies that even if there is such a last-second GetInterface
 // message originating from the previous document, it is no longer serviced.
@@ -1677,22 +1675,21 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   const GURL first_url(embedded_test_server()->GetURL("/title1.html"));
   const GURL second_url(embedded_test_server()->GetURL("/title2.html"));
 
-  // Prepare an PendingReceiver<InterfaceProvider> with no pending requests.
-  mojo::Remote<service_manager::mojom::InterfaceProvider> interface_provider;
-  mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
-      interface_provider_receiver =
-          interface_provider.BindNewPipeAndPassReceiver();
+  // Prepare an PendingReceiver<BrowserInterfaceBroker> with no pending
+  // requests.
+  mojo::Remote<blink::mojom::BrowserInterfaceBroker> interface_broker;
+  mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+      interface_broker_receiver = interface_broker.BindNewPipeAndPassReceiver();
 
-  // Set up a cunning mechanism to replace the |interface_provider_receiver|
+  // Set up a cunning mechanism to replace the |interface_broker_receiver|
   // argument in next DidCommitProvisionalLoad message with the rigged
-  // |interface_provider_receiver| from above, whose client end is controlled by
+  // |interface_broker_receiver| from above, whose client end is controlled by
   // this test; then trigger a navigation.
   {
-    ScopedFakeInterfaceProviderRequestInjector injector(
-        shell()->web_contents());
+    ScopedFakeInterfaceBrokerRequestInjector injector(shell()->web_contents());
     test::ScopedInterfaceFilterBypass filter_bypass;
     injector.set_fake_receiver_for_next_commit(
-        std::move(interface_provider_receiver));
+        std::move(interface_broker_receiver));
 
     ASSERT_TRUE(NavigateToURL(shell(), first_url));
     ASSERT_EQ(first_url, injector.url_of_last_commit());
@@ -1713,7 +1710,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
       main_rfh, mojom::FrameHostTestInterface::Name_,
       dispatched_interface_request_callback.Get());
 
-  // Set up the |test_interface request| to arrive on the InterfaceProvider
+  // Set up the |test_interface request| to arrive on the BrowserInterfaceBroker
   // connection corresponding to the old document in the middle of the firing of
   // WebContentsObserver::DidFinishNavigation.
   // TODO(engedy): Should we PostTask() this instead just before synchronously
@@ -1724,12 +1721,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   base::MockCallback<base::RepeatingClosure> navigation_finished_callback;
   DidFinishNavigationObserver navigation_finish_observer(
       main_rfh, base::BindLambdaForTesting([&]() {
-        interface_provider->GetInterface(mojom::FrameHostTestInterface::Name_,
-                                         test_interface_receiver.PassPipe());
+        interface_broker->GetInterface(std::move(test_interface_receiver));
         std::move(navigation_finished_callback).Run();
       }));
 
-  // The InterfaceProvider connection that semantically belongs to the old
+  // The BrowserInterfaceBroker connection that semantically belongs to the old
   // document, but whose client end is actually controlled by this test, should
   // still be alive and well.
   ASSERT_TRUE(test_interface.is_bound());
@@ -1759,29 +1755,27 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 // real committed load. This happens when the security origins of the two
 // documents are the same. We do not want to recalculate this in the browser
 // process, however, so for the first commit we leave it up to the renderer
-// whether it wants to replace the InterfaceProvider connection or not.
+// whether it wants to replace the BrowserInterfaceBroker connection or not.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       InterfaceProviderRequestIsOptionalForFirstCommit) {
+                       InterfaceBrokerRequestIsOptionalForFirstCommit) {
   const GURL main_frame_url(embedded_test_server()->GetURL("/title1.html"));
   const GURL subframe_url(embedded_test_server()->GetURL("/title2.html"));
 
-  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-      interface_provider;
-  auto stub_interface_provider_receiver =
-      interface_provider.InitWithNewPipeAndPassReceiver();
-  mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
-      null_interface_provider_receiver((mojo::NullReceiver()));
+  mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker> interface_broker;
+  auto stub_interface_broker_receiver =
+      interface_broker.InitWithNewPipeAndPassReceiver();
+  mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+      null_interface_broker_receiver((mojo::NullReceiver()));
 
-  for (auto* interface_provider_receiver :
-       {&stub_interface_provider_receiver, &null_interface_provider_receiver}) {
-    SCOPED_TRACE(interface_provider_receiver->is_valid());
+  for (auto* interface_broker_receiver :
+       {&stub_interface_broker_receiver, &null_interface_broker_receiver}) {
+    SCOPED_TRACE(interface_broker_receiver->is_valid());
 
     ASSERT_TRUE(NavigateToURL(shell(), main_frame_url));
 
-    ScopedFakeInterfaceProviderRequestInjector injector(
-        shell()->web_contents());
+    ScopedFakeInterfaceBrokerRequestInjector injector(shell()->web_contents());
     injector.set_fake_receiver_for_next_commit(
-        std::move(*interface_provider_receiver));
+        std::move(*interface_broker_receiver));
 
     // Must set 'src` before adding the iframe element to the DOM, otherwise it
     // will load `about:blank` as the first real load instead of |subframe_url|.
@@ -1826,7 +1820,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 // corresponding to the first real committed load.
 IN_PROC_BROWSER_TEST_F(
     RenderFrameHostImplBrowserTest,
-    InterfaceProviderRequestNotPresentForFirstRealLoadAfterAboutBlankWithRef) {
+    InterfaceBrokerRequestNotPresentForFirstRealLoadAfterAboutBlankWithRef) {
   const GURL kMainFrameURL(embedded_test_server()->GetURL("/title1.html"));
   const GURL kSubframeURLTwo("about:blank#ref");
   const GURL kSubframeURLThree(embedded_test_server()->GetURL("/title2.html"));
@@ -1866,7 +1860,7 @@ IN_PROC_BROWSER_TEST_F(
   // Set the `src` attribute again to trigger navigation (3).
 
   TestFrameNavigationObserver commit_observer(child->current_frame_host());
-  ScopedFakeInterfaceProviderRequestInjector injector(shell()->web_contents());
+  ScopedFakeInterfaceBrokerRequestInjector injector(shell()->web_contents());
   injector.set_fake_receiver_for_next_commit(mojo::NullReceiver());
 
   ASSERT_TRUE(ExecuteScript(shell(), kNavigateToThreeScript));
@@ -2024,7 +2018,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 }
 
 // Verify that if the UMA histograms are correctly recording if interface
-// provider requests are getting dropped because they racily arrive from the
+// broker requests are getting dropped because they racily arrive from the
 // previously active document (after the next navigation already committed).
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        DroppedInterfaceRequestCounter) {
@@ -2036,40 +2030,40 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // The 31-bit hash of the string "content.mojom.MojoWebTestHelper".
   const int32_t kHashOfContentMojomMojoWebTestHelper = 0x77b7b3d6;
 
-  // Client ends of the fake interface provider receivers injected for the first
+  // Client ends of the fake interface broker receivers injected for the first
   // and second navigations.
-  mojo::Remote<service_manager::mojom::InterfaceProvider> interface_provider_1;
-  mojo::Remote<service_manager::mojom::InterfaceProvider> interface_provider_2;
+  mojo::Remote<blink::mojom::BrowserInterfaceBroker> interface_broker_1;
+  mojo::Remote<blink::mojom::BrowserInterfaceBroker> interface_broker_2;
 
   base::RunLoop wait_until_connection_error_loop_1;
   base::RunLoop wait_until_connection_error_loop_2;
 
   {
-    ScopedFakeInterfaceProviderRequestInjector injector(
-        shell()->web_contents());
+    ScopedFakeInterfaceBrokerRequestInjector injector(shell()->web_contents());
     injector.set_fake_receiver_for_next_commit(
-        interface_provider_1.BindNewPipeAndPassReceiver());
-    interface_provider_1.set_disconnect_handler(
+        interface_broker_1.BindNewPipeAndPassReceiver());
+    interface_broker_1.set_disconnect_handler(
         wait_until_connection_error_loop_1.QuitClosure());
     ASSERT_TRUE(NavigateToURL(shell(), kUrl1));
   }
 
   {
-    ScopedFakeInterfaceProviderRequestInjector injector(
-        shell()->web_contents());
+    ScopedFakeInterfaceBrokerRequestInjector injector(shell()->web_contents());
     injector.set_fake_receiver_for_next_commit(
-        interface_provider_2.BindNewPipeAndPassReceiver());
-    interface_provider_2.set_disconnect_handler(
+        interface_broker_2.BindNewPipeAndPassReceiver());
+    interface_broker_2.set_disconnect_handler(
         wait_until_connection_error_loop_2.QuitClosure());
     ASSERT_TRUE(NavigateToURL(shell(), kUrl2));
   }
 
   // Simulate two interface requests corresponding to the first navigation
   // arrived after the second navigation was committed, hence were dropped.
-  interface_provider_1->GetInterface(mojom::MojoWebTestHelper::Name_,
-                                     CreateDisconnectedMessagePipeHandle());
-  interface_provider_1->GetInterface(mojom::MojoWebTestHelper::Name_,
-                                     CreateDisconnectedMessagePipeHandle());
+  interface_broker_1->GetInterface(
+      mojo::PendingReceiver<mojom::MojoWebTestHelper>(
+          CreateDisconnectedMessagePipeHandle()));
+  interface_broker_1->GetInterface(
+      mojo::PendingReceiver<mojom::MojoWebTestHelper>(
+          CreateDisconnectedMessagePipeHandle()));
 
   // RFHI destroys the DroppedInterfaceRequestLogger from navigation `n` on
   // navigation `n+2`. Histrograms are recorded on destruction, there should
@@ -2086,8 +2080,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   }
 
   // Simulate one interface request dropped for the second URL.
-  interface_provider_2->GetInterface(mojom::MojoWebTestHelper::Name_,
-                                     CreateDisconnectedMessagePipeHandle());
+  interface_broker_2->GetInterface(
+      mojo::PendingReceiver<mojom::MojoWebTestHelper>(
+          CreateDisconnectedMessagePipeHandle()));
 
   // A final navigation should record the sample from the second URL.
   {
@@ -2102,10 +2097,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 
   // Both the DroppedInterfaceRequestLogger for the first and second URLs are
   // destroyed -- even more interfacerequests should not cause any crashes.
-  interface_provider_1->GetInterface(mojom::MojoWebTestHelper::Name_,
-                                     CreateDisconnectedMessagePipeHandle());
-  interface_provider_2->GetInterface(mojom::MojoWebTestHelper::Name_,
-                                     CreateDisconnectedMessagePipeHandle());
+  interface_broker_1->GetInterface(
+      mojo::PendingReceiver<mojom::MojoWebTestHelper>(
+          CreateDisconnectedMessagePipeHandle()));
+  interface_broker_2->GetInterface(
+      mojo::PendingReceiver<mojom::MojoWebTestHelper>(
+          CreateDisconnectedMessagePipeHandle()));
 
   // The interface connections should be broken.
   wait_until_connection_error_loop_1.Run();

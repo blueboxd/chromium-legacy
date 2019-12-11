@@ -106,7 +106,7 @@ WlanApi& WlanApi::GetInstance() {
 WlanApi::WlanApi() : initialized(false) {
   // Mitigate the issues caused by loading DLLs on a background thread
   // (http://crbug/973868).
-  base::ScopedThreadMayLoadLibraryOnBackgroundThread priority_boost(FROM_HERE);
+  SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
 
   HMODULE module =
       ::LoadLibraryEx(L"wlanapi.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);

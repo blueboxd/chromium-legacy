@@ -199,43 +199,56 @@ bool IsExpandedModuleName(HMODULE module, const wchar_t* module_name) {
   return (fname.BaseName().value() == module_name);
 }
 
+std::vector<std::wstring> GetShortNameVariants(const std::wstring& name) {
+  std::vector<std::wstring> alt_names;
+  size_t period = name.rfind(L'.');
+  DCHECK_NE(std::string::npos, period);
+  DCHECK_LE(3U, (name.size() - period));
+  if (period <= 8)
+    return alt_names;
+
+  // The module could have been loaded with a 8.3 short name. We check
+  // the three most common cases: 'thelongname.dll' becomes
+  // 'thelon~1.dll', 'thelon~2.dll' and 'thelon~3.dll'.
+  alt_names.reserve(3);
+  for (wchar_t ix = '1'; ix <= '3'; ++ix) {
+    const wchar_t suffix[] = {'~', ix, 0};
+    alt_names.push_back(
+        base::StrCat({name.substr(0, 6), suffix, name.substr(period)}));
+  }
+  return alt_names;
+}
+
 // Adds a single dll by |module_name| into the |policy| blocklist.
 // If |check_in_browser| is true we only add an unload policy only if the dll
 // is also loaded in this process.
 void BlocklistAddOneDll(const wchar_t* module_name,
                         bool check_in_browser,
                         sandbox::TargetPolicy* policy) {
-  HMODULE module = check_in_browser ? ::GetModuleHandleW(module_name) : NULL;
-  if (!module) {
-    // The module could have been loaded with a 8.3 short name. We check
-    // the three most common cases: 'thelongname.dll' becomes
-    // 'thelon~1.dll', 'thelon~2.dll' and 'thelon~3.dll'.
-    std::wstring name(module_name);
-    size_t period = name.rfind(L'.');
-    DCHECK_NE(std::string::npos, period);
-    DCHECK_LE(3U, (name.size() - period));
-    if (period <= 8)
-      return;
-    for (wchar_t ix = '1'; ix <= '3'; ++ix) {
-      const wchar_t suffix[] = {'~', ix, 0};
-      std::wstring alt_name = name.substr(0, 6) + suffix;
-      alt_name += name.substr(period, name.size());
-      if (check_in_browser) {
+  if (check_in_browser) {
+    HMODULE module = ::GetModuleHandleW(module_name);
+    if (module) {
+      policy->AddDllToUnload(module_name);
+      DVLOG(1) << "dll to unload found: " << module_name;
+    } else {
+      for (const auto& alt_name : GetShortNameVariants(module_name)) {
         module = ::GetModuleHandleW(alt_name.c_str());
-        if (!module)
-          return;
         // We found it, but because it only has 6 significant letters, we
         // want to make sure it is the right one.
-        if (!IsExpandedModuleName(module, module_name))
+        if (module && IsExpandedModuleName(module, module_name)) {
+          // Found a match. We add both forms to the policy.
+          policy->AddDllToUnload(alt_name.c_str());
+          policy->AddDllToUnload(module_name);
           return;
+        }
       }
-      // Found a match. We add both forms to the policy.
+    }
+  } else {
+    policy->AddDllToUnload(module_name);
+    for (const auto& alt_name : GetShortNameVariants(module_name)) {
       policy->AddDllToUnload(alt_name.c_str());
     }
   }
-  policy->AddDllToUnload(module_name);
-  DVLOG(1) << "dll to unload found: " << module_name;
-  return;
 }
 
 // Adds policy rules for unloaded the known dlls that cause chrome to crash.
@@ -1037,6 +1050,12 @@ sandbox::ResultCode SandboxWin::GetPolicyDiagnostics(
   auto receiver = std::make_unique<ServiceManagerDiagnosticsReceiver>(
       base::SequencedTaskRunnerHandle::Get(), std::move(response));
   return g_broker_services->GetPolicyDiagnostics(std::move(receiver));
+}
+
+void BlocklistAddOneDllForTesting(const wchar_t* module_name,
+                                  bool check_in_browser,
+                                  sandbox::TargetPolicy* policy) {
+  BlocklistAddOneDll(module_name, check_in_browser, policy);
 }
 
 }  // namespace service_manager

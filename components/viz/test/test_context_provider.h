@@ -118,16 +118,19 @@ class TestContextProvider
   static scoped_refptr<TestContextProvider> Create(
       std::unique_ptr<TestGLES2Interface> gl);
   static scoped_refptr<TestContextProvider> Create(
+      std::unique_ptr<TestSharedImageInterface> sii);
+  static scoped_refptr<TestContextProvider> Create(
       std::unique_ptr<TestContextSupport> support);
 
-  explicit TestContextProvider(
-      std::unique_ptr<TestContextSupport> support,
-      std::unique_ptr<TestGLES2Interface> gl,
-      bool support_locking);
+  explicit TestContextProvider(std::unique_ptr<TestContextSupport> support,
+                               std::unique_ptr<TestGLES2Interface> gl,
+                               std::unique_ptr<TestSharedImageInterface> sii,
+                               bool support_locking);
   explicit TestContextProvider(
       std::unique_ptr<TestContextSupport> support,
       std::unique_ptr<TestGLES2Interface> gl,
       std::unique_ptr<gpu::raster::RasterInterface> raster,
+      std::unique_ptr<TestSharedImageInterface> sii,
       bool support_locking);
 
   // ContextProvider / RasterContextProvider implementation.

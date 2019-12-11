@@ -16,5 +16,9 @@ source_set("sandbox") {
   if (is_win) {
     sources += [ "sandbox_win_unittest.cc" ]
     deps += [ "//sandbox/win:sandbox" ]
+    data = [
+      "//base/test/data/pe_image/pe_image_test_32.dll",
+      "//base/test/data/pe_image/pe_image_test_64.dll",
+    ]
   }
 }

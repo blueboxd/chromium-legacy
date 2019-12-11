@@ -220,12 +220,22 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
       const base::Closure& callback,
       const network_handler::ErrorCallback& error_callback);
 
+  // Sets the active proxy values in managed network configurations depending on
+  // the source of the configuration. Proxy enforced by user policy
+  // (provided by kProxy prefence) should have precedence over configurations
+  // set by ONC policy.
+  void SetManagedActiveProxyValues(const std::string& guid,
+                                   base::DictionaryValue* dictionary);
+
   // Applies policies for |userhash|. |modified_policies| must be not null and
   // contain the GUIDs of the network configurations that changed since the last
   // policy application. Returns true if policy application was started and
   // false if it was queued or delayed.
   bool ApplyOrQueuePolicies(const std::string& userhash,
                             std::set<std::string>* modified_policies);
+
+  void set_ui_proxy_config_service(
+      UIProxyConfigService* ui_proxy_config_service);
 
   // If present, the empty string maps to the device policy.
   UserToPoliciesMap policies_by_user_;
@@ -236,6 +246,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
   NetworkConfigurationHandler* network_configuration_handler_ = nullptr;
   NetworkDeviceHandler* network_device_handler_ = nullptr;
   ProhibitedTechnologiesHandler* prohibited_technologies_handler_ = nullptr;
+  UIProxyConfigService* ui_proxy_config_service_ = nullptr;
 
   // Owns the currently running PolicyApplicators.
   UserToPolicyApplicatorMap policy_applicators_;

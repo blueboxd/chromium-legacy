@@ -1077,7 +1077,7 @@ bool FocusController::AdvanceFocusInDocumentOrder(
   auto* owner = DynamicTo<HTMLFrameOwnerElement>(element);
   bool has_remote_frame =
       owner && owner->ContentFrame() && owner->ContentFrame()->IsRemoteFrame();
-  if (owner && (has_remote_frame || !IsA<HTMLPlugInElement>(*element) ||
+  if (owner && (has_remote_frame || !IsHTMLPlugInElement(*element) ||
                 !element->IsKeyboardFocusable())) {
     // FIXME: We should not focus frames that have no scrollbars, as focusing
     // them isn't useful to the user.

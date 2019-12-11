@@ -2492,6 +2492,7 @@ enum WebFeature {
   kV8SharedArrayBufferConstructed = 3114,
   kScrollSnapCausesScrollOnInitialLayout = 3115,
   kClientHintsUAMobile = 3116,
+  kV8VideoPlaybackQuality_CorruptedVideoFrames_AttributeGetter = 3117,
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
   // Also, run update_use_counter_feature_enum.py in

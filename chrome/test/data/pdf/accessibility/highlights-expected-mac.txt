@@ -1,0 +1,12 @@
+AXGroup AXDescription='PDF document containing 1 page'
+++AXGroup AXDescription='PDF document containing 1 page'
+++++AXGroup AXDescription='Page 1'
+++++++AXGroup
+++++++++AXGroup AXDescription='Hello'
+++++++++++AXStaticText AXValue='Hello'
+++++++++AXStaticText AXValue=', nice '
+++++++++AXGroup AXDescription='meeting'
+++++++++++AXStaticText AXValue='meeting'
+++++++++AXGroup AXDescription=' y'
+++++++++++AXStaticText AXValue=' y'
+++++++++AXStaticText AXValue='ou'

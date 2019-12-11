@@ -1251,7 +1251,10 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kStricterMixedContentTreatmentEnabled,
     security_state::prefs::kStricterMixedContentTreatmentEnabled,
-    base::Value::Type::BOOLEAN }
+    base::Value::Type::BOOLEAN },
+  { key::kDNSInterceptionChecksEnabled,
+    prefs::kDNSInterceptionChecksEnabled,
+    base::Value::Type::BOOLEAN },
 };
 // clang-format on
 

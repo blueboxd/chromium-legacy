@@ -16,6 +16,7 @@ class ProxyConfigDictionary;
 namespace chromeos {
 
 class NetworkState;
+class NetworkProfileHandler;
 
 namespace proxy_config {
 
@@ -28,6 +29,7 @@ std::unique_ptr<ProxyConfigDictionary> GetProxyConfigForNetwork(
     const PrefService* profile_prefs,
     const PrefService* local_state_prefs,
     const NetworkState& network,
+    const NetworkProfileHandler* network_profile_handler,
     ::onc::ONCSource* onc_source);
 
 COMPONENT_EXPORT(CHROMEOS_NETWORK)

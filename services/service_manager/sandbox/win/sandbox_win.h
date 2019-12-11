@@ -89,6 +89,11 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxWin {
       base::OnceCallback<void(base::Value)> response);
 };
 
+SERVICE_MANAGER_SANDBOX_EXPORT
+void BlocklistAddOneDllForTesting(const wchar_t* module_name,
+                                  bool check_in_browser,
+                                  sandbox::TargetPolicy* policy);
+
 }  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANANGER_SANDBOX_WIN_SANDBOX_WIN_H_

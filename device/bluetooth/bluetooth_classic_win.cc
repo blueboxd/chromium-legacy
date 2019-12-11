@@ -16,7 +16,7 @@ HBLUETOOTH_RADIO_FIND BluetoothClassicWrapper::FindFirstRadio(
     const BLUETOOTH_FIND_RADIO_PARAMS* params) {
   // Mitigate the issues caused by loading DLLs on a background thread
   // (http://crbug/973868).
-  base::ScopedThreadMayLoadLibraryOnBackgroundThread priority_boost(FROM_HERE);
+  SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
 
   HANDLE radio_handle = INVALID_HANDLE_VALUE;
   HBLUETOOTH_RADIO_FIND radio_find_handle =

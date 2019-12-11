@@ -278,7 +278,7 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
 
     // We know that if absoluteMediaURL() is not empty or element has a media
     // stream descriptor, then this is a media element.
-    auto* media_element = To<HTMLMediaElement>(result.InnerNode());
+    HTMLMediaElement* media_element = ToHTMLMediaElement(result.InnerNode());
     if (IsA<HTMLVideoElement>(*media_element)) {
       // A video element should be presented as an audio element when it has an
       // audio track but no video track.
@@ -332,7 +332,8 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
         WebPlugin* plugin = plugin_view->Plugin();
         data.link_url = plugin->LinkAtPosition(data.mouse_position);
 
-        auto* plugin_element = To<HTMLPlugInElement>(result.InnerNode());
+        HTMLPlugInElement* plugin_element =
+            ToHTMLPlugInElement(result.InnerNode());
         data.src_url =
             plugin_element->GetDocument().CompleteURL(plugin_element->Url());
 

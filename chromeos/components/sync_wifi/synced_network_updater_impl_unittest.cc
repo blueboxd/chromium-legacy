@@ -97,7 +97,8 @@ class SyncedNetworkUpdaterImplTest : public testing::Test {
         ManagedNetworkConfigurationHandler::InitializeForTesting(
             network_state_helper_->network_state_handler(),
             network_profile_handler_.get(), network_device_handler_.get(),
-            network_configuration_handler_.get());
+            network_configuration_handler_.get(),
+            nullptr /* ui_proxy_config_service */);
     managed_network_configuration_handler_->SetPolicy(
         ::onc::ONC_SOURCE_DEVICE_POLICY,
         /*userhash=*/std::string(),

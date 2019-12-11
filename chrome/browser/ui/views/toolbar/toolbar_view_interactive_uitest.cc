@@ -275,6 +275,7 @@ void ToolbarViewTest::RunToolbarCycleFocusTest(Browser* browser) {
   size_t count = ids.size();
   for (size_t i = 0; i < count - 1; i++)
     EXPECT_EQ(ids[i], reverse_ids[count - 2 - i]);
+  EXPECT_EQ(ids[count - 1], reverse_ids[count - 1]);
 }
 
 IN_PROC_BROWSER_TEST_F(ToolbarViewTest, ToolbarCycleFocus) {

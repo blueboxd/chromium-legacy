@@ -213,7 +213,7 @@ RTCAnswerOptionsPlatform* ConvertToRTCAnswerOptionsPlatform(
                                            : true);
 }
 
-scoped_refptr<RTCIceCandidatePlatform> ConvertToRTCIceCandidatePlatform(
+RTCIceCandidatePlatform* ConvertToRTCIceCandidatePlatform(
     ExecutionContext* context,
     const RTCIceCandidateInitOrRTCIceCandidate& candidate) {
   DCHECK(!candidate.IsNull());
@@ -1767,7 +1767,7 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
     return ScriptPromise();
   }
 
-  scoped_refptr<RTCIceCandidatePlatform> platform_candidate =
+  RTCIceCandidatePlatform* platform_candidate =
       ConvertToRTCIceCandidatePlatform(ExecutionContext::From(script_state),
                                        candidate);
 
@@ -1804,7 +1804,7 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
     return ScriptPromise();
   }
 
-  scoped_refptr<RTCIceCandidatePlatform> platform_candidate =
+  RTCIceCandidatePlatform* platform_candidate =
       ConvertToRTCIceCandidatePlatform(ExecutionContext::From(script_state),
                                        candidate);
 
@@ -2693,12 +2693,11 @@ void RTCPeerConnection::MaybeFireNegotiationNeeded() {
 }
 
 void RTCPeerConnection::DidGenerateICECandidate(
-    scoped_refptr<RTCIceCandidatePlatform> platform_candidate) {
+    RTCIceCandidatePlatform* platform_candidate) {
   DCHECK(!closed_);
   DCHECK(GetExecutionContext()->IsContextThread());
   DCHECK(platform_candidate);
-  RTCIceCandidate* ice_candidate =
-      RTCIceCandidate::Create(std::move(platform_candidate));
+  RTCIceCandidate* ice_candidate = RTCIceCandidate::Create(platform_candidate);
   ScheduleDispatchEvent(RTCPeerConnectionIceEvent::Create(ice_candidate));
 }
 void RTCPeerConnection::DidFailICECandidate(const String& host_candidate,
@@ -3146,10 +3145,6 @@ void RTCPeerConnection::ChangeIceConnectionState(
   }
   ice_connection_state_ = ice_connection_state;
   DispatchEvent(*Event::Create(event_type_names::kIceconnectionstatechange));
-  if (ice_connection_state_ ==
-      webrtc::PeerConnectionInterface::kIceConnectionConnected) {
-    RecordRapporMetrics();
-  }
 }
 
 webrtc::PeerConnectionInterface::IceConnectionState
@@ -3315,28 +3310,6 @@ void RTCPeerConnection::DispatchScheduledEvents() {
   }
 
   events.clear();
-}
-
-void RTCPeerConnection::RecordRapporMetrics() {
-  Document* document = To<Document>(GetExecutionContext());
-  for (const auto& component : tracks_.Keys()) {
-    switch (component->Source()->GetType()) {
-      case MediaStreamSource::kTypeAudio:
-        HostsUsingFeatures::CountAnyWorld(
-            *document, HostsUsingFeatures::Feature::kRTCPeerConnectionAudio);
-        break;
-      case MediaStreamSource::kTypeVideo:
-        HostsUsingFeatures::CountAnyWorld(
-            *document, HostsUsingFeatures::Feature::kRTCPeerConnectionVideo);
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-
-  if (has_data_channels_)
-    HostsUsingFeatures::CountAnyWorld(
-        *document, HostsUsingFeatures::Feature::kRTCPeerConnectionDataChannel);
 }
 
 void RTCPeerConnection::Trace(blink::Visitor* visitor) {

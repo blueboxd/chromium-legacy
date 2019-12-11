@@ -8,6 +8,7 @@ source_set("ui") {
   deps = [
     ":crw_context_menu_controller",
     ":crw_web_view_navigation_proxy",
+    ":web_view_handler",
     "//base",
     "//ios/net",
     "//ios/third_party/webkit",
@@ -68,6 +69,15 @@ source_set("ui") {
     "js_window_error_manager.mm",
   ]
 
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("web_view_handler") {
+  sources = [
+    "crw_web_view_handler.h",
+    "crw_web_view_handler.mm",
+    "crw_web_view_handler_delegate.h",
+  ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 

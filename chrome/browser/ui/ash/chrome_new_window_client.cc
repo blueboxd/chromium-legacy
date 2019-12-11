@@ -57,6 +57,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window.h"
 #include "ui/base/base_window.h"
@@ -406,8 +407,14 @@ void ChromeNewWindowClient::OpenArcCustomTab(
   auto custom_tab =
       ash::ArcCustomTab::Create(arc_window, surface_id, top_margin);
   auto web_contents = arc::CreateArcCustomTabWebContents(profile, url);
-  std::move(callback).Run(CustomTabSessionImpl::Create(std::move(web_contents),
-                                                       std::move(custom_tab)));
+
+  // TODO(crbug.com/955171): Remove this temporary conversion to InterfacePtr
+  // once OnOpenCustomTab from //components/arc/mojom/intent_helper.mojom could
+  // take pending_remote directly. Refer to crrev.com/c/1868870.
+  mojo::InterfacePtr<arc::mojom::CustomTabSession> custom_tab_ptr(
+      CustomTabSessionImpl::Create(std::move(web_contents),
+                                   std::move(custom_tab)));
+  std::move(callback).Run(std::move(custom_tab_ptr));
 }
 
 content::WebContents* ChromeNewWindowClient::OpenUrlImpl(

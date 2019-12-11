@@ -5,6 +5,8 @@ import("//third_party/protobuf/proto_library.gni")
 
 static_library("security_interstitial_page") {
   sources = [
+    "captive_portal_blocking_page.cc",
+    "captive_portal_blocking_page.h",
     "cert_report_helper.cc",
     "cert_report_helper.h",
     "certificate_error_report.cc",
@@ -44,6 +46,7 @@ static_library("security_interstitial_page") {
     ":proto",
     "//base",
     "//build:branding_buildflags",
+    "//components/captive_portal",
     "//components/network_time",
     "//components/prefs:prefs",
     "//components/resources",
@@ -52,6 +55,7 @@ static_library("security_interstitial_page") {
     "//components/safe_browsing/db:util",
     "//components/security_interstitials/core:core",
     "//components/strings:components_strings_grit",
+    "//components/url_formatter",
     "//components/user_prefs",
     "//components/variations",
     "//components/version_info",
@@ -59,6 +63,10 @@ static_library("security_interstitial_page") {
     "//content/public/common",
     "//services/network/public/cpp:cpp",
   ]
+
+  if (is_win || is_mac) {
+    deps += [ "//components/wifi" ]
+  }
 }
 
 proto_library("proto") {

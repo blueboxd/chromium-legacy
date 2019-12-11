@@ -1432,6 +1432,26 @@
       This policy is intended to give enterprises depending on the legacy behavior a chance to update their login procedures, and will be removed in the future.'''
     },
     {
+      'name': 'DNSInterceptionChecksEnabled',
+      'owners': ['krb', 'jdonnelly'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:80-', 'chrome_os:80-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False
+      },
+      'example_value': True,
+      'id': 654,
+      'caption': '''DNS interception checks enabled''',
+      'tags': [],
+      'desc': '''This policy configures a local switch that can be used to disable DNS interception checks. The checks attempt to discover whether the browser is behind a proxy that redirects unknown host names.
+
+      This detection may not be necessary in an enterprise environment where the network configuration is known, since it causes some amount of DNS and HTTP traffic on start-up and each DNS configuration change.
+
+      When this policy is not set, or is enabled, the DNS interception checks are performed. When explicitly disabled, they're not.'''
+    },
+    {
       'name': 'Http09OnNonDefaultPortsEnabled',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'main',
@@ -18736,7 +18756,9 @@
 
       If this list is not set, both mitigations explained above are not applied.
 
-      For details on <ph name="CORS">CORS</ph>, visit: <ph name="CORS_HELP_URL">https://www.chromestatus.com/feature/5768642492891136</ph>.'''
+      For details on <ph name="CORS">CORS</ph>, visit: <ph name="CORS_HELP_URL">https://www.chromestatus.com/feature/5768642492891136</ph>.
+
+      Note that this policy will be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 82.'''
     },
     {
       'name': 'CorsLegacyModeEnabled',
@@ -18760,7 +18782,9 @@
 
       This policy will be removed after a couple of milestones.
 
-      For details on <ph name="CORS">CORS</ph>, visit: <ph name="CORS_HELP_URL">https://www.chromestatus.com/feature/5768642492891136</ph>.'''
+      For details on <ph name="CORS">CORS</ph>, visit: <ph name="CORS_HELP_URL">https://www.chromestatus.com/feature/5768642492891136</ph>.
+
+      Note that this policy will be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 82.'''
     },
     {
       'name': 'ExternalPrintServersWhitelist',
@@ -20081,6 +20105,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569, 578],
-  'highest_id_currently_used': 653,
+  'highest_id_currently_used': 654,
   'highest_atomic_group_id_currently_used': 38
 }

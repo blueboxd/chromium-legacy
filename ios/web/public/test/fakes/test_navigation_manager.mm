@@ -18,7 +18,8 @@ TestNavigationManager::TestNavigationManager()
       visible_item_(nullptr),
       browser_state_(nullptr),
       load_url_with_params_was_called_(false),
-      load_if_necessary_was_called_(false) {}
+      load_if_necessary_was_called_(false),
+      reload_was_called_(false) {}
 
 TestNavigationManager::~TestNavigationManager() {}
 
@@ -149,7 +150,7 @@ void TestNavigationManager::GoToIndex(int index) {
 
 void TestNavigationManager::Reload(ReloadType reload_type,
                                    bool check_for_repost) {
-  NOTREACHED();
+  reload_was_called_ = true;
 }
 
 void TestNavigationManager::ReloadWithUserAgentType(
@@ -210,6 +211,10 @@ bool TestNavigationManager::LoadURLWithParamsWasCalled() {
 
 bool TestNavigationManager::LoadIfNecessaryWasCalled() {
   return load_if_necessary_was_called_;
+}
+
+bool TestNavigationManager::ReloadWasCalled() {
+  return reload_was_called_;
 }
 
 }  // namespace web

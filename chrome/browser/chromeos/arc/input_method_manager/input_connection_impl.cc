@@ -64,13 +64,13 @@ InputConnectionImpl::InputConnectionImpl(
     : ime_engine_(ime_engine),
       imm_bridge_(imm_bridge),
       input_context_id_(input_context_id),
-      binding_(this),
       state_update_timer_() {}
 
 InputConnectionImpl::~InputConnectionImpl() = default;
 
-void InputConnectionImpl::Bind(mojom::InputConnectionPtr* interface_ptr) {
-  binding_.Bind(mojo::MakeRequest(interface_ptr));
+void InputConnectionImpl::Bind(
+    mojo::PendingRemote<mojom::InputConnection>* remote) {
+  receiver_.Bind(remote->InitWithNewPipeAndPassReceiver());
 }
 
 void InputConnectionImpl::UpdateTextInputState(

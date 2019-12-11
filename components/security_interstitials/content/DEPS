@@ -1,4 +1,5 @@
 include_rules = [
+  "+components/captive_portal",
   "+components/grit/components_resources.h",
   "+components/network_time",
   "+components/prefs",
@@ -8,6 +9,7 @@ include_rules = [
   "+components/user_prefs",
   "+components/variations",
   "+components/version_info",
+  "+components/wifi",
   "+content/public/browser",
   "+content/public/common",
   "+content/public/test",

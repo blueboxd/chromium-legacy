@@ -18,14 +18,15 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Implementation of {@link LabelAdder} that adds date headers for each date.
+ * Given a list of {@link ListItem}, returns a list that has date headers for each date.
  * Also adds Just Now header for recently completed items. Note that this class must be called on
  * the list before adding any other labels such as card header/footer/pagination etc.
  */
-public class DateLabelAdder implements DateOrderedListMutator.LabelAdder {
+public class DateLabelAdder implements ListConsumer {
     private final DownloadManagerUiConfig mConfig;
     @Nullable
     private final JustNowProvider mJustNowProvider;
+    private ListConsumer mListConsumer;
 
     public DateLabelAdder(
             DownloadManagerUiConfig config, @Nullable JustNowProvider justNowProvider) {
@@ -34,7 +35,18 @@ public class DateLabelAdder implements DateOrderedListMutator.LabelAdder {
     }
 
     @Override
-    public List<ListItem> addLabels(List<ListItem> sortedList) {
+    public ListConsumer setListConsumer(ListConsumer consumer) {
+        mListConsumer = consumer;
+        return mListConsumer;
+    }
+
+    @Override
+    public void onListUpdated(List<ListItem> inputList) {
+        if (mListConsumer == null) return;
+        mListConsumer.onListUpdated(addLabels(inputList));
+    }
+
+    private List<ListItem> addLabels(List<ListItem> sortedList) {
         List<ListItem> listItems = new ArrayList<>();
         OfflineItem previousItem = null;
         for (int i = 0; i < sortedList.size(); i++) {

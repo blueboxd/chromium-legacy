@@ -108,12 +108,6 @@ class WaitUntilObserver::ThenFunction final : public ScriptFunction {
   PromiseSettledCallback callback_;
 };
 
-WaitUntilObserver* WaitUntilObserver::Create(ExecutionContext* context,
-                                             EventType type,
-                                             int event_id) {
-  return MakeGarbageCollected<WaitUntilObserver>(context, type, event_id);
-}
-
 void WaitUntilObserver::WillDispatchEvent() {
   DCHECK(GetExecutionContext());
 

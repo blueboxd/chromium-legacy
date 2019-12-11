@@ -170,9 +170,6 @@ class GoogleUpdateSettings {
   // true if this operation succeeded.
   static bool ClearReferral();
 
-  // Updates Chrome's "did run" state, returning true if the update succeeds.
-  static bool UpdateDidRunState(bool did_run);
-
   // This method changes the Google Update "ap" value to move the installation
   // on to or off of one of the recovery channels.
   // - If incremental installer fails we append a magic string ("-full"), if

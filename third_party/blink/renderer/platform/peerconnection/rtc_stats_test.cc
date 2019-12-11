@@ -103,7 +103,7 @@ TEST(RTCStatsTest, IncludeAllMembers) {
 
   // Include both standard and non-standard member.
   RTCStatsReportPlatform report(
-      webrtc_report.get(), std::vector<webrtc::NonStandardGroupId>{
+      webrtc_report.get(), Vector<webrtc::NonStandardGroupId>{
                                webrtc::NonStandardGroupId::kGroupIdForTesting});
   std::unique_ptr<RTCStats> stats = report.GetStats("id");
   ASSERT_NE(nullptr, stats);
@@ -127,7 +127,7 @@ TEST(RTCStatsTest, CopyHandle) {
   ASSERT_EQ(1u, standard_members_copy->GetStats("id")->MembersCount());
 
   RTCStatsReportPlatform all_members_report(
-      webrtc_report.get(), std::vector<webrtc::NonStandardGroupId>{
+      webrtc_report.get(), Vector<webrtc::NonStandardGroupId>{
                                webrtc::NonStandardGroupId::kGroupIdForTesting});
   std::unique_ptr<RTCStatsReportPlatform> all_members_copy =
       all_members_report.CopyHandle();

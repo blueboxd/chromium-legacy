@@ -9,30 +9,23 @@
  * destroyed when finished, and re-created when shown again.
  */
 
-cr.define('smb_shares', function() {
-  /** @enum{number} */
-  const MountErrorType = {
-    NO_ERROR: 0,
-    CREDENTIAL_ERROR: 1,
-    PATH_ERROR: 2,
-    GENERAL_ERROR: 3,
-  };
+/** @enum{number} */
+const MountErrorType = {
+  NO_ERROR: 0,
+  CREDENTIAL_ERROR: 1,
+  PATH_ERROR: 2,
+  GENERAL_ERROR: 3,
+};
 
-  /**
-   * Regular expression that matches SMB share URLs of the form
-   * smb://server/share or \\server\share. This is a coarse regexp intended for
-   * quick UI feedback and does not reject all invalid URLs.
-   *
-   * @type {!RegExp}
-   */
-  const SMB_SHARE_URL_REGEX =
-      /^((smb:\/\/[^\/]+\/[^\/].*)|(\\\\[^\\]+\\[^\\].*))$/;
-
-  return {
-    MountErrorType: MountErrorType,
-    SMB_SHARE_URL_REGEX: SMB_SHARE_URL_REGEX,
-  };
-});
+/**
+ * Regular expression that matches SMB share URLs of the form
+ * smb://server/share or \\server\share. This is a coarse regexp intended for
+ * quick UI feedback and does not reject all invalid URLs.
+ *
+ * @type {!RegExp}
+ */
+const SMB_SHARE_URL_REGEX =
+    /^((smb:\/\/[^\/]+\/[^\/].*)|(\\\\[^\\]+\\[^\\].*))$/;
 
 Polymer({
   is: 'add-smb-share-dialog',
@@ -115,10 +108,10 @@ Polymer({
       value: false,
     },
 
-    /** @private {!smb_shares.MountErrorType} */
+    /** @private {!MountErrorType} */
     currentMountError_: {
       type: Number,
-      value: smb_shares.MountErrorType.NO_ERROR,
+      value: MountErrorType.NO_ERROR,
     },
   },
 
@@ -248,7 +241,7 @@ Polymer({
 
   /** @private */
   resetErrorState_: function() {
-    this.currentMountError_ = smb_shares.MountErrorType.NO_ERROR;
+    this.currentMountError_ = MountErrorType.NO_ERROR;
     this.$.address.errorMessage = '';
     this.$.password.errorMessage = '';
     this.generalErrorText_ = '';
@@ -260,7 +253,7 @@ Polymer({
    */
   setCredentialError_: function(errorMessage) {
     this.$.password.errorMessage = errorMessage;
-    this.currentMountError_ = smb_shares.MountErrorType.CREDENTIAL_ERROR;
+    this.currentMountError_ = MountErrorType.CREDENTIAL_ERROR;
   },
 
   /**
@@ -269,7 +262,7 @@ Polymer({
    */
   setGeneralError_: function(errorMessage) {
     this.generalErrorText_ = errorMessage;
-    this.currentMountError_ = smb_shares.MountErrorType.GENERAL_ERROR;
+    this.currentMountError_ = MountErrorType.GENERAL_ERROR;
   },
 
   /**
@@ -278,7 +271,7 @@ Polymer({
    */
   setPathError_: function(errorMessage) {
     this.$.address.errorMessage = errorMessage;
-    this.currentMountError_ = smb_shares.MountErrorType.PATH_ERROR;
+    this.currentMountError_ = MountErrorType.PATH_ERROR;
   },
 
   /**
@@ -286,8 +279,7 @@ Polymer({
    * @private
    */
   shouldShowCredentialError_: function() {
-    return this.currentMountError_ ==
-        smb_shares.MountErrorType.CREDENTIAL_ERROR;
+    return this.currentMountError_ == MountErrorType.CREDENTIAL_ERROR;
   },
 
   /**
@@ -295,7 +287,7 @@ Polymer({
    * @private
    */
   shouldShowGeneralError_: function() {
-    return this.currentMountError_ == smb_shares.MountErrorType.GENERAL_ERROR;
+    return this.currentMountError_ == MountErrorType.GENERAL_ERROR;
   },
 
   /**
@@ -303,7 +295,7 @@ Polymer({
    * @private
    */
   shouldShowPathError_: function() {
-    return this.currentMountError_ == smb_shares.MountErrorType.PATH_ERROR;
+    return this.currentMountError_ == MountErrorType.PATH_ERROR;
   },
 
   /**
@@ -314,6 +306,6 @@ Polymer({
     if (!this.mountUrl_ || this.shouldShowPathError_()) {
       return false;
     }
-    return smb_shares.SMB_SHARE_URL_REGEX.test(this.mountUrl_);
+    return SMB_SHARE_URL_REGEX.test(this.mountUrl_);
   },
 });

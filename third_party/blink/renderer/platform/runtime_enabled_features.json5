@@ -259,6 +259,12 @@
       status: "experimental",
     },
     {
+      name: "BrowserVerifiedUserActivationKeyboard",
+    },
+    {
+      name: "BrowserVerifiedUserActivationMouse",
+    },
+    {
       name: "BuiltInModuleAll",
       implied_by: ["ExperimentalProductivityFeatures"],
     },
@@ -403,10 +409,18 @@
     {
       name: "CSSCascade",
     },
-    // Support for the CSS color-scheme property from the css-color-adjust spec.
-    // https://drafts.csswg.org/css-color-adjust/#color-scheme-prop
     {
+      // Support for the CSS color-scheme property from the css-color-adjust spec.
+      // https://drafts.csswg.org/css-color-adjust/#color-scheme-prop
       name: "CSSColorScheme",
+    },
+    {
+      // When the color-scheme is supported via the CSS color-scheme property
+      // (CSSColorScheme) or the meta tag (MetaColorScheme), the only UA
+      // rendering change is for the canvas background and the :root element
+      // color property. Enabling this runtime flag will enable dark UA
+      // rendering for form controls, scrollbars, etc.
+      name: "CSSColorSchemeUARendering",
     },
     {
       // CSS min(), max() and clamp()

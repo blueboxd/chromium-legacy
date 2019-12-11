@@ -734,7 +734,7 @@
 
     // The folders in sorted order would be 111, aaa. Create these
     // folders in random order. crbug.com/1004717
-    let names = ['aaa', '111'];
+    const names = ['aaa', '111'];
     while (names.length) {
       const getRandomIndex = () => {
         return Math.floor(Math.random() * Math.floor(names.length));
@@ -934,41 +934,124 @@
       ['#delete', false],
       ['#new-folder', true],
     ];
-    const photosMenus = [
+    const photosTwoMenus = [
       ['#cut', true],
       ['#copy', true],
-      ['#paste-into-folder', false],
+      ['#paste-into-folder', true],
       ['#share-with-linux', true],
       ['#rename', true],
       ['#delete', true],
       ['#new-folder', true],
     ];
 
+    const photosTwo = new TestEntryInfo({
+      type: EntryType.DIRECTORY,
+      targetPath: 'photosTwo',
+      lastModifiedTime: 'Jan 1, 1990, 11:59 PM',
+      nameText: 'photosTwo',
+      sizeText: '--',
+      typeText: 'Folder'
+    });
+
+    const photosT = new TestEntryInfo({
+      type: EntryType.FILE,
+      sourceFileName: 'text.txt',
+      targetPath: 'photosT',
+      mimeType: 'text/plain',
+      lastModifiedTime: 'Jan 1, 1993, 11:59 PM',
+      nameText: 'photosT',
+      sizeText: '51 bytes',
+      typeText: 'Plain text'
+    });
+
     // Open Files app on local Downloads.
     const appId = await setupAndWaitUntilReady(
-        RootPath.DOWNLOADS, [ENTRIES.beautiful, ENTRIES.photos, ENTRIES.hello],
+        RootPath.DOWNLOADS,
+        [ENTRIES.beautiful, ENTRIES.photos, ENTRIES.hello, photosTwo, photosT],
         []);
 
-    // Select and copy hello.txt into the clipboard to test paste-into-folder
-    // command.
-    chrome.test.assertTrue(
-        !!await remoteCall.callRemoteTestUtil('selectFile', appId, ['photos']),
-        'selectFile failed');
-    chrome.test.assertTrue(
-        !!await remoteCall.callRemoteTestUtil('execCommand', appId, ['copy']),
-        'execCommand failed');
+    {
+      // Select and copy photos directory into the clipboard to test
+      // paste-into-folder command.
+      chrome.test.assertTrue(
+          !!await remoteCall.callRemoteTestUtil(
+              'selectFile', appId, ['photos']),
+          'selectFile failed');
+      chrome.test.assertTrue(
+          !!await remoteCall.callRemoteTestUtil('execCommand', appId, ['copy']),
+          'execCommand failed');
 
-    // Check the context menu is on desired state for MyFiles.
-    await checkContextMenu(
-        appId, '/My files', myFilesMenus, false /* rootMenu */);
+      const photosMenus = [
+        ['#cut', true],
+        ['#copy', true],
+        ['#paste-into-folder', false],
+        ['#share-with-linux', true],
+        ['#rename', true],
+        ['#delete', true],
+        ['#new-folder', true],
+      ];
+      // Check the context menu is on desired state for MyFiles.
+      await checkContextMenu(
+          appId, '/My files', myFilesMenus, false /* rootMenu */);
 
-    // Check the context menu for MyFiles>Downloads.
-    await checkContextMenu(
-        appId, '/My files/Downloads', downloadsMenus, false /* rootMenu */);
+      // Check the context menu for MyFiles>Downloads.
+      await checkContextMenu(
+          appId, '/My files/Downloads', downloadsMenus, false /* rootMenu */);
 
-    // Check the context menu for MyFiles>Downloads>photos.
-    await checkContextMenu(
-        appId, '/My files/Downloads/photos', photosMenus, false /* rootMenu */);
+      // Check the context menu for MyFiles>Downloads>photos.
+      await checkContextMenu(
+          appId, '/My files/Downloads/photos', photosMenus,
+          false /* rootMenu */);
+
+      // Check the context menu for MyFiles>Downloads>photosTwo.
+      // This used to be a breaking case as photos is a substring of photosTwo,
+      // and we would treat photosTwo as a descendant of photos.
+      // See crbug.com/1032436.
+      await checkContextMenu(
+          appId, '/My files/Downloads/photosTwo', photosTwoMenus,
+          false /* rootMenu */);
+    }
+
+    {
+      await navigateWithDirectoryTree(appId, '/My files/Downloads');
+      // Select and copy photosT file into the clipboard to test
+      // paste-into-folder command.
+      chrome.test.assertTrue(
+          !!await remoteCall.callRemoteTestUtil(
+              'selectFile', appId, ['photosT']),
+          'selectFile failed');
+      chrome.test.assertTrue(
+          !!await remoteCall.callRemoteTestUtil('execCommand', appId, ['copy']),
+          'execCommand failed');
+
+      const photosMenus = [
+        ['#cut', true],
+        ['#copy', true],
+        ['#paste-into-folder', true],
+        ['#share-with-linux', true],
+        ['#rename', true],
+        ['#delete', true],
+        ['#new-folder', true],
+      ];
+
+      // Check the context menu is on desired state for MyFiles.
+      await checkContextMenu(
+          appId, '/My files', myFilesMenus, false /* rootMenu */);
+
+      // Check the context menu for MyFiles>Downloads.
+      await checkContextMenu(
+          appId, '/My files/Downloads', downloadsMenus, false /* rootMenu */);
+
+      // Check the context menu for MyFiles>Downloads>photos.
+      await checkContextMenu(
+          appId, '/My files/Downloads/photos', photosMenus,
+          false /* rootMenu */);
+
+      // Check the context menu for MyFiles>Downloads>photosTwo.
+      await checkContextMenu(
+          appId, '/My files/Downloads/photosTwo', photosTwoMenus,
+          false /* rootMenu */);
+    }
   };
 
   /**

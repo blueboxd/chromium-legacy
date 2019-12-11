@@ -77,7 +77,8 @@ class FrameServiceBase : public Interface, public WebContentsObserver {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
     if (!navigation_handle->HasCommitted() ||
-        navigation_handle->IsSameDocument()) {
+        navigation_handle->IsSameDocument() ||
+        navigation_handle->IsServedFromBackForwardCache()) {
       return;
     }
 

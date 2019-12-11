@@ -311,13 +311,9 @@ void DragWindowFromShelfController::OnDragStarted(
   Shell::Get()->home_screen_controller()->OnWindowDragStarted();
 
   // Use the same dim and blur as in overview during dragging.
-  auto* wallpaper_view =
-      RootWindowController::ForWindow(window_->GetRootWindow())
-          ->wallpaper_widget_controller()
-          ->wallpaper_view();
-  if (wallpaper_view) {
-    wallpaper_view->RepaintBlurAndOpacity(kWallpaperBlurSigma, kShieldOpacity);
-  }
+  RootWindowController::ForWindow(window_->GetRootWindow())
+      ->wallpaper_widget_controller()
+      ->SetBlurAndOpacity(kWallpaperBlurSigma, kShieldOpacity);
 
   // If the dragged window is one of the snapped window in splitview, it needs
   // to be detached from splitview before start dragging.
@@ -363,12 +359,9 @@ void DragWindowFromShelfController::OnDragEnded(
   // Clear the wallpaper dim and blur if not in overview after drag ends.
   // If in overview, the dim and blur will be cleared after overview ends.
   if (!overview_controller->InOverviewSession()) {
-    auto* wallpaper_view =
-        RootWindowController::ForWindow(window_->GetRootWindow())
-            ->wallpaper_widget_controller()
-            ->wallpaper_view();
-    if (wallpaper_view)
-      wallpaper_view->RepaintBlurAndOpacity(kWallpaperClearBlurSigma, 1.f);
+    RootWindowController::ForWindow(window_->GetRootWindow())
+        ->wallpaper_widget_controller()
+        ->SetBlurAndOpacity(kWallpaperClearBlurSigma, 1.f);
   }
 
   WindowState::Get(window_)->DeleteDragDetails();

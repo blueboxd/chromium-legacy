@@ -194,16 +194,6 @@ class FetchLoaderClient final : public GarbageCollected<FetchLoaderClient>,
 
 }  // namespace
 
-FetchRespondWithObserver* FetchRespondWithObserver::Create(
-    ExecutionContext* context,
-    int fetch_event_id,
-    network::mojom::blink::CrossOriginEmbedderPolicy requestor_coep,
-    const mojom::blink::FetchAPIRequest& request,
-    WaitUntilObserver* observer) {
-  return MakeGarbageCollected<FetchRespondWithObserver>(
-      context, fetch_event_id, requestor_coep, request, observer);
-}
-
 // This function may be called when an exception is scheduled. Thus, it must
 // never invoke any code that might throw. In particular, it must never invoke
 // JavaScript.

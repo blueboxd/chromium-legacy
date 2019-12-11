@@ -22,11 +22,6 @@
 
 namespace blink {
 
-ServiceWorkerClient* ServiceWorkerClient::Create(
-    const mojom::blink::ServiceWorkerClientInfo& info) {
-  return MakeGarbageCollected<ServiceWorkerClient>(info);
-}
-
 ServiceWorkerClient::ServiceWorkerClient(
     const mojom::blink::ServiceWorkerClientInfo& info)
     : uuid_(info.client_uuid),

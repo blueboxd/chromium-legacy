@@ -376,6 +376,60 @@ IN_PROC_BROWSER_TEST_F(CorsFileOriginBrowserTestWithDisableWebSecurity,
   EXPECT_EQ(pass_string(), watcher->WaitAndGetTitle());
 }
 
+// Test if local image files can be protected by canvas tainting.
+// We can not have following test cases in web_tests because web_tests run with
+// --run-web-tests flag that internally specifies --allow-file-access-from-files
+// that changes this specific behavior.
+IN_PROC_BROWSER_TEST_F(CorsFileOriginBrowserTest, NoCorsImagefileTaint) {
+  std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
+  EXPECT_TRUE(NavigateToURL(
+      shell(), CreateTestDataURL("image-taint.html?test=no_cors")));
+  EXPECT_EQ(pass_string(), watcher->WaitAndGetTitle());
+}
+
+IN_PROC_BROWSER_TEST_F(CorsFileOriginBrowserTest, CorsImagefileTaint) {
+  std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
+  EXPECT_TRUE(
+      NavigateToURL(shell(), CreateTestDataURL("image-taint.html?test=cors")));
+  EXPECT_EQ(pass_string(), watcher->WaitAndGetTitle());
+}
+
+IN_PROC_BROWSER_TEST_F(CorsFileOriginBrowserTestWithAllowFileAccessFromFiles,
+                       NoCorsImagefileTaint) {
+  std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
+  EXPECT_TRUE(NavigateToURL(
+      shell(),
+      CreateTestDataURL("image-taint.html?test=no_cors_with_file_access")));
+  EXPECT_EQ(pass_string(), watcher->WaitAndGetTitle());
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(CorsFileOriginBrowserTestWithAllowFileAccessFromFiles,
+                       CorsImagefileTaint) {
+  std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
+  EXPECT_TRUE(NavigateToURL(
+      shell(),
+      CreateTestDataURL("image-taint.html?test=cors_with_file_access")));
+  EXPECT_EQ(pass_string(), watcher->WaitAndGetTitle());
+}  // namespace content
+
+IN_PROC_BROWSER_TEST_F(CorsFileOriginBrowserTestWithDisableWebSecurity,
+                       NoCorsImagefileTaint) {
+  std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
+  EXPECT_TRUE(NavigateToURL(
+      shell(), CreateTestDataURL(
+                   "image-taint.html?test=no_cors_with_disable_web_security")));
+  EXPECT_EQ(pass_string(), watcher->WaitAndGetTitle());
+}
+
+IN_PROC_BROWSER_TEST_F(CorsFileOriginBrowserTestWithDisableWebSecurity,
+                       CorsImagefileTaint) {
+  std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
+  EXPECT_TRUE(NavigateToURL(
+      shell(), CreateTestDataURL(
+                   "image-taint.html?test=cors_with_disable_web_security")));
+  EXPECT_EQ(pass_string(), watcher->WaitAndGetTitle());
+}
+
 }  // namespace
 
 }  // namespace content

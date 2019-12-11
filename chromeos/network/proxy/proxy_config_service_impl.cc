@@ -39,8 +39,9 @@ bool GetNetworkProxyConfig(const PrefService* profile_prefs,
                            net::ProxyConfigWithAnnotation* proxy_config,
                            ::onc::ONCSource* onc_source) {
   std::unique_ptr<ProxyConfigDictionary> proxy_dict =
-      proxy_config::GetProxyConfigForNetwork(profile_prefs, local_state_prefs,
-                                             network, onc_source);
+      proxy_config::GetProxyConfigForNetwork(
+          profile_prefs, local_state_prefs, network,
+          NetworkHandler::Get()->network_profile_handler(), onc_source);
   if (!proxy_dict)
     return false;
   return PrefProxyConfigTrackerImpl::PrefConfigToNetConfig(*proxy_dict,
@@ -202,8 +203,9 @@ ProxyConfigServiceImpl::GetActiveProxyConfigDictionary(
   // Apply network proxy configuration.
   ::onc::ONCSource onc_source;
   std::unique_ptr<ProxyConfigDictionary> proxy_config =
-      proxy_config::GetProxyConfigForNetwork(profile_prefs, local_state_prefs,
-                                             *network, &onc_source);
+      proxy_config::GetProxyConfigForNetwork(
+          profile_prefs, local_state_prefs, *network,
+          NetworkHandler::Get()->network_profile_handler(), &onc_source);
   if (!ProxyConfigServiceImpl::IgnoreProxy(profile_prefs,
                                            network->profile_path(), onc_source))
     return proxy_config;

@@ -16,7 +16,8 @@
 #include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_bridge.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "components/arc/mojom/input_method_manager.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace arc {
 
@@ -29,8 +30,8 @@ class InputConnectionImpl : public mojom::InputConnection {
                       int input_context_id);
   ~InputConnectionImpl() override;
 
-  // Binds this class to a passed interface pointer.
-  void Bind(mojom::InputConnectionPtr* interface_ptr);
+  // Binds this class to a passed pending remote.
+  void Bind(mojo::PendingRemote<mojom::InputConnection>* remote);
   // Sends current text input state to the ARC container.
   void UpdateTextInputState(bool is_input_state_update_requested);
   // Gets current text input state.
@@ -64,7 +65,7 @@ class InputConnectionImpl : public mojom::InputConnection {
   ArcInputMethodManagerBridge* const imm_bridge_;  // Not owned
   const int input_context_id_;
 
-  mojo::Binding<mojom::InputConnection> binding_;
+  mojo::Receiver<mojom::InputConnection> receiver_{this};
 
   base::OneShotTimer state_update_timer_;
 

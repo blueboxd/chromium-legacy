@@ -351,6 +351,8 @@ static_library("test_support") {
       "../browser/ui/views/desktop_capture/desktop_media_picker_views_test_api.h",
       "../browser/ui/views/media_router/app_menu_test_api.h",
       "../browser/ui/views/media_router/app_menu_test_api_views.cc",
+      "../browser/ui/views/web_apps/web_app_frame_toolbar_test.cc",
+      "../browser/ui/views/web_apps/web_app_frame_toolbar_test.h",
       "views/accessibility_checker.cc",
       "views/accessibility_checker.h",
       "views/chrome_test_views_delegate.cc",
@@ -2003,6 +2005,7 @@ if (!is_android) {
         "../browser/ui/views/translate/translate_bubble_test_utils_views.cc",
         "../browser/ui/views/translate/translate_bubble_view_browsertest.cc",
         "../browser/ui/views/translate/translate_language_browsertest.cc",
+        "../browser/ui/views/web_apps/bookmark_app_uninstall_dialog_browsertest.cc",
       ]
       if (!is_chromeos) {
         sources += [
@@ -5541,6 +5544,7 @@ if (!is_android) {
       "../browser/ui/views/content_test_utils.h",
       "../browser/ui/views/permission_bubble/permission_bubble_views_interactive_uitest_mac.mm",
       "../browser/ui/views/tabs/tab_spinner_interactive_uitest.cc",
+      "../browser/ui/views/web_apps/web_app_frame_toolbar_interactive_uitest.cc",
       "../browser/ui/views/web_dialog_view_browsertest.cc",
       "../browser/webauth_interactive_uitest.cc",
       "//ui/base/clipboard/clipboard_unittest.cc",

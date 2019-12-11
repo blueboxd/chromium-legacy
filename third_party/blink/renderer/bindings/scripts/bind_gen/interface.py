@@ -20,6 +20,7 @@ from .code_node import TextNode
 from .code_node_cxx import CxxBreakableBlockNode
 from .code_node_cxx import CxxFuncDefNode
 from .code_node_cxx import CxxLikelyIfNode
+from .code_node_cxx import CxxMultiBranchesNode
 from .code_node_cxx import CxxUnlikelyIfNode
 from .codegen_accumulator import CodeGenAccumulator
 from .codegen_context import CodeGenContext
@@ -171,7 +172,133 @@ def bind_callback_local_vars(code_node, cg_context):
     code_node.add_template_vars(template_vars)
 
 
-def _make_blink_api_call(cg_context, num_of_args=None):
+def _make_reflect_content_attribute_key(code_node, cg_context):
+    assert isinstance(code_node, SymbolScopeNode)
+    assert isinstance(cg_context, CodeGenContext)
+
+    name = (cg_context.attribute.extended_attributes.value_of("Reflect")
+            or cg_context.attribute.identifier.lower())
+    if cg_context.attribute_get and name in ("class", "id", "name"):
+        return None
+
+    if cg_context.class_like.identifier.startswith("SVG"):
+        namespace = "svg_names"
+        code_node.accumulate(
+            CodeGenAccumulator.require_include_headers(
+                ["third_party/blink/renderer/core/svg_names.h"]))
+    else:
+        namespace = "html_names"
+        code_node.accumulate(
+            CodeGenAccumulator.require_include_headers(
+                ["third_party/blink/renderer/core/html_names.h"]))
+    return "{}::{}".format(namespace, name_style.constant(name, "attr"))
+
+
+def _make_reflect_accessor_func_name(cg_context):
+    assert isinstance(cg_context, CodeGenContext)
+    assert cg_context.attribute_get or cg_context.attribute_set
+
+    if cg_context.attribute_get:
+        name = (cg_context.attribute.extended_attributes.value_of("Reflect")
+                or cg_context.attribute.identifier.lower())
+        if name in ("class", "id", "name"):
+            return name_style.func("get", name, "attribute")
+
+        if "URL" in cg_context.attribute.extended_attributes:
+            return "GetURLAttribute"
+
+    FAST_ACCESSORS = {
+        "boolean": ("FastHasAttribute", "SetBooleanAttribute"),
+        "long": ("GetIntegralAttribute", "SetIntegralAttribute"),
+        "unsigned long": ("GetUnsignedIntegralAttribute",
+                          "SetUnsignedIntegralAttribute"),
+    }
+    idl_type = cg_context.attribute.idl_type.unwrap()
+    accessors = FAST_ACCESSORS.get(idl_type.keyword_typename)
+    if accessors:
+        return accessors[0 if cg_context.attribute_get else 1]
+
+    if (idl_type.is_interface
+            and idl_type.type_definition_object.does_implement("Element")):
+        if cg_context.attribute_get:
+            return "GetElementAttribute"
+        else:
+            return "SetElementAttribute"
+
+    if idl_type.element_type:
+        element_type = idl_type.element_type.unwrap()
+        if (element_type.is_interface and
+                element_type.type_definition_object.does_implement("Element")):
+            if cg_context.attribute_get:
+                return "GetElementArrayAttribute"
+            else:
+                return "SetElementArrayAttribute"
+
+    if cg_context.attribute_get:
+        return "FastGetAttribute"
+    else:
+        return "setAttribute"
+
+
+def _make_reflect_process_enumerated_attributes(cg_context):
+    # https://html.spec.whatwg.org/C/#keywords-and-enumerated-attributes
+
+    assert isinstance(cg_context, CodeGenContext)
+    assert cg_context.attribute_get or cg_context.attribute_set
+
+    T = TextNode
+    F = lambda *args, **kwargs: T(_format(*args, **kwargs))
+
+    if not cg_context.attribute_get:
+        return None
+
+    ext_attrs = cg_context.attribute.extended_attributes
+    keywords = ext_attrs.values_of("ReflectOnly")
+    missing_default = ext_attrs.value_of("ReflectMissing")
+    empty_default = ext_attrs.value_of("ReflectEmpty")
+    invalid_default = ext_attrs.value_of("ReflectInvalid")
+
+    def constant(keyword):
+        if not keyword:
+            return "g_empty_atom"
+        return "keywords::{}".format(name_style.constant(keyword))
+
+    branches = CxxMultiBranchesNode()
+    nodes = [
+        T("// [ReflectOnly]"),
+        T("const AtomicString reflect_value(${return_value}.LowerASCII());"),
+        branches,
+    ]
+
+    if missing_default is not None:
+        branches.append(
+            cond="reflect_value.IsNull()",
+            body=F("${return_value} = {};", constant(missing_default)))
+    elif cg_context.return_type.unwrap(nullable=False).is_nullable:
+        branches.append(
+            cond="reflect_value.IsNull()",
+            body=T("// Null string to IDL null."))
+
+    if empty_default is not None:
+        branches.append(
+            cond="reflect_value.IsEmpty()",
+            body=F("${return_value} = {};", constant(empty_default)))
+
+    expr = " || ".join(
+        map(lambda keyword: "reflect_value == {}".format(constant(keyword)),
+            keywords))
+    branches.append(cond=expr, body=T("${return_value} = reflect_value;"))
+
+    if invalid_default is not None:
+        branches.append(
+            cond=True,
+            body=F("${return_value} = {};", constant(invalid_default)))
+
+    return SequenceNode(nodes)
+
+
+def _make_blink_api_call(code_node, cg_context, num_of_args=None):
+    assert isinstance(code_node, SymbolScopeNode)
     assert isinstance(cg_context, CodeGenContext)
     assert num_of_args is None or isinstance(num_of_args, (int, long))
 
@@ -187,6 +314,11 @@ def _make_blink_api_call(cg_context, num_of_args=None):
         arguments.append("${script_state}")
     if "ExecutionContext" in values:
         arguments.append("${execution_context}")
+
+    if "Reflect" in ext_attrs:  # [Reflect]
+        key = _make_reflect_content_attribute_key(code_node, cg_context)
+        if key:
+            arguments.append(key)
 
     if cg_context.attribute_get:
         pass
@@ -211,6 +343,8 @@ def _make_blink_api_call(cg_context, num_of_args=None):
                  or name_style.api_func(cg_context.member_like.identifier))
     if cg_context.attribute_set:
         func_name = name_style.api_func("set", func_name)
+    if "Reflect" in ext_attrs:  # [Reflect]
+        func_name = _make_reflect_accessor_func_name(cg_context)
 
     is_partial_or_mixin = (code_generator_info.defined_in_partial
                            or code_generator_info.defined_in_mixin)
@@ -232,6 +366,7 @@ def bind_return_value(code_node, cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
     T = TextNode
+    F = lambda *args, **kwargs: T(_format(*args, **kwargs))
 
     def create_definition(symbol_node):
         api_calls = []  # Pairs of (num_of_args, api_call_text)
@@ -239,9 +374,10 @@ def bind_return_value(code_node, cg_context):
                      if cg_context.function_like else [])
         for index, arg in enumerate(arguments):
             if arg.is_optional and not arg.default_value:
-                api_calls.append((index, _make_blink_api_call(
-                    cg_context, index)))
-        api_calls.append((None, _make_blink_api_call(cg_context)))
+                api_calls.append((index,
+                                  _make_blink_api_call(code_node, cg_context,
+                                                       index)))
+        api_calls.append((None, _make_blink_api_call(code_node, cg_context)))
 
         nodes = []
         is_return_type_void = cg_context.return_type.unwrap().is_void
@@ -250,13 +386,15 @@ def bind_return_value(code_node, cg_context):
         if len(api_calls) == 1:
             _, api_call = api_calls[0]
             if is_return_type_void:
-                nodes.append(T(_format("{};", api_call)))
+                nodes.append(F("{};", api_call))
             elif cg_context.is_return_by_argument:
-                nodes.append(T(_format("{} ${return_value};", return_type)))
-                nodes.append(T(_format("{};", api_call)))
-            else:
+                nodes.append(F("{} ${return_value};", return_type))
+                nodes.append(F("{};", api_call))
+            elif cg_context.is_return_value_mutable:
                 nodes.append(
-                    T(_format("const auto& ${return_value} = {};", api_call)))
+                    F("{} ${return_value} = {};", return_type, api_call))
+            else:
+                nodes.append(F("const auto& ${return_value} = {};", api_call))
         else:
             branches = SequenceNode()
             for index, api_call in api_calls:
@@ -276,7 +414,7 @@ def bind_return_value(code_node, cg_context):
                     branches.append(T(assignment))
 
             if not is_return_type_void:
-                nodes.append(T(_format("{} ${return_value};", return_type)))
+                nodes.append(F("{} ${return_value};", return_type))
             nodes.append(CxxBreakableBlockNode(branches))
 
         if cg_context.may_throw_exception:
@@ -284,6 +422,13 @@ def bind_return_value(code_node, cg_context):
                 CxxUnlikelyIfNode(
                     cond="${exception_state}.HadException()",
                     body=T("return;")))
+
+        if "ReflectOnly" in cg_context.member_like.extended_attributes:
+            # [ReflectOnly]
+            node = _make_reflect_process_enumerated_attributes(cg_context)
+            if node:
+                nodes.append(T(""))
+                nodes.append(node)
 
         return SymbolDefinitionNode(symbol_node, nodes)
 
@@ -690,9 +835,8 @@ def make_report_deprecate_as(cg_context):
     _1 = name
     node = TextNode(_format(pattern, _1=_1))
     node.accumulate(
-        CodeGenAccumulator.require_include_headers([
-            "third_party/blink/renderer/core/frame/deprecation.h",
-        ]))
+        CodeGenAccumulator.require_include_headers(
+            ["third_party/blink/renderer/core/frame/deprecation.h"]))
     return node
 
 
@@ -748,9 +892,8 @@ def make_report_measure_as(cg_context):
     _1 = name
     node.append(TextNode(_format(pattern, _1=_1)))
     node.accumulate(
-        CodeGenAccumulator.require_include_headers([
-            "third_party/blink/renderer/core/frame/dactyloscoper.h",
-        ]))
+        CodeGenAccumulator.require_include_headers(
+            ["third_party/blink/renderer/core/frame/dactyloscoper.h"]))
 
     return node
 
@@ -1051,7 +1194,7 @@ def generate_interfaces(web_idl_database, output_dirs):
     filename = "v8_example_interface.cc"
     filepath = os.path.join(output_dirs['core'], filename)
 
-    interface = web_idl_database.find("KeyboardEvent")
+    interface = web_idl_database.find("HTMLImageElement")
 
     cg_context = CodeGenContext(interface=interface)
 

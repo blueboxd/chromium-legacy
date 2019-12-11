@@ -38,7 +38,7 @@ cca.tooltip.setup = function(elements) {
     const el = /** @type {HTMLElement} */ (element);
     var handler = () => {
       // Handler hides tooltip only when it's for the element.
-      if (el == cca.tooltip.hovered_) {
+      if (el === cca.tooltip.hovered_) {
         cca.tooltip.hide();
       }
     };

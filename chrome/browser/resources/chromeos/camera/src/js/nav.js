@@ -56,7 +56,7 @@ cca.nav.setup = function(views) {
  * @private
  */
 cca.nav.findIndex_ = function(id) {
-  return cca.nav.views_.findIndex((view) => view.root.id == id);
+  return cca.nav.views_.findIndex((view) => view.root.id === id);
 };
 
 /**
@@ -113,7 +113,7 @@ cca.nav.show_ = function(index) {
  * @private
  */
 cca.nav.hide_ = function(index) {
-  if (index == cca.nav.topmostIndex_) {
+  if (index === cca.nav.topmostIndex_) {
     cca.nav.inactivate_(index);
     var next = cca.nav.findNextTopmostIndex_();
     if (next >= 0) {
@@ -161,7 +161,7 @@ cca.nav.inactivate_ = function(index) {
  */
 cca.nav.setTabIndex = function(view, element, tabIndex) {
   if ((cca.nav.topmostIndex_ >= 0) &&
-      (cca.nav.views_[cca.nav.topmostIndex_] == view)) {
+      (cca.nav.views_[cca.nav.topmostIndex_] === view)) {
     element.tabIndex = tabIndex;
   } else {
     // Remember tabindex by data attribute if the view isn't active.

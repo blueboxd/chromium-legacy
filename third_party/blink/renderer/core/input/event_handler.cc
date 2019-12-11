@@ -761,7 +761,9 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
     return WebInputEventResult::kHandledSuppressed;
   }
 
-  LocalFrame::NotifyUserActivation(frame_, true);
+  LocalFrame::NotifyUserActivation(
+      frame_,
+      RuntimeEnabledFeatures::BrowserVerifiedUserActivationMouseEnabled());
 
   if (RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled()) {
     // We store whether middle click autoscroll is in progress before calling
@@ -1165,12 +1167,11 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
 }
 
 static LocalFrame* LocalFrameFromTargetNode(Node* target) {
-  auto* html_frame_base_element = DynamicTo<HTMLFrameElementBase>(target);
-  if (!html_frame_base_element)
+  if (!IsHTMLFrameElementBase(target))
     return nullptr;
 
   // Cross-process drag and drop is not yet supported.
-  return DynamicTo<LocalFrame>(html_frame_base_element->ContentFrame());
+  return DynamicTo<LocalFrame>(ToHTMLFrameElementBase(target)->ContentFrame());
 }
 
 WebInputEventResult EventHandler::UpdateDragAndDrop(

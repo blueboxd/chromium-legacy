@@ -11,6 +11,8 @@
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/common/web_test/fake_bluetooth_chooser.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "services/service_manager/public/cpp/binder_map.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
 
 namespace content {
@@ -55,10 +57,8 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
   std::vector<url::Origin> GetOriginsRequiringDedicatedProcess() override;
   std::unique_ptr<OverlayWindow> CreateWindowForPictureInPicture(
       PictureInPictureWindowController* controller) override;
-
   PlatformNotificationService* GetPlatformNotificationService(
       content::BrowserContext* browser_context) override;
-
   bool CanCreateWindow(content::RenderFrameHost* opener,
                        const GURL& opener_url,
                        const GURL& opener_top_level_frame_url,
@@ -72,15 +72,16 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
                        bool user_gesture,
                        bool opener_suppressed,
                        bool* no_javascript_access) override;
+  void RegisterBrowserInterfaceBindersForFrame(
+      RenderFrameHost* render_frame_host,
+      service_manager::BinderMapWithContext<content::RenderFrameHost*>* map)
+      override;
   bool CanAcceptUntrustedExchangesIfNeeded() override;
 
   content::TtsControllerDelegate* GetTtsControllerDelegate() override;
   content::TtsPlatform* GetTtsPlatform() override;
 
   // ShellContentBrowserClient overrides.
-  void ExposeInterfacesToFrame(
-      service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>*
-          registry) override;
   std::unique_ptr<LoginDelegate> CreateLoginDelegate(
       const net::AuthChallengeInfo& auth_info,
       content::WebContents* web_contents,

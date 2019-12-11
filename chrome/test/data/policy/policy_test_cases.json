@@ -3381,6 +3381,24 @@
     ]
   },
 
+  "DNSInterceptionChecksEnabled": {
+    "os": ["chromeos", "linux", "mac", "win"],
+    "test_policy": { "DNSInterceptionChecksEnabled": false },
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "DNSInterceptionChecksEnabled": false
+        },
+        "prefs": {
+          "browser.dns_interception_checks_enabled": {
+            "local_state": true,
+            "value": false
+          }
+        }
+      }
+    ]
+  },
+
   "----- Chrome OS policies ------------------------------------------------": {},
 
   "ChromeOsLockOnIdleSuspend": {

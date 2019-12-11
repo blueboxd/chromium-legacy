@@ -374,7 +374,9 @@ HTMLMediaElement* HitTestResult::MediaElement() const {
         inner_node_->GetLayoutObject()->IsMedia()))
     return nullptr;
 
-  return DynamicTo<HTMLMediaElement>(*inner_node_);
+  if (IsHTMLMediaElement(*inner_node_))
+    return ToHTMLMediaElement(inner_node_);
+  return nullptr;
 }
 
 KURL HitTestResult::AbsoluteLinkURL() const {

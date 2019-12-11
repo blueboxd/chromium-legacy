@@ -84,14 +84,14 @@ async function testPromiseAndApps(promise, apps) {
  * @type {number}
  * @const
  */
-var REPEAT_UNTIL_INTERVAL = 200;
+const REPEAT_UNTIL_INTERVAL = 200;
 
 /**
  * Interval milliseconds between log output of repeatUntil.
  * @type {number}
  * @const
  */
-var LOG_INTERVAL = 3000;
+const LOG_INTERVAL = 3000;
 
 /**
  * Returns caller's file, function and line/column number from the call stack.
@@ -99,11 +99,11 @@ var LOG_INTERVAL = 3000;
  *     as returned by exception stack trace. Example "at /a_file.js:1:1".
  */
 function getCaller() {
-  let error = new Error('For extracting error.stack');
-  let ignoreStackLines = 3;
-  let lines = error.stack.split('\n');
+  const error = new Error('For extracting error.stack');
+  const ignoreStackLines = 3;
+  const lines = error.stack.split('\n');
   if (ignoreStackLines < lines.length) {
-    let caller = lines[ignoreStackLines];
+    const caller = lines[ignoreStackLines];
     // Strip 'chrome-extension://oobinhbdbiehknkpbpejbbpdbkdjmoco' prefix.
     return caller.replace(/(chrome-extension:\/\/\w*)/gi, '').trim();
   }
@@ -124,11 +124,11 @@ function getCaller() {
 function pending(caller, message, var_args) {
   // |index| is used to ignore caller and message arguments subsisting markers
   // (%s, %d and %j) within message with the remaining |arguments|.
-  var index = 2;
-  var args = arguments;
+  let index = 2;
+  const args = arguments;
   message = String(message);
-  var formattedMessage = message.replace(/%[sdj]/g, function(pattern) {
-    var arg = args[index++];
+  const formattedMessage = message.replace(/%[sdj]/g, function(pattern) {
+    const arg = args[index++];
     switch (pattern) {
       case '%s':
         return String(arg);
@@ -140,7 +140,7 @@ function pending(caller, message, var_args) {
         return pattern;
     }
   });
-  var pendingMarker = Object.create(pending.prototype);
+  const pendingMarker = Object.create(pending.prototype);
   pendingMarker.message = caller + ': ' + formattedMessage;
   return pendingMarker;
 }
@@ -154,7 +154,7 @@ function pending(caller, message, var_args) {
  *     marker.
  */
 async function repeatUntil(checkFunction) {
-  var logTime = Date.now() + LOG_INTERVAL;
+  let logTime = Date.now() + LOG_INTERVAL;
   while (true) {
     const result = await checkFunction();
     if (!(result instanceof pending)) {
@@ -266,7 +266,7 @@ async function addEntries(volumeNames, entries, opt_callback) {
     callback(true);
     return;
   }
-  var volumeResultPromises = volumeNames.map(function(volume) {
+  const volumeResultPromises = volumeNames.map(function(volume) {
     return sendTestMessage({
       name: 'addEntries',
       volume: volume,
@@ -289,7 +289,7 @@ async function addEntries(volumeNames, entries, opt_callback) {
  * @enum {string}
  * @const
  */
-var EntryType = Object.freeze({
+const EntryType = Object.freeze({
   FILE: 'file',
   DIRECTORY: 'directory',
   LINK: 'link',
@@ -301,7 +301,7 @@ var EntryType = Object.freeze({
  * @enum {string}
  * @const
  */
-var SharedOption = Object.freeze({
+const SharedOption = Object.freeze({
   NONE: 'none',
   SHARED: 'shared',
   SHARED_WITH_ME: 'sharedWithMe',
@@ -311,7 +311,7 @@ var SharedOption = Object.freeze({
 /**
  * @enum {string}
  */
-var RootPath = Object.seal({
+const RootPath = Object.seal({
   DOWNLOADS: '/must-be-filled-in-test-setup',
   DRIVE: '/must-be-filled-in-test-setup',
   ANDROID_FILES: '/must-be-filled-in-test-setup',
@@ -496,7 +496,7 @@ TestEntryInfo.prototype.getExpectedRow = function() {
  * @type {Object<TestEntryInfo>}
  * @const
  */
-var ENTRIES = {
+const ENTRIES = {
   hello: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'text.txt',

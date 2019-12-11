@@ -9,62 +9,36 @@
 
 @implementation AppShimDelegate
 
-- (BOOL)getFilesToOpenAtStartup:(std::vector<base::FilePath>*)out {
-  if (filesToOpenAtStartup_.empty())
-    return NO;
-
-  out->insert(out->end(), filesToOpenAtStartup_.begin(),
-              filesToOpenAtStartup_.end());
-  filesToOpenAtStartup_.clear();
-  return YES;
+- (id)initWithController:(AppShimController*)controller {
+  if (self = [super init])
+    appShimController_ = controller;
+  return self;
 }
 
-- (void)setController:(AppShimController*)controller {
-  appShimController_ = controller;
-}
-
-- (void)openFiles:(NSArray*)filenames {
-  std::vector<base::FilePath> filePaths;
-  for (NSString* filename in filenames)
-    filePaths.push_back(base::mac::NSStringToFilePath(filename));
-
-  // If the AppShimController is ready, try to send a FocusApp. If that fails,
-  // (e.g. if launching has not finished), enqueue the files.
-  if (appShimController_ &&
-      appShimController_->SendFocusApp(
-          chrome::mojom::AppShimFocusType::kOpenFiles, filePaths)) {
-    return;
-  }
-
-  filesToOpenAtStartup_.insert(filesToOpenAtStartup_.end(), filePaths.begin(),
-                               filePaths.end());
+- (void)applicationDidFinishLaunching:(NSNotification*)notification {
+  appShimController_->OnAppFinishedLaunching();
 }
 
 - (BOOL)application:(NSApplication*)app openFile:(NSString*)filename {
-  [self openFiles:@[ filename ]];
+  std::vector<base::FilePath> filePaths = {
+      base::mac::NSStringToFilePath(filename)};
+  appShimController_->OpenFiles(filePaths);
   return YES;
 }
 
 - (void)application:(NSApplication*)app openFiles:(NSArray*)filenames {
-  [self openFiles:filenames];
+  std::vector<base::FilePath> filePaths;
+  for (NSString* filename in filenames)
+    filePaths.push_back(base::mac::NSStringToFilePath(filename));
+  appShimController_->OpenFiles(filePaths);
   [app replyToOpenOrPrint:NSApplicationDelegateReplySuccess];
 }
 
-- (BOOL)applicationOpenUntitledFile:(NSApplication*)app {
-  if (appShimController_) {
-    return appShimController_->SendFocusApp(
-        chrome::mojom::AppShimFocusType::kReopen,
-        std::vector<base::FilePath>());
-  }
-
-  return NO;
-}
-
 - (void)applicationWillBecomeActive:(NSNotification*)notification {
-  if (appShimController_) {
-    appShimController_->SendFocusApp(chrome::mojom::AppShimFocusType::kNormal,
-                                     std::vector<base::FilePath>());
-  }
+  // TODO(https://crbug.com/829689): There should be no arguments to this mojo
+  // method.
+  return appShimController_->host()->FocusApp(
+      chrome::mojom::AppShimFocusType::kNormal, std::vector<base::FilePath>());
 }
 
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {

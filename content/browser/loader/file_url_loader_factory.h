@@ -55,9 +55,9 @@ class CONTENT_EXPORT FileURLLoaderFactory
 
   void CreateLoaderAndStartInternal(
       const network::ResourceRequest request,
+      network::mojom::FetchResponseType response_type,
       mojo::PendingReceiver<network::mojom::URLLoader> loader,
-      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
-      bool cors_flag);
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client);
 
   const base::FilePath profile_path_;
   const scoped_refptr<SharedCorsOriginAccessList>

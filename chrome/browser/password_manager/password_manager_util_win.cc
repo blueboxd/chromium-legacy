@@ -254,8 +254,7 @@ bool CheckBlankPasswordWithPrefs(const WCHAR* username,
   if (need_recheck) {
     // Mitigate the issues caused by loading DLLs on a background thread
     // (http://crbug/973868).
-    base::ScopedThreadMayLoadLibraryOnBackgroundThread priority_boost(
-        FROM_HERE);
+    SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
 
     HANDLE handle = INVALID_HANDLE_VALUE;
 

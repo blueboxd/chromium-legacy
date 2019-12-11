@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 
 class SkBitmap;
 
@@ -57,6 +58,9 @@ gfx::Rect TranslateBoundsToParentCoordinates(const gfx::Rect& child_bounds,
 // Translates bounds relative to parent window to top level window.
 gfx::Rect TranslateBoundsToTopLevelCoordinates(const gfx::Rect& child_bounds,
                                                const gfx::Rect& parent_bounds);
+
+// Says if the type is kPopup or kMenu.
+bool IsMenuType(ui::PlatformWindowType type);
 
 }  // namespace wl
 

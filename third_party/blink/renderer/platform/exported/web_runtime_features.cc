@@ -40,6 +40,16 @@ void WebRuntimeFeatures::EnableBlockingFocusWithoutUserActivation(bool enable) {
   RuntimeEnabledFeatures::SetBlockingFocusWithoutUserActivationEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableBrowserVerifiedUserActivationKeyboard(
+    bool enable) {
+  RuntimeEnabledFeatures::SetBrowserVerifiedUserActivationKeyboardEnabled(
+      enable);
+}
+
+void WebRuntimeFeatures::EnableBrowserVerifiedUserActivationMouse(bool enable) {
+  RuntimeEnabledFeatures::SetBrowserVerifiedUserActivationMouseEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableExperimentalFeatures(bool enable) {
   RuntimeEnabledFeatures::SetExperimentalFeaturesEnabled(enable);
 }

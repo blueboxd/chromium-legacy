@@ -2589,8 +2589,8 @@ TEST_F(EventHandlerSimTest, ElementTargetedGestureScrollIFrame) {
   )HTML");
   Compositor().BeginFrame();
 
-  auto* const iframe =
-      To<HTMLFrameElementBase>(GetDocument().getElementById("iframe"));
+  HTMLFrameElementBase* const iframe =
+      ToHTMLFrameElementBase(GetDocument().getElementById("iframe"));
   FrameView* child_frame_view =
       iframe->GetLayoutEmbeddedContent()->ChildFrameView();
   auto* local_child_frame_view = DynamicTo<LocalFrameView>(child_frame_view);

@@ -89,9 +89,13 @@ const base::Feature kTouchpadOverscrollHistoryNavigation {
 const base::Feature kBlockCredentialedSubresources{
     "BlockCredentialedSubresources", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Verify user activation notification by the browser side state.
-const base::Feature kBrowserVerifiedUserActivation{
-    "BrowserVerifiedUserActivation", base::FEATURE_DISABLED_BY_DEFAULT};
+// When enabled, keyboard user activation will be verified by the browser side.
+const base::Feature kBrowserVerifiedUserActivationKeyboard{
+    "BrowserVerifiedUserActivationKeyboard", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When enabled, mouse user activation will be verified by the browser side.
+const base::Feature kBrowserVerifiedUserActivationMouse{
+    "BrowserVerifiedUserActivationMouse", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables code caching for inline scripts.
 const base::Feature kCacheInlineScriptCode{"CacheInlineScriptCode",

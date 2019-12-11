@@ -138,7 +138,7 @@ void BackgroundFetchContext::DidGetRegistration(
   auto registration = blink::mojom::BackgroundFetchRegistration::New(
       std::move(registration_data),
       BackgroundFetchRegistrationServiceImpl::CreateInterfaceInfo(
-          std::move(registration_id), this));
+          std::move(registration_id), weak_factory_.GetWeakPtr()));
   std::move(callback).Run(error, std::move(registration));
 }
 
@@ -223,7 +223,7 @@ void BackgroundFetchContext::DidCreateRegistration(
     auto registration = blink::mojom::BackgroundFetchRegistration::New(
         std::move(registration_data),
         BackgroundFetchRegistrationServiceImpl::CreateInterfaceInfo(
-            registration_id, this));
+            registration_id, weak_factory_.GetWeakPtr()));
     std::move(iter->second).Run(error, std::move(registration));
   } else {
     std::move(iter->second).Run(error, /* registration= */ nullptr);
@@ -249,6 +249,11 @@ void BackgroundFetchContext::UpdateUI(
 
   delegate_proxy_.UpdateUI(registration_id.unique_id(), title, icon,
                            std::move(callback));
+}
+
+base::WeakPtr<BackgroundFetchContext> BackgroundFetchContext::GetWeakPtr() {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  return weak_factory_.GetWeakPtr();
 }
 
 void BackgroundFetchContext::Abort(

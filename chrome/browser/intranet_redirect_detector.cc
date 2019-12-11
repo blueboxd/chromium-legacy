@@ -71,11 +71,12 @@ GURL IntranetRedirectDetector::RedirectOrigin() {
 void IntranetRedirectDetector::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kLastKnownIntranetRedirectOrigin,
                                std::string());
+  registry->RegisterBooleanPref(prefs::kDNSInterceptionChecksEnabled, true);
 }
 
 void IntranetRedirectDetector::Restart() {
   // If a request is already scheduled, do not scheduled yet another one.
-  if (in_sleep_)
+  if (!IsEnabledByPolicy() || in_sleep_)
     return;
 
   // Since presumably many programs open connections after network changes,
@@ -92,6 +93,8 @@ void IntranetRedirectDetector::Restart() {
 
 void IntranetRedirectDetector::FinishSleep() {
   in_sleep_ = false;
+  if (!IsEnabledByPolicy())
+    return;
 
   // If another fetch operation is still running, cancel it.
   simple_loaders_.clear();
@@ -238,4 +241,9 @@ void IntranetRedirectDetector::SetupDnsConfigClient() {
 void IntranetRedirectDetector::OnDnsConfigClientConnectionError() {
   dns_config_client_receiver_.reset();
   SetupDnsConfigClient();
+}
+
+bool IntranetRedirectDetector::IsEnabledByPolicy() {
+  return g_browser_process->local_state()->GetBoolean(
+      prefs::kDNSInterceptionChecksEnabled);
 }

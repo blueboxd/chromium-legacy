@@ -155,10 +155,6 @@ const service_manager::Manifest& GetContentBrowserOverlayManifest() {
                   mojom::FakeBluetoothChooserFactory,
                   mojom::WebTestBluetoothFakeAdapterSetter,
                   bluetooth::mojom::FakeBluetooth>())
-          .ExposeInterfaceFilterCapability_Deprecated(
-              "navigation:frame", "renderer",
-              service_manager::Manifest::InterfaceList<
-                  mojom::MojoWebTestHelper>())
           .Build()};
   return *manifest;
 }
@@ -233,20 +229,6 @@ bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
       return true;
   }
   return false;
-}
-
-void ShellContentBrowserClient::BindInterfaceRequestFromFrame(
-    RenderFrameHost* render_frame_host,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  if (!frame_interfaces_) {
-    frame_interfaces_ = std::make_unique<
-        service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>>();
-    ExposeInterfacesToFrame(frame_interfaces_.get());
-  }
-
-  frame_interfaces_->TryBindInterface(interface_name, &interface_pipe,
-                                      render_frame_host);
 }
 
 void ShellContentBrowserClient::RunServiceInstance(
@@ -495,9 +477,5 @@ ShellBrowserContext*
     ShellContentBrowserClient::off_the_record_browser_context() {
   return shell_browser_main_parts_->off_the_record_browser_context();
 }
-
-void ShellContentBrowserClient::ExposeInterfacesToFrame(
-    service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>*
-        registry) {}
 
 }  // namespace content

@@ -24,6 +24,7 @@
 #include "base/task/task_traits.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/arc/file_system_watcher/arc_file_system_watcher_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -56,20 +57,10 @@ constexpr base::FilePath::CharType kAndroidMyFilesDir[] =
 constexpr base::FilePath::CharType kAndroidMyFilesDownloadsDir[] =
     FILE_PATH_LITERAL("/storage/MyFiles/Downloads/");
 
-// The removable media path in ChromeOS. This is the actual directory to be
-// watched.
-constexpr base::FilePath::CharType kCrosRemovableMediaDir[] =
-    FILE_PATH_LITERAL("/media/removable");
-
 // The removable media path inside ARC container. This will be the path that
 // is used in MediaScanner.scanFile request.
 constexpr base::FilePath::CharType kAndroidRemovableMediaDir[] =
     FILE_PATH_LITERAL("/storage");
-
-// The prefix for device label used in Android paths for removable media.
-// A removable device mounted at /media/removable/UNTITLED is mounted at
-// /storage/removable_UNTITLED in Android.
-constexpr char kRemovableMediaLabelPrefix[] = "removable_";
 
 // How long to wait for new inotify events before building the updated timestamp
 // map.
@@ -128,14 +119,8 @@ TimestampMap BuildTimestampMap(base::FilePath cros_dir,
     // Skip non-media files for efficiency.
     if (!HasAndroidSupportedMediaExtension(cros_path))
       continue;
-    // Android file path can be obtained by replacing |cros_dir|
-    // prefix with |android_dir|.
-    base::FilePath android_path(android_dir);
-    if (cros_dir.value() == kCrosRemovableMediaDir) {
-      AppendRelativePathForRemovableMedia(cros_path, &android_path);
-    } else {
-      cros_dir.AppendRelativePath(cros_path, &android_path);
-    }
+    base::FilePath android_path =
+        GetAndroidPath(cros_path, cros_dir, android_dir);
     const base::FileEnumerator::FileInfo& info = enumerator.GetInfo();
     timestamp_map[android_path] = info.GetLastModifiedTime();
   }
@@ -258,35 +243,6 @@ bool HasAndroidSupportedMediaExtension(const base::FilePath& path) {
       kAndroidSupportedMediaExtensions,
       kAndroidSupportedMediaExtensions + kAndroidSupportedMediaExtensionsSize,
       extension.c_str(), less_comparator);
-}
-
-bool AppendRelativePathForRemovableMedia(const base::FilePath& cros_path,
-                                         base::FilePath* android_path) {
-  std::vector<base::FilePath::StringType> parent_components;
-  base::FilePath(kCrosRemovableMediaDir).GetComponents(&parent_components);
-  std::vector<base::FilePath::StringType> child_components;
-  cros_path.GetComponents(&child_components);
-  auto child_itr = child_components.begin();
-  for (const auto& parent_component : parent_components) {
-    if (child_itr == child_components.end() || parent_component != *child_itr) {
-      LOG(WARNING) << "|cros_path| is not under kCrosRemovableMediaDir.";
-      return false;
-    }
-    ++child_itr;
-  }
-  if (child_itr == child_components.end()) {
-    LOG(WARNING) << "The CrOS path doesn't have a component for device label.";
-    return false;
-  }
-  // The device label (e.g. "UNTITLED" for /media/removable/UNTITLED/foo.jpg)
-  // should be converted to removable_UNTITLED, since the prefix "removable_"
-  // is appended to paths for removable media in Android.
-  *android_path = android_path->Append(kRemovableMediaLabelPrefix + *child_itr);
-  ++child_itr;
-  for (; child_itr != child_components.end(); ++child_itr) {
-    *android_path = android_path->Append(*child_itr);
-  }
-  return true;
 }
 
 // The core part of ArcFileSystemWatcherService to watch for file changes in

@@ -574,16 +574,12 @@ class TestRunnerManager(threading.Thread):
             self.timer.start()
 
     def _timeout(self):
-        # This is executed in a different thread (threading.Timer).
         self.logger.info("Got timeout in harness")
         test = self.state.test
-        self.inject_message(
-            "test_ended",
-            test,
-            (test.result_cls("EXTERNAL-TIMEOUT",
-                             "TestRunner hit external timeout "
-                             "(this may indicate a hang)"), []),
-        )
+        self.test_ended(test,
+                        (test.result_cls("EXTERNAL-TIMEOUT",
+                                         "TestRunner hit external timeout "
+                                         "(this may indicate a hang)"), []))
 
     def test_ended(self, test, results):
         """Handle the end of a test.
@@ -591,15 +587,9 @@ class TestRunnerManager(threading.Thread):
         Output the result of each subtest, and the result of the overall
         harness to the logs.
         """
-        if ((not isinstance(self.state, RunnerManagerState.running)) or
-            (test != self.state.test)):
-            # Due to inherent race conditions in EXTERNAL-TIMEOUT, we might
-            # receive multiple test_ended for a test (e.g. from both Executor
-            # and TestRunner), in which case we ignore the duplicate message.
-            self.logger.error("Received unexpected test_ended for %s" % test)
-            return
-        if self.timer is not None:
-            self.timer.cancel()
+        assert isinstance(self.state, RunnerManagerState.running)
+        assert test == self.state.test
+        self.timer.cancel()
         # Write the result of each subtest
         file_result, test_results = results
         subtest_unexpected = False
@@ -770,12 +760,7 @@ class TestRunnerManager(threading.Thread):
         return RunnerManagerState.stop()
 
     def send_message(self, command, *args):
-        """Send a message to the remote queue (to Executor)."""
         self.remote_queue.put((command, args))
-
-    def inject_message(self, command, *args):
-        """Inject a message to the command queue (from Executor)."""
-        self.command_queue.put((command, args))
 
     def cleanup(self):
         self.logger.debug("TestRunnerManager cleanup")

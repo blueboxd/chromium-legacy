@@ -23,13 +23,6 @@ v8::Local<v8::Value> RTCStatsToValue(ScriptState* script_state,
   builder.AddNumber("timestamp", stats->Timestamp());
   builder.AddString("type", stats->GetType());
 
-  auto add_vector = [&builder](const WebString& name, auto web_vector) {
-    Vector<typename decltype(web_vector)::value_type> vector(
-        SafeCast<wtf_size_t>(web_vector.size()));
-    std::move(web_vector.begin(), web_vector.end(), vector.begin());
-    builder.Add(name, vector);
-  };
-
   for (size_t i = 0; i < stats->MembersCount(); ++i) {
     std::unique_ptr<RTCStatsMember> member = stats->GetMember(i);
     if (!member->IsDefined())
@@ -58,29 +51,26 @@ v8::Local<v8::Value> RTCStatsToValue(ScriptState* script_state,
         builder.AddString(name, member->ValueString());
         break;
       case webrtc::RTCStatsMemberInterface::kSequenceBool: {
-        WebVector<int> sequence = member->ValueSequenceBool();
-        Vector<bool> vector(SafeCast<wtf_size_t>(sequence.size()));
-        std::copy(sequence.begin(), sequence.end(), vector.begin());
-        builder.Add(name, vector);
+        builder.Add(name, member->ValueSequenceBool());
         break;
       }
       case webrtc::RTCStatsMemberInterface::kSequenceInt32:
-        add_vector(name, member->ValueSequenceInt32());
+        builder.Add(name, member->ValueSequenceInt32());
         break;
       case webrtc::RTCStatsMemberInterface::kSequenceUint32:
-        add_vector(name, member->ValueSequenceUint32());
+        builder.Add(name, member->ValueSequenceUint32());
         break;
       case webrtc::RTCStatsMemberInterface::kSequenceInt64:
-        add_vector(name, member->ValueSequenceInt64());
+        builder.Add(name, member->ValueSequenceInt64());
         break;
       case webrtc::RTCStatsMemberInterface::kSequenceUint64:
-        add_vector(name, member->ValueSequenceUint64());
+        builder.Add(name, member->ValueSequenceUint64());
         break;
       case webrtc::RTCStatsMemberInterface::kSequenceDouble:
-        add_vector(name, member->ValueSequenceDouble());
+        builder.Add(name, member->ValueSequenceDouble());
         break;
       case webrtc::RTCStatsMemberInterface::kSequenceString:
-        add_vector(name, member->ValueSequenceString());
+        builder.Add(name, member->ValueSequenceString());
         break;
       default:
         NOTREACHED();
@@ -118,23 +108,6 @@ class RTCStatsReportIterationSource final
 };
 
 }  // namespace
-
-WebVector<webrtc::NonStandardGroupId> GetExposedGroupIdsDeprecated(
-    const ScriptState* script_state) {
-  const ExecutionContext* context = ExecutionContext::From(script_state);
-  DCHECK(context->IsContextThread());
-  WebVector<webrtc::NonStandardGroupId> enabled_origin_trials;
-  if (RuntimeEnabledFeatures::RtcAudioJitterBufferMaxPacketsEnabled(context)) {
-    enabled_origin_trials.emplace_back(
-        webrtc::NonStandardGroupId::kRtcAudioJitterBufferMaxPackets);
-  }
-  if (RuntimeEnabledFeatures::RTCStatsRelativePacketArrivalDelayEnabled(
-          context)) {
-    enabled_origin_trials.emplace_back(
-        webrtc::NonStandardGroupId::kRtcStatsRelativePacketArrivalDelay);
-  }
-  return enabled_origin_trials;
-}
 
 Vector<webrtc::NonStandardGroupId> GetExposedGroupIds(
     const ScriptState* script_state) {

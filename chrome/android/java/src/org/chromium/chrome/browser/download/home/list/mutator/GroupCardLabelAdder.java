@@ -18,11 +18,13 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Implementation of {@link LabelAdder} that adds card header and footer items for the group cards.
+ * Given a sorted list of offline items, generates a list of {@link ListItem} that has card header
+ * and footer items for group cards.
  */
-public class GroupCardLabelAdder implements DateOrderedListMutator.LabelAdder {
+public class GroupCardLabelAdder implements ListConsumer {
     private static final long CARD_DIVIDER_MIDDLE_HASH_CODE_OFFSET = 200000;
 
+    private ListConsumer mListConsumer;
     private CardPaginator mCardPaginator;
     private long mDividerIndexId;
 
@@ -32,7 +34,18 @@ public class GroupCardLabelAdder implements DateOrderedListMutator.LabelAdder {
     }
 
     @Override
-    public List<ListItem> addLabels(List<ListItem> sortedList) {
+    public ListConsumer setListConsumer(ListConsumer consumer) {
+        mListConsumer = consumer;
+        return mListConsumer;
+    }
+
+    @Override
+    public void onListUpdated(List<ListItem> inputList) {
+        if (mListConsumer == null) return;
+        mListConsumer.onListUpdated(addLabels(inputList));
+    }
+
+    private List<ListItem> addLabels(List<ListItem> sortedList) {
         mDividerIndexId = CARD_DIVIDER_MIDDLE_HASH_CODE_OFFSET;
 
         List<ListItem> outList = new ArrayList<>();

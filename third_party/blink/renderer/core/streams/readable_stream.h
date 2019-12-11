@@ -285,29 +285,6 @@ class CORE_EXPORT ReadableStream : public ScriptWrappable {
                                        ScriptValue options,
                                        ExceptionState&);
 
-  // Verifies that |destination_value| is a WritableStream and that both it and
-  // |source| are unlocked. Returns the WritableStream that was wrapped by
-  // |destination_value|.
-  static WritableStream* PipeToCheckSourceAndDestination(
-      ScriptState*,
-      ReadableStream* source,
-      ScriptValue destination_value,
-      ExceptionState&);
-
-  // Extracts the "readable" and "writable" streams from the |transform_stream|
-  // dictionary, validates them, and returns them via the |readable_stream| and
-  // |writable_stream| out parameters. The types of |readable_stream| and
-  // |writable_stream| are asymmetric because |readable_stream| is returned
-  // directly to JavaScript and so there is no point in converting it to an
-  // internal type.
-  static void PipeThroughExtractReadableWritable(
-      ScriptState*,
-      const ReadableStream* stream,
-      ScriptValue transform_stream,
-      ScriptValue* readable_stream,
-      WritableStream** writable_stream,
-      ExceptionState&);
-
   // Calls Tee() on |readable|, converts the two branches to a JavaScript array
   // and returns them.
   static ScriptValue CallTeeAndReturnBranchArray(

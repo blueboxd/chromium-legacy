@@ -43,7 +43,7 @@
 #include "device/bluetooth/test/fake_bluetooth.h"
 #include "gpu/config/gpu_switches.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
+#include "services/service_manager/public/cpp/binder_map.h"
 #include "url/origin.h"
 
 namespace content {
@@ -51,8 +51,9 @@ namespace {
 
 WebTestContentBrowserClient* g_web_test_browser_client;
 
-void BindWebTestHelper(mojo::PendingReceiver<mojom::MojoWebTestHelper> receiver,
-                       RenderFrameHost* render_frame_host) {
+void BindWebTestHelper(
+    RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<mojom::MojoWebTestHelper> receiver) {
   MojoWebTestHelper::Create(std::move(receiver));
 }
 
@@ -337,6 +338,12 @@ bool WebTestContentBrowserClient::CanCreateWindow(
   return !block_popups_ || user_gesture;
 }
 
+void WebTestContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
+    RenderFrameHost* render_frame_host,
+    service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
+  map->Add<mojom::MojoWebTestHelper>(base::BindRepeating(&BindWebTestHelper));
+}
+
 bool WebTestContentBrowserClient::CanAcceptUntrustedExchangesIfNeeded() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kRunWebTests);
@@ -349,12 +356,6 @@ WebTestContentBrowserClient::GetTtsControllerDelegate() {
 
 content::TtsPlatform* WebTestContentBrowserClient::GetTtsPlatform() {
   return WebTestTtsPlatform::GetInstance();
-}
-
-void WebTestContentBrowserClient::ExposeInterfacesToFrame(
-    service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>*
-        registry) {
-  registry->AddInterface(base::BindRepeating(&BindWebTestHelper));
 }
 
 std::unique_ptr<LoginDelegate> WebTestContentBrowserClient::CreateLoginDelegate(

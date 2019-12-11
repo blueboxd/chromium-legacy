@@ -393,12 +393,6 @@ bool GoogleUpdateSettings::ClearReferral() {
   return ClearGoogleUpdateStrKey(google_update::kRegReferralField);
 }
 
-bool GoogleUpdateSettings::UpdateDidRunState(bool did_run) {
-  // Written into HKCU; read by Google Update.
-  return WriteUserGoogleUpdateStrKey(google_update::kRegDidRunField,
-                                     did_run ? L"1" : L"0");
-}
-
 void GoogleUpdateSettings::UpdateInstallStatus(bool system_install,
     installer::ArchiveType archive_type, int install_return_code,
     const base::string16& product_guid) {

@@ -20,6 +20,7 @@
 #include "ash/wallpaper/wallpaper_utils/wallpaper_resizer.h"
 #include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
@@ -1892,36 +1893,36 @@ TEST_F(WallpaperControllerTest, IsActiveUserWallpaperControlledByPolicy) {
 TEST_F(WallpaperControllerTest, WallpaperBlur) {
   TestWallpaperControllerObserver observer(controller_);
 
-  ASSERT_TRUE(controller_->IsBlurAllowed());
-  ASSERT_FALSE(controller_->IsWallpaperBlurred());
+  ASSERT_TRUE(controller_->IsBlurAllowedForLockState());
+  ASSERT_FALSE(controller_->IsWallpaperBlurredForLockState());
 
   SetSessionState(SessionState::ACTIVE);
-  EXPECT_FALSE(controller_->IsWallpaperBlurred());
+  EXPECT_FALSE(controller_->IsWallpaperBlurredForLockState());
   EXPECT_EQ(0, observer.blur_changed_count());
 
   SetSessionState(SessionState::LOCKED);
-  EXPECT_TRUE(controller_->IsWallpaperBlurred());
+  EXPECT_TRUE(controller_->IsWallpaperBlurredForLockState());
   EXPECT_EQ(1, observer.blur_changed_count());
 
   SetSessionState(SessionState::LOGGED_IN_NOT_ACTIVE);
-  EXPECT_FALSE(controller_->IsWallpaperBlurred());
+  EXPECT_FALSE(controller_->IsWallpaperBlurredForLockState());
   EXPECT_EQ(2, observer.blur_changed_count());
 
   SetSessionState(SessionState::LOGIN_SECONDARY);
-  EXPECT_TRUE(controller_->IsWallpaperBlurred());
+  EXPECT_TRUE(controller_->IsWallpaperBlurredForLockState());
   EXPECT_EQ(3, observer.blur_changed_count());
 
   // Blur state does not change below.
   SetSessionState(SessionState::LOGIN_PRIMARY);
-  EXPECT_TRUE(controller_->IsWallpaperBlurred());
+  EXPECT_TRUE(controller_->IsWallpaperBlurredForLockState());
   EXPECT_EQ(3, observer.blur_changed_count());
 
   SetSessionState(SessionState::OOBE);
-  EXPECT_TRUE(controller_->IsWallpaperBlurred());
+  EXPECT_TRUE(controller_->IsWallpaperBlurredForLockState());
   EXPECT_EQ(3, observer.blur_changed_count());
 
   SetSessionState(SessionState::UNKNOWN);
-  EXPECT_TRUE(controller_->IsWallpaperBlurred());
+  EXPECT_TRUE(controller_->IsWallpaperBlurredForLockState());
   EXPECT_EQ(3, observer.blur_changed_count());
 }
 
@@ -1936,20 +1937,20 @@ TEST_F(WallpaperControllerTest, WallpaperBlurDuringLockScreenTransition) {
 
   TestWallpaperControllerObserver observer(controller_);
 
-  ASSERT_TRUE(controller_->IsBlurAllowed());
-  ASSERT_FALSE(controller_->IsWallpaperBlurred());
+  ASSERT_TRUE(controller_->IsBlurAllowedForLockState());
+  ASSERT_FALSE(controller_->IsWallpaperBlurredForLockState());
 
   ASSERT_EQ(1u, wallpaper_view()->layer()->parent()->children().size());
   EXPECT_EQ(ui::LAYER_TEXTURED,
             wallpaper_view()->layer()->parent()->children()[0]->type());
 
   // Simulate lock and unlock sequence.
-  controller_->UpdateWallpaperBlur(true);
-  EXPECT_TRUE(controller_->IsWallpaperBlurred());
+  controller_->UpdateWallpaperBlurForLockState(true);
+  EXPECT_TRUE(controller_->IsWallpaperBlurredForLockState());
   EXPECT_EQ(1, observer.blur_changed_count());
 
   SetSessionState(SessionState::LOCKED);
-  EXPECT_TRUE(controller_->IsWallpaperBlurred());
+  EXPECT_TRUE(controller_->IsWallpaperBlurredForLockState());
   ASSERT_EQ(2u, wallpaper_view()->layer()->parent()->children().size());
   EXPECT_EQ(ui::LAYER_SOLID_COLOR,
             wallpaper_view()->layer()->parent()->children()[0]->type());
@@ -1959,11 +1960,39 @@ TEST_F(WallpaperControllerTest, WallpaperBlurDuringLockScreenTransition) {
   // Change of state to ACTIVE triggers post lock animation and
   // UpdateWallpaperBlur(false)
   SetSessionState(SessionState::ACTIVE);
-  EXPECT_FALSE(controller_->IsWallpaperBlurred());
+  EXPECT_FALSE(controller_->IsWallpaperBlurredForLockState());
   EXPECT_EQ(2, observer.blur_changed_count());
   ASSERT_EQ(1u, wallpaper_view()->layer()->parent()->children().size());
   EXPECT_EQ(ui::LAYER_TEXTURED,
             wallpaper_view()->layer()->parent()->children()[0]->type());
+}
+
+TEST_F(WallpaperControllerTest, LockDuringOverview) {
+  gfx::ImageSkia image = CreateImage(600, 400, kWallpaperColor);
+  controller_->ShowWallpaperImage(
+      image, CreateWallpaperInfo(WALLPAPER_LAYOUT_CENTER),
+      /*preview_mode=*/false, /*always_on_top=*/false);
+  TestWallpaperControllerObserver observer(controller_);
+
+  Shell::Get()->overview_controller()->StartOverview();
+
+  EXPECT_FALSE(controller_->IsWallpaperBlurredForLockState());
+  EXPECT_EQ(0, observer.blur_changed_count());
+
+  // Simulate lock and unlock sequence.
+  SetSessionState(SessionState::LOCKED);
+
+  EXPECT_TRUE(controller_->IsWallpaperBlurredForLockState());
+
+  // Get wallpaper_view directly because it's not animating.
+  auto* wallpaper_view = Shell::Get()
+                             ->GetPrimaryRootWindowController()
+                             ->wallpaper_widget_controller()
+                             ->wallpaper_view();
+
+  // Make sure that wallpaper still have blur.
+  ASSERT_EQ(30, wallpaper_view->blur_sigma());
+  ASSERT_EQ(1, wallpaper_view->opacity());
 }
 
 TEST_F(WallpaperControllerTest, OnlyShowDevicePolicyWallpaperOnLoginScreen) {
@@ -1977,8 +2006,8 @@ TEST_F(WallpaperControllerTest, OnlyShowDevicePolicyWallpaperOnLoginScreen) {
   EXPECT_EQ(1, GetWallpaperCount());
   EXPECT_TRUE(IsDevicePolicyWallpaper());
   // Verify the device policy wallpaper shouldn't be blurred.
-  ASSERT_FALSE(controller_->IsBlurAllowed());
-  ASSERT_FALSE(controller_->IsWallpaperBlurred());
+  ASSERT_FALSE(controller_->IsBlurAllowedForLockState());
+  ASSERT_FALSE(controller_->IsWallpaperBlurredForLockState());
 
   // Verify the device policy wallpaper is replaced when session state is no
   // longer LOGIN_PRIMARY.
@@ -2471,7 +2500,7 @@ TEST_F(WallpaperControllerTest, ShowOneShotWallpaper) {
   EXPECT_EQ(1, GetWallpaperCount());
   EXPECT_EQ(kOneShotWallpaperColor, GetWallpaperColor());
   EXPECT_EQ(WallpaperType::ONE_SHOT, controller_->GetWallpaperType());
-  EXPECT_FALSE(controller_->IsBlurAllowed());
+  EXPECT_FALSE(controller_->IsBlurAllowedForLockState());
   EXPECT_FALSE(controller_->ShouldApplyDimming());
 
   // Verify the user wallpaper info is unaffected, and the one-shot wallpaper

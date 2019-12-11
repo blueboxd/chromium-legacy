@@ -54,14 +54,25 @@ enum ActionType {
 
 // Sync errors that should be exposed to the user through the avatar button.
 enum AvatarSyncErrorType {
-  NO_SYNC_ERROR,                     // No sync error.
-  MANAGED_USER_UNRECOVERABLE_ERROR,  // Unrecoverable error for managed users.
-  UNRECOVERABLE_ERROR,               // Unrecoverable error for regular users.
-  AUTH_ERROR,                        // Authentication error.
-  UPGRADE_CLIENT_ERROR,              // Out-of-date client error.
-  PASSPHRASE_ERROR,                  // Sync passphrase error.
-  TRUSTED_VAULT_KEY_MISSING_ERROR,   // Trusted vault keys missing.
-  SETTINGS_UNCONFIRMED_ERROR,        // Sync settings dialog not confirmed yet.
+  // No sync error.
+  NO_SYNC_ERROR,
+  // Unrecoverable error for managed users.
+  MANAGED_USER_UNRECOVERABLE_ERROR,
+  // Unrecoverable error for regular users.
+  UNRECOVERABLE_ERROR,
+  // Authentication error.
+  AUTH_ERROR,
+  // Out-of-date client error.
+  UPGRADE_CLIENT_ERROR,
+  // Sync passphrase error.
+  PASSPHRASE_ERROR,
+  // Trusted vault keys missing for all sync datatypes (encrypt everything is
+  // enabled).
+  TRUSTED_VAULT_KEY_MISSING_FOR_EVERYTHING_ERROR,
+  // Trusted vault keys missing for always-encrypted datatypes (passwords).
+  TRUSTED_VAULT_KEY_MISSING_FOR_PASSWORDS_ERROR,
+  // Sync settings dialog not confirmed yet.
+  SETTINGS_UNCONFIRMED_ERROR,
 };
 
 struct StatusLabels {

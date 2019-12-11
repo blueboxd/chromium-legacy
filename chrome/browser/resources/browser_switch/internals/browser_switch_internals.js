@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
+import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {$} from 'chrome://resources/js/util.m.js';
 
 /**
  * @typedef {{
@@ -121,7 +122,7 @@ function checkUrl() {
     $('output').innerText = '';
     return;
   }
-  cr.sendWithPromise('getDecision', url)
+  sendWithPromise('getDecision', url)
       .then(decision => {
         // URL is valid.
         $('output').innerText = JSON.stringify(decision, null, 2);
@@ -208,9 +209,9 @@ function updateXmlTable({browser_switcher: sources}) {
  * Called by C++ when we need to update everything on the page.
  */
 function updateEverything() {
-  cr.sendWithPromise('getAllRulesets').then(updateTables);
-  cr.sendWithPromise('getTimestamps').then(updateTimestamps);
-  cr.sendWithPromise('getRulesetSources').then(updateXmlTable);
+  sendWithPromise('getAllRulesets').then(updateTables);
+  sendWithPromise('getTimestamps').then(updateTimestamps);
+  sendWithPromise('getRulesetSources').then(updateXmlTable);
   checkUrl();
 }
 

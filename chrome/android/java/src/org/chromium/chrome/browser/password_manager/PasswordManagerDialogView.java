@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.password_manager;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -62,6 +63,15 @@ public class PasswordManagerDialogView extends ScrollView {
     public void updateHelpIcon(boolean usesInlineIcon) {
         // There is no help button to update.
         if (mHelpButtonView == null) return;
+
+        // The inline help icon is displayed on the same line as the title and requires a different
+        // margin.
+        LinearLayout.LayoutParams layoutParams =
+                (LinearLayout.LayoutParams) mTitleView.getLayoutParams();
+        layoutParams.setMarginEnd(getResources().getDimensionPixelSize(usesInlineIcon
+                        ? R.dimen.password_manager_dialog_title_compact_margin
+                        : R.dimen.password_manager_dialog_text_margin));
+        mTitleView.setLayoutParams(layoutParams);
 
         mHelpButtonView.setVisibility(usesInlineIcon ? GONE : VISIBLE);
         mInlineHelpButtonView.setVisibility(usesInlineIcon ? VISIBLE : GONE);

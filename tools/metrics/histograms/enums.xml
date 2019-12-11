@@ -4290,6 +4290,8 @@ Unknown properties are collapsed to zero. -->
   <int value="30" label="The popup was suppressed"/>
   <int value="31" label="The popup was suppressed (once)"/>
   <int value="32" label="The form was parsed"/>
+  <int value="33" label="The user hide the suggestions"/>
+  <int value="34" label="The user hide the suggestions (once)"/>
 </enum>
 
 <enum name="AutofillFormSubmittedState">
@@ -18918,6 +18920,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="651" label="PaymentMethodQueryEnabled"/>
   <int value="652" label="StricterMixedContentTreatmentEnabled"/>
   <int value="653" label="NTPCustomBackgroundEnabled"/>
+  <int value="654" label="DNSInterceptionChecksEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -25692,6 +25695,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3114" label="V8SharedArrayBufferConstructed"/>
   <int value="3115" label="ScrollSnapCausesScrollOnInitialLayout"/>
   <int value="3116" label="ClientHintsUAMobile"/>
+  <int value="3117"
+      label="V8VideoPlaybackQuality_CorruptedVideoFrames_AttributeGetter"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -36628,6 +36633,7 @@ from previous Chrome versions.
   <int value="-1336110789" label="CastMediaRouteProvider:disabled"/>
   <int value="-1335017208" label="KeyboardLockAPI:enabled"/>
   <int value="-1334327410" label="ash-enable-touch-view-testing"/>
+  <int value="-1333946113" label="ContentIndexingDownloadHome:disabled"/>
   <int value="-1332267458" label="RemoveNavigationHistory:enabled"/>
   <int value="-1331831950" label="site-isolation-for-password-sites:enabled"/>
   <int value="-1327676774" label="disable-accelerated-mjpeg-decode"/>
@@ -37100,6 +37106,7 @@ from previous Chrome versions.
   <int value="-762738927" label="LogJsConsoleMessages:enabled"/>
   <int value="-762687134" label="ExperimentalCrostiniUI:enabled"/>
   <int value="-759830869" label="enable-tab-discarding"/>
+  <int value="-758999727" label="ContentIndexingNTP:disabled"/>
   <int value="-758917191" label="AccountIdMigration:enabled"/>
   <int value="-758048639" label="InfiniteSessionRestore:enabled"/>
   <int value="-757946835"
@@ -37820,6 +37827,7 @@ from previous Chrome versions.
   <int value="160838658" label="SmartDimModelV3:enabled"/>
   <int value="161409456" label="AutofillUseMobileLabelDisambiguation:disabled"/>
   <int value="161694478" label="OmniboxNewAnswerLayout:enabled"/>
+  <int value="168429629" label="ContentIndexingNTP:enabled"/>
   <int value="168627257" label="AppServiceIntentHandling:disabled"/>
   <int value="173288154" label="PrintPdfAsImage:enabled"/>
   <int value="173339199" label="SmsReceiverCrossDevice:disabled"/>
@@ -38721,6 +38729,7 @@ from previous Chrome versions.
   <int value="1343713259" label="ArcPrintSpoolerExperiment:disabled"/>
   <int value="1344833841" label="ImeThread:enabled"/>
   <int value="1346994602" label="SyncPseudoUSSDictionary:enabled"/>
+  <int value="1351344112" label="ContentIndexingDownloadHome:enabled"/>
   <int value="1351830811" label="do-not-ignore-autocomplete-off"/>
   <int value="1352447982" label="enable-lcd-text"/>
   <int value="1352717172"

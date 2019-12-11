@@ -66,8 +66,7 @@ void NetworkHandler::Init() {
       network_configuration_handler_.get(), network_device_handler_.get(),
       prohibited_technologies_handler_.get());
   network_connection_handler_->Init(
-      network_state_handler_.get(),
-      network_configuration_handler_.get(),
+      network_state_handler_.get(), network_configuration_handler_.get(),
       managed_network_configuration_handler_.get());
   cellular_metrics_logger_->Init(network_state_handler_.get(),
                                  network_connection_handler_.get());
@@ -119,8 +118,11 @@ bool NetworkHandler::IsInitialized() {
 void NetworkHandler::InitializePrefServices(
     PrefService* logged_in_profile_prefs,
     PrefService* device_prefs) {
-  ui_proxy_config_service_.reset(
-      new UIProxyConfigService(logged_in_profile_prefs, device_prefs));
+  ui_proxy_config_service_.reset(new UIProxyConfigService(
+      logged_in_profile_prefs, device_prefs, network_state_handler_.get(),
+      network_profile_handler_.get()));
+  managed_network_configuration_handler_->set_ui_proxy_config_service(
+      ui_proxy_config_service_.get());
 }
 
 void NetworkHandler::ShutdownPrefServices() {

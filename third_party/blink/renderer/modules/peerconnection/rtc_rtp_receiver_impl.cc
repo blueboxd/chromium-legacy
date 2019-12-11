@@ -201,18 +201,10 @@ class RTCRtpReceiverImpl::RTCRtpReceiverInternal
   void GetStatsOnSignalingThread(
       RTCStatsReportCallback callback,
       const Vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
-    // TODO(crbug.com/787254): Remove this conversion step once
-    // CreateRTCStatsCollectorCallback() operates over WTF::Vector (instead of
-    // WebVector).
-    WebVector<webrtc::NonStandardGroupId> exposed_group_ids_copy(
-        exposed_group_ids.size());
-    for (WTF::wtf_size_t i = 0; i < exposed_group_ids.size(); ++i)
-      exposed_group_ids_copy[i] = exposed_group_ids[i];
-
     native_peer_connection_->GetStats(
-        webrtc_receiver_.get(), blink::CreateRTCStatsCollectorCallback(
-                                    main_task_runner_, std::move(callback),
-                                    std::move(exposed_group_ids_copy)));
+        webrtc_receiver_.get(),
+        CreateRTCStatsCollectorCallback(main_task_runner_, std::move(callback),
+                                        exposed_group_ids));
   }
 
   const scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection_;

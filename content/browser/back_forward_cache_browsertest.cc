@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include "base/command_line.h"
 #include "base/hash/hash.h"
 #include "base/metrics/metrics_hashes.h"
@@ -21,6 +22,7 @@
 #include "content/browser/presentation/presentation_test_utils.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/back_forward_cache.h"
+#include "content/public/browser/frame_service_base.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -41,6 +43,7 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "content/test/echo.mojom.h"
 #include "media/base/media_switches.h"
 #include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
@@ -4836,6 +4839,63 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // Reset |presentation_service|'s controller delegate so that it won't try to
   // call Reset() on it on destruction time.
   presentation_service.OnDelegateDestroyed();
+}
+
+namespace {
+
+// Subclass of FrameServiceBase for test.
+class EchoImpl final : public FrameServiceBase<mojom::Echo> {
+ public:
+  EchoImpl(RenderFrameHost* render_frame_host,
+           mojo::PendingReceiver<mojom::Echo> receiver,
+           bool* deleted)
+      : FrameServiceBase(render_frame_host, std::move(receiver)),
+        deleted_(deleted) {}
+  ~EchoImpl() final { *deleted_ = true; }
+
+  // mojom::Echo implementation
+  void EchoString(const std::string& input, EchoStringCallback callback) final {
+    std::move(callback).Run(input);
+  }
+
+ private:
+  bool* deleted_;
+};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, FrameServiceBase) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  ASSERT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+
+  mojo::Remote<mojom::Echo> echo_remote;
+  bool echo_deleted = false;
+  new EchoImpl(rfh_a, echo_remote.BindNewPipeAndPassReceiver(), &echo_deleted);
+
+  // 2) Navigate to B.
+  ASSERT_TRUE(NavigateToURL(shell(), url_b));
+
+  // - Page A should be in the cache.
+  ASSERT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_FALSE(echo_deleted);
+
+  // 3) Go back.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_FALSE(echo_deleted);
+
+  // 4) Prevent caching and navigate to B.
+  BackForwardCache::DisableForRenderFrameHost(rfh_a, "test");
+  ASSERT_TRUE(NavigateToURL(shell(), url_b));
+  delete_observer_rfh_a.WaitUntilDeleted();
+  EXPECT_TRUE(echo_deleted);
 }
 
 }  // namespace content

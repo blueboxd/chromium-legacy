@@ -30,6 +30,9 @@ specific_include_rules = {
  "ui_proxy_config_service_unittest.cc": [
     "+components/sync_preferences/testing_pref_service_syncable.h"
   ],
+ "managed_network_configuration_handler_unittest.cc": [
+    "+components/sync_preferences/testing_pref_service_syncable.h"
+  ],
 
   # Dependencies specific for fuzz targets and other fuzzing-related code.
   ".*fuzz.*": [

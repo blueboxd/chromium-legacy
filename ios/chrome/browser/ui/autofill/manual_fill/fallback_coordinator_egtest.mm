@@ -178,6 +178,8 @@ BOOL WaitForKeyboardToAppear() {
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Tap on the profiles icon.
+  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       performAction:grey_tap()];
 
@@ -219,6 +221,8 @@ BOOL WaitForKeyboardToAppear() {
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Tap on the profiles icon.
+  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       performAction:grey_tap()];
 
@@ -341,6 +345,8 @@ BOOL WaitForKeyboardToAppear() {
   DockKeyboard();
 
   // Tap on the profiles icon.
+  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       performAction:grey_tap()];
 

@@ -1223,6 +1223,18 @@ void AutofillManager::OnAutocompleteEntrySelected(const base::string16& value) {
   autocomplete_history_manager_->OnAutocompleteEntrySelected(value);
 }
 
+void AutofillManager::OnUserHideSuggestions(const FormData& form,
+                                            const FormFieldData& field) {
+  FormStructure* form_structure = nullptr;
+  AutofillField* autofill_field = nullptr;
+  if (!GetCachedFormAndField(form, field, &form_structure, &autofill_field))
+    return;
+
+  auto* logger = GetEventFormLogger(autofill_field->Type().group());
+  if (logger)
+    logger->OnUserHideSuggestions(*form_structure, *autofill_field);
+}
+
 bool AutofillManager::ShouldClearPreviewedForm() {
   return credit_card_access_manager_->ShouldClearPreviewedForm();
 }

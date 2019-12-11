@@ -1449,9 +1449,6 @@ void ThreadState::AtomicPauseSweepAndCompact(
     unified_heap_controller()->IterateTracedGlobalHandles(&visitor);
   }
 
-  // Allocation is allowed during the pre-finalizers and destructors.
-  // However, they must not mutate an object graph in a way in which
-  // a dead object gets resurrected.
   InvokePreFinalizers();
 
   // Slots filtering requires liveness information which is only present before

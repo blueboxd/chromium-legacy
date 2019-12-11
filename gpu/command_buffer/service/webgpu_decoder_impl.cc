@@ -49,9 +49,6 @@ class WireServerCommandSerializer : public dawn_wire::CommandSerializer {
                              uint32_t adapter_server_id,
                              const dawn_native::Adapter& adapter);
 
-  void SendRequestedDeviceInfo(uint32_t request_device_serial,
-                               bool is_request_device_success);
-
  private:
   DecoderClient* client_;
   std::vector<uint8_t> buffer_;
@@ -144,21 +141,6 @@ void WireServerCommandSerializer::SendAdapterProperties(
   client_->HandleReturnData(base::make_span(
       reinterpret_cast<const uint8_t*>(serialized_buffer.data()),
       serialized_buffer.size()));
-}
-
-void WireServerCommandSerializer::SendRequestedDeviceInfo(
-    uint32_t request_device_serial,
-    bool is_request_device_success) {
-  cmds::DawnReturnRequestDeviceInfo return_request_device_info;
-  DCHECK_EQ(DawnReturnDataType::kRequestedDeviceReturnInfo,
-            return_request_device_info.return_data_header.return_data_type);
-  return_request_device_info.request_device_serial = request_device_serial;
-  return_request_device_info.is_request_device_success =
-      is_request_device_success;
-
-  client_->HandleReturnData(base::make_span(
-      reinterpret_cast<const uint8_t*>(&return_request_device_info),
-      sizeof(return_request_device_info)));
 }
 
 dawn_native::DeviceType PowerPreferenceToDawnDeviceType(
@@ -514,7 +496,7 @@ error::Error WebGPUDecoderImpl::InitDawnDeviceAndSetWireServer(
 
   wgpu_device_ = dawn_adapters_[requested_adapter_index].CreateDevice();
   if (wgpu_device_ == nullptr) {
-    return error::kInvalidArguments;
+    return error::kLostContext;
   }
 
   dawn_wire::WireServerDescriptor descriptor = {};
@@ -707,8 +689,6 @@ error::Error WebGPUDecoderImpl::HandleRequestDevice(
   const volatile webgpu::cmds::RequestDevice& c =
       *static_cast<const volatile webgpu::cmds::RequestDevice*>(cmd_data);
 
-  uint32_t request_device_serial =
-      static_cast<uint32_t>(c.request_device_serial);
   uint32_t adapter_service_id = static_cast<uint32_t>(c.adapter_service_id);
   uint32_t request_device_properties_shm_id =
       static_cast<uint32_t>(c.request_device_properties_shm_id);
@@ -718,25 +698,22 @@ error::Error WebGPUDecoderImpl::HandleRequestDevice(
       static_cast<uint32_t>(c.request_device_properties_size);
 
   WGPUDeviceProperties device_properties = {};
-  if (request_device_properties_size) {
-    const volatile char* shm_device_properties =
-        GetSharedMemoryAs<const volatile char*>(
-            request_device_properties_shm_id,
-            request_device_properties_shm_offset,
-            request_device_properties_size);
-    if (!shm_device_properties) {
-      return error::kOutOfBounds;
-    }
-
-    dawn_wire::DeserializeWGPUDeviceProperties(&device_properties,
-                                               shm_device_properties);
+  if (!request_device_properties_size) {
+    return InitDawnDeviceAndSetWireServer(adapter_service_id,
+                                          device_properties);
   }
 
-  error::Error init_dawn_device_error =
-      InitDawnDeviceAndSetWireServer(adapter_service_id, device_properties);
-  wire_serializer_->SendRequestedDeviceInfo(
-      request_device_serial, !error::IsError(init_dawn_device_error));
-  return init_dawn_device_error;
+  const volatile char* shm_device_properties =
+      GetSharedMemoryAs<const volatile char*>(
+          request_device_properties_shm_id,
+          request_device_properties_shm_offset, request_device_properties_size);
+  if (!shm_device_properties) {
+    return error::kOutOfBounds;
+  }
+
+  dawn_wire::DeserializeWGPUDeviceProperties(&device_properties,
+                                             shm_device_properties);
+  return InitDawnDeviceAndSetWireServer(adapter_service_id, device_properties);
 }
 
 error::Error WebGPUDecoderImpl::HandleDawnCommands(

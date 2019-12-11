@@ -82,6 +82,6 @@ public class ExploreOfflineCard {
     }
 
     private static boolean isFeatureEnabled() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.OFFLINE_HOME);
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_INDEXING_NTP);
     }
 }

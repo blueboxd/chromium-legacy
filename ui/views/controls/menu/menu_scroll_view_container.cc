@@ -201,7 +201,7 @@ bool MenuScrollViewContainer::HasBubbleBorder() const {
 
 MenuItemView* MenuScrollViewContainer::GetFootnote() const {
   MenuItemView* const footnote = content_view_->GetLastItem();
-  return (footnote && footnote->GetType() == MenuItemView::HIGHLIGHTED)
+  return (footnote && footnote->GetType() == MenuItemView::Type::kHighlighted)
              ? footnote
              : nullptr;
 }

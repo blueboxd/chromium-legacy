@@ -15,11 +15,9 @@
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/web_applications/web_app_dialog_manager.h"
-#include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
@@ -103,10 +101,6 @@ HostedAppBrowserController::~HostedAppBrowserController() = default;
 
 bool HostedAppBrowserController::CreatedForInstalledPwa() const {
   return created_for_installed_pwa_;
-}
-
-bool HostedAppBrowserController::IsHostedApp() const {
-  return true;
 }
 
 bool HostedAppBrowserController::HasMinimalUiButtons() const {
@@ -219,21 +213,44 @@ base::string16 HostedAppBrowserController::GetFormattedUrlOrigin() const {
 }
 
 bool HostedAppBrowserController::CanUninstall() const {
-  return web_app::WebAppUiManagerImpl::Get(browser()->profile())
-      ->dialog_manager()
-      .CanUninstallWebApp(GetAppId());
+  if (uninstall_dialog_)
+    return false;
+
+  return web_app::WebAppProvider::Get(browser()->profile())
+      ->install_finalizer()
+      .CanUserUninstallExternalApp(GetAppId());
 }
 
 void HostedAppBrowserController::Uninstall() {
-  web_app::WebAppUiManagerImpl::Get(browser()->profile())
-      ->dialog_manager()
-      .UninstallWebApp(GetAppId(),
-                       web_app::WebAppDialogManager::UninstallSource::kAppMenu,
-                       browser()->window(), base::DoNothing());
+  const Extension* extension = GetExtension();
+  if (!extension)
+    return;
+
+  DCHECK(!uninstall_dialog_);
+  uninstall_dialog_ = ExtensionUninstallDialog::Create(
+      browser()->profile(),
+      browser()->window() ? browser()->window()->GetNativeWindow() : nullptr,
+      this);
+
+  // The dialog can be closed by UI system whenever it likes, but
+  // OnExtensionUninstallDialogClosed will be called anyway.
+  uninstall_dialog_->ConfirmUninstall(extension,
+                                      UNINSTALL_REASON_USER_INITIATED,
+                                      UNINSTALL_SOURCE_HOSTED_APP_MENU);
 }
 
 bool HostedAppBrowserController::IsInstalled() const {
   return GetExtension();
+}
+
+bool HostedAppBrowserController::IsHostedApp() const {
+  return true;
+}
+
+void HostedAppBrowserController::OnExtensionUninstallDialogClosed(
+    bool success,
+    const base::string16& error) {
+  uninstall_dialog_.reset();
 }
 
 void HostedAppBrowserController::OnReceivedInitialURL() {

@@ -162,24 +162,32 @@ cca.util.orientPhoto = function(blob, onSuccess, onFailure) {
  * @param {function()=} callback Callback called on completion.
  */
 cca.util.animateOnce = function(element, callback) {
-  element.classList.remove('animate');
-  /** @suppress {suspiciousCode} */
-  element.offsetWidth;  // Force calculation to re-apply animation.
-  element.classList.add('animate');
-  cca.util.waitAnimationCompleted(element).finally(() => {
-    element.classList.remove('animate');
-    if (callback) {
-      callback();
-    }
+  cca.util.animateCancel(element).then(() => {
+    element.classList.add('animate');
+    cca.util.waitAnimationCompleted(element).finally(() => {
+      element.classList.remove('animate');
+      if (callback) {
+        callback();
+      }
+    });
   });
 };
 
 /**
  * Cancels animating the element by removing 'animate' class.
  * @param {HTMLElement} element Element for canceling animation.
+ * @return {!Promise} Promise resolved when ongoing animation is canceled and
+ *     next animation can be safely applied.
  */
 cca.util.animateCancel = function(element) {
   element.classList.remove('animate');
+  element.classList.add('cancel-animate');
+  /** @suppress {suspiciousCode} */
+  element.offsetWidth;  // Force calculation to re-apply animation.
+  element.classList.remove('cancel-animate');
+  // Assumes transitioncancel, transitionend, animationend events from previous
+  // animation are all cleared after requestAnimationFrame().
+  return new Promise((r) => requestAnimationFrame(r));
 };
 
 /**

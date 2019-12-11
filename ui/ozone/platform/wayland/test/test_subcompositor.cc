@@ -33,7 +33,7 @@ void GetSubsurface(struct wl_client* client,
   wl_resource* subsurface_resource =
       CreateResourceWithImpl<::testing::NiceMock<TestSubSurface>>(
           client, &wl_subsurface_interface, wl_resource_get_version(resource),
-          &kTestSubSurfaceImpl, id);
+          &kTestSubSurfaceImpl, id, surface, parent);
   DCHECK(subsurface_resource);
   mock_surface->set_sub_surface(
       GetUserDataAs<TestSubSurface>(subsurface_resource));

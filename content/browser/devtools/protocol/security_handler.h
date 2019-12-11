@@ -25,7 +25,7 @@ class SecurityHandler : public DevToolsDomainHandler,
                         public WebContentsObserver {
  public:
   using CertErrorCallback =
-      base::Callback<void(content::CertificateRequestResultType)>;
+      base::OnceCallback<void(content::CertificateRequestResultType)>;
 
   SecurityHandler();
   ~SecurityHandler() override;

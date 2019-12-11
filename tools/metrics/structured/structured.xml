@@ -1,4 +1,5 @@
 <structured-metrics-configuration>
+
 <!-- Structured metrics is under development and isn't available for use yet. -->
 
 <event name="TestEvent">
@@ -11,14 +12,14 @@
       A per-user keyed hashed value.
     </summary>
   </metric>
-  <metric name="ValueTwo" kind="hashed-string">
-    <summary>
-      A per-user keyed hashed value.
-    </summary>
-  </metric>
   <metric name="ValueThree" kind="int">
     <summary>
       An unhashed value, recorded as-is.
+    </summary>
+  </metric>
+  <metric name="ValueTwo" kind="hashed-string">
+    <summary>
+      A per-user keyed hashed value.
     </summary>
   </metric>
 </event>

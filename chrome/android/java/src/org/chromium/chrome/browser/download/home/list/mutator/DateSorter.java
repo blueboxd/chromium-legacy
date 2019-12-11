@@ -12,28 +12,40 @@ import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.list.ListUtils;
 import org.chromium.components.offline_items_collection.OfflineItem;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Sorter based on download date. Items having same date (day of download creation), will be
  * compared based on mime type. For further tie-breakers, timestamp and ID are used.
  * Note, the input list must contain only offline items.
  */
-public class DateSorter implements DateOrderedListMutator.Sorter {
+public class DateSorter implements ListConsumer {
     private final JustNowProvider mJustNowProvider;
+    private ListConsumer mListConsumer;
 
     public DateSorter(@Nullable JustNowProvider justNowProvider) {
         mJustNowProvider = justNowProvider;
     }
 
     @Override
-    public ArrayList<ListItem> sort(ArrayList<ListItem> list) {
+    public ListConsumer setListConsumer(ListConsumer consumer) {
+        mListConsumer = consumer;
+        return mListConsumer;
+    }
+
+    @Override
+    public void onListUpdated(List<ListItem> inputList) {
+        if (mListConsumer == null) return;
+        mListConsumer.onListUpdated(sort(inputList));
+    }
+
+    private List<ListItem> sort(List<ListItem> list) {
         Collections.sort(list, this::compare);
         return list;
     }
 
-    public int compare(ListItem listItem1, ListItem listItem2) {
+    private int compare(ListItem listItem1, ListItem listItem2) {
         OfflineItem lhs = ((ListItem.OfflineItemListItem) listItem1).item;
         OfflineItem rhs = ((ListItem.OfflineItemListItem) listItem2).item;
 

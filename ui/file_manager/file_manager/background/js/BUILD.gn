@@ -493,7 +493,6 @@ js_library("runtime_loaded_test_util") {
 
   deps = [
     ":app_windows",
-    ":file_operation_util",
     ":test_util_base",
     "//ui/file_manager/base/js:error_counter",
   ]

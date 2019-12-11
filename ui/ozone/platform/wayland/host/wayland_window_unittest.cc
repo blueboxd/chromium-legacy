@@ -1176,32 +1176,84 @@ TEST_P(WaylandWindowTest, OnCloseRequest) {
   Sync();
 }
 
-TEST_P(WaylandWindowTest, TooltipSimpleParent) {
+TEST_P(WaylandWindowTest, SubsurfaceSimpleParent) {
   VerifyAndClearExpectations();
 
-  gfx::Rect tooltip_window_bounds(gfx::Point(15, 15), gfx::Size(10, 10));
-  std::unique_ptr<WaylandWindow> tooltip_window = CreateWaylandWindowWithParams(
-      PlatformWindowType::kTooltip, window_->GetWidget(), tooltip_window_bounds,
-      &delegate_);
-  EXPECT_TRUE(tooltip_window);
+  std::unique_ptr<WaylandWindow> second_window = CreateWaylandWindowWithParams(
+      PlatformWindowType::kWindow, gfx::kNullAcceleratedWidget,
+      gfx::Rect(0, 0, 640, 480), &delegate_);
+  EXPECT_TRUE(second_window);
 
-  window_->SetPointerFocus(true);
+  // Test case 1: if the subsurface is provided with a parent widget, it must
+  // always use that as a parent.
+  gfx::Rect subsurface_bounds(gfx::Point(15, 15), gfx::Size(10, 10));
+  std::unique_ptr<WaylandWindow> subsuface_window =
+      CreateWaylandWindowWithParams(PlatformWindowType::kTooltip,
+                                    window_->GetWidget(), subsurface_bounds,
+                                    &delegate_);
+  EXPECT_TRUE(subsuface_window);
 
-  tooltip_window->Show(false);
+  // The subsurface mustn't take the focused window as a parent, but use the
+  // provided one.
+  second_window->SetPointerFocus(true);
+  subsuface_window->Show(false);
 
   Sync();
 
-  auto* mock_tooltip_surface =
-      server_.GetObject<wl::MockSurface>(tooltip_window->GetWidget());
-  auto* test_subsurface = mock_tooltip_surface->sub_surface();
+  auto* mock_surface_subsurface =
+      server_.GetObject<wl::MockSurface>(subsuface_window->GetWidget());
+  auto* test_subsurface = mock_surface_subsurface->sub_surface();
 
-  EXPECT_EQ(test_subsurface->position(), tooltip_window_bounds.origin());
+  EXPECT_EQ(test_subsurface->position(), subsurface_bounds.origin());
   EXPECT_FALSE(test_subsurface->sync());
+
+  auto* parent_resource =
+      server_.GetObject<wl::MockSurface>(window_->GetWidget())->resource();
+  EXPECT_EQ(parent_resource, test_subsurface->parent_resource());
+
+  // Test case 2: the subsurface must use the focused window as its parent.
+  subsuface_window = CreateWaylandWindowWithParams(
+      PlatformWindowType::kTooltip, gfx::kNullAcceleratedWidget,
+      subsurface_bounds, &delegate_);
+  EXPECT_TRUE(subsuface_window);
+
+  // The tooltip must take the focused window.
+  second_window->SetPointerFocus(true);
+  subsuface_window->Show(false);
+
+  Sync();
+
+  // Get new surface after recreating the WaylandSubsurface.
+  mock_surface_subsurface =
+      server_.GetObject<wl::MockSurface>(subsuface_window->GetWidget());
+  test_subsurface = mock_surface_subsurface->sub_surface();
+
+  auto* second_parent_resource =
+      server_.GetObject<wl::MockSurface>(second_window->GetWidget())
+          ->resource();
+  EXPECT_EQ(second_parent_resource, test_subsurface->parent_resource());
+
+  subsuface_window->Hide();
+
+  Sync();
+
+  // The subsurface must take the focused window.
+  second_window->SetPointerFocus(false);
+  window_->SetPointerFocus(true);
+  subsuface_window->Show(false);
+
+  Sync();
+
+  // The subsurface is invalidated on each Hide call.
+  test_subsurface = mock_surface_subsurface->sub_surface();
+
+  // The |window_|'s resource must be the parent resource.
+  EXPECT_EQ(parent_resource, test_subsurface->parent_resource());
 
   window_->SetPointerFocus(false);
 }
 
-TEST_P(WaylandWindowTest, TooltipNestedParent) {
+TEST_P(WaylandWindowTest, SubsurfaceNestedParent) {
   VerifyAndClearExpectations();
 
   gfx::Rect menu_window_bounds(gfx::Point(10, 10), gfx::Size(100, 100));
@@ -1212,25 +1264,26 @@ TEST_P(WaylandWindowTest, TooltipNestedParent) {
 
   VerifyAndClearExpectations();
 
-  gfx::Rect tooltip_window_bounds(gfx::Point(15, 15), gfx::Size(10, 10));
-  std::unique_ptr<WaylandWindow> tooltip_window = CreateWaylandWindowWithParams(
-      PlatformWindowType::kTooltip, menu_window->GetWidget(),
-      tooltip_window_bounds, &delegate_);
-  EXPECT_TRUE(tooltip_window);
+  gfx::Rect subsurface_bounds(gfx::Point(15, 15), gfx::Size(10, 10));
+  std::unique_ptr<WaylandWindow> subsuface_window =
+      CreateWaylandWindowWithParams(PlatformWindowType::kTooltip,
+                                    menu_window->GetWidget(), subsurface_bounds,
+                                    &delegate_);
+  EXPECT_TRUE(subsuface_window);
 
   VerifyAndClearExpectations();
 
   menu_window->SetPointerFocus(true);
 
-  tooltip_window->Show(false);
+  subsuface_window->Show(false);
 
   Sync();
 
-  auto* mock_tooltip_surface =
-      server_.GetObject<wl::MockSurface>(tooltip_window->GetWidget());
-  auto* test_subsurface = mock_tooltip_surface->sub_surface();
+  auto* mock_surface_subsurface =
+      server_.GetObject<wl::MockSurface>(subsuface_window->GetWidget());
+  auto* test_subsurface = mock_surface_subsurface->sub_surface();
 
-  auto new_origin = tooltip_window_bounds.origin() -
+  auto new_origin = subsurface_bounds.origin() -
                     menu_window_bounds.origin().OffsetFromOrigin();
   EXPECT_EQ(test_subsurface->position(), new_origin);
 

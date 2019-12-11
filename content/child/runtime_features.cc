@@ -314,6 +314,10 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            kEnableOnly},
           {wf::EnableVideoPlaybackQuality, features::kVideoPlaybackQuality,
            kUseFeatureState},
+          {wf::EnableBrowserVerifiedUserActivationKeyboard,
+           features::kBrowserVerifiedUserActivationKeyboard, kEnableOnly},
+          {wf::EnableBrowserVerifiedUserActivationMouse,
+           features::kBrowserVerifiedUserActivationMouse, kEnableOnly},
       };
   for (const auto& mapping : blinkFeatureToBaseFeatureMapping) {
     const bool featureEnabled =

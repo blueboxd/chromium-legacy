@@ -43,10 +43,20 @@ const struct wl_subsurface_interface kTestSubSurfaceImpl = {
     DestroyResource, SetPosition, PlaceAbove, PlaceBelow, SetSync, SetDesync,
 };
 
-TestSubSurface::TestSubSurface(wl_resource* resource)
-    : ServerObject(resource) {}
+TestSubSurface::TestSubSurface(wl_resource* resource,
+                               wl_resource* surface,
+                               wl_resource* parent_resource)
+    : ServerObject(resource),
+      surface_(surface),
+      parent_resource_(parent_resource) {
+  DCHECK(surface_);
+}
 
-TestSubSurface::~TestSubSurface() = default;
+TestSubSurface::~TestSubSurface() {
+  auto* mock_surface = GetUserDataAs<MockSurface>(surface_);
+  if (mock_surface)
+    mock_surface->set_sub_surface(nullptr);
+}
 
 void TestSubSurface::SetPosition(int x, int y) {
   position_ = gfx::Point(x, y);

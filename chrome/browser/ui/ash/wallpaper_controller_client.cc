@@ -423,7 +423,7 @@ const std::vector<SkColor>& WallpaperControllerClient::GetWallpaperColors() {
 }
 
 bool WallpaperControllerClient::IsWallpaperBlurred() {
-  return wallpaper_controller_->IsWallpaperBlurred();
+  return wallpaper_controller_->IsWallpaperBlurredForLockState();
 }
 
 bool WallpaperControllerClient::IsActiveUserWallpaperControlledByPolicy() {

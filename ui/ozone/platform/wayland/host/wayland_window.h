@@ -30,7 +30,6 @@ namespace ui {
 class BitmapCursorOzone;
 class OSExchangeData;
 class WaylandConnection;
-class ShellPopupWrapper;
 
 class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
  public:
@@ -53,8 +52,10 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   void UpdateBufferScale(bool update_bounds);
 
   wl_surface* surface() const { return surface_.get(); }
-  ShellPopupWrapper* shell_popup() const { return shell_popup_.get(); }
 
+  void set_parent_window(WaylandWindow* parent_window) {
+    parent_window_ = parent_window;
+  }
   WaylandWindow* parent_window() const { return parent_window_; }
 
   gfx::AcceleratedWidget GetWidget() const;
@@ -75,6 +76,7 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   // Set a child of this window. It is very important in case of nested
   // shell_popups as long as they must be destroyed in the back order.
   void set_child_window(WaylandWindow* window) { child_window_ = window; }
+  WaylandWindow* child_window() const { return child_window_; }
 
   // Set whether this window has an implicit grab (often referred to as capture
   // in Chrome code). Implicit grabs happen while a pointer is down.
@@ -82,10 +84,14 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   bool has_implicit_grab() const { return has_implicit_grab_; }
 
   int32_t buffer_scale() const { return buffer_scale_; }
+  int32_t ui_scale() const { return ui_scale_; }
 
   const base::flat_set<uint32_t>& entered_outputs_ids() const {
     return entered_outputs_ids_;
   }
+
+  // Returns current type of the window.
+  PlatformWindowType type() const { return type_; }
 
   // PlatformWindow
   void Show(bool inactive) override;
@@ -131,9 +137,10 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
                                       bool is_maximized,
                                       bool is_fullscreen,
                                       bool is_activated);
-  void HandlePopupConfigure(const gfx::Rect& bounds);
+  virtual void HandlePopupConfigure(const gfx::Rect& bounds);
 
-  void OnCloseRequest();
+  // Handles close requests.
+  virtual void OnCloseRequest();
 
   // Notifies about drag/drop session events.
   virtual void OnDragEnter(const gfx::PointF& point,
@@ -156,22 +163,20 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   // Sets bounds in dip.
   void SetBoundsDip(const gfx::Rect& bounds_dip);
 
+  // Gets a parent window for this window.
+  WaylandWindow* GetParentWindow(gfx::AcceleratedWidget parent_widget);
+
+  // Sets the buffer scale.
+  void SetBufferScale(int32_t scale, bool update_bounds);
+
+  // Sets the ui scale.
+  void set_ui_scale(int32_t ui_scale) { ui_scale_ = ui_scale; }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(WaylandScreenTest, SetBufferScale);
 
   // Initializes the WaylandWindow with supplied properties.
   bool Initialize(PlatformWindowInitProperties properties);
-
-  void SetBufferScale(int32_t scale, bool update_bounds);
-
-  // Creates a popup window, which is visible as a menu window.
-  void CreateShellPopup();
-  // Creates (if necessary) and show subsurface window, to host
-  // tooltip's content.
-  void CreateAndShowTooltipSubSurface();
-
-  // Gets a parent window for this window.
-  WaylandWindow* GetParentWindow(gfx::AcceleratedWidget parent_widget);
 
   // Returns a root parent window.
   WaylandWindow* GetRootParentWindow();
@@ -184,9 +189,6 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
 
   void UpdateCursorPositionFromEvent(std::unique_ptr<Event> event);
 
-  // Returns bounds with origin relative to parent window's origin.
-  gfx::Rect AdjustPopupWindowPosition() const;
-
   WaylandWindow* GetTopLevelWindow();
 
   // It's important to set opaque region for opaque windows (provides
@@ -196,7 +198,7 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   bool IsOpaqueWindow() const;
 
   // Additional initialization of derived classes.
-  virtual bool OnInitialize(PlatformWindowInitProperties properties);
+  virtual bool OnInitialize(PlatformWindowInitProperties properties) = 0;
 
   // wl_surface_listener
   static void Enter(void* data,
@@ -212,11 +214,6 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   WaylandWindow* child_window_ = nullptr;
 
   wl::Object<wl_surface> surface_;
-  wl::Object<wl_subsurface> tooltip_subsurface_;
-
-  // Wrappers around xdg v5 and xdg v6 objects. WaylandWindow doesn't
-  // know anything about the version.
-  std::unique_ptr<ShellPopupWrapper> shell_popup_;
 
   // The current cursor bitmap (immutable).
   scoped_refptr<BitmapCursorOzone> bitmap_;
@@ -241,8 +238,6 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   // Stores current opacity of the window. Set on ::Initialize call.
   ui::PlatformWindowOpacity opacity_;
 
-  bool is_tooltip_ = false;
-
   // For top level window, stores IDs of outputs that the window is currently
   // rendered at.
   //
@@ -252,6 +247,9 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   // been hidden at least once.  To determine which output the popup belongs to,
   // we ask its parent.
   base::flat_set<uint32_t> entered_outputs_ids_;
+
+  // The type of the current WaylandWindow object.
+  ui::PlatformWindowType type_ = ui::PlatformWindowType::kWindow;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandWindow);
 };

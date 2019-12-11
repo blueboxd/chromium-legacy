@@ -24,8 +24,14 @@
 #include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/onc/onc_utils.h"
+#include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_observer.h"
 #include "components/onc/onc_constants.h"
+#include "components/onc/onc_pref_names.h"
+#include "components/prefs/testing_pref_service.h"
+#include "components/proxy_config/pref_proxy_config_tracker_impl.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "net/base/ip_address.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
@@ -53,11 +59,21 @@ class CrosNetworkConfigTest : public testing::Test {
             NetworkConfigurationHandler::InitializeForTest(
                 helper_.network_state_handler(),
                 network_device_handler_.get()));
+
+    PrefProxyConfigTrackerImpl::RegisterProfilePrefs(user_prefs_.registry());
+    PrefProxyConfigTrackerImpl::RegisterPrefs(local_state_.registry());
+    ::onc::RegisterProfilePrefs(user_prefs_.registry());
+    ::onc::RegisterPrefs(local_state_.registry());
+
+    ui_proxy_config_service_ = std::make_unique<chromeos::UIProxyConfigService>(
+        &user_prefs_, &local_state_, helper_.network_state_handler(),
+        network_profile_handler_.get());
+
     managed_network_configuration_handler_ =
         ManagedNetworkConfigurationHandler::InitializeForTesting(
             helper_.network_state_handler(), network_profile_handler_.get(),
-            network_device_handler_.get(),
-            network_configuration_handler_.get());
+            network_device_handler_.get(), network_configuration_handler_.get(),
+            ui_proxy_config_service_.get());
     network_connection_handler_ =
         NetworkConnectionHandler::InitializeForTesting(
             helper_.network_state_handler(),
@@ -81,6 +97,7 @@ class CrosNetworkConfigTest : public testing::Test {
     network_configuration_handler_.reset();
     network_device_handler_.reset();
     network_profile_handler_.reset();
+    ui_proxy_config_service_.reset();
     NetworkCertLoader::Shutdown();
     LoginState::Shutdown();
   }
@@ -435,6 +452,9 @@ class CrosNetworkConfigTest : public testing::Test {
   std::unique_ptr<ManagedNetworkConfigurationHandler>
       managed_network_configuration_handler_;
   std::unique_ptr<NetworkConnectionHandler> network_connection_handler_;
+  std::unique_ptr<chromeos::UIProxyConfigService> ui_proxy_config_service_;
+  sync_preferences::TestingPrefServiceSyncable user_prefs_;
+  TestingPrefServiceSimple local_state_;
   std::unique_ptr<CrosNetworkConfig> cros_network_config_;
   std::unique_ptr<CrosNetworkConfigTestObserver> observer_;
   std::string wifi1_path_;

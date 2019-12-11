@@ -75,6 +75,9 @@ class DesktopMediaPickerController : private content::WebContentsObserver {
  private:
   void OnInitialMediaListFound();
   void ShowPickerDialog();
+  // This function is responsible to call |done_callback_| and after running the
+  // callback |this| might be destroyed. Do **not** access fields after calling
+  // this function.
   void OnPickerDialogResults(const std::string& err,
                              content::DesktopMediaID source);
 

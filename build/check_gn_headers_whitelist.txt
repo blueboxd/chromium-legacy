@@ -57,9 +57,7 @@ chrome/install_static/install_details.h
 chrome/install_static/install_modes.h
 chrome/install_static/install_util.h
 chrome/install_static/test/scoped_install_details.h
-chrome/installer/util/google_update_constants.h
 chrome/installer/util/google_update_settings.h
-chrome/installer/util/util_constants.h
 components/browser_watcher/features.h
 components/browser_watcher/stability_paths.h
 components/cast_certificate/cast_crl_root_ca_cert_der-inc.h

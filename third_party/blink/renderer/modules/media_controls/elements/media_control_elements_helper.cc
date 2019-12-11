@@ -67,7 +67,8 @@ const HTMLMediaElement* MediaControlElementsHelper::ToParentMediaElement(
   if (!shadow_host)
     return nullptr;
 
-  return DynamicTo<HTMLMediaElement>(shadow_host);
+  return IsHTMLMediaElement(shadow_host) ? ToHTMLMediaElement(shadow_host)
+                                         : nullptr;
 }
 
 // static

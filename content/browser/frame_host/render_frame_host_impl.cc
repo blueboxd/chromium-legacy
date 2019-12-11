@@ -567,11 +567,10 @@ const uint32_t kMaxCookieSameSiteDeprecationUrls = 20;
 }  // namespace
 
 class RenderFrameHostImpl::DroppedInterfaceRequestLogger
-    : public service_manager::mojom::InterfaceProvider {
+    : public blink::mojom::BrowserInterfaceBroker {
  public:
-  DroppedInterfaceRequestLogger(
-      mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
-          receiver) {
+  explicit DroppedInterfaceRequestLogger(
+      mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker> receiver) {
     receiver_.Bind(std::move(receiver));
   }
 
@@ -581,10 +580,10 @@ class RenderFrameHostImpl::DroppedInterfaceRequestLogger
   }
 
  protected:
-  // service_manager::mojom::InterfaceProvider:
-  void GetInterface(const std::string& interface_name,
-                    mojo::ScopedMessagePipeHandle pipe) override {
+  // blink::mojom::BrowserInterfaceBroker
+  void GetInterface(mojo::GenericPendingReceiver receiver) override {
     ++num_dropped_requests_;
+    auto interface_name = receiver.interface_name().value_or("");
     base::UmaHistogramSparse(
         "RenderFrameHostImpl.DroppedInterfaceRequestName",
         HashInterfaceNameToHistogramSample(interface_name));
@@ -594,7 +593,7 @@ class RenderFrameHostImpl::DroppedInterfaceRequestLogger
   }
 
  private:
-  mojo::Receiver<service_manager::mojom::InterfaceProvider> receiver_{this};
+  mojo::Receiver<blink::mojom::BrowserInterfaceBroker> receiver_{this};
   int num_dropped_requests_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(DroppedInterfaceRequestLogger);
@@ -7512,14 +7511,15 @@ void RenderFrameHostImpl::DidCommitNavigation(
     // receiver end of a new InterfaceProvider connection that will be used by
     // the new document to issue interface receivers to access RenderFrameHost
     // services.
-    auto interface_provider_request_of_previous_document =
-        document_scoped_interface_provider_receiver_.Unbind();
-    dropped_interface_request_logger_ =
-        std::make_unique<DroppedInterfaceRequestLogger>(
-            std::move(interface_provider_request_of_previous_document));
+    document_scoped_interface_provider_receiver_.reset();
     BindInterfaceProviderReceiver(
         std::move(interface_params->interface_provider_receiver));
-    broker_receiver_.reset();
+    if (broker_receiver_.is_bound()) {
+      auto broker_receiver_of_previous_document = broker_receiver_.Unbind();
+      dropped_interface_request_logger_ =
+          std::make_unique<DroppedInterfaceRequestLogger>(
+              std::move(broker_receiver_of_previous_document));
+    }
     BindBrowserInterfaceBrokerReceiver(
         std::move(interface_params->browser_interface_broker_receiver));
   } else {

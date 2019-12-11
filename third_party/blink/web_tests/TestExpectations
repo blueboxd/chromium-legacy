@@ -2710,8 +2710,6 @@ crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking
 crbug.com/1029514 external/wpt/html/semantics/embedded-content/the-video-element/resize-during-playback.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Mac10.12 ] virtual/web-components-v0-disabled/external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-mode.html [ Timeout ]
-crbug.com/626703 [ Win7 ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/motion/offset-anchor-transform-box-fill-box-003.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/motion/offset-anchor-transform-box-fill-box-003.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/motion/offset-anchor-transform-box-fill-box-003.html [ Failure ]
@@ -6079,3 +6077,11 @@ crbug.com/963183 http/tests/devtools/security/security-explanation-ordering.js [
 # Temporarily disabled to land DOM breakpoint changes in DevTools
 crbug.com/963183 http/tests/devtools/sources/debugger-breakpoints/dom-breakpoints.js [ Pass Failure ]
 crbug.com/963183 http/tests/devtools/a11y-axe-core/sources/dom-breakpoints-pane-a11y-test.js [ Pass Failure ]
+
+# Temporarily disabled for landing frontend security sidepanel changes in DevTools
+crbug.com/963183 http/tests/devtools/security/interstitial-sidebar.js [ Pass Failure ]
+crbug.com/963183 http/tests/devtools/security/mixed-content-sidebar.js [ Pass Failure ]
+
+# Temporarily disabled for landing frontend source map reporting changes in DevTools
+crbug.com/1030746 http/tests/devtools/sourcemap-section-warning.js [ Pass Failure ]
+crbug.com/1030746 http/tests/devtools/sources/debugger-ui/sourcemap-src-not-loaded.js [ Pass Failure ]

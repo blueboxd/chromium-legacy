@@ -59,7 +59,7 @@ namespace {
 class EmptyMenuMenuItem : public MenuItemView {
  public:
   explicit EmptyMenuMenuItem(MenuItemView* parent)
-      : MenuItemView(parent, 0, EMPTY) {
+      : MenuItemView(parent, 0, Type::kEmpty) {
     // Set this so that we're not identified as a normal menu item.
     SetID(kEmptyMenuItemViewID);
     SetTitle(l10n_util::GetStringUTF16(IDS_APP_MENU_EMPTY_SUBMENU));
@@ -106,7 +106,7 @@ MenuItemView::MenuItemView(MenuDelegate* delegate)
       controller_(nullptr),
       canceled_(false),
       parent_menu_item_(nullptr),
-      type_(SUBMENU),
+      type_(Type::kSubMenu),
       selected_(false),
       command_(0),
       submenu_(nullptr),
@@ -123,7 +123,7 @@ MenuItemView::MenuItemView(MenuDelegate* delegate)
       use_right_margin_(true) {
   // NOTE: don't check the delegate for NULL, UpdateMenuPartSizes() supplies a
   // NULL delegate.
-  Init(nullptr, 0, SUBMENU, delegate);
+  Init(nullptr, 0, Type::kSubMenu, delegate);
 }
 
 void MenuItemView::ChildPreferredSizeChanged(View* child) {
@@ -135,7 +135,7 @@ base::string16 MenuItemView::GetTooltipText(const gfx::Point& p) const {
   if (!tooltip_.empty())
     return tooltip_;
 
-  if (type_ == SEPARATOR)
+  if (type_ == Type::kSeparator)
     return base::string16();
 
   const MenuController* controller = GetMenuController();
@@ -164,10 +164,10 @@ base::string16 MenuItemView::GetTooltipText(const gfx::Point& p) const {
 void MenuItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // Set the role based on the type of menu item.
   switch (type_) {
-    case CHECKBOX:
+    case Type::kCheckbox:
       node_data->role = ax::mojom::Role::kMenuItemCheckBox;
       break;
-    case RADIO:
+    case Type::kRadio:
       node_data->role = ax::mojom::Role::kMenuItemRadio;
       break;
     default:
@@ -190,21 +190,21 @@ void MenuItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(GetAccessibleNameForMenuItem(item_text, GetMinorText()));
 
   switch (type_) {
-    case SUBMENU:
-    case ACTIONABLE_SUBMENU:
+    case Type::kSubMenu:
+    case Type::kActionableSubMenu:
       node_data->SetHasPopup(ax::mojom::HasPopup::kMenu);
       break;
-    case CHECKBOX:
-    case RADIO: {
+    case Type::kCheckbox:
+    case Type::kRadio: {
       const bool is_checked = GetDelegate()->IsItemChecked(GetCommand());
       node_data->SetCheckedState(is_checked ? ax::mojom::CheckedState::kTrue
                                             : ax::mojom::CheckedState::kFalse);
     } break;
-    case TITLE:
-    case NORMAL:
-    case SEPARATOR:
-    case EMPTY:
-    case HIGHLIGHTED:
+    case Type::kTitle:
+    case Type::kNormal:
+    case Type::kSeparator:
+    case Type::kEmpty:
+    case Type::kHighlighted:
       // No additional accessibility states currently for these menu states.
       break;
   }
@@ -284,12 +284,12 @@ MenuItemView* MenuItemView::AddMenuItemAt(
     const gfx::VectorIcon* vector_icon,
     Type type,
     ui::MenuSeparatorType separator_style) {
-  DCHECK_NE(type, EMPTY);
+  DCHECK_NE(type, Type::kEmpty);
   DCHECK_GE(index, 0);
   if (!submenu_)
     CreateSubmenu();
   DCHECK_LE(size_t{index}, submenu_->children().size());
-  if (type == SEPARATOR) {
+  if (type == Type::kSeparator) {
     submenu_->AddChildViewAt(new MenuSeparator(separator_style), index);
     return nullptr;
   }
@@ -306,9 +306,9 @@ MenuItemView* MenuItemView::AddMenuItemAt(
   }
   if (!icon.isNull())
     item->SetIcon(icon);
-  if (type == SUBMENU || type == ACTIONABLE_SUBMENU)
+  if (type == Type::kSubMenu || type == Type::kActionableSubMenu)
     item->CreateSubmenu();
-  if (type == HIGHLIGHTED) {
+  if (type == Type::kHighlighted) {
     const MenuConfig& config = MenuConfig::instance();
     item->SetMargins(config.footnote_vertical_margin,
                      config.footnote_vertical_margin);
@@ -339,24 +339,24 @@ void MenuItemView::RemoveAllMenuItems() {
 MenuItemView* MenuItemView::AppendMenuItem(int item_id,
                                            const base::string16& label,
                                            const gfx::ImageSkia& icon) {
-  return AppendMenuItemImpl(item_id, label, icon, NORMAL);
+  return AppendMenuItemImpl(item_id, label, icon, Type::kNormal);
 }
 
 MenuItemView* MenuItemView::AppendSubMenu(int item_id,
                                           const base::string16& label,
                                           const gfx::ImageSkia& icon) {
-  return AppendMenuItemImpl(item_id, label, icon, SUBMENU);
+  return AppendMenuItemImpl(item_id, label, icon, Type::kSubMenu);
 }
 
 void MenuItemView::AppendSeparator() {
-  AppendMenuItemImpl(0, base::string16(), gfx::ImageSkia(), SEPARATOR);
+  AppendMenuItemImpl(0, base::string16(), gfx::ImageSkia(), Type::kSeparator);
 }
 
 void MenuItemView::AddSeparatorAt(int index) {
   AddMenuItemAt(index, /*item_id=*/0, /*label=*/base::string16(),
                 /*minor_text=*/base::string16(), /*minor_icon=*/nullptr,
                 /*icon=*/gfx::ImageSkia(), /*vector_icon=*/nullptr,
-                /*type=*/SEPARATOR,
+                /*type=*/Type::kSeparator,
                 /*separator_style=*/ui::NORMAL_SEPARATOR);
 }
 
@@ -415,7 +415,7 @@ void MenuItemView::SetSelected(bool selected) {
 
 void MenuItemView::SetSelectionOfActionableSubmenu(
     bool submenu_area_of_actionable_submenu_selected) {
-  DCHECK_EQ(ACTIONABLE_SUBMENU, type_);
+  DCHECK_EQ(Type::kActionableSubMenu, type_);
   if (submenu_area_of_actionable_submenu_selected_ ==
       submenu_area_of_actionable_submenu_selected) {
     return;
@@ -516,7 +516,7 @@ void MenuItemView::OnThemeChanged() {
 }
 
 gfx::Rect MenuItemView::GetSubmenuAreaOfActionableSubmenu() const {
-  DCHECK_EQ(ACTIONABLE_SUBMENU, type_);
+  DCHECK_EQ(Type::kActionableSubMenu, type_);
   const MenuConfig& config = MenuConfig::instance();
   return gfx::Rect(gfx::Point(vertical_separator_->bounds().right(), 0),
                    gfx::Size(config.actionable_submenu_width, height()));
@@ -659,7 +659,8 @@ void MenuItemView::Layout() {
       gfx::Size size = icon_view_->GetPreferredSize();
       int x = config.item_horizontal_padding + left_icon_margin_ +
               (icon_area_width_ - size.width()) / 2;
-      if (config.icons_in_label || type_ == CHECKBOX || type_ == RADIO)
+      if (config.icons_in_label || type_ == Type::kCheckbox ||
+          type_ == Type::kRadio)
         x = label_start_;
       if (GetMenuController() && GetMenuController()->use_touchable_layout())
         x = config.touchable_item_horizontal_padding;
@@ -680,7 +681,7 @@ void MenuItemView::Layout() {
 
     if (submenu_arrow_image_view_) {
       int x = width() - config.arrow_width -
-              (type_ == ACTIONABLE_SUBMENU
+              (type_ == Type::kActionableSubMenu
                    ? config.actionable_submenu_arrow_to_edge_padding
                    : config.arrow_to_edge_padding);
       int y =
@@ -714,7 +715,7 @@ void MenuItemView::SetForcedVisualSelection(bool selected) {
 }
 
 void MenuItemView::SetCornerRadius(int radius) {
-  DCHECK_EQ(HIGHLIGHTED, type_);
+  DCHECK_EQ(Type::kHighlighted, type_);
   corner_radius_ = radius;
   invalidate_dimensions();  // Triggers preferred size recalculation.
 }
@@ -816,17 +817,17 @@ void MenuItemView::Init(MenuItemView* parent,
   SetID(kMenuItemViewID);
   has_icons_ = false;
 
-  if (type_ == CHECKBOX || type_ == RADIO) {
+  if (type_ == Type::kCheckbox || type_ == Type::kRadio) {
     radio_check_image_view_ = new ImageView();
     bool show_check_radio_icon =
-        type_ == RADIO ||
-        (type_ == CHECKBOX && GetDelegate()->IsItemChecked(GetCommand()));
+        type_ == Type::kRadio || (type_ == Type::kCheckbox &&
+                                  GetDelegate()->IsItemChecked(GetCommand()));
     radio_check_image_view_->SetVisible(show_check_radio_icon);
     radio_check_image_view_->set_can_process_events_within_subtree(false);
     AddChildView(radio_check_image_view_);
   }
 
-  if (type_ == ACTIONABLE_SUBMENU) {
+  if (type_ == Type::kActionableSubMenu) {
     vertical_separator_ = new Separator();
     vertical_separator_->SetVisible(true);
     vertical_separator_->SetFocusBehavior(FocusBehavior::NEVER);
@@ -844,9 +845,9 @@ void MenuItemView::Init(MenuItemView* parent,
     submenu_arrow_image_view_->SetVisible(HasSubmenu());
 
   // Don't request enabled status from the root menu item as it is just
-  // a container for real items.  EMPTY items will be disabled.
+  // a container for real items. kEmpty items will be disabled.
   MenuDelegate* root_delegate = GetDelegate();
-  if (parent && type != EMPTY && root_delegate)
+  if (parent && type != Type::kEmpty && root_delegate)
     SetEnabled(root_delegate->IsCommandEnabled(command));
 }
 
@@ -966,9 +967,9 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   SkColor icon_color = color_utils::DeriveDefaultIconColor(style.foreground);
 
   // Render the check.
-  if (type_ == CHECKBOX && delegate->IsItemChecked(GetCommand())) {
+  if (type_ == Type::kCheckbox && delegate->IsItemChecked(GetCommand())) {
     radio_check_image_view_->SetImage(GetMenuCheckImage(icon_color));
-  } else if (type_ == RADIO) {
+  } else if (type_ == Type::kRadio) {
     const bool toggled = delegate->IsItemChecked(GetCommand());
     const gfx::VectorIcon& radio_icon =
         toggled ? kMenuRadioSelectedIcon : kMenuRadioEmptyIcon;
@@ -1004,10 +1005,10 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
 void MenuItemView::PaintBackground(gfx::Canvas* canvas,
                                    PaintButtonMode mode,
                                    bool render_selection) {
-  if (type_ == HIGHLIGHTED || is_alerted_) {
+  if (type_ == Type::kHighlighted || is_alerted_) {
     SkColor color = gfx::kPlaceholderColor;
 
-    if (type_ == HIGHLIGHTED) {
+    if (type_ == Type::kHighlighted) {
       const ui::NativeTheme::ColorId color_id =
           render_selection
               ? ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor
@@ -1036,7 +1037,7 @@ void MenuItemView::PaintBackground(gfx::Canvas* canvas,
     canvas->DrawRoundRect(spilling_rect, corner_radius_, flags);
   } else if (render_selection) {
     gfx::Rect item_bounds = GetLocalBounds();
-    if (type_ == ACTIONABLE_SUBMENU) {
+    if (type_ == Type::kActionableSubMenu) {
       if (submenu_area_of_actionable_submenu_selected_) {
         item_bounds = GetSubmenuAreaOfActionableSubmenu();
       } else {
@@ -1107,9 +1108,9 @@ SkColor MenuItemView::GetTextColor(bool minor, bool render_selection) const {
           : style::CONTEXT_MENU;
 
   style::TextStyle text_style = style::STYLE_PRIMARY;
-  if (type_ == Type::TITLE)
+  if (type_ == Type::kTitle)
     text_style = style::STYLE_PRIMARY;
-  else if (type_ == HIGHLIGHTED)
+  else if (type_ == Type::kHighlighted)
     text_style = style::STYLE_HIGHLIGHTED;
   else if (!GetEnabled())
     text_style = style::STYLE_DISABLED;
@@ -1268,8 +1269,8 @@ void MenuItemView::ApplyMinimumDimensions(MenuItemDimensions* dims) const {
 
   // TODO(nicolaso): PaintBackground() doesn't cover the whole area in footnotes
   // when minimum height is set too high. For now, just ignore minimum height
-  // for HIGHLIGHTED elements.
-  if (type_ == HIGHLIGHTED)
+  // for kHighlighted elements.
+  if (type_ == Type::kHighlighted)
     return;
 
   int used =
@@ -1293,7 +1294,8 @@ int MenuItemView::GetLabelStartForThisItem() const {
   }
 
   int label_start = label_start_ + left_icon_margin_ + right_icon_margin_;
-  if ((config.icons_in_label || type_ == CHECKBOX || type_ == RADIO) &&
+  if ((config.icons_in_label || type_ == Type::kCheckbox ||
+       type_ == Type::kRadio) &&
       icon_view_) {
     label_start += icon_view_->size().width() + config.item_horizontal_padding;
   }
@@ -1351,7 +1353,7 @@ int MenuItemView::GetMaxIconViewWidth() const {
 
   std::vector<int> widths(menu_items.size());
   const auto get_width = [](MenuItemView* item) {
-    if (item->type_ == CHECKBOX || item->type_ == RADIO) {
+    if (item->type_ == Type::kCheckbox || item->type_ == Type::kRadio) {
       // If this item has a radio or checkbox, the icon will not affect
       // alignment of other items.
       return 0;
@@ -1368,7 +1370,7 @@ int MenuItemView::GetMaxIconViewWidth() const {
 }
 
 bool MenuItemView::HasChecksOrRadioButtons() const {
-  if (type_ == CHECKBOX || type_ == RADIO)
+  if (type_ == Type::kCheckbox || type_ == Type::kRadio)
     return true;
   if (!HasSubmenu())
     return false;

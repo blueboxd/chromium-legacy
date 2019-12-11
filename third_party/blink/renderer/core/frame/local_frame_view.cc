@@ -1113,7 +1113,7 @@ void LocalFrameView::AddPartToUpdate(LayoutEmbeddedObject& object) {
   Node* node = object.GetNode();
   DCHECK(node);
   if (IsA<HTMLObjectElement>(*node) || IsA<HTMLEmbedElement>(*node))
-    To<HTMLPlugInElement>(node)->SetNeedsPluginUpdate(true);
+    ToHTMLPlugInElement(node)->SetNeedsPluginUpdate(true);
 
   part_update_set_.insert(&object);
 }
@@ -1751,7 +1751,7 @@ bool LocalFrameView::UpdatePlugins() {
 
   for (const auto& embedded_object : objects) {
     LayoutEmbeddedObject& object = *embedded_object;
-    auto* element = To<HTMLPlugInElement>(object.GetNode());
+    HTMLPlugInElement* element = ToHTMLPlugInElement(object.GetNode());
 
     // The object may have already been destroyed (thus node cleared),
     // but LocalFrameView holds a manual ref, so it won't have been deleted.

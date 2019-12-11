@@ -19,14 +19,6 @@ class ServiceWorkerGlobalScope;
 class ServiceWorkerScriptCachedMetadataHandler
     : public SingleCachedMetadataHandler {
  public:
-  static ServiceWorkerScriptCachedMetadataHandler* Create(
-      ServiceWorkerGlobalScope* global_scope,
-      const KURL& script_url,
-      std::unique_ptr<Vector<uint8_t>> meta_data) {
-    return MakeGarbageCollected<ServiceWorkerScriptCachedMetadataHandler>(
-        global_scope, script_url, std::move(meta_data));
-  }
-
   ServiceWorkerScriptCachedMetadataHandler(
       ServiceWorkerGlobalScope*,
       const KURL& script_url,

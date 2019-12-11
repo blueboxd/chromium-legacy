@@ -138,9 +138,8 @@ class MODULES_EXPORT RTCPeerConnectionHandler
   webrtc::RTCErrorType SetConfiguration(
       const webrtc::PeerConnectionInterface::RTCConfiguration& configuration)
       override;
-  void AddICECandidate(
-      blink::RTCVoidRequest* request,
-      scoped_refptr<RTCIceCandidatePlatform> candidate) override;
+  void AddICECandidate(blink::RTCVoidRequest* request,
+                       RTCIceCandidatePlatform* candidate) override;
   void RestartIce() override;
 
   void GetStats(RTCStatsRequest* request) override;

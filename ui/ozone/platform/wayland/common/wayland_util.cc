@@ -155,4 +155,9 @@ gfx::Rect TranslateBoundsToTopLevelCoordinates(const gfx::Rect& child_bounds,
       child_bounds.size());
 }
 
+bool IsMenuType(ui::PlatformWindowType type) {
+  return type == ui::PlatformWindowType::kMenu ||
+         type == ui::PlatformWindowType::kPopup;
+}
+
 }  // namespace wl

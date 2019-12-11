@@ -40,6 +40,10 @@ import("//testing/test.gni")
 # we would still need the variant with no strings for when chrome.dll replaces
 # all strings with its own versions.
 static_library("with_no_strings") {
+  public_deps = [
+    ":constants",
+  ]
+
   deps = [
     "//base",
     "//chrome:strings",
@@ -83,6 +87,8 @@ static_library("with_no_strings") {
       "shell_util.cc",
       "shell_util.h",
     ]
+
+    public_deps += [ ":did_run_support" ]
 
     deps += [
       # Need to depend on the generated strings target since files here
@@ -150,8 +156,6 @@ static_library("with_no_strings") {
       "duplicate_tree_detector.h",
       "firewall_manager_win.cc",
       "firewall_manager_win.h",
-      "google_update_constants.cc",
-      "google_update_constants.h",
       "google_update_settings.cc",
       "google_update_settings.h",
       "google_update_util.cc",
@@ -164,8 +168,6 @@ static_library("with_no_strings") {
       "installation_state.h",
       "l10n_string_util.cc",
       "l10n_string_util.h",
-      "master_preferences_constants.cc",
-      "master_preferences_constants.h",
       "move_tree_work_item.cc",
       "move_tree_work_item.h",
       "registry_key_backup.cc",
@@ -174,8 +176,6 @@ static_library("with_no_strings") {
       "self_reg_work_item.h",
       "set_reg_value_work_item.cc",
       "set_reg_value_work_item.h",
-      "util_constants.cc",
-      "util_constants.h",
       "work_item.cc",
       "work_item.h",
       "work_item_list.cc",
@@ -185,8 +185,6 @@ static_library("with_no_strings") {
     sources = [
       "master_preferences.cc",
       "master_preferences.h",
-      "master_preferences_constants.cc",
-      "master_preferences_constants.h",
     ]
   }
 }
@@ -237,7 +235,49 @@ source_set("strings") {
   ]
 }
 
+source_set("constants") {
+  public = [
+    "master_preferences_constants.h",
+  ]
+
+  sources = [
+    "master_preferences_constants.cc",
+  ]
+
+  if (is_win) {
+    public += [
+      "google_update_constants.h",
+      "util_constants.h",
+    ]
+
+    sources += [
+      "google_update_constants.cc",
+      "util_constants.cc",
+    ]
+
+    public_deps = [
+      "//base",
+    ]
+  }
+}
+
 if (is_win) {
+  source_set("did_run_support") {
+    public = [
+      "update_did_run_state.h",
+    ]
+
+    sources = [
+      "update_did_run_state.cc",
+    ]
+
+    deps = [
+      ":constants",
+      "//base",
+      "//chrome/install_static:install_static_util",
+    ]
+  }
+
   source_set("test_support") {
     testonly = true
     sources = [

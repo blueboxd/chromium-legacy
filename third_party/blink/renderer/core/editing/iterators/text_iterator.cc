@@ -374,7 +374,7 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
                      (layout_object->IsImage() ||
                       layout_object->IsLayoutEmbeddedContent() ||
                       (html_element &&
-                       (IsA<HTMLFormControlElement>(html_element) ||
+                       (IsHTMLFormControlElement(html_element) ||
                         IsA<HTMLLegendElement>(html_element) ||
                         IsA<HTMLImageElement>(html_element) ||
                         IsA<HTMLMeterElement>(html_element) ||

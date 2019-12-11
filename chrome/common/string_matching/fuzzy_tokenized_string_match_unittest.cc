@@ -280,4 +280,17 @@ TEST_F(FuzzyTokenizedStringMatchTest, OtherParamTest) {
   EXPECT_NEAR(match.relevance(), 0.33 / 2, 0.01);
 }
 
+TEST_F(FuzzyTokenizedStringMatchTest, ExactTextMatchTest) {
+  FuzzyTokenizedStringMatch match;
+  base::string16 query(base::UTF8ToUTF16("yat"));
+  base::string16 text(base::UTF8ToUTF16("YaT"));
+  EXPECT_TRUE(match.IsRelevant(TokenizedString(query), TokenizedString(text),
+                               0.35, false, false, true,
+                               kPartialMatchPenaltyRate));
+  EXPECT_DOUBLE_EQ(match.relevance(), 1.0);
+  EXPECT_EQ(match.hits().size(), 1u);
+  EXPECT_EQ(match.hits()[0].start(), 0u);
+  EXPECT_EQ(match.hits()[0].end(), 3u);
+}
+
 }  // namespace

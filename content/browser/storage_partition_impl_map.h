@@ -60,7 +60,7 @@ class CONTENT_EXPORT StoragePartitionImplMap
       std::unique_ptr<std::unordered_set<base::FilePath>> active_paths,
       base::OnceClosure done);
 
-  void ForEach(const BrowserContext::StoragePartitionCallback& callback);
+  void ForEach(BrowserContext::StoragePartitionCallback callback);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(StoragePartitionConfigTest, OperatorLess);

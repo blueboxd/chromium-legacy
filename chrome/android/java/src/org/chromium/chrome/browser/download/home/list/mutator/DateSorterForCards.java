@@ -9,9 +9,9 @@ import org.chromium.chrome.browser.download.home.list.ListUtils;
 import org.chromium.chrome.browser.download.home.list.UiUtils;
 import org.chromium.components.offline_items_collection.OfflineItem;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -19,17 +19,29 @@ import java.util.Map;
  * items grouped in a card, the timestamp of the most recent item will be used for comparison
  * purposes. Note, the input list must contain only offline items.
  */
-public class DateSorterForCards implements DateOrderedListMutator.Sorter {
+public class DateSorterForCards implements ListConsumer {
+    private ListConsumer mListConsumer;
     private Map<String, Long> mTimestampForCard = new HashMap<>();
 
     @Override
-    public ArrayList<ListItem> sort(ArrayList<ListItem> inputList) {
+    public ListConsumer setListConsumer(ListConsumer consumer) {
+        mListConsumer = consumer;
+        return mListConsumer;
+    }
+
+    @Override
+    public void onListUpdated(List<ListItem> inputList) {
+        if (mListConsumer == null) return;
+        mListConsumer.onListUpdated(sort(inputList));
+    }
+
+    private List<ListItem> sort(List<ListItem> inputList) {
         setTimestampForCards(inputList);
         Collections.sort(inputList, this::compare);
         return inputList;
     }
 
-    public int compare(ListItem listItem1, ListItem listItem2) {
+    private int compare(ListItem listItem1, ListItem listItem2) {
         OfflineItem lhs = ((ListItem.OfflineItemListItem) listItem1).item;
         OfflineItem rhs = ((ListItem.OfflineItemListItem) listItem2).item;
 
@@ -45,7 +57,7 @@ public class DateSorterForCards implements DateOrderedListMutator.Sorter {
         return ListUtils.compareItemByID(lhs, rhs);
     }
 
-    private void setTimestampForCards(ArrayList<ListItem> inputList) {
+    private void setTimestampForCards(List<ListItem> inputList) {
         mTimestampForCard.clear();
 
         // For items having same domain, use the timestamp of the most recent item for comparison.

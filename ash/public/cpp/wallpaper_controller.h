@@ -251,8 +251,8 @@ class ASH_PUBLIC_EXPORT WallpaperController {
   // Returns the wallpaper prominent colors.
   virtual const std::vector<SkColor>& GetWallpaperColors() = 0;
 
-  // Returns whether the current wallpaper is blurred.
-  virtual bool IsWallpaperBlurred() = 0;
+  // Returns whether the current wallpaper is blurred on lock/login screen.
+  virtual bool IsWallpaperBlurredForLockState() const = 0;
 
   // Returns true if the wallpaper of the currently active user (if any) is
   // controlled by policy (excluding device policy). If there's no active user,

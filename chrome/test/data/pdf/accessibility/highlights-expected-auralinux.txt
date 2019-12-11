@@ -1,0 +1,12 @@
+[embedded component]
+++[document frame] name='PDF document containing 1 page'
+++++[landmark] name='Page 1'
+++++++[paragraph]
+++++++++[static] name='Hello'
+++++++++++[static] name='Hello'
+++++++++[static] name=', nice '
+++++++++[static] name='meeting'
+++++++++++[static] name='meeting'
+++++++++[static] name=' y'
+++++++++++[static] name=' y'
+++++++++[static] name='ou'

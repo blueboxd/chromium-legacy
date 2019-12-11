@@ -1,21 +1,10 @@
-<link rel="import" href="chrome://resources/html/polymer.html">
+<style>
+  add-smb-share-dialog::part(dialog) {
+    border-radius: 0;
+    height: 100%;
+    width: 100%;
+  }
+</style>
 
-<link rel="import" href="chrome://resources/cr_components/chromeos/smb_shares/add_smb_share_dialog.html">
-<link rel="import" href="chrome://resources/html/load_time_data.html">
-<link rel="import" href="chrome://resources/html/i18n_behavior.html">
-
-<dom-module id="smb-share-dialog">
-  <template>
-    <style>
-      add-smb-share-dialog::part(dialog) {
-        border-radius: 0;
-        height: 100%;
-        width: 100%;
-      }
-    </style>
-
-    <add-smb-share-dialog on-close="onDialogClose_">
-    </add-smb-share-dialog>
-  </template>
-  <script src="smb_share_dialog.js"></script>
-</dom-module>
+<add-smb-share-dialog on-close="onDialogClose_">
+</add-smb-share-dialog>

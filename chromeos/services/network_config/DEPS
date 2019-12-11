@@ -3,3 +3,9 @@ include_rules = [
   "+components/proxy_config",
   "+components/user_manager",
 ]
+
+specific_include_rules = {
+ "cros_network_config_unittest.cc": [
+    "+components/sync_preferences/testing_pref_service_syncable.h"
+  ],
+}

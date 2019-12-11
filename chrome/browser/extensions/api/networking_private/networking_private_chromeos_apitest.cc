@@ -39,12 +39,18 @@
 #include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/onc/onc_constants.h"
+#include "components/onc/onc_pref_names.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
+#include "components/prefs/testing_pref_service.h"
+#include "components/proxy_config/pref_proxy_config_tracker_impl.h"
+#include "components/proxy_config/proxy_config_dictionary.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
@@ -465,6 +471,13 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
         base::Value("third_party_provider_extension_id"));
     profile_test_->AddService(kUser1ProfilePath, "stub_vpn2");
 
+    PrefProxyConfigTrackerImpl::RegisterProfilePrefs(user_prefs_.registry());
+    PrefProxyConfigTrackerImpl::RegisterPrefs(local_state_.registry());
+    ::onc::RegisterProfilePrefs(user_prefs_.registry());
+    ::onc::RegisterPrefs(local_state_.registry());
+
+    chromeos::NetworkHandler::Get()->InitializePrefServices(&user_prefs_,
+                                                            &local_state_);
     content::RunAllPendingInMessageLoop();
   }
 
@@ -487,6 +500,8 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
   ShillServiceClient::TestInterface* service_test_;
   ShillDeviceClient::TestInterface* device_test_;
   policy::MockConfigurationPolicyProvider provider_;
+  sync_preferences::TestingPrefServiceSyncable user_prefs_;
+  TestingPrefServiceSimple local_state_;
   std::string userhash_;
 
  private:
@@ -721,6 +736,9 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetManagedProperties) {
           { "GUID": "stub_wifi2",
             "Type": "WiFi",
             "Name": "My WiFi Network",
+            "ProxySettings":{
+                "Type": "Direct"
+            },
             "WiFi": {
               "HexSSID": "77696669325F50534B",
               "Passphrase": "passphrase",

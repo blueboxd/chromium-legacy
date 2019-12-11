@@ -37,9 +37,6 @@ namespace {
 
 using ::testing::Invoke;
 
-using StrictMockTask =
-    testing::StrictMock<base::MockCallback<base::Callback<void()>>>;
-
 class SequenceManagerThreadDelegate : public base::Thread::Delegate {
  public:
   SequenceManagerThreadDelegate() {
@@ -167,11 +164,11 @@ class UIThreadDestructionObserver
     : public base::MessageLoopCurrent::DestructionObserver {
  public:
   explicit UIThreadDestructionObserver(bool* did_shutdown,
-                                       const base::Closure& callback)
+                                       base::OnceClosure callback)
       : callback_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-        callback_(callback),
         ui_task_runner_(
             base::CreateSingleThreadTaskRunner({BrowserThread::UI})),
+        callback_(std::move(callback)),
         did_shutdown_(did_shutdown) {
     ui_task_runner_->PostTask(FROM_HERE, base::BindOnce(&Watch, this));
   }
@@ -191,12 +188,12 @@ class UIThreadDestructionObserver
 
     base::MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
     *did_shutdown_ = true;
-    callback_task_runner_->PostTask(FROM_HERE, callback_);
+    callback_task_runner_->PostTask(FROM_HERE, std::move(callback_));
   }
 
   const scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner_;
-  const base::Closure callback_;
   const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+  base::OnceClosure callback_;
   bool* did_shutdown_;
 };
 
@@ -339,8 +336,8 @@ class BrowserThreadWithCustomSchedulerTest : public testing::Test {
 };
 
 TEST_F(BrowserThreadWithCustomSchedulerTest, PostBestEffortTask) {
-  StrictMockTask best_effort_task;
-  StrictMockTask regular_task;
+  base::MockOnceClosure best_effort_task;
+  base::MockOnceClosure regular_task;
 
   auto task_runner =
       base::CreateTaskRunner({BrowserThread::UI, base::TaskPriority::HIGHEST});
@@ -349,7 +346,8 @@ TEST_F(BrowserThreadWithCustomSchedulerTest, PostBestEffortTask) {
   BrowserThread::PostBestEffortTask(FROM_HERE, task_runner,
                                     best_effort_task.Get());
 
-  EXPECT_CALL(regular_task, Run);
+  EXPECT_CALL(regular_task, Run).Times(1);
+  EXPECT_CALL(best_effort_task, Run).Times(0);
   task_environment_.RunUntilIdle();
 
   testing::Mock::VerifyAndClearExpectations(&regular_task);

@@ -16,16 +16,29 @@ import java.util.List;
  * being set are:
  * - Image item span width.
  */
-public class ListItemPropertySetter {
+public class ListItemPropertySetter implements ListConsumer {
     private final DownloadManagerUiConfig mConfig;
+    private ListConsumer mListConsumer;
 
     /** Constructor. */
     public ListItemPropertySetter(DownloadManagerUiConfig config) {
         mConfig = config;
     }
 
+    @Override
+    public void onListUpdated(List<ListItem> inputList) {
+        setProperties(inputList);
+        mListConsumer.onListUpdated(inputList);
+    }
+
+    @Override
+    public ListConsumer setListConsumer(ListConsumer nextConsumer) {
+        mListConsumer = nextConsumer;
+        return mListConsumer;
+    }
+
     /** Sets properties for items in the given list. */
-    public void setProperties(List<ListItem> sortedList) {
+    private void setProperties(List<ListItem> sortedList) {
         setWidthForImageItems(sortedList);
     }
 

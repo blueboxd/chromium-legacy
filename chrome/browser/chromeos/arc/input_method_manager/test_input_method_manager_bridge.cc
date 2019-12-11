@@ -24,7 +24,7 @@ void TestInputMethodManagerBridge::SendSwitchImeTo(
 }
 
 void TestInputMethodManagerBridge::SendFocus(
-    mojom::InputConnectionPtr connection,
+    mojo::PendingRemote<mojom::InputConnection> connection,
     mojom::TextInputStatePtr state) {
   ++focus_calls_count_;
 }

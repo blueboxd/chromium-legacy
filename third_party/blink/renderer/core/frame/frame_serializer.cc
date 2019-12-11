@@ -238,7 +238,7 @@ void SerializerMarkupAccumulator::AppendAttribute(const Element& element,
                                                   const Attribute& attribute) {
   // Check if link rewriting can affect the attribute.
   bool is_link_attribute = element.HasLegalLinkAttribute(attribute.GetName());
-  bool is_src_doc_attribute = IsA<HTMLFrameElementBase>(element) &&
+  bool is_src_doc_attribute = IsHTMLFrameElementBase(element) &&
                               attribute.GetName() == html_names::kSrcdocAttr;
   if (is_link_attribute || is_src_doc_attribute) {
     // Check if the delegate wants to do link rewriting for the element.
@@ -413,7 +413,8 @@ void FrameSerializer::AddResourceForElement(Document& document,
   } else if (const auto* style = DynamicTo<HTMLStyleElement>(element)) {
     if (CSSStyleSheet* sheet = style->sheet())
       SerializeCSSStyleSheet(*sheet, NullURL());
-  } else if (const auto* plugin = DynamicTo<HTMLPlugInElement>(&element)) {
+  } else if (IsHTMLPlugInElement(element)) {
+    const auto* plugin = ToHTMLPlugInElement(&element);
     if (plugin->IsImageType() && plugin->ImageLoader()) {
       KURL image_url = document.CompleteURL(plugin->Url());
       ImageResourceContent* cached_image = plugin->ImageLoader()->GetContent();

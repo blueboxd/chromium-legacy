@@ -16,7 +16,7 @@ namespace {
 class DataView final : public ArrayBufferView {
  public:
   static scoped_refptr<DataView> Create(ArrayBuffer* buffer,
-                                        unsigned byte_offset,
+                                        size_t byte_offset,
                                         size_t byte_length) {
     base::CheckedNumeric<uint32_t> checked_max = byte_offset;
     checked_max += byte_length;
@@ -35,7 +35,7 @@ class DataView final : public ArrayBufferView {
   }
 
  private:
-  DataView(ArrayBuffer* buffer, unsigned byte_offset, size_t byte_length)
+  DataView(ArrayBuffer* buffer, size_t byte_offset, size_t byte_length)
       : ArrayBufferView(buffer, byte_offset), byte_length_(byte_length) {}
 
   size_t byte_length_;
@@ -44,8 +44,8 @@ class DataView final : public ArrayBufferView {
 }  // anonymous namespace
 
 DOMDataView* DOMDataView::Create(DOMArrayBufferBase* buffer,
-                                 unsigned byte_offset,
-                                 unsigned byte_length) {
+                                 size_t byte_offset,
+                                 size_t byte_length) {
   scoped_refptr<DataView> data_view =
       DataView::Create(buffer->Buffer(), byte_offset, byte_length);
   return MakeGarbageCollected<DOMDataView>(data_view, buffer);

@@ -1704,8 +1704,6 @@ jumbo_static_library("browser") {
     "ssl/bad_clock_blocking_page.h",
     "ssl/blocked_interception_blocking_page.cc",
     "ssl/blocked_interception_blocking_page.h",
-    "ssl/captive_portal_blocking_page.cc",
-    "ssl/captive_portal_blocking_page.h",
     "ssl/captive_portal_helper.h",
     "ssl/captive_portal_helper_android.cc",
     "ssl/captive_portal_helper_android.h",

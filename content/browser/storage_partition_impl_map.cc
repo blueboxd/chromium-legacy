@@ -430,7 +430,7 @@ void StoragePartitionImplMap::GarbageCollect(
 }
 
 void StoragePartitionImplMap::ForEach(
-    const BrowserContext::StoragePartitionCallback& callback) {
+    BrowserContext::StoragePartitionCallback callback) {
   for (PartitionMap::const_iterator it = partitions_.begin();
        it != partitions_.end();
        ++it) {

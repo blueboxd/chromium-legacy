@@ -43,9 +43,6 @@ GURL URLEscapedForHistory(const GURL& url) {
 
 @property(nonatomic, weak) id<CRWJSNavigationHandlerDelegate> delegate;
 
-// Sets to YES when |close| is called.
-@property(nonatomic, assign) BOOL beingDestroyed;
-
 // Returns WebStateImpl from self.delegate.
 @property(nonatomic, readonly, assign) web::WebStateImpl* webStateImpl;
 // Returns NavigationManagerImpl from self.webStateImpl.
@@ -97,14 +94,10 @@ GURL URLEscapedForHistory(const GURL& url) {
   return self;
 }
 
-- (void)close {
-  self.beingDestroyed = YES;
-}
-
 #pragma mark - Private
 
 - (web::WebStateImpl*)webStateImpl {
-  return [self.delegate webStateImplForJSNavigationHandler:self];
+  return [self.delegate webStateImplForWebViewHandler:self];
 }
 
 - (web::NavigationManagerImpl*)navigationManagerImpl {
@@ -112,11 +105,11 @@ GURL URLEscapedForHistory(const GURL& url) {
 }
 
 - (web::UserInteractionState*)userInteractionState {
-  return [self.delegate userInteractionStateForJSNavigationHandler:self];
+  return [self.delegate userInteractionStateForWebViewHandler:self];
 }
 
 - (WKWebView*)webView {
-  return [self.delegate webViewForJSNavigationHandler:self];
+  return [self.delegate webViewForWebViewHandler:self];
 }
 
 - (GURL)currentURL {
@@ -204,8 +197,7 @@ GURL URLEscapedForHistory(const GURL& url) {
                   transition:transition
               hasUserGesture:self.userInteractionState->IsUserInteracting(
                                  self.webView)];
-  [self.delegate
-      JSNavigationHandlerUpdateSSLStatusForCurrentNavigationItem:self];
+  [self.delegate webViewHandlerUpdateSSLStatusForCurrentNavigationItem:self];
 }
 
 // Handles the navigation.didReplaceState message sent from |senderFrame|.

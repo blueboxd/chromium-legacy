@@ -112,7 +112,7 @@ TEST_P(HTMLPlugInElementTest, RemovePlugin) {
       String::Format(kDivWithPlugin, container_type, container_type));
 
   auto* plugin =
-      To<HTMLPlugInElement>(GetDocument().getElementById("test_plugin"));
+      ToHTMLPlugInElement(GetDocument().getElementById("test_plugin"));
   ASSERT_TRUE(plugin);
   EXPECT_EQ(container_type, plugin->tagName().LowerASCII());
 

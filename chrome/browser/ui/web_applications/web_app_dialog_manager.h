@@ -18,8 +18,7 @@ class Profile;
 
 namespace web_app {
 
-// An internal WebAppDialogManager's representation of any running dialog.
-class DialogInstance;
+class WebAppUninstallDialog;
 
 class WebAppDialogManager {
  public:
@@ -42,12 +41,13 @@ class WebAppDialogManager {
                        Callback callback);
 
  private:
-  void OnDialogCompleted(DialogInstance* dialog,
-                         Callback callback,
-                         bool success);
+  void OnWebAppUninstallDialogClosed(WebAppUninstallDialog* dialog,
+                                     Callback callback,
+                                     bool uninstalled);
 
   // All owned dialogs, running in parallel.
-  base::flat_set<std::unique_ptr<DialogInstance>, base::UniquePtrComparator>
+  base::flat_set<std::unique_ptr<WebAppUninstallDialog>,
+                 base::UniquePtrComparator>
       dialogs_;
 
   Profile* const profile_;

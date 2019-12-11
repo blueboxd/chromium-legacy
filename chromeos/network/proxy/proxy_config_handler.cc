@@ -45,6 +45,7 @@ std::unique_ptr<ProxyConfigDictionary> GetProxyConfigForNetwork(
     const PrefService* profile_prefs,
     const PrefService* local_state_prefs,
     const NetworkState& network,
+    const NetworkProfileHandler* network_profile_handler,
     ::onc::ONCSource* onc_source) {
   const base::DictionaryValue* network_policy = onc::GetPolicyForNetwork(
       profile_prefs, local_state_prefs, network, onc_source);
@@ -67,8 +68,7 @@ std::unique_ptr<ProxyConfigDictionary> GetProxyConfigForNetwork(
     return nullptr;
 
   const NetworkProfile* profile =
-      NetworkHandler::Get()->network_profile_handler()->GetProfileForPath(
-          network.profile_path());
+      network_profile_handler->GetProfileForPath(network.profile_path());
   if (!profile) {
     VLOG(1) << "Unknown profile_path '" << network.profile_path() << "'.";
     return nullptr;

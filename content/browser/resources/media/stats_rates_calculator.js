@@ -487,15 +487,6 @@ class StatsRatesCalculator {
           bytesReceived: new RateCalculator('bytesReceived', 'timestamp'),
           // TODO(https://crbug.com/webrtc/10569): Add packetsSent and
           // packetsReceived once implemented.
-          requestsSent: new RateCalculator('requestsSent', 'timestamp'),
-          requestsReceived: new RateCalculator('requestsReceived', 'timestamp'),
-          responsesSent: new RateCalculator('responsesSent', 'timestamp'),
-          responsesReceived:
-              new RateCalculator('responsesReceived', 'timestamp'),
-          consentRequestsSent:
-              new RateCalculator('consentRequestsSent', 'timestamp'),
-          consentRequestsReceived:
-              new RateCalculator('consentRequestsReceived', 'timestamp'),
           totalRoundTripTime: new RateCalculator(
               'totalRoundTripTime', 'responsesReceived',
               CalculatorModifier.kMillisecondsFromSeconds),

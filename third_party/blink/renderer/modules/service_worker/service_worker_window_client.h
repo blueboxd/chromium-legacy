@@ -25,9 +25,6 @@ class MODULES_EXPORT ServiceWorkerWindowClient final
   using ResolveWindowClientCallback = base::OnceCallback<
       void(bool, mojom::blink::ServiceWorkerClientInfoPtr, const String&)>;
 
-  static ServiceWorkerWindowClient* Create(
-      const mojom::blink::ServiceWorkerClientInfo&);
-
   static ResolveWindowClientCallback CreateResolveWindowClientCallback(
       ScriptPromiseResolver*);
 

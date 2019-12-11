@@ -553,6 +553,7 @@ extern const char kSelectFileLastDirectory[];
 extern const char kExcludedSchemes[];
 
 extern const char kLastKnownIntranetRedirectOrigin[];
+extern const char kDNSInterceptionChecksEnabled[];
 
 extern const char kShutdownType[];
 extern const char kShutdownNumProcesses[];

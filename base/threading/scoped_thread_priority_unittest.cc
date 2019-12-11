@@ -11,6 +11,17 @@
 
 namespace base {
 
+namespace {
+
+// Tests in this file invoke an API that tracks state in static variable. They
+// can therefore only be invoked once per process.
+#define ASSERT_RUNS_ONCE()                                              \
+  static int num_times_run = 0;                                         \
+  ++num_times_run;                                                      \
+  if (num_times_run > 1)                                                \
+    ADD_FAILURE() << "This test cannot run multiple times in the same " \
+                     "process.";
+
 class ScopedThreadPriorityTest : public testing::Test {
  protected:
   void SetUp() override {
@@ -28,10 +39,21 @@ class ScopedThreadPriorityTest : public testing::Test {
   test::ScopedFeatureList scoped_features_;
 };
 
+#if defined(OS_WIN)
+void FunctionThatBoostsPriorityOnFirstInvoke(ThreadPriority expected_priority) {
+  SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
+  EXPECT_EQ(expected_priority, PlatformThread::GetCurrentThreadPriority());
+}
+#endif  // OS_WIN
+
+}  // namespace
+
 TEST_F(ScopedThreadPriorityTest, WithoutPriorityBoost) {
+  ASSERT_RUNS_ONCE();
+
   // Validates that a thread at normal priority keep the same priority.
   {
-    ScopedThreadMayLoadLibraryOnBackgroundThread priority_boost(FROM_HERE);
+    SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
     EXPECT_EQ(ThreadPriority::NORMAL,
               PlatformThread::GetCurrentThreadPriority());
   }
@@ -40,11 +62,13 @@ TEST_F(ScopedThreadPriorityTest, WithoutPriorityBoost) {
 
 #if defined(OS_WIN)
 TEST_F(ScopedThreadPriorityTest, WithPriorityBoost) {
+  ASSERT_RUNS_ONCE();
+
   // Validates that a thread at background priority is boosted to normal
   // priority.
   PlatformThread::SetCurrentThreadPriority(ThreadPriority::BACKGROUND);
   {
-    ScopedThreadMayLoadLibraryOnBackgroundThread priority_boost(FROM_HERE);
+    SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
     EXPECT_EQ(ThreadPriority::NORMAL,
               PlatformThread::GetCurrentThreadPriority());
   }
@@ -58,15 +82,16 @@ TEST_F(ScopedThreadPriorityTest, WithPriorityBoost) {
 
 #if defined(OS_WIN)
 TEST_F(ScopedThreadPriorityTest, NestedScope) {
+  ASSERT_RUNS_ONCE();
+
   PlatformThread::SetCurrentThreadPriority(ThreadPriority::BACKGROUND);
 
   {
-    ScopedThreadMayLoadLibraryOnBackgroundThread priority_boost(FROM_HERE);
+    SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
     EXPECT_EQ(ThreadPriority::NORMAL,
               PlatformThread::GetCurrentThreadPriority());
     {
-      ScopedThreadMayLoadLibraryOnBackgroundThread nested_priority_boost(
-          FROM_HERE);
+      SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
       EXPECT_EQ(ThreadPriority::NORMAL,
                 PlatformThread::GetCurrentThreadPriority());
     }
@@ -76,6 +101,20 @@ TEST_F(ScopedThreadPriorityTest, NestedScope) {
 
   EXPECT_EQ(ThreadPriority::BACKGROUND,
             PlatformThread::GetCurrentThreadPriority());
+
+  // Put back the default thread priority.
+  PlatformThread::SetCurrentThreadPriority(ThreadPriority::NORMAL);
+}
+#endif  // OS_WIN
+
+#if defined(OS_WIN)
+TEST_F(ScopedThreadPriorityTest, FunctionThatBoostsPriorityOnFirstInvoke) {
+  ASSERT_RUNS_ONCE();
+
+  PlatformThread::SetCurrentThreadPriority(ThreadPriority::BACKGROUND);
+
+  FunctionThatBoostsPriorityOnFirstInvoke(base::ThreadPriority::NORMAL);
+  FunctionThatBoostsPriorityOnFirstInvoke(base::ThreadPriority::BACKGROUND);
 
   // Put back the default thread priority.
   PlatformThread::SetCurrentThreadPriority(ThreadPriority::NORMAL);

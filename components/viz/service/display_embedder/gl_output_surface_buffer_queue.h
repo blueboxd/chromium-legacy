@@ -12,8 +12,10 @@
 #include "base/memory/weak_ptr.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/service/display/output_surface.h"
+#include "components/viz/service/display_embedder/buffer_queue.h"
 #include "components/viz/service/display_embedder/gl_output_surface.h"
 #include "components/viz/service/display_embedder/viz_process_context_provider.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
@@ -26,13 +28,12 @@ class GpuMemoryBufferManager;
 
 namespace viz {
 
-class BufferQueue;
-
 // An OutputSurface implementation that directly draws and swap to a GL
 // "buffer_queue" surface (aka one backed by a buffer managed explicitly in
 // mus/ozone. This class is adapted from
 // GpuBufferQueueBrowserCompositorOutputSurface.
-class GLOutputSurfaceBufferQueue : public GLOutputSurface {
+class GLOutputSurfaceBufferQueue : public GLOutputSurface,
+                                   public BufferQueue::SyncTokenProvider {
  public:
   GLOutputSurfaceBufferQueue(
       scoped_refptr<VizProcessContextProvider> context_provider,
@@ -43,6 +44,9 @@ class GLOutputSurfaceBufferQueue : public GLOutputSurface {
   ~GLOutputSurfaceBufferQueue() override;
 
   // TODO(rjkroege): Implement the equivalent of Reflector.
+
+  // BufferQueue::SyncTokenProvider implementation.
+  gpu::SyncToken GenSyncToken() override;
 
  protected:
   // OutputSurface implementation.
@@ -68,8 +72,12 @@ class GLOutputSurfaceBufferQueue : public GLOutputSurface {
   void DidReceiveSwapBuffersAck(const gfx::SwapResponse& response) override;
 
   std::unique_ptr<BufferQueue> buffer_queue_;
-  unsigned current_texture_;
-  uint32_t fbo_;
+  unsigned current_texture_ = 0u;
+  const unsigned texture_target_;
+  unsigned fbo_ = 0u;
+
+  bool use_stencil_ = false;
+  unsigned stencil_buffer_ = 0u;
 
   gfx::OverlayTransform display_transform_ = gfx::OVERLAY_TRANSFORM_NONE;
   gfx::Size reshape_size_;

@@ -92,10 +92,10 @@ class BookmarkMenuDelegateTest : public BrowserWithTestWindowTest {
 
  private:
   void LoadAllMenus(views::MenuItemView* menu) {
-    EXPECT_EQ(views::MenuItemView::SUBMENU, menu->GetType());
+    EXPECT_EQ(views::MenuItemView::Type::kSubMenu, menu->GetType());
 
     for (views::MenuItemView* item : menu->GetSubmenu()->GetMenuItems()) {
-      if (item->GetType() == views::MenuItemView::SUBMENU) {
+      if (item->GetType() == views::MenuItemView::Type::kSubMenu) {
         bookmark_menu_delegate_->WillShowMenu(item);
         LoadAllMenus(item);
       }

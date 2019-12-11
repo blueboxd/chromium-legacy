@@ -124,7 +124,7 @@ TEST_F(NavigationURLLoaderTest, RequestFailedCertError) {
 
   // Wait for the request to fail as expected.
   delegate.WaitForRequestFailed();
-  ASSERT_EQ(net::ERR_ABORTED, delegate.net_error());
+  ASSERT_EQ(net::ERR_CERT_COMMON_NAME_INVALID, delegate.net_error());
   net::SSLInfo ssl_info = delegate.ssl_info();
   EXPECT_TRUE(ssl_info.is_valid());
   EXPECT_TRUE(
@@ -158,7 +158,7 @@ TEST_F(NavigationURLLoaderTest, RequestFailedCertErrorFatal) {
 
   // Wait for the request to fail as expected.
   delegate.WaitForRequestFailed();
-  ASSERT_EQ(net::ERR_ABORTED, delegate.net_error());
+  ASSERT_EQ(net::ERR_CERT_COMMON_NAME_INVALID, delegate.net_error());
   net::SSLInfo ssl_info = delegate.ssl_info();
   EXPECT_TRUE(ssl_info.is_valid());
   EXPECT_TRUE(

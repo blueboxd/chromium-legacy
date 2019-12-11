@@ -189,7 +189,7 @@ const std::vector<SkColor>& TestWallpaperController::GetWallpaperColors() {
   return kColors;
 }
 
-bool TestWallpaperController::IsWallpaperBlurred() {
+bool TestWallpaperController::IsWallpaperBlurredForLockState() const {
   NOTIMPLEMENTED();
   return false;
 }

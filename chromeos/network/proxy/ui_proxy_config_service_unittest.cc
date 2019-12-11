@@ -132,11 +132,16 @@ class UIProxyConfigServiceTest : public testing::Test {
   }
 
   std::unique_ptr<UIProxyConfigService> CreateServiceOffLocalState() {
-    return std::make_unique<UIProxyConfigService>(nullptr, &local_state_);
+    return std::make_unique<UIProxyConfigService>(
+        nullptr, &local_state_, NetworkHandler::Get()->network_state_handler(),
+        NetworkHandler::Get()->network_profile_handler());
   }
 
   std::unique_ptr<UIProxyConfigService> CreateServiceForUser() {
-    return std::make_unique<UIProxyConfigService>(&user_prefs_, &local_state_);
+    return std::make_unique<UIProxyConfigService>(
+        &user_prefs_, &local_state_,
+        NetworkHandler::Get()->network_state_handler(),
+        NetworkHandler::Get()->network_profile_handler());
   }
 
  protected:

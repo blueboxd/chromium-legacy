@@ -54,10 +54,14 @@ ZeroStateFileProvider::ZeroStateFileProvider(Profile* profile)
       {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
-  // TODO(crbug.com/959679): Add a metric for if this succeeds or fails.
-  if (auto* notifier =
-          file_manager::file_tasks::FileTasksNotifier::GetForProfile(
-              profile_)) {
+  auto* notifier =
+      file_manager::file_tasks::FileTasksNotifier::GetForProfile(profile_);
+
+  UMA_HISTOGRAM_BOOLEAN(
+      "Apps.AppList.ZeroStateFileProvider.NotifierCreationSuccess",
+      notifier != nullptr);
+
+  if (notifier) {
     file_tasks_observer_.Add(notifier);
 
     RecurrenceRankerConfigProto config;

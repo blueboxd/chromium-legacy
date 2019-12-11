@@ -35,7 +35,7 @@ void DidFocus(ScriptPromiseResolver* resolver,
         "The client was not found."));
     return;
   }
-  resolver->Resolve(ServiceWorkerWindowClient::Create(*client));
+  resolver->Resolve(MakeGarbageCollected<ServiceWorkerWindowClient>(*client));
 }
 
 void DidNavigateOrOpenWindow(ScriptPromiseResolver* resolver,
@@ -67,12 +67,6 @@ void DidNavigateOrOpenWindow(ScriptPromiseResolver* resolver,
 
 }  // namespace
 
-ServiceWorkerWindowClient* ServiceWorkerWindowClient::Create(
-    const mojom::blink::ServiceWorkerClientInfo& info) {
-  DCHECK_EQ(mojom::blink::ServiceWorkerClientType::kWindow, info.client_type);
-  return MakeGarbageCollected<ServiceWorkerWindowClient>(info);
-}
-
 // static
 ServiceWorkerWindowClient::ResolveWindowClientCallback
 ServiceWorkerWindowClient::CreateResolveWindowClientCallback(
@@ -84,7 +78,9 @@ ServiceWorkerWindowClient::ServiceWorkerWindowClient(
     const mojom::blink::ServiceWorkerClientInfo& info)
     : ServiceWorkerClient(info),
       page_hidden_(info.page_hidden),
-      is_focused_(info.is_focused) {}
+      is_focused_(info.is_focused) {
+  DCHECK_EQ(mojom::blink::ServiceWorkerClientType::kWindow, info.client_type);
+}
 
 ServiceWorkerWindowClient::~ServiceWorkerWindowClient() = default;
 

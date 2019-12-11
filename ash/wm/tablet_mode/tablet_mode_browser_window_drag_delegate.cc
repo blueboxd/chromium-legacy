@@ -152,13 +152,9 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
     Shell::Get()->home_screen_controller()->OnWindowDragStarted();
 
     // Blurs the wallpaper background.
-    auto* wallpaper_view = RootWindowController::ForWindow(root_window)
-                               ->wallpaper_widget_controller()
-                               ->wallpaper_view();
-    if (wallpaper_view) {
-      wallpaper_view->RepaintBlurAndOpacity(kWallpaperBlurSigma,
-                                            kShieldOpacity);
-    }
+    RootWindowController::ForWindow(root_window)
+        ->wallpaper_widget_controller()
+        ->SetBlurAndOpacity(kWallpaperBlurSigma, kShieldOpacity);
   }
 
   ~WindowsHider() override {
@@ -184,12 +180,9 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
         /*animate=*/false);
 
     // Clears the background wallpaper blur.
-    auto* wallpaper_view =
-        RootWindowController::ForWindow(dragged_window_->GetRootWindow())
-            ->wallpaper_widget_controller()
-            ->wallpaper_view();
-    if (wallpaper_view)
-      wallpaper_view->RepaintBlurAndOpacity(kWallpaperClearBlurSigma, 1.f);
+    RootWindowController::ForWindow(dragged_window_->GetRootWindow())
+        ->wallpaper_widget_controller()
+        ->SetBlurAndOpacity(kWallpaperClearBlurSigma, 1.f);
   }
 
   // aura::WindowObserver:

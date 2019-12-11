@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "components/arc/mojom/input_method_manager.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace arc {
 
@@ -39,7 +40,7 @@ class ArcInputMethodManagerBridge {
                              EnableImeCallback callback) = 0;
   virtual void SendSwitchImeTo(const std::string& ime_id,
                                SwitchImeToCallback callback) = 0;
-  virtual void SendFocus(mojom::InputConnectionPtr connection,
+  virtual void SendFocus(mojo::PendingRemote<mojom::InputConnection> connection,
                          mojom::TextInputStatePtr state) = 0;
   virtual void SendUpdateTextInputState(mojom::TextInputStatePtr state) = 0;
   virtual void SendShowVirtualKeyboard() = 0;

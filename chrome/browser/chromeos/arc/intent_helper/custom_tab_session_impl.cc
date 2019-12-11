@@ -10,22 +10,21 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "content/public/browser/web_contents.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "ui/aura/window.h"
 
 // static
-arc::mojom::CustomTabSessionPtr CustomTabSessionImpl::Create(
+mojo::PendingRemote<arc::mojom::CustomTabSession> CustomTabSessionImpl::Create(
     std::unique_ptr<content::WebContents> web_contents,
     std::unique_ptr<ash::ArcCustomTab> custom_tab) {
   if (!custom_tab)
-    return nullptr;
+    return mojo::NullRemote();
 
   // This object will be deleted when the mojo connection is closed.
   auto* tab =
       new CustomTabSessionImpl(std::move(web_contents), std::move(custom_tab));
-  arc::mojom::CustomTabSessionPtr ptr;
-  tab->Bind(&ptr);
-  return ptr;
+  mojo::PendingRemote<arc::mojom::CustomTabSession> remote;
+  tab->Bind(&remote);
+  return remote;
 }
 
 CustomTabSessionImpl::CustomTabSessionImpl(
@@ -33,7 +32,6 @@ CustomTabSessionImpl::CustomTabSessionImpl(
     std::unique_ptr<ash::ArcCustomTab> custom_tab)
     : ArcCustomTabModalDialogHost(std::move(custom_tab),
                                   std::move(web_contents)),
-      binding_(this),
       weak_ptr_factory_(this) {
   aura::Window* window = web_contents_->GetNativeView();
   custom_tab_->Attach(window);
@@ -70,9 +68,10 @@ void CustomTabSessionImpl::OnOpenInChromeClicked() {
   forwarded_to_normal_tab_ = true;
 }
 
-void CustomTabSessionImpl::Bind(arc::mojom::CustomTabSessionPtr* ptr) {
-  binding_.Bind(mojo::MakeRequest(ptr));
-  binding_.set_connection_error_handler(base::BindOnce(
+void CustomTabSessionImpl::Bind(
+    mojo::PendingRemote<arc::mojom::CustomTabSession>* remote) {
+  receiver_.Bind(remote->InitWithNewPipeAndPassReceiver());
+  receiver_.set_disconnect_handler(base::BindOnce(
       &CustomTabSessionImpl::Close, weak_ptr_factory_.GetWeakPtr()));
 }
 

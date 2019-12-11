@@ -989,15 +989,6 @@ test.util.async.getVolumesCount = callback => {
 };
 
 /**
- * Sets/Resets a flag that causes file copy operations to always fail in test.
- * @param {boolean} enable True to force errors.
- */
-test.util.sync.forceErrorsOnFileOperations = (contentWindow, enable) => {
-  fileOperationUtil.forceErrorForTest = enable;
-  return enable;
-};
-
-/**
  * Updates the preferences.
  * @param {chrome.fileManagerPrivate.PreferencesChange} preferences Preferences
  *     to set.

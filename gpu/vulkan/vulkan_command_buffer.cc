@@ -219,17 +219,20 @@ bool VulkanCommandBuffer::SubmissionFinished() {
   return device_queue_->GetFenceHelper()->HasPassed(submission_fence_);
 }
 
-void VulkanCommandBuffer::TransitionImageLayout(VkImage image,
-                                                VkImageLayout old_layout,
-                                                VkImageLayout new_layout) {
+void VulkanCommandBuffer::TransitionImageLayout(
+    VkImage image,
+    VkImageLayout old_layout,
+    VkImageLayout new_layout,
+    uint32_t src_queue_family_index,
+    uint32_t dst_queue_family_index) {
   VkImageMemoryBarrier barrier = {};
   barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
   barrier.srcAccessMask = GetAccessMask(old_layout);
   barrier.dstAccessMask = GetAccessMask(new_layout);
   barrier.oldLayout = old_layout;
   barrier.newLayout = new_layout;
-  barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-  barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+  barrier.srcQueueFamilyIndex = src_queue_family_index;
+  barrier.dstQueueFamilyIndex = dst_queue_family_index;
   barrier.image = image;
   barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
   barrier.subresourceRange.baseMipLevel = 0;

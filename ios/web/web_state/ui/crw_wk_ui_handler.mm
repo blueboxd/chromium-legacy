@@ -36,16 +36,17 @@
 
 @implementation CRWWKUIHandler
 
-#pragma mark - Public
+#pragma mark - CRWWebViewHandler
 
 - (void)close {
+  [super close];
   _mojoFacade.reset();
 }
 
 #pragma mark - Property
 
 - (web::WebStateImpl*)webStateImpl {
-  return [self.delegate webStateImplForUIHandler:self];
+  return [self.delegate webStateImplForWebViewHandler:self];
 }
 
 - (web::MojoFacade*)mojoFacade {
@@ -72,7 +73,7 @@
       valueForHTTPHeaderField:web::wk_navigation_util::kReferrerHeaderName];
   GURL openerURL = referrer.length
                        ? GURL(base::SysNSStringToUTF8(referrer))
-                       : [self.delegate documentURLForUIHandler:self];
+                       : [self.delegate documentURLForWebViewHandler:self];
 
   // There is no reliable way to tell if there was a user gesture, so this code
   // checks if user has recently tapped on web view. TODO(crbug.com/809706):

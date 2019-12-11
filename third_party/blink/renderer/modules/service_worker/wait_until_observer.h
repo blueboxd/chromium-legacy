@@ -50,8 +50,6 @@ class MODULES_EXPORT WaitUntilObserver final
     kContentDelete,
   };
 
-  static WaitUntilObserver* Create(ExecutionContext*, EventType, int event_id);
-
   WaitUntilObserver(ExecutionContext*, EventType, int event_id);
 
   // Must be called before dispatching the event.

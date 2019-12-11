@@ -28,7 +28,9 @@ CONTENT_EXPORT extern const base::Feature kBackgroundFetch;
 CONTENT_EXPORT extern const base::Feature kBackForwardCache;
 CONTENT_EXPORT extern const base::Feature kBackForwardCacheMemoryControl;
 CONTENT_EXPORT extern const base::Feature kBlockCredentialedSubresources;
-CONTENT_EXPORT extern const base::Feature kBrowserVerifiedUserActivation;
+CONTENT_EXPORT extern const base::Feature
+    kBrowserVerifiedUserActivationKeyboard;
+CONTENT_EXPORT extern const base::Feature kBrowserVerifiedUserActivationMouse;
 CONTENT_EXPORT extern const base::Feature kCacheInlineScriptCode;
 CONTENT_EXPORT extern const base::Feature kCacheStorageParallelOps;
 CONTENT_EXPORT extern const base::Feature kCacheStorageEagerReading;

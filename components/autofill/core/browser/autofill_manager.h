@@ -157,6 +157,11 @@ class AutofillManager : public AutofillHandler,
   // Invoked when the user selected |value| in the Autocomplete drop-down.
   void OnAutocompleteEntrySelected(const base::string16& value);
 
+  // Invoked when the user selects the "Hide Suggestions" item in the
+  // Autocomplete drop-down.
+  virtual void OnUserHideSuggestions(const FormData& form,
+                                     const FormFieldData& field);
+
   // Returns true only if the previewed form should be cleared.
   bool ShouldClearPreviewedForm();
 

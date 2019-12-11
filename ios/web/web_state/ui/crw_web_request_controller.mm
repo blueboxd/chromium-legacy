@@ -66,25 +66,9 @@ enum class BackForwardNavigationType {
 // Returns The WKNavigationDelegate handler class from delegate.
 @property(nonatomic, readonly) CRWWKNavigationHandler* navigationHandler;
 
-// Set to YES when [self close] is called.
-@property(nonatomic, assign) BOOL beingDestroyed;
-
 @end
 
 @implementation CRWWebRequestController
-
-- (instancetype)initWithWebState:(web::WebStateImpl*)webState {
-  self = [super init];
-  if (self) {
-    _webState = webState;
-  }
-  return self;
-}
-
-- (void)close {
-  self.beingDestroyed = YES;
-  _webState = nullptr;
-}
 
 - (void)loadCurrentURLWithRendererInitiatedNavigation:(BOOL)rendererInitiated {
   // Reset current WebUI if one exists.
@@ -122,7 +106,7 @@ enum class BackForwardNavigationType {
   // Loading a new url, must check here if it's a native chrome URL and
   // replace the appropriate view if so.
   if ([self maybeLoadRequestForCurrentNavigationItem]) {
-    [_delegate webRequestControllerEnsureWebViewCreated:self];
+    [_delegate ensureWebViewCreatedForWebViewHandler:self];
     [self loadRequestForCurrentNavigationItem];
   }
 }
@@ -174,7 +158,7 @@ enum class BackForwardNavigationType {
 - (void)loadHTML:(NSString*)HTML forURL:(const GURL&)URL {
   // Web View should not be created for App Specific URLs.
   if (!web::GetWebClient()->IsAppSpecificURL(URL)) {
-    [_delegate webRequestControllerEnsureWebViewCreated:self];
+    [_delegate ensureWebViewCreatedForWebViewHandler:self];
     DCHECK(self.webView) << "self.webView null while trying to load HTML";
   }
 
@@ -322,7 +306,7 @@ enum class BackForwardNavigationType {
   // Transfer time is registered so that further transitions within the time
   // envelope are not also registered as links.
   [_delegate
-      webRequestControllerUserInteractionState:self] -> ResetLastTransferTime();
+      userInteractionStateForWebViewHandler:self] -> ResetLastTransferTime();
 
   // Add or update pending item before any WebStateObserver callbacks.
   // See https://crbug.com/842151 for a scenario where this is important.
@@ -786,8 +770,12 @@ enum class BackForwardNavigationType {
 
 #pragma mark - Private properties
 
+- (web::WebStateImpl*)webState {
+  return [_delegate webStateImplForWebViewHandler:self];
+}
+
 - (WKWebView*)webView {
-  return [_delegate webRequestControllerWebView:self];
+  return [_delegate webViewForWebViewHandler:self];
 }
 
 - (CRWWKNavigationHandler*)navigationHandler {

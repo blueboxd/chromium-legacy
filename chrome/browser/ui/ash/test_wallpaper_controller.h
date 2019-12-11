@@ -100,7 +100,7 @@ class TestWallpaperController : public ash::WallpaperController {
   void RemoveObserver(ash::WallpaperControllerObserver* observer) override;
   gfx::ImageSkia GetWallpaperImage() override;
   const std::vector<SkColor>& GetWallpaperColors() override;
-  bool IsWallpaperBlurred() override;
+  bool IsWallpaperBlurredForLockState() const override;
   bool IsActiveUserWallpaperControlledByPolicy() override;
   ash::WallpaperInfo GetActiveUserWallpaperInfo() override;
   bool ShouldShowWallpaperSetting() override;

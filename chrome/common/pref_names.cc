@@ -1653,6 +1653,11 @@ const char kExcludedSchemes[] = "protocol_handler.excluded_schemes";
 // intranet_redirect_detector.h for more information.
 const char kLastKnownIntranetRedirectOrigin[] = "browser.last_redirect_origin";
 
+// Boolean specifying that the intranet redirect detector should be enabled.
+// Defaults to true.
+const char kDNSInterceptionChecksEnabled[] =
+    "browser.dns_interception_checks_enabled";
+
 // An enum value of how the browser was shut down (see browser_shutdown.h).
 const char kShutdownType[] = "shutdown.type";
 // Number of processes that were open when the user shut down.

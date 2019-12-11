@@ -129,7 +129,7 @@ void SSLManager::OnSSLCertificateError(
     // Requests can fail to dispatch because they don't have a WebContents. See
     // https://crbug.com/86537. In this case we have to make a decision in this
     // function.
-    handler->CancelRequest();
+    handler->DenyRequest();
     return;
   }
 

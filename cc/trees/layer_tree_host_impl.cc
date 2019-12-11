@@ -2672,12 +2672,7 @@ bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   frame_trackers_.NotifyBeginImplFrame(args);
 
   begin_main_frame_expected_during_impl_ = client_->IsBeginMainFrameExpected();
-  if (begin_main_frame_expected_during_impl_) {
-    frame_trackers_.NotifyBeginMainFrame(args);
-    begin_main_frame_sent_during_impl_ = true;
-  } else {
-    begin_main_frame_sent_during_impl_ = false;
-  }
+  begin_main_frame_sent_during_impl_ = false;
 
   if (is_likely_to_require_a_draw_) {
     // Optimistically schedule a draw. This will let us expect the tile manager
@@ -2741,26 +2736,7 @@ void LayerTreeHostImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack,
                                            FrameSkippedReason reason) {
   if (layer_tree_frame_sink_)
     layer_tree_frame_sink_->DidNotProduceFrame(ack);
-
-  // If a frame was not submitted because there was no damage, then notify the
-  // trackers.
-  if (reason == FrameSkippedReason::kNoDamage &&
-      impl_thread_phase_ == ImplThreadPhase::INSIDE_IMPL_FRAME) {
-    // It is possible that |ack| is for a 'future frame', i.e. for the next
-    // frame from the one currently being handled by the compositor (represented
-    // by the BeginFrameArgs instance in |current_begin_frame_tracker_|). This
-    // can happen, for example, when a frame is skipped early for
-    // latency-recovery, while the previous frame is still being processed.
-    // Notify the trackers only when this is *not* the case (since the trackers
-    // are not notified about the start of the future frame either).
-    const auto& args = current_begin_frame_tracker_.Current();
-    if (args.source_id == ack.source_id &&
-        args.sequence_number == ack.sequence_number) {
-      frame_trackers_.NotifyImplFrameCausedNoDamage(ack);
-      if (begin_main_frame_sent_during_impl_)
-        frame_trackers_.NotifyMainFrameCausedNoDamage(args);
-    }
-  }
+  // TODO(sad): Notify |frame_trackers_| if |reason| is no-damage.
 }
 
 void LayerTreeHostImpl::SynchronouslyInitializeAllTiles() {

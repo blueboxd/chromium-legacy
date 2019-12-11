@@ -84,6 +84,9 @@ class TestNavigationManager : public NavigationManager {
   // Returns whether LoadIfNecessary has been called.
   bool LoadIfNecessaryWasCalled();
 
+  // Returns whether Reload has been called;
+  bool ReloadWasCalled();
+
  private:
   // A list of items constructed by calling AddItem().
   web::ScopedNavigationItemList items_;
@@ -96,6 +99,7 @@ class TestNavigationManager : public NavigationManager {
   web::BrowserState* browser_state_;
   bool load_url_with_params_was_called_;
   bool load_if_necessary_was_called_;
+  bool reload_was_called_;
 };
 
 }  // namespace web

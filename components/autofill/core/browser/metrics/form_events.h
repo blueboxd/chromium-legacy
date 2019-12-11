@@ -8,7 +8,7 @@
 namespace autofill {
 
 // Form Events for autofill.
-// These events are triggered separetly for address and credit card forms.
+// These events are triggered separately for address and credit card forms.
 enum FormEvent {
   // User interacted with a field of this kind of form. Logged only once per
   // page load.
@@ -88,6 +88,11 @@ enum FormEvent {
 
   // The form was parsed.
   FORM_EVENT_DID_PARSE_FORM,
+
+  // The user selected the "Hide Suggestions" item.
+  FORM_EVENT_USER_HIDE_SUGGESTIONS,
+  // Same as above, but recoreded only once per page load.
+  FORM_EVENT_USER_HIDE_SUGGESTIONS_ONCE,
 
   NUM_FORM_EVENTS,
 };

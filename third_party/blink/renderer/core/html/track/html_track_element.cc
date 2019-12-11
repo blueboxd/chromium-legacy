@@ -73,9 +73,8 @@ Node::InsertionNotificationRequest HTMLTrackElement::InsertedInto(
 }
 
 void HTMLTrackElement::RemovedFrom(ContainerNode& insertion_point) {
-  auto* html_media_element = DynamicTo<HTMLMediaElement>(insertion_point);
-  if (html_media_element && !parentNode())
-    html_media_element->DidRemoveTrackElement(this);
+  if (!parentNode() && IsHTMLMediaElement(insertion_point))
+    ToHTMLMediaElement(insertion_point).DidRemoveTrackElement(this);
   HTMLElement::RemovedFrom(insertion_point);
 }
 
@@ -335,7 +334,10 @@ const AtomicString& HTMLTrackElement::MediaElementCrossOriginAttribute() const {
 }
 
 HTMLMediaElement* HTMLTrackElement::MediaElement() const {
-  return DynamicTo<HTMLMediaElement>(parentElement());
+  Element* parent = parentElement();
+  if (IsHTMLMediaElement(parent))
+    return ToHTMLMediaElement(parent);
+  return nullptr;
 }
 
 void HTMLTrackElement::Trace(Visitor* visitor) {

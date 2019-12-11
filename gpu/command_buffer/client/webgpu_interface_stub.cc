@@ -35,10 +35,9 @@ bool WebGPUInterfaceStub::RequestAdapterAsync(
         request_adapter_callback) {
   return false;
 }
-bool WebGPUInterfaceStub::RequestDeviceAsync(
+bool WebGPUInterfaceStub::RequestDevice(
     uint32_t adapter_service_id,
-    const WGPUDeviceProperties* requested_device_properties,
-    base::OnceCallback<void(bool)> request_device_callback) {
+    const WGPUDeviceProperties* requested_device_properties) {
   return false;
 }
 

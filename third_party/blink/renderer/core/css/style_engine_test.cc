@@ -2144,6 +2144,7 @@ TEST_F(StyleEngineTest, ColorSchemeBaseBackgroundChange) {
 
 TEST_F(StyleEngineTest, ColorSchemeOverride) {
   ScopedCSSColorSchemeForTest enable_color_scheme(true);
+  ScopedCSSColorSchemeUARenderingForTest enable_color_scheme_ua(true);
 
   GetDocument().documentElement()->SetInlineStyleProperty(
       CSSPropertyID::kColorScheme, "light dark");
@@ -2186,15 +2187,17 @@ TEST_F(StyleEngineTest, InternalRootColor) {
   auto* dark = GetDocument().getElementById("dark");
 
   // Initial value of color-scheme is 'light'.
-  EXPECT_EQ(
-      WebColorScheme::kLight,
-      GetDocument().documentElement()->GetComputedStyle()->UsedColorScheme());
+  EXPECT_EQ(WebColorScheme::kLight, GetDocument()
+                                        .documentElement()
+                                        ->GetComputedStyle()
+                                        ->UsedColorSchemeForInitialColors());
   EXPECT_EQ(WebColorScheme::kDark,
-            container->GetComputedStyle()->UsedColorScheme());
+            container->GetComputedStyle()->UsedColorSchemeForInitialColors());
   // color-scheme:dark inherited from #container.
-  EXPECT_EQ(WebColorScheme::kDark, dark->GetComputedStyle()->UsedColorScheme());
+  EXPECT_EQ(WebColorScheme::kDark,
+            dark->GetComputedStyle()->UsedColorSchemeForInitialColors());
   EXPECT_EQ(WebColorScheme::kLight,
-            light->GetComputedStyle()->UsedColorScheme());
+            light->GetComputedStyle()->UsedColorSchemeForInitialColors());
 
   EXPECT_EQ(Color::kBlack, GetDocument()
                                .documentElement()

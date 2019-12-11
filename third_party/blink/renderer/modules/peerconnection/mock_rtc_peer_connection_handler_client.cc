@@ -28,7 +28,7 @@ MockRTCPeerConnectionHandlerClient::MockRTCPeerConnectionHandlerClient() {
 MockRTCPeerConnectionHandlerClient::~MockRTCPeerConnectionHandlerClient() {}
 
 void MockRTCPeerConnectionHandlerClient::didGenerateICECandidateWorker(
-    scoped_refptr<RTCIceCandidatePlatform> candidate) {
+    RTCIceCandidatePlatform* candidate) {
   candidate_sdp_ = candidate->Candidate().Utf8();
   candidate_mline_index_ = candidate->SdpMLineIndex();
   candidate_mid_ = candidate->SdpMid().Utf8();

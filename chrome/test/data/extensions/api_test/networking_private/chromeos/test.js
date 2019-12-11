@@ -647,7 +647,6 @@ var availableTests = [
             Type: {
               Active: 'Direct',
               Effective: 'UserPolicy',
-              UserEditable: false,
               UserPolicy: 'Direct'
             }
           },

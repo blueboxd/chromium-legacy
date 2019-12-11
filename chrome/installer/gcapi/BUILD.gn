@@ -52,7 +52,7 @@ source_set("lib") {
   deps = [
     "//base",
     "//chrome/installer/launcher_support",
-    "//chrome/installer/util:with_no_strings",
+    "//chrome/installer/util:constants",
     "//google_update",
   ]
 }

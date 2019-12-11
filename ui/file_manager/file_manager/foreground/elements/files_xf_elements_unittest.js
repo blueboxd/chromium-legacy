@@ -129,6 +129,10 @@ async function testDisplayPanelChangingPanelTypes(done) {
       panelItem.status, 'failure',
       'Wrong panel status, got ' + panelItem.status);
 
+  // Verify the panel item icon is the failure icon.
+  const failIcon = panelItem.shadowRoot.querySelector('iron-icon');
+  assertEquals('files36:failure', failIcon.getAttribute('icon'));
+
   // Check dismiss signal from the panel from a click.
   /** @type {!HTMLElement} */
   let dismiss = assert(panelItem.secondaryButton);
@@ -146,6 +150,10 @@ async function testDisplayPanelChangingPanelTypes(done) {
   assertEquals(
       panelItem.status, 'success',
       'Wrong panel status, got ' + panelItem.status);
+
+  // Verify the panel item icon is the success icon.
+  const successIcon = panelItem.shadowRoot.querySelector('iron-icon');
+  assertEquals('files36:success', successIcon.getAttribute('icon'));
 
   // Check the dimiss signal from the panel from a click.
   signal = 'none';
@@ -364,7 +372,7 @@ async function testFilesDisplayPanelSummaryPanel(done) {
   assert(bounds.height === singlePanelHeight);
 
   // Trigger expand of the summary panel.
-  let expandButton =
+  const expandButton =
       summaryPanelItem.shadowRoot.querySelector('#primary-action');
   expandButton.click();
 
@@ -372,7 +380,7 @@ async function testFilesDisplayPanelSummaryPanel(done) {
   assertFalse(panelContainer.hasAttribute('hidden'));
 
   // Remove a progress panel and ensure the summary panel is removed.
-  let panelToRemove = displayPanel.findPanelItemById('testpanel1');
+  const panelToRemove = displayPanel.findPanelItemById('testpanel1');
   displayPanel.removePanelItem(panelToRemove);
   summaryPanelItem = summaryContainer.querySelector('xf-panel-item');
   assertEquals(summaryPanelItem, null);

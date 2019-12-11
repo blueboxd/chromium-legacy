@@ -185,7 +185,7 @@ bool DoCopyFile(const FilePath& from_path,
 
   // Mitigate the issues caused by loading DLLs on a background thread
   // (http://crbug/973868).
-  ScopedThreadMayLoadLibraryOnBackgroundThread priority_boost(FROM_HERE);
+  SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
 
   // Unlike the posix implementation that copies the file manually and discards
   // the ACL bits, CopyFile() copies the complete SECURITY_DESCRIPTOR and access

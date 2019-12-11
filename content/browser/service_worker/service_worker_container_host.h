@@ -53,8 +53,7 @@ struct ServiceWorkerRegistrationInfo;
 // TODO(https://crbug.com/931087): Make an execution context host (i.e.,
 // RenderFrameHostImpl, DedicatedWorkerHost etc) own this.
 //
-// TODO(https://crbug.com/931087): Add comments about the thread where this
-// class lives, and add sequence checkers to ensure it.
+// ServiceWorkerContainerHost lives on the service worker core thread.
 class CONTENT_EXPORT ServiceWorkerContainerHost final
     : public blink::mojom::ServiceWorkerContainerHost,
       public ServiceWorkerRegistration::Listener {
@@ -428,9 +427,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
     return receiver_;
   }
 
-  base::WeakPtr<ServiceWorkerContainerHost> GetWeakPtr() {
-    return weak_factory_.GetWeakPtr();
-  }
+  base::WeakPtr<ServiceWorkerContainerHost> GetWeakPtr();
 
  private:
   friend class ServiceWorkerProviderHostTest;

@@ -31,16 +31,8 @@ import org.chromium.chrome.browser.download.home.glue.OfflineContentProviderGlue
 import org.chromium.chrome.browser.download.home.glue.ThumbnailRequestGlue;
 import org.chromium.chrome.browser.download.home.list.DateOrderedListCoordinator.DateOrderedListObserver;
 import org.chromium.chrome.browser.download.home.list.DateOrderedListCoordinator.DeleteController;
-import org.chromium.chrome.browser.download.home.list.mutator.CardPaginator;
-import org.chromium.chrome.browser.download.home.list.mutator.DateLabelAdder;
 import org.chromium.chrome.browser.download.home.list.mutator.DateOrderedListMutator;
-import org.chromium.chrome.browser.download.home.list.mutator.DateOrderedListMutator.LabelAdder;
-import org.chromium.chrome.browser.download.home.list.mutator.DateOrderedListMutator.Sorter;
-import org.chromium.chrome.browser.download.home.list.mutator.DateSorter;
-import org.chromium.chrome.browser.download.home.list.mutator.DateSorterForCards;
-import org.chromium.chrome.browser.download.home.list.mutator.GroupCardLabelAdder;
-import org.chromium.chrome.browser.download.home.list.mutator.ListItemPropertySetter;
-import org.chromium.chrome.browser.download.home.list.mutator.Paginator;
+import org.chromium.chrome.browser.download.home.list.mutator.ListMutationController;
 import org.chromium.chrome.browser.download.home.metrics.OfflineItemStartupLogger;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils.ViewAction;
@@ -57,7 +49,6 @@ import org.chromium.components.offline_items_collection.VisualsCallback;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -111,6 +102,7 @@ class DateOrderedListMediator {
 
     private final OfflineItemSource mSource;
     private final DateOrderedListMutator mListMutator;
+    private final ListMutationController mListMutationController;
     private final ThumbnailProvider mThumbnailProvider;
     private final MediatorSelectionObserver mSelectionObserver;
     private final SelectionDelegate<ListItem> mSelectionDelegate;
@@ -121,15 +113,6 @@ class DateOrderedListMediator {
     private final DeleteUndoOfflineItemFilter mDeleteUndoFilter;
     private final TypeOfflineItemFilter mTypeFilter;
     private final SearchOfflineItemFilter mSearchFilter;
-
-    private final Paginator mPaginator;
-    private final CardPaginator mCardPaginator;
-
-    private final Sorter mDefaultDateSorter;
-    private final LabelAdder mDefaultDateLabelAdder;
-
-    private final Sorter mPrefetchSorter;
-    private final LabelAdder mPrefetchLabelAdder;
 
     /**
      * A selection observer that correctly updates the selection state for each item in the list.
@@ -206,16 +189,9 @@ class DateOrderedListMediator {
         mTypeFilter = new TypeOfflineItemFilter(mSearchFilter);
 
         JustNowProvider justNowProvider = new JustNowProvider(config);
-        mPaginator = new Paginator();
-        mCardPaginator = new CardPaginator();
-        mDefaultDateSorter = new DateSorter(justNowProvider);
-        mDefaultDateLabelAdder = new DateLabelAdder(config, justNowProvider);
-        mPrefetchSorter = new DateSorterForCards();
-        mPrefetchLabelAdder = new GroupCardLabelAdder(mCardPaginator);
-
-        mListMutator =
-                new DateOrderedListMutator(mTypeFilter, mModel, justNowProvider, mDefaultDateSorter,
-                        mDefaultDateLabelAdder, new ListItemPropertySetter(mUiConfig), mPaginator);
+        mListMutator = new DateOrderedListMutator(mTypeFilter, mModel, justNowProvider);
+        mListMutationController =
+                new ListMutationController(mUiConfig, justNowProvider, mListMutator, mModel);
 
         new OfflineItemStartupLogger(config, mInvalidStateFilter);
 
@@ -239,9 +215,9 @@ class DateOrderedListMediator {
         mModel.getProperties().set(ListProperties.CALLBACK_RENAME,
                 mUiConfig.isRenameEnabled ? this::onRenameItem : null);
         mModel.getProperties().set(
-                ListProperties.CALLBACK_PAGINATION_CLICK, mListMutator::loadMorePages);
-        mModel.getProperties().set(
-                ListProperties.CALLBACK_GROUP_PAGINATION_CLICK, this::loadMoreItemsOnCard);
+                ListProperties.CALLBACK_PAGINATION_CLICK, mListMutationController::loadMorePages);
+        mModel.getProperties().set(ListProperties.CALLBACK_GROUP_PAGINATION_CLICK,
+                mListMutationController::loadMoreItemsOnCard);
     }
 
     /** Tears down this mediator. */
@@ -256,17 +232,7 @@ class DateOrderedListMediator {
      * @see TypeOfflineItemFilter#onFilterSelected(int)
      */
     public void onFilterTypeSelected(@FilterType int filter) {
-        mPaginator.reset();
-        mCardPaginator.reset();
-
-        Sorter sorter = mDefaultDateSorter;
-        LabelAdder labelAdder = mDefaultDateLabelAdder;
-        if (filter == FilterType.PREFETCHED) {
-            sorter = mPrefetchSorter;
-            labelAdder = mPrefetchLabelAdder;
-        }
-
-        mListMutator.setMutators(sorter, labelAdder);
+        mListMutationController.onFilterTypeSelected(filter);
         try (AnimationDisableClosable closeable = new AnimationDisableClosable()) {
             mTypeFilter.onFilterSelected(filter);
         }
@@ -327,11 +293,6 @@ class DateOrderedListMediator {
      */
     public OfflineItemFilterSource getEmptySource() {
         return mTypeFilter;
-    }
-
-    private void loadMoreItemsOnCard(android.util.Pair<Date, String> dateAndDomain) {
-        mCardPaginator.loadMore(dateAndDomain);
-        mListMutator.reload();
     }
 
     private void onSelection(@Nullable ListItem item) {

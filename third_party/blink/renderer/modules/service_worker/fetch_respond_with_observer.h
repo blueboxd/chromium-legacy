@@ -36,13 +36,6 @@ class MODULES_EXPORT FetchRespondWithObserver : public RespondWithObserver {
                            WaitUntilObserver*);
   ~FetchRespondWithObserver() override = default;
 
-  static FetchRespondWithObserver* Create(
-      ExecutionContext*,
-      int fetch_event_id,
-      network::mojom::blink::CrossOriginEmbedderPolicy,
-      const mojom::blink::FetchAPIRequest&,
-      WaitUntilObserver*);
-
   void OnResponseRejected(mojom::ServiceWorkerResponseError) override;
   void OnResponseFulfilled(ScriptState*,
                            const ScriptValue&,

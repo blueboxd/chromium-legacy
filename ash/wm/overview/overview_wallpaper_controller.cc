@@ -31,8 +31,7 @@ bool g_disable_wallpaper_change_for_tests = false;
 constexpr int kBlurSlideDurationMs = 250;
 
 bool IsWallpaperChangeAllowed() {
-  return !g_disable_wallpaper_change_for_tests &&
-         Shell::Get()->wallpaper_controller()->IsBlurAllowed();
+  return !g_disable_wallpaper_change_for_tests;
 }
 
 WallpaperWidgetController* GetWallpaperWidgetController(aura::Window* root) {
@@ -170,12 +169,9 @@ void OverviewWallpaperController::ApplyBlurAndOpacity(aura::Window* root,
   DCHECK_LE(value, 10);
   const float opacity =
       gfx::Tween::FloatValueBetween(value / 10.0, 1.f, kShieldOpacity);
-  auto* wallpaper_widget_controller =
-      RootWindowController::ForWindow(root)->wallpaper_widget_controller();
-  if (wallpaper_widget_controller->wallpaper_view()) {
-    wallpaper_widget_controller->wallpaper_view()->RepaintBlurAndOpacity(
-        value, opacity);
-  }
+  RootWindowController::ForWindow(root)
+      ->wallpaper_widget_controller()
+      ->SetBlurAndOpacity(value, opacity);
 }
 
 void OverviewWallpaperController::OnBlurChange(WallpaperAnimationState state,
@@ -210,7 +206,7 @@ void OverviewWallpaperController::OnBlurChange(WallpaperAnimationState state,
       auto* wallpaper_view = RootWindowController::ForWindow(root)
                                  ->wallpaper_widget_controller()
                                  ->wallpaper_view();
-      float blur_sigma = wallpaper_view ? wallpaper_view->repaint_blur() : 0.f;
+      float blur_sigma = wallpaper_view ? wallpaper_view->blur_sigma() : 0.f;
       if (should_animate && animate_only && blur_sigma != kWallpaperBlurSigma) {
         root->AddObserver(this);
         roots_to_animate_.push_back(root);
@@ -276,7 +272,7 @@ void OverviewWallpaperController::OnBlurChangeCrossFade(
         Shell::Get()->tablet_mode_controller()->InTabletMode() || !should_blur
             ? 1.f
             : kShieldOpacity;
-    wallpaper_widget_controller->wallpaper_view()->RepaintBlurAndOpacity(
+    wallpaper_widget_controller->SetBlurAndOpacity(
         should_blur ? kWallpaperBlurSigma : kWallpaperClearBlurSigma, dimming);
     original_layer->SetOpacity(should_blur ? 0.f : 1.f);
 

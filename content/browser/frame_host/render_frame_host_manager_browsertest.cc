@@ -5502,6 +5502,28 @@ IN_PROC_BROWSER_TEST_F(
   }
 }
 
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostManagerProactivelySwapBrowsingInstancesTest,
+    ReloadShouldNotChangeBrowsingInstance) {
+  StartEmbeddedServer();
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+
+  // 1) Navigate to the page.
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  scoped_refptr<SiteInstance> site_instance =
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance();
+
+  // 2) Reload page.
+  shell()->web_contents()->GetMainFrame()->Reload();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // Ensure that we do not change BrowsingInstances for reload.
+  // We should keep this even when we start swapping BrowsingInstances
+  // for same-site navigations.
+  EXPECT_EQ(site_instance,
+            shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+}
+
 // Helper class to simplify testing of unload handlers.  It allows waiting for
 // particular HTTP requests to be made to the embedded_test_server(); the tests
 // use this to wait for termination pings (e.g., navigator.sendBeacon()) made

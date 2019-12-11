@@ -186,7 +186,9 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
   if (!is_modifier && initial_key_event.dom_key != ui::DomKey::ESCAPE &&
       (initial_key_event.GetType() == WebInputEvent::kKeyDown ||
        initial_key_event.GetType() == WebInputEvent::kRawKeyDown)) {
-    LocalFrame::NotifyUserActivation(frame_);
+    LocalFrame::NotifyUserActivation(
+        frame_,
+        RuntimeEnabledFeatures::BrowserVerifiedUserActivationKeyboardEnabled());
   }
 
   // In IE, access keys are special, they are handled after default keydown

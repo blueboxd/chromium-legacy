@@ -763,13 +763,22 @@ void FrameImpl::SetWindowTreeHost(
 
   window_tree_host_ = std::move(window_tree_host);
   window_tree_host_->InitHost();
+
+  window_tree_host_->window()->GetHost()->AddEventRewriter(
+      &discarding_event_filter_);
+
+  // Add hooks which automatically set the focus state when input events are
+  // received.
   focus_controller_ =
       std::make_unique<wm::FocusController>(new FrameFocusRules);
+  root_window()->AddPreTargetHandler(focus_controller_.get());
   aura::client::SetFocusClient(root_window(), focus_controller_.get());
+
   wm::SetActivationClient(root_window(), focus_controller_.get());
   root_window()->SetLayoutManager(new LayoutManagerImpl());
   root_window()->AddChild(web_contents_->GetNativeView());
   web_contents_->GetNativeView()->Show();
+
   window_tree_host_->Show();
 }
 

@@ -316,6 +316,11 @@ const char kPasswordLeakDetectionName[] = "Password Leak Detection";
 const char kPasswordLeakDetectionDescription[] =
     "Enables the detection of leaked passwords.";
 
+const char kReloadSadTabName[] = "Reload SadTab automatically";
+const char kReloadSadTabDescription[] =
+    "When enabled, the first time the renderer crashes, the page is reloaded "
+    "instead of showing the SadTab";
+
 const char kSaveCardInfobarMessagesUIName[] = "Save Card Infobar Messages UI";
 const char kSaveCardInfobarMessagesUIDescription[] =
     "When enabled, Save Card Infobar uses the new Messages UI.";

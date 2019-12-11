@@ -38,4 +38,8 @@ const base::Feature kV8GCLessCompaction{"V8GCLessCompaction",
 const base::Feature kV8GCAlwaysPromoteYoungMC{
     "V8GCAlwaysPromoteYoungMC", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable concurrent inlining in TurboFan.
+const base::Feature kV8ConcurrentInlining{"V8ConcurrentInlining",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features

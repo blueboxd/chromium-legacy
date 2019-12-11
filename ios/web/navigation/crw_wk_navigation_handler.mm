@@ -109,9 +109,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 // Returns the js injector from self.delegate.
 @property(nonatomic, readonly, weak) CRWJSInjector* JSInjector;
 
-// Set to YES when [self close] is called.
-@property(nonatomic, assign) BOOL beingDestroyed;
-
 @end
 
 @implementation CRWWKNavigationHandler
@@ -881,8 +878,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
       !context->IsLoadingErrorPage() &&
       !context->GetUrl().SchemeIs(url::kAboutScheme) &&
       !IsRestoreSessionUrl(context->GetUrl())) {
-    [self.delegate
-        navigationHandlerUpdateSSLStatusForCurrentNavigationItem:self];
+    [self.delegate webViewHandlerUpdateSSLStatusForCurrentNavigationItem:self];
     if (!context->IsLoadingErrorPage() && !IsRestoreSessionUrl(webViewURL)) {
       [self setLastCommittedNavigationItemTitle:webView.title];
     }
@@ -1013,7 +1009,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   [self.navigationStates setState:web::WKNavigationState::FINISHED
                     forNavigation:navigation];
 
-  [self.delegate navigationHandler:self didFinishNavigation:context];
+  [self.delegate webViewHandler:self didFinishNavigation:context];
 
   // Remove the navigation to immediately get rid of pending item. Navigation
   // should not be cleared, however, in the case of a committed interstitial
@@ -1102,11 +1098,11 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 }
 
 - (web::WebStateImpl*)webStateImpl {
-  return [self.delegate webStateImplForNavigationHandler:self];
+  return [self.delegate webStateImplForWebViewHandler:self];
 }
 
 - (web::UserInteractionState*)userInteractionState {
-  return [self.delegate userInteractionStateForNavigationHandler:self];
+  return [self.delegate userInteractionStateForWebViewHandler:self];
 }
 
 - (CRWJSInjector*)JSInjector {
@@ -1118,7 +1114,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 }
 
 - (GURL)documentURL {
-  return [self.delegate navigationHandlerDocumentURL:self];
+  return [self.delegate documentURLForWebViewHandler:self];
 }
 
 - (web::NavigationItemImpl*)currentNavItem {
@@ -2012,10 +2008,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 
 #pragma mark - Public methods
 
-- (void)close {
-  self.beingDestroyed = YES;
-}
-
 - (void)stopLoading {
   self.pendingNavigationInfo.cancelled = YES;
   _safeBrowsingWarningDetectionTimer.Stop();
@@ -2198,8 +2190,11 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
                         forContext:(std::unique_ptr<web::NavigationContextImpl>)
                                        originalContext {
   GURL placeholderURL = CreatePlaceholderUrlForUrl(originalURL);
-  WKWebView* webView =
-      [self.delegate navigationHandlerEnsureWebViewCreated:self];
+  // TODO(crbug.com/956511): Remove this code when NativeContent support is
+  // removed.
+  [self.delegate ensureWebViewCreatedForWebViewHandler:self];
+  WKWebView* webView = [self.delegate webViewForWebViewHandler:self];
+
   NSURLRequest* request =
       [NSURLRequest requestWithURL:net::NSURLWithGURL(placeholderURL)];
   WKNavigation* navigation = [webView loadRequest:request];

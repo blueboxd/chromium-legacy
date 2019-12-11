@@ -205,8 +205,10 @@ void SecurityHandler::DidFinishNavigation(NavigationHandle* navigation_handle) {
 }
 
 void SecurityHandler::FlushPendingCertificateErrorNotifications() {
-  for (auto callback : cert_error_callbacks_)
-    callback.second.Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL);
+  for (auto& callback : cert_error_callbacks_) {
+    std::move(callback).second.Run(
+        content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL);
+  }
   cert_error_callbacks_.clear();
 }
 
@@ -268,7 +270,7 @@ Response SecurityHandler::HandleCertificateError(int event_id,
     response =
         Response::Error(String("Unknown Certificate Error Action: " + action));
   }
-  cert_error_callbacks_[event_id].Run(type);
+  std::move(cert_error_callbacks_[event_id]).Run(type);
   cert_error_callbacks_.erase(event_id);
   return response;
 }

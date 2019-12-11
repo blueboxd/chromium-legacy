@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_REGISTRATION_SERVICE_IMPL_H_
 
 #include "base/macros.h"
-#include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/common/content_export.h"
@@ -20,7 +20,7 @@ class CONTENT_EXPORT BackgroundFetchRegistrationServiceImpl
   static mojo::PendingRemote<blink::mojom::BackgroundFetchRegistrationService>
   CreateInterfaceInfo(
       BackgroundFetchRegistrationId registration_id,
-      scoped_refptr<BackgroundFetchContext> background_fetch_context);
+      base::WeakPtr<BackgroundFetchContext> background_fetch_context);
 
   // blink::mojom::BackgroundFetchRegistrationService implementation.
   void MatchRequests(blink::mojom::FetchAPIRequestPtr request_to_match,
@@ -40,12 +40,12 @@ class CONTENT_EXPORT BackgroundFetchRegistrationServiceImpl
  private:
   BackgroundFetchRegistrationServiceImpl(
       BackgroundFetchRegistrationId registration_id,
-      scoped_refptr<BackgroundFetchContext> background_fetch_context);
+      base::WeakPtr<BackgroundFetchContext> background_fetch_context);
 
   bool ValidateTitle(const std::string& title) WARN_UNUSED_RESULT;
 
   BackgroundFetchRegistrationId registration_id_;
-  scoped_refptr<BackgroundFetchContext> background_fetch_context_;
+  base::WeakPtr<BackgroundFetchContext> background_fetch_context_;
   mojo::Receiver<blink::mojom::BackgroundFetchRegistrationService> receiver_{
       this};
 

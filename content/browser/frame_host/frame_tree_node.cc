@@ -600,8 +600,11 @@ bool FrameTreeNode::ClearUserActivation() {
 }
 
 bool FrameTreeNode::VerifyUserActivation() {
-  if (!base::FeatureList::IsEnabled(features::kBrowserVerifiedUserActivation))
-    return true;
+  DCHECK(base::FeatureList::IsEnabled(
+             features::kBrowserVerifiedUserActivationMouse) ||
+         base::FeatureList::IsEnabled(
+             features::kBrowserVerifiedUserActivationKeyboard));
+
   return render_manager_.current_frame_host()
       ->GetRenderWidgetHost()
       ->RemovePendingUserActivationIfAvailable();

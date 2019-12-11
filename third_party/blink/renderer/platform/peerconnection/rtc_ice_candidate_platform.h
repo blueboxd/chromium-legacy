@@ -32,29 +32,38 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_ICE_CANDIDATE_PLATFORM_H_
 
 #include "base/optional.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT RTCIceCandidatePlatform final
-    : public WTF::ThreadSafeRefCounted<RTCIceCandidatePlatform> {
+    : public GarbageCollected<RTCIceCandidatePlatform> {
  public:
   // Creates a new RTCIceCandidatePlatform using |candidate|, |sdp_mid| and
   // |sdp_m_line_index|. If |sdp_m_line_index| is negative, it is
   // considered as having no value.
-  static scoped_refptr<RTCIceCandidatePlatform> Create(String candidate,
-                                                       String sdp_mid,
-                                                       int sdp_m_line_index);
+  static RTCIceCandidatePlatform* Create(String candidate,
+                                         String sdp_mid,
+                                         int sdp_m_line_index);
 
   // Creates a new RTCIceCandidatePlatform using |candidate|, |sdp_mid|,
   // |sdp_m_line_index|, and |username_fragment|.
-  static scoped_refptr<RTCIceCandidatePlatform> Create(
+  static RTCIceCandidatePlatform* Create(
       String candidate,
       String sdp_mid,
       base::Optional<uint16_t> sdp_m_line_index,
       String username_fragment);
+
+  RTCIceCandidatePlatform(String candidate,
+                          String sdp_mid,
+                          base::Optional<uint16_t> sdp_m_line_index);
+  RTCIceCandidatePlatform(String candidate,
+                          String sdp_mid,
+                          base::Optional<uint16_t> sdp_m_line_index,
+                          String username_fragment);
+  ~RTCIceCandidatePlatform() = default;
 
   const String& Candidate() const { return candidate_; }
   const String& SdpMid() const { return sdp_mid_; }
@@ -73,21 +82,10 @@ class PLATFORM_EXPORT RTCIceCandidatePlatform final
   const base::Optional<uint16_t>& RelatedPort() const { return related_port_; }
   const String& UsernameFragment() const { return username_fragment_; }
 
+  void Trace(Visitor*) {}
+
  private:
-  friend class WTF::ThreadSafeRefCounted<RTCIceCandidatePlatform>;
-
-  RTCIceCandidatePlatform(String candidate,
-                          String sdp_mid,
-                          base::Optional<uint16_t> sdp_m_line_index);
-
-  RTCIceCandidatePlatform(String candidate,
-                          String sdp_mid,
-                          base::Optional<uint16_t> sdp_m_line_index,
-                          String username_fragment);
-
   void PopulateFields(bool use_username_from_candidate);
-
-  ~RTCIceCandidatePlatform() = default;
 
   String candidate_;
   String sdp_mid_;

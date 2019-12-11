@@ -54,11 +54,11 @@ void DidGetClient(ScriptPromiseResolver* resolver,
   ServiceWorkerClient* client = nullptr;
   switch (info->client_type) {
     case mojom::ServiceWorkerClientType::kWindow:
-      client = ServiceWorkerWindowClient::Create(*info);
+      client = MakeGarbageCollected<ServiceWorkerWindowClient>(*info);
       break;
     case mojom::ServiceWorkerClientType::kDedicatedWorker:
     case mojom::ServiceWorkerClientType::kSharedWorker:
-      client = ServiceWorkerClient::Create(*info);
+      client = MakeGarbageCollected<ServiceWorkerClient>(*info);
       break;
     case mojom::ServiceWorkerClientType::kAll:
       NOTREACHED();
@@ -95,9 +95,9 @@ void DidGetClients(ScriptPromiseResolver* resolver,
   HeapVector<Member<ServiceWorkerClient>> clients;
   for (const auto& info : infos) {
     if (info->client_type == mojom::blink::ServiceWorkerClientType::kWindow)
-      clients.push_back(ServiceWorkerWindowClient::Create(*info));
+      clients.push_back(MakeGarbageCollected<ServiceWorkerWindowClient>(*info));
     else
-      clients.push_back(ServiceWorkerClient::Create(*info));
+      clients.push_back(MakeGarbageCollected<ServiceWorkerClient>(*info));
   }
   resolver->Resolve(std::move(clients));
 }

@@ -1276,18 +1276,80 @@ ScriptValue ReadableStream::pipeThrough(ScriptState* script_state,
                                         ScriptValue transform_stream,
                                         ScriptValue options,
                                         ExceptionState& exception_state) {
-  // TODO(ricea): Get the order of operations to strictly match the standard.
-  ScriptValue readable;
-  WritableStream* writable;
-  PipeThroughExtractReadableWritable(script_state, this, transform_stream,
-                                     &readable, &writable, exception_state);
+  // https://streams.spec.whatwg.org/#rs-pipe-through
+  // The first part of this function implements the unpacking of the {readable,
+  // writable} argument to the method.
+  v8::Local<v8::Value> pair_value = transform_stream.V8Value();
+  v8::Local<v8::Context> context = script_state->GetContext();
+
+  constexpr char kWritableIsNotWritableStream[] =
+      "parameter 1's 'writable' property is not a WritableStream.";
+  constexpr char kReadableIsNotReadableStream[] =
+      "parameter 1's 'readable' property is not a ReadableStream.";
+  constexpr char kWritableIsLocked[] = "parameter 1's 'writable' is locked.";
+
+  v8::Local<v8::Object> pair;
+  if (!pair_value->ToObject(context).ToLocal(&pair)) {
+    exception_state.ThrowTypeError(kWritableIsNotWritableStream);
+    return ScriptValue();
+  }
+
+  v8::Isolate* isolate = script_state->GetIsolate();
+  v8::Local<v8::Value> writable, readable;
+  {
+    v8::TryCatch block(isolate);
+    if (!pair->Get(context, V8String(isolate, "writable")).ToLocal(&writable)) {
+      exception_state.RethrowV8Exception(block.Exception());
+      return ScriptValue();
+    }
+    DCHECK(!block.HasCaught());
+
+    if (!pair->Get(context, V8String(isolate, "readable")).ToLocal(&readable)) {
+      exception_state.RethrowV8Exception(block.Exception());
+      return ScriptValue();
+    }
+    DCHECK(!block.HasCaught());
+  }
+
+  // 2. If ! IsWritableStream(_writable_) is *false*, throw a *TypeError*
+  //    exception.
+  WritableStream* writable_stream =
+      V8WritableStream::ToImplWithTypeCheck(isolate, writable);
+  if (!writable_stream) {
+    exception_state.ThrowTypeError(kWritableIsNotWritableStream);
+    return ScriptValue();
+  }
+
+  // 3. If ! IsReadableStream(_readable_) is *false*, throw a *TypeError*
+  //    exception.
+  if (!V8ReadableStream::HasInstance(readable, isolate)) {
+    exception_state.ThrowTypeError(kReadableIsNotReadableStream);
+    return ScriptValue();
+  }
+
+  // 4. Set preventClose to ! ToBoolean(preventClose), set preventAbort to !
+  //    ToBoolean(preventAbort), and set preventCancel to !
+  //    ToBoolean(preventCancel).
+
+  // 5. If signal is not undefined, and signal is not an instance of the
+  //    AbortSignal interface, throw a TypeError exception.
+  auto* pipe_options =
+      MakeGarbageCollected<PipeOptions>(script_state, options, exception_state);
   if (exception_state.HadException()) {
     return ScriptValue();
   }
 
-  auto* pipe_options =
-      MakeGarbageCollected<PipeOptions>(script_state, options, exception_state);
-  if (exception_state.HadException()) {
+  // 6. If ! IsReadableStreamLocked(*this*) is *true*, throw a *TypeError*
+  //    exception.
+  if (IsLocked(this)) {
+    exception_state.ThrowTypeError("Cannot pipe a locked stream");
+    return ScriptValue();
+  }
+
+  // 7. If ! IsWritableStreamLocked(_writable_) is *true*, throw a *TypeError*
+  //    exception.
+  if (WritableStream::IsLocked(writable_stream)) {
+    exception_state.ThrowTypeError(kWritableIsLocked);
     return ScriptValue();
   }
 
@@ -1295,13 +1357,14 @@ ScriptValue ReadableStream::pipeThrough(ScriptState* script_state,
   //    _preventClose_, _preventAbort_, _preventCancel_,
   //   _signal_).
 
-  ScriptPromise promise = PipeTo(script_state, this, writable, pipe_options);
+  ScriptPromise promise =
+      PipeTo(script_state, this, writable_stream, pipe_options);
 
   // 9. Set _promise_.[[PromiseIsHandled]] to *true*.
   promise.MarkAsHandled();
 
   // 10. Return _readable_.
-  return readable;
+  return ScriptValue(script_state->GetIsolate(), readable);
 }
 
 ScriptPromise ReadableStream::pipeTo(ScriptState* script_state,
@@ -1317,16 +1380,41 @@ ScriptPromise ReadableStream::pipeTo(ScriptState* script_state,
                                      ScriptValue destination_value,
                                      ScriptValue options,
                                      ExceptionState& exception_state) {
-  WritableStream* destination = PipeToCheckSourceAndDestination(
-      script_state, this, destination_value, exception_state);
-  if (exception_state.HadException()) {
+  // https://streams.spec.whatwg.org/#rs-pipe-to
+  // 2. If ! IsWritableStream(dest) is false, return a promise rejected with a
+  //    TypeError exception.
+  // TODO(ricea): Do this in the IDL instead.
+  WritableStream* destination = V8WritableStream::ToImplWithTypeCheck(
+      script_state->GetIsolate(), destination_value.V8Value());
+
+  if (!destination) {
+    exception_state.ThrowTypeError("Illegal invocation");
     return ScriptPromise();
   }
-  CHECK(destination);
 
+  // 3. Set preventClose to ! ToBoolean(preventClose), set preventAbort to !
+  //    ToBoolean(preventAbort), and set preventCancel to !
+  //    ToBoolean(preventCancel).
+  // 4. If signal is not undefined, and signal is not an instance of the
+  //    AbortSignal interface, return a promise rejected with a TypeError
+  //    exception.
   auto* pipe_options =
       MakeGarbageCollected<PipeOptions>(script_state, options, exception_state);
   if (exception_state.HadException()) {
+    return ScriptPromise();
+  }
+
+  // 5. If ! IsReadableStreamLocked(this) is true, return a promise rejected
+  // with a TypeError exception.
+  if (IsLocked(this)) {
+    exception_state.ThrowTypeError("Cannot pipe a locked stream");
+    return ScriptPromise();
+  }
+
+  // 6. If ! IsWritableStreamLocked(dest) is true, return a promise rejected
+  // with a TypeError exception.
+  if (WritableStream::IsLocked(destination)) {
+    exception_state.ThrowTypeError("Cannot pipe to a locked stream");
     return ScriptPromise();
   }
 
@@ -1840,137 +1928,6 @@ void ReadableStream::GetReaderValidateOptions(ScriptState* script_state,
     exception_state.ThrowRangeError("invalid mode");
     return;
   }
-}
-
-void ReadableStream::PipeThroughExtractReadableWritable(
-    ScriptState* script_state,
-    const ReadableStream* stream,
-    ScriptValue transform_stream,
-    ScriptValue* readable_stream,
-    WritableStream** writable_stream,
-    ExceptionState& exception_state) {
-  DCHECK(readable_stream);
-  DCHECK(writable_stream);
-  // https://streams.spec.whatwg.org/#rs-pipe-through
-  // The first part of this function implements the unpacking of the {readable,
-  // writable} argument to the method.
-  v8::Local<v8::Value> pair_value = transform_stream.V8Value();
-  v8::Local<v8::Context> context = script_state->GetContext();
-
-  constexpr char kWritableIsNotWritableStream[] =
-      "parameter 1's 'writable' property is not a WritableStream.";
-  constexpr char kReadableIsNotReadableStream[] =
-      "parameter 1's 'readable' property is not a ReadableStream.";
-  constexpr char kWritableIsLocked[] = "parameter 1's 'writable' is locked.";
-
-  v8::Local<v8::Object> pair;
-  if (!pair_value->ToObject(context).ToLocal(&pair)) {
-    exception_state.ThrowTypeError(kWritableIsNotWritableStream);
-    return;
-  }
-
-  v8::Isolate* isolate = script_state->GetIsolate();
-  v8::Local<v8::Value> writable, readable;
-  {
-    v8::TryCatch block(isolate);
-    if (!pair->Get(context, V8String(isolate, "writable")).ToLocal(&writable)) {
-      exception_state.RethrowV8Exception(block.Exception());
-      return;
-    }
-    DCHECK(!block.HasCaught());
-
-    if (!pair->Get(context, V8String(isolate, "readable")).ToLocal(&readable)) {
-      exception_state.RethrowV8Exception(block.Exception());
-      return;
-    }
-    DCHECK(!block.HasCaught());
-  }
-
-  // 2. If ! IsWritableStream(_writable_) is *false*, throw a *TypeError*
-  //    exception.
-  WritableStream* dom_writable =
-      V8WritableStream::ToImplWithTypeCheck(isolate, writable);
-  if (!dom_writable) {
-    exception_state.ThrowTypeError(kWritableIsNotWritableStream);
-    return;
-  }
-
-  // 3. If ! IsReadableStream(_readable_) is *false*, throw a *TypeError*
-  //    exception.
-  if (!V8ReadableStream::HasInstance(readable, isolate)) {
-    exception_state.ThrowTypeError(kReadableIsNotReadableStream);
-    return;
-  }
-
-  // TODO(ricea): When aborting pipes is supported, implement step 5:
-  // 5. If _signal_ is not *undefined*, and _signal_ is not an instance of the
-  //    `AbortSignal` interface, throw a *TypeError* exception.
-
-  // 6. If ! IsReadableStreamLocked(*this*) is *true*, throw a *TypeError*
-  //    exception.
-  if (stream->IsLocked(script_state, exception_state).value_or(false)) {
-    exception_state.ThrowTypeError("Cannot pipe a locked stream");
-    return;
-  }
-  if (exception_state.HadException()) {
-    return;
-  }
-
-  // 7. If ! IsWritableStreamLocked(_writable_) is *true*, throw a *TypeError*
-  //    exception.
-  if (dom_writable->IsLocked(script_state, exception_state).value_or(false)) {
-    exception_state.ThrowTypeError(kWritableIsLocked);
-    return;
-  }
-  if (exception_state.HadException()) {
-    return;
-  }
-  *writable_stream = dom_writable;
-  *readable_stream = ScriptValue(script_state->GetIsolate(), readable);
-}
-
-WritableStream* ReadableStream::PipeToCheckSourceAndDestination(
-    ScriptState* script_state,
-    ReadableStream* source,
-    ScriptValue destination_value,
-    ExceptionState& exception_state) {
-  // https://streams.spec.whatwg.org/#rs-pipe-to
-
-  // 2. If ! IsWritableStream(dest) is false, return a promise rejected with a
-  // TypeError exception.
-  WritableStream* destination = V8WritableStream::ToImplWithTypeCheck(
-      script_state->GetIsolate(), destination_value.V8Value());
-
-  if (!destination) {
-    exception_state.ThrowTypeError("Illegal invocation");
-    return nullptr;
-  }
-
-  // Step 3. is done separately afterwards.
-
-  // TODO(ricea): When aborting pipes is supported, implement step 4:
-  // 4. If signal is not undefined, and signal is not an instance of the
-  // AbortSignal interface, return a promise rejected with a TypeError
-  // exception.
-
-  // 5. If ! IsReadableStreamLocked(this) is true, return a promise rejected
-  // with a TypeError exception.
-  if (source->locked(script_state, exception_state) &&
-      !exception_state.HadException()) {
-    exception_state.ThrowTypeError("Cannot pipe a locked stream");
-    return nullptr;
-  }
-  if (exception_state.HadException())
-    return nullptr;
-
-  // 6. If ! IsWritableStreamLocked(dest) is true, return a promise rejected
-  // with a TypeError exception.
-  if (destination->locked()) {
-    exception_state.ThrowTypeError("Cannot pipe to a locked stream");
-    return nullptr;
-  }
-
-  return destination;
 }
 
 ScriptValue ReadableStream::CallTeeAndReturnBranchArray(

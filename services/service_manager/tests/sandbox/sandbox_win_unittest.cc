@@ -16,9 +16,12 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
+#include "base/path_service.h"
+#include "base/scoped_native_library.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/win/windows_version.h"
+#include "build/build_config.h"
 #include "sandbox/win/src/app_container_profile_base.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/src/sid.h"
@@ -116,6 +119,7 @@ class TestTargetPolicy : public sandbox::TargetPolicy {
     return sandbox::SBOX_ALL_OK;
   }
   sandbox::ResultCode AddDllToUnload(const wchar_t* dll_name) override {
+    blocklisted_dlls_.push_back(dll_name);
     return sandbox::SBOX_ALL_OK;
   }
   sandbox::ResultCode AddKernelObjectToClose(
@@ -153,7 +157,12 @@ class TestTargetPolicy : public sandbox::TargetPolicy {
 
   void SetEffectiveToken(HANDLE token) override {}
 
+  const std::vector<std::wstring>& blocklisted_dlls() const {
+    return blocklisted_dlls_;
+  }
+
  private:
+  std::vector<std::wstring> blocklisted_dlls_;
   scoped_refptr<sandbox::AppContainerProfileBase> app_container_profile_;
 };
 
@@ -341,6 +350,61 @@ TEST_F(SandboxWinTest, AppContainerCheckProfileAddCapabilities) {
   ASSERT_EQ(sandbox::SBOX_ALL_OK, result);
   ASSERT_NE(nullptr, profile);
   EXPECT_TRUE(CheckCapabilities(profile.get(), {L"cap1", L"cap2"}));
+}
+
+TEST_F(SandboxWinTest, BlocklistAddOneDllCheckInBrowser) {
+  {  // Block loaded module.
+    TestTargetPolicy policy;
+    BlocklistAddOneDllForTesting(L"kernel32.dll", true, &policy);
+    EXPECT_EQ(policy.blocklisted_dlls(),
+              std::vector<std::wstring>({L"kernel32.dll"}));
+  }
+
+  {  // Block module which is not loaded.
+    TestTargetPolicy policy;
+    BlocklistAddOneDllForTesting(L"notloaded.dll", true, &policy);
+    EXPECT_TRUE(policy.blocklisted_dlls().empty());
+  }
+
+  {  // Block module loaded by short name.
+#if defined(ARCH_CPU_X86)
+    const std::wstring short_dll_name = L"pe_ima~1.dll";
+    const std::wstring full_dll_name = L"pe_image_test_32.dll";
+#elif defined(ARCH_CPU_X86_64)
+    const std::wstring short_dll_name = L"pe_ima~2.dll";
+    const std::wstring full_dll_name = L"pe_image_test_64.dll";
+#endif
+
+    base::FilePath test_data_dir;
+    base::PathService::Get(base::DIR_TEST_DATA, &test_data_dir);
+    auto dll_path =
+        test_data_dir.AppendASCII("pe_image").Append(short_dll_name);
+
+    base::ScopedNativeLibrary library(dll_path);
+    EXPECT_TRUE(library.is_valid());
+
+    TestTargetPolicy policy;
+    BlocklistAddOneDllForTesting(full_dll_name.c_str(), true, &policy);
+    EXPECT_EQ(policy.blocklisted_dlls(),
+              std::vector<std::wstring>({short_dll_name, full_dll_name}));
+  }
+}
+
+TEST_F(SandboxWinTest, BlocklistAddOneDllDontCheckInBrowser) {
+  {  // Block module with short name.
+    TestTargetPolicy policy;
+    BlocklistAddOneDllForTesting(L"short.dll", false, &policy);
+    EXPECT_EQ(policy.blocklisted_dlls(),
+              std::vector<std::wstring>({L"short.dll"}));
+  }
+
+  {  // Block module with long name.
+    TestTargetPolicy policy;
+    BlocklistAddOneDllForTesting(L"thelongname.dll", false, &policy);
+    EXPECT_EQ(policy.blocklisted_dlls(),
+              std::vector<std::wstring>({L"thelongname.dll", L"thelon~1.dll",
+                                         L"thelon~2.dll", L"thelon~3.dll"}));
+  }
 }
 
 }  // namespace service_manager

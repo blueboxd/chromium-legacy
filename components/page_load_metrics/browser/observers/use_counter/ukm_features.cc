@@ -144,6 +144,8 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kCSSSelectorInternalMediaControlsOverlayCastButton,
           WebFeature::kWebBluetoothRequestDevice,
           WebFeature::kWebBluetoothRequestScan,
+          WebFeature::
+              kV8VideoPlaybackQuality_CorruptedVideoFrames_AttributeGetter,
       }));
   return *opt_in_features;
 }

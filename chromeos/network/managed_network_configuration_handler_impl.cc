@@ -38,6 +38,7 @@
 #include "chromeos/network/onc/onc_validator.h"
 #include "chromeos/network/policy_util.h"
 #include "chromeos/network/prohibited_technologies_handler.h"
+#include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/network/shill_property_util.h"
 #include "chromeos/network/tether_constants.h"
 #include "components/onc/onc_constants.h"
@@ -263,6 +264,7 @@ void ManagedNetworkConfigurationHandlerImpl::SendManagedProperties(
       policy_util::CreateManagedONC(global_policy, network_policy,
                                     user_settings, active_settings.get(),
                                     profile));
+  SetManagedActiveProxyValues(guid, augmented_properties.get());
   callback.Run(service_path, *augmented_properties);
 }
 
@@ -407,6 +409,24 @@ void ManagedNetworkConfigurationHandlerImpl::SetManagerProperty(
     const network_handler::ErrorCallback& error_callback) {
   network_configuration_handler_->SetManagerProperty(property_name, value,
                                                      callback, error_callback);
+}
+
+void ManagedNetworkConfigurationHandlerImpl::SetManagedActiveProxyValues(
+    const std::string& guid,
+    base::DictionaryValue* dictionary) {
+  DCHECK(ui_proxy_config_service_);
+  const std::string proxy_settings_key = ::onc::network_config::kProxySettings;
+  base::Value* proxy_settings = dictionary->FindKeyOfType(
+      proxy_settings_key, base::Value::Type::DICTIONARY);
+
+  if (!proxy_settings) {
+    proxy_settings = dictionary->SetKey(
+        proxy_settings_key, base::Value(base::Value::Type::DICTIONARY));
+  }
+  ui_proxy_config_service_->MergeEnforcedProxyConfig(guid, proxy_settings);
+
+  if (proxy_settings->DictEmpty())
+    dictionary->RemoveKey(proxy_settings_key);
 }
 
 void ManagedNetworkConfigurationHandlerImpl::SetShillProperties(
@@ -652,6 +672,11 @@ bool ManagedNetworkConfigurationHandlerImpl::ApplyOrQueuePolicies(
   policy_applicators_[userhash] = base::WrapUnique(applicator);
   applicator->Run();
   return true;
+}
+
+void ManagedNetworkConfigurationHandlerImpl::set_ui_proxy_config_service(
+    UIProxyConfigService* ui_proxy_config_service) {
+  ui_proxy_config_service_ = ui_proxy_config_service;
 }
 
 void ManagedNetworkConfigurationHandlerImpl::OnProfileAdded(

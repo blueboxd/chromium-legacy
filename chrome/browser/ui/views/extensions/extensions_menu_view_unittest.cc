@@ -203,8 +203,7 @@ std::vector<std::string> ExtensionsMenuViewUnitTest::GetPinnedExtensionNames() {
   return result;
 }
 
-// Disabled due to flaky crashes. See also https://crbug.com/1030172.
-TEST_F(ExtensionsMenuViewUnitTest, DISABLED_ExtensionsAreShownInTheMenu) {
+TEST_F(ExtensionsMenuViewUnitTest, ExtensionsAreShownInTheMenu) {
   // To start, there should be no extensions in the menu.
   EXPECT_EQ(0u, extensions_menu()->extensions_menu_items_for_testing().size());
 
@@ -246,9 +245,7 @@ TEST_F(ExtensionsMenuViewUnitTest, PinnedExtensionAppearsInToolbar) {
   EXPECT_THAT(GetPinnedExtensionNames(), testing::IsEmpty());
 }
 
-// Disabled due to flaky crashes. See also https://crbug.com/1030172.
-TEST_F(ExtensionsMenuViewUnitTest,
-       DISABLED_PinnedExtensionAppearsInAnotherWindow) {
+TEST_F(ExtensionsMenuViewUnitTest, PinnedExtensionAppearsInAnotherWindow) {
   AddSimpleExtension("Test Name");
 
   AdditionalBrowser browser2(
@@ -272,8 +269,7 @@ TEST_F(ExtensionsMenuViewUnitTest,
       menu_item->view_controller_for_testing());
 }
 
-// Disabled due to flaky crashes. See also https://crbug.com/1030172.
-TEST_F(ExtensionsMenuViewUnitTest, DISABLED_ReorderPinnedExtensions) {
+TEST_F(ExtensionsMenuViewUnitTest, ReorderPinnedExtensions) {
   constexpr char kName1[] = "Test 1";
   AddSimpleExtension(kName1);
   constexpr char kName2[] = "Test 2";
@@ -308,9 +304,7 @@ TEST_F(ExtensionsMenuViewUnitTest, DISABLED_ReorderPinnedExtensions) {
               testing::ElementsAre(kName3, kName1, kName2));
 }
 
-// Disabled due to flaky crashes. See also https://crbug.com/1030172.
-TEST_F(ExtensionsMenuViewUnitTest,
-       DISABLED_PinnedExtensionsReorderOnPrefChange) {
+TEST_F(ExtensionsMenuViewUnitTest, PinnedExtensionsReorderOnPrefChange) {
   constexpr char kName1[] = "Test 1";
   const extensions::ExtensionId id1 = AddSimpleExtension(kName1)->id();
   constexpr char kName2[] = "Test 2";
@@ -332,8 +326,7 @@ TEST_F(ExtensionsMenuViewUnitTest,
               testing::ElementsAre(kName2, kName3, kName1));
 }
 
-// Disabled due to flaky crashes. See also https://crbug.com/1030172.
-TEST_F(ExtensionsMenuViewUnitTest, DISABLED_PinnedExtensionLayout) {
+TEST_F(ExtensionsMenuViewUnitTest, PinnedExtensionLayout) {
   for (int i = 0; i < 3; i++)
     AddSimpleExtension(base::StringPrintf("Test %d", i));
   for (auto* menu_item :
@@ -361,9 +354,7 @@ TEST_F(ExtensionsMenuViewUnitTest, DISABLED_PinnedExtensionLayout) {
 
 // Tests that when an extension is reloaded it remains visible in the toolbar
 // and extensions menu.
-//
-// Disabled due to flaky crashes. See also https://crbug.com/1030172.
-TEST_F(ExtensionsMenuViewUnitTest, DISABLED_ReloadExtension) {
+TEST_F(ExtensionsMenuViewUnitTest, ReloadExtension) {
   // The extension must have a manifest to be reloaded.
   extensions::TestExtensionDir extension_directory;
   constexpr char kManifest[] = R"({
@@ -398,9 +389,7 @@ TEST_F(ExtensionsMenuViewUnitTest, DISABLED_ReloadExtension) {
 // Tests that a when an extension is reloaded with manifest errors, and
 // therefore fails to be loaded into Chrome, it's removed from the toolbar and
 // extensions menu.
-//
-// Disabled due to flaky crashes. See also https://crbug.com/1030172.
-TEST_F(ExtensionsMenuViewUnitTest, DISABLED_ReloadExtensionFailed) {
+TEST_F(ExtensionsMenuViewUnitTest, ReloadExtensionFailed) {
   extensions::TestExtensionDir extension_directory;
   constexpr char kManifest[] = R"({
         "name": "Test",

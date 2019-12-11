@@ -488,7 +488,7 @@ ScriptPromise RTCRtpSender::getStats(ScriptState* script_state) {
   ScriptPromise promise = resolver->Promise();
   sender_->GetStats(
       WTF::Bind(WebRTCStatsReportCallbackResolver, WrapPersistent(resolver)),
-      GetExposedGroupIdsDeprecated(script_state));
+      GetExposedGroupIds(script_state));
   return promise;
 }
 
@@ -552,7 +552,7 @@ void RTCRtpSender::setStreams(HeapVector<Member<MediaStream>> streams,
                                       kOnlySupportedInUnifiedPlanMessage);
     return;
   }
-  WebVector<WebString> stream_ids;
+  Vector<String> stream_ids;
   for (auto stream : streams)
     stream_ids.emplace_back(stream->id());
   sender_->SetStreams(stream_ids);

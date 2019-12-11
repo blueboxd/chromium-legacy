@@ -66,7 +66,7 @@ cca.state.get = function(state) {
  */
 cca.state.set = function(state, val) {
   const oldVal = cca.state.get(state);
-  if (oldVal == val) {
+  if (oldVal === val) {
     return;
   }
   document.body.classList.toggle(state, val);

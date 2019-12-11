@@ -122,11 +122,10 @@ class MODULES_EXPORT PeerConnectionTracker
       const webrtc::PeerConnectionInterface::RTCConfiguration& config);
 
   // Sends an update when an Ice candidate is added.
-  virtual void TrackAddIceCandidate(
-      RTCPeerConnectionHandler* pc_handler,
-      scoped_refptr<RTCIceCandidatePlatform> candidate,
-      Source source,
-      bool succeeded);
+  virtual void TrackAddIceCandidate(RTCPeerConnectionHandler* pc_handler,
+                                    RTCIceCandidatePlatform* candidate,
+                                    Source source,
+                                    bool succeeded);
   // Sends an update when an Ice candidate error is receiver.
   virtual void TrackIceCandidateError(RTCPeerConnectionHandler* pc_handler,
                                       const String& host_candidate,

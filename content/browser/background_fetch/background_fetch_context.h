@@ -133,6 +133,8 @@ class CONTENT_EXPORT BackgroundFetchContext
     return registration_notifier_.get();
   }
 
+  base::WeakPtr<BackgroundFetchContext> GetWeakPtr();
+
  private:
   using GetPermissionCallback =
       base::OnceCallback<void(BackgroundFetchPermission)>;

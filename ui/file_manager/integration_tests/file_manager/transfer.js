@@ -171,7 +171,7 @@ async function transferBetweenVolumes(transferInfo) {
       'selectFile', appId, [transferInfo.fileToTransfer.nameText]));
 
   // Copy the file.
-  const transferCommand = transferInfo.isMove ? 'cut' : 'copy';
+  let transferCommand = transferInfo.isMove ? 'cut' : 'copy';
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
       'execCommand', appId, [transferCommand]));
 
@@ -663,7 +663,7 @@ testcase.transferToUsbHasDestinationText = async () => {
   const entry = ENTRIES.hello;
 
   // Open files app.
-  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, [entry], []);
+  let appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, [entry], []);
 
   // Mount a USB volume.
   await sendTestMessage({name: 'mountFakeUsbEmpty'});
@@ -695,72 +695,4 @@ testcase.transferToUsbHasDestinationText = async () => {
   const panel = await remoteCall.waitForElement(
       appId, ['#progress-panel', 'xf-panel-item']);
   chrome.test.assertEq('To fake-usb', panel.attributes['secondary-text']);
-};
-
-/**
- * Tests that dismissing an error notification on the foreground
- * page is propagated to the background page.
- */
-testcase.transferDismissedErrorIsRemembered = async () => {
-  const DOWNLOADS_QUERY = '#directory-tree [entry-label="Downloads"]';
-  const entry = ENTRIES.hello;
-
-  // Open Files app on Drive.
-  let appId =
-      await setupAndWaitUntilReady(RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET);
-
-  // Select a file to copy.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'selectFile', appId, [entry.nameText]));
-
-  // Copy the file.
-  chrome.test.assertTrue(
-      await remoteCall.callRemoteTestUtil('execCommand', appId, ['copy']));
-
-  // Force all file copy operations to trigger an error.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'forceErrorsOnFileOperations', appId, [true]));
-
-  // Select Downloads.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'selectInDirectoryTree', appId, [DOWNLOADS_QUERY]));
-
-  // Paste the file to begin a copy operation.
-  chrome.test.assertTrue(
-      await remoteCall.callRemoteTestUtil('execCommand', appId, ['paste']));
-
-  // Check: an error feedback panel with failure status should appear.
-  const errorPanel = await remoteCall.waitForElement(
-      appId, ['#progress-panel', 'xf-panel-item']);
-  chrome.test.assertEq('failure', errorPanel.attributes['status']);
-
-  // Press the dismiss button on the error feedback panel.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'fakeMouseClick', appId,
-      [['#progress-panel', 'xf-panel-item', 'xf-button#secondary-action']]));
-
-  // Close the Files app window.
-  await remoteCall.closeWindowAndWait(appId);
-
-  // Open a Files app window again.
-  appId =
-      await setupAndWaitUntilReady(RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET);
-
-  // Turn off the error generation for file operations.
-  chrome.test.assertFalse(await remoteCall.callRemoteTestUtil(
-      'forceErrorsOnFileOperations', appId, [false]));
-
-  // Tell the background page to never finish the file copy.
-  await remoteCall.callRemoteTestUtil(
-      'progressCenterNeverNotifyCompleted', appId, []);
-
-  // Paste the file to begin a copy operation.
-  chrome.test.assertTrue(
-      await remoteCall.callRemoteTestUtil('execCommand', appId, ['paste']));
-
-  // Check: the first feedback panel item should be a progress panel.
-  // If the error persisted then we'd see a summary panel here.
-  const progressPanel = await remoteCall.waitForElement(
-      appId, ['#progress-panel', 'xf-panel-item']);
-  chrome.test.assertEq('progress', progressPanel.attributes['indicator']);
 };

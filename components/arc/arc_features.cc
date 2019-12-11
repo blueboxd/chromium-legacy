@@ -85,6 +85,13 @@ const base::Feature kUsbHostFeature{"ArcUsbHost",
 const base::Feature kUsbStorageUIFeature{"ArcUsbStorageUI",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether ARC uses VideoDecoder-backed video decoding.
+// When enabled, GpuArcVideoDecodeAccelerator will use VdVideoDecodeAccelerator
+// to delegate decoding tasks to VideoDecoder implementations, instead of using
+// VDA implementations created by GpuVideoDecodeAcceleratorFactory.
+const base::Feature kVideoDecoder{"ArcVideoDecoder",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls ARC VPN integration.
 // When enabled, Chrome traffic will be routed through VPNs connected in
 // Android apps.

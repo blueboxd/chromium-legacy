@@ -11,6 +11,8 @@
 #import <memory>
 
 #import "ios/web/security/cert_verification_error.h"
+#import "ios/web/web_state/ui/crw_web_view_handler.h"
+#import "ios/web/web_state/ui/crw_web_view_handler_delegate.h"
 #include "ui/base/page_transition_types.h"
 
 @class CRWWKNavigationHandler;
@@ -23,22 +25,12 @@ namespace web {
 enum class WKNavigationState;
 enum class ErrorRetryCommand;
 struct Referrer;
-class WebStateImpl;
 class NavigationContextImpl;
-class UserInteractionState;
 class WKBackForwardListItemHolder;
 }
 
 // CRWWKNavigationHandler uses this protocol to interact with its owner.
-@protocol CRWWKNavigationHandlerDelegate <NSObject>
-
-// Returns associated WebStateImpl.
-- (web::WebStateImpl*)webStateImplForNavigationHandler:
-    (CRWWKNavigationHandler*)navigationHandler;
-
-// Returns associated UserInteractionState.
-- (web::UserInteractionState*)userInteractionStateForNavigationHandler:
-    (CRWWKNavigationHandler*)navigationHandler;
+@protocol CRWWKNavigationHandlerDelegate <CRWWebViewHandlerDelegate>
 
 // Returns associated certificate verificatio controller.
 - (CRWCertVerificationController*)
@@ -48,10 +40,6 @@ class WKBackForwardListItemHolder;
 // Returns the associated js injector.
 - (CRWJSInjector*)JSInjectorForNavigationHandler:
     (CRWWKNavigationHandler*)navigationHandler;
-
-// Returns the actual URL of the document object (i.e., the last committed URL
-// of the main frame).
-- (GURL)navigationHandlerDocumentURL:(CRWWKNavigationHandler*)navigationHandler;
 
 // Sets document URL to newURL, and updates any relevant state information.
 - (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
@@ -78,15 +66,6 @@ class WKBackForwardListItemHolder;
 - (void)navigationHandlerDidStartLoading:
     (CRWWKNavigationHandler*)navigationHandler;
 
-// Instructs the delegate to update the SSL status for the current navigation
-// item.
-- (void)navigationHandlerUpdateSSLStatusForCurrentNavigationItem:
-    (CRWWKNavigationHandler*)navigationHandler;
-
-// Notifies the delegate that navigation has finished.
-- (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
-      didFinishNavigation:(web::NavigationContextImpl*)context;
-
 // Notifies the delegate that web process has crashed.
 - (void)navigationHandlerWebProcessDidCrash:
     (CRWWKNavigationHandler*)navigationHandler;
@@ -100,15 +79,11 @@ class WKBackForwardListItemHolder;
     didCompleteLoadWithSuccess:(BOOL)loadSuccess
                     forContext:(web::NavigationContextImpl*)context;
 
-// Instructs the delegate to create a web view if it's not yet created.
-- (WKWebView*)navigationHandlerEnsureWebViewCreated:
-    (CRWWKNavigationHandler*)navigationHandler;
-
 @end
 
 // Handler class for WKNavigationDelegate, deals with navigation callbacks from
 // WKWebView and maintains page loading state.
-@interface CRWWKNavigationHandler : NSObject <WKNavigationDelegate>
+@interface CRWWKNavigationHandler : CRWWebViewHandler <WKNavigationDelegate>
 
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithDelegate:(id<CRWWKNavigationHandlerDelegate>)delegate
@@ -138,9 +113,6 @@ class WKBackForwardListItemHolder;
 
 // Returns the referrer for the current page.
 @property(nonatomic, readonly, assign) web::Referrer currentReferrer;
-
-// Instructs this handler to close.
-- (void)close;
 
 // Instructs this handler to stop loading.
 - (void)stopLoading;

@@ -508,6 +508,7 @@ TEST(ComputedStyleTest, CustomPropertiesEqual_Data) {
 
 TEST(ComputedStyleTest, ApplyColorSchemeLightOnDark) {
   ScopedCSSColorSchemeForTest scoped_property_enabled(true);
+  ScopedCSSColorSchemeUARenderingForTest scoped_ua_enabled(true);
 
   std::unique_ptr<DummyPageHolder> dummy_page_holder_ =
       std::make_unique<DummyPageHolder>(IntSize(0, 0), nullptr);
@@ -540,6 +541,7 @@ TEST(ComputedStyleTest, ApplyColorSchemeLightOnDark) {
 
 TEST(ComputedStyleTest, ApplyInternalLightDarkColor) {
   ScopedCSSColorSchemeForTest scoped_property_enabled(true);
+  ScopedCSSColorSchemeUARenderingForTest scoped_ua_enabled(true);
 
   std::unique_ptr<DummyPageHolder> dummy_page_holder_ =
       std::make_unique<DummyPageHolder>(IntSize(0, 0), nullptr);

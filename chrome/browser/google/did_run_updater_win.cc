@@ -4,7 +4,7 @@
 
 #include "chrome/browser/google/did_run_updater_win.h"
 
-#include "chrome/installer/util/google_update_settings.h"
+#include "chrome/installer/util/update_did_run_state.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -21,5 +21,5 @@ DidRunUpdater::~DidRunUpdater() {
 void DidRunUpdater::Observe(int type,
                             const content::NotificationSource& source,
                             const content::NotificationDetails& details) {
-  GoogleUpdateSettings::UpdateDidRunState(true);
+  installer::UpdateDidRunState(true);
 }

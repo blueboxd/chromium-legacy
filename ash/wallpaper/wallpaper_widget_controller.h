@@ -51,23 +51,23 @@ class ASH_EXPORT WallpaperWidgetController {
   // immediately. The primary widget will be switched when |widget|'s showing
   // animation finishes (during which |widget| will be kept by
   // |animating_widget_|).
-  // |blur_sigma| - if non-zero, the blur that should be applied to the
-  //     wallpaper widget layer.
-  void SetWallpaperWidget(views::Widget* widget,
-                          WallpaperView* wallpaper_view,
-                          float blur_sigma);
+  void SetWallpaperWidget(views::Widget* widget, WallpaperView* wallpaper_view);
 
   // Move the wallpaper for |root_window| to the specified |container|.
   // The lock screen moves the wallpaper container to hides the user's windows.
   // Returns true if there was something to reparent.
   bool Reparent(aura::Window* root_window, int container);
 
-  // Blur pixels of the wallpaper layer by 3 * the given amount.
-  void SetWallpaperBlur(float blur_sigma);
+  // Blur pixels of the wallpaper layer by 3 * the given amount and set the
+  // opacity.
+  bool SetBlurAndOpacity(float blur_sigma, float opacity);
 
   // TODO: Get the wallpaper view from |animating_widget_| or |active_widget_|
   // instead of caching the pointer value.
   WallpaperView* wallpaper_view() const { return wallpaper_view_; }
+
+  float blur_sigma() const { return blur_sigma_; }
+  float opacity() const { return opacity_; }
 
   // Reset, and closes both |active_widget_| and |animating_widget_|. Can be
   // used in tests to reset the wallpaper widget controller state.
@@ -104,6 +104,10 @@ class ASH_EXPORT WallpaperWidgetController {
   // Pointer to the wallpaper view owned by |animating_widget_| if it exists,
   // otherwise owned by |active_widget_|.
   WallpaperView* wallpaper_view_ = nullptr;
+
+  // The current blur sigma and opacity.
+  float blur_sigma_ = 0.f;
+  float opacity_ = 1.f;
 
   // Callbacks to be run when the |animating_widget_| stops animating and gets
   // set as the active widget.

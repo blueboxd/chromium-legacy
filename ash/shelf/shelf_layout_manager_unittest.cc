@@ -1363,12 +1363,12 @@ TEST_P(ShelfLayoutManagerTest, VisibleWhenLoginScreenShowing) {
   ASSERT_TRUE(wallpaper_controller->HasShownAnyWallpaper());
 
   // Non-blurred wallpaper.
-  wallpaper_controller->UpdateWallpaperBlur(/*blur=*/false);
+  wallpaper_controller->UpdateWallpaperBlurForLockState(/*blur=*/false);
   EXPECT_EQ(ShelfBackgroundType::kLoginNonBlurredWallpaper,
             GetShelfWidget()->GetBackgroundType());
 
   // Blurred wallpaper.
-  wallpaper_controller->UpdateWallpaperBlur(/*blur=*/true);
+  wallpaper_controller->UpdateWallpaperBlurForLockState(/*blur=*/true);
   EXPECT_EQ(ShelfBackgroundType::kLogin, GetShelfWidget()->GetBackgroundType());
 }
 

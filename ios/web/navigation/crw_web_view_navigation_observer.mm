@@ -52,18 +52,9 @@ using web::wk_navigation_util::IsPlaceholderUrl;
 // The NavigationManagerImpl associated with the web state.
 @property(nonatomic, readonly) NavigationManagerImpl* navigationManagerImpl;
 
-// Set to YES when [self close] is called.
-@property(nonatomic, assign) BOOL beingDestroyed;
-
 @end
 
 @implementation CRWWebViewNavigationObserver
-
-#pragma mark - Public
-
-- (void)close {
-  self.beingDestroyed = YES;
-}
 
 #pragma mark - Property
 
@@ -95,7 +86,7 @@ using web::wk_navigation_util::IsPlaceholderUrl;
 }
 
 - (web::WebStateImpl*)webStateImpl {
-  return [self.delegate webStateImplForNavigationObserver:self];
+  return [self.delegate webStateImplForWebViewHandler:self];
 }
 
 - (CRWWKNavigationHandler*)navigationHandler {
@@ -103,7 +94,7 @@ using web::wk_navigation_util::IsPlaceholderUrl;
 }
 
 - (const GURL&)documentURL {
-  return [self.delegate documentURLForNavigationObserver:self];
+  return [self.delegate documentURLForWebViewHandler:self];
 }
 
 #pragma mark - KVO Observation
@@ -222,8 +213,8 @@ using web::wk_navigation_util::IsPlaceholderUrl;
     }
   }
 
-  [self.delegate navigationObserverDidChangeSSLStatus:self];
-  [self.delegate navigationObserver:self didFinishNavigation:existingContext];
+  [self.delegate webViewHandlerUpdateSSLStatusForCurrentNavigationItem:self];
+  [self.delegate webViewHandler:self didFinishNavigation:existingContext];
 }
 
 // Called when WKWebView canGoForward/canGoBack state has been changed.

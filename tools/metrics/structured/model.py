@@ -29,9 +29,8 @@ _METRIC_TYPE =  models.ObjectNodeType(
       ('kind', unicode, r'^(?i)(|hashed-string|int)$'),
     ],
     alphabetization=[
-        (_OBSOLETE_TYPE.tag, _KEEP_ORDER),
-        (_OWNER_TYPE.tag, _KEEP_ORDER),
-        (_SUMMARY_TYPE.tag, _KEEP_ORDER),
+        (_OBSOLETE_TYPE.tag, lambda _: 1),
+        (_SUMMARY_TYPE.tag, lambda _: 2),
     ],
     children=[
         models.ChildType(_OBSOLETE_TYPE.tag, _OBSOLETE_TYPE, multiple=False),
@@ -42,12 +41,12 @@ _METRIC_TYPE =  models.ObjectNodeType(
 _EVENT_TYPE =  models.ObjectNodeType(
     'event',
     attributes=[
-      ('name', unicode, r'^[A-Za-z0-9.]+$'),
+      ('name', unicode, r'^[A-Z][A-Za-z0-9.]*$'),
     ],
     alphabetization=[
-        (_OBSOLETE_TYPE.tag, _KEEP_ORDER),
-        (_OWNER_TYPE.tag, _KEEP_ORDER),
-        (_SUMMARY_TYPE.tag, _KEEP_ORDER),
+        (_OBSOLETE_TYPE.tag, lambda _: 1),
+        (_OWNER_TYPE.tag, lambda _: 2),
+        (_SUMMARY_TYPE.tag, lambda _: 3),
         (_METRIC_TYPE.tag, _LOWERCASE_FN('name')),
     ],
     extra_newlines=(1, 1, 1),

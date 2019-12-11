@@ -44,8 +44,9 @@ class ServiceWorkerVersion;
 // renderer process, which the browser process uses when performing operations
 // involving service workers.
 //
-// ServiceWorkerProviderHost lives on the IO thread, since all nearly all
-// browser process service worker machinery lives on the IO thread.
+// ServiceWorkerProviderHost lives on the service worker core thread, since all
+// nearly all browser process service worker machinery lives on the service
+// worker core thread.
 //
 // Example:
 // * A new service worker registration is created. The browser process loops
@@ -142,13 +143,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost {
 
   ~ServiceWorkerProviderHost();
 
-  // May return nullptr.
-  RenderProcessHost* GetProcessHost() {
-    DCHECK(IsProviderForServiceWorker());
-    return RenderProcessHost::FromID(worker_process_id_);
-  }
-
   int provider_id() const { return provider_id_; }
+  int worker_process_id() const { return worker_process_id_; }
 
   // For service worker execution contexts. The version of the service worker.
   // This is nullptr when the worker is still starting up (until

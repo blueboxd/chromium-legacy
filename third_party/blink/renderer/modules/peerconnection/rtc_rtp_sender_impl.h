@@ -134,17 +134,17 @@ class MODULES_EXPORT RTCRtpSenderImpl : public blink::RTCRtpSenderPlatform {
   rtc::scoped_refptr<webrtc::DtlsTransportInterface> DtlsTransport() override;
   webrtc::DtlsTransportInformation DtlsTransportInformation() override;
   blink::WebMediaStreamTrack Track() const override;
-  WebVector<String> StreamIds() const override;
+  Vector<String> StreamIds() const override;
   void ReplaceTrack(blink::WebMediaStreamTrack with_track,
                     blink::RTCVoidRequest* request) override;
   std::unique_ptr<blink::RtcDtmfSenderHandler> GetDtmfSender() const override;
   std::unique_ptr<webrtc::RtpParameters> GetParameters() const override;
-  void SetParameters(blink::WebVector<webrtc::RtpEncodingParameters>,
+  void SetParameters(Vector<webrtc::RtpEncodingParameters>,
                      webrtc::DegradationPreference,
                      blink::RTCVoidRequest*) override;
   void GetStats(RTCStatsReportCallback,
-                const blink::WebVector<webrtc::NonStandardGroupId>&) override;
-  void SetStreams(const WebVector<String>& stream_ids) override;
+                const Vector<webrtc::NonStandardGroupId>&) override;
+  void SetStreams(const Vector<String>& stream_ids) override;
 
   // The ReplaceTrack() that takes a blink::RTCVoidRequest is implemented on
   // top of this, which returns the result in a callback instead. Allows doing

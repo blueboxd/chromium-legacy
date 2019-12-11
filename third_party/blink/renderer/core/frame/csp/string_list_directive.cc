@@ -14,43 +14,62 @@ namespace blink {
 StringListDirective::StringListDirective(const String& name,
                                          const String& value,
                                          ContentSecurityPolicy* policy)
-    : CSPDirective(name, value, policy), allow_any_(false) {
+    : CSPDirective(name, value, policy),
+      allow_any_(false),
+      allow_duplicates_(false) {
   // Turn whitespace-y characters into ' ' and then split on ' ' into list_.
   value.SimplifyWhiteSpace().Split(' ', false, list_);
 
-  // A single entry "*" means all values are allowed.
-  if (list_.size() == 1 && list_.at(0) == "*") {
-    allow_any_ = true;
-    list_.clear();
-  }
+  auto drop_fn = [this](const String& value) -> bool {
+    return !AllowOrProcessValue(value);
+  };
 
   // There appears to be no wtf::Vector equivalent to STLs erase(from, to)
   // method, so we can't do the canonical .erase(remove_if(..), end) and have
   // to emulate this:
-  list_.Shrink(
-      std::remove_if(list_.begin(), list_.end(), &IsInvalidStringValue) -
-      list_.begin());
+  list_.Shrink(std::remove_if(list_.begin(), list_.end(), drop_fn) -
+               list_.begin());
 }
 
-// TODO(vogelheim): If StringListDirective will be used in contexts other than
-//                  TrustedTypes, this needs to be made configurable or
-//                  over-rideable.
-bool StringListDirective::IsInvalidStringValue(const String& str) {
-  // TODO(vogelheim): Update this as the Trusted Type spec evolves.
+bool StringListDirective::IsPolicyName(const String& name) {
+  // This implements tt-policy-name from
+  // https://w3c.github.io/webappsec-trusted-types/dist/spec/#trusted-types-csp-directive/
+  return name.Find(&IsNotPolicyNameChar) == kNotFound;
+}
 
-  // Currently, Trusted Type demands that quoted strings are treated as
-  // placeholders (and thus cannot be policy names). We'll just disallow any
-  // string with quote marks in them.
-  return str.Contains('\'') || str.Contains('"');
+bool StringListDirective::IsNotPolicyNameChar(UChar c) {
+  // This implements the negation of one char of tt-policy-name from
+  // https://w3c.github.io/webappsec-trusted-types/dist/spec/#trusted-types-csp-directive/
+  bool is_name_char = (c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') ||
+                      (c >= 'A' && c <= 'Z') || c == '-' || c == '#' ||
+                      c == '=' || c == '_' || c == '/' || c == '@' ||
+                      c == '.' || c == '%';
+  return !is_name_char;
+}
+
+bool StringListDirective::AllowOrProcessValue(const String& src) {
+  DCHECK_EQ(src, src.StripWhiteSpace());
+  // Handle keywords and special tokens first:
+  if (src == "'allow-duplicates'") {
+    allow_duplicates_ = true;
+    return false;
+  }
+  if (src == "*") {
+    allow_any_ = true;
+    return false;
+  }
+  return IsPolicyName(src);
 }
 
 bool StringListDirective::Allows(const String& string_piece,
                                  bool is_duplicate) {
-  if (string_piece == "default" && is_duplicate)
+  if (is_duplicate && !allow_duplicates_)
     return false;
-  if (allow_any_)
-    return true;
-  return list_.Contains(string_piece) && !is_duplicate;
+  if (is_duplicate && string_piece == "default")
+    return false;
+  if (!IsPolicyName(string_piece))
+    return false;
+  return allow_any_ || list_.Contains(string_piece);
 }
 
 void StringListDirective::Trace(blink::Visitor* visitor) {

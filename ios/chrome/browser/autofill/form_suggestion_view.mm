@@ -63,6 +63,7 @@ const CGFloat kSuggestionHorizontalMargin = 6;
     }
     self.contentInset = UIEdgeInsetsZero;
     [self createAndInsertArrangedSubviews];
+    [self setContentOffset:CGPointZero];
   }
 }
 

@@ -288,8 +288,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     // Content area is lazily instantiated.
     _defaultURL = GURL(url::kAboutBlankURL);
     _jsInjector = [[CRWJSInjector alloc] initWithDelegate:self];
-    _requestController =
-        [[CRWWebRequestController alloc] initWithWebState:_webStateImpl];
+    _requestController = [[CRWWebRequestController alloc] init];
     _requestController.delegate = self;
     _webViewProxy = [[CRWWebViewProxyImpl alloc] initWithWebController:self];
     [[_webViewProxy scrollViewProxy] addObserver:self];
@@ -1450,10 +1449,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 #pragma mark - CRWWKUIHandlerDelegate
 
-- (const GURL&)documentURLForUIHandler:(CRWWKUIHandler*)UIHandler {
-  return _documentURL;
-}
-
 - (WKWebView*)UIHandler:(CRWWKUIHandler*)UIHandler
     createWebViewWithConfiguration:(WKWebViewConfiguration*)configuration
                        forWebState:(web::WebState*)webState {
@@ -1468,10 +1463,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (BOOL)UIHandler:(CRWWKUIHandler*)UIHandler
     isUserInitiatedAction:(WKNavigationAction*)action {
   return [self isUserInitiatedAction:action];
-}
-
-- (web::WebStateImpl*)webStateImplForUIHandler:(CRWWKUIHandler*)UIHandler {
-  return self.webStateImpl;
 }
 
 #pragma mark - WKNavigationDelegate Helpers
@@ -1606,31 +1597,45 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   }
 }
 
-#pragma mark - CRWWebViewNavigationObserverDelegate
+#pragma mark - CRWWebViewHandlerDelegate
 
-- (web::WebStateImpl*)webStateImplForNavigationObserver:
-    (CRWWebViewNavigationObserver*)navigationObserver {
+- (web::WebStateImpl*)webStateImplForWebViewHandler:
+    (CRWWebViewHandler*)handler {
   return self.webStateImpl;
 }
+
+- (const GURL&)documentURLForWebViewHandler:(CRWWebViewHandler*)handler {
+  return _documentURL;
+}
+
+- (web::UserInteractionState*)userInteractionStateForWebViewHandler:
+    (CRWWebViewHandler*)handler {
+  return &_userInteractionState;
+}
+
+- (void)webViewHandlerUpdateSSLStatusForCurrentNavigationItem:
+    (CRWWebViewHandler*)handler {
+  [self updateSSLStatusForCurrentNavigationItem];
+}
+
+- (void)webViewHandler:(CRWWebViewHandler*)handler
+    didFinishNavigation:(web::NavigationContextImpl*)context {
+  [self didFinishNavigation:context];
+}
+
+- (void)ensureWebViewCreatedForWebViewHandler:(CRWWebViewHandler*)handler {
+  [self ensureWebViewCreated];
+}
+
+- (WKWebView*)webViewForWebViewHandler:(CRWWebViewHandler*)handler {
+  return self.webView;
+}
+
+#pragma mark - CRWWebViewNavigationObserverDelegate
 
 - (CRWWKNavigationHandler*)navigationHandlerForNavigationObserver:
     (CRWWebViewNavigationObserver*)navigationObserver {
   return self.navigationHandler;
-}
-
-- (const GURL&)documentURLForNavigationObserver:
-    (CRWWebViewNavigationObserver*)navigationObserver {
-  return _documentURL;
-}
-
-- (void)navigationObserverDidChangeSSLStatus:
-    (CRWWebViewNavigationObserver*)navigationObserver {
-  [self updateSSLStatusForCurrentNavigationItem];
-}
-
-- (void)navigationObserver:(CRWWebViewNavigationObserver*)navigationObserver
-       didFinishNavigation:(web::NavigationContextImpl*)context {
-  [self didFinishNavigation:context];
 }
 
 - (void)navigationObserver:(CRWWebViewNavigationObserver*)navigationObserver
@@ -1757,16 +1762,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 #pragma mark - CRWWKNavigationHandlerDelegate
 
-- (web::WebStateImpl*)webStateImplForNavigationHandler:
-    (CRWWKNavigationHandler*)navigationHandler {
-  return self.webStateImpl;
-}
-
-- (web::UserInteractionState*)userInteractionStateForNavigationHandler:
-    (CRWWKNavigationHandler*)navigationHandler {
-  return &_userInteractionState;
-}
-
 - (CRWJSInjector*)JSInjectorForNavigationHandler:
     (CRWWKNavigationHandler*)navigationHandler {
   return self.jsInjector;
@@ -1776,11 +1771,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     certVerificationControllerForNavigationHandler:
         (CRWWKNavigationHandler*)navigationHandler {
   return _certVerificationController;
-}
-
-- (GURL)navigationHandlerDocumentURL:
-    (CRWWKNavigationHandler*)navigationHandler {
-  return _documentURL;
 }
 
 - (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
@@ -1818,16 +1808,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   [self didStartLoading];
 }
 
-- (void)navigationHandlerUpdateSSLStatusForCurrentNavigationItem:
-    (CRWWKNavigationHandler*)navigationHandler {
-  [self updateSSLStatusForCurrentNavigationItem];
-}
-
-- (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
-      didFinishNavigation:(web::NavigationContextImpl*)context {
-  [self didFinishNavigation:context];
-}
-
 - (void)navigationHandlerWebProcessDidCrash:
     (CRWWKNavigationHandler*)navigationHandler {
   self.webStateImpl->CancelDialogs();
@@ -1845,22 +1825,11 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   [self loadCompleteWithSuccess:loadSuccess forContext:context];
 }
 
-- (WKWebView*)navigationHandlerEnsureWebViewCreated:
-    (CRWWKNavigationHandler*)navigationHandler {
-  [self ensureWebViewCreated];
-  return self.webView;
-}
-
 #pragma mark - CRWWebRequestControllerDelegate
 
 - (void)webRequestControllerStopLoading:
     (CRWWebRequestController*)requestController {
   [self stopLoading];
-}
-
-- (void)webRequestControllerEnsureWebViewCreated:
-    (CRWWebRequestController*)requestController {
-  [self ensureWebViewCreated];
 }
 
 - (void)webRequestControllerDidStartLoading:
@@ -1882,19 +1851,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   self.webView.allowsBackForwardNavigationGestures = NO;
 }
 
-- (web::UserInteractionState*)webRequestControllerUserInteractionState:
-    (CRWWebRequestController*)requestController {
-  return &_userInteractionState;
-}
-
 - (void)webRequestControllerRestoreStateFromHistory:
     (CRWWebRequestController*)requestController {
   [self restoreStateFromHistory];
-}
-
-- (WKWebView*)webRequestControllerWebView:
-    (CRWWebRequestController*)requestController {
-  return self.webView;
 }
 
 - (CRWWKNavigationHandler*)webRequestControllerNavigationHandler:
@@ -1904,27 +1863,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 #pragma mark - CRWJSNavigationHandlerDelegate
 
-- (web::WebStateImpl*)webStateImplForJSNavigationHandler:
-    (CRWJSNavigationHandler*)navigationHandler {
-  return self.webStateImpl;
-}
-
-// Returns the current URL of web view.
 - (GURL)currentURLForJSNavigationHandler:
     (CRWJSNavigationHandler*)navigationHandler {
   return self.currentURL;
-}
-
-// Returns associated UserInteractionState.
-- (web::UserInteractionState*)userInteractionStateForJSNavigationHandler:
-    (CRWJSNavigationHandler*)navigationHandler {
-  return &_userInteractionState;
-}
-
-// Returns associated WKWebView.
-- (WKWebView*)webViewForJSNavigationHandler:
-    (CRWJSNavigationHandler*)navigationHandler {
-  return self.webView;
 }
 
 - (void)JSNavigationHandlerUpdateSSLStatusForCurrentNavigationItem:
@@ -1935,11 +1876,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)JSNavigationHandlerOptOutScrollsToTopForSubviews:
     (CRWJSNavigationHandler*)navigationHandler {
   return [self optOutScrollsToTopForSubviews];
-}
-
-- (void)JSNavigationHandler:(CRWJSNavigationHandler*)navigationHandler
-        didFinishNavigation:(web::NavigationContextImpl*)context {
-  [self didFinishNavigation:context];
 }
 
 #pragma mark - Testing-Only Methods

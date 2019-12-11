@@ -935,8 +935,7 @@ bool GCMStoreImpl::Backend::LoadDeviceCredentials(uint64_t* android_id,
   if (s.ok()) {
     // Mitigate the issues caused by loading DLLs on a background thread
     // (http://crbug/973868).
-    base::ScopedThreadMayLoadLibraryOnBackgroundThread priority_boost(
-        FROM_HERE);
+    SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
 
     std::string decrypted_token;
     encryptor_->DecryptString(result, &decrypted_token);

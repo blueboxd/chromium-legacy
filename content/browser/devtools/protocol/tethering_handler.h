@@ -27,10 +27,16 @@ namespace protocol {
 class TetheringHandler : public DevToolsDomainHandler,
                          public Tethering::Backend {
  public:
+  // Called each time an incoming connection is accepted. Should return a
+  // non-empty |channel_name| for the connection or the connection will be
+  // dropped.
   using CreateServerSocketCallback =
-      base::Callback<std::unique_ptr<net::ServerSocket>(std::string*)>;
+      base::RepeatingCallback<std::unique_ptr<net::ServerSocket>(
+          std::string* channel_name)>;
 
-  TetheringHandler(const CreateServerSocketCallback& socket_callback,
+  // Given a |socket_callback| that will be run each time an incoming connection
+  // is accepted.
+  TetheringHandler(CreateServerSocketCallback socket_callback,
                    scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~TetheringHandler() override;
 

@@ -25,8 +25,8 @@ class WallpaperView : public WallpaperBaseView,
   // Schedules a repaint of the wallpaper with blur and opacity changes.
   void RepaintBlurAndOpacity(int repaint_blur, float repaint_opacity);
 
-  int repaint_blur() const { return repaint_blur_; }
-  float repaint_opacity() const { return repaint_opacity_; }
+  int blur_sigma() const { return blur_sigma_; }
+  float opacity() const { return opacity_; }
 
  private:
   friend class WallpaperControllerTest;
@@ -48,11 +48,11 @@ class WallpaperView : public WallpaperBaseView,
                      gfx::Canvas* canvas) override;
 
   // These are used by overview mode to animate the blur and opacity on the
-  // wallpaper. If |repaint_blur_| is not 0 and |repaint_opacity_| is not 1, the
+  // wallpaper. If |blur_sigma_| is not 0 and |opacity_| is not 1, the
   // wallpaper will be downsampled and a blur and brightness filter will be
   // applied. It is downsampled to increase performance.
-  int repaint_blur_;
-  float repaint_opacity_;
+  int blur_sigma_;
+  float opacity_;
 
   // A cached downsampled image of the wallpaper image. It will help wallpaper
   // blur/brightness animations be more performant.

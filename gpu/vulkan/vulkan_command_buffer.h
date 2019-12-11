@@ -47,9 +47,12 @@ class VULKAN_EXPORT VulkanCommandBuffer {
   // is finished.
   bool SubmissionFinished();
 
-  void TransitionImageLayout(VkImage image,
-                             VkImageLayout old_layout,
-                             VkImageLayout new_layout);
+  void TransitionImageLayout(
+      VkImage image,
+      VkImageLayout old_layout,
+      VkImageLayout new_layout,
+      uint32_t src_queue_family_index = VK_QUEUE_FAMILY_IGNORED,
+      uint32_t dst_queue_family_index = VK_QUEUE_FAMILY_IGNORED);
   void CopyBufferToImage(VkBuffer buffer,
                          VkImage image,
                          uint32_t buffer_width,

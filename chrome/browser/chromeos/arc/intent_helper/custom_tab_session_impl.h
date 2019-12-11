@@ -12,7 +12,8 @@
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/ui/ash/arc_custom_tab_modal_dialog_host.h"
 #include "components/arc/mojom/intent_helper.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace ash {
 class ArcCustomTab;
@@ -26,7 +27,7 @@ class WebContents;
 class CustomTabSessionImpl : public arc::mojom::CustomTabSession,
                              public ArcCustomTabModalDialogHost {
  public:
-  static arc::mojom::CustomTabSessionPtr Create(
+  static mojo::PendingRemote<arc::mojom::CustomTabSession> Create(
       std::unique_ptr<content::WebContents> web_contents,
       std::unique_ptr<ash::ArcCustomTab> custom_tab);
 
@@ -38,13 +39,13 @@ class CustomTabSessionImpl : public arc::mojom::CustomTabSession,
                        std::unique_ptr<ash::ArcCustomTab> custom_tab);
   ~CustomTabSessionImpl() override;
 
-  void Bind(arc::mojom::CustomTabSessionPtr* ptr);
+  void Bind(mojo::PendingRemote<arc::mojom::CustomTabSession>* remote);
 
   void Close();
 
   // Used to bind the CustomTabSession interface implementation to a message
   // pipe.
-  mojo::Binding<arc::mojom::CustomTabSession> binding_;
+  mojo::Receiver<arc::mojom::CustomTabSession> receiver_{this};
 
   // Tracks the lifetime of the ARC Custom Tab session.
   base::ElapsedTimer lifetime_timer_;

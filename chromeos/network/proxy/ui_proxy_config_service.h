@@ -21,6 +21,8 @@ class Value;
 namespace chromeos {
 
 class NetworkState;
+class NetworkStateHandler;
+class NetworkProfileHandler;
 
 // This class provides an interface to the UI for getting a network proxy
 // configuration.
@@ -36,7 +38,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) UIProxyConfigService {
   // null if there is no logged in user, in which case only the local state
   // (device) prefs will be used. See note above.
   UIProxyConfigService(PrefService* profile_prefs,
-                       PrefService* local_state_prefs);
+                       PrefService* local_state_prefs,
+                       NetworkStateHandler* network_state_handler,
+                       NetworkProfileHandler* network_profile_handler);
   ~UIProxyConfigService();
 
   // Generates ONC dictionary for proxy settings enforced for the network, and
@@ -74,6 +78,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) UIProxyConfigService {
 
   PrefService* local_state_prefs_;  // unowned
   PrefChangeRegistrar local_state_registrar_;
+
+  NetworkStateHandler* network_state_handler_;      // unowned
+  NetworkProfileHandler* network_profile_handler_;  // unowned
 
   DISALLOW_COPY_AND_ASSIGN(UIProxyConfigService);
 };

@@ -225,7 +225,7 @@ class RTCRtpSenderImpl::RTCRtpSenderInternal
     return std::make_unique<webrtc::RtpParameters>(parameters_);
   }
 
-  void SetParameters(blink::WebVector<webrtc::RtpEncodingParameters> encodings,
+  void SetParameters(Vector<webrtc::RtpEncodingParameters> encodings,
                      webrtc::DegradationPreference degradation_preference,
                      base::OnceCallback<void(webrtc::RTCError)> callback) {
     DCHECK(main_task_runner_->BelongsToCurrentThread());
@@ -234,7 +234,7 @@ class RTCRtpSenderImpl::RTCRtpSenderInternal
 
     new_parameters.degradation_preference = degradation_preference;
 
-    for (std::size_t i = 0; i < new_parameters.encodings.size(); ++i) {
+    for (WTF::wtf_size_t i = 0; i < new_parameters.encodings.size(); ++i) {
       // Encodings have other parameters in the native layer that aren't exposed
       // to the blink layer. So instead of copying the new struct over the old
       // one, we copy the members one by one over the old struct, effectively
@@ -257,9 +257,8 @@ class RTCRtpSenderImpl::RTCRtpSenderInternal
                        this, std::move(new_parameters), std::move(callback)));
   }
 
-  void GetStats(
-      RTCStatsReportCallback callback,
-      const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids) {
+  void GetStats(RTCStatsReportCallback callback,
+                const Vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
     signaling_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(
@@ -326,11 +325,11 @@ class RTCRtpSenderImpl::RTCRtpSenderInternal
 
   void GetStatsOnSignalingThread(
       RTCStatsReportCallback callback,
-      const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids) {
+      const Vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
     native_peer_connection_->GetStats(
         webrtc_sender_.get(),
-        blink::CreateRTCStatsCollectorCallback(
-            main_task_runner_, std::move(callback), exposed_group_ids));
+        CreateRTCStatsCollectorCallback(main_task_runner_, std::move(callback),
+                                        exposed_group_ids));
   }
 
   void SetParametersOnSignalingThread(
@@ -440,10 +439,11 @@ blink::WebMediaStreamTrack RTCRtpSenderImpl::Track() const {
   return track_ref ? track_ref->web_track() : blink::WebMediaStreamTrack();
 }
 
-WebVector<String> RTCRtpSenderImpl::StreamIds() const {
+Vector<String> RTCRtpSenderImpl::StreamIds() const {
   const auto& stream_ids = internal_->state().stream_ids();
-  WebVector<String> wtf_stream_ids(stream_ids.size());
-  for (size_t i = 0; i < stream_ids.size(); ++i)
+  Vector<String> wtf_stream_ids(
+      static_cast<WTF::wtf_size_t>(stream_ids.size()));
+  for (WTF::wtf_size_t i = 0; i < stream_ids.size(); ++i)
     wtf_stream_ids[i] = String::FromUTF8(stream_ids[i]);
   return wtf_stream_ids;
 }
@@ -465,7 +465,7 @@ std::unique_ptr<webrtc::RtpParameters> RTCRtpSenderImpl::GetParameters() const {
 }
 
 void RTCRtpSenderImpl::SetParameters(
-    blink::WebVector<webrtc::RtpEncodingParameters> encodings,
+    Vector<webrtc::RtpEncodingParameters> encodings,
     webrtc::DegradationPreference degradation_preference,
     blink::RTCVoidRequest* request) {
   internal_->SetParameters(
@@ -475,11 +475,11 @@ void RTCRtpSenderImpl::SetParameters(
 
 void RTCRtpSenderImpl::GetStats(
     RTCStatsReportCallback callback,
-    const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids) {
+    const Vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
   internal_->GetStats(std::move(callback), exposed_group_ids);
 }
 
-void RTCRtpSenderImpl::SetStreams(const WebVector<String>& stream_ids) {
+void RTCRtpSenderImpl::SetStreams(const Vector<String>& stream_ids) {
   std::vector<std::string> ids;
   for (auto stream_id : stream_ids)
     ids.emplace_back(stream_id.Utf8());

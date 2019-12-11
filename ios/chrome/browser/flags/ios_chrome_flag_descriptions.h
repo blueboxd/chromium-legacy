@@ -273,6 +273,11 @@ extern const char kOmniboxOnDeviceHeadSuggestionsDescription[];
 extern const char kPasswordLeakDetectionName[];
 extern const char kPasswordLeakDetectionDescription[];
 
+// Title and description for the flag that reload the page when the renderer
+// crashes.
+extern const char kReloadSadTabName[];
+extern const char kReloadSadTabDescription[];
+
 // Title and description for the flag that enables Messages UI on
 // SaveCard Infobars.
 extern const char kSaveCardInfobarMessagesUIName[];

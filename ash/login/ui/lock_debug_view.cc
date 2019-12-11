@@ -847,8 +847,10 @@ void LockDebugView::ButtonPressed(views::Button* sender,
 
   // Enable or disable wallpaper blur.
   if (sender->GetID() == ButtonId::kGlobalToggleBlur) {
-    Shell::Get()->wallpaper_controller()->UpdateWallpaperBlur(
-        !Shell::Get()->wallpaper_controller()->IsWallpaperBlurred());
+    Shell::Get()->wallpaper_controller()->UpdateWallpaperBlurForLockState(
+        !Shell::Get()
+             ->wallpaper_controller()
+             ->IsWallpaperBlurredForLockState());
     return;
   }
 

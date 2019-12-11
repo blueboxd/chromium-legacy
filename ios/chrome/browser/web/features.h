@@ -17,6 +17,10 @@ extern const base::Feature kWebPageTextAccessibility;
 // the desktop version is requested by default.
 extern const base::Feature kMobileGoogleSRP;
 
+// Feature flag to reload the page instead of showing the SadTab when the
+// renderer crashes.
+extern const base::Feature kReloadSadTab;
+
 }  // namespace web
 
 #endif  // IOS_CHROME_BROWSER_WEB_FEATURES_H_

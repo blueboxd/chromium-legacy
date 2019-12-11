@@ -2476,6 +2476,15 @@ const char kCloseTabSuggestionsDescription[] =
     "configurable threshold or where duplicates of Tabs exist. "
     "The threshold is configurable.";
 
+const char kContentIndexingDownloadHomeName[] =
+    "Content indexing in download home";
+const char kContentIndexingDownloadHomeDescription[] =
+    "Shows content indexing articles in group cards in download home";
+
+const char kContentIndexingNTPName[] = "Content indexing in NTP";
+const char kContentIndexingNTPDescription[] =
+    "Shows content indexing entry point UI in NTP";
+
 const char kContextualSearchDefinitionsName[] = "Contextual Search definitions";
 const char kContextualSearchDefinitionsDescription[] =
     "Enables tap-activated contextual definitions of words on a page to be "
@@ -2621,9 +2630,6 @@ const char kOfflineIndicatorAlwaysHttpProbeDescription[] =
 const char kOfflineIndicatorChoiceName[] = "Offline indicator choices";
 const char kOfflineIndicatorChoiceDescription[] =
     "Show an offline indicator while offline.";
-
-const char kOfflineHomeName[] = "Offline Home";
-const char kOfflineHomeDescription[] = "Show offline home UI when offline.";
 
 const char kOfflineIndicatorV2Name[] = "Offline indicator V2";
 const char kOfflineIndicatorV2Description[] =

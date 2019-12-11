@@ -156,25 +156,6 @@ components/rappor/rappor_parameters.h.
   </summary>
 </rappor-metric>
 
-<rappor-metric name="PowerfulFeatureUse.ETLDPlus1.GetUserMedia.Insecure"
-    type="ETLD_PLUS_ONE">
-  <owner>guidou@chromium.org</owner>
-  <owner>hta@chromium.org</owner>
-  <summary>
-    The ETLD+1 of the URL that uses the getUserMedia API from an insecure
-    origin.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="PowerfulFeatureUse.ETLDPlus1.GetUserMedia.Secure"
-    type="ETLD_PLUS_ONE">
-  <owner>guidou@chromium.org</owner>
-  <owner>hta@chromium.org</owner>
-  <summary>
-    The ETLD+1 of the URL that uses the getUserMedia API from a secure origin.
-  </summary>
-</rappor-metric>
-
 <rappor-metric name="PowerfulFeatureUse.Host.ApplicationCacheAPI.Insecure"
     type="ETLD_PLUS_ONE">
   <owner>jww@chromium.org</owner>
@@ -194,59 +175,11 @@ components/rappor/rappor_parameters.h.
   </summary>
 </rappor-metric>
 
-<rappor-metric name="PowerfulFeatureUse.Host.Fullscreen.Insecure"
-    type="ETLD_PLUS_ONE">
-  <owner>jww@chromium.org</owner>
-  <summary>
-    The host of the URL that uses the fullscreen API from an insecure origin.
-  </summary>
-</rappor-metric>
-
 <rappor-metric name="PowerfulFeatureUse.Host.Geolocation.Insecure"
     type="ETLD_PLUS_ONE">
   <owner>jww@chromium.org</owner>
   <summary>
     The host of the URL that uses the geolocation API from an insecure origin.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="RTCPeerConnection.Audio" type="ETLD_PLUS_ONE">
-  <owner>guidou@chromium.org</owner>
-  <owner>hta@chromium.org</owner>
-  <owner>tommi@chromium.org</owner>
-  <summary>
-    The ETLD+1 of the URL with a WebRTC peer connection with at least one audio
-    track.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="RTCPeerConnection.DataChannel" type="ETLD_PLUS_ONE">
-  <owner>guidou@chromium.org</owner>
-  <owner>hta@chromium.org</owner>
-  <owner>tommi@chromium.org</owner>
-  <summary>
-    The ETLD+1 of the URL with a WebRTC peer connection with at least one data
-    channel.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="RTCPeerConnection.Unconnected" type="ETLD_PLUS_ONE">
-  <owner>guidou@chromium.org</owner>
-  <owner>hta@chromium.org</owner>
-  <owner>tommi@chromium.org</owner>
-  <summary>
-    The ETLD+1 of the URL with a WebRTC peer connection that was created but
-    never connected.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="RTCPeerConnection.Video" type="ETLD_PLUS_ONE">
-  <owner>guidou@chromium.org</owner>
-  <owner>hta@chromium.org</owner>
-  <owner>tommi@chromium.org</owner>
-  <summary>
-    The ETLD+1 of the URL with a WebRTC peer connection with at least one video
-    track.
   </summary>
 </rappor-metric>
 

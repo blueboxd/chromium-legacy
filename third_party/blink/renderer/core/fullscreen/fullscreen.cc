@@ -604,13 +604,10 @@ ScriptPromise Fullscreen::RequestFullscreen(Element& pending,
   // Use counters only need to be incremented in the process of the actual
   // fullscreen element.
   if (!for_cross_process_descendant) {
-    if (document.IsSecureContext()) {
+    if (document.IsSecureContext())
       UseCounter::Count(document, WebFeature::kFullscreenSecureOrigin);
-    } else {
+    else
       UseCounter::Count(document, WebFeature::kFullscreenInsecureOrigin);
-      HostsUsingFeatures::CountAnyWorld(
-          document, HostsUsingFeatures::Feature::kFullscreenInsecureHost);
-    }
   }
 
   // 5. Let |error| be false.

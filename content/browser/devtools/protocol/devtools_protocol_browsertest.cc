@@ -1918,7 +1918,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CertificateExplanations) {
   std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
   params = WaitForMatchingNotification(
       "Security.securityStateChanged",
-      base::Bind(&SecurityStateChangedHasCertificateExplanation));
+      base::BindRepeating(&SecurityStateChangedHasCertificateExplanation));
 
   // There should be one explanation containing the server's certificate chain.
   net::SHA256HashValue cert_chain_fingerprint =
@@ -2091,7 +2091,7 @@ class DownloadCreateObserver : DownloadManager::Observer {
   DownloadManager* manager_;
   download::DownloadItem* item_;
   bool received_item_response_;
-  base::Closure completion_closure_;
+  base::OnceClosure completion_closure_;
 };
 
 bool IsDownloadInState(download::DownloadItem::DownloadState state,
@@ -2155,8 +2155,8 @@ class DevToolsDownloadContentTest : public DevToolsProtocolTest {
 
   void WaitForCompletion(download::DownloadItem* download) {
     DownloadUpdatedObserver(
-        download,
-        base::Bind(&IsDownloadInState, download::DownloadItem::COMPLETE))
+        download, base::BindRepeating(&IsDownloadInState,
+                                      download::DownloadItem::COMPLETE))
         .WaitForEvent();
   }
 

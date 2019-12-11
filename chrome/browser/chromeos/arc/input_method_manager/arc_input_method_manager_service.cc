@@ -27,6 +27,7 @@
 #include "components/arc/mojom/ime_mojom_traits.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ui/base/ime/chromeos/component_extension_ime_manager.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
@@ -595,10 +596,10 @@ void ArcInputMethodManagerService::Focus(int context_id) {
   DCHECK(!active_connection_);
   active_connection_ = std::make_unique<InputConnectionImpl>(
       proxy_ime_engine_.get(), imm_bridge_.get(), context_id);
-  mojom::InputConnectionPtr connection_ptr;
-  active_connection_->Bind(&connection_ptr);
+  mojo::PendingRemote<mojom::InputConnection> connection_remote;
+  active_connection_->Bind(&connection_remote);
 
-  imm_bridge_->SendFocus(std::move(connection_ptr),
+  imm_bridge_->SendFocus(std::move(connection_remote),
                          active_connection_->GetTextInputState(false));
 }
 

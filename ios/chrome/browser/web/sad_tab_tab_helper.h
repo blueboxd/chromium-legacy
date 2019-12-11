@@ -52,8 +52,12 @@ class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
   // initial event.
   SadTabTabHelper(web::WebState* web_state, double repeat_failure_interval);
 
+  // Registers that a visible crash occurred for |url_causing_failure|. Updates
+  // |repeated_failure_|.
+  void OnVisibleCrash(const GURL& url_causing_failure);
+
   // Presents a new SadTabView via the web_state object.
-  void PresentSadTab(const GURL& url_causing_failure);
+  void PresentSadTab();
 
   // Called when the Sad Tab is added or removed from the WebState's content
   // area.

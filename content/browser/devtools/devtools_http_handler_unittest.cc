@@ -62,26 +62,23 @@ class DummyServerSocket : public net::ServerSocket {
   }
 };
 
-void QuitFromHandlerThread(const base::Closure& quit_closure) {
-  base::PostTask(FROM_HERE, {BrowserThread::UI}, quit_closure);
-}
-
 class DummyServerSocketFactory : public DevToolsSocketFactory {
  public:
-  DummyServerSocketFactory(base::Closure quit_closure_1,
-                           base::Closure quit_closure_2)
-      : quit_closure_1_(quit_closure_1),
-        quit_closure_2_(quit_closure_2) {}
+  DummyServerSocketFactory(base::OnceClosure create_socket_callback,
+                           base::OnceClosure shutdown_callback)
+      : create_socket_callback_(std::move(create_socket_callback)),
+        shutdown_callback_(std::move(shutdown_callback)) {}
 
   ~DummyServerSocketFactory() override {
-    base::PostTask(FROM_HERE, {BrowserThread::UI}, quit_closure_2_);
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   std::move(shutdown_callback_));
   }
 
  protected:
   std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&QuitFromHandlerThread, quit_closure_1_));
-    return base::WrapUnique(new DummyServerSocket());
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   std::move(create_socket_callback_));
+    return std::make_unique<DummyServerSocket>();
   }
 
   std::unique_ptr<net::ServerSocket> CreateForTethering(
@@ -89,21 +86,21 @@ class DummyServerSocketFactory : public DevToolsSocketFactory {
     return nullptr;
   }
 
-  base::Closure quit_closure_1_;
-  base::Closure quit_closure_2_;
+  base::OnceClosure create_socket_callback_;
+  base::OnceClosure shutdown_callback_;
 };
 
 class FailingServerSocketFactory : public DummyServerSocketFactory {
  public:
-  FailingServerSocketFactory(const base::Closure& quit_closure_1,
-                             const base::Closure& quit_closure_2)
-      : DummyServerSocketFactory(quit_closure_1, quit_closure_2) {
-  }
+  FailingServerSocketFactory(base::OnceClosure create_socket_callback,
+                             base::OnceClosure shutdown_callback)
+      : DummyServerSocketFactory(std::move(create_socket_callback),
+                                 std::move(shutdown_callback)) {}
 
  private:
   std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&QuitFromHandlerThread, quit_closure_1_));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   std::move(create_socket_callback_));
     return nullptr;
   }
 };
@@ -124,8 +121,8 @@ class DevToolsHttpHandlerTest : public testing::Test {
   DevToolsHttpHandlerTest() : testing::Test() { }
 
   void SetUp() override {
-    content_client_.reset(new ContentClient());
-    browser_content_client_.reset(new BrowserClient());
+    content_client_ = std::make_unique<ContentClient>();
+    browser_content_client_ = std::make_unique<BrowserClient>();
     SetBrowserClientForTesting(browser_content_client_.get());
   }
 
@@ -137,9 +134,8 @@ class DevToolsHttpHandlerTest : public testing::Test {
 
 TEST_F(DevToolsHttpHandlerTest, TestStartStop) {
   base::RunLoop run_loop, run_loop_2;
-  std::unique_ptr<DevToolsSocketFactory> factory(
-      new DummyServerSocketFactory(run_loop.QuitClosure(),
-                                   run_loop_2.QuitClosure()));
+  auto factory = std::make_unique<DummyServerSocketFactory>(
+      run_loop.QuitClosure(), run_loop_2.QuitClosure());
   DevToolsAgentHost::StartRemoteDebuggingServer(
       std::move(factory), base::FilePath(), base::FilePath());
   // Our dummy socket factory will post a quit message once the server will
@@ -152,9 +148,8 @@ TEST_F(DevToolsHttpHandlerTest, TestStartStop) {
 
 TEST_F(DevToolsHttpHandlerTest, TestServerSocketFailed) {
   base::RunLoop run_loop, run_loop_2;
-  std::unique_ptr<DevToolsSocketFactory> factory(
-      new FailingServerSocketFactory(run_loop.QuitClosure(),
-                                     run_loop_2.QuitClosure()));
+  auto factory = std::make_unique<FailingServerSocketFactory>(
+      run_loop.QuitClosure(), run_loop_2.QuitClosure());
   LOG(INFO) << "Following error message is expected:";
   DevToolsAgentHost::StartRemoteDebuggingServer(
       std::move(factory), base::FilePath(), base::FilePath());
@@ -173,9 +168,8 @@ TEST_F(DevToolsHttpHandlerTest, TestDevToolsActivePort) {
   base::RunLoop run_loop, run_loop_2;
   base::ScopedTempDir temp_dir;
   EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
-  std::unique_ptr<DevToolsSocketFactory> factory(
-      new DummyServerSocketFactory(run_loop.QuitClosure(),
-                                   run_loop_2.QuitClosure()));
+  auto factory = std::make_unique<DummyServerSocketFactory>(
+      run_loop.QuitClosure(), run_loop_2.QuitClosure());
 
   DevToolsAgentHost::StartRemoteDebuggingServer(
       std::move(factory), temp_dir.GetPath(), base::FilePath());

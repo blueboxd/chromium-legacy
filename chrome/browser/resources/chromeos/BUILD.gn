@@ -77,7 +77,6 @@ group("closure_compile") {
     "network_ui:closure_compile",
     "set_time_dialog:closure_compile",
     "smb_shares:closure_compile",
-    "smb_shares:closure_compile_module",
     "sys_internals:closure_compile",
   ]
 }

@@ -47,9 +47,10 @@ class TestPrintBackend : public PrintBackend {
   void AddValidPrinter(const std::string& printer_name,
                        std::unique_ptr<PrinterSemanticCapsAndDefaults> caps);
 
- private:
+ protected:
   ~TestPrintBackend() override;
 
+ private:
   std::string default_printer_name_;
   PrinterList printer_list_;
   std::map<std::string, std::unique_ptr<PrinterSemanticCapsAndDefaults>>

@@ -277,7 +277,9 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
   if (ShouldShowSyncKeysMissingError(service)) {
     *content_string_id = IDS_SYNC_ERROR_USER_MENU_RETRIEVE_KEYS_MESSAGE;
     *button_string_id = IDS_SYNC_ERROR_USER_MENU_RETRIEVE_KEYS_BUTTON;
-    return TRUSTED_VAULT_KEY_MISSING_ERROR;
+    return service->GetUserSettings()->IsEncryptEverythingEnabled()
+               ? TRUSTED_VAULT_KEY_MISSING_FOR_EVERYTHING_ERROR
+               : TRUSTED_VAULT_KEY_MISSING_FOR_PASSWORDS_ERROR;
   }
 
   // There is no error.

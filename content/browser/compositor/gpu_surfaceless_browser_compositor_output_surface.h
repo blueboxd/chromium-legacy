@@ -10,21 +10,20 @@
 #include <memory>
 #include <vector>
 
+#include "components/viz/service/display_embedder/buffer_queue.h"
 #include "content/browser/compositor/gpu_browser_compositor_output_surface.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/ipc/common/surface_handle.h"
 
 namespace gpu {
 class GpuMemoryBufferManager;
 }
 
-namespace viz {
-class BufferQueue;
-}
-
 namespace content {
 
 class GpuSurfacelessBrowserCompositorOutputSurface
-    : public GpuBrowserCompositorOutputSurface {
+    : public GpuBrowserCompositorOutputSurface,
+      public viz::BufferQueue::SyncTokenProvider {
  public:
   GpuSurfacelessBrowserCompositorOutputSurface(
       scoped_refptr<viz::ContextProviderCommandBuffer> context,
@@ -55,17 +54,22 @@ class GpuSurfacelessBrowserCompositorOutputSurface
       std::vector<ui::LatencyInfo> latency_info,
       const gpu::SwapBuffersCompleteParams& params) override;
 
+  // BufferQueue::SyncTokenProvider implementation.
+  gpu::SyncToken GenSyncToken() override;
+
  private:
   gfx::Size reshape_size_;
   gfx::Size swap_size_;
   bool use_gpu_fence_;
-  unsigned gpu_fence_id_;
+  unsigned gpu_fence_id_ = 0u;
 
   std::unique_ptr<viz::BufferQueue> buffer_queue_;
-  unsigned current_texture_;
-  uint32_t fbo_;
+  unsigned current_texture_ = 0u;
+  const unsigned texture_target_ = 0u;
+  unsigned fbo_ = 0u;
 
-  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
+  bool use_stencil_ = false;
+  unsigned stencil_buffer_ = 0u;
 };
 
 }  // namespace content

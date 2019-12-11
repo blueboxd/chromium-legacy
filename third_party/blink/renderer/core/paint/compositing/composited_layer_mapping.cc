@@ -466,7 +466,8 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
             layer, remote->WebLayerHasFixedContentsOpaque());
       }
     } else if (layout_object.IsVideo()) {
-      auto* media_element = To<HTMLMediaElement>(layout_object.GetNode());
+      HTMLMediaElement* media_element =
+          ToHTMLMediaElement(layout_object.GetNode());
       graphics_layer_->SetContentsToCcLayer(
           media_element->CcLayer(),
           /*prevent_contents_opaque_changes=*/true);

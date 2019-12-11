@@ -14,8 +14,6 @@
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
-#include "ui/ozone/platform/wayland/host/shell_object_factory.h"
-#include "ui/ozone/platform/wayland/host/shell_popup_wrapper.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_cursor_position.h"
@@ -77,74 +75,6 @@ gfx::AcceleratedWidget WaylandWindow::GetWidget() const {
     return gfx::kNullAcceleratedWidget;
   return surface_.id();
 }
-
-void WaylandWindow::CreateShellPopup() {
-  if (bounds_px_.IsEmpty())
-    return;
-
-  // TODO(jkim): Consider how to support DropArrow window on tabstrip.
-  // When it starts dragging, as described the protocol, https://goo.gl/1Mskq3,
-  // the client must have an active implicit grab. If we try to create a popup
-  // window while dragging is executed, it gets 'popup_done' directly from
-  // Wayland compositor and it's destroyed through 'popup_done'. It causes
-  // a crash when aura::Window is destroyed.
-  // https://crbug.com/875164
-  if (connection_->IsDragInProgress()) {
-    surface_.reset();
-    LOG(ERROR) << "Wayland can't create a popup window during dragging.";
-    return;
-  }
-
-  DCHECK(parent_window_ && !shell_popup_);
-
-  auto bounds_px = AdjustPopupWindowPosition();
-
-  ShellObjectFactory factory;
-  shell_popup_ = factory.CreateShellPopupWrapper(connection_, this, bounds_px);
-  if (!shell_popup_)
-    CHECK(false) << "Failed to create Wayland shell popup";
-
-  parent_window_->set_child_window(this);
-}
-
-void WaylandWindow::CreateAndShowTooltipSubSurface() {
-  // Since Aura does not not provide a reference parent window, needed by
-  // Wayland, we get the current focused window to place and show the tooltips.
-  auto* parent_window =
-      connection_->wayland_window_manager()->GetCurrentFocusedWindow();
-
-  // Tooltip creation is an async operation. By the time Aura actually creates
-  // the tooltip, it is possible that the user has already moved the
-  // mouse/pointer out of the window that triggered the tooptip. In this case,
-  // parent_window is NULL.
-  if (!parent_window)
-    return;
-
-  wl_subcompositor* subcompositor = connection_->subcompositor();
-  DCHECK(subcompositor);
-  tooltip_subsurface_.reset(wl_subcompositor_get_subsurface(
-      subcompositor, surface_.get(), parent_window->surface()));
-
-  // Chromium positions tooltip windows in screen coordinates, but Wayland
-  // requires them to be in local surface coordinates aka relative to parent
-  // window.
-  const auto parent_bounds_dip =
-      gfx::ScaleToRoundedRect(parent_window->GetBounds(), 1.0 / ui_scale_);
-  auto new_bounds_dip =
-      wl::TranslateBoundsToParentCoordinates(bounds_px_, parent_bounds_dip);
-  auto bounds_px =
-      gfx::ScaleToRoundedRect(new_bounds_dip, ui_scale_ / buffer_scale_);
-
-  DCHECK(tooltip_subsurface_);
-  // Convert position to DIP.
-  wl_subsurface_set_position(tooltip_subsurface_.get(),
-                             bounds_px.x() / buffer_scale_,
-                             bounds_px.y() / buffer_scale_);
-  wl_subsurface_set_desync(tooltip_subsurface_.get());
-  wl_surface_commit(parent_window->surface());
-  connection_->ScheduleFlush();
-}
-
 void WaylandWindow::SetPointerFocus(bool focus) {
   has_pointer_focus_ = focus;
 
@@ -156,43 +86,11 @@ void WaylandWindow::SetPointerFocus(bool focus) {
 }
 
 void WaylandWindow::Show(bool inactive) {
-  if (!is_tooltip_)  // Tooltip windows should not get keyboard focus
-    set_keyboard_focus(true);
-
-  if (is_tooltip_) {
-    CreateAndShowTooltipSubSurface();
-    return;
-  }
-
-  if (!shell_popup_) {
-    // When showing a sub-menu after it has been previously shown and hidden,
-    // Wayland sends SetBounds prior to Show, and |bounds_px| takes the pixel
-    // bounds.  This makes a difference against the normal flow when the
-    // window is created (see |Initialize|).  To equalize things, rescale
-    // |bounds_px_| to DIP.  It will be adjusted while creating the popup.
-    bounds_px_ = gfx::ScaleToRoundedRect(bounds_px_, 1.0 / ui_scale_);
-    CreateShellPopup();
-    connection_->ScheduleFlush();
-  }
-
-  UpdateBufferScale(false);
+  NOTREACHED();
 }
 
 void WaylandWindow::Hide() {
-  if (is_tooltip_) {
-    tooltip_subsurface_.reset();
-  } else {
-    if (child_window_)
-      child_window_->Hide();
-    if (shell_popup_) {
-      parent_window_->set_child_window(nullptr);
-      shell_popup_.reset();
-    }
-  }
-
-  // Detach buffer from surface in order to completely shutdown popups and
-  // tooltips, and release resources.
-  connection_->buffer_manager_host()->ResetSurfaceContents(GetWidget());
+  NOTREACHED();
 }
 
 void WaylandWindow::Close() {
@@ -200,7 +98,8 @@ void WaylandWindow::Close() {
 }
 
 bool WaylandWindow::IsVisible() const {
-  return !!shell_popup_;
+  NOTREACHED();
+  return false;
 }
 
 void WaylandWindow::PrepareForShutdown() {}
@@ -225,8 +124,8 @@ void WaylandWindow::SetTitle(const base::string16& title) {}
 
 void WaylandWindow::SetCapture() {
   // Wayland does implicit grabs, and doesn't allow for explicit grabs. The
-  // exception to that are popups, but we explicitly send events to a
-  // parent popup if such exists.
+  // exception to that are menus, but we explicitly send events to a
+  // parent menu if such exists.
 }
 
 void WaylandWindow::ReleaseCapture() {
@@ -234,8 +133,7 @@ void WaylandWindow::ReleaseCapture() {
 }
 
 bool WaylandWindow::HasCapture() const {
-  // If WaylandWindow is a popup window, assume it has the capture.
-  return shell_popup() ? true : has_implicit_grab_;
+  return has_implicit_grab_;
 }
 
 void WaylandWindow::ToggleFullscreen() {}
@@ -319,14 +217,14 @@ void WaylandWindow::SetWindowIcons(const gfx::ImageSkia& window_icon,
 void WaylandWindow::SizeConstraintsChanged() {}
 
 bool WaylandWindow::CanDispatchEvent(const PlatformEvent& event) {
-  // This window is a nested popup window, all the events must be forwarded
-  // to the main popup window.
-  if (child_window_ && child_window_->shell_popup())
-    return !!shell_popup_.get();
+  // This window is a nested menu window, all the events must be forwarded
+  // to the main menu window.
+  if (child_window_ && wl::IsMenuType(child_window_->type()))
+    return wl::IsMenuType(type());
 
   // If this is a nested menu window with a parent, it mustn't recieve any
   // events.
-  if (parent_window_ && parent_window_->shell_popup())
+  if (parent_window_ && wl::IsMenuType(parent_window_->type()))
     return false;
 
   // If another window has capture, return early before checking focus.
@@ -344,7 +242,6 @@ bool WaylandWindow::CanDispatchEvent(const PlatformEvent& event) {
 
 uint32_t WaylandWindow::DispatchEvent(const PlatformEvent& native_event) {
   Event* event = static_cast<Event*>(native_event);
-
   if (event->IsLocatedEvent()) {
     // Wayland sends locations in DIP so they need to be translated to
     // physical pixels.
@@ -355,13 +252,14 @@ uint32_t WaylandWindow::DispatchEvent(const PlatformEvent& native_event) {
   }
 
   // If the window does not have a pointer focus, but received this event, it
-  // means the window is a popup window with a child popup window. In this case,
-  // the location of the event must be converted from the nested popup to the
-  // main popup, which the menu controller needs to properly handle events.
-  if (event->IsLocatedEvent() && shell_popup()) {
-    // Parent window of the main menu window is not a popup, but rather an
+  // means the window is a menu window with a child menu window. In this case,
+  // the location of the event must be converted from the nested menu to the
+  // main menu, which the menu controller needs to properly handle events.
+  if (event->IsLocatedEvent() && wl::IsMenuType(type())) {
+    // Parent window of the main menu window is not a menu, but rather an
     // xdg surface.
-    DCHECK(!parent_window_->shell_popup() || !parent_window_->is_tooltip_);
+    DCHECK(!wl::IsMenuType(parent_window_->type()) ||
+           parent_window_->type() != PlatformWindowType::kTooltip);
     auto* window =
         connection_->wayland_window_manager()->GetCurrentFocusedWindow();
     if (window) {
@@ -387,59 +285,10 @@ void WaylandWindow::HandleSurfaceConfigure(int32_t widht,
 }
 
 void WaylandWindow::HandlePopupConfigure(const gfx::Rect& bounds_dip) {
-  DCHECK(shell_popup());
-  DCHECK(parent_window_);
-
-  SetBufferScale(parent_window_->buffer_scale_, true);
-
-  gfx::Rect new_bounds_dip = bounds_dip;
-
-  // It's not enough to just set new bounds. If it is a menu window, whose
-  // parent is a top level window aka browser window, it can be flipped
-  // vertically along y-axis and have negative values set. Chromium cannot
-  // understand that and starts to position nested menu windows incorrectly. To
-  // fix that, we have to bear in mind that Wayland compositor does not share
-  // global coordinates for any surfaces, and Chromium assumes the top level
-  // window is always located at 0,0 origin. What is more, child windows must
-  // always be positioned relative to parent window local surface coordinates.
-  // Thus, if the menu window is flipped along y-axis by Wayland and its origin
-  // is above the top level parent window, the origin of the top level window
-  // has to be shifted by that value on y-axis so that the origin of the menu
-  // becomes x,0, and events can be handled normally.
-  if (!parent_window_->shell_popup()) {
-    gfx::Rect parent_bounds = parent_window_->GetBounds();
-    // The menu window is flipped along y-axis and have x,-y origin. Shift the
-    // parent top level window instead.
-    if (new_bounds_dip.y() < 0) {
-      // Move parent bounds along y-axis.
-      parent_bounds.set_y(-(new_bounds_dip.y() * buffer_scale_));
-      new_bounds_dip.set_y(0);
-    } else {
-      // If the menu window is located at correct origin from the browser point
-      // of view, return the top level window back to 0,0.
-      parent_bounds.set_y(0);
-    }
-    parent_window_->SetBounds(parent_bounds);
-  } else {
-    // The nested menu windows are located relative to the parent menu windows.
-    // Thus, the location must be translated to be relative to the top level
-    // window, which automatically becomes the same as relative to an origin of
-    // a display.
-    new_bounds_dip = gfx::ScaleToRoundedRect(
-        wl::TranslateBoundsToTopLevelCoordinates(
-            gfx::ScaleToRoundedRect(new_bounds_dip, buffer_scale_),
-            parent_window_->GetBounds()),
-        1.0 / buffer_scale_);
-    DCHECK(new_bounds_dip.y() >= 0);
-  }
-
-  SetBoundsDip(new_bounds_dip);
+  NOTREACHED() << "Only shell popups must receive HandlePopupConfigure calls.";
 }
 
 void WaylandWindow::OnCloseRequest() {
-  // Before calling OnCloseRequest, the |shell_popup_| must become hidden and
-  // only then call OnCloseRequest().
-  DCHECK(!shell_popup_);
   delegate_->OnCloseRequest();
 }
 
@@ -470,6 +319,7 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
   DCHECK_EQ(buffer_scale_, 1);
   bounds_px_ = properties.bounds;
   opacity_ = properties.opacity;
+  type_ = properties.type;
 
   surface_.reset(wl_compositor_create_surface(connection_->compositor()));
   if (!surface_) {
@@ -481,44 +331,15 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
 
   connection_->wayland_window_manager()->AddWindow(GetWidget(), this);
 
-  ui::PlatformWindowType ui_window_type = properties.type;
-  switch (ui_window_type) {
-    case ui::PlatformWindowType::kMenu:
-    case ui::PlatformWindowType::kPopup:
-      parent_window_ = GetParentWindow(properties.parent_widget);
-
-      // Popups need to know their scale earlier to position themselves.
-      if (!parent_window_) {
-        LOG(ERROR) << "Failed to get a parent window for this popup";
-        return false;
-      }
-
-      SetBufferScale(parent_window_->buffer_scale_, false);
-      ui_scale_ = parent_window_->ui_scale_;
-
-      // TODO(msisov, jkim): Handle notification windows, which are marked
-      // as popup windows as well. Those are the windows that do not have
-      // parents and pop up when the browser receives a notification.
-      CreateShellPopup();
-      break;
-    case ui::PlatformWindowType::kTooltip:
-      // Tooltips subsurfaces are created on demand, upon ::Show calls.
-      is_tooltip_ = true;
-      break;
-    case ui::PlatformWindowType::kWindow:
-    case ui::PlatformWindowType::kBubble:
-    case ui::PlatformWindowType::kDrag:
-      if (!OnInitialize(std::move(properties)))
-        return false;
-      break;
-  }
+  if (!OnInitialize(std::move(properties)))
+    return false;
 
   connection_->ScheduleFlush();
 
   PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
   delegate_->OnAcceleratedWidgetAvailable(GetWidget());
 
-  // Will do nothing for popups because they have got their scale above.
+  // Will do nothing for menus because they have got their scale above.
   UpdateBufferScale(false);
 
   MaybeUpdateOpaqueRegion();
@@ -575,10 +396,10 @@ void WaylandWindow::AddSurfaceListener() {
 }
 
 void WaylandWindow::AddEnteredOutputId(struct wl_output* output) {
-  // Wayland does weird things for popups so instead of tracking outputs that
+  // Wayland does weird things for menus so instead of tracking outputs that
   // we entered or left, we take that from the parent window and ignore this
   // event.
-  if (shell_popup())
+  if (wl::IsMenuType(type()))
     return;
 
   const uint32_t entered_output_id =
@@ -591,10 +412,10 @@ void WaylandWindow::AddEnteredOutputId(struct wl_output* output) {
 }
 
 void WaylandWindow::RemoveEnteredOutputId(struct wl_output* output) {
-  // Wayland does weird things for popups so instead of tracking outputs that
+  // Wayland does weird things for menus so instead of tracking outputs that
   // we entered or left, we take that from the parent window and ignore this
   // event.
-  if (shell_popup())
+  if (wl::IsMenuType(type()))
     return;
 
   const uint32_t left_output_id =
@@ -654,53 +475,6 @@ void WaylandWindow::UpdateCursorPositionFromEvent(
   }
 }
 
-gfx::Rect WaylandWindow::AdjustPopupWindowPosition() const {
-  auto* parent_window = parent_window_->shell_popup()
-                            ? parent_window_->parent_window_
-                            : parent_window_;
-  DCHECK(parent_window);
-  DCHECK(buffer_scale_ == parent_window->buffer_scale_);
-  DCHECK(ui_scale_ == parent_window->ui_scale_);
-
-  // Chromium positions windows in screen coordinates, but Wayland requires them
-  // to be in local surface coordinates aka relative to parent window.
-  const gfx::Rect parent_bounds_dip =
-      gfx::ScaleToRoundedRect(parent_window_->GetBounds(), 1.0 / ui_scale_);
-  gfx::Rect new_bounds_dip =
-      wl::TranslateBoundsToParentCoordinates(bounds_px_, parent_bounds_dip);
-
-  // Chromium may decide to position nested menu windows on the left side
-  // instead of the right side of parent menu windows when the size of the
-  // window becomes larger than the display it is shown on. It's correct when
-  // the window is located on one display and occupies the whole work area, but
-  // as soon as it's moved and there is space on the right side, Chromium
-  // continues positioning the nested menus on the left side relative to the
-  // parent menu (Wayland does not provide clients with global coordinates).
-  // Instead, reposition that window to be on the right side of the parent menu
-  // window and let the compositor decide how to position it if it does not fit
-  // a single display. However, there is one exception - if the window is
-  // maximized, let Chromium position it on the left side as long as the Wayland
-  // compositor may decide to position the nested window on the right side of
-  // the parent menu window, which results in showing it on a second display if
-  // more than one display is used.
-  if (parent_window_->shell_popup() && parent_window_->parent_window_ &&
-      (parent_window_->parent_window()->GetPlatformWindowState() !=
-       PlatformWindowState::kMaximized)) {
-    auto* top_level_window = parent_window_->parent_window_;
-    DCHECK(top_level_window && !top_level_window->shell_popup());
-    if (new_bounds_dip.x() <= 0 && top_level_window->GetPlatformWindowState() !=
-                                       PlatformWindowState::kMaximized) {
-      // Position the child menu window on the right side of the parent window
-      // and let the Wayland compositor decide how to do constraint
-      // adjustements.
-      int new_x = parent_bounds_dip.width() -
-                  (new_bounds_dip.width() + new_bounds_dip.x());
-      new_bounds_dip.set_x(new_x);
-    }
-  }
-  return gfx::ScaleToRoundedRect(new_bounds_dip, ui_scale_ / buffer_scale_);
-}
-
 WaylandWindow* WaylandWindow::GetTopLevelWindow() {
   return parent_window_ ? parent_window_->GetTopLevelWindow() : this;
 }
@@ -719,10 +493,6 @@ void WaylandWindow::MaybeUpdateOpaqueRegion() {
 
 bool WaylandWindow::IsOpaqueWindow() const {
   return opacity_ == ui::PlatformWindowOpacity::kOpaqueWindow;
-}
-
-bool WaylandWindow::OnInitialize(PlatformWindowInitProperties properties) {
-  return true;
 }
 
 // static

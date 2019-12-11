@@ -2061,8 +2061,10 @@ TEST_F(RenderWidgetHostTest, RendererHangRecordsMetrics) {
 
 TEST_F(RenderWidgetHostTest, PendingUserActivationTimeout) {
   base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kBrowserVerifiedUserActivation);
+  scoped_feature_list_.InitWithFeatures(
+      {features::kBrowserVerifiedUserActivationMouse,
+       features::kBrowserVerifiedUserActivationKeyboard},
+      {});
 
   // One event allows one activation notification.
   SimulateMouseEvent(WebInputEvent::kMouseDown);

@@ -167,24 +167,22 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
   bool blocks_form_submission_ : 1;
 };
 
-template <>
-inline bool IsElementOfType<const HTMLFormControlElement>(const Node& node) {
-  return IsA<HTMLFormControlElement>(node);
+inline bool IsHTMLFormControlElement(const Element& element) {
+  return element.IsFormControlElement();
 }
+
+DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLFormControlElement);
+
 template <>
 struct DowncastTraits<HTMLFormControlElement> {
   static bool AllowFrom(const Node& node) {
-    auto* html_element = DynamicTo<HTMLElement>(node);
-    return html_element && AllowFrom(*html_element);
+    auto* element = DynamicTo<Element>(node);
+    return element && element->IsFormControlElement();
   }
   static bool AllowFrom(const ListedElement& control) {
     return control.IsFormControlElement();
   }
-  static bool AllowFrom(const HTMLElement& html_element) {
-    return html_element.IsFormControlElement();
-  }
 };
-
 }  // namespace blink
 
 #endif

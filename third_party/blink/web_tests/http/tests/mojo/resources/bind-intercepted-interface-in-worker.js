@@ -22,12 +22,10 @@ promise_test(async () => {
 }, 'Can implement a Mojo service and intercept it from a worker');
 
 test(t => {
-  assert_throws(
-      'NotSupportedError',
-      () => {
-        new MojoInterfaceInterceptor(content.mojom.MojoWebTestHelper.name,
-                                     "process");
-      });
+  assert_throws('NotSupportedError', () => {
+    new MojoInterfaceInterceptor(
+        content.mojom.MojoWebTestHelper.name, 'process', true);
+  });
 }, 'Cannot create a MojoInterfaceInterceptor with process scope');
 
 // done() is needed because the testharness is running as if explicit_done

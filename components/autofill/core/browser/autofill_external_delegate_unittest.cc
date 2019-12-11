@@ -112,6 +112,9 @@ class MockAutofillManager : public AutofillManager {
   MOCK_METHOD2(ShouldShowCreditCardSigninPromo,
                bool(const FormData& form, const FormFieldData& field));
 
+  MOCK_METHOD2(OnUserHideSuggestions,
+               void(const FormData& form, const FormFieldData& field));
+
   bool ShouldShowCardsFromAccountOption(const FormData& form,
                                         const FormFieldData& field) {
     return should_show_cards_from_account_option_;
@@ -612,6 +615,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateClearForm) {
 // Test that the client is directed to hide the autofill popup after being
 // notified that the user clicked "Hide suggestions" menu item.
 TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateHideSuggestions) {
+  EXPECT_CALL(*autofill_manager_, OnUserHideSuggestions(_, _));
   EXPECT_CALL(autofill_client_, HideAutofillPopup());
 
   external_delegate_->DidAcceptSuggestion(

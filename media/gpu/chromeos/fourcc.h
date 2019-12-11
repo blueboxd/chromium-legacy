@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <string>
 
+#include "base/optional.h"
 #include "media/base/video_types.h"
 #include "media/gpu/buildflags.h"
 #include "media/gpu/media_gpu_export.h"
@@ -119,12 +120,14 @@ class MEDIA_GPU_EXPORT Fourcc {
   ~Fourcc();
 
   bool operator==(const Fourcc& rhs) const { return value_ == rhs.value_; }
-  bool operator==(uint32_t rhs) const {
-    return static_cast<uint32_t>(value_) == rhs;
-  }
   explicit operator bool() const { return value_ != Fourcc::INVALID; }
 
   // Factory methods:
+
+  // Builds a Fourcc from a given fourcc code. This will return a valid
+  // Fourcc if the argument is part of the |Value| enum, or nullopt otherwise.
+  static base::Optional<Fourcc> FromUint32(uint32_t fourcc);
+
   // Converts a VideoPixelFormat to Fourcc.
   // Returns Fourcc::INVALID for invalid input.
   // Note that a VideoPixelFormat may have two Fourcc counterparts. Caller has
@@ -167,10 +170,7 @@ class MEDIA_GPU_EXPORT Fourcc {
   Value value_;
 };
 
-MEDIA_GPU_EXPORT bool operator==(uint32_t lhs, const Fourcc& rhs);
 MEDIA_GPU_EXPORT bool operator!=(const Fourcc& lhs, const Fourcc& rhs);
-MEDIA_GPU_EXPORT bool operator!=(uint32_t lhs, const Fourcc& rhs);
-MEDIA_GPU_EXPORT bool operator!=(const Fourcc& lhs, uint32_t rhs);
 
 }  // namespace media
 

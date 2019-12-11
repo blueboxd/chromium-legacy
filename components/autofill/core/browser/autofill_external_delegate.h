@@ -34,8 +34,7 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
  public:
   // Creates an AutofillExternalDelegate for the specified AutofillManager and
   // AutofillDriver.
-  AutofillExternalDelegate(AutofillManager* manager,
-                           AutofillDriver* driver);
+  AutofillExternalDelegate(AutofillManager* manager, AutofillDriver* driver);
   virtual ~AutofillExternalDelegate();
 
   // AutofillPopupDelegate implementation.
@@ -145,11 +144,11 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   // Returns the text (i.e. |Suggestion| value) for Chrome autofill options.
   base::string16 GetSettingsSuggestionValue() const;
 
-  AutofillManager* manager_;  // weak.
+  AutofillManager* const manager_;  // weak.
 
   // Provides driver-level context to the shared code of the component. Must
   // outlive this object.
-  AutofillDriver* driver_;  // weak
+  AutofillDriver* const driver_;  // weak
 
   // The ID of the last request sent for form field Autofill.  Used to ignore
   // out of date responses.

@@ -188,7 +188,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandler {
       NetworkStateHandler* network_state_handler,
       NetworkProfileHandler* network_profile_handler,
       NetworkDeviceHandler* network_device_handler,
-      NetworkConfigurationHandler* network_configuration_handler);
+      NetworkConfigurationHandler* network_configuration_handler,
+      UIProxyConfigService* ui_proxy_config_service);
 
  private:
   DISALLOW_ASSIGN(ManagedNetworkConfigurationHandler);

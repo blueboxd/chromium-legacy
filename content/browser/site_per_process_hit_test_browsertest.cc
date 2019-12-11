@@ -784,7 +784,7 @@ class SitePerProcessUserActivationHitTestBrowserTest
     SitePerProcessBrowserTest::SetUpCommandLine(command_line);
     ui::PlatformEventSource::SetIgnoreNativePlatformEvents(true);
     feature_list_.InitAndEnableFeature(
-        features::kBrowserVerifiedUserActivation);
+        features::kBrowserVerifiedUserActivationMouse);
   }
 
  private:

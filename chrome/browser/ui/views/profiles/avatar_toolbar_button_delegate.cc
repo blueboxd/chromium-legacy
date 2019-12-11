@@ -181,12 +181,19 @@ AvatarToolbarButton::State AvatarToolbarButtonDelegate::GetState() const {
     // When DICE is enabled and the error is an auth error, the sync-paused
     // icon is shown.
     int unused;
-    const bool should_show_sync_paused_ui =
-        AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_) &&
-        sync_ui_util::GetMessagesForAvatarSyncError(
-            profile_, &unused, &unused) == sync_ui_util::AUTH_ERROR;
-    return should_show_sync_paused_ui ? AvatarToolbarButton::State::kSyncPaused
-                                      : AvatarToolbarButton::State::kSyncError;
+    const sync_ui_util::AvatarSyncErrorType error =
+        sync_ui_util::GetMessagesForAvatarSyncError(profile_, &unused, &unused);
+
+    if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_) &&
+        error == sync_ui_util::AUTH_ERROR) {
+      return AvatarToolbarButton::State::kSyncPaused;
+    }
+
+    if (error == sync_ui_util::TRUSTED_VAULT_KEY_MISSING_FOR_PASSWORDS_ERROR) {
+      return AvatarToolbarButton::State::kPasswordsOnlySyncError;
+    }
+
+    return AvatarToolbarButton::State::kSyncError;
   }
 #endif  // !defined(OS_CHROMEOS)
   return AvatarToolbarButton::State::kNormal;

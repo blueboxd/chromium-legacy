@@ -27,12 +27,16 @@ class XDGPopupWrapperImpl : public ShellPopupWrapper {
                   const gfx::Rect& bounds) override;
 
  private:
-  bool InitializeStable(WaylandConnection* connection, const gfx::Rect& bounds);
+  bool InitializeStable(WaylandConnection* connection,
+                        const gfx::Rect& bounds,
+                        XDGSurfaceWrapperImpl* parent_xdg_surface);
   struct xdg_positioner* CreatePositionerStable(WaylandConnection* connection,
                                                 WaylandWindow* parent_window,
                                                 const gfx::Rect& bounds);
 
-  bool InitializeV6(WaylandConnection* connection, const gfx::Rect& bounds);
+  bool InitializeV6(WaylandConnection* connection,
+                    const gfx::Rect& bounds,
+                    XDGSurfaceWrapperImpl* parent_xdg_surface);
   struct zxdg_positioner_v6* CreatePositionerV6(WaylandConnection* connection,
                                                 WaylandWindow* parent_window,
                                                 const gfx::Rect& bounds);

@@ -115,8 +115,7 @@ class PLATFORM_EXPORT RTCPeerConnectionHandlerPlatform {
   virtual webrtc::RTCErrorType SetConfiguration(
       const webrtc::PeerConnectionInterface::RTCConfiguration&) = 0;
 
-  virtual void AddICECandidate(RTCVoidRequest*,
-                               scoped_refptr<RTCIceCandidatePlatform>) = 0;
+  virtual void AddICECandidate(RTCVoidRequest*, RTCIceCandidatePlatform*) = 0;
   virtual void RestartIce() = 0;
   virtual void GetStats(RTCStatsRequest*) = 0;
   // Gets stats using the new stats collection API, see

@@ -259,10 +259,9 @@ void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
             PhysicalOffset::FromFloatPointRound(drag_data->ClientPosition())));
         const HitTestResult result =
             event_handler.HitTestResultAtLocation(location);
-        auto* html_plugin_element =
-            DynamicTo<HTMLPlugInElement>(result.InnerNode());
         prevented_default |=
-            html_plugin_element && html_plugin_element->CanProcessDrag();
+            IsHTMLPlugInElement(*result.InnerNode()) &&
+            ToHTMLPlugInElement(result.InnerNode())->CanProcessDrag();
       }
 
       // Invalidate clipboard here for security.
@@ -719,7 +718,8 @@ bool DragController::CanProcessDrag(DragData* drag_data,
   if (drag_data->ContainsFiles() && AsFileInput(result.InnerNode()))
     return true;
 
-  if (auto* plugin = DynamicTo<HTMLPlugInElement>(result.InnerNode())) {
+  if (IsHTMLPlugInElement(*result.InnerNode())) {
+    HTMLPlugInElement* plugin = ToHTMLPlugInElement(result.InnerNode());
     if (!plugin->CanProcessDrag() && !HasEditableStyle(*result.InnerNode()))
       return false;
   } else if (!HasEditableStyle(*result.InnerNode())) {

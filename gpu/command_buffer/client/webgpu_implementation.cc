@@ -285,26 +285,6 @@ void WebGPUImplementation::OnGpuControlReturnData(
       std::move(request_callback).Run(adapter_service_id, adapter_properties);
       request_adapter_callback_map_.erase(request_callback_iter);
     } break;
-    case DawnReturnDataType::kRequestedDeviceReturnInfo: {
-      const cmds::DawnReturnRequestDeviceInfo* returned_request_device_info =
-          reinterpret_cast<const cmds::DawnReturnRequestDeviceInfo*>(
-              data.data());
-
-      GLuint request_device_serial =
-          returned_request_device_info->request_device_serial;
-      auto request_callback_iter =
-          request_device_callback_map_.find(request_device_serial);
-      if (request_callback_iter == request_device_callback_map_.end()) {
-        // TODO(jiawei.shao@intel.com): Lose the context.
-        NOTREACHED();
-        break;
-      }
-      auto& request_callback = request_callback_iter->second;
-      bool is_request_device_success =
-          returned_request_device_info->is_request_device_success;
-      std::move(request_callback).Run(is_request_device_success);
-      request_device_callback_map_.erase(request_callback_iter);
-    } break;
     default:
       // TODO(jiawei.shao@intel.com): Lose the context.
       NOTREACHED();
@@ -437,29 +417,12 @@ bool WebGPUImplementation::RequestAdapterAsync(
   return true;
 }
 
-uint32_t WebGPUImplementation::NextRequestDeviceSerial() {
-  return ++request_device_serial_;
-}
-
-bool WebGPUImplementation::RequestDeviceAsync(
+bool WebGPUImplementation::RequestDevice(
     uint32_t requested_adapter_id,
-    const WGPUDeviceProperties* requested_device_properties,
-    base::OnceCallback<void(bool)> request_device_callback) {
+    const WGPUDeviceProperties* requested_device_properties) {
 #if BUILDFLAG(USE_DAWN)
-  uint32_t request_device_serial = NextRequestDeviceSerial();
-
-  // Avoid the overflow of request_device_serial and old slot being reused.
-  if (request_device_callback_map_.find(request_device_serial) !=
-      request_device_callback_map_.end()) {
-    return false;
-  }
-
-  request_device_callback_map_[request_device_serial] =
-      std::move(request_device_callback);
-
   if (!requested_device_properties) {
-    helper_->RequestDevice(request_device_serial_, requested_adapter_id, 0, 0,
-                           0);
+    helper_->RequestDevice(requested_adapter_id, 0, 0, 0);
     return true;
   }
 
@@ -477,13 +440,10 @@ bool WebGPUImplementation::RequestDeviceAsync(
   dawn_wire::SerializeWGPUDeviceProperties(
       requested_device_properties,
       reinterpret_cast<char*>(transfer_buffer.address()));
-  helper_->RequestDevice(request_device_serial, requested_adapter_id,
-                         transfer_buffer.shm_id(), transfer_buffer.offset(),
+  helper_->RequestDevice(requested_adapter_id, transfer_buffer.shm_id(),
+                         transfer_buffer.offset(),
                          serialized_device_properties_size);
   transfer_buffer.Release();
-
-  helper_->Flush();
-
   return true;
 #else
   NOTREACHED();

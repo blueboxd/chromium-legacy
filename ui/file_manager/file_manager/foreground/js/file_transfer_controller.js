@@ -1250,8 +1250,15 @@ class FileTransferController {
     }
 
     // If the destination is sub-tree of any of the sources paste isn't allowed.
-    const destinationUrl = destinationEntry.toURL();
-    if (sourceUrls.some(source => destinationUrl.startsWith(source))) {
+    const addTrailingSlash = s => {
+      if (!s.endsWith('/')) {
+        s += '/';
+      }
+      return s;
+    };
+    const destinationUrl = addTrailingSlash(destinationEntry.toURL());
+    if (sourceUrls.some(
+            source => destinationUrl.startsWith(addTrailingSlash(source)))) {
       return false;
     }
 

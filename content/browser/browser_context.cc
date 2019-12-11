@@ -349,14 +349,14 @@ StoragePartition* BrowserContext::GetStoragePartitionForSite(
 
 void BrowserContext::ForEachStoragePartition(
     BrowserContext* browser_context,
-    const StoragePartitionCallback& callback) {
+    StoragePartitionCallback callback) {
   StoragePartitionImplMap* partition_map =
       static_cast<StoragePartitionImplMap*>(
           browser_context->GetUserData(kStoragePartitionMapKeyName));
   if (!partition_map)
     return;
 
-  partition_map->ForEach(callback);
+  partition_map->ForEach(std::move(callback));
 }
 
 StoragePartition* BrowserContext::GetDefaultStoragePartition(
@@ -439,7 +439,7 @@ void BrowserContext::NotifyWillBeDestroyed(BrowserContext* browser_context) {
   // since they keep render process hosts alive and the codebase assumes that
   // render process hosts die before their profile (browser context) dies.
   ForEachStoragePartition(browser_context,
-                          base::Bind(ShutdownServiceWorkerContext));
+                          base::BindRepeating(ShutdownServiceWorkerContext));
 
   // Shared workers also keep render process hosts alive, and are expected to
   // return ref counts to 0 after documents close. However, to ensure that

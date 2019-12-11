@@ -694,19 +694,25 @@ bool WallpaperControllerImpl::IsPolicyControlled(
   return GetUserWallpaperInfo(account_id, &info) && info.type == POLICY;
 }
 
-void WallpaperControllerImpl::UpdateWallpaperBlur(bool blur) {
-  bool needs_blur = blur && IsBlurAllowed();
-  if (needs_blur == is_wallpaper_blurred_)
-    return;
-
+void WallpaperControllerImpl::UpdateWallpaperBlurForLockState(bool blur) {
+  bool needs_blur = blur && IsBlurAllowedForLockState();
+  bool changed = is_wallpaper_blurred_for_lock_state_ != needs_blur;
+  // is_wallpaper_blurrred_for_lock_state_ may already be updated in
+  // InstallDesktopController. Always try to update, then invoke observer
+  // if something changed.
   for (auto* root_window_controller : Shell::GetAllRootWindowControllers()) {
-    root_window_controller->wallpaper_widget_controller()->SetWallpaperBlur(
-        needs_blur ? login_constants::kBlurSigma
-                   : login_constants::kClearBlurSigma);
+    changed |=
+        root_window_controller->wallpaper_widget_controller()
+            ->SetBlurAndOpacity(needs_blur ? login_constants::kBlurSigma
+                                           : login_constants::kClearBlurSigma,
+                                1.f);
   }
-  is_wallpaper_blurred_ = needs_blur;
-  for (auto& observer : observers_)
-    observer.OnWallpaperBlurChanged();
+
+  is_wallpaper_blurred_for_lock_state_ = needs_blur;
+  if (changed) {
+    for (auto& observer : observers_)
+      observer.OnWallpaperBlurChanged();
+  }
 }
 
 bool WallpaperControllerImpl::ShouldApplyDimming() const {
@@ -719,12 +725,8 @@ bool WallpaperControllerImpl::ShouldApplyDimming() const {
   return should_dim && !IsOneShotWallpaper();
 }
 
-bool WallpaperControllerImpl::IsBlurAllowed() const {
+bool WallpaperControllerImpl::IsBlurAllowedForLockState() const {
   return !IsDevicePolicyWallpaper() && !IsOneShotWallpaper();
-}
-
-bool WallpaperControllerImpl::IsWallpaperBlurred() const {
-  return is_wallpaper_blurred_;
 }
 
 bool WallpaperControllerImpl::SetUserWallpaperInfo(const AccountId& account_id,
@@ -1281,8 +1283,8 @@ const std::vector<SkColor>& WallpaperControllerImpl::GetWallpaperColors() {
   return prominent_colors_;
 }
 
-bool WallpaperControllerImpl::IsWallpaperBlurred() {
-  return is_wallpaper_blurred_;
+bool WallpaperControllerImpl::IsWallpaperBlurredForLockState() const {
+  return is_wallpaper_blurred_for_lock_state_;
 }
 
 bool WallpaperControllerImpl::IsActiveUserWallpaperControlledByPolicy() {
@@ -1428,44 +1430,34 @@ void WallpaperControllerImpl::InstallDesktopController(
     aura::Window* root_window) {
   DCHECK_EQ(WALLPAPER_IMAGE, wallpaper_mode_);
 
-  const bool is_wallpaper_blurred =
+  const bool is_wallpaper_blurred_for_lock_state =
       Shell::Get()->session_controller()->IsUserSessionBlocked() &&
-      IsBlurAllowed();
-  if (is_wallpaper_blurred_ != is_wallpaper_blurred) {
-    is_wallpaper_blurred_ = is_wallpaper_blurred;
+      IsBlurAllowedForLockState();
+  if (is_wallpaper_blurred_for_lock_state_ !=
+      is_wallpaper_blurred_for_lock_state) {
+    is_wallpaper_blurred_for_lock_state_ = is_wallpaper_blurred_for_lock_state;
     for (auto& observer : observers_)
       observer.OnWallpaperBlurChanged();
   }
 
   const int container_id = GetWallpaperContainerId(locked_);
-  float blur = is_wallpaper_blurred ? login_constants::kBlurSigma
-                                    : login_constants::kClearBlurSigma;
 
-  // There are two types of blurring we can do on the wallpaper. One is on the
-  // widget itself and the other is on the wallpaper view paint code which more
-  // optimized but lower quality. The latter is used by overview mode which
-  // needs to animate the wallpaper blur, meaning the former is not a very good
-  // option in terms of performance.
-  // TODO(crbug.com/944152): Modify wallpaper view use painting blur in all
-  // cases.
   auto* wallpaper_widget_controller =
       RootWindowController::ForWindow(root_window)
           ->wallpaper_widget_controller();
-  WallpaperView* previous_wallpaper_view =
-      wallpaper_widget_controller->wallpaper_view();
-  WallpaperView* current_wallpaper_view = nullptr;
 
-  // Copy the blur and opacity values from the old wallpaper to the new one.
-  const int repaint_blur =
-      previous_wallpaper_view ? previous_wallpaper_view->repaint_blur() : 0;
-  const float repaint_opacity = previous_wallpaper_view
-                                    ? previous_wallpaper_view->repaint_opacity()
-                                    : 1.f;
-  auto* widget =
-      CreateWallpaperWidget(root_window, container_id, repaint_blur,
-                            repaint_opacity, &current_wallpaper_view);
+  float blur = is_wallpaper_blurred_for_lock_state
+                   ? login_constants::kBlurSigma
+                   : wallpaper_widget_controller->blur_sigma();
+  float opacity = is_wallpaper_blurred_for_lock_state
+                      ? 1.f
+                      : wallpaper_widget_controller->opacity();
+
+  WallpaperView* current_wallpaper_view = nullptr;
+  auto* widget = CreateWallpaperWidget(root_window, container_id, blur, opacity,
+                                       &current_wallpaper_view);
   wallpaper_widget_controller->SetWallpaperWidget(widget,
-                                                  current_wallpaper_view, blur);
+                                                  current_wallpaper_view);
 }
 
 void WallpaperControllerImpl::InstallDesktopControllerForAllWindows() {

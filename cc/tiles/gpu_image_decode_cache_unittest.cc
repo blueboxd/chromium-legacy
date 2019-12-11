@@ -311,6 +311,7 @@ class GPUImageDecodeTestMockContextProvider : public viz::TestContextProvider {
       : TestContextProvider(std::move(support),
                             std::move(gl),
                             std::move(raster),
+                            nullptr /* sii */,
                             true) {}
 };
 

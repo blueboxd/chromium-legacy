@@ -166,7 +166,7 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
            const webrtc::PeerConnectionInterface::RTCConfiguration& config));
   MOCK_METHOD4(TrackAddIceCandidate,
                void(RTCPeerConnectionHandler* pc_handler,
-                    scoped_refptr<RTCIceCandidatePlatform> candidate,
+                    RTCIceCandidatePlatform* candidate,
                     Source source,
                     bool succeeded));
   MOCK_METHOD4(TrackAddTransceiver,
@@ -247,7 +247,7 @@ std::vector<T> ToSequence(T value) {
 }
 
 template <typename T>
-void ExpectSequenceEquals(const blink::WebVector<T>& sequence, T value) {
+void ExpectSequenceEquals(const Vector<T>& sequence, T value) {
   EXPECT_EQ(sequence.size(), static_cast<size_t>(1));
   EXPECT_EQ(sequence[0], value);
 }
@@ -788,7 +788,7 @@ TEST_F(RTCPeerConnectionHandlerTest, setConfigurationError) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, addICECandidate) {
-  scoped_refptr<RTCIceCandidatePlatform> candidate =
+  RTCIceCandidatePlatform* candidate =
       RTCIceCandidatePlatform::Create(kDummySdp, "sdpMid", 1);
 
   EXPECT_CALL(*mock_tracker_.get(),
@@ -995,7 +995,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetRTCStats) {
             EXPECT_EQ(member->ValueString(), "42");
             break;
           case webrtc::RTCStatsMemberInterface::kSequenceBool:
-            ExpectSequenceEquals(member->ValueSequenceBool(), 1);
+            ExpectSequenceEquals(member->ValueSequenceBool(), true);
             break;
           case webrtc::RTCStatsMemberInterface::kSequenceInt32:
             ExpectSequenceEquals(member->ValueSequenceInt32(),

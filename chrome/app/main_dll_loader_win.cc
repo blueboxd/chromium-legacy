@@ -41,7 +41,7 @@
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/metrics_constants_util_win.h"
-#include "chrome/installer/util/google_update_settings.h"
+#include "chrome/installer/util/update_did_run_state.h"
 #include "chrome/installer/util/util_constants.h"
 #include "content/public/app/sandbox_helper_win.h"
 #include "content/public/common/content_switches.h"
@@ -64,7 +64,7 @@ HMODULE LoadModuleWithDirectory(const base::FilePath& module) {
 }
 
 void RecordDidRun(const base::FilePath& dll_path) {
-  GoogleUpdateSettings::UpdateDidRunState(true);
+  installer::UpdateDidRunState(true);
 }
 
 bool ProcessTypeUsesMainDll(const std::string& process_type) {

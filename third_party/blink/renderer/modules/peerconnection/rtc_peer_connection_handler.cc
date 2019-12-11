@@ -485,16 +485,8 @@ void GetRTCStatsOnSignalingThread(
     RTCStatsReportCallback callback,
     const Vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
   TRACE_EVENT0("webrtc", "GetRTCStatsOnSignalingThread");
-
-  // TODO(crbug.com/787254): Remove this conversion routine when
-  // CreateRTCStatsCollectorCallback gets switched over to work on
-  // WTF::Vector (instead of WebVector).
-  WebVector<webrtc::NonStandardGroupId> exposed_group_ids_copy;
-  for (auto id : exposed_group_ids)
-    exposed_group_ids_copy.emplace_back(id);
-
   native_peer_connection->GetStats(CreateRTCStatsCollectorCallback(
-      main_thread, std::move(callback), std::move(exposed_group_ids_copy)));
+      main_thread, std::move(callback), exposed_group_ids));
 }
 
 void ConvertOfferOptionsToWebrtcOfferOptions(
@@ -1553,7 +1545,7 @@ webrtc::RTCErrorType RTCPeerConnectionHandler::SetConfiguration(
 
 void RTCPeerConnectionHandler::AddICECandidate(
     RTCVoidRequest* request,
-    scoped_refptr<RTCIceCandidatePlatform> candidate) {
+    RTCIceCandidatePlatform* candidate) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::addICECandidate");
   std::unique_ptr<webrtc::IceCandidateInterface> native_candidate(
@@ -1567,8 +1559,8 @@ void RTCPeerConnectionHandler::AddICECandidate(
   auto callback_on_task_runner =
       [](base::WeakPtr<RTCPeerConnectionHandler> handler_weak_ptr,
          base::WeakPtr<PeerConnectionTracker> tracker_weak_ptr,
-         scoped_refptr<RTCIceCandidatePlatform> candidate,
-         webrtc::RTCError result, RTCVoidRequest* request) {
+         RTCIceCandidatePlatform* candidate, webrtc::RTCError result,
+         RTCVoidRequest* request) {
         // Inform tracker (chrome://webrtc-internals).
         if (handler_weak_ptr && tracker_weak_ptr) {
           tracker_weak_ptr->TrackAddIceCandidate(
@@ -1595,10 +1587,10 @@ void RTCPeerConnectionHandler::AddICECandidate(
         // a fake |native_peer_connection_|). Jump back to the renderer thread.
         PostCrossThreadTask(
             *task_runner, FROM_HERE,
-            WTF::CrossThreadBindOnce(std::move(callback_on_task_runner),
-                                     handler_weak_ptr, tracker_weak_ptr,
-                                     candidate, std::move(result),
-                                     std::move(persistent_request)));
+            WTF::CrossThreadBindOnce(
+                std::move(callback_on_task_runner), handler_weak_ptr,
+                tracker_weak_ptr, WrapCrossThreadPersistent(candidate),
+                std::move(result), std::move(persistent_request)));
       });
 }
 
@@ -2394,11 +2386,11 @@ void RTCPeerConnectionHandler::OnIceCandidate(const String& sdp,
                                               int address_family) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnIceCandidateImpl");
-  scoped_refptr<RTCIceCandidatePlatform> web_candidate =
+  auto* platform_candidate =
       RTCIceCandidatePlatform::Create(sdp, sdp_mid, sdp_mline_index);
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackAddIceCandidate(
-        this, web_candidate, PeerConnectionTracker::SOURCE_LOCAL, true);
+        this, platform_candidate, PeerConnectionTracker::SOURCE_LOCAL, true);
   }
 
   // Only the first m line's first component is tracked to avoid
@@ -2408,12 +2400,12 @@ void RTCPeerConnectionHandler::OnIceCandidate(const String& sdp,
       ++num_local_candidates_ipv4_;
     } else if (address_family == AF_INET6) {
       ++num_local_candidates_ipv6_;
-    } else if (!IsHostnameCandidate(*web_candidate)) {
+    } else if (!IsHostnameCandidate(*platform_candidate)) {
       NOTREACHED();
     }
   }
   if (!is_closed_)
-    client_->DidGenerateICECandidate(std::move(web_candidate));
+    client_->DidGenerateICECandidate(platform_candidate);
 }
 
 void RTCPeerConnectionHandler::OnIceCandidateError(const String& host_candidate,

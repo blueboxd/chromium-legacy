@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_bridge.h"
 #include "components/arc/session/connection_observer.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace arc {
 
@@ -31,7 +32,7 @@ class ArcInputMethodManagerBridgeImpl
                      EnableImeCallback callback) override;
   void SendSwitchImeTo(const std::string& ime_id,
                        SwitchImeToCallback callback) override;
-  void SendFocus(mojom::InputConnectionPtr connection,
+  void SendFocus(mojo::PendingRemote<mojom::InputConnection> connection,
                  mojom::TextInputStatePtr state) override;
   void SendUpdateTextInputState(mojom::TextInputStatePtr state) override;
   void SendShowVirtualKeyboard() override;

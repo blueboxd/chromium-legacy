@@ -10,29 +10,42 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Handles pagination for the list and adds a pagination header at the end, if the list is longer
- * than the desired length. Tracks the number of pages currently being displayed to the user.
+ * Handles pagination for a given date ordered list. Always ensures that all the items for a given
+ * date are displayed fully even if the total item count might exceed the desired limit.
  */
-public class Paginator {
+public class DateListPaginator implements DateOrderedListMutator.ListPaginator {
     private static final int DEFAULT_PAGE_SIZE = 25;
 
+    private ListConsumer mListConsumer;
     private int mCurrentPageIndex;
 
-    /** Constructor. */
-    public Paginator() {}
+    @Override
+    public ListConsumer setListConsumer(ListConsumer consumer) {
+        mListConsumer = consumer;
+        return mListConsumer;
+    }
 
-    /**
-     * Increments the currently displayed page count. Called when the pagination header is clicked.
-     */
+    @Override
     public void loadMorePages() {
         mCurrentPageIndex++;
+    }
+
+    @Override
+    public void reset() {
+        mCurrentPageIndex = 0;
+    }
+
+    @Override
+    public void onListUpdated(List<ListItem> inputList) {
+        if (mListConsumer == null) return;
+        mListConsumer.onListUpdated(getPaginatedList(inputList));
     }
 
     /**
      * Given an input list, generates an output list to be displayed with a pagination header at
      * the end.
      */
-    public List<ListItem> getPaginatedList(List<ListItem> inputList) {
+    private List<ListItem> getPaginatedList(List<ListItem> inputList) {
         List<ListItem> outputList = new ArrayList<>();
 
         boolean showPagination = false;
@@ -50,12 +63,5 @@ public class Paginator {
         if (showPagination) outputList.add(new ListItem.PaginationListItem());
 
         return outputList;
-    }
-
-    /**
-     * Resets the pagination tracking. To be called when the filter type of the list is changed.
-     */
-    public void reset() {
-        mCurrentPageIndex = 0;
     }
 }

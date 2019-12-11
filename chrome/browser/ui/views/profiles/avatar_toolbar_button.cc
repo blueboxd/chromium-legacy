@@ -140,6 +140,7 @@ void AvatarToolbarButton::UpdateText() {
       text = delegate_->GetShortProfileName();
       break;
     }
+    case State::kPasswordsOnlySyncError:
     case State::kSyncError:
       color = AdjustHighlightColorForContrast(
           GetThemeProvider(), gfx::kGoogleRed300, gfx::kGoogleRed600,
@@ -249,6 +250,10 @@ base::string16 AvatarToolbarButton::GetAvatarTooltipText() const {
       return l10n_util::GetStringUTF16(IDS_GENERIC_USER_AVATAR_LABEL);
     case State::kAnimatedUserIdentity:
       return delegate_->GetShortProfileName();
+    case State::kPasswordsOnlySyncError:
+      return l10n_util::GetStringFUTF16(
+          IDS_AVATAR_BUTTON_SYNC_ERROR_PASSWORDS_TOOLTIP,
+          delegate_->GetProfileName());
     case State::kSyncError:
       return l10n_util::GetStringFUTF16(IDS_AVATAR_BUTTON_SYNC_ERROR_TOOLTIP,
                                         delegate_->GetProfileName());
@@ -282,6 +287,7 @@ gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon(
       return gfx::CreateVectorIcon(kUserAccountAvatarIcon, icon_size,
                                    icon_color);
     case State::kAnimatedUserIdentity:
+    case State::kPasswordsOnlySyncError:
     case State::kSyncError:
     case State::kSyncPaused:
     case State::kNormal:

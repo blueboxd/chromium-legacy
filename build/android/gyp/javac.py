@@ -524,14 +524,6 @@ def main(argv):
 
   argv = build_utils.ExpandFileArgs(argv)
   options, java_files = _ParseOptions(argv)
-
-  # Until we add a version of javac via DEPS, use errorprone with all checks
-  # disabled rather than javac. This ensures builds are reproducible.
-  # https://crbug.com/693079
-  # As of Jan 2019, on a z920, compiling chrome_java times:
-  # * With javac: 17 seconds
-  # * With errorprone (checks disabled): 20 seconds
-  # * With errorprone (checks enabled): 30 seconds
   javac_path = build_utils.JAVA_PATH + 'c'
 
   javac_cmd = [

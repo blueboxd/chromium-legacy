@@ -858,7 +858,7 @@ void PeerConnectionTracker::TrackSetConfiguration(
 
 void PeerConnectionTracker::TrackAddIceCandidate(
     RTCPeerConnectionHandler* pc_handler,
-    scoped_refptr<RTCIceCandidatePlatform> candidate,
+    RTCIceCandidatePlatform* candidate,
     Source source,
     bool succeeded) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);

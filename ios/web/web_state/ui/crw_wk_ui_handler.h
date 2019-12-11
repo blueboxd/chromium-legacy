@@ -8,20 +8,19 @@
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
 
+#import "ios/web/web_state/ui/crw_web_view_handler.h"
+
 @class CRWContextMenuController;
 @protocol CRWWKUIHandlerDelegate;
 
 // Object handling the WKUIDelegate callbacks for the WKWebView.
-@interface CRWWKUIHandler : NSObject <WKUIDelegate>
+@interface CRWWKUIHandler : CRWWebViewHandler <WKUIDelegate>
 
 // Delegate for the handler.
 @property(nonatomic, weak) id<CRWWKUIHandlerDelegate> delegate;
 
 // Context menu controller, to be set when the WebView is created.
 @property(nonatomic, strong) CRWContextMenuController* contextMenuController;
-
-// Closes the UI Handler.
-- (void)close;
 
 @end
 

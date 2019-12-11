@@ -112,6 +112,7 @@ static void ExtractSelectorValues(const CSSSelector* selector,
                                   AtomicString& class_name,
                                   AtomicString& custom_pseudo_element_name,
                                   AtomicString& tag_name,
+                                  AtomicString& part_name,
                                   CSSSelector::PseudoType& pseudo_type) {
   switch (selector->Match()) {
     case CSSSelector::kId:
@@ -137,7 +138,6 @@ static void ExtractSelectorValues(const CSSSelector* selector,
         case CSSSelector::kPseudoAnyLink:
         case CSSSelector::kPseudoFocus:
         case CSSSelector::kPseudoPlaceholder:
-        case CSSSelector::kPseudoPart:
         case CSSSelector::kPseudoHost:
         case CSSSelector::kPseudoHostContext:
         case CSSSelector::kPseudoSpatialNavigationInterest:
@@ -146,6 +146,9 @@ static void ExtractSelectorValues(const CSSSelector* selector,
         case CSSSelector::kPseudoWebKitCustomElement:
         case CSSSelector::kPseudoBlinkInternalElement:
           custom_pseudo_element_name = selector->Value();
+          break;
+        case CSSSelector::kPseudoPart:
+          part_name = selector->Value();
           break;
         default:
           break;
@@ -162,6 +165,7 @@ bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
   AtomicString class_name;
   AtomicString custom_pseudo_element_name;
   AtomicString tag_name;
+  AtomicString part_name;
   CSSSelector::PseudoType pseudo_type = CSSSelector::kPseudoUnknown;
 
 #ifndef NDEBUG
@@ -172,11 +176,11 @@ bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
   for (; it && it->Relation() == CSSSelector::kSubSelector;
        it = it->TagHistory()) {
     ExtractSelectorValues(it, id, class_name, custom_pseudo_element_name,
-                          tag_name, pseudo_type);
+                          tag_name, part_name, pseudo_type);
   }
   if (it) {
     ExtractSelectorValues(it, id, class_name, custom_pseudo_element_name,
-                          tag_name, pseudo_type);
+                          tag_name, part_name, pseudo_type);
   }
 
   // Prefer rule sets in order of most likely to apply infrequently.
@@ -199,6 +203,11 @@ bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
     DCHECK(class_name.IsEmpty());
     AddToRuleSet(custom_pseudo_element_name,
                  EnsurePendingRules()->shadow_pseudo_element_rules, rule_data);
+    return true;
+  }
+
+  if (!part_name.IsEmpty()) {
+    part_pseudo_rules_.push_back(rule_data);
     return true;
   }
 
@@ -230,9 +239,6 @@ bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
     case CSSSelector::kPseudoHost:
     case CSSSelector::kPseudoHostContext:
       shadow_host_rules_.push_back(rule_data);
-      return true;
-    case CSSSelector::kPseudoPart:
-      part_pseudo_rules_.push_back(rule_data);
       return true;
     default:
       break;

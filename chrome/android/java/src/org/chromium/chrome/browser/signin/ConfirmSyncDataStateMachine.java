@@ -119,7 +119,6 @@ public class ConfirmSyncDataStateMachine
         if (isBeingDestroyed) return;
         mCallback.onCancel();
         mDelegate.dismissAllDialogs();
-        dismissDialog(ConfirmImportSyncDataDialog.CONFIRM_IMPORT_SYNC_DATA_DIALOG_TAG);
         dismissDialog(ConfirmManagedSyncDataDialog.CONFIRM_IMPORT_SYNC_DATA_DIALOG_TAG);
     }
 
@@ -146,8 +145,8 @@ public class ConfirmSyncDataStateMachine
                     progress();
                 } else {
                     // This will call back into onConfirm(boolean wipeData) on success.
-                    ConfirmImportSyncDataDialog.showNewInstance(
-                            mOldAccountName, mNewAccountName, mFragmentManager, this);
+                    mDelegate.showConfirmImportSyncDataDialog(
+                            this, mOldAccountName, mNewAccountName);
                 }
 
                 break;

@@ -48,7 +48,7 @@
 #include "ui/base/webui/web_ui_util.h"
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-#include "chrome/browser/ssl/captive_portal_blocking_page.h"
+#include "components/security_interstitials/content/captive_portal_blocking_page.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)

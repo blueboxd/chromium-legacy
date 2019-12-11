@@ -119,10 +119,6 @@ class NetworkingPrivateChromeOS : public NetworkingPrivateDelegate {
   // which is not available to the chromeos/network module.
   void AppendThirdPartyProviderName(base::DictionaryValue* dictionary);
 
-  // Sets the active proxy values in managed network configurations.
-  void SetManagedActiveProxyValues(const std::string& guid,
-                                   base::DictionaryValue* dictionary);
-
   content::BrowserContext* browser_context_;
   base::WeakPtrFactory<NetworkingPrivateChromeOS> weak_ptr_factory_{this};
 

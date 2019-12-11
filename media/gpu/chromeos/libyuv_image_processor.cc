@@ -37,7 +37,13 @@ SupportResult IsFormatSupported(Fourcc input_fourcc, Fourcc output_fourcc) {
   };
 
   for (const auto& conv : kSupportFormatConversionArray) {
-    if (conv.input == input_fourcc && conv.output == output_fourcc) {
+    const auto conv_input_fourcc = Fourcc::FromUint32(conv.input);
+    const auto conv_output_fourcc = Fourcc::FromUint32(conv.output);
+    if (!conv_input_fourcc || !conv_output_fourcc)
+      return SupportResult::Unsupported;
+
+    if (*conv_input_fourcc == input_fourcc &&
+        *conv_output_fourcc == output_fourcc) {
       return conv.need_pivot ? SupportResult::SupportedWithPivot
                              : SupportResult::Supported;
     }

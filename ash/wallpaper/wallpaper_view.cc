@@ -79,7 +79,7 @@ class LayerControlView : public views::View {
 // WallpaperView, public:
 
 WallpaperView::WallpaperView(int blur, float opacity)
-    : repaint_blur_(blur), repaint_opacity_(opacity) {
+    : blur_sigma_(blur), opacity_(opacity) {
   set_context_menu_controller(this);
 }
 
@@ -87,11 +87,11 @@ WallpaperView::~WallpaperView() = default;
 
 void WallpaperView::RepaintBlurAndOpacity(int repaint_blur,
                                           float repaint_opacity) {
-  if (repaint_blur_ == repaint_blur && repaint_opacity_ == repaint_opacity)
+  if (blur_sigma_ == repaint_blur && opacity_ == repaint_opacity)
     return;
 
-  repaint_blur_ = repaint_blur;
-  repaint_opacity_ = repaint_opacity;
+  blur_sigma_ = repaint_blur;
+  opacity_ = repaint_opacity;
   SchedulePaint();
 }
 
@@ -131,7 +131,7 @@ void WallpaperView::DrawWallpaper(const gfx::ImageSkia& wallpaper,
         gfx::ImageSkia::CreateFrom1xBitmap(small_canvas.GetBitmap()));
   }
 
-  if (repaint_blur_ == 0 && repaint_opacity_ == 1.f) {
+  if (blur_sigma_ == 0 && opacity_ == 1.f) {
     canvas->DrawImageInt(wallpaper, src.x(), src.y(), src.width(), src.height(),
                          dst.x(), dst.y(), dst.width(), dst.height(),
                          /*filter=*/true, flags);
@@ -140,7 +140,7 @@ void WallpaperView::DrawWallpaper(const gfx::ImageSkia& wallpaper,
   bool will_not_fill = width() > dst.width() || height() > dst.height();
   // When not filling the view, we paint the small_image_ directly to the
   // canvas.
-  float blur = will_not_fill ? repaint_blur_ : repaint_blur_ * quality;
+  float blur = will_not_fill ? blur_sigma_ : blur_sigma_ * quality;
 
   // Create the blur and brightness filter to apply to the downsampled image.
   cc::FilterOperations operations;
@@ -148,10 +148,8 @@ void WallpaperView::DrawWallpaper(const gfx::ImageSkia& wallpaper,
   // |OnPaint| so we don't need to darken here.
   // TODO(crbug.com/944152): Merge this with the color filter in
   // WallpaperBaseView.
-  if (!Shell::Get()->tablet_mode_controller()->InTabletMode()) {
-    operations.Append(
-        cc::FilterOperation::CreateBrightnessFilter(repaint_opacity_));
-  }
+  if (!Shell::Get()->tablet_mode_controller()->InTabletMode())
+    operations.Append(cc::FilterOperation::CreateBrightnessFilter(opacity_));
 
   operations.Append(cc::FilterOperation::CreateBlurFilter(
       blur, SkBlurImageFilter::kClamp_TileMode));

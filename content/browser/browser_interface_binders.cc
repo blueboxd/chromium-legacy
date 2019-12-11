@@ -300,13 +300,13 @@ void RunOrPostTaskToBindServiceWorkerReceiver(
   content::RunOrPostTaskOnThread(
       FROM_HERE, BrowserThread::UI,
       base::BindOnce(
-          [](ServiceWorkerProviderHost* host,
-             void (RenderProcessHost::*method)(Args...), Args... args) {
-            RenderProcessHost* process_host = host->GetProcessHost();
+          [](int worker_process_id, void (RenderProcessHost::*method)(Args...),
+             Args... args) {
+            auto* process_host = RenderProcessHost::FromID(worker_process_id);
             if (process_host)
               (process_host->*method)(std::forward<Args>(args)...);
           },
-          base::Unretained(host), method, std::forward<Args>(args)...));
+          host->worker_process_id(), method, std::forward<Args>(args)...));
 }
 
 template <typename Interface>

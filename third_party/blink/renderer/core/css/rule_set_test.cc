@@ -307,6 +307,15 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_PseudoWhere) {
   }
 }
 
+TEST(RuleSetTest, findBestRuleSetAndAdd_PartPseudoElements) {
+  css_test_helpers::TestStyleSheet sheet;
+
+  sheet.AddCSSRules("::part(dummy):focus, #id::part(dummy) { }");
+  RuleSet& rule_set = sheet.GetRuleSet();
+  const HeapVector<Member<const RuleData>>* rules = rule_set.PartPseudoRules();
+  ASSERT_EQ(2u, rules->size());
+}
+
 TEST(RuleSetTest, findBestRuleSetAndAdd_PseudoIsTooLarge) {
   // RuleData cannot support selectors at index 8192 or beyond so the expansion
   // is limited to this size

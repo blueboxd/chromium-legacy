@@ -1466,6 +1466,12 @@ extern const char kClearOldBrowsingDataDescription[];
 extern const char kCloseTabSuggestionsName[];
 extern const char kCloseTabSuggestionsDescription[];
 
+extern const char kContentIndexingDownloadHomeName[];
+extern const char kContentIndexingDownloadHomeDescription[];
+
+extern const char kContentIndexingNTPName[];
+extern const char kContentIndexingNTPDescription[];
+
 extern const char kContextualSearchDefinitionsName[];
 extern const char kContextualSearchDefinitionsDescription[];
 
@@ -1549,9 +1555,6 @@ extern const char kOfflineIndicatorAlwaysHttpProbeDescription[];
 
 extern const char kOfflineIndicatorChoiceName[];
 extern const char kOfflineIndicatorChoiceDescription[];
-
-extern const char kOfflineHomeName[];
-extern const char kOfflineHomeDescription[];
 
 extern const char kOfflineIndicatorV2Name[];
 extern const char kOfflineIndicatorV2Description[];

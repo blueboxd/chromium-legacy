@@ -41,7 +41,7 @@ LayoutMedia::LayoutMedia(HTMLMediaElement* video) : LayoutImage(video) {
 LayoutMedia::~LayoutMedia() = default;
 
 HTMLMediaElement* LayoutMedia::MediaElement() const {
-  return To<HTMLMediaElement>(GetNode());
+  return ToHTMLMediaElement(GetNode());
 }
 
 void LayoutMedia::UpdateLayout() {

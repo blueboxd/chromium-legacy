@@ -17,12 +17,6 @@ namespace blink {
 
 // Returns the group ids for non-standardized members which should be exposed
 // based on what Origin Trials are running.
-//
-// TODO(crbug.com/787254): Remove this variant when its callers have switched
-// to using WTF::Vector - see below.
-WebVector<webrtc::NonStandardGroupId> GetExposedGroupIdsDeprecated(
-    const ScriptState* script_state);
-
 Vector<webrtc::NonStandardGroupId> GetExposedGroupIds(
     const ScriptState* script_state);
 

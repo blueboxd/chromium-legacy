@@ -144,7 +144,7 @@ bool LockStateController::ShutdownRequested() {
 void LockStateController::CancelLockAnimation() {
   VLOG(1) << "CancelLockAnimation";
   animating_lock_ = false;
-  Shell::Get()->wallpaper_controller()->UpdateWallpaperBlur(false);
+  Shell::Get()->wallpaper_controller()->UpdateWallpaperBlurForLockState(false);
   base::OnceClosure next_animation_starter =
       base::BindOnce(&LockStateController::LockAnimationCancelled,
                      weak_ptr_factory_.GetWeakPtr());
@@ -313,7 +313,7 @@ void LockStateController::OnRealPowerTimeout() {
 void LockStateController::PreLockAnimation(
     SessionStateAnimator::AnimationSpeed speed,
     bool request_lock_on_completion) {
-  Shell::Get()->wallpaper_controller()->UpdateWallpaperBlur(true);
+  Shell::Get()->wallpaper_controller()->UpdateWallpaperBlurForLockState(true);
   base::OnceClosure next_animation_starter = base::BindOnce(
       &LockStateController::PreLockAnimationFinished,
       weak_ptr_factory_.GetWeakPtr(), request_lock_on_completion);
@@ -431,7 +431,7 @@ void LockStateController::PostLockAnimationFinished() {
 }
 
 void LockStateController::UnlockAnimationAfterUIDestroyedFinished() {
-  Shell::Get()->wallpaper_controller()->UpdateWallpaperBlur(false);
+  Shell::Get()->wallpaper_controller()->UpdateWallpaperBlurForLockState(false);
   RestoreUnlockedProperties();
 }
 

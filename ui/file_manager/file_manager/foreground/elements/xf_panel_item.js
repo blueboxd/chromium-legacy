@@ -123,8 +123,10 @@ class PanelItem extends HTMLElement {
                   padding: 16px;
               }
 
-              xf-activity-complete {
+              iron-icon {
+                  height: 36px;
                   padding: 16px;
+                  width: 36px;
               }
 
               // TODO(crbug.com/947388) Use '--goog' prefixed CSS varables.
@@ -321,10 +323,10 @@ class PanelItem extends HTMLElement {
             }
             break;
           case 'status':
-            indicator = document.createElement('xf-activity-complete');
+            indicator = document.createElement('iron-icon');
             const status = this.getAttribute('status');
             if (status) {
-              indicator.status = status;
+              indicator.setAttribute('icon', `files36:${status}`);
             }
             break;
         }
@@ -351,7 +353,7 @@ class PanelItem extends HTMLElement {
         break;
       case 'status':
         if (this.indicator_) {
-          this.indicator_.status = newValue;
+          this.indicator_.setAttribute('icon', `files36:${newValue}`);
         }
         break;
       case 'primary-text':

@@ -12,5 +12,5 @@
     android:background="@drawable/group_card_item_border"
     android:gravity="center_vertical|start"
     android:clickable="true"
-    style="@style/PaginationHeaderText"
-    android:text="@string/download_manager_ui_pagination" />
+    style="@style/CardPaginationHeaderText"
+    android:text="@string/download_manager_ui_card_pagination" />

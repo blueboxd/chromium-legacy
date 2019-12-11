@@ -387,7 +387,7 @@ void ScrollableUsersListView::OnPaintBackground(gfx::Canvas* canvas) {
 
   // Only draw a gradient if the wallpaper is blurred. Otherwise, draw a rounded
   // rectangle.
-  if (Shell::Get()->wallpaper_controller()->IsWallpaperBlurred()) {
+  if (Shell::Get()->wallpaper_controller()->IsWallpaperBlurredForLockState()) {
     cc::PaintFlags flags;
 
     // Only draw a gradient if the content can be scrolled.

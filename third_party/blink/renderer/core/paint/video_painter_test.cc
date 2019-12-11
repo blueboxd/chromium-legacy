@@ -86,7 +86,8 @@ TEST_F(VideoPainterTestForCAP, VideoLayerAppearsInLayerTree) {
 
   // Fetch the layer associated with the <video>, and check that it was
   // correctly configured in the layer tree.
-  auto* element = To<HTMLMediaElement>(GetDocument().body()->firstChild());
+  HTMLMediaElement* element =
+      ToHTMLMediaElement(GetDocument().body()->firstChild());
   StubWebMediaPlayer* player =
       static_cast<StubWebMediaPlayer*>(element->GetWebMediaPlayer());
   const cc::Layer* layer = player->GetCcLayer();

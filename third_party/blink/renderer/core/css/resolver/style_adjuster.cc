@@ -243,7 +243,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     return;
   }
 
-  if (IsA<HTMLFrameElementBase>(element)) {
+  if (IsHTMLFrameElementBase(element)) {
     if (style.Display() == EDisplay::kContents) {
       style.SetDisplay(EDisplay::kNone);
       return;
@@ -296,9 +296,9 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     return;
   }
 
-  if (auto* html_plugin_element = DynamicTo<HTMLPlugInElement>(element)) {
+  if (IsHTMLPlugInElement(element)) {
     style.SetRequiresAcceleratedCompositingForExternalReasons(
-        html_plugin_element->ShouldAccelerate());
+        ToHTMLPlugInElement(element).ShouldAccelerate());
     if (style.Display() == EDisplay::kContents)
       style.SetDisplay(EDisplay::kNone);
     return;
@@ -309,7 +309,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     // Some of these elements are handled with other adjustments above.
     if (IsA<HTMLBRElement>(element) || IsA<HTMLWBRElement>(element) ||
         IsA<HTMLMeterElement>(element) || IsA<HTMLProgressElement>(element) ||
-        IsA<HTMLCanvasElement>(element) || IsA<HTMLMediaElement>(element) ||
+        IsA<HTMLCanvasElement>(element) || IsHTMLMediaElement(element) ||
         IsA<HTMLInputElement>(element) || IsA<HTMLTextAreaElement>(element) ||
         IsA<HTMLSelectElement>(element)) {
       style.SetDisplay(EDisplay::kNone);
@@ -644,8 +644,8 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     AdjustStateForRenderSubtree(style, element);
 
   if (style.IsColorInternalText()) {
-    style.ResolveInternalTextColor(
-        LayoutTheme::GetTheme().RootElementColor(style.UsedColorScheme()));
+    style.ResolveInternalTextColor(LayoutTheme::GetTheme().RootElementColor(
+        style.UsedColorSchemeForInitialColors()));
   }
 
   // Make sure our z-index value is only applied if the object is positioned.

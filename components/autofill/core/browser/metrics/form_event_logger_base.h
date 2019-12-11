@@ -47,6 +47,9 @@ class FormEventLoggerBase {
 
   void OnPopupSuppressed(const FormStructure& form, const AutofillField& field);
 
+  void OnUserHideSuggestions(const FormStructure& form,
+                             const AutofillField& field);
+
   void OnDidShowSuggestions(const FormStructure& form,
                             const AutofillField& field,
                             const base::TimeTicks& form_parsed_timestamp,
@@ -105,6 +108,7 @@ class FormEventLoggerBase {
   bool has_parsed_form_ = false;
   bool has_logged_interacted_ = false;
   bool has_logged_popup_suppressed_ = false;
+  bool has_logged_user_hide_suggestions_ = false;
   bool has_logged_suggestions_shown_ = false;
   bool has_logged_suggestion_filled_ = false;
   bool has_logged_will_submit_ = false;

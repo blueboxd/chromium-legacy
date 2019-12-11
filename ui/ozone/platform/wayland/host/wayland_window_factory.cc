@@ -6,8 +6,9 @@
 
 #include <memory>
 
+#include "ui/ozone/platform/wayland/host/wayland_popup.h"
+#include "ui/ozone/platform/wayland/host/wayland_subsurface.h"
 #include "ui/ozone/platform/wayland/host/wayland_surface.h"
-#include "ui/ozone/platform/wayland/host/wayland_window.h"
 
 namespace ui {
 
@@ -21,11 +22,11 @@ std::unique_ptr<WaylandWindow> WaylandWindow::Create(
     case PlatformWindowType::kMenu:
     case PlatformWindowType::kPopup:
       // TODO(msisov): Add WaylandPopup.
-      window.reset(new WaylandWindow(delegate, connection));
+      window.reset(new WaylandPopup(delegate, connection));
       break;
     case PlatformWindowType::kTooltip:
       // TODO(msisov): Add WaylandSubsurface.
-      window.reset(new WaylandWindow(delegate, connection));
+      window.reset(new WaylandSubsurface(delegate, connection));
       break;
     case PlatformWindowType::kWindow:
     case PlatformWindowType::kBubble:

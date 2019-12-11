@@ -158,7 +158,7 @@ bool* GetRegisteredWithManagementStateStorage() {
   static bool state = []() {
     // Mitigate the issues caused by loading DLLs on a background thread
     // (http://crbug/973868).
-    ScopedThreadMayLoadLibraryOnBackgroundThread priority_boost(FROM_HERE);
+    SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
 
     ScopedNativeLibrary library(
         FilePath(FILE_PATH_LITERAL("MDMRegistration.dll")));

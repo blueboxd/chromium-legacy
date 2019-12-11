@@ -85,19 +85,19 @@ class VIEWS_EXPORT MenuItemView : public View {
   static const int kEmptyMenuItemViewID;
 
   // Different types of menu items.
-  enum Type {
-    NORMAL,              // Performs an action when selected.
-    SUBMENU,             // Presents a submenu within another menu.
-    ACTIONABLE_SUBMENU,  // A SUBMENU that is also a COMMAND.
-    CHECKBOX,            // Can be selected/checked to toggle a boolean state.
-    RADIO,               // Can be selected/checked among a group of choices.
-    SEPARATOR,           // Shows a horizontal line separator.
-    HIGHLIGHTED,         // Performs an action when selected, and has a
+  enum class Type {
+    kNormal,             // Performs an action when selected.
+    kSubMenu,            // Presents a submenu within another menu.
+    kActionableSubMenu,  // A SubMenu that is also a COMMAND.
+    kCheckbox,           // Can be selected/checked to toggle a boolean state.
+    kRadio,              // Can be selected/checked among a group of choices.
+    kSeparator,          // Shows a horizontal line separator.
+    kHighlighted,        // Performs an action when selected, and has a
                          // different colored background that merges with the
                          // menu's rounded corners when placed at the bottom.
-    TITLE,               // Title text, does not perform any action.
-    EMPTY,               // EMPTY is a special type for empty menus that is only
-                         // used internally.
+    kTitle,              // Title text, does not perform any action.
+    kEmpty,              // kEmpty is a special type for empty menus that is
+                         // only used internally.
   };
 
   // Where the menu should be drawn, above or below the bounds (when

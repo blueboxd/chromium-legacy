@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.signin;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -13,10 +15,27 @@ import org.chromium.components.signin.identitymanager.IdentityManager;
 /**
  * Provides access to sign-in related services that are profile-keyed on the native side. Java
  * equivalent of AccountTrackerServiceFactory and similar classes.
+ * TODO(https://crbug.com/1032542): Inline the static methods of this class
  */
-public final class IdentityServicesProvider {
+public class IdentityServicesProvider {
+    private static IdentityServicesProvider sIdentityServicesProvider;
+
+    private IdentityServicesProvider() {}
+
+    public static IdentityServicesProvider get() {
+        if (sIdentityServicesProvider == null) {
+            sIdentityServicesProvider = new IdentityServicesProvider();
+        }
+        return sIdentityServicesProvider;
+    }
+
+    @VisibleForTesting
+    static void setInstanceForTests(IdentityServicesProvider provider) {
+        sIdentityServicesProvider = provider;
+    }
+
     /** Getter for {@link IdentityManager} instance. */
-    public static IdentityManager getIdentityManager() {
+    private IdentityManager getIdentityManagerInternal() {
         ThreadUtils.assertOnUiThread();
         IdentityManager result =
                 IdentityServicesProviderJni.get().getIdentityManager(Profile.getLastUsedProfile());
@@ -25,7 +44,7 @@ public final class IdentityServicesProvider {
     }
 
     /** Getter for {@link AccountTrackerService} instance. */
-    public static AccountTrackerService getAccountTrackerService() {
+    private AccountTrackerService getAccountTrackerServiceInternal() {
         ThreadUtils.assertOnUiThread();
         AccountTrackerService result = IdentityServicesProviderJni.get().getAccountTrackerService(
                 Profile.getLastUsedProfile());
@@ -33,7 +52,9 @@ public final class IdentityServicesProvider {
         return result;
     }
 
-    public static SigninManager getSigninManager() {
+    /** Getter for {@link SigninManager} instance. */
+    @VisibleForTesting
+    SigninManager getSigninManagerInternal() {
         ThreadUtils.assertOnUiThread();
         SigninManager result =
                 IdentityServicesProviderJni.get().getSigninManager(Profile.getLastUsedProfile());
@@ -41,10 +62,25 @@ public final class IdentityServicesProvider {
         return result;
     }
 
+    /** Getter for {@link IdentityManager} instance. */
+    public static IdentityManager getIdentityManager() {
+        return get().getIdentityManagerInternal();
+    }
+
+    /** Getter for {@link AccountTrackerService} instance. */
+    public static AccountTrackerService getAccountTrackerService() {
+        return get().getAccountTrackerServiceInternal();
+    }
+
+    /** Getter for {@link SigninManager} instance. */
+    public static SigninManager getSigninManager() {
+        return get().getSigninManagerInternal();
+    }
+
     @NativeMethods
     interface Natives {
-        public IdentityManager getIdentityManager(Profile profile);
-        public AccountTrackerService getAccountTrackerService(Profile profile);
-        public SigninManager getSigninManager(Profile profile);
+        IdentityManager getIdentityManager(Profile profile);
+        AccountTrackerService getAccountTrackerService(Profile profile);
+        SigninManager getSigninManager(Profile profile);
     }
 }

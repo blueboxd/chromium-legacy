@@ -907,9 +907,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return frame_host_associated_receiver_;
   }
 
-  mojo::Receiver<service_manager::mojom::InterfaceProvider>&
-  document_scoped_interface_provider_receiver_for_testing() {
-    return document_scoped_interface_provider_receiver_;
+  mojo::Receiver<blink::mojom::BrowserInterfaceBroker>&
+  browser_interface_broker_receiver_for_testing() {
+    return broker_receiver_;
   }
   void SetKeepAliveTimeoutForTesting(base::TimeDelta timeout);
 
@@ -2390,9 +2390,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Logs interface requests that arrive after the frame has already committed a
   // non-same-document navigation, and has already unbound
-  // |document_scoped_interface_provider_receiver_| from the interface
-  // connection that had been used to service RenderFrame::GetRemoteInterface
-  // for the previously active document in the frame.
+  // |broker_receiver_| from the interface connection that had been used to
+  // service RenderFrame::GetBrowserInterfaceBroker for the previously active
+  // document in the frame.
   std::unique_ptr<DroppedInterfaceRequestLogger>
       dropped_interface_request_logger_;
 

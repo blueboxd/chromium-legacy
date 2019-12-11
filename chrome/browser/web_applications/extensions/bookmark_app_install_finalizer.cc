@@ -195,10 +195,10 @@ void BookmarkAppInstallFinalizer::UninstallWebAppFromSyncByUser(
 bool BookmarkAppInstallFinalizer::CanUserUninstallExternalApp(
     const web_app::AppId& app_id) const {
   const Extension* app = GetEnabledExtension(app_id);
-  DCHECK(app);
-  return extensions::ExtensionSystem::Get(profile_)
-      ->management_policy()
-      ->UserMayModifySettings(app, nullptr);
+  return app ? extensions::ExtensionSystem::Get(profile_)
+                   ->management_policy()
+                   ->UserMayModifySettings(app, nullptr)
+             : false;
 }
 
 void BookmarkAppInstallFinalizer::UninstallExternalAppByUser(

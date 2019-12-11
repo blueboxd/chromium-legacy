@@ -59,8 +59,7 @@ class PLATFORM_EXPORT RTCPeerConnectionHandlerClient {
   virtual ~RTCPeerConnectionHandlerClient();
 
   virtual void NegotiationNeeded() = 0;
-  virtual void DidGenerateICECandidate(
-      scoped_refptr<RTCIceCandidatePlatform>) = 0;
+  virtual void DidGenerateICECandidate(RTCIceCandidatePlatform*) = 0;
   virtual void DidFailICECandidate(const String& host_candidate,
                                    const String& url,
                                    int error_code,

@@ -68,6 +68,11 @@ class CORE_EXPORT HTMLTableCellElement final : public HTMLTablePartElement {
 };
 
 template <>
+inline bool IsElementOfType<const HTMLTableCellElement>(
+    const HTMLElement& element) {
+  return IsA<HTMLTableCellElement>(element);
+}
+template <>
 inline bool IsElementOfType<const HTMLTableCellElement>(const Node& node) {
   return IsA<HTMLTableCellElement>(node);
 }
@@ -75,7 +80,7 @@ template <>
 struct DowncastTraits<HTMLTableCellElement> {
   static bool AllowFrom(const Node& node) {
     auto* html_element = DynamicTo<HTMLElement>(node);
-    return html_element && AllowFrom(*html_element);
+    return html_element ? IsA<HTMLTableCellElement>(html_element) : false;
   }
   static bool AllowFrom(const HTMLElement& html_element) {
     return html_element.HasTagName(html_names::kTdTag) ||

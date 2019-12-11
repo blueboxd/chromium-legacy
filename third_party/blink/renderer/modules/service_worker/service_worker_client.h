@@ -22,9 +22,6 @@ class MODULES_EXPORT ServiceWorkerClient : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static ServiceWorkerClient* Create(
-      const mojom::blink::ServiceWorkerClientInfo&);
-
   explicit ServiceWorkerClient(const mojom::blink::ServiceWorkerClientInfo&);
   ~ServiceWorkerClient() override;
 

@@ -164,6 +164,8 @@ BOOL WaitForKeyboardToAppear() {
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
 
   // Verify the status of the icons.
+  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
   [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]

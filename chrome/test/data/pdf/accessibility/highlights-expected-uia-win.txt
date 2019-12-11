@@ -1,0 +1,12 @@
+group
+++document Name='PDF document containing 1 page'
+++++region Name='Page 1'
+++++++group
+++++++++description Name='Hello'
+++++++++++description Name='Hello'
+++++++++description Name=', nice '
+++++++++description Name='meeting'
+++++++++++description Name='meeting'
+++++++++description Name=' y'
+++++++++++description Name=' y'
+++++++++description Name='ou'

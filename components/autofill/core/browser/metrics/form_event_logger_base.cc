@@ -71,6 +71,15 @@ void FormEventLoggerBase::OnPopupSuppressed(const FormStructure& form,
   }
 }
 
+void FormEventLoggerBase::OnUserHideSuggestions(const FormStructure& form,
+                                                const AutofillField& field) {
+  Log(FORM_EVENT_USER_HIDE_SUGGESTIONS, form);
+  if (!has_logged_user_hide_suggestions_) {
+    has_logged_user_hide_suggestions_ = true;
+    Log(FORM_EVENT_USER_HIDE_SUGGESTIONS_ONCE, form);
+  }
+}
+
 void FormEventLoggerBase::OnDidShowSuggestions(
     const FormStructure& form,
     const AutofillField& field,

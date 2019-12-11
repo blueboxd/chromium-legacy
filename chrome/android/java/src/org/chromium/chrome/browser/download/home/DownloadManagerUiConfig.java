@@ -54,6 +54,12 @@ public class DownloadManagerUiConfig {
     /** Whether or not rename feature should be shown in UI. */
     public final boolean isRenameEnabled;
 
+    /** Whether or not grouping items into a single card is supported. */
+    public final boolean supportsGrouping;
+
+    /** Whether or not to show the pagination headers in the list. */
+    public final boolean showPaginationHeaders;
+
     /** Constructor. */
     private DownloadManagerUiConfig(Builder builder) {
         isOffTheRecord = builder.mIsOffTheRecord;
@@ -66,6 +72,8 @@ public class DownloadManagerUiConfig {
         maxThumbnailScaleFactor = builder.mMaxThumbnailScaleFactor;
         justNowThresholdSeconds = builder.mJustNowThresholdSeconds;
         isRenameEnabled = builder.mIsRenameEnabled;
+        supportsGrouping = builder.mSupportsGrouping;
+        showPaginationHeaders = builder.mShowPaginationHeaders;
     }
 
     /** Helper class for building a {@link DownloadManagerUiConfig}. */
@@ -85,6 +93,8 @@ public class DownloadManagerUiConfig {
         private float mMaxThumbnailScaleFactor = 1.5f; /* hdpi scale factor. */
         private long mJustNowThresholdSeconds;
         private boolean mIsRenameEnabled;
+        private boolean mSupportsGrouping;
+        private boolean mShowPaginationHeaders;
 
         public Builder() {
             readParamsFromFinch();
@@ -135,6 +145,11 @@ public class DownloadManagerUiConfig {
             return this;
         }
 
+        public Builder setShowPaginationHeaders(boolean showPaginationHeaders) {
+            mShowPaginationHeaders = showPaginationHeaders;
+            return this;
+        }
+
         public DownloadManagerUiConfig build() {
             return new DownloadManagerUiConfig(this);
         }
@@ -142,6 +157,8 @@ public class DownloadManagerUiConfig {
         private void readParamsFromFinch() {
             mJustNowThresholdSeconds = JUST_NOW_THRESHOLD_SECONDS;
             mIsRenameEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_RENAME);
+            mSupportsGrouping =
+                    ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_INDEXING_DOWNLOAD_HOME);
         }
     }
 }

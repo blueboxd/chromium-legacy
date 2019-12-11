@@ -187,8 +187,14 @@ class CodeGenContext(object):
     def is_return_by_argument(self):
         if self.return_type is None:
             return None
-        return_type = self.return_type.unwrap()
-        return return_type.is_dictionary or return_type.is_union
+        return self.return_type.unwrap().is_union
+
+    @property
+    def is_return_value_mutable(self):
+        if (self.attribute_get
+                and "ReflectOnly" in self.attribute.extended_attributes):
+            return True
+        return False
 
     @property
     def may_throw_exception(self):

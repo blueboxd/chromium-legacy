@@ -227,8 +227,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void NotifyUserActivation(bool need_browser_verification) override;
   void ConsumeUserActivation() override;
 
-  void SetHasReceivedUserGestureBeforeNavigation(bool value) override;
-
   void AbortClientNavigation() override;
 
   WebSpellCheckPanelHostClient* SpellCheckPanelHostClient() const override;

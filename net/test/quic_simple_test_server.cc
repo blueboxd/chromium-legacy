@@ -49,6 +49,8 @@ const char kSimpleStatus[] = "200";
 
 const char kSimpleHeaderName[] = "hello_header";
 const char kSimpleHeaderValue[] = "hello header value";
+const std::string kCombinedHelloHeaderValue = std::string("foo\0bar", 7);
+const char kCombinedHeaderName[] = "combined";
 
 base::Thread* g_quic_server_thread = nullptr;
 quic::QuicMemoryCacheBackend* g_quic_cache_backend = nullptr;
@@ -101,6 +103,10 @@ const std::string QuicSimpleTestServer::GetHelloHeaderValue() {
   return kHelloHeaderValue;
 }
 
+const std::string QuicSimpleTestServer::GetCombinedHeaderName() {
+  return kCombinedHeaderName;
+}
+
 const std::string QuicSimpleTestServer::GetHelloTrailerName() {
   return kHelloTrailerName;
 }
@@ -135,6 +141,7 @@ void SetupQuicMemoryCacheBackend() {
   spdy::SpdyHeaderBlock headers;
   headers[kHelloHeaderName] = kHelloHeaderValue;
   headers[kStatusHeader] = kHelloStatus;
+  headers[kCombinedHeaderName] = kCombinedHelloHeaderValue;
   spdy::SpdyHeaderBlock trailers;
   trailers[kHelloTrailerName] = kHelloTrailerValue;
   g_quic_cache_backend = new quic::QuicMemoryCacheBackend();

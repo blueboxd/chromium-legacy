@@ -34,6 +34,8 @@ class CastRunner : public WebContentRunner {
              fuchsia::web::CreateContextParams create_context_params);
 
   ~CastRunner() override;
+  CastRunner(const CastRunner&) = delete;
+  CastRunner& operator=(const CastRunner&) = delete;
 
   // WebContentRunner implementation.
   void DestroyComponent(WebComponent* component) override;
@@ -99,8 +101,6 @@ class CastRunner : public WebContentRunner {
   // Manages isolated CastRunners owned by |this| instance.
   base::flat_set<std::unique_ptr<CastRunner>, base::UniquePtrComparator>
       isolated_runners_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastRunner);
 };
 
 #endif  // FUCHSIA_RUNNERS_CAST_CAST_RUNNER_H_

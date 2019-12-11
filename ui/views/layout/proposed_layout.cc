@@ -17,6 +17,13 @@ bool ChildLayout::operator==(const ChildLayout& other) const {
          (!visible || bounds == other.bounds);
 }
 
+std::string ChildLayout::ToString() const {
+  std::ostringstream oss;
+  oss << "{" << child_view << (visible ? " visible " : " not visible ")
+      << bounds.ToString() << "}";
+  return oss.str();
+}
+
 ProposedLayout::ProposedLayout() = default;
 ProposedLayout::ProposedLayout(const ProposedLayout& other) = default;
 ProposedLayout::ProposedLayout(ProposedLayout&& other) = default;
@@ -31,6 +38,21 @@ ProposedLayout& ProposedLayout::operator=(ProposedLayout&& other) = default;
 
 bool ProposedLayout::operator==(const ProposedLayout& other) const {
   return host_size == other.host_size && child_layouts == other.child_layouts;
+}
+
+std::string ProposedLayout::ToString() const {
+  std::ostringstream oss;
+  oss << "{" << host_size.ToString() << " {";
+  bool first = true;
+  for (const auto& child_layout : child_layouts) {
+    if (first)
+      first = false;
+    else
+      oss << ", ";
+    oss << child_layout.ToString();
+  }
+  oss << "}}";
+  return oss.str();
 }
 
 ProposedLayout ProposedLayoutBetween(double value,

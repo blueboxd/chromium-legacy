@@ -55,11 +55,16 @@ class VpnService : public KeyedService,
                    public NetworkStateHandlerObserver,
                    public extensions::ExtensionRegistryObserver {
  public:
-  using SuccessCallback = base::Closure;
+  using SuccessOnceCallback = base::OnceClosure;
   using StringCallback = base::Callback<void(const std::string& result)>;
-  using FailureCallback =
-      base::Callback<void(const std::string& error_name,
-                          const std::string& error_message)>;
+  using FailureOnceCallback =
+      base::OnceCallback<void(const std::string& error_name,
+                              const std::string& error_message)>;
+
+  // TODO(crbug.com/1007786): Delete these and rename the OnceCallback versions
+  // to replace these once they are no longer used.
+  using SuccessCallback = base::Callback<SuccessOnceCallback::RunType>;
+  using FailureCallback = base::Callback<FailureOnceCallback::RunType>;
 
   VpnService(content::BrowserContext* browser_context,
              const std::string& userid_hash,
@@ -125,8 +130,8 @@ class VpnService : public KeyedService,
   // Calls |success| or |failure| based on the outcome.
   void SendPacket(const std::string& extension_id,
                   const std::vector<char>& data,
-                  const SuccessCallback& success,
-                  const FailureCallback& failure);
+                  SuccessOnceCallback success,
+                  FailureOnceCallback failure);
 
   // Notifies connection state |state| to the active VPN configuration after
   // verifying that it belongs to the extension with id |extension_id|.
@@ -229,8 +234,8 @@ class VpnService : public KeyedService,
   void Bind(const std::string& extension_id,
             const std::string& configuration_id,
             const std::string& configuration_name,
-            const SuccessCallback& success,
-            const FailureCallback& failure,
+            SuccessOnceCallback success,
+            FailureOnceCallback failure,
             std::unique_ptr<content::PepperVpnProviderResourceHostProxy>
                 pepper_vpn_provider_proxy);
 

@@ -15,12 +15,12 @@
 // Waits for fullscreen transitions to complete.
 @interface NSWindowFullscreenNotificationWaiter : NSObject {
  @private
-  std::unique_ptr<base::RunLoop> runLoop_;
-  base::scoped_nsobject<NSWindow> window_;
-  int enterCount_;
-  int exitCount_;
-  int targetEnterCount_;
-  int targetExitCount_;
+  std::unique_ptr<base::RunLoop> _runLoop;
+  base::scoped_nsobject<NSWindow> _window;
+  int _enterCount;
+  int _exitCount;
+  int _targetEnterCount;
+  int _targetExitCount;
 }
 
 @property(readonly, nonatomic) int enterCount;

@@ -35,6 +35,7 @@
 #include "net/cert/x509_cert_types.h"
 #include "net/cert/x509_certificate.h"
 #include "net/extras/preload_data/decoder.h"
+#include "net/http/hsts_info.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/net_buildflags.h"
@@ -481,7 +482,8 @@ TEST_F(TransportSecurityStateTest, SubdomainMatches) {
 
 // Tests that a more-specific HSTS or HPKP rule overrides a less-specific rule
 // with it, regardless of the includeSubDomains bit. This is a regression test
-// for https://crbug.com/469957.
+// for https://crbug.com/469957. Note this behavior does not match the spec.
+// See https://crbug.com/821811.
 TEST_F(TransportSecurityStateTest, SubdomainCarveout) {
   const GURL report_uri(kReportUri);
   TransportSecurityState state;
@@ -665,7 +667,7 @@ TEST_F(TransportSecurityStateTest, DynamicDomainState) {
 
   TransportSecurityState::STSState sts_state;
   TransportSecurityState::PKPState pkp_state;
-  ASSERT_TRUE(state.GetDynamicSTSState("foo.example.com", &sts_state));
+  ASSERT_TRUE(state.GetDynamicSTSState("foo.example.com", &sts_state, nullptr));
   ASSERT_TRUE(state.GetDynamicPKPState("foo.example.com", &pkp_state));
   EXPECT_TRUE(sts_state.ShouldUpgradeToSSL());
   EXPECT_TRUE(pkp_state.HasPublicKeyPins());
@@ -788,7 +790,7 @@ TEST_F(TransportSecurityStateTest, LongNames) {
   TransportSecurityState::PKPState pkp_state;
   // Just checks that we don't hit a NOTREACHED.
   EXPECT_FALSE(state.GetStaticDomainState(kLongName, &sts_state, &pkp_state));
-  EXPECT_FALSE(state.GetDynamicSTSState(kLongName, &sts_state));
+  EXPECT_FALSE(state.GetDynamicSTSState(kLongName, &sts_state, nullptr));
   EXPECT_FALSE(state.GetDynamicPKPState(kLongName, &pkp_state));
 }
 
@@ -2468,6 +2470,60 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTUMA) {
                                 ssl);
     histograms.ExpectTotalCount(kHistogramName, 1);
     histograms.ExpectBucketCount(kHistogramName, false, 1);
+  }
+}
+
+// Tests the Net.HstsInfo histogram is recorded correctly. See
+// https://crbug.com/821811.
+TEST_F(TransportSecurityStateTest, HstsInfoHistogram) {
+  const base::Time current_time(base::Time::Now());
+  const base::Time expiry = current_time + base::TimeDelta::FromDays(1000);
+
+  TransportSecurityState state;
+  // a.test is not on the static list, so the dynamic set applies.
+  state.AddHSTS("a.test", expiry, /*include_subdomains=*/true);
+  state.AddHSTS("a.a.test", expiry, /*include_subdomains=*/false);
+  // Also test the interaction with the HSTS preload list.
+  state.AddHSTS("a.include-subdomains-hsts-preloaded.test", expiry,
+                /*include_subdomains=*/true);
+  state.AddHSTS("a.a.include-subdomains-hsts-preloaded.test", expiry,
+                /*include_subdomains=*/false);
+
+  const struct {
+    const char* host;
+    HstsInfo expected;
+  } kTests[] = {
+      // HSTS was not enabled.
+      {"b.test", HstsInfo::kDisabled},
+      // HSTS was enabled via the header.
+      {"a.test", HstsInfo::kEnabled},
+      {"a.a.test", HstsInfo::kEnabled},
+      // HSTS was enabled via the preload list.
+      {"b.include-subdomains-hsts-preloaded.test", HstsInfo::kEnabled},
+      // HSTS should have been enabled but was not due to spec non-compliance.
+      {"a.a.a.test", HstsInfo::kDynamicIncorrectlyMasked},
+      // Spec non-compliance was masked by the preload list.
+      {"a.a.a.include-subdomains-hsts-preloaded.test",
+       HstsInfo::kDynamicIncorrectlyMaskedButMatchedStatic},
+  };
+
+  for (const auto& test : kTests) {
+    SCOPED_TRACE(test.host);
+    bool enabled =
+        test.expected == HstsInfo::kEnabled ||
+        test.expected == HstsInfo::kDynamicIncorrectlyMaskedButMatchedStatic;
+    {
+      base::HistogramTester histograms;
+      EXPECT_EQ(enabled, state.ShouldUpgradeToSSL(test.host));
+      histograms.ExpectTotalCount("Net.HstsInfo", 1);
+      histograms.ExpectBucketCount("Net.HstsInfo", test.expected, 1);
+    }
+    {
+      base::HistogramTester histograms;
+      EXPECT_EQ(enabled, state.ShouldSSLErrorsBeFatal(test.host));
+      histograms.ExpectTotalCount("Net.HstsInfo", 1);
+      histograms.ExpectBucketCount("Net.HstsInfo", test.expected, 1);
+    }
   }
 }
 

@@ -465,11 +465,17 @@ class NET_EXPORT TransportSecurityState {
 
   // Returns true and updates |*result| iff |host| has dynamic
   // HSTS/HPKP/Expect-CT (respectively) state. If multiple entries match |host|,
-  // the most specific match determines the return value.
+  // the most specific match determines the return value. |*should_be_dynamic|
+  // is set to true if |host| has no dynamic HSTS state based on the current
+  // implementation but would have it based on a spec-compliant implementation.
+  // See https://crbug.com/821811. |should_be_dynamic| may be nullptr to ignore
+  // the output.
   //
   // Note that these methods are not const because they opportunistically remove
   // entries that have expired.
-  bool GetDynamicSTSState(const std::string& host, STSState* result);
+  bool GetDynamicSTSState(const std::string& host,
+                          STSState* result,
+                          bool* should_be_dynamic);
   bool GetDynamicPKPState(const std::string& host, PKPState* result);
   bool GetDynamicExpectCTState(const std::string& host, ExpectCTState* result);
 

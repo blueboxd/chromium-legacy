@@ -413,14 +413,7 @@ config("compiler") {
 
   # Linux-specific compiler flags setup.
   # ------------------------------------
-  if (((is_posix || is_fuchsia) && use_lld) ||
-      (target_os == "chromeos" && is_android)) {
-    # NOTE: Some Chrome OS builds globally disable LLD, but they also build some
-    # targets against Android toolchains which should use LLD. Therefore we
-    # explicitly select LLD in these cases.
-    #
-    # TODO(https://crbug.com/837095): This should be cleaned up if/when LLD can
-    # work properly for Chrome OS builds.
+  if ((is_posix || is_fuchsia) && use_lld) {
     ldflags += [ "-fuse-ld=lld" ]
     if (current_cpu == "arm64") {
       # Reduce the page size from 65536 in order to reduce binary size slightly

@@ -1417,7 +1417,7 @@
     'ozone': {
       'filepath': 'ui/ozone/|'\
         'ui/events/ozone/|'\
-        'ui/gfx/ozone/|'\
+        'ui/gfx/linux/|'\
         'ui/gl/gl_.*egl.*|'\
         'ui/gl/gl_.*ozone.*'
     },

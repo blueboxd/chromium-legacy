@@ -49,6 +49,7 @@ function getAsyncScriptInfo() {
 function executeAsyncScript(script, args, isUserSupplied) {
   let resolveHandle;
   let rejectHandle;
+  const Promise = window.cdc_adoQpoasnfa76pfcZLmcfl_Promise || window.Promise;
   var promise = new Promise((resolve, reject) => {
     resolveHandle = resolve;
     rejectHandle = reject;

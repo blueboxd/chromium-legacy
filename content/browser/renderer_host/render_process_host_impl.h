@@ -868,8 +868,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // without binding it to a specific frame or an origin.
   //
   // TODO(kinuko, lukasza): https://crbug.com/891872: Remove, once all
-  // URLLoaderFactories are associated with a specific origin and an execution
-  // context (e.g. a frame, a service worker or any other kind of worker).
+  // URLLoaderFactories vended to a renderer process are associated with a
+  // specific origin and an execution context (e.g. a frame, a service worker or
+  // any other kind of worker).
   void CreateURLLoaderFactoryForRendererProcess(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver);
 

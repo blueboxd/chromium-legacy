@@ -214,7 +214,7 @@ ScriptPromise AudioContext::suspendContext(ScriptState* script_state) {
 
     // Stop rendering now.
     if (destination())
-      StopRendering();
+      SuspendRendering();
 
     // Since we don't have any way of knowing when the hardware actually stops,
     // we'll just resolve the promise now.
@@ -364,8 +364,18 @@ void AudioContext::StopRendering() {
 
   if (ContextState() == kRunning) {
     destination()->GetAudioDestinationHandler().StopRendering();
-    SetContextState(kSuspended);
+    SetContextState(kClosed);
     GetDeferredTaskHandler().ClearHandlersToBeDeleted();
+  }
+}
+
+void AudioContext::SuspendRendering() {
+  DCHECK(IsMainThread());
+  DCHECK(destination());
+
+  if (ContextState() == kRunning) {
+    destination()->GetAudioDestinationHandler().StopRendering();
+    SetContextState(kSuspended);
   }
 }
 

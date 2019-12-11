@@ -1,1 +1,7 @@
-file://chromeos/network/OWNERS
+azeemarshad@chromium.org
+jonmann@chromium.org
+khorimoto@chromium.org
+stevenjb@chromium.org
+tbarzic@chromium.org
+
+# COMPONENT: UI>Shell>Networking

@@ -31,7 +31,7 @@ const size_t kMaxFailuresToEnforceBackoff = 3;
 
 const size_t kBackOffResetDurationInSeconds = 5 * 60;  // 5 minutes.
 
-const size_t kURLLookupTimeoutDurationInSeconds = 1 * 60;  // 1 minute.
+const size_t kURLLookupTimeoutDurationInSeconds = 10;  // 10 seconds.
 
 // Fragements, usernames and passwords are removed, becuase fragments are only
 // used for local navigations and usernames/passwords are too privacy sensitive.

@@ -969,7 +969,9 @@ void PasswordManager::MaybeSavePasswordHash(
           ? (is_password_change
                  ? GaiaPasswordHashChange::CHANGED_IN_CONTENT_AREA
                  : GaiaPasswordHashChange::SAVED_IN_CONTENT_AREA)
-          : GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE;
+          : (is_password_change
+                 ? GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE
+                 : GaiaPasswordHashChange::SAVED_IN_CONTENT_AREA);
   store->SaveGaiaPasswordHash(username, password, event);
 #endif
 }

@@ -42,6 +42,16 @@ mediaApp.AbstractFile.prototype.size;
 mediaApp.AbstractFile.prototype.mimeType;
 
 /**
+ * A function that will overwrite the original file with the provided Blob.
+ * Returns a promise that resolves when the write operations are complete. Or
+ * rejects. Upon success, `size` will reflect the new file size.
+ * If null, then in-place overwriting is not supported for this file.
+ * Note the "overwrite" may be simulated with a download operation.
+ * @type {function(!Blob): Promise<undefined>|undefined}
+ */
+mediaApp.AbstractFile.prototype.overwriteOriginal;
+
+/**
  * Wraps an HTML FileList object.
  * @record
  * @struct
@@ -70,7 +80,7 @@ mediaApp.ClientApi.prototype.loadFiles = function(files) {};
 
 /**
  * The message structure sent to the guest over postMessage.
- * @typedef{{buffer: ArrayBuffer, type: string}}
+ * @typedef{{buffer: ArrayBuffer, type: string, handle: (Object|undefined)}}
  */
 mediaApp.MessageEventData;
 

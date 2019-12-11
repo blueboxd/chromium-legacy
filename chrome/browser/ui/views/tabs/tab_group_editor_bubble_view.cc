@@ -127,7 +127,7 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
 
   color_selector_ =
       group_modifier_container->AddChildView(std::make_unique<ColorPickerView>(
-          GetColorPickerList(), current_data->color(),
+          GetColorPickerList(), background_color(), current_data->color(),
           base::Bind(&TabGroupEditorBubbleView::UpdateGroup,
                      base::Unretained(this))));
   color_selector_->SetBorder(views::CreateEmptyBorder(

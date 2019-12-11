@@ -18,10 +18,10 @@ class PepperVpnProviderResourceHostProxy;
 // All the methods below can only be called on the UI thread.
 class CONTENT_EXPORT VpnServiceProxy {
  public:
-  using SuccessCallback = base::Closure;
+  using SuccessCallback = base::OnceClosure;
   using FailureCallback =
-      base::Callback<void(const std::string& error_name,
-                          const std::string& error_message)>;
+      base::OnceCallback<void(const std::string& error_name,
+                              const std::string& error_message)>;
 
   virtual ~VpnServiceProxy() {}
 
@@ -30,16 +30,16 @@ class CONTENT_EXPORT VpnServiceProxy {
   virtual void Bind(const std::string& host_id,
                     const std::string& configuration_id,
                     const std::string& configuration_name,
-                    const SuccessCallback& success,
-                    const FailureCallback& failure,
+                    SuccessCallback success,
+                    FailureCallback failure,
                     std::unique_ptr<PepperVpnProviderResourceHostProxy>
                         pepper_vpn_provider_proxy) = 0;
 
   // Sends an IP packet to the VpnService.
   virtual void SendPacket(const std::string& host_id,
                           const std::vector<char>& data,
-                          const SuccessCallback& success,
-                          const FailureCallback& failure) = 0;
+                          SuccessCallback success,
+                          FailureCallback failure) = 0;
 };
 
 }  // namespace content

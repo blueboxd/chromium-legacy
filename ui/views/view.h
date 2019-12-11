@@ -43,6 +43,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/views/layout/layout_types.h"
 #include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/paint_info.h"
@@ -538,6 +539,13 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // LayoutManager::GetPreferredHeightForWidth(), otherwise this returns
   // GetPreferredSize().height().
   virtual int GetHeightForWidth(int w) const;
+
+  // Returns a bound on the available space for a child view, for example, in
+  // case the child view wants to play an animation that would cause it to
+  // become larger. Default is not to bound the available size; it is the
+  // responsibility of specific view/layout manager implementations to determine
+  // if and when a bound applies.
+  virtual SizeBounds GetAvailableSize(const View* child) const;
 
   // The |Visible| property. See comment above for instructions on declaring and
   // implementing a property.

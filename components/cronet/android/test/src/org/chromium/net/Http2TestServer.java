@@ -120,6 +120,13 @@ public final class Http2TestServer {
         return getServerUrl() + Http2TestHandler.SUCCESS_WITH_NEL_HEADERS_PATH;
     }
 
+    /**
+     * @return url of a resource that sends response headers with the same key
+     */
+    public static String getCombinedHeadersUrl() {
+        return getServerUrl() + Http2TestHandler.COMBINED_HEADERS_PATH;
+    }
+
     public static boolean startHttp2TestServer(
             Context context, String certFileName, String keyFileName) throws Exception {
         sReportingCollector = new ReportingCollector();

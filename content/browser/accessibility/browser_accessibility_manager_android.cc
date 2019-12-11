@@ -103,7 +103,7 @@ void BrowserAccessibilityManagerAndroid::FireBlinkEvent(
   // Sometimes we get events on nodes in our internal accessibility tree
   // that aren't exposed on Android. Update |node| to point to the highest
   // ancestor that's a leaf node.
-  node = node->GetClosestPlatformObject();
+  node = node->PlatformGetClosestPlatformObject();
   BrowserAccessibilityAndroid* android_node =
       static_cast<BrowserAccessibilityAndroid*>(node);
 
@@ -134,7 +134,7 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
   // that aren't exposed on Android. Update |node| to point to the highest
   // ancestor that's a leaf node.
   BrowserAccessibility* original_node = node;
-  node = node->GetClosestPlatformObject();
+  node = node->PlatformGetClosestPlatformObject();
   BrowserAccessibilityAndroid* android_node =
       static_cast<BrowserAccessibilityAndroid*>(node);
 
@@ -378,7 +378,7 @@ void BrowserAccessibilityManagerAndroid::HandleHoverEvent(
 
   // First walk up to the nearest platform node, in case this node isn't
   // even exposed on the platform.
-  node = node->GetClosestPlatformObject();
+  node = node->PlatformGetClosestPlatformObject();
 
   // If this node is uninteresting and just a wrapper around a sole
   // interesting descendant, prefer that descendant instead.

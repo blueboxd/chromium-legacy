@@ -154,6 +154,7 @@ class CC_EXPORT FrameSequenceTrackerCollection {
                          bool has_missing_content,
                          const viz::BeginFrameAck& ack,
                          const viz::BeginFrameArgs& origin_args);
+  void NotifyFrameEnd(const viz::BeginFrameArgs& args);
 
   // Note that this notifies the trackers of the presentation-feedbacks, and
   // destroys any tracker that had been scheduled for destruction (using
@@ -237,6 +238,8 @@ class CC_EXPORT FrameSequenceTracker {
                          bool has_missing_content,
                          const viz::BeginFrameAck& ack,
                          const viz::BeginFrameArgs& origin_args);
+
+  void ReportFrameEnd(const viz::BeginFrameArgs& args);
 
   // Notifies the tracker of the presentation-feedback of a previously submitted
   // CompositorFrame with |frame_token|.
@@ -374,6 +377,8 @@ class CC_EXPORT FrameSequenceTracker {
   const base::TimeDelta time_delta_to_report_ = base::TimeDelta::FromSeconds(5);
 
 #if DCHECK_IS_ON()
+  bool is_inside_frame_ = false;
+
   // This stringstream represents a sequence of frame reporting activities on
   // the current tracker. Each letter can be one of the following:
   // {'B', 'N', 'b', 'n', 'S', 'P'}, where

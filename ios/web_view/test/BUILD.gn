@@ -13,6 +13,7 @@ source_set("inttests") {
     "scroll_view_kvo_inttest.mm",
     "ui_delegate_inttest.mm",
     "web_view_autofill_inttest.mm",
+    "web_view_back_forward_list_inttest.mm",
     "web_view_from_wk_web_view_configuration_inttest.mm",
     "web_view_inttest.mm",
     "web_view_inttest_base.h",

@@ -375,7 +375,11 @@ void ContentBrowserClientImpl::GetAdditionalMappedFilesForChildProcess(
   fd = ui::GetLocalePackFd(&region);
   mappings->ShareWithRegion(kWebLayerLocalePakDescriptor, fd, region);
 
-  if (!base::android::BundleUtils::IsBundle()) {
+  if (base::android::BundleUtils::IsBundle()) {
+    fd = ui::GetSecondaryLocalePackFd(&region);
+    mappings->ShareWithRegion(kWebLayerSecondaryLocalePakDescriptor, fd,
+                              region);
+  } else {
     mappings->ShareWithRegion(kWebLayerSecondaryLocalePakDescriptor,
                               base::GlobalDescriptors::GetInstance()->Get(
                                   kWebLayerSecondaryLocalePakDescriptor),

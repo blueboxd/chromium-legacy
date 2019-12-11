@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {OmniboxElement} from './omnibox_element.js';
+
 /**
  * @typedef {{
  *   inputText: string,
@@ -15,7 +17,7 @@
  *   pageClassification: number,
  * }}
  */
-let QueryInputs;
+export let QueryInputs;
 
 /**
  * @typedef {{
@@ -26,9 +28,9 @@ let QueryInputs;
  *   thinRows: boolean,
  * }}
  */
-let DisplayInputs;
+export let DisplayInputs;
 
-class OmniboxInput extends OmniboxElement {
+export class OmniboxInput extends OmniboxElement {
   constructor() {
     super('omnibox-input-template');
     this.displayInputs = OmniboxInput.defaultDisplayInputs;

@@ -8,6 +8,8 @@ import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
+import android.content.res.AssetManager;
+import android.content.res.Resources;
 import android.view.LayoutInflater;
 
 import org.chromium.base.ContextUtils;
@@ -29,6 +31,16 @@ public class ClassLoaderContextWrapperFactory {
     private static final WeakHashMap<Context, WeakReference<ClassLoaderContextWrapper>>
             sCtxToWrapper = new WeakHashMap<>();
     private static final Object sLock = new Object();
+    @SuppressWarnings("StaticFieldLeak")
+    private static Context sResourceOverrideContext;
+
+    /**
+     * Sets a context that will override the return values from getAssets(), getResources(), and
+     * getSystemService() when asking for layout inflater.
+     */
+    public static void setResourceOverrideContext(Context context) {
+        sResourceOverrideContext = context;
+    }
 
     public static Context get(Context ctx) {
         // Avoid double-wrapping a context.
@@ -76,6 +88,9 @@ public class ClassLoaderContextWrapperFactory {
         @Override
         public Object getSystemService(String name) {
             if (Context.LAYOUT_INFLATER_SERVICE.equals(name)) {
+                if (sResourceOverrideContext != null) {
+                    return LayoutInflater.from(sResourceOverrideContext);
+                }
                 LayoutInflater i = (LayoutInflater) getBaseContext().getSystemService(name);
                 return i.cloneInContext(this);
             } else {
@@ -119,6 +134,22 @@ public class ClassLoaderContextWrapperFactory {
             }
 
             super.startActivity(intent);
+        }
+
+        @Override
+        public AssetManager getAssets() {
+            if (sResourceOverrideContext != null) {
+                return sResourceOverrideContext.getAssets();
+            }
+            return getBaseContext().getAssets();
+        }
+
+        @Override
+        public Resources getResources() {
+            if (sResourceOverrideContext != null) {
+                return sResourceOverrideContext.getResources();
+            }
+            return getBaseContext().getResources();
         }
     }
 }

@@ -484,7 +484,7 @@
 <translation id="3228969707346345236">Dịch thất bại vì trang đã bằng <ph name="LANGUAGE" />.</translation>
 <translation id="3229041911291329567">Thông tin phiên bản về thiết bị và trình duyệt của bạn</translation>
 <translation id="323107829343500871">Nhập CVC cho <ph name="CREDIT_CARD" /></translation>
-<translation id="3234392465377209614">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Bạn nên truy cập vào <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> và <ph name="WEBSITE_3" /> rồi đổi mật khẩu của mình ngay bây giờ.</translation>
+<translation id="3234392465377209614">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Chrome khuyên bạn nên truy cập vào <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> và <ph name="WEBSITE_3" /> rồi đổi mật khẩu của mình ngay bây giờ.</translation>
 <translation id="3234666976984236645">Luôn luôn phát hiện nội dung quan trọng trên trang web này</translation>
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> trông giống với <ph name="SUGGESTED_DOMAIN" />. Kẻ tấn công đôi khi bắt chước các trang web bằng cách sử dụng các URL tương tự những trang này.</translation>
 <translation id="3270847123878663523">&amp;Hoàn tác sắp xếp lại</translation>
@@ -531,7 +531,7 @@
 <translation id="3495081129428749620">Tìm trong trang
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">Chính sách này bị bỏ qua vì một chính sách khác thuộc cùng nhóm chính sách có mức ưu tiên cao hơn.</translation>
-<translation id="3525469219100414032">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Bạn nên truy cập vào <ph name="WEBSITE_1" /> rồi đổi mật khẩu của mình ngay bây giờ.</translation>
+<translation id="3525469219100414032">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Chrome khuyên bạn nên truy cập vào <ph name="WEBSITE_1" /> rồi đổi mật khẩu của mình ngay bây giờ.</translation>
 <translation id="3528171143076753409">Chứng chỉ của máy chủ không đáng tin cậy.</translation>
 <translation id="3528485271872257980">Nâu đậm</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Ít nhất 1 mục trên các thiết bị đã đồng bộ hóa}=1{1 mục (và nhiều mục khác trên các thiết bị đã đồng bộ hóa)}other{# mục (và nhiều mục khác trên các thiết bị đã đồng bộ hóa)}}</translation>
@@ -1676,7 +1676,7 @@ Thông tin chi tiết bổ sung:
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">Bạn có thể mất quyền truy cập vào Tài khoản Google của mình. Chromium khuyên bạn nên đổi mật khẩu ngay bây giờ. Bạn sẽ được yêu cầu đăng nhập.</translation>
 <translation id="939736085109172342">Thư mục mới</translation>
-<translation id="940786960229275114">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Bạn nên truy cập vào <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> và <ph name="WEBSITE_3" /> rồi đổi mật khẩu của mình ngay bây giờ.</translation>
+<translation id="940786960229275114">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Chrome khuyên bạn nên truy cập vào <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> và <ph name="WEBSITE_3" /> rồi đổi mật khẩu của mình ngay bây giờ.</translation>
 <translation id="945855313015696284">Kiểm tra thông tin bên dưới và xóa mọi thẻ không hợp lệ</translation>
 <translation id="950736567201356821">Đục 3 lỗ trên cùng</translation>
 <translation id="951104842009476243">Thẻ ghi nợ và thẻ trả trước được chấp nhận</translation>

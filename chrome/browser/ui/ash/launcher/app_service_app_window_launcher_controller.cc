@@ -257,13 +257,15 @@ void AppServiceAppWindowLauncherController::UnregisterWindow(
 void AppServiceAppWindowLauncherController::AddWindowToShelf(
     aura::Window* window,
     const ash::ShelfID& shelf_id) {
-  base::Contains(aura_window_to_app_window_, window);
+  if (base::Contains(aura_window_to_app_window_, window))
+    return;
 
   auto app_window_ptr = std::make_unique<AppWindowBase>(
       shelf_id, views::Widget::GetWidgetForNativeWindow(window));
+  AppWindowBase* app_window = app_window_ptr.get();
   aura_window_to_app_window_[window] = std::move(app_window_ptr);
 
-  AddAppWindowToShelf(app_window_ptr.get());
+  AddAppWindowToShelf(app_window);
 }
 
 void AppServiceAppWindowLauncherController::SetWindowActivated(
@@ -277,20 +279,25 @@ void AppServiceAppWindowLauncherController::SetWindowActivated(
     return;
 
   apps::InstanceState state = apps::InstanceState::kUnknown;
-  proxy_->InstanceRegistry().ForOneInstance(
-      window,
-      [&state](const apps::InstanceUpdate& update) { state = update.State(); });
+  if (active) {
+    // If the app is active, it should be started, running, and visible.
+    state = static_cast<apps::InstanceState>(
+        apps::InstanceState::kStarted | apps::InstanceState::kRunning |
+        apps::InstanceState::kActive | apps::InstanceState::kVisible);
+  } else {
+    proxy_->InstanceRegistry().ForOneInstance(
+        window, [&state](const apps::InstanceUpdate& update) {
+          state = update.State();
+        });
 
-  // When sets the instance active state, the instance should be in started and
-  // running state.
-  state = static_cast<apps::InstanceState>(
-      state | apps::InstanceState::kStarted | apps::InstanceState::kRunning);
+    // When sets the instance active state, the instance should be in started
+    // and running state.
+    state = static_cast<apps::InstanceState>(
+        state | apps::InstanceState::kStarted | apps::InstanceState::kRunning);
 
-  state = (active)
-              ? static_cast<apps::InstanceState>(state |
-                                                 apps::InstanceState::kActive)
-              : static_cast<apps::InstanceState>(state &
-                                                 ~apps::InstanceState::kActive);
+    state =
+        static_cast<apps::InstanceState>(state & ~apps::InstanceState::kActive);
+  }
   app_service_instance_helper_->OnInstances(shelf_id.app_id, window,
                                             std::string(), state);
 }
@@ -417,7 +424,8 @@ ash::ShelfID AppServiceAppWindowLauncherController::GetShelfId(
 
   if (!shelf_id.IsNull()) {
     if (proxy_->AppRegistryCache().GetAppType(shelf_id.app_id) ==
-        apps::mojom::AppType::kUnknown) {
+            apps::mojom::AppType::kUnknown &&
+        shelf_id.app_id != extension_misc::kChromeAppId) {
       return ash::ShelfID();
     }
     return shelf_id;

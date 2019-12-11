@@ -4,6 +4,7 @@
     <output filename="grit/aw_strings.h" type="rc_header">
       <emit emit_type='prepend'></emit>
     </output>
+    <output filename="aw_strings_af.pak" type="data_package" lang="af" />
     <output filename="aw_strings_am.pak" type="data_package" lang="am" />
     <output filename="aw_strings_ar.pak" type="data_package" lang="ar" />
     <output filename="aw_strings_bg.pak" type="data_package" lang="bg" />

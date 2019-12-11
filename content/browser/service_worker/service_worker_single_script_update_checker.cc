@@ -10,7 +10,6 @@
 #include "base/trace_event/trace_event.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/loader/browser_initiated_resource_request.h"
-#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_loader_helpers.h"
@@ -19,6 +18,7 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/referrer.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/ip_endpoint.h"
@@ -227,10 +227,9 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
       std::move(compare_reader), std::move(copy_reader), std::move(writer),
       /*pause_when_not_identical=*/true);
 
-  // Use NavigationURLLoaderImpl to get a unique request id across
-  // browser-initiated navigations and worker script fetch.
-  const int request_id =
-      NavigationURLLoaderImpl::MakeGlobalRequestID().request_id;
+  // Get a unique request id across browser-initiated navigations and navigation
+  // preloads.
+  const int request_id = GlobalRequestID::MakeBrowserInitiated().request_id;
   network_loader_ = ServiceWorkerUpdatedScriptLoader::
       ThrottlingURLLoaderCoreWrapper::CreateLoaderAndStart(
           loader_factory->Clone(), browser_context_getter, MSG_ROUTING_NONE,

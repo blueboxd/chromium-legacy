@@ -1402,7 +1402,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="29488703364906173">Un navegador web rápido, seguro y fácil de usar creado para la Web actual.</translation>
 <translation id="2949289451367477459">Usar ubicación. Permite que los servicios y aplicaciones con permiso de ubicación utilicen la ubicación de este dispositivo. Es posible que Google recopile datos de ubicación periódicamente y que los utilice de forma anónima para mejorar la precisión de la ubicación y los servicios basados en la ubicación. <ph name="BEGIN_LINK1" />Más información<ph name="END_LINK1" /></translation>
 <translation id="2956070239128776395">Sección anidada dentro de un grupo: <ph name="ERROR_LINE" /></translation>
-<translation id="2957117904572187936">No permitir a ningún sitio web editar archivos o carpetas que haya en tu dispositivo</translation>
+<translation id="2957117904572187936">No permitir a ningún sitio web editar archivos o carpetas de tu dispositivo</translation>
 <translation id="2958721676848865875">Advertencia sobre el empaquetado de extensión</translation>
 <translation id="2959842337402130152">No se ha podido restablecer porque falta espacio de almacenamiento. Libera <ph name="SPACE_REQUIRED" /> de espacio del dispositivo e inténtalo de nuevo.</translation>
 <translation id="296026337010986570">Se ha eliminado el software dañino. Para volver a activar las extensiones, ve a &lt;a href="chrome://extensions"&gt;Extensiones&lt;/a&gt;.</translation>
@@ -4564,7 +4564,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7607002721634913082">En pausa</translation>
 <translation id="7609148976235050828">Conéctate a Internet y vuelve a intentarlo.</translation>
 <translation id="7611008212562900400">Busca en tu dispositivo, aplicaciones, páginas web…</translation>
-<translation id="7614260613810441905">Preguntar cuando un sitio web quiera editar archivos o carpetas que haya en tu dispositivo (recomendado)</translation>
+<translation id="7614260613810441905">Preguntar cuando un sitio web quiera editar archivos o carpetas de tu dispositivo (recomendado)</translation>
 <translation id="7616214729753637086">Registrando dispositivo...</translation>
 <translation id="7617366389578322136">Se está estableciendo conexión con "<ph name="DEVICE_NAME" />"</translation>
 <translation id="7621382409404463535">El sistema no ha podido guardar la configuración del dispositivo.</translation>
@@ -5144,7 +5144,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8390449457866780408">Servidor no disponible</translation>
 <translation id="8391218455464584335">Vinilo</translation>
 <translation id="8391712576156218334">La imagen no está disponible. Inténtalo de nuevo más tarde.</translation>
-<translation id="8392364544846746346">Preguntar cuando un sitio web quiera editar archivos o carpetas que haya en tu dispositivo</translation>
+<translation id="8392364544846746346">Preguntar cuando un sitio web quiera editar archivos o carpetas de tu dispositivo</translation>
 <translation id="8392451568018454956">Menú de opciones de <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8393511274964623038">Detener complemento</translation>
 <translation id="8393700583063109961">Enviar mensaje</translation>

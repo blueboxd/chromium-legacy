@@ -9,7 +9,7 @@ import {TestProxy} from 'chrome://test/new_tab_page/test_support.js';
 import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
 
 suite('NewTabPageAppTest', () => {
-  /** @type {!NewTabPageApp} */
+  /** @type {!NewTabPageAppElement} */
   let app;
 
   /** @type {TestProxy} */
@@ -24,7 +24,7 @@ suite('NewTabPageAppTest', () => {
     testProxy = new TestProxy();
     BrowserProxy.instance_ = testProxy;
 
-    app = document.createElement('new-tab-page-app');
+    app = document.createElement('ntp-app');
     document.body.appendChild(app);
 
     toastManager = app.shadowRoot.querySelector('cr-toast-manager');

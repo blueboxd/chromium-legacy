@@ -25,7 +25,7 @@ class WebTestDownloadManagerDelegate : public ShellDownloadManagerDelegate {
 
   // ShellDownloadManagerDelegate implementation.
   bool ShouldOpenDownload(download::DownloadItem* item,
-                          const DownloadOpenDelayedCallback& callback) override;
+                          DownloadOpenDelayedCallback callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebTestDownloadManagerDelegate);

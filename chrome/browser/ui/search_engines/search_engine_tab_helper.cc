@@ -148,7 +148,8 @@ void SearchEngineTabHelper::PageHasOpenSearchDescriptionDocument(
       keyword, osdd_url, entry->GetFavicon().url,
       frame->GetLastCommittedOrigin(), url_loader_factory.get(),
       frame->GetRoutingID(),
-      static_cast<int>(content::ResourceType::kSubResource));
+      static_cast<int>(content::ResourceType::kSubResource),
+      content::GlobalRequestID::MakeBrowserInitiated().request_id);
 }
 
 void SearchEngineTabHelper::OnFaviconUpdated(

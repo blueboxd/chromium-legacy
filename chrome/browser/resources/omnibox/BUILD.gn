@@ -6,30 +6,43 @@ import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
 
 js_type_check("closure_compile") {
+  uses_js_modules = true
   deps = [
     ":omnibox",
+    ":omnibox_element",
+    ":omnibox_input",
+    ":omnibox_output",
   ]
 }
 
 js_library("omnibox") {
   deps = [
-    ":omnibox_element",
     ":omnibox_input",
     ":omnibox_output",
     "//chrome/browser/ui/webui/omnibox:mojo_bindings_js_library_for_compile",
-    "//ui/webui/resources/js:load_time_data",
+    "//ui/webui/resources/js:cr.m",
+    "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js:util.m",
   ]
 }
 
 js_library("omnibox_element") {
+  deps = [
+    "//ui/webui/resources/js:assert.m",
+  ]
 }
 
 js_library("omnibox_input") {
+  deps = [
+    ":omnibox_element",
+  ]
 }
 
 js_library("omnibox_output") {
   deps = [
-    "//ui/webui/resources/js:util",
+    ":omnibox_element",
+    ":omnibox_input",
+    "//chrome/browser/ui/webui/omnibox:mojo_bindings_js_library_for_compile",
   ]
   externs_list = [ "$externs_path/pending.js" ]
 }

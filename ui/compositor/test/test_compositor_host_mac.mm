@@ -26,7 +26,7 @@
 // AcceleratedTestView provides an NSView class that delegates drawing to a
 // ui::Compositor delegate, setting up the NSOpenGLContext as required.
 @interface AcceleratedTestView : NSView {
-  ui::Compositor* compositor_;
+  ui::Compositor* _compositor;
 }
 // Designated initializer.
 - (id)init;
@@ -43,12 +43,12 @@
 }
 
 - (void)setCompositor:(ui::Compositor*)compositor {
-  compositor_ = compositor;
+  _compositor = compositor;
 }
 
 - (void)drawRect:(NSRect)rect {
-  DCHECK(compositor_) << "Drawing with no compositor set.";
-  compositor_->ScheduleFullRedraw();
+  DCHECK(_compositor) << "Drawing with no compositor set.";
+  _compositor->ScheduleFullRedraw();
 }
 @end
 

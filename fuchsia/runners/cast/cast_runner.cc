@@ -192,12 +192,21 @@ void CastRunner::GetConfigCallback(
 
   // Request UrlRequestRewriteRulesProvider from the Agent.
   pending_component->agent_manager->ConnectToAgentService(
-      kAgentComponentUrl,
+      pending_component->app_config.agent_url(),
       pending_component->rewrite_rules_provider.NewRequest());
   pending_component->rewrite_rules_provider.set_error_handler(
       [this, pending_component = pending_component](zx_status_t status) {
-        ZX_LOG(ERROR, status) << "UrlRequestRewriteRulesProvider disconnected.";
-        CancelComponentLaunch(pending_component);
+        if (status != ZX_ERR_PEER_CLOSED) {
+          ZX_LOG(ERROR, status)
+              << "UrlRequestRewriteRulesProvider disconnected.";
+          CancelComponentLaunch(pending_component);
+          return;
+        }
+        ZX_LOG(WARNING, status)
+            << "UrlRequestRewriteRulesProvider unsupported.";
+        pending_component->rewrite_rules =
+            std::vector<fuchsia::web::UrlRequestRewriteRule>();
+        MaybeStartComponent(pending_component);
       });
   pending_component->rewrite_rules_provider->GetUrlRequestRewriteRules(
       [this, pending_component = pending_component](

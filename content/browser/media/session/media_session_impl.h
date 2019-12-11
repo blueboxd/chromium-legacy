@@ -306,7 +306,6 @@ class MediaSessionImpl : public MediaSession,
   };
   using PlayersMap =
       std::unordered_set<PlayerIdentifier, PlayerIdentifier::Hash>;
-  using StateChangedCallback = base::Callback<void(State)>;
 
   CONTENT_EXPORT explicit MediaSessionImpl(WebContents* web_contents);
 

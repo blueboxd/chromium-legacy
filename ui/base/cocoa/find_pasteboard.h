@@ -28,7 +28,7 @@ UI_BASE_EXPORT extern NSString* kFindPasteboardChangedNotification;
 UI_BASE_EXPORT
 @interface FindPasteboard : NSObject {
  @private
-  base::scoped_nsobject<NSString> findText_;
+  base::scoped_nsobject<NSString> _findText;
 }
 
 // Returns the singleton instance of this class.

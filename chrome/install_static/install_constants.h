@@ -76,6 +76,9 @@ struct InstallConstants {
   // * The prefix for the Elevation Service Name. See
   // install_static::GetElevationServiceDisplayName() and
   // install_static::GetElevationServiceName().
+  // * The prefix of Web App ProgIds. See web_app::GetProgIdForApp. This means
+  // |base_app_id| must only contain alphanumeric characters and
+  // non-leading '.'s.
   const wchar_t* base_app_id;
 
   // The prefix for the browser's ProgID. This prefix may be no more than 11

@@ -49,6 +49,13 @@ class WebEngineIntegrationTest : public testing::Test {
     ASSERT_TRUE(embedded_test_server_.Start());
   }
 
+  void StartWebEngine() {
+    web_context_provider_ =
+        StartWebEngineForTests(web_engine_controller_.NewRequest());
+    web_context_provider_.set_error_handler(
+        [](zx_status_t status) { ADD_FAILURE(); });
+  }
+
   fuchsia::web::CreateContextParams DefaultContextParams() const {
     fuchsia::web::CreateContextParams create_params;
     auto directory = base::fuchsia::OpenDirectory(
@@ -139,10 +146,7 @@ class WebEngineIntegrationTest : public testing::Test {
 };
 
 TEST_F(WebEngineIntegrationTest, ValidUserAgent) {
-  ConnectContextProvider(web_context_provider_.NewRequest(),
-                         web_engine_controller_.NewRequest());
-  web_context_provider_.set_error_handler(
-      [](zx_status_t status) { ADD_FAILURE(); });
+  StartWebEngine();
 
   const std::string kEchoHeaderPath =
       std::string("/echoheader?") + net::HttpRequestHeaders::kUserAgent;
@@ -189,10 +193,7 @@ TEST_F(WebEngineIntegrationTest, ValidUserAgent) {
 }
 
 TEST_F(WebEngineIntegrationTest, InvalidUserAgent) {
-  ConnectContextProvider(web_context_provider_.NewRequest(),
-                         web_engine_controller_.NewRequest());
-  web_context_provider_.set_error_handler(
-      [](zx_status_t status) { ADD_FAILURE(); });
+  StartWebEngine();
 
   const std::string kEchoHeaderPath =
       std::string("/echoheader?") + net::HttpRequestHeaders::kUserAgent;
@@ -225,10 +226,7 @@ TEST_F(WebEngineIntegrationTest, InvalidUserAgent) {
 // - DevTools becomes available when the first debuggable Frame is created.
 // - DevTools closes when the last debuggable Frame is closed.
 TEST_F(WebEngineIntegrationTest, RemoteDebuggingPort) {
-  ConnectContextProvider(web_context_provider_.NewRequest(),
-                         web_engine_controller_.NewRequest());
-  web_context_provider_.set_error_handler(
-      [](zx_status_t status) { ADD_FAILURE(); });
+  StartWebEngine();
 
   // Create a Context with remote debugging enabled via an ephemeral port.
   fuchsia::web::CreateContextParams create_params;
@@ -326,10 +324,7 @@ TEST_F(WebEngineIntegrationTest, RemoteDebuggingPort) {
 // Check that remote debugging requests for Frames in non-debuggable Contexts
 // cause an error to be reported.
 TEST_F(WebEngineIntegrationTest, RequestDebuggableFrameInNonDebuggableContext) {
-  ConnectContextProvider(web_context_provider_.NewRequest(),
-                         web_engine_controller_.NewRequest());
-  web_context_provider_.set_error_handler(
-      [](zx_status_t status) { ADD_FAILURE(); });
+  StartWebEngine();
 
   fuchsia::web::CreateContextParams create_params = DefaultContextParams();
 
@@ -355,10 +350,7 @@ TEST_F(WebEngineIntegrationTest, RequestDebuggableFrameInNonDebuggableContext) {
 
 // Navigates to a resource served under the "testdata" ContentDirectory.
 TEST_F(WebEngineIntegrationTest, ContentDirectoryProvider) {
-  ConnectContextProvider(web_context_provider_.NewRequest(),
-                         web_engine_controller_.NewRequest());
-  web_context_provider_.set_error_handler(
-      [](zx_status_t status) { ADD_FAILURE(); });
+  StartWebEngine();
 
   const GURL kUrl("fuchsia-dir://testdata/title1.html");
   constexpr char kTitle[] = "title 1";
@@ -381,10 +373,7 @@ TEST_F(WebEngineIntegrationTest, ContentDirectoryProvider) {
 }
 
 TEST_F(WebEngineIntegrationTest, PlayAudio) {
-  ConnectContextProvider(web_context_provider_.NewRequest(),
-                         web_engine_controller_.NewRequest());
-  web_context_provider_.set_error_handler(
-      [](zx_status_t status) { ADD_FAILURE(); });
+  StartWebEngine();
 
   fuchsia::web::CreateContextParams create_params =
       DefaultContextParamsWithTestData();

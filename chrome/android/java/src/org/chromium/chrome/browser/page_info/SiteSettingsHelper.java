@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.settings.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.util.UrlConstants;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.GURLUtils;
 
 /**
@@ -26,9 +27,10 @@ public class SiteSettingsHelper {
      * Whether site settings is available for a given {@link Tab}.
      */
     public static boolean isSiteSettingsAvailable(Tab tab) {
-        boolean isOfflinePage = OfflinePageUtils.getOfflinePage(tab) != null;
+        WebContents webContents = tab.getWebContents();
+        boolean isOfflinePage = OfflinePageUtils.getOfflinePage(webContents) != null;
         boolean isPreviewPage =
-                PreviewsAndroidBridge.getInstance().shouldShowPreviewUI(tab.getWebContents());
+                PreviewsAndroidBridge.getInstance().shouldShowPreviewUI(webContents);
         String scheme = GURLUtils.getScheme(((TabImpl) tab).getOriginalUrl());
         return !isOfflinePage && !isPreviewPage
                 && (UrlConstants.HTTP_SCHEME.equals(scheme)

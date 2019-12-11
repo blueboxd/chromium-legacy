@@ -99,6 +99,9 @@ void HotseatTransitionAnimator::DoAnimation(HotseatState old_state,
 
   const bool animating_to_shown_hotseat = new_state == HotseatState::kShown;
 
+  shelf_widget_->GetAnimatingBackground()->SetColor(
+      ShelfConfig::Get()->GetMaximizedShelfColor());
+
   gfx::Rect target_bounds = shelf_widget_->GetOpaqueBackground()->bounds();
   target_bounds.set_height(ShelfConfig::Get()->in_app_shelf_size());
   target_bounds.set_y(

@@ -349,6 +349,12 @@ BASE_EXPORT bool DevicePathToDriveLetterPath(const FilePath& device_path,
 // base::GetTempDir) just uses the value specified by TMP or TEMP, and so can
 // return a short path. Returns an empty path on error.
 BASE_EXPORT FilePath MakeLongFilePath(const FilePath& input);
+
+// Creates a hard link named |to_file| to the file |from_file|. Both paths
+// must be on the same volume, and |from_file| may not name a directory.
+// Returns true if the hard link is created, false if it fails.
+BASE_EXPORT bool CreateWinHardLink(const FilePath& to_file,
+                                   const FilePath& from_file);
 #endif
 
 // This function will return if the given file is a symlink or not.

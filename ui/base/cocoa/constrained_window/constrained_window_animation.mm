@@ -214,7 +214,7 @@ bool AreWindowServerEffectsDisabled() {
 - (instancetype)initWithWindow:(NSWindow*)window {
   if ((self = [self initWithDuration:kAnimationDuration
                       animationCurve:NSAnimationEaseInOut])) {
-    window_.reset([window retain]);
+    _window.reset([window retain]);
     [self setAnimationBlockingMode:NSAnimationBlocking];
     [self setWindowStateForStart];
   }
@@ -240,9 +240,9 @@ bool AreWindowServerEffectsDisabled() {
     // update to the window size, and then undoing it, seems to fix the problem.
     // See http://crbug.com/436884.
     // TODO(tapted): Find a better fix (this is horrible).
-    NSRect frame = [window_ frame];
-    [window_ setFrame:NSInsetRect(frame, 1, 1) display:NO animate:NO];
-    [window_ setFrame:frame display:NO animate:NO];
+    NSRect frame = [_window frame];
+    [_window setFrame:NSInsetRect(frame, 1, 1) display:NO animate:NO];
+    [_window setFrame:frame display:NO animate:NO];
     return;
   }
   [self setWindowStateForValue:[self currentValue]];
@@ -267,27 +267,27 @@ bool AreWindowServerEffectsDisabled() {
 
 - (void)setWindowStateForStart {
   if (AreWindowServerEffectsDisabled()) {
-    [window_ setAlphaValue:0.0];
+    [_window setAlphaValue:0.0];
     return;
   }
-  SetWindowAlpha(window_, 0.0);
+  SetWindowAlpha(_window, 0.0);
 }
 
 - (void)setWindowStateForValue:(float)value {
   if (AreWindowServerEffectsDisabled()) {
-    [window_ setAlphaValue:value];
+    [_window setAlphaValue:value];
     return;
   }
-  UpdateWindowShowHideAnimationState(window_, value);
+  UpdateWindowShowHideAnimationState(_window, value);
 }
 
 - (void)setWindowStateForEnd {
   if (AreWindowServerEffectsDisabled()) {
-    [window_ setAlphaValue:1.0];
+    [_window setAlphaValue:1.0];
     return;
   }
-  SetWindowAlpha(window_, 1.0);
-  ClearWindowWarp(window_);
+  SetWindowAlpha(_window, 1.0);
+  ClearWindowWarp(_window);
 }
 
 @end
@@ -296,19 +296,19 @@ bool AreWindowServerEffectsDisabled() {
 
 - (void)setWindowStateForValue:(float)value {
   if (AreWindowServerEffectsDisabled()) {
-    [window_ setAlphaValue:1.0 - value];
+    [_window setAlphaValue:1.0 - value];
     return;
   }
-  UpdateWindowShowHideAnimationState(window_, 1.0 - value);
+  UpdateWindowShowHideAnimationState(_window, 1.0 - value);
 }
 
 - (void)setWindowStateForEnd {
   if (AreWindowServerEffectsDisabled()) {
-    [window_ setAlphaValue:0.0];
+    [_window setAlphaValue:0.0];
     return;
   }
-  SetWindowAlpha(window_, 0.0);
-  ClearWindowWarp(window_);
+  SetWindowAlpha(_window, 0.0);
+  ClearWindowWarp(_window);
 }
 
 @end
@@ -335,7 +335,7 @@ bool AreWindowServerEffectsDisabled() {
     }
   }
 
-  SetWindowScale(window_, scale);
+  SetWindowScale(_window, scale);
 }
 
 - (void)setWindowStateForEnd {
@@ -344,7 +344,7 @@ bool AreWindowServerEffectsDisabled() {
     return;
   }
 
-  SetWindowScale(window_, 1.0);
+  SetWindowScale(_window, 1.0);
 }
 
 @end

@@ -67,7 +67,7 @@ export function userCanChangeEnablement(item) {
     return false;
   }
   // Blacklisted can't be enabled, either.
-  if (item.state == chrome.developerPrivate.ExtensionState.BLACKLISTED) {
+  if (item.state === chrome.developerPrivate.ExtensionState.BLACKLISTED) {
     return false;
   }
 
@@ -80,7 +80,7 @@ export function userCanChangeEnablement(item) {
  */
 export function getItemSource(item) {
   if (item.controlledInfo &&
-      item.controlledInfo.type ==
+      item.controlledInfo.type ===
           chrome.developerPrivate.ControllerType.POLICY) {
     return SourceType.POLICY;
   }
@@ -130,17 +130,17 @@ export function computeInspectableViewLabel(view) {
   // Trim the "chrome-extension://<id>/".
   const url = new URL(view.url);
   let label = view.url;
-  if (url.protocol == 'chrome-extension:') {
+  if (url.protocol === 'chrome-extension:') {
     label = url.pathname.substring(1);
   }
-  if (label == '_generated_background_page.html') {
+  if (label === '_generated_background_page.html') {
     label = loadTimeData.getString('viewBackgroundPage');
   }
   // Add any qualifiers.
   if (view.incognito) {
     label += ' ' + loadTimeData.getString('viewIncognito');
   }
-  if (view.renderProcessId == -1) {
+  if (view.renderProcessId === -1) {
     label += ' ' + loadTimeData.getString('viewInactive');
   }
   if (view.isIframe) {

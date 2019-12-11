@@ -116,12 +116,14 @@ import java.util.concurrent.TimeoutException;
  */
 // NOTE: Disable online detection so we we'll default to online on test bots with no network.
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ContextualSearchFieldTrial.ONLINE_DETECTION_DISABLED,
-        "disable-features=" + ChromeFeatureList.CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION})
-@Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-@RetryOnFailure
-public class ContextualSearchManagerTest {
+@DisableIf
+        .Build(sdk_is_greater_than = Build.VERSION_CODES.O_MR1, message = "crbug.com/1032760")
+        @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+                ContextualSearchFieldTrial.ONLINE_DETECTION_DISABLED,
+                "disable-features=" + ChromeFeatureList.CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION})
+        @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+        @RetryOnFailure
+        public class ContextualSearchManagerTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);

@@ -50,6 +50,7 @@ shared_library("libcontent_native_test") {
   testonly = true
   deps = [
     "//base",
+    "//base:base_javatests_lib",
     "//content/public/test/android:content_native_test_support",
     "//content/shell:content_shell_lib",
   ]

@@ -43,6 +43,7 @@ class QuicSimpleTestServer {
   static const std::string GetHelloStatus();
   static const std::string GetHelloHeaderName();
   static const std::string GetHelloHeaderValue();
+  static const std::string GetCombinedHeaderName();
   static const std::string GetHelloTrailerName();
   static const std::string GetHelloTrailerValue();
 

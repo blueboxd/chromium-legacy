@@ -55,7 +55,7 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
 @end
 
 @implementation WeakPtrToMenuModelAsNSObject {
-  base::WeakPtr<ui::MenuModel> model_;
+  base::WeakPtr<ui::MenuModel> _model;
 }
 
 + (instancetype)weakPtrForModel:(ui::MenuModel*)model {
@@ -70,13 +70,13 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
 
 - (instancetype)initWithModel:(ui::MenuModel*)model {
   if ((self = [super init])) {
-    model_ = model->AsWeakPtr();
+    _model = model->AsWeakPtr();
   }
   return self;
 }
 
 - (ui::MenuModel*)menuModel {
-  return model_.get();
+  return _model.get();
 }
 
 @end
@@ -120,23 +120,23 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
 @end
 
 @implementation MenuControllerCocoa {
-  base::WeakPtr<ui::MenuModel> model_;
-  base::scoped_nsobject<NSMenu> menu_;
-  BOOL useWithPopUpButtonCell_;  // If YES, 0th item is blank
-  BOOL isMenuOpen_;
-  BOOL postItemSelectedAsTask_;
-  std::unique_ptr<base::CancelableClosure> postedItemSelectedTask_;
+  base::WeakPtr<ui::MenuModel> _model;
+  base::scoped_nsobject<NSMenu> _menu;
+  BOOL _useWithPopUpButtonCell;  // If YES, 0th item is blank
+  BOOL _isMenuOpen;
+  BOOL _postItemSelectedAsTask;
+  std::unique_ptr<base::CancelableClosure> _postedItemSelectedTask;
 }
 
-@synthesize useWithPopUpButtonCell = useWithPopUpButtonCell_;
-@synthesize postItemSelectedAsTask = postItemSelectedAsTask_;
+@synthesize useWithPopUpButtonCell = _useWithPopUpButtonCell;
+@synthesize postItemSelectedAsTask = _postItemSelectedAsTask;
 
 - (ui::MenuModel*)model {
-  return model_.get();
+  return _model.get();
 }
 
 - (void)setModel:(ui::MenuModel*)model {
-  model_ = model->AsWeakPtr();
+  _model = model->AsWeakPtr();
 }
 
 - (instancetype)init {
@@ -147,30 +147,30 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
 - (instancetype)initWithModel:(ui::MenuModel*)model
        useWithPopUpButtonCell:(BOOL)useWithCell {
   if ((self = [super init])) {
-    model_ = model->AsWeakPtr();
-    useWithPopUpButtonCell_ = useWithCell;
+    _model = model->AsWeakPtr();
+    _useWithPopUpButtonCell = useWithCell;
     [self menu];
   }
   return self;
 }
 
 - (void)dealloc {
-  [menu_ setDelegate:nil];
+  [_menu setDelegate:nil];
 
   // Close the menu if it is still open. This could happen if a tab gets closed
   // while its context menu is still open.
   [self cancel];
 
-  model_ = nullptr;
+  _model = nullptr;
   [super dealloc];
 }
 
 - (void)cancel {
-  if (isMenuOpen_) {
-    [menu_ cancelTracking];
-    if (model_)
-      model_->MenuWillClose();
-    isMenuOpen_ = NO;
+  if (_isMenuOpen) {
+    [_menu cancelTracking];
+    if (_model)
+      _model->MenuWillClose();
+    _isMenuOpen = NO;
   }
 }
 
@@ -239,7 +239,7 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
                                    weakPtrForModel:model]];
     // On the Mac, context menus never have accelerators. Menus constructed
     // for context use have useWithPopUpButtonCell_ set to NO.
-    if (useWithPopUpButtonCell_) {
+    if (_useWithPopUpButtonCell) {
       ui::Accelerator accelerator;
       if (model->GetAcceleratorAt(index, &accelerator)) {
         NSString* key_equivalent;
@@ -293,7 +293,7 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
 }
 
 - (void)itemWillBeSelected:(NSMenuItem*)sender {
-  if (postItemSelectedAsTask_ && [sender action] == @selector(itemSelected:) &&
+  if (_postItemSelectedAsTask && [sender action] == @selector(itemSelected:) &&
       [[sender target]
           respondsToSelector:@selector(itemSelected:uiEventFlags:)]) {
     const int uiEventFlags = ui::EventFlagsFromNative([NSApp currentEvent]);
@@ -305,9 +305,9 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
     // menu action, ensure the -dealloc happens there. To do otherwise risks
     // |model_| being deleted when it is used in -cancel, whereas that is less
     // likely if the -cancel happens in the delegate method.
-    NSMenu* menu = menu_;
+    NSMenu* menu = _menu;
 
-    postedItemSelectedTask_ = std::make_unique<base::CancelableClosure>(
+    _postedItemSelectedTask = std::make_unique<base::CancelableClosure>(
         base::BindRepeating(base::RetainBlock(^{
           id target = [sender target];
           if ([target respondsToSelector:@selector(itemSelected:uiEventFlags:)])
@@ -323,14 +323,14 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
           CHECK([menu delegate]);  // Note: set to nil in -dealloc.
         })));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, postedItemSelectedTask_->callback());
+        FROM_HERE, _postedItemSelectedTask->callback());
   }
 }
 
 - (void)itemSelected:(id)sender {
   // A task created in -itemWillBeSelected: may or may not have run. If not, put
   // it on the stack before running it, in case it destroys |self|.
-  if (auto pendingTask = std::move(postedItemSelectedTask_)) {
+  if (auto pendingTask = std::move(_postedItemSelectedTask)) {
     if (!pendingTask->IsCancelled())
       pendingTask->callback().Run();
   } else {
@@ -342,8 +342,8 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
 - (void)itemSelected:(id)sender uiEventFlags:(int)uiEventFlags {
   // Cancel any posted task, but don't reset it, so that the correct path is
   // taken in -itemSelected:.
-  if (postedItemSelectedTask_)
-    postedItemSelectedTask_->Cancel();
+  if (_postedItemSelectedTask)
+    _postedItemSelectedTask->Cancel();
 
   NSInteger modelIndex = [sender tag];
   ui::MenuModel* model =
@@ -355,37 +355,37 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
 }
 
 - (NSMenu*)menu {
-  if (!menu_ && model_) {
-    menu_.reset([[self menuFromModel:model_.get()] retain]);
-    [menu_ setDelegate:self];
+  if (!_menu && _model) {
+    _menu.reset([[self menuFromModel:_model.get()] retain]);
+    [_menu setDelegate:self];
     // If this is to be used with a NSPopUpButtonCell, add an item at the 0th
     // position that's empty. Doing it after the menu has been constructed won't
     // complicate creation logic, and since the tags are model indexes, they
     // are unaffected by the extra item.
-    if (useWithPopUpButtonCell_) {
+    if (_useWithPopUpButtonCell) {
       base::scoped_nsobject<NSMenuItem> blankItem(
           [[NSMenuItem alloc] initWithTitle:@"" action:nil keyEquivalent:@""]);
-      [menu_ insertItem:blankItem atIndex:0];
+      [_menu insertItem:blankItem atIndex:0];
     }
   }
-  return menu_.get();
+  return _menu.get();
 }
 
 - (BOOL)isMenuOpen {
-  return isMenuOpen_;
+  return _isMenuOpen;
 }
 
 - (void)menuWillOpen:(NSMenu*)menu {
-  isMenuOpen_ = YES;
-  if (model_)
-    model_->MenuWillShow();  // Note: |model_| may trigger -[self dealloc].
+  _isMenuOpen = YES;
+  if (_model)
+    _model->MenuWillShow();  // Note: |model_| may trigger -[self dealloc].
 }
 
 - (void)menuDidClose:(NSMenu*)menu {
-  if (isMenuOpen_) {
-    isMenuOpen_ = NO;
-    if (model_)
-      model_->MenuWillClose();  // Note: |model_| may trigger -[self dealloc].
+  if (_isMenuOpen) {
+    _isMenuOpen = NO;
+    if (_model)
+      _model->MenuWillClose();  // Note: |model_| may trigger -[self dealloc].
   }
 }
 

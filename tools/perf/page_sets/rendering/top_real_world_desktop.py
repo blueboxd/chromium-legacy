@@ -298,7 +298,6 @@ class Twitch2018Page(TopRealWorldDesktopPage):
   YEAR = '2018'
   URL = 'https://www.twitch.tv'
   TAGS = TopRealWorldDesktopPage.TAGS + [
-    story_tags.REPRESENTATIVE_MOBILE,
     story_tags.REPRESENTATIVE_MAC_DESKTOP
   ]
 

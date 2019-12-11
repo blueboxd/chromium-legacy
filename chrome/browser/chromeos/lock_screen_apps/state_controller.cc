@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "ash/public/ash_interfaces.h"
 #include "ash/public/cpp/stylus_utils.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "ash/public/mojom/tray_action.mojom.h"
 #include "base/base64.h"
 #include "base/bind.h"
@@ -31,6 +31,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "crypto/symmetric_key.h"
 #include "extensions/browser/api/lock_screen_data/lock_screen_item_storage.h"
@@ -38,6 +39,7 @@
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/extension.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/wm/core/window_animations.h"
 
 using ash::mojom::CloseLockScreenNoteReason;
@@ -126,8 +128,10 @@ void StateController::Initialize() {
 
   // The tray action ptr might be set previously if the client was being created
   // for testing.
-  if (!tray_action_)
-    ash::BindTrayAction(tray_action_.BindNewPipeAndPassReceiver());
+  if (!tray_action_) {
+    content::GetSystemConnector()->Connect(
+        ash::mojom::kServiceName, tray_action_.BindNewPipeAndPassReceiver());
+  }
   mojo::PendingRemote<ash::mojom::TrayActionClient> client;
   receiver_.Bind(client.InitWithNewPipeAndPassReceiver());
   tray_action_->SetClient(std::move(client), lock_screen_note_state_);

@@ -121,7 +121,7 @@ Polymer({
 
   /** @private */
   onNoExtensionsTap_: function(e) {
-    if (e.target.tagName == 'A') {
+    if (e.target.tagName === 'A') {
       chrome.metricsPrivate.recordUserAction('Options_GetMoreExtensions');
     }
   },
@@ -135,7 +135,7 @@ Polymer({
         this.fire('iron-announce', {
           text: this.shouldShowEmptySearchMessage_() ?
               this.i18n('noSearchResults') :
-              (total == 1 ?
+              (total === 1 ?
                    this.i18n('searchResultsSingular', this.filter) :
                    this.i18n(
                        'searchResultsPlural', total.toString(), this.filter)),

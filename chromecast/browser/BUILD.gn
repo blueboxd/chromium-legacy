@@ -214,6 +214,7 @@ cast_source_set("browser") {
     "//media/mojo/services:media_manifest",
     "//net",
     "//services/media_session/public/mojom",
+    "//services/network/public/mojom",
     "//services/service_manager/public/cpp",
     "//ui/base",
     "//ui/compositor",

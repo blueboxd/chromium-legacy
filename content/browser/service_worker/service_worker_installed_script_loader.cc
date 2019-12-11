@@ -104,6 +104,7 @@ void ServiceWorkerInstalledScriptLoader::OnFinished(FinishedReason reason) {
       break;
     case FinishedReason::kConnectionError:
     case FinishedReason::kMetaDataSenderError:
+    case FinishedReason::kNoContextError:
       net_error = net::ERR_FAILED;
       break;
     case FinishedReason::kNotFinished:

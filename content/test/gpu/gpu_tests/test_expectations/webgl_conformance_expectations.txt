@@ -317,6 +317,8 @@ crbug.com/635081 [ mac nvidia-0xfe9 no-passthrough ] conformance/textures/misc/t
 crbug.com/784817 [ mac nvidia-0xfe9 ] conformance/glsl/bugs/init-array-with-loop.html [ Failure ]
 crbug.com/871352 [ mac debug nvidia-0xfe9 ] conformance/uniforms/uniform-samplers-test.html [ Failure ]
 crbug.com/948218 [ mac debug nvidia-0xfe9 ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Failure ]
+crbug.com/1027776 [ mac nvidia-0xfe9 ] conformance/textures/canvas_sub_rectangle/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ RetryOnFailure ]
+crbug.com/1027776 [ mac nvidia-0xfe9 ] conformance/textures/canvas_sub_rectangle/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ RetryOnFailure ]
 
 # Mac / Passthrough command decoder
 crbug.com/989194 [ mac passthrough ] conformance/extensions/oes-texture-half-float.html [ Failure ]

@@ -49,7 +49,7 @@ class CONTENT_EXPORT MediaInternals : public media::AudioLogFactory,
                                       public NotificationObserver {
  public:
   // Called with the update string.
-  typedef base::Callback<void(const base::string16&)> UpdateCallback;
+  using UpdateCallback = base::RepeatingCallback<void(const base::string16&)>;
 
   static MediaInternals* GetInstance();
 
@@ -66,7 +66,7 @@ class CONTENT_EXPORT MediaInternals : public media::AudioLogFactory,
 
   // Add/remove update callbacks (see above). Must be called on the UI thread.
   // The callbacks must also be fired on UI thread.
-  void AddUpdateCallback(const UpdateCallback& callback);
+  void AddUpdateCallback(UpdateCallback callback);
   void RemoveUpdateCallback(const UpdateCallback& callback);
 
   // Whether there are any update callbacks available. Can be called on any

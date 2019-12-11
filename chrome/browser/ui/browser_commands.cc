@@ -750,17 +750,17 @@ WebContents* DuplicateTabAt(Browser* browser, int index) {
   if (browser->CanSupportWindowFeature(Browser::FEATURE_TABSTRIP)) {
     // If this is a tabbed browser, just create a duplicate tab inside the same
     // window next to the tab being duplicated.
-    const int index =
-        browser->tab_strip_model()->GetIndexOfWebContents(contents);
-    pinned = browser->tab_strip_model()->IsTabPinned(index);
+    TabStripModel* tab_strip_model = browser->tab_strip_model();
+    const int index = tab_strip_model->GetIndexOfWebContents(contents);
+    pinned = tab_strip_model->IsTabPinned(index);
     int add_types = TabStripModel::ADD_ACTIVE |
                     TabStripModel::ADD_INHERIT_OPENER |
                     (pinned ? TabStripModel::ADD_PINNED : 0);
-    const auto old_group = browser->tab_strip_model()->GetTabGroupForTab(index);
-    browser->tab_strip_model()->InsertWebContentsAt(
-        index + 1, std::move(contents_dupe), add_types, old_group);
+    const auto old_group = tab_strip_model->GetTabGroupForTab(index);
+    tab_strip_model->InsertWebContentsAt(index + 1, std::move(contents_dupe),
+                                         add_types, old_group);
   } else {
-    Browser* new_browser = NULL;
+    Browser* new_browser = nullptr;
     if (browser->deprecated_is_app()) {
       new_browser = new Browser(Browser::CreateParams::CreateForApp(
           browser->app_name(), browser->is_trusted_source(), gfx::Rect(),
@@ -911,7 +911,7 @@ void BookmarkCurrentTabAllowingExtensionOverrides(Browser* browser) {
   DCHECK(!chrome::ShouldRemoveBookmarkThisTabUI(browser->profile()));
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  const extensions::Extension* extension = NULL;
+  const extensions::Extension* extension = nullptr;
   extensions::Command command;
   if (GetBookmarkOverrideCommand(browser->profile(), &extension, &command)) {
     switch (command.type()) {
@@ -1303,7 +1303,7 @@ void ToggleDistilledView(Browser* browser) {
 
 bool CanRequestTabletSite(WebContents* current_tab) {
   return current_tab &&
-         current_tab->GetController().GetLastCommittedEntry() != NULL;
+         current_tab->GetController().GetLastCommittedEntry() != nullptr;
 }
 
 bool IsRequestingTabletSite(Browser* browser) {

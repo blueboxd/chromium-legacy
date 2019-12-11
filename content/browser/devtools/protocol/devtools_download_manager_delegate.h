@@ -41,10 +41,10 @@ class CONTENT_EXPORT DevToolsDownloadManagerDelegate
   void Shutdown() override;
   bool DetermineDownloadTarget(
       download::DownloadItem* download,
-      const content::DownloadTargetCallback& callback) override;
+      content::DownloadTargetCallback* callback) override;
   bool ShouldOpenDownload(
       download::DownloadItem* item,
-      const content::DownloadOpenDelayedCallback& callback) override;
+      content::DownloadOpenDelayedCallback callback) override;
   void GetNextId(content::DownloadIdCallback callback) override;
 
  private:
@@ -54,18 +54,18 @@ class CONTENT_EXPORT DevToolsDownloadManagerDelegate
   static DevToolsDownloadManagerDelegate* GetInstance();
   ~DevToolsDownloadManagerDelegate() override;
 
-  typedef base::Callback<void(const base::FilePath&)>
-      FilenameDeterminedCallback;
+  using FilenameDeterminedCallback =
+      base::OnceCallback<void(const base::FilePath&)>;
 
   static void GenerateFilename(const GURL& url,
                                const std::string& content_disposition,
                                const std::string& suggested_filename,
                                const std::string& mime_type,
                                const base::FilePath& suggested_directory,
-                               const FilenameDeterminedCallback& callback);
+                               FilenameDeterminedCallback callback);
 
   void OnDownloadPathGenerated(uint32_t download_id,
-                               const content::DownloadTargetCallback& callback,
+                               content::DownloadTargetCallback callback,
                                const base::FilePath& suggested_path);
 
   content::DownloadManager* download_manager_;

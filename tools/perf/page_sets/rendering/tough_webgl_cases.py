@@ -109,7 +109,6 @@ class AnimometerWebGLAttribArraysPage(ToughWebglPage):
   # pylint: disable=line-too-long
   URL = 'http://kenrussell.github.io/webgl-animometer/Animometer/tests/3d/webgl.html?use_attributes=1'
   TAGS = ToughWebglPage.TAGS + [
-    story_tags.REPRESENTATIVE_MOBILE,
     story_tags.REPRESENTATIVE_MAC_DESKTOP
   ]
 

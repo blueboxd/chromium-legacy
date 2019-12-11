@@ -35,6 +35,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "chrome/app/builtin_service_manifests.h"
 #include "chrome/app/chrome_content_browser_overlay_manifest.h"
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
 #include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
@@ -348,6 +349,7 @@
 #include "chrome/browser/chrome_browser_main_mac.h"
 #elif defined(OS_CHROMEOS)
 #include "ash/public/cpp/tablet_mode.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "chrome/app/chrome_crash_reporter_client.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_backend_delegate.h"
@@ -3729,6 +3731,11 @@ ChromeContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
   if (name == content::mojom::kBrowserServiceName)
     return GetChromeContentBrowserOverlayManifest();
   return base::nullopt;
+}
+
+std::vector<service_manager::Manifest>
+ChromeContentBrowserClient::GetExtraServiceManifests() {
+  return GetChromeBuiltinServiceManifests();
 }
 
 void ChromeContentBrowserClient::OpenURL(

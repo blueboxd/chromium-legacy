@@ -22,13 +22,13 @@ class CastDownloadManagerDelegate : public content::DownloadManagerDelegate,
   void GetNextId(content::DownloadIdCallback callback) override;
   bool DetermineDownloadTarget(
       download::DownloadItem* item,
-      const content::DownloadTargetCallback& callback) override;
+      content::DownloadTargetCallback* callback) override;
   bool ShouldOpenFileBasedOnExtension(const base::FilePath& path) override;
   bool ShouldCompleteDownload(download::DownloadItem* item,
                               base::OnceClosure complete_callback) override;
   bool ShouldOpenDownload(
       download::DownloadItem* item,
-      const content::DownloadOpenDelayedCallback& callback) override;
+      content::DownloadOpenDelayedCallback callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastDownloadManagerDelegate);

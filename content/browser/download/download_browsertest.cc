@@ -547,11 +547,10 @@ class TestShellDownloadManagerDelegate : public ShellDownloadManagerDelegate {
       : delay_download_open_(false) {}
   ~TestShellDownloadManagerDelegate() override {}
 
-  bool ShouldOpenDownload(
-      download::DownloadItem* item,
-      const DownloadOpenDelayedCallback& callback) override {
+  bool ShouldOpenDownload(download::DownloadItem* item,
+                          DownloadOpenDelayedCallback callback) override {
     if (delay_download_open_) {
-      delayed_callbacks_.push_back(callback);
+      delayed_callbacks_.push_back(std::move(callback));
       return false;
     }
     return true;
@@ -1608,7 +1607,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtRelease) {
   GetDownloadManagerDelegate()->GetDelayedCallbacks(
       &delayed_callbacks);
   ASSERT_EQ(1u, delayed_callbacks.size());
-  delayed_callbacks[0].Run(true);
+  std::move(delayed_callbacks[0]).Run(true);
 
   // *Now* the download should be complete.
   EXPECT_EQ(download::DownloadItem::COMPLETE, items[0]->GetState());

@@ -10,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.Process;
 import android.os.RemoteException;
 import android.support.v4.app.Fragment;
 import android.util.AndroidRuntimeException;
@@ -44,8 +43,9 @@ public final class WebLayer {
     // load the code. Do not set this in production APKs!
     private static final String PACKAGE_MANIFEST_KEY = "org.chromium.weblayer.WebLayerPackage";
 
+    @SuppressWarnings("StaticFieldLeak")
     @Nullable
-    private static ClassLoader sRemoteClassLoader;
+    private static Context sRemoteContext;
 
     @Nullable
     private static WebLayerLoader sLoader;
@@ -168,7 +168,7 @@ public final class WebLayer {
             int majorVersion = -1;
             String version = "<unavailable>";
             try {
-                remoteClassLoader = getOrCreateRemoteClassLoader(appContext);
+                remoteClassLoader = getOrCreateRemoteContext(appContext).getClassLoader();
                 Class factoryClass = remoteClassLoader.loadClass(
                         "org.chromium.weblayer_private.WebLayerFactoryImpl");
                 // NOTE: the 20 comes from the previous scheme of incrementing versioning. It must
@@ -219,12 +219,21 @@ public final class WebLayer {
                 return;
             }
             try {
-                getIWebLayer(appContext)
-                        .loadAsync(ObjectWrapper.wrap(appContext),
-                                ObjectWrapper.wrap((ValueCallback<Boolean>) result -> {
-                                    onWebLayerReady();
-                                }));
-            } catch (RemoteException e) {
+                if (getMajorVersion() < 81) {
+                    getIWebLayer(appContext)
+                            .loadAsyncV80(ObjectWrapper.wrap(appContext),
+                                    ObjectWrapper.wrap((ValueCallback<Boolean>) result -> {
+                                        onWebLayerReady();
+                                    }));
+                } else {
+                    getIWebLayer(appContext)
+                            .loadAsync(ObjectWrapper.wrap(appContext),
+                                    ObjectWrapper.wrap(getOrCreateRemoteContext(appContext)),
+                                    ObjectWrapper.wrap((ValueCallback<Boolean>) result -> {
+                                        onWebLayerReady();
+                                    }));
+                }
+            } catch (Exception e) {
                 throw new APICallException(e);
             }
         }
@@ -239,10 +248,16 @@ public final class WebLayer {
                 return null;
             }
             try {
-                getIWebLayer(appContext).loadSync(ObjectWrapper.wrap(appContext));
+                if (getMajorVersion() < 81) {
+                    getIWebLayer(appContext).loadSyncV80(ObjectWrapper.wrap(appContext));
+                } else {
+                    getIWebLayer(appContext)
+                            .loadSync(ObjectWrapper.wrap(appContext),
+                                    ObjectWrapper.wrap(getOrCreateRemoteContext(appContext)));
+                }
                 onWebLayerReady();
                 return mWebLayer;
-            } catch (RemoteException e) {
+            } catch (Exception e) {
                 throw new APICallException(e);
             }
         }
@@ -350,53 +365,37 @@ public final class WebLayer {
         return getWebLayerLoader(appContext).getIWebLayer(appContext);
     }
 
-    @SuppressWarnings("NewApi")
-    static ClassLoader getOrCreateRemoteClassLoaderForChildProcess(Context appContext)
-            throws PackageManager.NameNotFoundException, ReflectiveOperationException {
-        if (sRemoteClassLoader != null) {
-            return sRemoteClassLoader;
-        }
-        if (getImplPackageName(appContext) == null && Process.isIsolated()
-                && Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
-            // In <= M, the WebView update service is not available in isolated processes. This
-            // causes a crash when trying to initialize WebView through the normal machinery, so we
-            // need to directly make the remote context here.
-            String packageName = (String) Class.forName("android.webkit.WebViewFactory")
-                                         .getMethod("getWebViewPackageName")
-                                         .invoke(null);
-            sRemoteClassLoader =
-                    appContext
-                            .createPackageContext(packageName,
-                                    Context.CONTEXT_IGNORE_SECURITY | Context.CONTEXT_INCLUDE_CODE)
-                            .getClassLoader();
-            return sRemoteClassLoader;
-        }
-        return getOrCreateRemoteClassLoader(appContext);
-    }
-
     /**
-     * Creates a ClassLoader for the remote (weblayer implementation) side.
+     * Creates a Context for the remote (weblayer implementation) side.
      */
-    static ClassLoader getOrCreateRemoteClassLoader(Context appContext)
+    static Context getOrCreateRemoteContext(Context appContext)
             throws PackageManager.NameNotFoundException, ReflectiveOperationException {
-        if (sRemoteClassLoader != null) {
-            return sRemoteClassLoader;
+        if (sRemoteContext != null) {
+            return sRemoteContext;
         }
+        Class<?> webViewFactoryClass = Class.forName("android.webkit.WebViewFactory");
         String implPackageName = getImplPackageName(appContext);
-        if (implPackageName == null) {
-            sRemoteClassLoader = createRemoteClassLoaderFromWebViewFactory(appContext);
+        if (implPackageName != null) {
+            sRemoteContext = createRemoteContextFromPackageName(appContext, implPackageName);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            Method getContext =
+                    webViewFactoryClass.getDeclaredMethod("getWebViewContextAndSetProvider");
+            getContext.setAccessible(true);
+            sRemoteContext = (Context) getContext.invoke(null);
         } else {
-            sRemoteClassLoader = createRemoteClassLoaderFromPackage(appContext, implPackageName);
+            implPackageName =
+                    (String) webViewFactoryClass.getMethod("getWebViewPackageName").invoke(null);
+            sRemoteContext = createRemoteContextFromPackageName(appContext, implPackageName);
         }
-        return sRemoteClassLoader;
+        return sRemoteContext;
     }
 
     /**
-     * Creates a ClassLoader for the remote (weblayer implementation) side
+     * Creates a Context for the remote (weblayer implementation) side
      * using a specified package name as the implementation. This is only
      * intended for testing, not production use.
      */
-    private static ClassLoader createRemoteClassLoaderFromPackage(
+    private static Context createRemoteContextFromPackageName(
             Context appContext, String implPackageName)
             throws PackageManager.NameNotFoundException, ReflectiveOperationException {
         // Load the code for the target package.
@@ -414,34 +413,7 @@ public final class WebLayer {
         sPackageInfo.setAccessible(true);
         sPackageInfo.set(null, implPackageInfo);
 
-        return remoteContext.getClassLoader();
-    }
-
-    /**
-     * Creates a ClassLoader for the remote (weblayer implementation) side
-     * using WebViewFactory to load the current WebView implementation.
-     */
-    private static ClassLoader createRemoteClassLoaderFromWebViewFactory(Context appContext)
-            throws ReflectiveOperationException {
-        Class<?> webViewFactory = Class.forName("android.webkit.WebViewFactory");
-        Class<?> providerClass;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            // In M+ this method loads the native library and the Java code, and adds the assets
-            // to the app.
-            Method getProviderClass = webViewFactory.getDeclaredMethod("getProviderClass");
-            getProviderClass.setAccessible(true);
-            providerClass = (Class) getProviderClass.invoke(null);
-        } else {
-            // In L we have to load the native library separately first.
-            Method loadNativeLibrary = webViewFactory.getDeclaredMethod("loadNativeLibrary");
-            loadNativeLibrary.setAccessible(true);
-            loadNativeLibrary.invoke(null);
-            // In L the method had a different name but still adds the assets to the app.
-            Method getFactoryClass = webViewFactory.getDeclaredMethod("getFactoryClass");
-            getFactoryClass.setAccessible(true);
-            providerClass = (Class) getFactoryClass.invoke(null);
-        }
-        return providerClass.getClassLoader();
+        return remoteContext;
     }
 
     private static String sanitizeProfileName(String profileName) {

@@ -134,10 +134,17 @@ public final class CrashReporterController {
             return this;
         }
         try {
-            mImpl = WebLayer.getIWebLayer(appContext)
-                            .getCrashReporterController(ObjectWrapper.wrap(appContext));
+            if (WebLayer.getSupportedMajorVersion(appContext) < 81) {
+                mImpl = WebLayer.getIWebLayer(appContext)
+                                .getCrashReporterControllerV80(ObjectWrapper.wrap(appContext));
+            } else {
+                mImpl = WebLayer.getIWebLayer(appContext)
+                                .getCrashReporterController(ObjectWrapper.wrap(appContext),
+                                        ObjectWrapper.wrap(
+                                                WebLayer.getOrCreateRemoteContext(appContext)));
+            }
             mImpl.setClient(new CrashReporterControllerClientImpl());
-        } catch (RemoteException e) {
+        } catch (Exception e) {
             throw new APICallException(e);
         }
         return this;

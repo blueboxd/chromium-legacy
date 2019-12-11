@@ -47,32 +47,23 @@ class WeeklyActivityStorage {
   // Returns whether the given |week_number| has data, based on whether
   // InitData has ever been called for that week.
   bool HasData(int week_number);
-  // Clears the click and impression counters for the given |week_number|.
-  void ClearData(int week_number);
 
-  // Reads and returns the value keyed by |storage_bucket|.
-  // If there is no stored value associated with the given bucket then 0 is
-  // returned.
-  virtual int ReadStorage(std::string storage_bucket) = 0;
-  // Overwrites the |value| to the storage bucket keyed by |storage_bucket|,
-  // regardless of whether there is an existing value in the given bucket.
-  virtual void WriteStorage(std::string storage_bucket, int value) = 0;
+  // Reads and returns values from persistent storage.
+  // If there is no stored value then 0 is returned.
+  virtual int ReadClicksForWeekRemainder(int week_remainder) = 0;
+  virtual int ReadImpressionsForWeekRemainder(int week_remainder) = 0;
+  virtual int ReadOldestWeekWritten() = 0;
+  virtual int ReadNewestWeekWritten() = 0;
+  // Writes values to persistent storage.
+  virtual void WriteClicksForWeekRemainder(int week_remainder, int value) = 0;
+  virtual void WriteImpressionsForWeekRemainder(int week_remainder,
+                                                int value) = 0;
+  virtual void WriteOldestWeekWritten(int value) = 0;
+  virtual void WriteNewestWeekWritten(int value) = 0;
 
  private:
-  // Returns the string key of the storage bin for the given week |which_week|.
-  std::string GetWeekKey(int which_week);
-  // Returns the string key for the "clicks" storage bin for the given week
-  // |which_week|.
-  std::string GetWeekClicksKey(int which_week);
-  // Returns the string key for the "impressions" storage bin for the given week
-  // |which_week|.
-  std::string GetWeekImpressionsKey(int which_week);
-
-  // Reads and returns the integer keyed by |storage_key|.
-  // If there is no value for the given key then 0 is returned.
-  int ReadInt(std::string storage_key);
-  // Writes the integer |value| to the storage bucket keyed by |storage_key|.
-  void WriteInt(std::string storage_key, int value);
+  // Returns the key to bin information about the given week |which_week|.
+  int GetWeekRemainder(int which_week);
 
   // Ensures that activity data is initialized for the given week |which_week|.
   void EnsureHasActivity(int which_week);

@@ -109,16 +109,6 @@ CanvasStyle::CanvasStyle(CanvasGradient* gradient)
 CanvasStyle::CanvasStyle(CanvasPattern* pattern)
     : type_(kImagePattern), pattern_(pattern) {}
 
-CanvasStyle* CanvasStyle::CreateFromGradient(CanvasGradient* gradient) {
-  DCHECK(gradient);
-  return MakeGarbageCollected<CanvasStyle>(gradient);
-}
-
-CanvasStyle* CanvasStyle::CreateFromPattern(CanvasPattern* pattern) {
-  DCHECK(pattern);
-  return MakeGarbageCollected<CanvasStyle>(pattern);
-}
-
 void CanvasStyle::ApplyToFlags(PaintFlags& flags) const {
   switch (type_) {
     case kColorRGBA:

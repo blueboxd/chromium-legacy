@@ -309,7 +309,8 @@ Polymer({
    * @private
    */
   isTerminated_: function() {
-    return this.data.state == chrome.developerPrivate.ExtensionState.TERMINATED;
+    return this.data.state ===
+        chrome.developerPrivate.ExtensionState.TERMINATED;
   },
 
   /**
@@ -355,8 +356,8 @@ Polymer({
     }
 
     const sourceType = getItemSource(this.data);
-    return sourceType == SourceType.WEBSTORE ? '' :
-                                               getItemSourceString(sourceType);
+    return sourceType === SourceType.WEBSTORE ? '' :
+                                                getItemSourceString(sourceType);
   },
 
   /**
@@ -364,7 +365,7 @@ Polymer({
    * @private
    */
   computeInspectViewsHidden_: function() {
-    return !this.data.views || this.data.views.length == 0;
+    return !this.data.views || this.data.views.length === 0;
   },
 
   /**
@@ -408,8 +409,8 @@ Polymer({
     // enabled. There's no point in reloading a disabled extension, and we'll
     // show a crashed reload button if it's terminated.
     const showIcon =
-        this.data.location == chrome.developerPrivate.Location.UNPACKED &&
-        this.data.state == chrome.developerPrivate.ExtensionState.ENABLED;
+        this.data.location === chrome.developerPrivate.Location.UNPACKED &&
+        this.data.state === chrome.developerPrivate.ExtensionState.ENABLED;
     return !showIcon;
   },
 

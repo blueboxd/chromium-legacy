@@ -133,7 +133,13 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
   // Record the current autoplay metrics.
   void RecordAutoplayMetrics();
 
+  // Called when the context is being closed to stop rendering audio and clean
+  // up handlers.
   void StopRendering();
+
+  // Called when suspending the context to stop reundering audio, but don't
+  // clean up handlers because we expect to be resuming where we left off.
+  void SuspendRendering();
 
   void DidClose();
 

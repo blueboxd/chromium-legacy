@@ -8,6 +8,7 @@
  * This file can be removed when upstreamed to the closure compiler.
  */
 
+/** @interface */
 class FileSystemWriter {
   /**
    * @param {number} position
@@ -26,6 +27,7 @@ class FileSystemWriter {
 /** @typedef {{writable: boolean}} */
 var FileSystemHandlePermissionDescriptor;
 
+/** @interface */
 class FileSystemHandle {
   constructor() {
     /** @type {boolean} */
@@ -54,17 +56,19 @@ class FileSystemHandle {
 /** @typedef {{keepExistingData: boolean}} */
 var FileSystemCreateWriterOptions;
 
+/** @interface */
 class FileSystemFileHandle extends FileSystemHandle {
   /**
-   * @param {?FileSystemCreateWriterOptions} opt_options
-   * @return {Promise<FileSystemWriter>}
+   * @param {FileSystemCreateWriterOptions=} options
+   * @return {Promise<!FileSystemWriter>}
    */
-  createWriter(opt_options) {}
+  createWriter(options) {}
 
-  /** @return {Promise<File>} */
+  /** @return {Promise<!File>} */
   getFile() {}
 }
 
+/** @interface */
 class LaunchParams {
   constructor() {
     /** @type{Array<FileSystemHandle>} */
@@ -75,9 +79,10 @@ class LaunchParams {
   }
 }
 
-/** @typedef function(LaunchParams) */
+/** @typedef {function(LaunchParams)} */
 var LaunchConsumer;
 
+/** @interface */
 class LaunchQueue {
   /** @param{LaunchConsumer} consumer */
   setConsumer(consumer) {}

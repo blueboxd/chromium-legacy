@@ -10,7 +10,7 @@ import android.widget.Button;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.chrome.browser.download.ExploreOfflineStatusProvider;
 import org.chromium.net.NetworkChangeNotifier;
 
 /**
@@ -18,10 +18,10 @@ import org.chromium.net.NetworkChangeNotifier;
  * responsible for inflating the card layout and displaying the card based on network connectivity.
  */
 public class ExploreOfflineCard {
+    private static boolean sCardDismissed;
     private final View mRootView;
     private final Runnable mOpenDownloadHomeCallback;
     private NetworkChangeNotifier.ConnectionTypeObserver mConnectionTypeObserver;
-    private boolean mCardDismissed;
 
     /**
      * Constructor.
@@ -32,7 +32,7 @@ public class ExploreOfflineCard {
         mRootView = rootView;
         mOpenDownloadHomeCallback = openDownloadHomeCallback;
 
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.OFFLINE_HOME)) return;
+        if (!isFeatureEnabled()) return;
         setCardViewVisibility();
         mConnectionTypeObserver = connectionType -> {
             setCardViewVisibility();
@@ -47,7 +47,7 @@ public class ExploreOfflineCard {
     }
 
     private void setCardViewVisibility() {
-        boolean isVisible = !mCardDismissed && DownloadUtils.shouldShowOfflineHome();
+        boolean isVisible = !sCardDismissed && shouldShowExploreOfflineMessage();
         View cardView = mRootView.findViewById(R.id.explore_offline_card);
 
         if (cardView == null) {
@@ -64,14 +64,24 @@ public class ExploreOfflineCard {
         Button cancelButton = cardView.findViewById(R.id.button_secondary);
 
         confirmButton.setOnClickListener(v -> {
-            mCardDismissed = true;
+            sCardDismissed = true;
             setCardViewVisibility();
             mOpenDownloadHomeCallback.run();
         });
         cancelButton.setOnClickListener(v -> {
-            mCardDismissed = true;
+            sCardDismissed = true;
             setCardViewVisibility();
         });
         return cardView;
+    }
+
+    private static boolean shouldShowExploreOfflineMessage() {
+        return isFeatureEnabled() && NetworkChangeNotifier.isInitialized()
+                && !NetworkChangeNotifier.isOnline()
+                && ExploreOfflineStatusProvider.getInstance().isPrefetchContentAvailable();
+    }
+
+    private static boolean isFeatureEnabled() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.OFFLINE_HOME);
     }
 }

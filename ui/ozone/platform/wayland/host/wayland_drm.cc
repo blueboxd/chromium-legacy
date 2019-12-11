@@ -9,7 +9,7 @@
 
 #include "base/files/scoped_file.h"
 #include "ui/gfx/buffer_format_util.h"
-#include "ui/ozone/common/linux/drm_util_linux.h"
+#include "ui/gfx/linux/drm_util_linux.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_drm.h"
 

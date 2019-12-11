@@ -754,6 +754,12 @@ FilePath MakeLongFilePath(const FilePath& input) {
   return FilePath(path_long_str);
 }
 
+bool CreateWinHardLink(const FilePath& to_file, const FilePath& from_file) {
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
+  return ::CreateHardLink(to_file.value().c_str(), from_file.value().c_str(),
+                          nullptr);
+}
+
 // TODO(rkc): Work out if we want to handle NTFS junctions here or not, handle
 // them if we do decide to.
 bool IsLink(const FilePath& file_path) {

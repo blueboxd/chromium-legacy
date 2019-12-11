@@ -663,6 +663,13 @@ void AppListControllerImpl::OnOverviewModeEnded() {
 }
 
 void AppListControllerImpl::OnTabletModeStarted() {
+  const AppListView* app_list_view = presenter_.GetView();
+  // In tablet mode shelf orientation is always "bottom". Dismiss app list if
+  // switching to tablet mode from side shelf app list, to ensure the app list
+  // is re-shown and laid out with correct "side shelf" value.
+  if (app_list_view && app_list_view->is_side_shelf())
+    DismissAppList();
+
   presenter_.OnTabletModeChanged(true);
 
   // Show the app list if the tablet mode starts.
@@ -1334,7 +1341,7 @@ gfx::Rect AppListControllerImpl::SnapBoundsToDisplayEdge(
   return screen_util::SnapBoundsToDisplayEdge(bounds, window);
 }
 
-int AppListControllerImpl::GetShelfHeight() {
+int AppListControllerImpl::GetShelfSize() {
   return ShelfConfig::Get()->system_shelf_size();
 }
 

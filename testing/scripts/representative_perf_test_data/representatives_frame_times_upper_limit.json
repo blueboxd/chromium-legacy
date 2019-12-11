@@ -20,10 +20,6 @@
       "ci_095": 3.976,
       "avg": 19.575
     },
-    "css_animations_simultaneous_inline_style": {
-      "ci_095": 0.774,
-      "avg": 21.192
-    },
     "aquarium_20k": {
       "ci_095": 3.731,
       "avg": 129.946
@@ -59,13 +55,13 @@
     "many_planets_deep": {
       "ci_095": 0.127,
       "avg": 16.678
+    },
+    "main_30fps_impl_60fps": {
+      "ci_095": 0.1,
+      "avg": 16.7
     }
   },
   "mac": {
-    "mix_blend_mode_animation_screen": {
-      "ci_095": 2.861,
-      "avg": 102.359
-    },
     "twitch_2018": {
       "ci_095": 13.965,
       "avg": 28.108
@@ -94,17 +90,9 @@
       "ci_095": 0.544,
       "avg": 16.936
     },
-    "web_animation_value_type_transform_simple": {
-      "ci_095": 2.185,
-      "avg": 50.459
-    },
     "canvas_05000_pixels_per_second": {
       "ci_095": 0.324,
       "avg": 16.684
-    },
-    "bouncing_clipped_rectangles": {
-      "ci_095": 128.12,
-      "avg": 596.153
     },
     "ie_chalkboard": {
       "ci_095": 41.361,
@@ -118,20 +106,12 @@
       "ci_095": 0.42,
       "avg": 16.732
     },
-    "extra_large_texture_uploads": {
-      "ci_095": 2.274,
-      "avg": 60.959
-    },
-    "css_value_type_filter": {
-      "ci_095": 1.667,
-      "avg": 89.362
+    "main_30fps_impl_60fps": {
+      "ci_095": 0.2,
+      "avg": 16.7
     }
   },
   "android": {
-    "mix_blend_mode_animation_screen": {
-      "ci_095": 226.118,
-      "avg": 629.962
-    },
     "text_10000_pixels_per_second": {
       "ci_095": 0.653,
       "avg": 16.812
@@ -148,10 +128,6 @@
       "ci_095": 8.037,
       "avg": 67.986
     },
-    "twitch_2018": {
-      "ci_095": 10.816,
-      "avg": 21.09
-    },
     "motion_mark_canvas_fill_shapes": {
       "ci_095": 74.393,
       "avg": 240.943
@@ -160,21 +136,9 @@
       "ci_095": 33.919,
       "avg": 382.617
     },
-    "animometer_webgl_attrib_arrays": {
-      "ci_095": 122.988,
-      "avg": 412.67
-    },
     "canvas_05000_pixels_per_second": {
       "ci_095": 0.4,
       "avg": 16.77
-    },
-    "bouncing_clipped_rectangles": {
-      "ci_095": 85.547,
-      "avg": 394.492
-    },
-    "ie_chalkboard": {
-      "ci_095": 1283.402,
-      "avg": 1382.753
     },
     "new_tilings": {
       "ci_095": 1.657,
@@ -184,13 +148,9 @@
       "ci_095": 48.798,
       "avg": 352.437
     },
-    "web_animation_value_type_transform_simple": {
-      "ci_095": 51.563,
-      "avg": 484.022
-    },
-    "css_value_type_filter": {
-      "ci_095": 167.231,
-      "avg": 575.907
+    "main_30fps_impl_60fps": {
+      "ci_095": 1.0,
+      "avg": 16.9
     }
   }
 }

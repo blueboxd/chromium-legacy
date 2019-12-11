@@ -593,7 +593,7 @@
 <translation id="1910704279188129272">Permite establecer restricciones de uso según la app.
         Se pueden aplicar restricciones de uso a las apps instaladas en <ph name="PRODUCT_OS_NAME" /> para un usuario determinado.
         Las restricciones se deben especificar en la lista |app_limits|. Solo se permite una entrada por app. Las apps que no se incluyan en la lista no tendrán restricciones.
-        Si no es posible bloquear apps que son fundamentales para el funcionamiento del sistema operativo, se ignorarán las restricciones para estas apps.
+        No es posible bloquear apps que son fundamentales para el funcionamiento del sistema operativo; se ignorarán las restricciones que se especifiquen para estas apps.
         La app se identifica unívocamente por su |app_id|. Dado que distintos tipos de apps pueden usar formatos de identificación diferentes, debe especificarse |app_type| junto a |app_id|.
         Actualmente, los límites de tiempo por app solo admiten las apps |ARC|. Se usa el nombre del paquete de Android como |app_id|.
         En el futuro se admitirán otros tipos de apps; por el momento se pueden especificar en la política, aunque las restricciones no tendrán efecto.

@@ -1454,6 +1454,9 @@ extern const char kChromeDuetDescription[];
 extern const char kChromeDuetLabelsName[];
 extern const char kChromeDuetLabelsDescription[];
 
+extern const char kChromeShareScreenshotName[];
+extern const char kChromeShareScreenshotDescription[];
+
 extern const char kChromeSharingHubName[];
 extern const char kChromeSharingHubDescription[];
 

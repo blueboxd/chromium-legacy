@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/skia/include/effects/SkDashPathEffect.h"
 #include "third_party/skia/include/effects/SkDropShadowImageFilter.h"
 
@@ -35,8 +36,8 @@ namespace blink {
 
 CanvasRenderingContext2DState::CanvasRenderingContext2DState()
     : unrealized_save_count_(0),
-      stroke_style_(CanvasStyle::CreateFromRGBA(SK_ColorBLACK)),
-      fill_style_(CanvasStyle::CreateFromRGBA(SK_ColorBLACK)),
+      stroke_style_(MakeGarbageCollected<CanvasStyle>(SK_ColorBLACK)),
+      fill_style_(MakeGarbageCollected<CanvasStyle>(SK_ColorBLACK)),
       shadow_blur_(0),
       shadow_color_(Color::kTransparent),
       global_alpha_(1),

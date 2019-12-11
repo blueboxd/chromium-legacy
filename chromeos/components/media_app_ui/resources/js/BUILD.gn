@@ -25,6 +25,5 @@ js_library("launch") {
 }
 
 js_library("receiver") {
-  externs_list =
-      [ "//chromeos/components/media_app_ui/resources/js/media_app.externs.js" ]
+  externs_list = [ "media_app.externs.js" ]
 }

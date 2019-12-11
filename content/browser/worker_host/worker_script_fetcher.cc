@@ -5,7 +5,6 @@
 #include "content/browser/worker_host/worker_script_fetcher.h"
 
 #include "base/feature_list.h"
-#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/worker_host/worker_script_fetch_initiator.h"
 #include "content/browser/worker_host/worker_script_loader.h"
 #include "content/browser/worker_host/worker_script_loader_factory.h"
@@ -91,9 +90,9 @@ void WorkerScriptFetcher::Start(
   // workers (https://crbug.com/906991).
   int32_t routing_id = MSG_ROUTING_NONE;
 
-  // Use NavigationURLLoaderImpl to get a unique request id across
-  // browser-initiated navigations and worker script fetch.
-  int request_id = NavigationURLLoaderImpl::MakeGlobalRequestID().request_id;
+  // Get a unique request id across browser-initiated navigations and navigation
+  // preloads.
+  int request_id = GlobalRequestID::MakeBrowserInitiated().request_id;
 
   url_loader_ = blink::ThrottlingURLLoader::CreateLoaderAndStart(
       std::move(shared_url_loader_factory), std::move(throttles), routing_id,

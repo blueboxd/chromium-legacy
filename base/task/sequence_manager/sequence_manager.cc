@@ -50,14 +50,6 @@ SequenceManager::Settings::Builder::SetAddQueueTimeToTasks(
   return *this;
 }
 
-SequenceManager::Settings::Builder&
-SequenceManager::Settings::Builder::SetAntiStarvationLogicForPrioritiesDisabled(
-    bool anti_starvation_logic_for_priorities_disabled_val) {
-  settings_.anti_starvation_logic_for_priorities_disabled =
-      anti_starvation_logic_for_priorities_disabled_val;
-  return *this;
-}
-
 #if DCHECK_IS_ON()
 
 SequenceManager::Settings::Builder&

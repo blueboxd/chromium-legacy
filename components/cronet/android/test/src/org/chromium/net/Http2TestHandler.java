@@ -48,6 +48,7 @@ public final class Http2TestHandler extends Http2ConnectionHandler implements Ht
     public static final String SERVE_SIMPLE_BROTLI_RESPONSE = "/simplebrotli";
     public static final String REPORTING_COLLECTOR_PATH = "/reporting-collector";
     public static final String SUCCESS_WITH_NEL_HEADERS_PATH = "/success-with-nel";
+    public static final String COMBINED_HEADERS_PATH = "/combinedheaders";
 
     private static final String TAG = Http2TestHandler.class.getSimpleName();
     private static final Http2FrameLogger sLogger =
@@ -140,6 +141,22 @@ public final class Http2TestHandler extends Http2ConnectionHandler implements Ht
             encoder().writeData(ctx, streamId, data.retain(), 0, endOfStream, ctx.newPromise());
             ctx.flush();
             return processed;
+        }
+    }
+
+    private class CombinedHeadersResponder extends RequestResponder {
+        @Override
+        void onHeadersRead(ChannelHandlerContext ctx, int streamId, boolean endOfStream,
+                Http2Headers headers) {
+            ByteBuf content = ctx.alloc().buffer();
+            ByteBufUtil.writeAscii(content, "GET");
+            Http2Headers responseHeaders = new DefaultHttp2Headers().status(OK.codeAsText());
+            // Upon receiving, the following two headers will be jointed by '\0'.
+            responseHeaders.add("foo", "bar");
+            responseHeaders.add("foo", "bar2");
+            encoder().writeHeaders(ctx, streamId, responseHeaders, 0, false, ctx.newPromise());
+            encoder().writeData(ctx, streamId, content, 0, true, ctx.newPromise());
+            ctx.flush();
         }
     }
 
@@ -351,6 +368,8 @@ public final class Http2TestHandler extends Http2ConnectionHandler implements Ht
             responder = new ReportingCollectorResponder();
         } else if (path.startsWith(SUCCESS_WITH_NEL_HEADERS_PATH)) {
             responder = new SuccessWithNELHeadersResponder();
+        } else if (path.startsWith(COMBINED_HEADERS_PATH)) {
+            responder = new CombinedHeadersResponder();
         } else {
             responder = new RequestResponder();
         }

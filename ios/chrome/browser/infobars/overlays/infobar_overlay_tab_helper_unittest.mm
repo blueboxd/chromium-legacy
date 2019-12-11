@@ -10,10 +10,10 @@
 #include "components/infobars/core/infobar_delegate.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_banner_overlay_request_factory.h"
+#include "ios/chrome/browser/infobars/test/fake_infobar_delegate.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #include "ios/chrome/browser/overlays/test/fake_overlay_user_data.h"
-#import "ios/chrome/browser/ui/infobars/test_infobar_delegate.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,9 +28,6 @@ using infobars::InfoBarDelegate;
 using infobars::InfoBarManager;
 
 namespace {
-// Message for the fake InfoBar.
-NSString* const kFakeInfoBarMessage = @"Fake Message";
-
 // The pointer value stored in FakeOverlayRequestUserData used to configure
 // banner OverlayRequests created for InfoBars using a fake InfoBarDelegate with
 // kFakeInfoBarMessage.
@@ -82,10 +79,8 @@ class InfobarOverlayTabHelperTest : public PlatformTest {
 // Tests that adding an InfoBar to the manager creates a fake banner request.
 TEST_F(InfobarOverlayTabHelperTest, AddInfoBar) {
   ASSERT_FALSE(front_request());
-  std::unique_ptr<InfoBarDelegate> delegate =
-      std::make_unique<TestInfoBarDelegate>(kFakeInfoBarMessage);
   std::unique_ptr<InfoBar> infobar =
-      std::make_unique<InfoBar>(std::move(delegate));
+      std::make_unique<InfoBar>(std::make_unique<FakeInfobarDelegate>());
   manager()->AddInfoBar(std::move(infobar));
   ASSERT_TRUE(front_request());
 }

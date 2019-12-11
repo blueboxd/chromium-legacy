@@ -45,6 +45,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
 
   // ActionableView:
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
 

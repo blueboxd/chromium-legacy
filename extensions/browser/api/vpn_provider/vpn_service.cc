@@ -163,14 +163,14 @@ class VpnService::VpnServiceProxyImpl : public content::VpnServiceProxy {
   void Bind(const std::string& extension_id,
             const std::string& configuration_id,
             const std::string& configuration_name,
-            const SuccessCallback& success,
-            const FailureCallback& failure,
+            SuccessOnceCallback success,
+            FailureOnceCallback failure,
             std::unique_ptr<content::PepperVpnProviderResourceHostProxy>
                 pepper_vpn_provider_proxy) override;
   void SendPacket(const std::string& extension_id,
                   const std::vector<char>& data,
-                  const SuccessCallback& success,
-                  const FailureCallback& failure) override;
+                  SuccessOnceCallback success,
+                  FailureOnceCallback failure) override;
 
  private:
   base::WeakPtr<VpnService> vpn_service_;
@@ -186,8 +186,8 @@ void VpnService::VpnServiceProxyImpl::Bind(
     const std::string& extension_id,
     const std::string& configuration_id,
     const std::string& configuration_name,
-    const SuccessCallback& success,
-    const FailureCallback& failure,
+    SuccessOnceCallback success,
+    FailureOnceCallback failure,
     std::unique_ptr<content::PepperVpnProviderResourceHostProxy>
         pepper_vpn_provider_proxy) {
   if (!vpn_service_) {
@@ -196,20 +196,22 @@ void VpnService::VpnServiceProxyImpl::Bind(
   }
 
   vpn_service_->Bind(extension_id, configuration_id, configuration_name,
-                     success, failure, std::move(pepper_vpn_provider_proxy));
+                     std::move(success), std::move(failure),
+                     std::move(pepper_vpn_provider_proxy));
 }
 
 void VpnService::VpnServiceProxyImpl::SendPacket(
     const std::string& extension_id,
     const std::vector<char>& data,
-    const SuccessCallback& success,
-    const FailureCallback& failure) {
+    SuccessOnceCallback success,
+    FailureOnceCallback failure) {
   if (!vpn_service_) {
     NOTREACHED();
     return;
   }
 
-  vpn_service_->SendPacket(extension_id, data, success, failure);
+  vpn_service_->SendPacket(extension_id, data, std::move(success),
+                           std::move(failure));
 }
 
 VpnService::VpnService(
@@ -452,20 +454,21 @@ void VpnService::SetParameters(const std::string& extension_id,
 
 void VpnService::SendPacket(const std::string& extension_id,
                             const std::vector<char>& data,
-                            const SuccessCallback& success,
-                            const FailureCallback& failure) {
+                            SuccessOnceCallback success,
+                            FailureOnceCallback failure) {
   if (!DoesActiveConfigurationExistAndIsAccessAuthorized(extension_id)) {
-    failure.Run(std::string(), std::string("Unauthorized access."));
+    std::move(failure).Run(std::string(), std::string("Unauthorized access."));
     return;
   }
 
   if (data.empty()) {
-    failure.Run(std::string(), std::string("Can't send an empty packet."));
+    std::move(failure).Run(std::string(),
+                           std::string("Can't send an empty packet."));
     return;
   }
 
-  shill_client_->SendPacket(active_configuration_->object_path(), data, success,
-                            failure);
+  shill_client_->SendPacket(active_configuration_->object_path(), data,
+                            std::move(success), std::move(failure));
 }
 
 void VpnService::NotifyConnectionStateChanged(const std::string& extension_id,
@@ -628,44 +631,46 @@ void VpnService::Bind(
     const std::string& extension_id,
     const std::string& configuration_id,
     const std::string& configuration_name,
-    const SuccessCallback& success,
-    const FailureCallback& failure,
+    SuccessOnceCallback success,
+    FailureOnceCallback failure,
     std::unique_ptr<content::PepperVpnProviderResourceHostProxy>
         pepper_vpn_provider_proxy) {
   // The ID is the configuration name for now. This may change in the future.
   const std::string key = GetKey(extension_id, configuration_id);
   if (!base::Contains(key_to_configuration_map_, key)) {
-    failure.Run(std::string(),
-                std::string("Unauthorized access. "
-                            "The configuration does not exist."));
+    std::move(failure).Run(std::string(),
+                           std::string("Unauthorized access. "
+                                       "The configuration does not exist."));
     return;
   }
 
   VpnConfiguration* configuration = key_to_configuration_map_[key].get();
   if (active_configuration_ != configuration) {
-    failure.Run(std::string(), std::string("Unauthorized access. "
-                                           "The configuration is not active."));
+    std::move(failure).Run(std::string(),
+                           std::string("Unauthorized access. "
+                                       "The configuration is not active."));
     return;
   }
 
   if (configuration->extension_id() != extension_id ||
       configuration->configuration_name() != configuration_name) {
-    failure.Run(std::string(),
-                std::string("Unauthorized access. "
-                            "Configuration name or extension ID mismatch."));
+    std::move(failure).Run(
+        std::string(),
+        std::string("Unauthorized access. "
+                    "Configuration name or extension ID mismatch."));
     return;
   }
 
   const std::string service_path = configuration->service_path();
   if (service_path.empty()) {
-    failure.Run(std::string(), std::string("Pending create."));
+    std::move(failure).Run(std::string(), std::string("Pending create."));
     return;
   }
 
   // Connection authorized. All packets will be routed through the Pepper API.
   configuration->set_pepper_proxy(std::move(pepper_vpn_provider_proxy));
 
-  success.Run();
+  std::move(success).Run();
 }
 
 std::unique_ptr<content::VpnServiceProxy> VpnService::GetVpnServiceProxy() {

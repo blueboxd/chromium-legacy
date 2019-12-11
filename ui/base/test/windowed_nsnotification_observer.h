@@ -19,9 +19,9 @@ class RunLoop;
 // calls to init and wait will be caught.
 @interface WindowedNSNotificationObserver : NSObject {
  @private
-  base::scoped_nsobject<NSString> bundleId_;
-  int notificationCount_;
-  base::RunLoop* runLoop_;
+  base::scoped_nsobject<NSString> _bundleId;
+  int _notificationCount;
+  base::RunLoop* _runLoop;
 }
 
 @property(readonly, nonatomic) int notificationCount;

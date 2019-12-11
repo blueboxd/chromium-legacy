@@ -36,8 +36,8 @@ export let PageState;
  * @return {boolean} Whether a and b are equal.
  */
 function isPageStateEqual(a, b) {
-  return a.page == b.page && a.subpage == b.subpage &&
-      a.extensionId == b.extensionId;
+  return a.page === b.page && a.subpage === b.subpage &&
+      a.extensionId === b.extensionId;
 }
 
 /**
@@ -82,8 +82,8 @@ export class NavigationHelper {
    * @private
    */
   processRoute_() {
-    if (this.currentPath_ == '/configureCommands' ||
-        this.currentPath_ == '/shortcuts') {
+    if (this.currentPath_ === '/configureCommands' ||
+        this.currentPath_ === '/shortcuts') {
       window.history.replaceState(
           undefined /* stateObject */, '', '/shortcuts');
     } else if (this.currentPath_ !== '/') {
@@ -114,7 +114,7 @@ export class NavigationHelper {
       return {page: Page.ERRORS, extensionId: id};
     }
 
-    if (this.currentPath_ == '/shortcuts') {
+    if (this.currentPath_ === '/shortcuts') {
       return {page: Page.SHORTCUTS};
     }
 
@@ -195,7 +195,7 @@ export class NavigationHelper {
         break;
       case Page.DETAILS:
         if (entry.subpage) {
-          assert(entry.subpage == Dialog.OPTIONS);
+          assert(entry.subpage === Dialog.OPTIONS);
           path = '/?options=' + entry.extensionId;
         } else {
           path = '/?id=' + entry.extensionId;
@@ -211,8 +211,8 @@ export class NavigationHelper {
     assert(path);
     const state = {url: path};
     const currentPage = this.getCurrentPage();
-    const isDialogNavigation = currentPage.page == entry.page &&
-        currentPage.extensionId == entry.extensionId;
+    const isDialogNavigation = currentPage.page === entry.page &&
+        currentPage.extensionId === entry.extensionId;
     // Navigating to a dialog doesn't visually change pages; it just opens
     // a dialog. As such, we replace state rather than pushing a new state
     // on the stack so that hitting the back button doesn't just toggle the

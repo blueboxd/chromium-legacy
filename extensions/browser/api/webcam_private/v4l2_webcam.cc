@@ -14,6 +14,7 @@
 
 #include "base/posix/eintr_wrapper.h"
 #include "base/stl_util.h"
+#include "base/logging.h"
 
 #define V4L2_CID_PAN_SPEED (V4L2_CID_CAMERA_CLASS_BASE+32)
 #define V4L2_CID_TILT_SPEED (V4L2_CID_CAMERA_CLASS_BASE+33)
@@ -40,7 +41,9 @@
 
 namespace {
 const int kLogitechMenuIndexGoHome = 2;
+const int kLogitechMenuIndexSetHome = 0;
 const int kAverMenuIndexGoHome = 1;
+const int kAverMenuIndexSetHome = 0;
 
 const uvc_menu_info kLogitechCmdMenu[] = {
   {1, "Set Preset"}, {2, "Get Preset"}, {3, "Go Home"}
@@ -285,6 +288,31 @@ void V4L2Webcam::SetTiltDirection(TiltDirection direction,
   }
   callback.Run(
       SetWebcamParameter(fd_.get(), V4L2_CID_TILT_SPEED, direction_value));
+}
+
+void V4L2Webcam::SetHome(const SetPTZCompleteCallback& callback) {
+  if (EnsureLogitechCommandsMapped()) {
+    if (!SetWebcamParameter(fd_.get(), V4L2_CID_PANTILT_CMD,
+                            kLogitechMenuIndexSetHome)) {
+      LOG(WARNING) << "Failed to set HOME preset for Logitech webcam";
+      callback.Run(false);
+      return;
+    }
+    callback.Run(true);
+    return;
+  }
+  if (EnsureAverCommandsMapped()) {
+    if (!SetWebcamParameter(fd_.get(), V4L2_CID_PANTILT_CMD,
+                            kAverMenuIndexSetHome)) {
+      LOG(WARNING) << "Failed to set HOME preset for AVer CAM webcam";
+      callback.Run(false);
+      return;
+    }
+    callback.Run(true);
+    return;
+  }
+  LOG(WARNING) << "Active webcam does not currently support seting HOME preset";
+  callback.Run(false);
 }
 
 void V4L2Webcam::Reset(bool pan,

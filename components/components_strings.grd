@@ -6,6 +6,9 @@
     <output filename="grit/components_strings.h" type="rc_header">
       <emit emit_type='prepend'></emit>
     </output>
+    <if expr="is_android">
+      <output filename="components_strings_af.pak" type="data_package" lang="af" />
+    </if>
     <output filename="components_strings_am.pak" type="data_package" lang="am" />
     <output filename="components_strings_ar.pak" type="data_package" lang="ar" />
     <output filename="components_strings_bg.pak" type="data_package" lang="bg" />
@@ -78,6 +81,7 @@
     <!-- On Android, output some strings into Android's xml string format.
          These strings are tagged with formatter_data="android_java" -->
     <if expr="is_android">
+      <output filename="java/res/values-af/components_strings.xml" lang="af" type="android" context="android_java" />
       <output filename="java/res/values-am/components_strings.xml" lang="am" type="android" context="android_java" />
       <output filename="java/res/values-ar/components_strings.xml" lang="ar" type="android" context="android_java" />
       <output filename="java/res/values-bg/components_strings.xml" lang="bg" type="android" context="android_java" />

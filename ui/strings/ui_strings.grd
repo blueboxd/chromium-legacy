@@ -16,6 +16,9 @@ need to be translated for each locale.-->
     <output filename="grit/ui_strings.h" type="rc_header">
       <emit emit_type='prepend'></emit>
     </output>
+    <if expr="is_android">
+      <output filename="ui_strings_af.pak" type="data_package" lang="af" />
+    </if>
     <output filename="ui_strings_am.pak" type="data_package" lang="am" />
     <output filename="ui_strings_ar.pak" type="data_package" lang="ar" />
     <output filename="ui_strings_bg.pak" type="data_package" lang="bg" />

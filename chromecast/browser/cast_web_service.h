@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -20,6 +21,7 @@ class SequencedTaskRunner;
 
 namespace content {
 class BrowserContext;
+class StoragePartition;
 }  // namespace content
 
 namespace chromecast {
@@ -49,6 +51,12 @@ class CastWebService {
 
   std::unique_ptr<CastContentWindow> CreateWindow(
       const CastContentWindow::CreateParams& params);
+
+  void FlushDomLocalStorage();
+
+  // |callback| is called when data deletion is done or at least the deletion
+  // is scheduled.
+  void ClearLocalStorage(base::OnceClosure callback);
 
  private:
   void OwnerDestroyed(CastWebView* web_view);

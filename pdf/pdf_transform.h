@@ -6,7 +6,9 @@
 #define PDF_PDF_TRANSFORM_H_
 
 namespace gfx {
+class PointF;
 class Rect;
+class SizeF;
 }
 
 namespace chrome_pdf {
@@ -20,18 +22,15 @@ struct PdfRectangle {
   float top;
 };
 
-// Calculate the scale factor between |content_rect| and a page of size
-// |src_width| x |src_height|.
+// Calculate the scale factor between |content_rect| and a page of |src_size|.
 //
 // |content_rect| specifies the printable area of the destination page, with
 // origin at left-bottom. Values are in points.
-// |src_width| specifies the source page width in points.
-// |src_height| specifies the source page height in points.
+// |src_size| specifies the source page size in points.
 // |rotated| True if source page is rotated 90 degree or 270 degree.
-double CalculateScaleFactor(const gfx::Rect& content_rect,
-                            double src_width,
-                            double src_height,
-                            bool rotated);
+float CalculateScaleFactor(const gfx::Rect& content_rect,
+                           const gfx::SizeF& src_size,
+                           bool rotated);
 
 // Make the default size to be letter size (8.5" X 11"). We are just following
 // the PDFium way of handling these corner cases. PDFium always consider
@@ -58,7 +57,7 @@ PdfRectangle CalculateClipBoxBoundary(const PdfRectangle& media_box,
                                       const PdfRectangle& crop_box);
 
 // Scale |rect| by |scale_factor|.
-void ScalePdfRectangle(double scale_factor, PdfRectangle* rect);
+void ScalePdfRectangle(float scale_factor, PdfRectangle* rect);
 
 // Calculate the clip box translation offset for a page that does need to be
 // scaled. All parameters are in points.
@@ -67,12 +66,10 @@ void ScalePdfRectangle(double scale_factor, PdfRectangle* rect);
 // origin at left-bottom.
 // |source_clip_box| specifies the source clip box positions, relative to
 // origin at left-bottom.
-// |offset_x| and |offset_y| will contain the final translation offsets for the
-// source clip box, relative to origin at left-bottom.
-void CalculateScaledClipBoxOffset(const gfx::Rect& content_rect,
-                                  const PdfRectangle& source_clip_box,
-                                  double* offset_x,
-                                  double* offset_y);
+// Returns the final translation offsets for the source clip box, relative to
+// origin at left-bottom.
+gfx::PointF CalculateScaledClipBoxOffset(const gfx::Rect& content_rect,
+                                         const PdfRectangle& source_clip_box_);
 
 // Calculate the clip box offset for a page that does not need to be scaled.
 // All parameters are in points.
@@ -83,14 +80,13 @@ void CalculateScaledClipBoxOffset(const gfx::Rect& content_rect,
 // |page_height| specifies the screen destination page height.
 // |source_clip_box| specifies the source clip box positions, relative to origin
 // at left-bottom.
-// |offset_x| and |offset_y| will contain the final translation offsets for the
-// source clip box, relative to origin at left-bottom.
-void CalculateNonScaledClipBoxOffset(int rotation,
-                                     int page_width,
-                                     int page_height,
-                                     const PdfRectangle& source_clip_box,
-                                     double* offset_x,
-                                     double* offset_y);
+// Returns the final translation offsets for the source clip box, relative to
+// origin at left-bottom.
+gfx::PointF CalculateNonScaledClipBoxOffset(
+    int rotation,
+    int page_width,
+    int page_height,
+    const PdfRectangle& source_clip_box);
 
 }  // namespace chrome_pdf
 

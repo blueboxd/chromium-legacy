@@ -52,7 +52,7 @@ class DownloadPrefs;
 class DownloadTargetDeterminer : public download::DownloadItem::Observer {
  public:
   using CompletionCallback =
-      base::Callback<void(std::unique_ptr<DownloadTargetInfo>)>;
+      base::OnceCallback<void(std::unique_ptr<DownloadTargetInfo>)>;
 
   // Start the process of determing the target of |download|.
   //
@@ -77,7 +77,7 @@ class DownloadTargetDeterminer : public download::DownloadItem::Observer {
           conflict_action,
       DownloadPrefs* download_prefs,
       DownloadTargetDeterminerDelegate* delegate,
-      const CompletionCallback& callback);
+      CompletionCallback callback);
 
   // Returns a .crdownload intermediate path for the |suggested_path|.
   static base::FilePath GetCrDownloadPath(const base::FilePath& suggested_path);
@@ -144,7 +144,7 @@ class DownloadTargetDeterminer : public download::DownloadItem::Observer {
           conflict_action,
       DownloadPrefs* download_prefs,
       DownloadTargetDeterminerDelegate* delegate,
-      const CompletionCallback& callback);
+      CompletionCallback callback);
 
   ~DownloadTargetDeterminer() override;
 

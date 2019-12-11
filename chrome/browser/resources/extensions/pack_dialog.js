@@ -115,14 +115,14 @@ Polymer({
   onAlertClose_: function(e) {
     e.stopPropagation();
 
-    if (this.lastResponse_.status ==
+    if (this.lastResponse_.status ===
         chrome.developerPrivate.PackStatus.SUCCESS) {
       this.$.dialog.close();
       return;
     }
 
     // This is only possible for a warning dialog.
-    if (this.$$('extensions-pack-dialog-alert').returnValue == 'success') {
+    if (this.$$('extensions-pack-dialog-alert').returnValue === 'success') {
       this.delegate.packExtension(
           this.lastResponse_.item_path, this.lastResponse_.pem_path,
           this.lastResponse_.override_flags, this.onPackResponse_.bind(this));

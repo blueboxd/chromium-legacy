@@ -15,7 +15,7 @@
 UI_BASE_EXPORT
 @interface FocusTracker : NSObject {
  @private
-  base::scoped_nsobject<NSView> focusedView_;
+  base::scoped_nsobject<NSView> _focusedView;
 }
 
 // |window| is the window that we are saving focus for.  This

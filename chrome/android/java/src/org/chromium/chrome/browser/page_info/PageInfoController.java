@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.page_info;
 
-import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -28,6 +27,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
@@ -155,7 +155,7 @@ public class PageInfoController
      * @param previewPageState         State of the tab showing the preview.
      * @param publisher                The name of the content publisher, if any.
      */
-    protected PageInfoController(Activity activity, Tab tab, int securityLevel,
+    protected PageInfoController(ChromeActivity activity, Tab tab, int securityLevel,
             String offlinePageUrl, String offlinePageCreationDate,
             @OfflinePageState int offlinePageState, @PreviewPageState int previewPageState,
             String publisher) {
@@ -372,7 +372,7 @@ public class PageInfoController
 
         // Display the appropriate connection message.
         SpannableStringBuilder messageBuilder = new SpannableStringBuilder();
-        Context context = mWindowAndroid.getActivity().get();
+        ChromeActivity context = (ChromeActivity) mWindowAndroid.getActivity().get();
         assert context != null;
         if (mContentPublisher != null) {
             messageBuilder.append(
@@ -424,7 +424,7 @@ public class PageInfoController
                 runAfterDismiss(() -> {
                     if (!mTab.getWebContents().isDestroyed()) {
                         recordAction(PageInfoAction.PAGE_INFO_SECURITY_DETAILS_OPENED);
-                        ConnectionInfoPopup.show(context, mTab);
+                        ConnectionInfoPopup.show(context, mTab.getWebContents());
                     }
                 });
             };
@@ -513,8 +513,8 @@ public class PageInfoController
      * @param contentPublisher The name of the publisher of the content.
      * @param source Determines the source that triggered the popup.
      */
-    public static void show(final Activity activity, final Tab tab, final String contentPublisher,
-            @OpenedFromSource int source) {
+    public static void show(final ChromeActivity activity, final Tab tab,
+            final String contentPublisher, @OpenedFromSource int source) {
         // If the activity's decor view is not attached to window, we don't show the dialog because
         // the window manager might have revoked the window token for this activity. See
         // https://crbug.com/921450.
@@ -531,18 +531,18 @@ public class PageInfoController
             assert false : "Invalid source passed";
         }
 
-        final int securityLevel =
-                SecurityStateModel.getSecurityLevelForWebContents(tab.getWebContents());
+        WebContents webContents = tab.getWebContents();
+        final int securityLevel = SecurityStateModel.getSecurityLevelForWebContents(webContents);
 
         @PreviewPageState
         int previewPageState = PreviewPageState.NOT_PREVIEW;
         final PreviewsAndroidBridge bridge = PreviewsAndroidBridge.getInstance();
-        if (bridge.shouldShowPreviewUI(tab.getWebContents())) {
+        if (bridge.shouldShowPreviewUI(webContents)) {
             previewPageState = securityLevel == ConnectionSecurityLevel.SECURE
                     ? PreviewPageState.SECURE_PAGE_PREVIEW
                     : PreviewPageState.INSECURE_PAGE_PREVIEW;
 
-            PreviewsUma.recordPageInfoOpened(bridge.getPreviewsType(tab.getWebContents()));
+            PreviewsUma.recordPageInfoOpened(bridge.getPreviewsType(webContents));
             Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
             tracker.notifyEvent(EventConstants.PREVIEWS_VERBOSE_STATUS_OPENED);
         }
@@ -552,10 +552,10 @@ public class PageInfoController
         @OfflinePageState
         int offlinePageState = OfflinePageState.NOT_OFFLINE_PAGE;
 
-        OfflinePageItem offlinePage = OfflinePageUtils.getOfflinePage(tab);
+        OfflinePageItem offlinePage = OfflinePageUtils.getOfflinePage(webContents);
         if (offlinePage != null) {
             offlinePageUrl = offlinePage.getUrl();
-            if (OfflinePageUtils.isShowingTrustedOfflinePage(tab)) {
+            if (OfflinePageUtils.isShowingTrustedOfflinePage(webContents)) {
                 offlinePageState = OfflinePageState.TRUSTED_OFFLINE_PAGE;
             } else {
                 offlinePageState = OfflinePageState.UNTRUSTED_OFFLINE_PAGE;

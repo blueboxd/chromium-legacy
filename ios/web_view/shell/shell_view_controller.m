@@ -118,6 +118,9 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
   [_backButton addTarget:self
                   action:@selector(back)
         forControlEvents:UIControlEventTouchUpInside];
+  [_backButton addTarget:self
+                  action:@selector(logBackStack)
+        forControlEvents:UIControlEventTouchDragOutside];
   [_backButton setAccessibilityLabel:kWebViewShellBackButtonAccessibilityLabel];
 
   [_forwardButton setImage:[UIImage imageNamed:@"ic_forward"]
@@ -126,6 +129,9 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
   [_forwardButton addTarget:self
                      action:@selector(forward)
            forControlEvents:UIControlEventTouchUpInside];
+  [_forwardButton addTarget:self
+                     action:@selector(logForwardStack)
+           forControlEvents:UIControlEventTouchDragOutside];
   [_forwardButton
       setAccessibilityLabel:kWebViewShellForwardButtonAccessibilityLabel];
 
@@ -280,9 +286,35 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
   }
 }
 
+- (void)logBackStack {
+  if (!_webView.canGoBack) {
+    return;
+  }
+  CWVBackForwardList* list = _webView.backForwardList;
+  CWVBackForwardListItemArray* backList = list.backList;
+  for (size_t i = 0; i < backList.count; i++) {
+    CWVBackForwardListItem* item = backList[i];
+    NSLog(@"BackStack Item #%ld: <URL='%@', title='%@'>", i, item.URL,
+          item.title);
+  }
+}
+
 - (void)forward {
   if ([_webView canGoForward]) {
     [_webView goForward];
+  }
+}
+
+- (void)logForwardStack {
+  if (!_webView.canGoForward) {
+    return;
+  }
+  CWVBackForwardList* list = _webView.backForwardList;
+  CWVBackForwardListItemArray* forwardList = list.forwardList;
+  for (size_t i = 0; i < forwardList.count; i++) {
+    CWVBackForwardListItem* item = forwardList[i];
+    NSLog(@"ForwardStack Item #%ld: <URL='%@', title='%@'>", i, item.URL,
+          item.title);
   }
 }
 

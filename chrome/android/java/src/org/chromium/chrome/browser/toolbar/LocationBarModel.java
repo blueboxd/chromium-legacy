@@ -184,7 +184,7 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
                     DomDistillerTabUtils.getFormattedUrlFromOriginalDistillerUrl(originalUrl));
 
             // Clear the editing text for untrusted offline pages.
-            if (!OfflinePageUtils.isShowingTrustedOfflinePage(mTab)) {
+            if (!OfflinePageUtils.isShowingTrustedOfflinePage(mTab.getWebContents())) {
                 return buildUrlBarData(url, formattedUrl, "");
             }
 

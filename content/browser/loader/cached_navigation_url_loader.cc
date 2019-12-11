@@ -33,7 +33,7 @@ CachedNavigationURLLoader::CachedNavigationURLLoader(
 }
 
 void CachedNavigationURLLoader::OnResponseStarted() {
-  GlobalRequestID global_id = NavigationURLLoaderImpl::MakeGlobalRequestID();
+  GlobalRequestID global_id = GlobalRequestID::MakeBrowserInitiated();
 
   delegate_->OnResponseStarted(
       /*url_loader_client_endpoints=*/nullptr,

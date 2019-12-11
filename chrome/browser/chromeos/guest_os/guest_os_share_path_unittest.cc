@@ -747,29 +747,6 @@ TEST_F(GuestOsSharePathTest, UnsharePathInvalidPath) {
   run_loop()->Run();
 }
 
-TEST_F(GuestOsSharePathTest, MigratePersistedPathsToMultiVM) {
-  SetUpVolume();
-  base::ListValue shared_paths = base::ListValue();
-  base::FilePath downloads_file = profile()->GetPath().Append("Downloads/file");
-  shared_paths.AppendString(downloads_file.value());
-  base::FilePath not_downloads("/not/downloads");
-  shared_paths.AppendString(not_downloads.value());
-  profile()->GetPrefs()->Set(prefs::kCrostiniSharedPaths, shared_paths);
-  GuestOsSharePath::MigratePersistedPathsToMultiVM(profile()->GetPrefs());
-  EXPECT_EQ(
-      profile()->GetPrefs()->GetList(prefs::kCrostiniSharedPaths)->GetSize(),
-      0U);
-  const base::DictionaryValue* prefs =
-      profile()->GetPrefs()->GetDictionary(prefs::kGuestOSPathsSharedToVms);
-  EXPECT_EQ(prefs->size(), 2U);
-  EXPECT_EQ(prefs->FindKey(downloads_file.value())->GetList().size(), 1U);
-  EXPECT_EQ(prefs->FindKey(downloads_file.value())->GetList()[0].GetString(),
-            "termina");
-  EXPECT_EQ(prefs->FindKey(not_downloads.value())->GetList().size(), 1U);
-  EXPECT_EQ(prefs->FindKey(not_downloads.value())->GetList()[0].GetString(),
-            "termina");
-}
-
 TEST_F(GuestOsSharePathTest, GetPersistedSharedPaths) {
   SetUpVolume();
   // path1:['vm1'], path2:['vm2'], path3:['vm3'], path12:['vm1','vm2']

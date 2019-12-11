@@ -2864,6 +2864,8 @@ base::Value QuicChromiumClientSession::GetInfoAsValue(
 
   dict.SetInteger("total_streams", num_total_streams_);
   dict.SetString("peer_address", peer_address().ToString());
+  dict.SetString("network_isolation_key",
+                 session_key_.network_isolation_key().ToDebugString());
   dict.SetString("connection_id", connection_id().ToString());
   dict.SetBoolean("connected", connection()->connected());
   const quic::QuicConnectionStats& stats = connection()->GetStats();

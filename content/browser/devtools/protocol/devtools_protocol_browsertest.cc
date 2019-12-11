@@ -2038,33 +2038,6 @@ class CountingDownloadFileFactory : public download::DownloadFileFactory {
   }
 };
 
-class TestShellDownloadManagerDelegate : public ShellDownloadManagerDelegate {
- public:
-  TestShellDownloadManagerDelegate() : delay_download_open_(false) {}
-  ~TestShellDownloadManagerDelegate() override {}
-
-  bool ShouldOpenDownload(
-      download::DownloadItem* item,
-      const DownloadOpenDelayedCallback& callback) override {
-    if (delay_download_open_) {
-      delayed_callbacks_.push_back(callback);
-      return false;
-    }
-    return true;
-  }
-
-  void SetDelayedOpen(bool delay) { delay_download_open_ = delay; }
-
-  void GetDelayedCallbacks(
-      std::vector<DownloadOpenDelayedCallback>* callbacks) {
-    callbacks->swap(delayed_callbacks_);
-  }
-
- private:
-  bool delay_download_open_;
-  std::vector<DownloadOpenDelayedCallback> delayed_callbacks_;
-};
-
 // Get the next created download.
 class DownloadCreateObserver : DownloadManager::Observer {
  public:
@@ -2133,7 +2106,7 @@ class DevToolsDownloadContentTest : public DevToolsProtocolTest {
     ASSERT_TRUE(downloads_directory_.CreateUniqueTempDir());
 
     // Set shell default download manager to test proxy reset behavior.
-    test_delegate_.reset(new TestShellDownloadManagerDelegate());
+    test_delegate_.reset(new ShellDownloadManagerDelegate());
     test_delegate_->SetDownloadBehaviorForTesting(
         downloads_directory_.GetPath());
     DownloadManager* manager = DownloadManagerForShell(shell());
@@ -2234,7 +2207,7 @@ class DevToolsDownloadContentTest : public DevToolsProtocolTest {
  private:
   // Location of the downloads directory for these tests
   base::ScopedTempDir downloads_directory_;
-  std::unique_ptr<TestShellDownloadManagerDelegate> test_delegate_;
+  std::unique_ptr<ShellDownloadManagerDelegate> test_delegate_;
 };
 
 }  // namespace

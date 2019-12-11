@@ -714,9 +714,9 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   auto url_loader_client = std::make_unique<DelegatingURLLoaderClient>(
       std::move(inner_url_loader_client), resource_request);
 
-  // Use NavigationURLLoaderImpl to get a unique request id across
-  // browser-initiated navigations and navigation preloads.
-  int request_id = NavigationURLLoaderImpl::MakeGlobalRequestID().request_id;
+  // Get a unique request id across browser-initiated navigations and navigation
+  // preloads.
+  int request_id = GlobalRequestID::MakeBrowserInitiated().request_id;
 
   // Start the network request for the URL using the network factory.
   // TODO(falken): What to do about routing_id.

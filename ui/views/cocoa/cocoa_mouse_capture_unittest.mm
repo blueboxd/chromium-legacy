@@ -15,17 +15,17 @@
 // Simple test view that counts calls to -[NSView mouseDown:].
 @interface CocoaMouseCaptureTestView : NSView {
  @private
-  int mouseDownCount_;
+  int _mouseDownCount;
 }
 @property(readonly, nonatomic) int mouseDownCount;
 @end
 
 @implementation CocoaMouseCaptureTestView
 
-@synthesize mouseDownCount = mouseDownCount_;
+@synthesize mouseDownCount = _mouseDownCount;
 
 - (void)mouseDown:(NSEvent*)theEvent {
-  ++mouseDownCount_;
+  ++_mouseDownCount;
 }
 
 @end

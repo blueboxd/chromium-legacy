@@ -259,8 +259,8 @@ NSTextInputContext* g_fake_current_input_context = nullptr;
 // windowDidFailToEnterFullScreen:.
 @interface BridgedNativeWidgetTestWindow : NativeWidgetMacNSWindow {
  @private
-  BOOL ignoreToggleFullScreen_;
-  int ignoredToggleFullScreenCount_;
+  BOOL _ignoreToggleFullScreen;
+  int _ignoredToggleFullScreenCount;
 }
 @property(assign, nonatomic) BOOL ignoreToggleFullScreen;
 @property(readonly, nonatomic) int ignoredToggleFullScreenCount;
@@ -268,8 +268,8 @@ NSTextInputContext* g_fake_current_input_context = nullptr;
 
 @implementation BridgedNativeWidgetTestWindow
 
-@synthesize ignoreToggleFullScreen = ignoreToggleFullScreen_;
-@synthesize ignoredToggleFullScreenCount = ignoredToggleFullScreenCount_;
+@synthesize ignoreToggleFullScreen = _ignoreToggleFullScreen;
+@synthesize ignoredToggleFullScreenCount = _ignoredToggleFullScreenCount;
 
 - (void)performSelector:(SEL)aSelector
              withObject:(id)anArgument
@@ -277,15 +277,15 @@ NSTextInputContext* g_fake_current_input_context = nullptr;
   // This is used in simulations without a message loop. Don't start a message
   // loop since that would expose the tests to system notifications and
   // potential flakes. Instead, just pretend the message loop is flushed here.
-  if (ignoreToggleFullScreen_ && aSelector == @selector(toggleFullScreen:))
+  if (_ignoreToggleFullScreen && aSelector == @selector(toggleFullScreen:))
     [self toggleFullScreen:anArgument];
   else
     [super performSelector:aSelector withObject:anArgument afterDelay:delay];
 }
 
 - (void)toggleFullScreen:(id)sender {
-  if (ignoreToggleFullScreen_)
-    ++ignoredToggleFullScreenCount_;
+  if (_ignoreToggleFullScreen)
+    ++_ignoredToggleFullScreenCount;
   else
     [super toggleFullScreen:sender];
 }

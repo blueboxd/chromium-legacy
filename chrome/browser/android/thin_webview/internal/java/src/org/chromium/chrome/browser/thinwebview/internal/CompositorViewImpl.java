@@ -80,7 +80,7 @@ public class CompositorViewImpl implements CompositorView {
 
     private SurfaceView createSurfaceView() {
         SurfaceView surfaceView = new SurfaceView(mContext);
-        if (mViewConstraints.zOrderOnTop) surfaceView.setZOrderOnTop(true);
+        surfaceView.setZOrderMediaOverlay(true);
         surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(SurfaceHolder surfaceHolder) {

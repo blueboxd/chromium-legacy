@@ -20,7 +20,6 @@ import org.chromium.components.crash.browser.ChildProcessCrashObserver;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 import org.chromium.weblayer_private.interfaces.ICrashReporterController;
 import org.chromium.weblayer_private.interfaces.ICrashReporterControllerClient;
-import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
 import java.io.File;
@@ -59,9 +58,7 @@ public final class CrashReporterControllerImpl extends ICrashReporterController.
                 });
     }
 
-    public static CrashReporterControllerImpl getInstance(IObjectWrapper appContextWrapper) {
-        // This is a no-op if init has already happened.
-        WebLayerImpl.minimalInitForContext(appContextWrapper);
+    public static CrashReporterControllerImpl getInstance() {
         return Holder.sInstance;
     }
 

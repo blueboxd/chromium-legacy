@@ -1141,9 +1141,6 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 #if defined(OS_CHROMEOS)
   // Added 12/2018.
   profile_prefs->ClearPref(prefs::kDataSaverPromptsShown);
-
-  // Added 4/2019
-  guest_os::GuestOsSharePath::MigratePersistedPathsToMultiVM(profile_prefs);
 #endif
 
   // Added 1/2019.

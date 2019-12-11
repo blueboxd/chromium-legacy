@@ -54,7 +54,7 @@ export class DragAndDropHandler {
   /** @override */
   doDrop(e) {
     this.fireDragEnded_();
-    if (e.dataTransfer.files.length != 1) {
+    if (e.dataTransfer.files.length !== 1) {
       return;
     }
 

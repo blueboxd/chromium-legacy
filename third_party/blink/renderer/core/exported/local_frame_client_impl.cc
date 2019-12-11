@@ -972,11 +972,6 @@ void LocalFrameClientImpl::ConsumeUserActivation() {
       UserActivationUpdateType::kConsumeTransientActivation);
 }
 
-void LocalFrameClientImpl::SetHasReceivedUserGestureBeforeNavigation(
-    bool value) {
-  web_frame_->Client()->SetHasReceivedUserGestureBeforeNavigation(value);
-}
-
 void LocalFrameClientImpl::AbortClientNavigation() {
   if (web_frame_->Client())
     web_frame_->Client()->AbortClientNavigation();

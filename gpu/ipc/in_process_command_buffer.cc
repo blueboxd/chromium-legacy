@@ -645,6 +645,11 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
         use_virtualized_gl_context_
             ? gl_share_group_->GetSharedContext(surface_.get())
             : nullptr;
+    if (real_context &&
+        (!real_context->MakeCurrent(surface_.get()) ||
+         real_context->CheckStickyGraphicsResetStatus() != GL_NO_ERROR)) {
+      real_context = nullptr;
+    }
     if (!real_context) {
       real_context = gl::init::CreateGLContext(
           gl_share_group_.get(), surface_.get(),

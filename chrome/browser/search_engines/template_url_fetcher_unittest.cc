@@ -33,6 +33,8 @@ namespace {
 
 using base::ASCIIToUTF16;
 
+constexpr int32_t kRequestID = 10;
+
 bool GetTestFilePath(const std::string& file_name, base::FilePath* path) {
   if (!base::PathService::Get(base::DIR_SOURCE_ROOT, path))
     return false;
@@ -90,6 +92,7 @@ class TemplateURLFetcherTest : public testing::Test {
     base::FilePath path;
     CHECK(GetTestFilePath(params->url_request.url.ExtractFileName(), &path));
     content::URLLoaderInterceptor::WriteResponse(path, params->client.get());
+    EXPECT_EQ(params->request_id, kRequestID);
     return true;
   }
 
@@ -155,7 +158,7 @@ void TemplateURLFetcherTest::StartDownload(
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess()
           .get(),
-      0 /* render_frame_id */, 0 /* resource_type */);
+      0 /* render_frame_id */, 0 /* resource_type */, kRequestID);
 }
 
 void TemplateURLFetcherTest::WaitForDownloadToFinish() {

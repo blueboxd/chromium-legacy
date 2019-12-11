@@ -47,28 +47,24 @@ class MockObserver : public TaskQueueSelector::Observer {
 
 class TaskQueueSelectorForTest : public TaskQueueSelector {
  public:
+  using TaskQueueSelector::ActivePriorityTracker;
   using TaskQueueSelector::ChooseWithPriority;
   using TaskQueueSelector::delayed_work_queue_sets;
   using TaskQueueSelector::immediate_work_queue_sets;
-  using TaskQueueSelector::kMaxHighPriorityStarvationScore;
-  using TaskQueueSelector::kMaxLowPriorityStarvationScore;
-  using TaskQueueSelector::kMaxNormalPriorityStarvationScore;
   using TaskQueueSelector::SetImmediateStarvationCountForTest;
   using TaskQueueSelector::SetOperationOldest;
-  using TaskQueueSelector::SmallPriorityQueue;
 
-  TaskQueueSelectorForTest(scoped_refptr<AssociatedThreadId> associated_thread,
-                           const SequenceManager::Settings& settings)
-      : TaskQueueSelector(associated_thread, settings) {}
+  TaskQueueSelectorForTest(scoped_refptr<AssociatedThreadId> associated_thread)
+      : TaskQueueSelector(associated_thread, SequenceManager::Settings()) {}
 };
 
-class TaskQueueSelectorTestBase : public testing::Test {
+class TaskQueueSelectorTest : public testing::Test {
  public:
-  explicit TaskQueueSelectorTestBase(const SequenceManager::Settings& settings)
-      : test_closure_(BindRepeating(&TaskQueueSelectorTestBase::TestFunction)),
+  explicit TaskQueueSelectorTest()
+      : test_closure_(BindRepeating(&TaskQueueSelectorTest::TestFunction)),
         associated_thread_(AssociatedThreadId::CreateBound()),
-        selector_(associated_thread_, settings) {}
-  ~TaskQueueSelectorTestBase() override = default;
+        selector_(associated_thread_) {}
+  ~TaskQueueSelectorTest() override = default;
 
   void PushTasks(const size_t queue_indices[], size_t num_tasks) {
     EnqueueOrderGenerator enqueue_order_generator;
@@ -144,22 +140,14 @@ class TaskQueueSelectorTestBase : public testing::Test {
                                            TaskQueue::Spec("test"));
   }
 
-  const size_t kTaskQueueCount = 5;
+  const size_t kTaskQueueCount =
+      static_cast<size_t>(TaskQueue::QueuePriority::kQueuePriorityCount);
   RepeatingClosure test_closure_;
   scoped_refptr<AssociatedThreadId> associated_thread_;
   TaskQueueSelectorForTest selector_;
   std::unique_ptr<TimeDomain> time_domain_;
   std::vector<std::unique_ptr<TaskQueueImpl>> task_queues_;
   std::map<TaskQueueImpl*, size_t> queue_to_index_map_;
-};
-
-class TaskQueueSelectorTest : public TaskQueueSelectorTestBase {
- public:
-  TaskQueueSelectorTest()
-      : TaskQueueSelectorTestBase(
-            SequenceManager::Settings::Builder()
-                .SetAntiStarvationLogicForPrioritiesDisabled(false)
-                .Build()) {}
 };
 
 TEST_F(TaskQueueSelectorTest, TestDefaultPriority) {
@@ -305,336 +293,58 @@ TEST_F(TaskQueueSelectorTest, TestAge) {
   EXPECT_THAT(PopTasksAndReturnQueueIndices(), ElementsAre(1, 2, 4, 3, 0));
 }
 
-TEST_F(TaskQueueSelectorTest, TestControlStarvesOthers) {
-  size_t queue_order[] = {0, 1, 2, 3};
-  PushTasks(queue_order, 4);
-  selector_.SetQueuePriority(task_queues_[3].get(),
-                             TaskQueue::kControlPriority);
-  selector_.SetQueuePriority(task_queues_[2].get(),
-                             TaskQueue::kHighestPriority);
-  selector_.SetQueuePriority(task_queues_[1].get(),
-                             TaskQueue::kBestEffortPriority);
-  for (int i = 0; i < 100; i++) {
-    WorkQueue* chosen_work_queue = selector_.SelectWorkQueueToService();
-    ASSERT_THAT(chosen_work_queue, NotNull());
-    EXPECT_EQ(task_queues_[3].get(), chosen_work_queue->task_queue());
-    // Don't remove task from queue to simulate all queues still being full.
+class TaskQueueSelectorStarvationTest : public TaskQueueSelectorTest {
+ public:
+  TaskQueueSelectorStarvationTest() = default;
+
+ protected:
+  void TestPriorityOrder(const size_t queue_order[], size_t num_tasks) {
+    for (size_t i = 0; i < kTaskQueueCount; i++) {
+      // Setting the queue priority to its current value causes a check to fail.
+      if (task_queues_[i]->GetQueuePriority() !=
+          static_cast<TaskQueue::QueuePriority>(i)) {
+        selector_.SetQueuePriority(task_queues_[i].get(),
+                                   static_cast<TaskQueue::QueuePriority>(i));
+      }
+    }
+
+    ASSERT_EQ(num_tasks, kTaskQueueCount);
+    PushTasks(queue_order, kTaskQueueCount);
+
+    for (size_t priority = 0; priority < kTaskQueueCount; priority++) {
+      for (int i = 0; i < 100; i++) {
+        WorkQueue* chosen_work_queue = selector_.SelectWorkQueueToService();
+        ASSERT_THAT(chosen_work_queue, NotNull());
+        EXPECT_EQ(task_queues_[priority].get(),
+                  chosen_work_queue->task_queue());
+        // Don't remove task from queue to simulate all queues still being full.
+      }
+
+      // Simulate the highest priority queue becoming empty.
+      WorkQueue* chosen_work_queue = selector_.SelectWorkQueueToService();
+      chosen_work_queue->PopTaskForTesting();
+      chosen_work_queue->work_queue_sets()->OnPopMinQueueInSet(
+          chosen_work_queue);
+    }
   }
+};
+
+TEST_F(TaskQueueSelectorStarvationTest,
+       HigherPriorityWorkStarvesLowerPriorityWork) {
+  size_t queue_order[kTaskQueueCount];
+  for (size_t i = 0; i < kTaskQueueCount; i++)
+    queue_order[i] = i;
+  TestPriorityOrder(queue_order, kTaskQueueCount);
 }
 
-TEST_F(TaskQueueSelectorTest, ControlTasksDontTriggerAntiStarvationLogic) {
-  size_t queue_order[] = {0, 1};
-  PushTasks(queue_order, 2);
-  selector_.SetQueuePriority(task_queues_[0].get(),
-                             TaskQueue::kControlPriority);
-  selector_.SetQueuePriority(task_queues_[1].get(), TaskQueue::kLowPriority);
-  // |task_queues_[2]| has normal priority by default.
-
-  // Run a number of control tasks.
-  for (int i = 0; i < 100; i++) {
-    WorkQueue* chosen_work_queue = selector_.SelectWorkQueueToService();
-    ASSERT_THAT(chosen_work_queue, NotNull());
-    EXPECT_EQ(task_queues_[0].get(), chosen_work_queue->task_queue());
-    // Don't remove task from queue to simulate all queues still being full.
-  }
-
-  // Simulate the control queue becoming empty.
-  WorkQueue* chosen_work_queue = selector_.SelectWorkQueueToService();
-  chosen_work_queue->PopTaskForTesting();
-  chosen_work_queue->work_queue_sets()->OnPopMinQueueInSet(chosen_work_queue);
-
-  // Simulate posting a normal priority task.
-  PushTask(2, 2);
-  chosen_work_queue = selector_.SelectWorkQueueToService();
-  ASSERT_THAT(chosen_work_queue, NotNull());
-
-  // Check that the low priority task is not considered starved, and so the
-  // normal priority task we just posted runs.
-  EXPECT_EQ(chosen_work_queue->task_queue(), task_queues_[2].get());
-}
-
-TEST_F(TaskQueueSelectorTest, TestHighestPriorityDoesNotStarveHigh) {
-  size_t queue_order[] = {0, 1};
-  PushTasks(queue_order, 2);
-  selector_.SetQueuePriority(task_queues_[0].get(),
-                             TaskQueue::kHighestPriority);
-  selector_.SetQueuePriority(task_queues_[1].get(), TaskQueue::kHighPriority);
-
-  size_t counts[] = {0, 0};
-  for (int i = 0; i < 100; i++) {
-    WorkQueue* chosen_work_queue = selector_.SelectWorkQueueToService();
-    size_t chosen_queue_index =
-        queue_to_index_map_.find(chosen_work_queue->task_queue())->second;
-    counts[chosen_queue_index]++;
-    // Don't remove task from queue to simulate all queues still being full.
-  }
-  EXPECT_GT(counts[1], 0ul);        // Check highest doesn't starve high.
-  EXPECT_GT(counts[0], counts[1]);  // Check highest gets more chance to run.
-}
-
-TEST_F(TaskQueueSelectorTest, TestHighestPriorityDoesNotStarveHighOrNormal) {
-  size_t queue_order[] = {0, 1, 2};
-  PushTasks(queue_order, 3);
-  selector_.SetQueuePriority(task_queues_[0].get(),
-                             TaskQueue::kHighestPriority);
-  selector_.SetQueuePriority(task_queues_[1].get(), TaskQueue::kHighPriority);
-
-  size_t counts[] = {0, 0, 0};
-  for (int i = 0; i < 100; i++) {
-    WorkQueue* chosen_work_queue = selector_.SelectWorkQueueToService();
-    size_t chosen_queue_index =
-        queue_to_index_map_.find(chosen_work_queue->task_queue())->second;
-    counts[chosen_queue_index]++;
-    // Don't remove task from queue to simulate all queues still being full.
-  }
-
-  // Check highest runs more frequently then high.
-  EXPECT_GT(counts[0], counts[1]);
-
-  // Check high runs at least as frequently as normal.
-  EXPECT_GE(counts[1], counts[2]);
-
-  // Check normal isn't starved.
-  EXPECT_GT(counts[2], 0ul);
-}
-
-TEST_F(TaskQueueSelectorTest,
-       TestHighestPriorityDoesNotStarveHighOrNormalOrLow) {
-  size_t queue_order[] = {0, 1, 2, 3};
-  PushTasks(queue_order, 4);
-  selector_.SetQueuePriority(task_queues_[0].get(),
-                             TaskQueue::kHighestPriority);
-  selector_.SetQueuePriority(task_queues_[1].get(), TaskQueue::kHighPriority);
-  selector_.SetQueuePriority(task_queues_[3].get(), TaskQueue::kLowPriority);
-
-  size_t counts[] = {0, 0, 0, 0};
-  for (int i = 0; i < 100; i++) {
-    WorkQueue* chosen_work_queue = selector_.SelectWorkQueueToService();
-    ASSERT_THAT(chosen_work_queue, NotNull());
-    size_t chosen_queue_index =
-        queue_to_index_map_.find(chosen_work_queue->task_queue())->second;
-    counts[chosen_queue_index]++;
-    // Don't remove task from queue to simulate all queues still being full.
-  }
-
-  // Check highest runs more frequently then high.
-  EXPECT_GT(counts[0], counts[1]);
-
-  // Check high runs at least as frequently as normal.
-  EXPECT_GE(counts[1], counts[2]);
-
-  // Check normal runs more frequently than low.
-  EXPECT_GT(counts[2], counts[3]);
-
-  // Check low isn't starved.
-  EXPECT_GT(counts[3], 0ul);
-}
-
-TEST_F(TaskQueueSelectorTest, TestHighPriorityDoesNotStarveNormal) {
-  size_t queue_order[] = {0, 1};
-  PushTasks(queue_order, 2);
-
-  selector_.SetQueuePriority(task_queues_[0].get(), TaskQueue::kHighPriority);
-
-  size_t counts[] = {0, 0, 0, 0};
-  for (int i = 0; i < 100; i++) {
-    WorkQueue* chosen_work_queue = selector_.SelectWorkQueueToService();
-    ASSERT_THAT(chosen_work_queue, NotNull());
-    size_t chosen_queue_index =
-        queue_to_index_map_.find(chosen_work_queue->task_queue())->second;
-    counts[chosen_queue_index]++;
-    // Don't remove task from queue to simulate all queues still being full.
-  }
-
-  // Check high runs more frequently then normal.
-  EXPECT_GT(counts[0], counts[1]);
-
-  // Check low isn't starved.
-  EXPECT_GT(counts[1], 0ul);
-}
-
-TEST_F(TaskQueueSelectorTest, TestHighPriorityDoesNotStarveNormalOrLow) {
-  size_t queue_order[] = {0, 1, 2};
-  PushTasks(queue_order, 3);
-  selector_.SetQueuePriority(task_queues_[0].get(), TaskQueue::kHighPriority);
-  selector_.SetQueuePriority(task_queues_[2].get(), TaskQueue::kLowPriority);
-
-  size_t counts[] = {0, 0, 0};
-  for (int i = 0; i < 100; i++) {
-    WorkQueue* chosen_work_queue = selector_.SelectWorkQueueToService();
-    ASSERT_THAT(chosen_work_queue, NotNull());
-    size_t chosen_queue_index =
-        queue_to_index_map_.find(chosen_work_queue->task_queue())->second;
-    counts[chosen_queue_index]++;
-    // Don't remove task from queue to simulate all queues still being full.
-  }
-
-  // Check high runs more frequently than normal.
-  EXPECT_GT(counts[0], counts[1]);
-
-  // Check normal runs more frequently than low.
-  EXPECT_GT(counts[1], counts[2]);
-
-  // Check low isn't starved.
-  EXPECT_GT(counts[2], 0ul);
-}
-
-TEST_F(TaskQueueSelectorTest, TestNormalPriorityDoesNotStarveLow) {
-  size_t queue_order[] = {0, 1, 2};
-  PushTasks(queue_order, 3);
-  selector_.SetQueuePriority(task_queues_[0].get(), TaskQueue::kLowPriority);
-  selector_.SetQueuePriority(task_queues_[1].get(),
-                             TaskQueue::kBestEffortPriority);
-  size_t counts[] = {0, 0, 0};
-  for (int i = 0; i < 100; i++) {
-    WorkQueue* chosen_work_queue = selector_.SelectWorkQueueToService();
-    ASSERT_THAT(chosen_work_queue, NotNull());
-    size_t chosen_queue_index =
-        queue_to_index_map_.find(chosen_work_queue->task_queue())->second;
-    counts[chosen_queue_index]++;
-    // Don't remove task from queue to simulate all queues still being full.
-  }
-  EXPECT_GT(counts[0], 0ul);        // Check normal doesn't starve low.
-  EXPECT_GT(counts[2], counts[0]);  // Check normal gets more chance to run.
-  EXPECT_EQ(0ul, counts[1]);        // Check best effort is starved.
-}
-
-TEST_F(TaskQueueSelectorTest, TestBestEffortGetsStarved) {
-  size_t queue_order[] = {0, 1};
-  PushTasks(queue_order, 2);
-  selector_.SetQueuePriority(task_queues_[0].get(),
-                             TaskQueue::kBestEffortPriority);
-  EXPECT_EQ(TaskQueue::kNormalPriority, task_queues_[1]->GetQueuePriority());
-
-  // Check that normal priority tasks starve best effort.
-  for (int i = 0; i < 100; i++) {
-    WorkQueue* chosen_work_queue = selector_.SelectWorkQueueToService();
-    ASSERT_THAT(chosen_work_queue, NotNull());
-    EXPECT_EQ(task_queues_[1].get(), chosen_work_queue->task_queue());
-    // Don't remove task from queue to simulate all queues still being full.
-  }
-
-  // Check that highest priority tasks starve best effort.
-  selector_.SetQueuePriority(task_queues_[1].get(),
-                             TaskQueue::kHighestPriority);
-  for (int i = 0; i < 100; i++) {
-    WorkQueue* chosen_work_queue = selector_.SelectWorkQueueToService();
-    ASSERT_THAT(chosen_work_queue, NotNull());
-    EXPECT_EQ(task_queues_[1].get(), chosen_work_queue->task_queue());
-    // Don't remove task from queue to simulate all queues still being full.
-  }
-
-  // Check that high priority tasks starve best effort.
-  selector_.SetQueuePriority(task_queues_[1].get(), TaskQueue::kHighPriority);
-  for (int i = 0; i < 100; i++) {
-    WorkQueue* chosen_work_queue = selector_.SelectWorkQueueToService();
-    ASSERT_THAT(chosen_work_queue, NotNull());
-    EXPECT_EQ(task_queues_[1].get(), chosen_work_queue->task_queue());
-    // Don't remove task from queue to simulate all queues still being full.
-  }
-
-  // Check that low priority tasks starve best effort.
-  selector_.SetQueuePriority(task_queues_[1].get(), TaskQueue::kLowPriority);
-  for (int i = 0; i < 100; i++) {
-    WorkQueue* chosen_work_queue = selector_.SelectWorkQueueToService();
-    ASSERT_THAT(chosen_work_queue, NotNull());
-    EXPECT_EQ(task_queues_[1].get(), chosen_work_queue->task_queue());
-    // Don't remove task from queue to simulate all queues still being full.
-  }
-
-  // Check that control priority tasks starve best effort.
-  selector_.SetQueuePriority(task_queues_[1].get(),
-                             TaskQueue::kControlPriority);
-  for (int i = 0; i < 100; i++) {
-    WorkQueue* chosen_work_queue = selector_.SelectWorkQueueToService();
-    ASSERT_THAT(chosen_work_queue, NotNull());
-    EXPECT_EQ(task_queues_[1].get(), chosen_work_queue->task_queue());
-    // Don't remove task from queue to simulate all queues still being full.
-  }
-}
-
-TEST_F(TaskQueueSelectorTest,
-       TestHighPriorityStarvationScoreIncreasedOnlyWhenTasksArePresent) {
-  size_t queue_order[] = {0, 1};
-  PushTasks(queue_order, 2);
-  selector_.SetQueuePriority(task_queues_[0].get(),
-                             TaskQueue::kHighestPriority);
-  selector_.SetQueuePriority(task_queues_[1].get(),
-                             TaskQueue::kHighestPriority);
-
-  // Run a number of highest priority tasks needed to starve high priority
-  // tasks (when present).
-  for (size_t num_tasks = 0;
-       num_tasks <= TaskQueueSelectorForTest::kMaxHighPriorityStarvationScore;
-       num_tasks++) {
-    ASSERT_THAT(selector_.SelectWorkQueueToService(), NotNull());
-    // Don't remove task from queue to simulate the queue is still full.
-  }
-
-  // Simulate posting a high priority task.
-  selector_.SetQueuePriority(task_queues_[1].get(), TaskQueue::kHighPriority);
-  WorkQueue* chosen_work_queue = selector_.SelectWorkQueueToService();
-  ASSERT_THAT(chosen_work_queue, NotNull());
-
-  // Check that the high priority task is not considered starved, and thus isn't
-  // processed.
-  EXPECT_NE(chosen_work_queue->task_queue(), task_queues_[1].get());
-}
-
-TEST_F(TaskQueueSelectorTest,
-       TestNormalPriorityStarvationScoreIncreasedOnlyWhenTasksArePresent) {
-  size_t queue_order[] = {0, 1, 2};
-  PushTasks(queue_order, 3);
-  selector_.SetQueuePriority(task_queues_[0].get(),
-                             TaskQueue::kHighestPriority);
-  selector_.SetQueuePriority(task_queues_[1].get(), TaskQueue::kHighPriority);
-  selector_.SetQueuePriority(task_queues_[2].get(), TaskQueue::kHighPriority);
-
-  // Run a number of highest or high priority tasks needed to starve normal
-  // priority tasks (when present).
-  for (size_t num_tasks = 0;
-       num_tasks <= TaskQueueSelectorForTest::kMaxNormalPriorityStarvationScore;
-       num_tasks++) {
-    ASSERT_THAT(selector_.SelectWorkQueueToService(), NotNull());
-    // Don't remove task from queue to simulate the queue is still full.
-  }
-
-  // Simulate posting a normal priority task.
-  selector_.SetQueuePriority(task_queues_[2].get(), TaskQueue::kNormalPriority);
-  WorkQueue* chosen_work_queue = selector_.SelectWorkQueueToService();
-  ASSERT_THAT(chosen_work_queue, NotNull());
-
-  // Check that the normal priority task is not considered starved, and thus
-  // isn't processed.
-  EXPECT_NE(chosen_work_queue->task_queue(), task_queues_[2].get());
-}
-
-TEST_F(TaskQueueSelectorTest,
-       TestLowPriorityStarvationScoreIncreasedOnlyWhenTasksArePresent) {
-  size_t queue_order[] = {0, 1, 2, 3};
-  PushTasks(queue_order, 4);
-  selector_.SetQueuePriority(task_queues_[0].get(),
-                             TaskQueue::kHighestPriority);
-  selector_.SetQueuePriority(task_queues_[1].get(), TaskQueue::kHighPriority);
-  // NOTE |task_queues_[2]_| and |task_queues_[2]_| are already kNormalPriority.
-
-  // Run a number of highest, high or normal priority tasks needed to starve
-  // low priority tasks (when present).
-  for (size_t num_tasks = 0;
-       num_tasks <= TaskQueueSelectorForTest::kMaxLowPriorityStarvationScore;
-       num_tasks++) {
-    ASSERT_THAT(selector_.SelectWorkQueueToService(), NotNull());
-    // Don't remove task from queue to simulate the queue is still full.
-  }
-
-  // Simulate posting a low priority task.
-  selector_.SetQueuePriority(task_queues_[3].get(), TaskQueue::kLowPriority);
-  WorkQueue* chosen_work_queue = selector_.SelectWorkQueueToService();
-  ASSERT_THAT(chosen_work_queue, NotNull());
-
-  // Check that the low priority task is not considered starved, and thus
-  // isn't processed.
-  EXPECT_NE(chosen_work_queue->task_queue(), task_queues_[3].get());
+TEST_F(TaskQueueSelectorStarvationTest,
+       NewHigherPriorityTasksStarveOldLowerPriorityTasks) {
+  // Enqueue tasks in order from lowest to highest priority, and check that they
+  // still run in order from highest to lowest priority.
+  size_t queue_order[kTaskQueueCount];
+  for (size_t i = 0; i < kTaskQueueCount; i++)
+    queue_order[i] = (kTaskQueueCount - i) - 1;
+  TestPriorityOrder(queue_order, kTaskQueueCount);
 }
 
 TEST_F(TaskQueueSelectorTest, GetHighestPendingPriority) {
@@ -693,8 +403,7 @@ TEST_F(TaskQueueSelectorTest, ChooseWithPriority_OnlyImmediate) {
 }
 
 TEST_F(TaskQueueSelectorTest, TestObserverWithOneBlockedQueue) {
-  TaskQueueSelectorForTest selector(associated_thread_,
-                                    SequenceManager::Settings());
+  TaskQueueSelectorForTest selector(associated_thread_);
   MockObserver mock_observer;
   selector.SetTaskQueueSelectorObserver(&mock_observer);
 
@@ -719,8 +428,7 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithOneBlockedQueue) {
 }
 
 TEST_F(TaskQueueSelectorTest, TestObserverWithTwoBlockedQueues) {
-  TaskQueueSelectorForTest selector(associated_thread_,
-                                    SequenceManager::Settings());
+  TaskQueueSelectorForTest selector(associated_thread_);
   MockObserver mock_observer;
   selector.SetTaskQueueSelectorObserver(&mock_observer);
 
@@ -777,62 +485,6 @@ TEST_F(TaskQueueSelectorTest, CollectSkippedOverLowerPriorityTasks) {
   EXPECT_EQ(4u, result[2]->enqueue_order());
 }
 
-class DisabledAntiStarvationLogicTaskQueueSelectorTest
-    : public TaskQueueSelectorTestBase,
-      public testing::WithParamInterface<TaskQueue::QueuePriority> {
- public:
-  DisabledAntiStarvationLogicTaskQueueSelectorTest()
-      : TaskQueueSelectorTestBase(
-            SequenceManager::Settings::Builder()
-                .SetAntiStarvationLogicForPrioritiesDisabled(true)
-                .Build()) {}
-};
-
-TEST_P(DisabledAntiStarvationLogicTaskQueueSelectorTest,
-       TestStarvedByHigherPriorities) {
-  TaskQueue::QueuePriority priority_to_test = GetParam();
-  size_t queue_order[] = {0, 1};
-  PushTasks(queue_order, 2);
-
-  // Setting the queue priority to its current value causes a check to fail.
-  if (task_queues_[0]->GetQueuePriority() != priority_to_test) {
-    selector_.SetQueuePriority(task_queues_[0].get(), priority_to_test);
-  }
-
-  // Test that |priority_to_test| is starved by all higher priorities.
-  for (int higher_priority = static_cast<int>(priority_to_test) - 1;
-       higher_priority >= 0; higher_priority--) {
-    // Setting the queue priority to its current value causes a check to fail.
-    if (task_queues_[1]->GetQueuePriority() != higher_priority) {
-      selector_.SetQueuePriority(
-          task_queues_[1].get(),
-          static_cast<TaskQueue::QueuePriority>(higher_priority));
-    }
-
-    for (int i = 0; i < 100; i++) {
-      WorkQueue* chosen_work_queue = selector_.SelectWorkQueueToService();
-      ASSERT_THAT(chosen_work_queue, NotNull());
-      EXPECT_EQ(task_queues_[1].get(), chosen_work_queue->task_queue());
-      // Don't remove task from queue to simulate all queues still being full.
-    }
-  }
-}
-
-std::string GetPriorityTestNameSuffix(
-    const testing::TestParamInfo<TaskQueue::QueuePriority>& info) {
-  return TaskQueue::PriorityToString(info.param);
-}
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         DisabledAntiStarvationLogicTaskQueueSelectorTest,
-                         testing::Values(TaskQueue::kHighestPriority,
-                                         TaskQueue::kVeryHighPriority,
-                                         TaskQueue::kHighPriority,
-                                         TaskQueue::kNormalPriority,
-                                         TaskQueue::kLowPriority,
-                                         TaskQueue::kBestEffortPriority),
-                         GetPriorityTestNameSuffix);
-
 struct ChooseWithPriorityTestParam {
   int delayed_task_enqueue_order;
   int immediate_task_enqueue_order;
@@ -882,167 +534,51 @@ INSTANTIATE_TEST_SUITE_P(ChooseWithPriorityTest,
                          ChooseWithPriorityTest,
                          testing::ValuesIn(kChooseWithPriorityTestCases));
 
-class SmallPriorityQueueTest : public testing::Test {
- public:
-  TaskQueueSelectorForTest::SmallPriorityQueue queue_;
-
-  std::vector<uint8_t> PopAllIds() {
-    std::vector<uint8_t> result;
-    while (!queue_.empty()) {
-      result.push_back(queue_.min_id());
-      queue_.erase(queue_.min_id());
-    }
-    return result;
-  }
+class ActivePriorityTrackerTest : public testing::Test {
+ protected:
+  TaskQueueSelectorForTest::ActivePriorityTracker active_priority_tracker_;
 };
 
-TEST_F(SmallPriorityQueueTest, Insert) {
-  EXPECT_TRUE(queue_.empty());
+TEST_F(ActivePriorityTrackerTest, SetPriorityActiveAndInactive) {
+  EXPECT_FALSE(active_priority_tracker_.HasActivePriority());
+  EXPECT_FALSE(active_priority_tracker_.IsActive(
+      TaskQueue::QueuePriority::kNormalPriority));
 
-  EXPECT_FALSE(queue_.IsInQueue(static_cast<TaskQueue::QueuePriority>(1)));
-  queue_.insert(1000, static_cast<TaskQueue::QueuePriority>(1));
-  EXPECT_TRUE(queue_.IsInQueue(static_cast<TaskQueue::QueuePriority>(1)));
-  EXPECT_EQ(1, queue_.min_id());
-  EXPECT_FALSE(queue_.empty());
+  active_priority_tracker_.SetActive(TaskQueue::QueuePriority::kNormalPriority,
+                                     true);
 
-  EXPECT_FALSE(queue_.IsInQueue(static_cast<TaskQueue::QueuePriority>(2)));
-  queue_.insert(1002, static_cast<TaskQueue::QueuePriority>(2));
-  EXPECT_TRUE(queue_.IsInQueue(static_cast<TaskQueue::QueuePriority>(2)));
-  EXPECT_EQ(1, queue_.min_id());
+  EXPECT_TRUE(active_priority_tracker_.HasActivePriority());
+  EXPECT_TRUE(active_priority_tracker_.IsActive(
+      TaskQueue::QueuePriority::kNormalPriority));
 
-  EXPECT_FALSE(queue_.IsInQueue(static_cast<TaskQueue::QueuePriority>(3)));
-  queue_.insert(999, static_cast<TaskQueue::QueuePriority>(3));
-  EXPECT_TRUE(queue_.IsInQueue(static_cast<TaskQueue::QueuePriority>(3)));
-  EXPECT_EQ(3, queue_.min_id());
+  active_priority_tracker_.SetActive(TaskQueue::QueuePriority::kNormalPriority,
+                                     false);
 
-  EXPECT_FALSE(queue_.IsInQueue(static_cast<TaskQueue::QueuePriority>(4)));
-  queue_.insert(1003, static_cast<TaskQueue::QueuePriority>(4));
-  EXPECT_TRUE(queue_.IsInQueue(static_cast<TaskQueue::QueuePriority>(4)));
-  EXPECT_EQ(3, queue_.min_id());
+  EXPECT_FALSE(active_priority_tracker_.HasActivePriority());
+  EXPECT_FALSE(active_priority_tracker_.IsActive(
+      TaskQueue::QueuePriority::kNormalPriority));
 }
 
-TEST_F(SmallPriorityQueueTest, EraseMin) {
-  queue_.insert(1000, static_cast<TaskQueue::QueuePriority>(1));
-  queue_.insert(1002, static_cast<TaskQueue::QueuePriority>(2));
-  queue_.insert(999, static_cast<TaskQueue::QueuePriority>(3));
-  queue_.insert(1003, static_cast<TaskQueue::QueuePriority>(4));
+TEST_F(ActivePriorityTrackerTest, HighestActivePriority) {
+  EXPECT_FALSE(active_priority_tracker_.HasActivePriority());
 
-  EXPECT_EQ(3, queue_.min_id());
-  EXPECT_TRUE(queue_.IsInQueue(static_cast<TaskQueue::QueuePriority>(4)));
+  for (size_t i = 0; i < TaskQueue::QueuePriority::kQueuePriorityCount; i++) {
+    TaskQueue::QueuePriority priority =
+        static_cast<TaskQueue::QueuePriority>(i);
+    EXPECT_FALSE(active_priority_tracker_.IsActive(priority));
+    active_priority_tracker_.SetActive(priority, true);
+    EXPECT_TRUE(active_priority_tracker_.IsActive(priority));
+  }
 
-  queue_.erase(static_cast<TaskQueue::QueuePriority>(4));
-  EXPECT_FALSE(queue_.IsInQueue(static_cast<TaskQueue::QueuePriority>(4)));
-  EXPECT_EQ(3, queue_.min_id());
-  EXPECT_TRUE(queue_.IsInQueue(static_cast<TaskQueue::QueuePriority>(3)));
+  for (size_t i = 0; i < TaskQueue::QueuePriority::kQueuePriorityCount; i++) {
+    EXPECT_TRUE(active_priority_tracker_.HasActivePriority());
+    TaskQueue::QueuePriority priority =
+        static_cast<TaskQueue::QueuePriority>(i);
+    EXPECT_EQ(active_priority_tracker_.HighestActivePriority(), priority);
+    active_priority_tracker_.SetActive(priority, false);
+  }
 
-  queue_.erase(static_cast<TaskQueue::QueuePriority>(3));
-  EXPECT_FALSE(queue_.IsInQueue(static_cast<TaskQueue::QueuePriority>(3)));
-  EXPECT_EQ(1, queue_.min_id());
-  EXPECT_TRUE(queue_.IsInQueue(static_cast<TaskQueue::QueuePriority>(2)));
-
-  queue_.erase(static_cast<TaskQueue::QueuePriority>(2));
-  EXPECT_FALSE(queue_.IsInQueue(static_cast<TaskQueue::QueuePriority>(2)));
-  EXPECT_EQ(1, queue_.min_id());
-  EXPECT_TRUE(queue_.IsInQueue(static_cast<TaskQueue::QueuePriority>(1)));
-
-  queue_.erase(static_cast<TaskQueue::QueuePriority>(1));
-  EXPECT_FALSE(queue_.IsInQueue(static_cast<TaskQueue::QueuePriority>(1)));
-  EXPECT_TRUE(queue_.empty());
-}
-
-TEST_F(SmallPriorityQueueTest, EraseMiddle) {
-  queue_.insert(100, static_cast<TaskQueue::QueuePriority>(1));
-  queue_.insert(101, static_cast<TaskQueue::QueuePriority>(2));
-  queue_.insert(102, static_cast<TaskQueue::QueuePriority>(3));
-  queue_.insert(103, static_cast<TaskQueue::QueuePriority>(4));
-  queue_.insert(104, static_cast<TaskQueue::QueuePriority>(5));
-
-  queue_.erase(static_cast<TaskQueue::QueuePriority>(3));
-
-  EXPECT_THAT(PopAllIds(), ElementsAre(1, 2, 4, 5));
-}
-
-TEST_F(SmallPriorityQueueTest, EraseAllButOne) {
-  queue_.insert(100, static_cast<TaskQueue::QueuePriority>(1));
-  queue_.insert(101, static_cast<TaskQueue::QueuePriority>(2));
-  queue_.insert(102, static_cast<TaskQueue::QueuePriority>(3));
-  queue_.insert(103, static_cast<TaskQueue::QueuePriority>(4));
-  queue_.insert(104, static_cast<TaskQueue::QueuePriority>(5));
-
-  queue_.erase(static_cast<TaskQueue::QueuePriority>(5));
-  queue_.erase(static_cast<TaskQueue::QueuePriority>(1));
-  queue_.erase(static_cast<TaskQueue::QueuePriority>(3));
-  queue_.erase(static_cast<TaskQueue::QueuePriority>(2));
-
-  EXPECT_THAT(PopAllIds(), ElementsAre(4));
-}
-
-TEST_F(SmallPriorityQueueTest, ChangeMinKeyNoOrderDifference) {
-  queue_.insert(100, static_cast<TaskQueue::QueuePriority>(1));
-  queue_.insert(101, static_cast<TaskQueue::QueuePriority>(2));
-  queue_.insert(102, static_cast<TaskQueue::QueuePriority>(3));
-  queue_.insert(105, static_cast<TaskQueue::QueuePriority>(4));
-  queue_.insert(106, static_cast<TaskQueue::QueuePriority>(5));
-
-  queue_.ChangeMinKey(99);
-
-  EXPECT_THAT(PopAllIds(), ElementsAre(1, 2, 3, 4, 5));
-}
-
-TEST_F(SmallPriorityQueueTest, ChangeMinKeyToMiddle) {
-  queue_.insert(100, static_cast<TaskQueue::QueuePriority>(1));
-  queue_.insert(101, static_cast<TaskQueue::QueuePriority>(2));
-  queue_.insert(102, static_cast<TaskQueue::QueuePriority>(3));
-  queue_.insert(105, static_cast<TaskQueue::QueuePriority>(4));
-  queue_.insert(106, static_cast<TaskQueue::QueuePriority>(5));
-
-  queue_.ChangeMinKey(103);
-
-  EXPECT_THAT(PopAllIds(), ElementsAre(2, 3, 1, 4, 5));
-}
-
-TEST_F(SmallPriorityQueueTest, ChangeMinKeyToLast) {
-  queue_.insert(100, static_cast<TaskQueue::QueuePriority>(1));
-  queue_.insert(101, static_cast<TaskQueue::QueuePriority>(2));
-  queue_.insert(102, static_cast<TaskQueue::QueuePriority>(3));
-  queue_.insert(105, static_cast<TaskQueue::QueuePriority>(4));
-  queue_.insert(106, static_cast<TaskQueue::QueuePriority>(5));
-
-  queue_.ChangeMinKey(107);
-
-  EXPECT_THAT(PopAllIds(), ElementsAre(2, 3, 4, 5, 1));
-}
-
-TEST_F(SmallPriorityQueueTest, StableSortingOrder) {
-  queue_.insert(100, static_cast<TaskQueue::QueuePriority>(1));
-  queue_.insert(100, static_cast<TaskQueue::QueuePriority>(2));
-  queue_.insert(100, static_cast<TaskQueue::QueuePriority>(3));
-  queue_.insert(100, static_cast<TaskQueue::QueuePriority>(4));
-  queue_.insert(100, static_cast<TaskQueue::QueuePriority>(5));
-
-  EXPECT_THAT(PopAllIds(), ElementsAre(1, 2, 3, 4, 5));
-}
-
-TEST_F(SmallPriorityQueueTest, StableSortingOrderRemoveMiddle) {
-  queue_.insert(100, static_cast<TaskQueue::QueuePriority>(1));
-  queue_.insert(100, static_cast<TaskQueue::QueuePriority>(2));
-  queue_.insert(100, static_cast<TaskQueue::QueuePriority>(3));
-  queue_.insert(100, static_cast<TaskQueue::QueuePriority>(4));
-  queue_.insert(100, static_cast<TaskQueue::QueuePriority>(5));
-  queue_.erase(static_cast<TaskQueue::QueuePriority>(3));
-
-  EXPECT_THAT(PopAllIds(), ElementsAre(1, 2, 4, 5));
-}
-
-TEST_F(SmallPriorityQueueTest, StableSortingOrderChangeMinToLast) {
-  queue_.insert(100, static_cast<TaskQueue::QueuePriority>(1));
-  queue_.insert(100, static_cast<TaskQueue::QueuePriority>(2));
-  queue_.insert(100, static_cast<TaskQueue::QueuePriority>(3));
-  queue_.insert(100, static_cast<TaskQueue::QueuePriority>(4));
-  queue_.insert(100, static_cast<TaskQueue::QueuePriority>(5));
-  queue_.ChangeMinKey(101);
-
-  EXPECT_THAT(PopAllIds(), ElementsAre(2, 3, 4, 5, 1));
+  EXPECT_FALSE(active_priority_tracker_.HasActivePriority());
 }
 
 }  // namespace task_queue_selector_unittest

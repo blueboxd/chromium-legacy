@@ -44,6 +44,7 @@ class AndroidLiveTabContext : public sessions::LiveTabContext {
       int selected_navigation,
       const std::string& extension_app_id,
       base::Optional<base::Token> group,
+      const TabGroupMetadata* group_metadata,
       bool select,
       bool pin,
       bool from_last_session,

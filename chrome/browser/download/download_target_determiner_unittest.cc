@@ -114,14 +114,14 @@ class NullWebContentsDelegate : public content::WebContentsDelegate {
 //   EXPECT_CALL(mock_fooclass_instance, Foo(callback))
 //     .WillOnce(ScheduleCallback(false));
 ACTION_P(ScheduleCallback, result0) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::BindOnce(arg0, result0));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(arg0), result0));
 }
 
 // Similar to ScheduleCallback, but binds 2 arguments.
 ACTION_P2(ScheduleCallback2, result0, result1) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(arg0, result0, result1));
+      FROM_HERE, base::BindOnce(std::move(arg0), result0, result1));
 }
 
 // Used with DownloadTestCase. Indicates the type of test case. The expectations
@@ -198,10 +198,20 @@ class MockDownloadTargetDeterminerDelegate
   MOCK_METHOD3(DetermineLocalPath,
                void(DownloadItem*, const base::FilePath&,
                     const LocalPathCallback&));
-  MOCK_METHOD5(ReserveVirtualPath,
-               void(DownloadItem*, const base::FilePath&, bool,
+  void ReserveVirtualPath(
+      DownloadItem* download,
+      const base::FilePath& virtual_path,
+      bool create_directory,
+      DownloadPathReservationTracker::FilenameConflictAction action,
+      ReservedPathCallback cb) override {
+    ReserveVirtualPath_(download, virtual_path, create_directory, action, cb);
+  }
+  MOCK_METHOD5(ReserveVirtualPath_,
+               void(DownloadItem*,
+                    const base::FilePath&,
+                    bool,
                     DownloadPathReservationTracker::FilenameConflictAction,
-                    const ReservedPathCallback&));
+                    ReservedPathCallback&));
   MOCK_METHOD2(GetFileMimeType,
                void(const base::FilePath&,
                     const GetFileMimeTypeCallback&));
@@ -216,9 +226,15 @@ class MockDownloadTargetDeterminerDelegate
         .WillByDefault(WithArg<2>(
             ScheduleCallback2(base::FilePath(),
                               DownloadPathReservationTracker::UNIQUIFY)));
-    ON_CALL(*this, ReserveVirtualPath(_, _, _, _, _))
+    ON_CALL(*this, ReserveVirtualPath_(_, _, _, _, _))
         .WillByDefault(Invoke(
-            &MockDownloadTargetDeterminerDelegate::NullReserveVirtualPath));
+            [](DownloadItem* download, const base::FilePath& virtual_path,
+               bool create_directory,
+               DownloadPathReservationTracker::FilenameConflictAction action,
+               ReservedPathCallback& callback) {
+              std::move(callback).Run(download::PathValidationResult::SUCCESS,
+                                      virtual_path);
+            }));
     ON_CALL(*this, RequestConfirmation(_, _, _, _))
         .WillByDefault(
             Invoke(&MockDownloadTargetDeterminerDelegate::NullPromptUser));
@@ -230,12 +246,6 @@ class MockDownloadTargetDeterminerDelegate
             ScheduleCallback("")));
   }
  private:
-  static void NullReserveVirtualPath(
-      DownloadItem* download,
-      const base::FilePath& virtual_path,
-      bool create_directory,
-      DownloadPathReservationTracker::FilenameConflictAction conflict_action,
-      const DownloadTargetDeterminerDelegate::ReservedPathCallback& callback);
   static void NullPromptUser(DownloadItem* download,
                              const base::FilePath& suggested_path,
                              DownloadConfirmationReason reason,
@@ -553,16 +563,6 @@ void DownloadTargetDeterminerTest::SetUpFileTypePolicies() {
   platform_settings->set_auto_open_hint(DownloadFileType::DISALLOW_AUTO_OPEN);
 
   file_type_configuration_.SwapConfig(fake_file_type_config);
-}
-
-// static
-void MockDownloadTargetDeterminerDelegate::NullReserveVirtualPath(
-    DownloadItem* download,
-    const base::FilePath& virtual_path,
-    bool create_directory,
-    DownloadPathReservationTracker::FilenameConflictAction conflict_action,
-    const DownloadTargetDeterminerDelegate::ReservedPathCallback& callback) {
-  callback.Run(download::PathValidationResult::SUCCESS, virtual_path);
 }
 
 // static
@@ -1009,7 +1009,7 @@ TEST_F(DownloadTargetDeterminerTest, InactiveDownload) {
 
     EXPECT_CALL(*delegate(), RequestConfirmation(_, _, _, _)).Times(0);
     EXPECT_CALL(*delegate(), NotifyExtensions(_, _, _)).Times(0);
-    EXPECT_CALL(*delegate(), ReserveVirtualPath(_, _, _, _, _)).Times(0);
+    EXPECT_CALL(*delegate(), ReserveVirtualPath_(_, _, _, _, _)).Times(0);
     EXPECT_CALL(*delegate(), DetermineLocalPath(_, _, _)).Times(1);
 
     // Each test case has a non-empty target path. The test will fail if the
@@ -1051,7 +1051,7 @@ TEST_F(DownloadTargetDeterminerTest, ReservationFailed_Confirmation) {
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(::testing::Message() << "download::PathValidationResult "
                                       << static_cast<int>(test_case.result));
-    ON_CALL(*delegate(), ReserveVirtualPath(_, _, _, _, _))
+    ON_CALL(*delegate(), ReserveVirtualPath_(_, _, _, _, _))
         .WillByDefault(WithArg<4>(ScheduleCallback2(
             test_case.result,
             GetPathInDownloadDir(FILE_PATH_LITERAL("bar.txt")))));
@@ -1661,8 +1661,8 @@ TEST_F(DownloadTargetDeterminerTest, NotifyExtensionsConflict) {
           ScheduleCallback2(overridden_path,
                             DownloadPathReservationTracker::OVERWRITE)));
   EXPECT_CALL(*delegate(),
-              ReserveVirtualPath(_, full_overridden_path, true,
-                                 DownloadPathReservationTracker::OVERWRITE, _))
+              ReserveVirtualPath_(_, full_overridden_path, true,
+                                  DownloadPathReservationTracker::OVERWRITE, _))
       .WillOnce(WithArg<4>(ScheduleCallback2(
           download::PathValidationResult::SUCCESS, full_overridden_path)));
 
@@ -1674,8 +1674,8 @@ TEST_F(DownloadTargetDeterminerTest, NotifyExtensionsConflict) {
           ScheduleCallback2(overridden_path,
                             DownloadPathReservationTracker::PROMPT)));
   EXPECT_CALL(*delegate(),
-              ReserveVirtualPath(_, full_overridden_path, true,
-                                 DownloadPathReservationTracker::PROMPT, _))
+              ReserveVirtualPath_(_, full_overridden_path, true,
+                                  DownloadPathReservationTracker::PROMPT, _))
       .WillOnce(WithArg<4>(ScheduleCallback2(
           download::PathValidationResult::SUCCESS, full_overridden_path)));
   RunTestCase(test_case, base::FilePath(), item.get());
@@ -1818,7 +1818,8 @@ TEST_F(DownloadTargetDeterminerTest, ResumedNoPrompt) {
     // type == AUTOMATIC.
     EXPECT_CALL(*delegate(), NotifyExtensions(_, _, _))
         .Times(test_case.test_type == AUTOMATIC ? 1 : 0);
-    EXPECT_CALL(*delegate(), ReserveVirtualPath(_, expected_path, false, _, _));
+    EXPECT_CALL(*delegate(),
+                ReserveVirtualPath_(_, expected_path, false, _, _));
     EXPECT_CALL(*delegate(), RequestConfirmation(_, expected_path, _, _))
         .Times(0);
     EXPECT_CALL(*delegate(), DetermineLocalPath(_, expected_path, _));
@@ -1855,7 +1856,7 @@ TEST_F(DownloadTargetDeterminerTest, ResumedForcedDownload) {
       .WillByDefault(Return(download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE));
   EXPECT_CALL(*delegate(), NotifyExtensions(_, _, _))
       .Times(test_case.test_type == AUTOMATIC ? 1 : 0);
-  EXPECT_CALL(*delegate(), ReserveVirtualPath(_, expected_path, false, _, _));
+  EXPECT_CALL(*delegate(), ReserveVirtualPath_(_, expected_path, false, _, _));
   EXPECT_CALL(*delegate(), RequestConfirmation(_, _, _, _)).Times(0);
   EXPECT_CALL(*delegate(), DetermineLocalPath(_, expected_path, _));
   EXPECT_CALL(*delegate(), CheckDownloadUrl(_, expected_path, _));
@@ -1928,7 +1929,8 @@ TEST_F(DownloadTargetDeterminerTest, ResumedWithPrompt) {
             Return(download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE));
     EXPECT_CALL(*delegate(), NotifyExtensions(_, _, _))
         .Times(test_case.test_type == AUTOMATIC ? 1 : 0);
-    EXPECT_CALL(*delegate(), ReserveVirtualPath(_, expected_path, false, _, _));
+    EXPECT_CALL(*delegate(),
+                ReserveVirtualPath_(_, expected_path, false, _, _));
     EXPECT_CALL(*delegate(), RequestConfirmation(_, expected_path, _, _));
     EXPECT_CALL(*delegate(), DetermineLocalPath(_, expected_path, _));
     EXPECT_CALL(*delegate(), CheckDownloadUrl(_, expected_path, _));
@@ -2240,7 +2242,7 @@ TEST_F(DownloadTargetDeterminerTest, ResumedWithUserValidatedDownload) {
       .WillByDefault(
           Return(download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED));
   EXPECT_CALL(*delegate(), NotifyExtensions(_, _, _));
-  EXPECT_CALL(*delegate(), ReserveVirtualPath(_, expected_path, false, _, _));
+  EXPECT_CALL(*delegate(), ReserveVirtualPath_(_, expected_path, false, _, _));
   EXPECT_CALL(*delegate(), DetermineLocalPath(_, expected_path, _));
   EXPECT_CALL(*delegate(), CheckDownloadUrl(_, expected_path, _)).Times(0);
   EXPECT_CALL(*delegate(), RequestConfirmation(_, _, _, _)).Times(0);
@@ -2269,8 +2271,8 @@ TEST_F(DownloadTargetDeterminerTest, TransientDownload) {
       GetPathInDownloadDir(transient_test_case.expected_local_path);
 
   EXPECT_CALL(*delegate(), NotifyExtensions(_, _, _)).Times(0);
-  EXPECT_CALL(*delegate(), ReserveVirtualPath(_, expected_path, false,
-                                              ConflictAction::OVERWRITE, _))
+  EXPECT_CALL(*delegate(), ReserveVirtualPath_(_, expected_path, false,
+                                               ConflictAction::OVERWRITE, _))
       .Times(1);
   EXPECT_CALL(*delegate(), DetermineLocalPath(_, expected_path, _)).Times(1);
   EXPECT_CALL(*delegate(), CheckDownloadUrl(_, expected_path, _)).Times(1);
@@ -2322,8 +2324,8 @@ TEST_F(DownloadTargetDeterminerTest, TransientDownloadResumption) {
           Return(download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED));
 
   EXPECT_CALL(*delegate(), NotifyExtensions(_, _, _)).Times(0);
-  EXPECT_CALL(*delegate(), ReserveVirtualPath(_, expected_path, false,
-                                              ConflictAction::OVERWRITE, _))
+  EXPECT_CALL(*delegate(), ReserveVirtualPath_(_, expected_path, false,
+                                               ConflictAction::OVERWRITE, _))
       .Times(1);
   EXPECT_CALL(*delegate(), DetermineLocalPath(_, expected_path, _));
   EXPECT_CALL(*delegate(), CheckDownloadUrl(_, expected_path, _)).Times(1);

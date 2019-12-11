@@ -39,7 +39,8 @@ public class ConnectionInfoPopupTest {
     public void testShow() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> ConnectionInfoPopup.show(mActivityTestRule.getActivity(),
-                                mActivityTestRule.getActivity().getActivityTab()));
+                ()
+                        -> ConnectionInfoPopup.show(mActivityTestRule.getActivity(),
+                                mActivityTestRule.getActivity().getActivityTab().getWebContents()));
     }
 }

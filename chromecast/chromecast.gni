@@ -159,6 +159,13 @@ if (chromecast_branding == "public") {
 # in //build/config/locales.gni.
 cast_locales = locales
 
+# Android currently supports more locales than Desktop and ChromeOS.
+# If Cast will also the android files update this and the Cast grd files.
+if (is_android) {
+  # Subtract out additional Android locales
+  cast_locales -= [ "af" ]
+}
+
 enable_chromecast_extensions = enable_extensions
 
 # Use Chromecast CDMs for protected content. Some Android platforms use

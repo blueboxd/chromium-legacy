@@ -48,17 +48,32 @@ class HeadersArray : public bidirectional_stream_header_array {
 
 HeadersArray::HeadersArray(const spdy::SpdyHeaderBlock& header_block)
     : headers_strings_(header_block.size()) {
-  // Count and headers are inherited from parent structure.
-  count = capacity = header_block.size();
+  // Split coalesced headers by '\0' and copy them into |header_strings_|.
+  for (const auto& it : header_block) {
+    std::string value = it.second.as_string();
+    size_t start = 0;
+    size_t end = 0;
+    do {
+      end = value.find('\0', start);
+      std::string split_value;
+      if (end != value.npos) {
+        split_value = value.substr(start, end - start);
+      } else {
+        split_value = value.substr(start);
+      }
+      // |headers_strings_| is initialized to the size of header_block, but
+      // split headers might take up more space.
+      headers_strings_.push_back(
+          std::make_pair(it.first.as_string(), split_value));
+      start = end + 1;
+    } while (end != value.npos);
+  }
+  count = capacity = headers_strings_.size();
   headers = new bidirectional_stream_header[count];
   size_t i = 0;
-  // Copy headers into |headers_strings_| because string pieces are not
-  // '\0'-terminated.
-  for (const auto& it : header_block) {
-    headers_strings_[i].first = it.first.as_string();
-    headers_strings_[i].second = it.second.as_string();
-    headers[i].key = headers_strings_[i].first.c_str();
-    headers[i].value = headers_strings_[i].second.c_str();
+  for (const auto& it : headers_strings_) {
+    headers[i].key = it.first.c_str();
+    headers[i].value = it.second.c_str();
     ++i;
   }
 }

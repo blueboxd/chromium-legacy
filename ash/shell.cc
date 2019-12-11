@@ -168,6 +168,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "dbus/bus.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
@@ -239,7 +240,7 @@ Shell* Shell::instance_ = nullptr;
 // static
 Shell* Shell::CreateInstance(ShellInitParams init_params) {
   CHECK(!instance_);
-  instance_ = new Shell(std::move(init_params.delegate));
+  instance_ = new Shell(std::move(init_params.delegate), init_params.connector);
   instance_->Init(init_params.context_factory,
                   init_params.context_factory_private, init_params.local_state,
                   std::move(init_params.keyboard_ui_factory),
@@ -520,9 +521,11 @@ void Shell::NotifyShelfAutoHideBehaviorChanged(aura::Window* root_window) {
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, private:
 
-Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate)
+Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
+             service_manager::Connector* connector)
     : brightness_control_delegate_(
           std::make_unique<system::BrightnessControllerChromeos>()),
+      connector_(connector),
       focus_cycler_(std::make_unique<FocusCycler>()),
       ime_controller_(std::make_unique<ImeControllerImpl>()),
       immersive_context_(std::make_unique<ImmersiveContextAsh>()),
@@ -559,12 +562,8 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate)
       std::make_unique<KeyboardControllerImpl>(session_controller_.get());
 
   if (base::FeatureList::IsEnabled(features::kUseBluetoothSystemInAsh)) {
-    mojo::PendingRemote<device::mojom::BluetoothSystemFactory>
-        bluetooth_system_factory;
-    shell_delegate_->BindBluetoothSystemFactory(
-        bluetooth_system_factory.InitWithNewPipeAndPassReceiver());
-    tray_bluetooth_helper_ = std::make_unique<TrayBluetoothHelperExperimental>(
-        std::move(bluetooth_system_factory));
+    tray_bluetooth_helper_ =
+        std::make_unique<TrayBluetoothHelperExperimental>(connector_);
   } else {
     tray_bluetooth_helper_ = std::make_unique<TrayBluetoothHelperLegacy>();
   }
@@ -1122,13 +1121,9 @@ void Shell::Init(
     peripheral_battery_tracker_ = std::make_unique<PeripheralBatteryTracker>();
   }
   power_event_observer_.reset(new PowerEventObserver());
-
-  mojo::PendingRemote<device::mojom::Fingerprint> fingerprint;
-  shell_delegate_->BindFingerprint(
-      fingerprint.InitWithNewPipeAndPassReceiver());
   user_activity_notifier_ =
       std::make_unique<ui::UserActivityPowerManagerNotifier>(
-          user_activity_detector_.get(), std::move(fingerprint));
+          user_activity_detector_.get(), connector_);
   video_activity_notifier_.reset(
       new VideoActivityNotifier(video_detector_.get()));
   bluetooth_notification_controller_ =

@@ -156,14 +156,13 @@ void OnDownloadDisplayNamesReturned(
       base::BindOnce(std::move(callback), std::move(download_names)));
 }
 
-void OnPathReserved(
-    const DownloadItemImplDelegate::DownloadTargetCallback& callback,
-    DownloadDangerType danger_type,
-    const InProgressDownloadManager::IntermediatePathCallback&
-        intermediate_path_cb,
-    const base::FilePath& forced_file_path,
-    PathValidationResult result,
-    const base::FilePath& target_path) {
+void OnPathReserved(DownloadItemImplDelegate::DownloadTargetCallback callback,
+                    DownloadDangerType danger_type,
+                    const InProgressDownloadManager::IntermediatePathCallback&
+                        intermediate_path_cb,
+                    const base::FilePath& forced_file_path,
+                    PathValidationResult result,
+                    const base::FilePath& target_path) {
   base::FilePath intermediate_path;
   if (!target_path.empty() &&
       (result == PathValidationResult::SUCCESS ||
@@ -180,10 +179,11 @@ void OnPathReserved(
       intermediate_path.empty()
           ? BackgroudTargetDeterminationResultTypes::kPathReservationFailed
           : BackgroudTargetDeterminationResultTypes::kSuccess);
-  callback.Run(target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-               danger_type, intermediate_path,
-               intermediate_path.empty() ? DOWNLOAD_INTERRUPT_REASON_FILE_FAILED
-                                         : DOWNLOAD_INTERRUPT_REASON_NONE);
+  std::move(callback).Run(
+      target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE, danger_type,
+      intermediate_path,
+      intermediate_path.empty() ? DOWNLOAD_INTERRUPT_REASON_FILE_FAILED
+                                : DOWNLOAD_INTERRUPT_REASON_NONE);
 }
 #endif
 
@@ -368,16 +368,17 @@ void InProgressDownloadManager::ShutDown() {
 
 void InProgressDownloadManager::DetermineDownloadTarget(
     DownloadItemImpl* download,
-    const DownloadTargetCallback& callback) {
+    DownloadTargetCallback callback) {
 #if defined(OS_ANDROID)
   base::FilePath target_path = download->GetForcedFilePath().empty()
                                    ? download->GetTargetFilePath()
                                    : download->GetForcedFilePath();
 
   if (target_path.empty()) {
-    callback.Run(target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                 download->GetDangerType(), target_path,
-                 DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
+    std::move(callback).Run(target_path,
+                            DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+                            download->GetDangerType(), target_path,
+                            DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
     RecordBackgroundTargetDeterminationResult(
         BackgroudTargetDeterminationResultTypes::kTargetPathMissing);
     return;
@@ -386,9 +387,9 @@ void InProgressDownloadManager::DetermineDownloadTarget(
   // If final target is a content URI, the intermediate path should
   // be identical to it.
   if (target_path.IsContentUri()) {
-    callback.Run(target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                 download->GetDangerType(), target_path,
-                 DOWNLOAD_INTERRUPT_REASON_NONE);
+    std::move(callback).Run(
+        target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+        download->GetDangerType(), target_path, DOWNLOAD_INTERRUPT_REASON_NONE);
     RecordBackgroundTargetDeterminationResult(
         BackgroudTargetDeterminationResultTypes::kSuccess);
     return;
@@ -400,13 +401,14 @@ void InProgressDownloadManager::DetermineDownloadTarget(
       download->GetForcedFilePath().empty()
           ? DownloadPathReservationTracker::UNIQUIFY
           : DownloadPathReservationTracker::OVERWRITE,
-      base::Bind(&OnPathReserved, callback, download->GetDangerType(),
-                 intermediate_path_cb_, download->GetForcedFilePath()));
+      base::BindOnce(&OnPathReserved, std::move(callback),
+                     download->GetDangerType(), intermediate_path_cb_,
+                     download->GetForcedFilePath()));
 #else
-  callback.Run(download->GetTargetFilePath(),
-               DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-               download->GetDangerType(), download->GetFullPath(),
-               DOWNLOAD_INTERRUPT_REASON_NONE);
+  std::move(callback).Run(download->GetTargetFilePath(),
+                          DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+                          download->GetDangerType(), download->GetFullPath(),
+                          DOWNLOAD_INTERRUPT_REASON_NONE);
 #endif  // defined(OS_ANDROID)
 }
 
@@ -422,7 +424,7 @@ void InProgressDownloadManager::ResumeInterruptedDownload(
 
 bool InProgressDownloadManager::ShouldOpenDownload(
     DownloadItemImpl* item,
-    const ShouldOpenDownloadCallback& callback) {
+    ShouldOpenDownloadCallback callback) {
   return true;
 }
 

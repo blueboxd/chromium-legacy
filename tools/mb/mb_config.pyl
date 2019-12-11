@@ -14,16 +14,6 @@
   # below). MB uses this dict to look up which config to use for a given bot.
   'masters': {
     'chrome': {
-      # TODO(crbug.com/1032272): Delete all these in favor of their "*-chrome"
-      # counterparts below.
-      'chromeos-betty-google-rel': 'official_cros_chrome_sdk',
-      'chromeos-betty-pi-arc-google-rel': 'official_cros_chrome_sdk',
-      'chromeos-eve-google-rel': 'official_cros_chrome_sdk',
-      'chromeos-kevin-google-rel': 'official_cros_chrome_sdk',
-      'linux-chromeos-google-rel': 'official_goma_chromeos_minimal_symbols',
-      'linux-google-rel': 'official_goma',
-      'mac-google-rel': 'official_goma',
-      'win-google-rel': 'official_goma_x86',
       'chromeos-betty-chrome': 'official_cros_chrome_sdk',
       'chromeos-betty-pi-arc-chrome': 'official_cros_chrome_sdk',
       'chromeos-eve-chrome': 'official_cros_chrome_sdk',

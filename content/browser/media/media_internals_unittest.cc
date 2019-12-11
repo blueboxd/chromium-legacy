@@ -128,7 +128,7 @@ class MediaInternalsVideoCaptureDeviceTest : public testing::Test,
                                              public MediaInternalsTestBase {
  public:
   MediaInternalsVideoCaptureDeviceTest()
-      : update_cb_(base::Bind(
+      : update_cb_(base::BindRepeating(
             &MediaInternalsVideoCaptureDeviceTest::UpdateCallbackImpl,
             base::Unretained(this))) {
     SetUpServiceManager();
@@ -224,8 +224,9 @@ class MediaInternalsAudioLogTest
       public testing::TestWithParam<media::AudioLogFactory::AudioComponent> {
  public:
   MediaInternalsAudioLogTest()
-      : update_cb_(base::Bind(&MediaInternalsAudioLogTest::UpdateCallbackImpl,
-                              base::Unretained(this))),
+      : update_cb_(
+            base::BindRepeating(&MediaInternalsAudioLogTest::UpdateCallbackImpl,
+                                base::Unretained(this))),
         test_params_(MakeAudioParams()),
         test_component_(GetParam()),
         audio_log_(media_internals()->CreateAudioLog(test_component_,

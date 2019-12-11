@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {$} from 'chrome://resources/js/util.m.js';
+
 /**
  * This variable structure is here to document the structure that the template
  * expects to correctly populate the page.
@@ -39,7 +42,7 @@ function renderTemplate(moduleListData) {
  * and return detailed data about the configuration.
  */
 function requestModuleListData() {
-  cr.sendWithPromise('requestModuleList').then(returnModuleList);
+  sendWithPromise('requestModuleList').then(returnModuleList);
 }
 
 /**
@@ -52,9 +55,9 @@ function filterModuleListData() {
   const modules = document.getElementsByClassName('module');
 
   // Loop through all modules, and hide all that don't match the filter.
-  for (i = 0; i < modules.length; ++i) {
-    modules[i].style.display =
-        modules[i].dataset.process.includes(filter) ? '' : 'none';
+  for (const module of modules) {
+    module.style.display =
+        module.dataset['process'].includes(filter) ? '' : 'none';
   }
 }
 

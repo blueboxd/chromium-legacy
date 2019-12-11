@@ -74,64 +74,10 @@ grit("generated_resources") {
   source = "generated_resources.grd"
   defines = chrome_grit_defines
   output_dir = "$root_gen_dir/chrome"
-  outputs = [
-    "grit/generated_resources.h",
-    "generated_resources_am.pak",
-    "generated_resources_ar.pak",
-    "generated_resources_bg.pak",
-    "generated_resources_bn.pak",
-    "generated_resources_ca.pak",
-    "generated_resources_cs.pak",
-    "generated_resources_da.pak",
-    "generated_resources_de.pak",
-    "generated_resources_el.pak",
-    "generated_resources_en-GB.pak",
-    "generated_resources_en-US.pak",
-    "generated_resources_es.pak",
-    "generated_resources_es-419.pak",
-    "generated_resources_et.pak",
-    "generated_resources_fa.pak",
-    "generated_resources_fake-bidi.pak",
-    "generated_resources_fi.pak",
-    "generated_resources_fil.pak",
-    "generated_resources_fr.pak",
-    "generated_resources_gu.pak",
-    "generated_resources_he.pak",
-    "generated_resources_hi.pak",
-    "generated_resources_hr.pak",
-    "generated_resources_hu.pak",
-    "generated_resources_id.pak",
-    "generated_resources_it.pak",
-    "generated_resources_ja.pak",
-    "generated_resources_kn.pak",
-    "generated_resources_ko.pak",
-    "generated_resources_lt.pak",
-    "generated_resources_lv.pak",
-    "generated_resources_ml.pak",
-    "generated_resources_mr.pak",
-    "generated_resources_ms.pak",
-    "generated_resources_nl.pak",
-    "generated_resources_nb.pak",
-    "generated_resources_pl.pak",
-    "generated_resources_pt-BR.pak",
-    "generated_resources_pt-PT.pak",
-    "generated_resources_ro.pak",
-    "generated_resources_ru.pak",
-    "generated_resources_sk.pak",
-    "generated_resources_sl.pak",
-    "generated_resources_sr.pak",
-    "generated_resources_sv.pak",
-    "generated_resources_sw.pak",
-    "generated_resources_ta.pak",
-    "generated_resources_te.pak",
-    "generated_resources_th.pak",
-    "generated_resources_tr.pak",
-    "generated_resources_uk.pak",
-    "generated_resources_vi.pak",
-    "generated_resources_zh-CN.pak",
-    "generated_resources_zh-TW.pak",
-  ]
-
+  outputs =
+      [ "grit/generated_resources.h" ] +
+      process_file_template(locales_with_fake_bidi,
+                            [ "generated_resources_{{source_name_part}}.pak" ])
   if (is_android) {
     outputs += android_generated_java_resources
   }
@@ -152,126 +98,20 @@ grit("google_chrome_strings") {
   source = "google_chrome_strings.grd"
   defines = chrome_grit_defines
   output_dir = "$root_gen_dir/chrome"
-  outputs = [
-    "grit/google_chrome_strings.h",
-    "google_chrome_strings_am.pak",
-    "google_chrome_strings_ar.pak",
-    "google_chrome_strings_bg.pak",
-    "google_chrome_strings_bn.pak",
-    "google_chrome_strings_ca.pak",
-    "google_chrome_strings_cs.pak",
-    "google_chrome_strings_da.pak",
-    "google_chrome_strings_de.pak",
-    "google_chrome_strings_el.pak",
-    "google_chrome_strings_en-GB.pak",
-    "google_chrome_strings_en-US.pak",
-    "google_chrome_strings_es.pak",
-    "google_chrome_strings_es-419.pak",
-    "google_chrome_strings_et.pak",
-    "google_chrome_strings_fa.pak",
-    "google_chrome_strings_fi.pak",
-    "google_chrome_strings_fil.pak",
-    "google_chrome_strings_fr.pak",
-    "google_chrome_strings_gu.pak",
-    "google_chrome_strings_he.pak",
-    "google_chrome_strings_hi.pak",
-    "google_chrome_strings_hr.pak",
-    "google_chrome_strings_hu.pak",
-    "google_chrome_strings_id.pak",
-    "google_chrome_strings_it.pak",
-    "google_chrome_strings_ja.pak",
-    "google_chrome_strings_kn.pak",
-    "google_chrome_strings_ko.pak",
-    "google_chrome_strings_lt.pak",
-    "google_chrome_strings_lv.pak",
-    "google_chrome_strings_ml.pak",
-    "google_chrome_strings_mr.pak",
-    "google_chrome_strings_ms.pak",
-    "google_chrome_strings_nl.pak",
-    "google_chrome_strings_nb.pak",
-    "google_chrome_strings_pl.pak",
-    "google_chrome_strings_pt-BR.pak",
-    "google_chrome_strings_pt-PT.pak",
-    "google_chrome_strings_ro.pak",
-    "google_chrome_strings_ru.pak",
-    "google_chrome_strings_sk.pak",
-    "google_chrome_strings_sl.pak",
-    "google_chrome_strings_sr.pak",
-    "google_chrome_strings_sv.pak",
-    "google_chrome_strings_sw.pak",
-    "google_chrome_strings_ta.pak",
-    "google_chrome_strings_te.pak",
-    "google_chrome_strings_th.pak",
-    "google_chrome_strings_tr.pak",
-    "google_chrome_strings_uk.pak",
-    "google_chrome_strings_vi.pak",
-    "google_chrome_strings_zh-CN.pak",
-    "google_chrome_strings_zh-TW.pak",
-    "google_chrome_strings_fake-bidi.pak",
-  ]
+  outputs = [ "grit/google_chrome_strings.h" ] +
+            process_file_template(
+                locales_with_fake_bidi,
+                [ "google_chrome_strings_{{source_name_part}}.pak" ])
 }
 
 grit("chromium_strings") {
   source = "chromium_strings.grd"
   defines = chrome_grit_defines
   output_dir = "$root_gen_dir/chrome"
-  outputs = [
-    "grit/chromium_strings.h",
-    "chromium_strings_am.pak",
-    "chromium_strings_ar.pak",
-    "chromium_strings_bg.pak",
-    "chromium_strings_bn.pak",
-    "chromium_strings_ca.pak",
-    "chromium_strings_cs.pak",
-    "chromium_strings_da.pak",
-    "chromium_strings_de.pak",
-    "chromium_strings_el.pak",
-    "chromium_strings_en-GB.pak",
-    "chromium_strings_en-US.pak",
-    "chromium_strings_es.pak",
-    "chromium_strings_es-419.pak",
-    "chromium_strings_et.pak",
-    "chromium_strings_fa.pak",
-    "chromium_strings_fake-bidi.pak",
-    "chromium_strings_fi.pak",
-    "chromium_strings_fil.pak",
-    "chromium_strings_fr.pak",
-    "chromium_strings_gu.pak",
-    "chromium_strings_he.pak",
-    "chromium_strings_hi.pak",
-    "chromium_strings_hr.pak",
-    "chromium_strings_hu.pak",
-    "chromium_strings_id.pak",
-    "chromium_strings_it.pak",
-    "chromium_strings_ja.pak",
-    "chromium_strings_kn.pak",
-    "chromium_strings_ko.pak",
-    "chromium_strings_lt.pak",
-    "chromium_strings_lv.pak",
-    "chromium_strings_ml.pak",
-    "chromium_strings_mr.pak",
-    "chromium_strings_ms.pak",
-    "chromium_strings_nl.pak",
-    "chromium_strings_nb.pak",
-    "chromium_strings_pl.pak",
-    "chromium_strings_pt-BR.pak",
-    "chromium_strings_pt-PT.pak",
-    "chromium_strings_ro.pak",
-    "chromium_strings_ru.pak",
-    "chromium_strings_sk.pak",
-    "chromium_strings_sl.pak",
-    "chromium_strings_sr.pak",
-    "chromium_strings_sv.pak",
-    "chromium_strings_sw.pak",
-    "chromium_strings_ta.pak",
-    "chromium_strings_te.pak",
-    "chromium_strings_th.pak",
-    "chromium_strings_tr.pak",
-    "chromium_strings_uk.pak",
-    "chromium_strings_vi.pak",
-    "chromium_strings_zh-CN.pak",
-    "chromium_strings_zh-TW.pak",
-  ]
+  outputs =
+      [ "grit/chromium_strings.h" ] +
+      process_file_template(locales_with_fake_bidi,
+                            [ "chromium_strings_{{source_name_part}}.pak" ])
 }
 
 static_library("test_support") {
@@ -430,8 +270,31 @@ source_set("chrome_content_browser_overlay_manifest") {
   }
 }
 
+source_set("builtin_service_manifests") {
+  sources = [
+    "builtin_service_manifests.cc",
+    "builtin_service_manifests.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chrome/common:buildflags",
+    "//chrome/common:mojo_bindings",
+    "//components/startup_metric_utils/common:interfaces",
+    "//device/vr/buildflags",
+    "//extensions/buildflags",
+    "//printing/buildflags",
+    "//services/service_manager/public/cpp",
+  ]
+
+  if (is_chromeos) {
+    deps += [ "//ash/public/cpp:manifest" ]
+  }
+}
+
 source_set("chrome_service_manifests") {
   public_deps = [
+    ":builtin_service_manifests",
     ":chrome_content_browser_overlay_manifest",
   ]
 }

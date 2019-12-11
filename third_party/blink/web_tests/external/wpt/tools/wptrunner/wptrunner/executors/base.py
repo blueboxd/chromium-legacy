@@ -13,6 +13,7 @@ from abc import ABCMeta, abstractmethod
 
 from ..testrunner import Stop
 from .protocol import Protocol, BaseProtocolPart
+import webdriver as client
 
 here = os.path.split(__file__)[0]
 
@@ -148,7 +149,7 @@ class TimedRunner(object):
         executor = threading.Thread(target=self.run_func)
         executor.start()
 
-        # Add twice the timeout multiplier since the called function is expected to
+        # Add twice the extra timeout since the called function is expected to
         # wait at least self.timeout + self.extra_timeout and this gives some leeway
         timeout = self.timeout + 2 * self.extra_timeout if self.timeout else None
         finished = self.result_flag.wait(timeout)
@@ -700,6 +701,9 @@ class CallbackHandler(object):
             raise ValueError("Unknown action %s" % action)
         try:
             result = action_handler(payload)
+        except (NotImplementedError, client.UnknownCommandException):
+            self.logger.warning("Action %s not implemented" % action)
+            self._send_message("complete", "error", "Action %s not implemented" % action)
         except Exception:
             self.logger.warning("Action %s failed" % action)
             self.logger.warning(traceback.format_exc())

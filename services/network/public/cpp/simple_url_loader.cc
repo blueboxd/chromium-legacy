@@ -229,6 +229,7 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
       uint64_t length = std::numeric_limits<uint64_t>::max()) override;
   void SetRetryOptions(int max_retries, int retry_mode) override;
   void SetURLLoaderFactoryOptions(uint32_t options) override;
+  void SetRequestID(int32_t request_id) override;
   void SetTimeoutDuration(base::TimeDelta timeout_duration) override;
 
   int NetError() const override;
@@ -344,6 +345,7 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
   int remaining_retries_ = 0;
   int retry_mode_ = RETRY_NEVER;
   uint32_t url_loader_factory_options_ = 0;
+  int32_t request_id_ = 0;
 
   // The next values contain all the information required to restart the
   // request.
@@ -1365,6 +1367,12 @@ void SimpleURLLoaderImpl::SetURLLoaderFactoryOptions(uint32_t options) {
   url_loader_factory_options_ = options;
 }
 
+void SimpleURLLoaderImpl::SetRequestID(int32_t request_id) {
+  // Check if a request has not yet been started.
+  DCHECK(!body_handler_);
+  request_id_ = request_id;
+}
+
 void SimpleURLLoaderImpl::SetTimeoutDuration(base::TimeDelta timeout_duration) {
   DCHECK(!request_state_->body_started);
   DCHECK(timeout_duration >= base::TimeDelta());
@@ -1515,8 +1523,8 @@ void SimpleURLLoaderImpl::StartRequest(
         string_upload_data_pipe_getter_->GetRemoteForNewUpload());
   }
   url_loader_factory->CreateLoaderAndStart(
-      url_loader_.BindNewPipeAndPassReceiver(), 0 /* routing_id */,
-      0 /* request_id */, url_loader_factory_options_, *resource_request_,
+      url_loader_.BindNewPipeAndPassReceiver(), 0 /* routing_id */, request_id_,
+      url_loader_factory_options_, *resource_request_,
       client_receiver_.BindNewPipeAndPassRemote(),
       net::MutableNetworkTrafficAnnotationTag(annotation_tag_));
   client_receiver_.set_disconnect_handler(base::BindOnce(

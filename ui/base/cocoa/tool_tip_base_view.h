@@ -16,10 +16,10 @@ UI_BASE_EXPORT
 @interface ToolTipBaseView : BaseView {
  @private
   // These are part of the magic tooltip code from WebKit's WebHTMLView:
-  id trackingRectOwner_;  // (not retained)
-  void* trackingRectUserData_;
-  NSTrackingRectTag lastToolTipTag_;
-  base::scoped_nsobject<NSString> toolTip_;
+  id _trackingRectOwner;  // (not retained)
+  void* _trackingRectUserData;
+  NSTrackingRectTag _lastToolTipTag;
+  base::scoped_nsobject<NSString> _toolTip;
 }
 
 // Set the current tooltip. It is the responsibility of the caller to set a nil

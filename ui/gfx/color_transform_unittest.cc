@@ -7,7 +7,7 @@
 
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/src/sksl/SkSLCompiler.h"
+#include "third_party/skia/src/core/SkColorFilterPriv.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/color_transform.h"
 #include "ui/gfx/icc_profile.h"
@@ -518,13 +518,9 @@ TEST(SimpleColorSpace, CanParseSkShaderSource) {
 
       std::string source = "void main(inout half4 color) {" +
                            transform->GetSkShaderSource() + "}";
-      SkSL::Program::Settings settings;
-      SkSL::Compiler compiler;
-      auto program = compiler.convertProgram(
-          SkSL::Program::kPipelineStage_Kind,
-          SkSL::String(source.c_str(), source.length()), settings);
-      EXPECT_NE(nullptr, program.get());
-      EXPECT_EQ(0, compiler.errorCount()) << compiler.errorText();
+      SkRuntimeColorFilterFactory factory(
+          SkString(source.c_str(), source.length()), nullptr);
+      EXPECT_TRUE(factory.testCompile());
     }
   }
 }

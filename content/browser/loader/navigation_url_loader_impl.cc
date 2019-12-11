@@ -57,7 +57,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_utils.h"
-#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/ssl_status.h"
@@ -400,7 +399,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(!started_);
     ui_to_io_time_ += (base::Time::Now() - ui_post_time);
-    global_request_id_ = MakeGlobalRequestID();
+    global_request_id_ = GlobalRequestID::MakeBrowserInitiated();
     frame_tree_node_id_ = request_info->frame_tree_node_id;
     started_ = true;
     web_contents_getter_ = base::BindRepeating(
@@ -1510,13 +1509,6 @@ void NavigationURLLoaderImpl::CreateURLLoaderFactoryWithHeaderClient(
 
   partition->GetNetworkContext()->CreateURLLoaderFactory(
       std::move(factory_receiver), std::move(params));
-}
-
-// static
-GlobalRequestID NavigationURLLoaderImpl::MakeGlobalRequestID() {
-  // Start at -2 on the same lines as ResourceDispatcherHostImpl.
-  static std::atomic_int s_next_request_id{-2};
-  return GlobalRequestID(-1, s_next_request_id--);
 }
 
 void NavigationURLLoaderImpl::OnRequestStarted(base::TimeTicks timestamp) {

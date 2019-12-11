@@ -10,6 +10,7 @@ include_rules = [
 
   # Components can be mojo services.
   "+mojo/public",
+  "+services/service_manager/public",
 
   # Components support views UI with aura.
   "+cc/paint",

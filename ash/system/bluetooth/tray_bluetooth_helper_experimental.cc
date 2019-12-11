@@ -12,6 +12,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/device/public/mojom/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/identity.h"
 
 // base::Unretained():
 //
@@ -23,14 +26,17 @@
 namespace ash {
 
 TrayBluetoothHelperExperimental::TrayBluetoothHelperExperimental(
-    mojo::PendingRemote<device::mojom::BluetoothSystemFactory>
-        bluetooth_system_factory)
-    : bluetooth_system_factory_(std::move(bluetooth_system_factory)) {}
+    service_manager::Connector* connector)
+    : connector_(connector) {}
 
 TrayBluetoothHelperExperimental::~TrayBluetoothHelperExperimental() = default;
 
 void TrayBluetoothHelperExperimental::Initialize() {
-  bluetooth_system_factory_->Create(
+  mojo::Remote<device::mojom::BluetoothSystemFactory> bluetooth_system_factory;
+  connector_->Connect(device::mojom::kServiceName,
+                      bluetooth_system_factory.BindNewPipeAndPassReceiver());
+
+  bluetooth_system_factory->Create(
       bluetooth_system_.BindNewPipeAndPassReceiver(),
       bluetooth_system_client_receiver_.BindNewPipeAndPassRemote());
   bluetooth_system_->GetState(

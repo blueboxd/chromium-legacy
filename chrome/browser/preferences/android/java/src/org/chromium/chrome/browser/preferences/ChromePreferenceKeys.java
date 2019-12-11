@@ -141,6 +141,12 @@ public final class ChromePreferenceKeys {
             "contextual_search_impressions_week_4";
 
     /**
+     * Indicates whether or not there are prefetched content in chrome that can be viewed offline.
+     */
+    public static final String EXPLORE_OFFLINE_CONTENT_AVAILABILITY_STATUS =
+            "Chrome.NTPExploreOfflineCard.HasExploreOfflineContent";
+
+    /**
      * Whether the promotion for data reduction has been skipped on first invocation.
      * Default value is false.
      */
@@ -424,6 +430,7 @@ public final class ChromePreferenceKeys {
                 CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_2,
                 CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_3,
                 CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_4,
+                EXPLORE_OFFLINE_CONTENT_AVAILABILITY_STATUS,
                 PROMOS_SKIPPED_ON_FIRST_START,
                 SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION,
                 SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES,

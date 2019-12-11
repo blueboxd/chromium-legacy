@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/guest_os/guest_os_share_path_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -507,25 +506,6 @@ void GuestOsSharePath::RegisterPersistedPath(const std::string& vm_name,
     vms.Append(base::Value(vm_name));
     shared_paths->SetKey(path.value(), std::move(vms));
   }
-}
-
-void GuestOsSharePath::MigratePersistedPathsToMultiVM(
-    PrefService* profile_prefs) {
-  const base::ListValue* shared_paths =
-      profile_prefs->GetList(prefs::kCrostiniSharedPaths);
-  if (shared_paths->GetSize() == 0) {
-    return;
-  }
-  // Convert ['foo', 'bar'] to {'foo':['termina'], 'bar':['termina']}.
-  base::Value dict(base::Value::Type::DICTIONARY);
-  for (const auto& shared_path : *shared_paths) {
-    base::Value termina(base::Value::Type::LIST);
-    termina.Append(base::Value(crostini::kCrostiniDefaultVmName));
-    dict.SetKey(shared_path.GetString(), std::move(termina));
-  }
-  profile_prefs->Set(prefs::kGuestOSPathsSharedToVms, std::move(dict));
-
-  profile_prefs->ClearPref(prefs::kCrostiniSharedPaths);
 }
 
 void GuestOsSharePath::OnVolumeMounted(chromeos::MountError error_code,

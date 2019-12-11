@@ -77,7 +77,12 @@ void IOHandler::Read(
                                 "does not support random access"));
     return;
   }
-  stream->Read(offset.fromMaybe(-1), max_size.fromMaybe(kDefaultChunkSize),
+  int size = max_size.fromMaybe(kDefaultChunkSize);
+  if (size <= 0) {
+    callback->sendFailure(Response::InvalidParams("Invalid max read size"));
+    return;
+  }
+  stream->Read(offset.fromMaybe(-1), size,
                base::BindOnce(&IOHandler::ReadComplete,
                               weak_factory_.GetWeakPtr(), std::move(callback)));
 }

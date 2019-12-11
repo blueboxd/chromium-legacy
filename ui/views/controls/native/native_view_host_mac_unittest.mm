@@ -46,7 +46,7 @@ class TestViewsHostable : public ui::ViewsHostableView {
 @property(nonatomic, assign) ui::ViewsHostableView* viewsHostableView;
 @end
 @implementation TestViewsHostableView
-@synthesize viewsHostableView = viewsHostableView_;
+@synthesize viewsHostableView = _viewsHostableView;
 @end
 
 namespace views {

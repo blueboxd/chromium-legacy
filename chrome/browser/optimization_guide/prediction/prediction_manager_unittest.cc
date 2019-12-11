@@ -338,10 +338,16 @@ class TestPredictionManager : public PredictionManager {
 
   std::unique_ptr<PredictionModel> CreatePredictionModel(
       const proto::PredictionModel& model) const override {
+    if (!create_valid_prediction_model_)
+      return nullptr;
     std::unique_ptr<PredictionModel> prediction_model =
         std::make_unique<TestPredictionModel>(
             std::make_unique<proto::PredictionModel>(model));
     return prediction_model;
+  }
+
+  void set_create_valid_prediction_model(bool create_valid_prediction_model) {
+    create_valid_prediction_model_ = create_valid_prediction_model;
   }
 
   using PredictionManager::GetHostModelFeaturesForTesting;
@@ -369,6 +375,7 @@ class TestPredictionManager : public PredictionManager {
 
  private:
   StoreEntryMap db_store_;
+  bool create_valid_prediction_model_ = true;
 };
 
 class PredictionManagerTest
@@ -620,6 +627,49 @@ TEST_F(PredictionManagerTest, EvaluatePredictionModel) {
           GetStringNameForOptimizationTarget(
               optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
       1);
+
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.IsPredictionModelValid." +
+          GetStringNameForOptimizationTarget(
+              optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
+      true, 1);
+
+  histogram_tester.ExpectBucketCount("OptimizationGuide.IsPredictionModelValid",
+                                     true, 1);
+
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionModelValidationLatency." +
+          GetStringNameForOptimizationTarget(
+              optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
+      1);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionModelValidationLatency", 1);
+}
+
+TEST_F(PredictionManagerTest, UpdatePredictionModelsWithInvalidModel) {
+  base::HistogramTester histogram_tester;
+  CreatePredictionManager({});
+  prediction_manager()->SetPredictionModelFetcherForTesting(
+      BuildTestPredictionModelFetcher(
+          PredictionModelFetcherEndState::kFetchFailed));
+
+  prediction_manager()->RegisterOptimizationTargets(
+      {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
+
+  std::unique_ptr<proto::GetModelsResponse> get_models_response =
+      BuildGetModelsResponse({} /* hosts */, {} /* client features */);
+
+  // Override the manager so that any prediction model updates will be seen as
+  // invalid.
+  prediction_manager()->set_create_valid_prediction_model(false);
+  prediction_manager()->UpdatePredictionModelsForTesting(
+      get_models_response.get());
+
+  histogram_tester.ExpectBucketCount("OptimizationGuide.IsPredictionModelValid",
+                                     false, 1);
+
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionModelValidationLatency", 0);
 }
 
 TEST_F(PredictionManagerTest, UpdateModelWithSameVersion) {

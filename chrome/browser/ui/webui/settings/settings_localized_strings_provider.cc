@@ -631,7 +631,7 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "showCrostiniExportImport",
       crostini::CrostiniFeatures::Get()->IsExportImportUIAllowed(profile));
-  html_source->AddBoolean("ArcAdbSideloadingSupported",
+  html_source->AddBoolean("arcAdbSideloadingSupported",
                           base::FeatureList::IsEnabled(
                               chromeos::features::kArcAdbSideloadingFeature));
   html_source->AddBoolean("isOwnerProfile",
@@ -1660,6 +1660,8 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
     {"manageInputMethodsPageTitle",
      IDS_SETTINGS_LANGUAGES_MANAGE_INPUT_METHODS_TITLE},
     {"showImeMenu", IDS_SETTINGS_LANGUAGES_SHOW_IME_MENU},
+    {"displayLanguageRestart",
+     IDS_SETTINGS_LANGUAGES_RESTART_TO_DISPLAY_LANGUAGE},
 #endif
     {"addLanguagesDialogTitle", IDS_SETTINGS_LANGUAGES_MANAGE_LANGUAGES_TITLE},
     {"allLanguages", IDS_SETTINGS_LANGUAGES_ALL_LANGUAGES},

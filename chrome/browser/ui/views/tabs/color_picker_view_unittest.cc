@@ -38,8 +38,9 @@ class ColorPickerViewTest : public ChromeViewsTestBase {
     widget_ = std::make_unique<views::Widget>();
     widget_->Init(std::move(widget_params));
 
-    color_picker_ = new ColorPickerView(kTestColors, SK_ColorCYAN,
-                                        color_selected_callback_.Get());
+    color_picker_ =
+        new ColorPickerView(kTestColors, SK_ColorWHITE, SK_ColorCYAN,
+                            color_selected_callback_.Get());
     widget_->SetContentsView(color_picker_);
 
     color_picker_->SizeToPreferredSize();
@@ -102,8 +103,9 @@ TEST_F(ColorPickerViewTest, ColorSelectedByDefaultIfMatching) {
   std::unique_ptr<views::Widget> widget = std::make_unique<views::Widget>();
   widget->Init(std::move(widget_params));
 
-  ColorPickerView* color_picker = new ColorPickerView(
-      kTestColors, initial_color, color_selected_callback_.Get());
+  ColorPickerView* color_picker =
+      new ColorPickerView(kTestColors, SK_ColorWHITE, initial_color,
+                          color_selected_callback_.Get());
   widget->SetContentsView(color_picker);
 
   color_picker->SizeToPreferredSize();

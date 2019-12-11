@@ -32,12 +32,12 @@ fuchsia::mem::Buffer MemBufferFromString(base::StringPiece data,
 
   zx_status_t status = zx::vmo::create(data.size(), 0, &buffer.vmo);
   ZX_CHECK(status == ZX_OK, status) << "zx_vmo_create";
-
   status = buffer.vmo.set_property(ZX_PROP_NAME, name.data(), name.size());
   ZX_DCHECK(status == ZX_OK, status);
-
-  status = buffer.vmo.write(data.data(), 0, data.size());
-  ZX_CHECK(status == ZX_OK, status) << "zx_vmo_write";
+  if (data.size() > 0) {
+    status = buffer.vmo.write(data.data(), 0, data.size());
+    ZX_CHECK(status == ZX_OK, status) << "zx_vmo_write";
+  }
 
   buffer.size = data.size();
   return buffer;
@@ -54,6 +54,9 @@ fuchsia::mem::Buffer MemBufferFromString16(const base::StringPiece16& data,
 bool StringFromMemBuffer(const fuchsia::mem::Buffer& buffer,
                          std::string* output) {
   output->resize(buffer.size);
+  if (buffer.size == 0) {
+    return true;
+  }
   zx_status_t status = buffer.vmo.read(&output->at(0), 0, buffer.size);
   if (status != ZX_OK) {
     ZX_LOG(ERROR, status) << "zx_vmo_read";

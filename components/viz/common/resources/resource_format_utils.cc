@@ -518,7 +518,6 @@ wgpu::TextureFormat ToDawnFormat(ResourceFormat format) {
     case P010:
       break;
   }
-  NOTREACHED() << "Unsupported format " << format;
   return wgpu::TextureFormat::Undefined;
 }
 

@@ -96,7 +96,7 @@ public class StartSurfaceCoordinator implements StartSurface {
                 mSurfaceMode != SurfaceMode.NO_START_SURFACE
                         ? mActivity.getToolbarManager().getFakeboxDelegate()
                         : null,
-                mActivity.getNightModeStateProvider());
+                mActivity.getNightModeStateProvider(), mActivity.getFullscreenManager());
     }
 
     // Implements StartSurface.

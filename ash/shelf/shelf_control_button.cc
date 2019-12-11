@@ -25,9 +25,6 @@ namespace ash {
 
 namespace {
 
-// The height inset on the ink drop when in-app shelf is shown.
-constexpr int kInAppInkDropHeightInset = 4;
-
 class ShelfControlButtonHighlightPathGenerator
     : public views::HighlightPathGenerator {
  public:
@@ -41,9 +38,15 @@ class ShelfControlButtonHighlightPathGenerator
     // the same, so we find the center point and draw a square around that.
     const gfx::Point center = view->GetLocalBounds().CenterPoint();
     const int half_size = ShelfConfig::Get()->control_size() / 2;
-    const gfx::Rect visual_size(center.x() - half_size, center.y() - half_size,
-                                ShelfConfig::Get()->control_size(),
-                                ShelfConfig::Get()->control_size());
+    gfx::Rect visual_size(center.x() - half_size, center.y() - half_size,
+                          ShelfConfig::Get()->control_size(),
+                          ShelfConfig::Get()->control_size());
+    if (chromeos::switches::ShouldShowShelfHotseat() &&
+        Shell::Get()->tablet_mode_controller()->InTabletMode() &&
+        ShelfConfig::Get()->is_in_app()) {
+      visual_size.Inset(
+          0, ShelfConfig::Get()->in_app_control_button_height_inset());
+    }
     return SkPath().addRoundRect(gfx::RectToSkRect(visual_size), border_radius,
                                  border_radius);
   }
@@ -87,8 +90,10 @@ std::unique_ptr<views::InkDropMask> ShelfControlButton::CreateInkDropMask()
       Shell::Get()->tablet_mode_controller()->InTabletMode() &&
       ShelfConfig::Get()->is_in_app()) {
     return std::make_unique<views::RoundRectInkDropMask>(
-        size(), gfx::Insets(kInAppInkDropHeightInset, 0),
-        (size().height() / 2) - kInAppInkDropHeightInset);
+        size(),
+        gfx::Insets(ShelfConfig::Get()->in_app_control_button_height_inset(),
+                    0),
+        ShelfConfig::Get()->control_border_radius());
   }
 
   return std::make_unique<views::CircleInkDropMask>(

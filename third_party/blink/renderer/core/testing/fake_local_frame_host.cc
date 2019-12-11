@@ -63,6 +63,9 @@ void FakeLocalFrameHost::SuddenTerminationDisablerChanged(
     bool present,
     blink::mojom::SuddenTerminationDisablerType disabler_type) {}
 
+void FakeLocalFrameHost::ReceivedUserGestureBeforeNavigationChanged(
+    bool value) {}
+
 void FakeLocalFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<mojom::blink::LocalFrameHost>(

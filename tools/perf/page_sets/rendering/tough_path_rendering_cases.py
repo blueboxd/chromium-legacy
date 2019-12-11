@@ -38,7 +38,6 @@ class ChalkboardPage(rendering_story.RenderingStory):
   URL = 'https://testdrive-archive.azurewebsites.net/performance/chalkboard/'
   TAGS = [
     story_tags.TOUGH_PATH_RENDERING,
-    story_tags.REPRESENTATIVE_MOBILE,
     story_tags.REPRESENTATIVE_MAC_DESKTOP
   ]
 

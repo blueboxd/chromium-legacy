@@ -215,7 +215,7 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   void GetAppLaunchedMetricParams(
       AppLaunchedMetricParams* metric_params) override;
   gfx::Rect SnapBoundsToDisplayEdge(const gfx::Rect& bounds) override;
-  int GetShelfHeight() override;
+  int GetShelfSize() override;
 
   void AddObserver(AppListControllerObserver* observer);
   void RemoveObserver(AppListControllerObserver* obsever);

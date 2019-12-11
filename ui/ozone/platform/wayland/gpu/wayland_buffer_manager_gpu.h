@@ -19,7 +19,7 @@
 #include "ui/ozone/public/mojom/wayland/wayland_buffer_manager.mojom.h"
 
 #if defined(WAYLAND_GBM)
-#include "ui/ozone/common/linux/gbm_device.h"  // nogncheck
+#include "ui/gfx/linux/gbm_device.h"  // nogncheck
 #endif
 
 namespace gfx {

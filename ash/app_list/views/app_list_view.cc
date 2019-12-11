@@ -611,7 +611,7 @@ void AppListView::InitContents(bool is_tablet_mode) {
   DCHECK(!announcement_view_);
 
   app_list_background_shield_ =
-      new AppListBackgroundShieldView(delegate_->GetShelfHeight() / 2);
+      new AppListBackgroundShieldView(delegate_->GetShelfSize() / 2);
   app_list_background_shield_->UpdateBackground(/*use_blur*/ !is_tablet_mode &&
                                                 is_background_blur_enabled_);
   AddChildView(app_list_background_shield_);
@@ -806,16 +806,10 @@ void AppListView::Layout() {
 
   const gfx::Rect contents_bounds = GetContentsBounds();
 
-  // Exclude the shelf height from the contents bounds to avoid apps grid from
+  // Exclude the shelf size from the contents bounds to avoid apps grid from
   // overlapping with shelf.
   gfx::Rect main_bounds = contents_bounds;
-  if (is_side_shelf()) {
-    // Set both horizontal insets so the app list remains centered on the
-    // screen.
-    main_bounds.Inset(delegate_->GetShelfHeight(), 0);
-  } else {
-    main_bounds.Inset(0, 0, 0, delegate_->GetShelfHeight());
-  }
+  main_bounds.Inset(GetMainViewInsetsForShelf());
 
   app_list_main_view_->SetBoundsRect(main_bounds);
 
@@ -847,11 +841,16 @@ bool AppListView::IsShowingEmbeddedAssistantUI() const {
   return app_list_main_view()->contents_view()->IsShowingEmbeddedAssistantUI();
 }
 
+gfx::Insets AppListView::GetMainViewInsetsForShelf() const {
+  if (is_side_shelf()) {
+    // Set both horizontal insets so the app list remains centered on the
+    // screen.
+    return gfx::Insets(0, delegate_->GetShelfSize());
+  }
+  return gfx::Insets(0, 0, delegate_->GetShelfSize(), 0);
+}
+
 void AppListView::UpdateAppListConfig(aura::Window* parent_window) {
-  // For side shelf, extra horizontal margin is needed to ensure the apps grid
-  // does not overlap with shelf.
-  const int side_shelf_width =
-      is_side_shelf() ? delegate_->GetShelfHeight() : 0;
   // Create the app list configuration override if it's needed for the current
   // display bounds and the available apps grid size.
   std::unique_ptr<AppListConfig> new_config =
@@ -860,8 +859,7 @@ void AppListView::UpdateAppListConfig(aura::Window* parent_window) {
               ->GetDisplayNearestView(parent_window)
               .work_area()
               .size(),
-          delegate_->GetShelfHeight(), side_shelf_width,
-          app_list_config_.get());
+          GetMainViewInsetsForShelf(), app_list_config_.get());
 
   if (!new_config)
     return;
@@ -1715,7 +1713,7 @@ void AppListView::ApplyBoundsAnimation(ash::AppListViewState target_state,
 
   gfx::Transform shield_transform;
   if (ShouldHideRoundedCorners(target_state, target_bounds)) {
-    shield_transform.Translate(0, -(delegate_->GetShelfHeight() / 2));
+    shield_transform.Translate(0, -(delegate_->GetShelfSize() / 2));
   }
   app_list_background_shield_->SetTransform(shield_transform);
 
@@ -1798,7 +1796,7 @@ void AppListView::UpdateYPositionAndOpacity(int y_position_in_screen,
   gfx::Rect new_widget_bounds = GetWidget()->GetWindowBoundsInScreen();
   app_list_y_position_in_screen_ = std::min(
       std::max(y_position_in_screen, GetDisplayNearestView().work_area().y()),
-      GetScreenBottom() - delegate_->GetShelfHeight());
+      GetScreenBottom() - delegate_->GetShelfSize());
   new_widget_bounds.set_y(app_list_y_position_in_screen_);
   gfx::NativeView native_view = GetWidget()->GetNativeView();
   ::wm::ConvertRectFromScreen(native_view->parent(), &new_widget_bounds);
@@ -1872,7 +1870,7 @@ int AppListView::GetScreenBottom() const {
 
 int AppListView::GetCurrentAppListHeight() const {
   if (!GetWidget())
-    return delegate_->GetShelfHeight();
+    return delegate_->GetShelfSize();
   return GetScreenBottom() - GetWidget()->GetWindowBoundsInScreen().y();
 }
 
@@ -2023,7 +2021,7 @@ void AppListView::OnWindowBoundsChanged(aura::Window* window,
 
   gfx::Transform transform;
   if (ShouldHideRoundedCorners(app_list_state_, new_bounds))
-    transform.Translate(0, -(delegate_->GetShelfHeight() / 2));
+    transform.Translate(0, -(delegate_->GetShelfSize() / 2));
 
   // Avoid setting new transform if the shield is animating to (or already has)
   // the target value.
@@ -2188,7 +2186,7 @@ void AppListView::OnParentWindowBoundsChanged() {
 
 float AppListView::GetAppListBackgroundOpacityDuringDragging() {
   float top_of_applist = GetWidget()->GetWindowBoundsInScreen().y();
-  const int shelf_height = delegate_->GetShelfHeight();
+  const int shelf_height = delegate_->GetShelfSize();
   float dragging_height =
       std::max((GetScreenBottom() - shelf_height - top_of_applist), 0.f);
   float coefficient =
@@ -2305,7 +2303,7 @@ gfx::Rect AppListView::GetPreferredWidgetBoundsForState(
 
 void AppListView::UpdateAppListBackgroundYPosition(
     ash::AppListViewState state) {
-  const int app_list_background_corner_radius = delegate_->GetShelfHeight() / 2;
+  const int app_list_background_corner_radius = delegate_->GetShelfSize() / 2;
 
   // Update the y position of the background shield.
   gfx::Transform transform;

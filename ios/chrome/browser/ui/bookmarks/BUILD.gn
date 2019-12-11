@@ -159,7 +159,14 @@ source_set("eg_tests") {
   ]
   testonly = true
   sources = [
+    "bookmark_earl_grey_utils.h",
+    "bookmark_earl_grey_utils.mm",
+    "bookmarks_accessibility_egtest.mm",
     "bookmarks_egtest.mm",
+    "bookmarks_entries_egtest.mm",
+    "bookmarks_folders_egtest.mm",
+    "bookmarks_promo_egtest.mm",
+    "bookmarks_search_egtest.mm",
   ]
   deps = [
     ":bookmarks_ui",
@@ -174,15 +181,9 @@ source_set("eg_tests") {
     "//ios/chrome/browser/bookmarks:bookmarks_utils",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ui/authentication:eg_test_support",
-    "//ios/chrome/browser/ui/authentication/cells",
     "//ios/chrome/browser/ui/bookmarks:bookmarks",
-    "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/popup_menu:constants",
-    "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/table_view:feature_flags",
-    "//ios/chrome/browser/ui/toolbar/buttons",
-    "//ios/chrome/browser/ui/toolbar/public",
-    "//ios/chrome/browser/ui/util",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/public/provider/chrome/browser/signin:fake_chrome_identity",

@@ -45,12 +45,6 @@ class CanvasRenderingContext2DState final
     kImagePaintType,
   };
 
-  static CanvasRenderingContext2DState* Create(
-      const CanvasRenderingContext2DState& other,
-      ClipListCopyMode mode) {
-    return MakeGarbageCollected<CanvasRenderingContext2DState>(other, mode);
-  }
-
   // FontSelectorClient implementation
   void FontsNeedUpdate(FontSelector*) override;
 

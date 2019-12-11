@@ -207,6 +207,10 @@ void VideoFrameSubmitter::OnBeginFrame(
 
   frame_trackers_.NotifyBeginImplFrame(args);
 
+  base::ScopedClosureRunner end_frame(
+      base::BindOnce(&cc::FrameSequenceTrackerCollection::NotifyFrameEnd,
+                     base::Unretained(&frame_trackers_), args));
+
   // Don't call UpdateCurrentFrame() for MISSED BeginFrames. Also don't call it
   // after StopRendering() has been called (forbidden by API contract).
   viz::BeginFrameAck current_begin_frame_ack(args, false);

@@ -11,7 +11,7 @@ import 'chrome://new-tab-page/customize_dialog.js';
 import {flushTasks} from 'chrome://test/test_util.m.js';
 
 suite('NewTabPageCustomizeDialogTest', () => {
-  /** @type {!CustomizeDialog} */
+  /** @type {!CustomizeDialogElement} */
   let customizeDialog;
 
   setup(() => {

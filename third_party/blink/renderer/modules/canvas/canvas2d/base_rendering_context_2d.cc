@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/graphics/stroke_data.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -186,16 +187,17 @@ void BaseRenderingContext2D::setStrokeStyle(
       ModifiableState().SetUnparsedStrokeColor(color_string);
       return;
     }
-    canvas_style = CanvasStyle::CreateFromRGBA(parsed_color.Rgb());
+    canvas_style = MakeGarbageCollected<CanvasStyle>(parsed_color.Rgb());
   } else if (style.IsCanvasGradient()) {
-    canvas_style = CanvasStyle::CreateFromGradient(style.GetAsCanvasGradient());
+    canvas_style =
+        MakeGarbageCollected<CanvasStyle>(style.GetAsCanvasGradient());
   } else if (style.IsCanvasPattern()) {
     CanvasPattern* canvas_pattern = style.GetAsCanvasPattern();
 
     if (!origin_tainted_by_content_ && !canvas_pattern->OriginClean())
       SetOriginTaintedByContent();
 
-    canvas_style = CanvasStyle::CreateFromPattern(canvas_pattern);
+    canvas_style = MakeGarbageCollected<CanvasStyle>(canvas_pattern);
   }
 
   DCHECK(canvas_style);
@@ -227,16 +229,17 @@ void BaseRenderingContext2D::setFillStyle(
       ModifiableState().SetUnparsedFillColor(color_string);
       return;
     }
-    canvas_style = CanvasStyle::CreateFromRGBA(parsed_color.Rgb());
+    canvas_style = MakeGarbageCollected<CanvasStyle>(parsed_color.Rgb());
   } else if (style.IsCanvasGradient()) {
-    canvas_style = CanvasStyle::CreateFromGradient(style.GetAsCanvasGradient());
+    canvas_style =
+        MakeGarbageCollected<CanvasStyle>(style.GetAsCanvasGradient());
   } else if (style.IsCanvasPattern()) {
     CanvasPattern* canvas_pattern = style.GetAsCanvasPattern();
 
     if (!origin_tainted_by_content_ && !canvas_pattern->OriginClean()) {
       SetOriginTaintedByContent();
     }
-    canvas_style = CanvasStyle::CreateFromPattern(canvas_pattern);
+    canvas_style = MakeGarbageCollected<CanvasStyle>(canvas_pattern);
   }
 
   DCHECK(canvas_style);

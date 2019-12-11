@@ -203,8 +203,8 @@ void MediaPlayerRenderer::InitiateScopedSurfaceRequest(
 
   surface_request_token_ =
       ScopedSurfaceRequestManager::GetInstance()->RegisterScopedSurfaceRequest(
-          base::Bind(&MediaPlayerRenderer::OnScopedSurfaceRequestCompleted,
-                     weak_factory_.GetWeakPtr()));
+          base::BindOnce(&MediaPlayerRenderer::OnScopedSurfaceRequestCompleted,
+                         weak_factory_.GetWeakPtr()));
 
   std::move(callback).Run(surface_request_token_);
 }

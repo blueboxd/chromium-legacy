@@ -27,7 +27,7 @@ Polymer({
   /** @override */
   attached: function() {
     this.$.sectionMenu.select(
-        navigation.getCurrentPage().page == Page.SHORTCUTS ? 1 : 0);
+        navigation.getCurrentPage().page === Page.SHORTCUTS ? 1 : 0);
   },
 
   /**

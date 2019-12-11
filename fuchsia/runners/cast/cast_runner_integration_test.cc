@@ -59,6 +59,10 @@ class FakeUrlRequestRewriteRulesProvider
  public:
   FakeUrlRequestRewriteRulesProvider() = default;
   ~FakeUrlRequestRewriteRulesProvider() override = default;
+  FakeUrlRequestRewriteRulesProvider(
+      const FakeUrlRequestRewriteRulesProvider&) = delete;
+  FakeUrlRequestRewriteRulesProvider& operator=(
+      const FakeUrlRequestRewriteRulesProvider&) = delete;
 
  private:
   void GetUrlRequestRewriteRules(
@@ -78,8 +82,6 @@ class FakeUrlRequestRewriteRulesProvider
   }
 
   bool rules_sent_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeUrlRequestRewriteRulesProvider);
 };
 
 class FakeApplicationControllerReceiver
@@ -87,6 +89,10 @@ class FakeApplicationControllerReceiver
  public:
   FakeApplicationControllerReceiver() = default;
   ~FakeApplicationControllerReceiver() final = default;
+  FakeApplicationControllerReceiver(const FakeApplicationControllerReceiver&) =
+      delete;
+  FakeApplicationControllerReceiver& operator=(
+      const FakeApplicationControllerReceiver&) = delete;
 
   chromium::cast::ApplicationController* controller() {
     if (!controller_)
@@ -104,8 +110,6 @@ class FakeApplicationControllerReceiver
   }
 
   chromium::cast::ApplicationControllerPtr controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeApplicationControllerReceiver);
 };
 
 class FakeComponentState : public cr_fuchsia::AgentImpl::ComponentStateBase {
@@ -119,15 +123,20 @@ class FakeComponentState : public cr_fuchsia::AgentImpl::ComponentStateBase {
       : ComponentStateBase(component_url),
         app_config_binding_(outgoing_directory(), app_config_manager),
         bindings_manager_binding_(outgoing_directory(), bindings_manager),
-        url_request_rules_provider_binding_(outgoing_directory(),
-                                            url_request_rules_provider),
         controller_receiver_binding_(outgoing_directory(),
-                                     &controller_receiver_) {}
+                                     &controller_receiver_) {
+    if (url_request_rules_provider) {
+      url_request_rules_provider_binding_.emplace(outgoing_directory(),
+                                                  url_request_rules_provider);
+    }
+  }
 
   ~FakeComponentState() override {
     if (on_delete_)
       std::move(on_delete_).Run();
   }
+  FakeComponentState(const FakeComponentState&) = delete;
+  FakeComponentState& operator=(const FakeComponentState&) = delete;
 
   FakeApplicationControllerReceiver* controller_receiver() {
     return &controller_receiver_;
@@ -143,22 +152,27 @@ class FakeComponentState : public cr_fuchsia::AgentImpl::ComponentStateBase {
     return bindings_manager_binding_.has_clients();
   }
 
+  bool url_request_rules_provider_has_clients() {
+    if (url_request_rules_provider_binding_) {
+      return url_request_rules_provider_binding_->has_clients();
+    }
+    return false;
+  }
+
  protected:
   const base::fuchsia::ScopedServiceBinding<
       chromium::cast::ApplicationConfigManager>
       app_config_binding_;
   const base::fuchsia::ScopedServiceBinding<chromium::cast::ApiBindings>
       bindings_manager_binding_;
-  const base::fuchsia::ScopedServiceBinding<
-      chromium::cast::UrlRequestRewriteRulesProvider>
+  base::Optional<base::fuchsia::ScopedServiceBinding<
+      chromium::cast::UrlRequestRewriteRulesProvider>>
       url_request_rules_provider_binding_;
   FakeApplicationControllerReceiver controller_receiver_;
   const base::fuchsia::ScopedServiceBinding<
       chromium::cast::ApplicationControllerReceiver>
       controller_receiver_binding_;
   base::OnceClosure on_delete_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeComponentState);
 };
 
 }  // namespace
@@ -192,6 +206,9 @@ class CastRunnerIntegrationTest : public testing::Test {
       ADD_FAILURE();
     });
   }
+  CastRunnerIntegrationTest(const CastRunnerIntegrationTest&) = delete;
+  CastRunnerIntegrationTest& operator=(const CastRunnerIntegrationTest&) =
+      delete;
 
   void SetUp() override {
     test_server_.ServeFilesFromSourceDirectory(kTestServerRoot);
@@ -285,8 +302,6 @@ class CastRunnerIntegrationTest : public testing::Test {
 
   std::unique_ptr<CastRunner> cast_runner_;
   fuchsia::sys::RunnerPtr cast_runner_ptr_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastRunnerIntegrationTest);
 };
 
 // A basic integration test ensuring a basic cast request launches the right
@@ -645,10 +660,64 @@ TEST_F(CastRunnerIntegrationTest, DisconnectedCastAgent) {
   run_loop.Run();
 }
 
-// Test that the ApiBindings are received from the secondary DummyAgent. This
-// validates that the |agent_url| retrieved from AppConfigManager is the one
-// used to retrieve the bindings.
+// Test that the ApiBindings and RewriteRules are received from the secondary
+// DummyAgent. This validates that the |agent_url| retrieved from
+// AppConfigManager is the one used to retrieve the bindings and the rewrite
+// rules.
 TEST_F(CastRunnerIntegrationTest, ApplicationConfigAgentUrl) {
+  const char kBlankAppId[] = "00000000";
+  const char kBlankAppPath[] = "/echo.html";
+  auto component_url = base::StringPrintf("cast:%s", kBlankAppId);
+
+  // These are part of the secondary agent, and CastRunner will contact
+  // the secondary agent for both of them.
+  FakeUrlRequestRewriteRulesProvider dummy_url_request_rewrite_rules_provider;
+  TestApiBindings dummy_agent_api_bindings;
+
+  // Indicate that this app is to get bindings from a secondary agent.
+  app_config_manager_.AddAppMappingWithAgent(
+      kBlankAppId, test_server_.GetURL(kBlankAppPath), false, kDummyAgentUrl);
+
+  // Instantiate the bindings that are returned in the multi-agent scenario. The
+  // bindings returned for the single-agent scenario are not initialized.
+  std::vector<chromium::cast::ApiBinding> binding_list;
+  chromium::cast::ApiBinding echo_binding;
+  echo_binding.set_before_load_script(cr_fuchsia::MemBufferFromString(
+      "window.echo = cast.__platform__.PortConnector.bind('dummyService');",
+      "test"));
+  binding_list.emplace_back(std::move(echo_binding));
+  // Assign the bindings to the multi-agent binding.
+  dummy_agent_api_bindings.set_bindings(std::move(binding_list));
+
+  component_context_ = CreateComponentContext(component_url);
+  EXPECT_NE(component_context_, nullptr);
+  component_context_->RegisterCreateComponentStateCallback(
+      kDummyAgentUrl,
+      base::BindLambdaForTesting(
+          [&](base::StringPiece component_url)
+              -> std::unique_ptr<cr_fuchsia::AgentImpl::ComponentStateBase> {
+            return std::make_unique<FakeComponentState>(
+                component_url, &app_config_manager_, &dummy_agent_api_bindings,
+                &dummy_url_request_rewrite_rules_provider);
+          }));
+
+  // Launch the test-app component.
+  fuchsia::sys::ComponentControllerPtr component_controller =
+      StartCastComponent(component_url);
+  component_controller.set_error_handler(&ComponentErrorHandler);
+
+  base::RunLoop().RunUntilIdle();
+
+  // Validate that the correct bindings were requested.
+  EXPECT_FALSE(component_state_->api_bindings_has_clients());
+  // Validate that the correct rewrite rules were requested.
+  EXPECT_FALSE(component_state_->url_request_rules_provider_has_clients());
+}
+
+// Test that when RewriteRules are not provided, a WebComponent is still
+// created. Further validate that the primary agent does not provide ApiBindings
+// or RewriteRules.
+TEST_F(CastRunnerIntegrationTest, ApplicationConfigAgentUrlRewriteOptional) {
   const char kBlankAppId[] = "00000000";
   const char kBlankAppPath[] = "/echo.html";
   auto component_url = base::StringPrintf("cast:%s", kBlankAppId);
@@ -679,7 +748,7 @@ TEST_F(CastRunnerIntegrationTest, ApplicationConfigAgentUrl) {
               -> std::unique_ptr<cr_fuchsia::AgentImpl::ComponentStateBase> {
             return std::make_unique<FakeComponentState>(
                 component_url, &app_config_manager_, &dummy_agent_api_bindings,
-                &url_request_rewrite_rules_provider_);
+                nullptr);
           }));
 
   // Launch the test-app component.
@@ -687,10 +756,24 @@ TEST_F(CastRunnerIntegrationTest, ApplicationConfigAgentUrl) {
       StartCastComponent(component_url);
   component_controller.set_error_handler(&ComponentErrorHandler);
 
+  // Validate that the WebComponent was created successfully when RewriteRules
+  // are not provided.
+  {
+    base::RunLoop run_loop;
+    cr_fuchsia::ResultReceiver<WebComponent*> web_component(
+        run_loop.QuitClosure());
+    cast_runner_->SetWebComponentCreatedCallbackForTest(
+        base::AdaptCallbackForRepeating(web_component.GetReceiveCallback()));
+    run_loop.Run();
+    ASSERT_NE(*web_component, nullptr);
+  }
+
   base::RunLoop().RunUntilIdle();
 
-  // Validate that the correct bindings were requested.
+  // Validate that the primary agent didn't provide API bindings.
   EXPECT_FALSE(component_state_->api_bindings_has_clients());
+  // Validate that the primary agent didn't provide its RewriteRules.
+  EXPECT_FALSE(component_state_->url_request_rules_provider_has_clients());
 }
 
 }  // namespace castrunner

@@ -29,9 +29,6 @@ WebThreadScheduler::CreateMainThreadScheduler(
           .SetMessagePumpType(base::MessagePumpType::DEFAULT)
           .SetRandomisedSamplingEnabled(true)
           .SetAddQueueTimeToTasks(true)
-          .SetAntiStarvationLogicForPrioritiesDisabled(
-              base::FeatureList::IsEnabled(
-                  kBlinkSchedulerDisableAntiStarvationForPriorities))
           .Build();
   auto sequence_manager =
       message_pump

@@ -208,10 +208,6 @@ class BouncingClippedRectanglesPage(ToughCanvasPage):
   BASE_NAME = 'bouncing_clipped_rectangles'
   # pylint: disable=line-too-long
   URL = 'file://../tough_canvas_cases/rendering_throughput/bouncing_clipped_rectangles.html'
-  TAGS = ToughCanvasPage.TAGS + [
-    story_tags.REPRESENTATIVE_MOBILE,
-    story_tags.REPRESENTATIVE_MAC_DESKTOP
-  ]
 
 
 class BouncingGradientCirclesPage(ToughCanvasPage):

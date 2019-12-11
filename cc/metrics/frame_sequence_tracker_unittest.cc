@@ -65,11 +65,13 @@ class FrameSequenceTrackerTest : public testing::Test {
       uint32_t frame_token = NextFrameToken();
       collection_.NotifySubmitFrame(frame_token, has_missing_content,
                                     viz::BeginFrameAck(args, true), args);
+      collection_.NotifyFrameEnd(args);
       return frame_token;
     } else {
       collection_.NotifyImplFrameCausedNoDamage(
           viz::BeginFrameAck(args, false));
       collection_.NotifyMainFrameCausedNoDamage(args);
+      collection_.NotifyFrameEnd(args);
     }
     return 0;
   }

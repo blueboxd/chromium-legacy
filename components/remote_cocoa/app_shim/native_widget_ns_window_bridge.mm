@@ -137,11 +137,11 @@ constexpr auto kUIPaintTimeout = base::TimeDelta::FromSeconds(5);
 }
 - (void)stopAnimation {
   [super stopAnimation];
-  [window_ invalidateShadow];
+  [_window invalidateShadow];
 }
 - (void)setCurrentProgress:(NSAnimationProgress)progress {
   [super setCurrentProgress:progress];
-  [window_ invalidateShadow];
+  [_window invalidateShadow];
 }
 @end
 

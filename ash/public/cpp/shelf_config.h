@@ -146,6 +146,9 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   int mousewheel_scroll_offset_threshold() const {
     return mousewheel_scroll_offset_threshold_;
   }
+  int in_app_control_button_height_inset() const {
+    return in_app_control_button_height_inset_;
+  }
 
   bool is_dense() const { return is_dense_; }
 
@@ -249,6 +252,9 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // The threshold at which mousewheel and touchpad scrolls are either ignored
   // or acted upon.
   const int mousewheel_scroll_offset_threshold_;
+
+  // The height inset on the control buttons when in-app shelf is shown.
+  const int in_app_control_button_height_inset_;
 
   base::ObserverList<Observer> observers_;
 

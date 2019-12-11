@@ -23,8 +23,8 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
+#include "components/services/storage/dom_storage/session_storage_data_map.h"
 #include "components/services/storage/dom_storage/session_storage_metadata.h"
-#include "content/browser/dom_storage/session_storage_data_map.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl_mojo.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/session_storage_usage_info.h"
@@ -47,7 +47,7 @@ struct SessionStorageUsageInfo;
 // ShutdownAndDelete (on the correct task runner).
 class CONTENT_EXPORT SessionStorageContextMojo
     : public base::trace_event::MemoryDumpProvider,
-      public SessionStorageDataMap::Listener,
+      public storage::SessionStorageDataMap::Listener,
       public SessionStorageNamespaceImplMojo::Delegate {
  public:
   using GetStorageUsageCallback =
@@ -179,16 +179,16 @@ class CONTENT_EXPORT SessionStorageContextMojo
       storage::SessionStorageMetadata::NamespaceEntry namespace_entry,
       const url::Origin& origin);
 
-  // SessionStorageAreaImpl::Listener implementation:
+  // storage::SessionStorageAreaImpl::Listener implementation:
   void OnDataMapCreation(const std::vector<uint8_t>& map_prefix,
-                         SessionStorageDataMap* map) override;
+                         storage::SessionStorageDataMap* map) override;
   void OnDataMapDestruction(const std::vector<uint8_t>& map_prefix) override;
   void OnCommitResult(leveldb::Status status) override;
   void OnCommitResultWithCallback(base::OnceClosure callback,
                                   leveldb::Status status);
 
   // SessionStorageNamespaceImplMojo::Delegate implementation:
-  scoped_refptr<SessionStorageDataMap> MaybeGetExistingDataMapForId(
+  scoped_refptr<storage::SessionStorageDataMap> MaybeGetExistingDataMapForId(
       const std::vector<uint8_t>& map_number_as_bytes) override;
   void RegisterShallowClonedNamespace(
       storage::SessionStorageMetadata::NamespaceEntry source_namespace_entry,
@@ -281,9 +281,9 @@ class CONTENT_EXPORT SessionStorageContextMojo
   std::vector<base::OnceClosure> on_database_opened_callbacks_;
 
   // The removal of items from this map is managed by the refcounting in
-  // SessionStorageDataMap.
+  // storage::SessionStorageDataMap.
   // Populated after the database is connected.
-  std::map<std::vector<uint8_t>, SessionStorageDataMap*> data_maps_;
+  std::map<std::vector<uint8_t>, storage::SessionStorageDataMap*> data_maps_;
   // Populated in CreateSessionNamespace, CloneSessionNamespace, and sometimes
   // RegisterShallowClonedNamespace. Items are removed in
   // DeleteSessionNamespace.

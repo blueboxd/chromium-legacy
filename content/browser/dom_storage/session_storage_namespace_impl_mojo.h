@@ -12,9 +12,10 @@
 #include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
+#include "components/services/storage/dom_storage/session_storage_area_impl.h"
+#include "components/services/storage/dom_storage/session_storage_data_map.h"
 #include "components/services/storage/dom_storage/session_storage_metadata.h"
-#include "content/browser/dom_storage/session_storage_area_impl.h"
-#include "content/browser/dom_storage/session_storage_data_map.h"
+#include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
@@ -53,7 +54,7 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
     : public blink::mojom::SessionStorageNamespace {
  public:
   using OriginAreas =
-      std::map<url::Origin, std::unique_ptr<SessionStorageAreaImpl>>;
+      std::map<url::Origin, std::unique_ptr<storage::SessionStorageAreaImpl>>;
 
   enum class State {
     // This is the default state when a namespace is first constructed. It has
@@ -85,7 +86,8 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
     // purged in a call to |PurgeUnboundAreas| but the map could still be alive
     // as a clone, used by another namespace.
     // Returns nullptr if a data map was not found.
-    virtual scoped_refptr<SessionStorageDataMap> MaybeGetExistingDataMapForId(
+    virtual scoped_refptr<storage::SessionStorageDataMap>
+    MaybeGetExistingDataMapForId(
         const std::vector<uint8_t>& map_number_as_bytes) = 0;
   };
 
@@ -95,12 +97,14 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
   // namespace. The |delegate| is called when the |Clone| method
   // is called by mojo, as well as when the |OpenArea| method is called and the
   // map id for that origin is found in our metadata. The
-  // |register_new_map_callback| is given to the the SessionStorageAreaImpl's,
-  // used per-origin, that are bound to in OpenArea.
+  // |register_new_map_callback| is given to the the
+  // storage::SessionStorageAreaImpl's, used per-origin, that are bound to in
+  // OpenArea.
   SessionStorageNamespaceImplMojo(
       std::string namespace_id,
-      SessionStorageDataMap::Listener* data_map_listener,
-      SessionStorageAreaImpl::RegisterNewAreaMap register_new_map_callback,
+      storage::SessionStorageDataMap::Listener* data_map_listener,
+      storage::SessionStorageAreaImpl::RegisterNewAreaMap
+          register_new_map_callback,
       Delegate* delegate);
 
   ~SessionStorageNamespaceImplMojo() override;
@@ -206,8 +210,9 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
   storage::SessionStorageMetadata::NamespaceEntry namespace_entry_;
   storage::AsyncDomStorageDatabase* database_ = nullptr;
 
-  SessionStorageDataMap::Listener* data_map_listener_;
-  SessionStorageAreaImpl::RegisterNewAreaMap register_new_map_callback_;
+  storage::SessionStorageDataMap::Listener* data_map_listener_;
+  storage::SessionStorageAreaImpl::RegisterNewAreaMap
+      register_new_map_callback_;
   Delegate* delegate_;
 
   State state_ = State::kNotPopulated;

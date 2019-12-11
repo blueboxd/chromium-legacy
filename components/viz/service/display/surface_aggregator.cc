@@ -801,13 +801,15 @@ void SurfaceAggregator::AddColorConversionPass() {
 
   // An extra color conversion pass is only done if the display's color
   // space is unsuitable as a working color space. This happens only
-  // on Windows, where HDR output is required to be in a space with a linear
+  // on platforms where HDR output is required to be in a space with a linear
   // (or PQ) transfer function.
   // TODO(ccameron,sunnyps): Determine if blending in PQ space is close
   // enough to sRGB space as to not require this extra pass.
   // Or at least to avoid changing behavior.
-  if (output_color_space_ != gfx::ColorSpace::CreateSCRGBLinear() &&
-      output_color_space_ != gfx::ColorSpace::CreateHDR10()) {
+  if (output_color_space_.GetTransferID() !=
+          gfx::ColorSpace::TransferID::LINEAR_HDR &&
+      output_color_space_.GetTransferID() !=
+          gfx::ColorSpace::TransferID::SMPTEST2084) {
     return;
   }
 

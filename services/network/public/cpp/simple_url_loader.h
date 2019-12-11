@@ -327,6 +327,11 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
   // called before the request is started.
   virtual void SetURLLoaderFactoryOptions(uint32_t options) = 0;
 
+  // Sets request_id for URLLoaderFactory::CreateLoaderAndStart. See
+  // network/public/mojom/url_loader_factory.mojom. This should be called before
+  // the request is started.
+  virtual void SetRequestID(int32_t request_id) = 0;
+
   // The amount of time to wait before giving up on a given network request and
   // considering it an error. If not set, then the request is allowed to take
   // as much time as it wants.

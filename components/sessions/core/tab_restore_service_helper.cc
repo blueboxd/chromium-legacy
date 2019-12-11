@@ -318,6 +318,7 @@ std::vector<LiveTab*> TabRestoreServiceHelper::RestoreEntryById(
           LiveTab* restored_tab = context->AddRestoredTab(
               tab.navigations, context->GetTabCount(),
               tab.current_navigation_index, tab.extension_app_id, tab.group,
+              base::OptionalOrNullptr(tab.group_metadata),
               static_cast<int>(tab_i) == window.selected_tab_index, tab.pinned,
               tab.from_last_session, tab.platform_data.get(),
               tab.user_agent_override);
@@ -555,6 +556,11 @@ void TabRestoreServiceHelper::PopulateTab(Tab* tab,
     tab->browser_id = context->GetSessionID().id();
     tab->pinned = context->IsTabPinned(tab->tabstrip_index);
     tab->group = context->GetTabGroupForTab(tab->tabstrip_index);
+    tab->group_metadata =
+        tab->group.has_value()
+            ? base::Optional<TabGroupMetadata>{context->GetTabGroupMetadata(
+                  tab->group.value())}
+            : base::nullopt;
   }
 }
 
@@ -599,7 +605,8 @@ LiveTabContext* TabRestoreServiceHelper::RestoreTab(
 
     restored_tab = context->AddRestoredTab(
         tab.navigations, tab_index, tab.current_navigation_index,
-        tab.extension_app_id, base::nullopt,
+        tab.extension_app_id, tab.group,
+        base::OptionalOrNullptr(tab.group_metadata),
         disposition != WindowOpenDisposition::NEW_BACKGROUND_TAB, tab.pinned,
         tab.from_last_session, tab.platform_data.get(),
         tab.user_agent_override);

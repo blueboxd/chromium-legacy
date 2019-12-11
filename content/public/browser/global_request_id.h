@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_GLOBAL_REQUEST_ID_H_
 #define CONTENT_PUBLIC_BROWSER_GLOBAL_REQUEST_ID_H_
 
+#include <atomic>
 #include <tuple>
 
 namespace content {
@@ -24,6 +25,12 @@ struct GlobalRequestID {
 
   // The request ID (unique for the child).
   int request_id;
+
+  // Returns a Request ID for browser-initiated requests.
+  static GlobalRequestID MakeBrowserInitiated() {
+    static std::atomic_int s_next_request_id{-2};
+    return GlobalRequestID(-1, s_next_request_id--);
+  }
 
   bool operator<(const GlobalRequestID& other) const {
     return std::tie(child_id, request_id) <

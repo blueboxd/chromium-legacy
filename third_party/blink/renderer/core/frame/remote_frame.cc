@@ -6,6 +6,7 @@
 
 #include "cc/layers/surface_layer.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
@@ -345,6 +346,10 @@ void RemoteFrame::Focus() {
   FocusImpl();
 }
 
+void RemoteFrame::SetReceivedUserGestureBeforeNavigation(bool value) {
+  SetDocumentHasReceivedUserGestureBeforeNavigation(value);
+}
+
 bool RemoteFrame::IsIgnoredForHitTest() const {
   HTMLFrameOwnerElement* owner = DeprecatedLocalOwner();
   if (!owner || !owner->GetLayoutObject())
@@ -352,6 +357,24 @@ bool RemoteFrame::IsIgnoredForHitTest() const {
 
   return owner->OwnerType() == FrameOwnerElementType::kPortal ||
          !visible_to_hit_testing_;
+}
+
+void RemoteFrame::UpdateHitTestOcclusionData() {
+  if (!cc_layer_ || !is_surface_layer_)
+    return;
+  bool unoccluded = false;
+  if (base::FeatureList::IsEnabled(
+          blink::features::kVizHitTestOcclusionCheck)) {
+    if (HTMLFrameOwnerElement* owner_element = DeprecatedLocalOwner()) {
+      if (LayoutObject* owner = owner_element->GetLayoutObject()) {
+        HitTestResult hit_test_result(owner->HitTestForOcclusion());
+        const Node* hit_node = hit_test_result.InnerNode();
+        unoccluded = (!hit_node || hit_node == owner_element);
+      }
+    }
+  }
+  static_cast<cc::SurfaceLayer*>(cc_layer_)->SetUnoccludedForHitTesting(
+      unoccluded);
 }
 
 void RemoteFrame::SetCcLayer(cc::Layer* cc_layer,

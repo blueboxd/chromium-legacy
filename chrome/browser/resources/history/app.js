@@ -304,8 +304,7 @@ Polymer({
       // <if expr="is_macosx">
       hasTriggerModifier = !e.ctrlKey && e.metaKey;
       // </if>
-      if (hasTriggerModifier) {
-        this.onSelectAllCommand_();
+      if (hasTriggerModifier && this.onSelectAllCommand_()) {
         e.preventDefault();
       }
     }
@@ -319,13 +318,17 @@ Polymer({
     this.deleteSelected();
   },
 
-  /** @private */
+  /**
+   * @return {boolean} Whether the command was actually triggered.
+   * @private
+   */
   onSelectAllCommand_: function() {
     if (this.$.toolbar.searchField.isSearchFocused() ||
         this.syncedTabsSelected_(this.selectedPage_)) {
-      return;
+      return false;
     }
     this.selectOrUnselectAll();
+    return true;
   },
 
   /**

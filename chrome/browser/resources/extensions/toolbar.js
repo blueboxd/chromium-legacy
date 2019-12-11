@@ -134,7 +134,7 @@ Polymer({
         /** @suppress {suspiciousCode} */ drawer.offsetTop;
       }
     } else {
-      if (previous == undefined) {
+      if (previous === undefined) {
         drawer.hidden = true;
         return;
       }

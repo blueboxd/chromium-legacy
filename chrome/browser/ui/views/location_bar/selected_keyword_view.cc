@@ -63,30 +63,33 @@ gfx::Size SelectedKeywordView::GetMinimumSize() const {
 }
 
 void SelectedKeywordView::SetKeyword(const base::string16& keyword) {
-  keyword_ = keyword;
-  if (keyword.empty())
-    return;
-  DCHECK(profile_);
-  TemplateURLService* model =
-      TemplateURLServiceFactory::GetForProfile(profile_);
-  if (!model)
-    return;
+  if (keyword_ != keyword) {
+    keyword_ = keyword;
+    if (keyword.empty())
+      return;
+    DCHECK(profile_);
+    TemplateURLService* model =
+        TemplateURLServiceFactory::GetForProfile(profile_);
+    if (!model)
+      return;
 
-  bool is_extension_keyword;
-  const base::string16 short_name =
-      model->GetKeywordShortName(keyword, &is_extension_keyword);
-  const base::string16 full_name =
-      is_extension_keyword
-          ? short_name
-          : l10n_util::GetStringFUTF16(IDS_OMNIBOX_KEYWORD_TEXT_MD, short_name);
-  full_label_.SetText(full_name);
-  partial_label_.SetText(short_name);
+    bool is_extension_keyword;
+    const base::string16 short_name =
+        model->GetKeywordShortName(keyword, &is_extension_keyword);
+    const base::string16 full_name =
+        is_extension_keyword ? short_name
+                             : l10n_util::GetStringFUTF16(
+                                   IDS_OMNIBOX_KEYWORD_TEXT_MD, short_name);
+    full_label_.SetText(full_name);
+    partial_label_.SetText(short_name);
 
-  // Update the label now so ShouldShowLabel() works correctly when the parent
-  // class is calculating the preferred size. It will be updated again in
-  // Layout(), taking into account how much space has actually been allotted.
-  SetLabelForCurrentWidth();
-  NotifyAccessibilityEvent(ax::mojom::Event::kLiveRegionChanged, true);
+    // Update the label now so ShouldShowLabel() works correctly when the parent
+    // class is calculating the preferred size. It will be updated again in
+    // Layout(), taking into account how much space has actually been allotted.
+    SetLabelForCurrentWidth();
+  }
+  if (!keyword_.empty())
+    NotifyAccessibilityEvent(ax::mojom::Event::kLiveRegionChanged, true);
 }
 
 int SelectedKeywordView::GetExtraInternalSpacing() const {

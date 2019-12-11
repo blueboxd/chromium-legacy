@@ -313,7 +313,7 @@ bool MediaRecorderHandler::Start(int timeslice) {
       return false;
 
     const AudioTrackRecorder::OnEncodedAudioCB on_encoded_audio_cb =
-        media::BindToCurrentLoop(base::Bind(
+        media::BindToCurrentLoop(WTF::BindRepeating(
             &MediaRecorderHandler::OnEncodedAudio, WrapWeakPersistent(this)));
 
     audio_recorders_.emplace_back(MakeGarbageCollected<AudioTrackRecorder>(

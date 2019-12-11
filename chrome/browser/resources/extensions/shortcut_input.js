@@ -107,11 +107,11 @@ Polymer({
    * @private
    */
   onKeyDown_: function(e) {
-    if (e.target == this.$.clear) {
+    if (e.target === this.$.clear) {
       return;
     }
 
-    if (e.keyCode == Key.Escape) {
+    if (e.keyCode === Key.Escape) {
       if (!this.capturing_) {
         // If we're not currently capturing, allow escape to propagate.
         return;
@@ -122,7 +122,7 @@ Polymer({
       e.stopPropagation();
       return;
     }
-    if (e.keyCode == Key.Tab) {
+    if (e.keyCode === Key.Tab) {
       // Allow tab propagation for keyboard navigation.
       return;
     }
@@ -143,11 +143,11 @@ Polymer({
     // case, the clear button disappears before key-up, so 'Enter's key-up
     // target becomes the input field, not the clear button, and needs to
     // be caught explicitly.
-    if (e.target == this.$.clear || e.key == 'Enter') {
+    if (e.target === this.$.clear || e.key === 'Enter') {
       return;
     }
 
-    if (e.keyCode == Key.Escape || e.keyCode == Key.Tab) {
+    if (e.keyCode === Key.Escape || e.keyCode === Key.Tab) {
       return;
     }
 
@@ -172,7 +172,7 @@ Polymer({
       case ShortcutError.NEED_CHARACTER:
         return needCharacter;
       default:
-        assert(this.error_ == ShortcutError.NO_ERROR);
+        assert(this.error_ === ShortcutError.NO_ERROR);
         return '';
     }
   },
@@ -235,13 +235,21 @@ Polymer({
   },
 
   /**
+   * Invisible when capturing AND we have a shortcut.
+   * @return {boolean} Whether the clear button is invisible.
+   * @private
+   */
+  computeClearInvisible_: function() {
+    return this.capturing_ && !!this.shortcut;
+  },
+
+  /**
+   * Hidden when no shortcut is set.
    * @return {boolean} Whether the clear button is hidden.
    * @private
    */
   computeClearHidden_: function() {
-    // We don't want to show the clear button if the input is currently
-    // capturing a new shortcut or if there is no shortcut to clear.
-    return this.capturing_ || !this.shortcut;
+    return !this.shortcut;
   },
 
   /**
@@ -249,7 +257,7 @@ Polymer({
    * @private
    */
   getIsInvalid_: function() {
-    return this.error_ != ShortcutError.NO_ERROR;
+    return this.error_ !== ShortcutError.NO_ERROR;
   },
 
   /** @private */

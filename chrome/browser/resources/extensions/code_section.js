@@ -114,7 +114,7 @@ Polymer({
             .join('\n');
     let visibleAfter = linesAfter.slice(0, visibleLineCountAfter).join('\n');
     // If the last character is a \n, force it to be rendered.
-    if (visibleAfter.charAt(visibleAfter.length - 1) == '\n') {
+    if (visibleAfter.charAt(visibleAfter.length - 1) === '\n') {
       visibleAfter += ' ';
     }
 
@@ -142,7 +142,7 @@ Polymer({
    * @private
    */
   getLinesNotShownLabel_(lineCount, stringSingular, stringPluralTemplate) {
-    return lineCount == 1 ?
+    return lineCount === 1 ?
         stringSingular :
         loadTimeData.substituteString(stringPluralTemplate, lineCount);
   },

@@ -94,10 +94,8 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
      * bottom sheet.
      */
     private void createThinWebView(int maxSheetHeight) {
-        ThinWebViewConstraints thinWebViewConstraints = new ThinWebViewConstraints();
-        thinWebViewConstraints.zOrderOnTop = true;
         mThinWebView = ThinWebViewFactory.create(
-                mContext, new ActivityWindowAndroid(mContext), thinWebViewConstraints);
+                mContext, new ActivityWindowAndroid(mContext), new ThinWebViewConstraints());
 
         mSheetContentView = new FrameLayout(mContext);
         mThinWebView.getView().setLayoutParams(new FrameLayout.LayoutParams(

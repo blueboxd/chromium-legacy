@@ -121,6 +121,9 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
 
     // The group the tab belonged to, if any.
     base::Optional<base::Token> group;
+
+    // The group metadata for the tab, if any.
+    base::Optional<TabGroupMetadata> group_metadata;
   };
 
   // Represents a previously open window.

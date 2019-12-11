@@ -18,6 +18,8 @@ struct VIEWS_EXPORT ChildLayout {
   bool operator==(const ChildLayout& other) const;
   bool operator!=(const ChildLayout& other) const { return !(*this == other); }
 
+  std::string ToString() const;
+
   View* child_view = nullptr;
   bool visible = false;
   gfx::Rect bounds;
@@ -38,6 +40,8 @@ struct VIEWS_EXPORT ProposedLayout {
   bool operator!=(const ProposedLayout& other) const {
     return !(*this == other);
   }
+
+  std::string ToString() const;
 
   // The size of the host view given the size bounds for this layout. If both
   // dimensions of the size bounds are specified, this will be the same size.

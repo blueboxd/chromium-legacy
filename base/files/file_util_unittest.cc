@@ -746,6 +746,21 @@ TEST_F(FileUtilTest, MakeLongFilePathTest) {
   EXPECT_TRUE(MakeLongFilePath(short_test_dir).empty());
 }
 
+TEST_F(FileUtilTest, CreateWinHardlinkTest) {
+  // Link to a different file name in a sub-directory of |temp_dir_|.
+  FilePath test_dir = temp_dir_.GetPath().Append(FPL("test"));
+  ASSERT_TRUE(CreateDirectory(test_dir));
+  FilePath temp_file;
+  ASSERT_TRUE(CreateTemporaryFileInDir(temp_dir_.GetPath(), &temp_file));
+  FilePath link_to_file = test_dir.Append(FPL("linked_name"));
+  EXPECT_TRUE(CreateWinHardLink(link_to_file, temp_file));
+  EXPECT_TRUE(PathExists(link_to_file));
+
+  // Link two directories. This should fail. Verify that failure is returned
+  // by CreateWinHardLink.
+  EXPECT_FALSE(CreateWinHardLink(temp_dir_.GetPath(), test_dir));
+}
+
 #endif  // defined(OS_WIN)
 
 #if defined(OS_POSIX)

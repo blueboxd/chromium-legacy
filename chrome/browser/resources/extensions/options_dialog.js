@@ -15,13 +15,13 @@ import {navigation, Page} from './navigation_helper.js';
  *     registered yet.
  */
 function whenDocumentReady() {
-  if (document.readyState == 'complete') {
+  if (document.readyState === 'complete') {
     return Promise.resolve();
   }
 
   return new Promise(function(resolve) {
     document.addEventListener('readystatechange', function f() {
-      if (document.readyState == 'complete') {
+      if (document.readyState === 'complete') {
         document.removeEventListener('readystatechange', f);
         resolve();
       }
@@ -120,7 +120,7 @@ Polymer({
     // still on the details page. We could be on a different page if the
     // user hit back while the options dialog was visible; in that case, the
     // new page is already correct.
-    if (currentPage && currentPage.page == Page.DETAILS) {
+    if (currentPage && currentPage.page === Page.DETAILS) {
       // This will update the currentPage_ and the NavigationHelper; since
       // the active page is already the details page, no main page
       // transition occurs.

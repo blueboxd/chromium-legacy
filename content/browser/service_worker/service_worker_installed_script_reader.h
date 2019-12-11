@@ -31,8 +31,9 @@ class ServiceWorkerInstalledScriptReader {
     kConnectionError = 4,
     kResponseReaderError = 5,
     kMetaDataSenderError = 6,
+    kNoContextError = 7,
     // Add a new type here, then update kMaxValue and enums.xml.
-    kMaxValue = kMetaDataSenderError,
+    kMaxValue = kNoContextError,
   };
 
   // Receives the read data.

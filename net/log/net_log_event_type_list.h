@@ -3413,6 +3413,8 @@ EVENT_TYPE(COOKIE_SET_BLOCKED_BY_NETWORK_DELEGATE)
 //  {
 //    "exclusion_reason": <Exclusion flags>,
 //    "name": <Name of the cookie>,
+//    "domain": <Domain of the cookie>,
+//    "path": <Path of the cookie>,
 //    "operation": <Operation, either "send" or "store">
 //  }
 EVENT_TYPE(COOKIE_INCLUSION_STATUS)

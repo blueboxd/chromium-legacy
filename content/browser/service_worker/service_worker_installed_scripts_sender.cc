@@ -70,6 +70,12 @@ void ServiceWorkerInstalledScriptsSender::StartSendingScript(
   DCHECK(!reader_);
   DCHECK(current_sending_url_.is_empty());
   state_ = State::kSendingScripts;
+
+  if (!owner_->context()) {
+    Abort(ServiceWorkerInstalledScriptReader::FinishedReason::kNoContextError);
+    return;
+  }
+
   current_sending_url_ = script_url;
 
   std::unique_ptr<ServiceWorkerResponseReader> response_reader =
@@ -205,6 +211,7 @@ void ServiceWorkerInstalledScriptsSender::Abort(
     case ServiceWorkerInstalledScriptReader::FinishedReason::kConnectionError:
     case ServiceWorkerInstalledScriptReader::FinishedReason::
         kMetaDataSenderError:
+    case ServiceWorkerInstalledScriptReader::FinishedReason::kNoContextError:
       // Break the Mojo connection with the renderer. This usually causes the
       // service worker to stop, and the error handler of EmbeddedWorkerInstance
       // is invoked soon.

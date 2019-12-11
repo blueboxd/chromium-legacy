@@ -43,6 +43,8 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
 
   void UpdateGroup();
 
+  SkColor background_color() const { return color(); }
+
   TabController* const tab_controller_;
   const TabGroupId group_;
 

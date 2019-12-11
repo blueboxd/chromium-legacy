@@ -6,17 +6,17 @@
   <summary>
     Event for unit testing, do not use.
   </summary>
-  <metric name="ValueOne" kind="hashed">
+  <metric name="ValueOne" kind="hashed-string">
     <summary>
       A per-user keyed hashed value.
     </summary>
   </metric>
-  <metric name="ValueTwo" kind="hashed">
+  <metric name="ValueTwo" kind="hashed-string">
     <summary>
       A per-user keyed hashed value.
     </summary>
   </metric>
-  <metric name="ValueThree" kind="unhashed">
+  <metric name="ValueThree" kind="int">
     <summary>
       An unhashed value, recorded as-is.
     </summary>

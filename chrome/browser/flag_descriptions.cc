@@ -2457,6 +2457,10 @@ const char kChromeDuetLabelsName[] = "Chrome Duet Labels";
 const char kChromeDuetLabelsDescription[] =
     "Enables Chrome Duet (split toolbar) labels.";
 
+const char kChromeShareScreenshotName[] = "Chrome Share Screenshots";
+const char kChromeShareScreenshotDescription[] =
+    "Enables UI to edit and share screenshots";
+
 const char kChromeSharingHubName[] = "Chrome Sharing Hub";
 const char kChromeSharingHubDescription[] =
     "Enables the Chrome Sharing Hub/custom share sheet.";

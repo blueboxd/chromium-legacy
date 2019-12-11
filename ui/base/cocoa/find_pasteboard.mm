@@ -22,7 +22,7 @@ NSString* kFindPasteboardChangedNotification =
 
 - (instancetype)init {
   if ((self = [super init])) {
-    findText_.reset([[NSString alloc] init]);
+    _findText.reset([[NSString alloc] init]);
 
     // Check if the text in the findboard has changed on app activate.
     [[NSNotificationCenter defaultCenter]
@@ -52,7 +52,7 @@ NSString* kFindPasteboardChangedNotification =
 }
 
 - (NSString*)findText {
-  return findText_;
+  return _findText;
 }
 
 - (void)setFindText:(NSString*)newText {
@@ -62,12 +62,12 @@ NSString* kFindPasteboardChangedNotification =
 
   DCHECK([NSThread isMainThread]);
 
-  BOOL needToSendNotification = ![findText_.get() isEqualToString:newText];
+  BOOL needToSendNotification = ![_findText.get() isEqualToString:newText];
   if (needToSendNotification) {
-    findText_.reset([newText copy]);
+    _findText.reset([newText copy]);
     NSPasteboard* findPboard = [self findPboard];
     [findPboard declareTypes:@[ NSStringPboardType ] owner:nil];
-    [findPboard setString:findText_.get() forType:NSStringPboardType];
+    [findPboard setString:_findText.get() forType:NSStringPboardType];
     [[NSNotificationCenter defaultCenter]
         postNotificationName:kFindPasteboardChangedNotification
                       object:self];

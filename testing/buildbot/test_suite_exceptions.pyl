@@ -108,13 +108,6 @@
           'shards': 15,
         },
       },
-      'linux-chromeos-google-rel': {
-        # TODO(https://crbug.com/932269): Promote out of experiment when the
-        # tests are green.
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.browser_tests.filter',
-        ],
-      },
       'linux-chromeos-chrome': {
         # TODO(https://crbug.com/932269): Promote out of experiment when the
         # tests are green.
@@ -891,12 +884,6 @@
       'Win10 Tests x64 (dbg)': {
         'experiment_percentage': 100,
       },
-      'linux-chromeos-google-rel': {
-        # TODO(crbug.com/970649): Remove this filter.
-        'args': [
-          '--gtest_filter=-SadTabViewInteractiveUITest.ReloadMultipleSadTabs',
-        ],
-      },
       'linux-chromeos-chrome': {
         # TODO(crbug.com/970649): Remove this filter.
         'args': [
@@ -1078,12 +1065,6 @@
         'swarming': {
           'shards': 2,
         },
-      },
-      'chromeos-betty-google-rel': {
-        # TODO(crbug.com/986904): Remove this filter.
-        'args': [
-          '--gtest_filter=-NetworkQualityEstimatorTest.TestTCPSocketRTT',
-        ],
       },
       'chromeos-betty-chrome': {
         # TODO(crbug.com/986904): Remove this filter.
@@ -1329,13 +1310,6 @@
           'shards': 20,
         },
       },
-      'linux-chromeos-google-rel': {
-        # TODO(https://crbug.com/932269): Promote out of experiment when the
-        # tests are green.
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.browser_tests.filter',
-        ],
-      },
       'linux-chromeos-chrome': {
         # TODO(https://crbug.com/932269): Promote out of experiment when the
         # tests are green.
@@ -1423,21 +1397,6 @@
   },
   'ozone_unittests': {
     'modifications': {
-      'chromeos-betty-google-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.ozone_unittests.filter',
-        ],
-      },
-      'chromeos-betty-pi-arc-google-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.ozone_unittests.filter',
-        ],
-      },
-      'linux-chromeos-google-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.ozone_unittests.filter',
-        ],
-      },
       'chromeos-betty-chrome': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.ozone_unittests.filter',
@@ -1855,11 +1814,6 @@
           'shards': 2,
         },
       },
-      'linux-chromeos-google-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.unit_tests.filter',
-        ],
-      },
       'linux-chromeos-chrome': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.unit_tests.filter',
@@ -1972,7 +1926,7 @@
       },
       'chromeos-amd64-generic-rel': {
         'swarming': {
-          'shards': 6,
+          'shards': 12,
         },
       },
     },

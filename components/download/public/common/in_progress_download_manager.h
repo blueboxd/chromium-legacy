@@ -136,11 +136,11 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
 
   // DownloadItemImplDelegate implementations.
   void DetermineDownloadTarget(DownloadItemImpl* download,
-                               const DownloadTargetCallback& callback) override;
+                               DownloadTargetCallback callback) override;
   void ResumeInterruptedDownload(std::unique_ptr<DownloadUrlParameters> params,
                                  const GURL& site_url) override;
   bool ShouldOpenDownload(DownloadItemImpl* item,
-                          const ShouldOpenDownloadCallback& callback) override;
+                          ShouldOpenDownloadCallback callback) override;
   void ReportBytesWasted(DownloadItemImpl* download) override;
 
   // Called to remove an in-progress download.

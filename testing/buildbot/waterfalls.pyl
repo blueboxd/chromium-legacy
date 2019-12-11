@@ -12,27 +12,7 @@
   {
     'name': 'chrome',
     'machines': {
-      # TODO(crbug.com/1032272): Delete all these in favor of their "*-chrome"
-      # counterparts below.
       'chromeos-betty-chrome': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromeos_vm_gtests',
-          'isolated_scripts': 'chromeos_isolated_scripts',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'kvm': '1',
-              'os': 'Ubuntu-16.04',
-              'pool': 'chrome.tests.cros-vm',
-            },
-          ],
-        },
-      },
-      'chromeos-betty-google-rel': {
         'additional_compile_targets': [
           'chromiumos_preflight',
         ],
@@ -67,23 +47,6 @@
           ],
         },
       },
-      'chromeos-betty-pi-arc-google-rel': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromeos_browser_integration_tests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'kvm': '1',
-              'os': 'Ubuntu-16.04',
-              'pool': 'chrome.tests.cros-vm',
-            },
-          ],
-        },
-      },
       'chromeos-eve-chrome': {
         'additional_compile_targets': [
           'chromiumos_preflight',
@@ -102,43 +65,7 @@
         },
         'os_type': 'chromeos'
       },
-      'chromeos-eve-google-rel': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromeos_device_gtests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'ChromeOS',
-              'device_type': 'eve',
-              'pool': 'luci.chrome.cros-dut',
-            },
-          ],
-        },
-        'os_type': 'chromeos'
-      },
       'chromeos-kevin-chrome': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromeos_device_gtests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'ChromeOS',
-              'device_type': 'kevin',
-              'pool': 'luci.chrome.cros-dut',
-            },
-          ],
-        },
-        'os_type': 'chromeos'
-      },
-      'chromeos-kevin-google-rel': {
         'additional_compile_targets': [
           'chromiumos_preflight',
         ],
@@ -190,40 +117,6 @@
           'gtest_tests': 'linux_chromeos_gtests',
         },
       },
-      'linux-chromeos-google-rel': {
-        'additional_compile_targets': [
-          'chrome',
-          'chrome_sandbox',
-          'linux_symbols',
-          'symupload'
-        ],
-        'mixins': [
-          'chrome-swarming-pool',
-          'linux-xenial',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'ssd': '0',
-            },
-          ],
-        },
-        'test_suites': {
-          'gtest_tests': 'linux_chromeos_gtests',
-        },
-      },
-      'linux-google-rel': {
-        'additional_compile_targets': [
-          'chrome',
-          'chrome/installer/linux',
-        ],
-        'mixins': [
-          'chrome-swarming-pool',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'chrome_sizes',
-        },
-      },
       'mac-chrome': {
         'additional_compile_targets': [
           'chrome',
@@ -236,32 +129,7 @@
           'isolated_scripts': 'chrome_sizes',
         },
       },
-      'mac-google-rel': {
-        'additional_compile_targets': [
-          'chrome',
-        ],
-        'mixins': [
-          'chrome-swarming-pool',
-          'mac_10.14',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'chrome_sizes',
-        },
-      },
       'win-chrome': {
-        'additional_compile_targets': [
-          'chrome',
-          'chrome_official_builder',
-        ],
-        'mixins': [
-          'chrome-swarming-pool',
-          'win10',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'chrome_sizes',
-        },
-      },
-      'win-google-rel': {
         'additional_compile_targets': [
           'chrome',
           'chrome_official_builder',

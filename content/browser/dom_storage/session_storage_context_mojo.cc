@@ -26,7 +26,7 @@
 #include "build/build_config.h"
 #include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
-#include "content/browser/dom_storage/session_storage_area_impl.h"
+#include "components/services/storage/dom_storage/session_storage_area_impl.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl_mojo.h"
 #include "content/public/browser/session_storage_usage_info.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -558,7 +558,7 @@ SessionStorageContextMojo::RegisterNewAreaMap(
 
 void SessionStorageContextMojo::OnDataMapCreation(
     const std::vector<uint8_t>& map_prefix,
-    SessionStorageDataMap* map) {
+    storage::SessionStorageDataMap* map) {
   DCHECK(data_maps_.find(map_prefix) == data_maps_.end());
   data_maps_.emplace(std::piecewise_construct,
                      std::forward_as_tuple(map_prefix),
@@ -604,7 +604,7 @@ void SessionStorageContextMojo::OnCommitResultWithCallback(
   std::move(callback).Run();
 }
 
-scoped_refptr<SessionStorageDataMap>
+scoped_refptr<storage::SessionStorageDataMap>
 SessionStorageContextMojo::MaybeGetExistingDataMapForId(
     const std::vector<uint8_t>& map_number_as_bytes) {
   auto it = data_maps_.find(map_number_as_bytes);
@@ -658,7 +658,7 @@ void SessionStorageContextMojo::RegisterShallowClonedNamespace(
 std::unique_ptr<SessionStorageNamespaceImplMojo>
 SessionStorageContextMojo::CreateSessionStorageNamespaceImplMojo(
     std::string namespace_id) {
-  SessionStorageAreaImpl::RegisterNewAreaMap map_id_callback =
+  storage::SessionStorageAreaImpl::RegisterNewAreaMap map_id_callback =
       base::BindRepeating(&SessionStorageContextMojo::RegisterNewAreaMap,
                           base::Unretained(this));
 

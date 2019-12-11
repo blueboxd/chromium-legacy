@@ -22,8 +22,10 @@
 #include "third_party/pdfium/public/fpdf_ppo.h"
 #include "third_party/pdfium/public/fpdf_transformpage.h"
 #include "ui/gfx/codec/jpeg_codec.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/size_f.h"
 
 using printing::ConvertUnit;
 using printing::ConvertUnitDouble;
@@ -69,17 +71,17 @@ void SetPageSizeAndContentRect(bool rotated,
 
 // Transform |page| contents to fit in the selected printer paper size.
 void TransformPDFPageForPrinting(FPDF_PAGE page,
-                                 double scale_factor,
+                                 float scale_factor,
                                  const PP_PrintSettings_Dev& print_settings) {
   // Get the source page width and height in points.
-  const double src_page_width = FPDF_GetPageWidth(page);
-  const double src_page_height = FPDF_GetPageHeight(page);
+  gfx::SizeF src_page_size(FPDF_GetPageWidthF(page), FPDF_GetPageHeightF(page));
   const int src_page_rotation = FPDFPage_GetRotation(page);
 
   pp::Size page_size(print_settings.paper_size);
   pp::Rect content_rect(print_settings.printable_area);
   const bool rotated = (src_page_rotation % 2 == 1);
-  SetPageSizeAndContentRect(rotated, src_page_width > src_page_height,
+  SetPageSizeAndContentRect(rotated,
+                            src_page_size.width() > src_page_size.height(),
                             &page_size, &content_rect);
 
   // Compute the screen page width and height in points.
@@ -106,8 +108,8 @@ void TransformPDFPageForPrinting(FPDF_PAGE page,
   }
 
   if (fitted_scaling) {
-    scale_factor = CalculateScaleFactor(gfx_printed_rect, src_page_width,
-                                        src_page_height, rotated);
+    scale_factor =
+        CalculateScaleFactor(gfx_printed_rect, src_page_size, rotated);
   }
 
   // Calculate positions for the clip box.
@@ -124,17 +126,12 @@ void TransformPDFPageForPrinting(FPDF_PAGE page,
   ScalePdfRectangle(scale_factor, &source_clip_box);
 
   // Calculate the translation offset values.
-  double offset_x = 0;
-  double offset_y = 0;
-
-  if (fitted_scaling) {
-    CalculateScaledClipBoxOffset(gfx_printed_rect, source_clip_box, &offset_x,
-                                 &offset_y);
-  } else {
-    CalculateNonScaledClipBoxOffset(src_page_rotation, actual_page_width,
-                                    actual_page_height, source_clip_box,
-                                    &offset_x, &offset_y);
-  }
+  gfx::PointF offset =
+      fitted_scaling
+          ? CalculateScaledClipBoxOffset(gfx_printed_rect, source_clip_box)
+          : CalculateNonScaledClipBoxOffset(
+                src_page_rotation, actual_page_width, actual_page_height,
+                source_clip_box);
 
   // Reset the media box and crop box. When the page has crop box and media box,
   // the plugin will display the crop box contents and not the entire media box.
@@ -148,28 +145,23 @@ void TransformPDFPageForPrinting(FPDF_PAGE page,
   // Transformation is not required, return. Do this check only after updating
   // the media box and crop box. For more detailed information, please refer to
   // the comment block right before FPDF_SetMediaBox and FPDF_GetMediaBox calls.
-  if (scale_factor == 1.0 && offset_x == 0 && offset_y == 0)
+  if (scale_factor == 1.0f && offset.IsOrigin())
     return;
 
   // All the positions have been calculated, now manipulate the PDF.
-  FS_MATRIX matrix = {static_cast<float>(scale_factor),
-                      0,
-                      0,
-                      static_cast<float>(scale_factor),
-                      static_cast<float>(offset_x),
-                      static_cast<float>(offset_y)};
-  FS_RECTF cliprect = {static_cast<float>(source_clip_box.left + offset_x),
-                       static_cast<float>(source_clip_box.top + offset_y),
-                       static_cast<float>(source_clip_box.right + offset_x),
-                       static_cast<float>(source_clip_box.bottom + offset_y)};
+  const FS_MATRIX matrix = {scale_factor, 0.0f,       0.0f,
+                            scale_factor, offset.x(), offset.y()};
+  const FS_RECTF cliprect = {
+      source_clip_box.left + offset.x(), source_clip_box.top + offset.y(),
+      source_clip_box.right + offset.x(), source_clip_box.bottom + offset.y()};
   FPDFPage_TransFormWithClip(page, &matrix, &cliprect);
-  FPDFPage_TransformAnnots(page, scale_factor, 0, 0, scale_factor, offset_x,
-                           offset_y);
+  FPDFPage_TransformAnnots(page, scale_factor, 0, 0, scale_factor, offset.x(),
+                           offset.y());
 }
 
 void FitContentsToPrintableAreaIfRequired(
     FPDF_DOCUMENT doc,
-    double scale_factor,
+    float scale_factor,
     const PP_PrintSettings_Dev& print_settings) {
   // Check to see if we need to fit pdf contents to printer paper size.
   if (print_settings.print_scaling_option == PP_PRINTSCALINGOPTION_SOURCE_SIZE)
@@ -334,7 +326,7 @@ void PDFiumPrint::FitContentsToPrintableArea(FPDF_DOCUMENT doc,
                printable_area.height());
   print_settings.print_scaling_option =
       PP_PRINTSCALINGOPTION_FIT_TO_PRINTABLE_AREA;
-  FitContentsToPrintableAreaIfRequired(doc, 1.0, print_settings);
+  FitContentsToPrintableAreaIfRequired(doc, 1.0f, print_settings);
 }
 
 std::vector<uint8_t> PDFiumPrint::PrintPagesAsPdf(
@@ -369,7 +361,7 @@ ScopedFPDFDocument PDFiumPrint::CreatePrintPdf(
     return nullptr;
   }
 
-  double scale_factor = pdf_print_settings.scale_factor / 100.0;
+  float scale_factor = pdf_print_settings.scale_factor / 100.0f;
   FitContentsToPrintableAreaIfRequired(output_doc.get(), scale_factor,
                                        print_settings);
   if (!FlattenPrintData(output_doc.get()))

@@ -32,6 +32,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
 import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
@@ -104,13 +105,14 @@ class StartSurfaceMediator
     private TabModelObserver mNormalTabModelObserver;
     @Nullable
     private TabModelSelectorObserver mTabModelSelectorObserver;
+    private FullscreenManager mFullScreenManager;
 
     StartSurfaceMediator(TabSwitcher.Controller controller, TabModelSelector tabModelSelector,
             @Nullable PropertyModel propertyModel,
             @Nullable ExploreSurfaceCoordinator.FeedSurfaceCreator feedSurfaceCreator,
             @Nullable SecondaryTasksSurfaceInitializer secondaryTasksSurfaceInitializer,
             @SurfaceMode int surfaceMode, @Nullable FakeboxDelegate fakeboxDelegate,
-            NightModeStateProvider nightModeStateProvider) {
+            NightModeStateProvider nightModeStateProvider, FullscreenManager fullscreenManager) {
         mController = controller;
         mTabModelSelector = tabModelSelector;
         mPropertyModel = propertyModel;
@@ -119,6 +121,7 @@ class StartSurfaceMediator
         mSurfaceMode = surfaceMode;
         mFakeboxDelegate = fakeboxDelegate;
         mNightModeStateProvider = nightModeStateProvider;
+        mFullScreenManager = fullscreenManager;
 
         if (mPropertyModel != null) {
             assert mSurfaceMode == SurfaceMode.SINGLE_PANE || mSurfaceMode == SurfaceMode.TWO_PANES
@@ -249,6 +252,10 @@ class StartSurfaceMediator
                     mTabModelSelector.getModel(false).getCount() > 0 && !mIsIncognito);
             setMVTilesVisibility(!mIsIncognito);
             setSecondaryTasksSurfaceVisibility(mIsIncognito);
+
+            // Only pad single pane home page since tabs grid has already been padding for the
+            // bottom bar.
+            mPropertyModel.set(BOTTOM_BAR_HEIGHT, mFullScreenManager.getBottomControlsHeight());
             mNormalTabModel.addObserver(mNormalTabModelObserver);
 
         } else if (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER) {

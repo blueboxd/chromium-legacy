@@ -94,7 +94,7 @@ DownloadTargetDeterminer::DownloadTargetDeterminer(
     DownloadPathReservationTracker::FilenameConflictAction conflict_action,
     DownloadPrefs* download_prefs,
     DownloadTargetDeterminerDelegate* delegate,
-    const CompletionCallback& callback)
+    CompletionCallback callback)
     : next_state_(STATE_GENERATE_TARGET_PATH),
       confirmation_reason_(DownloadConfirmationReason::NONE),
       should_notify_extensions_(false),
@@ -113,7 +113,7 @@ DownloadTargetDeterminer::DownloadTargetDeterminer(
                      !initial_virtual_path.empty()),
       download_prefs_(download_prefs),
       delegate_(delegate),
-      completion_callback_(callback) {
+      completion_callback_(std::move(callback)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(download_);
   DCHECK(delegate);
@@ -125,7 +125,7 @@ DownloadTargetDeterminer::DownloadTargetDeterminer(
 DownloadTargetDeterminer::~DownloadTargetDeterminer() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(download_);
-  DCHECK(completion_callback_.is_null());
+  DCHECK(!completion_callback_);
   download_->RemoveObserver(this);
 }
 
@@ -959,8 +959,8 @@ void DownloadTargetDeterminer::ScheduleCallbackAndDeleteSelf(
   target_info->is_filetype_handled_safely = is_filetype_handled_safely_;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(completion_callback_, std::move(target_info)));
-  completion_callback_.Reset();
+      FROM_HERE,
+      base::BindOnce(std::move(completion_callback_), std::move(target_info)));
   delete this;
 }
 
@@ -1103,12 +1103,12 @@ void DownloadTargetDeterminer::Start(
     DownloadPathReservationTracker::FilenameConflictAction conflict_action,
     DownloadPrefs* download_prefs,
     DownloadTargetDeterminerDelegate* delegate,
-    const CompletionCallback& callback) {
+    CompletionCallback callback) {
   // DownloadTargetDeterminer owns itself and will self destruct when the job is
   // complete or the download item is destroyed. The callback is always invoked
   // asynchronously.
   new DownloadTargetDeterminer(download, initial_virtual_path, conflict_action,
-                               download_prefs, delegate, callback);
+                               download_prefs, delegate, std::move(callback));
 }
 
 // static

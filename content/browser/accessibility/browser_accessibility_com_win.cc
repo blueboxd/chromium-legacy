@@ -1908,7 +1908,7 @@ bool BrowserAccessibilityComWin::IsListBoxOptionOrMenuListOption() {
 }
 
 void BrowserAccessibilityComWin::FireNativeEvent(LONG win_event_type) const {
-  if (owner()->PlatformIsChildOfLeaf())
+  if (owner()->IsChildOfLeaf())
     return;
   Manager()->ToBrowserAccessibilityManagerWin()->FireWinAccessibilityEvent(
       win_event_type, owner());

@@ -118,7 +118,7 @@ public class OfflinePageUtils {
          * @param tab The current tab.
          * @return True if a trusted offline page is shown in the tab.
          */
-        boolean isShowingTrustedOfflinePage(Tab tab);
+        boolean isShowingTrustedOfflinePage(WebContents webContents);
 
         /**
          * Returns whether the tab is showing offline preview.
@@ -187,16 +187,13 @@ public class OfflinePageUtils {
         }
 
         @Override
-        public boolean isShowingTrustedOfflinePage(Tab tab) {
-            if (tab == null) return false;
-
-            WebContents webContents = tab.getWebContents();
+        public boolean isShowingTrustedOfflinePage(WebContents webContents) {
             if (webContents == null) return false;
 
             OfflinePageBridge offlinePageBridge =
-                    getOfflinePageBridge(((TabImpl) tab).getProfile());
+                    getOfflinePageBridge(Profile.fromWebContents(webContents));
             if (offlinePageBridge == null) return false;
-            return offlinePageBridge.isShowingTrustedOfflinePage(tab.getWebContents());
+            return offlinePageBridge.isShowingTrustedOfflinePage(webContents);
         }
     }
 
@@ -619,14 +616,14 @@ public class OfflinePageUtils {
 
     /**
      * Retrieves the extra request header to reload the offline page.
-     * @param tab The current tab.
+     * @param webContents The current WebContents.
      * @return The extra request header string.
      */
-    public static String getOfflinePageHeaderForReload(Tab tab) {
+    public static String getOfflinePageHeaderForReload(WebContents webContents) {
         OfflinePageBridge offlinePageBridge =
-                getInstance().getOfflinePageBridge(((TabImpl) tab).getProfile());
+                getInstance().getOfflinePageBridge(Profile.fromWebContents(webContents));
         if (offlinePageBridge == null) return "";
-        return offlinePageBridge.getOfflinePageHeaderForReload(tab.getWebContents());
+        return offlinePageBridge.getOfflinePageHeaderForReload(webContents);
     }
 
     /**
@@ -689,26 +686,25 @@ public class OfflinePageUtils {
     }
 
     /**
-     * Retrieves the offline page that is shown for the tab.
-     * @param tab The tab to be reloaded.
+     * Retrieves the offline page that is shown for the web-content.
+     * @param webContents The WebContents to be reloaded.
      * @return The offline page if tab currently displays it, null otherwise.
      */
-    public static OfflinePageItem getOfflinePage(Tab tab) {
-        WebContents webContents = tab.getWebContents();
+    public static OfflinePageItem getOfflinePage(WebContents webContents) {
         if (webContents == null) return null;
         OfflinePageBridge offlinePageBridge =
-                getInstance().getOfflinePageBridge(((TabImpl) tab).getProfile());
+                getInstance().getOfflinePageBridge(Profile.fromWebContents(webContents));
         if (offlinePageBridge == null) return null;
         return offlinePageBridge.getOfflinePage(webContents);
     }
 
     /**
-     * Returns whether the tab is showing a trusted offline page.
-     * @param tab The current tab.
-     * @return True if the tab is showing a trusted offline page.
+     * Returns whether the WebContents is showing trusted offline page.
+     * @param webContents The current WebContents.
+     * @return True if a trusted offline page is shown in the webContents.
      */
-    public static boolean isShowingTrustedOfflinePage(Tab tab) {
-        return getInstance().isShowingTrustedOfflinePage(tab);
+    public static boolean isShowingTrustedOfflinePage(WebContents webContents) {
+        return getInstance().isShowingTrustedOfflinePage(webContents);
     }
 
     /**
@@ -716,19 +712,20 @@ public class OfflinePageUtils {
      * @param tab The tab to be reloaded.
      */
     public static void reload(Tab tab) {
+        WebContents webContents = tab.getWebContents();
         // Only the transition type with both RELOAD and FROM_ADDRESS_BAR set will force the
         // navigation to be treated as reload (see ShouldTreatNavigationAsReload()). Without this,
         // reloading an URL containing a hash will be treated as same document load and thus
         // no loading is triggered.
         int transitionTypeForReload = PageTransition.RELOAD | PageTransition.FROM_ADDRESS_BAR;
 
-        OfflinePageItem offlinePage = getOfflinePage(tab);
-        if (isShowingTrustedOfflinePage(tab) || offlinePage == null) {
+        OfflinePageItem offlinePage = getOfflinePage(webContents);
+        if (isShowingTrustedOfflinePage(tab.getWebContents()) || offlinePage == null) {
             // If current page is an offline page, reload it with custom behavior defined in extra
             // header respected.
             LoadUrlParams params =
                     new LoadUrlParams(((TabImpl) tab).getOriginalUrl(), transitionTypeForReload);
-            params.setVerbatimHeaders(getOfflinePageHeaderForReload(tab));
+            params.setVerbatimHeaders(getOfflinePageHeaderForReload(webContents));
             tab.loadUrl(params);
             return;
         }
@@ -832,7 +829,7 @@ public class OfflinePageUtils {
             // We first compute the bitwise tab restore context.
             int tabRestoreContext = 0;
             if (isConnected()) tabRestoreContext |= BIT_ONLINE;
-            OfflinePageItem page = getOfflinePage(tab);
+            OfflinePageItem page = getOfflinePage(tab.getWebContents());
             if (page != null) {
                 tabRestoreContext |= BIT_OFFLINE_PAGE;
                 if (page.getClientId().getNamespace().equals(OfflinePageBridge.LAST_N_NAMESPACE)) {

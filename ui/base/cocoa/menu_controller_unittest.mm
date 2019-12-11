@@ -33,13 +33,13 @@ using base::ASCIIToUTF16;
 @end
 
 @implementation TestResponsiveMenuController {
-  BOOL sawItemEarly_;
+  BOOL _sawItemEarly;
 }
 
-@synthesize sawItemEarly = sawItemEarly_;
+@synthesize sawItemEarly = _sawItemEarly;
 
 - (void)itemWillBeSelected:(NSMenuItem*)sender {
-  sawItemEarly_ = YES;
+  _sawItemEarly = YES;
   [super itemWillBeSelected:sender];
 }
 
@@ -50,13 +50,13 @@ using base::ASCIIToUTF16;
 @end
 
 @implementation WatchedLifetimeMenuController {
-  BOOL* deallocCalled_;
+  BOOL* _deallocCalled;
 }
 
-@synthesize deallocCalled = deallocCalled_;
+@synthesize deallocCalled = _deallocCalled;
 
 - (void)dealloc {
-  *deallocCalled_ = YES;
+  *_deallocCalled = YES;
   [super dealloc];
 }
 

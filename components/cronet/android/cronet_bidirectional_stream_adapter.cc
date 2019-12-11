@@ -441,8 +441,22 @@ CronetBidirectionalStreamAdapter::GetHeadersArray(
 
   std::vector<std::string> headers;
   for (const auto& header : header_block) {
-    headers.push_back(header.first.as_string());
-    headers.push_back(header.second.as_string());
+    std::string value = header.second.as_string();
+    size_t start = 0;
+    size_t end = 0;
+    // The do loop will split headers by '\0' so that applications can skip it.
+    do {
+      end = value.find('\0', start);
+      std::string split_value;
+      if (end != value.npos) {
+        split_value = value.substr(start, end - start);
+      } else {
+        split_value = value.substr(start);
+      }
+      headers.push_back(header.first.as_string());
+      headers.push_back(split_value);
+      start = end + 1;
+    } while (end != value.npos);
   }
   return base::android::ToJavaArrayOfStrings(env, headers);
 }

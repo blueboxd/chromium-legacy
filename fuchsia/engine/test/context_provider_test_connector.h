@@ -11,9 +11,7 @@
 
 #include "base/command_line.h"
 
-fidl::InterfaceHandle<fuchsia::web::ContextProvider> ConnectContextProvider(
-    fidl::InterfaceRequest<fuchsia::web::ContextProvider>
-        context_provider_request,
+fuchsia::web::ContextProviderPtr StartWebEngineForTests(
     fidl::InterfaceRequest<fuchsia::sys::ComponentController>
         component_controller_request,
     const base::CommandLine& command_line =

@@ -45,24 +45,23 @@ bool NativeInit(base::android::LibraryProcessType) {
   return android::OnJNIOnLoadInit();
 }
 
+void RegisterNonMainDexNatives() {
+  RegisterNonMainDexNatives(base::android::AttachCurrentThread());
+}
+
 }  // namespace
 
 // This is called by the VM when the shared library is first loaded.
 JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
-  // By default, all JNI methods are registered. However, since render processes
-  // don't need very much Java code, we enable selective JNI registration on the
-  // Java side and only register a subset of JNI methods.
+  // All MainDex JNI methods are registered. Since render processes don't need
+  // very much Java code, we enable selective JNI registration on the
+  // Java side and only register Non-MainDex JNI when necessary through
+  // RegisterNonMainDexNatives().
   base::android::InitVM(vm);
-  JNIEnv* env = base::android::AttachCurrentThread();
-
-  if (!base::android::IsSelectiveJniRegistrationEnabled(env) &&
-      !RegisterNonMainDexNatives(env)) {
+  if (!RegisterMainDexNatives(base::android::AttachCurrentThread())) {
     return -1;
   }
-
-  if (!RegisterMainDexNatives(env)) {
-    return -1;
-  }
+  base::android::SetNonMainDexJniRegistrationHook(RegisterNonMainDexNatives);
   base::android::SetNativeInitializationHook(NativeInit);
   return JNI_VERSION_1_4;
 }

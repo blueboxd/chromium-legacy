@@ -192,19 +192,27 @@ NSString* ResolvePath(NSString* path) {
 NSString* GetDeviceBySDKAndName(NSDictionary* simctl_list,
                                 NSString* device_name,
                                 NSString* sdk_version) {
-  NSString* sdk = [@"iOS " stringByAppendingString:sdk_version];
-  NSArray* devices = [simctl_list[@"devices"] objectForKey:sdk];
-  // Pre-Xcode 10.2's simulator, xcrun simctl -j returned "devices" that looked
-  // like "iOS 12.1".  Now they look like
-  // com.apple.CoreSimulator.SimRuntime.iOS-12-1. Only use this block when all
-  // bots move to Xcode 10.2+
-  if (devices == nil || [devices count] == 0) {
-    sdk_version = [sdk_version stringByReplacingOccurrencesOfString:@"."
-                                                         withString:@"-"];
-    NSString* sdk = [@"com.apple.CoreSimulator.SimRuntime.iOS-"
-        stringByAppendingString:sdk_version];
-    devices = [simctl_list[@"devices"] objectForKey:sdk];
+  NSString* sdk = nil;
+  // Get runtime identifier based on version property to handle
+  // cases when version and identifier are not the same,
+  // e.g. below identifer is *13-2 but version is 13.2.2
+  // {
+  //   "version" : "13.2.2",
+  //   "bundlePath" : "path"
+  //   "identifier" : "com.apple.CoreSimulator.SimRuntime.iOS-13-2",
+  //   "buildversion" : "17K90"
+  // }
+  for (NSDictionary* runtime in Runtimes(simctl_list)) {
+    if ([runtime[@"version"] isEqualToString:sdk_version]) {
+      sdk = runtime[@"identifier"];
+    }
   }
+  if (sdk == nil) {
+    printf("\nDid not find Runtime with specified version.\n");
+    PrintSupportedDevices(simctl_list);
+    exit(kExitInvalidArguments);
+  }
+  NSArray* devices = [simctl_list[@"devices"] objectForKey:sdk];
   for (NSDictionary* device in devices) {
     if ([device[@"name"] isEqualToString:device_name]) {
       return device[@"udid"];
@@ -213,7 +221,7 @@ NSString* GetDeviceBySDKAndName(NSDictionary* simctl_list,
   return nil;
 }
 
-// Create and a redturn a device udid of |device| and |sdk_version|.
+// Create and return a device udid of |device| and |sdk_version|.
 NSString* CreateDeviceBySDKAndName(NSString* device, NSString* sdk_version) {
   NSString* sdk = [@"iOS" stringByAppendingString:sdk_version];
   XCRunTask* create = [[[XCRunTask alloc]

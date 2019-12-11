@@ -280,7 +280,14 @@ XrResult OpenXrApiWrapper::CreateSwapchain() {
 
   XrSwapchainCreateInfo swapchain_create_info = {XR_TYPE_SWAPCHAIN_CREATE_INFO};
   swapchain_create_info.arraySize = 1;
-  swapchain_create_info.format = DXGI_FORMAT_R8G8B8A8_UNORM;
+  // OpenXR's swapchain format expects to describe the texture content.
+  // The result of a swapchain image created from OpenXR API always contains a
+  // typeless texture. On the other hand, WebGL API uses CSS color convention
+  // that's sRGB. The RGBA typelss texture from OpenXR swapchain image leads to
+  // a linear format render target view (reference to function
+  // D3D11TextureHelper::EnsureRenderTargetView in d3d11_texture_helper.cc).
+  // Therefore, the content in this openxr swapchain image is in sRGB format.
+  swapchain_create_info.format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 
   // WebVR and WebXR textures are double wide, meaning the texture contains
   // both the left and the right eye, so the width of the swapchain texture

@@ -110,22 +110,22 @@ void GetDefaultMediaDeviceID(
     blink::MediaDeviceType device_type,
     int render_process_id,
     int render_frame_id,
-    const base::Callback<void(const std::string&)>& callback) {
+    base::OnceCallback<void(const std::string&)> callback) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseFakeDeviceForMediaStream)) {
     std::string command_line_default_device_id =
         GetDefaultMediaDeviceIDFromCommandLine(device_type);
     if (!command_line_default_device_id.empty()) {
-      callback.Run(command_line_default_device_id);
+      std::move(callback).Run(command_line_default_device_id);
       return;
     }
   }
 
   base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&GetDefaultMediaDeviceIDOnUIThread, device_type,
-                 render_process_id, render_frame_id),
-      callback);
+      base::BindOnce(&GetDefaultMediaDeviceIDOnUIThread, device_type,
+                     render_process_id, render_frame_id),
+      std::move(callback));
 }
 
 MediaDeviceSaltAndOrigin GetMediaDeviceSaltAndOrigin(int render_process_id,

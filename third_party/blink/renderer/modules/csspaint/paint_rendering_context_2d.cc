@@ -155,9 +155,13 @@ void PaintRenderingContext2D::setTransform(double m11,
 
 void PaintRenderingContext2D::setTransform(DOMMatrix2DInit* transform,
                                            ExceptionState& exception_state) {
-  // The PaintRenderingContext2D APIs are running on worklet thread, therefore
-  // it is not possible to construct a DOMMatrix.
-  NOTREACHED();
+  DOMMatrixReadOnly* m =
+      DOMMatrixReadOnly::fromMatrix2D(transform, exception_state);
+
+  if (!m)
+    return;
+
+  setTransform(m->m11(), m->m12(), m->m21(), m->m22(), m->m41(), m->m42());
 }
 
 sk_sp<PaintRecord> PaintRenderingContext2D::GetRecord() {

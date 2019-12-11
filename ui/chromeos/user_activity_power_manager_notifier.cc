@@ -4,6 +4,8 @@
 
 #include "ui/chromeos/user_activity_power_manager_notifier.h"
 
+#include "services/device/public/mojom/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/stylus_state.h"
@@ -43,14 +45,18 @@ power_manager::UserActivityType GetUserActivityTypeForEvent(
 
 UserActivityPowerManagerNotifier::UserActivityPowerManagerNotifier(
     UserActivityDetector* detector,
-    mojo::PendingRemote<device::mojom::Fingerprint> fingerprint)
-    : detector_(detector), fingerprint_(std::move(fingerprint)) {
+    service_manager::Connector* connector)
+    : detector_(detector) {
   detector_->AddObserver(this);
   ui::DeviceDataManager::GetInstance()->AddObserver(this);
   chromeos::PowerManagerClient::Get()->AddObserver(this);
 
-  // |fingerprint_| can be null in tests.
-  if (fingerprint_) {
+  // Connector can be null in tests.
+  if (connector) {
+    // Treat fingerprint attempts as user activies to turn on the screen.
+    // I.e., when user tried to use fingerprint to unlock.
+    connector->Connect(device::mojom::kServiceName,
+                       fingerprint_.BindNewPipeAndPassReceiver());
     fingerprint_->AddFingerprintObserver(
         fingerprint_observer_receiver_.BindNewPipeAndPassRemote());
   }

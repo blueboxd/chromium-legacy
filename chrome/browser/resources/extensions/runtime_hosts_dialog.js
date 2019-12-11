@@ -115,7 +115,7 @@ Polymer({
   validate_: function() {
     // If input is empty, disable the action button, but don't show the red
     // invalid message.
-    if (this.site_.trim().length == 0) {
+    if (this.site_.trim().length === 0) {
       this.inputInvalid_ = false;
       return;
     }
@@ -140,7 +140,7 @@ Polymer({
    */
   computeSubmitButtonDisabled_: function() {
     return this.inputInvalid_ || this.site_ === undefined ||
-        this.site_.trim().length == 0;
+        this.site_.trim().length === 0;
   },
 
   /**
@@ -196,7 +196,7 @@ Polymer({
         'Editing host permissions should only be possible if the host ' +
             'access is already set to specific sites.');
 
-    if (this.currentSite == this.site_) {
+    if (this.currentSite === this.site_) {
       // No change in values, so no need to update anything.
       this.$.dialog.close();
       return;

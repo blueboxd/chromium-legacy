@@ -390,19 +390,19 @@ void DownloadManagerImpl::OnHistoryNextIdRetrived(uint32_t next_id) {
 
 void DownloadManagerImpl::DetermineDownloadTarget(
     download::DownloadItemImpl* item,
-    const DownloadTargetCallback& callback) {
+    DownloadTargetCallback callback) {
   // Note that this next call relies on
   // DownloadItemImplDelegate::DownloadTargetCallback and
   // DownloadManagerDelegate::DownloadTargetCallback having the same
   // type.  If the types ever diverge, gasket code will need to
   // be written here.
-  if (!delegate_ || !delegate_->DetermineDownloadTarget(item, callback)) {
+  if (!delegate_ || !delegate_->DetermineDownloadTarget(item, &callback)) {
     base::FilePath target_path = item->GetForcedFilePath();
     // TODO(asanka): Determine a useful path if |target_path| is empty.
-    callback.Run(target_path,
-                 download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                 download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, target_path,
-                 download::DOWNLOAD_INTERRUPT_REASON_NONE);
+    std::move(callback).Run(
+        target_path, download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+        download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, target_path,
+        download::DOWNLOAD_INTERRUPT_REASON_NONE);
   }
 }
 
@@ -428,14 +428,14 @@ bool DownloadManagerImpl::ShouldOpenFileBasedOnExtension(
 
 bool DownloadManagerImpl::ShouldOpenDownload(
     download::DownloadItemImpl* item,
-    const ShouldOpenDownloadCallback& callback) {
+    ShouldOpenDownloadCallback callback) {
   if (!delegate_)
     return true;
 
   // Relies on DownloadItemImplDelegate::ShouldOpenDownloadCallback and
   // DownloadManagerDelegate::DownloadOpenDelayedCallback "just happening"
   // to have the same type :-}.
-  return delegate_->ShouldOpenDownload(item, callback);
+  return delegate_->ShouldOpenDownload(item, std::move(callback));
 }
 
 void DownloadManagerImpl::SetDelegate(DownloadManagerDelegate* delegate) {

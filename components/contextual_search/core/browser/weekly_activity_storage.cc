@@ -10,13 +10,6 @@
 
 namespace {
 
-// Keys for ChromePreferenceManager storage of oldest and newest week written.
-const char kOldestWeekWrittenKey[] = "contextual_search_oldest_week";
-const char kNewestWeekWrittenKey[] = "contextual_search_newest_week";
-// Prefixes for ChromePreferenceManager storage keyed by week.
-const char kClicksWeekKeyPrefix[] = "contextual_search_clicks_week_";
-const char kImpressionsWeekKeyPrefix[] = "contextual_search_impressions_week_";
-
 // Used for validation in debug build.  Week numbers are > 2300 as of year 2016.
 const int kReasonableMinWeek = 2000;
 
@@ -31,33 +24,24 @@ WeeklyActivityStorage::WeeklyActivityStorage(int weeks_needed) {
 WeeklyActivityStorage::~WeeklyActivityStorage() {}
 
 int WeeklyActivityStorage::ReadClicks(int week_number) {
-  std::string key = GetWeekClicksKey(week_number);
-  return ReadInt(key);
+  return ReadClicksForWeekRemainder(GetWeekRemainder(week_number));
 }
 
 void WeeklyActivityStorage::WriteClicks(int week_number, int value) {
-  std::string key = GetWeekClicksKey(week_number);
-  WriteInt(key, value);
+  WriteClicksForWeekRemainder(GetWeekRemainder(week_number), value);
 }
 
 int WeeklyActivityStorage::ReadImpressions(int week_number) {
-  std::string key = GetWeekImpressionsKey(week_number);
-  return ReadInt(key);
+  return ReadImpressionsForWeekRemainder(GetWeekRemainder(week_number));
 }
 
 void WeeklyActivityStorage::WriteImpressions(int week_number, int value) {
-  std::string key = GetWeekImpressionsKey(week_number);
-  WriteInt(key, value);
+  WriteImpressionsForWeekRemainder(GetWeekRemainder(week_number), value);
 }
 
 bool WeeklyActivityStorage::HasData(int week_number) {
-  return ReadInt(kOldestWeekWrittenKey) <= week_number &&
-         ReadInt(kNewestWeekWrittenKey) >= week_number;
-}
-
-void WeeklyActivityStorage::ClearData(int week_number) {
-  WriteImpressions(week_number, 0);
-  WriteClicks(week_number, 0);
+  return ReadOldestWeekWritten() <= week_number &&
+         ReadNewestWeekWritten() >= week_number;
 }
 
 void WeeklyActivityStorage::AdvanceToWeek(int week_number) {
@@ -66,38 +50,30 @@ void WeeklyActivityStorage::AdvanceToWeek(int week_number) {
 
 // private
 
-std::string WeeklyActivityStorage::GetWeekImpressionsKey(int which_week) {
-  return kImpressionsWeekKeyPrefix + GetWeekKey(which_week);
-}
-
-std::string WeeklyActivityStorage::GetWeekClicksKey(int which_week) {
-  return kClicksWeekKeyPrefix + GetWeekKey(which_week);
-}
-
 // Round-robin implementation:
-// GetWeekKey and EnsureHasActivity are implemented with a round-robin
+// GetWeekRemainder and EnsureHasActivity are implemented with a round-robin
 // implementation that simply recycles usage of the last N weeks, where N is
 // less than weeks_needed_.
 
-std::string WeeklyActivityStorage::GetWeekKey(int which_week) {
-  return std::to_string(which_week % (weeks_needed_ + 1));
+int WeeklyActivityStorage::GetWeekRemainder(int which_week) {
+  return which_week % (weeks_needed_ + 1);
 }
 
 void WeeklyActivityStorage::EnsureHasActivity(int which_week) {
   DCHECK(which_week > kReasonableMinWeek);
 
   // If still on the newest week we're done!
-  int newest_week = ReadInt(kNewestWeekWrittenKey);
+  int newest_week = ReadNewestWeekWritten();
   if (newest_week == which_week)
     return;
 
   // Update the newest and oldest week written.
   if (which_week > newest_week) {
-    WriteInt(kNewestWeekWrittenKey, which_week);
+    WriteNewestWeekWritten(which_week);
   }
-  int oldest_week = ReadInt(kOldestWeekWrittenKey);
+  int oldest_week = ReadOldestWeekWritten();
   if (oldest_week == 0 || oldest_week > which_week)
-    WriteInt(kOldestWeekWrittenKey, which_week);
+    WriteOldestWeekWritten(which_week);
 
   // Any stale weeks to update?
   if (newest_week == 0)
@@ -109,21 +85,11 @@ void WeeklyActivityStorage::EnsureHasActivity(int which_week) {
   int weeks_to_clear = std::min(which_week - newest_week, weeks_needed_);
   int week = which_week;
   while (weeks_to_clear > 0) {
-    WriteInt(GetWeekImpressionsKey(week), 0);
-    WriteInt(GetWeekClicksKey(week), 0);
+    WriteImpressionsForWeekRemainder(GetWeekRemainder(week), 0);
+    WriteClicksForWeekRemainder(GetWeekRemainder(week), 0);
     week--;
     weeks_to_clear--;
   }
-}
-
-// Storage access bottlenecks
-
-int WeeklyActivityStorage::ReadInt(std::string storage_bucket) {
-  return ReadStorage(storage_bucket);
-}
-
-void WeeklyActivityStorage::WriteInt(std::string storage_bucket, int value) {
-  WriteStorage(storage_bucket, value);
 }
 
 }  // namespace contextual_search

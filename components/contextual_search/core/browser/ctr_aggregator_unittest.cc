@@ -29,11 +29,20 @@ class CtrAggregatorTest : public testing::Test {
     WeeklyActivityStorageStub();
 
    private:
-    int ReadStorage(std::string storage_bucket) override;
-    void WriteStorage(std::string storage_key, int value) override;
+    int ReadClicksForWeekRemainder(int week_remainder) override;
+    int ReadImpressionsForWeekRemainder(int week_remainder) override;
+    int ReadOldestWeekWritten() override;
+    int ReadNewestWeekWritten() override;
+    void WriteClicksForWeekRemainder(int week_remainder, int value) override;
+    void WriteImpressionsForWeekRemainder(int week_remainder,
+                                          int value) override;
+    void WriteOldestWeekWritten(int value) override;
+    void WriteNewestWeekWritten(int value) override;
 
-    typedef std::unordered_map<std::string, int> hashmap;
-    hashmap weeks_;
+    std::unordered_map<int, int> clicks_;
+    std::unordered_map<int, int> impressions_;
+    int oldest_week_;
+    int newest_week_;
   };
 
   // Test helpers
@@ -58,17 +67,45 @@ class CtrAggregatorTest : public testing::Test {
 };
 
 CtrAggregatorTest::WeeklyActivityStorageStub::WeeklyActivityStorageStub()
-    : WeeklyActivityStorage(4) {}
+    : WeeklyActivityStorage(4), oldest_week_(0), newest_week_(0) {}
 
-int CtrAggregatorTest::WeeklyActivityStorageStub::ReadStorage(
-    std::string storage_bucket) {
-  return weeks_[storage_bucket];
+int CtrAggregatorTest::WeeklyActivityStorageStub::ReadClicksForWeekRemainder(
+    int week_remainder) {
+  return clicks_[week_remainder];
 }
 
-void CtrAggregatorTest::WeeklyActivityStorageStub::WriteStorage(
-    std::string storage_bucket,
+int CtrAggregatorTest::WeeklyActivityStorageStub::
+    ReadImpressionsForWeekRemainder(int week_remainder) {
+  return impressions_[week_remainder];
+}
+
+int CtrAggregatorTest::WeeklyActivityStorageStub::ReadOldestWeekWritten() {
+  return oldest_week_;
+}
+
+int CtrAggregatorTest::WeeklyActivityStorageStub::ReadNewestWeekWritten() {
+  return newest_week_;
+}
+
+void CtrAggregatorTest::WeeklyActivityStorageStub::WriteClicksForWeekRemainder(
+    int week_remainder,
     int value) {
-  weeks_[storage_bucket] = value;
+  clicks_[week_remainder] = value;
+}
+
+void CtrAggregatorTest::WeeklyActivityStorageStub::
+    WriteImpressionsForWeekRemainder(int week_remainder, int value) {
+  impressions_[week_remainder] = value;
+}
+
+void CtrAggregatorTest::WeeklyActivityStorageStub::WriteOldestWeekWritten(
+    int value) {
+  oldest_week_ = value;
+}
+
+void CtrAggregatorTest::WeeklyActivityStorageStub::WriteNewestWeekWritten(
+    int value) {
+  newest_week_ = value;
 }
 
 void CtrAggregatorTest::Fill4Weeks() {

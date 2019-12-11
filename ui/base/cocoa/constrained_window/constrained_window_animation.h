@@ -14,7 +14,7 @@
 UI_BASE_EXPORT
 @interface ConstrainedWindowAnimationBase : NSAnimation {
  @protected
-  base::scoped_nsobject<NSWindow> window_;
+  base::scoped_nsobject<NSWindow> _window;
 }
 
 - (instancetype)initWithWindow:(NSWindow*)window;

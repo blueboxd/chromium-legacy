@@ -28,13 +28,20 @@ public abstract class ChildProcessService extends Service {
         super.onCreate();
         try {
             Context appContext = getApplicationContext();
-            ClassLoader remoteClassLoader =
-                    WebLayer.getOrCreateRemoteClassLoaderForChildProcess(appContext);
-            mImpl = IChildProcessService.Stub.asInterface(
-                    (IBinder) remoteClassLoader
-                            .loadClass("org.chromium.weblayer_private.ChildProcessServiceImpl")
-                            .getMethod("create", Service.class, Context.class)
-                            .invoke(null, this, appContext));
+            Context remoteContext = WebLayer.getOrCreateRemoteContext(appContext);
+            if (WebLayer.getSupportedMajorVersion(appContext) < 81) {
+                mImpl = IChildProcessService.Stub.asInterface(
+                        (IBinder) remoteContext.getClassLoader()
+                                .loadClass("org.chromium.weblayer_private.ChildProcessServiceImpl")
+                                .getMethod("create", Service.class, Context.class)
+                                .invoke(null, this, appContext));
+            } else {
+                mImpl = IChildProcessService.Stub.asInterface(
+                        (IBinder) remoteContext.getClassLoader()
+                                .loadClass("org.chromium.weblayer_private.ChildProcessServiceImpl")
+                                .getMethod("create", Service.class, Context.class, Context.class)
+                                .invoke(null, this, appContext, remoteContext));
+            }
             mImpl.onCreate();
         } catch (Exception e) {
             throw new APICallException(e);

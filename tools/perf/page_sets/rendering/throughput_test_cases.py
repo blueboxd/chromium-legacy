@@ -28,6 +28,11 @@ class MainThirtyImplSixty(ThroughputMetricStory):
   SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS
   URL = ('file://../../../../chrome/test/data/perf/throughput_test_cases/'
          'main-impl-animations-throughput.html#30')
+  TAGS = ThroughputMetricStory.TAGS + [
+    story_tags.REPRESENTATIVE_MOBILE,
+    story_tags.REPRESENTATIVE_MAC_DESKTOP,
+    story_tags.REPRESENTATIVE_WIN_DESKTOP
+  ]
 
 
 class MainSixtyImplSixty(ThroughputMetricStory):

@@ -114,6 +114,7 @@ class ViscaWebcam : public Webcam {
              bool tilt,
              bool zoom,
              const SetPTZCompleteCallback& callback) override;
+  void SetHome(const SetPTZCompleteCallback& callback) override;
   void SetFocus(int value, const SetPTZCompleteCallback& callback) override;
   void SetAutofocusState(AutofocusState state,
                          const SetPTZCompleteCallback& callback) override;

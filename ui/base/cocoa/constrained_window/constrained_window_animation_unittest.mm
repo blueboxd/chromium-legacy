@@ -13,7 +13,7 @@
 @interface ConstrainedWindowAnimationTestDelegate
     : NSObject<NSAnimationDelegate> {
  @private
-  CGFloat frameCount_;
+  CGFloat _frameCount;
 }
 
 - (void)runAnimation:(NSAnimation*)animation;
@@ -24,14 +24,14 @@
 
 - (float)animation:(NSAnimation*)animation
     valueForProgress:(NSAnimationProgress)progress {
-  ++frameCount_;
-  if (frameCount_ >= 2)
+  ++_frameCount;
+  if (_frameCount >= 2)
     [animation setDuration:0.0];
-  return frameCount_ == 1 ? 0.2 : 0.6;
+  return _frameCount == 1 ? 0.2 : 0.6;
 }
 
 - (void)animationDidEnd:(NSAnimation*)animation {
-  EXPECT_EQ(2, frameCount_);
+  EXPECT_EQ(2, _frameCount);
 }
 
 - (void)runAnimation:(NSAnimation*)animation {
@@ -40,7 +40,7 @@
   [animation setDuration:600];
   [animation setDelegate:self];
   [animation startAnimation];
-  EXPECT_EQ(2, frameCount_);
+  EXPECT_EQ(2, _frameCount);
 }
 
 @end

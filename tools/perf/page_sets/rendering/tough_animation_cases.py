@@ -256,7 +256,6 @@ class CssAnimationsSimultaneousInlineStylePage(ToughAnimationPage):
   BASE_NAME = 'css_animations_simultaneous_inline_style'
   # pylint: disable=line-too-long
   URL = 'file://../tough_animation_cases/css_animations_simultaneous_by_updating_inline_style.html?N=0316'
-  TAGS = ToughAnimationPage.TAGS + [story_tags.REPRESENTATIVE_WIN_DESKTOP]
 
 
 class CssAnimationsStaggeredNewElementPage(ToughAnimationPage):
@@ -407,10 +406,6 @@ class CssValueTypeFilterPage(ToughAnimationPage):
   BASE_NAME = 'css_value_type_filter'
   # pylint: disable=line-too-long
   URL = 'file://../tough_animation_cases/css_value_type_filter.html?api=css_animations&N=0316'
-  TAGS = ToughAnimationPage.TAGS + [
-    story_tags.REPRESENTATIVE_MOBILE,
-    story_tags.REPRESENTATIVE_MAC_DESKTOP
-  ]
 
 
 class CssValueTypeLengthPage(ToughAnimationPage):
@@ -522,10 +517,6 @@ class WebAnimationValueTypeTransformSimplePage(ToughAnimationPage):
   BASE_NAME = 'web_animation_value_type_transform_simple'
   # pylint: disable=line-too-long
   URL = 'file://../tough_animation_cases/css_value_type_transform_simple.html?api=web_animations&N=0316'
-  TAGS = ToughAnimationPage.TAGS + [
-    story_tags.REPRESENTATIVE_MOBILE,
-    story_tags.REPRESENTATIVE_MAC_DESKTOP
-  ]
 
 
 class CompositorHeavyAnimationPage(ToughAnimationPage):
@@ -587,10 +578,6 @@ class MixBlendModeAnimationScreenPage(ToughAnimationPage):
   # pylint: disable=line-too-long
   URL = 'file://../tough_animation_cases/mix_blend_mode_animation_screen.html'
   NEED_MEASUREMENT_READY = False
-  TAGS = ToughAnimationPage.TAGS + [
-    story_tags.REPRESENTATIVE_MOBILE,
-    story_tags.REPRESENTATIVE_MAC_DESKTOP
-  ]
 
 
 class MixAnimationPropagatingIsolationPage(ToughAnimationPage):

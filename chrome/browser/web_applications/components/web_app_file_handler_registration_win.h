@@ -8,8 +8,14 @@
 #include "chrome/browser/web_applications/components/web_app_file_handler_registration.h"
 
 #include "base/files/file_path.h"
+#include "base/strings/string16.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 
 namespace web_app {
+
+// Returns the Windows ProgId for the web app with the passed |app_id| in
+// |profile|.
+base::string16 GetProgIdForApp(Profile* profile, const AppId& app_id);
 
 // The name of "Last Browser" file, where UpdateChromeExePath() stores the path
 // of the last Chrome executable to use the containing user-data directory.

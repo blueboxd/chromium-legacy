@@ -14,10 +14,10 @@
 #include "base/test/bind_test_util.h"
 #include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
+#include "components/services/storage/dom_storage/session_storage_data_map.h"
 #include "components/services/storage/dom_storage/session_storage_metadata.h"
 #include "components/services/storage/dom_storage/storage_area_test_util.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/dom_storage/session_storage_data_map.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/gmock_util.h"
@@ -46,13 +46,13 @@ MATCHER(OKStatus, "Equality matcher for type OK leveldb::Status") {
   return arg.ok();
 }
 
-class MockListener : public SessionStorageDataMap::Listener {
+class MockListener : public storage::SessionStorageDataMap::Listener {
  public:
   MockListener() {}
   ~MockListener() override {}
   MOCK_METHOD2(OnDataMapCreation,
                void(const std::vector<uint8_t>& map_id,
-                    SessionStorageDataMap* map));
+                    storage::SessionStorageDataMap* map));
   MOCK_METHOD1(OnDataMapDestruction, void(const std::vector<uint8_t>& map_id));
   MOCK_METHOD1(OnCommitResult, void(leveldb::Status));
 };
@@ -142,7 +142,7 @@ class SessionStorageNamespaceImplMojoTest
   SessionStorageNamespaceImplMojo* CreateSessionStorageNamespaceImplMojo(
       const std::string& namespace_id) {
     DCHECK(namespaces_.find(namespace_id) == namespaces_.end());
-    SessionStorageAreaImpl::RegisterNewAreaMap map_id_callback =
+    storage::SessionStorageAreaImpl::RegisterNewAreaMap map_id_callback =
         base::BindRepeating(
             &SessionStorageNamespaceImplMojoTest::RegisterNewAreaMap,
             base::Unretained(this));
@@ -188,7 +188,7 @@ class SessionStorageNamespaceImplMojoTest
                                 areas_to_clone);
   }
 
-  scoped_refptr<SessionStorageDataMap> MaybeGetExistingDataMapForId(
+  scoped_refptr<storage::SessionStorageDataMap> MaybeGetExistingDataMapForId(
       const std::vector<uint8_t>& map_number_as_bytes) override {
     auto it = data_maps_.find(map_number_as_bytes);
     if (it == data_maps_.end())
@@ -209,7 +209,7 @@ class SessionStorageNamespaceImplMojoTest
 
   std::map<std::string, std::unique_ptr<SessionStorageNamespaceImplMojo>>
       namespaces_;
-  std::map<std::vector<uint8_t>, scoped_refptr<SessionStorageDataMap>>
+  std::map<std::vector<uint8_t>, scoped_refptr<storage::SessionStorageDataMap>>
       data_maps_;
 
   testing::StrictMock<MockListener> listener_;
@@ -616,7 +616,7 @@ TEST_F(SessionStorageNamespaceImplMojoTest, ReopenClonedAreaAfterPurge) {
   SessionStorageNamespaceImplMojo* namespace_impl =
       CreateSessionStorageNamespaceImplMojo(test_namespace_id1_);
 
-  SessionStorageDataMap* data_map;
+  storage::SessionStorageDataMap* data_map;
   EXPECT_CALL(listener_,
               OnDataMapCreation(StdStringToUint8Vector("0"), testing::_))
       .WillOnce(testing::SaveArg<1>(&data_map));

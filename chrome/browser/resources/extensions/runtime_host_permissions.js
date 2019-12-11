@@ -119,8 +119,8 @@ Polymer({
     const group = /** @type {!HTMLElement} */ (this.$['host-access']);
     const access = group.selected;
 
-    if (access == chrome.developerPrivate.HostAccess.ON_SPECIFIC_SITES &&
-        this.permissions.hostAccess !=
+    if (access === chrome.developerPrivate.HostAccess.ON_SPECIFIC_SITES &&
+        this.permissions.hostAccess !==
             chrome.developerPrivate.HostAccess.ON_SPECIFIC_SITES) {
       // If the user is transitioning to the "on specific sites" option, show
       // the "add host" dialog. This serves two purposes:
@@ -142,7 +142,7 @@ Polymer({
    * @private
    */
   showSpecificSites_: function() {
-    return this.permissions.hostAccess ==
+    return this.permissions.hostAccess ===
         chrome.developerPrivate.HostAccess.ON_SPECIFIC_SITES;
   },
 
@@ -200,7 +200,7 @@ Polymer({
     // The user canceled the dialog. Set host-access back to the old value,
     // if the dialog was shown when just transitioning to a new state.
     if (this.oldHostAccess_) {
-      assert(this.permissions.hostAccess == this.oldHostAccess_);
+      assert(this.permissions.hostAccess === this.oldHostAccess_);
       this.$['host-access'].selected = this.oldHostAccess_;
       this.oldHostAccess_ = null;
     }

@@ -67,7 +67,8 @@ class TemplateURLFetcher::RequestDelegate {
                   const url::Origin& initiator,
                   network::mojom::URLLoaderFactory* url_loader_factory,
                   int render_frame_id,
-                  int resource_type);
+                  int resource_type,
+                  int32_t request_id);
 
   // If data contains a valid OSDD, a TemplateURL is created and added to
   // the TemplateURLService.
@@ -104,7 +105,8 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
     const url::Origin& initiator,
     network::mojom::URLLoaderFactory* url_loader_factory,
     int render_frame_id,
-    int resource_type)
+    int resource_type,
+    int32_t request_id)
     : fetcher_(fetcher),
       keyword_(keyword),
       osdd_url_(osdd_url),
@@ -133,6 +135,7 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
       base::TimeDelta::FromSeconds(kOpenSearchTimeoutSeconds));
   simple_url_loader_->SetRetryOptions(
       kOpenSearchRetryCount, network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
+  simple_url_loader_->SetRequestID(request_id);
   simple_url_loader_->DownloadToString(
       url_loader_factory,
       base::BindOnce(
@@ -235,7 +238,8 @@ void TemplateURLFetcher::ScheduleDownload(
     const url::Origin& initiator,
     network::mojom::URLLoaderFactory* url_loader_factory,
     int render_frame_id,
-    int resource_type) {
+    int resource_type,
+    int32_t request_id) {
   DCHECK(osdd_url.is_valid());
   DCHECK(!keyword.empty());
 
@@ -260,7 +264,7 @@ void TemplateURLFetcher::ScheduleDownload(
 
   requests_.push_back(std::make_unique<RequestDelegate>(
       this, keyword, osdd_url, favicon_url, initiator, url_loader_factory,
-      render_frame_id, resource_type));
+      render_frame_id, resource_type, request_id));
 }
 
 void TemplateURLFetcher::RequestCompleted(RequestDelegate* request) {

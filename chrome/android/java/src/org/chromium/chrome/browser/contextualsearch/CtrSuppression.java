@@ -129,13 +129,77 @@ public class CtrSuppression extends ContextualSearchHeuristic {
     // ============================================================================================
 
     @CalledByNative
-    void writeInt(String key, int value) {
-        mPreferenceManager.writeInt(key, value);
+    void writeClicks(int weekRemainder, int value) {
+        mPreferenceManager.writeInt(getKeyForClicksWeek(weekRemainder), value);
     }
 
     @CalledByNative
-    int readInt(String key) {
-        return mPreferenceManager.readInt(key);
+    void writeImpressions(int weekRemainder, int value) {
+        mPreferenceManager.writeInt(getKeyForImpressionsWeek(weekRemainder), value);
+    }
+
+    @CalledByNative
+    void writeOldestWeek(int value) {
+        mPreferenceManager.writeInt(ChromePreferenceKeys.CONTEXTUAL_SEARCH_OLDEST_WEEK, value);
+    }
+
+    @CalledByNative
+    void writeNewestWeek(int value) {
+        mPreferenceManager.writeInt(ChromePreferenceKeys.CONTEXTUAL_SEARCH_NEWEST_WEEK, value);
+    }
+
+    @CalledByNative
+    int readClicks(int weekRemainder) {
+        return mPreferenceManager.readInt(getKeyForClicksWeek(weekRemainder));
+    }
+
+    @CalledByNative
+    int readImpressions(int weekRemainder) {
+        return mPreferenceManager.readInt(getKeyForImpressionsWeek(weekRemainder));
+    }
+
+    @CalledByNative
+    int readOldestWeek() {
+        return mPreferenceManager.readInt(ChromePreferenceKeys.CONTEXTUAL_SEARCH_OLDEST_WEEK);
+    }
+
+    @CalledByNative
+    int readNewestWeek() {
+        return mPreferenceManager.readInt(ChromePreferenceKeys.CONTEXTUAL_SEARCH_NEWEST_WEEK);
+    }
+
+    private String getKeyForClicksWeek(int weekRemainder) {
+        switch (weekRemainder) {
+            case 0:
+                return ChromePreferenceKeys.CONTEXTUAL_SEARCH_CLICKS_WEEK_0;
+            case 1:
+                return ChromePreferenceKeys.CONTEXTUAL_SEARCH_CLICKS_WEEK_1;
+            case 2:
+                return ChromePreferenceKeys.CONTEXTUAL_SEARCH_CLICKS_WEEK_2;
+            case 3:
+                return ChromePreferenceKeys.CONTEXTUAL_SEARCH_CLICKS_WEEK_3;
+            case 4:
+                return ChromePreferenceKeys.CONTEXTUAL_SEARCH_CLICKS_WEEK_4;
+            default:
+                return null;
+        }
+    }
+
+    private String getKeyForImpressionsWeek(int weekRemainder) {
+        switch (weekRemainder) {
+            case 0:
+                return ChromePreferenceKeys.CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_0;
+            case 1:
+                return ChromePreferenceKeys.CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_1;
+            case 2:
+                return ChromePreferenceKeys.CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_2;
+            case 3:
+                return ChromePreferenceKeys.CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_3;
+            case 4:
+                return ChromePreferenceKeys.CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_4;
+            default:
+                return null;
+        }
     }
 
     // ============================================================================================

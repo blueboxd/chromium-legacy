@@ -65,6 +65,8 @@ class Webcam : public base::RefCounted<Webcam> {
                      bool zoom,
                      const SetPTZCompleteCallback& callback) = 0;
 
+  virtual void SetHome(const SetPTZCompleteCallback& callback) = 0;
+
  protected:
   friend class base::RefCounted<Webcam>;
   virtual ~Webcam();

@@ -85,14 +85,20 @@ namespace {
 
 base::Value CookieExcludedNetLogParams(const std::string& operation,
                                        const std::string& cookie_name,
+                                       const std::string& cookie_domain,
+                                       const std::string& cookie_path,
                                        const std::string& exclusion_reason,
                                        net::NetLogCaptureMode capture_mode) {
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetStringKey("operation", operation);
   dict.SetStringKey("exclusion_reason", exclusion_reason);
-  if (net::NetLogCaptureIncludesSensitive(capture_mode) &&
-      !cookie_name.empty()) {
-    dict.SetStringKey("name", cookie_name);
+  if (net::NetLogCaptureIncludesSensitive(capture_mode)) {
+    if (!cookie_name.empty())
+      dict.SetStringKey("name", cookie_name);
+    if (!cookie_domain.empty())
+      dict.SetStringKey("domain", cookie_domain);
+    if (!cookie_path.empty())
+      dict.SetStringKey("path", cookie_path);
   }
   return dict;
 }
@@ -653,6 +659,8 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
             [&](NetLogCaptureMode capture_mode) {
               return CookieExcludedNetLogParams(
                   "send", cookie_and_status.cookie.Name(),
+                  cookie_and_status.cookie.Domain(),
+                  cookie_and_status.cookie.Path(),
                   cookie_and_status.status.GetDebugString(), capture_mode);
             });
       }
@@ -771,6 +779,8 @@ void URLRequestHttpJob::OnSetCookieResult(
                                    return CookieExcludedNetLogParams(
                                        "store",
                                        cookie ? cookie.value().Name() : "",
+                                       cookie ? cookie.value().Domain() : "",
+                                       cookie ? cookie.value().Path() : "",
                                        status.GetDebugString(), capture_mode);
                                  });
   }

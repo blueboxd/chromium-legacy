@@ -367,6 +367,8 @@ angle_builder(
 
 angle_builder(
     name = 'win-angle-deqp-rel-32',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 
@@ -379,6 +381,8 @@ angle_builder(
 
 angle_builder(
     name = 'win-angle-rel-32',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 
@@ -587,6 +591,8 @@ dawn_builder(
 
 dawn_builder(
     name = 'dawn-win10-x86-deps-rel',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
     tryjob = tryjob(
         location_regexp = [
@@ -912,6 +918,8 @@ gpu_win_builder(
 
 gpu_win_builder(
     name = 'gpu-fyi-try-win10-nvidia-rel-32',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 gpu_win_builder(
@@ -922,14 +930,20 @@ gpu_win_builder(
 
 gpu_win_builder(
     name = 'gpu-fyi-try-win7-amd-dbg-32',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 gpu_win_builder(
     name = 'gpu-fyi-try-win7-amd-dqp-32',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 gpu_win_builder(
     name = 'gpu-fyi-try-win7-amd-rel-32',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 gpu_win_builder(
@@ -940,6 +954,8 @@ gpu_win_builder(
 
 gpu_win_builder(
     name = 'gpu-fyi-try-win7-nvidia-rel-32',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 gpu_win_builder(
@@ -1593,6 +1609,8 @@ win_builder(
 win_builder(
     name = 'win7-rel',
     execution_timeout = time.hour * 9 / 2,  # 4.5 (can't multiply float * duration)
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     goma_jobs = goma.jobs.J300,
     ssd = True,
 )
@@ -1603,16 +1621,22 @@ win_builder(
 
 win_builder(
     name = 'win_chromium_compile_dbg_ng',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     goma_jobs = goma.jobs.J150,
     tryjob = tryjob(),
 )
 
 win_builder(
     name = 'win_chromium_compile_rel_ng',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 win_builder(
     name = 'win_chromium_dbg_ng',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 win_builder(

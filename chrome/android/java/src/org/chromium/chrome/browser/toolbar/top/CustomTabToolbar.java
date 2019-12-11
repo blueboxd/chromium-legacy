@@ -45,6 +45,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.native_page.NativePage;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
@@ -594,8 +595,8 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
                 if (currentTab == null || currentTab.getWebContents() == null) return;
                 Activity activity = currentTab.getWindowAndroid().getActivity().get();
                 if (activity == null) return;
-                PageInfoController.show(activity, currentTab, getContentPublisher(),
-                        PageInfoController.OpenedFromSource.TOOLBAR);
+                PageInfoController.show((ChromeActivity) activity, currentTab,
+                        getContentPublisher(), PageInfoController.OpenedFromSource.TOOLBAR);
             });
         }
 

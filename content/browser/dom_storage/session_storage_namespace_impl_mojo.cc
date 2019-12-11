@@ -23,8 +23,9 @@ void SessionStorageResponse(base::OnceClosure callback, bool success) {
 
 SessionStorageNamespaceImplMojo::SessionStorageNamespaceImplMojo(
     std::string namespace_id,
-    SessionStorageDataMap::Listener* data_map_listener,
-    SessionStorageAreaImpl::RegisterNewAreaMap register_new_map_callback,
+    storage::SessionStorageDataMap::Listener* data_map_listener,
+    storage::SessionStorageAreaImpl::RegisterNewAreaMap
+        register_new_map_callback,
     Delegate* delegate)
     : namespace_id_(std::move(namespace_id)),
       data_map_listener_(data_map_listener),
@@ -67,16 +68,17 @@ void SessionStorageNamespaceImplMojo::PopulateFromMetadata(
   pending_population_from_parent_namespace_.clear();
   namespace_entry_ = namespace_metadata;
   for (const auto& pair : namespace_entry_->second) {
-    scoped_refptr<SessionStorageDataMap> data_map =
+    scoped_refptr<storage::SessionStorageDataMap> data_map =
         delegate_->MaybeGetExistingDataMapForId(
             pair.second->MapNumberAsBytes());
     if (!data_map) {
-      data_map = SessionStorageDataMap::CreateFromDisk(data_map_listener_,
-                                                       pair.second, database_);
+      data_map = storage::SessionStorageDataMap::CreateFromDisk(
+          data_map_listener_, pair.second, database_);
     }
-    origin_areas_[pair.first] = std::make_unique<SessionStorageAreaImpl>(
-        namespace_entry_, pair.first, std::move(data_map),
-        register_new_map_callback_);
+    origin_areas_[pair.first] =
+        std::make_unique<storage::SessionStorageAreaImpl>(
+            namespace_entry_, pair.first, std::move(data_map),
+            register_new_map_callback_);
   }
   if (!run_after_population_.empty()) {
     for (base::OnceClosure& callback : run_after_population_)
@@ -190,7 +192,7 @@ void SessionStorageNamespaceImplMojo::OpenArea(
   if (it == origin_areas_.end()) {
     // The area may have been purged due to lack of bindings, so check the
     // metadata for the map.
-    scoped_refptr<SessionStorageDataMap> data_map;
+    scoped_refptr<storage::SessionStorageDataMap> data_map;
     auto map_data_it = namespace_entry_->second.find(origin);
     if (map_data_it != namespace_entry_->second.end()) {
       // The map exists already, either on disk or being used by another
@@ -200,18 +202,18 @@ void SessionStorageNamespaceImplMojo::OpenArea(
       data_map =
           delegate_->MaybeGetExistingDataMapForId(map_data->MapNumberAsBytes());
       if (!data_map) {
-        data_map = SessionStorageDataMap::CreateFromDisk(data_map_listener_,
-                                                         map_data, database_);
+        data_map = storage::SessionStorageDataMap::CreateFromDisk(
+            data_map_listener_, map_data, database_);
       }
     } else {
       // The map doesn't exist yet.
-      data_map = SessionStorageDataMap::CreateEmpty(
+      data_map = storage::SessionStorageDataMap::CreateEmpty(
           data_map_listener_,
           register_new_map_callback_.Run(namespace_entry_, origin), database_);
     }
     it = origin_areas_
              .emplace(std::make_pair(
-                 origin, std::make_unique<SessionStorageAreaImpl>(
+                 origin, std::make_unique<storage::SessionStorageAreaImpl>(
                              namespace_entry_, origin, std::move(data_map),
                              register_new_map_callback_)))
              .first;

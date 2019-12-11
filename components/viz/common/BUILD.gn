@@ -36,9 +36,9 @@ viz_component("resource_format_utils") {
     "//cc/base:base",
     "//gpu/vulkan:buildflags",
     "//skia",
+    "//third_party/dawn/src/dawn:dawncpp_headers",
     "//ui/gfx:buffer_types",
     "//ui/gfx/geometry:geometry",
-    "//third_party/dawn/src/dawn:dawncpp_headers",
   ]
 }
 
@@ -210,6 +210,8 @@ viz_component("common") {
     "quads/render_pass.h",
     "quads/render_pass_draw_quad.cc",
     "quads/render_pass_draw_quad.h",
+    "quads/render_pass_io.cc",
+    "quads/render_pass_io.h",
     "quads/selection.h",
     "quads/shared_quad_state.cc",
     "quads/shared_quad_state.h",
@@ -355,6 +357,7 @@ viz_source_set("unit_tests") {
     "gl_scaler_unittest.cc",
     "gpu/context_cache_controller_unittest.cc",
     "quads/draw_quad_unittest.cc",
+    "quads/render_pass_io_unittest.cc",
     "quads/render_pass_unittest.cc",
     "resources/resource_sizes_unittest.cc",
     "surfaces/child_local_surface_id_allocator_unittest.cc",

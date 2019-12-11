@@ -183,6 +183,28 @@ Status DevToolsClientImpl::ConnectIfNecessary() {
       if (!socket_->Connect(url_))
         return Status(kDisconnected, "unable to connect to renderer");
     }
+    if (id_ != kBrowserwideDevToolsClientId) {
+      base::DictionaryValue params;
+      std::string script =
+          "(function () {"
+          "window.cdc_adoQpoasnfa76pfcZLmcfl_Array = window.Array;"
+          "window.cdc_adoQpoasnfa76pfcZLmcfl_Promise = window.Promise;"
+          "window.cdc_adoQpoasnfa76pfcZLmcfl_Symbol = window.Symbol;"
+          "}) ();";
+      params.SetString("source", script);
+
+      Timeout small = Timeout(base::TimeDelta::FromSeconds(1));
+      Status status = SendCommandWithTimeout(
+          "Page.addScriptToEvaluateOnNewDocument", params, &small);
+      if (status.IsError())
+        return status;
+
+      params.Clear();
+      params.SetString("expression", script);
+      status = SendCommandWithTimeout("Runtime.evaluate", params, &small);
+      if (status.IsError())
+        return status;
+    }
   }
 
   unnotified_connect_listeners_ = listeners_;

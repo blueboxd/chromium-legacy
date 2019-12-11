@@ -13,14 +13,14 @@
  @private
   // Whether or not the owner is "alive" and should forward calls to the real
   // owner object.
-  BOOL alive_;
+  BOOL _alive;
 
   // The real object for which this is a proxy. Weak.
-  id owner_;
+  id _owner;
 
   // The Class of |owner_|. When the actual object is no longer alive (and could
   // be zombie), this allows for introspection.
-  Class ownerClass_;
+  Class _ownerClass;
 }
 @property(nonatomic, assign) BOOL alive;
 - (instancetype)initWithOwner:(id)owner;
@@ -28,31 +28,31 @@
 
 @implementation CrTrackingAreaOwnerProxy
 
-@synthesize alive = alive_;
+@synthesize alive = _alive;
 
 - (instancetype)initWithOwner:(id)owner {
   if ((self = [super init])) {
-    alive_ = YES;
-    owner_ = owner;
-    ownerClass_ = [owner class];
+    _alive = YES;
+    _owner = owner;
+    _ownerClass = [owner class];
   }
   return self;
 }
 
 - (void)forwardInvocation:(NSInvocation*)invocation {
-  if (!alive_)
+  if (!_alive)
     return;
-  [invocation invokeWithTarget:owner_];
+  [invocation invokeWithTarget:_owner];
 }
 
 - (NSMethodSignature*)methodSignatureForSelector:(SEL)sel {
   // This can be called if |owner_| is not |alive_|, so use the Class to
   // generate the signature. |-forwardInvocation:| will block the actual call.
-  return [ownerClass_ instanceMethodSignatureForSelector:sel];
+  return [_ownerClass instanceMethodSignatureForSelector:sel];
 }
 
 - (BOOL)respondsToSelector:(SEL)aSelector {
-  return [ownerClass_ instancesRespondToSelector:aSelector];
+  return [_ownerClass instancesRespondToSelector:aSelector];
 }
 
 @end
@@ -77,7 +77,7 @@
                           options:options
                             owner:ownerProxy.get()
                          userInfo:userInfo])) {
-    ownerProxy_.swap(ownerProxy);
+    _ownerProxy.swap(ownerProxy);
   }
   return self;
 }
@@ -89,7 +89,7 @@
 }
 
 - (void)clearOwner {
-  [ownerProxy_ setAlive:NO];
+  [_ownerProxy setAlive:NO];
 }
 
 - (void)clearOwnerWhenWindowWillClose:(NSWindow*)window {

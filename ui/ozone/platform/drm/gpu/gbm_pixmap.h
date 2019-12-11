@@ -8,8 +8,8 @@
 #include <memory>
 #include <vector>
 
+#include "ui/gfx/linux/gbm_buffer.h"
 #include "ui/gfx/native_pixmap.h"
-#include "ui/ozone/common/linux/gbm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
 
 namespace ui {

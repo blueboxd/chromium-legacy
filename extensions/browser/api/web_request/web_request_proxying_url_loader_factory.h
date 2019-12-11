@@ -164,7 +164,6 @@ class WebRequestProxyingURLLoaderFactory
     base::Optional<net::AuthCredentials> auth_credentials_;
 
     const bool for_cors_preflight_ = false;
-    bool request_completed_ = false;
 
     // If |has_any_extra_headers_listeners_| is set to true, the request will be
     // sent with the network::mojom::kURLLoadOptionUseHeaderClient option, and

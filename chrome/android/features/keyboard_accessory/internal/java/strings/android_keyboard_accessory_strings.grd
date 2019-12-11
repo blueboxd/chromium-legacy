@@ -2,6 +2,7 @@
 <!-- android_chrome_strings.grd contains strings for the keyboard accessory in Chrome for Android. -->
 <grit current_release="1" latest_public_release="0" output_all_resource_defines="false">
   <outputs>
+    <output filename="values-af/android_keyboard_accessory_strings.xml" lang="af" type="android" />
     <output filename="values-am/android_keyboard_accessory_strings.xml" lang="am" type="android" />
     <output filename="values-ar/android_keyboard_accessory_strings.xml" lang="ar" type="android" />
     <output filename="values-bg/android_keyboard_accessory_strings.xml" lang="bg" type="android" />

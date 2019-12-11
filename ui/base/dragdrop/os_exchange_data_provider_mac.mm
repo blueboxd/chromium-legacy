@@ -25,12 +25,12 @@
 @end
 
 @implementation CrPasteboardItemWrapper {
-  base::scoped_nsobject<NSPasteboardItem> pasteboardItem_;
+  base::scoped_nsobject<NSPasteboardItem> _pasteboardItem;
 }
 
 - (instancetype)initWithPasteboardItem:(NSPasteboardItem*)pasteboardItem {
   if ((self = [super init])) {
-    pasteboardItem_.reset([pasteboardItem retain]);
+    _pasteboardItem.reset([pasteboardItem retain]);
   }
 
   return self;
@@ -47,7 +47,7 @@
   // is marked to receive the drags. TODO(avi): Wire up MacViews so that
   // BridgedContentView properly registers the result of View::GetDropFormats()
   // rather than OSExchangeDataProviderMac::SupportedPasteboardTypes().
-  return [[pasteboardItem_ types]
+  return [[_pasteboardItem types]
       arrayByAddingObject:ui::kChromeDragDummyPboardType];
 }
 
@@ -67,7 +67,7 @@
 
   // Like above, an NSPasteboardItem added to a pasteboard will return nil from
   // -pasteboardPropertyListForType:, so call -dataForType: instead.
-  return [pasteboardItem_ dataForType:type];
+  return [_pasteboardItem dataForType:type];
 }
 
 @end

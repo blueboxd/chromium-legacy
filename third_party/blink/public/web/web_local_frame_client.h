@@ -307,10 +307,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void UpdateUserActivationState(UserActivationUpdateType update_type) {
   }
 
-  // Called if the previous document had a user gesture and is on the same
-  // eTLD+1 as the current document.
-  virtual void SetHasReceivedUserGestureBeforeNavigation(bool value) {}
-
   // Called when a frame is capturing mouse input, such as when a scrollbar
   // is being dragged.
   virtual void SetMouseCapture(bool capture) {}

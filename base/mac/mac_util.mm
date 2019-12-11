@@ -493,5 +493,28 @@ std::string GetOSDisplayName() {
   return os_name + " " + version_string;
 }
 
+std::string GetPlatformSerialNumber() {
+  base::mac::ScopedIOObject<io_service_t> expert_device(
+      IOServiceGetMatchingService(kIOMasterPortDefault,
+                                  IOServiceMatching("IOPlatformExpertDevice")));
+  if (!expert_device) {
+    DLOG(ERROR) << "Error retrieving the machine serial number.";
+    return std::string();
+  }
+
+  base::ScopedCFTypeRef<CFTypeRef> serial_number(
+      IORegistryEntryCreateCFProperty(expert_device,
+                                      CFSTR(kIOPlatformSerialNumberKey),
+                                      kCFAllocatorDefault, 0));
+  CFStringRef serial_number_cfstring =
+      base::mac::CFCast<CFStringRef>(serial_number);
+  if (!serial_number_cfstring) {
+    DLOG(ERROR) << "Error retrieving the machine serial number.";
+    return std::string();
+  }
+
+  return base::SysCFStringRefToUTF8(serial_number_cfstring);
+}
+
 }  // namespace mac
 }  // namespace base

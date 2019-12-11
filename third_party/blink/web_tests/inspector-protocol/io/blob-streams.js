@@ -20,6 +20,10 @@
   }
 
   function dumpResponse(title, response) {
+    if (response.error) {
+      testRunner.log(response.error, `${title}, got error: `);
+      return;
+    }
     testRunner.log(`${title}: "${response.result.data}" eof: ${response.result.eof}, encoded: ${response.result.base64Encoded}`);
   }
 
@@ -41,6 +45,9 @@
 
   response = await session.protocol.IO.read({handle: handle, offset: 0, size: 10});
   dumpResponse('Seeking to 0', response);
+
+  response = await session.protocol.IO.read({handle: handle, offset: 0, size: -1});
+  dumpResponse('Reading negative size', response);
 
   // Try multiple queued request
   var promises = [];

@@ -12,11 +12,11 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_ioobject.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 
 namespace rlz_lib {
@@ -97,27 +97,6 @@ bool GetMacAddress(unsigned char* buffer, size_t size) {
   return result;
 }
 
-CFStringRef CopySerialNumber() {
-  base::mac::ScopedIOObject<io_service_t> expert_device(
-      IOServiceGetMatchingService(kIOMasterPortDefault,
-          IOServiceMatching("IOPlatformExpertDevice")));
-  if (!expert_device)
-    return NULL;
-
-  base::ScopedCFTypeRef<CFTypeRef> serial_number(
-      IORegistryEntryCreateCFProperty(expert_device,
-                                      CFSTR(kIOPlatformSerialNumberKey),
-                                      kCFAllocatorDefault,
-                                      0));
-  CFStringRef serial_number_cfstring =
-      base::mac::CFCast<CFStringRef>(serial_number);
-  if (!serial_number_cfstring)
-    return NULL;
-
-  ignore_result(serial_number.release());
-  return serial_number_cfstring;
-}
-
 }  // namespace
 
 bool GetRawMachineId(base::string16* data, int* more_data) {
@@ -134,12 +113,11 @@ bool GetRawMachineId(base::string16* data, int* more_data) {
   // A MAC address is enough to uniquely identify a machine, but it's only 6
   // bytes, 3 of which are manufacturer-determined. To make brute-forcing the
   // SHA1 of this harder, also append the system's serial number.
-  CFStringRef serial = CopySerialNumber();
-  if (serial) {
+  std::string serial = base::mac::GetPlatformSerialNumber();
+  if (!serial.empty()) {
     if (!data->empty())
       *data += base::UTF8ToUTF16(" ");
-    *data += base::UTF8ToUTF16("serial:") + base::SysCFStringRefToUTF16(serial);
-    CFRelease(serial);
+    *data += base::UTF8ToUTF16("serial:") + base::UTF8ToUTF16(serial);
   }
 
   // On windows, this is set to the volume id. Since it's not scrambled before

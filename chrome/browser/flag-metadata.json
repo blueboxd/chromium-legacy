@@ -460,6 +460,11 @@
     "expiry_milestone": 79
   },
   {
+    "name": "chrome-share-screenshot",
+    "owners": ["jeffreycohen","kristipark"],
+    "expiry_milestone": 83
+  },
+  {
     "name": "chrome-sharing-hub",
     "owners": ["kmilka"],
     "expiry_milestone": 83

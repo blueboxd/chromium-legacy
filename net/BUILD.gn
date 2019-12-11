@@ -284,6 +284,7 @@ component("net") {
     "der/parser.h",
     "der/tag.cc",
     "der/tag.h",
+    "http/hsts_info.h",
     "http/http_auth_challenge_tokenizer.cc",
     "http/http_auth_challenge_tokenizer.h",
     "http/http_auth_scheme.cc",

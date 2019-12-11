@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 // https://github.com/WICG/ua-client-hints
-[
-    Exposed=Window
-] dictionary UserAgent {
+dictionary UserAgent {
   DOMString brand = "";
   DOMString version = "";
   DOMString platform = "";

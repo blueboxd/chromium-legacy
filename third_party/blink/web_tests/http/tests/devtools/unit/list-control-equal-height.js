@@ -29,6 +29,10 @@
       if (toElement)
         toElement.classList.add('selected');
     }
+
+    updateSelectedItemARIA(fromElement, toElement) {
+      return false;
+    }
   }
 
   var delegate = new Delegate();

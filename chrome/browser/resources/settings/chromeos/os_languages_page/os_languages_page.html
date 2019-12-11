@@ -155,7 +155,8 @@
         <template is="dom-repeat" items="[[languages.enabled]]">
           <div class$="list-item [[getLanguageItemClass_(
               item.language.code, language.prospectiveUILanguage)]]">
-            <div class="start">
+            <div class="start" id="displayText-[[index]]"
+                aria-hidden="true">
               <div title="[[item.language.nativeDisplayName]]">
                 [[item.language.displayName]]
               </div>
@@ -169,13 +170,17 @@
             <template is="dom-if" if="[[isRestartRequired_(
                 item.language.code, languages.prospectiveUILanguage)]]"
                 restamp>
-              <cr-button id="restartButton" on-click="onRestartTap_">
+              <cr-button id="restartButton" on-click="onRestartTap_"
+                  aria-label$="[[getRestartButtonDescription_(
+                      item.language.displayName)]]">
                 $i18n{restart}
               </cr-button>
             </template>
             <cr-icon-button class="icon-more-vert"
                 title="$i18n{moreActions}" id="more-[[item.language.code]]"
-                on-click="onDotsTap_"></cr-icon-button>
+                on-click="onDotsTap_"
+                aria-labelledby$="displayText-[[index]]">
+            </cr-icon-button>
           </div>
         </template>
         <div class="list-item">
@@ -197,8 +202,9 @@
               actionable on-click="onInputMethodTap_"
               on-keypress="onInputMethodTap_" on-mousedown="onMouseDown_"
               tabindex$="[[getInputMethodTabIndex_(
-                  item.id, languages.inputMethods.currentId)]]">
-            <div class="start">
+                  item.id, languages.inputMethods.currentId)]]"
+              aria-labelledby$="language-[[index]]" role="button">
+            <div class="start" id="language-[[index]]" aria-hidden="true">
               <div class="display-name">[[item.displayName]]</div>
               <div class="explain-selected"
                   hidden="[[!isCurrentInputMethod_(

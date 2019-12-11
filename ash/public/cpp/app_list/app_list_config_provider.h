@@ -13,6 +13,7 @@
 #include "base/observer_list.h"
 
 namespace gfx {
+class Insets;
 class Size;
 }
 
@@ -53,9 +54,8 @@ class ASH_PUBLIC_EXPORT AppListConfigProvider {
   // based on the app list display, and available size for the apps grid.
   // Returns nullptr if the new app list config is the same as |current_config|.
   // |work_area_size|: The work area size of the display showing the app list.
-  // |shelf_height|: The current shelf height.
-  // |side_shelf_width|: The width taken by side shelf - should be 0 if a side
-  // shelf is not active.
+  // |shelf_insets|: The insets added to app list content to accommodate the
+  // shelf.
   // |current_config|: If not null, the app list config currently used by the
   //     app list.
   // TODO(crbug.com/976947): Once ScalableAppList feature is removed (and
@@ -64,8 +64,7 @@ class ASH_PUBLIC_EXPORT AppListConfigProvider {
   // configs will be restricted to the number of supported config types.
   std::unique_ptr<AppListConfig> CreateForAppListWidget(
       const gfx::Size& display_work_area_size,
-      int shelf_height,
-      int side_shelf_width,
+      const gfx::Insets& shelf_insets,
       const AppListConfig* current_config);
 
   // Clears the set of configs owned by the provider.

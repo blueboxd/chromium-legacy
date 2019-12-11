@@ -87,10 +87,6 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver,
       StoragePartitionImpl* partition);
 
-  // Returns a Request ID for browser-initiated navigation requests. Called on
-  // the IO thread.
-  static GlobalRequestID MakeGlobalRequestID();
-
  private:
   class URLLoaderRequestController;
   void OnRequestStarted(base::TimeTicks timestamp);

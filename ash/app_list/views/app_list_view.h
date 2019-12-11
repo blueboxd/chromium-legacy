@@ -377,6 +377,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   class StateAnimationMetricsReporter;
 
+  // Returns insets that should be added to app list content to avoid overlap
+  // with the shelf.
+  gfx::Insets GetMainViewInsetsForShelf() const;
+
   // Updates the app list configuration that should be used by this app list
   // view.
   // |parent_window|: The window that contains the app list widget.

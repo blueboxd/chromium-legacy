@@ -9,7 +9,7 @@ import {TestProxy} from 'chrome://test/new_tab_page/test_support.js';
 import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
 
 suite('NewTabPageMostVisitedTest', () => {
-  /** @type {!MostVisited} */
+  /** @type {!MostVisitedElement} */
   let mostVisited;
 
   /** @type {TestProxy} */
@@ -57,7 +57,7 @@ suite('NewTabPageMostVisitedTest', () => {
     testProxy = new TestProxy();
     BrowserProxy.instance_ = testProxy;
 
-    mostVisited = document.createElement('most-visited');
+    mostVisited = document.createElement('ntp-most-visited');
     document.body.appendChild(mostVisited);
 
     toastManager = document.createElement('cr-toast-manager');

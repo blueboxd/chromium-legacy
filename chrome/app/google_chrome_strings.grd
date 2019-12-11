@@ -10,6 +10,9 @@ chromium_strings.grd. -->
     <output filename="grit/google_chrome_strings.h" type="rc_header">
       <emit emit_type='prepend'></emit>
     </output>
+    <if expr="is_android">
+      <output filename="google_chrome_strings_af.pak" type="data_package" lang="af" />
+    </if>
     <output filename="google_chrome_strings_am.pak" type="data_package" lang="am" />
     <output filename="google_chrome_strings_ar.pak" type="data_package" lang="ar" />
     <output filename="google_chrome_strings_bg.pak" type="data_package" lang="bg" />

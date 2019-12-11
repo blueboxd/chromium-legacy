@@ -134,7 +134,7 @@ public class CompositorView
             return;
         }
 
-        mCompositorSurfaceManager = new CompositorSurfaceManagerImpl(this, this);
+        mCompositorSurfaceManager = new CompositorSurfaceManagerImpl(this, this, false);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             mScreenStateReceiver = new ScreenStateReceiverWorkaround();
         }
@@ -487,6 +487,7 @@ public class CompositorView
     @CalledByNative
     private void notifyWillUseSurfaceControl() {
         mIsSurfaceControlEnabled = true;
+        mCompositorSurfaceManager.recreateTranslucentSurfaceForSurfaceControl();
     }
 
     /**
@@ -602,7 +603,8 @@ public class CompositorView
     }
 
     private void createCompositorSurfaceManager() {
-        mCompositorSurfaceManager = new CompositorSurfaceManagerImpl(this, this);
+        mCompositorSurfaceManager =
+                new CompositorSurfaceManagerImpl(this, this, mIsSurfaceControlEnabled);
         mCompositorSurfaceManager.requestSurface(getSurfacePixelFormat());
         CompositorViewJni.get().setNeedsComposite(mNativeCompositorView, CompositorView.this);
         mCompositorSurfaceManager.setVisibility(getVisibility());

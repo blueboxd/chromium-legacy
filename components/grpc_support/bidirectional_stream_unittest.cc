@@ -195,8 +195,17 @@ class TestBidirectionalStreamCallback {
     ASSERT_EQ(test->expected_negotiated_protocol,
               std::string(negotiated_protocol));
     for (size_t i = 0; i < headers->count; ++i) {
-      test->response_headers[headers->headers[i].key] =
-          headers->headers[i].value;
+      if (test->response_headers.find(headers->headers[i].key) ==
+          test->response_headers.end()) {
+        test->response_headers[headers->headers[i].key] =
+            headers->headers[i].value;
+      } else {
+        // For testing purposes, headers with the same key are combined with
+        // comma.
+        test->response_headers[headers->headers[i].key] =
+            test->response_headers[headers->headers[i].key] + ", " +
+            headers->headers[i].value;
+      }
     }
     if (test->MaybeCancel(stream, ON_RESPONSE_STARTED))
       return;
@@ -281,6 +290,40 @@ TestBidirectionalStreamCallback::WriteData::WriteData(const std::string& data,
     : buffer(data), flush(flush_after) {}
 
 TestBidirectionalStreamCallback::WriteData::~WriteData() {}
+
+// Regression test for b/144733928. Test that coalesced headers will be split by
+// cronet by '\0' separator.
+TEST_P(MAYBE_BidirectionalStreamTest, CoalescedHeadersAreSplit) {
+  TestBidirectionalStreamCallback test;
+  test.AddWriteData("Hello, ");
+  test.AddWriteData("world!");
+  test.read_buffer_size = 2;
+  test.stream = bidirectional_stream_create(engine(), &test, test.callback());
+  DCHECK(test.stream);
+  bidirectional_stream_delay_request_headers_until_flush(test.stream,
+                                                         GetParam());
+  bidirectional_stream_start(test.stream, test_hello_url(), 0, "POST",
+                             &kTestHeadersArray, false);
+  test.BlockForDone();
+  ASSERT_EQ(
+      net::QuicSimpleTestServer::GetHelloStatus(),
+      test.response_headers[net::QuicSimpleTestServer::GetStatusHeaderName()]);
+  // Assert the original "foo\0bar" is split into "foo" and "bar".
+  ASSERT_EQ("foo, bar",
+            test.response_headers
+                [net::QuicSimpleTestServer::GetCombinedHeaderName()]);
+  ASSERT_EQ(TestBidirectionalStreamCallback::ON_SUCCEEDED, test.response_step);
+  ASSERT_EQ(std::string(net::QuicSimpleTestServer::GetHelloBodyValue(), 0, 2),
+            test.read_data.front());
+  // Verify that individual read data joined using empty separator match
+  // expected body.
+  ASSERT_EQ(net::QuicSimpleTestServer::GetHelloBodyValue(),
+            base::StrCat(test.read_data));
+  ASSERT_EQ(
+      net::QuicSimpleTestServer::GetHelloTrailerValue(),
+      test.response_trailers[net::QuicSimpleTestServer::GetHelloTrailerName()]);
+  bidirectional_stream_destroy(test.stream);
+}
 
 TEST_P(MAYBE_BidirectionalStreamTest, StartExampleBidiStream) {
   TestBidirectionalStreamCallback test_callback;

@@ -7,7 +7,7 @@
 #include <drm_fourcc.h>
 #include <linux-dmabuf-unstable-v1-client-protocol.h>
 
-#include "ui/ozone/common/linux/drm_util_linux.h"
+#include "ui/gfx/linux/drm_util_linux.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 
 namespace ui {

@@ -38,9 +38,9 @@ function toast(msgId) {
   getToastManager().show(loadTimeData.getString(msgId));
 }
 
-class MostVisited extends PolymerElement {
+class MostVisitedElement extends PolymerElement {
   static get is() {
-    return 'most-visited';
+    return 'ntp-most-visited';
   }
 
   static get template() {
@@ -318,4 +318,4 @@ class MostVisited extends PolymerElement {
   }
 }
 
-customElements.define(MostVisited.is, MostVisited);
+customElements.define(MostVisitedElement.is, MostVisitedElement);

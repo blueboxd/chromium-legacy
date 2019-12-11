@@ -62,17 +62,17 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
 
 @implementation CommandDispatcher {
  @private
-  BOOL eventHandled_;
-  BOOL isRedispatchingKeyEvent_;
+  BOOL _eventHandled;
+  BOOL _isRedispatchingKeyEvent;
 
-  NSWindow<CommandDispatchingWindow>* owner_;  // Weak, owns us.
+  NSWindow<CommandDispatchingWindow>* _owner;  // Weak, owns us.
 }
 
-@synthesize delegate = delegate_;
+@synthesize delegate = _delegate;
 
 - (instancetype)initWithOwner:(NSWindow<CommandDispatchingWindow>*)owner {
   if ((self = [super init])) {
-    owner_ = owner;
+    _owner = owner;
   }
   return self;
 }
@@ -85,7 +85,7 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
   if ([event.window conformsToProtocol:@protocol(CommandDispatchingWindow)]) {
     NSObject<CommandDispatchingWindow>* window =
         static_cast<NSObject<CommandDispatchingWindow>*>(event.window);
-    return [window commandDispatcher]->isRedispatchingKeyEvent_;
+    return [window commandDispatcher]->_isRedispatchingKeyEvent;
   }
   return NO;
 }
@@ -108,8 +108,8 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
   // triggered on the first pass of the event.
   if ([self isEventBeingRedispatched:event]) {
     ui::PerformKeyEquivalentResult result =
-        [delegate_ postPerformKeyEquivalent:event
-                                     window:owner_
+        [_delegate postPerformKeyEquivalent:event
+                                     window:_owner
                                isRedispatch:YES];
     if (result == ui::PerformKeyEquivalentResult::kHandled)
       return YES;
@@ -120,7 +120,7 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
 
   // First, give the delegate an opportunity to consume this event.
   ui::PerformKeyEquivalentResult result =
-      [delegate_ prePerformKeyEquivalent:event window:owner_];
+      [_delegate prePerformKeyEquivalent:event window:_owner];
   if (result == ui::PerformKeyEquivalentResult::kHandled)
     return YES;
   if (result == ui::PerformKeyEquivalentResult::kPassToMainMenu)
@@ -132,13 +132,13 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
   // RenderWidgetHostViewCocoa, it may choose to return true, and to
   // asynchronously pass the event to the renderer. See
   // -[RenderWidgetHostViewCocoa performKeyEquivalent:].
-  if ([owner_ defaultPerformKeyEquivalent:event])
+  if ([_owner defaultPerformKeyEquivalent:event])
     return YES;
 
   // If the firstResponder [e.g. omnibox] chose not to handle the keyEquivalent,
   // then give the delegate another chance to consume it.
   result =
-      [delegate_ postPerformKeyEquivalent:event window:owner_ isRedispatch:NO];
+      [_delegate postPerformKeyEquivalent:event window:_owner isRedispatch:NO];
   if (result == ui::PerformKeyEquivalentResult::kHandled)
     return YES;
   if (result == ui::PerformKeyEquivalentResult::kPassToMainMenu)
@@ -160,7 +160,7 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
       // -dispatch:.. can't later decide to bubble events because
       // -commandDispatch:.. is assumed to always succeed. So, if there is a
       // |handler|, only validate against that for -commandDispatch:.
-      return [handler validateUserInterfaceItem:item window:owner_];
+      return [handler validateUserInterfaceItem:item window:_owner];
     }
 
     id appController = [NSApp delegate];
@@ -176,15 +176,15 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
   // TODO(tapted): Fix this. E.g. bubble up validation via the bubbleParent's
   // CommandDispatcher rather than the NSUserInterfaceValidations protocol, so
   // that this step can be skipped.
-  if ([owner_ defaultValidateUserInterfaceItem:item])
+  if ([_owner defaultValidateUserInterfaceItem:item])
     return YES;
 
   return [[self bubbleParent] validateUserInterfaceItem:item];
 }
 
 - (BOOL)redispatchKeyEvent:(NSEvent*)event {
-  DCHECK(!isRedispatchingKeyEvent_);
-  base::AutoReset<BOOL> resetter(&isRedispatchingKeyEvent_, YES);
+  DCHECK(!_isRedispatchingKeyEvent);
+  base::AutoReset<BOOL> resetter(&_isRedispatchingKeyEvent, YES);
 
   DCHECK(event);
   NSEventType eventType = [event type];
@@ -200,17 +200,17 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
   // renderer is running slowly and several mode switches occur). In this rare
   // case, we synthesize a new key event so that its associate window (number)
   // is our |owner_|'s.
-  if ([event window] != owner_)
-    event = KeyEventForWindow(owner_, event);
+  if ([event window] != _owner)
+    event = KeyEventForWindow(_owner, event);
 
   // Redispatch the event.
-  eventHandled_ = YES;
+  _eventHandled = YES;
   [NSApp sendEvent:event];
 
   // If the event was not handled by [NSApp sendEvent:], the preSendEvent:
   // method below will be called, and because the event is being redispatched,
   // |eventHandled_| will be set to NO.
-  return eventHandled_;
+  return _eventHandled;
 }
 
 - (BOOL)preSendEvent:(NSEvent*)event {
@@ -226,7 +226,7 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
 
   if ([self isEventBeingRedispatched:event]) {
     // If we get here, then the event was not handled by NSApplication.
-    eventHandled_ = NO;
+    _eventHandled = NO;
     // Return YES to stop native -sendEvent handling.
     return YES;
   }
@@ -237,7 +237,7 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
 - (void)dispatch:(id)sender
       forHandler:(id<UserInterfaceItemCommandHandler>)handler {
   if (handler)
-    [handler commandDispatch:sender window:owner_];
+    [handler commandDispatch:sender window:_owner];
   else
     [[self bubbleParent] commandDispatch:sender];
 }
@@ -245,13 +245,13 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
 - (void)dispatchUsingKeyModifiers:(id)sender
                        forHandler:(id<UserInterfaceItemCommandHandler>)handler {
   if (handler)
-    [handler commandDispatchUsingKeyModifiers:sender window:owner_];
+    [handler commandDispatchUsingKeyModifiers:sender window:_owner];
   else
     [[self bubbleParent] commandDispatchUsingKeyModifiers:sender];
 }
 
 - (NSWindow<CommandDispatchingWindow>*)bubbleParent {
-  NSWindow* parent = [owner_ parentWindow];
+  NSWindow* parent = [_owner parentWindow];
   if (parent && [parent hasKeyAppearance] &&
       [parent conformsToProtocol:@protocol(CommandDispatchingWindow)])
     return static_cast<NSWindow<CommandDispatchingWindow>*>(parent);

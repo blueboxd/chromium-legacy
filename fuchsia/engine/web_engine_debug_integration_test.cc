@@ -37,8 +37,8 @@ class WebEngineDebugIntegrationTest : public testing::Test {
   ~WebEngineDebugIntegrationTest() override = default;
 
   void SetUp() override {
-    ConnectContextProvider(web_context_provider_.NewRequest(),
-                           web_context_controller_.NewRequest());
+    web_context_provider_ =
+        StartWebEngineForTests(web_engine_controller_.NewRequest());
     web_context_provider_.set_error_handler(
         [](zx_status_t status) { ADD_FAILURE(); });
 
@@ -105,7 +105,7 @@ class WebEngineDebugIntegrationTest : public testing::Test {
   std::unique_ptr<sys::ServiceDirectory> debug_dir_;
   fuchsia::web::ContextProviderPtr web_context_provider_;
   fidl::InterfaceHandle<fuchsia::sys::ComponentController>
-      web_context_controller_;
+      web_engine_controller_;
   fuchsia::web::DebugSyncPtr debug_;
 
   base::OnceClosure on_url_fetch_complete_ack_;

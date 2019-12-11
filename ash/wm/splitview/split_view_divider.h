@@ -73,11 +73,6 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
   void OnWindowDragStarted(aura::Window* dragged_window);
   void OnWindowDragEnded();
 
-  // Splitview divider resizable area for gesture events while in landscape mode
-  // is restricted for back gesture now. Returns true if |location| is inside
-  // the area that can be used to resize the snapped windows.
-  bool IsInsideLandscapeResizableArea(const gfx::Point& location);
-
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
 

@@ -39,7 +39,7 @@ using base::ASCIIToUTF16;
 // Drop() methods. Out of the required methods of the protocol, only
 // draggingLocation and draggingPasteboard are used.
 @interface MockDraggingInfo : NSObject<NSDraggingInfo> {
-  NSPasteboard* pasteboard_;
+  NSPasteboard* _pasteboard;
 }
 
 @property BOOL animatesToDestination;
@@ -59,7 +59,7 @@ using base::ASCIIToUTF16;
 
 - (instancetype)initWithPasteboard:(NSPasteboard*)pasteboard {
   if ((self = [super init])) {
-    pasteboard_ = pasteboard;
+    _pasteboard = pasteboard;
   }
   return self;
 }
@@ -69,7 +69,7 @@ using base::ASCIIToUTF16;
 }
 
 - (NSPasteboard*)draggingPasteboard {
-  return pasteboard_;
+  return _pasteboard;
 }
 
 - (NSInteger)draggingSequenceNumber {

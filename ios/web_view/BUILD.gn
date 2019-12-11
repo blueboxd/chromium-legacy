@@ -44,6 +44,8 @@ config("config") {
 
 # These are defined as vars so they can be shared with different targets below.
 ios_web_view_public_headers = [
+  "public/cwv_back_forward_list.h",
+  "public/cwv_back_forward_list_item.h",
   "public/cwv_download_task.h",
   "public/cwv_export.h",
   "public/cwv_favicon.h",
@@ -115,6 +117,10 @@ ios_web_view_sources = [
   "internal/content_settings/web_view_cookie_settings_factory.mm",
   "internal/content_settings/web_view_host_content_settings_map_factory.h",
   "internal/content_settings/web_view_host_content_settings_map_factory.mm",
+  "internal/cwv_back_forward_list.mm",
+  "internal/cwv_back_forward_list_internal.h",
+  "internal/cwv_back_forward_list_item.mm",
+  "internal/cwv_back_forward_list_item_internal.h",
   "internal/cwv_download_task.mm",
   "internal/cwv_download_task_internal.h",
   "internal/cwv_favicon.mm",

@@ -221,8 +221,10 @@ void ContentMainDelegateImpl::InitializeResourceBundle() {
   if (is_browser_process) {
     // If we're not being loaded from a bundle, locales will be loaded from the
     // webview stored-locales directory. Otherwise, we are in Monochrome, and
-    // can use chrome's locale assets.
-    if (!base::android::BundleUtils::IsBundle())
+    // we load both chrome and webview's locale assets.
+    if (base::android::BundleUtils::IsBundle())
+      ui::SetLoadSecondaryLocalePaks(true);
+    else
       ui::SetLocalePaksStoredInApk(true);
     // Passing an empty |pref_locale| yields the system default locale.
     std::string locale = ui::ResourceBundle::InitSharedInstanceWithLocale(
@@ -247,8 +249,8 @@ void ContentMainDelegateImpl::InitializeResourceBundle() {
       base::MemoryMappedFile::Region region;
       int fd = base::android::OpenApkAsset(kWebLayerLocalePath, &region);
       CHECK_GE(fd, 0) << "Could not find " << kWebLayerLocalePath << " in APK.";
-      ui::ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
-          base::File(fd), region, ui::SCALE_FACTOR_NONE);
+      ui::ResourceBundle::GetSharedInstance()
+          .LoadSecondaryLocaleDataWithPakFileRegion(base::File(fd), region);
       base::GlobalDescriptors::GetInstance()->Set(
           kWebLayerSecondaryLocalePakDescriptor, fd, region);
     }
@@ -263,13 +265,16 @@ void ContentMainDelegateImpl::InitializeResourceBundle() {
     ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(base::File(pak_fd),
                                                             pak_region);
 
+    pak_fd = global_descriptors->Get(kWebLayerSecondaryLocalePakDescriptor);
+    pak_region =
+        global_descriptors->GetRegion(kWebLayerSecondaryLocalePakDescriptor);
+    ui::ResourceBundle::GetSharedInstance()
+        .LoadSecondaryLocaleDataWithPakFileRegion(base::File(pak_fd),
+                                                  pak_region);
+
     std::vector<std::pair<int, ui::ScaleFactor>> extra_paks = {
         {kWebLayerMainPakDescriptor, ui::SCALE_FACTOR_NONE},
         {kWebLayer100PercentPakDescriptor, ui::SCALE_FACTOR_100P}};
-    if (!base::android::BundleUtils::IsBundle()) {
-      extra_paks.push_back(
-          {kWebLayerSecondaryLocalePakDescriptor, ui::SCALE_FACTOR_NONE});
-    }
 
     for (const auto& pak_info : extra_paks) {
       pak_fd = global_descriptors->Get(pak_info.first);

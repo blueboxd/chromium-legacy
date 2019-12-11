@@ -188,11 +188,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   BrowserAccessibility* PlatformGetSelectionContainer() const;
 
   // Returns true if an ancestor of this node (not including itself) is a
-  // leaf node, meaning that this node is not actually exposed to the
-  // platform.
-  bool PlatformIsChildOfLeaf() const;
-
-  // Returns true if an ancestor of this node (not including itself) is a
   // leaf node, including ignored nodes, meaning that this node is not
   // actually exposed to the platform, but a node shouldn't be
   // considered a leaf node solely because it has only ignored children.
@@ -200,7 +195,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   // If this object is exposed to the platform, returns this object. Otherwise,
   // returns the platform leaf under which this object is found.
-  BrowserAccessibility* GetClosestPlatformObject() const;
+  BrowserAccessibility* PlatformGetClosestPlatformObject() const;
 
   bool IsPreviousSiblingOnSameLine() const;
   bool IsNextSiblingOnSameLine() const;
@@ -449,6 +444,9 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   gfx::NativeViewAccessible GetLastChild() override;
   gfx::NativeViewAccessible GetNextSibling() override;
   gfx::NativeViewAccessible GetPreviousSibling() override;
+
+  bool IsChildOfLeaf() const override;
+  gfx::NativeViewAccessible GetClosestPlatformObject() const override;
 
   std::unique_ptr<ChildIterator> ChildrenBegin() override;
   std::unique_ptr<ChildIterator> ChildrenEnd() override;

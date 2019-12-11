@@ -68,7 +68,7 @@ TEST(InitiatorLockCompatibilityTest, VerifyRequestInitiatorSiteLock) {
   //
   // TODO(lukasza): These should result in kIncorrectLock eventually (once
   // request_initiator_site_lock becomes request_initiator_origin_lock - see
-  // https://crbug.com/888079 and https://crbug.com/891872.
+  // https://crbug.com/891872.
   EXPECT_EQ(InitiatorLockCompatibility::kCompatibleLock,
             VerifyRequestInitiatorLock(example_com, bar_foo_example_com));
   EXPECT_EQ(InitiatorLockCompatibility::kCompatibleLock,

@@ -18,12 +18,10 @@
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chromeos/components/drivefs/drivefs_host_observer.h"
 #include "chromeos/dbus/seneschal/seneschal_service.pb.h"
 #include "components/keyed_service/core/keyed_service.h"
-
-class PrefService;
-class Profile;
 
 namespace guest_os {
 
@@ -59,12 +57,6 @@ class GuestOsSharePath : public KeyedService,
     virtual void OnUnshare(const std::string& vm_name,
                            const base::FilePath& path) = 0;
   };
-
-  // Migrates from crostini.shared_paths to crostini.paths_shared_to_vms which
-  // supports multi VM sharing.
-  // TODO(crbug.com/946273): Remove crostini.shared_paths and migration code
-  // after M77.
-  static void MigratePersistedPathsToMultiVM(PrefService* profile_prefs);
 
   static GuestOsSharePath* GetForProfile(Profile* profile);
   explicit GuestOsSharePath(Profile* profile);

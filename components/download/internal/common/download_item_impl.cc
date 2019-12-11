@@ -1887,8 +1887,8 @@ void DownloadItemImpl::OnDownloadRenamedToFinalName(
   TransitionTo(COMPLETING_INTERNAL);
 
   if (delegate_->ShouldOpenDownload(
-          this, base::Bind(&DownloadItemImpl::DelayedDownloadOpened,
-                           weak_ptr_factory_.GetWeakPtr()))) {
+          this, base::BindOnce(&DownloadItemImpl::DelayedDownloadOpened,
+                               weak_ptr_factory_.GetWeakPtr()))) {
     Completed();
   } else {
     delegate_delayed_complete_ = true;

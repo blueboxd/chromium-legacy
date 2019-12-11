@@ -31,6 +31,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -137,7 +138,7 @@
 #include "chrome/browser/metrics/assistant_service_metrics_provider.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
 #include "chrome/browser/signin/signin_status_metrics_provider_chromeos.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/app_list_launch_metrics_provider.h"
+#include "components/metrics/structured/structured_metrics_provider.h"
 #endif
 
 #if defined(OS_WIN)
@@ -616,6 +617,11 @@ void ChromeMetricsServiceClient::Initialize() {
         base::BindRepeating(&IsWebstoreExtension));
     RegisterUKMProviders();
   }
+
+#if defined(OS_CHROMEOS)
+  metrics::structured::Recorder::GetInstance()->SetUiTaskRunner(
+      base::SequencedTaskRunnerHandle::Get());
+#endif
 }
 
 void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
@@ -738,9 +744,8 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<chromeos::PrinterMetricsProvider>());
 
-  // Using WrapUnique to access a private constructor.
   metrics_service_->RegisterMetricsProvider(
-      base::WrapUnique(new app_list::AppListLaunchMetricsProvider()));
+      std::make_unique<metrics::structured::StructuredMetricsProvider>());
 
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<AssistantServiceMetricsProvider>());
@@ -947,6 +952,22 @@ bool ChromeMetricsServiceClient::RegisterForProfileEvents(Profile* profile) {
       chromeos::ProfileHelper::IsLockScreenAppProfile(profile)) {
     // No listeners, but still a success case.
     return true;
+  }
+
+  // Begin initializing the structured metrics system, which is currently
+  // only implemented for Chrome OS. Initialization must wait until a
+  // profile is added, because it reads keys stored within the user's
+  // cryptohome. We only initialize for profiles that are valid candidates
+  // for metrics collection, ignoring the sign-in profile, lock screen app
+  // profile, and guest sessions.
+  //
+  // TODO(crbug.com/1016655): This conditional would be better placed in
+  // metrics::structured::Recorder, but can't be because it depends on Chrome
+  // code. Investigate whether there's a way of checking this from the
+  // component.
+  if (!profile->IsGuestSession()) {
+    metrics::structured::Recorder::GetInstance()->ProfileAdded(
+        profile->GetPath());
   }
 #endif
 #if defined(OS_WIN) || defined(OS_MACOSX) || \

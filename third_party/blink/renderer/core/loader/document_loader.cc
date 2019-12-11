@@ -1484,8 +1484,8 @@ void DocumentLoader::InstallNewDocument(
       had_sticky_activation_) {
     frame_->SetDocumentHasReceivedUserGestureBeforeNavigation(
         had_sticky_activation_);
-    GetLocalFrameClient().SetHasReceivedUserGestureBeforeNavigation(
-        had_sticky_activation_);
+    frame_->GetLocalFrameHostRemote()
+        .ReceivedUserGestureBeforeNavigationChanged(had_sticky_activation_);
   }
 
   bool should_clear_window_name =

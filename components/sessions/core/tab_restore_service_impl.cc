@@ -105,6 +105,7 @@ const SessionCommand::id_type kCommandSetExtensionAppID = 6;
 const SessionCommand::id_type kCommandSetWindowAppName = 7;
 const SessionCommand::id_type kCommandSetTabUserAgentOverride = 8;
 const SessionCommand::id_type kCommandWindow = 9;
+const SessionCommand::id_type kCommandGroup = 10;
 
 // Number of entries (not commands) before we clobber the file and write
 // everything.
@@ -695,6 +696,17 @@ void TabRestoreServiceImpl::PersistenceDelegate::ScheduleCommandsForTab(
     base_session_service_->ScheduleCommand(std::move(command));
   }
 
+  if (tab.group.has_value()) {
+    base::Pickle pickle;
+    WriteTokenToPickle(&pickle, tab.group.value());
+    const TabGroupMetadata* metadata = &tab.group_metadata.value();
+    pickle.WriteString16(metadata->title);
+    pickle.WriteUInt32(metadata->color);
+    std::unique_ptr<SessionCommand> command(
+        new SessionCommand(kCommandGroup, pickle));
+    base_session_service_->ScheduleCommand(std::move(command));
+  }
+
   if (!tab.extension_app_id.empty()) {
     base_session_service_->ScheduleCommand(CreateSetTabExtensionAppIDCommand(
         kCommandSetExtensionAppID, tab.id, tab.extension_app_id));
@@ -939,6 +951,27 @@ void TabRestoreServiceImpl::PersistenceDelegate::CreateEntriesFromCommands(
         // NOTE: payload doesn't matter. kCommandPinnedState is only written if
         // tab is pinned.
         current_tab->pinned = true;
+        break;
+      }
+
+      case kCommandGroup: {
+        if (!current_tab) {
+          // Should be in a tab when we get this.
+          return;
+        }
+        std::unique_ptr<base::Pickle> pickle(command.PayloadAsPickle());
+        base::PickleIterator iter(*pickle);
+        base::Optional<base::Token> group_id = ReadTokenFromPickle(&iter);
+        base::string16 title;
+        SkColor color;
+        if (!iter.ReadString16(&title)) {
+          break;
+        }
+        if (!iter.ReadUInt32(&color)) {
+          break;
+        }
+        current_tab->group = group_id.value();
+        current_tab->group_metadata = TabGroupMetadata{title, color};
         break;
       }
 

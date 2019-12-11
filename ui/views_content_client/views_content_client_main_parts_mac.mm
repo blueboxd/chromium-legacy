@@ -23,7 +23,7 @@
 // activate a task when the application has finished loading.
 @interface ViewsContentClientAppController : NSObject<NSApplicationDelegate> {
  @private
-  base::OnceClosure onApplicationDidFinishLaunching_;
+  base::OnceClosure _onApplicationDidFinishLaunching;
 }
 
 // Set the task to run after receiving -applicationDidFinishLaunching:.
@@ -107,7 +107,7 @@ void ViewsContentClientMainParts::PreCreateMainMessageLoop() {
 @implementation ViewsContentClientAppController
 
 - (void)setOnApplicationDidFinishLaunching:(base::OnceClosure)task {
-  onApplicationDidFinishLaunching_ = std::move(task);
+  _onApplicationDidFinishLaunching = std::move(task);
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification*)aNotification {
@@ -134,7 +134,7 @@ void ViewsContentClientMainParts::PreCreateMainMessageLoop() {
 
   CHECK([NSApp isKindOfClass:[ShellCrApplication class]]);
 
-  std::move(onApplicationDidFinishLaunching_).Run();
+  std::move(_onApplicationDidFinishLaunching).Run();
 }
 
 @end

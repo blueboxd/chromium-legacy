@@ -1420,6 +1420,8 @@ base::Value SpdySession::GetInfoAsValue() const {
     dict.SetKey("aliases", std::move(alias_list));
   }
   dict.SetStringKey("proxy", host_port_proxy_pair().second.ToURI());
+  dict.SetStringKey("network_isolation_key",
+                    spdy_session_key_.network_isolation_key().ToDebugString());
 
   dict.SetIntKey("active_streams", active_streams_.size());
 

@@ -38,7 +38,7 @@
 #include "extensions/common/extension_set.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/ash_interfaces.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
@@ -46,6 +46,8 @@
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/system_connector.h"
+#include "services/service_manager/public/cpp/connector.h"
 #endif
 
 #if defined(OS_WIN)
@@ -248,7 +250,8 @@ std::string DetermineInstallLocation() {
 ChromeInternalLogSource::ChromeInternalLogSource()
     : SystemLogsSource("ChromeInternal") {
 #if defined(OS_CHROMEOS)
-  ash::BindCrosDisplayConfigController(
+  content::GetSystemConnector()->Connect(
+      ash::mojom::kServiceName,
       cros_display_config_.BindNewPipeAndPassReceiver());
 #endif  // defined(OS_CHROMEOS)
 }

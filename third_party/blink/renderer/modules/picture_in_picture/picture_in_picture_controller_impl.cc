@@ -45,12 +45,6 @@ bool IsVideoElement(const Element& element) {
 }  // namespace
 
 // static
-PictureInPictureControllerImpl* PictureInPictureControllerImpl::Create(
-    Document& document) {
-  return MakeGarbageCollected<PictureInPictureControllerImpl>(document);
-}
-
-// static
 PictureInPictureControllerImpl& PictureInPictureControllerImpl::From(
     Document& document) {
   return static_cast<PictureInPictureControllerImpl&>(

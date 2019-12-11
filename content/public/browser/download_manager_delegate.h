@@ -59,15 +59,15 @@ using SavePackagePathPickedCallback =
 //     results in the download being marked cancelled. Any other value results
 //     in the download being marked as interrupted. The other fields are only
 //     considered valid if |interrupt_reason| is NONE.
-using DownloadTargetCallback =
-    base::Callback<void(const base::FilePath& target_path,
-                        download::DownloadItem::TargetDisposition disposition,
-                        download::DownloadDangerType danger_type,
-                        const base::FilePath& intermediate_path,
-                        download::DownloadInterruptReason interrupt_reason)>;
+using DownloadTargetCallback = base::OnceCallback<void(
+    const base::FilePath& target_path,
+    download::DownloadItem::TargetDisposition disposition,
+    download::DownloadDangerType danger_type,
+    const base::FilePath& intermediate_path,
+    download::DownloadInterruptReason interrupt_reason)>;
 
 // Called when a download delayed by the delegate has completed.
-using DownloadOpenDelayedCallback = base::Callback<void(bool)>;
+using DownloadOpenDelayedCallback = base::OnceCallback<void(bool)>;
 
 // On failure, |next_id| is equal to kInvalidId.
 using DownloadIdCallback = base::OnceCallback<void(uint32_t /* next_id */)>;
@@ -100,7 +100,7 @@ class CONTENT_EXPORT DownloadManagerDelegate {
   // If the download should be canceled, |callback| should be invoked with an
   // empty |target_path| argument.
   virtual bool DetermineDownloadTarget(download::DownloadItem* item,
-                                       const DownloadTargetCallback& callback);
+                                       DownloadTargetCallback* callback);
 
   // Tests if a file type should be opened automatically.
   virtual bool ShouldOpenFileBasedOnExtension(const base::FilePath& path);
@@ -115,11 +115,12 @@ class CONTENT_EXPORT DownloadManagerDelegate {
                                       base::OnceClosure complete_callback);
 
   // Allows the delegate to override opening the download. If this function
-  // returns false, the delegate needs to call callback when it's done
-  // with the item, and is responsible for opening it.  This function is called
-  // after the final rename, but before the download state is set to COMPLETED.
+  // returns false, the delegate needs to call |callback| when it's done
+  // with the item, and is responsible for opening it. When it returns true,
+  // the callback will not be used. This function is called after the final
+  // rename, but before the download state is set to COMPLETED.
   virtual bool ShouldOpenDownload(download::DownloadItem* item,
-                                  const DownloadOpenDelayedCallback& callback);
+                                  DownloadOpenDelayedCallback callback);
 
   // Checks and hands off the downloading to be handled by another system based
   // on mime type. Returns true if the download was intercepted.

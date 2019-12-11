@@ -39,15 +39,16 @@ class CONTENT_EXPORT WebContentsTracker
   // capture. This is also invoked with false to indicate tracking will not
   // continue (i.e., the WebContents instance was not found or has been
   // destroyed).
-  typedef base::Callback<void(bool was_still_tracking)> ChangeCallback;
+  using ChangeCallback = base::RepeatingCallback<void(bool was_still_tracking)>;
 
   // Start tracking.  The last-known |render_process_id| and
   // |main_render_frame_id| are provided, and |callback| will be run once to
   // indicate whether tracking successfully started (this may occur during the
   // invocation of Start(), or in the future).  The callback will be invoked on
   // the same thread calling Start().
-  virtual void Start(int render_process_id, int main_render_frame_id,
-                     const ChangeCallback& callback);
+  virtual void Start(int render_process_id,
+                     int main_render_frame_id,
+                     ChangeCallback callback);
 
   // Stop tracking.  Once this method returns, the callback is guaranteed not to
   // be invoked again.
@@ -65,7 +66,7 @@ class CONTENT_EXPORT WebContentsTracker
   // resized.  This method must be called on the same thread that calls
   // Start()/Stop(), and |callback| will be run on that same thread.  Calling
   // the Stop() method guarantees the callback will never be invoked again.
-  void SetResizeChangeCallback(const base::Closure& callback);
+  void SetResizeChangeCallback(base::RepeatingClosure callback);
 
  protected:
   friend class base::RefCountedThreadSafe<WebContentsTracker>;
@@ -123,7 +124,7 @@ class CONTENT_EXPORT WebContentsTracker
   ChangeCallback callback_;
 
   // Callback to run when the target RenderWidgetHostView has resized.
-  base::Closure resize_callback_;
+  base::RepeatingClosure resize_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsTracker);
 };

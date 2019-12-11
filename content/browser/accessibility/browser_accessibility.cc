@@ -280,18 +280,6 @@ BrowserAccessibility* BrowserAccessibility::PlatformGetChild(
   return result;
 }
 
-bool BrowserAccessibility::PlatformIsChildOfLeaf() const {
-  BrowserAccessibility* ancestor = InternalGetParent();
-
-  while (ancestor) {
-    if (ancestor->PlatformIsLeaf())
-      return true;
-    ancestor = ancestor->InternalGetParent();
-  }
-
-  return false;
-}
-
 bool BrowserAccessibility::PlatformIsChildOfLeafIncludingIgnored() const {
   BrowserAccessibility* ancestor = InternalGetParent();
 
@@ -304,10 +292,11 @@ bool BrowserAccessibility::PlatformIsChildOfLeafIncludingIgnored() const {
   return false;
 }
 
-BrowserAccessibility* BrowserAccessibility::GetClosestPlatformObject() const {
+BrowserAccessibility* BrowserAccessibility::PlatformGetClosestPlatformObject()
+    const {
   BrowserAccessibility* platform_object =
       const_cast<BrowserAccessibility*>(this);
-  while (platform_object && platform_object->PlatformIsChildOfLeaf())
+  while (platform_object && platform_object->IsChildOfLeaf())
     platform_object = platform_object->InternalGetParent();
 
   DCHECK(platform_object);
@@ -1533,6 +1522,23 @@ gfx::NativeViewAccessible BrowserAccessibility::GetPreviousSibling() {
     return nullptr;
 
   return sibling->GetNativeViewAccessible();
+}
+
+bool BrowserAccessibility::IsChildOfLeaf() const {
+  BrowserAccessibility* ancestor = InternalGetParent();
+
+  while (ancestor) {
+    if (ancestor->PlatformIsLeaf())
+      return true;
+    ancestor = ancestor->InternalGetParent();
+  }
+
+  return false;
+}
+
+gfx::NativeViewAccessible BrowserAccessibility::GetClosestPlatformObject()
+    const {
+  return PlatformGetClosestPlatformObject()->GetNativeViewAccessible();
 }
 
 BrowserAccessibility::PlatformChildIterator::PlatformChildIterator(

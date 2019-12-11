@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <grit current_release="1" latest_public_release="0" output_all_resource_defines="false">
   <outputs>
+    <output filename="values-af/android_webview_strings.xml" lang="af" type="android" />
     <output filename="values-am/android_webview_strings.xml" lang="am" type="android" />
     <output filename="values-ar/android_webview_strings.xml" lang="ar" type="android" />
     <output filename="values-bg/android_webview_strings.xml" lang="bg" type="android" />

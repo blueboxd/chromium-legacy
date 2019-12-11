@@ -4,6 +4,9 @@
     <output filename="grit/components_locale_settings.h" type="rc_header">
       <emit emit_type='prepend'></emit>
     </output>
+    <if expr="is_android">
+      <output filename="components_locale_settings_af.pak" type="data_package" lang="af" />
+    </if>
     <output filename="components_locale_settings_am.pak" type="data_package" lang="am" />
     <output filename="components_locale_settings_ar.pak" type="data_package" lang="ar" />
     <output filename="components_locale_settings_bg.pak" type="data_package" lang="bg" />
@@ -76,6 +79,7 @@
     <!-- On Android, output some strings into Android's xml string format.
          These strings are tagged with formatter_data="android_java" -->
     <if expr="is_android">
+      <output filename="java/res/values-af/components_locale_settings.xml" lang="af" type="android" context="android_java" />
       <output filename="java/res/values-am/components_locale_settings.xml" lang="am" type="android" context="android_java" />
       <output filename="java/res/values-ar/components_locale_settings.xml" lang="ar" type="android" context="android_java" />
       <output filename="java/res/values-bg/components_locale_settings.xml" lang="bg" type="android" context="android_java" />

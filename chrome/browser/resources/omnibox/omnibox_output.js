@@ -2,7 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('omnibox_output', function() {
+import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
+import './chrome/browser/ui/webui/omnibox/omnibox.mojom-lite.js';
+
+import {OmniboxElement} from './omnibox_element.js';
+import {OmniboxInput, DisplayInputs} from './omnibox_input.js';
+
   /**
    * @typedef  {{
    *   cursorPosition: number,
@@ -22,7 +27,7 @@ cr.define('omnibox_output', function() {
     }
   }
 
-  class OmniboxOutput extends OmniboxElement {
+  export class OmniboxOutput extends OmniboxElement {
     constructor() {
       super('omnibox-output-template');
 
@@ -1150,6 +1155,3 @@ cr.define('omnibox_output', function() {
       'output-url-property', OutputUrlProperty, {extends: 'td'});
   customElements.define(
       'output-text-property', OutputTextProperty, {extends: 'td'});
-
-  return {OmniboxOutput: OmniboxOutput};
-});

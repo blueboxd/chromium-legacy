@@ -74,8 +74,10 @@ TEST(InstallModes, VerifyModes) {
     // Every mode must have a base app name.
     ASSERT_THAT(mode.base_app_name, StrNe(L""));
 
-    // Every mode must have a base app id.
+    // Every mode must have a base app id, and it must not contain illegal
+    // ProgId characters.
     ASSERT_THAT(mode.base_app_id, StrNe(L""));
+    ASSERT_THAT(mode.base_app_id, Not(ContainsIllegalProgIdChar()));
 
     // The ProgID prefix must not be empty, must be no greater than 11
     // characters long, must contain no punctuation, and may not start with a

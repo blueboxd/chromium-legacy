@@ -1297,6 +1297,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void SuddenTerminationDisablerChanged(
       bool present,
       blink::mojom::SuddenTerminationDisablerType disabler_type) override;
+  void ReceivedUserGestureBeforeNavigationChanged(bool value) override;
 
  protected:
   friend class RenderFrameHostFactory;
@@ -1493,7 +1494,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnFocusedNodeChanged(bool is_editable_element,
                             const gfx::Rect& bounds_in_frame_widget);
   void OnUpdateUserActivationState(blink::UserActivationUpdateType update_type);
-  void OnSetHasReceivedUserGestureBeforeNavigation(bool value);
   void OnSetNeedsOcclusionTracking(bool needs_tracking);
   void OnScrollRectToVisibleInParentFrame(
       const gfx::Rect& rect_to_scroll,

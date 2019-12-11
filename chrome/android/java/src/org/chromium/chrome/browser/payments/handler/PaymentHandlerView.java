@@ -46,10 +46,8 @@ import org.chromium.ui.base.ActivityWindowAndroid;
         mContentView = (FrameLayout) LayoutInflater.from(activity).inflate(
                 R.layout.payment_handler_content, null);
 
-        ThinWebViewConstraints thinWebViewConstraints = new ThinWebViewConstraints();
-        thinWebViewConstraints.zOrderOnTop = true;
         mThinWebView = ThinWebViewFactory.create(
-                activity, new ActivityWindowAndroid(activity), thinWebViewConstraints);
+                activity, new ActivityWindowAndroid(activity), new ThinWebViewConstraints());
         initContentView(activity, mThinWebView, webContents, webContentView);
     }
 

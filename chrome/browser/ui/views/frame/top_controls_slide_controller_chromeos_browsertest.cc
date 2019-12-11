@@ -8,10 +8,10 @@
 #include <numeric>
 #include <vector>
 
-#include "ash/public/ash_interfaces.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/test/shell_test_api.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "ash/public/mojom/cros_display_config.mojom-test-utils.h"
 #include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/bind.h"
@@ -32,9 +32,11 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/test/browser_test_utils.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/dns/mock_host_resolver.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/display.h"
@@ -793,7 +795,8 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, DisplayRotation) {
   };
 
   mojo::Remote<ash::mojom::CrosDisplayConfigController> cros_display_config;
-  ash::BindCrosDisplayConfigController(
+  content::GetSystemConnector()->Connect(
+      ash::mojom::kServiceName,
       cros_display_config.BindNewPipeAndPassReceiver());
   ash::mojom::CrosDisplayConfigControllerAsyncWaiter waiter_for(
       cros_display_config.get());

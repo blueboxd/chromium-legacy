@@ -3668,6 +3668,26 @@
             ]
         }
     ],
+    "MyChromeEverywhere": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AnimatedAvatarButton",
+                        "AutofillCreditCardUploadFeedback",
+                        "AutofillEnableToolbarStatusChip",
+                        "ProfileMenuRevamp"
+                    ]
+                }
+            ]
+        }
+    ],
     "NTPLaunchAfterInactivity": [
         {
             "platforms": [

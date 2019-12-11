@@ -446,7 +446,7 @@
 <translation id="3024663005179499861">Tipo de política incorrecto</translation>
 <translation id="3037605927509011580">¡Vaya!</translation>
 <translation id="3041612393474885105">Datos del certificado</translation>
-<translation id="3057676462092457419">El modo DnsOverHttps <ph name="SECURE_DNS_MODE_SECURE" /> aún no está disponible. El valor que se le ha asignado es <ph name="SECURE_DNS_MODE_OFF" />.</translation>
+<translation id="3057676462092457419">El modo DnsOverHttps <ph name="SECURE_DNS_MODE_SECURE" /> aún no es compatible. El valor que se le ha asignado es <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">C9 (sobre)</translation>
 <translation id="3061707000357573562">Aplicar parche a servicio</translation>
 <translation id="3064966200440839136">Saldrás del modo de incógnito para realizar un pago en una aplicación externa. ¿Quieres continuar?</translation>

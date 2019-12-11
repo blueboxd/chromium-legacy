@@ -37,10 +37,6 @@ namespace ash {
 
 namespace {
 
-// Distance from the divider's center point that reserved for splitview
-// resizing in landscape orientation.
-constexpr int kDistanceForSplitViewResize = 32;
-
 // The window targeter that is installed on the always on top container window
 // when the split view mode is active.
 class AlwaysOnTopWindowTargeter : public aura::WindowTargeter {
@@ -168,8 +164,6 @@ class DividerView : public views::View, public views::ViewTargeterDelegate {
         break;
       case ui::ET_GESTURE_TAP_DOWN:
       case ui::ET_GESTURE_SCROLL_BEGIN:
-        if (!divider_->IsInsideLandscapeResizableArea(location))
-          break;
         controller_->StartResize(location);
         OnResizeStatusChanged();
         break;
@@ -364,14 +358,6 @@ void SplitViewDivider::OnWindowDragStarted(aura::Window* dragged_window) {
 void SplitViewDivider::OnWindowDragEnded() {
   is_dragging_window_ = false;
   SetAlwaysOnTop(true);
-}
-
-bool SplitViewDivider::IsInsideLandscapeResizableArea(
-    const gfx::Point& location) {
-  const gfx::Point center_point =
-      GetDividerBoundsInScreen(/*is_dragging=*/false).CenterPoint();
-  return location.y() >= center_point.y() - kDistanceForSplitViewResize &&
-         location.y() <= center_point.y() + kDistanceForSplitViewResize;
 }
 
 void SplitViewDivider::OnWindowDestroying(aura::Window* window) {

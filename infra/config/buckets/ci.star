@@ -768,6 +768,8 @@ dawn_builder(
 
 dawn_builder(
     name = 'Dawn Win10 x86 Builder',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 
@@ -806,6 +808,8 @@ dawn_builder(
 
 dawn_builder(
     name = 'Dawn Win10 x86 DEPS Builder',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 
@@ -1758,14 +1762,20 @@ def gpu_fyi_windows_builder(*, name, **kwargs):
 
 gpu_fyi_windows_builder(
     name = 'GPU FYI Win Builder',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 gpu_fyi_windows_builder(
     name = 'GPU FYI Win Builder (dbg)',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 gpu_fyi_windows_builder(
     name = 'GPU FYI Win dEQP Builder',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 gpu_fyi_windows_builder(
@@ -2247,12 +2257,16 @@ win_builder(
 win_builder(
     name = 'Win Builder',
     cores = 32,
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 
 win_builder(
     name = 'Win Builder (dbg)',
     cores = 32,
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 

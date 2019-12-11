@@ -15,9 +15,11 @@
 #include <vector>
 
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "device/vr/test/test_hook.h"
 #include "third_party/openxr/src/include/openxr/openxr.h"
+#include "third_party/openxr/src/include/openxr/openxr_platform.h"
 
 namespace gfx {
 class Transform;
@@ -111,21 +113,36 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   XrResult ValidateViews(uint32_t view_capacity_input, XrView* views) const;
 
   // Properties of the mock OpenXR runtime that does not change are created
-  // as static variables.
-  static uint32_t NumExtensionsSupported();
-  static uint32_t NumViews();
-  static const char* kExtensions[];
-  static const uint32_t kDimension;
-  static const uint32_t kSwapCount;
-  static const uint32_t kMinSwapchainBuffering;
-  static const uint32_t kViewCount;
-  static const XrViewConfigurationView kViewConfigView;
-  static XrViewConfigurationView kViewConfigurationViews[];
-  static const XrViewConfigurationType kViewConfigurationType;
-  static const XrEnvironmentBlendMode kEnvironmentBlendMode;
-  static const char* kLocalReferenceSpacePath;
-  static const char* kStageReferenceSpacePath;
-  static const char* kViewReferenceSpacePath;
+  static constexpr const char* const kExtensions[] = {
+      XR_KHR_D3D11_ENABLE_EXTENSION_NAME};
+  static constexpr uint32_t kDimension = 128;
+  static constexpr uint32_t kSwapCount = 1;
+  static constexpr uint32_t kMinSwapchainBuffering = 3;
+  static constexpr uint32_t kViewCount = 2;
+  static constexpr XrViewConfigurationView kViewConfigView = {
+      XR_TYPE_VIEW_CONFIGURATION_VIEW,
+      nullptr,
+      kDimension,
+      kDimension,
+      kDimension,
+      kDimension,
+      kSwapCount,
+      kSwapCount};
+  static constexpr XrViewConfigurationView kViewConfigurationViews[] = {
+      kViewConfigView, kViewConfigView};
+  static constexpr XrViewConfigurationType kViewConfigurationType =
+      XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
+  static constexpr XrEnvironmentBlendMode kEnvironmentBlendMode =
+      XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
+  static constexpr const char* kLocalReferenceSpacePath =
+      "/reference_space/local";
+  static constexpr const char* kStageReferenceSpacePath =
+      "/reference_space/stage";
+  static constexpr const char* kViewReferenceSpacePath =
+      "/reference_space/view";
+
+  static constexpr uint32_t kNumExtensionsSupported = base::size(kExtensions);
+  static constexpr uint32_t kNumViews = base::size(kViewConfigurationViews);
 
  private:
   struct ActionProperties {

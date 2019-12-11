@@ -4307,11 +4307,6 @@ void RenderFrameImpl::UpdateUserActivationState(
   Send(new FrameHostMsg_UpdateUserActivationState(routing_id_, update_type));
 }
 
-void RenderFrameImpl::SetHasReceivedUserGestureBeforeNavigation(bool value) {
-  Send(new FrameHostMsg_SetHasReceivedUserGestureBeforeNavigation(routing_id_,
-                                                                  value));
-}
-
 void RenderFrameImpl::SetMouseCapture(bool capture) {
   GetLocalRootRenderWidget()->SetMouseCapture(capture);
 }

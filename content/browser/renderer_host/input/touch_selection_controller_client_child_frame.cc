@@ -199,13 +199,11 @@ void TouchSelectionControllerClientChildFrame::RunContextMenu() {
 }
 
 bool TouchSelectionControllerClientChildFrame::ShouldShowQuickMenu() {
-  NOTREACHED();
-  return false;
+  return true;
 }
 
 base::string16 TouchSelectionControllerClientChildFrame::GetSelectedText() {
-  NOTREACHED();
-  return base::string16();
+  return rwhv_->GetSelectedText();
 }
 
 }  // namespace content

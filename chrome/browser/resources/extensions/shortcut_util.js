@@ -78,11 +78,11 @@ function hasModifier(e, countShiftAsModifier) {
  * @return {boolean} Whether the key is valid.
  */
 export function isValidKeyCode(keyCode) {
-  if (keyCode == Key.Escape) {
+  if (keyCode === Key.Escape) {
     return false;
   }
   for (const k in Key) {
-    if (Key[k] == keyCode) {
+    if (Key[k] === keyCode) {
       return true;
     }
   }

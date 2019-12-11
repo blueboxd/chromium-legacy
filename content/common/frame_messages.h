@@ -875,11 +875,6 @@ IPC_MESSAGE_ROUTED1(FrameMsg_SetNeedsOcclusionTracking,
 IPC_MESSAGE_ROUTED1(FrameMsg_UpdateUserActivationState,
                     blink::UserActivationUpdateType /* type of state update */)
 
-// Tells the frame to mark that the previous document on that frame had received
-// a user gesture on the same eTLD+1.
-IPC_MESSAGE_ROUTED1(FrameMsg_SetHasReceivedUserGestureBeforeNavigation,
-                    bool /* value */)
-
 // Updates the renderer with a list of unique WebFeature values representing
 // Blink features used, performed or encountered by the browser during the
 // current page load happening on the frame.
@@ -1196,11 +1191,6 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateUserActivationState,
 // Transfers user activation state from the source frame to the current frame.
 IPC_MESSAGE_ROUTED1(FrameMsg_TransferUserActivationFrom,
                     int /* source_routing_id */)
-
-// Indicates that this frame received a user gesture on a previous navigation on
-// the same eTLD+1. This ensures the state is propagated to any remote frames.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_SetHasReceivedUserGestureBeforeNavigation,
-                    bool /* value */)
 
 // Used to tell the parent that the user right clicked on an area of the
 // content area, and a context menu should be shown for it. The params

@@ -26,10 +26,10 @@ UI_BASE_EXPORT
   };
 
  @private
-  ui::ScopedCrTrackingArea trackingArea_;
-  BOOL dragging_;
-  base::scoped_nsobject<NSEvent> pendingExitEvent_;
-  NSInteger pressureEventStage_;
+  ui::ScopedCrTrackingArea _trackingArea;
+  BOOL _dragging;
+  base::scoped_nsobject<NSEvent> _pendingExitEvent;
+  NSInteger _pressureEventStage;
 }
 
 // Process an NSLeftMouseUp event on this view that wasn't dispatched already

@@ -2494,16 +2494,46 @@ TEST_F(PasswordManagerTest, SaveOtherGaiaPasswordHash) {
 
   ON_CALL(*client_.GetStoreResultFilter(), ShouldSaveGaiaPasswordHash(_))
       .WillByDefault(Return(true));
+  EXPECT_CALL(*store_,
+              SaveGaiaPasswordHash(
+                  "googleuser", form.password_value,
+                  metrics_util::GaiaPasswordHashChange::SAVED_IN_CONTENT_AREA));
+
+  client_.FilterAllResultsForSaving();
+  OnPasswordFormSubmitted(form);
+
+  observed.clear();
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+}
+
+// Non-Sync Gaia password hash should be saved upon submission of change
+// password page.
+TEST_F(PasswordManagerTest, SaveOtherGaiaPasswordHashOnChangePasswordPage) {
+  PasswordForm form(MakeGAIAChangePasswordForm());
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+
+  std::vector<PasswordForm> observed;
+  observed.push_back(form);
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+  // Submit form and finish navigation.
+  EXPECT_CALL(client_, IsSavingAndFillingEnabled(form.origin))
+      .WillRepeatedly(Return(true));
+
+  ON_CALL(*client_.GetStoreResultFilter(), ShouldSaveGaiaPasswordHash(_))
+      .WillByDefault(Return(true));
   EXPECT_CALL(
       *store_,
       SaveGaiaPasswordHash(
-          "googleuser", form.password_value,
+          "googleuser", form.new_password_value,
           metrics_util::GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE));
 
   client_.FilterAllResultsForSaving();
   OnPasswordFormSubmitted(form);
 
   observed.clear();
+  manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 }
 

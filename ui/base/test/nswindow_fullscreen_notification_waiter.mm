@@ -15,12 +15,12 @@
 
 @implementation NSWindowFullscreenNotificationWaiter
 
-@synthesize enterCount = enterCount_;
-@synthesize exitCount = exitCount_;
+@synthesize enterCount = _enterCount;
+@synthesize exitCount = _exitCount;
 
 - (instancetype)initWithWindow:(NSWindow*)window {
   if ((self = [super init])) {
-    window_.reset([window retain]);
+    _window.reset([window retain]);
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
     [defaultCenter addObserver:self
                       selector:@selector(onEnter:)
@@ -35,37 +35,37 @@
 }
 
 - (void)dealloc {
-  DCHECK(!runLoop_);
+  DCHECK(!_runLoop);
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
 }
 
 - (void)waitForEnterCount:(int)enterCount exitCount:(int)exitCount {
-  if (enterCount_ >= enterCount && exitCount_ >= exitCount)
+  if (_enterCount >= enterCount && _exitCount >= exitCount)
     return;
 
-  targetEnterCount_ = enterCount;
-  targetExitCount_ = exitCount;
-  runLoop_ = std::make_unique<base::RunLoop>();
-  runLoop_->Run();
-  runLoop_.reset();
+  _targetEnterCount = enterCount;
+  _targetExitCount = exitCount;
+  _runLoop = std::make_unique<base::RunLoop>();
+  _runLoop->Run();
+  _runLoop.reset();
 }
 
 - (void)maybeQuitForChangedArg:(int*)changedArg {
   ++*changedArg;
-  if (!runLoop_)
+  if (!_runLoop)
     return;
 
-  if (enterCount_ >= targetEnterCount_ && exitCount_ >= targetExitCount_)
-    runLoop_->Quit();
+  if (_enterCount >= _targetEnterCount && _exitCount >= _targetExitCount)
+    _runLoop->Quit();
 }
 
 - (void)onEnter:(NSNotification*)notification {
-  [self maybeQuitForChangedArg:&enterCount_];
+  [self maybeQuitForChangedArg:&_enterCount];
 }
 
 - (void)onExit:(NSNotification*)notification {
-  [self maybeQuitForChangedArg:&exitCount_];
+  [self maybeQuitForChangedArg:&_exitCount];
 }
 
 @end

@@ -116,7 +116,7 @@ IN_PROC_BROWSER_TEST_P(WebAppFileHandlingBrowserTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     WebAppFileHandlingBrowserTest,
     ::testing::Values(
         web_app::ControllerType::kHostedAppController,

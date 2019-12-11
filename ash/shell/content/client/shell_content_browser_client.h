@@ -28,6 +28,8 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* context,
       content::StoragePartition* partition,
       storage::OptionalQuotaSettingsCallback callback) override;
+  base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
+      base::StringPiece name) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellContentBrowserClient);

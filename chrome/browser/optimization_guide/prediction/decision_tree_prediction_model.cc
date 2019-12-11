@@ -18,8 +18,6 @@ DecisionTreePredictionModel::~DecisionTreePredictionModel() = default;
 bool DecisionTreePredictionModel::ValidatePredictionModel() const {
   // Only the top-level ensemble or decision tree must have a threshold. Any
   // submodels of an ensemble will have model weights but no threshold.
-  // TODO(mcrouse): Add metrics to record if the validation is successful or
-  // not.
   if (!model_->has_threshold())
     return false;
   return ValidateModel(*model_.get());

@@ -18,8 +18,8 @@
 #include "base/time/time.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/linux/gbm_device.h"
 #include "ui/gfx/overlay_transform.h"
-#include "ui/ozone/common/linux/gbm_device.h"
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 #include "ui/ozone/platform/drm/gpu/page_flip_request.h"
 

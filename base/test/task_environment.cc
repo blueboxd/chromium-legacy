@@ -74,7 +74,6 @@ CreateSequenceManagerForMainThreadType(
       MessagePump::Create(type),
       base::sequence_manager::SequenceManager::Settings::Builder()
           .SetMessagePumpType(type)
-          .SetAntiStarvationLogicForPrioritiesDisabled(true)
           .Build());
 }
 

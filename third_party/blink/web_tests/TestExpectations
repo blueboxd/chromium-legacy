@@ -2710,6 +2710,8 @@ crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking
 crbug.com/1029514 external/wpt/html/semantics/embedded-content/the-video-element/resize-during-playback.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.12 ] virtual/web-components-v0-disabled/external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-mode.html [ Timeout ]
+crbug.com/626703 [ Win7 ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/motion/offset-anchor-transform-box-fill-box-003.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/motion/offset-anchor-transform-box-fill-box-003.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/motion/offset-anchor-transform-box-fill-box-003.html [ Failure ]
@@ -5996,11 +5998,6 @@ crbug.com/1025944 [ Linux ] external/wpt/pointerevents/pointerlock/pointerevent_
 # Timeout media preload test until preloading media destinations gets enabled.
 crbug.com/977033 http/tests/priorities/resource-load-priorities-media-preload.html [ Timeout ]
 
-# Temporarily disabled to land call stack changes in devtools
-crbug.com/963183 http/tests/devtools/sources/debugger-pause/debugger-change-variable.js [ Pass Failure ]
-crbug.com/963183 http/tests/devtools/sources/debugger-pause/debugger-eval-on-call-frame-inside-iframe.js [ Pass Failure ]
-crbug.com/963183 http/tests/devtools/sources/debugger-pause/debugger-eval-while-paused.js [ Pass Failure ]
-
 crbug.com/1016815 external/wpt/longtask-timing/buffered-flag.window.html [ Failure ]
 
 # Sheriff 2019-11-21
@@ -6051,6 +6048,10 @@ crbug.com/993790 external/wpt/document-policy/required-policy/document-policy.ht
 crbug.com/993790 external/wpt/document-policy/required-policy/no-document-policy.html [ Failure ]
 crbug.com/993790 external/wpt/document-policy/required-policy/required-document-policy-nested.html [ Failure ]
 crbug.com/993790 external/wpt/document-policy/required-policy/required-document-policy.html [ Failure ]
+crbug.com/993790 virtual/document-policy/external/wpt/document-policy/required-policy/document-policy.html [ Failure ]
+crbug.com/993790 virtual/document-policy/external/wpt/document-policy/required-policy/no-document-policy.html [ Failure ]
+crbug.com/993790 virtual/document-policy/external/wpt/document-policy/required-policy/required-document-policy-nested.html [ Failure ]
+crbug.com/993790 virtual/document-policy/external/wpt/document-policy/required-policy/required-document-policy.html [ Failure ]
 
 # Temporary suppression to allow devtools-frontend changes
 crbug.com/1029489 http/tests/devtools/elements/elements-linkify-attributes.js [ Pass Failure ]
@@ -6067,8 +6068,14 @@ crbug.com/878878 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-for-different-k
 crbug.com/878878 virtual/threaded/fast/scroll-snap/animate-fling-to-snap-points.html [ Failure Pass Timeout ]
 crbug.com/878878 virtual/threaded/fast/scroll-snap/snap-scrolls-visual-viewport.html [ Failure Pass ]
 
-# DevTools ListControl (disabled temporarily as part of workflow)
-crbug.com/963183 http/tests/devtools/unit/list-control-equal-height.js [ Skip  ]
-
 # Sheriff 2019-12-10
 crbug.com/1032451 virtual/threaded-no-composited-antialiasing/animations/stability/animation-iteration-event-destroy-renderer.html [ Pass Timeout ]
+
+# Temporarily disabled for landing security button fixes change in devtools
+crbug.com/963183 http/tests/devtools/security/origin-view-ct-compliance.js [ Pass Failure ]
+crbug.com/963183 http/tests/devtools/security/security-details-updated-with-security-state.js [ Pass Failure ]
+crbug.com/963183 http/tests/devtools/security/security-explanation-ordering.js [ Pass Failure ]
+
+# Temporarily disabled to land DOM breakpoint changes in DevTools
+crbug.com/963183 http/tests/devtools/sources/debugger-breakpoints/dom-breakpoints.js [ Pass Failure ]
+crbug.com/963183 http/tests/devtools/a11y-axe-core/sources/dom-breakpoints-pane-a11y-test.js [ Pass Failure ]

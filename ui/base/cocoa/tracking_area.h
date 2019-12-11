@@ -18,7 +18,7 @@
 UI_BASE_EXPORT
 @interface CrTrackingArea : NSTrackingArea {
  @private
-  base::scoped_nsobject<CrTrackingAreaOwnerProxy> ownerProxy_;
+  base::scoped_nsobject<CrTrackingAreaOwnerProxy> _ownerProxy;
 }
 
 // Designated initializer. Forwards all arguments to the superclass, but wraps

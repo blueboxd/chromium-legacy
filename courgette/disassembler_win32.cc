@@ -238,13 +238,14 @@ bool DisassemblerWin32::ParseRelocs(std::vector<RVA>* relocs) {
   // at http://msdn.microsoft.com/en-us/library/ms809762.aspx
 
   const uint8_t* relocs_start = RVAToPointer(base_relocation_table_.address_);
-  const uint8_t* relocs_end = relocs_start + relocs_size;
+  if (relocs_start == nullptr || relocs_start < start() ||
+      relocs_start >= end())
+    return Bad(".relocs outside image");
 
   // Make sure entire base relocation table is within the buffer.
-  if (relocs_start < start() || relocs_start >= end() ||
-      relocs_end <= start() || relocs_end > end()) {
+  if (relocs_size > static_cast<size_t>(end() - relocs_start))
     return Bad(".relocs outside image");
-  }
+  const uint8_t* relocs_end = relocs_start + relocs_size;
 
   const uint8_t* block = relocs_start;
 

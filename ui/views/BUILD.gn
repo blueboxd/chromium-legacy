@@ -916,6 +916,7 @@ jumbo_source_set("test_support") {
     "test/desktop_test_views_delegate.h",
     "test/focus_manager_test.cc",
     "test/focus_manager_test.h",
+    "test/layout_test_utils.cc",
     "test/menu_runner_test_api.cc",
     "test/menu_runner_test_api.h",
     "test/menu_test_utils.cc",

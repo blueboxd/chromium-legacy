@@ -24,7 +24,8 @@ void MediaInternalsProxy::Attach(MediaInternalsMessageHandler* handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   handler_ = handler;
-  update_callback_ = base::Bind(&MediaInternalsProxy::UpdateUIOnUIThread, this);
+  update_callback_ =
+      base::BindRepeating(&MediaInternalsProxy::UpdateUIOnUIThread, this);
   MediaInternals::GetInstance()->AddUpdateCallback(update_callback_);
 }
 

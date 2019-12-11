@@ -145,11 +145,11 @@ source_set("gbm") {
     "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/gfx/linux:drm",
+    "//ui/gfx/linux:gbm",
     "//ui/gl",
     "//ui/ozone:ozone_base",
     "//ui/ozone/common",
-    "//ui/ozone/common/linux:drm",
-    "//ui/ozone/common/linux:gbm",
     "//ui/ozone/public/mojom",
     "//ui/platform_window",
   ]
@@ -201,10 +201,10 @@ source_set("gbm_unittests") {
     "//testing/gtest",
     "//ui/base/ime",
     "//ui/gfx",
+    "//ui/gfx/linux:drm",
+    "//ui/gfx/linux:gbm",
     "//ui/ozone:platform",
     "//ui/ozone/common",
-    "//ui/ozone/common/linux:drm",
-    "//ui/ozone/common/linux:gbm",
   ]
 
   if (drm_commit_properties_on_page_flip) {

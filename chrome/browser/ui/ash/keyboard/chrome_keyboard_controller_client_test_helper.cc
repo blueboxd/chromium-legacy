@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/public/cpp/keyboard/keyboard_controller.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/callback.h"

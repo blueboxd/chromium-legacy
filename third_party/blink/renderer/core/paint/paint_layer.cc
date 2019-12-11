@@ -2052,7 +2052,7 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
   // The natural thing would be to keep HitTestingTransformState on the stack,
   // but it's big, so we heap-allocate.
   HitTestingTransformState* local_transform_state = nullptr;
-  base::Optional<HitTestingTransformState> storage;
+  STACK_UNINITIALIZED base::Optional<HitTestingTransformState> storage;
 
   if (applied_transform) {
     // We computed the correct state in the caller (above code), so just
@@ -2071,7 +2071,7 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
   // Check for hit test on backface if backface-visibility is 'hidden'
   if (local_transform_state && layout_object.StyleRef().BackfaceVisibility() ==
                                    EBackfaceVisibility::kHidden) {
-    TransformationMatrix inverted_matrix =
+    STACK_UNINITIALIZED TransformationMatrix inverted_matrix =
         local_transform_state->accumulated_transform_.Inverse();
     // If the z-vector of the matrix is negative, the back is facing towards the
     // viewer.
@@ -2080,7 +2080,8 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
   }
 
   HitTestingTransformState* unflattened_transform_state = local_transform_state;
-  base::Optional<HitTestingTransformState> unflattened_storage;
+  STACK_UNINITIALIZED base::Optional<HitTestingTransformState>
+      unflattened_storage;
   if (local_transform_state && !Preserves3D()) {
     // Keep a copy of the pre-flattening state, for computing z-offsets for the
     // container
@@ -2111,7 +2112,7 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
 
   // Collect the fragments. This will compute the clip rectangles for each
   // layer fragment.
-  base::Optional<PaintLayerFragments> layer_fragments;
+  STACK_UNINITIALIZED base::Optional<PaintLayerFragments> layer_fragments;
   if (recursion_data.intersects_location) {
     layer_fragments.emplace();
     if (applied_transform) {
@@ -2189,8 +2190,8 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
                                      DisplayLockLifecycleTarget::kChildren)) {
       // Hit test with a temporary HitTestResult, because we only want to commit
       // to 'result' if we know we're frontmost.
-      HitTestResult temp_result(result.GetHitTestRequest(),
-                                recursion_data.original_location);
+      STACK_UNINITIALIZED HitTestResult temp_result(
+          result.GetHitTestRequest(), recursion_data.original_location);
       temp_result.SetInertNode(result.InertNode());
       bool inside_fragment_foreground_rect = false;
 
@@ -2237,8 +2238,8 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
     return candidate_layer;
 
   if (recursion_data.intersects_location && IsSelfPaintingLayer()) {
-    HitTestResult temp_result(result.GetHitTestRequest(),
-                              recursion_data.original_location);
+    STACK_UNINITIALIZED HitTestResult temp_result(
+        result.GetHitTestRequest(), recursion_data.original_location);
     temp_result.SetInertNode(result.InertNode());
     bool inside_fragment_background_rect = false;
     if (HitTestContentsForFragments(*layer_fragments, offset, temp_result,
@@ -2469,8 +2470,8 @@ PaintLayer* PaintLayer::HitTestChildren(
     }
 
     PaintLayer* hit_layer = nullptr;
-    HitTestResult temp_result(result.GetHitTestRequest(),
-                              recursion_data.original_location);
+    STACK_UNINITIALIZED HitTestResult temp_result(
+        result.GetHitTestRequest(), recursion_data.original_location);
     temp_result.SetInertNode(result.InertNode());
     hit_layer = child_layer->HitTestLayer(
         root_layer, this, temp_result, recursion_data, false, transform_state,

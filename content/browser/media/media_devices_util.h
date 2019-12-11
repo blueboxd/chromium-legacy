@@ -21,7 +21,7 @@ CONTENT_EXPORT void GetDefaultMediaDeviceID(
     blink::MediaDeviceType device_type,
     int render_process_id,
     int render_frame_id,
-    const base::Callback<void(const std::string&)>& callback);
+    base::OnceCallback<void(const std::string&)> callback);
 
 struct CONTENT_EXPORT MediaDeviceSaltAndOrigin {
   MediaDeviceSaltAndOrigin();

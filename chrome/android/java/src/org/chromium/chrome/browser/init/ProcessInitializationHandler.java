@@ -49,6 +49,7 @@ import org.chromium.chrome.browser.crash.LogcatExtractionRunnable;
 import org.chromium.chrome.browser.crash.MinidumpUploadService;
 import org.chromium.chrome.browser.download.DownloadController;
 import org.chromium.chrome.browser.download.DownloadManagerService;
+import org.chromium.chrome.browser.download.ExploreOfflineStatusProvider;
 import org.chromium.chrome.browser.firstrun.ForcedSigninProcessor;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.history.HistoryDeletionBridge;
@@ -444,6 +445,7 @@ public class ProcessInitializationHandler {
 
         deferredStartupHandler.addDeferredTask(
                 () -> SharedClipboardShareActivity.updateComponentEnabledState());
+        deferredStartupHandler.addDeferredTask(() -> ExploreOfflineStatusProvider.getInstance());
     }
 
     private void initChannelsAsync() {

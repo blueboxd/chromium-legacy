@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/task/cancelable_task_tracker.h"
 
 class Profile;
@@ -21,6 +22,7 @@ class HistoryService;
 
 namespace bookmarks {
 class BookmarkModel;
+class ModelLoader;
 }
 
 namespace history_report {
@@ -48,7 +50,7 @@ class DataProvider {
   void RecreateLog();
 
   history::HistoryService* history_service_;
-  bookmarks::BookmarkModel* bookmark_model_;
+  scoped_refptr<bookmarks::ModelLoader> bookmark_model_loader_;
   DeltaFileService* delta_file_service_;
   base::CancelableTaskTracker history_task_tracker_;
 

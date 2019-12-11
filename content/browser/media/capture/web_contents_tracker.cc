@@ -22,13 +22,14 @@ WebContentsTracker::~WebContentsTracker() {
   DCHECK(!web_contents());
 }
 
-void WebContentsTracker::Start(int render_process_id, int main_render_frame_id,
-                               const ChangeCallback& callback) {
+void WebContentsTracker::Start(int render_process_id,
+                               int main_render_frame_id,
+                               ChangeCallback callback) {
   DCHECK(!task_runner_ || task_runner_->BelongsToCurrentThread());
 
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
   DCHECK(task_runner_);
-  callback_ = callback;
+  callback_ = std::move(callback);
 
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     StartObservingWebContents(render_process_id, main_render_frame_id);
@@ -73,9 +74,9 @@ RenderWidgetHostView* WebContentsTracker::GetTargetView() const {
 }
 
 void WebContentsTracker::SetResizeChangeCallback(
-    const base::Closure& callback) {
+    base::RepeatingClosure callback) {
   DCHECK(!task_runner_ || task_runner_->BelongsToCurrentThread());
-  resize_callback_ = callback;
+  resize_callback_ = std::move(callback);
 }
 
 void WebContentsTracker::OnPossibleTargetChange(bool force_callback_run) {

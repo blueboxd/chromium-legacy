@@ -17,6 +17,7 @@ import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGN
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_VOICE_RECOGNITION_BUTTON_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MV_TILES_VISIBLE;
+import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_HEIGHT;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_EXPLORE_SURFACE_VISIBLE;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SECONDARY_SURFACE_VISIBLE;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SHOWING_OVERVIEW;
@@ -36,6 +37,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
@@ -76,6 +78,8 @@ public class StartSurfaceMediatorUnitTest {
     private ExploreSurfaceCoordinator.FeedSurfaceCreator mFeedSurfaceCreator;
     @Mock
     private NightModeStateProvider mNightModeStateProvider;
+    @Mock
+    private ChromeFullscreenManager mChromeFullscreenManager;
     @Mock
     private LocationBarVoiceRecognitionHandler mLocationBarVoiceRecognitionHandler;
     @Mock
@@ -551,11 +555,49 @@ public class StartSurfaceMediatorUnitTest {
         assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_INCOGNITO), equalTo(true));
     }
 
+    @Test
+    public void paddingForBottomBarSinglePane() {
+        doReturn(false).when(mTabModelSelector).isIncognitoSelected();
+        doReturn(mLocationBarVoiceRecognitionHandler)
+                .when(mFakeBoxDelegate)
+                .getLocationBarVoiceRecognitionHandler();
+        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+
+        StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
+        mediator.setSecondaryTasksSurfacePropertyModel(mSecondaryTasksSurfacePropertyModel);
+        assertThat(mediator.getOverviewState(), equalTo(OverviewModeState.NOT_SHOWN));
+
+        doReturn(30).when(mChromeFullscreenManager).getBottomControlsHeight();
+        doReturn(2).when(mNormalTabModel).getCount();
+        mediator.showOverview(false);
+        assertThat(mPropertyModel.get(BOTTOM_BAR_HEIGHT), equalTo(30));
+        assertThat(mSecondaryTasksSurfacePropertyModel.get(BOTTOM_BAR_HEIGHT), equalTo(0));
+    }
+
+    @Test
+    public void doNotPaddingForBottomBarTasksOnly() {
+        doReturn(false).when(mTabModelSelector).isIncognitoSelected();
+        doReturn(mLocationBarVoiceRecognitionHandler)
+                .when(mFakeBoxDelegate)
+                .getLocationBarVoiceRecognitionHandler();
+        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+
+        StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.TASKS_ONLY);
+        mediator.setSecondaryTasksSurfacePropertyModel(mSecondaryTasksSurfacePropertyModel);
+        assertThat(mediator.getOverviewState(), equalTo(OverviewModeState.NOT_SHOWN));
+
+        doReturn(30).when(mChromeFullscreenManager).getBottomControlsHeight();
+        doReturn(2).when(mNormalTabModel).getCount();
+        mediator.showOverview(false);
+        assertThat(mPropertyModel.get(BOTTOM_BAR_HEIGHT), equalTo(0));
+        assertThat(mSecondaryTasksSurfacePropertyModel.get(BOTTOM_BAR_HEIGHT), equalTo(0));
+    }
+
     private StartSurfaceMediator createStartSurfaceMediator(@SurfaceMode int mode) {
         return new StartSurfaceMediator(mMainTabGridController, mTabModelSelector,
                 mode == SurfaceMode.NO_START_SURFACE ? null : mPropertyModel,
                 mode == SurfaceMode.SINGLE_PANE ? mFeedSurfaceCreator : null,
                 mode == SurfaceMode.SINGLE_PANE ? mSecondaryTasksSurfaceInitializer : null, mode,
-                mFakeBoxDelegate, mNightModeStateProvider);
+                mFakeBoxDelegate, mNightModeStateProvider, mChromeFullscreenManager);
     }
 }

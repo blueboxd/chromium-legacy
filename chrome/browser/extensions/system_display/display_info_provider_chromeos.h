@@ -13,8 +13,11 @@
 #include "base/memory/weak_ptr.h"
 #include "extensions/browser/api/system_display/display_info_provider.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+
+namespace service_manager {
+class Connector;
+}
 
 namespace extensions {
 
@@ -22,9 +25,7 @@ class DisplayInfoProviderChromeOS
     : public DisplayInfoProvider,
       public ash::mojom::CrosDisplayConfigObserver {
  public:
-  explicit DisplayInfoProviderChromeOS(
-      mojo::PendingRemote<ash::mojom::CrosDisplayConfigController>
-          display_config);
+  explicit DisplayInfoProviderChromeOS(service_manager::Connector* connector);
   ~DisplayInfoProviderChromeOS() override;
 
   // DisplayInfoProvider implementation.

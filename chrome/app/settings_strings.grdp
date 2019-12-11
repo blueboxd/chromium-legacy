@@ -2880,6 +2880,9 @@
     <message name="IDS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE" desc="The label used for a button that changes the UI language.">
       Show system text in this language
     </message>
+    <message name="IDS_SETTINGS_LANGUAGES_RESTART_TO_DISPLAY_LANGUAGE" desc="The aria label to be read aloud to describe a button for restarting the device to change the device's UI language.">
+      Restart device to show system text in <ph name="LANGUAGE">$1<ex>English</ex></ph>
+    </message>
   </if>
   <if expr="not chromeos">
     <message name="IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_ORDERING_INSTRUCTIONS" desc="Explanatory message about ordering the list of languages.">

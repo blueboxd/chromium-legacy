@@ -375,6 +375,7 @@ source_set("unit_tests") {
     "session/arc_vm_client_adapter_util_unittest.cc",
     "session/file_system_status_unittest.cc",
     "timer/arc_timer_bridge_unittest.cc",
+    "video_accelerator/arc_video_accelerator_util_unittest.cc",
     "wake_lock/arc_wake_lock_bridge_unittest.cc",
   ]
 
@@ -397,6 +398,7 @@ source_set("unit_tests") {
     "//chromeos/network:test_support",
     "//chromeos/system:system",
     "//components/account_id",
+    "//components/arc/video_accelerator",
     "//components/keyed_service/content",
     "//components/prefs:test_support",
     "//components/session_manager/core:core",

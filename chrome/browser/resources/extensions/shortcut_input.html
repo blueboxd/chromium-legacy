@@ -14,6 +14,11 @@
     left: -2px;
     right: inherit;
   }
+
+  /* Invisible so the element is still in the tab order. */
+  [invisible] {
+    opacity: 0;
+  }
 </style>
 <div id="main">
   <cr-input id="input" placeholder="$i18n{shortcutTypeAShortcut}"
@@ -25,7 +30,8 @@
       value="[[computeText_(capturing_, shortcut, pendingShortcut_)]]">
     <cr-icon-button id="clear" aria-label="$i18nPolymer{clear}"
         slot="suffix" class="icon-cancel no-overlap"
-        hidden$="[[computeClearHidden_(capturing_, shortcut)]]"
+        invisible$="[[computeClearInvisible_(capturing_, shortcut)]]"
+        hidden$="[[computeClearHidden_(shortcut)]]"
         on-click="onClearTap_"></cr-icon-button>
   </cr-input>
 </div>

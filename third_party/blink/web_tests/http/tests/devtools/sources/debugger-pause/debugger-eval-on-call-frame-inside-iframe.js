@@ -69,7 +69,7 @@
 
   function step3() {
     var pane = self.runtime.sharedInstance(Sources.CallStackSidebarPane);
-    pane._list.selectItem(pane._list._model.at(1));
+    pane._selectNextCallFrameOnStack();
     TestRunner.deprecatedRunAfterPendingDispatches(step4);
   }
 

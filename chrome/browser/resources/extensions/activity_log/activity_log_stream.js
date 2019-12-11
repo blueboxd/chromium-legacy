@@ -156,7 +156,7 @@ Polymer({
    * @return {boolean}
    */
   isStreamEmpty_: function() {
-    return this.activityStream_.length == 0;
+    return this.activityStream_.length === 0;
   },
 
   /**
@@ -164,7 +164,7 @@ Polymer({
    * @return {boolean}
    */
   isFilteredStreamEmpty_: function() {
-    return this.filteredActivityStream_.length == 0;
+    return this.filteredActivityStream_.length === 0;
   },
 
   /**
@@ -180,7 +180,7 @@ Polymer({
    * @param {!chrome.activityLogPrivate.ExtensionActivity} activity
    */
   extensionActivityListener_: function(activity) {
-    if (activity.extensionId != this.extensionId) {
+    if (activity.extensionId !== this.extensionId) {
       return;
     }
 

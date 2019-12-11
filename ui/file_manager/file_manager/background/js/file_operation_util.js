@@ -286,7 +286,7 @@ fileOperationUtil.findEntriesRecursively = (entry, onResultCallback) => {
     };
 
     /** @param {!DirectoryEntry} directory */
-    var processDirectory = directory => {
+    const processDirectory = directory => {
       // All scanning stops when an error is encountered.
       if (scanError) {
         return;
@@ -348,6 +348,12 @@ fileOperationUtil.listEntries = (directory, callback) => {
 };
 
 /**
+ * When set, forces all file operations to complete with an error.
+ * @type {boolean}
+ */
+fileOperationUtil.forceErrorForTest = false;
+
+/**
  * Copies source to parent with the name newName recursively.
  * This should work very similar to FileSystem API's copyTo. The difference is;
  * - The progress callback is supported.
@@ -392,6 +398,15 @@ fileOperationUtil.copyTo =
 
           // This is not what we're interested in.
           if (progressCopyId != copyId) {
+            callback();
+            return;
+          }
+
+          if (window.IN_TEST && fileOperationUtil.forceErrorForTest) {
+            chrome.fileManagerPrivate.onCopyProgress.removeListener(
+                onCopyProgress);
+            const forceErrorForTest = util.FileError.INVALID_STATE_ERR;
+            errorCallback(util.createDOMError(forceErrorForTest));
             callback();
             return;
           }
@@ -1307,21 +1322,21 @@ fileOperationUtil.EventRouter = class extends cr.EventTarget {
   dispatchEntryChangedEvent_() {
     const deletedEntries = [];
     const createdEntries = [];
-    for (var url in this.pendingDeletedEntries_) {
+    for (const url in this.pendingDeletedEntries_) {
       deletedEntries.push(this.pendingDeletedEntries_[url]);
     }
-    for (var url in this.pendingCreatedEntries_) {
+    for (const url in this.pendingCreatedEntries_) {
       createdEntries.push(this.pendingCreatedEntries_[url]);
     }
     if (deletedEntries.length > 0) {
-      var event = new Event('entries-changed');
+      const event = new Event('entries-changed');
       event.kind = util.EntryChangedKind.DELETED;
       event.entries = deletedEntries;
       this.dispatchEvent(event);
       this.pendingDeletedEntries_ = {};
     }
     if (createdEntries.length > 0) {
-      var event = new Event('entries-changed');
+      const event = new Event('entries-changed');
       event.kind = util.EntryChangedKind.CREATED;
       event.entries = createdEntries;
       this.dispatchEvent(event);

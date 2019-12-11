@@ -472,6 +472,14 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetAttributeValue(
         delegate->GetFromNodeID(it->anchor_id()));
     DCHECK(platform_node);
 
+    // Only get attributes for nodes in the tree
+    if (platform_node->GetDelegate()->IsChildOfLeaf()) {
+      platform_node = static_cast<AXPlatformNodeWin*>(
+          AXPlatformNode::FromNativeViewAccessible(
+              platform_node->GetDelegate()->GetClosestPlatformObject()));
+      DCHECK(platform_node);
+    }
+
     base::win::ScopedVariant current_variant;
     HRESULT hr = platform_node->GetTextAttributeValue(
         attribute_id, current_variant.Receive());

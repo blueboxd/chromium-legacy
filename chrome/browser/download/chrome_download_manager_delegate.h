@@ -84,13 +84,13 @@ class ChromeDownloadManagerDelegate
   void GetNextId(content::DownloadIdCallback callback) override;
   bool DetermineDownloadTarget(
       download::DownloadItem* item,
-      const content::DownloadTargetCallback& callback) override;
+      content::DownloadTargetCallback* callback) override;
   bool ShouldOpenFileBasedOnExtension(const base::FilePath& path) override;
   bool ShouldCompleteDownload(download::DownloadItem* item,
                               base::OnceClosure complete_callback) override;
   bool ShouldOpenDownload(
       download::DownloadItem* item,
-      const content::DownloadOpenDelayedCallback& callback) override;
+      content::DownloadOpenDelayedCallback callback) override;
   bool InterceptDownloadIfApplicable(
       const GURL& url,
       const std::string& user_agent,
@@ -170,7 +170,7 @@ class ChromeDownloadManagerDelegate
       bool create_directory,
       download::DownloadPathReservationTracker::FilenameConflictAction
           conflict_action,
-      const ReservedPathCallback& callback) override;
+      ReservedPathCallback callback) override;
   void RequestConfirmation(download::DownloadItem* download,
                            const base::FilePath& suggested_virtual_path,
                            DownloadConfirmationReason reason,
@@ -237,7 +237,7 @@ class ChromeDownloadManagerDelegate
 
   void OnDownloadTargetDetermined(
       uint32_t download_id,
-      const content::DownloadTargetCallback& callback,
+      content::DownloadTargetCallback callback,
       std::unique_ptr<DownloadTargetInfo> target_info);
 
   // Returns true if |path| should open in the browser.

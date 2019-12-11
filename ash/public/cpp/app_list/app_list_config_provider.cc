@@ -9,6 +9,7 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/no_destructor.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace ash {
@@ -89,8 +90,7 @@ AppListConfig* AppListConfigProvider::GetConfigForType(
 
 std::unique_ptr<AppListConfig> AppListConfigProvider::CreateForAppListWidget(
     const gfx::Size& display_work_area_size,
-    int shelf_height,
-    int side_shelf_width,
+    const gfx::Insets& shelf_insets,
     const AppListConfig* current_config) {
   const AppListConfig& base_config =
       GetBaseConfigForDisplaySize(display_work_area_size);
@@ -116,9 +116,10 @@ std::unique_ptr<AppListConfig> AppListConfigProvider::CreateForAppListWidget(
   int non_grid_height = base_config.suggestion_chip_container_top_margin() +
                         base_config.suggestion_chip_container_height();
   // Add search box height.
-  non_grid_height += display_work_area_size.height() - shelf_height >= 600
-                         ? base_config.search_box_height()
-                         : base_config.search_box_height_for_dense_layout();
+  non_grid_height +=
+      display_work_area_size.height() - shelf_insets.height() >= 600
+          ? base_config.search_box_height()
+          : base_config.search_box_height_for_dense_layout();
 
   // Add minimum top margin (which matches the grid fadeout zone when scalable
   // app list is enabled).
@@ -129,7 +130,7 @@ std::unique_ptr<AppListConfig> AppListConfigProvider::CreateForAppListWidget(
   }
 
   const int available_grid_height =
-      display_work_area_size.height() - shelf_height - non_grid_height;
+      display_work_area_size.height() - shelf_insets.height() - non_grid_height;
 
   if (available_grid_height < min_grid_height) {
     scale_y = std::max(
@@ -153,7 +154,7 @@ std::unique_ptr<AppListConfig> AppListConfigProvider::CreateForAppListWidget(
   }
 
   const int available_grid_width =
-      display_work_area_size.width() - 2 * side_shelf_width -
+      display_work_area_size.width() - shelf_insets.width() -
       2 * base_config.GetMinGridHorizontalPadding();
   if (available_grid_width < min_grid_width) {
     scale_x =

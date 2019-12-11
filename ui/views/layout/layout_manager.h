@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "ui/views/layout/layout_types.h"
 #include "ui/views/views_export.h"
 
 namespace gfx {
@@ -64,6 +65,10 @@ class VIEWS_EXPORT LayoutManager {
   // example, a multi-line labels preferred height may change with the width.
   // The default implementation returns GetPreferredSize().height().
   virtual int GetPreferredHeightForWidth(const View* host, int width) const;
+
+  // Returns the maximum space available in the layout for the specified child
+  // view. Default is unbounded.
+  virtual SizeBounds GetAvailableSize(const View* host, const View* view) const;
 
   // Called when a View is added as a child of the View the LayoutManager has
   // been installed on.

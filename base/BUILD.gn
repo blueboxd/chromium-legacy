@@ -3389,6 +3389,7 @@ if (is_android) {
     deps = [
       ":base_java",
       ":base_java_test_support",
+      ":jni_java",
       "//base/test:test_support_java",
       "//third_party/android_support_test_runner:runner_java",
       "//third_party/hamcrest:hamcrest_java",
@@ -3409,6 +3410,7 @@ if (is_android) {
       "android/javatests/src/org/chromium/base/LocaleUtilsTest.java",
       "android/javatests/src/org/chromium/base/ObserverListTest.java",
       "android/javatests/src/org/chromium/base/StrictModeContextTest.java",
+      "android/javatests/src/org/chromium/base/library_loader/EarlyNativeTest.java",
       "android/javatests/src/org/chromium/base/metrics/RecordHistogramTest.java",
       "android/javatests/src/org/chromium/base/task/AsyncTaskTest.java",
       "android/javatests/src/org/chromium/base/task/PostTaskTest.java",
@@ -3416,6 +3418,26 @@ if (is_android) {
       "android/javatests/src/org/chromium/base/task/SingleThreadTaskRunnerImplTest.java",
       "android/javatests/src/org/chromium/base/task/TaskRunnerImplTest.java",
       "android/javatests/src/org/chromium/base/util/GarbageCollectionTestUtilsTest.java",
+    ]
+
+    annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+  }
+
+  source_set("base_javatests_lib") {
+    testonly = true
+    deps = [
+      ":base",
+      ":base_javatests_jni_headers",
+    ]
+    sources = [
+      "test/library_loader/early_native_test_helper.cc",
+    ]
+  }
+
+  generate_jni("base_javatests_jni_headers") {
+    testonly = true
+    sources = [
+      "android/javatests/src/org/chromium/base/library_loader/EarlyNativeTest.java",
     ]
   }
 

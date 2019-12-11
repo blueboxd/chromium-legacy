@@ -185,18 +185,21 @@ bool ShouldShowHowToUse(const extensions::Extension* extension) {
 }
 
 bool HasCommandKeybinding(const extensions::Extension* extension,
-                          const Browser* browser) {
+                          const Browser* browser,
+                          extensions::Command* command = nullptr) {
   const auto* info = GetActionInfoForExtension(extension);
   extensions::CommandService* command_service =
       extensions::CommandService::Get(browser->profile());
-  extensions::Command command;
+  extensions::Command ignored_command;
+  if (!command)
+    command = &ignored_command;
 
   if (info->type == extensions::ActionInfo::TYPE_BROWSER) {
     return command_service->GetBrowserActionCommand(
-        extension->id(), extensions::CommandService::ACTIVE, &command, nullptr);
+        extension->id(), extensions::CommandService::ACTIVE, command, nullptr);
   } else if (info->type == extensions::ActionInfo::TYPE_PAGE) {
     return command_service->GetPageActionCommand(
-        extension->id(), extensions::CommandService::ACTIVE, &command, nullptr);
+        extension->id(), extensions::CommandService::ACTIVE, command, nullptr);
   }
 
   return false;
@@ -238,6 +241,39 @@ bool ShouldShowSignInPromo(const Extension* extension, const Browser* browser) {
          SyncPromoUI::ShouldShowSyncPromo(browser->profile());
 }
 
+base::string16 GetHowToUseDescription(const Extension* extension,
+                                      const Browser* browser) {
+  int message_id = 0;
+  base::string16 extra;
+  const auto* action_info = GetActionInfoForExtension(extension);
+  extensions::Command command;
+  if (HasCommandKeybinding(extension, browser, &command))
+    extra = command.accelerator().GetShortcutText();
+
+  switch (action_info->type) {
+    case extensions::ActionInfo::TYPE_BROWSER:
+      message_id =
+          extra.empty()
+              ? IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO
+              : IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO_WITH_SHORTCUT;
+      break;
+    case extensions::ActionInfo::TYPE_PAGE:
+      message_id = extra.empty()
+                       ? IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO
+                       : IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO_WITH_SHORTCUT;
+      break;
+    case extensions::ActionInfo::TYPE_ACTION:
+      extra = base::UTF8ToUTF16(extensions::OmniboxInfo::GetKeyword(extension));
+      message_id = IDS_EXTENSION_INSTALLED_OMNIBOX_KEYWORD_INFO;
+      break;
+  }
+
+  if (message_id == 0)
+    return base::string16();
+  return extra.empty() ? l10n_util::GetStringUTF16(message_id)
+                       : l10n_util::GetStringFUTF16(message_id, extra);
+}
+
 }  // namespace
 
 // Provides feedback to the user upon successful installation of an
@@ -254,7 +290,6 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
                                      public views::LinkListener {
  public:
   ExtensionInstalledBubbleView(
-      ExtensionInstalledBubble* bubble,
       BubbleReference reference,
       Browser* browser,
       scoped_refptr<const extensions::Extension> extension,
@@ -281,8 +316,6 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
   // views::LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;
 
-  ExtensionInstalledBubble* controller_;
-
   BubbleReference bubble_reference_;
 
   // The shortcut to open the manage shortcuts page.
@@ -296,17 +329,14 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
 };
 
 ExtensionInstalledBubbleView::ExtensionInstalledBubbleView(
-    ExtensionInstalledBubble* controller,
     BubbleReference bubble_reference,
     Browser* browser,
     scoped_refptr<const extensions::Extension> extension,
     const SkBitmap& icon)
     : BubbleDialogDelegateView(nullptr,
-                               controller->anchor_position() ==
-                                       ExtensionInstalledBubble::ANCHOR_OMNIBOX
+                               HasOmniboxKeyword(extension.get())
                                    ? views::BubbleBorder::TOP_LEFT
                                    : views::BubbleBorder::TOP_RIGHT),
-      controller_(controller),
       bubble_reference_(bubble_reference),
       manage_shortcut_(nullptr),
       browser_(browser),
@@ -394,8 +424,10 @@ void ExtensionInstalledBubbleView::Init() {
       views::BoxLayout::CrossAxisAlignment::kStart);
   SetLayoutManager(std::move(layout));
 
-  if (ShouldShowHowToUse(extension_.get()))
-    AddChildView(CreateLabel(controller_->GetHowToUseDescription()));
+  if (ShouldShowHowToUse(extension_.get())) {
+    AddChildView(
+        CreateLabel(GetHowToUseDescription(extension_.get(), browser_)));
+  }
 
   if (ShouldShowKeybinding(extension_.get(), browser_)) {
     manage_shortcut_ = new views::Link(
@@ -444,9 +476,9 @@ ExtensionInstalledBubbleUi::~ExtensionInstalledBubbleUi() {
 }
 
 void ExtensionInstalledBubbleUi::Show(BubbleReference bubble_reference) {
-  bubble_view_ = new ExtensionInstalledBubbleView(
-      bubble_, bubble_reference, bubble_->browser(), bubble_->extension(),
-      bubble_->icon());
+  bubble_view_ =
+      new ExtensionInstalledBubbleView(bubble_reference, bubble_->browser(),
+                                       bubble_->extension(), bubble_->icon());
   bubble_reference_ = bubble_reference;
 
   views::BubbleDialogDelegateView::CreateBubble(bubble_view_)->Show();

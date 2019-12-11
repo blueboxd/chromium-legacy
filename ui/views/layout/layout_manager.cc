@@ -33,6 +33,11 @@ int LayoutManager::GetPreferredHeightForWidth(const View* host,
   return GetPreferredSize(host).height();
 }
 
+SizeBounds LayoutManager::GetAvailableSize(const View* host,
+                                           const View* view) const {
+  return SizeBounds();
+}
+
 void LayoutManager::ViewAdded(View* host, View* view) {
 }
 

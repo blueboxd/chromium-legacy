@@ -262,6 +262,10 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
   scoped_refptr<gl::GLContext> context;
   if (use_virtualized_gl_context_ && share_group_) {
     context = share_group_->GetSharedContext(surface_.get());
+    if (context && (!context->MakeCurrent(surface_.get()) ||
+                    context->CheckStickyGraphicsResetStatus() != GL_NO_ERROR)) {
+      context = nullptr;
+    }
     if (!context) {
       context = gl::init::CreateGLContext(
           share_group_.get(), surface_.get(),

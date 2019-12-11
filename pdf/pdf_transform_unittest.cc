@@ -6,7 +6,9 @@
 
 #include "printing/units.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size_f.h"
 
 namespace chrome_pdf {
 
@@ -15,7 +17,7 @@ namespace {
 constexpr float kDefaultWidth = 8.5 * printing::kPointsPerInch;
 constexpr float kDefaultHeight = 11.0 * printing::kPointsPerInch;
 constexpr float kDefaultRatio = kDefaultWidth / kDefaultHeight;
-constexpr double kTolerance = 0.0001;
+constexpr float kTolerance = 0.0001f;
 
 void ExpectDefaultPortraitBox(const PdfRectangle& box) {
   EXPECT_FLOAT_EQ(0, box.left);
@@ -60,42 +62,43 @@ void InitializeBoxToDefaultLandscapeValue(PdfRectangle* box) {
 }  // namespace
 
 TEST(PdfTransformTest, CalculateScaleFactor) {
+  static constexpr gfx::SizeF kSize(kDefaultWidth, kDefaultHeight);
   gfx::Rect rect(kDefaultWidth, kDefaultHeight);
-  double scale;
+  float scale;
 
   // 1:1
-  scale = CalculateScaleFactor(rect, kDefaultWidth, kDefaultHeight, false);
-  EXPECT_NEAR(1, scale, kTolerance);
-  scale = CalculateScaleFactor(rect, kDefaultWidth, kDefaultHeight, true);
+  scale = CalculateScaleFactor(rect, kSize, false);
+  EXPECT_NEAR(1.0f, scale, kTolerance);
+  scale = CalculateScaleFactor(rect, kSize, true);
   EXPECT_NEAR(kDefaultRatio, scale, kTolerance);
 
   // 1:2
   rect = gfx::Rect(kDefaultWidth / 2, kDefaultHeight / 2);
-  scale = CalculateScaleFactor(rect, kDefaultWidth, kDefaultHeight, false);
-  EXPECT_NEAR(0.5, scale, kTolerance);
-  scale = CalculateScaleFactor(rect, kDefaultWidth, kDefaultHeight, true);
+  scale = CalculateScaleFactor(rect, kSize, false);
+  EXPECT_NEAR(0.5f, scale, kTolerance);
+  scale = CalculateScaleFactor(rect, kSize, true);
   EXPECT_NEAR(kDefaultRatio / 2, scale, kTolerance);
 
   // 3:1
   rect = gfx::Rect(kDefaultWidth * 3, kDefaultHeight * 3);
-  scale = CalculateScaleFactor(rect, kDefaultWidth, kDefaultHeight, false);
-  EXPECT_NEAR(3, scale, kTolerance);
-  scale = CalculateScaleFactor(rect, kDefaultWidth, kDefaultHeight, true);
+  scale = CalculateScaleFactor(rect, kSize, false);
+  EXPECT_NEAR(3.0f, scale, kTolerance);
+  scale = CalculateScaleFactor(rect, kSize, true);
   EXPECT_NEAR(kDefaultRatio * 3, scale, kTolerance);
 
   // 3:1, rotated.
   rect = gfx::Rect(kDefaultHeight * 3, kDefaultWidth * 3);
-  scale = CalculateScaleFactor(rect, kDefaultWidth, kDefaultHeight, false);
+  scale = CalculateScaleFactor(rect, kSize, false);
   EXPECT_NEAR(kDefaultRatio * 3, scale, kTolerance);
-  scale = CalculateScaleFactor(rect, kDefaultWidth, kDefaultHeight, true);
-  EXPECT_NEAR(3, scale, kTolerance);
+  scale = CalculateScaleFactor(rect, kSize, true);
+  EXPECT_NEAR(3.0f, scale, kTolerance);
 
   // Odd size
   rect = gfx::Rect(10, 1000);
-  scale = CalculateScaleFactor(rect, kDefaultWidth, kDefaultHeight, false);
-  EXPECT_NEAR(0.01634, scale, kTolerance);
-  scale = CalculateScaleFactor(rect, kDefaultWidth, kDefaultHeight, true);
-  EXPECT_NEAR(0.01263, scale, kTolerance);
+  scale = CalculateScaleFactor(rect, kSize, false);
+  EXPECT_NEAR(0.01634f, scale, kTolerance);
+  scale = CalculateScaleFactor(rect, kSize, true);
+  EXPECT_NEAR(0.01263f, scale, kTolerance);
 }
 
 TEST(PdfTransformTest, SetDefaultClipBox) {
@@ -190,89 +193,87 @@ TEST(PdfTransformTest, CalculateClipBoxBoundary) {
 TEST(PdfTransformTest, CalculateScaledClipBoxOffset) {
   constexpr gfx::Rect rect(kDefaultWidth, kDefaultHeight);
   PdfRectangle clip_box;
-  double offset_x;
-  double offset_y;
+  gfx::PointF offset;
 
   // |rect| and |clip_box| are the same size.
   InitializeBoxToDefaultPortraitValues(&clip_box);
-  CalculateScaledClipBoxOffset(rect, clip_box, &offset_x, &offset_y);
-  EXPECT_DOUBLE_EQ(0, offset_x);
-  EXPECT_DOUBLE_EQ(0, offset_y);
+  offset = CalculateScaledClipBoxOffset(rect, clip_box);
+  EXPECT_FLOAT_EQ(0, offset.x());
+  EXPECT_FLOAT_EQ(0, offset.y());
 
   // |rect| is larger than |clip_box|.
   clip_box.top /= 2;
   clip_box.right /= 4;
-  CalculateScaledClipBoxOffset(rect, clip_box, &offset_x, &offset_y);
-  EXPECT_DOUBLE_EQ(229.5, offset_x);
-  EXPECT_DOUBLE_EQ(198, offset_y);
+  offset = CalculateScaledClipBoxOffset(rect, clip_box);
+  EXPECT_FLOAT_EQ(229.5f, offset.x());
+  EXPECT_FLOAT_EQ(198, offset.y());
 }
 
 TEST(PdfTransformTest, CalculateNonScaledClipBoxOffset) {
   int page_width = kDefaultWidth;
   int page_height = kDefaultHeight;
   PdfRectangle clip_box;
-  double offset_x;
-  double offset_y;
+  gfx::PointF offset;
 
   // |rect|, page size and |clip_box| are the same.
   InitializeBoxToDefaultPortraitValues(&clip_box);
-  CalculateNonScaledClipBoxOffset(0, page_width, page_height, clip_box,
-                                  &offset_x, &offset_y);
-  EXPECT_DOUBLE_EQ(0, offset_x);
-  EXPECT_DOUBLE_EQ(0, offset_y);
-  CalculateNonScaledClipBoxOffset(1, page_width, page_height, clip_box,
-                                  &offset_x, &offset_y);
-  EXPECT_DOUBLE_EQ(0, offset_x);
-  EXPECT_DOUBLE_EQ(0, offset_y);
-  CalculateNonScaledClipBoxOffset(2, page_width, page_height, clip_box,
-                                  &offset_x, &offset_y);
-  EXPECT_DOUBLE_EQ(0, offset_x);
-  EXPECT_DOUBLE_EQ(0, offset_y);
-  CalculateNonScaledClipBoxOffset(3, page_width, page_height, clip_box,
-                                  &offset_x, &offset_y);
-  EXPECT_DOUBLE_EQ(180, offset_x);
-  EXPECT_DOUBLE_EQ(-180, offset_y);
+  offset =
+      CalculateNonScaledClipBoxOffset(0, page_width, page_height, clip_box);
+  EXPECT_FLOAT_EQ(0, offset.x());
+  EXPECT_FLOAT_EQ(0, offset.y());
+  offset =
+      CalculateNonScaledClipBoxOffset(1, page_width, page_height, clip_box);
+  EXPECT_FLOAT_EQ(0, offset.x());
+  EXPECT_FLOAT_EQ(0, offset.y());
+  offset =
+      CalculateNonScaledClipBoxOffset(2, page_width, page_height, clip_box);
+  EXPECT_FLOAT_EQ(0, offset.x());
+  EXPECT_FLOAT_EQ(0, offset.y());
+  offset =
+      CalculateNonScaledClipBoxOffset(3, page_width, page_height, clip_box);
+  EXPECT_FLOAT_EQ(180, offset.x());
+  EXPECT_FLOAT_EQ(-180, offset.y());
 
   // Smaller |clip_box|.
   clip_box.top /= 4;
   clip_box.right /= 2;
-  CalculateNonScaledClipBoxOffset(0, page_width, page_height, clip_box,
-                                  &offset_x, &offset_y);
-  EXPECT_DOUBLE_EQ(0, offset_x);
-  EXPECT_DOUBLE_EQ(594, offset_y);
-  CalculateNonScaledClipBoxOffset(1, page_width, page_height, clip_box,
-                                  &offset_x, &offset_y);
-  EXPECT_DOUBLE_EQ(0, offset_x);
-  EXPECT_DOUBLE_EQ(0, offset_y);
-  CalculateNonScaledClipBoxOffset(2, page_width, page_height, clip_box,
-                                  &offset_x, &offset_y);
-  EXPECT_DOUBLE_EQ(306, offset_x);
-  EXPECT_DOUBLE_EQ(0, offset_y);
-  CalculateNonScaledClipBoxOffset(3, page_width, page_height, clip_box,
-                                  &offset_x, &offset_y);
-  EXPECT_DOUBLE_EQ(486, offset_x);
-  EXPECT_DOUBLE_EQ(414, offset_y);
+  offset =
+      CalculateNonScaledClipBoxOffset(0, page_width, page_height, clip_box);
+  EXPECT_FLOAT_EQ(0, offset.x());
+  EXPECT_FLOAT_EQ(594, offset.y());
+  offset =
+      CalculateNonScaledClipBoxOffset(1, page_width, page_height, clip_box);
+  EXPECT_FLOAT_EQ(0, offset.x());
+  EXPECT_FLOAT_EQ(0, offset.y());
+  offset =
+      CalculateNonScaledClipBoxOffset(2, page_width, page_height, clip_box);
+  EXPECT_FLOAT_EQ(306, offset.x());
+  EXPECT_FLOAT_EQ(0, offset.y());
+  offset =
+      CalculateNonScaledClipBoxOffset(3, page_width, page_height, clip_box);
+  EXPECT_FLOAT_EQ(486, offset.x());
+  EXPECT_FLOAT_EQ(414, offset.y());
 
   // Larger page size.
   InitializeBoxToDefaultPortraitValues(&clip_box);
   page_width += 10;
   page_height += 20;
-  CalculateNonScaledClipBoxOffset(0, page_width, page_height, clip_box,
-                                  &offset_x, &offset_y);
-  EXPECT_DOUBLE_EQ(0, offset_x);
-  EXPECT_DOUBLE_EQ(20, offset_y);
-  CalculateNonScaledClipBoxOffset(1, page_width, page_height, clip_box,
-                                  &offset_x, &offset_y);
-  EXPECT_DOUBLE_EQ(0, offset_x);
-  EXPECT_DOUBLE_EQ(0, offset_y);
-  CalculateNonScaledClipBoxOffset(2, page_width, page_height, clip_box,
-                                  &offset_x, &offset_y);
-  EXPECT_DOUBLE_EQ(10, offset_x);
-  EXPECT_DOUBLE_EQ(0, offset_y);
-  CalculateNonScaledClipBoxOffset(3, page_width, page_height, clip_box,
-                                  &offset_x, &offset_y);
-  EXPECT_DOUBLE_EQ(200, offset_x);
-  EXPECT_DOUBLE_EQ(-170, offset_y);
+  offset =
+      CalculateNonScaledClipBoxOffset(0, page_width, page_height, clip_box);
+  EXPECT_FLOAT_EQ(0, offset.x());
+  EXPECT_FLOAT_EQ(20, offset.y());
+  offset =
+      CalculateNonScaledClipBoxOffset(1, page_width, page_height, clip_box);
+  EXPECT_FLOAT_EQ(0, offset.x());
+  EXPECT_FLOAT_EQ(0, offset.y());
+  offset =
+      CalculateNonScaledClipBoxOffset(2, page_width, page_height, clip_box);
+  EXPECT_FLOAT_EQ(10, offset.x());
+  EXPECT_FLOAT_EQ(0, offset.y());
+  offset =
+      CalculateNonScaledClipBoxOffset(3, page_width, page_height, clip_box);
+  EXPECT_FLOAT_EQ(200, offset.x());
+  EXPECT_FLOAT_EQ(-170, offset.y());
 }
 
 // https://crbug.com/491160 and https://crbug.com/588757
@@ -281,8 +282,7 @@ TEST(PdfTransformTest, ReversedMediaBox) {
   int page_height = kDefaultHeight;
   constexpr gfx::Rect rect(kDefaultWidth, kDefaultHeight);
   PdfRectangle clip_box;
-  double offset_x;
-  double offset_y;
+  gfx::PointF offset;
 
   constexpr PdfRectangle expected_media_box_b491160 = {0, -792, 612, 0};
   PdfRectangle media_box_b491160 = {0, 0, 612, -792};
@@ -291,14 +291,14 @@ TEST(PdfTransformTest, ReversedMediaBox) {
   ExpectBoxesAreEqual(expected_media_box_b491160, media_box_b491160);
   ExpectBoxesAreEqual(expected_media_box_b491160, clip_box);
 
-  CalculateScaledClipBoxOffset(rect, media_box_b491160, &offset_x, &offset_y);
-  EXPECT_DOUBLE_EQ(0, offset_x);
-  EXPECT_DOUBLE_EQ(792, offset_y);
+  offset = CalculateScaledClipBoxOffset(rect, media_box_b491160);
+  EXPECT_FLOAT_EQ(0, offset.x());
+  EXPECT_FLOAT_EQ(792, offset.y());
 
-  CalculateNonScaledClipBoxOffset(0, page_width, page_height, media_box_b491160,
-                                  &offset_x, &offset_y);
-  EXPECT_DOUBLE_EQ(0, offset_x);
-  EXPECT_DOUBLE_EQ(792, offset_y);
+  offset = CalculateNonScaledClipBoxOffset(0, page_width, page_height,
+                                           media_box_b491160);
+  EXPECT_FLOAT_EQ(0, offset.x());
+  EXPECT_FLOAT_EQ(792, offset.y());
 
   PdfRectangle media_box_b588757 = {0, 792, 612, 0};
   CalculateMediaBoxAndCropBox(false, true, false, &media_box_b588757,
@@ -306,14 +306,14 @@ TEST(PdfTransformTest, ReversedMediaBox) {
   ExpectDefaultPortraitBox(media_box_b588757);
   ExpectDefaultPortraitBox(clip_box);
 
-  CalculateScaledClipBoxOffset(rect, clip_box, &offset_x, &offset_y);
-  EXPECT_DOUBLE_EQ(0, offset_x);
-  EXPECT_DOUBLE_EQ(0, offset_y);
+  offset = CalculateScaledClipBoxOffset(rect, clip_box);
+  EXPECT_FLOAT_EQ(0, offset.x());
+  EXPECT_FLOAT_EQ(0, offset.y());
 
-  CalculateNonScaledClipBoxOffset(0, page_width, page_height, clip_box,
-                                  &offset_x, &offset_y);
-  EXPECT_DOUBLE_EQ(0, offset_x);
-  EXPECT_DOUBLE_EQ(0, offset_y);
+  offset =
+      CalculateNonScaledClipBoxOffset(0, page_width, page_height, clip_box);
+  EXPECT_FLOAT_EQ(0, offset.x());
+  EXPECT_FLOAT_EQ(0, offset.y());
 
   PdfRectangle media_box_left_right_flipped = {612, 792, 0, 0};
   CalculateMediaBoxAndCropBox(false, true, false, &media_box_left_right_flipped,
@@ -321,14 +321,14 @@ TEST(PdfTransformTest, ReversedMediaBox) {
   ExpectDefaultPortraitBox(media_box_left_right_flipped);
   ExpectDefaultPortraitBox(clip_box);
 
-  CalculateScaledClipBoxOffset(rect, clip_box, &offset_x, &offset_y);
-  EXPECT_DOUBLE_EQ(0, offset_x);
-  EXPECT_DOUBLE_EQ(0, offset_y);
+  offset = CalculateScaledClipBoxOffset(rect, clip_box);
+  EXPECT_FLOAT_EQ(0, offset.x());
+  EXPECT_FLOAT_EQ(0, offset.y());
 
-  CalculateNonScaledClipBoxOffset(0, page_width, page_height, clip_box,
-                                  &offset_x, &offset_y);
-  EXPECT_DOUBLE_EQ(0, offset_x);
-  EXPECT_DOUBLE_EQ(0, offset_y);
+  offset =
+      CalculateNonScaledClipBoxOffset(0, page_width, page_height, clip_box);
+  EXPECT_FLOAT_EQ(0, offset.x());
+  EXPECT_FLOAT_EQ(0, offset.y());
 }
 
 }  // namespace chrome_pdf

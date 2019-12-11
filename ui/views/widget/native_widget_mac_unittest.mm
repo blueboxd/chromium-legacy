@@ -69,10 +69,10 @@
 @interface MockBridgedView : NSView {
  @private
   // Number of times -[NSView drawRect:] has been called.
-  NSUInteger drawRectCount_;
+  NSUInteger _drawRectCount;
 
   // The dirtyRect parameter passed to last invocation of drawRect:.
-  NSRect lastDirtyRect_;
+  NSRect _lastDirtyRect;
 }
 
 @property(assign, nonatomic) NSUInteger drawRectCount;
@@ -2479,37 +2479,37 @@ TEST_F(NativeWidgetMacTest, InitCallback) {
 
 @implementation NativeWidgetMacTestWindow
 
-@synthesize invalidateShadowCount = invalidateShadowCount_;
-@synthesize fakeOnInactiveSpace = fakeOnInactiveSpace_;
-@synthesize deallocFlag = deallocFlag_;
+@synthesize invalidateShadowCount = _invalidateShadowCount;
+@synthesize fakeOnInactiveSpace = _fakeOnInactiveSpace;
+@synthesize deallocFlag = _deallocFlag;
 
 - (void)dealloc {
-  if (deallocFlag_) {
-    DCHECK(!*deallocFlag_);
-    *deallocFlag_ = true;
+  if (_deallocFlag) {
+    DCHECK(!*_deallocFlag);
+    *_deallocFlag = true;
   }
   [super dealloc];
 }
 
 - (void)invalidateShadow {
-  ++invalidateShadowCount_;
+  ++_invalidateShadowCount;
   [super invalidateShadow];
 }
 
 - (BOOL)isOnActiveSpace {
-  return !fakeOnInactiveSpace_;
+  return !_fakeOnInactiveSpace;
 }
 
 @end
 
 @implementation MockBridgedView
 
-@synthesize drawRectCount = drawRectCount_;
-@synthesize lastDirtyRect = lastDirtyRect_;
+@synthesize drawRectCount = _drawRectCount;
+@synthesize lastDirtyRect = _lastDirtyRect;
 
 - (void)drawRect:(NSRect)dirtyRect {
-  ++drawRectCount_;
-  lastDirtyRect_ = dirtyRect;
+  ++_drawRectCount;
+  _lastDirtyRect = dirtyRect;
 }
 
 @end

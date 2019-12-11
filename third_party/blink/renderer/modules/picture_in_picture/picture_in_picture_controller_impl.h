@@ -42,10 +42,6 @@ class MODULES_EXPORT PictureInPictureControllerImpl
   explicit PictureInPictureControllerImpl(Document&);
   ~PictureInPictureControllerImpl() override = default;
 
-  // Meant to be called internally by PictureInPictureController::From()
-  // through ModulesInitializer.
-  static PictureInPictureControllerImpl* Create(Document&);
-
   // Gets, or creates, PictureInPictureControllerImpl supplement on Document.
   // Should be called before any other call to make sure a document is attached.
   static PictureInPictureControllerImpl& From(Document&);

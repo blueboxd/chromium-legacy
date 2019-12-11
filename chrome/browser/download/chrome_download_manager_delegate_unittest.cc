@@ -173,13 +173,12 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
       const base::FilePath& virtual_path,
       bool create_directory,
       DownloadPathReservationTracker::FilenameConflictAction conflict_action,
-      const DownloadPathReservationTracker::ReservedPathCallback& callback)
-      override {
+      DownloadPathReservationTracker::ReservedPathCallback callback) override {
     PathValidationResult result = PathValidationResult::SUCCESS;
     base::FilePath path_to_return = MockReserveVirtualPath(
         download, virtual_path, create_directory, conflict_action, &result);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, result, path_to_return));
+        FROM_HERE, base::BindOnce(std::move(callback), result, path_to_return));
   }
 
 #if defined(OS_ANDROID)
@@ -405,9 +404,10 @@ void ChromeDownloadManagerDelegateTest::DetermineDownloadTarget(
     DownloadItem* download_item,
     DetermineDownloadTargetResult* result) {
   base::RunLoop loop_runner;
-  delegate()->DetermineDownloadTarget(
-      download_item,
-      base::Bind(&StoreDownloadTargetInfo, loop_runner.QuitClosure(), result));
+  content::DownloadTargetCallback callback = base::BindOnce(
+      &StoreDownloadTargetInfo, loop_runner.QuitClosure(), result);
+  EXPECT_TRUE(delegate()->DetermineDownloadTarget(download_item, &callback));
+  EXPECT_FALSE(callback);  // DetermineDownloadTarget() took the callback.
   loop_runner.Run();
 }
 

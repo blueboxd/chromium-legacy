@@ -529,10 +529,11 @@ void CdmFileImpl::Write(const std::vector<uint8_t>& data,
       std::make_unique<storage::FileSystemOperationContext>(
           file_system_context_.get());
   operation_context->set_allowed_bytes_growth(storage::QuotaManager::kNoLimit);
-  file_util->EnsureFileExists(std::move(operation_context), url,
-                              base::Bind(&CdmFileImpl::OnEnsureTempFileExists,
-                                         weak_factory_.GetWeakPtr(),
-                                         std::move(buffer), bytes_to_write));
+  file_util->EnsureFileExists(
+      std::move(operation_context), url,
+      base::BindOnce(&CdmFileImpl::OnEnsureTempFileExists,
+                     weak_factory_.GetWeakPtr(), std::move(buffer),
+                     bytes_to_write));
 }
 
 void CdmFileImpl::OnEnsureTempFileExists(scoped_refptr<net::IOBuffer> buffer,
@@ -569,10 +570,10 @@ void CdmFileImpl::OnEnsureTempFileExists(scoped_refptr<net::IOBuffer> buffer,
       std::make_unique<storage::FileSystemOperationContext>(
           file_system_context_.get());
   operation_context->set_allowed_bytes_growth(storage::QuotaManager::kNoLimit);
-  file_util->Truncate(
-      std::move(operation_context), url, 0,
-      base::Bind(&CdmFileImpl::OnTempFileIsEmpty, weak_factory_.GetWeakPtr(),
-                 std::move(buffer), bytes_to_write));
+  file_util->Truncate(std::move(operation_context), url, 0,
+                      base::BindOnce(&CdmFileImpl::OnTempFileIsEmpty,
+                                     weak_factory_.GetWeakPtr(),
+                                     std::move(buffer), bytes_to_write));
 }
 
 void CdmFileImpl::OnTempFileIsEmpty(scoped_refptr<net::IOBuffer> buffer,

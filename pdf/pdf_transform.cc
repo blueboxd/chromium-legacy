@@ -8,7 +8,9 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size_f.h"
 
 namespace chrome_pdf {
 
@@ -25,19 +27,18 @@ void SwapPdfRectangleValuesIfNeeded(PdfRectangle* rect) {
 
 }  // namespace
 
-double CalculateScaleFactor(const gfx::Rect& content_rect,
-                            double src_width,
-                            double src_height,
-                            bool rotated) {
-  if (src_width == 0 || src_height == 0)
-    return 1.0;
+float CalculateScaleFactor(const gfx::Rect& content_rect,
+                           const gfx::SizeF& src_size,
+                           bool rotated) {
+  if (src_size.IsEmpty())
+    return 1.0f;
 
-  double actual_source_page_width = rotated ? src_height : src_width;
-  double actual_source_page_height = rotated ? src_width : src_height;
-  double ratio_x =
-      static_cast<double>(content_rect.width()) / actual_source_page_width;
-  double ratio_y =
-      static_cast<double>(content_rect.height()) / actual_source_page_height;
+  float actual_source_page_width =
+      rotated ? src_size.height() : src_size.width();
+  float actual_source_page_height =
+      rotated ? src_size.width() : src_size.height();
+  float ratio_x = content_rect.width() / actual_source_page_width;
+  float ratio_y = content_rect.height() / actual_source_page_height;
   return std::min(ratio_x, ratio_y);
 }
 
@@ -84,54 +85,45 @@ PdfRectangle CalculateClipBoxBoundary(const PdfRectangle& media_box,
   return clip_box;
 }
 
-void ScalePdfRectangle(double scale_factor, PdfRectangle* rect) {
+void ScalePdfRectangle(float scale_factor, PdfRectangle* rect) {
   rect->left *= scale_factor;
   rect->bottom *= scale_factor;
   rect->right *= scale_factor;
   rect->top *= scale_factor;
 }
 
-void CalculateScaledClipBoxOffset(const gfx::Rect& content_rect,
-                                  const PdfRectangle& source_clip_box,
-                                  double* offset_x,
-                                  double* offset_y) {
+gfx::PointF CalculateScaledClipBoxOffset(const gfx::Rect& content_rect,
+                                         const PdfRectangle& source_clip_box) {
   const float clip_box_width = source_clip_box.right - source_clip_box.left;
   const float clip_box_height = source_clip_box.top - source_clip_box.bottom;
 
   // Center the intended clip region to real clip region.
-  *offset_x = (content_rect.width() - clip_box_width) / 2 + content_rect.x() -
-              source_clip_box.left;
-  *offset_y = (content_rect.height() - clip_box_height) / 2 + content_rect.y() -
-              source_clip_box.bottom;
+  return gfx::PointF((content_rect.width() - clip_box_width) / 2 +
+                         content_rect.x() - source_clip_box.left,
+                     (content_rect.height() - clip_box_height) / 2 +
+                         content_rect.y() - source_clip_box.bottom);
 }
 
-void CalculateNonScaledClipBoxOffset(int rotation,
-                                     int page_width,
-                                     int page_height,
-                                     const PdfRectangle& source_clip_box,
-                                     double* offset_x,
-                                     double* offset_y) {
+gfx::PointF CalculateNonScaledClipBoxOffset(
+    int rotation,
+    int page_width,
+    int page_height,
+    const PdfRectangle& source_clip_box) {
   // Align the intended clip region to left-top corner of real clip region.
   switch (rotation) {
     case 0:
-      *offset_x = -1 * source_clip_box.left;
-      *offset_y = page_height - source_clip_box.top;
-      break;
+      return gfx::PointF(-1 * source_clip_box.left,
+                         page_height - source_clip_box.top);
     case 1:
-      *offset_x = 0;
-      *offset_y = -1 * source_clip_box.bottom;
-      break;
+      return gfx::PointF(0, -1 * source_clip_box.bottom);
     case 2:
-      *offset_x = page_width - source_clip_box.right;
-      *offset_y = 0;
-      break;
+      return gfx::PointF(page_width - source_clip_box.right, 0);
     case 3:
-      *offset_x = page_height - source_clip_box.right;
-      *offset_y = page_width - source_clip_box.top;
-      break;
+      return gfx::PointF(page_height - source_clip_box.right,
+                         page_width - source_clip_box.top);
     default:
       NOTREACHED();
-      break;
+      return gfx::PointF();
   }
 }
 

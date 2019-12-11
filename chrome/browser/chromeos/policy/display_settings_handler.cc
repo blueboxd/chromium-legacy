@@ -5,8 +5,7 @@
 #include "chrome/browser/chromeos/policy/display_settings_handler.h"
 
 #include <utility>
-
-#include "ash/public/ash_interfaces.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -17,12 +16,15 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "content/public/browser/system_connector.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace policy {
 
 DisplaySettingsHandler::DisplaySettingsHandler() {
-  ash::BindCrosDisplayConfigController(
+  content::GetSystemConnector()->Connect(
+      ash::mojom::kServiceName,
       cros_display_config_.BindNewPipeAndPassReceiver());
 }
 

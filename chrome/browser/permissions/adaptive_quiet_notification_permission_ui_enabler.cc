@@ -11,16 +11,19 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/time/default_clock.h"
 #include "base/util/values/values_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -47,6 +50,13 @@ constexpr char kPermissionActionEntryTimestampKey[] = "time";
 constexpr base::TimeDelta kPermissionActionMaxAge =
     base::TimeDelta::FromDays(90);
 
+constexpr char kDidAdaptivelyEnableQuietUiInPrefs[] =
+    "Permissions.QuietNotificationPrompts.DidEnableAdapativelyInPrefs";
+constexpr char kIsQuietUiEnabledInPrefs[] =
+    "Permissions.QuietNotificationPrompts.IsEnabledInPrefs";
+constexpr char kQuietUiEnabledStateInPrefsChangedTo[] =
+    "Permissions.QuietNotificationPrompts.EnabledStateInPrefsChangedTo";
+
 }  // namespace
 
 // AdaptiveQuietNotificationPermissionUiEnabler::Factory ---------------------
@@ -69,7 +79,9 @@ AdaptiveQuietNotificationPermissionUiEnabler::Factory::GetInstance() {
 AdaptiveQuietNotificationPermissionUiEnabler::Factory::Factory()
     : BrowserContextKeyedServiceFactory(
           "AdaptiveQuietNotificationPermissionUiEnabler",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(HostContentSettingsMapFactory::GetInstance());
+}
 
 AdaptiveQuietNotificationPermissionUiEnabler::Factory::~Factory() {}
 
@@ -157,10 +169,15 @@ void AdaptiveQuietNotificationPermissionUiEnabler::
     }
 
     if (rolling_denies_in_a_row >= kConsecutiveDeniesThresholdForActivation) {
+      // Set |is_enabling_adaptively_| for the duration of the pref update to
+      // inform OnQuietUiStateChanged() that the quiet UI is being enabled
+      // adaptively, so that it can record the correct metrics.
+      is_enabling_adaptively_ = true;
       profile_->GetPrefs()->SetBoolean(
           prefs::kEnableQuietNotificationPermissionUi, true /* value */);
       profile_->GetPrefs()->SetBoolean(
           prefs::kQuietNotificationPermissionShouldShowPromo, true /* value */);
+      is_enabling_adaptively_ = false;
       break;
     }
 
@@ -200,14 +217,35 @@ AdaptiveQuietNotificationPermissionUiEnabler::
       base::BindRepeating(
           &AdaptiveQuietNotificationPermissionUiEnabler::OnQuietUiStateChanged,
           base::Unretained(this)));
+
+  // Record whether the quiet UI is enabled, but only when notifications are not
+  // completely blocked.
+  auto* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile_);
+  const ContentSetting notifications_setting =
+      host_content_settings_map->GetDefaultContentSetting(
+          ContentSettingsType::NOTIFICATIONS, nullptr /* provider_id */);
+  if (notifications_setting != CONTENT_SETTING_BLOCK) {
+    const bool is_quiet_ui_enabled_in_prefs = profile_->GetPrefs()->GetBoolean(
+        prefs::kEnableQuietNotificationPermissionUi);
+    base::UmaHistogramBoolean(kIsQuietUiEnabledInPrefs,
+                              is_quiet_ui_enabled_in_prefs);
+  }
 }
 
 AdaptiveQuietNotificationPermissionUiEnabler::
     ~AdaptiveQuietNotificationPermissionUiEnabler() = default;
 
 void AdaptiveQuietNotificationPermissionUiEnabler::OnQuietUiStateChanged() {
-  if (!profile_->GetPrefs()->GetBoolean(
-          prefs::kEnableQuietNotificationPermissionUi)) {
+  const bool is_quiet_ui_enabled_in_prefs = profile_->GetPrefs()->GetBoolean(
+      prefs::kEnableQuietNotificationPermissionUi);
+  base::UmaHistogramBoolean(kQuietUiEnabledStateInPrefsChangedTo,
+                            is_quiet_ui_enabled_in_prefs);
+
+  if (is_quiet_ui_enabled_in_prefs) {
+    base::UmaHistogramBoolean(kDidAdaptivelyEnableQuietUiInPrefs,
+                              is_enabling_adaptively_);
+  } else {
     // Reset the promo state so that if the quiet UI is enabled adaptively
     // again, the promo will be shown again.
     profile_->GetPrefs()->SetBoolean(

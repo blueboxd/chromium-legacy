@@ -126,7 +126,7 @@ Polymer({
    * @return {boolean}
    */
   hasWebRequestInfo_: function() {
-    return !!this.data.webRequestInfo && this.data.webRequestInfo != '{}';
+    return !!this.data.webRequestInfo && this.data.webRequestInfo !== '{}';
   },
 
   /**

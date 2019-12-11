@@ -88,7 +88,7 @@ Polymer({
    * @private
    */
   updateApp_: function(app) {
-    const index = this.apps_.findIndex(a => a.id == app.id);
+    const index = this.apps_.findIndex(a => a.id === app.id);
     assert(index < this.apps_.length);
     this.set('apps_.' + index, app);
   },

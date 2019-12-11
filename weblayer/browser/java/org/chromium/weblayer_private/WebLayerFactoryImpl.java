@@ -10,6 +10,7 @@ import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.components.version_info.VersionConstants;
 import org.chromium.weblayer_private.interfaces.IWebLayer;
 import org.chromium.weblayer_private.interfaces.IWebLayerFactory;
+import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
 /**
  * Factory used to create WebLayer as well as verify compatibility.
@@ -46,6 +47,7 @@ public final class WebLayerFactoryImpl extends IWebLayerFactory.Stub {
      */
     @Override
     public boolean isClientSupported() {
+        StrictModeWorkaround.apply();
         return Math.abs(mClientMajorVersion - getImplementationMajorVersion()) <= 3;
     }
 
@@ -54,6 +56,7 @@ public final class WebLayerFactoryImpl extends IWebLayerFactory.Stub {
      */
     @Override
     public int getImplementationMajorVersion() {
+        StrictModeWorkaround.apply();
         return VersionConstants.PRODUCT_MAJOR_VERSION;
     }
 
@@ -62,11 +65,13 @@ public final class WebLayerFactoryImpl extends IWebLayerFactory.Stub {
      */
     @Override
     public String getImplementationVersion() {
+        StrictModeWorkaround.apply();
         return VersionConstants.PRODUCT_VERSION;
     }
 
     @Override
     public IWebLayer createWebLayer() {
+        StrictModeWorkaround.apply();
         assert isClientSupported();
         return new WebLayerImpl();
     }

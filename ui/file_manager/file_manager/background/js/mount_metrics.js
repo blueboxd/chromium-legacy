@@ -117,6 +117,12 @@ MountMetrics.FileSystemProviders = {
       MountMetrics.FileSystemProvidersForUMA.ZIP_ARCHIVER,
   pnhechapfaindjhompbnflcldabbghjo:
       MountMetrics.FileSystemProvidersForUMA.SECURE_SHELL_APP,
+  okddffdblfhhnmhodogpojmfkjmhinfp:
+      MountMetrics.FileSystemProvidersForUMA.SECURE_SHELL_APP,
+  iodihamcpbpeioajjeobimgagajmlibd:
+      MountMetrics.FileSystemProvidersForUMA.SECURE_SHELL_APP,
+  algkcnfjnajfhgimadimbjhmpaeohhln:
+      MountMetrics.FileSystemProvidersForUMA.SECURE_SHELL_APP,
   /**
    * Native Providers.
    */

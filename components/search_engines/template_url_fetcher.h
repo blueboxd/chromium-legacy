@@ -52,7 +52,8 @@ class TemplateURLFetcher : public KeyedService {
                         const url::Origin& initiator,
                         network::mojom::URLLoaderFactory* url_loader_factory,
                         int render_frame_id,
-                        int resource_type);
+                        int resource_type,
+                        int32_t request_id);
 
   // The current number of outstanding requests.
   int requests_count() const { return requests_.size(); }

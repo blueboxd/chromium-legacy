@@ -31446,6 +31446,16 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="143196163" label="AUDCLNT_S_POSITION_STALLED"/>
 </enum>
 
+<enum name="HstsInfo">
+  <int value="0" label="HSTS was disabled and the results matched the spec"/>
+  <int value="1" label="HSTS was enabled and the results matched the spec"/>
+  <int value="2"
+      label="HSTS should have been enabled via the header but was not"/>
+  <int value="3"
+      label="HSTS should have been enabled via the header, was not, but it
+             matched the static list."/>
+</enum>
+
 <enum name="HttpAuthCount">
   <int value="0" label="Basic Start"/>
   <int value="1" label="Basic Reject"/>
@@ -38732,6 +38742,7 @@ from previous Chrome versions.
   <int value="1367529437" label="NTPAssetDownloadSuggestions:enabled"/>
   <int value="1367671275" label="enable-proximity-auth-proximity-detection"/>
   <int value="1369449914" label="SysInternals:disabled"/>
+  <int value="1369649674" label="ChromeShareScreenshot:enabled"/>
   <int value="1370797930" label="ShowBluetoothDeviceBattery:enabled"/>
   <int value="1371092708" label="disable-desktop-capture-picker-old-ui"/>
   <int value="1371907429" label="enable-wallet-card-import"/>
@@ -38906,6 +38917,7 @@ from previous Chrome versions.
   <int value="1597880096" label="FocusMode:disabled"/>
   <int value="1600850069" label="MobileIdentityConsistency:disabled"/>
   <int value="1600926040" label="TranslateCompactUI:enabled"/>
+  <int value="1602869271" label="ChromeShareScreenshot:disabled"/>
   <int value="1603578716" label="CaptionSettings:disabled"/>
   <int value="1605398303" label="MacSystemMediaPermissionsInfoUI:enabled"/>
   <int value="1605611615" label="enable-webrtc-srtp-aes-gcm"/>
@@ -54708,7 +54720,7 @@ Called by update_net_trust_anchors.py.-->
   </int>
   <int value="1" label="NoLock">
     |request_initiator_site_lock| is missing - see https://crbug.com/891872 and
-    RenderProcessHostImpl::CreateURLLoaderFactoryWithOptionalOrigin.
+    RenderProcessHostImpl::CreateURLLoaderFactoryForRendererProcess.
   </int>
   <int value="2" label="NoInitiator">|request_initiator| is missing.</int>
   <int value="3" label="CompatibleLock">
@@ -56758,6 +56770,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="CONNECTION_ERROR"/>
   <int value="5" label="RESPONSE_READER_ERROR"/>
   <int value="6" label="META_DATA_SENDER_ERROR"/>
+  <int value="7" label="NO_CONTEXT_ERROR"/>
 </enum>
 
 <enum name="ServiceWorkerMainResourceRequestDestination">

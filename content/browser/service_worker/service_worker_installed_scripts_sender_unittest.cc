@@ -198,6 +198,7 @@ class ServiceWorkerInstalledScriptsSenderTest : public testing::Test {
     helper_.reset();
   }
 
+  EmbeddedWorkerTestHelper* helper() { return helper_.get(); }
   ServiceWorkerContextCore* context() { return helper_->context(); }
   ServiceWorkerVersion* version() { return version_.get(); }
 
@@ -653,6 +654,34 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, RequestScriptAfterStreaming) {
     info.CheckIfIdentical(script_info);
   }
   EXPECT_EQ(FinishedReason::kSuccess, sender->last_finished_reason());
+}
+
+// Test that the scripts sender aborts gracefully on ServiceWorkerContext
+// shutdown.
+TEST_F(ServiceWorkerInstalledScriptsSenderTest, NoContext) {
+  const GURL kMainScriptURL = version()->script_url();
+  std::map<GURL, ExpectedScriptInfo> kExpectedScriptInfoMap = {
+      {kMainScriptURL,
+       {1,
+        kMainScriptURL,
+        {{"Content-Length", "35"},
+         {"Content-Type", "text/javascript; charset=utf-8"},
+         {"TestHeader", "BlahBlah"}},
+        "utf-8",
+        "I'm script body for the main script",
+        "I'm meta data for the main script"}}};
+  std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+  for (const auto& info : kExpectedScriptInfoMap)
+    records.push_back(info.second.WriteToDiskCache(context()->storage()));
+  version()->script_cache_map()->SetResources(records);
+  auto sender =
+      std::make_unique<ServiceWorkerInstalledScriptsSender>(version());
+
+  helper()->ShutdownContext();
+  base::RunLoop().RunUntilIdle();
+
+  sender->Start();
+  EXPECT_EQ(sender->last_finished_reason(), FinishedReason::kNoContextError);
 }
 
 }  // namespace content

@@ -4,14 +4,12 @@
 //
 #include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher.h"
 
-#include "ash/public/ash_interfaces.h"
-#include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/callback.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/storage_partition.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "content/public/browser/system_connector.h"
 
 namespace chromeos {
 
@@ -29,12 +27,8 @@ std::unique_ptr<RecommendAppsFetcher> RecommendAppsFetcher::Create(
     RecommendAppsFetcherDelegate* delegate) {
   if (g_factory_callback)
     return g_factory_callback->Run(delegate);
-
-  mojo::PendingRemote<ash::mojom::CrosDisplayConfigController> display_config;
-  ash::BindCrosDisplayConfigController(
-      display_config.InitWithNewPipeAndPassReceiver());
   return std::make_unique<RecommendAppsFetcherImpl>(
-      delegate, std::move(display_config),
+      delegate, content::GetSystemConnector(),
       content::BrowserContext::GetDefaultStoragePartition(
           ProfileManager::GetActiveUserProfile())
           ->GetURLLoaderFactoryForBrowserProcess()

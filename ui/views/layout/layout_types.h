@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_LAYOUT_LAYOUT_TYPES_H_
 #define UI_VIEWS_LAYOUT_LAYOUT_TYPES_H_
 
+#include <ostream>
 #include <string>
 
 #include "base/optional.h"
@@ -52,6 +53,12 @@ class VIEWS_EXPORT SizeBounds {
   base::Optional<int> width_;
   base::Optional<int> height_;
 };
+
+// These are declared here for use in gtest-based unit tests but is defined in
+// the views_test_support target. Depend on that to use this in your unit test.
+// This should not be used in production code - call ToString() instead.
+void PrintTo(const SizeBounds& size_bounds, ::std::ostream* os);
+void PrintTo(LayoutOrientation layout_orientation, ::std::ostream* os);
 
 }  // namespace views
 

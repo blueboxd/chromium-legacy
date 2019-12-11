@@ -31,6 +31,7 @@ class ColorPickerView : public views::View {
   // not be duplicate colors.
   explicit ColorPickerView(
       base::span<const std::pair<SkColor, base::string16>> colors,
+      SkColor background_color,
       SkColor initial_color,
       ColorSelectedCallback callback);
   ~ColorPickerView() override;

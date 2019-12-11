@@ -79,14 +79,16 @@ class MockDownloadManagerDelegate : public DownloadManagerDelegate {
   void GetNextId(DownloadIdCallback cb) override { GetNextId_(cb); }
   MOCK_METHOD1(GetNextId_, void(DownloadIdCallback&));
   MOCK_METHOD2(DetermineDownloadTarget,
-               bool(download::DownloadItem* item,
-                    const DownloadTargetCallback&));
+               bool(download::DownloadItem*, DownloadTargetCallback*));
   MOCK_METHOD1(ShouldOpenFileBasedOnExtension, bool(const base::FilePath&));
   MOCK_METHOD2(ShouldCompleteDownload,
                bool(download::DownloadItem*, base::OnceClosure));
-  MOCK_METHOD2(ShouldOpenDownload,
-               bool(download::DownloadItem*,
-                    const DownloadOpenDelayedCallback&));
+  bool ShouldOpenDownload(download::DownloadItem* item,
+                          DownloadOpenDelayedCallback cb) override {
+    return ShouldOpenDownload_(item, cb);
+  }
+  MOCK_METHOD2(ShouldOpenDownload_,
+               bool(download::DownloadItem*, DownloadOpenDelayedCallback&));
   MOCK_METHOD3(GetSaveDir,
                void(BrowserContext*, base::FilePath*, base::FilePath*));
   MOCK_METHOD5(ChooseSavePath,

@@ -495,5 +495,14 @@ Polymer({
     // Preventing the mousedown event from propagating prevents focus being set.
     e.preventDefault();
   },
+
+  /**
+   * @param {string} language The language displayed in the row
+   * @return {string}
+   * @private
+   */
+  getRestartButtonDescription_: function(language) {
+    return this.i18n('displayLanguageRestart', language);
+  },
 });
 })();

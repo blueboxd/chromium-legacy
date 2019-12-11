@@ -67,7 +67,7 @@ function getRelativeUrl(url, error) {
  * @private
  */
 function getErrorSeverityText_(item, log, warn, error) {
-  if (item.type == chrome.developerPrivate.ErrorType.RUNTIME) {
+  if (item.type === chrome.developerPrivate.ErrorType.RUNTIME) {
     switch (item.severity) {
       case chrome.developerPrivate.ErrorLevel.LOG:
         return log;
@@ -78,7 +78,7 @@ function getErrorSeverityText_(item, log, warn, error) {
     }
     assertNotReached();
   }
-  assert(item.type == chrome.developerPrivate.ErrorType.MANIFEST);
+  assert(item.type === chrome.developerPrivate.ErrorType.MANIFEST);
   return warn;
 }
 
@@ -272,7 +272,7 @@ Polymer({
    * @private
    */
   computeIsRuntimeError_: function(item) {
-    return item.type == chrome.developerPrivate.ErrorType.RUNTIME;
+    return item.type === chrome.developerPrivate.ErrorType.RUNTIME;
   },
 
   /**
@@ -288,7 +288,7 @@ Polymer({
         frame.lineNumber;
 
     if (frame.functionName) {
-      const functionName = frame.functionName == '(anonymous function)' ?
+      const functionName = frame.functionName === '(anonymous function)' ?
           loadTimeData.getString('anonymousFunction') :
           frame.functionName;
       description += ' (' + functionName + ')';
@@ -303,7 +303,7 @@ Polymer({
    * @private
    */
   getStackFrameClass_: function(frame) {
-    return frame == this.selectedStackFrame_ ? 'selected' : '';
+    return frame === this.selectedStackFrame_ ? 'selected' : '';
   },
 
   /**
@@ -312,7 +312,7 @@ Polymer({
    * @private
    */
   getStackFrameTabIndex_: function(frame) {
-    return frame == this.selectedStackFrame_ ? 0 : -1;
+    return frame === this.selectedStackFrame_ ? 0 : -1;
   },
 
   /**
@@ -361,9 +361,9 @@ Polymer({
   onStackKeydown_: function(e) {
     let direction = 0;
 
-    if (e.key == 'ArrowDown') {
+    if (e.key === 'ArrowDown') {
       direction = 1;
-    } else if (e.key == 'ArrowUp') {
+    } else if (e.key === 'ArrowUp') {
       direction = -1;
     } else {
       return;
@@ -394,13 +394,13 @@ Polymer({
    * @private
    */
   computeErrorClass_: function(index) {
-    return index == this.selectedEntry_ ? 'selected' : '';
+    return index === this.selectedEntry_ ? 'selected' : '';
   },
 
   /** @private */
   iconName_: function(index) {
-    return index == this.selectedEntry_ ? 'icon-expand-less' :
-                                          'icon-expand-more';
+    return index === this.selectedEntry_ ? 'icon-expand-less' :
+                                           'icon-expand-more';
   },
 
   /**
@@ -410,7 +410,7 @@ Polymer({
    * @private
    */
   isOpened_: function(index) {
-    return index == this.selectedEntry_;
+    return index === this.selectedEntry_;
   },
 
 
@@ -428,7 +428,7 @@ Polymer({
    * @private
    */
   onErrorItemAction_: function(e) {
-    if (e.type == 'keydown' && !((e.code == 'Space' || e.code == 'Enter'))) {
+    if (e.type === 'keydown' && !((e.code === 'Space' || e.code === 'Enter'))) {
       return;
     }
 
@@ -436,6 +436,6 @@ Polymer({
     // is pressed.
     e.preventDefault();
     this.selectedEntry_ =
-        this.selectedEntry_ == e.model.index ? -1 : e.model.index;
+        this.selectedEntry_ === e.model.index ? -1 : e.model.index;
   },
 });

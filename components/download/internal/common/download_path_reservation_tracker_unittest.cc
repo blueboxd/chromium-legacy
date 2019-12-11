@@ -153,8 +153,9 @@ void DownloadPathReservationTrackerTest::CallGetReservedPath(
   DownloadPathReservationTracker::GetReservedPath(
       download_item, target_path, default_download_path(), fallback_directory_,
       create_directory, conflict_action,
-      base::Bind(&DownloadPathReservationTrackerTest::TestReservedPathCallback,
-                 weak_ptr_factory.GetWeakPtr(), return_path, return_result));
+      base::BindOnce(
+          &DownloadPathReservationTrackerTest::TestReservedPathCallback,
+          weak_ptr_factory.GetWeakPtr(), return_path, return_result));
   task_environment_.RunUntilIdle();
 }
 

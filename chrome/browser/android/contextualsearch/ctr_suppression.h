@@ -51,8 +51,14 @@ class CtrSuppression : public contextual_search::WeeklyActivityStorage {
                              const base::android::JavaParamRef<jobject>& obj);
 
   // WeeklyActivityStorage Overrides.
-  int ReadStorage(std::string storage_bucket) override;
-  void WriteStorage(std::string storage_bucket, int value) override;
+  int ReadClicksForWeekRemainder(int week_remainder) override;
+  int ReadImpressionsForWeekRemainder(int week_remainder) override;
+  int ReadOldestWeekWritten() override;
+  int ReadNewestWeekWritten() override;
+  void WriteClicksForWeekRemainder(int week_remainder, int value) override;
+  void WriteImpressionsForWeekRemainder(int week_remainder, int value) override;
+  void WriteOldestWeekWritten(int value) override;
+  void WriteNewestWeekWritten(int value) override;
 
  private:
   // The CtrAggregator that we forward requests to.

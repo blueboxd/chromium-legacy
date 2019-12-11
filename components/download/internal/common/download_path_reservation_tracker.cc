@@ -220,7 +220,6 @@ struct CreateReservationInfo {
   bool create_target_directory;
   base::Time start_time;
   DownloadPathReservationTracker::FilenameConflictAction conflict_action;
-  DownloadPathReservationTracker::ReservedPathCallback completion_callback;
 };
 
 // Check if |target_path| is writable.
@@ -409,10 +408,10 @@ void RevokeReservation(ReservationKey key) {
 }
 
 void RunGetReservedPathCallback(
-    const DownloadPathReservationTracker::ReservedPathCallback& callback,
+    DownloadPathReservationTracker::ReservedPathCallback callback,
     const base::FilePath* reserved_path,
     PathValidationResult result) {
-  callback.Run(result, *reserved_path);
+  std::move(callback).Run(result, *reserved_path);
 }
 
 // Gets the path reserved in the global |g_reservation_map|. For content Uri,
@@ -496,7 +495,7 @@ void DownloadPathReservationTracker::GetReservedPath(
     const base::FilePath& fallback_directory,
     bool create_directory,
     FilenameConflictAction conflict_action,
-    const ReservedPathCallback& callback) {
+    ReservedPathCallback callback) {
   // Attach an observer to the download item so that we know when the target
   // path changes and/or the download is no longer active.
   new DownloadItemObserver(download_item);
@@ -514,13 +513,12 @@ void DownloadPathReservationTracker::GetReservedPath(
                                 fallback_directory,
                                 create_directory,
                                 download_item->GetStartTime(),
-                                conflict_action,
-                                callback};
+                                conflict_action};
 
   base::PostTaskAndReplyWithResult(
       GetTaskRunner().get(), FROM_HERE,
       base::BindOnce(&CreateReservation, info, reserved_path),
-      base::BindOnce(&RunGetReservedPathCallback, callback,
+      base::BindOnce(&RunGetReservedPathCallback, std::move(callback),
                      base::Owned(reserved_path)));
 }
 

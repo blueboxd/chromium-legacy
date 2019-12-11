@@ -55,7 +55,6 @@ BrowserIOThreadDelegate::BrowserIOThreadDelegate()
     : owned_sequence_manager_(CreateUnboundSequenceManager(
           SequenceManager::Settings::Builder()
               .SetMessagePumpType(base::MessagePumpType::IO)
-              .SetAntiStarvationLogicForPrioritiesDisabled(true)
               .Build())),
       sequence_manager_(owned_sequence_manager_.get()) {
   Init();

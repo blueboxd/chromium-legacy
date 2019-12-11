@@ -5,7 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_DRM_GPU_MOCK_GBM_DEVICE_H_
 #define UI_OZONE_PLATFORM_DRM_GPU_MOCK_GBM_DEVICE_H_
 
-#include "ui/ozone/common/linux/gbm_device.h"
+#include "ui/gfx/linux/gbm_device.h"
 
 namespace ui {
 

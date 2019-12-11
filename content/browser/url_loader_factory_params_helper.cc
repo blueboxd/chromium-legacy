@@ -30,7 +30,7 @@ namespace {
 //
 // TODO(kinuko, lukasza): https://crbug.com/891872: Make
 // |request_initiator_site_lock| non-optional, once
-// CreateURLLoaderFactoryForRendererProcess is removed.
+// URLLoaderFactoryParamsHelper::CreateForRendererProcess is removed.
 network::mojom::URLLoaderFactoryParamsPtr CreateParams(
     RenderProcessHost* process,
     const url::Origin& origin,

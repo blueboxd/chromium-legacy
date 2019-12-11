@@ -164,6 +164,7 @@ test("keyboard_unittests") {
     "//base/test:test_support",
     "//components/ukm:test_support",
     "//mojo/core/embedder",
+    "//services/service_manager/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/aura:test_support",

@@ -2310,9 +2310,16 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   }
 #endif
 
-  frame_trackers_.NotifySubmitFrame(
-      compositor_frame.metadata.frame_token, frame->has_missing_content,
-      frame->begin_frame_ack, frame->origin_begin_main_frame_args);
+  // In some cases (e.g. for android-webviews), the frame-submission happens
+  // outside of begin-impl frame pipeline. Avoid notifying the trackers in such
+  // cases.
+  if (impl_thread_phase_ == ImplThreadPhase::INSIDE_IMPL_FRAME) {
+    frame_trackers_.NotifySubmitFrame(
+        compositor_frame.metadata.frame_token, frame->has_missing_content,
+        frame->begin_frame_ack, frame->origin_begin_main_frame_args);
+  }
+
+
   if (!mutator_host_->NextFrameHasPendingRAF())
     frame_trackers_.StopSequence(FrameSequenceTrackerType::kRAF);
 
@@ -2665,7 +2672,12 @@ bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   frame_trackers_.NotifyBeginImplFrame(args);
 
   begin_main_frame_expected_during_impl_ = client_->IsBeginMainFrameExpected();
-  begin_main_frame_sent_during_impl_ = false;
+  if (begin_main_frame_expected_during_impl_) {
+    frame_trackers_.NotifyBeginMainFrame(args);
+    begin_main_frame_sent_during_impl_ = true;
+  } else {
+    begin_main_frame_sent_during_impl_ = false;
+  }
 
   if (is_likely_to_require_a_draw_) {
     // Optimistically schedule a draw. This will let us expect the tile manager
@@ -2720,6 +2732,7 @@ void LayerTreeHostImpl::DidFinishImplFrame() {
     frame_trackers_.NotifyMainFrameCausedNoDamage(
         current_begin_frame_tracker_.Current());
   }
+  frame_trackers_.NotifyFrameEnd(current_begin_frame_tracker_.Current());
   impl_thread_phase_ = ImplThreadPhase::IDLE;
   current_begin_frame_tracker_.Finish();
 }
@@ -2728,7 +2741,26 @@ void LayerTreeHostImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack,
                                            FrameSkippedReason reason) {
   if (layer_tree_frame_sink_)
     layer_tree_frame_sink_->DidNotProduceFrame(ack);
-  // TODO(sad): Notify |frame_trackers_| if |reason| is no-damage.
+
+  // If a frame was not submitted because there was no damage, then notify the
+  // trackers.
+  if (reason == FrameSkippedReason::kNoDamage &&
+      impl_thread_phase_ == ImplThreadPhase::INSIDE_IMPL_FRAME) {
+    // It is possible that |ack| is for a 'future frame', i.e. for the next
+    // frame from the one currently being handled by the compositor (represented
+    // by the BeginFrameArgs instance in |current_begin_frame_tracker_|). This
+    // can happen, for example, when a frame is skipped early for
+    // latency-recovery, while the previous frame is still being processed.
+    // Notify the trackers only when this is *not* the case (since the trackers
+    // are not notified about the start of the future frame either).
+    const auto& args = current_begin_frame_tracker_.Current();
+    if (args.source_id == ack.source_id &&
+        args.sequence_number == ack.sequence_number) {
+      frame_trackers_.NotifyImplFrameCausedNoDamage(ack);
+      if (begin_main_frame_sent_during_impl_)
+        frame_trackers_.NotifyMainFrameCausedNoDamage(args);
+    }
+  }
 }
 
 void LayerTreeHostImpl::SynchronouslyInitializeAllTiles() {
@@ -2835,8 +2867,9 @@ base::Optional<viz::HitTestRegionList> LayerTreeHostImpl::BuildHitTestData() {
           viz::AsyncHitTestReasons::kNotAsyncHitTest;
       if (surface_layer->has_pointer_events_none())
         flag |= viz::HitTestRegionFlags::kHitTestIgnore;
-      if (assume_overlap ||
-          overlapping_region.Intersects(layer_screen_space_rect)) {
+      if (!surface_layer->unoccluded_for_hit_testing() &&
+          (assume_overlap ||
+           overlapping_region.Intersects(layer_screen_space_rect))) {
         flag |= viz::HitTestRegionFlags::kHitTestAsk;
         async_hit_test_reasons |= viz::AsyncHitTestReasons::kOverlappedRegion;
       }

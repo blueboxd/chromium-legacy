@@ -26,6 +26,26 @@ class Clock;
 // prompts to be low.
 class AdaptiveQuietNotificationPermissionUiEnabler : public KeyedService {
  public:
+  class Factory : public BrowserContextKeyedServiceFactory {
+   public:
+    static AdaptiveQuietNotificationPermissionUiEnabler* GetForProfile(
+        Profile* profile);
+
+    static AdaptiveQuietNotificationPermissionUiEnabler::Factory* GetInstance();
+
+   private:
+    friend struct base::DefaultSingletonTraits<Factory>;
+
+    Factory();
+    ~Factory() override;
+
+    // BrowserContextKeyedServiceFactory
+    KeyedService* BuildServiceInstanceFor(
+        content::BrowserContext* context) const override;
+    content::BrowserContext* GetBrowserContextToUse(
+        content::BrowserContext* context) const override;
+  };
+
   static AdaptiveQuietNotificationPermissionUiEnabler* GetForProfile(
       Profile* profile);
 
@@ -42,26 +62,6 @@ class AdaptiveQuietNotificationPermissionUiEnabler : public KeyedService {
   void set_clock_for_testing(base::Clock* clock) { clock_ = clock; }
 
  private:
-  class Factory : public BrowserContextKeyedServiceFactory {
-   public:
-    static AdaptiveQuietNotificationPermissionUiEnabler* GetForProfile(
-        Profile* profile);
-
-   private:
-    static AdaptiveQuietNotificationPermissionUiEnabler::Factory* GetInstance();
-    friend struct base::DefaultSingletonTraits<Factory>;
-
-    Factory();
-    ~Factory() override;
-
-    // BrowserContextKeyedServiceFactory
-    KeyedService* BuildServiceInstanceFor(
-        content::BrowserContext* context) const override;
-
-    content::BrowserContext* GetBrowserContextToUse(
-        content::BrowserContext* context) const override;
-  };
-
   explicit AdaptiveQuietNotificationPermissionUiEnabler(Profile* profile);
   ~AdaptiveQuietNotificationPermissionUiEnabler() override;
 
@@ -70,6 +70,7 @@ class AdaptiveQuietNotificationPermissionUiEnabler : public KeyedService {
 
   Profile* profile_;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+  bool is_enabling_adaptively_ = false;
 
   // The clock to use as a source of time, materialized so that a mock clock can
   // be injected for tests.

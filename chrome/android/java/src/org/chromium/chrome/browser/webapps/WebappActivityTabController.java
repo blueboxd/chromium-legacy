@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.browserservices.BrowserServicesActivityTabCon
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.TabCreationMode;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
+import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -24,6 +25,7 @@ import javax.inject.Inject;
 /**
  * Shortcut/WebAPK implementation of {@link BrowserServicesActivityTabController}.
  */
+@ActivityScope
 public class WebappActivityTabController implements BrowserServicesActivityTabController {
     private final ActivityTabProvider mActivityTabProvider;
     private final CustomTabActivityTabProvider mTabProvider;

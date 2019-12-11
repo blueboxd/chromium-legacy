@@ -24,6 +24,12 @@ class CC_EXPORT ThroughputUkmReporter {
                            const base::Optional<int>& impl_throughput_percent,
                            const base::Optional<int>& main_throughput_percent,
                            FrameSequenceTrackerType type);
+
+ private:
+  // Sampling control. We sample the event here to not throttle the UKM system.
+  // Currently, the same sampling rate is applied to all existing trackers. We
+  // might want to iterate on this based on the collected data.
+  uint32_t samples_to_next_event_ = 0;
 };
 
 }  // namespace cc

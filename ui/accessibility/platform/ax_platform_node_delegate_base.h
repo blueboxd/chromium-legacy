@@ -67,6 +67,15 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   gfx::NativeViewAccessible GetNextSibling() override;
   gfx::NativeViewAccessible GetPreviousSibling() override;
 
+  // Returns true if an ancestor of this node (not including itself) is a
+  // leaf node, meaning that this node is not actually exposed to the
+  // platform.
+  bool IsChildOfLeaf() const override;
+
+  // If this object is exposed to the platform, returns this object. Otherwise,
+  // returns the platform leaf under which this object is found.
+  gfx::NativeViewAccessible GetClosestPlatformObject() const override;
+
   class ChildIteratorBase : public ChildIterator {
    public:
     ChildIteratorBase(AXPlatformNodeDelegateBase* parent, int index);

@@ -206,7 +206,8 @@ void SearchEngineTabHelper::AddTemplateURLByOSDD(const GURL& page_url,
       ->ScheduleDownload(keyword, osdd_url, item->GetFavicon().url,
                          url::Origin::Create(web_state_->GetLastCommittedURL()),
                          browser_state->GetURLLoaderFactory(), MSG_ROUTING_NONE,
-                         /* content::ResourceType::kSubResource */ 6);
+                         /* content::ResourceType::kSubResource */ 6,
+                         /* request_id */ 0);
 }
 
 // Creates a TemplateURL by |searchable_url| and adds it to TemplateURLService.

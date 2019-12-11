@@ -123,14 +123,16 @@ class WEBGPU_EXPORT WebGPUImplementation final
       PowerPreference power_preference,
       base::OnceCallback<void(uint32_t, const WGPUDeviceProperties&)>
           request_adapter_callback) override;
-  bool RequestDevice(
+  bool RequestDeviceAsync(
       uint32_t requested_adapter_id,
-      const WGPUDeviceProperties* requested_device_properties) override;
+      const WGPUDeviceProperties* requested_device_properties,
+      base::OnceCallback<void(bool)> request_device_callback) override;
 
  private:
   const char* GetLogPrefix() const { return "webgpu"; }
   void CheckGLError() {}
   uint32_t NextRequestAdapterSerial();
+  uint32_t NextRequestDeviceSerial();
 
   WebGPUCmdHelper* helper_;
 #if BUILDFLAG(USE_DAWN)
@@ -150,6 +152,10 @@ class WEBGPU_EXPORT WebGPUImplementation final
       base::OnceCallback<void(uint32_t, const WGPUDeviceProperties&)>>
       request_adapter_callback_map_;
   uint32_t request_adapter_serial_ = 0;
+
+  base::flat_map<uint32_t, base::OnceCallback<void(bool)>>
+      request_device_callback_map_;
+  uint32_t request_device_serial_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(WebGPUImplementation);
 };

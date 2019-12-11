@@ -18,7 +18,7 @@
 
 @implementation WindowedNSNotificationObserver
 
-@synthesize notificationCount = notificationCount_;
+@synthesize notificationCount = _notificationCount;
 
 - (instancetype)initForNotification:(NSString*)name {
   return [self initForNotification:name object:nil];
@@ -37,7 +37,7 @@
 - (instancetype)initForWorkspaceNotification:(NSString*)name
                                     bundleId:(NSString*)bundleId {
   if ((self = [super init])) {
-    bundleId_.reset([bundleId copy]);
+    _bundleId.reset([bundleId copy]);
     [[[NSWorkspace sharedWorkspace] notificationCenter]
         addObserver:self
            selector:@selector(onNotification:)
@@ -48,7 +48,7 @@
 }
 
 - (void)dealloc {
-  if (bundleId_)
+  if (_bundleId)
     [[[NSWorkspace sharedWorkspace] notificationCenter] removeObserver:self];
   else
     [[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -56,33 +56,33 @@
 }
 
 - (void)onNotification:(NSNotification*)notification {
-  if (bundleId_) {
+  if (_bundleId) {
     NSRunningApplication* application =
         [notification userInfo][NSWorkspaceApplicationKey];
-    if (![[application bundleIdentifier] isEqualToString:bundleId_])
+    if (![[application bundleIdentifier] isEqualToString:_bundleId])
       return;
   }
 
-  ++notificationCount_;
-  if (runLoop_)
-    runLoop_->Quit();
+  ++_notificationCount;
+  if (_runLoop)
+    _runLoop->Quit();
 }
 
 - (BOOL)waitForCount:(int)minimumCount {
-  while (notificationCount_ < minimumCount) {
-    const int oldCount = notificationCount_;
+  while (_notificationCount < minimumCount) {
+    const int oldCount = _notificationCount;
     base::RunLoop runLoop;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, runLoop.QuitClosure(), TestTimeouts::action_timeout());
-    runLoop_ = &runLoop;
+    _runLoop = &runLoop;
     runLoop.Run();
-    runLoop_ = nullptr;
+    _runLoop = nullptr;
 
     // If there was no new notification, it must have been a timeout.
-    if (notificationCount_ == oldCount)
+    if (_notificationCount == oldCount)
       break;
   }
-  return notificationCount_ >= minimumCount;
+  return _notificationCount >= minimumCount;
 }
 
 - (BOOL)wait {

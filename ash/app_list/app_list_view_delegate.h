@@ -208,8 +208,9 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // space. This prevents 1px gaps on displays with non-integer scale factors.
   virtual gfx::Rect SnapBoundsToDisplayEdge(const gfx::Rect& bounds) = 0;
 
-  // Gets the current shelf height from the ShelfConfig.
-  virtual int GetShelfHeight() = 0;
+  // Gets the current shelf height (or width for side-shelf) from the
+  // ShelfConfig.
+  virtual int GetShelfSize() = 0;
 };
 
 }  // namespace ash

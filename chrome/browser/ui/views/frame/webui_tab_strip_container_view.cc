@@ -209,8 +209,9 @@ void WebUITabStripContainerView::UpdateButtons() {
   const SkColor normal_color =
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
   if (new_tab_button_) {
-    new_tab_button_->SetImage(views::Button::STATE_NORMAL,
-                              gfx::CreateVectorIcon(kAddIcon, normal_color));
+    new_tab_button_->SetImage(
+        views::Button::STATE_NORMAL,
+        gfx::CreateVectorIcon(kNewTabToolbarButtonIcon, normal_color));
   }
 }
 

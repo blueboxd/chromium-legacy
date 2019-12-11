@@ -12,6 +12,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class CWVBackForwardList;
+@class CWVBackForwardListItem;
 @class CWVScriptCommand;
 @class CWVScrollView;
 @class CWVTranslationController;
@@ -113,6 +115,10 @@ CWV_EXPORT
 // back-forward list navigations.
 @property(nonatomic) BOOL allowsBackForwardNavigationGestures;
 
+// An equivalent of
+// https://developer.apple.com/documentation/webkit/wkwebview/1414977-backforwardlist
+@property(nonatomic, readonly, nonnull) CWVBackForwardList* backForwardList;
+
 // The User Agent product string used to build the full User Agent.
 + (NSString*)userAgentProduct;
 
@@ -163,6 +169,11 @@ CWV_EXPORT
 // corresponding |canGoBack| or |canGoForward| method returns NO.
 - (void)goBack;
 - (void)goForward;
+
+// Navigates to the specified |item| in the |self.backForwardList| and returns
+// YES. Does nothing and returns NO when |item| is the current item, or it
+// belongs to an expired list, or the list does not contain |item|.
+- (BOOL)goToBackForwardListItem:(CWVBackForwardListItem*)item;
 
 // Reloads the current page.
 - (void)reload;

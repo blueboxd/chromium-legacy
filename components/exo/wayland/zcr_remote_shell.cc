@@ -1173,7 +1173,7 @@ void remote_shell_get_remote_surface(wl_client* client,
       base::BindRepeating(&HandleRemoteSurfaceDragFinishedCallback,
                           base::Unretained(remote_surface_resource)));
 
-  if (wl_resource_get_version(remote_surface_resource) >= 16) {
+  if (wl_resource_get_version(remote_surface_resource) >= 23) {
     shell_surface->set_change_zoom_level_callback(
         shell->CreateChangeZoomLevelCallback(remote_surface_resource));
   }

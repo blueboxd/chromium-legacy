@@ -62,18 +62,18 @@ TEST_F(TransportSecurityPersisterTest, LoadEntriesClearsExistingState) {
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
   static const char kYahooDomain[] = "yahoo.com";
 
-  EXPECT_FALSE(state_.GetDynamicSTSState(kYahooDomain, &sts_state));
+  EXPECT_FALSE(state_.GetDynamicSTSState(kYahooDomain, &sts_state, nullptr));
 
   state_.AddHSTS(kYahooDomain, expiry, false /* include subdomains */);
   state_.AddExpectCT(kYahooDomain, expiry, true /* enforce */, GURL());
 
-  EXPECT_TRUE(state_.GetDynamicSTSState(kYahooDomain, &sts_state));
+  EXPECT_TRUE(state_.GetDynamicSTSState(kYahooDomain, &sts_state, nullptr));
   EXPECT_TRUE(state_.GetDynamicExpectCTState(kYahooDomain, &expect_ct_state));
 
   EXPECT_TRUE(persister_->LoadEntries("{}", &dirty));
   EXPECT_FALSE(dirty);
 
-  EXPECT_FALSE(state_.GetDynamicSTSState(kYahooDomain, &sts_state));
+  EXPECT_FALSE(state_.GetDynamicSTSState(kYahooDomain, &sts_state, nullptr));
   EXPECT_FALSE(state_.GetDynamicExpectCTState(kYahooDomain, &expect_ct_state));
 }
 
@@ -92,7 +92,7 @@ TEST_F(TransportSecurityPersisterTest, SerializeData2) {
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
   static const char kYahooDomain[] = "yahoo.com";
 
-  EXPECT_FALSE(state_.GetDynamicSTSState(kYahooDomain, &sts_state));
+  EXPECT_FALSE(state_.GetDynamicSTSState(kYahooDomain, &sts_state, nullptr));
 
   bool include_subdomains = true;
   state_.AddHSTS(kYahooDomain, expiry, include_subdomains);
@@ -102,16 +102,18 @@ TEST_F(TransportSecurityPersisterTest, SerializeData2) {
   EXPECT_TRUE(persister_->SerializeData(&output));
   EXPECT_TRUE(persister_->LoadEntries(output, &dirty));
 
-  EXPECT_TRUE(state_.GetDynamicSTSState(kYahooDomain, &sts_state));
+  EXPECT_TRUE(state_.GetDynamicSTSState(kYahooDomain, &sts_state, nullptr));
   EXPECT_EQ(sts_state.upgrade_mode,
             TransportSecurityState::STSState::MODE_FORCE_HTTPS);
-  EXPECT_TRUE(state_.GetDynamicSTSState("foo.yahoo.com", &sts_state));
+  EXPECT_TRUE(state_.GetDynamicSTSState("foo.yahoo.com", &sts_state, nullptr));
   EXPECT_EQ(sts_state.upgrade_mode,
             TransportSecurityState::STSState::MODE_FORCE_HTTPS);
-  EXPECT_TRUE(state_.GetDynamicSTSState("foo.bar.yahoo.com", &sts_state));
+  EXPECT_TRUE(
+      state_.GetDynamicSTSState("foo.bar.yahoo.com", &sts_state, nullptr));
   EXPECT_EQ(sts_state.upgrade_mode,
             TransportSecurityState::STSState::MODE_FORCE_HTTPS);
-  EXPECT_TRUE(state_.GetDynamicSTSState("foo.bar.baz.yahoo.com", &sts_state));
+  EXPECT_TRUE(
+      state_.GetDynamicSTSState("foo.bar.baz.yahoo.com", &sts_state, nullptr));
   EXPECT_EQ(sts_state.upgrade_mode,
             TransportSecurityState::STSState::MODE_FORCE_HTTPS);
 }
@@ -273,7 +275,7 @@ TEST_F(TransportSecurityPersisterTest, ExpectCTWithSTSDataPresent) {
   EXPECT_EQ(expiry, new_expect_ct_state.expiry);
   // Check that STS state is loaded properly as well.
   TransportSecurityState::STSState sts_state;
-  EXPECT_TRUE(state_.GetDynamicSTSState(kTestDomain, &sts_state));
+  EXPECT_TRUE(state_.GetDynamicSTSState(kTestDomain, &sts_state, nullptr));
   EXPECT_EQ(sts_state.upgrade_mode,
             TransportSecurityState::STSState::MODE_FORCE_HTTPS);
 }

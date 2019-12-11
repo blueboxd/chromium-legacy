@@ -45,8 +45,8 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadPathReservationTracker {
   // If |requested_target_path| was not writeable, then the parent directory of
   // |target_path| may be different from that of |requested_target_path|.
   using ReservedPathCallback =
-      base::Callback<void(PathValidationResult result,
-                          const base::FilePath& target_path)>;
+      base::OnceCallback<void(PathValidationResult result,
+                              const base::FilePath& target_path)>;
 
   // The largest index for the uniquification suffix that we will try while
   // attempting to come up with a unique path.
@@ -103,7 +103,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadPathReservationTracker {
                               const base::FilePath& fallback_directory,
                               bool create_directory,
                               FilenameConflictAction conflict_action,
-                              const ReservedPathCallback& callback);
+                              ReservedPathCallback callback);
 
   // Returns true if |path| is in use by an existing path reservation. Should
   // only be called on the task runner returned by

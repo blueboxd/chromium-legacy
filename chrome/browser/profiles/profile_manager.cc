@@ -45,6 +45,7 @@
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/permissions/adaptive_quiet_notification_permission_ui_enabler.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
@@ -1304,6 +1305,10 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   chromeos::AccountManagerPolicyControllerFactory::GetForBrowserContext(
       profile);
 #endif
+
+  // TODO(crbug.com/1031477): Remove once getting this created with the browser
+  // context does not change dependency initialization order to cause crashes.
+  AdaptiveQuietNotificationPermissionUiEnabler::GetForProfile(profile);
 }
 
 void ProfileManager::DoFinalInitLogging(Profile* profile) {

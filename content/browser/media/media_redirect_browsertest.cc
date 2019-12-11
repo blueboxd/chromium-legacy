@@ -30,8 +30,8 @@ class MediaRedirectTest : public MediaBrowserTest {
     const GURL dest_url = http_test_server->GetURL("/" + media_file);
 
     http_test_server->RegisterRequestHandler(
-        base::Bind(&MediaRedirectTest::RedirectResponseHandler,
-                   base::Unretained(this), dest_url));
+        base::BindRepeating(&MediaRedirectTest::RedirectResponseHandler,
+                            base::Unretained(this), dest_url));
     http_test_server->StartAcceptingConnections();
 
     // Run the normal media playback test.

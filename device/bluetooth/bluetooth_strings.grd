@@ -10,6 +10,9 @@ This file contains the strings for bluetooth.
     <output filename="grit/bluetooth_strings.h" type="rc_header">
       <emit emit_type='prepend'></emit>
     </output>
+    <if expr="is_android">
+      <output filename="bluetooth_strings_af.pak" type="data_package" lang="af" />
+    </if>
     <output filename="bluetooth_strings_am.pak" type="data_package" lang="am" />
     <output filename="bluetooth_strings_ar.pak" type="data_package" lang="ar" />
     <output filename="bluetooth_strings_bg.pak" type="data_package" lang="bg" />
@@ -22,7 +25,13 @@ This file contains the strings for bluetooth.
     <output filename="bluetooth_strings_en-GB.pak" type="data_package" lang="en-GB" />
     <output filename="bluetooth_strings_en-US.pak" type="data_package" lang="en" />
     <output filename="bluetooth_strings_es.pak" type="data_package" lang="es" />
-    <output filename="bluetooth_strings_es-419.pak" type="data_package" lang="es-419" />
+    <if expr="is_ios">
+      <!-- iOS uses es-MX for es-419 -->
+      <output filename="bluetooth_strings_es-MX.pak" type="data_package" lang="es-419" />
+    </if>
+    <if expr="not is_ios">
+      <output filename="bluetooth_strings_es-419.pak" type="data_package" lang="es-419" />
+    </if>
     <output filename="bluetooth_strings_et.pak" type="data_package" lang="et" />
     <output filename="bluetooth_strings_fa.pak" type="data_package" lang="fa" />
     <output filename="bluetooth_strings_fake-bidi.pak" type="data_package" lang="fake-bidi" />
@@ -49,7 +58,13 @@ This file contains the strings for bluetooth.
          be 'nb'. -->
     <output filename="bluetooth_strings_nb.pak" type="data_package" lang="no" />
     <output filename="bluetooth_strings_pl.pak" type="data_package" lang="pl" />
-    <output filename="bluetooth_strings_pt-BR.pak" type="data_package" lang="pt-BR" />
+    <if expr="is_ios">
+      <!-- iOS uses pt for pt-BR -->
+      <output filename="bluetooth_strings_pt.pak" type="data_package" lang="pt-BR" />
+    </if>
+    <if expr="not is_ios">
+      <output filename="bluetooth_strings_pt-BR.pak" type="data_package" lang="pt-BR" />
+    </if>
     <output filename="bluetooth_strings_pt-PT.pak" type="data_package" lang="pt-PT" />
     <output filename="bluetooth_strings_ro.pak" type="data_package" lang="ro" />
     <output filename="bluetooth_strings_ru.pak" type="data_package" lang="ru" />

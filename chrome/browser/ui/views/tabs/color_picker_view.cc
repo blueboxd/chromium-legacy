@@ -52,10 +52,12 @@ class ColorPickerElementView : public views::Button,
  public:
   ColorPickerElementView(
       base::RepeatingCallback<void(ColorPickerElementView*)> selected_callback,
+      SkColor background_color,
       SkColor color,
       base::string16 color_name)
       : Button(this),
         selected_callback_(std::move(selected_callback)),
+        background_color_(background_color),
         color_(color),
         color_name_(color_name) {
     DCHECK(selected_callback_);
@@ -155,12 +157,11 @@ class ColorPickerElementView : public views::Button,
     // Visual parameters of our ring.
     constexpr float kInset = 3.0f;
     constexpr float kThickness = 2.0f;
-    constexpr SkColor paint_color = SK_ColorWHITE;
     cc::PaintFlags flags;
     flags.setStyle(cc::PaintFlags::kStroke_Style);
     flags.setStrokeWidth(kThickness);
     flags.setAntiAlias(true);
-    flags.setColor(paint_color);
+    flags.setColor(background_color_);
 
     gfx::RectF indicator_bounds(GetContentsBounds());
     indicator_bounds.Inset(gfx::InsetsF(kInset));
@@ -169,14 +170,17 @@ class ColorPickerElementView : public views::Button,
                        indicator_bounds.width() / 2.0f, flags);
   }
 
-  base::RepeatingCallback<void(ColorPickerElementView*)> selected_callback_;
-  SkColor color_;
-  base::string16 color_name_;
+  const base::RepeatingCallback<void(ColorPickerElementView*)>
+      selected_callback_;
+  const SkColor background_color_;
+  const SkColor color_;
+  const base::string16 color_name_;
   bool selected_ = false;
 };
 
 ColorPickerView::ColorPickerView(
     base::span<const std::pair<SkColor, base::string16>> colors,
+    SkColor background_color,
     SkColor initial_color,
     ColorSelectedCallback callback)
     : callback_(std::move(callback)) {
@@ -187,7 +191,7 @@ ColorPickerView::ColorPickerView(
     // views in our destructor, ensuring we outlive them.
     elements_.push_back(AddChildView(std::make_unique<ColorPickerElementView>(
         base::Bind(&ColorPickerView::OnColorSelected, base::Unretained(this)),
-        color.first, color.second)));
+        background_color, color.first, color.second)));
     if (initial_color == color.first)
       elements_.back()->SetSelected(true);
   }

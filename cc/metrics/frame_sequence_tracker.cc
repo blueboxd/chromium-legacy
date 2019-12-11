@@ -298,6 +298,13 @@ void FrameSequenceTrackerCollection::NotifySubmitFrame(
   }
 }
 
+void FrameSequenceTrackerCollection::NotifyFrameEnd(
+    const viz::BeginFrameArgs& args) {
+  for (auto& tracker : frame_trackers_) {
+    tracker.second->ReportFrameEnd(args);
+  }
+}
+
 void FrameSequenceTrackerCollection::NotifyFramePresented(
     uint32_t frame_token,
     const gfx::PresentationFeedback& feedback) {
@@ -395,12 +402,16 @@ void FrameSequenceTracker::ReportBeginImplFrame(
 
   if (ShouldIgnoreBeginFrameSource(args.source_id))
     return;
+#if DCHECK_IS_ON()
+  DCHECK(!is_inside_frame_) << TRACKER_DCHECK_MSG;
+  is_inside_frame_ = true;
+#endif
 
 #if DCHECK_IS_ON()
   if (args.type == viz::BeginFrameArgs::NORMAL)
     impl_frames_.insert(std::make_pair(args.source_id, args.sequence_number));
 #endif
-  TRACKER_TRACE_STREAM << 'b';
+  TRACKER_TRACE_STREAM << "b(" << args.sequence_number << ")";
   UpdateTrackedFrameData(&begin_impl_frame_data_, args.source_id,
                          args.sequence_number);
   impl_throughput().frames_expected +=
@@ -451,6 +462,9 @@ void FrameSequenceTracker::ReportSubmitFrame(
     return;
   }
 
+#if DCHECK_IS_ON()
+  DCHECK(is_inside_frame_) << TRACKER_DCHECK_MSG;
+#endif
   if (first_submitted_frame_ == 0)
     first_submitted_frame_ = frame_token;
   last_submitted_frame_ = frame_token;
@@ -472,6 +486,25 @@ void FrameSequenceTracker::ReportSubmitFrame(
   if (has_missing_content) {
     checkerboarding_.frames.push_back(frame_token);
   }
+}
+
+void FrameSequenceTracker::ReportFrameEnd(const viz::BeginFrameArgs& args) {
+#if DCHECK_IS_ON()
+  if (termination_status_ != TerminationStatus::kActive)
+    return;
+
+  if (ShouldIgnoreBeginFrameSource(args.source_id))
+    return;
+
+  if (ShouldIgnoreSequence(args.sequence_number)) {
+    is_inside_frame_ = false;
+    return;
+  }
+
+  TRACKER_TRACE_STREAM << "e(" << args.sequence_number << ")";
+  DCHECK(is_inside_frame_) << TRACKER_DCHECK_MSG;
+  is_inside_frame_ = false;
+#endif
 }
 
 void FrameSequenceTracker::ReportFramePresented(

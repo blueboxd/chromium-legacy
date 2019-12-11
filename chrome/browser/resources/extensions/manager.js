@@ -46,13 +46,13 @@ const compareExtensions = function(a, b) {
     return x < y ? -1 : (x > y ? 1 : 0);
   }
   function compareLocation(x, y) {
-    if (x.location == y.location) {
+    if (x.location === y.location) {
       return 0;
     }
-    if (x.location == chrome.developerPrivate.Location.UNPACKED) {
+    if (x.location === chrome.developerPrivate.Location.UNPACKED) {
       return -1;
     }
-    if (y.location == chrome.developerPrivate.Location.UNPACKED) {
+    if (y.location === chrome.developerPrivate.Location.UNPACKED) {
       return 1;
     }
     return 0;
@@ -301,7 +301,7 @@ Polymer({
 
         const listId = this.getListId_(eventData.extensionInfo);
         const currentIndex = this[listId].findIndex(
-            item => item.id == eventData.extensionInfo.id);
+            item => item.id === eventData.extensionInfo.id);
 
         if (currentIndex >= 0) {
           this.updateItem_(listId, currentIndex, eventData.extensionInfo);
@@ -366,7 +366,7 @@ Polymer({
    */
   getIndexInList_: function(listId, itemId) {
     return this[listId].findIndex(function(item) {
-      return item.id == itemId;
+      return item.id === itemId;
     });
   },
 
@@ -407,11 +407,11 @@ Polymer({
    */
   addItem_: function(listId, item) {
     // We should never try and add an existing item.
-    assert(this.getIndexInList_(listId, item.id) == -1);
+    assert(this.getIndexInList_(listId, item.id) === -1);
     let insertBeforeChild = this[listId].findIndex(function(listEl) {
       return compareExtensions(listEl, item) > 0;
     });
-    if (insertBeforeChild == -1) {
+    if (insertBeforeChild === -1) {
       insertBeforeChild = this[listId].length;
     }
     this.splice(listId, insertBeforeChild, 0, item);
@@ -432,16 +432,16 @@ Polymer({
     // set the item correctly before opening the page. It's a little weird
     // that the DOM will have stale data, but there's no point in causing the
     // extra work.
-    if (this.detailViewItem_ && this.detailViewItem_.id == item.id &&
-        this.currentPage_.page == Page.DETAILS) {
+    if (this.detailViewItem_ && this.detailViewItem_.id === item.id &&
+        this.currentPage_.page === Page.DETAILS) {
       this.detailViewItem_ = item;
     } else if (
-        this.errorPageItem_ && this.errorPageItem_.id == item.id &&
-        this.currentPage_.page == Page.ERRORS) {
+        this.errorPageItem_ && this.errorPageItem_.id === item.id &&
+        this.currentPage_.page === Page.ERRORS) {
       this.errorPageItem_ = item;
     } else if (
-        this.activityLogItem_ && this.activityLogItem_.id == item.id &&
-        this.currentPage_.page == Page.ACTIVITY_LOG) {
+        this.activityLogItem_ && this.activityLogItem_.id === item.id &&
+        this.currentPage_.page === Page.ACTIVITY_LOG) {
       this.activityLogItem_ = item;
     }
   },
@@ -454,7 +454,7 @@ Polymer({
     // Search for the item to be deleted in |extensions_|.
     let listId = 'extensions_';
     let index = this.getIndexInList_(listId, itemId);
-    if (index == -1) {
+    if (index === -1) {
       // If not in |extensions_| it must be in |apps_|.
       listId = 'apps_';
       index = this.getIndexInList_(listId, itemId);
@@ -463,10 +463,10 @@ Polymer({
     // We should never try and remove a non-existent item.
     assert(index >= 0);
     this.splice(listId, index, 1);
-    if ((this.currentPage_.page == Page.ACTIVITY_LOG ||
-         this.currentPage_.page == Page.DETAILS ||
-         this.currentPage_.page == Page.ERRORS) &&
-        this.currentPage_.extensionId == itemId) {
+    if ((this.currentPage_.page === Page.ACTIVITY_LOG ||
+         this.currentPage_.page === Page.DETAILS ||
+         this.currentPage_.page === Page.ERRORS) &&
+        this.currentPage_.extensionId === itemId) {
       // Leave the details page (the 'list' page is a fine choice).
       navigation.replaceWith({page: Page.LIST});
     }
@@ -509,7 +509,7 @@ Polymer({
         // extension ID is not valid. This enables the use case of seeing an
         // extension's install-time activities by navigating to an extension's
         // activity log page, then installing the extension.
-        if (this.showActivityLog && toPage == Page.ACTIVITY_LOG) {
+        if (this.showActivityLog && toPage === Page.ACTIVITY_LOG) {
           activityLogPlaceholder = {
             id: newPage.extensionId,
             isPlaceholder: true,
@@ -522,11 +522,11 @@ Polymer({
       }
     }
 
-    if (toPage == Page.DETAILS) {
+    if (toPage === Page.DETAILS) {
       this.detailViewItem_ = assert(data);
-    } else if (toPage == Page.ERRORS) {
+    } else if (toPage === Page.ERRORS) {
       this.errorPageItem_ = assert(data);
-    } else if (toPage == Page.ACTIVITY_LOG) {
+    } else if (toPage === Page.ACTIVITY_LOG) {
       if (!this.showActivityLog) {
         // Redirect back to the details page if we try to view the
         // activity log of an extension but the flag is not set.
@@ -538,13 +538,13 @@ Polymer({
       this.activityLogItem_ = data ? assert(data) : activityLogPlaceholder;
     }
 
-    if (fromPage != toPage) {
+    if (fromPage !== toPage) {
       /** @type {CrViewManagerElement} */ (this.$.viewManager)
           .switchView(/** @type {string} */ (toPage));
     }
 
     if (newPage.subpage) {
-      assert(newPage.subpage == Dialog.OPTIONS);
+      assert(newPage.subpage === Dialog.OPTIONS);
       assert(newPage.extensionId);
       this.showOptionsDialog_ = true;
       this.async(() => {
@@ -552,7 +552,7 @@ Polymer({
       });
     }
 
-    document.title = toPage == Page.DETAILS ?
+    document.title = toPage === Page.DETAILS ?
         `${loadTimeData.getString('title')} - ${this.detailViewItem_.name}` :
         loadTimeData.getString('title');
     this.currentPage_ = newPage;
@@ -600,7 +600,7 @@ Polymer({
    */
   onViewExitStart_: function(e) {
     const viewType = e.composedPath()[0].tagName;
-    this.fromActivityLog_ = viewType == 'EXTENSIONS-ACTIVITY-LOG';
+    this.fromActivityLog_ = viewType === 'EXTENSIONS-ACTIVITY-LOG';
   },
 
   /**
@@ -609,15 +609,15 @@ Polymer({
    */
   onViewExitFinish_: function(e) {
     const viewType = e.composedPath()[0].tagName;
-    if (viewType == 'EXTENSIONS-ITEM-LIST' ||
-        viewType == 'EXTENSIONS-KEYBOARD-SHORTCUTS' ||
-        viewType == 'EXTENSIONS-ACTIVITY-LOG') {
+    if (viewType === 'EXTENSIONS-ITEM-LIST' ||
+        viewType === 'EXTENSIONS-KEYBOARD-SHORTCUTS' ||
+        viewType === 'EXTENSIONS-ACTIVITY-LOG') {
       return;
     }
 
     const extensionId = e.composedPath()[0].data.id;
     const list = this.$$('extensions-item-list');
-    const button = viewType == 'EXTENSIONS-DETAIL-VIEW' ?
+    const button = viewType === 'EXTENSIONS-DETAIL-VIEW' ?
         list.getDetailsButton(extensionId) :
         list.getErrorsButton(extensionId);
 

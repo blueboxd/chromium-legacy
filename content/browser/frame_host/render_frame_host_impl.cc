@@ -1717,8 +1717,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateUserActivationState,
                         OnUpdateUserActivationState)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_SetHasReceivedUserGestureBeforeNavigation,
-                        OnSetHasReceivedUserGestureBeforeNavigation)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ScrollRectToVisibleInParentFrame,
                         OnScrollRectToVisibleInParentFrame)
     IPC_MESSAGE_HANDLER(FrameHostMsg_BubbleLogicalScrollInParentFrame,
@@ -4118,7 +4116,7 @@ void RenderFrameHostImpl::OnUpdateUserActivationState(
   frame_tree_node_->UpdateUserActivationState(update_type);
 }
 
-void RenderFrameHostImpl::OnSetHasReceivedUserGestureBeforeNavigation(
+void RenderFrameHostImpl::ReceivedUserGestureBeforeNavigationChanged(
     bool value) {
   frame_tree_node_->OnSetHasReceivedUserGestureBeforeNavigation(value);
 }

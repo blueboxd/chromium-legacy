@@ -179,7 +179,7 @@ function groupActivities(activityData) {
  */
 function sortActivitiesByCallCount(groupedActivities) {
   return Array.from(groupedActivities.values()).sort((a, b) => {
-    if (a.count != b.count) {
+    if (a.count !== b.count) {
       return b.count - a.count;
     }
     if (a.key < b.key) {

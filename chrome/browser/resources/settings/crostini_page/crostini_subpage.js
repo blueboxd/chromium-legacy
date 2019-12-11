@@ -41,7 +41,7 @@ Polymer({
     isArcAdbSideloadingSupported_: {
       type: Boolean,
       value: function() {
-        return loadTimeData.getBoolean('ArcAdbSideloadingSupported');
+        return loadTimeData.getBoolean('arcAdbSideloadingSupported');
       },
     },
 

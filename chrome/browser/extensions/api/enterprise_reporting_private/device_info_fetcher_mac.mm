@@ -5,12 +5,14 @@
 #include "chrome/browser/extensions/api/enterprise_reporting_private/device_info_fetcher_mac.h"
 
 #import <Foundation/Foundation.h>
-#import <IOKit/IOKitLib.h>
-#import <sys/sysctl.h>
+
+#include <IOKit/IOKitLib.h>
+#include <sys/sysctl.h>
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_ioobject.h"
 #include "base/process/launch.h"
@@ -38,26 +40,8 @@ std::string GetDeviceHostName() {
   return net::GetHostName();
 }
 
-// This approach was described here:
-// https://developer.apple.com/library/content/technotes/tn1103/_index.html
 std::string GetSerialNumber() {
-  std::string serial_number;
-  base::mac::ScopedIOObject<io_service_t> platform_expert(
-      IOServiceGetMatchingService(kIOMasterPortDefault,
-                                  IOServiceMatching("IOPlatformExpertDevice")));
-
-  if (platform_expert) {
-    base::ScopedCFTypeRef<CFTypeRef> serial_number_cf_string(
-        IORegistryEntryCreateCFProperty(platform_expert,
-                                        CFSTR(kIOPlatformSerialNumberKey),
-                                        kCFAllocatorDefault, 0));
-    if (serial_number_cf_string) {
-      serial_number = base::SysCFStringRefToUTF8(
-          base::mac::CFCastStrict<CFStringRef>(serial_number_cf_string));
-    }
-  }
-
-  return serial_number;
+  return base::mac::GetPlatformSerialNumber();
 }
 
 enterprise_reporting_private::SettingValue GetScreenlockSecured() {

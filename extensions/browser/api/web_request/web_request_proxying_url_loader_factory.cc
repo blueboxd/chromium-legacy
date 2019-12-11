@@ -164,8 +164,6 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::RestartInternal() {
   DCHECK_EQ(info_->url, request_.url)
       << "UpdateRequestInfo must have been called first";
-  request_completed_ = false;
-
   // If the header client will be used, we start the request immediately, and
   // OnBeforeSendHeaders and OnSendHeaders will be handled there. Otherwise,
   // send these events before the request starts.
@@ -858,8 +856,6 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
   // reset the request body manually.
   if (request_.method == net::HttpRequestHeaders::kGetMethod)
     request_.request_body = nullptr;
-
-  request_completed_ = true;
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
@@ -901,13 +897,11 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 }
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError(
     const network::URLLoaderCompletionStatus& status) {
-  if (!request_completed_) {
-    if (target_client_)
-      target_client_->OnComplete(status);
-    ExtensionWebRequestEventRouter::GetInstance()->OnErrorOccurred(
-        factory_->browser_context_, &info_.value(), true /* started */,
-        status.error_code);
-  }
+  if (target_client_)
+    target_client_->OnComplete(status);
+  ExtensionWebRequestEventRouter::GetInstance()->OnErrorOccurred(
+      factory_->browser_context_, &info_.value(), true /* started */,
+      status.error_code);
 
   // Deletes |this|.
   factory_->RemoveRequest(network_service_request_id_, request_id_);
@@ -924,8 +918,12 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     // RequestIDGenerator::Generate() with the same ID pair.
     factory_->request_id_generator_->SaveID(
         routing_id_, network_service_request_id_, request_id_);
+
+    // Deletes |this|.
+    factory_->RemoveRequest(network_service_request_id_, request_id_);
+  } else {
+    OnRequestError(network::URLLoaderCompletionStatus(net::ERR_ABORTED));
   }
-  OnRequestError(network::URLLoaderCompletionStatus(net::ERR_ABORTED));
 }
 
 // Determines whether it is safe to redirect from |from_url| to |to_url|.

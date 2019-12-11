@@ -14,6 +14,7 @@ function executeScript(script, args) {
   try {
     // Convert script (as a string) into an async function.
     const f = (new Function('return async function(){' + script + '}'))();
+    const Promise = window.cdc_adoQpoasnfa76pfcZLmcfl_Promise || window.Promise;
     return Promise.resolve(f.apply(null, args));
   } catch (e) {
     return Promise.reject(e);

@@ -42,6 +42,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/test/mock_overscroll_observer.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -6720,6 +6721,55 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessUserActivationHitTestBrowserTest,
   EXPECT_FALSE(child->current_frame_host()
                    ->GetRenderWidgetHost()
                    ->RemovePendingUserActivationIfAvailable());
+}
+
+class SitePerProcessHitTestWithOcclusionCheckBrowserTest
+    : public SitePerProcessHitTestBrowserTest {
+ public:
+  SitePerProcessHitTestWithOcclusionCheckBrowserTest() {}
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SitePerProcessHitTestBrowserTest::SetUpCommandLine(command_line);
+    feature_list_.InitAndEnableFeature(
+        blink::features::kVizHitTestOcclusionCheck);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestWithOcclusionCheckBrowserTest,
+                       SquashingTest) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "foo.com", "/frame_tree/iframe_cc_layer_overlap.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child = root->child_at(0);
+  ASSERT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://foo.com/\n"
+      "      B = http://baz.com/",
+      DepictFrameTree(root));
+
+  RenderWidgetHostViewBase* child_view =
+      child->current_frame_host()->GetRenderWidgetHost()->GetView();
+  HitTestRegionObserver child_observer(child_view->GetFrameSinkId());
+  HitTestRegionObserver root_observer(child_view->GetRootFrameSinkId());
+  child_observer.WaitForHitTestData();
+  root_observer.WaitForHitTestData();
+  bool found = false;
+  for (const auto& region : root_observer.GetHitTestData()) {
+    if (region.frame_sink_id == child_view->GetFrameSinkId()) {
+      found = true;
+      EXPECT_EQ(viz::AsyncHitTestReasons::kNotAsyncHitTest,
+                region.async_hit_test_reasons);
+      break;
+    }
+  }
+  ASSERT_TRUE(found);
 }
 
 class SitePerProcessHitTestDataGenerationBrowserTest

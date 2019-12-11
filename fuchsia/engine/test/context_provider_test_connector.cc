@@ -16,9 +16,7 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
 
-fidl::InterfaceHandle<fuchsia::web::ContextProvider> ConnectContextProvider(
-    fidl::InterfaceRequest<fuchsia::web::ContextProvider>
-        context_provider_request,
+fuchsia::web::ContextProviderPtr StartWebEngineForTests(
     fidl::InterfaceRequest<fuchsia::sys::ComponentController>
         component_controller_request,
     const base::CommandLine& command_line) {
@@ -49,7 +47,7 @@ fidl::InterfaceHandle<fuchsia::web::ContextProvider> ConnectContextProvider(
   sys::ServiceDirectory web_engine_service_dir(
       std::move(web_engine_services_dir));
 
-  fidl::InterfaceHandle<fuchsia::web::ContextProvider> context_provider;
-  web_engine_service_dir.Connect(std::move(context_provider_request));
+  fuchsia::web::ContextProviderPtr context_provider;
+  web_engine_service_dir.Connect(context_provider.NewRequest());
   return context_provider;
 }

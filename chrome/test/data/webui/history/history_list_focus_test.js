@@ -81,4 +81,41 @@ suite('<history-list>', function() {
     assertFalse(items[2].row_.isActive());
     assertTrue(items[3].row_.isActive());
   });
+
+  test('selection of all items using ctrl + a', async function() {
+    app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
+    await test_util.flushTasks();
+    const toolbar = app.$.toolbar;
+    const field = toolbar.$['main-toolbar'].getSearchField();
+    field.blur();
+    assertFalse(field.showingSearch);
+
+    const modifier = cr.isMac ? 'meta' : 'ctrl';
+    let promise = test_util.eventToPromise('keydown', document);
+    MockInteractions.pressAndReleaseKeyOn(document.body, 65, modifier, 'a');
+    let keydownEvent = await promise;
+    assertTrue(keydownEvent.defaultPrevented);
+
+    assertDeepEquals(
+        [true, true, true, true], element.historyData_.map(i => i.selected));
+
+    // If everything is already selected, the same shortcut will trigger
+    // cancelling selection.
+    MockInteractions.pressAndReleaseKeyOn(document.body, 65, modifier, 'a');
+    assertDeepEquals(
+        [false, false, false, false],
+        element.historyData_.map(i => i.selected));
+
+    // If the search field is focused, the keyboard event should be handled by
+    // the browser (which triggers selection of the text within the search
+    // input).
+    field.getSearchInput().focus();
+    promise = test_util.eventToPromise('keydown', document);
+    MockInteractions.pressAndReleaseKeyOn(document.body, 65, modifier, 'a');
+    keydownEvent = await promise;
+    assertFalse(keydownEvent.defaultPrevented);
+    assertDeepEquals(
+        [false, false, false, false],
+        element.historyData_.map(i => i.selected));
+  });
 });

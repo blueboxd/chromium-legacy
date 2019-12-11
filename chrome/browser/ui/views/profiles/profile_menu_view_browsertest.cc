@@ -159,7 +159,9 @@ Profile* SetupProfilesForLock(Profile* signed_in) {
 class ProfileMenuViewExtensionsTest
     : public SupportsTestDialog<extensions::ExtensionBrowserTest> {
  public:
-  ProfileMenuViewExtensionsTest() {}
+  ProfileMenuViewExtensionsTest() {
+    scoped_feature_list_.InitAndDisableFeature(features::kProfileMenuRevamp);
+  }
   ~ProfileMenuViewExtensionsTest() override {}
 
   // SupportsTestUi:
@@ -264,6 +266,8 @@ class ProfileMenuViewExtensionsTest
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(ProfileMenuViewExtensionsTest);
 };
 

@@ -158,7 +158,8 @@ Polymer({
    * @private
    */
   isTerminated_: function() {
-    return this.data.state == chrome.developerPrivate.ExtensionState.TERMINATED;
+    return this.data.state ===
+        chrome.developerPrivate.ExtensionState.TERMINATED;
   },
 
   /**

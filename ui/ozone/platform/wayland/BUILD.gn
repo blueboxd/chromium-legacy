@@ -146,9 +146,9 @@ source_set("wayland") {
     "//ui/gfx",
     "//ui/gfx:memory_buffer",
     "//ui/gfx/geometry",
+    "//ui/gfx/linux:drm",
     "//ui/ozone:ozone_base",
     "//ui/ozone/common",
-    "//ui/ozone/common/linux:drm",
     "//ui/ozone/public/mojom/wayland:wayland_mojom",
     "//ui/platform_window",
     "//ui/platform_window/platform_window_handler",
@@ -174,7 +174,7 @@ source_set("wayland") {
     deps += [
       "//third_party/minigbm",
       "//ui/gfx:memory_buffer",
-      "//ui/ozone/common/linux:gbm",
+      "//ui/gfx/linux:gbm",
     ]
   }
 
@@ -297,10 +297,10 @@ source_set("wayland_unittests") {
     "//ui/base:buildflags",
     "//ui/base/ime/linux",
     "//ui/events/ozone/layout",
+    "//ui/gfx/linux:drm",
+    "//ui/gfx/linux:gbm",
     "//ui/ozone:platform",
     "//ui/ozone:test_support",
-    "//ui/ozone/common/linux:drm",
-    "//ui/ozone/common/linux:gbm",
     "//ui/platform_window/platform_window_handler",
   ]
 

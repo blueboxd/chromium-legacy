@@ -490,6 +490,8 @@ void PasswordStore::SaveProtectedPasswordHash(const std::string& username,
                                               const base::string16& password,
                                               bool is_gaia_password,
                                               GaiaPasswordHashChange event) {
+  bool is_first_sign_in =
+      !hash_password_manager_.HasPasswordHash(username, is_gaia_password);
   if (hash_password_manager_.SavePasswordHash(username, password,
                                               is_gaia_password)) {
     bool is_syncing =
@@ -498,7 +500,8 @@ void PasswordStore::SaveProtectedPasswordHash(const std::string& username,
     if (is_gaia_password) {
       metrics_util::LogGaiaPasswordHashChange(event, is_syncing);
     }
-    SchedulePasswordHashUpdate(/*should_log_metrics=*/false);
+    // Should log metrics if this is the first time saving the password hash.
+    SchedulePasswordHashUpdate(/*should_log_metrics=*/is_first_sign_in);
   }
 }
 

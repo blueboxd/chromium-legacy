@@ -262,7 +262,7 @@ class AppListViewTest : public views::ViewsTestBase,
            view_->search_box_view()->GetWidget()->GetWindowBoundsInScreen();
   }
 
-  int ShelfHeight() const { return delegate_->GetShelfHeight(); }
+  int ShelfSize() const { return delegate_->GetShelfSize(); }
 
   // Gets the PaginationModel owned by |view_|.
   ash::PaginationModel* GetPaginationModel() const {
@@ -311,7 +311,7 @@ class AppListViewTest : public views::ViewsTestBase,
         container_size.width() - 2 * expected_horizontal_margin;
 
     const int search_box_and_suggestion_chip_height =
-        container_size.height() < 600 + ShelfHeight()
+        container_size.height() < 600 + ShelfSize()
             ? kSearchBoxAndSuggestionChipsHeightDense
             : kSearchBoxAndSuggestionChipsHeightDefault;
 
@@ -320,7 +320,7 @@ class AppListViewTest : public views::ViewsTestBase,
                                  kGridVerticalMargin;
     const int kExpectedGridHeight =
         container_size.height() - kExpectedGridTop -
-        (expected_vertical_margin - kGridVerticalInset) - ShelfHeight();
+        (expected_vertical_margin - kGridVerticalInset) - ShelfSize();
 
     EXPECT_EQ(gfx::Rect(expected_horizontal_margin, kExpectedGridTop,
                         kExpectedGridWidth, kExpectedGridHeight),
@@ -1937,7 +1937,7 @@ TEST_F(AppListViewTest, ShowFullscreenWhenInSideShelfMode) {
   EXPECT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
   // The rounded corners should be off screen in side shelf.
   gfx::Transform translation;
-  translation.Translate(0, -(delegate_->GetShelfHeight() / 2));
+  translation.Translate(0, -(delegate_->GetShelfSize() / 2));
   // The rounded corners should be off screen in side shelf.
   EXPECT_EQ(translation,
             view_->GetAppListBackgroundShieldForTest()->GetTransform());
@@ -2832,7 +2832,7 @@ TEST_F(AppListViewScalableLayoutTest,
   view_->SetState(ash::AppListViewState::kFullscreenAllApps);
 
   const int expected_vertical_margin =
-      (window_size.height() - ShelfHeight()) / 16;
+      (window_size.height() - ShelfSize()) / 16;
   VerifyAppsContainerLayout(
       window_size, 5 /*column_count*/, 4 /*row_count*/,
       window_size.width() / 12 /*expected_horizontal_margin*/,
@@ -2852,7 +2852,7 @@ TEST_F(AppListViewScalableLayoutTest, AppListViewLayoutForSmallPortraitScreen) {
   view_->SetState(ash::AppListViewState::kFullscreenAllApps);
 
   const int expected_vertical_margin =
-      (window_size.height() - ShelfHeight()) / 16;
+      (window_size.height() - ShelfSize()) / 16;
   VerifyAppsContainerLayout(window_size, 4 /*column_count*/, 5 /*row_count*/,
                             56 /*expected_horizontal_margin*/,
                             expected_vertical_margin,
@@ -2876,7 +2876,7 @@ TEST_F(AppListViewScalableLayoutTest,
   const int expected_horizontal_margin =
       (window_size.width() - GetItemGridSizeWithMaxItemMargins(88, 5)) / 2;
   const int expected_vertical_margin =
-      (window_size.height() - ShelfHeight()) / 16;
+      (window_size.height() - ShelfSize()) / 16;
   VerifyAppsContainerLayout(window_size, 5 /*column_count*/, 4 /*row_count*/,
                             expected_horizontal_margin,
                             expected_vertical_margin,
@@ -2897,7 +2897,7 @@ TEST_F(AppListViewScalableLayoutTest,
   view_->SetState(ash::AppListViewState::kFullscreenAllApps);
 
   const int expected_vertical_margin =
-      (window_size.height() - ShelfHeight()) / 16;
+      (window_size.height() - ShelfSize()) / 16;
   VerifyAppsContainerLayout(
       window_size, 4 /*column_count*/, 5 /*row_count*/,
       window_size.width() / 12 /*expected_horizontal_margin*/,
@@ -2921,7 +2921,7 @@ TEST_F(AppListViewScalableLayoutTest,
   const int expected_horizontal_margin =
       (window_size.width() - GetItemGridSizeWithMaxItemMargins(120, 5)) / 2;
   const int expected_vertical_margin =
-      (window_size.height() - ShelfHeight()) / 16;
+      (window_size.height() - ShelfSize()) / 16;
   VerifyAppsContainerLayout(window_size, 5 /*column_count*/, 4 /*row_count*/,
                             expected_horizontal_margin,
                             expected_vertical_margin,
@@ -2941,7 +2941,7 @@ TEST_F(AppListViewScalableLayoutTest, AppListViewLayoutForLargePortraitScreen) {
   view_->SetState(ash::AppListViewState::kFullscreenAllApps);
 
   const int expected_vertical_margin =
-      (window_size.height() - ShelfHeight()) / 16;
+      (window_size.height() - ShelfSize()) / 16;
   VerifyAppsContainerLayout(
       window_size, 4 /*column_count*/, 5 /*row_count*/,
       window_size.width() / 12 /*expected_horizontal_margin*/,
@@ -2961,7 +2961,7 @@ TEST_F(AppListViewScalableLayoutTest, EnsurePageSwitcherFitsAppsGridMargin) {
   view_->SetState(ash::AppListViewState::kFullscreenAllApps);
 
   const int expected_vertical_margin =
-      (window_size.height() - ShelfHeight()) / 16;
+      (window_size.height() - ShelfSize()) / 16;
   // The horizontal margin is selected so the page switcher fits the margin
   // space (note that 440 / 12, which is how the margin is normally calculated
   // is smaller than the width required by page switcher).
@@ -2988,7 +2988,7 @@ TEST_F(AppListViewScalableLayoutTest, VerticalAppsGridItemSpacingIsBounded) {
   const int expected_horizontal_margin =
       (window_size.width() - GetItemGridSizeWithMaxItemMargins(120, 4)) / 2;
   const int expected_vertical_margin =
-      (window_size.height() - ShelfHeight() - kGridVerticalInset -
+      (window_size.height() - ShelfSize() - kGridVerticalInset -
        kSearchBoxAndSuggestionChipsHeightDefault - kGridVerticalMargin -
        GetItemGridSizeWithMaxItemMargins(120, 5)) /
       2;

@@ -163,28 +163,6 @@ suite('<history-list>', function() {
     });
   });
 
-  test('selection of all items using ctrl + a', function() {
-    app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
-    return test_util.flushTasks().then(function() {
-      const field = toolbar.$['main-toolbar'].getSearchField();
-      field.blur();
-      assertFalse(field.showingSearch);
-
-      const modifier = cr.isMac ? 'meta' : 'ctrl';
-      MockInteractions.pressAndReleaseKeyOn(document.body, 65, modifier, 'a');
-
-      assertDeepEquals(
-          [true, true, true, true], element.historyData_.map(i => i.selected));
-
-      // If everything is already selected, the same shortcut will trigger
-      // cancelling selection.
-      MockInteractions.pressAndReleaseKeyOn(document.body, 65, modifier, 'a');
-      assertDeepEquals(
-          [false, false, false, false],
-          element.historyData_.map(i => i.selected));
-    });
-  });
-
   // See http://crbug.com/845802.
   test('disabling ctrl + a command on syncedTabs page', function() {
     app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);

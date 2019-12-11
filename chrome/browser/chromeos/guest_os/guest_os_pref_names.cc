@@ -9,15 +9,11 @@
 namespace guest_os {
 namespace prefs {
 
-// TODO(crbug.com/946273): Remove crostini.shared_paths and migration code after
-// M77.
-const char kCrostiniSharedPaths[] = "crostini.shared_paths";
 // Dictionary of filesystem paths mapped to the list of VMs that the paths are
 // shared with.
 const char kGuestOSPathsSharedToVms[] = "guest_os.paths_shared_to_vms";
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterListPref(kCrostiniSharedPaths);
   registry->RegisterDictionaryPref(kGuestOSPathsSharedToVms);
 }
 

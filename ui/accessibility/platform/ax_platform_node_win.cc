@@ -4335,16 +4335,8 @@ STDMETHODIMP AXPlatformNodeWin::InternalQueryInterface(
 
 HRESULT AXPlatformNodeWin::GetTextAttributeValue(TEXTATTRIBUTEID attribute_id,
                                                  VARIANT* result) {
-  // Text attributes of kInlineTextBox nodes are stored on the parent node
-  // (which is typically a kStaticText or kLineBreak node).
-  if (GetData().role == ax::mojom::Role::kInlineTextBox) {
-    AXPlatformNodeWin* parent_platform_node =
-        static_cast<AXPlatformNodeWin*>(FromNativeViewAccessible(GetParent()));
-    if (!parent_platform_node)
-      return UIA_E_ELEMENTNOTAVAILABLE;
-
-    return parent_platform_node->GetTextAttributeValue(attribute_id, result);
-  }
+  // This should only be called on nodes actually in the tree
+  DCHECK(!GetDelegate()->IsChildOfLeaf());
 
   switch (attribute_id) {
     case UIA_BackgroundColorAttributeId:

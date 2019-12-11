@@ -198,6 +198,9 @@ BASE_EXPORT bool ParseModelIdentifier(const std::string& ident,
 // displaying to the user.
 BASE_EXPORT std::string GetOSDisplayName();
 
+// Returns the serial number of the macOS device.
+BASE_EXPORT std::string GetPlatformSerialNumber();
+
 }  // namespace mac
 }  // namespace base
 

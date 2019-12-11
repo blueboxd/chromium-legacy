@@ -117,7 +117,8 @@ export class Service {
     return new Promise(function(resolve, reject) {
       chrome.developerPrivate.choosePath(selectType, fileType, function(path) {
         if (chrome.runtime.lastError &&
-            chrome.runtime.lastError != 'File selection was canceled.') {
+            chrome.runtime.lastError.message !==
+                'File selection was canceled.') {
           reject(chrome.runtime.lastError);
         } else {
           resolve(path || '');
@@ -172,7 +173,7 @@ export class Service {
 
       chrome.developerPrivate.loadUnpacked(options, (loadError) => {
         if (chrome.runtime.lastError &&
-            chrome.runtime.lastError.message !=
+            chrome.runtime.lastError.message !==
                 'File selection was canceled.') {
           throw new Error(chrome.runtime.lastError.message);
         }

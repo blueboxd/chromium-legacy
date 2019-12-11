@@ -34,7 +34,7 @@ WebTestDownloadManagerDelegate::~WebTestDownloadManagerDelegate() {}
 
 bool WebTestDownloadManagerDelegate::ShouldOpenDownload(
     download::DownloadItem* item,
-    const DownloadOpenDelayedCallback& callback) {
+    DownloadOpenDelayedCallback callback) {
   if (BlinkTestController::Get() &&
       BlinkTestController::Get()->IsMainWindow(
           DownloadItemUtils::GetWebContents(item)) &&

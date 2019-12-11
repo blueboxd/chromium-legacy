@@ -1061,18 +1061,6 @@ class ToplevelWindowEventHandlerBackGestureTest : public AshTestBase {
     controller->Register({accelerator_back_release}, back_release);
   }
 
-  // Send gesture event with |type| to the toplevel window event handler.
-  void SendGestureEvent(const gfx::Point& position,
-                        int scroll_x,
-                        int scroll_y,
-                        ui::EventType type) {
-    ui::GestureEvent event = ui::GestureEvent(
-        position.x(), position.y(), ui::EF_NONE, base::TimeTicks::Now(),
-        ui::GestureEventDetails(type, scroll_x, scroll_y));
-    ui::Event::DispatcherApi(&event).set_target(top_window_.get());
-    ash::Shell::Get()->toplevel_window_event_handler()->OnGestureEvent(&event);
-  }
-
   // Send touch event with |type| to the toplevel window event handler.
   void SendTouchEvent(const gfx::Point& position, ui::EventType type) {
     ui::TouchEvent event = ui::TouchEvent(
@@ -1122,40 +1110,35 @@ TEST_F(ToplevelWindowEventHandlerBackGestureTest, FlingFromLeftEdgeToGoBack) {
 
   // Tests that fling from the left with velocity smaller than
   // |kFlingVelocityForGoingBack| should not go to previous page.
-  gfx::Point start(0, 100);
-  gfx::Point update_and_end(kSwipingDistanceForGoingBack + 10, 100);
-  SendGestureEvent(start, 0, 0, ui::ET_GESTURE_SCROLL_BEGIN);
-  SendGestureEvent(update_and_end, update_and_end.x() - start.x(), 0,
-                   ui::ET_GESTURE_SCROLL_UPDATE);
-  SendGestureEvent(update_and_end,
-                   ToplevelWindowEventHandler::kFlingVelocityForGoingBack - 10,
-                   0, ui::ET_SCROLL_FLING_START);
+  // Drag further than |touch_slop| in GestureDetector to trigger scroll
+  // sequence. Note, |touch_slop| equals to 15.05, which is the value of
+  // |max_touch_move_in_pixels_for_click_| + |kSlopEpsilon|. Generate the scroll
+  // sequence with short duration and only one step for FLING scroll gestures.
+  // X-velocity here will be 800 dips/seconds.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->GestureScrollSequence(gfx::Point(0, 0), gfx::Point(16, 0),
+                                   base::TimeDelta::FromMilliseconds(20),
+                                   /*steps=*/1);
   EXPECT_EQ(0, target_back_press.accelerator_count());
   EXPECT_EQ(0, target_back_release.accelerator_count());
 
   // Tests that fling from the left with velocity larger than
-  // |kFlingVelocityForGoingBack| should go to previous page.
-  SendGestureEvent(start, 0, 0, ui::ET_GESTURE_SCROLL_BEGIN);
-  SendGestureEvent(update_and_end, update_and_end.x() - start.x(), 0,
-                   ui::ET_GESTURE_SCROLL_UPDATE);
-  SendGestureEvent(update_and_end,
-                   ToplevelWindowEventHandler::kFlingVelocityForGoingBack + 10,
-                   0, ui::ET_SCROLL_FLING_START);
+  // |kFlingVelocityForGoingBack| should go to previous page. X-velocity here
+  // will be 1600 dips/seconds.
+  generator->GestureScrollSequence(gfx::Point(0, 0), gfx::Point(16, 0),
+                                   base::TimeDelta::FromMilliseconds(1),
+                                   /*steps=*/1);
   EXPECT_EQ(1, target_back_press.accelerator_count());
   EXPECT_EQ(1, target_back_release.accelerator_count());
 
   // Tests that fling from the left with velocity smaller than
   // |kFlingVelocityForGoingBack| but dragged further enough to trigger
-  // activated affordance should still go back to previous page.
-  SendTouchEvent(start, ui::ET_TOUCH_PRESSED);
-  SendGestureEvent(start, 0, 0, ui::ET_GESTURE_SCROLL_BEGIN);
-  SendTouchEvent(update_and_end, ui::ET_TOUCH_MOVED);
-  SendGestureEvent(update_and_end, update_and_end.x() - start.x(), 0,
-                   ui::ET_GESTURE_SCROLL_UPDATE);
-  SendTouchEvent(update_and_end, ui::ET_TOUCH_RELEASED);
-  SendGestureEvent(update_and_end,
-                   ToplevelWindowEventHandler::kFlingVelocityForGoingBack - 10,
-                   0, ui::ET_SCROLL_FLING_START);
+  // activated affordance should still go back to previous page. X-velocity here
+  // will be 800 dips/seconds and drag distance is 160, which is larger than
+  // |kSwipingDistanceForGoingBack|.
+  generator->GestureScrollSequence(gfx::Point(0, 0), gfx::Point(160, 0),
+                                   base::TimeDelta::FromMilliseconds(200),
+                                   /*steps=*/1);
   EXPECT_EQ(2, target_back_press.accelerator_count());
   EXPECT_EQ(2, target_back_release.accelerator_count());
 }
@@ -1253,17 +1236,14 @@ TEST_F(ToplevelWindowEventHandlerBackGestureTest, CancelOnScreenRotation) {
 
   gfx::Point start(0, 100);
   gfx::Point update_and_end(200, 100);
-  SendGestureEvent(start, 0, 0, ui::ET_GESTURE_SCROLL_BEGIN);
-  SendGestureEvent(update_and_end, update_and_end.x() - start.x(), 0,
-                   ui::ET_GESTURE_SCROLL_UPDATE);
+  SendTouchEvent(start, ui::ET_TOUCH_PRESSED);
+  SendTouchEvent(update_and_end, ui::ET_TOUCH_MOVED);
   // Rotate the screen by 270 degree during drag.
   test_api.SetDisplayRotation(display::Display::ROTATE_270,
                               display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
             OrientationLockType::kPortraitPrimary);
-  SendGestureEvent(update_and_end,
-                   ToplevelWindowEventHandler::kFlingVelocityForGoingBack + 10,
-                   0, ui::ET_SCROLL_FLING_START);
+  SendTouchEvent(update_and_end, ui::ET_TOUCH_RELEASED);
   // Left edge swipe back should be cancelled due to screen rotation, so the
   // fling event with velocity larger than |kFlingVelocityForGoingBack| above
   // will not trigger actual going back.

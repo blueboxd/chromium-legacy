@@ -94,7 +94,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, HasMinimalUiButtons) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     WebAppBrowserTest,
     ::testing::Values(ControllerType::kHostedAppController,
                       ControllerType::kUnifiedControllerWithBookmarkApp,

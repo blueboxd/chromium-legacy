@@ -83,7 +83,7 @@ void DevToolsDownloadManagerDelegate::Shutdown() {
 
 bool DevToolsDownloadManagerDelegate::DetermineDownloadTarget(
     download::DownloadItem* item,
-    const content::DownloadTargetCallback& callback) {
+    content::DownloadTargetCallback* callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   DevToolsDownloadManagerHelper* download_helper =
@@ -100,19 +100,19 @@ bool DevToolsDownloadManagerDelegate::DetermineDownloadTarget(
       download_helper->GetDownloadBehavior() !=
           DevToolsDownloadManagerHelper::DownloadBehavior::ALLOW) {
     base::FilePath empty_path = base::FilePath();
-    callback.Run(empty_path,
-                 download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                 download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, empty_path,
-                 download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED);
+    std::move(*callback).Run(
+        empty_path, download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+        download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, empty_path,
+        download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED);
     return true;
   }
 
   base::FilePath download_path =
       base::FilePath::FromUTF8Unsafe(download_helper->GetDownloadPath());
 
-  FilenameDeterminedCallback filename_determined_callback =
-      base::Bind(&DevToolsDownloadManagerDelegate::OnDownloadPathGenerated,
-                 base::Unretained(this), item->GetId(), callback);
+  FilenameDeterminedCallback filename_determined_callback = base::BindOnce(
+      &DevToolsDownloadManagerDelegate::OnDownloadPathGenerated,
+      base::Unretained(this), item->GetId(), std::move(*callback));
 
   PostTask(
       FROM_HERE,
@@ -128,7 +128,7 @@ bool DevToolsDownloadManagerDelegate::DetermineDownloadTarget(
 
 bool DevToolsDownloadManagerDelegate::ShouldOpenDownload(
     download::DownloadItem* item,
-    const content::DownloadOpenDelayedCallback& callback) {
+    content::DownloadOpenDelayedCallback callback) {
   DevToolsDownloadManagerHelper* download_helper =
       DevToolsDownloadManagerHelper::FromWebContents(
           DownloadItemUtils::GetWebContents(item));
@@ -136,7 +136,10 @@ bool DevToolsDownloadManagerDelegate::ShouldOpenDownload(
   if (download_helper)
     return true;
   if (proxy_download_delegate_)
-    return proxy_download_delegate_->ShouldOpenDownload(item, callback);
+    return proxy_download_delegate_->ShouldOpenDownload(item,
+                                                        std::move(callback));
+  // TODO(qinmin): When this returns false it means this should run the callback
+  // at some point.
   return false;
 }
 
@@ -159,7 +162,7 @@ void DevToolsDownloadManagerDelegate::GenerateFilename(
     const std::string& suggested_filename,
     const std::string& mime_type,
     const base::FilePath& suggested_directory,
-    const FilenameDeterminedCallback& callback) {
+    FilenameDeterminedCallback callback) {
   base::FilePath generated_name =
       net::GenerateFileName(url, content_disposition, std::string(),
                             suggested_filename, mime_type, "download");
@@ -169,20 +172,20 @@ void DevToolsDownloadManagerDelegate::GenerateFilename(
 
   base::FilePath suggested_path(suggested_directory.Append(generated_name));
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(callback, suggested_path));
+                 base::BindOnce(std::move(callback), suggested_path));
 }
 
 void DevToolsDownloadManagerDelegate::OnDownloadPathGenerated(
     uint32_t download_id,
-    const content::DownloadTargetCallback& callback,
+    content::DownloadTargetCallback callback,
     const base::FilePath& suggested_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  callback.Run(suggested_path,
-               download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-               download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
-               suggested_path.AddExtension(FILE_PATH_LITERAL(".crdownload")),
-               download::DOWNLOAD_INTERRUPT_REASON_NONE);
+  std::move(callback).Run(
+      suggested_path, download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+      download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+      suggested_path.AddExtension(FILE_PATH_LITERAL(".crdownload")),
+      download::DOWNLOAD_INTERRUPT_REASON_NONE);
 }
 
 }  // namespace protocol

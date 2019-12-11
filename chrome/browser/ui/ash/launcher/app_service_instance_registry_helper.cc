@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/app_service_instance_registry_helper.h"
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -13,12 +14,14 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/services/app_service/public/cpp/instance_update.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/constants.h"
 
 AppServiceInstanceRegistryHelper::AppServiceInstanceRegistryHelper(
     Profile* profile)
@@ -43,29 +46,33 @@ void AppServiceInstanceRegistryHelper::OnActiveTabChanged(
     return;
 
   if (old_contents) {
-    apps::InstanceState state = apps::InstanceState::kUnknown;
-    proxy_->InstanceRegistry().ForOneInstance(
-        old_contents->GetNativeView(),
-        [&state](const apps::InstanceUpdate& update) {
-          state = update.State();
-        });
-    state =
-        static_cast<apps::InstanceState>(state & ~apps::InstanceState::kActive);
-    OnInstances(launcher_controller_helper_->GetAppID(old_contents),
-                GetWindow(old_contents), std::string(), state);
+    std::string app_id = launcher_controller_helper_->GetAppID(old_contents);
+    // If app_id is empty, we should not set it as inactive because this is
+    // Chrome's tab.
+    if (!app_id.empty()) {
+      apps::InstanceState state = apps::InstanceState::kUnknown;
+      proxy_->InstanceRegistry().ForOneInstance(
+          old_contents->GetNativeView(),
+          [&state](const apps::InstanceUpdate& update) {
+            state = update.State();
+          });
+      // If the app has been inactive, we don't need to update the instance.
+      if ((state & apps::InstanceState::kActive) !=
+          apps::InstanceState::kUnknown) {
+        state = static_cast<apps::InstanceState>(state &
+                                                 ~apps::InstanceState::kActive);
+        OnInstances(app_id, GetWindow(old_contents), std::string(), state);
+      }
+    }
   }
 
   if (new_contents) {
-    apps::InstanceState state = apps::InstanceState::kUnknown;
-    proxy_->InstanceRegistry().ForOneInstance(
-        new_contents->GetNativeView(),
-        [&state](const apps::InstanceUpdate& update) {
-          state = update.State();
-        });
-    state =
-        static_cast<apps::InstanceState>(state | apps::InstanceState::kActive);
-    OnInstances(launcher_controller_helper_->GetAppID(new_contents),
-                GetWindow(new_contents), std::string(), state);
+    // If the app is active, it should be started, running, and visible.
+    apps::InstanceState state = static_cast<apps::InstanceState>(
+        apps::InstanceState::kStarted | apps::InstanceState::kRunning |
+        apps::InstanceState::kActive | apps::InstanceState::kVisible);
+    OnInstances(GetAppId(new_contents), GetWindow(new_contents), std::string(),
+                state);
   }
 }
 
@@ -85,10 +92,8 @@ void AppServiceInstanceRegistryHelper::OnTabInserted(
     return;
 
   apps::InstanceState state = static_cast<apps::InstanceState>(
-      apps::InstanceState::kStarted | apps::InstanceState::kRunning |
-      apps::InstanceState::kActive | apps::InstanceState::kVisible);
-  OnInstances(launcher_controller_helper_->GetAppID(contents),
-              GetWindow(contents), std::string(), state);
+      apps::InstanceState::kStarted | apps::InstanceState::kRunning);
+  OnInstances(GetAppId(contents), GetWindow(contents), std::string(), state);
 }
 
 void AppServiceInstanceRegistryHelper::OnTabClosing(
@@ -96,9 +101,26 @@ void AppServiceInstanceRegistryHelper::OnTabClosing(
   if (!base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry))
     return;
 
-  OnInstances(launcher_controller_helper_->GetAppID(contents),
-              GetWindow(contents), std::string(),
+  std::string app_id = launcher_controller_helper_->GetAppID(contents);
+  // If app_id is empty, we should monitor the browser for Chrome.
+  if (app_id.empty())
+    return;
+
+  OnInstances(app_id, GetWindow(contents), std::string(),
               apps::InstanceState::kDestroyed);
+}
+
+void AppServiceInstanceRegistryHelper::OnBrowserRemoved() {
+  std::set<aura::Window*> windows =
+      proxy_->InstanceRegistry().GetWindows(extension_misc::kChromeAppId);
+  for (auto* window : windows) {
+    if (!chrome::FindBrowserWithWindow(window)) {
+      // The browser is removed if the window can't be found, so update the
+      // Chrome window instance as destroyed.
+      OnInstances(extension_misc::kChromeAppId, window, std::string(),
+                  apps::InstanceState::kDestroyed);
+    }
+  }
 }
 
 void AppServiceInstanceRegistryHelper::OnInstances(const std::string& app_id,
@@ -135,11 +157,19 @@ bool AppServiceInstanceRegistryHelper::IsWebApp(
   return false;
 }
 
+std::string AppServiceInstanceRegistryHelper::GetAppId(
+    content::WebContents* contents) const {
+  std::string app_id = launcher_controller_helper_->GetAppID(contents);
+  if (!app_id.empty())
+    return app_id;
+  return extension_misc::kChromeAppId;
+}
+
 aura::Window* AppServiceInstanceRegistryHelper::GetWindow(
     content::WebContents* contents) {
   std::string app_id = launcher_controller_helper_->GetAppID(contents);
   aura::Window* window = contents->GetNativeView();
-  if (IsWebApp(app_id))
+  if (app_id.empty() || IsWebApp(app_id))
     window = window->GetToplevelWindow();
   return window;
 }

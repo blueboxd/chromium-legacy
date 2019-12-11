@@ -484,7 +484,7 @@ IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, RecordedForNonApps) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     WebAppEngagementBrowserTest,
     ::testing::Values(ControllerType::kHostedAppController,
                       ControllerType::kUnifiedControllerWithBookmarkApp,
@@ -492,7 +492,7 @@ INSTANTIATE_TEST_SUITE_P(
     ControllerTypeParamToString);
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     HostedAppEngagementBrowserTest,
     ::testing::Values(ControllerType::kHostedAppController,
                       ControllerType::kUnifiedControllerWithBookmarkApp),

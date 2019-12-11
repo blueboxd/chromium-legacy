@@ -49,8 +49,9 @@ class URLLoaderFactoryParamsHelper {
       const url::Origin& worker_origin);
 
   // TODO(kinuko, lukasza): https://crbug.com/891872: Remove, once all
-  // URLLoaderFactories are associated with a specific execution context (e.g. a
-  // frame, a service worker or any other kind of worker).
+  // URLLoaderFactories vended to a renderer process are associated with a
+  // specific origin and an execution context (e.g. a frame, a service worker or
+  // any other kind of worker).
   static network::mojom::URLLoaderFactoryParamsPtr CreateForRendererProcess(
       RenderProcessHost* process);
 

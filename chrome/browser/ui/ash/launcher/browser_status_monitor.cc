@@ -138,6 +138,7 @@ void BrowserStatusMonitor::OnBrowserRemoved(Browser* browser) {
     RemoveV1AppFromShelf(browser);
 
   UpdateBrowserItemState();
+  app_service_instance_helper_->OnBrowserRemoved();
 }
 
 void BrowserStatusMonitor::OnTabStripModelChanged(

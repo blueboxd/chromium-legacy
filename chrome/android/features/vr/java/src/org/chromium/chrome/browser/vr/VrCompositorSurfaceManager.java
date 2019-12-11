@@ -98,6 +98,9 @@ public class VrCompositorSurfaceManager implements CompositorSurfaceManager {
     public void recreateSurface() {}
 
     @Override
+    public void recreateTranslucentSurfaceForSurfaceControl() {}
+
+    @Override
     public void setBackgroundDrawable(Drawable background) {}
 
     @Override

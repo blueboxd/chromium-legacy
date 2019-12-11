@@ -425,6 +425,12 @@ int View::GetHeightForWidth(int w) const {
   return GetPreferredSize().height();
 }
 
+SizeBounds View::GetAvailableSize(const View* child) const {
+  if (layout_manager_)
+    return layout_manager_->GetAvailableSize(this, child);
+  return SizeBounds();
+}
+
 bool View::GetVisible() const {
   return visible_;
 }

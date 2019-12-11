@@ -5107,8 +5107,8 @@ TEST_F(URLRequestTestHTTP, ProcessSTS) {
       default_context().transport_security_state();
   TransportSecurityState::STSState sts_state;
   TransportSecurityState::PKPState pkp_state;
-  EXPECT_TRUE(
-      security_state->GetDynamicSTSState(test_server_hostname, &sts_state));
+  EXPECT_TRUE(security_state->GetDynamicSTSState(test_server_hostname,
+                                                 &sts_state, nullptr));
   EXPECT_FALSE(
       security_state->GetDynamicPKPState(test_server_hostname, &pkp_state));
   EXPECT_EQ(TransportSecurityState::STSState::MODE_FORCE_HTTPS,
@@ -5141,8 +5141,8 @@ TEST_F(URLRequestTestHTTP, STSNotProcessedOnIP) {
   TransportSecurityState* security_state =
       default_context().transport_security_state();
   TransportSecurityState::STSState sts_state;
-  EXPECT_FALSE(
-      security_state->GetDynamicSTSState(test_server_hostname, &sts_state));
+  EXPECT_FALSE(security_state->GetDynamicSTSState(test_server_hostname,
+                                                  &sts_state, nullptr));
 }
 
 namespace {
@@ -5355,8 +5355,8 @@ TEST_F(URLRequestTestHTTP, ProcessSTSOnce) {
   TransportSecurityState* security_state =
       default_context().transport_security_state();
   TransportSecurityState::STSState sts_state;
-  EXPECT_TRUE(
-      security_state->GetDynamicSTSState(test_server_hostname, &sts_state));
+  EXPECT_TRUE(security_state->GetDynamicSTSState(test_server_hostname,
+                                                 &sts_state, nullptr));
   EXPECT_EQ(TransportSecurityState::STSState::MODE_FORCE_HTTPS,
             sts_state.upgrade_mode);
   EXPECT_FALSE(sts_state.include_subdomains);
@@ -6731,14 +6731,15 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
   context.Init();
   // Make sure cookies blocked from being stored are caught, and those that are
   // accepted are reported as well.
+  GURL set_cookie_test_url = test_server.GetURL(
+      "/set-cookie?not_stored_cookie=true&"
+      "stored_cookie=tasty"
+      "&path_cookie=narrow;path=/set-cookie");
   {
     TestDelegate d;
-    GURL test_url = test_server.GetURL(
-        "/set-cookie?not_stored_cookie=true&"
-        "stored_cookie=tasty"
-        "&path_cookie=narrow;path=/set-cookie");
-    std::unique_ptr<URLRequest> req(context.CreateFirstPartyRequest(
-        test_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    std::unique_ptr<URLRequest> req(
+        context.CreateFirstPartyRequest(set_cookie_test_url, DEFAULT_PRIORITY,
+                                        &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
     d.RunUntilComplete();
 
@@ -6757,10 +6758,11 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
     auto entries =
         net_log.GetEntriesWithType(NetLogEventType::COOKIE_INCLUSION_STATUS);
     EXPECT_EQ(1u, entries.size());
-    EXPECT_EQ(
-        "{\"exclusion_reason\":\"EXCLUDE_USER_PREFERENCES, "
-        "DO_NOT_WARN\",\"name\":\"not_stored_cookie\",\"operation\":\"store\"}",
-        SerializeNetLogValueToJson(entries[0].params));
+    EXPECT_EQ("{\"domain\":\"" + set_cookie_test_url.host() +
+                  "\",\"exclusion_reason\":\"EXCLUDE_USER_PREFERENCES, "
+                  "DO_NOT_WARN\",\"name\":\"not_stored_cookie\",\"operation\":"
+                  "\"store\",\"path\":\"/\"}",
+              SerializeNetLogValueToJson(entries[0].params));
     net_log.Clear();
   }
   {
@@ -6791,15 +6793,17 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
     auto entries =
         net_log.GetEntriesWithType(NetLogEventType::COOKIE_INCLUSION_STATUS);
     EXPECT_EQ(2u, entries.size());
-    EXPECT_EQ(
-        "{\"exclusion_reason\":\"EXCLUDE_NOT_ON_PATH, "
-        "EXCLUDE_USER_PREFERENCES, "
-        "DO_NOT_WARN\",\"name\":\"path_cookie\",\"operation\":\"send\"}",
-        SerializeNetLogValueToJson(entries[0].params));
-    EXPECT_EQ(
-        "{\"exclusion_reason\":\"EXCLUDE_USER_PREFERENCES, "
-        "DO_NOT_WARN\",\"name\":\"stored_cookie\",\"operation\":\"send\"}",
-        SerializeNetLogValueToJson(entries[1].params));
+    EXPECT_EQ("{\"domain\":\"" + set_cookie_test_url.host() +
+                  "\",\"exclusion_reason\":\"EXCLUDE_NOT_ON_PATH, "
+                  "EXCLUDE_USER_PREFERENCES, "
+                  "DO_NOT_WARN\",\"name\":\"path_cookie\",\"operation\":"
+                  "\"send\",\"path\":\"/set-cookie\"}",
+              SerializeNetLogValueToJson(entries[0].params));
+    EXPECT_EQ("{\"domain\":\"" + set_cookie_test_url.host() +
+                  "\",\"exclusion_reason\":\"EXCLUDE_USER_PREFERENCES, "
+                  "DO_NOT_WARN\",\"name\":\"stored_cookie\",\"operation\":"
+                  "\"send\",\"path\":\"/\"}",
+              SerializeNetLogValueToJson(entries[1].params));
     net_log.Clear();
   }
   {
@@ -6818,8 +6822,8 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
         net_log.GetEntriesWithType(NetLogEventType::COOKIE_INCLUSION_STATUS);
     EXPECT_EQ(2u, entries.size());
 
-    // Ensure that the potentially-sensitive |name| field is omitted, but other
-    // fields are logged as expected.
+    // Ensure that the potentially-sensitive |name|, |domain|, and |path| fields
+    // are omitted, but other fields are logged as expected.
     EXPECT_EQ(
         "{\"exclusion_reason\":\"EXCLUDE_NOT_ON_PATH, EXCLUDE_USER_PREFERENCES,"
         " DO_NOT_WARN\",\"operation\":\"send\"}",
@@ -6857,10 +6861,11 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
     auto entries =
         net_log.GetEntriesWithType(NetLogEventType::COOKIE_INCLUSION_STATUS);
     EXPECT_EQ(1u, entries.size());
-    EXPECT_EQ(
-        "{\"exclusion_reason\":\"EXCLUDE_NOT_ON_PATH, "
-        "DO_NOT_WARN\",\"name\":\"path_cookie\",\"operation\":\"send\"}",
-        SerializeNetLogValueToJson(entries[0].params));
+    EXPECT_EQ("{\"domain\":\"" + set_cookie_test_url.host() +
+                  "\",\"exclusion_reason\":\"EXCLUDE_NOT_ON_PATH, "
+                  "DO_NOT_WARN\",\"name\":\"path_cookie\",\"operation\":"
+                  "\"send\",\"path\":\"/set-cookie\"}",
+              SerializeNetLogValueToJson(entries[0].params));
     net_log.Clear();
   }
 }
@@ -8702,7 +8707,7 @@ TEST_F(HTTPSRequestTest, HTTPSErrorsNoClobberTSSTest) {
   TransportSecurityState::STSState dynamic_sts_state;
   TransportSecurityState::PKPState dynamic_pkp_state;
   EXPECT_FALSE(transport_security_state.GetDynamicSTSState(
-      "hsts-hpkp-preloaded.test", &dynamic_sts_state));
+      "hsts-hpkp-preloaded.test", &dynamic_sts_state, nullptr));
   EXPECT_FALSE(transport_security_state.GetDynamicPKPState(
       "hsts-hpkp-preloaded.test", &dynamic_pkp_state));
 
@@ -8731,7 +8736,7 @@ TEST_F(HTTPSRequestTest, HTTPSErrorsNoClobberTSSTest) {
   TransportSecurityState::STSState new_dynamic_sts_state;
   TransportSecurityState::PKPState new_dynamic_pkp_state;
   EXPECT_FALSE(transport_security_state.GetDynamicSTSState(
-      "hsts-hpkp-preloaded.test", &new_dynamic_sts_state));
+      "hsts-hpkp-preloaded.test", &new_dynamic_sts_state, nullptr));
   EXPECT_FALSE(transport_security_state.GetDynamicPKPState(
       "hsts-hpkp-preloaded.test", &new_dynamic_pkp_state));
 

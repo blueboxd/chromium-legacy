@@ -61,7 +61,7 @@ void ShellDownloadManagerDelegate::Shutdown() {
 
 bool ShellDownloadManagerDelegate::DetermineDownloadTarget(
     download::DownloadItem* download,
-    const DownloadTargetCallback& callback) {
+    DownloadTargetCallback* callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // This assignment needs to be here because even at the call to
   // SetDownloadManager, the system is not fully initialized.
@@ -71,17 +71,18 @@ bool ShellDownloadManagerDelegate::DetermineDownloadTarget(
   }
 
   if (!download->GetForcedFilePath().empty()) {
-    callback.Run(download->GetForcedFilePath(),
-                 download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                 download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-                 download->GetForcedFilePath(),
-                 download::DOWNLOAD_INTERRUPT_REASON_NONE);
+    std::move(*callback).Run(
+        download->GetForcedFilePath(),
+        download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+        download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+        download->GetForcedFilePath(),
+        download::DOWNLOAD_INTERRUPT_REASON_NONE);
     return true;
   }
 
   FilenameDeterminedCallback filename_determined_callback = base::BindOnce(
       &ShellDownloadManagerDelegate::OnDownloadPathGenerated,
-      weak_ptr_factory_.GetWeakPtr(), download->GetId(), callback);
+      weak_ptr_factory_.GetWeakPtr(), download->GetId(), std::move(*callback));
 
   PostTask(FROM_HERE,
            {base::ThreadPool(), base::MayBlock(),
@@ -97,7 +98,7 @@ bool ShellDownloadManagerDelegate::DetermineDownloadTarget(
 
 bool ShellDownloadManagerDelegate::ShouldOpenDownload(
     download::DownloadItem* item,
-    const DownloadOpenDelayedCallback& callback) {
+    DownloadOpenDelayedCallback callback) {
   return true;
 }
 
@@ -131,25 +132,25 @@ void ShellDownloadManagerDelegate::GenerateFilename(
 
 void ShellDownloadManagerDelegate::OnDownloadPathGenerated(
     uint32_t download_id,
-    const DownloadTargetCallback& callback,
+    DownloadTargetCallback callback,
     const base::FilePath& suggested_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (suppress_prompting_) {
     // Testing exit.
-    callback.Run(suggested_path,
-                 download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                 download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-                 suggested_path.AddExtension(FILE_PATH_LITERAL(".crdownload")),
-                 download::DOWNLOAD_INTERRUPT_REASON_NONE);
+    std::move(callback).Run(
+        suggested_path, download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+        download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+        suggested_path.AddExtension(FILE_PATH_LITERAL(".crdownload")),
+        download::DOWNLOAD_INTERRUPT_REASON_NONE);
     return;
   }
 
-  ChooseDownloadPath(download_id, callback, suggested_path);
+  ChooseDownloadPath(download_id, std::move(callback), suggested_path);
 }
 
 void ShellDownloadManagerDelegate::ChooseDownloadPath(
     uint32_t download_id,
-    const DownloadTargetCallback& callback,
+    DownloadTargetCallback callback,
     const base::FilePath& suggested_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   download::DownloadItem* item = download_manager_->GetDownload(download_id);
@@ -187,9 +188,10 @@ void ShellDownloadManagerDelegate::ChooseDownloadPath(
   NOTIMPLEMENTED();
 #endif
 
-  callback.Run(result, download::DownloadItem::TARGET_DISPOSITION_PROMPT,
-               download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, result,
-               download::DOWNLOAD_INTERRUPT_REASON_NONE);
+  std::move(callback).Run(result,
+                          download::DownloadItem::TARGET_DISPOSITION_PROMPT,
+                          download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, result,
+                          download::DOWNLOAD_INTERRUPT_REASON_NONE);
 }
 
 void ShellDownloadManagerDelegate::SetDownloadBehaviorForTesting(

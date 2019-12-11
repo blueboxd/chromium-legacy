@@ -195,7 +195,7 @@ gfx::Rect AppListTestViewDelegate::SnapBoundsToDisplayEdge(
   return bounds;
 }
 
-int AppListTestViewDelegate::GetShelfHeight() {
+int AppListTestViewDelegate::GetShelfSize() {
   // TODO(mmourgos): change this to 48 once shelf-hotseat flag is enabled.
   // Return the height of the shelf when clamshell mode is active.
   return 56;

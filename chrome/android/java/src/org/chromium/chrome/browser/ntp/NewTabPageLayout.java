@@ -889,7 +889,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     private Runnable openDownloadHomeCallback() {
         return () -> {
             DownloadUtils.showDownloadManager(mActivity, mActivity.getActivityTabProvider().get(),
-                    DownloadOpenSource.NEW_TAB_PAGE);
+                    DownloadOpenSource.NEW_TAB_PAGE, true /*showPrefetchedContent*/);
         };
     }
 

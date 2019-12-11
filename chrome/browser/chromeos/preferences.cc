@@ -7,10 +7,10 @@
 #include <limits>
 #include <vector>
 
-#include "ash/public/ash_interfaces.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_prefs.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -58,6 +58,8 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/system_connector.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/mojom/speech/speech_synthesis.mojom.h"
 #include "third_party/cros_system_api/dbus/update_engine/dbus-constants.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
@@ -124,8 +126,12 @@ Preferences::Preferences(input_method::InputMethodManager* input_method_manager)
       input_method_manager_(input_method_manager),
       user_(NULL),
       user_is_primary_(false) {
-  ash::BindCrosDisplayConfigController(
-      cros_display_config_.BindNewPipeAndPassReceiver());
+  // |connector| may be null in tests.
+  service_manager::Connector* connector = content::GetSystemConnector();
+  if (connector) {
+    connector->Connect(ash::mojom::kServiceName,
+                       cros_display_config_.BindNewPipeAndPassReceiver());
+  }
 }
 
 Preferences::~Preferences() {

@@ -20,38 +20,6 @@ bool PathContainsString(const std::string& path, const std::string& s) {
 
 }  // namespace
 
-// Initialize static variables in OpenXrTestHelper.
-const char* OpenXrTestHelper::kExtensions[] = {
-    XR_KHR_D3D11_ENABLE_EXTENSION_NAME};
-const uint32_t OpenXrTestHelper::kDimension = 128;
-const uint32_t OpenXrTestHelper::kSwapCount = 1;
-const uint32_t OpenXrTestHelper::kMinSwapchainBuffering = 3;
-const uint32_t OpenXrTestHelper::kViewCount = 2;
-const XrViewConfigurationView OpenXrTestHelper::kViewConfigView = {
-    XR_TYPE_VIEW_CONFIGURATION_VIEW, nullptr,
-    OpenXrTestHelper::kDimension,    OpenXrTestHelper::kDimension,
-    OpenXrTestHelper::kDimension,    OpenXrTestHelper::kDimension,
-    OpenXrTestHelper::kSwapCount,    OpenXrTestHelper::kSwapCount};
-XrViewConfigurationView OpenXrTestHelper::kViewConfigurationViews[] = {
-    OpenXrTestHelper::kViewConfigView, OpenXrTestHelper::kViewConfigView};
-const XrViewConfigurationType OpenXrTestHelper::kViewConfigurationType =
-    XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
-const XrEnvironmentBlendMode OpenXrTestHelper::kEnvironmentBlendMode =
-    XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
-const char* OpenXrTestHelper::kLocalReferenceSpacePath =
-    "/reference_space/local";
-const char* OpenXrTestHelper::kStageReferenceSpacePath =
-    "/reference_space/stage";
-const char* OpenXrTestHelper::kViewReferenceSpacePath = "/reference_space/view";
-
-uint32_t OpenXrTestHelper::NumExtensionsSupported() {
-  return sizeof(kExtensions) / sizeof(kExtensions[0]);
-}
-
-uint32_t OpenXrTestHelper::NumViews() {
-  return sizeof(kViewConfigurationViews) / sizeof(kViewConfigurationViews[0]);
-}
-
 OpenXrTestHelper::OpenXrTestHelper()
     // since openxr_statics is created first, so the first instance returned
     // should be a fake one since openxr_statics does not need to use

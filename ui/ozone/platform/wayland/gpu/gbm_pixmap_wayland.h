@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/linux/gbm_buffer.h"
 #include "ui/gfx/native_pixmap.h"
-#include "ui/ozone/common/linux/gbm_buffer.h"
 
 namespace ui {
 

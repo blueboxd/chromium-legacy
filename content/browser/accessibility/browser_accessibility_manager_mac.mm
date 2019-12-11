@@ -526,7 +526,7 @@ NSDictionary* BrowserAccessibilityManagerMac::
   int32_t focus_id = ax_tree()->GetUnignoredSelection().focus_object_id;
   BrowserAccessibility* focus_object = GetFromID(focus_id);
   if (focus_object) {
-    focus_object = focus_object->GetClosestPlatformObject();
+    focus_object = focus_object->PlatformGetClosestPlatformObject();
     auto native_focus_object = ToBrowserAccessibilityCocoa(focus_object);
     if (native_focus_object && [native_focus_object instanceActive]) {
       [user_info setObject:native_focus_object

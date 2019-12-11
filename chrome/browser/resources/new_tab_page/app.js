@@ -13,9 +13,9 @@ import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/poly
 
 import {BrowserProxy} from './browser_proxy.js';
 
-class NewTabPageApp extends PolymerElement {
+class NewTabPageAppElement extends PolymerElement {
   static get is() {
-    return 'new-tab-page-app';
+    return 'ntp-app';
   }
 
   static get template() {
@@ -56,4 +56,4 @@ class NewTabPageApp extends PolymerElement {
   }
 }
 
-customElements.define(NewTabPageApp.is, NewTabPageApp);
+customElements.define(NewTabPageAppElement.is, NewTabPageAppElement);

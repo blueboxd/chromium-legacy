@@ -25,7 +25,7 @@
 
     if ([current_focus isKindOfClass:[NSView class]]) {
       NSView* current_focus_view = (NSView*)current_focus;
-      focusedView_.reset([current_focus_view retain]);
+      _focusedView.reset([current_focus_view retain]);
     }
   }
 
@@ -33,11 +33,11 @@
 }
 
 - (BOOL)restoreFocusInWindow:(NSWindow*)window {
-  if (!focusedView_.get())
+  if (!_focusedView.get())
     return NO;
 
-  if ([focusedView_ window] && [focusedView_ window] == window)
-    return [window makeFirstResponder:focusedView_.get()];
+  if ([_focusedView window] && [_focusedView window] == window)
+    return [window makeFirstResponder:_focusedView.get()];
 
   return NO;
 }

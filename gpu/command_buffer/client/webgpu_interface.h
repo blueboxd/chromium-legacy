@@ -34,9 +34,10 @@ class WebGPUInterface : public InterfaceBase {
       PowerPreference power_preference,
       base::OnceCallback<void(uint32_t, const WGPUDeviceProperties&)>
           request_adapter_callback) = 0;
-  virtual bool RequestDevice(
+  virtual bool RequestDeviceAsync(
       uint32_t adapter_service_id,
-      const WGPUDeviceProperties* requested_device_properties) = 0;
+      const WGPUDeviceProperties* requested_device_properties,
+      base::OnceCallback<void(bool)> request_device_callback) = 0;
 
 // Include the auto-generated part of this class. We split this because
 // it means we can easily edit the non-auto generated parts right here in

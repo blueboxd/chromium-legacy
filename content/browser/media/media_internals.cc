@@ -378,9 +378,9 @@ void MediaInternals::OnMediaEvents(
   }
 }
 
-void MediaInternals::AddUpdateCallback(const UpdateCallback& callback) {
+void MediaInternals::AddUpdateCallback(UpdateCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  update_callbacks_.push_back(callback);
+  update_callbacks_.push_back(std::move(callback));
 
   base::AutoLock auto_lock(lock_);
   can_update_ = true;

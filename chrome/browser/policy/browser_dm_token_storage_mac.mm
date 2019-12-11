@@ -15,6 +15,7 @@
 #include "base/hash/sha1.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_ioobject.h"
 #include "base/no_destructor.h"
@@ -179,27 +180,7 @@ BrowserDMTokenStorageMac::BrowserDMTokenStorageMac()
 BrowserDMTokenStorageMac::~BrowserDMTokenStorageMac() {}
 
 std::string BrowserDMTokenStorageMac::InitClientId() {
-  // Returns the device s/n.
-  base::mac::ScopedIOObject<io_service_t> expert_device(
-      IOServiceGetMatchingService(kIOMasterPortDefault,
-                                  IOServiceMatching("IOPlatformExpertDevice")));
-  if (!expert_device) {
-    SYSLOG(ERROR) << "Error retrieving the machine serial number.";
-    return std::string();
-  }
-
-  base::ScopedCFTypeRef<CFTypeRef> serial_number(
-      IORegistryEntryCreateCFProperty(expert_device,
-                                      CFSTR(kIOPlatformSerialNumberKey),
-                                      kCFAllocatorDefault, 0));
-  CFStringRef serial_number_cfstring =
-      base::mac::CFCast<CFStringRef>(serial_number);
-  if (!serial_number_cfstring) {
-    SYSLOG(ERROR) << "Error retrieving the machine serial number.";
-    return std::string();
-  }
-
-  return base::SysCFStringRefToUTF8(serial_number_cfstring);
+  return base::mac::GetPlatformSerialNumber();
 }
 
 std::string BrowserDMTokenStorageMac::InitEnrollmentToken() {

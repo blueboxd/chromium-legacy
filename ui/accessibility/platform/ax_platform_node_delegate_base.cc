@@ -93,6 +93,15 @@ gfx::NativeViewAccessible AXPlatformNodeDelegateBase::GetPreviousSibling() {
   return nullptr;
 }
 
+bool AXPlatformNodeDelegateBase::IsChildOfLeaf() const {
+  return false;
+}
+
+gfx::NativeViewAccessible AXPlatformNodeDelegateBase::GetClosestPlatformObject()
+    const {
+  return nullptr;
+}
+
 AXPlatformNodeDelegateBase::ChildIteratorBase::ChildIteratorBase(
     AXPlatformNodeDelegateBase* parent,
     int index)

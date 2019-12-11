@@ -905,6 +905,41 @@ luci.console_view(
             short_name = 'dbg',
         ),
         luci.console_view_entry(
+            builder = 'ci/Win Builder',
+            category = 'win|week3',
+            short_name = 'rel',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Win Builder (dbg)',
+            category = 'win|week3',
+            short_name = 'dbg',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/GPU FYI Win Builder',
+            category = 'win|week3|gpu|fyi',
+            short_name = 'rel',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/GPU FYI Win Builder (dbg)',
+            category = 'win|week3|gpu|fyi',
+            short_name = 'dbg',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/GPU FYI Win dEQP Builder',
+            category = 'win|week3|gpu|fyi',
+            short_name = 'deqp',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Dawn Win10 x86 Builder',
+            category = 'win|week3|dawn',
+            short_name = 'rel',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Dawn Win10 x86 DEPS Builder',
+            category = 'win|week3|dawn',
+            short_name = 'deps',
+        ),
+        luci.console_view_entry(
             builder = 'ci/linux-chromeos-dbg',
             category = 'cros|week1',
             short_name = 'dbg',

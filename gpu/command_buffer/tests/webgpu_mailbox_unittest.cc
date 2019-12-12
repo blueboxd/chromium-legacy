@@ -91,7 +91,8 @@ TEST_F(WebGPUMailboxTest, WriteToMailboxThenReadFromIt) {
   webgpu()->WaitSyncTokenCHROMIUM(mailbox_produced_token.GetConstData());
 
   constexpr uint32_t kAdapterID = 0;
-  webgpu()->RequestDevice(kAdapterID, nullptr);
+  webgpu()->RequestDeviceAsync(kAdapterID, nullptr,
+                               base::BindOnce(&OnRequestDeviceCallback));
   wgpu::Device device = wgpu::Device::Acquire(webgpu()->GetDefaultDevice());
 
   // Part 1: Write to the texture using Dawn
@@ -211,7 +212,8 @@ TEST_F(WebGPUMailboxTest, ErrorWhenUsingTextureAfterDissociate) {
 
   // Create the device, and expect a validation error.
   constexpr uint32_t kAdapterID = 0;
-  webgpu()->RequestDevice(kAdapterID, nullptr);
+  webgpu()->RequestDeviceAsync(kAdapterID, nullptr,
+                               base::BindOnce(&OnRequestDeviceCallback));
   wgpu::Device device = wgpu::Device::Acquire(webgpu()->GetDefaultDevice());
   device.SetUncapturedErrorCallback(ToMockUncapturedErrorCallback, 0);
 

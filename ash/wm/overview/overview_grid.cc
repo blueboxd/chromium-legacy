@@ -663,13 +663,6 @@ void OverviewGrid::AddDropTargetForDraggingFromOverview(
   overview_session_->AddItem(drop_target_widget_->GetNativeWindow(),
                              /*reposition=*/true, /*animate=*/false,
                              /*ignored_items=*/{dragged_item}, position);
-
-  // This part is necessary because |OverviewItem::OnSelectorItemDragStarted| is
-  // called on all overview items before the drop target exists among them. That
-  // is because |AddDropTargetForDraggingFromOverview| is only called for drag
-  // to snap, but |OnSelectorItemDragStarted| is called before the drag has been
-  // disambiguated between drag to close and drag to snap.
-  GetDropTarget()->OnSelectorItemDragStarted(dragged_item);
 }
 
 void OverviewGrid::RemoveDropTarget() {

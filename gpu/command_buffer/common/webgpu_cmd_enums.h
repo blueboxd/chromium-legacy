@@ -18,6 +18,7 @@ enum class PowerPreference : uint32_t {
 enum class DawnReturnDataType : uint32_t {
   kDawnCommands,
   kRequestedDawnAdapterProperties,
+  kRequestedDeviceReturnInfo,
   kNumDawnReturnDataType
 };
 

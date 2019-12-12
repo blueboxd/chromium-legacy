@@ -51,6 +51,16 @@ static_assert(offsetof(DawnReturnAdapterInfo, deserialized_buffer) %
               "The offset of deserialized_buffer must align to "
               "GPU_DAWN_RETURN_DATA_ALIGNMENT");
 
+struct DawnReturnRequestDeviceInfo {
+  DawnReturnDataHeader return_data_header = {
+      DawnReturnDataType::kRequestedDeviceReturnInfo};
+  uint32_t request_device_serial;
+  bool is_request_device_success;
+};
+
+static_assert(offsetof(DawnReturnRequestDeviceInfo, return_data_header) == 0,
+              "The offset of return_data_header must be 0");
+
 // Command buffer is GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT byte aligned.
 #pragma pack(push, 4)
 static_assert(GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT == 4,

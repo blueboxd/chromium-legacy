@@ -70,7 +70,8 @@ _FUNCTION_INFO = {
     'impl_func': False,
     'internal': True,
     'data_transfer_methods': ['shm'],
-    'cmd_args': 'uint32_t adapter_service_id, '
+    'cmd_args': 'uint32_t request_device_serial, '
+                'uint32_t adapter_service_id, '
                 'uint32_t request_device_properties_shm_id, '
                 'uint32_t request_device_properties_shm_offset, '
                 'uint32_t request_device_properties_size',

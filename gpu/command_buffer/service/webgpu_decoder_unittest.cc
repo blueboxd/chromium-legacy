@@ -64,8 +64,9 @@ class WebGPUDecoderTest : public ::testing::Test {
     ASSERT_EQ(error::kNoError, ExecuteCmd(requestAdapterCmd));
 
     constexpr uint32_t kAdapterServiceID = 0;
+    constexpr uint32_t kRequestDeviceSerial = 0;
     cmds::RequestDevice requestDeviceCmd;
-    requestDeviceCmd.Init(kAdapterServiceID, 0, 0, 0);
+    requestDeviceCmd.Init(kRequestDeviceSerial, kAdapterServiceID, 0, 0, 0);
     ASSERT_EQ(error::kNoError, ExecuteCmd(requestDeviceCmd));
 
     factory_ = std::make_unique<SharedImageFactory>(

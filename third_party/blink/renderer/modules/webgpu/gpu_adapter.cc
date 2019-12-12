@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_extensions.h"
@@ -56,22 +57,36 @@ ScriptValue GPUAdapter::extensions(ScriptState* script_state) const {
   return object_builder.GetScriptValue();
 }
 
+void GPUAdapter::OnRequestDeviceCallback(ScriptPromiseResolver* resolver,
+                                         const GPUDeviceDescriptor* descriptor,
+                                         bool is_request_device_success) {
+  if (is_request_device_success) {
+    ExecutionContext* execution_context = resolver->GetExecutionContext();
+    GPUDevice* device = GPUDevice::Create(
+        execution_context, GetDawnControlClient(), this, descriptor);
+    resolver->Resolve(device);
+  } else {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kOperationError,
+        "Fail to request GPUDevice with the given GPUDeviceDescriptor"));
+  }
+}
+
 ScriptPromise GPUAdapter::requestDevice(ScriptState* script_state,
                                         const GPUDeviceDescriptor* descriptor) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   WGPUDeviceProperties requested_device_properties = AsDawnType(descriptor);
-  GetInterface()->RequestDevice(adapter_service_id_,
-                                &requested_device_properties);
 
-  // TODO(jiawei.shao@intel.com): create GPUDevice in the callback of
-  // GetInterface()->RequestDevice().
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  GPUDevice* device = GPUDevice::Create(
-      execution_context, GetDawnControlClient(), this, descriptor);
+  if (!GetInterface()->RequestDeviceAsync(
+          adapter_service_id_, &requested_device_properties,
+          WTF::Bind(&GPUAdapter::OnRequestDeviceCallback, WrapPersistent(this),
+                    WrapPersistent(resolver), WrapPersistent(descriptor)))) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kOperationError, "Unknown error creating GPUDevice"));
+  }
 
-  resolver->Resolve(device);
   return promise;
 }
 

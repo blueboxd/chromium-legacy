@@ -21,6 +21,8 @@ namespace gpu {
 class SharedImageInterface;
 class WebGPUInProcessContext;
 
+void OnRequestDeviceCallback(bool is_request_device_success);
+
 namespace webgpu {
 
 class WebGPUInterface;

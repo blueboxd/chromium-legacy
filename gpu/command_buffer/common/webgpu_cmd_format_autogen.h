@@ -216,11 +216,13 @@ struct RequestDevice {
 
   void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(uint32_t _adapter_service_id,
+  void Init(uint32_t _request_device_serial,
+            uint32_t _adapter_service_id,
             uint32_t _request_device_properties_shm_id,
             uint32_t _request_device_properties_shm_offset,
             uint32_t _request_device_properties_size) {
     SetHeader();
+    request_device_serial = _request_device_serial;
     adapter_service_id = _adapter_service_id;
     request_device_properties_shm_id = _request_device_properties_shm_id;
     request_device_properties_shm_offset =
@@ -229,38 +231,43 @@ struct RequestDevice {
   }
 
   void* Set(void* cmd,
+            uint32_t _request_device_serial,
             uint32_t _adapter_service_id,
             uint32_t _request_device_properties_shm_id,
             uint32_t _request_device_properties_shm_offset,
             uint32_t _request_device_properties_size) {
     static_cast<ValueType*>(cmd)->Init(
-        _adapter_service_id, _request_device_properties_shm_id,
+        _request_device_serial, _adapter_service_id,
+        _request_device_properties_shm_id,
         _request_device_properties_shm_offset, _request_device_properties_size);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
+  uint32_t request_device_serial;
   uint32_t adapter_service_id;
   uint32_t request_device_properties_shm_id;
   uint32_t request_device_properties_shm_offset;
   uint32_t request_device_properties_size;
 };
 
-static_assert(sizeof(RequestDevice) == 20,
-              "size of RequestDevice should be 20");
+static_assert(sizeof(RequestDevice) == 24,
+              "size of RequestDevice should be 24");
 static_assert(offsetof(RequestDevice, header) == 0,
               "offset of RequestDevice header should be 0");
-static_assert(offsetof(RequestDevice, adapter_service_id) == 4,
-              "offset of RequestDevice adapter_service_id should be 4");
+static_assert(offsetof(RequestDevice, request_device_serial) == 4,
+              "offset of RequestDevice request_device_serial should be 4");
+static_assert(offsetof(RequestDevice, adapter_service_id) == 8,
+              "offset of RequestDevice adapter_service_id should be 8");
 static_assert(
-    offsetof(RequestDevice, request_device_properties_shm_id) == 8,
-    "offset of RequestDevice request_device_properties_shm_id should be 8");
+    offsetof(RequestDevice, request_device_properties_shm_id) == 12,
+    "offset of RequestDevice request_device_properties_shm_id should be 12");
 static_assert(offsetof(RequestDevice, request_device_properties_shm_offset) ==
-                  12,
+                  16,
               "offset of RequestDevice request_device_properties_shm_offset "
-              "should be 12");
+              "should be 16");
 static_assert(
-    offsetof(RequestDevice, request_device_properties_size) == 16,
-    "offset of RequestDevice request_device_properties_size should be 16");
+    offsetof(RequestDevice, request_device_properties_size) == 20,
+    "offset of RequestDevice request_device_properties_size should be 20");
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_WEBGPU_CMD_FORMAT_AUTOGEN_H_

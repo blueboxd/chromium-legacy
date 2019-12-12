@@ -26,6 +26,8 @@ void OnRequestAdapterCallback(uint32_t adapter_server_id,
 
 }  // anonymous namespace
 
+void OnRequestDeviceCallback(bool is_request_device_success) {}
+
 WebGPUTest::Options::Options() = default;
 
 WebGPUTest::WebGPUTest() = default;

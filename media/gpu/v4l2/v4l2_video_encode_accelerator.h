@@ -19,6 +19,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/sequence_checker.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "media/gpu/chromeos/image_processor.h"
@@ -254,8 +256,9 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   // Initializes input_memory_type_.
   bool InitInputMemoryType(const Config& config);
 
-  // Our original calling task runner for the child thread.
+  // Our original calling task runner for the child thread and its checker.
   const scoped_refptr<base::SingleThreadTaskRunner> child_task_runner_;
+  SEQUENCE_CHECKER(child_sequence_checker_);
 
   gfx::Size visible_size_;
   // Layout of device accepted input VideoFrame.
@@ -336,10 +339,8 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   // Video frames ready to be processed. Only accessed on child thread.
   base::queue<InputFrameInfo> image_processor_input_queue_;
 
-  // This thread services tasks posted from the VideoEncodeAccelerator API entry
-  // points by the child thread and device service callbacks posted from the
-  // device thread.
-  base::Thread encoder_thread_;
+  const scoped_refptr<base::SingleThreadTaskRunner> encoder_task_runner_;
+  SEQUENCE_CHECKER(encoder_sequence_checker_);
 
   // The device polling thread handles notifications of V4L2 device changes.
   // TODO(sheu): replace this thread with an TYPE_IO encoder_thread_.
@@ -347,15 +348,14 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
 
   // To expose client callbacks from VideoEncodeAccelerator.
   // NOTE: all calls to these objects *MUST* be executed on
-  // child_task_runner_.
+  // |child_task_runner_|.
   base::WeakPtr<Client> client_;
   std::unique_ptr<base::WeakPtrFactory<Client>> client_ptr_factory_;
 
   // WeakPtr<> pointing to |this| for use in posting tasks to
-  // |encoder_thread_.task_runner()|. It guarantees no task will be executed
-  // after DestroyTask().
+  // |encoder_task_runner_|.
   base::WeakPtr<V4L2VideoEncodeAccelerator> weak_this_;
-  base::WeakPtrFactory<V4L2VideoEncodeAccelerator> weak_this_ptr_factory_;
+  base::WeakPtrFactory<V4L2VideoEncodeAccelerator> weak_this_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(V4L2VideoEncodeAccelerator);
 };

@@ -165,10 +165,7 @@ class CORE_EXPORT NGLineBreaker {
       const NGInlineItem&,
       LayoutUnit percentage_resolution_block_size_for_min_max,
       NGLineInfo*);
-  bool IsAtomicInlineAfterNoBreakSpace(
-      const NGInlineItemResult& item_result) const;
-  bool IsAtomicInlineBeforeNoBreakSpace(
-      const NGInlineItemResult& item_result) const;
+  bool ShouldForceCanBreakAfter(const NGInlineItemResult& item_result) const;
   void HandleFloat(const NGInlineItem&,
                    NGLineInfo*);
   void HandleOutOfFlowPositioned(const NGInlineItem&, NGLineInfo*);
@@ -258,6 +255,10 @@ class CORE_EXPORT NGLineBreaker {
   // Set when the line ended with a forced break. Used to setup the states for
   // the next line.
   bool is_after_forced_break_ = false;
+
+  // Set in quirks mode when we're not supposed to break inside table cells
+  // between images, and between text and images.
+  bool sticky_images_quirk_ = false;
 
   const NGInlineItemsData& items_data_;
 

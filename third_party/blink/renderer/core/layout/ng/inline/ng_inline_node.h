@@ -72,10 +72,19 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
     return Data().ItemsData(is_first_line);
   }
 
+  // There's a special intrinsic size measure quirk for images that are direct
+  // children of table cells that have auto inline-size: When measuring
+  // intrinsic min/max inline sizes, we pretend that it's not possible to break
+  // between images, or between text and images. Note that this only applies
+  // when measuring. During actual layout, on the other hand, standard breaking
+  // rules are to be followed.
+  // See https://quirks.spec.whatwg.org/#the-table-cell-width-calculation-quirk
+  bool IsStickyImagesQuirkForContentSize() const;
+
   // Returns the text content to use for content sizing. This is normally the
   // same as |items_data.text_content|, except when sticky images quirk is
   // needed.
-  String TextContentForContentSize(const NGInlineItemsData& items_data) const;
+  static String TextContentForStickyImagesQuirk(const NGInlineItemsData&);
 
   // Clear associated fragments for LayoutObjects.
   // They are associated when NGPaintFragment is constructed, but when clearing,
@@ -170,8 +179,6 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   }
   const NGInlineNodeData& EnsureData();
 
-  static String TextContentForStickyImagesQuirk(const NGInlineItemsData&);
-
   static void ComputeOffsetMapping(LayoutBlockFlow* layout_block_flow,
                                    NGInlineNodeData* data);
 
@@ -179,28 +186,14 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   friend class NGInlineNodeLegacy;
 };
 
-inline String NGInlineNode::TextContentForContentSize(
-    const NGInlineItemsData& items_data) const {
-  const String& text_content = items_data.text_content;
-  if (UNLIKELY(text_content.IsEmpty()))
-    return text_content;
-
-  // There's a special intrinsic size measure quirk for images that are direct
-  // children of table cells that have auto inline-size: When measuring
-  // intrinsic min/max inline sizes, we pretend that it's not possible to break
-  // between images, or between text and images. Note that this only applies
-  // when measuring. During actual layout, on the other hand, standard breaking
-  // rules are to be followed.
-  // See https://quirks.spec.whatwg.org/#the-table-cell-width-calculation-quirk
+inline bool NGInlineNode::IsStickyImagesQuirkForContentSize() const {
   if (UNLIKELY(GetDocument().InQuirksMode())) {
     const ComputedStyle& style = Style();
     if (UNLIKELY(style.Display() == EDisplay::kTableCell &&
-                 style.LogicalWidth().IsIntrinsicOrAuto())) {
-      return TextContentForStickyImagesQuirk(items_data);
-    }
+                 style.LogicalWidth().IsIntrinsicOrAuto()))
+      return true;
   }
-
-  return text_content;
+  return false;
 }
 
 template <>

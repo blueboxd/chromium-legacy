@@ -801,19 +801,22 @@ void VaapiVideoEncodeAccelerator::RequestEncodingParametersChangeTask(
 void VaapiVideoEncodeAccelerator::Flush(FlushCallback flush_callback) {
   DVLOGF(2);
   DCHECK_CALLED_ON_VALID_SEQUENCE(child_sequence_checker_);
+
+  encoder_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VaapiVideoEncodeAccelerator::FlushTask,
+                                encoder_weak_this_, std::move(flush_callback)));
+}
+
+void VaapiVideoEncodeAccelerator::FlushTask(FlushCallback flush_callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
+
   if (flush_callback_) {
     NOTIFY_ERROR(kIllegalStateError, "There is a pending flush");
-    std::move(flush_callback).Run(false);
+    child_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(std::move(flush_callback), false));
     return;
   }
   flush_callback_ = std::move(flush_callback);
-  encoder_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VaapiVideoEncodeAccelerator::FlushTask,
-                                encoder_weak_this_));
-}
-
-void VaapiVideoEncodeAccelerator::FlushTask() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
 
   // Insert an null job to indicate a flush command.
   input_queue_.push(std::unique_ptr<InputFrameRef>(nullptr));
@@ -830,9 +833,6 @@ void VaapiVideoEncodeAccelerator::Destroy() {
 
   child_weak_this_factory_.InvalidateWeakPtrs();
 
-  if (flush_callback_)
-    std::move(flush_callback_).Run(false);
-
   encoder_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VaapiVideoEncodeAccelerator::DestroyTask,
                                 encoder_weak_this_));
@@ -843,6 +843,11 @@ void VaapiVideoEncodeAccelerator::DestroyTask() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
 
   encoder_weak_this_factory_.InvalidateWeakPtrs();
+
+  if (flush_callback_) {
+    child_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(std::move(flush_callback_), false));
+  }
 
   // Clean up members that are to be accessed on the encoder thread only.
   if (vaapi_wrapper_)

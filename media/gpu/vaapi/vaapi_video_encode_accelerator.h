@@ -90,7 +90,7 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
       uint32_t framerate);
 
   void DestroyTask();
-  void FlushTask();
+  void FlushTask(FlushCallback flush_callback);
 
   // Checks if sufficient resources for a new encode job with |frame| as input
   // are available, and if so, claims them by associating them with

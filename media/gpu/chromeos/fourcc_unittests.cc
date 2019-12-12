@@ -19,6 +19,40 @@
 namespace media {
 
 #if BUILDFLAG(USE_V4L2_CODEC)
+// Checks that converting a V4L2 pixel format to Fourcc and back to V4L2
+// yields the same format as the original one.
+static void CheckFromV4L2PixFmtAndBack(uint32_t fmt) {
+  base::Optional<Fourcc> fourcc = Fourcc::FromV4L2PixFmt(fmt);
+  EXPECT_NE(fourcc, base::nullopt);
+  EXPECT_EQ(fourcc->ToV4L2PixFmt(), fmt);
+}
+
+TEST(FourccTest, V4L2PixFmtToV4L2PixFmt) {
+  // Temporary defined in v4l2/v4l2_device.h
+  static constexpr uint32_t V4L2_MM21 = ComposeFourcc('M', 'M', '2', '1');
+
+  CheckFromV4L2PixFmtAndBack(V4L2_PIX_FMT_ABGR32);
+#ifdef V4L2_PIX_FMT_RGBA32
+  V4L2PixFmtIsEqual(V4L2_PIX_FMT_RGBA32);
+#endif
+  CheckFromV4L2PixFmtAndBack(V4L2_PIX_FMT_XBGR32);
+#ifdef V4L2_PIX_FMT_RGBX32
+  V4L2PixFmtIsEqual(V4L2_PIX_FMT_RGBX32);
+#endif
+  CheckFromV4L2PixFmtAndBack(V4L2_PIX_FMT_RGB32);
+  CheckFromV4L2PixFmtAndBack(V4L2_PIX_FMT_YUV420);
+  CheckFromV4L2PixFmtAndBack(V4L2_PIX_FMT_YVU420);
+  CheckFromV4L2PixFmtAndBack(V4L2_PIX_FMT_YUV420M);
+  CheckFromV4L2PixFmtAndBack(V4L2_PIX_FMT_YVU420M);
+  CheckFromV4L2PixFmtAndBack(V4L2_PIX_FMT_YUYV);
+  CheckFromV4L2PixFmtAndBack(V4L2_PIX_FMT_NV12);
+  CheckFromV4L2PixFmtAndBack(V4L2_PIX_FMT_NV21);
+  CheckFromV4L2PixFmtAndBack(V4L2_PIX_FMT_NV12M);
+  CheckFromV4L2PixFmtAndBack(V4L2_PIX_FMT_YUV422M);
+  CheckFromV4L2PixFmtAndBack(V4L2_PIX_FMT_MT21C);
+  CheckFromV4L2PixFmtAndBack(V4L2_MM21);
+}
+
 TEST(FourccTest, V4L2PixFmtToVideoPixelFormat) {
   EXPECT_EQ(PIXEL_FORMAT_NV12,
             Fourcc::FromV4L2PixFmt(V4L2_PIX_FMT_NV12)->ToVideoPixelFormat());

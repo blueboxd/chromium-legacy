@@ -21,10 +21,7 @@ source_set("quick_answers") {
     "search_result_parsers/unit_conversion_result_parser.h",
   ]
   deps = [
-    "//ash/public/cpp",
-    "//ash/public/mojom",
     "//base",
-    "//chromeos/constants:constants",
     "//net:net",
     "//services/data_decoder/public/cpp",
     "//services/network/public/cpp:cpp",
@@ -36,7 +33,6 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "quick_answers_client_unittest.cc",
     "search_result_parsers/definition_result_parser_unittest.cc",
     "search_result_parsers/result_parser_unittest.cc",
     "search_result_parsers/search_response_parser_unittest.cc",
@@ -46,13 +42,9 @@ source_set("unit_tests") {
 
   deps = [
     ":quick_answers",
-    "//ash/public/cpp",
-    "//ash/public/mojom",
     "//base",
     "//base/test:test_support",
-    "//chromeos/constants:constants",
     "//services/data_decoder/public/cpp:test_support",
-    "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

@@ -177,10 +177,13 @@ NGLineBreaker::NGLineBreaker(NGInlineNode node,
       use_first_line_style_(is_first_formatted_line_ &&
                             node.UseFirstLineStyle()),
       in_line_height_quirks_mode_(node.InLineHeightQuirksMode()),
+      sticky_images_quirk_(mode != NGLineBreakerMode::kContent &&
+                           node.IsStickyImagesQuirkForContentSize()),
       items_data_(node.ItemsData(use_first_line_style_)),
-      text_content_(mode == NGLineBreakerMode::kContent
-                        ? items_data_.text_content
-                        : node.TextContentForContentSize(items_data_)),
+      text_content_(
+          !sticky_images_quirk_
+              ? items_data_.text_content
+              : NGInlineNode::TextContentForStickyImagesQuirk(items_data_)),
       constraint_space_(space),
       exclusion_space_(exclusion_space),
       break_token_(break_token),
@@ -467,29 +470,15 @@ void NGLineBreaker::ComputeLineLocation(NGLineInfo* line_info) const {
     line_info->UpdateTextAlign();
 }
 
-// For Web-compatibility, allow break between an atomic inline and any adjacent
-// U+00A0 NO-BREAK SPACE character.
-// https://www.w3.org/TR/css-text-3/#line-break-details
-bool NGLineBreaker::IsAtomicInlineBeforeNoBreakSpace(
-    const NGInlineItemResult& item_result) const {
-  DCHECK(auto_wrap_);
-  DCHECK_EQ(item_result.item->Type(), NGInlineItem::kAtomicInline);
-  const String& text = Text();
-  DCHECK_GE(text.length(), item_result.end_offset);
-  return text.length() > item_result.end_offset &&
-         text[item_result.end_offset] == kNoBreakSpaceCharacter &&
-         // Except when sticky images quirk was applied.
-         text[item_result.start_offset] != kNoBreakSpaceCharacter;
-}
-
-bool NGLineBreaker::IsAtomicInlineAfterNoBreakSpace(
+// Atomic inlines have break opportunities before and after, even when the
+// adjacent character is U+00A0 NO-BREAK SPACE character.
+bool NGLineBreaker::ShouldForceCanBreakAfter(
     const NGInlineItemResult& item_result) const {
   DCHECK(auto_wrap_);
   DCHECK_EQ(item_result.item->Type(), NGInlineItem::kText);
   const String& text = Text();
   DCHECK_GE(text.length(), item_result.end_offset);
-  if (text[item_result.end_offset - 1] != kNoBreakSpaceCharacter ||
-      text.length() <= item_result.end_offset ||
+  if (text.length() <= item_result.end_offset ||
       text[item_result.end_offset] != kObjectReplacementCharacter)
     return false;
   // This kObjectReplacementCharacter can be any objects, such as a floating or
@@ -776,7 +765,7 @@ NGLineBreaker::BreakResult NGLineBreaker::BreakText(
     item_result->can_break_after =
         break_iterator_.IsBreakable(item_result->end_offset);
     if (!item_result->can_break_after && item.Type() == NGInlineItem::kText &&
-        IsAtomicInlineAfterNoBreakSpace(*item_result))
+        ShouldForceCanBreakAfter(*item_result))
       item_result->can_break_after = true;
     trailing_whitespace_ = WhitespaceState::kUnknown;
   }
@@ -1379,10 +1368,7 @@ void NGLineBreaker::HandleAtomicInline(
   }
 
   item_result->should_create_line_box = true;
-  ComputeCanBreakAfter(item_result, auto_wrap_, break_iterator_);
-  if (!item_result->can_break_after && auto_wrap_ &&
-      IsAtomicInlineBeforeNoBreakSpace(*item_result))
-    item_result->can_break_after = true;
+  item_result->can_break_after = auto_wrap_ && !sticky_images_quirk_;
 
   position_ += item_result->inline_size;
   trailing_whitespace_ = WhitespaceState::kNone;

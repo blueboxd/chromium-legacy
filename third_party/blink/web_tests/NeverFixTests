@@ -441,6 +441,15 @@ external/wpt/css/css-text/writing-system/writing-system-line-break-001.html [ Sk
 external/wpt/css/css-text/writing-system/writing-system-line-break-002.html [ Skip ]
 external/wpt/css/css-text/writing-system/writing-system-segment-break-001.html [ Skip ]
 
+# Tests without any implementations.
+# https://github.com/w3c/csswg-drafts/issues/4576
+external/wpt/css/css-text/line-breaking/line-breaking-atomic-003.html [ Skip ]
+external/wpt/css/css-text/line-breaking/line-breaking-atomic-004.html [ Skip ]
+external/wpt/css/css-text/line-breaking/line-breaking-atomic-005.html [ Skip ]
+external/wpt/css/css-text/line-breaking/line-breaking-atomic-006.html [ Skip ]
+external/wpt/css/css-text/line-breaking/line-breaking-replaced-002.html [ Skip ]
+external/wpt/css/css-text/line-breaking/line-breaking-replaced-003.html [ Skip ]
+
 # Undefined behavior without any implementations.
 external/wpt/css/css-text/white-space/seg-break-transformation-019.html [ Skip ]
 

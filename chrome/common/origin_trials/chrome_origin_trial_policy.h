@@ -21,17 +21,17 @@ class ChromeOriginTrialPolicy : public blink::OriginTrialPolicy {
 
   // blink::OriginTrialPolicy interface
   bool IsOriginTrialsSupported() const override;
-  base::StringPiece GetPublicKey() const override;
+  std::vector<base::StringPiece> GetPublicKeys() const override;
   bool IsFeatureDisabled(base::StringPiece feature) const override;
   bool IsTokenDisabled(base::StringPiece token_signature) const override;
   bool IsOriginSecure(const GURL& url) const override;
 
-  bool SetPublicKeyFromASCIIString(const std::string& ascii_public_key);
+  bool SetPublicKeysFromASCIIString(const std::string& ascii_public_key);
   bool SetDisabledFeatures(const std::string& disabled_feature_list);
   bool SetDisabledTokens(const std::string& disabled_token_list);
 
  private:
-  std::string public_key_;
+  std::vector<std::string> public_keys_;
   std::set<std::string> disabled_features_;
   std::set<std::string> disabled_tokens_;
 

@@ -7,8 +7,10 @@
 #include <map>
 
 #include "base/bind.h"
+#include "chrome/browser/chromeos/app_mode/app_session.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_cryptohome_remover.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/web_application_info.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -92,6 +94,14 @@ void WebKioskAppManager::AddAppForTesting(const AccountId& account_id,
   const std::string app_id = web_app::GenerateAppIdFromURL(install_url);
   apps_.push_back(
       std::make_unique<WebKioskAppData>(this, app_id, account_id, install_url));
+}
+
+void WebKioskAppManager::InitSession(Browser* browser) {
+  LOG_IF(FATAL, app_session_) << "Kiosk session is already initialized.";
+
+  app_session_ = std::make_unique<AppSession>();
+  app_session_->InitForWebKiosk(browser);
+  NotifySessionInitialized();
 }
 
 void WebKioskAppManager::UpdateAppsFromPolicy() {

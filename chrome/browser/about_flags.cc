@@ -1733,7 +1733,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
     {"webui-tab-strip", flag_descriptions::kWebUITabStripName,
      flag_descriptions::kWebUITabStripDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kWebUITabStrip)},
+     SINGLE_VALUE_TYPE(switches::kWebUITabStrip)},
     {"webui-tab-strip-demo-options",
      flag_descriptions::kWebUITabStripDemoOptionsName,
      flag_descriptions::kWebUITabStripDemoOptionsDescription, kOsDesktop,

@@ -15,7 +15,6 @@ source_set("main") {
     "//base",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/sessions:serialisation",
-    "//ios/chrome/browser/sessions:session_service",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/web_state_list",

@@ -994,8 +994,10 @@ bool StyleResolver::PseudoStyleForElementInternal(
     if (tracker_)
       AddMatchedRulesToTracker(collector);
 
-    if (!collector.MatchedResult().HasMatchedProperties())
+    if (!collector.MatchedResult().HasMatchedProperties()) {
+      StyleAdjuster::AdjustComputedStyle(state, nullptr);
       return false;
+    }
 
     ApplyMatchedProperties(state, collector.MatchedResult());
     ApplyCallbackSelectors(state);

@@ -510,9 +510,6 @@ bool ExternalVkImageBacking::BeginAccess(
   // TODO(penghuang): ask skia to do it for us to avoid this queue submission.
   command_buffer->Submit(wait_semaphores.size(), wait_semaphores.data(), 1,
                          &signal_semaphore);
-  vkQueueWaitIdle(context_state_->vk_context_provider()
-                      ->GetDeviceQueue()
-                      ->GetVulkanQueue());
   auto end_access_semphore_handle =
       vulkan_implementation()->GetSemaphoreHandle(device(), signal_semaphore);
   semaphore_handles->push_back(std::move(end_access_semphore_handle));

@@ -170,6 +170,9 @@ To test an origin trial feature during development, follow these steps:
 3. Run Chrome with the test public key by passing:
    `--origin-trial-public-key=dRCs+TocuKkocNKa0AtZ4awrt9XKH2SQCI6o4FY6BNA=`
 
+You can also run Chrome with both the test public key and the default public key along side by passing:
+`--origin-trial-public-key=dRCs+TocuKkocNKa0AtZ4awrt9XKH2SQCI6o4FY6BNA=,fMS4mpO6buLQ/QMd+zJmxzty/VQ6B1EUZqoCU04zoRU=`
+
 The `--origin-trial-public-key` switch is not needed with `content_shell`, as it
 uses the test public key by default.
 

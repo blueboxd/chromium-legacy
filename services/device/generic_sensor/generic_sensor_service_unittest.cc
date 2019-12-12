@@ -18,7 +18,6 @@
 #include "services/device/public/cpp/device_features.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "services/device/public/cpp/generic_sensor/sensor_traits.h"
-#include "services/device/public/mojom/constants.mojom.h"
 
 using ::testing::_;
 using ::testing::Invoke;
@@ -157,10 +156,10 @@ class GenericSensorServiceTest : public DeviceServiceTestBase {
     DeviceServiceTestBase::SetUp();
 
     fake_platform_sensor_provider_ = new FakePlatformSensorProvider();
-    device_service()->SetPlatformSensorProviderForTesting(
+    device_service_impl()->SetPlatformSensorProviderForTesting(
         base::WrapUnique(fake_platform_sensor_provider_));
-    connector()->Connect(mojom::kServiceName,
-                         sensor_provider_.BindNewPipeAndPassReceiver());
+    device_service()->BindSensorProvider(
+        sensor_provider_.BindNewPipeAndPassReceiver());
   }
 
   mojo::Remote<mojom::SensorProvider> sensor_provider_;

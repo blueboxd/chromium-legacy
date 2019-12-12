@@ -93,6 +93,8 @@ void WebKioskAppLauncher::LaunchApp() {
   browser_->window()->GetNativeWindow()->SetProperty(
       ash::kWindowPinTypeKey, ash::WindowPinType::kTrustedPinned);
   browser_->window()->Show();
+
+  WebKioskAppManager::Get()->InitSession(browser_);
   delegate_->OnAppLaunched();
 }
 

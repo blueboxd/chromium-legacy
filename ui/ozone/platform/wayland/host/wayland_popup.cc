@@ -18,9 +18,9 @@ WaylandPopup::WaylandPopup(PlatformWindowDelegate* delegate,
 
 WaylandPopup::~WaylandPopup() = default;
 
-void WaylandPopup::CreateShellPopup() {
+bool WaylandPopup::CreateShellPopup() {
   if (GetBounds().IsEmpty())
-    return;
+    return false;
 
   // TODO(jkim): Consider how to support DropArrow window on tabstrip.
   // When it starts dragging, as described the protocol, https://goo.gl/1Mskq3,
@@ -30,8 +30,8 @@ void WaylandPopup::CreateShellPopup() {
   // a crash when aura::Window is destroyed.
   // https://crbug.com/875164
   if (connection()->IsDragInProgress()) {
-    LOG(ERROR) << "Wayland can't create a popup window during dragging.";
-    return;
+    LOG(WARNING) << "Wayland can't create a popup window during dragging.";
+    return false;
   }
 
   DCHECK(parent_window() && !shell_popup_);
@@ -40,30 +40,40 @@ void WaylandPopup::CreateShellPopup() {
 
   ShellObjectFactory factory;
   shell_popup_ = factory.CreateShellPopupWrapper(connection(), this, bounds_px);
-  if (!shell_popup_)
-    CHECK(false) << "Failed to create Wayland shell popup";
+  if (!shell_popup_) {
+    LOG(ERROR) << "Failed to create Wayland shell popup";
+    return false;
+  }
 
   parent_window()->set_child_window(this);
+  return true;
 }
 
 void WaylandPopup::Show(bool inactive) {
+  if (shell_popup_)
+    return;
+
   set_keyboard_focus(true);
 
-  if (!shell_popup_) {
-    // When showing a sub-menu after it has been previously shown and hidden,
-    // Wayland sends SetBounds prior to Show, and |bounds_px| takes the pixel
-    // bounds.  This makes a difference against the normal flow when the
-    // window is created (see |Initialize|).  To equalize things, rescale
-    // |bounds_px_| to DIP.  It will be adjusted while creating the popup.
-    SetBounds(gfx::ScaleToRoundedRect(GetBounds(), 1.0 / ui_scale()));
-    CreateShellPopup();
-    connection()->ScheduleFlush();
+  // When showing a sub-menu after it has been previously shown and hidden,
+  // Wayland sends SetBounds prior to Show, and |bounds_px| takes the pixel
+  // bounds.  This makes a difference against the normal flow when the
+  // window is created (see |Initialize|).  To equalize things, rescale
+  // |bounds_px_| to DIP.  It will be adjusted while creating the popup.
+  SetBounds(gfx::ScaleToRoundedRect(GetBounds(), 1.0 / ui_scale()));
+  if (!CreateShellPopup()) {
+    Close();
+    return;
   }
 
   UpdateBufferScale(false);
+  connection()->ScheduleFlush();
 }
 
 void WaylandPopup::Hide() {
+  if (!shell_popup_)
+    return;
+
   if (child_window())
     child_window()->Hide();
 
@@ -155,7 +165,6 @@ bool WaylandPopup::OnInitialize(PlatformWindowInitProperties properties) {
   // If parent window is known in advanced, we may set the scale early.
   SetBufferScale(parent_window()->buffer_scale(), false);
   set_ui_scale(parent_window()->ui_scale());
-  CreateShellPopup();
   return true;
 }
 

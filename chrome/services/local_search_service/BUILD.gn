@@ -21,6 +21,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "index_impl_unittest.cc",
     "local_search_service_impl_unittest.cc",
   ]
 

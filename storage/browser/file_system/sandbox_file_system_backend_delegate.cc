@@ -271,7 +271,6 @@ void SandboxFileSystemBackendDelegate::OpenFileSystem(
       (quota_manager_proxy_.get())
           ? base::BindOnce(&QuotaManagerProxy::NotifyStorageAccessed,
                            quota_manager_proxy_,
-                           storage::QuotaClient::kFileSystem,
                            url::Origin::Create(origin_url),
                            FileSystemTypeToQuotaStorageType(type))
           : base::DoNothing();

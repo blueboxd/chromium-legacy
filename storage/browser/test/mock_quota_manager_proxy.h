@@ -46,8 +46,7 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
   // which can be accessed via notify_storage_accessed_count().
   // The also records the |origin| and |type| in last_notified_origin_ and
   // last_notified_type_.
-  void NotifyStorageAccessed(QuotaClient::ID client_id,
-                             const url::Origin& origin,
+  void NotifyStorageAccessed(const url::Origin& origin,
                              blink::mojom::StorageType type) override;
 
   // Records the |origin|, |type| and |delta| as last_notified_origin_,

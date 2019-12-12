@@ -45,4 +45,9 @@ interface Index {
   // |max_latency_in_ms| = -1 means there is no maximum latency.
   Find(string query, int32 max_latency_in_ms, int32 max_results)
       => (ResponseStatus status, array<Result>? results);
+
+  // Sets search parameters. Clients should not need to set the parameters
+  // explicitly. They can use default values provided by the Index. However,
+  // this will be useful for experimental purposes.
+  SetSearchParams(SearchParams search_params) => ();
 };

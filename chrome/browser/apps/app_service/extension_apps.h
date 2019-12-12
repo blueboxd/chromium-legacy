@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_APPS_APP_SERVICE_EXTENSION_APPS_H_
 #define CHROME_BROWSER_APPS_APP_SERVICE_EXTENSION_APPS_H_
 
+#include <map>
+#include <set>
 #include <string>
 
 #include "base/macros.h"
@@ -116,6 +118,7 @@ class ExtensionApps : public apps::mojom::Publisher,
   void OnAppWindowAdded(extensions::AppWindow* app_window) override;
   void OnAppWindowShown(extensions::AppWindow* app_window,
                         bool was_hidden) override;
+  void OnAppWindowHidden(extensions::AppWindow* app_window) override;
 
   // extensions::ExtensionPrefsObserver overrides.
   void OnExtensionLastLaunchTimeChanged(
@@ -190,6 +193,7 @@ class ExtensionApps : public apps::mojom::Publisher,
 
   void SetIconEffect(const std::string& app_id);
 
+  bool ShouldRecordAppWindowActivity(extensions::AppWindow* app_window);
   void RegisterInstance(extensions::AppWindow* app_window, InstanceState state);
 
   mojo::Receiver<apps::mojom::Publisher> receiver_{this};

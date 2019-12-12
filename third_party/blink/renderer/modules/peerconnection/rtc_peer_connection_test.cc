@@ -833,18 +833,21 @@ TEST_F(RTCPeerConnectionCallSetupStateTest, OffererSucceeded) {
   V8TestingScope scope;
   RTCPeerConnection* pc = Initialize(scope);
   // createOffer()
-  pc->createOffer(scope.GetScriptState(), RTCOfferOptions::Create());
+  pc->createOffer(scope.GetScriptState(), RTCOfferOptions::Create(),
+                  scope.GetExceptionState());
   EXPECT_EQ(OffererState::kCreateOfferPending, tracker_->offerer_state());
   EXPECT_EQ(CallSetupState::kStarted, tracker_->GetCallSetupState());
   platform_->RunUntilIdle();
   EXPECT_EQ(OffererState::kCreateOfferResolved, tracker_->offerer_state());
   // setLocalDescription(offer)
-  pc->setLocalDescription(scope.GetScriptState(), EmptyOffer());
+  pc->setLocalDescription(scope.GetScriptState(), EmptyOffer(),
+                          scope.GetExceptionState());
   EXPECT_EQ(OffererState::kSetLocalOfferPending, tracker_->offerer_state());
   platform_->RunUntilIdle();
   EXPECT_EQ(OffererState::kSetLocalOfferResolved, tracker_->offerer_state());
   // setRemoteDescription(answer)
-  pc->setRemoteDescription(scope.GetScriptState(), EmptyAnswer());
+  pc->setRemoteDescription(scope.GetScriptState(), EmptyAnswer(),
+                           scope.GetExceptionState());
   EXPECT_EQ(OffererState::kSetRemoteAnswerPending, tracker_->offerer_state());
   EXPECT_EQ(CallSetupState::kStarted, tracker_->GetCallSetupState());
   platform_->RunUntilIdle();
@@ -857,7 +860,8 @@ TEST_F(RTCPeerConnectionCallSetupStateTest, OffererFailedAtCreateOffer) {
   RTCPeerConnection* pc = Initialize(scope);
   // createOffer()
   SetNextOperationIsSuccessful(false);
-  pc->createOffer(scope.GetScriptState(), RTCOfferOptions::Create());
+  pc->createOffer(scope.GetScriptState(), RTCOfferOptions::Create(),
+                  scope.GetExceptionState());
   platform_->RunUntilIdle();
   EXPECT_EQ(OffererState::kCreateOfferRejected, tracker_->offerer_state());
   EXPECT_EQ(CallSetupState::kFailed, tracker_->GetCallSetupState());
@@ -868,11 +872,13 @@ TEST_F(RTCPeerConnectionCallSetupStateTest,
   V8TestingScope scope;
   RTCPeerConnection* pc = Initialize(scope);
   // createOffer()
-  pc->createOffer(scope.GetScriptState(), RTCOfferOptions::Create());
+  pc->createOffer(scope.GetScriptState(), RTCOfferOptions::Create(),
+                  scope.GetExceptionState());
   platform_->RunUntilIdle();
   // setLocalDescription(offer)
   SetNextOperationIsSuccessful(false);
-  pc->setLocalDescription(scope.GetScriptState(), EmptyOffer());
+  pc->setLocalDescription(scope.GetScriptState(), EmptyOffer(),
+                          scope.GetExceptionState());
   platform_->RunUntilIdle();
   EXPECT_EQ(OffererState::kSetLocalOfferRejected, tracker_->offerer_state());
   EXPECT_EQ(CallSetupState::kFailed, tracker_->GetCallSetupState());
@@ -883,14 +889,17 @@ TEST_F(RTCPeerConnectionCallSetupStateTest,
   V8TestingScope scope;
   RTCPeerConnection* pc = Initialize(scope);
   // createOffer()
-  pc->createOffer(scope.GetScriptState(), RTCOfferOptions::Create());
+  pc->createOffer(scope.GetScriptState(), RTCOfferOptions::Create(),
+                  scope.GetExceptionState());
   platform_->RunUntilIdle();
   // setLocalDescription(offer)
-  pc->setLocalDescription(scope.GetScriptState(), EmptyOffer());
+  pc->setLocalDescription(scope.GetScriptState(), EmptyOffer(),
+                          scope.GetExceptionState());
   platform_->RunUntilIdle();
   // setRemoteDescription(answer)
   SetNextOperationIsSuccessful(false);
-  pc->setRemoteDescription(scope.GetScriptState(), EmptyAnswer());
+  pc->setRemoteDescription(scope.GetScriptState(), EmptyAnswer(),
+                           scope.GetExceptionState());
   platform_->RunUntilIdle();
   EXPECT_EQ(OffererState::kSetRemoteAnswerRejected, tracker_->offerer_state());
   EXPECT_EQ(CallSetupState::kFailed, tracker_->GetCallSetupState());
@@ -933,18 +942,21 @@ TEST_F(RTCPeerConnectionCallSetupStateTest, AnswererSucceeded) {
   V8TestingScope scope;
   RTCPeerConnection* pc = Initialize(scope);
   // setRemoteDescription(offer)
-  pc->setRemoteDescription(scope.GetScriptState(), EmptyOffer());
+  pc->setRemoteDescription(scope.GetScriptState(), EmptyOffer(),
+                           scope.GetExceptionState());
   EXPECT_EQ(AnswererState::kSetRemoteOfferPending, tracker_->answerer_state());
   EXPECT_EQ(CallSetupState::kStarted, tracker_->GetCallSetupState());
   platform_->RunUntilIdle();
   EXPECT_EQ(AnswererState::kSetRemoteOfferResolved, tracker_->answerer_state());
   // createAnswer()
-  pc->createAnswer(scope.GetScriptState(), RTCAnswerOptions::Create());
+  pc->createAnswer(scope.GetScriptState(), RTCAnswerOptions::Create(),
+                   scope.GetExceptionState());
   EXPECT_EQ(AnswererState::kCreateAnswerPending, tracker_->answerer_state());
   platform_->RunUntilIdle();
   EXPECT_EQ(AnswererState::kCreateAnswerResolved, tracker_->answerer_state());
   // setLocalDescription(answer)
-  pc->setLocalDescription(scope.GetScriptState(), EmptyAnswer());
+  pc->setLocalDescription(scope.GetScriptState(), EmptyAnswer(),
+                          scope.GetExceptionState());
   EXPECT_EQ(AnswererState::kSetLocalAnswerPending, tracker_->answerer_state());
   EXPECT_EQ(CallSetupState::kStarted, tracker_->GetCallSetupState());
   platform_->RunUntilIdle();
@@ -958,7 +970,8 @@ TEST_F(RTCPeerConnectionCallSetupStateTest,
   RTCPeerConnection* pc = Initialize(scope);
   // setRemoteDescription(offer)
   SetNextOperationIsSuccessful(false);
-  pc->setRemoteDescription(scope.GetScriptState(), EmptyOffer());
+  pc->setRemoteDescription(scope.GetScriptState(), EmptyOffer(),
+                           scope.GetExceptionState());
   platform_->RunUntilIdle();
   EXPECT_EQ(AnswererState::kSetRemoteOfferRejected, tracker_->answerer_state());
   EXPECT_EQ(CallSetupState::kFailed, tracker_->GetCallSetupState());
@@ -968,11 +981,13 @@ TEST_F(RTCPeerConnectionCallSetupStateTest, AnswererFailedAtCreateAnswer) {
   V8TestingScope scope;
   RTCPeerConnection* pc = Initialize(scope);
   // setRemoteDescription(offer)
-  pc->setRemoteDescription(scope.GetScriptState(), EmptyOffer());
+  pc->setRemoteDescription(scope.GetScriptState(), EmptyOffer(),
+                           scope.GetExceptionState());
   platform_->RunUntilIdle();
   // createAnswer()
   SetNextOperationIsSuccessful(false);
-  pc->createAnswer(scope.GetScriptState(), RTCAnswerOptions::Create());
+  pc->createAnswer(scope.GetScriptState(), RTCAnswerOptions::Create(),
+                   scope.GetExceptionState());
   platform_->RunUntilIdle();
   EXPECT_EQ(AnswererState::kCreateAnswerRejected, tracker_->answerer_state());
   EXPECT_EQ(CallSetupState::kFailed, tracker_->GetCallSetupState());
@@ -983,14 +998,17 @@ TEST_F(RTCPeerConnectionCallSetupStateTest,
   V8TestingScope scope;
   RTCPeerConnection* pc = Initialize(scope);
   // setRemoteDescription(offer)
-  pc->setRemoteDescription(scope.GetScriptState(), EmptyOffer());
+  pc->setRemoteDescription(scope.GetScriptState(), EmptyOffer(),
+                           scope.GetExceptionState());
   platform_->RunUntilIdle();
   // createAnswer()
-  pc->createAnswer(scope.GetScriptState(), RTCAnswerOptions::Create());
+  pc->createAnswer(scope.GetScriptState(), RTCAnswerOptions::Create(),
+                   scope.GetExceptionState());
   platform_->RunUntilIdle();
   // setLocalDescription(answer)
   SetNextOperationIsSuccessful(false);
-  pc->setLocalDescription(scope.GetScriptState(), EmptyAnswer());
+  pc->setLocalDescription(scope.GetScriptState(), EmptyAnswer(),
+                          scope.GetExceptionState());
   platform_->RunUntilIdle();
   EXPECT_EQ(AnswererState::kSetLocalAnswerRejected, tracker_->answerer_state());
   EXPECT_EQ(CallSetupState::kFailed, tracker_->GetCallSetupState());

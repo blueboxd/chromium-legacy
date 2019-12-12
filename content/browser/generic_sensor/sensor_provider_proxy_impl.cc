@@ -9,16 +9,14 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/no_destructor.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/device_service.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 
 using device::mojom::SensorType;
@@ -26,6 +24,16 @@ using device::mojom::SensorType;
 using device::mojom::SensorCreationResult;
 
 namespace content {
+
+namespace {
+
+SensorProviderProxyImpl::SensorProviderBinder& GetBinderOverride() {
+  static base::NoDestructor<SensorProviderProxyImpl::SensorProviderBinder>
+      binder;
+  return *binder;
+}
+
+}  // namespace
 
 SensorProviderProxyImpl::SensorProviderProxyImpl(
     PermissionControllerImpl* permission_controller,
@@ -43,6 +51,12 @@ void SensorProviderProxyImpl::Bind(
   receiver_set_.Add(this, std::move(receiver));
 }
 
+// static
+void SensorProviderProxyImpl::OverrideSensorProviderBinderForTesting(
+    SensorProviderBinder binder) {
+  GetBinderOverride() = std::move(binder);
+}
+
 void SensorProviderProxyImpl::GetSensor(SensorType type,
                                         GetSensorCallback callback) {
   if (!CheckFeaturePolicies(type)) {
@@ -51,17 +65,15 @@ void SensorProviderProxyImpl::GetSensor(SensorType type,
   }
 
   if (!sensor_provider_) {
-    auto* connector = GetSystemConnector();
-    if (!connector) {
-      std::move(callback).Run(SensorCreationResult::ERROR_NOT_AVAILABLE,
-                              nullptr);
-      return;
-    }
-
-    connector->Connect(device::mojom::kServiceName,
-                       sensor_provider_.BindNewPipeAndPassReceiver());
+    auto receiver = sensor_provider_.BindNewPipeAndPassReceiver();
     sensor_provider_.set_disconnect_handler(base::BindOnce(
         &SensorProviderProxyImpl::OnConnectionError, base::Unretained(this)));
+
+    const auto& binder = GetBinderOverride();
+    if (binder)
+      binder.Run(std::move(receiver));
+    else
+      GetDeviceService().BindSensorProvider(std::move(receiver));
   }
 
   // TODO(shalamov): base::BindOnce should be used (https://crbug.com/714018),

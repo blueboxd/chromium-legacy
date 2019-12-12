@@ -29,15 +29,16 @@ void GetXdgSurfaceImpl(wl_client* client,
     wl_resource_post_error(resource, xdg_error, "surface already has a role");
     return;
   }
-  wl_resource* xdg_surface_resource = wl_resource_create(
-      client, interface, wl_resource_get_version(resource), id);
 
+  wl_resource* xdg_surface_resource =
+      CreateResourceWithImpl<::testing::NiceMock<MockXdgSurface>>(
+          client, interface, wl_resource_get_version(resource), implementation,
+          id, surface_resource);
   if (!xdg_surface_resource) {
     wl_client_post_no_memory(client);
     return;
   }
-  surface->set_xdg_surface(
-      std::make_unique<MockXdgSurface>(xdg_surface_resource, implementation));
+  surface->set_xdg_surface(GetUserDataAs<MockXdgSurface>(xdg_surface_resource));
 }
 
 void CreatePositioner(wl_client* client,

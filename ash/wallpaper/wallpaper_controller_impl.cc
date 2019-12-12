@@ -703,9 +703,8 @@ void WallpaperControllerImpl::UpdateWallpaperBlurForLockState(bool blur) {
   for (auto* root_window_controller : Shell::GetAllRootWindowControllers()) {
     changed |=
         root_window_controller->wallpaper_widget_controller()
-            ->SetBlurAndOpacity(needs_blur ? login_constants::kBlurSigma
-                                           : login_constants::kClearBlurSigma,
-                                1.f);
+            ->SetWallpaperProperty(needs_blur ? wallpaper_constants::kLockState
+                                              : wallpaper_constants::kClear);
   }
 
   is_wallpaper_blurred_for_lock_state_ = needs_blur;
@@ -1445,16 +1444,12 @@ void WallpaperControllerImpl::InstallDesktopController(
   auto* wallpaper_widget_controller =
       RootWindowController::ForWindow(root_window)
           ->wallpaper_widget_controller();
-
-  float blur = is_wallpaper_blurred_for_lock_state
-                   ? login_constants::kBlurSigma
-                   : wallpaper_widget_controller->blur_sigma();
-  float opacity = is_wallpaper_blurred_for_lock_state
-                      ? 1.f
-                      : wallpaper_widget_controller->opacity();
+  WallpaperProperty property = is_wallpaper_blurred_for_lock_state
+                                   ? wallpaper_constants::kLockState
+                                   : wallpaper_widget_controller->property();
 
   WallpaperView* current_wallpaper_view = nullptr;
-  auto* widget = CreateWallpaperWidget(root_window, container_id, blur, opacity,
+  auto* widget = CreateWallpaperWidget(root_window, container_id, property,
                                        &current_wallpaper_view);
   wallpaper_widget_controller->SetWallpaperWidget(widget,
                                                   current_wallpaper_view);

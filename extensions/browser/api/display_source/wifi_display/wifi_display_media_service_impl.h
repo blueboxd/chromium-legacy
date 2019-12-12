@@ -24,7 +24,7 @@ namespace extensions {
 class WiFiDisplayMediaServiceImpl : public mojom::WiFiDisplayMediaService {
  public:
   ~WiFiDisplayMediaServiceImpl() override;
-  static void BindToRequest(
+  static void BindToReceiver(
       mojo::PendingReceiver<mojom::WiFiDisplayMediaService> receiver,
       content::RenderFrameHost* render_frame_host);
 

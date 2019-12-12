@@ -24,7 +24,7 @@ extern const struct zxdg_popup_v6_interface kZxdgPopupV6Impl;
 
 class MockXdgPopup : public ServerObject {
  public:
-  MockXdgPopup(wl_resource* resource, const void* implementation);
+  MockXdgPopup(wl_resource* resource, wl_resource* surface);
   ~MockXdgPopup() override;
 
   MOCK_METHOD1(Grab, void(uint32_t serial));
@@ -42,8 +42,10 @@ class MockXdgPopup : public ServerObject {
   }
 
  private:
-  // Position of the popup. Used only with V6.
   struct TestPositioner::PopupPosition position_;
+
+  // Ground surface for this popup.
+  wl_resource* surface_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MockXdgPopup);
 };

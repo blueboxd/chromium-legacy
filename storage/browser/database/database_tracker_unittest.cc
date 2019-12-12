@@ -105,10 +105,8 @@ class TestQuotaManagerProxy : public storage::QuotaManagerProxy {
     registered_client_ = client;
   }
 
-  void NotifyStorageAccessed(storage::QuotaClient::ID client_id,
-                             const url::Origin& origin,
+  void NotifyStorageAccessed(const url::Origin& origin,
                              blink::mojom::StorageType type) override {
-    EXPECT_EQ(storage::QuotaClient::kDatabase, client_id);
     EXPECT_EQ(blink::mojom::StorageType::kTemporary, type);
     accesses_[origin] += 1;
   }

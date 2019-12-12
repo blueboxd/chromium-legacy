@@ -19,7 +19,7 @@ class FakeSensorProvider : public mojom::SensorProvider {
       mojo::PendingReceiver<mojom::SensorProvider> receiver);
   ~FakeSensorProvider() override;
 
-  void Bind(mojo::ScopedMessagePipeHandle handle);
+  void Bind(mojo::PendingReceiver<mojom::SensorProvider> receiver);
   void GetSensor(mojom::SensorType type, GetSensorCallback callback) override;
   void CallCallback(mojom::SensorInitParamsPtr param);
 

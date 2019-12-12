@@ -15,6 +15,7 @@
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_property.h"
 #include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -218,12 +219,8 @@ DragWindowFromShelfController::EndDrag(const gfx::PointF& location_in_screen,
       SplitViewController::Get(Shell::GetPrimaryRootWindow());
   const bool in_overview = overview_controller->InOverviewSession();
   const bool in_splitview = split_view_controller->InSplitViewMode();
-  const bool drop_window_in_overview =
-      ShouldDropWindowInOverview(location_in_screen, velocity_y);
-  SplitViewController::SnapPosition snap_position =
-      GetSnapPositionOnDragEnd(location_in_screen, velocity_y);
-
   base::Optional<ShelfWindowDragResult> window_drag_result;
+
   if (ShouldGoToHomeScreen(location_in_screen, velocity_y)) {
     DCHECK(!in_splitview);
     if (in_overview) {
@@ -241,16 +238,13 @@ DragWindowFromShelfController::EndDrag(const gfx::PointF& location_in_screen,
     ScaleDownWindowAfterDrag();
     window_drag_result = ShelfWindowDragResult::kGoToHomeScreen;
   } else {
-    if (drop_window_in_overview)
-      window_drag_result = ShelfWindowDragResult::kGoToOverviewMode;
-    else if (snap_position != SplitViewController::NONE)
-      window_drag_result = ShelfWindowDragResult::kGoToSplitviewMode;
-    // For window that may drop in overview or snap in split screen, restore its
-    // original backdrop mode.
-    window_->SetProperty(kBackdropWindowMode, original_backdrop_mode_);
+    window_drag_result = ShelfWindowDragResult::kGoToOverviewMode;
   }
 
-  OnDragEnded(location_in_screen, drop_window_in_overview, snap_position);
+  OnDragEnded(location_in_screen,
+              ShouldDropWindowInOverview(location_in_screen, velocity_y),
+              GetSnapPositionOnDragEnd(location_in_screen, velocity_y));
+
   return window_drag_result;
 }
 
@@ -320,7 +314,7 @@ void DragWindowFromShelfController::OnDragStarted(
   // Use the same dim and blur as in overview during dragging.
   RootWindowController::ForWindow(window_->GetRootWindow())
       ->wallpaper_widget_controller()
-      ->SetBlurAndOpacity(kWallpaperBlurSigma, kShieldOpacity);
+      ->SetWallpaperProperty(wallpaper_constants::kOverviewInTabletState);
 
   // If the dragged window is one of the snapped window in splitview, it needs
   // to be detached from splitview before start dragging.
@@ -368,7 +362,7 @@ void DragWindowFromShelfController::OnDragEnded(
   if (!overview_controller->InOverviewSession()) {
     RootWindowController::ForWindow(window_->GetRootWindow())
         ->wallpaper_widget_controller()
-        ->SetBlurAndOpacity(kWallpaperClearBlurSigma, 1.f);
+        ->SetWallpaperProperty(wallpaper_constants::kClear);
   }
 
   WindowState::Get(window_)->DeleteDragDetails();

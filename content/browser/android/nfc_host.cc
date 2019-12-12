@@ -8,10 +8,8 @@
 
 #include "base/atomic_sequence_num.h"
 #include "content/public/android/content_jni_headers/NfcHost_jni.h"
-#include "content/public/browser/system_connector.h"
-#include "services/device/public/mojom/constants.mojom.h"
+#include "content/public/browser/device_service.h"
 #include "services/device/public/mojom/nfc.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
 
@@ -30,11 +28,8 @@ NFCHost::NFCHost(WebContents* web_contents)
   // The created instance's reference is kept inside a map in Java world.
   Java_NfcHost_create(env, web_contents_->GetJavaWebContents(), id_);
 
-  service_manager::Connector* connector = content::GetSystemConnector();
-  if (connector) {
-    connector->Connect(device::mojom::kServiceName,
-                       nfc_provider_.BindNewPipeAndPassReceiver());
-  }
+  content::GetDeviceService().BindNFCProvider(
+      nfc_provider_.BindNewPipeAndPassReceiver());
 }
 
 void NFCHost::GetNFC(mojo::PendingReceiver<device::mojom::NFC> receiver) {

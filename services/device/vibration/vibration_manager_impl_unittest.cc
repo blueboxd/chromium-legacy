@@ -5,7 +5,6 @@
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/device_service_test_base.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/vibration_manager.mojom.h"
 
 #if defined(OS_ANDROID)
@@ -28,8 +27,8 @@ class VibrationManagerImplTest : public DeviceServiceTestBase {
   void SetUp() override {
     DeviceServiceTestBase::SetUp();
 
-    connector()->Connect(mojom::kServiceName,
-                         vibration_manager_.BindNewPipeAndPassReceiver());
+    device_service()->BindVibrationManager(
+        vibration_manager_.BindNewPipeAndPassReceiver());
   }
 
   void Vibrate(int64_t milliseconds) {

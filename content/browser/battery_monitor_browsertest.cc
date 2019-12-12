@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -17,8 +18,6 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "services/device/public/mojom/battery_status.mojom.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/service_binding.h"
 
 namespace content {
 
@@ -76,15 +75,14 @@ class BatteryMonitorTest : public ContentBrowserTest {
     // Because Device Service also runs in this process(browser process), here
     // we can directly set our binder to intercept interface requests against
     // it.
-    service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
-        device::mojom::kServiceName,
+    RenderProcessHostImpl::OverrideBatteryMonitorBinderForTesting(
         base::BindRepeating(&MockBatteryMonitor::Bind,
                             base::Unretained(mock_battery_monitor_.get())));
   }
 
   ~BatteryMonitorTest() override {
-    service_manager::ServiceBinding::ClearInterfaceBinderOverrideForTesting<
-        device::mojom::BatteryMonitor>(device::mojom::kServiceName);
+    RenderProcessHostImpl::OverrideBatteryMonitorBinderForTesting(
+        base::NullCallback());
   }
 
  protected:

@@ -6,6 +6,7 @@
 #define ASH_LOGIN_UI_LOGIN_PIN_VIEW_H_
 
 #include <memory>
+#include <vector>
 
 #include "ash/ash_export.h"
 #include "ash/login/ui/non_accessible_view.h"
@@ -97,6 +98,9 @@ class ASH_EXPORT LoginPinView : public NonAccessibleView {
                const OnPinBack& on_back);
   ~LoginPinView() override;
 
+  // Notify accessibility that location of rows and LoginPinView changed.
+  void NotifyAccessibilityLocationChanged();
+
   void SetBackButtonVisible(bool visible);
 
   // Called when the password field text changed.
@@ -111,6 +115,8 @@ class ASH_EXPORT LoginPinView : public NonAccessibleView {
   OnPinKey on_key_;
   OnPinBackspace on_backspace_;
   OnPinBack on_back_;
+
+  std::vector<NonAccessibleView*> rows;
 
   DISALLOW_COPY_AND_ASSIGN(LoginPinView);
 };

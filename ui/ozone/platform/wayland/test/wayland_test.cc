@@ -55,6 +55,8 @@ void WaylandTest::SetUp() {
                                   std::move(properties));
   ASSERT_NE(widget_, gfx::kNullAcceleratedWidget);
 
+  window_->Show(false);
+
   // Wait for the client to flush all pending requests from initialization.
   base::RunLoop().RunUntilIdle();
 

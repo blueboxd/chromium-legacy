@@ -17,7 +17,7 @@
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_media_pipeline.h"
 #include "media/base/bind_to_current_loop.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 
 namespace extensions {
 
@@ -88,11 +88,11 @@ WiFiDisplayMediaManager::WiFiDisplayMediaManager(
     const blink::WebMediaStreamTrack& video_track,
     const blink::WebMediaStreamTrack& audio_track,
     const net::IPAddress& sink_ip_address,
-    service_manager::InterfaceProvider* interface_provider,
+    blink::BrowserInterfaceBrokerProxy* interface_broker,
     const ErrorCallback& error_callback)
     : video_track_(video_track),
       audio_track_(audio_track),
-      interface_provider_(interface_provider),
+      interface_broker_(interface_broker),
       sink_ip_address_(sink_ip_address),
       player_(nullptr),
       io_task_runner_(content::RenderThread::Get()->GetIOTaskRunner()),
@@ -101,7 +101,7 @@ WiFiDisplayMediaManager::WiFiDisplayMediaManager(
       is_initialized_(false),
       weak_factory_(this) {
   DCHECK(!video_track.isNull() || !audio_track.isNull());
-  DCHECK(interface_provider_);
+  DCHECK(interface_broker);
   DCHECK(!error_callback_.is_null());
 }
 
@@ -489,7 +489,7 @@ void WiFiDisplayMediaManager::RegisterMediaService(
 void WiFiDisplayMediaManager::ConnectToRemoteService(
     mojo::PendingReceiver<mojom::WiFiDisplayMediaService> receiver) {
   DCHECK(content::RenderThread::Get());
-  interface_provider_->GetInterface(std::move(receiver));
+  interface_broker_->GetInterface(std::move(receiver));
 }
 
 }  // namespace extensions

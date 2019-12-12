@@ -13,9 +13,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/device_service_test_base.h"
 #include "services/device/public/cpp/power_monitor/power_monitor_broadcast_source.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/power_monitor.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace device {
 
@@ -81,8 +79,8 @@ TEST_F(PowerMonitorMessageBroadcasterTest, PowerMessageBroadcast) {
           std::make_unique<MockClient>(run_loop.QuitClosure()),
           base::SequencedTaskRunnerHandle::Get()));
   mojo::PendingRemote<mojom::PowerMonitor> remote_monitor;
-  connector()->Connect(mojom::kServiceName,
-                       remote_monitor.InitWithNewPipeAndPassReceiver());
+  device_service()->BindPowerMonitor(
+      remote_monitor.InitWithNewPipeAndPassReceiver());
   broadcast_source->Init(std::move(remote_monitor));
   run_loop.Run();
 

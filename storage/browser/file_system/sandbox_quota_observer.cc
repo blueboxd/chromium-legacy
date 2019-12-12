@@ -78,8 +78,7 @@ void SandboxQuotaObserver::OnEndUpdate(const FileSystemURL& url) {
 void SandboxQuotaObserver::OnAccess(const FileSystemURL& url) {
   if (quota_manager_proxy_.get()) {
     quota_manager_proxy_->NotifyStorageAccessed(
-        storage::QuotaClient::kFileSystem, url.origin(),
-        FileSystemTypeToQuotaStorageType(url.type()));
+        url.origin(), FileSystemTypeToQuotaStorageType(url.type()));
   }
 }
 

@@ -23,7 +23,7 @@ static base::RepeatingCallback<blink::OriginTrialPolicy*()>& PolicyGetter() {
           []() -> blink::OriginTrialPolicy* { return nullptr; }));
   return *policy;
 }
-}
+}  // namespace
 
 namespace blink {
 
@@ -55,13 +55,18 @@ OriginTrialTokenStatus TrialTokenValidator::ValidateToken(
   if (!policy->IsOriginTrialsSupported())
     return OriginTrialTokenStatus::kNotSupported;
 
-  // TODO(iclelland): Allow for multiple signing keys, and iterate over all
-  // active keys here. https://crbug.com/543220
-  base::StringPiece public_key = policy->GetPublicKey();
+  std::vector<base::StringPiece> public_keys = policy->GetPublicKeys();
+  if (public_keys.size() == 0)
+    return OriginTrialTokenStatus::kNotSupported;
 
   OriginTrialTokenStatus status;
-  std::unique_ptr<TrialToken> trial_token =
-      TrialToken::From(token, public_key, &status);
+  std::unique_ptr<TrialToken> trial_token;
+  for (auto& key : public_keys) {
+    trial_token = TrialToken::From(token, key, &status);
+    if (status == OriginTrialTokenStatus::kSuccess)
+      break;
+  }
+
   if (status != OriginTrialTokenStatus::kSuccess)
     return status;
 

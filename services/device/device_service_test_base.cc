@@ -60,7 +60,10 @@ DeviceServiceTestBase::DeviceServiceTestBase()
           {base::ThreadPool(), base::TaskPriority::USER_VISIBLE})),
       network_connection_tracker_(
           network::TestNetworkConnectionTracker::CreateInstance()),
-      connector_(test_connector_factory_.CreateConnector()) {}
+      connector_(test_connector_factory_.CreateConnector()) {
+  connector_->Connect(mojom::kServiceName,
+                      service_remote_.BindNewPipeAndPassReceiver());
+}
 
 DeviceServiceTestBase::~DeviceServiceTestBase() = default;
 

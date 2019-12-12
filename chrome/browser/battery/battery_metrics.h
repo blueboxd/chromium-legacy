@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_BATTERY_BATTERY_METRICS_H_
 #define CHROME_BROWSER_BATTERY_BATTERY_METRICS_H_
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "services/device/public/mojom/battery_status.mojom.h"
@@ -19,6 +21,12 @@ class BatteryMetrics {
  public:
   BatteryMetrics();
   ~BatteryMetrics();
+
+  // Allows tests to override how this class binds a BatteryMonitor receiver.
+  using BatteryMonitorBinder = base::RepeatingCallback<void(
+      mojo::PendingReceiver<device::mojom::BatteryMonitor>)>;
+  static void OverrideBatteryMonitorBinderForTesting(
+      BatteryMonitorBinder binder);
 
  private:
   // Start recording UMA for the session/profile.

@@ -437,7 +437,7 @@
 - (void)showReadingList {
   self.readingListCoordinator = [[ReadingListCoordinator alloc]
       initWithBaseViewController:self.viewController
-                    browserState:self.browserState];
+                         browser:self.browser];
   [self.readingListCoordinator start];
 }
 

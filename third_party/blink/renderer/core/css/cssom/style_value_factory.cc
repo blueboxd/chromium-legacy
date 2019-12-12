@@ -56,7 +56,7 @@ CSSStyleValue* CreateStyleValue(const CSSValue& value) {
   if (auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value))
     return CSSNumericValue::FromCSSValue(*primitive_value);
   if (auto* color_value = DynamicTo<cssvalue::CSSColorValue>(value))
-    return CSSUnsupportedColorValue::FromCSSValue(*color_value);
+    return MakeGarbageCollected<CSSUnsupportedColorValue>(*color_value);
   if (auto* image_value = DynamicTo<CSSImageValue>(value))
     return MakeGarbageCollected<CSSURLImageValue>(*image_value->Clone());
   return nullptr;
@@ -106,8 +106,8 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
       if (identifier_value &&
           identifier_value->GetValueID() == CSSValueID::kCurrentcolor)
         return CSSKeywordValue::Create("currentcolor");
-      return CSSUnsupportedStyleValue::Create(CSSPropertyName(property_id),
-                                              value);
+      return MakeGarbageCollected<CSSUnsupportedStyleValue>(
+          CSSPropertyName(property_id), value);
     }
     case CSSPropertyID::kContain: {
       if (value.IsIdentifierValue())
@@ -228,8 +228,8 @@ CSSStyleValue* CreateStyleValueWithProperty(CSSPropertyID property_id,
 
   if (!CSSOMTypes::IsPropertySupported(property_id)) {
     DCHECK_NE(property_id, CSSPropertyID::kVariable);
-    return CSSUnsupportedStyleValue::Create(CSSPropertyName(property_id),
-                                            value);
+    return MakeGarbageCollected<CSSUnsupportedStyleValue>(
+        CSSPropertyName(property_id), value);
   }
 
   CSSStyleValue* style_value =
@@ -242,7 +242,8 @@ CSSStyleValue* CreateStyleValueWithProperty(CSSPropertyID property_id,
 CSSStyleValueVector UnsupportedCSSValue(const CSSPropertyName& name,
                                         const CSSValue& value) {
   CSSStyleValueVector style_value_vector;
-  style_value_vector.push_back(CSSUnsupportedStyleValue::Create(name, value));
+  style_value_vector.push_back(
+      MakeGarbageCollected<CSSUnsupportedStyleValue>(name, value));
   return style_value_vector;
 }
 
@@ -278,7 +279,7 @@ CSSStyleValueVector StyleValueFactory::FromString(
 
     // Shorthands are not yet supported.
     CSSStyleValueVector result;
-    result.push_back(CSSUnsupportedStyleValue::Create(
+    result.push_back(MakeGarbageCollected<CSSUnsupportedStyleValue>(
         CSSPropertyName(property_id), css_text));
     return result;
   }
@@ -304,7 +305,7 @@ CSSStyleValue* StyleValueFactory::CssValueToStyleValue(
   CSSStyleValue* style_value =
       CreateStyleValueWithProperty(name.Id(), css_value);
   if (!style_value)
-    return CSSUnsupportedStyleValue::Create(name, css_value);
+    return MakeGarbageCollected<CSSUnsupportedStyleValue>(name, css_value);
   return style_value;
 }
 
@@ -385,10 +386,12 @@ CSSStyleValueVector StyleValueFactory::CssValueToStyleValueVector(
     const CSSValue& css_value) {
   CSSStyleValueVector style_value_vector;
 
-  if (CSSStyleValue* value = CreateStyleValueWithoutProperty(css_value))
+  if (CSSStyleValue* value = CreateStyleValueWithoutProperty(css_value)) {
     style_value_vector.push_back(value);
-  else
-    style_value_vector.push_back(CSSUnsupportedStyleValue::Create(css_value));
+  } else {
+    style_value_vector.push_back(
+        MakeGarbageCollected<CSSUnsupportedStyleValue>(css_value.CssText()));
+  }
 
   return style_value_vector;
 }

@@ -148,10 +148,10 @@ unsigned ExtractCompoundFlags(const CSSParserSelector& simple_selector,
     return kHasContentPseudoElement;
   if (simple_selector.GetPseudoType() == CSSSelector::kPseudoShadow)
     return 0;
-  // TODO(futhark@chromium.org): crbug.com/578131
-  // The UASheetMode check is a work-around to allow this selector in
-  // mediaControls(New).css:
-  // input[type="range" i]::-webkit-media-slider-container > div {
+  // We don't restrict what follows custom ::-webkit-* pseudo elements in UA
+  // sheets. We currently use selectors in mediaControls.css like this:
+  //
+  // video::-webkit-media-text-track-region-container.scrolling
   if (parser_mode == kUASheetMode &&
       simple_selector.GetPseudoType() ==
           CSSSelector::kPseudoWebKitCustomElement)

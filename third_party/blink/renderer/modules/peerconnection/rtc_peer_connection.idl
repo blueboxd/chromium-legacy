@@ -70,13 +70,13 @@ enum RTCPeerConnectionState {
     RaisesException=Constructor,
     Exposed=Window
 ] interface RTCPeerConnection : EventTarget {
-    [CallWith=ScriptState] Promise<RTCSessionDescription> createOffer(optional RTCOfferOptions options);
-    [CallWith=ScriptState] Promise<RTCSessionDescription> createAnswer(optional RTCAnswerOptions options);
-    [CallWith=ScriptState] Promise<void> setLocalDescription(optional RTCSessionDescriptionInit description = {});
+    [CallWith=ScriptState, RaisesException] Promise<RTCSessionDescription> createOffer(optional RTCOfferOptions options);
+    [CallWith=ScriptState, RaisesException] Promise<RTCSessionDescription> createAnswer(optional RTCAnswerOptions options);
+    [CallWith=ScriptState, RaisesException] Promise<void> setLocalDescription(optional RTCSessionDescriptionInit description = {});
     readonly attribute RTCSessionDescription? localDescription;
     readonly attribute RTCSessionDescription? currentLocalDescription;
     readonly attribute RTCSessionDescription? pendingLocalDescription;
-    [CallWith=ScriptState] Promise<void> setRemoteDescription(RTCSessionDescriptionInit description);
+    [CallWith=ScriptState, RaisesException] Promise<void> setRemoteDescription(RTCSessionDescriptionInit description);
     readonly attribute RTCSessionDescription? remoteDescription;
     readonly attribute RTCSessionDescription? currentRemoteDescription;
     readonly attribute RTCSessionDescription? pendingRemoteDescription;

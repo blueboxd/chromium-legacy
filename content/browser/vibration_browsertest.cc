@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "content/browser/browser_interface_binders.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -15,9 +16,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/vibration_manager.mojom.h"
-#include "services/service_manager/public/cpp/service_binding.h"
 
 namespace content {
 
@@ -27,18 +26,12 @@ class VibrationTest : public ContentBrowserTest,
                       public device::mojom::VibrationManager {
  public:
   VibrationTest() {
-    // Because Device Service also runs in this process(browser process), here
-    // we can directly set our binder to intercept interface requests against
-    // it.
-    service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
-        device::mojom::kServiceName,
-        base::BindRepeating(&VibrationTest::BindVibrationManager,
-                            base::Unretained(this)));
+    OverrideVibrationManagerBinderForTesting(base::BindRepeating(
+        &VibrationTest::BindVibrationManager, base::Unretained(this)));
   }
 
   ~VibrationTest() override {
-    service_manager::ServiceBinding::ClearInterfaceBinderOverrideForTesting<
-        device::mojom::VibrationManager>(device::mojom::kServiceName);
+    OverrideVibrationManagerBinderForTesting(base::NullCallback());
   }
 
   void BindVibrationManager(

@@ -10,17 +10,15 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "chrome/browser/battery/battery_metrics.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/browser_test_utils.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "services/device/public/mojom/battery_status.mojom.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/service_binding.h"
 
 namespace {
 
@@ -108,15 +106,14 @@ class BatteryMetricsBrowserTest : public InProcessBrowserTest {
  private:
   void SetUpOnMainThread() override {
     mock_battery_monitor_ = std::make_unique<MockBatteryMonitor>();
-    service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
-        device::mojom::kServiceName,
+    BatteryMetrics::OverrideBatteryMonitorBinderForTesting(
         base::BindRepeating(&MockBatteryMonitor::Bind,
                             base::Unretained(mock_battery_monitor_.get())));
   }
 
   void TearDownOnMainThread() override {
-    service_manager::ServiceBinding::ClearInterfaceBinderOverrideForTesting<
-        device::mojom::BatteryMonitor>(device::mojom::kServiceName);
+    BatteryMetrics::OverrideBatteryMonitorBinderForTesting(
+        base::NullCallback());
 
     InProcessBrowserTest::TearDownOnMainThread();
   }

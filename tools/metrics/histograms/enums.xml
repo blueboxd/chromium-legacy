@@ -4388,6 +4388,12 @@ Unknown properties are collapsed to zero. -->
   <int value="10" label="All Bits"/>
 </enum>
 
+<enum name="AutofillMigrateUserOptedInToWalletSync">
+  <int value="0" label="Not migrated"/>
+  <int value="1" label="Migrated from canonical email"/>
+  <int value="2" label="Migrated from non canonical email"/>
+</enum>
+
 <enum name="AutofillPredictionSource">
   <int value="0" label="PREDICTION_SOURCE_UNKNOWN"/>
   <int value="1" label="PREDICTION_SOURCE_HEURISTIC"/>
@@ -36303,7 +36309,6 @@ from previous Chrome versions.
   <int value="-1768672408" label="ChromeDuplex:disabled"/>
   <int value="-1768308156" label="OmniboxDedupeGoogleDriveURLs:enabled"/>
   <int value="-1767470652" label="out-of-process-pdf"/>
-  <int value="-1766791501" label="WebUITabStrip:enabled"/>
   <int value="-1766648764" label="OmniboxShortBookmarkSuggestions:disabled"/>
   <int value="-1766162197" label="AppServiceInstanceRegistry:enabled"/>
   <int value="-1766129470" label="DataSaverLiteModeRebranding:disabled"/>
@@ -38440,7 +38445,6 @@ from previous Chrome versions.
   <int value="975104092" label="show-taps"/>
   <int value="976079108" label="TouchpadOverscrollHistoryNavigation:disabled"/>
   <int value="976278412" label="google-password-manager:enabled"/>
-  <int value="977968353" label="WebUITabStrip:disabled"/>
   <int value="978712907" label="PrintServerUi:disabled"/>
   <int value="979445973" label="OmniboxSpareRenderer:enabled"/>
   <int value="980396200" label="enable-new-korean-ime"/>

@@ -2159,9 +2159,6 @@ crbug.com/645988 external/wpt/uievents/order-of-events/focus-events/focus-manual
 crbug.com/346473  fast/events/drag-on-mouse-move-cancelled.html [ Failure ]
 crbug.com/346473  virtual/mouseevent_fractional/fast/events/drag-on-mouse-move-cancelled.html [ Failure ]
 
-# About to land a change which will imperceptibly change the rendering of this test
-skbug.com/8250 svg/W3C-SVG-1.1/filters-turb-01-f.svg [ Pass Failure ]
-
 # These tests are skipped as there is no touch support on Mac.
 crbug.com/613672 [ Mac ] external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/unified-autoplay/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
@@ -2792,7 +2789,6 @@ crbug.com/626703 [ Mac ] external/wpt/html/webappapis/dynamic-markup-insertion/o
 crbug.com/626703 [ Win ] external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/location-set-and-document-open.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-enter-exit.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/preload/preload-with-type.html [ Pass Timeout ]
-crbug.com/626703 [ Win10 ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/threaded/external/wpt/css/css-animations/animation-opacity-pause-and-set-time.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/html/rendering/non-replaced-elements/form-controls/select-sizing-001.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-align/baseline-rules/grid-item-input-type-number.html [ Failure ]
@@ -2855,7 +2851,6 @@ crbug.com/626703 [ Win ] external/wpt/css/motion/offset-path-ray-009.html [ Fail
 crbug.com/626703 [ Linux ] external/wpt/css/motion/offset-path-ray-contain-005.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/motion/offset-path-ray-contain-005.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/motion/offset-path-ray-contain-005.html [ Failure ]
-crbug.com/626703 [ Win7 ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
 crbug.com/626703 [ Win10 ] virtual/cascade/external/wpt/css/css-paint-api/color-custom-property-animation.https.html [ Failure ]
@@ -3976,7 +3971,12 @@ crbug.com/655458 virtual/omt-worker-fetch/external/wpt/workers/semantics/multipl
 
 crbug.com/910709 navigator_language/worker_navigator_language.html [ Timeout ]
 
-crbug.com/1002377 [ Win ] virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
+crbug.com/1002377 external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Pass Timeout ]
+crbug.com/1002377 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Pass Timeout ]
+crbug.com/1002377 virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Pass Timeout ]
+crbug.com/1002377 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Pass Timeout ]
+crbug.com/1002377 virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Pass Timeout ]
+crbug.com/1002377 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Pass Timeout ]
 
 crbug.com/435547 http/tests/cachestorage/serviceworker/ignore-search-with-credentials.html [ Skip ]
 
@@ -4726,8 +4726,6 @@ crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-strokeRect-alpha-shadow.
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ Skip ]
 # Fails on Mac but might be removed altogether crbug.com/903837
 crbug.com/903837 [ Mac ] virtual/gpu/fast/canvas/color-space/display_linear-rgb.html [ Skip ]
-
-crbug.com/766129 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
 
 # Antialiasing error
 crbug.com/845973 virtual/display-compositor-pixel-dump/fast/canvas/display-compositor-pixel-dump/OffscreenCanvas-opaque-background-compositing.html  [ Pass Failure ]
@@ -6127,7 +6125,8 @@ crbug.com/993790 virtual/document-policy/external/wpt/document-policy/required-p
 # Temporary suppression to allow devtools-frontend changes
 crbug.com/1029489 http/tests/devtools/elements/elements-linkify-attributes.js [ Pass Failure ]
 crbug.com/1030258 http/tests/devtools/resource-har-conversion.js [ Pass Failure ]
-
+crbug.com/1030258 http/tests/devtools/components/cookie-parser.js [ Pass Failure ]
+crbug.com/1030258 http/tests/devtools/network/network-columns-visible.js [ Pass Failure ]
 crbug.com/1029521 virtual/threaded/external/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Pass Failure Timeout ]
 
 # Enable scroll-snap tests on impl thread
@@ -6145,10 +6144,6 @@ crbug.com/1032451 virtual/threaded-no-composited-antialiasing/animations/stabili
 # Temporarily disabled to land DOM breakpoint changes in DevTools
 crbug.com/963183 http/tests/devtools/sources/debugger-breakpoints/dom-breakpoints.js [ Pass Failure ]
 crbug.com/963183 http/tests/devtools/a11y-axe-core/sources/dom-breakpoints-pane-a11y-test.js [ Pass Failure ]
-
-# Temporarily disabled for landing frontend source map reporting changes in DevTools
-crbug.com/1030746 http/tests/devtools/sourcemap-section-warning.js [ Pass Failure ]
-crbug.com/1030746 http/tests/devtools/sources/debugger-ui/sourcemap-src-not-loaded.js [ Pass Failure ]
 
 # Temporarily disabled for landing changes to front_end/common in DevTools
 crbug.com/1006759 inspector-protocol/heap-profiler/heap-samples-in-snapshot.js [ Pass Failure ]

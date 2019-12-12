@@ -963,11 +963,10 @@ void QuotaManager::GetUsageAndQuota(const url::Origin& origin,
   GetUsageAndQuotaForWebApps(origin, type, std::move(callback));
 }
 
-void QuotaManager::NotifyStorageAccessed(QuotaClient::ID client_id,
-                                         const url::Origin& origin,
+void QuotaManager::NotifyStorageAccessed(const url::Origin& origin,
                                          StorageType type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NotifyStorageAccessedInternal(client_id, origin, type, base::Time::Now());
+  NotifyStorageAccessedInternal(origin, type, base::Time::Now());
 }
 
 void QuotaManager::NotifyStorageModified(QuotaClient::ID client_id,
@@ -1325,8 +1324,7 @@ void QuotaManager::GetCachedOrigins(StorageType type,
   GetUsageTracker(type)->GetCachedOrigins(origins);
 }
 
-void QuotaManager::NotifyStorageAccessedInternal(QuotaClient::ID client_id,
-                                                 const url::Origin& origin,
+void QuotaManager::NotifyStorageAccessedInternal(const url::Origin& origin,
                                                  StorageType type,
                                                  base::Time accessed_time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

@@ -35,6 +35,7 @@
 namespace {
 
 constexpr int kFramePaddingLeft = 75;
+// Keep in sync with web_app_frame_toolbar_browsertest.cc
 constexpr double kTitlePaddingWidthFraction = 0.1;
 
 FullscreenToolbarStyle GetUserPreferredToolbarStyle(bool always_show) {
@@ -76,6 +77,9 @@ BrowserNonClientFrameViewMac::BrowserNonClientFrameViewMac(
               GetCaptionColor(BrowserFrameActiveState::kInactive))));
     }
 
+    // The window title appears above the web app frame toolbar (if present),
+    // which surrounds the title with minimal-ui buttons on the left,
+    // and other controls (such as the app menu button) on the right.
     DCHECK(browser_view->ShouldShowWindowTitle());
     window_title_ = AddChildView(
         std::make_unique<views::Label>(browser_view->GetWindowTitle()));

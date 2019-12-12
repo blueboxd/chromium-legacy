@@ -25,6 +25,7 @@
 #include "ios/chrome/browser/translate/language_selection_handler.h"
 #import "ios/chrome/browser/translate/translate_constants.h"
 #import "ios/chrome/browser/translate/translate_infobar_delegate_observer_bridge.h"
+#import "ios/chrome/browser/translate/translate_infobar_metrics_recorder.h"
 #include "ios/chrome/browser/translate/translate_option_selection_delegate.h"
 #include "ios/chrome/browser/translate/translate_option_selection_handler.h"
 #import "ios/chrome/browser/ui/translate/translate_infobar_view.h"
@@ -72,6 +73,12 @@ typedef NS_ENUM(NSInteger, LanguageSelectionState) {
 // Tracks user actions.
 @property(nonatomic, assign) UserAction userAction;
 
+// The NSDate during which the infobar was displayed.
+@property(nonatomic, strong) NSDate* infobarDisplayTime;
+
+// The NSDate of when a Translate or a revert was last executed.
+@property(nonatomic, strong) NSDate* lastTranslateTime;
+
 // Tracks the total number of translations in a page, incl. reverts to original.
 @property(nonatomic, assign) NSUInteger translationsCount;
 
@@ -97,6 +104,16 @@ typedef NS_ENUM(NSInteger, LanguageSelectionState) {
   return self;
 }
 
+- (void)dealloc {
+  if (self.userAction == UserActionNone) {
+    NSTimeInterval displayDuration =
+        [[NSDate date] timeIntervalSinceDate:self.infobarDisplayTime];
+    [TranslateInfobarMetricsRecorder
+        recordUnusedLegacyInfobarScreenDuration:displayDuration];
+    [TranslateInfobarMetricsRecorder recordUnusedInfobar];
+  }
+}
+
 - (UIView*)infobarView {
   TranslateInfobarView* infobarView =
       [[TranslateInfobarView alloc] initWithFrame:CGRectZero];
@@ -106,6 +123,7 @@ typedef NS_ENUM(NSInteger, LanguageSelectionState) {
   infobarView.targetLanguage = self.targetLanguage;
   infobarView.delegate = self;
   [self updateUIForTranslateStep:self.infoBarDelegate->translate_step()];
+  self.infobarDisplayTime = [NSDate date];
   return infobarView;
 }
 
@@ -138,6 +156,13 @@ typedef NS_ENUM(NSInteger, LanguageSelectionState) {
     return;
 
   self.userAction |= UserActionRevert;
+  if (self.userAction & UserActionTranslate) {
+    // Log the time between the last translate and this revert.
+    NSTimeInterval duration =
+        [[NSDate date] timeIntervalSinceDate:self.lastTranslateTime];
+    [TranslateInfobarMetricsRecorder recordLegacyInfobarToggleDelay:duration];
+  }
+  self.lastTranslateTime = [NSDate date];
 
   [self recordInfobarEvent:InfobarEvent::INFOBAR_REVERT];
   [self incrementAndRecordTranslationsCount];
@@ -155,6 +180,13 @@ typedef NS_ENUM(NSInteger, LanguageSelectionState) {
     return;
 
   self.userAction |= UserActionTranslate;
+  if (self.userAction & UserActionRevert) {
+    // Log the time between the last revert and this translate.
+    NSTimeInterval duration =
+        [[NSDate date] timeIntervalSinceDate:self.lastTranslateTime];
+    [TranslateInfobarMetricsRecorder recordLegacyInfobarToggleDelay:duration];
+  }
+  self.lastTranslateTime = [NSDate date];
 
   [self recordInfobarEvent:InfobarEvent::INFOBAR_TARGET_TAB_TRANSLATE];
   [self

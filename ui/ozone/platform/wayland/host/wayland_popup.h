@@ -32,7 +32,7 @@ class WaylandPopup : public WaylandWindow {
   bool OnInitialize(PlatformWindowInitProperties properties) override;
 
   // Creates a popup window, which is visible as a menu window.
-  void CreateShellPopup();
+  bool CreateShellPopup();
 
   // Returns bounds with origin relative to parent window's origin.
   gfx::Rect AdjustPopupWindowPosition();

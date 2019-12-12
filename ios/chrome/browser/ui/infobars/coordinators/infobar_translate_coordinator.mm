@@ -183,6 +183,9 @@ NSString* const kTranslateNotificationSnackbarCategory =
     // RemoveInfoBar() will delete the InfobarIOS that owns this Coordinator
     // from memory.
     self.delegate->RemoveInfoBar();
+    if (self.userAction == UserActionNone) {
+      [TranslateInfobarMetricsRecorder recordUnusedInfobar];
+    }
     [self.infobarContainer childCoordinatorStopped:self];
   }
 }

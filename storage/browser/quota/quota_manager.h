@@ -169,8 +169,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   // Called by clients via proxy.
   // Client storage should call this method when storage is accessed.
   // Used to maintain LRU ordering.
-  void NotifyStorageAccessed(QuotaClient::ID client_id,
-                             const url::Origin& origin,
+  void NotifyStorageAccessed(const url::Origin& origin,
                              blink::mojom::StorageType type);
 
   // Called by clients via proxy.
@@ -340,8 +339,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
                         std::set<url::Origin>* origins);
 
   // These internal methods are separately defined mainly for testing.
-  void NotifyStorageAccessedInternal(QuotaClient::ID client_id,
-                                     const url::Origin& origin,
+  void NotifyStorageAccessedInternal(const url::Origin& origin,
                                      blink::mojom::StorageType type,
                                      base::Time accessed_time);
   void NotifyStorageModifiedInternal(QuotaClient::ID client_id,

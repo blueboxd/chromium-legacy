@@ -58,7 +58,6 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_interface_binders.h"
-#include "extensions/browser/mojo/interface_registration.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/browser/url_request_util.h"
 #include "extensions/common/features/feature_channel.h"
@@ -334,7 +333,6 @@ void ChromeExtensionsBrowserClient::RegisterExtensionInterfaces(
         registry,
     content::RenderFrameHost* render_frame_host,
     const Extension* extension) const {
-  RegisterInterfacesForExtension(registry, render_frame_host, extension);
   RegisterChromeInterfacesForExtension(registry, render_frame_host, extension);
 }
 

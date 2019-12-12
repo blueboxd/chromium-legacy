@@ -21,7 +21,6 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
 #import "ios/chrome/browser/sessions/session_ios.h"
-#import "ios/chrome/browser/sessions/session_ios_factory.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/web/public/session/crw_navigation_item_storage.h"
 #import "ios/web/public/session/crw_session_certificate_policy_cache_storage.h"
@@ -77,9 +76,8 @@ NSString* const kRootObjectKey = @"root";  // Key for the root object.
   // The SequencedTaskRunner on which File IO operations are performed.
   scoped_refptr<base::SequencedTaskRunner> _taskRunner;
 
-  // Maps session path to the pending session factories for the delayed save
-  // behaviour. SessionIOSFactory pointers are weak.
-  NSMapTable<NSString*, SessionIOSFactory*>* _pendingSessions;
+  // Maps session path to the pending session for the delayed save behaviour.
+  NSMutableDictionary<NSString*, SessionIOSFactory>* _pendingSessions;
 }
 
 #pragma mark - NSObject overrides
@@ -108,13 +106,13 @@ NSString* const kRootObjectKey = @"root";  // Key for the root object.
   DCHECK(taskRunner);
   self = [super init];
   if (self) {
-    _pendingSessions = [NSMapTable strongToWeakObjectsMapTable];
+    _pendingSessions = [NSMutableDictionary dictionary];
     _taskRunner = taskRunner;
   }
   return self;
 }
 
-- (void)saveSession:(__weak SessionIOSFactory*)factory
+- (void)saveSession:(SessionIOSFactory)factory
           directory:(NSString*)directory
         immediately:(BOOL)immediately {
   NSString* sessionPath = [[self class] sessionPathForDirectory:directory];
@@ -213,12 +211,13 @@ NSString* const kRootObjectKey = @"root";  // Key for the root object.
 // Do the work of saving on a background thread.
 - (void)performSaveToPathInBackground:(NSString*)sessionPath {
   DCHECK(sessionPath);
+  DCHECK([_pendingSessions objectForKey:sessionPath] != nil);
 
   // Serialize to NSData on the main thread to avoid accessing potentially
   // non-threadsafe objects on a background thread.
-  SessionIOSFactory* factory = [_pendingSessions objectForKey:sessionPath];
+  SessionIOSFactory factory = [_pendingSessions objectForKey:sessionPath];
   [_pendingSessions removeObjectForKey:sessionPath];
-  SessionIOS* session = [factory sessionForSaving];
+  SessionIOS* session = factory();
   // Because the factory may be called asynchronously after the underlying
   // web state list is destroyed, the session may be nil; if so, do nothing.
   if (!session)

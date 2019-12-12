@@ -74,11 +74,8 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
     // Dragged window restored to its original bounds.
     kRestoreToOriginalBounds,
 
-    // Dragged window is dropped to overview after drag ends.
-    kGoToOverviewMode,
-
-    // Enter splitview mode after drag ends.
-    kGoToSplitviewMode,
+    // Enter overview mode after drag ends.
+    kGoToOverviewMode
   };
 
   class Observer : public base::CheckedObserver {

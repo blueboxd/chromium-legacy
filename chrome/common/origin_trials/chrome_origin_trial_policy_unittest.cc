@@ -23,12 +23,38 @@ const uint8_t kTestPublicKey[] = {
 // Base64 encoding of the above sample public key
 const char kTestPublicKeyString[] =
     "dRCs+TocuKkocNKa0AtZ4awrt9XKH2SQCI6o4FY6BNA=";
+
+const uint8_t kTwoTestPublicKeys[][32] = {
+{
+    0x75, 0x10, 0xac, 0xf9, 0x3a, 0x1c, 0xb8, 0xa9, 0x28, 0x70, 0xd2,
+    0x9a, 0xd0, 0x0b, 0x59, 0xe1, 0xac, 0x2b, 0xb7, 0xd5, 0xca, 0x1f,
+    0x64, 0x90, 0x08, 0x8e, 0xa8, 0xe0, 0x56, 0x3a, 0x04, 0xd0,
+},
+{
+    0x50, 0x07, 0x4d, 0x76, 0x55, 0x56, 0x42, 0x17, 0x2d, 0x8a, 0x9c,
+    0x47, 0x96, 0x25, 0xda, 0x70, 0xaa, 0xb9, 0xfd, 0x53, 0x5d, 0x51,
+    0x3e, 0x16, 0xab, 0xb4, 0x86, 0xea, 0xf3, 0x35, 0xc6, 0xca,
+}};
+const int kTwoTestPublicKeysSize = 2;
+
+// Comma-separated Base64 encodings of the above sample public keys.
+const char kTwoTestPublicKeysString[] =
+    "dRCs+TocuKkocNKa0AtZ4awrt9XKH2SQCI6o4FY6BNA=,"
+    "UAdNdlVWQhctipxHliXacKq5/VNdUT4Wq7SG6vM1xso=";
+
 const char kBadEncodingPublicKeyString[] = "Not even base64!";
 // Base64-encoded, 31 bytes long
 const char kTooShortPublicKeyString[] =
     "dRCs+TocuKkocNKa0AtZ4awrt9XKH2SQCI6o4FY6BN==";
 // Base64-encoded, 33 bytes long
 const char kTooLongPublicKeyString[] =
+    "dRCs+TocuKkocNKa0AtZ4awrt9XKH2SQCI6o4FY6BNAA";
+// Comma-separated bad encoding key and good test key.
+const char kTwoPublicKeysString_BadAndGood[] =
+    "Not even base64!, dRCs+TocuKkocNKa0AtZ4awrt9XKH2SQCI6o4FY6BNA=";
+// Comma-separated too short key and too long key.
+const char kTwoBadPublicKeysString[] =
+    "dRCs+TocuKkocNKa0AtZ4awrt9XKH2SQCI6o4FY6BN==,"
     "dRCs+TocuKkocNKa0AtZ4awrt9XKH2SQCI6o4FY6BNAA";
 
 const char kOneDisabledFeature[] = "A";
@@ -94,13 +120,21 @@ class ChromeOriginTrialPolicyTest : public testing::Test {
                               kToken3SignatureEncoded},
                              kTokenSeparator)),
         manager_(base::WrapUnique(new ChromeOriginTrialPolicy())),
-        default_key_(manager_->GetPublicKey().as_string()),
-        test_key_(std::string(reinterpret_cast<const char*>(kTestPublicKey),
-                              base::size(kTestPublicKey))) {}
+        default_keys_(manager_->GetPublicKeys()) {
+    test_keys_.push_back(
+        base::StringPiece(reinterpret_cast<const char*>(kTestPublicKey),
+                          base::size(kTestPublicKey)));
+    for (int n = 0; n < kTwoTestPublicKeysSize; n++) {
+      test_keys2_.push_back(base::StringPiece(
+          reinterpret_cast<const char*>(kTwoTestPublicKeys[n]),
+          base::size(kTwoTestPublicKeys[n])));
+    }
+  }
 
   ChromeOriginTrialPolicy* manager() { return manager_.get(); }
-  base::StringPiece default_key() { return default_key_; }
-  base::StringPiece test_key() { return test_key_; }
+  std::vector<base::StringPiece> default_keys() { return default_keys_; }
+  std::vector<base::StringPiece> test_keys() { return test_keys_; }
+  std::vector<base::StringPiece> test_keys2() { return test_keys2_; }
   std::string token1_signature_;
   std::string token2_signature_;
   std::string token3_signature_;
@@ -109,44 +143,64 @@ class ChromeOriginTrialPolicyTest : public testing::Test {
 
  private:
   std::unique_ptr<ChromeOriginTrialPolicy> manager_;
-  std::string default_key_;
-  std::string test_key_;
+  std::vector<base::StringPiece> default_keys_;
+  std::vector<base::StringPiece> test_keys_;
+  std::vector<base::StringPiece> test_keys2_;
 };
 
 TEST_F(ChromeOriginTrialPolicyTest, DefaultConstructor) {
-  // We don't specify here what the key should be, but make sure that it is
-  // returned, is valid, and is consistent.
-  base::StringPiece key = manager()->GetPublicKey();
-  EXPECT_EQ(32UL, key.size());
-  EXPECT_EQ(default_key(), key);
+  // We don't specify here what the keys should be, but make sure those are
+  // returned, valid and consistent.
+  for (base::StringPiece key : manager()->GetPublicKeys()) {
+    EXPECT_EQ(32UL, key.size());
+  }
+  EXPECT_EQ(default_keys(), manager()->GetPublicKeys());
 }
 
-TEST_F(ChromeOriginTrialPolicyTest, DefaultKeyIsConsistent) {
+TEST_F(ChromeOriginTrialPolicyTest, DefaultKeysAreConsistent) {
   ChromeOriginTrialPolicy manager2;
-  EXPECT_EQ(manager()->GetPublicKey(), manager2.GetPublicKey());
+  EXPECT_EQ(manager()->GetPublicKeys(), manager2.GetPublicKeys());
 }
 
-TEST_F(ChromeOriginTrialPolicyTest, OverridePublicKey) {
-  EXPECT_TRUE(manager()->SetPublicKeyFromASCIIString(kTestPublicKeyString));
-  EXPECT_NE(default_key(), manager()->GetPublicKey());
-  EXPECT_EQ(test_key(), manager()->GetPublicKey());
+TEST_F(ChromeOriginTrialPolicyTest, OverridePublicKeys) {
+  EXPECT_TRUE(manager()->SetPublicKeysFromASCIIString(kTestPublicKeyString));
+  EXPECT_EQ(test_keys(), manager()->GetPublicKeys());
 }
 
-TEST_F(ChromeOriginTrialPolicyTest, OverrideKeyNotBase64) {
+TEST_F(ChromeOriginTrialPolicyTest, OverridePublicKeysWithTwoKeys) {
+  EXPECT_TRUE(
+      manager()->SetPublicKeysFromASCIIString(kTwoTestPublicKeysString));
+  EXPECT_EQ(test_keys2(), manager()->GetPublicKeys());
+}
+
+TEST_F(ChromeOriginTrialPolicyTest, OverrideKeysNotBase64) {
   EXPECT_FALSE(
-      manager()->SetPublicKeyFromASCIIString(kBadEncodingPublicKeyString));
-  EXPECT_EQ(default_key(), manager()->GetPublicKey());
+      manager()->SetPublicKeysFromASCIIString(kBadEncodingPublicKeyString));
+  EXPECT_EQ(default_keys(), manager()->GetPublicKeys());
 }
 
-TEST_F(ChromeOriginTrialPolicyTest, OverrideKeyTooShort) {
+TEST_F(ChromeOriginTrialPolicyTest, OverrideKeysTooShort) {
   EXPECT_FALSE(
-      manager()->SetPublicKeyFromASCIIString(kTooShortPublicKeyString));
-  EXPECT_EQ(default_key(), manager()->GetPublicKey());
+      manager()->SetPublicKeysFromASCIIString(kTooShortPublicKeyString));
+  EXPECT_EQ(default_keys(), manager()->GetPublicKeys());
 }
 
-TEST_F(ChromeOriginTrialPolicyTest, OverrideKeyTooLong) {
-  EXPECT_FALSE(manager()->SetPublicKeyFromASCIIString(kTooLongPublicKeyString));
-  EXPECT_EQ(default_key(), manager()->GetPublicKey());
+TEST_F(ChromeOriginTrialPolicyTest, OverrideKeysTooLong) {
+  EXPECT_FALSE(
+      manager()->SetPublicKeysFromASCIIString(kTooLongPublicKeyString));
+  EXPECT_EQ(default_keys(), manager()->GetPublicKeys());
+}
+
+TEST_F(ChromeOriginTrialPolicyTest, OverridePublicKeysWithBadAndGoodKey) {
+  EXPECT_FALSE(
+      manager()->SetPublicKeysFromASCIIString(kTwoPublicKeysString_BadAndGood));
+  EXPECT_EQ(default_keys(), manager()->GetPublicKeys());
+}
+
+TEST_F(ChromeOriginTrialPolicyTest, OverridePublicKeysWithTwoBadKeys) {
+  EXPECT_FALSE(
+      manager()->SetPublicKeysFromASCIIString(kTwoBadPublicKeysString));
+  EXPECT_EQ(default_keys(), manager()->GetPublicKeys());
 }
 
 TEST_F(ChromeOriginTrialPolicyTest, NoDisabledFeatures) {
@@ -247,8 +301,8 @@ class ChromeOriginTrialPolicyInitializationTest
 };
 
 TEST_F(ChromeOriginTrialPolicyInitializationTest, PublicKeyInitialized) {
-  EXPECT_NE(default_key(), initialized_manager()->GetPublicKey());
-  EXPECT_EQ(test_key(), initialized_manager()->GetPublicKey());
+  EXPECT_NE(default_keys(), initialized_manager()->GetPublicKeys());
+  EXPECT_EQ(test_keys(), initialized_manager()->GetPublicKeys());
 }
 
 TEST_F(ChromeOriginTrialPolicyInitializationTest, DisabledFeaturesInitialized) {

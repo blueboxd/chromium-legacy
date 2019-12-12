@@ -14,15 +14,14 @@
 #include "device/vr/vr_export.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace device {
 
 class DEVICE_VR_EXPORT VROrientationDeviceProvider : public VRDeviceProvider {
  public:
-  VROrientationDeviceProvider(service_manager::Connector* connector);
+  explicit VROrientationDeviceProvider(
+      mojo::PendingRemote<device::mojom::SensorProvider> sensor_provider);
   ~VROrientationDeviceProvider() override;
 
   void Initialize(

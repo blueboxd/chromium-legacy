@@ -657,8 +657,18 @@ std::unique_ptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
         kVaSurfaceFormat, base::BindOnce(vpp_va_surface_release_cb_));
     available_vpp_va_surface_ids_.pop_back();
     // Crop/Scale the visible area of |frame| -> |blit_visible_rect|.
-    vpp_vaapi_wrapper_->BlitSurface(input_surface, blit_surface,
-                                    frame->visible_rect(), blit_visible_rect_);
+    if (!vpp_vaapi_wrapper_->BlitSurface(input_surface, blit_surface,
+                                         frame->visible_rect(),
+                                         blit_visible_rect_)) {
+      NOTIFY_ERROR(
+          kPlatformFailureError,
+          "Failed BlitSurface on frame size: "
+              << frame->coded_size().ToString()
+              << " (visible rect: " << frame->visible_rect().ToString()
+              << ") -> frame size: " << aligned_input_frame_size_.ToString()
+              << " (visible rect: " << blit_visible_rect_.ToString() << ")");
+      return nullptr;
+    }
     // We can destroy the original |input_surface| because the buffer is already
     // copied to blit_surface.
     input_surface = std::move(blit_surface);

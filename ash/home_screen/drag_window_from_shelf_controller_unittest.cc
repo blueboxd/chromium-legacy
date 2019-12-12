@@ -435,11 +435,12 @@ TEST_F(DragWindowFromShelfControllerTest, WallpaperBlurDuringDragging) {
       RootWindowController::ForWindow(window->GetRootWindow())
           ->wallpaper_widget_controller()
           ->wallpaper_view();
-  EXPECT_EQ(wallpaper_view->blur_sigma(), kWallpaperBlurSigma);
+  EXPECT_EQ(wallpaper_view->blur_sigma(), overview_constants::kBlurSigma);
 
   EndDrag(shelf_bounds.CenterPoint(),
           /*velocity_y=*/base::nullopt);
-  EXPECT_EQ(wallpaper_view->blur_sigma(), kWallpaperClearBlurSigma);
+  EXPECT_EQ(wallpaper_view->blur_sigma(),
+            wallpaper_constants::kClear.blur_sigma);
 }
 
 // Test overview is hidden during dragging and shown when drag slows down or
@@ -711,60 +712,6 @@ TEST_F(DragWindowFromShelfControllerTest, GoHomeIfOverviewInvisible) {
   // fling, the window should be taken to home screen.
   EndDrag(gfx::Point(200, 200), base::nullopt);
   EXPECT_TRUE(WindowState::Get(window.get())->IsMinimized());
-}
-
-// Test that the original backdrop is restored in the drag window after drag
-// ends, no matter where the window ends.
-TEST_F(DragWindowFromShelfControllerTest, RestoreBackdropAfterDragEnds) {
-  UpdateDisplay("400x400");
-  const gfx::Rect shelf_bounds =
-      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
-  auto window = CreateTestWindow();
-  BackdropWindowMode original_backdrop_mode =
-      window->GetProperty(kBackdropWindowMode);
-  EXPECT_NE(original_backdrop_mode, BackdropWindowMode::kDisabled);
-
-  // For window that ends in overview:
-  StartDrag(window.get(), shelf_bounds.CenterPoint(), HotseatState::kExtended);
-  EXPECT_EQ(window->GetProperty(kBackdropWindowMode),
-            BackdropWindowMode::kDisabled);
-  Drag(gfx::Point(200, 200), 0.f, 1.f);
-  DragWindowFromShelfControllerTestApi test_api;
-  test_api.WaitUntilOverviewIsShown(window_drag_controller());
-  EndDrag(gfx::Point(200, 200), base::nullopt);
-  OverviewController* overview_controller = Shell::Get()->overview_controller();
-  EXPECT_TRUE(overview_controller->InOverviewSession());
-  EXPECT_TRUE(overview_controller->overview_session()->IsWindowInOverview(
-      window.get()));
-  EXPECT_EQ(window->GetProperty(kBackdropWindowMode), original_backdrop_mode);
-
-  // For window that ends in homescreen:
-  wm::ActivateWindow(window.get());
-  StartDrag(window.get(), shelf_bounds.CenterPoint(), HotseatState::kExtended);
-  EXPECT_EQ(window->GetProperty(kBackdropWindowMode),
-            BackdropWindowMode::kDisabled);
-  EndDrag(gfx::Point(200, 200),
-          base::make_optional(
-              -DragWindowFromShelfController::kVelocityToHomeScreenThreshold));
-  EXPECT_TRUE(WindowState::Get(window.get())->IsMinimized());
-  EXPECT_EQ(window->GetProperty(kBackdropWindowMode), original_backdrop_mode);
-
-  // For window that restores to its original bounds:
-  wm::ActivateWindow(window.get());
-  StartDrag(window.get(), shelf_bounds.CenterPoint(), HotseatState::kExtended);
-  EXPECT_EQ(window->GetProperty(kBackdropWindowMode),
-            BackdropWindowMode::kDisabled);
-  Drag(gfx::Point(200, 200), 0.f, 1.f);
-  EndDrag(shelf_bounds.CenterPoint(), base::nullopt);
-  EXPECT_EQ(window->GetProperty(kBackdropWindowMode), original_backdrop_mode);
-
-  // For window that ends in splitscreen:
-  StartDrag(window.get(), shelf_bounds.CenterPoint(), HotseatState::kExtended);
-  EXPECT_EQ(window->GetProperty(kBackdropWindowMode),
-            BackdropWindowMode::kDisabled);
-  EndDrag(gfx::Point(0, 200), base::nullopt);
-  EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window.get()));
-  EXPECT_EQ(window->GetProperty(kBackdropWindowMode), original_backdrop_mode);
 }
 
 }  // namespace ash

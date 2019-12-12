@@ -25,10 +25,11 @@ static const uint8_t kOriginTrialPublicKey[] = {
 
 }  // namespace
 
-ShellOriginTrialPolicy::ShellOriginTrialPolicy()
-    : public_key_(base::StringPiece(
-          reinterpret_cast<const char*>(kOriginTrialPublicKey),
-          base::size(kOriginTrialPublicKey))) {}
+ShellOriginTrialPolicy::ShellOriginTrialPolicy() {
+  public_keys_.push_back(base::StringPiece(
+      reinterpret_cast<const char*>(kOriginTrialPublicKey),
+      base::size(kOriginTrialPublicKey)));
+}
 
 ShellOriginTrialPolicy::~ShellOriginTrialPolicy() {}
 
@@ -36,8 +37,8 @@ bool ShellOriginTrialPolicy::IsOriginTrialsSupported() const {
   return true;
 }
 
-base::StringPiece ShellOriginTrialPolicy::GetPublicKey() const {
-  return public_key_;
+std::vector<base::StringPiece> ShellOriginTrialPolicy::GetPublicKeys() const {
+  return public_keys_;
 }
 
 bool ShellOriginTrialPolicy::IsOriginSecure(const GURL& url) const {

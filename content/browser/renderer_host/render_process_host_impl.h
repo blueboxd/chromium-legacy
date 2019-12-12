@@ -62,6 +62,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "net/base/network_isolation_key.h"
+#include "services/device/public/mojom/battery_monitor.mojom-forward.h"
 #include "services/network/public/mojom/mdns_responder.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
@@ -619,6 +620,13 @@ class CONTENT_EXPORT RenderProcessHostImpl
   size_t keep_alive_ref_count() const { return keep_alive_ref_count_; }
 
   PeerConnectionTrackerHost* GetPeerConnectionTrackerHost();
+
+  // Allows tests to override how RenderProcessHosts bind incoming
+  // BatteryMonitor receivers.
+  using BatteryMonitorBinder = base::RepeatingCallback<void(
+      mojo::PendingReceiver<device::mojom::BatteryMonitor>)>;
+  static void OverrideBatteryMonitorBinderForTesting(
+      BatteryMonitorBinder binder);
 
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread.

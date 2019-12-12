@@ -14,6 +14,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -69,6 +70,8 @@ class BrowserNonClientFrameViewMacBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewMacBrowserTest, TitleUpdates) {
+  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
+
   ASSERT_TRUE(https_server()->Start());
   const GURL app_url = GetInstallableAppURL();
   const web_app::AppId app_id = InstallPWA(app_url);

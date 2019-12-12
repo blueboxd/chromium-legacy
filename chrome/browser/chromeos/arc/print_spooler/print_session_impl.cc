@@ -173,30 +173,31 @@ base::ReadOnlySharedMemoryRegion ReadPreviewDocument(
 }  // namespace
 
 // static
-mojom::PrintSessionHostPtr PrintSessionImpl::Create(
+mojo::PendingRemote<mojom::PrintSessionHost> PrintSessionImpl::Create(
     std::unique_ptr<content::WebContents> web_contents,
     std::unique_ptr<ash::ArcCustomTab> custom_tab,
     mojom::PrintSessionInstancePtr instance) {
   if (!custom_tab || !instance)
-    return nullptr;
+    return mojo::NullRemote();
 
   // This object will be deleted when the mojo connection is closed.
-  mojom::PrintSessionHostPtr ptr;
+  mojo::PendingRemote<mojom::PrintSessionHost> remote;
   new PrintSessionImpl(std::move(web_contents), std::move(custom_tab),
-                       std::move(instance), mojo::MakeRequest(&ptr));
-  return ptr;
+                       std::move(instance),
+                       remote.InitWithNewPipeAndPassReceiver());
+  return remote;
 }
 
 PrintSessionImpl::PrintSessionImpl(
     std::unique_ptr<content::WebContents> web_contents,
     std::unique_ptr<ash::ArcCustomTab> custom_tab,
     mojom::PrintSessionInstancePtr instance,
-    mojom::PrintSessionHostRequest request)
+    mojo::PendingReceiver<mojom::PrintSessionHost> receiver)
     : ArcCustomTabModalDialogHost(std::move(custom_tab),
                                   std::move(web_contents)),
       instance_(std::move(instance)),
-      session_binding_(this, std::move(request)) {
-  session_binding_.set_connection_error_handler(
+      session_receiver_(this, std::move(receiver)) {
+  session_receiver_.set_disconnect_handler(
       base::BindOnce(&PrintSessionImpl::Close, weak_ptr_factory_.GetWeakPtr()));
   web_contents_->SetUserData(UserDataKey(), base::WrapUnique(this));
 

@@ -82,10 +82,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kNotificationExpansionAnimation;
 // Enables notification scroll bar in UnifiedSystemTray.
 ASH_PUBLIC_EXPORT extern const base::Feature kNotificationScrollBar;
 
-// Enables using a cross fade animation for the wallpaper blur for overview
-// mode.
-ASH_PUBLIC_EXPORT extern const base::Feature kOverviewCrossFadeWallpaperBlur;
-
 // Enables rounded corners for the Picture-in-picture window.
 ASH_PUBLIC_EXPORT extern const base::Feature kPipRoundedCorners;
 

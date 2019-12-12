@@ -10,21 +10,13 @@
 // Coordinator for Reading List, displaying the Reading List when starting.
 @interface ReadingListCoordinator : ChromeCoordinator
 
-// Designated initialier for a ReadingListCoordinator that loads reading list
-// items using |loader|.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState
-    NS_DESIGNATED_INITIALIZER;
-
+// Use -initWithBaseViewController:browser:
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
     NS_UNAVAILABLE;
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                               browserState:
                                   (ios::ChromeBrowserState*)browserState
     NS_UNAVAILABLE;
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                                   browser:(Browser*)browser NS_UNAVAILABLE;
 
 @end
 

@@ -17,7 +17,9 @@
 #include "components/printing/common/print.mojom.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 namespace ash {
@@ -37,7 +39,7 @@ class PrintSessionImpl : public mojom::PrintSessionHost,
                          public content::WebContentsUserData<PrintSessionImpl>,
                          public printing::mojom::PrintRenderer {
  public:
-  static mojom::PrintSessionHostPtr Create(
+  static mojo::PendingRemote<mojom::PrintSessionHost> Create(
       std::unique_ptr<content::WebContents> web_contents,
       std::unique_ptr<ash::ArcCustomTab> custom_tab,
       mojom::PrintSessionInstancePtr instance);
@@ -51,7 +53,7 @@ class PrintSessionImpl : public mojom::PrintSessionHost,
   PrintSessionImpl(std::unique_ptr<content::WebContents> web_contents,
                    std::unique_ptr<ash::ArcCustomTab> custom_tab,
                    mojom::PrintSessionInstancePtr instance,
-                   mojom::PrintSessionHostRequest request);
+                   mojo::PendingReceiver<mojom::PrintSessionHost> receiver);
   friend class content::WebContentsUserData<PrintSessionImpl>;
 
   // printing::mojom::PrintRenderer:
@@ -88,7 +90,7 @@ class PrintSessionImpl : public mojom::PrintSessionHost,
 
   // Used to bind the PrintSessionHost interface implementation to a message
   // pipe.
-  mojo::Binding<mojom::PrintSessionHost> session_binding_;
+  mojo::Receiver<mojom::PrintSessionHost> session_receiver_;
 
   // Remote interface used to flatten a PDF (preview document).
   mojo::Remote<printing::mojom::PdfFlattener> pdf_flattener_;

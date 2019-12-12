@@ -16,8 +16,7 @@
 #include "content/common/field_trial_recorder.mojom.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/system_connector.h"
-#include "services/device/public/mojom/constants.mojom.h"
+#include "content/public/browser/device_service.h"
 #include "services/device/public/mojom/power_monitor.mojom.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/mojom/ukm_interface.mojom.h"
@@ -106,8 +105,7 @@ void BrowserChildProcessHostImpl::BindHostReceiver(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             [](mojo::PendingReceiver<device::mojom::PowerMonitor> r) {
-              GetSystemConnector()->Connect(device::mojom::kServiceName,
-                                            std::move(r));
+              GetDeviceService().BindPowerMonitor(std::move(r));
             },
             std::move(r)));
     return;

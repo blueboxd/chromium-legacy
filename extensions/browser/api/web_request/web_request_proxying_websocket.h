@@ -111,8 +111,13 @@ class WebRequestProxyingWebSocket
   void PauseIncomingMethodCallProcessing();
   void ResumeIncomingMethodCallProcessing();
   void OnError(int result);
-  void OnMojoConnectionError(uint32_t custom_reason,
-                             const std::string& description);
+  // This is used for detecting errors on mojo connection with the network
+  // service.
+  void OnMojoConnectionErrorWithCustomReason(uint32_t custom_reason,
+                                             const std::string& description);
+  // This is used for detecting errors on mojo connection with original client
+  // (i.e., renderer).
+  void OnMojoConnectionError();
 
   WebSocketFactory factory_;
   content::BrowserContext* const browser_context_;

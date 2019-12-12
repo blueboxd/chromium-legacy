@@ -280,8 +280,6 @@ jumbo_source_set("browser_sources") {
     "management_policy.h",
     "media_capture_util.cc",
     "media_capture_util.h",
-    "mojo/interface_registration.cc",
-    "mojo/interface_registration.h",
     "mojo/keep_alive_impl.cc",
     "mojo/keep_alive_impl.h",
     "notification_types.cc",

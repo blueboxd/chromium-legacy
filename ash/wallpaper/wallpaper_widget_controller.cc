@@ -114,8 +114,6 @@ class WallpaperWidgetController::WidgetHandler
       StopObservingImplicitAnimations();
     }
 
-    if (has_blur_cache_)
-      parent_window_->layer()->RemoveCacheRenderSurfaceRequest();
     parent_window_ = nullptr;
 
     if (close)
@@ -128,7 +126,6 @@ class WallpaperWidgetController::WidgetHandler
   aura::Window* parent_window_;
 
   bool reset_ = false;
-  bool has_blur_cache_ = false;
   bool observing_implicit_animations_ = false;
 
   ScopedObserver<views::Widget, views::WidgetObserver> widget_observer_{this};
@@ -198,12 +195,11 @@ bool WallpaperWidgetController::Reparent(aura::Window* root_window,
   return moved_widget || moved_animating_widget;
 }
 
-bool WallpaperWidgetController::SetBlurAndOpacity(float blur_sigma,
-                                                  float opacity) {
-  if (blur_sigma_ == blur_sigma && opacity_ == opacity)
+bool WallpaperWidgetController::SetWallpaperProperty(
+    const WallpaperProperty& property) {
+  if (property_ == property)
     return false;
-  blur_sigma_ = blur_sigma;
-  opacity_ = opacity;
+  property_ = property;
   // Do not overwrite the locked blur.
   // TODO(oshima): This is a bit hacky. Investigate if there is a better way to
   // handle this scenario.
@@ -212,7 +208,7 @@ bool WallpaperWidgetController::SetBlurAndOpacity(float blur_sigma,
       kShellWindowId_LockScreenWallpaperContainer;
 
   if (wallpaper_view_ && !locked)
-    wallpaper_view_->RepaintBlurAndOpacity(blur_sigma_, opacity_);
+    wallpaper_view_->SetWallpaperProperty(property);
   return true;
 }
 

@@ -18,11 +18,17 @@ WaylandSubsurface::WaylandSubsurface(PlatformWindowDelegate* delegate,
 WaylandSubsurface::~WaylandSubsurface() = default;
 
 void WaylandSubsurface::Show(bool inactive) {
+  if (subsurface_)
+    return;
+
   CreateSubsurface();
   UpdateBufferScale(false);
 }
 
 void WaylandSubsurface::Hide() {
+  if (!subsurface_)
+    return;
+
   subsurface_.reset();
 
   // Detach buffer from surface in order to completely shutdown menus and

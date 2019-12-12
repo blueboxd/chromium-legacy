@@ -18,17 +18,16 @@
 #include "content/public/common/origin_util.h"
 
 // This is the default public key used for validating signatures.
-// TODO(iclelland): Provide a mechanism to allow for multiple signing keys.
-// https://crbug.com/584737
 static const uint8_t kDefaultPublicKey[] = {
     0x7c, 0xc4, 0xb8, 0x9a, 0x93, 0xba, 0x6e, 0xe2, 0xd0, 0xfd, 0x03,
     0x1d, 0xfb, 0x32, 0x66, 0xc7, 0x3b, 0x72, 0xfd, 0x54, 0x3a, 0x07,
     0x51, 0x14, 0x66, 0xaa, 0x02, 0x53, 0x4e, 0x33, 0xa1, 0x15,
 };
 
-ChromeOriginTrialPolicy::ChromeOriginTrialPolicy()
-    : public_key_(std::string(reinterpret_cast<const char*>(kDefaultPublicKey),
-                              base::size(kDefaultPublicKey))) {
+ChromeOriginTrialPolicy::ChromeOriginTrialPolicy() {
+  public_keys_.push_back(
+      std::string(reinterpret_cast<const char*>(kDefaultPublicKey),
+                  base::size(kDefaultPublicKey)));
   // Set the public key and disabled feature list for the origin trial key
   // manager, based on the command line flags which were passed to this process.
   // If the flags are not present, or are incorrectly formatted, the defaults
@@ -36,7 +35,7 @@ ChromeOriginTrialPolicy::ChromeOriginTrialPolicy()
   if (base::CommandLine::InitializedForCurrentProcess()) {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     if (command_line->HasSwitch(switches::kOriginTrialPublicKey)) {
-      SetPublicKeyFromASCIIString(
+      SetPublicKeysFromASCIIString(
         command_line->GetSwitchValueASCII(switches::kOriginTrialPublicKey));
     }
     if (command_line->HasSwitch(switches::kOriginTrialDisabledFeatures)) {
@@ -56,8 +55,12 @@ bool ChromeOriginTrialPolicy::IsOriginTrialsSupported() const {
   return true;
 }
 
-base::StringPiece ChromeOriginTrialPolicy::GetPublicKey() const {
-  return base::StringPiece(public_key_);
+std::vector<base::StringPiece> ChromeOriginTrialPolicy::GetPublicKeys() const {
+  std::vector<base::StringPiece> casted_public_keys;
+  for (auto const& key : public_keys_) {
+    casted_public_keys.push_back(base::StringPiece(key));
+  }
+  return casted_public_keys;
 }
 
 bool ChromeOriginTrialPolicy::IsFeatureDisabled(
@@ -74,16 +77,26 @@ bool ChromeOriginTrialPolicy::IsOriginSecure(const GURL& url) const {
   return content::IsOriginSecure(url);
 }
 
-bool ChromeOriginTrialPolicy::SetPublicKeyFromASCIIString(
-    const std::string& ascii_public_key) {
-  // Base64-decode the incoming string. Set the key if it is correctly formatted
-  std::string new_public_key;
-  if (!base::Base64Decode(ascii_public_key, &new_public_key))
-    return false;
-  if (new_public_key.size() != 32)
-    return false;
-  public_key_.swap(new_public_key);
-  return true;
+bool ChromeOriginTrialPolicy::SetPublicKeysFromASCIIString(
+    const std::string& ascii_public_keys) {
+  std::vector<std::string> new_public_keys;
+  const auto public_keys = base::SplitString(ascii_public_keys, ",",
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  for (const auto& ascii_public_key : public_keys) {
+    // Base64-decode the incoming string. Set the key if it is correctly
+    // formatted
+    std::string new_public_key;
+    if (!base::Base64Decode(ascii_public_key, &new_public_key))
+      return false;
+    if (new_public_key.size() != 32)
+      return false;
+    new_public_keys.push_back(new_public_key);
+  }
+  if (new_public_keys.size() > 0) {
+    public_keys_.swap(new_public_keys);
+    return true;
+  }
+  return false;
 }
 
 bool ChromeOriginTrialPolicy::SetDisabledFeatures(

@@ -189,6 +189,7 @@ extern const char kVersion[];
 extern const char kWebRtcRemoteEventLogProactivePruningDelta[];
 extern const char kWebRtcRemoteEventLogUploadDelayMs[];
 extern const char kWebRtcRemoteEventLogUploadNoSuppression[];
+extern const char kWebUITabStrip[];
 extern const char kWindowPosition[];
 extern const char kWindowSize[];
 extern const char kWindowWorkspace[];

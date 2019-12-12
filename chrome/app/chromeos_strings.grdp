@@ -607,7 +607,7 @@
     Select timezone
   </message>
   <message name="IDS_OOBE_EULA_SECTION_TITLE" desc="Title of Terms of Service screen">
-    Google Chrome OS terms
+    Google Chrome OS Terms
   </message>
   <message name="IDS_OOBE_EULA_IFRAME_LABEL" desc="Accessibility label on an iframe with full Chrome OS Terms text">
     Google Chrome OS Terms contents

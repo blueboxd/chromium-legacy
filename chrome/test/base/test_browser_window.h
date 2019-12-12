@@ -55,7 +55,7 @@ class TestBrowserWindow : public BrowserWindow {
   void Hide() override {}
   bool IsVisible() const override;
   void SetBounds(const gfx::Rect& bounds) override {}
-  void Close() override {}
+  void Close() override;
   void Activate() override {}
   void Deactivate() override {}
   bool IsActive() const override;
@@ -197,6 +197,8 @@ class TestBrowserWindow : public BrowserWindow {
 
   void SetNativeWindow(gfx::NativeWindow window);
 
+  void SetCloseCallback(base::OnceClosure close_callback);
+
  protected:
   void DestroyBrowser() override {}
 
@@ -230,6 +232,8 @@ class TestBrowserWindow : public BrowserWindow {
   TestDownloadShelf download_shelf_;
   TestLocationBar location_bar_;
   gfx::NativeWindow native_window_ = nullptr;
+
+  base::OnceClosure close_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserWindow);
 };

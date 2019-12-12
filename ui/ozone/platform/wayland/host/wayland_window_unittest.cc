@@ -128,11 +128,7 @@ class WaylandWindowTest : public WaylandTest {
     }
   }
 
-  // Depending on a shell version, xdg_surface_ or xdg_toplevel surface should
-  // get the mock calls. This method decided, which surface to use.
-  wl::MockXdgSurface* GetXdgSurface() {
-    return xdg_surface_->xdg_toplevel();
-  }
+  wl::MockXdgTopLevel* GetXdgToplevel() { return xdg_surface_->xdg_toplevel(); }
 
   void AddStateToWlArray(uint32_t state, wl_array* states) {
     *static_cast<uint32_t*>(wl_array_add(states, sizeof state)) = state;
@@ -162,8 +158,11 @@ class WaylandWindowTest : public WaylandTest {
     properties.type = type;
     properties.parent_widget = parent_widget;
 
-    return WaylandWindow::Create(delegate, connection_.get(),
-                                 std::move(properties));
+    auto window = WaylandWindow::Create(delegate, connection_.get(),
+                                        std::move(properties));
+    if (window)
+      window->Show(false);
+    return window;
   }
 
   void InitializeWithSupportedHitTestValues(std::vector<int>* hit_tests) {
@@ -213,7 +212,7 @@ class WaylandWindowTest : public WaylandTest {
 };
 
 TEST_P(WaylandWindowTest, SetTitle) {
-  EXPECT_CALL(*GetXdgSurface(), SetTitle(StrEq("hello")));
+  EXPECT_CALL(*GetXdgToplevel(), SetTitle(StrEq("hello")));
   window_->SetTitle(base::ASCIIToUTF16("hello"));
 }
 
@@ -229,7 +228,7 @@ TEST_P(WaylandWindowTest, MaximizeAndRestore) {
 
   auto active_maximized = MakeStateArray(
       {XDG_TOPLEVEL_STATE_ACTIVATED, XDG_TOPLEVEL_STATE_MAXIMIZED});
-  EXPECT_CALL(*GetXdgSurface(), SetMaximized());
+  EXPECT_CALL(*GetXdgToplevel(), SetMaximized());
   EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, kMaximizedBounds.width(),
                                                kMaximizedBounds.height()));
   EXPECT_CALL(delegate_, OnActivationChanged(Eq(true)));
@@ -267,7 +266,7 @@ TEST_P(WaylandWindowTest, MaximizeAndRestore) {
               OnWindowStateChanged(Eq(PlatformWindowState::kNormal)));
   EXPECT_CALL(delegate_, OnActivationChanged(_)).Times(0);
   EXPECT_CALL(delegate_, OnBoundsChanged(kNormalBounds));
-  EXPECT_CALL(*GetXdgSurface(), UnsetMaximized());
+  EXPECT_CALL(*GetXdgToplevel(), UnsetMaximized());
   window_->Restore();
   // Reinitialize wl_array, which removes previous old states.
   auto active = InitializeWlArrayWithActivatedState();
@@ -283,7 +282,7 @@ TEST_P(WaylandWindowTest, Minimize) {
   SendConfigureEvent(0, 0, 1, states.get());
   Sync();
 
-  EXPECT_CALL(*GetXdgSurface(), SetMinimized());
+  EXPECT_CALL(*GetXdgToplevel(), SetMinimized());
   // Wayland compositor doesn't notify clients about minimized state, but rather
   // if a window is not activated. Thus, a WaylandWindow marks itself as being
   // minimized and as soon as a configuration event with not activated state
@@ -319,7 +318,7 @@ TEST_P(WaylandWindowTest, SetFullscreenAndRestore) {
 
   AddStateToWlArray(XDG_TOPLEVEL_STATE_FULLSCREEN, states.get());
 
-  EXPECT_CALL(*GetXdgSurface(), SetFullscreen());
+  EXPECT_CALL(*GetXdgToplevel(), SetFullscreen());
   EXPECT_CALL(delegate_,
               OnWindowStateChanged(Eq(PlatformWindowState::kFullScreen)));
   window_->ToggleFullscreen();
@@ -330,7 +329,7 @@ TEST_P(WaylandWindowTest, SetFullscreenAndRestore) {
   SendConfigureEvent(0, 0, 2, states.get());
   Sync();
 
-  EXPECT_CALL(*GetXdgSurface(), UnsetFullscreen());
+  EXPECT_CALL(*GetXdgToplevel(), UnsetFullscreen());
   EXPECT_CALL(delegate_,
               OnWindowStateChanged(Eq(PlatformWindowState::kNormal)));
   window_->Restore();
@@ -347,7 +346,7 @@ TEST_P(WaylandWindowTest, StartWithFullscreen) {
 
   // The state must not be changed to the fullscreen before the surface is
   // activated.
-  EXPECT_CALL(*GetXdgSurface(), SetFullscreen()).Times(0);
+  EXPECT_CALL(*GetXdgToplevel(), SetFullscreen()).Times(0);
   EXPECT_CALL(delegate_, OnWindowStateChanged(_)).Times(0);
   window_->ToggleFullscreen();
   // The state of the window must still be a normal one.
@@ -357,7 +356,7 @@ TEST_P(WaylandWindowTest, StartWithFullscreen) {
 
   // Once the surface will be activated, the window will automatically trigger
   // the state change.
-  EXPECT_CALL(*GetXdgSurface(), SetFullscreen());
+  EXPECT_CALL(*GetXdgToplevel(), SetFullscreen());
   EXPECT_CALL(delegate_,
               OnWindowStateChanged(Eq(PlatformWindowState::kFullScreen)));
 
@@ -391,7 +390,7 @@ TEST_P(WaylandWindowTest, SetMaximizedFullscreenAndRestore) {
 
   auto active_maximized = MakeStateArray(
       {XDG_TOPLEVEL_STATE_ACTIVATED, XDG_TOPLEVEL_STATE_MAXIMIZED});
-  EXPECT_CALL(*GetXdgSurface(), SetMaximized());
+  EXPECT_CALL(*GetXdgToplevel(), SetMaximized());
   EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, kMaximizedBounds.width(),
                                                kMaximizedBounds.height()));
   EXPECT_CALL(delegate_, OnActivationChanged(Eq(true)));
@@ -404,7 +403,7 @@ TEST_P(WaylandWindowTest, SetMaximizedFullscreenAndRestore) {
   Sync();
   VerifyAndClearExpectations();
 
-  EXPECT_CALL(*GetXdgSurface(), SetFullscreen());
+  EXPECT_CALL(*GetXdgToplevel(), SetFullscreen());
   EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, kMaximizedBounds.width(),
                                                kMaximizedBounds.height()));
   EXPECT_CALL(delegate_, OnBoundsChanged(_)).Times(0);
@@ -419,8 +418,8 @@ TEST_P(WaylandWindowTest, SetMaximizedFullscreenAndRestore) {
 
   EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, kNormalBounds.width(),
                                                kNormalBounds.height()));
-  EXPECT_CALL(*GetXdgSurface(), UnsetFullscreen());
-  EXPECT_CALL(*GetXdgSurface(), UnsetMaximized());
+  EXPECT_CALL(*GetXdgToplevel(), UnsetFullscreen());
+  EXPECT_CALL(*GetXdgToplevel(), UnsetMaximized());
   EXPECT_CALL(delegate_, OnBoundsChanged(kNormalBounds));
   EXPECT_CALL(delegate_,
               OnWindowStateChanged(Eq(PlatformWindowState::kNormal)));
@@ -841,7 +840,7 @@ TEST_P(WaylandWindowTest, CanDispatchEventToMenuWindowNested) {
 }
 
 TEST_P(WaylandWindowTest, DispatchWindowMove) {
-  EXPECT_CALL(*GetXdgSurface(), Move(_));
+  EXPECT_CALL(*GetXdgToplevel(), Move(_));
   ui::GetWmMoveResizeHandler(*window_)->DispatchHostWindowDragMovement(HTCAPTION, gfx::Point());
 }
 
@@ -855,7 +854,7 @@ TEST_P(WaylandWindowTest, DispatchWindowResize) {
   for (const int value : hit_test_values) {
     {
       uint32_t direction = wl::IdentifyDirection(*(connection_.get()), value);
-      EXPECT_CALL(*GetXdgSurface(), Resize(_, Eq(direction)));
+      EXPECT_CALL(*GetXdgToplevel(), Resize(_, Eq(direction)));
       wm_move_resize_handler->DispatchHostWindowDragMovement(value,
                                                              gfx::Point());
     }
@@ -1092,7 +1091,7 @@ TEST_P(WaylandWindowTest, AdjustPopupBounds) {
   // shown on another display.
   auto active_maximized = MakeStateArray(
       {XDG_TOPLEVEL_STATE_ACTIVATED, XDG_TOPLEVEL_STATE_MAXIMIZED});
-  EXPECT_CALL(*GetXdgSurface(), SetMaximized());
+  EXPECT_CALL(*GetXdgToplevel(), SetMaximized());
 
   window_->Maximize();
   SendConfigureEvent(2493, 1413, 1, active_maximized.get());
@@ -1305,9 +1304,9 @@ TEST_P(WaylandWindowTest, OnSizeConstraintsChanged) {
       EXPECT_CALL(delegate_, GetMaximumSizeForWindow())
           .WillOnce(Return(max_size));
 
-      EXPECT_CALL(*GetXdgSurface(), SetMinSize(100, 200))
+      EXPECT_CALL(*GetXdgToplevel(), SetMinSize(100, 200))
           .Times(has_min_size ? 1 : 0);
-      EXPECT_CALL(*GetXdgSurface(), SetMaxSize(300, 400))
+      EXPECT_CALL(*GetXdgToplevel(), SetMaxSize(300, 400))
           .Times(has_max_size ? 1 : 0);
 
       window_->SizeConstraintsChanged();
@@ -1316,6 +1315,129 @@ TEST_P(WaylandWindowTest, OnSizeConstraintsChanged) {
       VerifyAndClearExpectations();
     }
   }
+}
+
+TEST_P(WaylandWindowTest, DestroysCreatesSurfaceOnHideShow) {
+  MockPlatformWindowDelegate delegate;
+  auto window = CreateWaylandWindowWithParams(
+      PlatformWindowType::kWindow, gfx::kNullAcceleratedWidget,
+      gfx::Rect(0, 0, 100, 100), &delegate);
+  ASSERT_TRUE(window);
+
+  Sync();
+
+  auto* mock_surface = server_.GetObject<wl::MockSurface>(window->GetWidget());
+  EXPECT_TRUE(mock_surface->xdg_surface());
+  EXPECT_TRUE(mock_surface->xdg_surface()->xdg_toplevel());
+
+  Sync();
+
+  window->Hide();
+
+  Sync();
+
+  EXPECT_FALSE(mock_surface->xdg_surface());
+
+  window->Show(false);
+
+  Sync();
+
+  EXPECT_TRUE(mock_surface->xdg_surface());
+  EXPECT_TRUE(mock_surface->xdg_surface()->xdg_toplevel());
+}
+
+TEST_P(WaylandWindowTest, DestroysCreatesPopupsOnHideShow) {
+  MockPlatformWindowDelegate delegate;
+  auto window = CreateWaylandWindowWithParams(
+      PlatformWindowType::kMenu, window_->GetWidget(), gfx::Rect(0, 0, 50, 50),
+      &delegate);
+  ASSERT_TRUE(window);
+
+  Sync();
+
+  auto* mock_surface = server_.GetObject<wl::MockSurface>(window->GetWidget());
+  EXPECT_TRUE(mock_surface->xdg_surface());
+  EXPECT_TRUE(mock_surface->xdg_surface()->xdg_popup());
+
+  Sync();
+
+  window->Hide();
+
+  Sync();
+
+  EXPECT_FALSE(mock_surface->xdg_surface());
+
+  window->Show(false);
+
+  Sync();
+
+  EXPECT_TRUE(mock_surface->xdg_surface());
+  EXPECT_TRUE(mock_surface->xdg_surface()->xdg_popup());
+}
+
+// Tests that if the window gets hidden and shown again, the title, app id and
+// size constraints remain the same.
+TEST_P(WaylandWindowTest, SetsPropertiesOnShow) {
+  constexpr char kAppId[] = "wayland_test";
+  const base::string16 kTitle(base::UTF8ToUTF16("WaylandWindowTest"));
+
+  PlatformWindowInitProperties properties;
+  properties.bounds = gfx::Rect(0, 0, 100, 100);
+  properties.type = PlatformWindowType::kWindow;
+  properties.wm_class_class = kAppId;
+
+  MockPlatformWindowDelegate delegate;
+  auto window = WaylandWindow::Create(&delegate, connection_.get(),
+                                      std::move(properties));
+  DCHECK(window);
+  window->Show(false);
+
+  Sync();
+
+  auto* mock_surface = server_.GetObject<wl::MockSurface>(window->GetWidget());
+  auto* mock_xdg_toplevel = mock_surface->xdg_surface()->xdg_toplevel();
+
+  // Only app id must be set now.
+  EXPECT_EQ(std::string(kAppId), mock_xdg_toplevel->app_id());
+  EXPECT_TRUE(mock_xdg_toplevel->title().empty());
+  EXPECT_TRUE(mock_xdg_toplevel->min_size().IsEmpty());
+  EXPECT_TRUE(mock_xdg_toplevel->max_size().IsEmpty());
+
+  // Now, propagate size constraints and title.
+  base::Optional<gfx::Size> min_size(gfx::Size(1, 1));
+  base::Optional<gfx::Size> max_size(gfx::Size(100, 100));
+  EXPECT_CALL(delegate, GetMinimumSizeForWindow()).WillOnce(Return(min_size));
+  EXPECT_CALL(delegate, GetMaximumSizeForWindow()).WillOnce(Return(max_size));
+
+  EXPECT_CALL(*mock_xdg_toplevel,
+              SetMinSize(min_size.value().width(), min_size.value().height()));
+  EXPECT_CALL(*mock_xdg_toplevel,
+              SetMaxSize(max_size.value().width(), max_size.value().height()));
+  EXPECT_CALL(*mock_xdg_toplevel, SetTitle(base::UTF16ToUTF8(kTitle)));
+
+  window->SetTitle(kTitle);
+  window->SizeConstraintsChanged();
+
+  Sync();
+
+  window->Hide();
+
+  Sync();
+
+  window->Show(false);
+
+  Sync();
+
+  mock_xdg_toplevel = mock_surface->xdg_surface()->xdg_toplevel();
+
+  // We can't mock all those methods above as long as the xdg_toplevel is
+  // created and destroyed on each show and hide call. However, it is the same
+  // WaylandSurface object that cached the values we set and must restore them
+  // on Show().
+  EXPECT_EQ(mock_xdg_toplevel->min_size(), min_size.value());
+  EXPECT_EQ(mock_xdg_toplevel->max_size(), max_size.value());
+  EXPECT_EQ(std::string(kAppId), mock_xdg_toplevel->app_id());
+  EXPECT_EQ(mock_xdg_toplevel->title(), base::UTF16ToUTF8(kTitle));
 }
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,

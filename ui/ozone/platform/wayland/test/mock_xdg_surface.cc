@@ -4,6 +4,7 @@
 
 #include <xdg-shell-unstable-v6-server-protocol.h>
 
+#include "ui/ozone/platform/wayland/test/mock_surface.h"
 #include "ui/ozone/platform/wayland/test/mock_xdg_popup.h"
 #include "ui/ozone/platform/wayland/test/mock_xdg_surface.h"
 #include "ui/ozone/platform/wayland/test/test_positioner.h"
@@ -11,18 +12,26 @@
 namespace wl {
 
 void SetTitle(wl_client* client, wl_resource* resource, const char* title) {
-  GetUserDataAs<MockXdgSurface>(resource)->SetTitle(title);
+  auto* toplevel = GetUserDataAs<MockXdgTopLevel>(resource);
+  // As it this can be envoked during construction of the XdgSurface, cache the
+  // result so that tests are able to access that information.
+  toplevel->set_title(title);
+  toplevel->SetTitle(toplevel->title());
 }
 
 void SetAppId(wl_client* client, wl_resource* resource, const char* app_id) {
-  GetUserDataAs<MockXdgSurface>(resource)->SetAppId(app_id);
+  auto* toplevel = GetUserDataAs<MockXdgTopLevel>(resource);
+  toplevel->SetAppId(app_id);
+  // As it this can be envoked during construction of the XdgSurface, cache the
+  // result so that tests are able to access that information.
+  toplevel->set_app_id(app_id);
 }
 
 void Move(wl_client* client,
           wl_resource* resource,
           wl_resource* seat,
           uint32_t serial) {
-  GetUserDataAs<MockXdgSurface>(resource)->Move(serial);
+  GetUserDataAs<MockXdgTopLevel>(resource)->Move(serial);
 }
 
 void Resize(wl_client* client,
@@ -30,7 +39,7 @@ void Resize(wl_client* client,
             wl_resource* seat,
             uint32_t serial,
             uint32_t edges) {
-  GetUserDataAs<MockXdgSurface>(resource)->Resize(serial, edges);
+  GetUserDataAs<MockXdgTopLevel>(resource)->Resize(serial, edges);
 }
 
 void AckConfigure(wl_client* client, wl_resource* resource, uint32_t serial) {
@@ -48,25 +57,47 @@ void SetWindowGeometry(wl_client* client,
 }
 
 void SetMaximized(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<MockXdgSurface>(resource)->SetMaximized();
+  GetUserDataAs<MockXdgTopLevel>(resource)->SetMaximized();
 }
 
 void UnsetMaximized(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<MockXdgSurface>(resource)->UnsetMaximized();
+  GetUserDataAs<MockXdgTopLevel>(resource)->UnsetMaximized();
 }
 
 void SetFullscreen(wl_client* client,
                    wl_resource* resource,
                    wl_resource* output) {
-  GetUserDataAs<MockXdgSurface>(resource)->SetFullscreen();
+  GetUserDataAs<MockXdgTopLevel>(resource)->SetFullscreen();
 }
 
 void UnsetFullscreen(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<MockXdgSurface>(resource)->UnsetFullscreen();
+  GetUserDataAs<MockXdgTopLevel>(resource)->UnsetFullscreen();
 }
 
 void SetMinimized(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<MockXdgSurface>(resource)->SetMinimized();
+  GetUserDataAs<MockXdgTopLevel>(resource)->SetMinimized();
+}
+
+void SetMaxSize(wl_client* client,
+                wl_resource* resource,
+                int32_t width,
+                int32_t height) {
+  auto* toplevel = GetUserDataAs<MockXdgTopLevel>(resource);
+  toplevel->SetMaxSize(width, height);
+  // As it this can be envoked during construction of the XdgSurface, cache the
+  // result so that tests are able to access that information.
+  toplevel->set_max_size(gfx::Size(width, height));
+}
+
+void SetMinSize(wl_client* client,
+                wl_resource* resource,
+                int32_t width,
+                int32_t height) {
+  auto* toplevel = GetUserDataAs<MockXdgTopLevel>(resource);
+  toplevel->SetMinSize(width, height);
+  // As it this can be envoked during construction of the XdgSurface, cache the
+  // result so that tests are able to access that information.
+  toplevel->set_min_size(gfx::Size(width, height));
 }
 
 void GetTopLevel(wl_client* client, wl_resource* resource, uint32_t id) {
@@ -120,13 +151,22 @@ void GetXdgPopup(struct wl_client* client,
     return;
   }
 
-  wl_resource* xdg_popup_resource = wl_resource_create(
-      client, &xdg_popup_interface, wl_resource_get_version(resource), id);
+  wl_resource* xdg_popup_resource =
+      CreateResourceWithImpl<::testing::NiceMock<MockXdgPopup>>(
+          client, &xdg_popup_interface, wl_resource_get_version(resource),
+          &kXdgPopupImpl, id, resource);
+
+  if (!xdg_popup_resource) {
+    wl_client_post_no_memory(client);
+    return;
+  }
+
+  auto* mock_xdg_popup = GetUserDataAs<MockXdgPopup>(xdg_popup_resource);
+  DCHECK(mock_xdg_popup);
+
   auto* positioner = GetUserDataAs<TestPositioner>(positioner_resource);
   DCHECK(positioner);
 
-  auto mock_xdg_popup =
-      std::make_unique<MockXdgPopup>(xdg_popup_resource, &kXdgPopupImpl);
   mock_xdg_popup->set_position(positioner->position());
   if (mock_xdg_popup->size().IsEmpty() ||
       mock_xdg_popup->anchor_rect().IsEmpty()) {
@@ -135,7 +175,7 @@ void GetXdgPopup(struct wl_client* client,
     return;
   }
 
-  mock_xdg_surface->set_xdg_popup(std::move(mock_xdg_popup));
+  mock_xdg_surface->set_xdg_popup(mock_xdg_popup);
 }
 
 void GetZXdgPopupV6(struct wl_client* client,
@@ -156,13 +196,22 @@ void GetZXdgPopupV6(struct wl_client* client,
     return;
   }
 
-  wl_resource* xdg_popup_resource = wl_resource_create(
-      client, &zxdg_popup_v6_interface, wl_resource_get_version(resource), id);
+  wl_resource* xdg_popup_resource =
+      CreateResourceWithImpl<::testing::NiceMock<MockXdgPopup>>(
+          client, &zxdg_popup_v6_interface, wl_resource_get_version(resource),
+          &kZxdgPopupV6Impl, id, resource);
+
+  if (!xdg_popup_resource) {
+    wl_client_post_no_memory(client);
+    return;
+  }
+
+  auto* mock_xdg_popup = GetUserDataAs<MockXdgPopup>(xdg_popup_resource);
+  DCHECK(mock_xdg_popup);
+
   auto* positioner = GetUserDataAs<TestPositioner>(positioner_resource);
   DCHECK(positioner);
 
-  auto mock_xdg_popup =
-      std::make_unique<MockXdgPopup>(xdg_popup_resource, &kZxdgPopupV6Impl);
   mock_xdg_popup->set_position(positioner->position());
   if (mock_xdg_popup->size().IsEmpty() ||
       mock_xdg_popup->anchor_rect().IsEmpty()) {
@@ -171,21 +220,7 @@ void GetZXdgPopupV6(struct wl_client* client,
     return;
   }
 
-  mock_xdg_surface->set_xdg_popup(std::move(mock_xdg_popup));
-}
-
-void SetMaxSize(wl_client* client,
-                wl_resource* resource,
-                int32_t width,
-                int32_t height) {
-  GetUserDataAs<MockXdgSurface>(resource)->SetMaxSize(width, height);
-}
-
-void SetMinSize(wl_client* client,
-                wl_resource* resource,
-                int32_t width,
-                int32_t height) {
-  GetUserDataAs<MockXdgSurface>(resource)->SetMinSize(width, height);
+  mock_xdg_surface->set_xdg_popup(mock_xdg_popup);
 }
 
 const struct xdg_surface_interface kMockXdgSurfaceImpl = {
@@ -238,17 +273,18 @@ const struct zxdg_toplevel_v6_interface kMockZxdgToplevelV6Impl = {
     &SetMinimized,     // set_minimized
 };
 
-MockXdgSurface::MockXdgSurface(wl_resource* resource,
-                               const void* implementation)
-    : ServerObject(resource) {
-  SetImplementationUnretained(resource, implementation, this);
-}
+MockXdgSurface::MockXdgSurface(wl_resource* resource, wl_resource* surface)
+    : ServerObject(resource), surface_(surface) {}
 
-MockXdgSurface::~MockXdgSurface() {}
+MockXdgSurface::~MockXdgSurface() {
+  auto* mock_surface = GetUserDataAs<MockSurface>(surface_);
+  if (mock_surface)
+    mock_surface->set_xdg_surface(nullptr);
+}
 
 MockXdgTopLevel::MockXdgTopLevel(wl_resource* resource,
                                  const void* implementation)
-    : MockXdgSurface(resource, implementation) {
+    : ServerObject(resource) {
   SetImplementationUnretained(resource, implementation, this);
 }
 

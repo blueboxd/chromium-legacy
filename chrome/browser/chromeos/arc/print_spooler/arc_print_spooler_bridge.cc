@@ -22,6 +22,7 @@
 #include "components/arc/session/arc_bridge_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "net/base/filename_util.h"
 #include "ui/aura/window.h"
 #include "url/gurl.h"
@@ -110,8 +111,15 @@ void ArcPrintSpoolerBridge::OnPrintDocumentSaved(
   auto custom_tab =
       ash::ArcCustomTab::Create(arc_window, surface_id, top_margin);
   auto web_contents = CreateArcCustomTabWebContents(profile_, url);
-  std::move(callback).Run(PrintSessionImpl::Create(
-      std::move(web_contents), std::move(custom_tab), std::move(instance)));
+
+  // TODO(crbug.com/955171): Remove this temporary conversion to InterfacePtr
+  // once StartPrintInCustomTab callback from
+  // //components/arc/mojom/print_spooler.mojom could take pending_remote
+  // directly. Refer to crrev.com/c/1868870.
+  mojo::InterfacePtr<mojom::PrintSessionHost> print_session_host_ptr(
+      PrintSessionImpl::Create(std::move(web_contents), std::move(custom_tab),
+                               std::move(instance)));
+  std::move(callback).Run(std::move(print_session_host_ptr));
 }
 
 }  // namespace arc

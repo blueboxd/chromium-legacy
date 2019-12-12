@@ -116,8 +116,7 @@ class AppCacheHostTest : public testing::Test {
 
     // Not needed for our tests.
     void RegisterClient(scoped_refptr<storage::QuotaClient> client) override {}
-    void NotifyStorageAccessed(storage::QuotaClient::ID client_id,
-                               const url::Origin& origin,
+    void NotifyStorageAccessed(const url::Origin& origin,
                                blink::mojom::StorageType type) override {}
     void NotifyStorageModified(storage::QuotaClient::ID client_id,
                                const url::Origin& origin,

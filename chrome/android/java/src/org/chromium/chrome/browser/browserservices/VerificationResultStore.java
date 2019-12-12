@@ -4,11 +4,15 @@
 
 package org.chromium.chrome.browser.browserservices;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -39,15 +43,21 @@ public class VerificationResultStore {
         setRelationships(Collections.emptySet());
     }
 
-    private static Set<String> getRelationships() {
+    @VisibleForTesting
+    static Set<String> getRelationships() {
         // In case we're called on the UI thread and Preferences haven't been read before.
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            return ChromePreferenceManager.getInstance().getVerifiedDigitalAssetLinks();
+            // From the official docs, modifying the result of a SharedPreferences.getStringSet can
+            // cause bad things to happen including exceptions or ruining the data.
+            return new HashSet<>(SharedPreferencesManager.getInstance().readStringSet(
+                    ChromePreferenceKeys.VERIFIED_DIGITAL_ASSET_LINKS));
         }
     }
 
-    private static void setRelationships(Set<String> relationships) {
-        ChromePreferenceManager.getInstance().setVerifiedDigitalAssetLinks(relationships);
+    @VisibleForTesting
+    static void setRelationships(Set<String> relationships) {
+        SharedPreferencesManager.getInstance().writeStringSet(
+                ChromePreferenceKeys.VERIFIED_DIGITAL_ASSET_LINKS, relationships);
     }
 
     private VerificationResultStore() {}

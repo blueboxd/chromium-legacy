@@ -292,12 +292,9 @@ class QuotaManagerTest : public testing::Test {
     quota_manager_->GetCachedOrigins(type, origins);
   }
 
-  void NotifyStorageAccessed(QuotaClient* client,
-                             const url::Origin& origin,
-                             StorageType type) {
-    DCHECK(client);
-    quota_manager_->NotifyStorageAccessedInternal(
-        client->id(), origin, type, IncrementMockTime());
+  void NotifyStorageAccessed(const url::Origin& origin, StorageType type) {
+    quota_manager_->NotifyStorageAccessedInternal(origin, type,
+                                                  IncrementMockTime());
   }
 
   void DeleteOriginFromDatabase(const url::Origin& origin, StorageType type) {
@@ -1540,12 +1537,10 @@ TEST_F(QuotaManagerTest, EvictOriginData) {
 
   for (size_t i = 0; i < base::size(kData1); ++i)
     quota_manager()->NotifyStorageAccessed(
-        QuotaClient::kUnknown, url::Origin::Create(GURL(kData1[i].origin)),
-        kData1[i].type);
+        url::Origin::Create(GURL(kData1[i].origin)), kData1[i].type);
   for (size_t i = 0; i < base::size(kData2); ++i)
     quota_manager()->NotifyStorageAccessed(
-        QuotaClient::kUnknown, url::Origin::Create(GURL(kData2[i].origin)),
-        kData2[i].type);
+        url::Origin::Create(GURL(kData2[i].origin)), kData2[i].type);
   task_environment_.RunUntilIdle();
 
   EvictOriginData(ToOrigin("http://foo.com/"), kTemp);
@@ -1604,7 +1599,7 @@ TEST_F(QuotaManagerTest, EvictOriginDataHistogram) {
   client->AddOriginAndNotify(kOrigin, kTemp, 100);
 
   // Change the used count of the origin.
-  quota_manager()->NotifyStorageAccessed(QuotaClient::kUnknown, kOrigin, kTemp);
+  quota_manager()->NotifyStorageAccessed(kOrigin, kTemp);
   task_environment_.RunUntilIdle();
 
   GetGlobalUsage(kTemp);
@@ -1662,7 +1657,7 @@ TEST_F(QuotaManagerTest, EvictOriginDataWithDeletionError) {
   int64_t predelete_host_pers = usage();
 
   for (size_t i = 0; i < base::size(kData); ++i)
-    NotifyStorageAccessed(client, url::Origin::Create(GURL(kData[i].origin)),
+    NotifyStorageAccessed(url::Origin::Create(GURL(kData[i].origin)),
                           kData[i].type);
   task_environment_.RunUntilIdle();
 
@@ -1927,13 +1922,11 @@ TEST_F(QuotaManagerTest, DeleteOriginDataMultiple) {
 
   for (size_t i = 0; i < base::size(kData1); ++i) {
     quota_manager()->NotifyStorageAccessed(
-        QuotaClient::kUnknown, url::Origin::Create(GURL(kData1[i].origin)),
-        kData1[i].type);
+        url::Origin::Create(GURL(kData1[i].origin)), kData1[i].type);
   }
   for (size_t i = 0; i < base::size(kData2); ++i) {
     quota_manager()->NotifyStorageAccessed(
-        QuotaClient::kUnknown, url::Origin::Create(GURL(kData2[i].origin)),
-        kData2[i].type);
+        url::Origin::Create(GURL(kData2[i].origin)), kData2[i].type);
   }
   task_environment_.RunUntilIdle();
 
@@ -2040,14 +2033,14 @@ TEST_F(QuotaManagerTest, NotifyAndLRUOrigin) {
   task_environment_.RunUntilIdle();
   EXPECT_FALSE(eviction_origin().has_value());
 
-  NotifyStorageAccessed(client, ToOrigin("http://a.com/"), kTemp);
+  NotifyStorageAccessed(ToOrigin("http://a.com/"), kTemp);
   GetEvictionOrigin(kTemp);
   task_environment_.RunUntilIdle();
   EXPECT_EQ("http://a.com/", eviction_origin()->GetURL().spec());
 
-  NotifyStorageAccessed(client, ToOrigin("http://b.com/"), kPerm);
-  NotifyStorageAccessed(client, ToOrigin("https://a.com/"), kTemp);
-  NotifyStorageAccessed(client, ToOrigin("http://c.com/"), kTemp);
+  NotifyStorageAccessed(ToOrigin("http://b.com/"), kPerm);
+  NotifyStorageAccessed(ToOrigin("https://a.com/"), kTemp);
+  NotifyStorageAccessed(ToOrigin("http://c.com/"), kTemp);
   GetEvictionOrigin(kTemp);
   task_environment_.RunUntilIdle();
   EXPECT_EQ("http://a.com/", eviction_origin()->GetURL().spec());
@@ -2080,10 +2073,10 @@ TEST_F(QuotaManagerTest, GetLRUOriginWithOriginInUse) {
   task_environment_.RunUntilIdle();
   EXPECT_FALSE(eviction_origin().has_value());
 
-  NotifyStorageAccessed(client, ToOrigin("http://a.com/"), kTemp);
-  NotifyStorageAccessed(client, ToOrigin("http://b.com/"), kPerm);
-  NotifyStorageAccessed(client, ToOrigin("https://a.com/"), kTemp);
-  NotifyStorageAccessed(client, ToOrigin("http://c.com/"), kTemp);
+  NotifyStorageAccessed(ToOrigin("http://a.com/"), kTemp);
+  NotifyStorageAccessed(ToOrigin("http://b.com/"), kPerm);
+  NotifyStorageAccessed(ToOrigin("https://a.com/"), kTemp);
+  NotifyStorageAccessed(ToOrigin("http://c.com/"), kTemp);
 
   GetEvictionOrigin(kTemp);
   task_environment_.RunUntilIdle();
@@ -2105,7 +2098,7 @@ TEST_F(QuotaManagerTest, GetLRUOriginWithOriginInUse) {
 
   // Notify access for http://c.com while GetEvictionOrigin is running.
   GetEvictionOrigin(kTemp);
-  NotifyStorageAccessed(client, ToOrigin("http://c.com/"), kTemp);
+  NotifyStorageAccessed(ToOrigin("http://c.com/"), kTemp);
   task_environment_.RunUntilIdle();
   // Post-filtering must have excluded the returned origin, so we will
   // see empty result here.
@@ -2198,12 +2191,12 @@ TEST_F(QuotaManagerTest, DumpQuotaTable) {
 TEST_F(QuotaManagerTest, DumpOriginInfoTable) {
   using std::make_pair;
 
-  quota_manager()->NotifyStorageAccessed(
-      QuotaClient::kUnknown, ToOrigin("http://example.com/"), kTemp);
-  quota_manager()->NotifyStorageAccessed(
-      QuotaClient::kUnknown, ToOrigin("http://example.com/"), kPerm);
-  quota_manager()->NotifyStorageAccessed(
-      QuotaClient::kUnknown, ToOrigin("http://example.com/"), kPerm);
+  quota_manager()->NotifyStorageAccessed(ToOrigin("http://example.com/"),
+                                         kTemp);
+  quota_manager()->NotifyStorageAccessed(ToOrigin("http://example.com/"),
+                                         kPerm);
+  quota_manager()->NotifyStorageAccessed(ToOrigin("http://example.com/"),
+                                         kPerm);
   task_environment_.RunUntilIdle();
 
   DumpOriginInfoTable();

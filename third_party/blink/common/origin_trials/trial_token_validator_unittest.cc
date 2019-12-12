@@ -23,8 +23,10 @@
 namespace blink {
 namespace trial_token_validator_unittest {
 
-// This is a sample public key for testing the API. The corresponding private
-// key (use this to generate new samples for this test file) is:
+// These are sample public keys for testing the API.
+
+// For the first public key, the corresponding private key (use this
+// to generate new samples for this test file) is:
 //
 //  0x83, 0x67, 0xf4, 0xcd, 0x2a, 0x1f, 0x0e, 0x04, 0x0d, 0x43, 0x13,
 //  0x4c, 0x67, 0xc4, 0xf4, 0x28, 0xc9, 0x90, 0x15, 0x02, 0xe2, 0xba,
@@ -32,11 +34,8 @@ namespace trial_token_validator_unittest {
 //  0x10, 0xac, 0xf9, 0x3a, 0x1c, 0xb8, 0xa9, 0x28, 0x70, 0xd2, 0x9a,
 //  0xd0, 0x0b, 0x59, 0xe1, 0xac, 0x2b, 0xb7, 0xd5, 0xca, 0x1f, 0x64,
 //  0x90, 0x08, 0x8e, 0xa8, 0xe0, 0x56, 0x3a, 0x04, 0xd0
-const uint8_t kTestPublicKey[] = {
-    0x75, 0x10, 0xac, 0xf9, 0x3a, 0x1c, 0xb8, 0xa9, 0x28, 0x70, 0xd2,
-    0x9a, 0xd0, 0x0b, 0x59, 0xe1, 0xac, 0x2b, 0xb7, 0xd5, 0xca, 0x1f,
-    0x64, 0x90, 0x08, 0x8e, 0xa8, 0xe0, 0x56, 0x3a, 0x04, 0xd0,
-};
+
+//  For the second public key, the corresponding private key is:
 
 //  0x21, 0xee, 0xfa, 0x81, 0x6a, 0xff, 0xdf, 0xb8, 0xc1, 0xdd, 0x75,
 //  0x05, 0x04, 0x29, 0x68, 0x67, 0x60, 0x85, 0x91, 0xd0, 0x50, 0x16,
@@ -44,11 +43,26 @@ const uint8_t kTestPublicKey[] = {
 //  0x07, 0x4d, 0x76, 0x55, 0x56, 0x42, 0x17, 0x2d, 0x8a, 0x9c, 0x47,
 //  0x96, 0x25, 0xda, 0x70, 0xaa, 0xb9, 0xfd, 0x53, 0x5d, 0x51, 0x3e,
 //  0x16, 0xab, 0xb4, 0x86, 0xea, 0xf3, 0x35, 0xc6, 0xca
-const uint8_t kTestPublicKey2[] = {
+const uint8_t kTestPublicKeys[][32] = {
+    {
+        0x75, 0x10, 0xac, 0xf9, 0x3a, 0x1c, 0xb8, 0xa9, 0x28, 0x70, 0xd2,
+        0x9a, 0xd0, 0x0b, 0x59, 0xe1, 0xac, 0x2b, 0xb7, 0xd5, 0xca, 0x1f,
+        0x64, 0x90, 0x08, 0x8e, 0xa8, 0xe0, 0x56, 0x3a, 0x04, 0xd0,
+    },
+    {
+        0x50, 0x07, 0x4d, 0x76, 0x55, 0x56, 0x42, 0x17, 0x2d, 0x8a, 0x9c,
+        0x47, 0x96, 0x25, 0xda, 0x70, 0xaa, 0xb9, 0xfd, 0x53, 0x5d, 0x51,
+        0x3e, 0x16, 0xab, 0xb4, 0x86, 0xea, 0xf3, 0x35, 0xc6, 0xca,
+    }};
+const int kTestPublicKeysSize = 2;
+
+// The corresponding private key can be found above.
+const uint8_t kTestPublicKeys2[][32] = {{
     0x50, 0x07, 0x4d, 0x76, 0x55, 0x56, 0x42, 0x17, 0x2d, 0x8a, 0x9c,
     0x47, 0x96, 0x25, 0xda, 0x70, 0xaa, 0xb9, 0xfd, 0x53, 0x5d, 0x51,
     0x3e, 0x16, 0xab, 0xb4, 0x86, 0xea, 0xf3, 0x35, 0xc6, 0xca,
-};
+}};
+const int kTestPublicKeys2Size = 1;
 
 // This is a good trial token, signed with the above test private key.
 // TODO(iclelland): This token expires in 2033. Update it or find a way
@@ -67,6 +81,19 @@ const uint8_t kSampleTokenSignature[] = {
     0xe0, 0x6d, 0x3c, 0x0d, 0x51, 0x47, 0x0e, 0x0d, 0x8a, 0x07, 0xf7,
     0xdf, 0xaa, 0xfe, 0x3b, 0x87, 0xcc, 0xdd, 0x26, 0xbe, 0x30, 0x47,
     0x7e, 0xe4, 0x97, 0x08, 0x81, 0x26, 0x5a, 0x7f, 0x0f};
+
+// This is a trial token signed with the corresponding private key
+// for kTestPublicKeys2
+// TODO(iclelland): This token expires in 2033. Update it or find a way
+// to autogenerate it before then.
+// Generate this token with the command (in tools/origin_trials):
+// generate_token.py valid.example.com Frobulate --expire-timestamp=2000000000
+// --key-file=eftest2.key
+const char kSampleToken2[] =
+    "Ar3e2ev1rH7T/5NRr/9g/ehLLk7dXBi4mjluPG7pohGifzTJCgBtuGhgJXO/8tD/"
+    "m59D2hj0sLjSYSDw4B5NiA4AAABZeyJvcmlnaW4iOiAiaHR0cHM6Ly92YWxpZC5le"
+    "GFtcGxlLmNvbTo0NDMiLCAiZmVhdHVyZSI6ICJGcm9idWxhdGUiLCAiZXhwaXJ5Ij"
+    "ogMjAwMDAwMDAwMH0=";
 
 // The token should be valid for this origin and for this feature.
 const char kAppropriateOrigin[] = "https://valid.example.com";
@@ -122,16 +149,21 @@ class TestOriginTrialPolicy : public OriginTrialPolicy {
   bool IsOriginSecure(const GURL& url) const override {
     return url.SchemeIs("https");
   }
-  base::StringPiece GetPublicKey() const override {
-    return base::StringPiece(reinterpret_cast<const char*>(key_),
-                             base::size(kTestPublicKey));
+  std::vector<base::StringPiece> GetPublicKeys() const override {
+    return keys_;
   }
   bool IsFeatureDisabled(base::StringPiece feature) const override {
     return disabled_features_.count(feature.as_string()) > 0;
   }
 
   // Test setup methods
-  void SetPublicKey(const uint8_t* key) { key_ = key; }
+  void SetPublicKeys(const uint8_t keys[][32], const int keys_size) {
+    keys_.clear();
+    for (int n = 0; n < keys_size; n++) {
+      keys_.push_back(base::StringPiece(reinterpret_cast<const char*>(keys[n]),
+                                        base::size(keys[n])));
+    }
+  }
   void DisableFeature(const std::string& feature) {
     disabled_features_.insert(feature);
   }
@@ -145,7 +177,7 @@ class TestOriginTrialPolicy : public OriginTrialPolicy {
   }
 
  private:
-  const uint8_t* key_ = nullptr;
+  std::vector<base::StringPiece> keys_;
   std::set<std::string> disabled_features_;
   std::set<std::string> disabled_tokens_;
 };
@@ -166,14 +198,16 @@ class TrialTokenValidatorTest : public testing::Test {
     TrialTokenValidator::SetOriginTrialPolicyGetter(
         base::BindRepeating([](OriginTrialPolicy* policy) { return policy; },
                             base::Unretained(&policy_)));
-    SetPublicKey(kTestPublicKey);
+    SetPublicKeys(kTestPublicKeys, kTestPublicKeysSize);
   }
 
   ~TrialTokenValidatorTest() override {
     TrialTokenValidator::ResetOriginTrialPolicyGetter();
   }
 
-  void SetPublicKey(const uint8_t* key) { policy_.SetPublicKey(key); }
+  void SetPublicKeys(const uint8_t keys[][32], const int keys_size) {
+    policy_.SetPublicKeys(keys, keys_size);
+  }
 
   void DisableFeature(const std::string& feature) {
     policy_.DisableFeature(feature);
@@ -202,6 +236,12 @@ TEST_F(TrialTokenValidatorTest, ValidateValidToken) {
   std::string feature;
   EXPECT_EQ(blink::OriginTrialTokenStatus::kSuccess,
             validator_.ValidateToken(kSampleToken, appropriate_origin_,
+                                     &feature, Now()));
+  EXPECT_EQ(kAppropriateFeatureName, feature);
+
+  // All signing keys should be able to validate their tokens.
+  EXPECT_EQ(blink::OriginTrialTokenStatus::kSuccess,
+            validator_.ValidateToken(kSampleToken2, appropriate_origin_,
                                      &feature, Now()));
   EXPECT_EQ(kAppropriateFeatureName, feature);
 }
@@ -239,8 +279,16 @@ TEST_F(TrialTokenValidatorTest, ValidateExpiredToken) {
 
 TEST_F(TrialTokenValidatorTest, ValidateValidTokenWithIncorrectKey) {
   std::string feature;
-  SetPublicKey(kTestPublicKey2);
+  SetPublicKeys(kTestPublicKeys2, kTestPublicKeys2Size);
   EXPECT_EQ(blink::OriginTrialTokenStatus::kInvalidSignature,
+            validator_.ValidateToken(kSampleToken, appropriate_origin_,
+                                     &feature, Now()));
+}
+
+TEST_F(TrialTokenValidatorTest, PublicKeyNotAvailable) {
+  std::string feature;
+  SetPublicKeys({}, 0);
+  EXPECT_EQ(blink::OriginTrialTokenStatus::kNotSupported,
             validator_.ValidateToken(kSampleToken, appropriate_origin_,
                                      &feature, Now()));
 }

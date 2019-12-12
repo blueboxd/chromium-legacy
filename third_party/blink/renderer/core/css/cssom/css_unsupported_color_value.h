@@ -21,11 +21,6 @@ namespace blink {
 class CORE_EXPORT CSSUnsupportedColorValue final
     : public CSSUnsupportedStyleValue {
  public:
-  static CSSUnsupportedColorValue* Create(Color color);
-  static CSSUnsupportedColorValue* Create(const CSSPropertyName& name,
-                                          Color color);
-  static CSSUnsupportedColorValue* FromCSSValue(const cssvalue::CSSColorValue&);
-
   explicit CSSUnsupportedColorValue(Color color)
       : CSSUnsupportedStyleValue(
             cssvalue::CSSColorValue::SerializeAsCSSComponentValue(color)),
@@ -35,6 +30,8 @@ class CORE_EXPORT CSSUnsupportedColorValue final
             name,
             cssvalue::CSSColorValue::SerializeAsCSSComponentValue(color)),
         color_value_(color) {}
+  explicit CSSUnsupportedColorValue(const cssvalue::CSSColorValue& color_value)
+      : CSSUnsupportedColorValue(color_value.Value()) {}
 
   StyleValueType GetType() const override { return kUnsupportedColorType; }
 

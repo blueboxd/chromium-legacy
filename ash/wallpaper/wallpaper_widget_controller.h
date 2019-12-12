@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/wallpaper/wallpaper_property.h"
 #include "base/callback.h"
 #include "base/macros.h"
 
@@ -58,20 +59,18 @@ class ASH_EXPORT WallpaperWidgetController {
   // Returns true if there was something to reparent.
   bool Reparent(aura::Window* root_window, int container);
 
-  // Blur pixels of the wallpaper layer by 3 * the given amount and set the
-  // opacity.
-  bool SetBlurAndOpacity(float blur_sigma, float opacity);
+  // Set the properties (blur and opacity) used to draw wallpaper.
+  bool SetWallpaperProperty(const WallpaperProperty& property);
 
   // TODO: Get the wallpaper view from |animating_widget_| or |active_widget_|
   // instead of caching the pointer value.
   WallpaperView* wallpaper_view() const { return wallpaper_view_; }
 
-  float blur_sigma() const { return blur_sigma_; }
-  float opacity() const { return opacity_; }
-
   // Reset, and closes both |active_widget_| and |animating_widget_|. Can be
   // used in tests to reset the wallpaper widget controller state.
   void ResetWidgetsForTesting();
+
+  const WallpaperProperty& property() const { return property_; }
 
  private:
   // Wrapper around wallpaper widgets that manages the widget state.
@@ -106,8 +105,7 @@ class ASH_EXPORT WallpaperWidgetController {
   WallpaperView* wallpaper_view_ = nullptr;
 
   // The current blur sigma and opacity.
-  float blur_sigma_ = 0.f;
-  float opacity_ = 1.f;
+  WallpaperProperty property_{wallpaper_constants::kClear};
 
   // Callbacks to be run when the |animating_widget_| stops animating and gets
   // set as the active widget.

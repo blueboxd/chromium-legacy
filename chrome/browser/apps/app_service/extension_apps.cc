@@ -231,6 +231,7 @@ ExtensionApps::ExtensionApps(
       app_type_(app_type),
       instance_registry_(instance_registry),
       app_service_(nullptr) {
+  DCHECK(instance_registry_);
   Initialize(app_service);
 }
 
@@ -711,14 +712,40 @@ void ExtensionApps::OnContentSettingChanged(
 }
 
 void ExtensionApps::OnAppWindowAdded(extensions::AppWindow* app_window) {
+  if (!ShouldRecordAppWindowActivity(app_window)) {
+    return;
+  }
+
+  DCHECK(!instance_registry_->ForOneInstance(
+      app_window->GetNativeWindow(),
+      [](const apps::InstanceUpdate& update) {}));
+
   RegisterInstance(app_window, InstanceState::kStarted);
 }
 
 void ExtensionApps::OnAppWindowShown(extensions::AppWindow* app_window,
                                      bool was_hidden) {
-  RegisterInstance(app_window,
-                   static_cast<InstanceState>(InstanceState::kStarted |
-                                              InstanceState::kRunning));
+  if (!ShouldRecordAppWindowActivity(app_window)) {
+    return;
+  }
+
+  InstanceState state = InstanceState::kUnknown;
+  instance_registry_->ForOneInstance(
+      app_window->GetNativeWindow(),
+      [&state](const apps::InstanceUpdate& update) { state = update.State(); });
+  state = static_cast<apps::InstanceState>(
+      state | apps::InstanceState::kStarted | apps::InstanceState::kRunning);
+  RegisterInstance(app_window, state);
+}
+
+void ExtensionApps::OnAppWindowHidden(extensions::AppWindow* app_window) {
+  if (!ShouldRecordAppWindowActivity(app_window)) {
+    return;
+  }
+
+  // For hidden |app_window|, the other state bit, running, active, and visible
+  // should be cleared, and the state is set back to the started state.
+  RegisterInstance(app_window, InstanceState::kStarted);
 }
 
 void ExtensionApps::OnExtensionLastLaunchTimeChanged(
@@ -1181,30 +1208,31 @@ void ExtensionApps::SetIconEffect(const std::string& app_id) {
   Publish(std::move(app));
 }
 
+bool ExtensionApps::ShouldRecordAppWindowActivity(
+    extensions::AppWindow* app_window) {
+  if (!base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry)) {
+    return false;
+  }
+
+  DCHECK(app_window);
+
+  const extensions::Extension* extension = app_window->GetExtension();
+  if (!extension || !Accepts(extension)) {
+    return false;
+  }
+
+  return true;
+}
+
 void ExtensionApps::RegisterInstance(extensions::AppWindow* app_window,
                                      InstanceState new_state) {
-  if (!base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry)) {
-    return;
-  }
-
-  if (!instance_registry_ || !app_window) {
-    return;
-  }
-  const extensions::Extension* extension = app_window->GetExtension();
-  if (!extension) {
-    return;
-  }
-  if (!Accepts(extension)) {
-    return;
-  }
-
   InstanceState state = InstanceState::kUnknown;
   instance_registry_->ForOneInstance(
       app_window->GetNativeWindow(),
       [&state](const apps::InstanceUpdate& update) { state = update.State(); });
 
   // If |state| has been marked as |new_state|, we don't need to update.
-  if ((state & new_state) == new_state) {
+  if (state == new_state) {
     return;
   }
 
@@ -1212,8 +1240,7 @@ void ExtensionApps::RegisterInstance(extensions::AppWindow* app_window,
   auto instance = std::make_unique<apps::Instance>(
       app_window->extension_id(), app_window->GetNativeWindow());
   instance->SetLaunchId(GetLaunchId(app_window));
-  instance->UpdateState(static_cast<InstanceState>(state | new_state),
-                        base::Time::Now());
+  instance->UpdateState(new_state, base::Time::Now());
   deltas.push_back(std::move(instance));
   instance_registry_->OnInstances(deltas);
 }

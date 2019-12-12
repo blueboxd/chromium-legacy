@@ -9,6 +9,10 @@
 
 namespace arc {
 
+// Exposed only for testing.
+extern const char* kAndroidSupportedMediaExtensions[];
+extern const int kAndroidSupportedMediaExtensionsSize;
+
 // The removable media path in ChromeOS. This is the actual directory to be
 // watched.
 constexpr base::FilePath::CharType kCrosRemovableMediaDir[] =
@@ -34,6 +38,9 @@ bool AppendRelativePathForRemovableMedia(const base::FilePath& cros_path,
 base::FilePath GetAndroidPath(const base::FilePath& cros_path,
                               const base::FilePath& cros_dir,
                               const base::FilePath& android_dir);
+
+// Returns true if the file path has a media extension supported by Android.
+bool HasAndroidSupportedMediaExtension(const base::FilePath& path);
 
 }  // namespace arc
 

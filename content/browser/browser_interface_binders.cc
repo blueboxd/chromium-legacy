@@ -37,6 +37,7 @@
 #include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/device_service.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/shared_worker_instance.h"
 #include "content/public/browser/webvr_service_provider.h"
@@ -55,7 +56,6 @@
 #include "services/device/public/mojom/sensor_provider.mojom.h"
 #include "services/device/public/mojom/vibration_manager.mojom.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/shape_detection/public/mojom/barcodedetection_provider.mojom.h"
 #include "services/shape_detection/public/mojom/facedetection_provider.mojom.h"
 #include "services/shape_detection/public/mojom/shape_detection_service.mojom.h"
@@ -123,17 +123,6 @@ namespace content {
 namespace internal {
 
 namespace {
-
-// Forwards service receivers to Service Manager since the renderer cannot
-// launch out-of-process services on is own.
-template <typename Interface>
-void ForwardServiceReceiver(const char* service_name,
-                            RenderFrameHostImpl* host,
-                            mojo::PendingReceiver<Interface> receiver) {
-  auto* connector =
-      BrowserContext::GetConnectorFor(host->GetProcess()->GetBrowserContext());
-  connector->Connect(service_name, std::move(receiver));
-}
 
 void BindShapeDetectionServiceOnIOThread(
     mojo::PendingReceiver<shape_detection::mojom::ShapeDetectionService>
@@ -367,6 +356,20 @@ BindServiceWorkerReceiverForOriginAndFrameId(
       base::Unretained(host), method);
 }
 
+VibrationManagerBinder& GetVibrationManagerBinderOverride() {
+  static base::NoDestructor<VibrationManagerBinder> binder;
+  return *binder;
+}
+
+void BindVibrationManager(
+    mojo::PendingReceiver<device::mojom::VibrationManager> receiver) {
+  const auto& binder = GetVibrationManagerBinderOverride();
+  if (binder)
+    binder.Run(std::move(receiver));
+  else
+    GetDeviceService().BindVibrationManager(std::move(receiver));
+}
+
 }  // namespace
 
 // Documents/frames
@@ -455,9 +458,8 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
   map->Add<device::mojom::SensorProvider>(base::BindRepeating(
       &RenderFrameHostImpl::GetSensorProvider, base::Unretained(host)));
 
-  map->Add<device::mojom::VibrationManager>(base::BindRepeating(
-      &ForwardServiceReceiver<device::mojom::VibrationManager>,
-      device::mojom::kServiceName, base::Unretained(host)));
+  map->Add<device::mojom::VibrationManager>(
+      base::BindRepeating(&BindVibrationManager));
 
   map->Add<payments::mojom::PaymentManager>(base::BindRepeating(
       &RenderFrameHostImpl::CreatePaymentManager, base::Unretained(host)));
@@ -861,4 +863,9 @@ void PopulateBinderMap(ServiceWorkerProviderHost* host,
 }
 
 }  // namespace internal
+
+void OverrideVibrationManagerBinderForTesting(VibrationManagerBinder binder) {
+  internal::GetVibrationManagerBinderOverride() = std::move(binder);
+}
+
 }  // namespace content

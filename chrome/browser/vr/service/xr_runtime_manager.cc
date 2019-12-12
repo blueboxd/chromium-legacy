@@ -14,11 +14,13 @@
 #include "build/build_config.h"
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
 #include "chrome/common/chrome_features.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/device_service.h"
 #include "content/public/common/content_features.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "device/vr/orientation/orientation_device_provider.h"
 #include "device/vr/vr_device_provider.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/device/public/mojom/sensor_provider.mojom.h"
 
 #if BUILDFLAG(ENABLE_OPENVR)
 #include "device/vr/openvr/openvr_device.h"
@@ -69,12 +71,11 @@ scoped_refptr<XRRuntimeManager> XRRuntimeManager::GetOrCreateInstance() {
   providers.emplace_back(std::make_unique<vr::IsolatedVRDeviceProvider>());
 #endif  // defined(OS_ANDROID)
 
-  auto* connector = content::GetSystemConnector();
-  if (connector) {
-    providers.emplace_back(
-        std::make_unique<device::VROrientationDeviceProvider>(connector));
-  }
-
+  mojo::PendingRemote<device::mojom::SensorProvider> sensor_provider;
+  content::GetDeviceService().BindSensorProvider(
+      sensor_provider.InitWithNewPipeAndPassReceiver());
+  providers.emplace_back(std::make_unique<device::VROrientationDeviceProvider>(
+      std::move(sensor_provider)));
   return CreateInstance(std::move(providers));
 }
 

@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/wayland/test/mock_xdg_popup.h"
 
+#include "ui/ozone/platform/wayland/test/mock_xdg_surface.h"
+
 namespace wl {
 
 namespace {
@@ -27,9 +29,11 @@ const struct zxdg_popup_v6_interface kZxdgPopupV6Impl = {
     &Grab,             // grab
 };
 
-MockXdgPopup::MockXdgPopup(wl_resource* resource, const void* implementation)
-    : ServerObject(resource) {
-  SetImplementationUnretained(resource, implementation, this);
+MockXdgPopup::MockXdgPopup(wl_resource* resource, wl_resource* surface)
+    : ServerObject(resource), surface_(surface) {
+  auto* mock_xdg_surface = GetUserDataAs<MockXdgSurface>(surface_);
+  if (mock_xdg_surface)
+    mock_xdg_surface->set_xdg_popup(nullptr);
 }
 
 MockXdgPopup::~MockXdgPopup() {}

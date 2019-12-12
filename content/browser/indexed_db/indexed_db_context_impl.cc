@@ -463,8 +463,7 @@ void IndexedDBContextImpl::ConnectionOpened(const Origin& origin,
                                             IndexedDBConnection* connection) {
   DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
   quota_manager_proxy()->NotifyStorageAccessed(
-      storage::QuotaClient::kIndexedDatabase, origin,
-      blink::mojom::StorageType::kTemporary);
+      origin, blink::mojom::StorageType::kTemporary);
   if (GetOriginSet()->insert(origin).second) {
     // A newly created db, notify the quota system.
     QueryDiskAndUpdateQuotaUsage(origin);
@@ -477,8 +476,7 @@ void IndexedDBContextImpl::ConnectionClosed(const Origin& origin,
                                             IndexedDBConnection* connection) {
   DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
   quota_manager_proxy()->NotifyStorageAccessed(
-      storage::QuotaClient::kIndexedDatabase, origin,
-      blink::mojom::StorageType::kTemporary);
+      origin, blink::mojom::StorageType::kTemporary);
   if (indexeddb_factory_.get() &&
       indexeddb_factory_->GetConnectionCount(origin) == 0)
     QueryDiskAndUpdateQuotaUsage(origin);

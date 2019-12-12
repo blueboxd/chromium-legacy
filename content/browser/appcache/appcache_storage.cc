@@ -133,8 +133,7 @@ void AppCacheStorage::NotifyStorageAccessed(const url::Origin& origin) {
   if (service()->quota_manager_proxy() &&
       usage_map_.find(origin) != usage_map_.end())
     service()->quota_manager_proxy()->NotifyStorageAccessed(
-        storage::QuotaClient::kAppcache, origin,
-        blink::mojom::StorageType::kTemporary);
+        origin, blink::mojom::StorageType::kTemporary);
 }
 
 }  // namespace content

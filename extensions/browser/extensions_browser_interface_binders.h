@@ -15,10 +15,10 @@ namespace extensions {
 
 class Extension;
 
-void PopulateExtensionFrameBinders(
-    service_manager::BinderMapWithContext<content::RenderFrameHost*>* map,
-    content::RenderFrameHost* render_frame_host,
-    const Extension* extension);
+void PopulateExtensionFrameBinders(service_manager::BinderMapWithContext<
+                                       content::RenderFrameHost*>* binder_map,
+                                   content::RenderFrameHost* render_frame_host,
+                                   const Extension* extension);
 
 }  // namespace extensions
 

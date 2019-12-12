@@ -26,6 +26,8 @@ class Profile;
 
 namespace plugin_vm {
 
+class PluginVmDriveImageDownloadService;
+
 // PluginVmImageManager is responsible for management of PluginVm image
 // including downloading this image from url specified by the user policy,
 // and importing the downloaded image archive using concierge D-Bus services.
@@ -37,6 +39,11 @@ namespace plugin_vm {
 // called not in the correct order or before the previous state is finished then
 // associated fail method will be called by the manager and image processing
 // will be interrupted.
+//
+// This class uses one of two different objects for handling file downloads. If
+// the image is hosted on Drive, a PluginVmDriveImageDownloadService object is
+// used due to the need for using the Drive API. In all other cases, the
+// DownloadService class is used to make the request directly.
 class PluginVmImageManager
     : public KeyedService,
       public chromeos::ConciergeClient::DiskImageObserver {
@@ -176,6 +183,8 @@ class PluginVmImageManager
   base::TimeTicks dlc_download_start_tick_;
   base::TimeTicks download_start_tick_;
   base::TimeTicks import_start_tick_;
+  std::unique_ptr<PluginVmDriveImageDownloadService> drive_download_service_;
+  bool using_drive_download_service_ = false;
 
   ~PluginVmImageManager() override;
 

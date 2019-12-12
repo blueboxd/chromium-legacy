@@ -76,9 +76,12 @@ class WaylandSurface : public WaylandWindow,
   void MaybeTriggerPendingStateChange();
 
   // Creates a surface window, which is visible as a main window.
-  void CreateShellSurface();
+  bool CreateShellSurface();
 
   WmMoveResizeHandler* AsWmMoveResizeHandler();
+
+  // Propagates the |min_size_| and |max_size_| to the ShellSurface.
+  void SetSizeConstraints();
 
   // Wrappers around shell surface.
   std::unique_ptr<ShellSurfaceWrapper> shell_surface_;
@@ -105,6 +108,19 @@ class WaylandSurface : public WaylandWindow,
 
   bool is_active_ = false;
   bool is_minimizing_ = false;
+
+  // Id of the chromium app passed through
+  // PlatformWindowInitProperties::wm_class_class. This is used by Wayland
+  // compositor to identify the app, unite it's windows into the same stack of
+  // windows and find *.desktop file to set various preferences including icons.
+  std::string app_id_;
+
+  // Title of the ShellSurface.
+  base::string16 window_title_;
+
+  // Max and min sizes of the WaylandSurface window.
+  base::Optional<gfx::Size> min_size_;
+  base::Optional<gfx::Size> max_size_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandSurface);
 };

@@ -174,10 +174,8 @@ class AppCacheStorageImplTest : public testing::Test {
    public:
     MockQuotaManagerProxy() : QuotaManagerProxy(nullptr, nullptr) {}
 
-    void NotifyStorageAccessed(storage::QuotaClient::ID client_id,
-                               const url::Origin& origin,
+    void NotifyStorageAccessed(const url::Origin& origin,
                                StorageType type) override {
-      EXPECT_EQ(storage::QuotaClient::kAppcache, client_id);
       EXPECT_EQ(StorageType::kTemporary, type);
       ++notify_storage_accessed_count_;
       last_origin_ = origin;

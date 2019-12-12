@@ -53,6 +53,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/sync/driver/test_sync_service.h"
@@ -132,19 +133,47 @@ void ExpectSameElements(const std::vector<T*>& expectations,
             results_copy.end());
 }
 
+class ScopedFeatureListWrapper {
+ public:
+  explicit ScopedFeatureListWrapper(
+      const std::vector<base::Feature>& default_enabled_features,
+      const std::vector<base::Feature>& additional_enabled_features) {
+    std::vector<base::Feature> all_enabled_features(default_enabled_features);
+    std::copy(additional_enabled_features.begin(),
+              additional_enabled_features.end(),
+              std::back_inserter(all_enabled_features));
+    scoped_features_.InitWithFeatures(all_enabled_features,
+                                      /*disabled_features=*/{});
+  }
+  ~ScopedFeatureListWrapper() = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_features_;
+};
+
 }  // anonymous namespace
 
 class PersonalDataManagerTestBase {
  protected:
-  PersonalDataManagerTestBase()
-      : identity_test_env_(&test_url_loader_factory_) {
+  static std::vector<base::Feature> GetDefaultEnabledFeatures() {
     // Enable account storage by default, some tests will override this to be
     // false.
-    scoped_features_.InitWithFeatures(
-        /*enabled_features=*/{features::kAutofillEnableAccountWalletStorage,
-                              features::kAutofillProfileClientValidation},
-        /*disabled_features=*/{});
+    return {features::kAutofillEnableAccountWalletStorage,
+            features::kAutofillProfileClientValidation};
   }
+
+  PersonalDataManagerTestBase()
+      : scoped_features_(
+            PersonalDataManagerTestBase::GetDefaultEnabledFeatures(),
+            /*additioanal_enabled_features=*/{}),
+        identity_test_env_(&test_url_loader_factory_) {}
+
+  explicit PersonalDataManagerTestBase(
+      const std::vector<base::Feature>& additioanal_enabled_features)
+      : scoped_features_(
+            PersonalDataManagerTestBase::GetDefaultEnabledFeatures(),
+            additioanal_enabled_features),
+        identity_test_env_(&test_url_loader_factory_) {}
 
   void SetUpTest() {
     OSCryptMocker::SetUp();
@@ -289,6 +318,7 @@ class PersonalDataManagerTestBase {
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::SingleThreadTaskEnvironment::MainThreadType::UI};
   std::unique_ptr<PrefService> prefs_;
+  ScopedFeatureListWrapper scoped_features_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   signin::IdentityTestEnvironment identity_test_env_;
   syncer::TestSyncService sync_service_;
@@ -299,11 +329,16 @@ class PersonalDataManagerTestBase {
   AutofillTable* profile_autofill_table_;  // weak ref
   AutofillTable* account_autofill_table_;  // weak ref
   PersonalDataLoadedObserverMock personal_data_observer_;
-  base::test::ScopedFeatureList scoped_features_;
 };
 
 class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
  protected:
+  PersonalDataManagerHelper() = default;
+
+  explicit PersonalDataManagerHelper(
+      const std::vector<base::Feature>& additional_enabled_features)
+      : PersonalDataManagerTestBase(additional_enabled_features) {}
+
   virtual ~PersonalDataManagerHelper() {
     if (personal_data_)
       personal_data_->Shutdown();
@@ -527,6 +562,22 @@ class PersonalDataManagerTest : public PersonalDataManagerHelper,
     SetUpTest();
     ResetPersonalDataManager(USER_MODE_NORMAL);
   }
+  void TearDown() override { TearDownTest(); }
+};
+
+class PersonalDataManagerMigrationTest : public PersonalDataManagerHelper,
+                                         public testing::Test {
+ public:
+  PersonalDataManagerMigrationTest()
+      : PersonalDataManagerHelper(
+#if defined(OS_CHROMEOS)
+            { ::switches::kAccountIdMigration }
+#endif
+        ) {
+  }
+
+ protected:
+  void SetUp() override { SetUpTest(); }
   void TearDown() override { TearDownTest(); }
 };
 
@@ -7462,6 +7513,25 @@ TEST_F(PersonalDataManagerTest, OnAccountsCookieDeletedByUserAction) {
   // Make sure the pref is now empty.
   EXPECT_TRUE(
       prefs_->GetDictionary(prefs::kAutofillSyncTransportOptIn)->DictEmpty());
+}
+
+TEST_F(PersonalDataManagerMigrationTest,
+       MigrateUserOptedInWalletSyncTransportIfNeeded) {
+  ASSERT_EQ(
+      signin::IdentityManager::MIGRATION_DONE,
+      identity_test_env_.identity_manager()->GetAccountIdMigrationState());
+
+  ::autofill::prefs::SetUserOptedInWalletSyncTransport(
+      prefs_.get(), CoreAccountId::FromEmail(kPrimaryAccountEmail), true);
+  ASSERT_TRUE(::autofill::prefs::IsUserOptedInWalletSyncTransport(
+      prefs_.get(), CoreAccountId::FromEmail(kPrimaryAccountEmail)));
+
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+
+  EXPECT_FALSE(::autofill::prefs::IsUserOptedInWalletSyncTransport(
+      prefs_.get(), CoreAccountId::FromEmail(kPrimaryAccountEmail)));
+  EXPECT_TRUE(::autofill::prefs::IsUserOptedInWalletSyncTransport(
+      prefs_.get(), sync_service_.GetAuthenticatedAccountInfo().account_id));
 }
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)

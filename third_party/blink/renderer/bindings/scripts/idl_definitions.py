@@ -315,6 +315,8 @@ class IdlInterface(object):
         has_indexed_property_getter = False
         has_integer_typed_length = False
 
+        constructor_operations = []
+
         def is_blacklisted_attribute_type(idl_type):
             return idl_type.is_callback_function or \
                 idl_type.is_dictionary or \
@@ -347,6 +349,9 @@ class IdlInterface(object):
                     elif str(op.arguments[0].idl_type) == 'DOMString':
                         self.has_named_property_getter = True
                 self.operations.append(op)
+            elif child_class == 'Constructor':
+                constructor = constructor_operation_from_node(child)
+                constructor_operations.append(constructor)
             elif child_class == 'Inherit':
                 self.parent = child.GetName()
             elif child_class == 'Stringifier':
@@ -382,6 +387,11 @@ class IdlInterface(object):
 
         if 'Unforgeable' in self.extended_attributes:
             raise ValueError('[Unforgeable] cannot appear on interfaces.')
+
+        if constructor_operations:
+            if self.constructors:
+                raise ValueError('Detected mixed extended attribute constructors and consructor operations. Do not use both in a single interface.')
+            self.constructors = constructor_operations
 
     def accept(self, visitor):
         visitor.visit_interface(self)
@@ -893,6 +903,27 @@ def extended_attributes_to_constructors(extended_attributes):
         constructors.append(named_constructor)
 
     return constructors, custom_constructors
+
+
+def constructor_operation_from_node(node):
+    arguments_node = None
+    for child in node.GetChildren():
+        child_class = child.GetClass()
+        if child_class == 'Arguments':
+            arguments_node = child
+        elif child_class == 'ExtAttributes':
+            # TODO(bashi): Add minimal support of extended attributes, i.e,
+            # ConstructorCallWith, RaisesException and CustomConstructor.
+            raise Exception('Extended attributes are not yet supported on '
+                            'constructor operations')
+        else:
+            raise ValueError('Unrecognized node class: %s' % child_class)
+
+    if not arguments_node:
+        raise ValueError('Expected Arguments node for constructor operation')
+
+    return IdlOperation.constructor_from_arguments_node(
+        'Constructor', arguments_node)
 
 
 def clear_constructor_attributes(extended_attributes):

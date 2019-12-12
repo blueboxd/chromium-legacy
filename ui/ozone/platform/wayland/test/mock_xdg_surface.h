@@ -30,60 +30,71 @@ class MockXdgTopLevel;
 // UI.
 class MockXdgSurface : public ServerObject {
  public:
-  MockXdgSurface(wl_resource* resource, const void* implementation);
+  MockXdgSurface(wl_resource* resource, wl_resource* surface);
   ~MockXdgSurface() override;
 
-  // These mock methods are shared between xdg_surface and zxdg_toplevel
-  // surface.
-  MOCK_METHOD1(SetParent, void(wl_resource* parent));
-  MOCK_METHOD1(SetTitle, void(const char* title));
-  MOCK_METHOD1(SetAppId, void(const char* app_id));
-  MOCK_METHOD1(Move, void(uint32_t serial));
-  MOCK_METHOD2(Resize, void(uint32_t serial, uint32_t edges));
   MOCK_METHOD1(AckConfigure, void(uint32_t serial));
   MOCK_METHOD4(SetWindowGeometry,
                void(int32_t x, int32_t y, int32_t width, int32_t height));
-  MOCK_METHOD0(SetMaximized, void());
-  MOCK_METHOD0(UnsetMaximized, void());
-  MOCK_METHOD0(SetFullscreen, void());
-  MOCK_METHOD0(UnsetFullscreen, void());
-  MOCK_METHOD0(SetMinimized, void());
-
-  // These methods are for zxdg_toplevel only.
-  MOCK_METHOD2(SetMaxSize, void(int32_t width, int32_t height));
-  MOCK_METHOD2(SetMinSize, void(int32_t width, int32_t height));
 
   void set_xdg_toplevel(std::unique_ptr<MockXdgTopLevel> xdg_toplevel) {
     xdg_toplevel_ = std::move(xdg_toplevel);
   }
   MockXdgTopLevel* xdg_toplevel() const { return xdg_toplevel_.get(); }
 
-  void set_xdg_popup(std::unique_ptr<MockXdgPopup> xdg_popup) {
-    xdg_popup_ = std::move(xdg_popup);
-  }
-  MockXdgPopup* xdg_popup() const { return xdg_popup_.get(); }
+  void set_xdg_popup(MockXdgPopup* xdg_popup) { xdg_popup_ = xdg_popup; }
+  MockXdgPopup* xdg_popup() const { return xdg_popup_; }
 
  private:
-  // Used when xdg v6 is used.
+  // Has either toplevel role..
   std::unique_ptr<MockXdgTopLevel> xdg_toplevel_;
+  // Or popup role.
+  MockXdgPopup* xdg_popup_ = nullptr;
 
-  std::unique_ptr<MockXdgPopup> xdg_popup_;
+  // MockSurface that is the ground for this xdg_surface.
+  wl_resource* surface_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MockXdgSurface);
 };
 
 // Manage zxdg_toplevel for providing desktop UI.
-class MockXdgTopLevel : public MockXdgSurface {
+class MockXdgTopLevel : public ServerObject {
  public:
-  explicit MockXdgTopLevel(wl_resource* resource, const void* implementation);
+  MockXdgTopLevel(wl_resource* resource, const void* implementation);
   ~MockXdgTopLevel() override;
 
-  // TODO(msisov): mock other zxdg_toplevel specific methods once
-  // implementation
-  // is done. example: MOCK_METHOD2(SetMaxSize, void(int32_t width, int32_t
-  // height());
+  MOCK_METHOD1(SetParent, void(wl_resource* parent));
+  MOCK_METHOD1(SetTitle, void(const std::string& title));
+  MOCK_METHOD1(SetAppId, void(const char* app_id));
+  MOCK_METHOD1(Move, void(uint32_t serial));
+  MOCK_METHOD2(Resize, void(uint32_t serial, uint32_t edges));
+  MOCK_METHOD0(SetMaximized, void());
+  MOCK_METHOD0(UnsetMaximized, void());
+  MOCK_METHOD0(SetFullscreen, void());
+  MOCK_METHOD0(UnsetFullscreen, void());
+  MOCK_METHOD0(SetMinimized, void());
+  MOCK_METHOD2(SetMaxSize, void(int32_t width, int32_t height));
+  MOCK_METHOD2(SetMinSize, void(int32_t width, int32_t height));
+
+  const std::string& app_id() const { return app_id_; }
+  void set_app_id(const char* app_id) { app_id_ = std::string(app_id); }
+
+  std::string title() const { return title_; }
+  void set_title(const char* title) { title_ = std::string(title); }
+
+  const gfx::Size& min_size() const { return min_size_; }
+  void set_min_size(const gfx::Size& min_size) { min_size_ = min_size; }
+
+  const gfx::Size& max_size() const { return max_size_; }
+  void set_max_size(const gfx::Size& max_size) { max_size_ = max_size; }
 
  private:
+  gfx::Size min_size_;
+  gfx::Size max_size_;
+
+  std::string title_;
+  std::string app_id_;
+
   DISALLOW_COPY_AND_ASSIGN(MockXdgTopLevel);
 };
 

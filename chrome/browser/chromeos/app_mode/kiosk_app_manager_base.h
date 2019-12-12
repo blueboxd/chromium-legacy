@@ -24,6 +24,7 @@ class FilePath;
 
 namespace chromeos {
 
+class AppSession;
 class KioskAppDataBase;
 class KioskAppManagerObserver;
 
@@ -62,13 +63,18 @@ class KioskAppManagerBase : public KioskAppDataDelegate {
   void OnKioskAppDataChanged(const std::string& app_id) const override;
   void OnKioskAppDataLoadFailure(const std::string& app_id) const override;
 
-  void NotifyKioskAppsChanged() const;
-
   bool current_app_was_auto_launched_with_zero_delay() const {
     return auto_launched_with_zero_delay_;
   }
 
+  // Session of the app that is currently running.
+  AppSession* app_session() { return app_session_.get(); }
+
  protected:
+  // Notifies the observers about the updates.
+  void NotifyKioskAppsChanged() const;
+  void NotifySessionInitialized() const;
+
   // Updates internal list of apps by the new data received by policy.
   virtual void UpdateAppsFromPolicy() = 0;
 
@@ -81,6 +87,9 @@ class KioskAppManagerBase : public KioskAppDataDelegate {
       local_accounts_subscription_;
   std::unique_ptr<CrosSettings::ObserverSubscription>
       local_account_auto_login_id_subscription_;
+
+  // Current app session.
+  std::unique_ptr<AppSession> app_session_;
 
   base::ObserverList<KioskAppManagerObserver, true>::Unchecked observers_;
 

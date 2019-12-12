@@ -48,13 +48,9 @@ ui::LayerAnimator* GetAnimator(
 
 }  // namespace
 
-OverviewWallpaperController::OverviewWallpaperController()
-    : use_cross_fade_(base::FeatureList::IsEnabled(
-          features::kOverviewCrossFadeWallpaperBlur)) {}
+OverviewWallpaperController::OverviewWallpaperController() = default;
 
 OverviewWallpaperController::~OverviewWallpaperController() {
-  if (compositor_)
-    compositor_->RemoveAnimationObserver(this);
   for (aura::Window* root : roots_to_animate_)
     root->RemoveObserver(this);
 
@@ -80,9 +76,6 @@ void OverviewWallpaperController::Unblur() {
 }
 
 bool OverviewWallpaperController::HasBlurAnimationForTesting() const {
-  if (!use_cross_fade_)
-    return !!compositor_;
-
   for (aura::Window* root : Shell::Get()->GetAllRootWindows()) {
     auto* wallpaper_widget_controller = GetWallpaperWidgetController(root);
     if (GetAnimator(wallpaper_widget_controller)->is_animating())
@@ -92,7 +85,6 @@ bool OverviewWallpaperController::HasBlurAnimationForTesting() const {
 }
 
 void OverviewWallpaperController::StopBlurAnimationsForTesting() {
-  DCHECK(use_cross_fade_);
   for (auto& layer_tree : animating_copies_)
     layer_tree->root()->GetAnimator()->StopAnimating();
   for (aura::Window* root : Shell::Get()->GetAllRootWindows()) {
@@ -102,133 +94,13 @@ void OverviewWallpaperController::StopBlurAnimationsForTesting() {
   }
 }
 
-void OverviewWallpaperController::Stop() {
-  if (compositor_) {
-    compositor_->RemoveAnimationObserver(this);
-    compositor_ = nullptr;
-  }
-  state_ = WallpaperAnimationState::kNormal;
-}
-
-void OverviewWallpaperController::Start() {
-  DCHECK(!compositor_);
-  compositor_ = Shell::GetPrimaryRootWindow()->GetHost()->compositor();
-  compositor_->AddAnimationObserver(this);
-  start_time_ = base::TimeTicks();
-}
-
-void OverviewWallpaperController::AnimationProgressed(float value) {
-  // Animate only to even numbers to reduce the load.
-  int ivalue = static_cast<int>(value * kWallpaperBlurSigma) / 2 * 2;
-  for (aura::Window* root : roots_to_animate_)
-    ApplyBlurAndOpacity(root, ivalue);
-}
-
-void OverviewWallpaperController::OnAnimationStep(base::TimeTicks timestamp) {
-  DCHECK(!use_cross_fade_);
-  if (start_time_ == base::TimeTicks()) {
-    start_time_ = timestamp;
-    return;
-  }
-  const float progress = (timestamp - start_time_).InMilliseconds() /
-                         static_cast<float>(kBlurSlideDurationMs);
-  const bool adding = state_ == WallpaperAnimationState::kAddingBlur;
-  if (progress > 1.0f) {
-    AnimationProgressed(adding ? 1.0f : 0.f);
-    Stop();
-  } else {
-    AnimationProgressed(adding ? progress : 1.f - progress);
-  }
-}
-
-void OverviewWallpaperController::OnCompositingShuttingDown(
-    ui::Compositor* compositor) {
-  DCHECK(!use_cross_fade_);
-  if (compositor_ == compositor)
-    Stop();
-}
-
-void OverviewWallpaperController::OnWindowDestroying(aura::Window* window) {
-  DCHECK(!use_cross_fade_);
-  window->RemoveObserver(this);
-  auto it =
-      std::find(roots_to_animate_.begin(), roots_to_animate_.end(), window);
-  if (it != roots_to_animate_.end())
-    roots_to_animate_.erase(it);
-}
-
 void OverviewWallpaperController::OnImplicitAnimationsCompleted() {
-  DCHECK(use_cross_fade_);
   animating_copies_.clear();
   state_ = WallpaperAnimationState::kNormal;
 }
 
-void OverviewWallpaperController::ApplyBlurAndOpacity(aura::Window* root,
-                                                      int value) {
-  DCHECK_GE(value, 0);
-  DCHECK_LE(value, 10);
-  const float opacity =
-      gfx::Tween::FloatValueBetween(value / 10.0, 1.f, kShieldOpacity);
-  RootWindowController::ForWindow(root)
-      ->wallpaper_widget_controller()
-      ->SetBlurAndOpacity(value, opacity);
-}
-
 void OverviewWallpaperController::OnBlurChange(WallpaperAnimationState state,
                                                bool animate_only) {
-  if (use_cross_fade_) {
-    OnBlurChangeCrossFade(state, animate_only);
-    return;
-  }
-
-  Stop();
-  for (aura::Window* root : roots_to_animate_)
-    root->RemoveObserver(this);
-  roots_to_animate_.clear();
-
-  state_ = state;
-  const bool should_blur = state_ == WallpaperAnimationState::kAddingBlur;
-  if (animate_only)
-    DCHECK(should_blur);
-
-  const float value =
-      should_blur ? kWallpaperBlurSigma : kWallpaperClearBlurSigma;
-
-  OverviewSession* overview_session =
-      Shell::Get()->overview_controller()->overview_session();
-  for (aura::Window* root : Shell::Get()->GetAllRootWindows()) {
-    // No need to animate the blur on exiting as this should only be called
-    // after overview animations are finished.
-    if (should_blur) {
-      DCHECK(overview_session);
-      OverviewGrid* grid = overview_session->GetGridWithRootWindow(root);
-      bool should_animate = grid && grid->ShouldAnimateWallpaper();
-      auto* wallpaper_view = RootWindowController::ForWindow(root)
-                                 ->wallpaper_widget_controller()
-                                 ->wallpaper_view();
-      float blur_sigma = wallpaper_view ? wallpaper_view->blur_sigma() : 0.f;
-      if (should_animate && animate_only && blur_sigma != kWallpaperBlurSigma) {
-        root->AddObserver(this);
-        roots_to_animate_.push_back(root);
-        continue;
-      }
-      if (should_animate == animate_only)
-        ApplyBlurAndOpacity(root, value);
-    } else {
-      ApplyBlurAndOpacity(root, value);
-    }
-  }
-
-  // Run the animation if one of the roots needs to be animated.
-  if (roots_to_animate_.empty())
-    state_ = WallpaperAnimationState::kNormal;
-  else
-    Start();
-}
-
-void OverviewWallpaperController::OnBlurChangeCrossFade(
-    WallpaperAnimationState state,
-    bool animate_only) {
   state_ = state;
   const bool should_blur = state_ == WallpaperAnimationState::kAddingBlur;
   if (animate_only)
@@ -268,12 +140,12 @@ void OverviewWallpaperController::OnBlurChangeCrossFade(
     original_layer->GetAnimator()->StopAnimating();
     // Tablet mode wallpaper is already dimmed, so no need to change the
     // opacity.
-    const float dimming =
-        Shell::Get()->tablet_mode_controller()->InTabletMode() || !should_blur
-            ? 1.f
-            : kShieldOpacity;
-    wallpaper_widget_controller->SetBlurAndOpacity(
-        should_blur ? kWallpaperBlurSigma : kWallpaperClearBlurSigma, dimming);
+    WallpaperProperty property =
+        !should_blur ? wallpaper_constants::kClear
+                     : (Shell::Get()->tablet_mode_controller()->InTabletMode()
+                            ? wallpaper_constants::kOverviewInTabletState
+                            : wallpaper_constants::kOverviewState);
+    wallpaper_widget_controller->SetWallpaperProperty(property);
     original_layer->SetOpacity(should_blur ? 0.f : 1.f);
 
     ui::Layer* copy_layer = copy_layer_tree ? copy_layer_tree->root() : nullptr;

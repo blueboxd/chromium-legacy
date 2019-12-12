@@ -53,7 +53,7 @@ void WiFiDisplayMediaServiceImpl::Create(
 }
 
 // static
-void WiFiDisplayMediaServiceImpl::BindToRequest(
+void WiFiDisplayMediaServiceImpl::BindToReceiver(
     mojo::PendingReceiver<mojom::WiFiDisplayMediaService> receiver,
     content::RenderFrameHost* render_frame_host) {
   base::PostTask(

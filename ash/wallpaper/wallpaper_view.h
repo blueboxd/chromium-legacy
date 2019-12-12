@@ -6,6 +6,7 @@
 #define ASH_WALLPAPER_WALLPAPER_VIEW_H_
 
 #include "ash/wallpaper/wallpaper_base_view.h"
+#include "ash/wallpaper/wallpaper_property.h"
 #include "ui/views/context_menu_controller.h"
 
 namespace aura {
@@ -19,18 +20,16 @@ namespace ash {
 class WallpaperView : public WallpaperBaseView,
                       public views::ContextMenuController {
  public:
-  WallpaperView(int blur, float opacity);
+  explicit WallpaperView(const WallpaperProperty& property);
   ~WallpaperView() override;
 
   // Schedules a repaint of the wallpaper with blur and opacity changes.
-  void RepaintBlurAndOpacity(int repaint_blur, float repaint_opacity);
+  void SetWallpaperProperty(const WallpaperProperty& property);
 
-  int blur_sigma() const { return blur_sigma_; }
-  float opacity() const { return opacity_; }
+  int blur_sigma() const { return property_.blur_sigma; }
+  float opacity() const { return property_.opacity; }
 
  private:
-  friend class WallpaperControllerTest;
-
   // views::View:
   const char* GetClassName() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -47,12 +46,8 @@ class WallpaperView : public WallpaperBaseView,
                      const cc::PaintFlags& flags,
                      gfx::Canvas* canvas) override;
 
-  // These are used by overview mode to animate the blur and opacity on the
-  // wallpaper. If |blur_sigma_| is not 0 and |opacity_| is not 1, the
-  // wallpaper will be downsampled and a blur and brightness filter will be
-  // applied. It is downsampled to increase performance.
-  int blur_sigma_;
-  float opacity_;
+  // Paint parameters (blur sigma and opacity) to draw wallpaper.
+  WallpaperProperty property_;
 
   // A cached downsampled image of the wallpaper image. It will help wallpaper
   // blur/brightness animations be more performant.
@@ -63,8 +58,7 @@ class WallpaperView : public WallpaperBaseView,
 
 views::Widget* CreateWallpaperWidget(aura::Window* root_window,
                                      int container_id,
-                                     int blur,
-                                     float opacity,
+                                     const WallpaperProperty& property,
                                      WallpaperView** out_wallpaper_view);
 
 }  // namespace ash

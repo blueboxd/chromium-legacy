@@ -8,6 +8,8 @@
 #include <map>
 #include <memory>
 
+#include "base/bind.h"
+#include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
@@ -50,10 +52,12 @@ using chrome_test_util::ClearBrowsingHistoryButton;
 using chrome_test_util::ClearCacheButton;
 using chrome_test_util::ClearCookiesButton;
 using chrome_test_util::ClearSavedPasswordsButton;
+using chrome_test_util::ContentSettingsButton;
 using chrome_test_util::SettingsCollectionView;
 using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SettingsMenuBackButton;
 using chrome_test_util::SettingsMenuPrivacyButton;
+using chrome_test_util::VoiceSearchButton;
 
 namespace {
 
@@ -73,6 +77,40 @@ enum MetricsServiceType {
 // Matcher for the Clear Browsing Data cell on the Privacy screen.
 id<GREYMatcher> ClearBrowsingDataCell() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_CLEAR_BROWSING_DATA_TITLE);
+}
+// Matcher for the Search Engine cell on the main Settings screen.
+id<GREYMatcher> SearchEngineButton() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_SEARCH_ENGINE_SETTING_TITLE);
+}
+// Matcher for the payment methods cell on the main Settings screen.
+id<GREYMatcher> PaymentMethodsButton() {
+  return ButtonWithAccessibilityLabelId(IDS_AUTOFILL_PAYMENT_METHODS);
+}
+// Matcher for the addresses cell on the main Settings screen.
+id<GREYMatcher> AddressesButton() {
+  return ButtonWithAccessibilityLabelId(IDS_AUTOFILL_ADDRESSES_SETTINGS_TITLE);
+}
+// Matcher for the Google Chrome cell on the main Settings screen.
+id<GREYMatcher> GoogleChromeButton() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_PRODUCT_NAME);
+}
+
+// Matcher for the Preload Webpages button on the bandwidth UI.
+id<GREYMatcher> BandwidthPreloadWebpagesButton() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_OPTIONS_PRELOAD_WEBPAGES);
+}
+// Matcher for the Privacy Handoff button on the privacy UI.
+id<GREYMatcher> PrivacyHandoffButton() {
+  return ButtonWithAccessibilityLabelId(
+      IDS_IOS_OPTIONS_ENABLE_HANDOFF_TO_OTHER_DEVICES);
+}
+// Matcher for the Privacy Block Popups button on the privacy UI.
+id<GREYMatcher> BlockPopupsButton() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_BLOCK_POPUPS);
+}
+// Matcher for the Bandwidth Settings button on the main Settings screen.
+id<GREYMatcher> BandwidthSettingsButton() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_BANDWIDTH_MANAGEMENT_SETTINGS);
 }
 
 }  // namespace
@@ -108,6 +146,14 @@ id<GREYMatcher> ClearBrowsingDataCell() {
   }
 
   [super tearDown];
+}
+
+// Closes a sub-settings menu, and then the general Settings menu.
+- (void)closeSubSettingsMenu {
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Performs the steps to clear browsing data. Must be called on the
@@ -485,6 +531,163 @@ id<GREYMatcher> ClearBrowsingDataCell() {
 
   chrome_test_util::SetFirstLaunchStateTo(YES);
   [self assertsMetricsPrefsForService:kBreakpadFirstLaunch];
+}
+
+// Verifies that Settings opens when signed-out and in Incognito mode.
+// This tests that crbug.com/607335 has not regressed.
+- (void)testSettingsSignedOutIncognito {
+  [ChromeEarlGrey openNewIncognitoTab];
+  [ChromeEarlGreyUI openSettingsMenu];
+  [[EarlGrey selectElementWithMatcher:SettingsCollectionView()]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
+}
+
+// Verifies that the Settings screen can be swiped down to dismiss, and clean up
+// is performed allowing a new presentation.
+- (void)testSettingsSwipeDownDismiss {
+  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 12 and lower.");
+  }
+
+  [ChromeEarlGreyUI openSettingsMenu];
+
+  // Check that Settings is presented.
+  [[EarlGrey selectElementWithMatcher:SettingsCollectionView()]
+      assertWithMatcher:grey_notNil()];
+
+  // Swipe TableView down.
+  [[EarlGrey selectElementWithMatcher:SettingsCollectionView()]
+      performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
+
+  // Check that Settings has been dismissed.
+  [[EarlGrey selectElementWithMatcher:SettingsCollectionView()]
+      assertWithMatcher:grey_nil()];
+
+  // Re-Open Settings to confirm SwipeDown cleaned up properly and Settings can
+  // be shown again.
+  [ChromeEarlGreyUI openSettingsMenu];
+  [[EarlGrey selectElementWithMatcher:SettingsCollectionView()]
+      assertWithMatcher:grey_notNil()];
+}
+
+// Verifies the UI elements are accessible on the Settings page.
+- (void)testAccessibilityOnSettingsPage {
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
+}
+
+// Verifies the UI elements are accessible on the Content Settings page.
+- (void)testAccessibilityOnContentSettingsPage {
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:ContentSettingsButton()];
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
+  [self closeSubSettingsMenu];
+}
+
+// Verifies the UI elements are accessible on the Content Settings
+// Block Popups page.
+- (void)testAccessibilityOnContentSettingsBlockPopupsPage {
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:ContentSettingsButton()];
+  [[EarlGrey selectElementWithMatcher:BlockPopupsButton()]
+      performAction:grey_tap()];
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
+  [self closeSubSettingsMenu];
+}
+
+// Verifies the UI elements are accessible on the Privacy Settings page.
+- (void)testAccessibilityOnPrivacySettingsPage {
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsMenuPrivacyButton()];
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
+  [self closeSubSettingsMenu];
+}
+
+// Verifies the UI elements are accessible on the Privacy Handoff Settings
+// page.
+- (void)testAccessibilityOnPrivacyHandoffSettingsPage {
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsMenuPrivacyButton()];
+  [[EarlGrey selectElementWithMatcher:PrivacyHandoffButton()]
+      performAction:grey_tap()];
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
+  [self closeSubSettingsMenu];
+}
+
+// Verifies the UI elements are accessible on the Privacy Clear Browsing Data
+// Settings page.
+- (void)testAccessibilityOnPrivacyClearBrowsingHistoryPage {
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsMenuPrivacyButton()];
+  [ChromeEarlGreyUI tapPrivacyMenuButton:ClearBrowsingDataCell()];
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
+  [self closeSubSettingsMenu];
+}
+
+// Verifies the UI elements are accessible on the Bandwidth Management Settings
+// page.
+- (void)testAccessibilityOnBandwidthManagementSettingsPage {
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:BandwidthSettingsButton()];
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
+  [self closeSubSettingsMenu];
+}
+
+// Verifies the UI elements are accessible on the Bandwidth Preload Webpages
+// Settings page.
+- (void)testAccessibilityOnBandwidthPreloadWebpagesSettingsPage {
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:BandwidthSettingsButton()];
+  [[EarlGrey selectElementWithMatcher:BandwidthPreloadWebpagesButton()]
+      performAction:grey_tap()];
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
+  [self closeSubSettingsMenu];
+}
+
+// Verifies the UI elements are accessible on the Search engine page.
+- (void)testAccessibilityOnSearchEngine {
+  [ChromeEarlGreyUI openSettingsMenu];
+  [[EarlGrey selectElementWithMatcher:SearchEngineButton()]
+      performAction:grey_tap()];
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
+  [self closeSubSettingsMenu];
+}
+
+// Verifies the UI elements are accessible on the payment methods page.
+- (void)testAccessibilityOnPaymentMethods {
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:PaymentMethodsButton()];
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
+  [self closeSubSettingsMenu];
+}
+
+// Verifies the UI elements are accessible on the addresses page.
+- (void)testAccessibilityOnAddresses {
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:AddressesButton()];
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
+  [self closeSubSettingsMenu];
+}
+
+// Verifies the UI elements are accessible on the About Chrome page.
+- (void)testAccessibilityOnGoogleChrome {
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:GoogleChromeButton()];
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
+  [self closeSubSettingsMenu];
+}
+
+// Verifies the UI elements are accessible on the Voice Search page.
+- (void)testAccessibilityOnVoiceSearch {
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:VoiceSearchButton()];
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
+  [self closeSubSettingsMenu];
 }
 
 // Verifies that the Settings UI registers keyboard commands when presented, but

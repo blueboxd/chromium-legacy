@@ -239,6 +239,22 @@ void AppServiceAppWindowLauncherController::OnInstanceUpdate(
     window->SetProperty(ash::kShelfIDKey, shelf_id.Serialize());
     window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_APP);
   }
+
+  if (update.StateChanged() &&
+      update.State() == apps::InstanceState::kStarted) {
+    // For Chrome apps, when the app window is added or hidden, the state is set
+    // as kStarted, no kRunning/kActive/kVisible. For all other app types, it is
+    // impossible that the state is kStarted, because kStarted and kRunning are
+    // set together. So if the state is started, that means the Chrome app
+    // window is just added or hidden, and we don't need to add the app window
+    // to Shelf. When the app window is visible or activeted, it can be added to
+    // Shelf.
+    auto app_window_it = aura_window_to_app_window_.find(window);
+    if (app_window_it != aura_window_to_app_window_.end()) {
+      RemoveAppWindowFromShelf(app_window_it->second.get());
+      aura_window_to_app_window_.erase(app_window_it);
+    }
+  }
 }
 
 void AppServiceAppWindowLauncherController::OnInstanceRegistryWillBeDestroyed(

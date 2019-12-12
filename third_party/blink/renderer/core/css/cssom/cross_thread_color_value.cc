@@ -9,7 +9,7 @@
 namespace blink {
 
 CSSStyleValue* CrossThreadColorValue::ToCSSStyleValue() {
-  return CSSUnsupportedColorValue::Create(value_);
+  return MakeGarbageCollected<CSSUnsupportedColorValue>(value_);
 }
 
 bool CrossThreadColorValue::operator==(

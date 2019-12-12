@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.preferences;
 
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -94,24 +93,5 @@ public class ChromePreferenceManager {
      */
     public void clearNewTabPageSigninPromoSuppressionPeriodStart() {
         mManager.removeKey(ChromePreferenceKeys.NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START);
-    }
-
-    /**
-     * Gets a set of Strings representing digital asset links that have been verified.
-     * Set by {@link #setVerifiedDigitalAssetLinks(Set)}.
-     */
-    public Set<String> getVerifiedDigitalAssetLinks() {
-        // From the official docs, modifying the result of a SharedPreferences.getStringSet can
-        // cause bad things to happen including exceptions or ruining the data.
-        return new HashSet<>(
-                mManager.readStringSet(ChromePreferenceKeys.VERIFIED_DIGITAL_ASSET_LINKS));
-    }
-
-    /**
-     * Sets a set of digital asset links (represented a strings) that have been verified.
-     * Can be retrieved by {@link #getVerifiedDigitalAssetLinks()}.
-     */
-    public void setVerifiedDigitalAssetLinks(Set<String> links) {
-        mManager.writeStringSet(ChromePreferenceKeys.VERIFIED_DIGITAL_ASSET_LINKS, links);
     }
 }

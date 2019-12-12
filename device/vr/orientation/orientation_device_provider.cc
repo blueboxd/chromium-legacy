@@ -4,22 +4,20 @@
 
 #include "device/vr/orientation/orientation_device_provider.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "device/base/features.h"
 #include "device/vr/orientation/orientation_device.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/identity.h"
 
 namespace device {
 
 VROrientationDeviceProvider::VROrientationDeviceProvider(
-    service_manager::Connector* connector) {
-  connector->Connect(device::mojom::kServiceName,
-                     sensor_provider_.BindNewPipeAndPassReceiver());
-}
+    mojo::PendingRemote<device::mojom::SensorProvider> sensor_provider)
+    : sensor_provider_(std::move(sensor_provider)) {}
 
 VROrientationDeviceProvider::~VROrientationDeviceProvider() = default;
 

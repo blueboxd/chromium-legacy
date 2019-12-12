@@ -17,21 +17,6 @@
 
 namespace blink {
 
-CSSUnsupportedColorValue* CSSUnsupportedColorValue::Create(Color color) {
-  return MakeGarbageCollected<CSSUnsupportedColorValue>(color);
-}
-
-CSSUnsupportedColorValue* CSSUnsupportedColorValue::Create(
-    const CSSPropertyName& name,
-    Color color) {
-  return MakeGarbageCollected<CSSUnsupportedColorValue>(name, color);
-}
-
-CSSUnsupportedColorValue* CSSUnsupportedColorValue::FromCSSValue(
-    const cssvalue::CSSColorValue& color_value) {
-  return MakeGarbageCollected<CSSUnsupportedColorValue>(color_value.Value());
-}
-
 Color CSSUnsupportedColorValue::Value() const {
   return color_value_;
 }

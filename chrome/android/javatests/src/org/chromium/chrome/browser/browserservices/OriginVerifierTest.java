@@ -21,7 +21,6 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.browserservices.OriginVerifier.OriginVerificationListener;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.settings.privacy.BrowsingDataBridge;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -152,10 +151,9 @@ public class OriginVerifierTest {
         Set<String> savedLinks = new HashSet<>();
         savedLinks.add(relationship);
 
-        ChromePreferenceManager preferences = ChromePreferenceManager.getInstance();
+        VerificationResultStore.setRelationships(savedLinks);
 
-        preferences.setVerifiedDigitalAssetLinks(savedLinks);
-        Assert.assertTrue(preferences.getVerifiedDigitalAssetLinks().contains(relationship));
+        Assert.assertTrue(VerificationResultStore.getRelationships().contains(relationship));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             BrowsingDataBridge.getInstance().clearBrowsingData(callbackHelper::notifyCalled,
@@ -163,6 +161,6 @@ public class OriginVerifierTest {
         });
 
         callbackHelper.waitForCallback(0);
-        Assert.assertTrue(preferences.getVerifiedDigitalAssetLinks().isEmpty());
+        Assert.assertTrue(VerificationResultStore.getRelationships().isEmpty());
     }
 }

@@ -10,6 +10,7 @@
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/ios/ios_serialized_navigation_builder.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/web_state.h"

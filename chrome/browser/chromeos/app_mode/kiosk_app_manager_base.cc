@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "chrome/browser/chromeos/app_mode/app_session.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data_base.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_cryptohome_remover.h"
@@ -73,6 +74,11 @@ void KioskAppManagerBase::OnKioskAppDataLoadFailure(
 void KioskAppManagerBase::NotifyKioskAppsChanged() const {
   for (auto& observer : observers_)
     observer.OnKioskAppsSettingsChanged();
+}
+
+void KioskAppManagerBase::NotifySessionInitialized() const {
+  for (auto& observer : observers_)
+    observer.OnKioskSessionInitialized();
 }
 
 void KioskAppManagerBase::AddObserver(KioskAppManagerObserver* observer) {

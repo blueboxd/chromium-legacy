@@ -25,10 +25,6 @@ namespace blink {
 class CORE_EXPORT ComputedStylePropertyMap
     : public StylePropertyMapReadOnlyMainThread {
  public:
-  static ComputedStylePropertyMap* Create(Node* node) {
-    return MakeGarbageCollected<ComputedStylePropertyMap>(node);
-  }
-
   ComputedStylePropertyMap(Node* node, const String& pseudo_element = String())
       : StylePropertyMapReadOnlyMainThread(),
         pseudo_id_(CSSSelector::ParsePseudoId(pseudo_element)),

@@ -296,7 +296,7 @@ void FCMInvalidationServiceBase::DoUpdateSubscribedTopicsIfNeeded() {
   if (!invalidation_listener_ || !update_was_requested_)
     return;
   auto subscribed_topics = invalidator_registrar_.GetAllSubscribedTopics();
-  invalidation_listener_->UpdateRegisteredTopics(subscribed_topics);
+  invalidation_listener_->UpdateInterestedTopics(subscribed_topics);
   update_was_requested_ = false;
 }
 

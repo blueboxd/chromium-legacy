@@ -702,6 +702,10 @@ class PersonalDataManager : public KeyedService,
   // Clear |ongoing_profile_changes_|.
   void ClearOnGoingProfileChanges();
 
+  // Migrates the user opted in to wallet sync transport. This is needed while
+  // migrating from using email to Gaia ID as th account identifier.
+  void MigrateUserOptedInWalletSyncTransportIfNeeded();
+
   const std::string app_locale_;
 
   // The default country code for new addresses.

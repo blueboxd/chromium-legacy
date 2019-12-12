@@ -26,7 +26,6 @@
 #include "services/device/device_service_test_base.h"
 #include "services/device/public/mojom/bluetooth_system.mojom-test-utils.h"
 #include "services/device/public/mojom/bluetooth_system.mojom.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace device {
@@ -650,8 +649,8 @@ class BluetoothSystemTest : public DeviceServiceTestBase,
 
   void SetUp() override {
     DeviceServiceTestBase::SetUp();
-    connector()->Connect(mojom::kServiceName,
-                         system_factory_.BindNewPipeAndPassReceiver());
+    device_service()->BindBluetoothSystemFactory(
+        system_factory_.BindNewPipeAndPassReceiver());
 
     auto test_bluetooth_adapter_client =
         std::make_unique<TestBluetoothAdapterClient>();

@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <unordered_map>
+
 #include "base/command_line.h"
 #include "base/hash/hash.h"
 #include "base/metrics/metrics_hashes.h"
@@ -19,6 +21,7 @@
 #include "content/browser/frame_host/back_forward_cache_impl.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/generic_sensor/sensor_provider_proxy_impl.h"
 #include "content/browser/presentation/presentation_test_utils.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/back_forward_cache.h"
@@ -53,11 +56,8 @@
 #include "net/test/test_data_directory.h"
 #include "services/device/public/cpp/test/fake_sensor_and_provider.h"
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/service_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
-#include "unordered_map"
 
 using testing::_;
 using testing::Each;
@@ -4158,16 +4158,15 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, VideoSuspendAndResume) {
 class SensorBackForwardCacheBrowserTest : public BackForwardCacheBrowserTest {
  protected:
   SensorBackForwardCacheBrowserTest() {
-    service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
-        device::mojom::kServiceName,
+    SensorProviderProxyImpl::OverrideSensorProviderBinderForTesting(
         base::BindRepeating(
             &SensorBackForwardCacheBrowserTest::BindSensorProvider,
             base::Unretained(this)));
   }
 
   ~SensorBackForwardCacheBrowserTest() override {
-    service_manager::ServiceBinding::ClearInterfaceBinderOverrideForTesting<
-        device::mojom::SensorProvider>(device::mojom::kServiceName);
+    SensorProviderProxyImpl::OverrideSensorProviderBinderForTesting(
+        base::NullCallback());
   }
 
   void SetUpOnMainThread() override {

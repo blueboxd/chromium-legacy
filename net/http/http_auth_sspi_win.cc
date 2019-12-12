@@ -220,7 +220,6 @@ Error MapInitializeSecurityContextStatusToError(SECURITY_STATUS status) {
     case SEC_E_INVALID_TOKEN:
       return ERR_INVALID_RESPONSE;
     case SEC_E_LOGON_DENIED:
-      return ERR_ACCESS_DENIED;
     case SEC_E_NO_CREDENTIALS:
     case SEC_E_WRONG_PRINCIPAL:
       return ERR_INVALID_AUTH_CREDENTIALS;

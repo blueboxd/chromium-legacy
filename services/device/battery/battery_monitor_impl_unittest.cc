@@ -15,7 +15,6 @@
 #include "services/device/battery/battery_status_service.h"
 #include "services/device/device_service_test_base.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
-#include "services/device/public/mojom/constants.mojom.h"
 
 // These tests run against the implementation of the BatteryMonitor interface
 // inside Device Service, with a dummy BatteryManager set as a source of the
@@ -97,8 +96,8 @@ class BatteryMonitorImplTest : public DeviceServiceTestBase {
     battery_manager_ = battery_manager.get();
     battery_service->SetBatteryManagerForTesting(std::move(battery_manager));
 
-    connector()->Connect(mojom::kServiceName,
-                         battery_monitor_.BindNewPipeAndPassReceiver());
+    device_service()->BindBatteryMonitor(
+        battery_monitor_.BindNewPipeAndPassReceiver());
   }
 
   void TearDown() override {

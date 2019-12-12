@@ -10,7 +10,7 @@ namespace blink {
 
 TEST(CSSUnsupportedColorValueTest, CreateColorStyleValue) {
   CSSStyleValue* style_value =
-      CSSUnsupportedColorValue::Create(Color(0, 255, 0));
+      MakeGarbageCollected<CSSUnsupportedColorValue>(Color(0, 255, 0));
 
   EXPECT_EQ(style_value->GetType(),
             CSSStyleValue::StyleValueType::kUnsupportedColorType);
@@ -26,7 +26,7 @@ TEST(CSSUnsupportedColorValueTest, CreateColorStyleValue) {
 
 TEST(CSSUnsupportedColorValueTest, ColorStyleValueToString) {
   CSSUnsupportedColorValue* style_value =
-      CSSUnsupportedColorValue::Create(Color(0, 255, 0));
+      MakeGarbageCollected<CSSUnsupportedColorValue>(Color(0, 255, 0));
 
   EXPECT_TRUE(style_value);
   EXPECT_EQ(

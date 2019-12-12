@@ -12,7 +12,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_media_manager.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/wds/src/libwds/public/logging.h"
 #include "third_party/wds/src/libwds/public/media_manager.h"
 
@@ -39,7 +39,7 @@ WiFiDisplaySession::WiFiDisplaySession(const DisplaySourceSessionParams& params)
     : params_(params), cseq_(0), timer_id_(0), weak_factory_(this) {
   DCHECK(params_.render_frame);
   wds::LogSystem::set_error_func(&LogWDSError);
-  params.render_frame->GetRemoteInterfaces()->GetInterface(&service_);
+  params.render_frame->GetBrowserInterfaceBroker()->GetInterface(&service_);
   service_.set_connection_error_handler(base::Bind(
           &WiFiDisplaySession::OnIPCConnectionError,
           weak_factory_.GetWeakPtr()));
@@ -76,15 +76,11 @@ void WiFiDisplaySession::OnConnected(const net::IPAddress& local_ip_address,
                                      const net::IPAddress& sink_ip_address) {
   DCHECK_EQ(DisplaySourceSession::Established, state_);
   local_ip_address_ = local_ip_address;
-  media_manager_.reset(
-      new WiFiDisplayMediaManager(
-          params_.video_track,
-          params_.audio_track,
-          sink_ip_address,
-          params_.render_frame->GetRemoteInterfaces(),
-          base::Bind(
-              &WiFiDisplaySession::OnMediaError,
-              weak_factory_.GetWeakPtr())));
+  media_manager_.reset(new WiFiDisplayMediaManager(
+      params_.video_track, params_.audio_track, sink_ip_address,
+      params_.render_frame->GetBrowserInterfaceBroker(),
+      base::Bind(&WiFiDisplaySession::OnMediaError,
+                 weak_factory_.GetWeakPtr())));
   wfd_source_.reset(wds::Source::Create(this, media_manager_.get(), this));
   wfd_source_->Start();
 }

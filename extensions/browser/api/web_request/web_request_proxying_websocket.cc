@@ -389,6 +389,10 @@ void WebRequestProxyingWebSocket::ContinueToStartRequest(int error_code) {
   // See also CreateWebSocket in
   // //network/services/public/mojom/network_context.mojom.
   receiver_as_handshake_client_.set_disconnect_with_reason_handler(
+      base::BindOnce(
+          &WebRequestProxyingWebSocket::OnMojoConnectionErrorWithCustomReason,
+          base::Unretained(this)));
+  forwarding_handshake_client_.set_disconnect_handler(
       base::BindOnce(&WebRequestProxyingWebSocket::OnMojoConnectionError,
                      base::Unretained(this)));
 }
@@ -494,10 +498,17 @@ void WebRequestProxyingWebSocket::OnError(int error_code) {
   proxies_->RemoveProxy(this);
 }
 
-void WebRequestProxyingWebSocket::OnMojoConnectionError(
+void WebRequestProxyingWebSocket::OnMojoConnectionErrorWithCustomReason(
     uint32_t custom_reason,
     const std::string& description) {
+  // Here we want to nofiy the custom reason to the client, which is why
+  // we reset |forwarding_handshake_client_| manually.
   forwarding_handshake_client_.ResetWithReason(custom_reason, description);
+  OnError(net::ERR_FAILED);
+  // Deletes |this|.
+}
+
+void WebRequestProxyingWebSocket::OnMojoConnectionError() {
   OnError(net::ERR_FAILED);
   // Deletes |this|.
 }

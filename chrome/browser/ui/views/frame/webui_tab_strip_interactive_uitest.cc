@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -23,13 +22,11 @@ class WebUITabStripInteractiveTest : public InProcessBrowserTest {
   WebUITabStripInteractiveTest() {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kTopChromeTouchUi, switches::kTopChromeTouchUiEnabled);
-    feature_override_.InitAndEnableFeature(features::kWebUITabStrip);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kWebUITabStrip);
   }
 
   ~WebUITabStripInteractiveTest() override = default;
-
- private:
-  base::test::ScopedFeatureList feature_override_;
 };
 
 // Regression test for crbug.com/1027375.

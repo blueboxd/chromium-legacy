@@ -238,6 +238,18 @@ public class AwMetricsIntegrationTest {
     @Test
     @MediumTest
     @Feature({"AndroidWebView"})
+    public void testMetadata_hardwareDrive() throws Throwable {
+        ChromeUserMetricsExtension log = mPlatformServiceBridge.waitForNextMetricsLog();
+        SystemProfileProto systemProfile = log.getSystemProfile();
+        Assert.assertTrue("Should have some hardware.app_drive.has_seek_penalty",
+                systemProfile.getHardware().getAppDrive().hasHasSeekPenalty());
+        Assert.assertTrue("Should have some hardware.user_data_drive.has_seek_penalty",
+                systemProfile.getHardware().getUserDataDrive().hasHasSeekPenalty());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView"})
     public void testMetadata_network() throws Throwable {
         ChromeUserMetricsExtension log = mPlatformServiceBridge.waitForNextMetricsLog();
         SystemProfileProto systemProfile = log.getSystemProfile();

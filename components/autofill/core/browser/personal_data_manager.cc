@@ -18,7 +18,7 @@
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/timezone.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -57,6 +57,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/version_info/version_info.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_formatter.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/source.h"
@@ -69,6 +70,15 @@ namespace {
 using ::i18n::addressinput::AddressField;
 using ::i18n::addressinput::GetStreetAddressLinesAsSingleLine;
 using ::i18n::addressinput::STREET_ADDRESS;
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class MigrateUserOptedInWalletSyncType {
+  kNotMigrated = 0,
+  kMigratedFromCanonicalEmail = 1,
+  kMigratedFromNonCanonicalEmail = 2,
+  kMaxValue = kMigratedFromNonCanonicalEmail,
+};
 
 template <typename T>
 const T& Deref(T* x) {
@@ -370,6 +380,8 @@ void PersonalDataManager::OnSyncServiceInitialized(
       database_helper_->SetUseAccountStorageForServerData(
           !sync_service->IsSyncFeatureEnabled());
     }
+
+    MigrateUserOptedInWalletSyncTransportIfNeeded();
   }
 }
 
@@ -2474,6 +2486,58 @@ void PersonalDataManager::OnProfileChangeDone(const std::string& guid) {
 
 void PersonalDataManager::ClearOnGoingProfileChanges() {
   ongoing_profile_changes_.clear();
+}
+
+void PersonalDataManager::MigrateUserOptedInWalletSyncTransportIfNeeded() {
+  CoreAccountInfo primary_account =
+      sync_service_->GetAuthenticatedAccountInfo();
+  if (primary_account.IsEmpty())
+    return;
+
+  if (identity_manager_->GetAccountIdMigrationState() ==
+      signin::IdentityManager::MIGRATION_NOT_STARTED) {
+    return;
+  }
+
+  CoreAccountId primary_account_id = primary_account.account_id;
+
+  // When migration is started or done, the primary account is created from a
+  // Gaia ID.
+  DCHECK(!primary_account_id.IsEmail());
+
+  CoreAccountId legacy_account_id_from_email =
+      CoreAccountId::FromEmail(gaia::CanonicalizeEmail(primary_account.email));
+
+  MigrateUserOptedInWalletSyncType migrate =
+      prefs::IsUserOptedInWalletSyncTransport(pref_service_,
+                                              legacy_account_id_from_email)
+          ? MigrateUserOptedInWalletSyncType::kMigratedFromCanonicalEmail
+          : MigrateUserOptedInWalletSyncType::kNotMigrated;
+
+  if (migrate == MigrateUserOptedInWalletSyncType::kNotMigrated &&
+      prefs::IsUserOptedInWalletSyncTransport(
+          pref_service_, CoreAccountId::FromEmail(primary_account.email))) {
+    // Only canonicalized emails should be used to create CoreAccountId objects
+    // by the IdentityManager. Be overly caution and also check whether
+    // the non-canonical email was used when the user opted in to wallet sync.
+    legacy_account_id_from_email =
+        CoreAccountId::FromEmail(primary_account.email);
+    migrate = MigrateUserOptedInWalletSyncType::kMigratedFromNonCanonicalEmail;
+  }
+
+  base::UmaHistogramEnumeration("Autofill.MigrateUserOptedInToWalletSync",
+                                migrate);
+
+  if (migrate == MigrateUserOptedInWalletSyncType::kNotMigrated)
+    return;
+
+  DCHECK(prefs::IsUserOptedInWalletSyncTransport(pref_service_,
+                                                 legacy_account_id_from_email));
+  prefs::SetUserOptedInWalletSyncTransport(pref_service_,
+                                           legacy_account_id_from_email,
+                                           /*opted_in=*/false);
+  prefs::SetUserOptedInWalletSyncTransport(pref_service_, primary_account_id,
+                                           /*opted_in=*/true);
 }
 
 }  // namespace autofill

@@ -232,12 +232,13 @@ class ExtensionsBrowserClient {
       service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>*
           registry,
       content::RenderFrameHost* render_frame_host,
-      const Extension* extension) const = 0;
+      const Extension* extension) const {}
 
   // Registers additional interfaces to a binder map for a browser interface
   // broker.
   virtual void RegisterBrowserInterfaceBindersForFrame(
-      service_manager::BinderMapWithContext<content::RenderFrameHost*>* map,
+      service_manager::BinderMapWithContext<content::RenderFrameHost*>*
+          binder_map,
       content::RenderFrameHost* render_frame_host,
       const Extension* extension) const = 0;
 

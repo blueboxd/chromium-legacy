@@ -10,11 +10,9 @@
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
-#include "ui/compositor/compositor_animation_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 
 namespace ui {
-class Compositor;
 class LayerTreeOwner;
 class Window;
 }  // namespace ui
@@ -25,9 +23,10 @@ namespace ash {
 // exiting overview mode. Blurs the wallpaper automatically if the wallpaper is
 // not visible prior to entering overview mode (covered by a window), otherwise
 // animates the blur and dim.
+// TODO(oshima): Move the crosfade animation into WallpaperWidgetController
+// this class will no longer be necessary.
 class ASH_EXPORT OverviewWallpaperController
-    : public ui::CompositorAnimationObserver,
-      public aura::WindowObserver,
+    : public aura::WindowObserver,
       public ui::ImplicitAnimationObserver {
  public:
   OverviewWallpaperController();
@@ -51,21 +50,8 @@ class ASH_EXPORT OverviewWallpaperController
     kNormal,
   };
 
-  void Stop();
-  void Start();
-  void AnimationProgressed(float value);
-
-  // ui::CompositorAnimationObserver:
-  void OnAnimationStep(base::TimeTicks timestamp) override;
-  void OnCompositingShuttingDown(ui::Compositor* compositor) override;
-
-  // aura::WindowObserver:
-  void OnWindowDestroying(aura::Window* window) override;
-
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
-
-  void ApplyBlurAndOpacity(aura::Window* root, int value);
 
   // Called when the wallpaper is to be changed. Checks to see which root
   // windows should have their wallpaper blurs animated and fills
@@ -74,13 +60,6 @@ class ASH_EXPORT OverviewWallpaperController
   // |animate_only| is true, it'll apply blur only to the root windows that
   // requires animation.
   void OnBlurChange(WallpaperAnimationState state, bool animate_only);
-  void OnBlurChangeCrossFade(WallpaperAnimationState state, bool animate_only);
-
-  const bool use_cross_fade_;
-
-  // Used for the compositor animation which drives the normal blur animation.
-  ui::Compositor* compositor_ = nullptr;
-  base::TimeTicks start_time_;
 
   WallpaperAnimationState state_ = WallpaperAnimationState::kNormal;
   // Vector which contains the root windows, if any, whose wallpaper should have

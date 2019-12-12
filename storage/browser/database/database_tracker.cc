@@ -124,7 +124,6 @@ void DatabaseTracker::DatabaseOpened(const std::string& origin_identifier,
 
   if (quota_manager_proxy_.get())
     quota_manager_proxy_->NotifyStorageAccessed(
-        storage::QuotaClient::kDatabase,
         storage::GetOriginFromIdentifier(origin_identifier),
         blink::mojom::StorageType::kTemporary);
 
@@ -161,7 +160,6 @@ void DatabaseTracker::DatabaseClosed(const std::string& origin_identifier,
   // closed because we don't call it for read while open.
   if (quota_manager_proxy_.get())
     quota_manager_proxy_->NotifyStorageAccessed(
-        storage::QuotaClient::kDatabase,
         storage::GetOriginFromIdentifier(origin_identifier),
         blink::mojom::StorageType::kTemporary);
 

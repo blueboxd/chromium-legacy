@@ -4,8 +4,7 @@
 
 // Test for overload resolution for the string-like USVString
 // argument.
-[
-    Constructor(TestInterfaceConstructor4 testInterface4Arg),
-    Constructor(USVString usvStringArg)
-] interface TestInterfaceConstructor4 {
+interface TestInterfaceConstructor4 {
+    constructor(TestInterfaceConstructor4 testInterface4Arg);
+    constructor(USVString usvStringArg);
 };

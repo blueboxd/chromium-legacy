@@ -6,6 +6,8 @@
 #define CONTENT_BROWSER_BROWSER_INTERFACE_BINDERS_H_
 
 #include "content/browser/service_worker/service_worker_info.h"
+#include "content/common/content_export.h"
+#include "services/device/public/mojom/vibration_manager.mojom-forward.h"
 #include "services/service_manager/public/cpp/binder_map.h"
 #include "url/origin.h"
 
@@ -61,6 +63,13 @@ void PopulateBinderMapWithContext(
 ServiceWorkerVersionInfo GetContextForHost(ServiceWorkerProviderHost* host);
 
 }  // namespace internal
+
+// Allows tests to override how frame hosts bind VibrationManager receivers.
+using VibrationManagerBinder = base::RepeatingCallback<void(
+    mojo::PendingReceiver<device::mojom::VibrationManager>)>;
+CONTENT_EXPORT void OverrideVibrationManagerBinderForTesting(
+    VibrationManagerBinder binder);
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_BROWSER_INTERFACE_BINDERS_H_

@@ -14,6 +14,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/base_paths_android.h"
 #include "base/feature_list.h"
 #include "base/hash/hash.h"
 #include "base/i18n/rtl.h"
@@ -24,6 +25,7 @@
 #include "components/metrics/android_metrics_provider.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/cpu_metrics_provider.h"
+#include "components/metrics/drive_metrics_provider.h"
 #include "components/metrics/enabled_state_provider.h"
 #include "components/metrics/gpu/gpu_metrics_provider.h"
 #include "components/metrics/metrics_log_uploader.h"
@@ -126,6 +128,9 @@ std::unique_ptr<metrics::MetricsService> CreateMetricsService(
       std::make_unique<metrics::CPUMetricsProvider>());
   service->RegisterMetricsProvider(
       std::make_unique<metrics::GPUMetricsProvider>());
+  service->RegisterMetricsProvider(
+      std::make_unique<metrics::DriveMetricsProvider>(
+          base::DIR_ANDROID_APP_DATA));
   service->RegisterMetricsProvider(
       std::make_unique<metrics::ScreenInfoMetricsProvider>());
   service->RegisterMetricsProvider(

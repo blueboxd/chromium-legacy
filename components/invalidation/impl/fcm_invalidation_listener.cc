@@ -50,13 +50,13 @@ void FCMInvalidationListener::Start(
 
   network_channel_->StartListening();
   EmitStateChange();
-  DoRegistrationUpdate();
+  DoSubscriptionUpdate();
 }
 
-void FCMInvalidationListener::UpdateRegisteredTopics(const Topics& topics) {
+void FCMInvalidationListener::UpdateInterestedTopics(const Topics& topics) {
   topics_update_requested_ = true;
-  registered_topics_ = topics;
-  DoRegistrationUpdate();
+  interested_topics_ = topics;
+  DoSubscriptionUpdate();
 }
 
 void FCMInvalidationListener::Invalidate(const std::string& payload,
@@ -91,7 +91,7 @@ void FCMInvalidationListener::DispatchInvalidations(
     const TopicInvalidationMap& invalidations) {
   TopicInvalidationMap to_save = invalidations;
   TopicInvalidationMap to_emit =
-      invalidations.GetSubsetWithTopics(registered_topics_);
+      invalidations.GetSubsetWithTopics(interested_topics_);
 
   SaveInvalidations(to_save);
   EmitSavedInvalidations(to_emit);
@@ -118,7 +118,7 @@ void FCMInvalidationListener::EmitSavedInvalidations(
 
 void FCMInvalidationListener::InformTokenReceived(const std::string& token) {
   instance_id_token_ = token;
-  DoRegistrationUpdate();
+  DoSubscriptionUpdate();
 }
 
 void FCMInvalidationListener::Acknowledge(const invalidation::ObjectId& id,
@@ -141,19 +141,23 @@ void FCMInvalidationListener::Drop(const invalidation::ObjectId& id,
   lookup->second.Drop(handle);
 }
 
-void FCMInvalidationListener::DoRegistrationUpdate() {
+void FCMInvalidationListener::DoSubscriptionUpdate() {
   if (!per_user_topic_registration_manager_ || instance_id_token_.empty() ||
       !topics_update_requested_) {
     return;
   }
   per_user_topic_registration_manager_->UpdateSubscribedTopics(
-      registered_topics_, instance_id_token_);
+      interested_topics_, instance_id_token_);
 
+  // Go over all stored unacked invalidations and dispatch them if their topics
+  // have become interesting.
+  // Note: We might dispatch invalidations for a second time here, if they were
+  // already dispatched but not acked yet.
   // TODO(melandory): remove unacked invalidations for unregistered objects.
   ObjectIdInvalidationMap object_id_invalidation_map;
-  for (auto& unacked : unacked_invalidations_map_) {
-    if (registered_topics_.find(unacked.first.name()) ==
-        registered_topics_.end()) {
+  for (const auto& unacked : unacked_invalidations_map_) {
+    if (interested_topics_.find(unacked.first.name()) ==
+        interested_topics_.end()) {
       continue;
     }
 
@@ -176,10 +180,6 @@ void FCMInvalidationListener::RequestDetailedStatus(
   callback.Run(CollectDebugData());
 }
 
-void FCMInvalidationListener::StopForTest() {
-  Stop();
-}
-
 void FCMInvalidationListener::StartForTest(Delegate* delegate) {
   delegate_ = delegate;
 }
@@ -191,10 +191,6 @@ void FCMInvalidationListener::EmitStateChangeForTest(InvalidatorState state) {
 void FCMInvalidationListener::EmitSavedInvalidationsForTest(
     const TopicInvalidationMap& to_emit) {
   EmitSavedInvalidations(to_emit);
-}
-
-Topics FCMInvalidationListener::GetRegisteredTopicsForTest() const {
-  return registered_topics_;
 }
 
 void FCMInvalidationListener::Stop() {
@@ -249,9 +245,9 @@ base::DictionaryValue FCMInvalidationListener::CollectDebugData() const {
   status.SetString(
       "InvalidationListener.Subscription-channel-state",
       SubscriptionChannelStateToString(subscription_channel_state_));
-  for (const auto& topic : registered_topics_) {
+  for (const auto& topic : interested_topics_) {
     if (!status.HasKey(topic.first)) {
-      status.SetString(topic.first, "Unregistered");
+      status.SetString(topic.first, "Unsubscribed");
     }
   }
   return status;

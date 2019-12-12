@@ -150,6 +150,29 @@ ui::CallbackLayerAnimationObserver* BuildObserverToHideView(views::View* view) {
       view));
 }
 
+ui::CallbackLayerAnimationObserver* BuildObserverToNotifyA11yLocationChanged(
+    views::View* view) {
+  return new ui::CallbackLayerAnimationObserver(base::BindRepeating(
+      [](views::View* view,
+         const ui::CallbackLayerAnimationObserver& observer) {
+        view->NotifyAccessibilityEvent(ax::mojom::Event::kLocationChanged,
+                                       false /*send_native_event*/);
+        return true;
+      },
+      view));
+}
+
+ui::CallbackLayerAnimationObserver* BuildObserverToNotifyA11yLocationChanged(
+    LoginPinView* view) {
+  return new ui::CallbackLayerAnimationObserver(base::BindRepeating(
+      [](LoginPinView* view,
+         const ui::CallbackLayerAnimationObserver& observer) {
+        view->NotifyAccessibilityLocationChanged();
+        return true;
+      },
+      view));
+}
+
 // Clears the password for the given |LoginPasswordView| instance, hides it, and
 // then deletes itself.
 class ClearPasswordAndHideAnimationObserver
@@ -1121,25 +1144,30 @@ void LoginAuthUserView::ApplyAnimationPostLayout() {
 
   ////////
   // Animate the user info (ie, icon, name) up or down the screen.
+  {
+    int non_pin_y_end_in_screen = GetBoundsInScreen().y();
 
-  int non_pin_y_end_in_screen = GetBoundsInScreen().y();
-
-  // Transform the layer so the user view renders where it used to be. This
-  // requires a y offset.
-  // Note: Doing this animation via ui::ScopedLayerAnimationSettings works, but
-  // it seems that the timing gets slightly out of sync with the PIN animation.
-  auto move_to_center = std::make_unique<ui::InterpolatedTranslation>(
-      gfx::PointF(0, cached_animation_state_->non_pin_y_start_in_screen -
-                         non_pin_y_end_in_screen),
-      gfx::PointF());
-  auto transition =
-      ui::LayerAnimationElement::CreateInterpolatedTransformElement(
-          std::move(move_to_center),
-          base::TimeDelta::FromMilliseconds(
-              login_constants::kChangeUserAnimationDurationMs));
-  transition->set_tween_type(gfx::Tween::Type::FAST_OUT_SLOW_IN);
-  layer()->GetAnimator()->StartAnimation(
-      new ui::LayerAnimationSequence(std::move(transition)));
+    // Transform the layer so the user view renders where it used to be. This
+    // requires a y offset.
+    // Note: Doing this animation via ui::ScopedLayerAnimationSettings works,
+    // but it seems that the timing gets slightly out of sync with the PIN
+    // animation.
+    auto move_to_center = std::make_unique<ui::InterpolatedTranslation>(
+        gfx::PointF(0, cached_animation_state_->non_pin_y_start_in_screen -
+                           non_pin_y_end_in_screen),
+        gfx::PointF());
+    auto transition =
+        ui::LayerAnimationElement::CreateInterpolatedTransformElement(
+            std::move(move_to_center),
+            base::TimeDelta::FromMilliseconds(
+                login_constants::kChangeUserAnimationDurationMs));
+    transition->set_tween_type(gfx::Tween::Type::FAST_OUT_SLOW_IN);
+    auto* sequence = new ui::LayerAnimationSequence(std::move(transition));
+    auto* observer = BuildObserverToNotifyA11yLocationChanged(this);
+    sequence->AddObserver(observer);
+    observer->SetActive();
+    layer()->GetAnimator()->StartAnimation(sequence);
+  }
 
   ////////
   // Fade the password view if it is being hidden or shown.
@@ -1201,7 +1229,9 @@ void LoginAuthUserView::ApplyAnimationPostLayout() {
       sequence->AddObserver(observer);
       observer->SetActive();
     }
-
+    auto* observer = BuildObserverToNotifyA11yLocationChanged(pin_view_);
+    sequence->AddObserver(observer);
+    observer->SetActive();
     pin_view_->layer()->GetAnimator()->ScheduleAnimation(sequence);
   }
 

@@ -19,8 +19,8 @@
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/wds/src/libwds/public/media_manager.h"
 
-namespace service_manager {
-class InterfaceProvider;
+namespace blink {
+class BrowserInterfaceBrokerProxy;
 }
 
 namespace extensions {
@@ -32,12 +32,11 @@ class WiFiDisplayMediaManager : public wds::SourceMediaManager {
  public:
   using ErrorCallback = base::Callback<void(const std::string&)>;
 
-  WiFiDisplayMediaManager(
-      const blink::WebMediaStreamTrack& video_track,
-      const blink::WebMediaStreamTrack& audio_track,
-      const net::IPAddress& sink_ip_address,
-      service_manager::InterfaceProvider* interface_provider,
-      const ErrorCallback& error_callback);
+  WiFiDisplayMediaManager(const blink::WebMediaStreamTrack& video_track,
+                          const blink::WebMediaStreamTrack& audio_track,
+                          const net::IPAddress& sink_ip_address,
+                          blink::BrowserInterfaceBrokerProxy* interface_broker,
+                          const ErrorCallback& error_callback);
 
   ~WiFiDisplayMediaManager() override;
 
@@ -80,7 +79,7 @@ class WiFiDisplayMediaManager : public wds::SourceMediaManager {
   std::unique_ptr<WiFiDisplayAudioSink> audio_sink_;
   std::unique_ptr<WiFiDisplayVideoSink> video_sink_;
 
-  service_manager::InterfaceProvider* interface_provider_;
+  blink::BrowserInterfaceBrokerProxy* interface_broker_;
   net::IPAddress sink_ip_address_;
   std::pair<int, int> sink_rtp_ports_;
   wds::H264VideoFormat optimal_video_format_;

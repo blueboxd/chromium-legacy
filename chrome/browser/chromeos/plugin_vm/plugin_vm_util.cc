@@ -7,7 +7,12 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_util.h"
+#include "base/task/post_task.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_drive_image_download_service.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -20,6 +25,7 @@
 #include "components/exo/shell_surface_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "google_apis/drive/drive_api_error_codes.h"
 
 namespace plugin_vm {
 
@@ -157,6 +163,42 @@ void SetFakePluginVmPolicy(Profile* profile,
 
 bool FakeLicenseKeyIsSet() {
   return !GetFakeLicenseKey().empty();
+}
+
+void RemoveDriveDownloadDirectoryIfExists() {
+  auto log_file_deletion_if_failed = [](bool success) {
+    if (!success) {
+      LOG(ERROR) << "PluginVM failed to delete download directory";
+    }
+  };
+
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&base::DeleteFileRecursively,
+                     base::FilePath(kPluginVmDriveDownloadDirectory)),
+      base::BindOnce(std::move(log_file_deletion_if_failed)));
+}
+
+// TODO(muhamedp): Update if a different url format is ultimately chosen.
+bool IsDriveUrl(const GURL& url) {
+  const std::string url_base = "https://drive.google.com/open?id=";
+  return url.spec().find(url_base) == 0 &&
+         url.spec().length() > url_base.length();
+}
+
+// TODO(muhamedp): Update if a different url format is ultimately chosen.
+std::string GetIdFromDriveUrl(const GURL& url) {
+  const std::string& spec = url.spec();
+
+  const size_t id_start = spec.find("id=") + 3;
+  // In case there are other GET parameters after the id.
+  const size_t first_ampersand = spec.find('&', id_start);
+
+  if (first_ampersand == std::string::npos)
+    return spec.substr(id_start);
+  else
+    return spec.substr(id_start, first_ampersand - id_start);
 }
 
 }  // namespace plugin_vm

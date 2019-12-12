@@ -4,6 +4,10 @@
 
 #include "chrome/browser/chromeos/arc/file_system_watcher/arc_file_system_watcher_util.h"
 
+#include <string.h>
+
+#include <algorithm>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace arc {
@@ -112,6 +116,43 @@ TEST(ArcFileSystemWatcherUtilTest, GetAndroidPath) {
                 base::FilePath(FILE_PATH_LITERAL("/media/removable")),
                 base::FilePath(FILE_PATH_LITERAL("/storage")))
                 .value());
+}
+
+TEST(ArcFileSystemWatcherServiceTest, AndroidSupportedMediaExtensionsSorted) {
+  const auto less_comparator = [](const char* a, const char* b) {
+    return strcmp(a, b) < 0;
+  };
+  EXPECT_TRUE(std::is_sorted(
+      kAndroidSupportedMediaExtensions,
+      kAndroidSupportedMediaExtensions + kAndroidSupportedMediaExtensionsSize,
+      less_comparator));
+}
+
+TEST(ArcFileSystemWatcherServiceTest, HasAndroidSupportedMediaExtension) {
+  EXPECT_TRUE(HasAndroidSupportedMediaExtension(
+      base::FilePath(FILE_PATH_LITERAL("/tmp/kitten.3g2"))));
+  EXPECT_TRUE(HasAndroidSupportedMediaExtension(
+      base::FilePath(FILE_PATH_LITERAL("/tmp/kitten.jpg"))));
+  EXPECT_TRUE(HasAndroidSupportedMediaExtension(
+      base::FilePath(FILE_PATH_LITERAL("/tmp/kitten.png"))));
+  EXPECT_TRUE(HasAndroidSupportedMediaExtension(
+      base::FilePath(FILE_PATH_LITERAL("/tmp/kitten.xmf"))));
+  EXPECT_TRUE(HasAndroidSupportedMediaExtension(
+      base::FilePath(FILE_PATH_LITERAL("/tmp/kitten.nef"))));
+
+  EXPECT_TRUE(HasAndroidSupportedMediaExtension(
+      base::FilePath(FILE_PATH_LITERAL("/tmp/kitten.JPEG"))));
+  EXPECT_TRUE(HasAndroidSupportedMediaExtension(
+      base::FilePath(FILE_PATH_LITERAL("/tmp/kitten.cute.jpg"))));
+  EXPECT_TRUE(HasAndroidSupportedMediaExtension(
+      base::FilePath(FILE_PATH_LITERAL("/tmp/.kitten.jpg"))));
+
+  EXPECT_FALSE(HasAndroidSupportedMediaExtension(
+      base::FilePath(FILE_PATH_LITERAL("/tmp/kitten.txt"))));
+  EXPECT_FALSE(HasAndroidSupportedMediaExtension(
+      base::FilePath(FILE_PATH_LITERAL("/tmp/kitten.jpg.exe"))));
+  EXPECT_FALSE(HasAndroidSupportedMediaExtension(
+      base::FilePath(FILE_PATH_LITERAL("/tmp/kitten"))));
 }
 
 }  // namespace arc

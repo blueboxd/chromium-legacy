@@ -131,6 +131,10 @@ class ChromeBrowserProvider {
   virtual id<LogoVendor> CreateLogoVendor(
       ios::ChromeBrowserState* browser_state) const NS_RETURNS_RETAINED;
 
+  virtual id<LogoVendor> CreateLogoVendor(
+      ios::ChromeBrowserState* browser_state,
+      web::WebState* web_state) const NS_RETURNS_RETAINED;
+
   // Returns an instance of the omaha service provider.
   virtual OmahaServiceProvider* GetOmahaServiceProvider() const;
 

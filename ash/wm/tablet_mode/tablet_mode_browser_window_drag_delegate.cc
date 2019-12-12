@@ -154,7 +154,7 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
     // Blurs the wallpaper background.
     RootWindowController::ForWindow(root_window)
         ->wallpaper_widget_controller()
-        ->SetBlurAndOpacity(kWallpaperBlurSigma, kShieldOpacity);
+        ->SetWallpaperProperty(wallpaper_constants::kOverviewState);
   }
 
   ~WindowsHider() override {
@@ -182,7 +182,7 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
     // Clears the background wallpaper blur.
     RootWindowController::ForWindow(dragged_window_->GetRootWindow())
         ->wallpaper_widget_controller()
-        ->SetBlurAndOpacity(kWallpaperClearBlurSigma, 1.f);
+        ->SetWallpaperProperty(wallpaper_constants::kClear);
   }
 
   // aura::WindowObserver:

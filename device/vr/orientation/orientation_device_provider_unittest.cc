@@ -46,15 +46,11 @@ class VROrientationDeviceProviderTest : public testing::Test {
         sizeof(SensorReadingSharedBuffer) *
         (static_cast<uint64_t>(mojom::SensorType::kMaxValue) + 1));
 
-    mojo::PendingReceiver<service_manager::mojom::Connector> receiver;
-    connector_ = service_manager::Connector::Create(&receiver);
-    connector_->OverrideBinderForTesting(
-        service_manager::ServiceFilter::ByName(mojom::kServiceName),
-        mojom::SensorProvider::Name_,
-        base::BindRepeating(&FakeSensorProvider::Bind,
-                            base::Unretained(fake_sensor_provider_.get())));
-
-    provider_ = std::make_unique<VROrientationDeviceProvider>(connector_.get());
+    mojo::PendingRemote<device::mojom::SensorProvider> sensor_provider;
+    fake_sensor_provider_->Bind(
+        sensor_provider.InitWithNewPipeAndPassReceiver());
+    provider_ = std::make_unique<VROrientationDeviceProvider>(
+        std::move(sensor_provider));
 
     task_environment_.RunUntilIdle();
   }
@@ -149,8 +145,6 @@ class VROrientationDeviceProviderTest : public testing::Test {
   mojo::PendingRemote<mojom::Sensor> sensor_;
   mojo::ScopedSharedBufferHandle shared_buffer_handle_;
   mojo::Remote<mojom::SensorClient> sensor_client_;
-
-  std::unique_ptr<service_manager::Connector> connector_;
 
   DISALLOW_COPY_AND_ASSIGN(VROrientationDeviceProviderTest);
 };

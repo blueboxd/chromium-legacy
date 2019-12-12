@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_data.h"
 #include "components/account_id/account_id.h"
 
+class Browser;
 class PrefRegistrySimple;
 struct WebApplicationInfo;
 
@@ -50,6 +51,9 @@ class WebKioskAppManager : public KioskAppManagerBase {
 
   // Adds fake apps in tests.
   void AddAppForTesting(const AccountId& account_id, const GURL& install_url);
+
+  // Initialize current app session with the browser that is running the app.
+  void InitSession(Browser* browser);
 
  private:
   // KioskAppManagerBase:

@@ -432,7 +432,7 @@ class ListNode(CodeNode):
     except that addition and removal of None have no effect.
     """
 
-    def __init__(self, code_nodes=None, separator=" ", separator_last=""):
+    def __init__(self, code_nodes=None, separator="\n", separator_last=""):
         assert isinstance(separator, str)
         assert isinstance(separator_last, str)
 

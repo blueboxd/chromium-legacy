@@ -131,14 +131,18 @@ class MODULES_EXPORT RTCPeerConnection final
                     ExceptionState&);
   ~RTCPeerConnection() override;
 
-  ScriptPromise createOffer(ScriptState*, const RTCOfferOptions*);
+  ScriptPromise createOffer(ScriptState*,
+                            const RTCOfferOptions*,
+                            ExceptionState&);
   ScriptPromise createOffer(ScriptState*,
                             V8RTCSessionDescriptionCallback*,
                             V8RTCPeerConnectionErrorCallback*,
                             const Dictionary&,
                             ExceptionState&);
 
-  ScriptPromise createAnswer(ScriptState*, const RTCAnswerOptions*);
+  ScriptPromise createAnswer(ScriptState*,
+                             const RTCAnswerOptions*,
+                             ExceptionState&);
   ScriptPromise createAnswer(ScriptState*,
                              V8RTCSessionDescriptionCallback*,
                              V8RTCPeerConnectionErrorCallback*,
@@ -146,7 +150,8 @@ class MODULES_EXPORT RTCPeerConnection final
 
   ScriptPromise setLocalDescription(ScriptState*);
   ScriptPromise setLocalDescription(ScriptState*,
-                                    const RTCSessionDescriptionInit*);
+                                    const RTCSessionDescriptionInit*,
+                                    ExceptionState&);
   ScriptPromise setLocalDescription(
       ScriptState*,
       const RTCSessionDescriptionInit*,
@@ -157,7 +162,8 @@ class MODULES_EXPORT RTCPeerConnection final
   RTCSessionDescription* pendingLocalDescription();
 
   ScriptPromise setRemoteDescription(ScriptState*,
-                                     const RTCSessionDescriptionInit*);
+                                     const RTCSessionDescriptionInit*,
+                                     ExceptionState&);
   ScriptPromise setRemoteDescription(
       ScriptState*,
       const RTCSessionDescriptionInit*,
@@ -224,7 +230,9 @@ class MODULES_EXPORT RTCPeerConnection final
       ScriptState*,
       V8RTCStatsCallback* success_callback,
       MediaStreamTrack* selector);
-  ScriptPromise PromiseBasedGetStats(ScriptState*, MediaStreamTrack* selector);
+  ScriptPromise PromiseBasedGetStats(ScriptState*,
+                                     MediaStreamTrack* selector,
+                                     ExceptionState&);
 
   const HeapVector<Member<RTCRtpTransceiver>>& getTransceivers() const;
   const HeapVector<Member<RTCRtpSender>>& getSenders() const;

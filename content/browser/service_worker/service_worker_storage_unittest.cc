@@ -1788,14 +1788,22 @@ class ServiceWorkerStorageOriginTrialsDiskTest
  private:
   class TestOriginTrialPolicy : public blink::OriginTrialPolicy {
    public:
+    TestOriginTrialPolicy() {
+      public_keys_.push_back(
+          base::StringPiece(reinterpret_cast<const char*>(kTestPublicKey),
+                            base::size(kTestPublicKey)));
+    }
+
     bool IsOriginTrialsSupported() const override { return true; }
-    base::StringPiece GetPublicKey() const override {
-      return base::StringPiece(reinterpret_cast<const char*>(kTestPublicKey),
-                               base::size(kTestPublicKey));
+    std::vector<base::StringPiece> GetPublicKeys() const override {
+      return public_keys_;
     }
     bool IsOriginSecure(const GURL& url) const override {
       return content::IsOriginSecure(url);
     }
+
+   private:
+    std::vector<base::StringPiece> public_keys_;
   };
   TestOriginTrialPolicy origin_trial_policy_;
 };

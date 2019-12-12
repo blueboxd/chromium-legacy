@@ -17,6 +17,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -445,6 +446,7 @@ LoginPinView::LoginPinView(Style keyboard_style,
     row->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kHorizontal));
     AddChildView(row);
+    rows.push_back(row);
     return row;
   };
 
@@ -495,6 +497,15 @@ LoginPinView::LoginPinView(Style keyboard_style,
 }
 
 LoginPinView::~LoginPinView() = default;
+
+void LoginPinView::NotifyAccessibilityLocationChanged() {
+  this->NotifyAccessibilityEvent(ax::mojom::Event::kLocationChanged,
+                                 false /*send_native_event*/);
+  for (NonAccessibleView* row : rows) {
+    row->NotifyAccessibilityEvent(ax::mojom::Event::kLocationChanged,
+                                  false /*send_native_event*/);
+  }
+}
 
 void LoginPinView::SetBackButtonVisible(bool visible) {
   back_button_->SetVisible(visible);

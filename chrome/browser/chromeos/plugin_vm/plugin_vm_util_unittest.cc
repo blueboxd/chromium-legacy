@@ -17,6 +17,10 @@
 
 namespace plugin_vm {
 
+const char kBaseDriveUrl[] = "https://drive.google.com/open?id=";
+const char kDriveFileId[] = "Yxhi5BDTxsEl9onT8AunH4o_tkKviFGjY";
+const char kDriveExtraParam[] = "&foobar=barfoo";
+
 class PluginVmUtilTest : public testing::Test {
  public:
   PluginVmUtilTest() = default;
@@ -81,6 +85,31 @@ TEST_F(PluginVmUtilTest, PluginVmShouldBeAllowedForManualTesting) {
 
   test_helper_->AllowPluginVmForManualTesting();
   EXPECT_TRUE(IsPluginVmAllowedForProfile(testing_profile_.get()));
+}
+
+TEST_F(PluginVmUtilTest, DriveLinkDetection) {
+  std::string base_url(kBaseDriveUrl);
+  std::string file_id(kDriveFileId);
+
+  EXPECT_TRUE(IsDriveUrl(GURL(base_url + file_id)));
+  EXPECT_TRUE(IsDriveUrl(
+      GURL(base_url + file_id + kDriveExtraParam + kDriveExtraParam)));
+
+  EXPECT_FALSE(IsDriveUrl(GURL("https://othersite.com?id=" + file_id)));
+  EXPECT_FALSE(
+      IsDriveUrl(GURL("https://drive.google.com.othersite.com?id=" + file_id)));
+}
+
+TEST_F(PluginVmUtilTest, DriveLinkIdExtraction) {
+  std::string base_url(kBaseDriveUrl);
+  std::string file_id(kDriveFileId);
+
+  EXPECT_EQ(GetIdFromDriveUrl(GURL(base_url + file_id)), file_id);
+  EXPECT_EQ(GetIdFromDriveUrl(GURL(base_url + file_id + kDriveExtraParam)),
+            file_id);
+  EXPECT_EQ(GetIdFromDriveUrl(
+                GURL(base_url + file_id + kDriveExtraParam + kDriveExtraParam)),
+            file_id);
 }
 
 }  // namespace plugin_vm

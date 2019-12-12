@@ -468,7 +468,8 @@ const char kOriginTrialDisabledFeatures[] = "origin-trial-disabled-features";
 // be disabled. Tokens should be separated by "|" characters.
 const char kOriginTrialDisabledTokens[] = "origin-trial-disabled-tokens";
 
-// Overrides the default public key for checking origin trial tokens.
+// Comma-separated list of keys which will override the default public keys for
+// checking origin trial tokens.
 const char kOriginTrialPublicKey[] = "origin-trial-public-key";
 
 // Packages an extension to a .crx installable file from a given directory.
@@ -650,6 +651,14 @@ const char kWebRtcRemoteEventLogUploadDelayMs[] =
 // peer connections are active. With this flag, the upload is never suppressed.
 const char kWebRtcRemoteEventLogUploadNoSuppression[] =
     "webrtc-event-log-upload-no-suppression";
+
+// Enables a web-based tab strip. See https://crbug.com/989131. Note this
+// feature only works when the ENABLE_WEBUI_TAB_STRIP buildflag is enabled.
+//
+// This is a command-line switch instead of a base::Feature so that it
+// can be enabled on specific ChromeOS boards. This feature is always
+// disabled by default.
+const char kWebUITabStrip[] = "webui-tab-strip";
 
 // Specify the initial window position: --window-position=x,y
 const char kWindowPosition[]                = "window-position";

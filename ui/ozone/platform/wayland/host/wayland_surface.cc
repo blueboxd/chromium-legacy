@@ -10,6 +10,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/wayland/host/shell_object_factory.h"
 #include "ui/ozone/platform/wayland/host/shell_surface_wrapper.h"
+#include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/platform_window/platform_window_handler/wm_drop_handler.h"
 
@@ -35,11 +36,18 @@ WaylandSurface::~WaylandSurface() {
   }
 }
 
-void WaylandSurface::CreateShellSurface() {
+bool WaylandSurface::CreateShellSurface() {
   ShellObjectFactory factory;
   shell_surface_ = factory.CreateShellSurfaceWrapper(connection(), this);
-  if (!shell_surface_)
-    CHECK(false) << "Failed to initialize Wayland shell surface";
+  if (!shell_surface_) {
+    LOG(ERROR) << "Failed to create a ShellSurface.";
+    return false;
+  }
+
+  shell_surface_->SetAppId(app_id_);
+  shell_surface_->SetTitle(window_title_);
+  SetSizeConstraints();
+  return true;
 }
 
 void WaylandSurface::ApplyPendingBounds() {
@@ -77,12 +85,33 @@ void WaylandSurface::StartDrag(const ui::OSExchangeData& data,
 }
 
 void WaylandSurface::Show(bool inactive) {
+  if (shell_surface_)
+    return;
+
+  if (!CreateShellSurface()) {
+    Close();
+    return;
+  }
+
   set_keyboard_focus(true);
-  // TODO(msisov): recreate |shell_surface_| on show calls.
+  UpdateBufferScale(false);
 }
 
 void WaylandSurface::Hide() {
-  // TODO(msisov): destroy |shell_surface_| on hide calls.
+  if (!shell_surface_)
+    return;
+
+  if (child_window()) {
+    child_window()->Hide();
+    set_child_window(nullptr);
+  }
+
+  shell_surface_.reset();
+  connection()->ScheduleFlush();
+
+  // Detach buffer from surface in order to completely shutdown menus and
+  // tooltips, and release resources.
+  connection()->buffer_manager_host()->ResetSurfaceContents(GetWidget());
 }
 
 bool WaylandSurface::IsVisible() const {
@@ -92,9 +121,15 @@ bool WaylandSurface::IsVisible() const {
 }
 
 void WaylandSurface::SetTitle(const base::string16& title) {
-  DCHECK(shell_surface_);
-  shell_surface_->SetTitle(title);
-  connection()->ScheduleFlush();
+  if (window_title_ == title)
+    return;
+
+  window_title_ = title;
+
+  if (shell_surface_) {
+    shell_surface_->SetTitle(title);
+    connection()->ScheduleFlush();
+  }
 }
 
 void WaylandSurface::ToggleFullscreen() {
@@ -178,15 +213,9 @@ void WaylandSurface::SizeConstraintsChanged() {
     return;
 
   DCHECK(delegate());
-  auto min_size = delegate()->GetMinimumSizeForWindow();
-  auto max_size = delegate()->GetMaximumSizeForWindow();
-
-  if (min_size.has_value())
-    shell_surface_->SetMinSize(min_size->width(), min_size->height());
-  if (max_size.has_value())
-    shell_surface_->SetMaxSize(max_size->width(), max_size->height());
-
-  connection()->ScheduleFlush();
+  min_size_ = delegate()->GetMinimumSizeForWindow();
+  max_size_ = delegate()->GetMaximumSizeForWindow();
+  SetSizeConstraints();
 }
 
 void WaylandSurface::HandleSurfaceConfigure(int32_t width,
@@ -315,10 +344,8 @@ void WaylandSurface::OnDragSessionClose(uint32_t dnd_action) {
 }
 
 bool WaylandSurface::OnInitialize(PlatformWindowInitProperties properties) {
-  CreateShellSurface();
-  if (shell_surface_ && !properties.wm_class_class.empty())
-    shell_surface_->SetAppId(properties.wm_class_class);
-  return !!shell_surface_;
+  app_id_ = properties.wm_class_class;
+  return true;
 }
 
 bool WaylandSurface::IsMinimized() const {
@@ -343,6 +370,15 @@ void WaylandSurface::MaybeTriggerPendingStateChange() {
 
 WmMoveResizeHandler* WaylandSurface::AsWmMoveResizeHandler() {
   return static_cast<WmMoveResizeHandler*>(this);
+}
+
+void WaylandSurface::SetSizeConstraints() {
+  if (min_size_.has_value())
+    shell_surface_->SetMinSize(min_size_->width(), min_size_->height());
+  if (max_size_.has_value())
+    shell_surface_->SetMaxSize(max_size_->width(), max_size_->height());
+
+  connection()->ScheduleFlush();
 }
 
 }  // namespace ui

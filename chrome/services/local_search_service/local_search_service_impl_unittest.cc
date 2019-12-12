@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
 #include <set>
 #include <sstream>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -103,6 +105,8 @@ class LocalSearchServiceImplTest : public testing::Test {
   mojo::Remote<mojom::LocalSearchService> service_remote_;
 };
 
+// Tests a query that results in an exact match. We do not aim to test the
+// algorithm used in the search, but exact match should always be returned.
 TEST_F(LocalSearchServiceImplTest, ResultFound) {
   mojo::Remote<mojom::Index> index_remote;
   service_remote_->GetIndex(mojom::LocalSearchService::IndexId::CROS_SETTINGS,
@@ -113,7 +117,7 @@ TEST_F(LocalSearchServiceImplTest, ResultFound) {
   // Register the following data to the search index, the map is id to
   // search-tags.
   const std::map<std::string, std::vector<std::string>> data_to_register = {
-      {"id1", {"tag1a", "tag1b"}}, {"id2", {"tag2a", "tag2b"}}};
+      {"id1", {"id1", "tag1a", "tag1b"}}, {"xyz", {"xyz"}}};
   std::vector<mojom::DataPtr> data = CreateTestData(data_to_register);
   EXPECT_EQ(data.size(), 2u);
 
@@ -125,6 +129,9 @@ TEST_F(LocalSearchServiceImplTest, ResultFound) {
                /*max_results=*/-1, mojom::ResponseStatus::SUCCESS, {"id1"});
 }
 
+// Tests a query that results in no match. We do not aim to test the algorithm
+// used in the search, but a query too different from the item should have no
+// result returned.
 TEST_F(LocalSearchServiceImplTest, ResultNotFound) {
   mojo::Remote<mojom::Index> index_remote;
   service_remote_->GetIndex(mojom::LocalSearchService::IndexId::CROS_SETTINGS,
@@ -135,15 +142,15 @@ TEST_F(LocalSearchServiceImplTest, ResultNotFound) {
   // Register the following data to the search index, the map is id to
   // search-tags.
   const std::map<std::string, std::vector<std::string>> data_to_register = {
-      {"id1", {"tag1a", "tag1b"}}, {"id2", {"tag2a", "tag2b"}}};
+      {"id1", {"id1", "tag1a", "tag1b"}}, {"id2", {"id2", "tag2a", "tag2b"}}};
   std::vector<mojom::DataPtr> data = CreateTestData(data_to_register);
   EXPECT_EQ(data.size(), 2u);
 
   AddOrUpdateAndCheck(index_remote.get(), std::move(data));
   GetSizeAndCheck(index_remote.get(), 2u);
 
-  // Find result with query "id3". It returns no match.
-  FindAndCheck(index_remote.get(), "id3", /*max_latency_in_ms=*/-1,
+  // Find result with query "xyz". It returns no match.
+  FindAndCheck(index_remote.get(), "xyz", /*max_latency_in_ms=*/-1,
                /*max_results=*/-1, mojom::ResponseStatus::SUCCESS, {});
 }
 

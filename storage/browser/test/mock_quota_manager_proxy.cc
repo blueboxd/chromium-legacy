@@ -43,7 +43,6 @@ void MockQuotaManagerProxy::GetUsageAndQuota(
 }
 
 void MockQuotaManagerProxy::NotifyStorageAccessed(
-    QuotaClient::ID client_id,
     const url::Origin& origin,
     blink::mojom::StorageType type) {
   ++storage_accessed_count_;

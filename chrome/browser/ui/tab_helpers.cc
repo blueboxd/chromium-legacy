@@ -316,8 +316,13 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     SyncEncryptionKeysTabHelper::CreateForWebContents(web_contents);
   }
   TabDialogs::CreateForWebContents(web_contents);
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
   if (base::FeatureList::IsEnabled(features::kTabHoverCardImages) ||
-      base::FeatureList::IsEnabled(features::kWebUITabStrip)) {
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kWebUITabStrip)) {
+#else
+  if (base::FeatureList::IsEnabled(features::kTabHoverCardImages)) {
+#endif
     ThumbnailTabHelper::CreateForWebContents(web_contents);
   }
   web_modal::WebContentsModalDialogManager::CreateForWebContents(web_contents);

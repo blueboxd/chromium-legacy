@@ -5,6 +5,9 @@
 #ifndef CHROME_SERVICES_LOCAL_SEARCH_SERVICE_LOCAL_SEARCH_SERVICE_IMPL_H_
 #define CHROME_SERVICES_LOCAL_SEARCH_SERVICE_LOCAL_SEARCH_SERVICE_IMPL_H_
 
+#include <map>
+#include <memory>
+
 #include "base/macros.h"
 #include "chrome/services/local_search_service/public/mojom/local_search_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"

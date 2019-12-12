@@ -419,9 +419,7 @@ class DetachToBrowserTabDragControllerTest
       public ::testing::WithParamInterface<const char*> {
  public:
   DetachToBrowserTabDragControllerTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {features::kMixBrowserTypeTabs} /* enabled_features */,
-        {features::kWebUITabStrip} /* disabled_features */);
+    scoped_feature_list_.InitAndEnableFeature(features::kMixBrowserTypeTabs);
   }
 
   void SetUpOnMainThread() override {

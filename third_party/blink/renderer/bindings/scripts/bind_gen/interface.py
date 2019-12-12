@@ -380,7 +380,8 @@ def bind_return_value(code_node, cg_context):
         api_calls.append((None, _make_blink_api_call(code_node, cg_context)))
 
         nodes = []
-        is_return_type_void = cg_context.return_type.unwrap().is_void
+        is_return_type_void = (cg_context.attribute_set
+                               or cg_context.return_type.unwrap().is_void)
         if not is_return_type_void:
             return_type = blink_type_info(cg_context.return_type).value_t
         if len(api_calls) == 1:
@@ -436,35 +437,28 @@ def bind_return_value(code_node, cg_context):
         SymbolNode("return_value", definition_constructor=create_definition))
 
 
-def bind_v8_set_return_value(code_node, cg_context):
-    assert isinstance(code_node, SymbolScopeNode)
+def make_check_argument_length(cg_context):
     assert isinstance(cg_context, CodeGenContext)
+    # Attribute getters don't need this check and operations have their own
+    # checks handling optional arguments.
+    assert cg_context.attribute_set
 
-    pattern = "{_1}({_2});"
-    _1 = "V8SetReturnValue"
-    _2 = ["${info}", "${return_value}"]
+    T = TextNode
 
-    return_type = cg_context.return_type.unwrap(nullable=True, typedef=True)
-    if return_type.is_void:
-        # Render a SymbolNode |return_value| discarding the content text, and
-        # let a symbol definition be added.
-        pattern = "<% str(return_value) %>"
-    elif (cg_context.for_world == cg_context.MAIN_WORLD
-          and return_type.is_interface):
-        _1 = "V8SetReturnValueForMainWorld"
-    elif return_type.is_interface:
-        _2.append("${creation_context_object}")
+    idl_type = cg_context.attribute.idl_type
+    if not (idl_type.does_include_nullable_type or idl_type.unwrap().is_any or
+            "TreatNonObjectAsNull" in idl_type.unwrap().extended_attributes):
+        # ES undefined in ${info}[0] will cause a TypeError anyway, so omit the
+        # check against the number of arguments.
+        return None
 
-    text = _format(pattern, _1=_1, _2=", ".join(_2))
-    code_node.add_template_var("v8_set_return_value", TextNode(text))
-
-
-_callback_common_binders = (
-    bind_blink_api_arguments,
-    bind_callback_local_vars,
-    bind_return_value,
-    bind_v8_set_return_value,
-)
+    return CxxUnlikelyIfNode(
+        cond="${info}.Length() == 0",
+        body=[
+            T("${exception_state}.ThrowTypeError("
+              "ExceptionMessages::NotEnoughArguments(1, ${info}.Length()));"),
+            T("return;"),
+        ])
 
 
 def make_check_receiver(cg_context):
@@ -481,7 +475,7 @@ def make_check_receiver(cg_context):
                 body=T("return;")),
         ])
 
-    if cg_context.return_type.unwrap().is_promise:
+    if cg_context.return_type and cg_context.return_type.unwrap().is_promise:
         return SequenceNode([
             T("// Promise returning function: "
               "Convert a TypeError to a reject promise."),
@@ -974,83 +968,100 @@ def make_runtime_call_timer_scope(cg_context):
     return node
 
 
-def make_attribute_get_callback_def(cg_context, function_name):
+def make_steps_of_ce_reactions(cg_context):
     assert isinstance(cg_context, CodeGenContext)
-    assert isinstance(function_name, str)
+    assert cg_context.attribute_set or cg_context.operation
 
     T = TextNode
 
-    cg_context = cg_context.make_copy(attribute_get=True)
+    nodes = []
 
-    func_def = CxxFuncDefNode(
-        name=function_name,
-        arg_decls=["const v8::FunctionCallbackInfo<v8::Value>& info"],
-        return_type="void")
+    ext_attrs = cg_context.member_like.extended_attributes
+    if "CustomElementCallbacks" in ext_attrs or "Reflect" in ext_attrs:
+        if "CustomElementCallbacks" in ext_attrs:
+            nodes.append(T("// [CustomElementCallbacks]"))
+        elif "Reflect" in ext_attrs:
+            nodes.append(T("// [Reflect]"))
+        nodes.append(
+            T("V0CustomElementProcessingStack::CallbackDeliveryScope "
+              "v0_custom_element_scope;"))
 
-    body = func_def.body
-    body.add_template_var("info", "info")
-    body.add_template_vars(cg_context.template_bindings())
+    if "CEReactions" in ext_attrs:
+        nodes.append(T("// [CEReactions]"))
+        nodes.append(T("CEReactionsScope ce_reactions_scope;"))
 
-    for bind in _callback_common_binders:
-        bind(body, cg_context)
-
-    body.extend([
-        make_runtime_call_timer_scope(cg_context),
-        make_report_deprecate_as(cg_context),
-        make_report_measure_as(cg_context),
-        make_log_activity(cg_context),
-        T(""),
-        make_check_receiver(cg_context),
-        make_return_value_cache_return_early(cg_context),
-        T(""),
-        make_check_security_of_return_value(cg_context),
-        T("${v8_set_return_value}"),
-        make_return_value_cache_update_value(cg_context),
-    ])
-
-    return func_def
+    return SequenceNode(nodes) if nodes else None
 
 
-def make_attribute_set_callback_def(cg_context, function_name):
+def make_steps_of_put_forwards(cg_context):
     assert isinstance(cg_context, CodeGenContext)
-    assert isinstance(function_name, str)
-
-    return None
-
-
-def make_operation_function_def(cg_context, function_name):
-    assert isinstance(cg_context, CodeGenContext)
-    assert isinstance(function_name, str)
 
     T = TextNode
 
-    func_def = CxxFuncDefNode(
-        name=function_name,
-        arg_decls=["const v8::FunctionCallbackInfo<v8::Value>& info"],
-        return_type="void")
-
-    body = func_def.body
-    body.add_template_var("info", "info")
-    body.add_template_vars(cg_context.template_bindings())
-
-    for bind in _callback_common_binders:
-        bind(body, cg_context)
-
-    body.extend([
-        make_runtime_call_timer_scope(cg_context),
-        make_report_deprecate_as(cg_context),
-        make_report_measure_as(cg_context),
-        make_log_activity(cg_context),
-        T(""),
-        make_check_receiver(cg_context),
-        T(""),
-        T("${v8_set_return_value}"),
+    return SequenceNode([
+        T("// [PutForwards]"),
+        T("v8::Local<v8::Value> target;"),
+        T("if (!${v8_receiver}->Get(${current_context}, "
+          "V8AtomicString(${isolate}, property_name))"
+          ".ToLocal(&target)) {\n"
+          "  return;\n"
+          "}"),
+        CxxUnlikelyIfNode(
+            cond="!target->IsObject()",
+            body=[
+                T("${exception_state}.ThrowTypeError("
+                  "\"The attribute value is not an object\");"),
+                T("return;"),
+            ]),
+        T("bool did_set;"),
+        T("if (!target.As<v8::Object>()->Set(${current_context}, "
+          "V8AtomicString("
+          "\"${attribute.extended_attributes.value_of(\"PutForwards\")}\""
+          "), ${info}[0]).To(&did_set)) {{\n"
+          "  return;\n"
+          "}}"),
     ])
 
-    return func_def
+
+def make_steps_of_replaceable(cg_context):
+    assert isinstance(cg_context, CodeGenContext)
+
+    T = TextNode
+
+    return SequenceNode([
+        T("// [Replaceable]"),
+        T("bool did_create;"),
+        T("if (!${v8_receiver}->CreateDataProperty(${current_context}, "
+          "V8AtomicString(${isolate}, property_name), "
+          "${info}[0]).To(&did_create)) {\n"
+          "  return;\n"
+          "}"),
+    ])
 
 
-def make_overload_dispatcher_function_def(cg_context, function_name):
+def make_v8_set_return_value(cg_context):
+    assert isinstance(cg_context, CodeGenContext)
+
+    T = TextNode
+
+    if cg_context.attribute_set or cg_context.return_type.unwrap().is_void:
+        # Render a SymbolNode |return_value| discarding the content text, and
+        # let a symbol definition be inserted.
+        return T("<% str(return_value) %>")
+
+    return_type_body = cg_context.return_type.unwrap()
+    if (cg_context.for_world == cg_context.MAIN_WORLD
+            and return_type_body.is_interface):
+        return T("V8SetReturnValueForMainWorld(${info}, ${return_value});")
+
+    if return_type_body.is_interface:
+        return T("V8SetReturnValue(${info}, ${return_value}, "
+                 "${creation_context_object});")
+
+    return T("V8SetReturnValue(${info}, ${return_value});")
+
+
+def _make_empty_callback_def(cg_context, function_name):
     assert isinstance(cg_context, CodeGenContext)
     assert isinstance(function_name, str)
 
@@ -1064,6 +1075,116 @@ def make_overload_dispatcher_function_def(cg_context, function_name):
     body.add_template_vars(cg_context.template_bindings())
 
     bind_callback_local_vars(body, cg_context)
+    if cg_context.attribute or cg_context.function_like:
+        bind_blink_api_arguments(body, cg_context)
+        bind_return_value(body, cg_context)
+
+    return func_def
+
+
+def make_attribute_get_callback_def(cg_context, function_name):
+    assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(function_name, str)
+
+    T = TextNode
+
+    cg_context = cg_context.make_copy(attribute_get=True)
+    func_def = _make_empty_callback_def(cg_context, function_name)
+    body = func_def.body
+
+    body.extend([
+        make_runtime_call_timer_scope(cg_context),
+        make_report_deprecate_as(cg_context),
+        make_report_measure_as(cg_context),
+        make_log_activity(cg_context),
+        T(""),
+        make_check_receiver(cg_context),
+        make_return_value_cache_return_early(cg_context),
+        T(""),
+        make_check_security_of_return_value(cg_context),
+        make_v8_set_return_value(cg_context),
+        make_return_value_cache_update_value(cg_context),
+    ])
+
+    return func_def
+
+
+def make_attribute_set_callback_def(cg_context, function_name):
+    assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(function_name, str)
+
+    T = TextNode
+
+    ext_attrs = cg_context.attribute.extended_attributes
+    if cg_context.attribute.is_readonly and not ("PutForwards" in ext_attrs or
+                                                 "Replaceable" in ext_attrs):
+        return None
+
+    cg_context = cg_context.make_copy(attribute_set=True)
+    func_def = _make_empty_callback_def(cg_context, function_name)
+    body = func_def.body
+
+    if "LenientSetter" in ext_attrs:
+        body.append(T("// [LenientSetter]"))
+        return func_def
+
+    body.extend([
+        make_runtime_call_timer_scope(cg_context),
+        make_report_deprecate_as(cg_context),
+        make_report_measure_as(cg_context),
+        make_log_activity(cg_context),
+        T(""),
+        make_check_receiver(cg_context),
+        make_check_argument_length(cg_context),
+        T(""),
+    ])
+
+    if "PutForwards" in ext_attrs:
+        body.append(make_steps_of_put_forwards(cg_context))
+        return func_def
+
+    if "Replaceable" in ext_attrs:
+        body.append(make_steps_of_replaceable(cg_context))
+        return func_def
+
+    body.extend([
+        make_steps_of_ce_reactions(cg_context),
+        T(""),
+        make_v8_set_return_value(cg_context),
+    ])
+
+    return func_def
+
+
+def make_operation_function_def(cg_context, function_name):
+    assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(function_name, str)
+
+    T = TextNode
+
+    func_def = _make_empty_callback_def(cg_context, function_name)
+    body = func_def.body
+
+    body.extend([
+        make_runtime_call_timer_scope(cg_context),
+        make_report_deprecate_as(cg_context),
+        make_report_measure_as(cg_context),
+        make_log_activity(cg_context),
+        T(""),
+        make_check_receiver(cg_context),
+        T(""),
+        make_v8_set_return_value(cg_context),
+    ])
+
+    return func_def
+
+
+def make_overload_dispatcher_function_def(cg_context, function_name):
+    assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(function_name, str)
+
+    func_def = _make_empty_callback_def(cg_context, function_name)
+    body = func_def.body
 
     body.append(make_overload_dispatcher(cg_context))
 
@@ -1194,7 +1315,7 @@ def generate_interfaces(web_idl_database, output_dirs):
     filename = "v8_example_interface.cc"
     filepath = os.path.join(output_dirs['core'], filename)
 
-    interface = web_idl_database.find("HTMLImageElement")
+    interface = web_idl_database.find("WorkerGlobalScope")
 
     cg_context = CodeGenContext(interface=interface)
 

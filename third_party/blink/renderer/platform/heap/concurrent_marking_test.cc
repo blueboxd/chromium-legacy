@@ -208,5 +208,62 @@ TEST_F(ConcurrentMarkingTest, SwapVectors) {
   driver.FinishGC();
 }
 
+TEST_F(ConcurrentMarkingTest, AddToDeque) {
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  using D = HeapDeque<Member<IntegerObject>>;
+  Persistent<CollectionWrapper<D>> persistent =
+      MakeGarbageCollected<CollectionWrapper<D>>();
+  D* deque = persistent->GetCollection();
+  driver.Start();
+  for (int i = 0; i < 100; ++i) {
+    driver.SingleConcurrentStep();
+    for (int j = 0; j < 100; ++j) {
+      int num = 100 * i + j;
+      deque->push_back(MakeGarbageCollected<IntegerObject>(num));
+    }
+  }
+  driver.FinishSteps();
+  driver.FinishGC();
+}
+
+TEST_F(ConcurrentMarkingTest, RemoveFromDeque) {
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  using D = HeapDeque<Member<IntegerObject>>;
+  Persistent<CollectionWrapper<D>> persistent =
+      MakeGarbageCollected<CollectionWrapper<D>>();
+  D* deque = persistent->GetCollection();
+  for (int i = 0; i < 10000; ++i) {
+    deque->push_back(MakeGarbageCollected<IntegerObject>(i));
+  }
+  driver.Start();
+  for (int i = 0; i < 100; ++i) {
+    driver.SingleConcurrentStep();
+    for (int j = 0; j < 100; ++j) {
+      deque->pop_back();
+    }
+  }
+  driver.FinishSteps();
+  driver.FinishGC();
+}
+
+TEST_F(ConcurrentMarkingTest, SwapDeque) {
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  using D = HeapDeque<Member<IntegerObject>>;
+  Persistent<CollectionWrapper<D>> persistent =
+      MakeGarbageCollected<CollectionWrapper<D>>();
+  D* deque = persistent->GetCollection();
+  driver.Start();
+  for (int i = 0; i < 100; ++i) {
+    D new_deque;
+    for (int j = 0; j < 10 * i; ++j) {
+      new_deque.push_back(MakeGarbageCollected<IntegerObject>(j));
+    }
+    driver.SingleConcurrentStep();
+    deque->Swap(new_deque);
+  }
+  driver.FinishSteps();
+  driver.FinishGC();
+}
+
 }  // namespace concurrent_marking_test
 }  // namespace blink

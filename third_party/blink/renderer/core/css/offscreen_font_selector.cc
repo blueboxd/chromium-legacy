@@ -93,6 +93,12 @@ void OffscreenFontSelector::ReportSuccessfulFontFamilyMatch(
 void OffscreenFontSelector::ReportFailedFontFamilyMatch(
     const AtomicString& font_family_name) {}
 
+void OffscreenFontSelector::ReportSuccessfulLocalFontMatch(
+    const AtomicString& font_name) {}
+
+void OffscreenFontSelector::ReportFailedLocalFontMatch(
+    const AtomicString& font_name) {}
+
 void OffscreenFontSelector::FontCacheInvalidated() {
   font_face_cache_.IncrementVersion();
 }

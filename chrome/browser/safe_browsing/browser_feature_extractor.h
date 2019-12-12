@@ -44,13 +44,18 @@ class ClientPhishingRequest;
 class ClientSideDetectionHost;
 
 struct IPUrlInfo {
-  // The url on the bad IP address.
-  std::string url;
+  // The origin of the final URL for the request to the bad IP address (final =
+  // after redirects).
+  //
+  // The full URL is not available, because in some cases the path
+  // and query may be sanitized away - see https://crbug.com/973885.
+  std::string origin_of_final_url;
+
   std::string method;
   std::string referrer;
   content::ResourceType resource_type;
 
-  IPUrlInfo(const std::string& url,
+  IPUrlInfo(const std::string& origin_of_final_url,
             const std::string& method,
             const std::string& referrer,
             const content::ResourceType& resource_type);

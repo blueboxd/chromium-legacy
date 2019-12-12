@@ -57,9 +57,10 @@
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
 #include "services/network/loader_util.h"
+#include "services/network/public/cpp/http_raw_request_response_info.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/common/security/security_style.h"
@@ -1130,13 +1131,6 @@ void WebURLLoaderImpl::PopulateURLResponse(
                                  WebString::FromLatin1(value));
   }
 }
-
-void WebURLLoaderImpl::PopulateURLResponse(
-    const WebURL& url,
-    const network::ResourceResponseHead& head,
-    WebURLResponse* response,
-    bool report_security_info,
-    int request_id) {}
 
 // static
 WebURLError WebURLLoaderImpl::PopulateURLError(

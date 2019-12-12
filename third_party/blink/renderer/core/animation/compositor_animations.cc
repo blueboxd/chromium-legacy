@@ -188,8 +188,7 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
     const PaintArtifactCompositor* paint_artifact_compositor,
     double animation_playback_rate) {
   FailureReasons reasons = kNoFailure;
-  const KeyframeEffectModelBase& keyframe_effect =
-      ToKeyframeEffectModelBase(effect);
+  const auto& keyframe_effect = To<KeyframeEffectModelBase>(effect);
 
   LayoutObject* layout_object = target_element.GetLayoutObject();
   if (paint_artifact_compositor) {
@@ -456,8 +455,7 @@ void CompositorAnimations::StartAnimationOnCompositor(
                                          nullptr, animation_playback_rate),
       kNoFailure);
 
-  const KeyframeEffectModelBase& keyframe_effect =
-      ToKeyframeEffectModelBase(effect);
+  const auto& keyframe_effect = To<KeyframeEffectModelBase>(effect);
 
   Vector<std::unique_ptr<CompositorKeyframeModel>> keyframe_models;
   GetAnimationOnCompositor(element, timing, group, start_time, time_offset,

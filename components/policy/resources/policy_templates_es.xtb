@@ -1,15 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
-<translation id="1001649754854402482">Permite habilitar las mitigaciones de comprobación de <ph name="CORS" /> en la nueva implementación de <ph name="CORS" />. Así, las extensiones continúan siendo compatibles y <ph name="PRODUCT_NAME" /> puede enviar encabezados definidos sin comprobaciones de <ph name="CORS" />.
-
-      Si esta lista se deja vacía, <ph name="PRODUCT_NAME" /> intentará ejecutar las extensiones de forma compatible y no introducirá cambios de <ph name="API" /> en <ph name="PRODUCT_NAME" /> 79, tal y como se explica en <ph name="WEB_REQUEST_API_MANUAL" />.
-
-      Si la lista se configura para que tenga nombres de encabezado de solicitud <ph name="HTTP" />, la comprobación de <ph name="CORS" /> ignorará los encabezados de la lista y habilitará la mitigación en el caso de las extensiones.
-
-      Si no se establece esta lista, no se aplicará ninguna de las dos mitigaciones explicadas arriba.
-
-      Para consultar más información sobre <ph name="CORS" />, visita <ph name="CORS_HELP_URL" />.</translation>
 <translation id="1002439864875515590">Si se asigna una cadena en blanco a esta política o no se configura, <ph name="PRODUCT_OS_NAME" /> no mostrará la opción de autocompletar los datos durante el flujo de inicio de sesión del usuario.
       Si se le asigna una cadena que representa un nombre de dominio, <ph name="PRODUCT_OS_NAME" /> mostrará la opción de autocompletar los datos durante el inicio de sesión del usuario, por lo que el usuario podrá introducir únicamente su nombre de usuario sin la extensión de nombre de dominio.  El usuario podrá sobrescribir esta extensión de nombre de dominio.
       Si el valor de esta política no es un dominio válido, no se aplicará la política.</translation>
@@ -129,9 +120,9 @@
 <translation id="1118093128235245168">Permitir que los sitios web pidan permiso al usuario para acceder a un dispositivo USB conectado</translation>
 <translation id="1123594119609921068">Define el estado predeterminado de la función de accesibilidad de mensajes de voz en la pantalla de inicio de sesión.
 
-          Si se asigna el valor "True" a esta política, se habilitarán los mensajes de voz cuando se muestre la pantalla de inicio de sesión.
+          Si se asigna el valor "true" a esta política, se habilitarán los mensajes de voz cuando se muestre la pantalla de inicio de sesión.
 
-          Si se le asigna el valor "False", se inhabilitarán los mensajes de voz cuando se muestre la pantalla de inicio de sesión.
+          Si se le asigna el valor "false", se inhabilitarán los mensajes de voz cuando se muestre la pantalla de inicio de sesión.
 
           Si asignas un valor a esta política, los usuarios podrán anularlo temporalmente habilitando o inhabilitando los mensajes de voz. Sin embargo, la selección del usuario no se mantendrá y se restablecerá el valor predeterminado cuando se vuelva a mostrar la pantalla de inicio de sesión o cuando el usuario permanezca inactivo en la pantalla de inicio durante un minuto.
 
@@ -418,7 +409,7 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 <translation id="1654087023995670109">Forzar el modo invitados en el navegador</translation>
 <translation id="1655229863189977773">Establecer tamaño de caché de disco en bytes</translation>
 <translation id="166427968280387991">Servidor proxy</translation>
-<translation id="1667071842533245879">Permite crear una lista de patrones de URL donde se especifica qué sitios web no pueden mostrar contenido mixto (es decir, contenido HTTP en sitios web HTTPS) bloqueable (es decir, activo), y para qué contenido mixto opcionalmente bloqueable (es decir, pasivo) se habilitarán las actualizaciones.
+<translation id="1667071842533245879">Permite crear una lista de patrones de URL donde se especifica qué sitios web no pueden mostrar contenido mixto (es decir, contenido HTTP en sitios web HTTPS) bloqueable (es decir, activo), y qué contenido mixto opcionalmente bloqueable (es decir, pasivo) se actualizará.
 
           Si no se establece esta política, el contenido mixto bloqueable se bloqueará y el contenido mixto opcionalmente bloqueable se actualizará, pero los usuarios podrán establecer excepciones para permitir este contenido en sitios web concretos.</translation>
 <translation id="1667877109169174750">Si se asigna el valor "true" a esta política, las opciones de accesibilidad siempre aparecerán en el menú de la bandeja del sistema.
@@ -568,7 +559,7 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 <translation id="186719019195685253">Acción a emprender si se alcanza el retraso de inactividad mientras el dispositivo está conectado a la red eléctrica</translation>
 <translation id="1875371246345730828">Esta política define las URL a las que se otorgará acceso para usar la atestación remota de identidades de dispositivos durante el flujo de SAML en la pantalla de inicio de sesión.
 
-      En concreto, si una URL coincide con uno de los patrones proporcionados a través de esta política, la URL podrá recibir un encabezado HTTP con una respuesta a una prueba de atestación remota, atestando la identidad y el estado del dispositivo.
+      En concreto, si una URL coincide con uno de los patrones proporcionados a través de esta política, la URL podrá recibir un encabezado HTTP con una respuesta a un desafío de atestación remoto, atestando la identidad y el estado del dispositivo.
 
       Si no se define esta política o se le asigna una lista vacía, no se permitirá que ninguna URL use la atestación remota en la pantalla de inicio de sesión.
 
@@ -1551,7 +1542,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 
           Es posible anular la aplicación de esta política en patrones de URL concretos usando las políticas "InsecureContentAllowedForUrls" e "InsecureContentBlockedForUrls".
 
-          Si no se establece esta política, los usuarios podrán añadir excepciones para permitir contenido mixto bloqueable e inhabilitar actualizaciones automáticas de contenido mixto bloqueable opcionalmente.</translation>
+          Si no se establece esta política, los usuarios podrán añadir excepciones para permitir contenido mixto bloqueable y para inhabilitar actualizaciones automáticas de contenido mixto bloqueable opcionalmente.</translation>
 <translation id="3307971460556020865">Bloquear la subida y la descarga de archivos grandes</translation>
 <translation id="3312206664202507568">Habilita una página en chrome://password-change que permite a los usuarios de SAML cambiar sus contraseñas de SAML mientras tienen la sesión iniciada. De esta manera, se asegura que la contraseña de SAML y la contraseña de bloqueo de pantalla del dispositivo estén sincronizadas.
 
@@ -1731,7 +1722,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="356579196325389849">Los usuarios pueden configurar el canal de lanzamiento de Chrome​OS</translation>
 <translation id="3575011234198230041">Autenticación HTTP</translation>
 <translation id="3577251398714997599">Configuración de anuncios de sitios web con anuncios invasivos</translation>
-<translation id="3577628175311752799">Utiliza una política de referencia predeterminada de no-referrer-when-downgrade.</translation>
+<translation id="3577628175311752799">Utiliza una política de referer predeterminada de no-referrer-when-downgrade.</translation>
 <translation id="357917253161699596">Permitir que los usuarios gestionen certificados de usuario</translation>
 <translation id="3583230441447348508">Define una lista de sistemas de archivos compartidos en red preconfigurados.
 
@@ -1959,9 +1950,9 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="3911737181201537215">Esta política no afecta al registro realizado por Android.</translation>
 <translation id="3912092044353890761">Habilita la función de accesibilidad de teclado virtual en la pantalla de inicio de sesión.
 
-          Si se asigna el valor "True" a esta política, siempre se habilitará el teclado virtual en la pantalla de inicio de sesión.
+          Si se asigna el valor "true" a esta política, siempre se habilitará el teclado virtual en la pantalla de inicio de sesión.
 
-          Si se le asigna el valor "False", siempre se inhabilitará el teclado virtual en la pantalla de inicio de sesión.
+          Si se le asigna el valor "false", siempre se inhabilitará el teclado virtual en la pantalla de inicio de sesión.
 
           Si asignas un valor a esta política, los usuarios no podrán cambiarlo ni anularlo.
 
@@ -2144,9 +2135,9 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
           Si no se le asigna ningún valor, se inhabilitarán las teclas persistentes inicialmente, pero los usuarios podrán habilitarlas en cualquier momento.</translation>
 <translation id="4169692397912242417">Habilita la función de accesibilidad de mensajes de voz en la pantalla de inicio de sesión.
 
-          Si se asigna el valor "True" a esta política, siempre se habilitarán los mensajes de voz en la pantalla de inicio de sesión.
+          Si se asigna el valor "true" a esta política, siempre se habilitarán los mensajes de voz en la pantalla de inicio de sesión.
 
-          Si se le asigna el valor "False", siempre se inhabilitarán los mensajes de voz en la pantalla de inicio de sesión.
+          Si se le asigna el valor "false", siempre se inhabilitarán los mensajes de voz en la pantalla de inicio de sesión.
 
           Si asignas un valor a esta política, los usuarios no podrán cambiarlo ni anularlo.
 
@@ -2167,9 +2158,9 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 <translation id="4192388905594723944">URL para validar el token de autenticación de clientes de acceso remoto</translation>
 <translation id="420007931282384740">Define el estado predeterminado de la función de accesibilidad de teclado en pantalla en la pantalla de inicio de sesión.
 
-          Si se asigna el valor "True" a esta política, se habilitará el teclado en pantalla cuando se muestre la pantalla de inicio de sesión.
+          Si se asigna el valor "true" a esta política, se habilitará el teclado en pantalla cuando se muestre la pantalla de inicio de sesión.
 
-          Si se le asigna el valor "False", se inhabilitará el teclado en pantalla cuando se muestre la pantalla de inicio de sesión.
+          Si se le asigna el valor "false", se inhabilitará el teclado en pantalla cuando se muestre la pantalla de inicio de sesión.
 
           Si asignas un valor a esta política, los usuarios podrán anularlo temporalmente habilitando o inhabilitando el teclado en pantalla. Sin embargo, la selección del usuario no se mantendrá y se restablecerá el valor predeterminado cuando se vuelva a mostrar la pantalla de inicio de sesión o cuando el usuario permanezca inactivo en la pantalla de inicio durante un minuto.
 
@@ -2327,15 +2318,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
       Los tipos de datos actuales para esta política son los siguientes: "bookmarks", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs" y "wifiConfiguration". Estos nombres distinguen entre mayúsculas y minúsculas.</translation>
 <translation id="4454820008017317557">Mostrar el icono de la barra de herramientas de <ph name="PRODUCT_NAME" /></translation>
-<translation id="4458977366860064210">Permite usar la implementación antigua de <ph name="CORS" /> en vez de la nueva implementación de <ph name="CORS" />.
-
-      Si se asigna el valor "True" a esta política, se usa la implementación antigua, la cual debería ser compatible con las versiones anteriores.
-
-      Si se le asigna el valor "False", o no se establece, se usa la nueva implementación, lo que podría causar distintos problemas de compatibilidad según la empresa.
-
-      Esta política se eliminará después de dos hitos.
-
-      Para consultar más información sobre <ph name="CORS" />, visita <ph name="CORS_HELP_URL" />.</translation>
 <translation id="4467952432486360968">Bloquear cookies de terceros</translation>
 <translation id="4474167089968829729">Habilitar el almacenamiento de contraseñas en el administrador de contraseñas</translation>
 <translation id="4476769083125004742">Si se asigna el valor <ph name="BLOCK_GEOLOCATION_SETTING" /> a esta política, las aplicaciones para Android no tendrán acceso a la información sobre la ubicación. Si se le asigna cualquier otro valor o no se configura, el usuario tendrá que dar su consentimiento cuando una aplicación para Android quiera acceder a los datos de ubicación.</translation>
@@ -2817,11 +2799,11 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si se le asigna el valor "True" o no se le asigna ninguno, el usuario podrá ejecutar Crostini si los demás ajustes también lo permiten.
       Estas tres políticas (VirtualMachinesAllowed, CrostiniAllowed y DeviceUnaffiliatedCrostiniAllowed) deben tener asignado el valor "True" cuando soliciten permiso para ejecutar Crostini.
       Si se cambia el valor de esta política a "False", esta acción afectará a los nuevos contenedores de Crostini, pero no se cerrarán los contenedores que ya se estén ejecutando.</translation>
-<translation id="5278367296164377827">Esta política de empresa está orientada a una adaptación a corto plazo y se eliminará en la versión M82.
+<translation id="5278367296164377827">Esta política de empresa sirve para una adaptación a corto plazo y se eliminará en la versión M82.
 
-      Se refuerza la política de referencia predeterminada de Chrome a partir de su valor actual de no-referrer-when-downgrade para mejorar la seguridad con strict-origin-when-cross-origin mediante un lanzamiento gradual orientado a la versión estable M80.
+      Se refuerza la política de referer predeterminada de Chrome a partir de su valor actual de no-referrer-when-downgrade para mejorar la seguridad con strict-origin-when-cross-origin mediante un lanzamiento gradual orientado a la versión estable M80.
 
-      Esta política de empresa no tendrá ningún efecto antes del lanzamiento. Después del lanzamiento, cuando se habilite esta política de empresa, a la política de referencia predeterminada de Chrome se le asignará el valor de no-referrer-when-downgrade anterior al de la versión M80.
+      Esta política de empresa no tendrá ningún efecto antes del lanzamiento. Después del lanzamiento, cuando se habilite esta política de empresa, a la política de referer predeterminada de Chrome se le asignará el valor de no-referrer-when-downgrade anterior al de la versión M80.
 
       Esta política de empresa está inhabilitada de forma predeterminada.</translation>
 <translation id="5283457834853986457">Inhabilitar el buscador de complementos (obsoleta)</translation>
@@ -4258,7 +4240,7 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 <translation id="7683777542468165012">Actualización dinámica de política</translation>
 <translation id="7684516445147212248">Al configurar esta política, se habilita o inhabilita la autenticación pasiva para los perfiles de incógnito y de invitado en <ph name="PRODUCT_NAME" />.
 
-      La autenticación pasiva permite realizar la autenticación HTTP con credenciales predeterminadas si no se proporcionan credenciales explícitas a través de estructuras de solicitud-respuesta de NTLM, Kerberos o Negotiate.
+      La autenticación pasiva permite realizar la autenticación HTTP con credenciales predeterminadas si no se proporcionan credenciales explícitas a través de estructuras de desafío-respuesta de NTLM, Kerberos o Negotiate.
 
       Si se establece la opción <ph name="REGULAR_ONLY_OPTION_NAME" /> (valor 0), se permite la autenticación pasiva únicamente en las sesiones normales. Las sesiones de incógnito y de invitado no podrán usar la autenticación pasiva.
 
@@ -4270,7 +4252,7 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 
       Ten en cuenta que la autenticación pasiva siempre está permitida en los perfiles normales.
 
-      Si no se establece esta política, las sesiones de incógnito y de invitado no podrán usar la autenticación pasiva en las versiones futuras de <ph name="PRODUCT_NAME" />, ya que no estarán permitidas.</translation>
+      Si no se establece esta política, las sesiones de incógnito y de invitado no podrán usar la autenticación pasiva en las versiones futuras de <ph name="PRODUCT_NAME" />, ya que este tipo de autenticación no estará permitida.</translation>
 <translation id="7687943045976362719">Si se asigna un valor a esta política, <ph name="PRODUCT_FRAME_NAME" /> gestiona los tipos de contenido especificados.
 
           Si no se asigna ningún valor a esta política, se usará el procesador predeterminado para todos los sitios web. Se puede usar la política <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> para configurar el procesador predeterminado.</translation>
@@ -4342,9 +4324,9 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 <translation id="7841880500990419427">Versión mínima de TLS a la que recurrir</translation>
 <translation id="7842317008224536842">Define el estado predeterminado de la función de accesibilidad de contraste alto en la pantalla de inicio de sesión.
 
-          Si se asigna el valor "True" a esta política, se habilitará el modo de contraste alto cuando se muestre la pantalla de inicio de sesión.
+          Si se asigna el valor "true" a esta política, se habilitará el modo de contraste alto cuando se muestre la pantalla de inicio de sesión.
 
-          Si se le asigna el valor "False", se inhabilitará el modo de contraste alto cuando se muestre la pantalla de inicio de sesión.
+          Si se le asigna el valor "false", se inhabilitará el modo de contraste alto cuando se muestre la pantalla de inicio de sesión.
 
           Si asignas un valor a esta política, los usuarios podrán anularlo temporalmente habilitando o inhabilitando el modo de contraste alto. Sin embargo, la selección del usuario no se mantendrá y se restablecerá el valor predeterminado cuando se vuelva a mostrar la pantalla de inicio de sesión o cuando el usuario permanezca inactivo en la pantalla de inicio durante un minuto.
 
@@ -4359,9 +4341,9 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
       Si no se configura esta opción, se pedirá permiso a los usuarios para ejecutar complementos obsoletos.</translation>
 <translation id="7863947545897944083">Habilita la función de accesibilidad de contraste alto en la pantalla de inicio de sesión.
 
-          Si se asigna el valor "True" a esta política, siempre se habilitará el contraste alto en la pantalla de inicio de sesión.
+          Si se asigna el valor "true" a esta política, siempre se habilitará el contraste alto en la pantalla de inicio de sesión.
 
-          Si se le asigna el valor "False", siempre se inhabilitará el contraste alto en la pantalla de inicio de sesión.
+          Si se le asigna el valor "false", siempre se inhabilitará el contraste alto en la pantalla de inicio de sesión.
 
           Si asignas un valor a esta política, los usuarios no podrán cambiarlo ni anularlo.
 

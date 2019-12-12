@@ -31,30 +31,30 @@
 
 @implementation SyntheticPinchEvent
 
-@synthesize magnification = magnification_;
-@synthesize locationInWindow = locationInWindow_;
-@synthesize type = type_;
-@synthesize phase = phase_;
-@synthesize deltaX = deltaX_;
-@synthesize deltaY = deltaY_;
-@synthesize modifierFlags = modifierFlags_;
-@synthesize timestamp = timestamp_;
+@synthesize magnification = _magnification;
+@synthesize locationInWindow = _locationInWindow;
+@synthesize type = _type;
+@synthesize phase = _phase;
+@synthesize deltaX = _deltaX;
+@synthesize deltaY = _deltaY;
+@synthesize modifierFlags = _modifierFlags;
+@synthesize timestamp = _timestamp;
 
 - (id)initWithMagnification:(float)magnification
            locationInWindow:(NSPoint)location {
   self = [super init];
   if (self) {
-    type_ = NSEventTypeMagnify;
-    phase_ = NSEventPhaseChanged;
-    magnification_ = magnification;
-    locationInWindow_ = location;
+    _type = NSEventTypeMagnify;
+    _phase = NSEventPhaseChanged;
+    _magnification = magnification;
+    _locationInWindow = location;
 
-    deltaX_ = 0;
-    deltaY_ = 0;
-    modifierFlags_ = 0;
+    _deltaX = 0;
+    _deltaY = 0;
+    _modifierFlags = 0;
 
     // Default timestamp to current time.
-    timestamp_ = [[NSDate date] timeIntervalSince1970];
+    _timestamp = [[NSDate date] timeIntervalSince1970];
   }
 
   return self;

@@ -8,14 +8,11 @@ import("//ui/android/features.gni")
 android_library("java") {
   java_files = [
     "java/src/org/chromium/chrome/browser/ui/widget/AlwaysDismissedDialog.java",
-    "java/src/org/chromium/chrome/browser/ui/widget/BoundedLinearLayout.java",
     "java/src/org/chromium/chrome/browser/ui/widget/ClipDrawableProgressBar.java",
     "java/src/org/chromium/chrome/browser/ui/widget/CompositeTouchDelegate.java",
     "java/src/org/chromium/chrome/browser/ui/widget/ContextMenuDialog.java",
-    "java/src/org/chromium/chrome/browser/ui/widget/DualControlLayout.java",
     "java/src/org/chromium/chrome/browser/ui/widget/FadingShadow.java",
     "java/src/org/chromium/chrome/browser/ui/widget/FadingShadowView.java",
-    "java/src/org/chromium/chrome/browser/ui/widget/FadingEdgeScrollView.java",
     "java/src/org/chromium/chrome/browser/ui/widget/LoadingView.java",
     "java/src/org/chromium/chrome/browser/ui/widget/PaddedFrameLayout.java",
     "java/src/org/chromium/chrome/browser/ui/widget/PromoDialog.java",
@@ -53,6 +50,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/ui/widget/listmenu/ListMenuItemProperties.java",
     "java/src/org/chromium/chrome/browser/ui/widget/text/AccessibleTextView.java",
     "java/src/org/chromium/chrome/browser/ui/widget/text/AlertDialogEditText.java",
+    "java/src/org/chromium/chrome/browser/ui/widget/text/TemplatePreservingTextView.java",
     "java/src/org/chromium/chrome/browser/ui/widget/text/TextViewWithCompoundDrawables.java",
     "java/src/org/chromium/chrome/browser/ui/widget/text/VerticallyFixedEditText.java",
     "java/src/org/chromium/chrome/browser/ui/widget/textbubble/ArrowBubbleDrawable.java",
@@ -64,6 +62,7 @@ android_library("java") {
     ":ui_widget_java_resources",
     "//base:base_java",
     "//chrome/browser/util:java",
+    "//components/browser_ui/widget/android:java",
     "//third_party/android_deps:android_support_v4_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:com_android_support_design_java",
@@ -79,6 +78,7 @@ android_resources("ui_widget_java_resources") {
   deps = [
     "//chrome/browser/ui/android/strings:ui_strings_grd",
     "//chrome/browser/ui/android/styles:java_resources",
+    "//components/browser_ui/widget/android:java_resources",
     "//third_party/android_deps:com_android_support_design_java",
     "//ui/android:ui_java_resources",
   ]
@@ -98,12 +98,12 @@ android_library("ui_widget_java_tests") {
   testonly = true
 
   java_files = [
-    "java/src/org/chromium/chrome/browser/ui/widget/DualControlLayoutTest.java",
     "java/src/org/chromium/chrome/browser/ui/widget/PromoDialogTest.java",
     "java/src/org/chromium/chrome/browser/ui/widget/RadioButtonLayoutTest.java",
     "java/src/org/chromium/chrome/browser/ui/widget/RadioButtonWithDescriptionLayoutTest.java",
     "java/src/org/chromium/chrome/browser/ui/widget/highlight/ViewHighlighterTest.java",
     "java/src/org/chromium/chrome/browser/ui/widget/MoreProgressButtonTest.java",
+    "java/src/org/chromium/chrome/browser/ui/widget/WrappingLayoutTest.java",
   ]
   deps = [
     ":java",

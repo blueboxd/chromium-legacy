@@ -408,17 +408,36 @@ void TopControlsSlideControllerChromeOS::SetTopControlsGestureScrollInProgress(
     bool in_progress) {
   is_gesture_scrolling_in_progress_ = in_progress;
 
-  // Gesture scrolling may end before we reach a terminal value (1.f or 0.f) for
-  // the |shown_ratio_|. In this case the render should continue by animating
-  // the top controls towards one side. Therefore we wait for that to happen.
-  if (is_gesture_scrolling_in_progress_ || !is_sliding_in_progress_)
+  if (!IsEnabled())
     return;
 
-  // Also, it may end when we are already at a terminal value of the
-  // |shown_ratio_| (for example user scrolls top-chrome up until it's fully
-  // hidden, keeps their finger down without movement for a bit, and then
-  // releases finger). Calling refresh in this case will take care of ending the
-  // sliding state (if we are in it).
+  if (is_gesture_scrolling_in_progress_) {
+    // Once gesture scrolling starts, the renderer is expected to
+    // SetShownRatio() or at least call back here to reset
+    // |is_gesture_scrolling_in_progress_| back to false. Nothing needs to be
+    // done here.
+    return;
+  }
+
+  // Regardless of the value of |is_sliding_in_progress_|, which may be:
+  // - True:
+  //   * We haven't reached a terminal value (1.f or 0.f) for the
+  //     |shown_ratio_|. In this case the render should continue by animating
+  //     the top controls towards one side. Therefore we wait for that to
+  //     happen.
+  //   * We are already at a terminal value of the |shown_ratio_| but sliding
+  //     hasn't ended, because gesture scrolling hasn't ended (for example user
+  //     scrolls top-chrome up until it's fully hidden, keeps their finger down
+  //     without movement for a bit, and then releases finger).
+  //
+  // - False:
+  //   * In tests, where flings can be very fast that the renderer sets the
+  //     shown ratio from one terminal value to the opposite terminal value
+  //     directly (without fractional values). In this case no sliding happens,
+  //     but we still want to commit the new value of the shown ratio, once
+  //     gesture scrolling ends.
+  //
+  // Calling refresh will take care of the above cases.
   Refresh();
 }
 

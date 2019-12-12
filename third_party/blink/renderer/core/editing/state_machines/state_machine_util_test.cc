@@ -168,4 +168,10 @@ TEST(StateMachineUtilTest, IsGraphmeBreak_IndicSyllabicCategoryVirama) {
   EXPECT_TRUE(IsGraphemeBreak(kTamilVirama, kDevangariKa));
 }
 
+TEST(StateMachineUtilTest, IsGraphmeBreak_ZWNJSequecne) {
+  // U+200C (kZeroWidthNonJoinerCharacter)
+  EXPECT_TRUE(IsGraphemeBreak('a', WTF::unicode::kZeroWidthNonJoinerCharacter));
+  EXPECT_TRUE(IsGraphemeBreak(WTF::unicode::kZeroWidthNonJoinerCharacter, 'a'));
+}
+
 }  // namespace blink

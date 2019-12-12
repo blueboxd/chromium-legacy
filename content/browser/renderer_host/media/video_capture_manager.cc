@@ -343,7 +343,7 @@ void VideoCaptureManager::OnDeviceLaunched(VideoCaptureController* controller) {
     VideoCaptureController* maybe_entry =
         LookupControllerBySessionId(request->first);
     if (maybe_entry && maybe_entry->IsDeviceAlive()) {
-      request->second.Run();
+      std::move(request->second).Run();
       photo_request_queue_.erase(request);
     }
   }
@@ -386,7 +386,7 @@ void VideoCaptureManager::ConnectClient(
     const media::VideoCaptureParams& params,
     VideoCaptureControllerID client_id,
     VideoCaptureControllerEventHandler* client_handler,
-    const DoneCB& done_cb) {
+    DoneCB done_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
                        "VideoCaptureManager::ConnectClient",
@@ -403,7 +403,7 @@ void VideoCaptureManager::ConnectClient(
   VideoCaptureController* controller =
       GetOrCreateController(session_id, params);
   if (!controller) {
-    done_cb.Run(base::WeakPtr<VideoCaptureController>());
+    std::move(done_cb).Run(nullptr);
     return;
   }
 
@@ -419,7 +419,7 @@ void VideoCaptureManager::ConnectClient(
     QueueStartDevice(session_id, controller, params);
   }
   // Run the callback first, as AddClient() may trigger OnFrameInfo().
-  done_cb.Run(controller->GetWeakPtrForIOThread());
+  std::move(done_cb).Run(controller->GetWeakPtrForIOThread());
   controller->AddClient(client_id, client_handler, session_id, params);
 }
 
@@ -655,9 +655,9 @@ void VideoCaptureManager::GetPhotoState(
   }
   // Queue up a request for later.
   photo_request_queue_.emplace_back(
-      session_id,
-      base::Bind(&VideoCaptureController::GetPhotoState,
-                 controller->GetWeakPtrForIOThread(), base::Passed(&callback)));
+      session_id, base::BindOnce(&VideoCaptureController::GetPhotoState,
+                                 controller->GetWeakPtrForIOThread(),
+                                 base::Passed(&callback)));
 }
 
 void VideoCaptureManager::SetPhotoOptions(
@@ -675,9 +675,10 @@ void VideoCaptureManager::SetPhotoOptions(
   }
   // Queue up a request for later.
   photo_request_queue_.emplace_back(
-      session_id, base::Bind(&VideoCaptureController::SetPhotoOptions,
-                             controller->GetWeakPtrForIOThread(),
-                             base::Passed(&settings), base::Passed(&callback)));
+      session_id,
+      base::BindOnce(&VideoCaptureController::SetPhotoOptions,
+                     controller->GetWeakPtrForIOThread(),
+                     base::Passed(&settings), base::Passed(&callback)));
 }
 
 void VideoCaptureManager::TakePhoto(
@@ -700,9 +701,9 @@ void VideoCaptureManager::TakePhoto(
                        "VideoCaptureManager::TakePhoto enqueuing request",
                        TRACE_EVENT_SCOPE_PROCESS);
   photo_request_queue_.emplace_back(
-      session_id,
-      base::Bind(&VideoCaptureController::TakePhoto,
-                 controller->GetWeakPtrForIOThread(), base::Passed(&callback)));
+      session_id, base::BindOnce(&VideoCaptureController::TakePhoto,
+                                 controller->GetWeakPtrForIOThread(),
+                                 base::Passed(&callback)));
 }
 
 void VideoCaptureManager::OnOpened(
@@ -788,11 +789,10 @@ void VideoCaptureManager::DestroyControllerIfNoClients(
         });
     controllers_.erase(controller_iter);
     // Check if there are any associated pending callbacks and delete them.
-    photo_request_queue_.remove_if(
-        [capture_session_id](
-            const std::pair<base::UnguessableToken, base::Closure>& request) {
-          return request.first == capture_session_id;
-        });
+    base::EraseIf(photo_request_queue_,
+                  [capture_session_id](const auto& request) {
+                    return request.first == capture_session_id;
+                  });
   }
 }
 

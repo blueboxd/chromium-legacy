@@ -94,8 +94,9 @@ FrameHeader* FrameHeader::Get(views::Widget* widget) {
 }
 
 FrameHeader::~FrameHeader() {
-  if (target_widget_->GetNativeView())
-    target_widget_->GetNativeView()->ClearProperty(kFrameHeaderKey);
+  auto* target_window = target_widget_->GetNativeView();
+  if (target_window && target_window->GetProperty(kFrameHeaderKey) == this)
+    target_window->ClearProperty(kFrameHeaderKey);
 }
 
 int FrameHeader::GetMinimumHeaderWidth() const {
@@ -212,6 +213,10 @@ FrameHeader::FrameHeader(views::Widget* target_widget, views::View* view)
       view_(view) {
   DCHECK(target_widget);
   DCHECK(view);
+  UpdateFrameHeaderKey();
+}
+
+void FrameHeader::UpdateFrameHeaderKey() {
   target_widget_->GetNativeView()->SetProperty(kFrameHeaderKey, this);
 }
 

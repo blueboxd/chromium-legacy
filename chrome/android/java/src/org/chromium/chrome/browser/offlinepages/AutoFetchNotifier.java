@@ -122,7 +122,7 @@ public class AutoFetchNotifier {
                     .putInt(PREF_USER_CANCEL_ACTION_IN_PROGRESS, action)
                     .apply();
             // This will call us back with cancellationComplete().
-            ChromeBrowserInitializer.getInstance(context).runNowOrAfterNativeInitialization(
+            ChromeBrowserInitializer.getInstance().runNowOrAfterNativeInitialization(
                     AutoFetchNotifier::cancelInProgress);
             // Finally, whether chrome is running or not, remove the notification.
             closeInProgressNotification();
@@ -133,7 +133,6 @@ public class AutoFetchNotifier {
     @CalledByNative
     private static void updateInProgressNotificationCountIfShowing(int inProgressCount) {
         if (inProgressCount == 0) {
-            Context context = ContextUtils.getApplicationContext();
             // Note: we're not fully trusting the result of isShowingInProgressNotification(). It's
             // possible that the prefs-based value is out of sync with the system notification, in
             // which case we still try to remove the notification even if we think it's not there.
@@ -278,7 +277,6 @@ public class AutoFetchNotifier {
     @CalledByNative
     private static void showCompleteNotification(
             String pageTitle, String originalUrl, String finalUrl, int tabId, long offlineId) {
-        Context context = ContextUtils.getApplicationContext();
         OfflinePageUtils.getLoadUrlParamsForOpeningOfflineVersion(
                 finalUrl, offlineId, LaunchLocation.NOTIFICATION, (params) -> {
                     showCompleteNotificationWithParams(

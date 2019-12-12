@@ -22,6 +22,7 @@
 #include "base/strings/string16.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "components/services/storage/indexed_db/scopes/leveldb_scopes_factory.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_data_loss_info.h"
@@ -48,7 +49,9 @@ class IndexedDBContextImpl;
 class IndexedDBFactoryImpl;
 class IndexedDBOriginState;
 
-class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
+class CONTENT_EXPORT IndexedDBFactoryImpl
+    : public IndexedDBFactory,
+      base::trace_event::MemoryDumpProvider {
  public:
   IndexedDBFactoryImpl(IndexedDBContextImpl* context,
                        IndexedDBClassFactory* indexed_db_class_factory,
@@ -207,6 +210,9 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
                       const base::string16& name) const;
   bool IsBackingStoreOpen(const url::Origin& origin) const;
   bool IsBackingStorePendingClose(const url::Origin& origin) const;
+
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
   SEQUENCE_CHECKER(sequence_checker_);
   // Raw pointer is safe because IndexedDBContextImpl owns this object.

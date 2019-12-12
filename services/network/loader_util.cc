@@ -19,7 +19,6 @@
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/http_raw_request_response_info.h"
 #include "services/network/public/cpp/network_switches.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/http_raw_request_response_info.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"

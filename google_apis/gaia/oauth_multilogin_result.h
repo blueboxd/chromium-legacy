@@ -13,7 +13,6 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
-#include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
 // Values for the 'status' field of multilogin responses. Used for UMA logging,

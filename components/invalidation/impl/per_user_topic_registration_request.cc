@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "net/http/http_status_code.h"
@@ -59,13 +58,13 @@ void RecordRequestStatus(
     int response_code = 200) {
   switch (type) {
     case syncer::PerUserTopicRegistrationRequest::SUBSCRIBE: {
-      UMA_HISTOGRAM_ENUMERATION("FCMInvalidations.SubscriptionRequestStatus",
-                                status);
+      base::UmaHistogramEnumeration(
+          "FCMInvalidations.SubscriptionRequestStatus", status);
       break;
     }
     case syncer::PerUserTopicRegistrationRequest::UNSUBSCRIBE: {
-      UMA_HISTOGRAM_ENUMERATION("FCMInvalidations.UnsubscriptionRequestStatus",
-                                status);
+      base::UmaHistogramEnumeration(
+          "FCMInvalidations.UnsubscriptionRequestStatus", status);
       break;
     }
   }

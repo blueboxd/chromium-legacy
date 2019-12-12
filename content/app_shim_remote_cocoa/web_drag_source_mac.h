@@ -33,36 +33,36 @@ CONTENT_EXPORT
  @private
   // The host through which to communicate with the WebContentsImpl. Owns
   // |self| and resets |host_| via clearHostAndWebContentsView.
-  remote_cocoa::mojom::WebContentsNSViewHost* host_;
+  remote_cocoa::mojom::WebContentsNSViewHost* _host;
 
   // The view from which the drag was initiated. Weak reference.
   // An instance of this class may outlive |contentsView_|. The destructor of
   // |contentsView_| must set this ivar to |nullptr|.
-  NSView* contentsView_;
+  NSView* _contentsView;
 
   // Our drop data. Should only be initialized once.
-  std::unique_ptr<content::DropData> dropData_;
+  std::unique_ptr<content::DropData> _dropData;
 
   // The image to show as drag image. Can be nil.
-  base::scoped_nsobject<NSImage> dragImage_;
+  base::scoped_nsobject<NSImage> _dragImage;
 
   // The offset to draw |dragImage_| at.
-  NSPoint imageOffset_;
+  NSPoint _imageOffset;
 
   // Our pasteboard.
-  base::scoped_nsobject<NSPasteboard> pasteboard_;
+  base::scoped_nsobject<NSPasteboard> _pasteboard;
 
   // A mask of the allowed drag operations.
-  NSDragOperation dragOperationMask_;
+  NSDragOperation _dragOperationMask;
 
   // The file name to be saved to for a drag-out download.
-  base::FilePath downloadFileName_;
+  base::FilePath _downloadFileName;
 
   // The URL to download from for a drag-out download.
-  GURL downloadURL_;
+  GURL _downloadURL;
 
   // The file UTI associated with the file drag, if any.
-  base::ScopedCFTypeRef<CFStringRef> fileUTI_;
+  base::ScopedCFTypeRef<CFStringRef> _fileUTI;
 }
 
 // Initialize a WebDragSource object for a drag (originating on the given

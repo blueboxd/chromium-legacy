@@ -22,7 +22,7 @@
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/ios/device_accounts_provider.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
-#include "net/url_request/url_request_status.h"
+#include "net/base/net_errors.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -59,8 +59,7 @@ GoogleServiceAuthError GetGoogleServiceAuthErrorFromNSError(
           GoogleServiceAuthError::SERVICE_UNAVAILABLE);
     case kAuthenticationErrorCategoryNetworkServerErrors:
       // Just set the connection error state to FAILED.
-      return GoogleServiceAuthError::FromConnectionError(
-          net::URLRequestStatus::FAILED);
+      return GoogleServiceAuthError::FromConnectionError(net::ERR_FAILED);
     case kAuthenticationErrorCategoryUserCancellationErrors:
       return GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED);
     case kAuthenticationErrorCategoryUnknownIdentityErrors:

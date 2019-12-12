@@ -18,6 +18,7 @@
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/base/client_tag_hash.h"
+#include "components/sync/base/hash_util.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
 #include "components/sync/base/unique_position.h"
@@ -28,6 +29,26 @@
 #include "components/sync/protocol/proto_memory_estimations.h"
 
 namespace syncer {
+
+namespace {
+
+void AdaptClientTagForWalletData(syncer::EntityData* data) {
+  // Server does not send any client tags for wallet data entities. This code
+  // manually asks the bridge to create the client tags for each entity, so that
+  // we can use ClientTagBasedModelTypeProcessor for WALLET_DATA.
+  if (data->parent_id == "0") {
+    // Ignore the permanent root node as that one should have no client tag
+    // hash.
+    return;
+  }
+  DCHECK(!data->specifics.has_encrypted());
+  DCHECK(data->specifics.has_autofill_wallet());
+  data->client_tag_hash = ClientTagHash::FromUnhashed(
+      AUTOFILL_WALLET_DATA, GetUnhashedClientTagFromAutofillWalletSpecifics(
+                                data->specifics.autofill_wallet()));
+}
+
+}  // namespace
 
 ModelTypeWorker::ModelTypeWorker(
     ModelType type,
@@ -261,8 +282,9 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
     AdaptTitleForBookmark(update_entity, &data->specifics,
                           specifics_were_encrypted);
     AdaptGuidForBookmark(update_entity, &data->specifics);
+  } else if (model_type == AUTOFILL_WALLET_DATA) {
+    AdaptClientTagForWalletData(data.get());
   }
-  // TODO(crbug.com/881289): Generate client tag hash for wallet data.
 
   response_data->entity = std::move(data);
   return SUCCESS;

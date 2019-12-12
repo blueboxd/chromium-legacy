@@ -38,12 +38,6 @@ class OOPBrowserTest : public ContentBrowserTest {
     command_line->AppendSwitch(switches::kUseGpuInTests);
   }
 
-  void VerifyVisualStateUpdated(const base::Closure& done_cb,
-                                bool visual_state_updated) {
-    ASSERT_TRUE(visual_state_updated);
-    done_cb.Run();
-  }
-
   SkBitmap snapshot_;
 };
 

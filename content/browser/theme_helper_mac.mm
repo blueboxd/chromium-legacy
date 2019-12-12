@@ -158,7 +158,7 @@ SkColor MenuBackgroundColor() {
 } // namespace
 
 @interface SystemThemeObserver : NSObject {
-  base::RepeatingClosure colorsChangedCallback_;
+  base::RepeatingClosure _colorsChangedCallback;
 }
 
 - (instancetype)initWithColorsChangedCallback:
@@ -177,7 +177,7 @@ SkColor MenuBackgroundColor() {
     return nil;
   }
 
-  colorsChangedCallback_ = std::move(colorsChangedCallback);
+  _colorsChangedCallback = std::move(colorsChangedCallback);
 
   NSDistributedNotificationCenter* distributedCenter =
       [NSDistributedNotificationCenter defaultCenter];
@@ -248,7 +248,7 @@ SkColor MenuBackgroundColor() {
 }
 
 - (void)systemColorsChanged:(NSNotification*)notification {
-  colorsChangedCallback_.Run();
+  _colorsChangedCallback.Run();
 
   for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd();

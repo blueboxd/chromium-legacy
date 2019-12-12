@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/autofill/payments/local_card_migration_bubble.h"
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_view.h"
 #include "chrome/browser/ui/autofill/payments/save_card_ui.h"
+#include "chrome/browser/ui/autofill/payments/save_upi_bubble.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/views/autofill/payments/local_card_migration_bubble_views.h"
 #include "chrome/browser/ui/views/autofill/payments/local_card_migration_icon_view.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/ui/views/autofill/payments/save_card_manage_cards_bubble_views.h"
 #include "chrome/browser/ui/views/autofill/payments/save_card_offer_bubble_views.h"
 #include "chrome/browser/ui/views/autofill/payments/save_card_sign_in_promo_bubble_views.h"
+#include "chrome/browser/ui/views/autofill/payments/save_upi_offer_bubble_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
@@ -132,6 +134,18 @@ AutofillBubbleHandlerImpl::ShowLocalCardMigrationBubble(
   views::BubbleDialogDelegateView::CreateBubble(bubble);
   bubble->Show(is_user_gesture ? LocalCardMigrationBubbleViews::USER_GESTURE
                                : LocalCardMigrationBubbleViews::AUTOMATIC);
+  return bubble;
+}
+
+SaveUPIBubble* AutofillBubbleHandlerImpl::ShowSaveUPIBubble(
+    content::WebContents* web_contents,
+    SaveUPIBubbleController* controller) {
+  views::View* anchor_view =
+      toolbar_button_provider_->GetAnchorView(PageActionIconType::kSaveCard);
+  SaveUPIOfferBubbleViews* bubble =
+      new SaveUPIOfferBubbleViews(anchor_view, web_contents, controller);
+  views::BubbleDialogDelegateView::CreateBubble(bubble);
+  bubble->Show();
   return bubble;
 }
 

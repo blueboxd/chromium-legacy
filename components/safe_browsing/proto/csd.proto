@@ -165,7 +165,13 @@ message ClientMalwareRequest {
 
   message UrlInfo {
     required string ip = 1;
+
+    // The final URL for the request (final = after redirects).
+    //
+    // Only the origin portion of the URL is present.  The full URL is not
+    // available, because of https://crbug.com/973885.
     required string url = 2;
+
     optional string method = 3;
     optional string referrer = 4;
     // Resource type, the int value is a direct cast from the Type enum

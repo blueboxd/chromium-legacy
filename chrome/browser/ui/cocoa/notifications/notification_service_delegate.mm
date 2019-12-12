@@ -17,17 +17,17 @@
 @implementation ServiceDelegate {
   // Helper to manage the XPC transaction reference count with respect to
   // still-visible notifications.
-  base::scoped_nsobject<XPCTransactionHandler> transactionHandler_;
+  base::scoped_nsobject<XPCTransactionHandler> _transactionHandler;
 
   // Client connection accepted from the browser process, to which messages
   // are sent in response to notification actions.
-  base::scoped_nsobject<NSXPCConnection> connection_;
+  base::scoped_nsobject<NSXPCConnection> _connection;
 }
 
 - (instancetype)init {
   if ((self = [super init])) {
     [[NSUserNotificationCenter defaultUserNotificationCenter] setDelegate:self];
-    transactionHandler_.reset([[XPCTransactionHandler alloc] init]);
+    _transactionHandler.reset([[XPCTransactionHandler alloc] init]);
   }
   return self;
 }
@@ -52,11 +52,11 @@
 
   base::scoped_nsobject<AlertNotificationService> object(
       [[AlertNotificationService alloc]
-          initWithTransactionHandler:transactionHandler_]);
+          initWithTransactionHandler:_transactionHandler]);
   newConnection.exportedObject = object.get();
   newConnection.remoteObjectInterface =
       [NSXPCInterface interfaceWithProtocol:@protocol(NotificationReply)];
-  connection_.reset(newConnection, base::scoped_policy::RETAIN);
+  _connection.reset(newConnection, base::scoped_policy::RETAIN);
   [newConnection resume];
 
   return YES;
@@ -67,7 +67,7 @@
        didActivateNotification:(NSUserNotification*)notification {
   NSDictionary* response =
       [NotificationResponseBuilder buildActivatedDictionary:notification];
-  [[connection_ remoteObjectProxy] notificationClick:response];
+  [[_connection remoteObjectProxy] notificationClick:response];
 }
 
 // _NSUserNotificationCenterDelegatePrivate:
@@ -75,8 +75,8 @@
                didDismissAlert:(NSUserNotification*)notification {
   NSDictionary* response =
       [NotificationResponseBuilder buildDismissedDictionary:notification];
-  [[connection_ remoteObjectProxy] notificationClick:response];
-  [transactionHandler_ closeTransactionIfNeeded];
+  [[_connection remoteObjectProxy] notificationClick:response];
+  [_transactionHandler closeTransactionIfNeeded];
 }
 
 // _NSUserNotificationCenterDelegatePrivate:
@@ -85,9 +85,9 @@
   for (NSUserNotification* notification in notifications) {
     NSDictionary* response =
         [NotificationResponseBuilder buildDismissedDictionary:notification];
-    [[connection_ remoteObjectProxy] notificationClick:response];
+    [[_connection remoteObjectProxy] notificationClick:response];
   }
-  [transactionHandler_ closeTransactionIfNeeded];
+  [_transactionHandler closeTransactionIfNeeded];
 }
 
 @end

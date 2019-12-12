@@ -103,10 +103,10 @@ PageRequestSummary::PageRequestSummary(const PageRequestSummary& other) =
 void PageRequestSummary::UpdateOrAddToOrigins(
     const content::mojom::ResourceLoadInfo& resource_load_info) {
   for (const auto& redirect_info : resource_load_info.redirect_info_chain) {
-    UpdateOrAddToOrigins(url::Origin::Create(redirect_info->url),
+    UpdateOrAddToOrigins(redirect_info->origin_of_new_url,
                          redirect_info->network_info);
   }
-  UpdateOrAddToOrigins(url::Origin::Create(resource_load_info.url),
+  UpdateOrAddToOrigins(resource_load_info.origin_of_final_url,
                        resource_load_info.network_info);
 }
 
@@ -235,7 +235,7 @@ void LoadingDataCollector::RecordFirstContentfulPaint(
 bool LoadingDataCollector::ShouldRecordResourceLoad(
     const NavigationID& navigation_id,
     const content::mojom::ResourceLoadInfo& resource_load_info) const {
-  const GURL& url = resource_load_info.url;
+  const GURL& url = resource_load_info.origin_of_final_url.GetURL();
   if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS())
     return false;
 

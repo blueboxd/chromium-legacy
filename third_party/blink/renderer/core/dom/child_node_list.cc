@@ -23,7 +23,6 @@
 
 #include "third_party/blink/renderer/core/dom/child_node_list.h"
 
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_rare_data.h"
 
@@ -38,10 +37,7 @@ Node* ChildNodeList::VirtualOwnerNode() const {
 ChildNodeList::~ChildNodeList() = default;
 
 Node* ChildNodeList::item(unsigned index) const {
-  Node* node = collection_index_cache_.NodeAt(*this, index);
-  if (node && node->GetDocument().InDOMNodeRemovedHandler())
-    node->GetDocument().CountDetachingNodeAccessInDOMNodeRemovedHandler();
-  return node;
+  return collection_index_cache_.NodeAt(*this, index);
 }
 
 void ChildNodeList::ChildrenChanged(

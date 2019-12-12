@@ -37,21 +37,23 @@ bool ConvertAnimationEffects(
   // Currently we only support KeyframeEffect.
   if (effects.IsAnimationEffect()) {
     auto* const effect = effects.GetAsAnimationEffect();
-    if (!effect->IsKeyframeEffect()) {
+    auto* key_frame = DynamicTo<KeyframeEffect>(effect);
+    if (!key_frame) {
       error_string = "Effect must be a KeyframeEffect object";
       return false;
     }
-    keyframe_effects.push_back(ToKeyframeEffect(effect));
+    keyframe_effects.push_back(key_frame);
   } else {
     const HeapVector<Member<AnimationEffect>>& effect_sequence =
         effects.GetAsAnimationEffectSequence();
     keyframe_effects.ReserveInitialCapacity(effect_sequence.size());
     for (const auto& effect : effect_sequence) {
-      if (!effect->IsKeyframeEffect()) {
+      auto* key_frame = DynamicTo<KeyframeEffect>(*effect);
+      if (!key_frame) {
         error_string = "Effects must all be KeyframeEffect objects";
         return false;
       }
-      keyframe_effects.push_back(ToKeyframeEffect(effect));
+      keyframe_effects.push_back(key_frame);
     }
   }
 
@@ -573,7 +575,7 @@ bool WorkletAnimation::CanStartOnCompositor() {
   // If the scroll source is not composited, fall back to main thread.
   if (timeline_->IsScrollTimeline() &&
       !CheckElementComposited(
-          *ToScrollTimeline(timeline_)->ResolvedScrollSource())) {
+          *To<ScrollTimeline>(*timeline_).ResolvedScrollSource())) {
     return false;
   }
 
@@ -644,7 +646,7 @@ bool WorkletAnimation::UpdateOnCompositor() {
   }
 
   if (timeline_->IsScrollTimeline()) {
-    Node* scroll_source = ToScrollTimeline(timeline_)->ResolvedScrollSource();
+    Node* scroll_source = To<ScrollTimeline>(*timeline_).ResolvedScrollSource();
     LayoutBox* box = scroll_source ? scroll_source->GetLayoutBox() : nullptr;
 
     base::Optional<double> start_scroll_offset;
@@ -652,14 +654,15 @@ bool WorkletAnimation::UpdateOnCompositor() {
     if (box) {
       double current_offset;
       double max_offset;
-      ToScrollTimeline(timeline_)->GetCurrentAndMaxOffset(box, current_offset,
-                                                          max_offset);
+      To<ScrollTimeline>(*timeline_)
+          .GetCurrentAndMaxOffset(box, current_offset, max_offset);
 
       double resolved_start_scroll_offset = 0;
       double resolved_end_scroll_offset = max_offset;
-      ToScrollTimeline(timeline_)->ResolveScrollStartAndEnd(
-          box, max_offset, resolved_start_scroll_offset,
-          resolved_end_scroll_offset);
+      To<ScrollTimeline>(*timeline_)
+          .ResolveScrollStartAndEnd(box, max_offset,
+                                    resolved_start_scroll_offset,
+                                    resolved_end_scroll_offset);
       start_scroll_offset = resolved_start_scroll_offset;
       end_scroll_offset = resolved_end_scroll_offset;
     }

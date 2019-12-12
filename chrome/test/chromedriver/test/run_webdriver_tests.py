@@ -267,7 +267,7 @@ if __name__ == '__main__':
   path_finder = PathFinder(host.filesystem)
 
   # Starts WPT Serve to serve the WPT WebDriver test content.
-  port.start_wptserve()
+  port.start_wptserve(output_dir=output_dir)
 
   # WebDriverExpectations stores skipped and failed WebDriver tests.
   expectations = parse_webdriver_expectations(host, port)

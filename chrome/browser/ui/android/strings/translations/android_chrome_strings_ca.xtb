@@ -232,7 +232,7 @@
 <translation id="2650751991977523696">Vols tornar a baixar el fitxer?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# fitxer d'àudio}other{# fitxers d'àudio}}</translation>
 <translation id="2653659639078652383">Envia</translation>
-<translation id="2669093958999339774">Impedeix que les sol·licituds de notificacions t'interrompin i substitueix-les per un missatge més silenciós</translation>
+<translation id="2669093958999339774">Bloqueja les sol·licituds de notificacions per evitar interrupcions i utilitza un missatge més silenciós</translation>
 <translation id="2677748264148917807">Surt</translation>
 <translation id="2704606927547763573">Copiada</translation>
 <translation id="2707726405694321444">Actualitza la pàgina</translation>

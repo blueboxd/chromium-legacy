@@ -71,15 +71,17 @@
         initWithDelegate:self
            presentsModal:self.hasBadge
                     type:self.infobarBannerType];
-    self.bannerViewController.titleText = base::SysUTF16ToNSString(
+    NSString* titleText = base::SysUTF16ToNSString(
         self.passwordInfoBarDelegate->GetMessageText());
+    self.bannerViewController.titleText = titleText;
     NSString* username = self.passwordInfoBarDelegate->GetUserNameText();
     NSString* password = self.passwordInfoBarDelegate->GetPasswordText();
     password = [@"" stringByPaddingToLength:[password length]
                                  withString:@"•"
                             startingAtIndex:0];
-    self.bannerViewController.subTitleText =
-        [NSString stringWithFormat:@"%@ %@", username, password];
+    [self.bannerViewController
+        setSubtitleText:[NSString
+                            stringWithFormat:@"%@ %@", username, password]];
     self.bannerViewController.buttonText =
         base::SysUTF16ToNSString(self.passwordInfoBarDelegate->GetButtonLabel(
             ConfirmInfoBarDelegate::BUTTON_OK));
@@ -87,9 +89,11 @@
         [UIImage imageNamed:@"infobar_passwords_icon"];
     NSString* hiddenPasswordText =
         l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_HIDDEN_LABEL);
-    self.bannerViewController.optionalAccessibilityLabel = [NSString
-        stringWithFormat:@"%@,%@, %@", self.bannerViewController.titleText,
-                         username, hiddenPasswordText];
+    [self.bannerViewController
+        setBannerAccessibilityLabel:[NSString
+                                        stringWithFormat:@"%@,%@, %@",
+                                                         titleText, username,
+                                                         hiddenPasswordText]];
   }
 }
 

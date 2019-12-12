@@ -192,8 +192,6 @@ crbug.com/730267 virtual/gpu-rasterization/images/yuv-decode-eligible/color-prof
 crbug.com/730267 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-layer.html [ Pass Timeout Failure ]
 crbug.com/730267 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-layer-filter.html [ Pass Timeout Failure ]
 
-crbug.com/1022460 [ Win ] storage/indexeddb/key-type-array.html [ Pass Crash ]
-
 # Flaky virtual/threaded/fast/scrolling tests
 crbug.com/841567 virtual/threaded-prefer-compositing/fast/scrolling/absolute-position-behind-scrollbar.html [ Failure Pass ]
 crbug.com/841567 virtual/threaded-prefer-compositing/fast/scrolling/fixed-position-behind-scrollbar.html [ Failure Pass ]
@@ -1800,8 +1798,6 @@ crbug.com/652536 virtual/mouseevent_fractional/fast/events/mouse-cursor-change-a
 crbug.com/520188 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass ]
 crbug.com/520611 [ Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Failure Pass ]
 crbug.com/520194 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
-
-crbug.com/771233 [ Win10 ] http/tests/devtools/audits/ [ Skip ]
 
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]
@@ -4158,6 +4154,92 @@ crbug.com/789139 http/tests/devtools/sources/debugger/live-edit-no-reveal.js [ F
 
 # ====== Begin web-components-v0-disabled virtual suite tests ======
 
+# Ignore these - they are tests of the disabled features. Eventually remove these.
+crbug.com/937746 virtual/web-components-v0-disabled/fast/html/imports [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/custom/callback-context.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/custom/crash-without-dom-wrapper.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/custom/created-callback.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/custom/document-register-on-create-callback.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/custom/imports-custom-element-abort.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/custom/registration-context-delete-during-attribute-changed.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/custom/registration-context-delete-during-callback-recursion.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/custom/registration-context-delete-during-upgrade.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/custom/registration-context-sharing.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/access-document-of-detached-stylesheetlist-crash.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-after-style.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-element-in-media-element.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-element-in-meter-element.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-element-in-progress-element.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-element-in-select-element.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-element-move.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-element-select-dynamic.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-pseudo-element-dynamic-attribute-change.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-reprojection-dynamic.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/distribution-attribute-modified.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/distribution-className-modified.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/distribution-id-modified.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/distribution-update-fonts-load.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/form-in-shadow.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/no-style-sharing-with-uncommon-attribute-and-pseudo-content.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/no-style-sharing-with-uncommon-attribute-nodes.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/reprojection-attribute-modified.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/reprojection-className-modified.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/reprojection-id-modified.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadow-contents-fallback-dynamic.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadow-dynamic-style-change-via-mutation-and-selector.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadow-element-rendering-single.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadowhost-keyframes.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadowroot-keyframes.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/transition-on-shadow-host-createshadowroot.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/transition-on-shadow-host-with-distributed-node.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/forms/fieldset/fieldset-adoptnode-crash.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/forms/fieldset/fieldset-shadowdom-crash.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/gc-treescope.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/StyleSheet/css-insert-import-rule-to-shadow-stylesheets.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-pseudo-element-dynamic-class.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/gesture-tapHighlight-shadow-tree.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/import-rule-in-shadow-tree-needs-document-style-recalc.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/scrollbar.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadow-contents-select.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadow-insertion-point-rendering.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/style-sharing-with-content-and-host.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/svg-style-in-shadow-tree.xhtml [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/text-node-in-shadow.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/custom/lifecycle-created-parser-only.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-element-fallback-display-none-dynamic.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-element-outside-shadow-style.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-element-select-namespace.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-pseudo-element-match-all.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-pseudo-element-match-descendant.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-pseudo-element-nested.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-pseudo-element-relative-selector.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-pseudo-element-reprojection.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-pseudo-element-specifiers-in-left-side.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-pseudo-element-support-selector.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-pseudo-element-used-in-selector-list.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-pseudo-element-with-any.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-pseudo-element.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-reprojection-complex.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-reprojection-fallback-reprojection.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-reprojection-fallback.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-reprojection-shadow.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-whitespace-attach.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/custom-pseudo-scope.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/dynamically-created-shadow-root.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/new-fallback.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/no-style-sharing-with-distributed-nodes.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadow-content-crash.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadow-on-image.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadowdom-for-button-complex-shadow.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadowdom-for-button-without-shadow.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadowdom-reprojection-1.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadowdom-reprojection-2.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadowroot-of-insertionpoint.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/table-border.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/fast/forms/datalist/datalist-inside-shadow-dom.html [ Skip ]
+crbug.com/937746 virtual/web-components-v0-disabled/shadow-dom/v0/v0-added-after-v1-and-slotted.html [ Skip ]
+
+
 # == These fail with or without the WCv0 features disabled, and most/all already
 # == exist somewhere else in this file, outside the virtual suite.
 crbug.com/937746 virtual/web-components-v0-disabled/dom/legacy_dom_conformance/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Skip ]
@@ -5804,6 +5886,7 @@ crbug.com/626703 external/wpt/css/css-paint-api/custom-property-animation-on-mai
 crbug.com/919204 external/wpt/scroll-to-text-fragment/scroll-to-text-fragment.html [ Skip ]
 crbug.com/919204 external/wpt/scroll-to-text-fragment/scroll-to-text-fragment-same-doc.html [ Skip ]
 crbug.com/919204 external/wpt/scroll-to-text-fragment/scroll-to-text-fragment-api.html [ Skip ]
+crbug.com/919204 external/wpt/scroll-to-text-fragment/scroll-to-text-fragment-security.html [ Skip ]
 
 crbug.com/999209 virtual/lazyload-image/http/tests/lazyload/style-dimension.html [ Timeout ]
 
@@ -5961,13 +6044,6 @@ crbug.com/1024976 virtual/audio-service/media/video-no-audio.html [ Pass Failure
 # Sheriff 2019-10-31
 crbug.com/1020036 [ Debug ] external/wpt/lifecycle/freeze.html [ Failure Pass ]
 
-# Temporarily disabled for landing datagrid Changes in devtools
-crbug.com/963183 http/tests/devtools/network/network-close-request-view.js [ Pass Failure ]
-crbug.com/963183 http/tests/devtools/network/network-cookies-pane.js [ Pass Timeout Failure ]
-crbug.com/963183 http/tests/devtools/network/preview-searchable.js [ Pass Failure ]
-crbug.com/963183 http/tests/devtools/network/waterfall-header-height-updates.js [ Pass Failure ]
-crbug.com/963183 http/tests/devtools/network/network-search.js [ Pass Timeout Failure ]
-
 # Temporarily disabled for landing productregistry removal in devtools
 crbug.com/1011466 http/tests/devtools/console/console-format-classes.js [ Pass Failure ]
 crbug.com/1011466 http/tests/devtools/modules-load-initial.js [ Pass Failure ]
@@ -5996,8 +6072,6 @@ crbug.com/1025944 [ Linux ] external/wpt/pointerevents/pointerlock/pointerevent_
 # Timeout media preload test until preloading media destinations gets enabled.
 crbug.com/977033 http/tests/priorities/resource-load-priorities-media-preload.html [ Timeout ]
 
-crbug.com/1016815 external/wpt/longtask-timing/buffered-flag.window.html [ Failure ]
-
 # Sheriff 2019-11-21
 crbug.com/1027287 css3/filters/effect-reference-image-lazy-attach.html [ Pass Failure ]
 
@@ -6008,7 +6082,6 @@ crbug.com/1015187 virtual/cross-origin-isolation/external/wpt/html/cross-origin-
 crbug.com/1015187 [ Linux Mac ] external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure Timeout ]
 
 # Sheriff 2019-11-29
-crbug.com/1027436 [ Mac ] inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.js [ Pass Timeout ]
 crbug.com/1019079 virtual/gpu/fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Pass Failure ]
 crbug.com/1019079 fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Pass Failure ]
 crbug.com/1027435 [ Mac ] external/wpt/html/cross-origin-opener-policy/popup-none.https.html [ Pass Timeout ]
@@ -6069,19 +6142,20 @@ crbug.com/878878 virtual/threaded/fast/scroll-snap/snap-scrolls-visual-viewport.
 # Sheriff 2019-12-10
 crbug.com/1032451 virtual/threaded-no-composited-antialiasing/animations/stability/animation-iteration-event-destroy-renderer.html [ Pass Timeout ]
 
-# Temporarily disabled for landing security button fixes change in devtools
-crbug.com/963183 http/tests/devtools/security/origin-view-ct-compliance.js [ Pass Failure ]
-crbug.com/963183 http/tests/devtools/security/security-details-updated-with-security-state.js [ Pass Failure ]
-crbug.com/963183 http/tests/devtools/security/security-explanation-ordering.js [ Pass Failure ]
-
 # Temporarily disabled to land DOM breakpoint changes in DevTools
 crbug.com/963183 http/tests/devtools/sources/debugger-breakpoints/dom-breakpoints.js [ Pass Failure ]
 crbug.com/963183 http/tests/devtools/a11y-axe-core/sources/dom-breakpoints-pane-a11y-test.js [ Pass Failure ]
 
-# Temporarily disabled for landing frontend security sidepanel changes in DevTools
-crbug.com/963183 http/tests/devtools/security/interstitial-sidebar.js [ Pass Failure ]
-crbug.com/963183 http/tests/devtools/security/mixed-content-sidebar.js [ Pass Failure ]
-
 # Temporarily disabled for landing frontend source map reporting changes in DevTools
 crbug.com/1030746 http/tests/devtools/sourcemap-section-warning.js [ Pass Failure ]
 crbug.com/1030746 http/tests/devtools/sources/debugger-ui/sourcemap-src-not-loaded.js [ Pass Failure ]
+
+# Temporarily disabled for landing changes to front_end/common in DevTools
+crbug.com/1006759 inspector-protocol/heap-profiler/heap-samples-in-snapshot.js [ Pass Failure ]
+crbug.com/1006759 inspector-protocol/heap-profiler/heap-snapshot-merged-nodes.js [ Pass Failure ]
+crbug.com/1006759 inspector-protocol/heap-profiler/heap-snapshot-with-active-dom-object.js [ Pass Failure ]
+crbug.com/1006759 inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.js [ Pass Failure ]
+crbug.com/1006759 inspector-protocol/heap-profiler/heap-snapshot-with-detached-iframe.js [ Pass Failure ]
+crbug.com/1006759 inspector-protocol/heap-profiler/heap-snapshot-with-event-listener.js [ Pass Failure ]
+crbug.com/1006759 inspector-protocol/heap-profiler/heap-snapshot-with-multiple-retainers.js [ Pass Failure ]
+crbug.com/1006759 inspector-protocol/heap-profiler/heap-snapshot-with-no-detached-iframe.js [ Pass Failure ]

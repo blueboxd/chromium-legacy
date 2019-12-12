@@ -132,8 +132,8 @@ bool ValidateExtensionIconSet(const ExtensionIconSet& icon_set,
                               std::string* error);
 
 // Loads extension message catalogs and returns message bundle. Passes
-// |gzip_permission| to extension_l10n_util::LoadMessageCatalogs for
-// trused sources (see extension_l10n_util.h for details).
+// |gzip_permission| to extension_l10n_util::LoadMessageCatalogs (see
+// extension_l10n_util.h for details).
 // Returns null on error or if the extension is not localized.
 MessageBundle* LoadMessageBundle(
     const base::FilePath& extension_path,
@@ -142,11 +142,14 @@ MessageBundle* LoadMessageBundle(
     std::string* error);
 
 // Loads the extension message bundle substitution map. Contains at least
-// the extension_id item. Does not supported compressed locale files.
+// the extension_id item. Does not supported compressed locale files. Passes
+// |gzip_permission| to extension_l10n_util::LoadMessageCatalogs (see
+// extension_l10n_util.h).
 MessageBundle::SubstitutionMap* LoadMessageBundleSubstitutionMap(
     const base::FilePath& extension_path,
     const std::string& extension_id,
-    const std::string& default_locale);
+    const std::string& default_locale,
+    extension_l10n_util::GzippedMessagesPermission gzip_permission);
 
 // Loads the extension message bundle substitution map for a non-localized
 // extension. Contains only the extension_id item.
@@ -155,11 +158,13 @@ MessageBundle::SubstitutionMap* LoadNonLocalizedMessageBundleSubstitutionMap(
     const std::string& extension_id);
 
 // Loads the extension message bundle substitution map from the specified paths.
-// Contains at least the extension_id item.
+// Contains at least the extension_id item. Passes |gzip_permission| to
+// extension_l10n_util::LoadMessageCatalogs (see extension_l10n_util.h).
 MessageBundle::SubstitutionMap* LoadMessageBundleSubstitutionMapFromPaths(
     const std::vector<base::FilePath>& paths,
     const std::string& extension_id,
-    const std::string& default_locale);
+    const std::string& default_locale,
+    extension_l10n_util::GzippedMessagesPermission gzip_permission);
 
 // Helper functions for getting paths for files used in content verification.
 base::FilePath GetVerifiedContentsPath(const base::FilePath& extension_path);

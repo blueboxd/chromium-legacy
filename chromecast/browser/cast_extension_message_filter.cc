@@ -122,19 +122,23 @@ void CastExtensionMessageFilter::OnGetExtMessageBundle(
   // This blocks tab loading. Priority is inherited from the calling context.
   base::PostTask(
       FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-      base::BindOnce(&CastExtensionMessageFilter::OnGetExtMessageBundleAsync,
-                     this, paths_to_load, extension_id, default_locale,
-                     reply_msg));
+      base::BindOnce(
+          &CastExtensionMessageFilter::OnGetExtMessageBundleAsync, this,
+          paths_to_load, extension_id, default_locale,
+          extension_l10n_util::GetGzippedMessagesPermissionForExtension(
+              extension),
+          reply_msg));
 }
 
 void CastExtensionMessageFilter::OnGetExtMessageBundleAsync(
     const std::vector<base::FilePath>& extension_paths,
     const std::string& main_extension_id,
     const std::string& default_locale,
+    extension_l10n_util::GzippedMessagesPermission gzip_permission,
     IPC::Message* reply_msg) {
   std::unique_ptr<extensions::MessageBundle::SubstitutionMap> dictionary_map(
       extensions::file_util::LoadMessageBundleSubstitutionMapFromPaths(
-          extension_paths, main_extension_id, default_locale));
+          extension_paths, main_extension_id, default_locale, gzip_permission));
 
   ExtensionHostMsg_GetMessageBundle::WriteReplyParams(reply_msg,
                                                       *dictionary_map);

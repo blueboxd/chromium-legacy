@@ -373,6 +373,9 @@ TEST_F(SandboxWinTest, BlocklistAddOneDllCheckInBrowser) {
 #elif defined(ARCH_CPU_X86_64)
     const std::wstring short_dll_name = L"pe_ima~2.dll";
     const std::wstring full_dll_name = L"pe_image_test_64.dll";
+#elif defined(ARCH_CPU_ARM64)
+    const std::wstring short_dll_name = L"pe_ima~3.dll";
+    const std::wstring full_dll_name = L"pe_image_test_arm64.dll";
 #endif
 
     base::FilePath test_data_dir;

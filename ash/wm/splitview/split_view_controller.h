@@ -202,6 +202,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   void OnWindowDragEnded(aura::Window* dragged_window,
                          SnapPosition desired_snap_position,
                          const gfx::Point& last_location_in_screen);
+  void OnWindowDragCanceled();
 
   void AddObserver(SplitViewObserver* observer);
   void RemoveObserver(SplitViewObserver* observer);

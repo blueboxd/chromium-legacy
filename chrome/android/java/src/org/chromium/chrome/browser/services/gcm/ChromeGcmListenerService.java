@@ -200,7 +200,7 @@ public class ChromeGcmListenerService extends GcmListenerService {
 
         // Dispatch message immediately on pre N versions of Android.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-            dispatchMessageToDriver(ContextUtils.getApplicationContext(), message);
+            dispatchMessageToDriver(message);
             return;
         }
 
@@ -215,14 +215,13 @@ public class ChromeGcmListenerService extends GcmListenerService {
      * of the browser process, and forward the message to the GCM Driver. Must be called on the UI
      * thread.
      */
-    static void dispatchMessageToDriver(Context applicationContext, GCMMessage message) {
+    static void dispatchMessageToDriver(GCMMessage message) {
         ThreadUtils.assertOnUiThread();
-        ChromeBrowserInitializer.getInstance(applicationContext).handleSynchronousStartup();
+        ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
         GCMDriver.dispatchMessage(message);
     }
 
     private static boolean isNativeLoaded() {
-        return ChromeBrowserInitializer.getInstance(ContextUtils.getApplicationContext())
-                .hasNativeInitializationCompleted();
+        return ChromeBrowserInitializer.getInstance().hasNativeInitializationCompleted();
     }
 }

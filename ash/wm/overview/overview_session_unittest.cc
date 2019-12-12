@@ -4064,6 +4064,30 @@ TEST_P(SplitViewOverviewSessionTest, DraggingUnsnappableAppWithSplitView) {
   EXPECT_EQ(expected_grid_bounds, GetGridBounds());
 }
 
+// Test that if an unsnappable window is dragged from overview to where another
+// window is already snapped, then there is no snap preview, and if the drag
+// ends there, then there is no DCHECK failure (or crash).
+TEST_P(SplitViewOverviewSessionTest,
+       DragUnsnappableWindowFromOverviewToSnappedWindow) {
+  std::unique_ptr<aura::Window> snapped_window = CreateTestWindow();
+  std::unique_ptr<aura::Window> unsnappable_window = CreateUnsnappableWindow();
+  ToggleOverview();
+  split_view_controller()->SnapWindow(snapped_window.get(),
+                                      SplitViewController::LEFT);
+  ASSERT_EQ(1u, overview_session()->grid_list().size());
+  OverviewGrid* overview_grid = overview_session()->grid_list()[0].get();
+  OverviewItem* overview_item =
+      overview_grid->GetOverviewItemContaining(unsnappable_window.get());
+  overview_session()->InitiateDrag(overview_item,
+                                   overview_item->target_bounds().CenterPoint(),
+                                   /*is_touch_dragging=*/false);
+  overview_session()->Drag(overview_item, gfx::PointF());
+  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromOverview,
+            overview_grid->split_view_drag_indicators()
+                ->current_window_dragging_state());
+  overview_session()->CompleteDrag(overview_item, gfx::PointF());
+}
+
 TEST_P(SplitViewOverviewSessionTest, Clipping) {
   // Helper to check if two rectangles have roughly the same aspect ratio. They
   // may be off by a bit due to insets but should have roughly the same shape.

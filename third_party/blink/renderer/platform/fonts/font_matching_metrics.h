@@ -27,10 +27,7 @@ class PLATFORM_EXPORT FontMatchingMetrics {
  public:
   FontMatchingMetrics(bool top_level,
                       ukm::UkmRecorder* ukm_recorder,
-                      ukm::SourceId source_id)
-      : top_level_(top_level),
-        ukm_recorder_(ukm_recorder),
-        source_id_(source_id) {}
+                      ukm::SourceId source_id);
 
   // Called when a page attempts to match a font family, and the font family is
   // available.
@@ -45,6 +42,14 @@ class PLATFORM_EXPORT FontMatchingMetrics {
 
   // Called when a page attempts to match a web font family.
   void ReportWebFontFamily(const AtomicString& font_family_name);
+
+  // Reports a font listed in a @font-face src:local rule that successfully
+  // matched.
+  void ReportSuccessfulLocalFontMatch(const AtomicString& font_name);
+
+  // Reports a font listed in a @font-face src:local rule that didn't
+  // successfully match.
+  void ReportFailedLocalFontMatch(const AtomicString& font_name);
 
   // Publishes the number of font family matches attempted (both successful and
   // otherwise) to UKM. Called at page unload.
@@ -62,6 +67,12 @@ class PLATFORM_EXPORT FontMatchingMetrics {
 
   // Web font families the page attempted to match.
   HashSet<AtomicString> web_font_families_;
+
+  // @font-face src:local fonts that successfully matched.
+  HashSet<AtomicString> local_fonts_succeeded_;
+
+  // @font-face src:local fonts that didn't successfully match.
+  HashSet<AtomicString> local_fonts_failed_;
 
   // True if this FontMatchingMetrics instance is for a top-level frame, false
   // otherwise.

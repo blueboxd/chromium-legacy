@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
 // Interface of a OAuth2 access token fetcher.
 //

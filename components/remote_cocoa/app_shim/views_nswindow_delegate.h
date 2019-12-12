@@ -19,8 +19,8 @@ class NativeWidgetNSWindowBridge;
 REMOTE_COCOA_APP_SHIM_EXPORT
 @interface ViewsNSWindowDelegate : NSObject <NSWindowDelegate> {
  @private
-  remote_cocoa::NativeWidgetNSWindowBridge* parent_;  // Weak. Owns this.
-  base::scoped_nsobject<NSCursor> cursor_;
+  remote_cocoa::NativeWidgetNSWindowBridge* _parent;  // Weak. Owns this.
+  base::scoped_nsobject<NSCursor> _cursor;
 }
 
 // If set, the cursor set in -[NSResponder updateCursor:] when the window is

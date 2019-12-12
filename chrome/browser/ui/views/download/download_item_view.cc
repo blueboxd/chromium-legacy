@@ -229,8 +229,10 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
   open_button_ = AddChildView(std::move(open_button));
 
   int file_name_style = views::style::STYLE_PRIMARY;
+#if !defined(OS_LINUX)
   if (base::FeatureList::IsEnabled(safe_browsing::kUseNewDownloadWarnings))
     file_name_style = STYLE_EMPHASIZED;
+#endif
   auto file_name_label = std::make_unique<views::Label>(
       ElidedFilename(), views::style::CONTEXT_LABEL, file_name_style);
   file_name_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -1439,6 +1441,7 @@ void DownloadItemView::StyleFilenameInLabel(views::StyledLabel* label) {
   if (!base::FeatureList::IsEnabled(safe_browsing::kUseNewDownloadWarnings))
     return;
 
+#if !defined(OS_LINUX)
   base::string16 filename = ElidedFilename();
   size_t file_name_position = label->GetText().find(filename);
   if (file_name_position != std::string::npos) {
@@ -1448,6 +1451,7 @@ void DownloadItemView::StyleFilenameInLabel(views::StyledLabel* label) {
         gfx::Range(file_name_position, file_name_position + filename.size()),
         style);
   }
+#endif
 }
 
 // static

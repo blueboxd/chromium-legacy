@@ -4,10 +4,8 @@
      found in the LICENSE file. -->
 
 <resources>
-    <color name="black_alpha_11">#1D000000</color>
     <color name="black_alpha_65">#A6000000</color>
 
-    <color name="toolbar_shadow_color">@color/black_alpha_11</color>
     <color name="modal_dialog_scrim_color">@color/black_alpha_65</color>
 
     <!-- Progress Bar colors -->

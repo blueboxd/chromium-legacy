@@ -190,6 +190,11 @@ bool AXNodePosition::IsInWhiteSpace() const {
          base::ContainsOnlyChars(GetText(), base::kWhitespaceUTF16);
 }
 
+// This override is an optimized version AXPosition::MaxTextOffset. Instead of
+// concatenating the strings in GetText() to then get their text length, we sum
+// the lengths of the individual strings. This is faster than concatenating the
+// strings first and then taking their length, especially when the process
+// is recursive.
 int AXNodePosition::MaxTextOffset() const {
   if (IsNullPosition())
     return INVALID_OFFSET;

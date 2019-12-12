@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/string_or_double.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_performance_observer_callback.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
@@ -16,6 +17,8 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
+#include "third_party/blink/renderer/core/timing/performance_observer.h"
+#include "third_party/blink/renderer/core/timing/performance_observer_init.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
@@ -69,6 +72,22 @@ class WindowPerformanceTest : public testing::Test {
                                      timestamp);
   }
 
+  void AddLongTaskTiming(base::TimeTicks start_time,
+                         base::TimeTicks end_time,
+                         const AtomicString& name,
+                         const AtomicString& container_type,
+                         const String& container_src,
+                         const String& container_id,
+                         const String& container_name) {
+    performance_->AddLongTaskTiming(start_time, end_time, name, container_type,
+                                    container_src, container_id,
+                                    container_name);
+  }
+
+  size_t NumEntries(PerformanceObserver* observer) {
+    return observer->performance_entries_.size();
+  }
+
   LocalFrame* GetFrame() const { return &page_holder_->GetFrame(); }
 
   Document* GetDocument() const { return &page_holder_->GetDocument(); }
@@ -107,8 +126,10 @@ class WindowPerformanceTest : public testing::Test {
 };
 
 TEST_F(WindowPerformanceTest, LongTaskObserverInstrumentation) {
+  // Longtasks are observed by default.
+  EXPECT_TRUE(ObservingLongTasks());
   performance_->UpdateLongTaskInstrumentation();
-  EXPECT_FALSE(ObservingLongTasks());
+  EXPECT_TRUE(ObservingLongTasks());
 
   // Adding LongTask observer (with filer option) enables instrumentation.
   AddLongTaskObserver();
@@ -118,7 +139,7 @@ TEST_F(WindowPerformanceTest, LongTaskObserverInstrumentation) {
   // Removing LongTask observer disables instrumentation.
   RemoveLongTaskObserver();
   performance_->UpdateLongTaskInstrumentation();
-  EXPECT_FALSE(ObservingLongTasks());
+  EXPECT_TRUE(ObservingLongTasks());
 }
 
 TEST_F(WindowPerformanceTest, SanitizedLongTaskName) {
@@ -402,6 +423,38 @@ TEST_F(WindowPerformanceTest, FirstPointerUp) {
   // The name of the entry should be "pointerdown".
   EXPECT_EQ(
       1u, performance_->getEntriesByName("pointerdown", "first-input").size());
+}
+
+TEST_F(WindowPerformanceTest, AddLongTaskTiming) {
+  V8TestingScope scope;
+  v8::Local<v8::Function> callback =
+      v8::Function::New(scope.GetScriptState()->GetContext(), nullptr)
+          .ToLocalChecked();
+  Persistent<PerformanceObserver> observer =
+      MakeGarbageCollected<PerformanceObserver>(
+          ExecutionContext::From(scope.GetScriptState()), performance_,
+          V8PerformanceObserverCallback::Create(callback));
+  // Add a long task entry, but no observer registered.
+  AddLongTaskTiming(base::TimeTicks() + base::TimeDelta::FromSecondsD(1234),
+                    base::TimeTicks() + base::TimeDelta::FromSecondsD(5678),
+                    "window", "same-origin", "www.foo.com/bar", "", "");
+  EXPECT_FALSE(performance_->HasObserverFor(PerformanceEntry::kLongTask));
+  EXPECT_EQ(0u, NumEntries(observer));  // has no effect
+
+  // Make an observer for longtask
+  NonThrowableExceptionState exception_state;
+  PerformanceObserverInit* options = PerformanceObserverInit::Create();
+  Vector<String> entry_type_vec;
+  entry_type_vec.push_back("longtask");
+  options->setEntryTypes(entry_type_vec);
+  observer->observe(options, exception_state);
+
+  EXPECT_TRUE(performance_->HasObserverFor(PerformanceEntry::kLongTask));
+  // Add a long task entry
+  AddLongTaskTiming(base::TimeTicks() + base::TimeDelta::FromSecondsD(1234),
+                    base::TimeTicks() + base::TimeDelta::FromSecondsD(5678),
+                    "window", "same-origin", "www.foo.com/bar", "", "");
+  EXPECT_EQ(1u, NumEntries(observer));  // added an entry
 }
 
 }  // namespace blink

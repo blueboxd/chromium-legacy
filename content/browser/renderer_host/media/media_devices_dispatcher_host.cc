@@ -202,9 +202,9 @@ void MediaDevicesDispatcherHost::GetDefaultVideoInputDeviceID(
   GetDefaultMediaDeviceID(
       blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT, render_process_id_,
       render_frame_id_,
-      base::Bind(&MediaDevicesDispatcherHost::GotDefaultVideoInputDeviceID,
-                 weak_factory_.GetWeakPtr(), base::Passed(&client_callback),
-                 std::move(salt_and_origin)));
+      base::BindOnce(&MediaDevicesDispatcherHost::GotDefaultVideoInputDeviceID,
+                     weak_factory_.GetWeakPtr(), base::Passed(&client_callback),
+                     std::move(salt_and_origin)));
 }
 
 void MediaDevicesDispatcherHost::GotDefaultVideoInputDeviceID(
@@ -329,8 +329,8 @@ void MediaDevicesDispatcherHost::GetDefaultAudioInputDeviceID(
   GetDefaultMediaDeviceID(
       blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT, render_process_id_,
       render_frame_id_,
-      base::Bind(&MediaDevicesDispatcherHost::GotDefaultAudioInputDeviceID,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&MediaDevicesDispatcherHost::GotDefaultAudioInputDeviceID,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void MediaDevicesDispatcherHost::GotDefaultAudioInputDeviceID(

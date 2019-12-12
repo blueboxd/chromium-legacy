@@ -58,6 +58,7 @@ const CGFloat kOmniboxIconSize = 16;
 
 - (void)setConsumer:(id<OmniboxConsumer>)consumer {
   _consumer = consumer;
+
   [self updateConsumerEmptyTextImage];
 }
 

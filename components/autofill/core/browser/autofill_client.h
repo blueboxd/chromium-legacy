@@ -343,6 +343,11 @@ class AutofillClient : public RiskDataLoader {
   // Will close the current visible WebAuthn dialog. Returns true if dialog was
   // visible and has been closed.
   virtual bool CloseWebauthnDialog() = 0;
+
+  // Prompt the user to confirm the saving of a UPI ID.
+  virtual void ConfirmSaveUpiIdLocally(
+      const std::string& upi_id,
+      base::OnceCallback<void(bool user_decision)> callback) = 0;
 #endif
 
   // Runs |callback| if the |profile| should be imported as personal data.

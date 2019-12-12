@@ -22,7 +22,10 @@ namespace viz {
 class DisplayResourceProvider;
 class RendererSettings;
 
-// Holds all information necessary to construct a DCLayer from a DrawQuad.
+// TODO(weiliangc): Eventually fold this into OverlayProcessorWin and
+// OverlayCandidate class.
+// Holds all information necessary to construct a
+// DCLayer from a DrawQuad.
 class VIZ_SERVICE_EXPORT DCLayerOverlay {
  public:
   DCLayerOverlay();
@@ -83,13 +86,14 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor {
                           const RendererSettings& settings);
   // For testing.
   DCLayerOverlayProcessor();
-  ~DCLayerOverlayProcessor();
+  virtual ~DCLayerOverlayProcessor();
 
-  void Process(DisplayResourceProvider* resource_provider,
-               const gfx::RectF& display_rect,
-               RenderPassList* render_passes,
-               gfx::Rect* damage_rect,
-               DCLayerOverlayList* dc_layer_overlays);
+  // Virtual for testing.
+  virtual void Process(DisplayResourceProvider* resource_provider,
+                       const gfx::RectF& display_rect,
+                       RenderPassList* render_passes,
+                       gfx::Rect* damage_rect,
+                       DCLayerOverlayList* dc_layer_overlays);
   void ClearOverlayState();
   // This is the damage contribution due to previous frame's overlays which can
   // be empty.

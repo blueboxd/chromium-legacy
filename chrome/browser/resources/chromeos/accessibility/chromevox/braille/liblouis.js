@@ -141,7 +141,7 @@ LibLouis.prototype.onInstanceLoad_ = function(e) {
  * @private
  */
 LibLouis.prototype.onInstanceError_ = function(e) {
-  window.console.error('Error in liblouis ' + e.toString());
+  window.console.error('Error in liblouis ' + e.message);
   this.loadOrReload_();
 };
 

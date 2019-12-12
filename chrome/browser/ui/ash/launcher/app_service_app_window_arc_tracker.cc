@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
+#include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "base/time/time.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/app_service_app_window_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/app_service_app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
@@ -64,7 +66,7 @@ class AppServiceAppWindowArcTracker::ArcAppWindowInfo {
   const arc::ArcAppShelfId& app_shelf_id() const { return app_shelf_id_; }
 
   const ash::ShelfID shelf_id() const {
-    return ash::ShelfID(app_shelf_id_.app_id());
+    return ash::ShelfID(app_shelf_id_.ToString());
   }
 
   const std::string& launch_intent() const { return launch_intent_; }
@@ -118,6 +120,13 @@ void AppServiceAppWindowArcTracker::OnWindowVisibilityChanging(
       user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId());
 }
 
+void AppServiceAppWindowArcTracker::OnAppRemoved(const std::string& app_id) {
+  const std::vector<int> task_ids_to_remove = GetTaskIdsForApp(app_id);
+  for (const auto task_id : task_ids_to_remove)
+    OnTaskDestroyed(task_id);
+  DCHECK(GetTaskIdsForApp(app_id).empty());
+}
+
 void AppServiceAppWindowArcTracker::OnTaskCreated(
     int task_id,
     const std::string& package_name,
@@ -135,8 +144,10 @@ void AppServiceAppWindowArcTracker::OnTaskCreated(
 
   CheckAndAttachControllers();
 
-  // TODO(crbug.com/1011235): Add AttachControllerToTask to handle tasks started
-  // in background.
+  // Some tasks can be started in background and might have no window until
+  // pushed to the front. We need its representation on the shelf to give a user
+  // control over it.
+  AttachControllerToTask(task_id);
 
   aura::Window* const window =
       task_id_to_arc_app_window_info_[task_id]->window();
@@ -181,6 +192,19 @@ void AppServiceAppWindowArcTracker::OnTaskDestroyed(int task_id) {
   aura::Window* const window = it->second.get()->window();
   if (window)
     app_service_controller_->UnregisterWindow(window);
+
+  // Check if we may close controller now, at this point we can safely remove
+  // controllers without window.
+  auto it_controller =
+      app_shelf_group_to_controller_map_.find(it->second->app_shelf_id());
+  if (it_controller != app_shelf_group_to_controller_map_.end()) {
+    it_controller->second->RemoveTaskId(task_id);
+    if (!it_controller->second->HasAnyTasks()) {
+      app_service_controller_->owner()->CloseLauncherItem(
+          it_controller->second->shelf_id());
+      app_shelf_group_to_controller_map_.erase(it_controller);
+    }
+  }
   task_id_to_arc_app_window_info_.erase(it);
 }
 
@@ -251,6 +275,7 @@ void AppServiceAppWindowArcTracker::AttachControllerToWindow(
   DCHECK(widget);
   info->set_window(window);
   const ash::ShelfID shelf_id = info->shelf_id();
+  AttachControllerToTask(task_id);
   app_service_controller_->AddWindowToShelf(window, shelf_id);
   window->SetProperty(ash::kShelfIDKey, shelf_id.Serialize());
   window->SetProperty(ash::kArcPackageNameKey,
@@ -270,6 +295,13 @@ void AppServiceAppWindowArcTracker::RemoveCandidateWindow(
   arc_window_candidates_.erase(window);
 }
 
+void AppServiceAppWindowArcTracker::OnItemDelegateDiscarded(
+    const ash::ShelfID& shelf_id) {
+  arc::ArcAppShelfId app_shelf_id =
+      arc::ArcAppShelfId::FromString(shelf_id.app_id);
+  app_shelf_group_to_controller_map_.erase(app_shelf_id);
+}
+
 ash::ShelfID AppServiceAppWindowArcTracker::GetShelfId(int task_id) const {
   const auto it = task_id_to_arc_app_window_info_.find(task_id);
   if (it == task_id_to_arc_app_window_info_.end())
@@ -281,6 +313,33 @@ ash::ShelfID AppServiceAppWindowArcTracker::GetShelfId(int task_id) const {
 void AppServiceAppWindowArcTracker::CheckAndAttachControllers() {
   for (auto* window : arc_window_candidates_)
     AttachControllerToWindow(window);
+}
+
+void AppServiceAppWindowArcTracker::AttachControllerToTask(int task_id) {
+  ArcAppWindowInfo* const app_window_info =
+      task_id_to_arc_app_window_info_[task_id].get();
+  const arc::ArcAppShelfId& app_shelf_id = app_window_info->app_shelf_id();
+  if (base::Contains(app_shelf_group_to_controller_map_, app_shelf_id)) {
+    app_shelf_group_to_controller_map_[app_shelf_id]->AddTaskId(task_id);
+    return;
+  }
+
+  const ash::ShelfID shelf_id(app_shelf_id.ToString());
+  std::unique_ptr<AppServiceAppWindowLauncherItemController> controller =
+      std::make_unique<AppServiceAppWindowLauncherItemController>(shelf_id);
+  AppServiceAppWindowLauncherItemController* item_controller = controller.get();
+
+  if (!app_service_controller_->owner()->GetItem(shelf_id)) {
+    app_service_controller_->owner()->CreateAppLauncherItem(
+        std::move(controller), ash::STATUS_RUNNING);
+  } else {
+    app_service_controller_->owner()->shelf_model()->SetShelfItemDelegate(
+        shelf_id, std::move(controller));
+    app_service_controller_->owner()->SetItemStatus(shelf_id,
+                                                    ash::STATUS_RUNNING);
+  }
+  item_controller->AddTaskId(task_id);
+  app_shelf_group_to_controller_map_[app_shelf_id] = item_controller;
 }
 
 void AppServiceAppWindowArcTracker::OnArcOptInManagementCheckStarted() {
@@ -322,4 +381,16 @@ void AppServiceAppWindowArcTracker::HandlePlayStoreLaunch(
     DCHECK_GE(launch_time, base::TimeDelta());
     arc::UpdatePlayStoreLaunchTime(launch_time);
   }
+}
+
+std::vector<int> AppServiceAppWindowArcTracker::GetTaskIdsForApp(
+    const std::string& app_id) const {
+  std::vector<int> task_ids;
+  for (const auto& it : task_id_to_arc_app_window_info_) {
+    const ArcAppWindowInfo* app_window_info = it.second.get();
+    if (app_window_info->app_shelf_id().app_id() == app_id)
+      task_ids.push_back(it.first);
+  }
+
+  return task_ids;
 }

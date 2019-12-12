@@ -153,11 +153,12 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
   Vector<int> compositor_keyframe_model_ids_;
 };
 
-DEFINE_TYPE_CASTS(KeyframeEffect,
-                  AnimationEffect,
-                  animationNode,
-                  animationNode->IsKeyframeEffect(),
-                  animationNode.IsKeyframeEffect());
+template <>
+struct DowncastTraits<KeyframeEffect> {
+  static bool AllowFrom(const AnimationEffect& animationNode) {
+    return animationNode.IsKeyframeEffect();
+  }
+};
 
 }  // namespace blink
 

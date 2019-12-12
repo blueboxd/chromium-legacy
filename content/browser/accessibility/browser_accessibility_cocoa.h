@@ -35,10 +35,10 @@ struct AXTextEdit {
 // This class converts it into a format Cocoa can query.
 @interface BrowserAccessibilityCocoa : NSAccessibilityElement {
  @private
-  content::BrowserAccessibility* owner_;
-  base::scoped_nsobject<NSMutableArray> children_;
+  content::BrowserAccessibility* _owner;
+  base::scoped_nsobject<NSMutableArray> _children;
   // Stores the previous value of an edit field.
-  base::string16 oldValue_;
+  base::string16 _oldValue;
 }
 
 // This creates a cocoa browser accessibility object around

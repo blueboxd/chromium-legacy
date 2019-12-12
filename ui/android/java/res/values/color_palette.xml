@@ -34,6 +34,7 @@
     <color name="modern_grey_900_with_grey_200_alpha_11">#35363A</color>
     <color name="modern_grey_900_with_grey_200_alpha_12">#38383C</color>
 
+    <color name="black_alpha_11" tools:ignore="UnusedResources">#1D000000</color>
     <color name="black_alpha_38" tools:ignore="UnusedResources">#61000000</color>
 
     <color name="white_alpha_8" tools:ignore="UnusedResources">#14FFFFFF</color>

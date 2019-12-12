@@ -8,6 +8,7 @@ class TestOsSyncBrowserProxy extends TestBrowserProxy {
     super([
       'didNavigateToOsSyncPage',
       'didNavigateAwayFromOsSyncPage',
+      'setOsSyncFeatureEnabled',
       'setOsSyncDatatypes',
     ]);
   }
@@ -23,31 +24,58 @@ class TestOsSyncBrowserProxy extends TestBrowserProxy {
   }
 
   /** @override */
+  setOsSyncFeatureEnabled(enabled) {
+    this.methodCalled('setOsSyncFeatureEnabled', enabled);
+  }
+
+  /** @override */
   setOsSyncDatatypes(osSyncPrefs) {
     this.methodCalled('setOsSyncDatatypes', osSyncPrefs);
   }
 }
 
 /**
- * Returns a sync prefs dictionary with everything set to sync.
+ * Returns a sync prefs dictionary with either all or nothing syncing.
+ * @param {boolean} syncAll
  * @return {!settings.OsSyncPrefs}
  */
-function getSyncAllOsPrefs() {
+function getOsSyncPrefs(syncAll) {
   return {
     osAppsEnforced: false,
     osAppsRegistered: true,
-    osAppsSynced: true,
+    osAppsSynced: syncAll,
     osPreferencesEnforced: false,
     osPreferencesRegistered: true,
-    osPreferencesSynced: true,
+    osPreferencesSynced: syncAll,
     printersEnforced: false,
     printersRegistered: true,
-    printersSynced: true,
-    syncAllOsTypes: true,
+    printersSynced: syncAll,
+    syncAllOsTypes: syncAll,
     wifiConfigurationsEnforced: false,
     wifiConfigurationsRegistered: true,
-    wifiConfigurationsSynced: true,
+    wifiConfigurationsSynced: syncAll,
   };
+}
+
+function getSyncAllPrefs() {
+  return getOsSyncPrefs(true);
+}
+
+function getSyncNothingPrefs() {
+  return getOsSyncPrefs(false);
+}
+
+function setupWithFeatureEnabled() {
+  cr.webUIListenerCallback(
+      'os-sync-prefs-changed', /*featureEnabled=*/ true, getSyncAllPrefs());
+  Polymer.dom.flush();
+}
+
+function setupWithFeatureDisabled() {
+  cr.webUIListenerCallback(
+      'os-sync-prefs-changed', /*featureEnabled=*/ false,
+      getSyncNothingPrefs());
+  Polymer.dom.flush();
 }
 
 suite('OsSyncControlsTest', function() {
@@ -61,45 +89,101 @@ suite('OsSyncControlsTest', function() {
     PolymerTest.clearBody();
     syncControls = document.createElement('os-sync-controls');
     document.body.appendChild(syncControls);
-
-    // Start with Sync All.
-    cr.webUIListenerCallback('os-sync-prefs-changed', getSyncAllOsPrefs());
-    Polymer.dom.flush();
   });
 
   teardown(function() {
     syncControls.remove();
   });
 
-  test('SyncAllEnabledByDefault', function() {
+  test('ControlsHiddenUntilInitialUpdateSent', function() {
+    assertTrue(syncControls.hidden);
+    setupWithFeatureEnabled();
+    assertFalse(syncControls.hidden);
+  });
+
+  test('FeatureDisabled', function() {
+    setupWithFeatureDisabled();
+
+    assertFalse(syncControls.$.turnOnSyncButton.hidden);
+    assertTrue(syncControls.$.turnOffSyncButton.hidden);
+
+    assertTrue(syncControls.$.syncEverythingCheckboxLabel.hasAttribute(
+        'label-disabled'));
+
+    const syncAllControl = syncControls.$.syncAllOsTypesControl;
+    assertTrue(syncAllControl.disabled);
+    assertFalse(syncAllControl.checked);
+
+    const labels = syncControls.shadowRoot.querySelectorAll(
+        '.list-item:not([hidden]) > div');
+    for (const label of labels) {
+      assertTrue(label.hasAttribute('label-disabled'));
+    }
+
+    const datatypeControls = syncControls.shadowRoot.querySelectorAll(
+        '.list-item:not([hidden]) > cr-toggle');
+    for (const control of datatypeControls) {
+      assertTrue(control.disabled);
+      assertFalse(control.checked);
+    }
+  });
+
+  test('FeatureEnabled', function() {
+    setupWithFeatureEnabled();
+
+    assertTrue(syncControls.$.turnOnSyncButton.hidden);
+    assertFalse(syncControls.$.turnOffSyncButton.hidden);
+
+    assertFalse(syncControls.$.syncEverythingCheckboxLabel.hasAttribute(
+        'label-disabled'));
+
     const syncAllControl = syncControls.$.syncAllOsTypesControl;
     assertFalse(syncAllControl.disabled);
     assertTrue(syncAllControl.checked);
-  });
 
-  test('IndividualControlsDisabledByDefault', async function() {
+    const labels = syncControls.shadowRoot.querySelectorAll(
+        '.list-item:not([hidden]) > div.checkbox-label');
+    for (const label of labels) {
+      assertFalse(label.hasAttribute('label-disabled'));
+    }
+
     const datatypeControls = syncControls.shadowRoot.querySelectorAll(
         '.list-item:not([hidden]) > cr-toggle');
-
     for (const control of datatypeControls) {
       assertTrue(control.disabled);
       assertTrue(control.checked);
     }
   });
 
+  test('ClickingTurnOffDisablesFeature', async function() {
+    setupWithFeatureEnabled();
+    syncControls.$.turnOffSyncButton.click();
+    const enabled = await browserProxy.whenCalled('setOsSyncFeatureEnabled');
+    assertFalse(enabled);
+  });
+
+  test('ClickingTurnOnEnablesFeature', async function() {
+    setupWithFeatureDisabled();
+    syncControls.$.turnOnSyncButton.click();
+    enabled = await browserProxy.whenCalled('setOsSyncFeatureEnabled');
+    assertTrue(enabled);
+  });
+
   test('UncheckingSyncAllEnablesAllIndividualControls', async function() {
+    setupWithFeatureEnabled();
     syncControls.$.syncAllOsTypesControl.click();
     const prefs = await browserProxy.whenCalled('setOsSyncDatatypes');
 
-    const expectedPrefs = getSyncAllOsPrefs();
+    const expectedPrefs = getSyncAllPrefs();
     expectedPrefs.syncAllOsTypes = false;
     assertEquals(JSON.stringify(expectedPrefs), JSON.stringify(prefs));
   });
 
   test('PrefChangeUpdatesControls', function() {
-    const prefs = getSyncAllOsPrefs();
+    const prefs = getSyncAllPrefs();
     prefs.syncAllOsTypes = false;
-    cr.webUIListenerCallback('os-sync-prefs-changed', prefs);
+    cr.webUIListenerCallback(
+        'os-sync-prefs-changed', /*featureEnabled=*/ true, prefs);
 
     const datatypeControls = syncControls.shadowRoot.querySelectorAll(
         '.list-item:not([hidden]) > cr-toggle');
@@ -110,36 +194,18 @@ suite('OsSyncControlsTest', function() {
   });
 
   test('DisablingOneControlUpdatesPrefs', async function() {
+    setupWithFeatureEnabled();
+
     // Disable "Sync All".
     syncControls.$.syncAllOsTypesControl.click();
     // Disable "Settings".
     syncControls.$.osPreferencesControl.click();
     const prefs = await browserProxy.whenCalled('setOsSyncDatatypes');
 
-    const expectedPrefs = getSyncAllOsPrefs();
+    const expectedPrefs = getSyncAllPrefs();
     expectedPrefs.syncAllOsTypes = false;
     expectedPrefs.osPreferencesSynced = false;
     assertEquals(JSON.stringify(expectedPrefs), JSON.stringify(prefs));
-  });
-
-  test('ControlsVisibleByDefault', function() {
-    assertFalse(syncControls.hidden);
-  });
-
-  test('ControlsVisibleWhenNoError', function() {
-    syncControls
-        .syncStatus = {disabled: false, hasError: false, signedIn: true};
-    assertFalse(syncControls.hidden);
-  });
-
-  test('ControlsHiddenWhenSyncDisabled', function() {
-    syncControls.syncStatus = {disabled: true, hasError: false, signedIn: true};
-    assertTrue(syncControls.hidden);
-  });
-
-  test('ControlsHiddenWhenSyncHasError', function() {
-    syncControls.syncStatus = {disabled: false, hasError: true, signedIn: true};
-    assertTrue(syncControls.hidden);
   });
 });
 

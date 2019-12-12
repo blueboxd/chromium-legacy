@@ -41,7 +41,7 @@ Refer to README.md for content description and update process.
  <item id="certificate_verifier_url_request" hash_code="85988208" type="0" content_hash_code="59262468" os_list="linux,windows" file_path="net/cert_net/cert_net_fetcher_url_request.cc"/>
  <item id="chrome_apps_socket_api" hash_code="8591273" type="0" content_hash_code="70868355" os_list="linux,windows" file_path="extensions/browser/api/socket/socket.cc"/>
  <item id="chrome_cleaner" hash_code="27071967" type="0" content_hash_code="111240292" os_list="windows" file_path="chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_fetcher_win.cc"/>
- <item id="chrome_cleanup_report" hash_code="71102679" type="0" content_hash_code="50235856" os_list="windows" file_path="chrome/chrome_cleaner/logging/cleaner_logging_service.cc"/>
+ <item id="chrome_cleanup_report" hash_code="71102679" type="0" content_hash_code="130565656" os_list="windows" file_path="chrome/chrome_cleaner/logging/cleaner_logging_service.cc"/>
  <item id="chrome_feedback_report_app" hash_code="134729048" type="0" content_hash_code="73916972" os_list="linux,windows" file_path="components/feedback/feedback_uploader.cc"/>
  <item id="chrome_variations_service" hash_code="115188287" type="0" content_hash_code="32485683" os_list="linux,windows" file_path="components/variations/service/variations_service.cc"/>
  <item id="client_download_request" hash_code="125522256" type="0" content_hash_code="23897505" os_list="linux,windows" file_path="chrome/browser/safe_browsing/download_protection/check_client_download_request_base.cc"/>
@@ -284,7 +284,7 @@ Refer to README.md for content description and update process.
  <item id="translate_url_fetcher" hash_code="137116619" type="0" content_hash_code="104217506" os_list="linux,windows" file_path="components/translate/core/browser/translate_url_fetcher.cc"/>
  <item id="ui_devtools_server" hash_code="4986170" type="0" content_hash_code="62670263" os_list="linux,windows" file_path="components/ui_devtools/devtools_server.cc"/>
  <item id="undefined" hash_code="45578882" type="0" reserved="1" os_list="linux,windows" file_path=""/>
- <item id="unwanted_software_report" hash_code="43759504" type="0" content_hash_code="43217092" os_list="windows" file_path="chrome/chrome_cleaner/logging/reporter_logging_service.cc"/>
+ <item id="unwanted_software_report" hash_code="43759504" type="0" content_hash_code="59154788" os_list="windows" file_path="chrome/chrome_cleaner/logging/reporter_logging_service.cc"/>
  <item id="update_client" hash_code="54845618" type="0" content_hash_code="86129031" os_list="linux,windows" file_path="components/update_client/net/network_impl.cc"/>
  <item id="url_fetcher_downloader" hash_code="113231892" type="0" deprecated="2019-02-09" content_hash_code="61085066" file_path=""/>
  <item id="url_prevision_fetcher" hash_code="118389509" type="0" content_hash_code="66145513" os_list="linux,windows" file_path="content/browser/media/url_provision_fetcher.cc"/>

@@ -46,6 +46,7 @@
 #include "services/network/origin_policy/origin_policy_manager.h"
 #include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/content_security_policy.h"
+#include "services/network/public/cpp/cross_origin_opener_policy_parser.h"
 #include "services/network/public/cpp/cross_origin_resource_policy.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/header_util.h"
@@ -53,9 +54,9 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/origin_policy.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/origin_policy_manager.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
 #include "services/network/sec_header_helpers.h"
 #include "services/network/throttling/scoped_throttling_token.h"
@@ -837,13 +838,14 @@ void URLLoader::OnAuthRequired(net::URLRequest* url_request,
 
   DCHECK(!auth_challenge_responder_receiver_.is_bound());
 
-  ResourceResponseHead head;
+  auto head = mojom::URLResponseHead::New();
   if (url_request->response_headers())
-    head.headers = url_request->response_headers();
-  head.auth_challenge_info = auth_info;
+    head->headers = url_request->response_headers();
+  head->auth_challenge_info = auth_info;
   network_context_client_->OnAuthRequired(
       fetch_window_id_, factory_params_->process_id, render_frame_id_,
-      request_id_, url_request_->url(), first_auth_attempt_, auth_info, head,
+      request_id_, url_request_->url(), first_auth_attempt_, auth_info,
+      std::move(head),
       auth_challenge_responder_receiver_.BindNewPipeAndPassRemote());
 
   auth_challenge_responder_receiver_.set_disconnect_handler(
@@ -1005,7 +1007,16 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
     // Parse the Content-Security-Policy headers.
     ContentSecurityPolicy policy;
     if (policy.Parse(url_request_->url(), *url_request_->response_headers()))
-      response_->content_security_policy = std::move(policy);
+      response_->content_security_policy = policy.TakeContentSecurityPolicy();
+  }
+
+  // Parse the Cross-Origin-Opener-Policy header.
+  std::string raw_coop_string;
+  if (url_request_->response_headers() &&
+      url_request_->response_headers()->GetNormalizedHeader(
+          kCrossOriginOpenerPolicyHeader, &raw_coop_string)) {
+    response_->cross_origin_opener_policy =
+        ParseCrossOriginOpenerPolicyHeader(raw_coop_string);
   }
 
   // If necessary, retrieve the associated origin policy, before sending the

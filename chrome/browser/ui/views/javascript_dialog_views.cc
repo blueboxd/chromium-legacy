@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/javascript_dialog_views.h"
 
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/views/front_eliding_title_label.h"
+#include "chrome/browser/ui/views/title_origin_label.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -81,8 +81,7 @@ ui::ModalType JavaScriptDialogViews::GetModalType() const {
 void JavaScriptDialogViews::AddedToWidget() {
   auto* bubble_frame_view = static_cast<views::BubbleFrameView*>(
       GetWidget()->non_client_view()->frame_view());
-  bubble_frame_view->SetTitleView(
-      CreateFrontElidingTitleLabel(GetWindowTitle()));
+  bubble_frame_view->SetTitleView(CreateTitleOriginLabel(GetWindowTitle()));
 }
 
 JavaScriptDialogViews::JavaScriptDialogViews(

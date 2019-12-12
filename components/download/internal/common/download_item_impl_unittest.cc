@@ -75,8 +75,12 @@ class MockDelegate : public DownloadItemImplDelegate {
   MOCK_METHOD2(DetermineDownloadTarget_,
                void(DownloadItemImpl*,
                     DownloadItemImplDelegate::DownloadTargetCallback&));
-  MOCK_METHOD2(ShouldCompleteDownload,
-               bool(DownloadItemImpl*, const base::Closure&));
+  bool ShouldCompleteDownload(DownloadItemImpl* item,
+                              base::OnceClosure cb) override {
+    return ShouldCompleteDownload_(item, cb);
+  }
+  MOCK_METHOD2(ShouldCompleteDownload_,
+               bool(DownloadItemImpl*, base::OnceClosure&));
   bool ShouldOpenDownload(DownloadItemImpl* item,
                           ShouldOpenDownloadCallback cb) override {
     return ShouldOpenDownload_(item, cb);
@@ -316,7 +320,7 @@ class DownloadItemTest : public testing::Test {
 
   void DoDestinationComplete(DownloadItemImpl* item,
                              MockDownloadFile* download_file) {
-    EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(_, _))
+    EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload_(_, _))
         .WillOnce(Return(true));
     base::FilePath final_path(kDummyTargetPath);
     auto task_runner = base::ThreadTaskRunnerHandle::Get();
@@ -502,7 +506,7 @@ TEST_F(DownloadItemTest, NotificationAfterOnContentCheckCompleted) {
                                           DOWNLOAD_INTERRUPT_REASON_NONE);
   EXPECT_TRUE(unsafeurl_observer.CheckAndResetDownloadUpdated());
 
-  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(_, _))
+  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload_(_, _))
       .WillOnce(Return(true));
   EXPECT_CALL(*download_file, RenameAndAnnotate(_, _, _, _, _, _));
   unsafeurl_item->ValidateDangerousDownload();
@@ -520,7 +524,7 @@ TEST_F(DownloadItemTest, NotificationAfterOnContentCheckCompleted) {
                                            DOWNLOAD_INTERRUPT_REASON_NONE);
   EXPECT_TRUE(unsafefile_observer.CheckAndResetDownloadUpdated());
 
-  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(_, _))
+  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload_(_, _))
       .WillOnce(Return(true));
   EXPECT_CALL(*download_file, RenameAndAnnotate(_, _, _, _, _, _));
   unsafefile_item->ValidateDangerousDownload();
@@ -759,7 +763,7 @@ TEST_F(DownloadItemTest, UnresumableInterrupt) {
       DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
 
   // Fail final rename with unresumable reason.
-  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(item, _))
+  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload_(item, _))
       .WillOnce(Return(true));
   auto task_runner = base::ThreadTaskRunnerHandle::Get();
   EXPECT_CALL(
@@ -1291,7 +1295,7 @@ TEST_F(DownloadItemTest, CallbackAfterRename) {
   ::testing::Mock::VerifyAndClearExpectations(download_file);
   mock_delegate()->VerifyAndClearExpectations();
 
-  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(item, _))
+  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload_(item, _))
       .WillOnce(Return(true));
   EXPECT_CALL(*download_file, RenameAndAnnotate(final_path, _, _, _, _, _))
       .WillOnce(WithArg<5>([&task_runner, &final_path](
@@ -1713,7 +1717,7 @@ TEST_F(DownloadItemTest, DestinationCompleted) {
       crypto::SecureHash::Create(crypto::SecureHash::SHA256));
   hash->Update(kTestData1, sizeof(kTestData1));
 
-  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(_, _));
+  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload_(_, _));
   as_observer->DestinationCompleted(10, std::move(hash));
   mock_delegate()->VerifyAndClearExpectations();
   EXPECT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
@@ -1753,7 +1757,7 @@ TEST_F(DownloadItemTest, EnabledActionsForNormalDownload) {
                                base::FilePath(kDummyTargetPath)));
           }));
 
-  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(item, _))
+  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload_(item, _))
       .WillOnce(Return(true));
   EXPECT_CALL(*download_file, FullPath())
       .WillOnce(ReturnRefOfCopy(base::FilePath()));
@@ -1783,7 +1787,7 @@ TEST_F(DownloadItemTest, EnabledActionsForTemporaryDownload) {
   EXPECT_FALSE(item->CanOpenDownload());
 
   // Complete Temporary
-  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(item, _))
+  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload_(item, _))
       .WillOnce(Return(true));
   auto task_runner = base::ThreadTaskRunnerHandle::Get();
   EXPECT_CALL(*download_file, RenameAndAnnotate(_, _, _, _, _, _))
@@ -1848,7 +1852,7 @@ TEST_F(DownloadItemTest, CompleteDelegate_ReturnTrue) {
       DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
 
   // Drive the delegate interaction.
-  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(item, _))
+  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload_(item, _))
       .WillOnce(Return(true));
   item->DestinationObserverAsWeakPtr()->DestinationCompleted(
       0, std::unique_ptr<crypto::SecureHash>());
@@ -1885,19 +1889,16 @@ TEST_F(DownloadItemTest, CompleteDelegate_BlockOnce) {
   MockDownloadFile* download_file =
       DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
 
-  base::Closure delegate_callback;
-  base::Closure copy_delegate_callback;
-  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(item, _))
-      .WillOnce(DoAll(SaveArg<1>(&delegate_callback), Return(false)))
+  base::OnceClosure delegate_callback;
+  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload_(item, _))
+      .WillOnce(DoAll(MoveArg<1>(&delegate_callback), Return(false)))
       .WillOnce(Return(true));
   item->DestinationObserverAsWeakPtr()->DestinationCompleted(
       0, std::unique_ptr<crypto::SecureHash>());
-  ASSERT_FALSE(delegate_callback.is_null());
-  copy_delegate_callback = delegate_callback;
-  delegate_callback.Reset();
+  ASSERT_TRUE(delegate_callback);
   EXPECT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
-  std::move(copy_delegate_callback).Run();
-  ASSERT_TRUE(delegate_callback.is_null());
+  std::move(delegate_callback).Run();
+  ASSERT_FALSE(delegate_callback);
   EXPECT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
   EXPECT_FALSE(item->IsDangerous());
 
@@ -1931,22 +1932,19 @@ TEST_F(DownloadItemTest, CompleteDelegate_SetDanger) {
       DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
 
   // Drive the delegate interaction.
-  base::Closure delegate_callback;
-  base::Closure copy_delegate_callback;
-  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(item, _))
-      .WillOnce(DoAll(SaveArg<1>(&delegate_callback), Return(false)))
+  base::OnceClosure delegate_callback;
+  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload_(item, _))
+      .WillOnce(DoAll(MoveArg<1>(&delegate_callback), Return(false)))
       .WillOnce(Return(true));
   item->DestinationObserverAsWeakPtr()->DestinationCompleted(
       0, std::unique_ptr<crypto::SecureHash>());
-  ASSERT_FALSE(delegate_callback.is_null());
-  copy_delegate_callback = delegate_callback;
-  delegate_callback.Reset();
+  ASSERT_TRUE(delegate_callback);
   EXPECT_FALSE(item->IsDangerous());
   item->OnContentCheckCompleted(DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
                                 DOWNLOAD_INTERRUPT_REASON_NONE);
   EXPECT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
-  std::move(copy_delegate_callback).Run();
-  ASSERT_TRUE(delegate_callback.is_null());
+  std::move(delegate_callback).Run();
+  ASSERT_FALSE(delegate_callback);
   EXPECT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
   EXPECT_TRUE(item->IsDangerous());
 
@@ -1986,25 +1984,20 @@ TEST_F(DownloadItemTest, CompleteDelegate_BlockTwice) {
       DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
 
   // Drive the delegate interaction.
-  base::Closure delegate_callback;
-  base::Closure copy_delegate_callback;
-  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(item, _))
-      .WillOnce(DoAll(SaveArg<1>(&delegate_callback), Return(false)))
-      .WillOnce(DoAll(SaveArg<1>(&delegate_callback), Return(false)))
+  base::OnceClosure delegate_callback;
+  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload_(item, _))
+      .WillOnce(DoAll(MoveArg<1>(&delegate_callback), Return(false)))
+      .WillOnce(DoAll(MoveArg<1>(&delegate_callback), Return(false)))
       .WillOnce(Return(true));
   item->DestinationObserverAsWeakPtr()->DestinationCompleted(
       0, std::unique_ptr<crypto::SecureHash>());
-  ASSERT_FALSE(delegate_callback.is_null());
-  copy_delegate_callback = delegate_callback;
-  delegate_callback.Reset();
+  ASSERT_TRUE(delegate_callback);
   EXPECT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
-  copy_delegate_callback.Run();
-  ASSERT_FALSE(delegate_callback.is_null());
-  copy_delegate_callback = delegate_callback;
-  delegate_callback.Reset();
+  std::move(delegate_callback).Run();
+  ASSERT_TRUE(delegate_callback);
   EXPECT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
-  std::move(copy_delegate_callback).Run();
-  ASSERT_TRUE(delegate_callback.is_null());
+  std::move(delegate_callback).Run();
+  ASSERT_FALSE(delegate_callback);
   EXPECT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
   EXPECT_FALSE(item->IsDangerous());
 
@@ -2136,7 +2129,7 @@ TEST_F(DownloadItemTest, AnnotationWithEmptyURLInIncognito) {
                 base::BindOnce(std::move(cb), DOWNLOAD_INTERRUPT_REASON_NONE,
                                base::FilePath(kDummyTargetPath)));
           }));
-  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(item, _))
+  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload_(item, _))
       .WillOnce(Return(true));
   EXPECT_CALL(*download_file, FullPath())
       .WillOnce(ReturnRefOfCopy(base::FilePath()));
@@ -2159,7 +2152,7 @@ TEST_F(DownloadItemTest, AnnotationWithEmptyURLInIncognito) {
                                base::FilePath(kDummyTargetPath)));
           }));
 
-  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(item, _))
+  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload_(item, _))
       .WillOnce(Return(true));
   EXPECT_CALL(*mock_delegate(), IsOffTheRecord()).WillRepeatedly(Return(true));
   EXPECT_CALL(*download_file, FullPath())
@@ -2563,7 +2556,7 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, IntermediateRenameSucceeds) {
 
   // This may or may not be called, depending on whether there are any errors in
   // our action list.
-  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(_, _))
+  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload_(_, _))
       .Times(::testing::AnyNumber());
 
   ScheduleObservations(PostIntermediateRenameObservations(),

@@ -1249,11 +1249,11 @@ void SavePackage::GetSaveInfo() {
   bool can_save_as_complete = CanSaveAsComplete(mime_type);
   base::PostTaskAndReplyWithResult(
       download::GetDownloadTaskRunner().get(), FROM_HERE,
-      base::Bind(&SavePackage::CreateDirectoryOnFileThread, title_, page_url_,
-                 can_save_as_complete, mime_type, website_save_dir,
-                 download_save_dir),
-      base::Bind(&SavePackage::ContinueGetSaveInfo, this,
-                 can_save_as_complete));
+      base::BindOnce(&SavePackage::CreateDirectoryOnFileThread, title_,
+                     page_url_, can_save_as_complete, mime_type,
+                     website_save_dir, download_save_dir),
+      base::BindOnce(&SavePackage::ContinueGetSaveInfo, this,
+                     can_save_as_complete));
 }
 
 // static

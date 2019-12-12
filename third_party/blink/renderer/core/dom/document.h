@@ -1381,24 +1381,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void DidEnforceInsecureRequestPolicy();
   void DidEnforceInsecureNavigationsSet();
 
-  // Temporary flag for some UseCounter items. crbug.com/859391.
-  enum class InDOMNodeRemovedHandlerState {
-    kNone,
-    kDOMNodeRemoved,
-    kDOMNodeRemovedFromDocument
-  };
-  void SetInDOMNodeRemovedHandlerState(InDOMNodeRemovedHandlerState state) {
-    in_dom_node_removed_handler_state_ = state;
-  }
-  InDOMNodeRemovedHandlerState GetInDOMNodeRemovedHandlerState() const {
-    return in_dom_node_removed_handler_state_;
-  }
-  bool InDOMNodeRemovedHandler() const {
-    return in_dom_node_removed_handler_state_ !=
-           InDOMNodeRemovedHandlerState::kNone;
-  }
-  void CountDetachingNodeAccessInDOMNodeRemovedHandler();
-
   bool MayContainV0Shadow() const { return may_contain_v0_shadow_; }
 
   ShadowCascadeOrder GetShadowCascadeOrder() const {
@@ -2061,9 +2043,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   int node_count_;
 
-  // Temporary flag for some UseCounter items. crbug.com/859391.
-  InDOMNodeRemovedHandlerState in_dom_node_removed_handler_state_ =
-      InDOMNodeRemovedHandlerState::kNone;
   bool may_contain_v0_shadow_ = false;
 
   Member<SnapCoordinator> snap_coordinator_;

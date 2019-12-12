@@ -40,12 +40,11 @@ void VerifyPowerStateInChildProcess(mojom::PowerMonitorTest* power_monitor_test,
                                     bool expected_state) {
   base::RunLoop run_loop;
   power_monitor_test->QueryNextState(base::BindOnce(
-      [](const base::Closure& quit, bool expected_state,
-         bool on_battery_power) {
+      [](base::RunLoop* loop, bool expected_state, bool on_battery_power) {
         EXPECT_EQ(expected_state, on_battery_power);
-        quit.Run();
+        loop->Quit();
       },
-      run_loop.QuitClosure(), expected_state));
+      &run_loop, expected_state));
   run_loop.Run();
 }
 
@@ -175,7 +174,7 @@ class PowerMonitorTest : public ContentBrowserTest {
  protected:
   void StartUtilityProcess(
       mojo::Remote<mojom::PowerMonitorTest>* power_monitor_test,
-      base::Closure utility_bound_closure) {
+      base::OnceClosure utility_bound_closure) {
     utility_bound_closure_ = std::move(utility_bound_closure);
     base::PostTask(
         FROM_HERE, {BrowserThread::IO},
@@ -183,11 +182,11 @@ class PowerMonitorTest : public ContentBrowserTest {
                        power_monitor_test->BindNewPipeAndPassReceiver()));
   }
 
-  void set_renderer_bound_closure(base::Closure closure) {
+  void set_renderer_bound_closure(base::OnceClosure closure) {
     renderer_bound_closure_ = std::move(closure);
   }
 
-  void set_gpu_bound_closure(base::Closure closure) {
+  void set_gpu_bound_closure(base::OnceClosure closure) {
     gpu_bound_closure_ = std::move(closure);
   }
 

@@ -6082,7 +6082,7 @@ class SpdySessionReadIfReadyTest
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          SpdySessionReadIfReadyTest,
                          testing::Values(READ_IF_READY_SUPPORTED,
                                          READ_IF_READY_NOT_SUPPORTED));

@@ -245,8 +245,7 @@ void ClientAppMetadataProviderService::OnInstanceIdTokenFetched(
   instance_id_recreated_ = false;
 
   UMA_HISTOGRAM_ENUMERATION(
-      "CryptAuth.ClientAppMetadataInstanceIdTokenFetch.Result", result,
-      instance_id::InstanceID::Result::LAST_RESULT + 1);
+      "CryptAuth.ClientAppMetadataInstanceIdTokenFetch.Result", result);
 
   // If fetching the token failed, invoke the pending callbacks with a null
   // ClientAppMetadata.

@@ -8,9 +8,11 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -71,7 +73,12 @@ class NextFrameWaiter {
 
 class DragToOverviewTest : public UIPerformanceTest {
  public:
-  DragToOverviewTest() = default;
+  DragToOverviewTest() {
+    // When the WebUI tab strip is enabled, there is no window drag handle nor
+    // draggable tabs.
+    feature_override_.InitAndDisableFeature(features::kWebUITabStrip);
+  }
+
   ~DragToOverviewTest() override = default;
 
   // UIPerformanceTest:
@@ -137,6 +144,7 @@ class DragToOverviewTest : public UIPerformanceTest {
   void set_tab_drag_test(bool tab_drag_test) { tab_drag_test_ = tab_drag_test; }
 
  private:
+  base::test::ScopedFeatureList feature_override_;
   bool tab_drag_test_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DragToOverviewTest);

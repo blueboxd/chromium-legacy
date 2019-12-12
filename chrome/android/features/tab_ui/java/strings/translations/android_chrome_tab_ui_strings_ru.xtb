@@ -24,8 +24,8 @@
 <translation id="6840760312327750441">Чтобы сгруппировать вкладки: нажмите и удерживайте одну вкладку, затем перетащите ее на другую.</translation>
 <translation id="7151209024774799310">Удалить вкладки из группы</translation>
 <translation id="7559245342362162951">Показать сетку с вкладками группы на весь экран</translation>
-<translation id="7792771145871471484">Подробнее</translation>
-<translation id="7966321538264951561">Закрыть подсказки.</translation>
+<translation id="7792771145871471484">Подробнее.</translation>
+<translation id="7966321538264951561">Скрыть подсказки.</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Закрыть <ph name="TABS_COUNT_ONE" /> выбранную вкладку}one{Закрыть <ph name="TABS_COUNT_MANY" /> выбранную вкладку}few{Закрыть <ph name="TABS_COUNT_MANY" /> выбранные вкладки}many{Закрыть <ph name="TABS_COUNT_MANY" /> выбранных вкладок}other{Закрыть <ph name="TABS_COUNT_MANY" /> выбранной вкладки}}</translation>
 <translation id="9150694013019234766">В нижней части экрана можно переключаться между вкладками, объединенными в группы</translation>
 <translation id="9169594135889675189">Добавить новую вкладку в группу</translation>

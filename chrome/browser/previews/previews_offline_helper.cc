@@ -31,6 +31,9 @@
 #include "content/public/browser/browser_task_traits.h"
 
 namespace {
+// The maximum number of entries to keep in the pref.
+const size_t kOfflinePreviewsHelperMaxPrefSize = 100;
+
 // Pref key for the available hashed pages kept in class.
 const char kHashedAvailablePages[] = "previews.offline_helper.available_pages";
 
@@ -101,7 +104,7 @@ void RemoveStaleOfflinePageEntries(base::DictionaryValue* dict) {
 
   // RemoveStaleOfflinePageEntries is called for every new added page, so it's
   // fine to just remove one at a time to keep the pref size below a threshold.
-  if (dict->DictSize() > previews::params::OfflinePreviewsHelperMaxPrefSize()) {
+  if (dict->DictSize() > kOfflinePreviewsHelperMaxPrefSize) {
     dict->RemoveKey(earliest_key);
   }
 }
@@ -146,9 +149,7 @@ PreviewsOfflineHelper::PreviewsOfflineHelper(
       offline_pages::OfflinePageModelFactory::GetForBrowserContext(
           browser_context);
 
-  if (offline_page_model_ &&
-      base::FeatureList::IsEnabled(
-          previews::features::kOfflinePreviewsFalsePositivePrevention)) {
+  if (offline_page_model_) {
     offline_page_model_->AddObserver(this);
     // Schedule a low priority task with a slight delay to ensure that the
     // expensive DB query doesn't occur during startup or during other user
@@ -178,11 +179,6 @@ void PreviewsOfflineHelper::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 bool PreviewsOfflineHelper::ShouldAttemptOfflinePreview(const GURL& url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!base::FeatureList::IsEnabled(
-          previews::features::kOfflinePreviewsFalsePositivePrevention)) {
-    // This is the default behavior without this optimization.
-    return true;
-  }
   std::string hashed_url = HashURL(url);
 
   base::Value* value = available_pages_->FindKey(hashed_url);
@@ -226,8 +222,7 @@ void PreviewsOfflineHelper::Shutdown() {
 
 void PreviewsOfflineHelper::RequestDBUpdate() {
   offline_pages::PageCriteria criteria;
-  criteria.maximum_matches =
-      previews::params::OfflinePreviewsHelperMaxPrefSize();
+  criteria.maximum_matches = kOfflinePreviewsHelperMaxPrefSize;
 
   offline_page_model_->GetPagesWithCriteria(
       criteria, base::BindOnce(&PreviewsOfflineHelper::UpdateAllPrefEntries,

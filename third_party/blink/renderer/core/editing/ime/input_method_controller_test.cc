@@ -3235,4 +3235,34 @@ TEST_F(InputMethodControllerTest, SetCompositionInTableCell) {
   EXPECT_EQ(1u, range->endOffset());
 }
 
+TEST_F(InputMethodControllerTest, SetCompositionInMyanmar) {
+  Element* div =
+      InsertHTMLElement("<div id='sample' contenteditable></div>", "sample");
+
+  // Add character U+200C: 'kZeroWidthNonJoinerCharacter' and Myanmar vowel
+  Controller().SetComposition(String::FromUTF8("\xE2\x80\x8C\xE1\x80\xB1"),
+                              Vector<ImeTextSpan>(), 0, 0);
+
+  EXPECT_EQ(1u, div->CountChildren());
+  EXPECT_EQ(String::FromUTF8("\xE2\x80\x8C\xE1\x80\xB1"),
+            div->InnerHTMLAsString());
+
+  Range* range = GetCompositionRange();
+  EXPECT_EQ(0u, range->startOffset());
+  EXPECT_EQ(2u, range->endOffset());
+  Controller().CommitText(String::FromUTF8("\xE2\x80\x8C\xE1\x80\xB1"),
+                          Vector<ImeTextSpan>(), 1);
+  EXPECT_EQ(String::FromUTF8("\xE2\x80\x8C\xE1\x80\xB1"),
+            div->InnerHTMLAsString());
+
+  // Add character U+200C: 'kZeroWidthNonJoinerCharacter' and Myanmar vowel
+  Controller().SetComposition(String::FromUTF8("\xE2\x80\x8C\xE1\x80\xB1"),
+                              Vector<ImeTextSpan>(), 2, 2);
+  Controller().CommitText(String::FromUTF8("\xE2\x80\x8C\xE1\x80\xB1"),
+                          Vector<ImeTextSpan>(), 1);
+  EXPECT_EQ(
+      String::FromUTF8("\xE2\x80\x8C\xE1\x80\xB1\xE2\x80\x8C\xE1\x80\xB1"),
+      div->InnerHTMLAsString());
+}
+
 }  // namespace blink

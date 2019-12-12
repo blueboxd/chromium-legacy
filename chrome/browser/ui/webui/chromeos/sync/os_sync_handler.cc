@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/sync/os_sync_handler.h"
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/values.h"
@@ -25,6 +26,7 @@ OSSyncHandler::OSSyncHandler(Profile* profile) : profile_(profile) {
 
 OSSyncHandler::~OSSyncHandler() {
   RemoveSyncServiceObserver();
+  CommitFeatureEnabledPref();
 }
 
 void OSSyncHandler::RegisterMessages() {
@@ -35,6 +37,10 @@ void OSSyncHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "DidNavigateAwayFromOsSyncPage",
       base::BindRepeating(&OSSyncHandler::HandleDidNavigateAwayFromOsSyncPage,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "SetOsSyncFeatureEnabled",
+      base::BindRepeating(&OSSyncHandler::HandleSetOsSyncFeatureEnabled,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "SetOsSyncDatatypes",
@@ -51,26 +57,32 @@ void OSSyncHandler::OnJavascriptDisallowed() {
 }
 
 void OSSyncHandler::OnStateChanged(syncer::SyncService* service) {
-  PushSyncPrefs();
+  if (!is_setting_prefs_)
+    PushSyncPrefs();
 }
 
 void OSSyncHandler::HandleDidNavigateToOsSyncPage(const base::ListValue* args) {
   AllowJavascript();
 
+  // Cache the feature enabled pref.
   SyncService* service = GetSyncService();
-
-  if (service && !sync_blocker_)
-    sync_blocker_ = service->GetSetupInProgressHandle();
-
-  // TODO(jamescook): Sort out consent/opt-in story, then SetSyncRequested()
-  // here.
+  if (service)
+    feature_enabled_ = service->GetUserSettings()->GetOsSyncFeatureEnabled();
 
   PushSyncPrefs();
 }
 
 void OSSyncHandler::HandleDidNavigateAwayFromOsSyncPage(
     const base::ListValue* args) {
-  sync_blocker_.reset();
+  CommitFeatureEnabledPref();
+}
+
+void OSSyncHandler::HandleSetOsSyncFeatureEnabled(const base::ListValue* args) {
+  CHECK_EQ(1u, args->GetSize());
+  CHECK(args->GetBoolean(0, &feature_enabled_));
+  should_commit_feature_enabled_ = true;
+  // Changing the feature enabled state may change toggle state.
+  PushSyncPrefs();
 }
 
 void OSSyncHandler::HandleSetOsSyncDatatypes(const base::ListValue* args) {
@@ -83,10 +95,8 @@ void OSSyncHandler::HandleSetOsSyncDatatypes(const base::ListValue* args) {
   syncer::SyncService* service = GetSyncService();
 
   // If the sync engine has shutdown for some reason, just stop.
-  if (!service || !service->IsEngineInitialized()) {
-    sync_blocker_.reset();
+  if (!service || !service->IsEngineInitialized())
     return;
-  }
 
   bool sync_all_os_types;
   CHECK(result->GetBoolean("syncAllOsTypes", &sync_all_os_types));
@@ -105,19 +115,26 @@ void OSSyncHandler::HandleSetOsSyncDatatypes(const base::ListValue* args) {
   // toggles for in-development features hidden by feature flags.
   SyncUserSettings* settings = service->GetUserSettings();
   selected_types.RetainAll(settings->GetRegisteredSelectableOsTypes());
-  settings->SetSelectedOsTypes(sync_all_os_types, selected_types);
 
-  // Update the enabled state last so that the selected types will be set before
-  // pref observers are notified of the change.
-  bool feature_enabled;
-  CHECK(result->GetBoolean("featureEnabled", &feature_enabled));
-  settings->SetOsSyncFeatureEnabled(feature_enabled);
+  // Don't send updates back to JS while processing values sent from JS.
+  base::AutoReset<bool> reset(&is_setting_prefs_, true);
+  settings->SetSelectedOsTypes(sync_all_os_types, selected_types);
 
   // TODO(jamescook): Add metrics for selected types.
 }
 
 void OSSyncHandler::SetWebUIForTest(content::WebUI* web_ui) {
   set_web_ui(web_ui);
+}
+
+void OSSyncHandler::CommitFeatureEnabledPref() {
+  if (!should_commit_feature_enabled_)
+    return;
+  SyncService* service = GetSyncService();
+  if (!service)
+    return;
+  service->GetUserSettings()->SetOsSyncFeatureEnabled(feature_enabled_);
+  should_commit_feature_enabled_ = false;
 }
 
 void OSSyncHandler::PushSyncPrefs() {
@@ -128,8 +145,8 @@ void OSSyncHandler::PushSyncPrefs() {
 
   base::DictionaryValue args;
   SyncUserSettings* user_settings = service->GetUserSettings();
-  args.SetBoolean("featureEnabled", user_settings->GetOsSyncFeatureEnabled());
   // Tell the UI layer which data types are registered/enabled by the user.
+  args.SetBoolean("syncAllOsTypes", user_settings->IsSyncAllOsTypesEnabled());
   UserSelectableOsTypeSet registered_types =
       user_settings->GetRegisteredSelectableOsTypes();
   UserSelectableOsTypeSet selected_types = user_settings->GetSelectedOsTypes();
@@ -142,8 +159,8 @@ void OSSyncHandler::PushSyncPrefs() {
     // decide to support Apps sync for supervised users.
     args.SetBoolean(type_name + "Enforced", false);
   }
-  args.SetBoolean("syncAllOsTypes", user_settings->IsSyncAllOsTypesEnabled());
-  FireWebUIListener("os-sync-prefs-changed", args);
+  FireWebUIListener("os-sync-prefs-changed", base::Value(feature_enabled_),
+                    args);
 }
 
 syncer::SyncService* OSSyncHandler::GetSyncService() const {

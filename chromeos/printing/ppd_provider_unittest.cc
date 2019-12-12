@@ -159,6 +159,12 @@ class PpdProviderTest : public ::testing::Test {
     captured_resolve_ppd_references_.push_back({code, ref, usb_manufacturer});
   }
 
+  // Capture the result of a ResolvePpdLicense() call.
+  void CaptureResolvePpdLicense(PpdProvider::CallbackResultCode code,
+                                const std::string& license) {
+    captured_resolve_ppd_license_.push_back({code, license});
+  }
+
   void CaptureReverseLookup(PpdProvider::CallbackResultCode code,
                             const std::string& manufacturer,
                             const std::string& model) {
@@ -217,7 +223,7 @@ class PpdProviderTest : public ::testing::Test {
              "en-gb"])"},
             {"metadata_v2/index-01.json",
              R"([
-             ["printer_a_ref", "printer_a.ppd"]
+             ["printer_a_ref", "printer_a.ppd", {"license": "fake_license"}]
             ])"},
             {"metadata_v2/index-02.json",
              R"([
@@ -335,6 +341,12 @@ class PpdProviderTest : public ::testing::Test {
     std::string model;
   };
   std::vector<CapturedReverseLookup> captured_reverse_lookup_;
+
+  struct CapturedResolvePpdLicense {
+    PpdProvider::CallbackResultCode code;
+    std::string license;
+  };
+  std::vector<CapturedResolvePpdLicense> captured_resolve_ppd_license_;
 
   base::ScopedTempDir ppd_cache_temp_dir_;
   base::ScopedTempDir interceptor_temp_dir_;
@@ -767,6 +779,36 @@ TEST_F(PpdProviderTest, CaseInsensitiveMakeAndModel) {
   EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_references_[0].code);
   EXPECT_EQ("printer_a_ref",
             captured_resolve_ppd_references_[0].ref.effective_make_and_model);
+}
+
+// Tests that ResolvePpdLicense is able to correctly source the index and
+// determine the name of the PPD license associated with the given effecive make
+// and model (if any).
+TEST_F(PpdProviderTest, ResolvePpdLicense) {
+  StartFakePpdServer();
+  auto provider = CreateProvider("en", false);
+
+  // For this effective_make_and_model, we expect that there is associated
+  // license.
+  const char kEmm1[] = "printer_a_ref";
+  provider->ResolvePpdLicense(
+      kEmm1, base::BindOnce(&PpdProviderTest::CaptureResolvePpdLicense,
+                            base::Unretained(this)));
+
+  // We do not expect there to be any license associated with this
+  // effective_make_and_model, so the response should be empty.
+  const char kEmm2[] = "printer_b_ref";
+  provider->ResolvePpdLicense(
+      kEmm2, base::BindOnce(&PpdProviderTest::CaptureResolvePpdLicense,
+                            base::Unretained(this)));
+
+  task_environment_.RunUntilIdle();
+
+  ASSERT_EQ(2UL, captured_resolve_ppd_license_.size());
+  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_license_[0].code);
+  EXPECT_EQ("fake_license", captured_resolve_ppd_license_[0].license);
+  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_license_[1].code);
+  EXPECT_EQ("", captured_resolve_ppd_license_[1].license);
 }
 
 // Verifies that we can extract the Manufacturer and Model selectison for a

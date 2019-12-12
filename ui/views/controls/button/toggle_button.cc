@@ -114,6 +114,11 @@ ToggleButton::ToggleButton(ButtonListener* listener) : Button(listener) {
   thumb_view_ = AddChildView(std::make_unique<ThumbView>());
   SetInkDropMode(InkDropMode::ON);
   SetFocusForPlatform();
+  // TODO(pbos): Update the highlight-path shape so that a FocusRing can be used
+  // on top of it to increase contrast. Disabling it for now addresses a
+  // regression in crbug.com/1031983, but a matching FocusRing would probably be
+  // desirable.
+  SetInstallFocusRingOnFocus(false);
   set_has_ink_drop_action_on_click(true);
 }
 

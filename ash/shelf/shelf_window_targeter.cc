@@ -28,9 +28,14 @@ gfx::Insets GetInsetsForAlignment(int distance, ShelfAlignment alignment) {
 
 }  // namespace
 
-ShelfWindowTargeter::ShelfWindowTargeter(aura::Window* container, Shelf* shelf)
+ShelfWindowTargeter::ShelfWindowTargeter(
+    aura::Window* container,
+    Shelf* shelf,
+    bool extend_touch_area_for_auto_hidden_shelf)
     : ::wm::EasyResizeWindowTargeter(gfx::Insets(), gfx::Insets()),
-      shelf_(shelf) {
+      shelf_(shelf),
+      extend_touch_area_for_auto_hidden_shelf_(
+          extend_touch_area_for_auto_hidden_shelf) {
   WillChangeVisibilityState(shelf_->GetVisibilityState());
   container->AddObserver(this);
   shelf_->AddObserver(this);
@@ -85,7 +90,8 @@ void ShelfWindowTargeter::WillChangeVisibilityState(
     mouse_insets = GetInsetsForAlignment(
         ShelfConfig::Get()->workspace_area_visible_inset(),
         shelf_->alignment());
-  } else if (new_state == SHELF_AUTO_HIDE) {
+  } else if (new_state == SHELF_AUTO_HIDE &&
+             extend_touch_area_for_auto_hidden_shelf_) {
     // Extend the touch hit target out a bit to allow users to drag shelf out
     // while hidden.
     touch_insets = GetInsetsForAlignment(

@@ -382,9 +382,11 @@ void ClientSideDetectionHost::DidFinishNavigation(
     content::ResourceType resource_type =
         navigation_handle->IsInMainFrame() ? content::ResourceType::kMainFrame
                                            : content::ResourceType::kSubFrame;
+    url::Origin origin_of_final_url =
+        url::Origin::Create(navigation_handle->GetURL());
     UpdateIPUrlMap(
         navigation_handle->GetSocketAddress().ToStringWithoutPort() /* ip */,
-        navigation_handle->GetURL().spec() /* url */,
+        origin_of_final_url.Serialize(),
         navigation_handle->IsPost() ? "POST" : "GET",
         navigation_handle->GetReferrer().url.spec(), resource_type);
   }
@@ -452,12 +454,13 @@ void ClientSideDetectionHost::ResourceLoadComplete(
     const content::mojom::ResourceLoadInfo& resource_load_info) {
   if (!content::IsResourceTypeFrame(resource_load_info.resource_type) &&
       browse_info_.get() && should_extract_malware_features_ &&
-      resource_load_info.url.is_valid() &&
+      !resource_load_info.origin_of_final_url.opaque() &&
       resource_load_info.network_info->remote_endpoint.has_value()) {
     UpdateIPUrlMap(
         resource_load_info.network_info->remote_endpoint->ToStringWithoutPort(),
-        resource_load_info.url.spec(), resource_load_info.method,
-        resource_load_info.referrer.spec(), resource_load_info.resource_type);
+        resource_load_info.origin_of_final_url.Serialize(),
+        resource_load_info.method, resource_load_info.referrer.spec(),
+        resource_load_info.resource_type);
   }
 }
 
@@ -709,23 +712,26 @@ void ClientSideDetectionHost::MalwareFeatureExtractionDone(
   }
 }
 
-void ClientSideDetectionHost::UpdateIPUrlMap(const std::string& ip,
-                                             const std::string& url,
-                                             const std::string& method,
-                                             const std::string& referrer,
-                                             const ResourceType resource_type) {
-  if (ip.empty() || url.empty())
+void ClientSideDetectionHost::UpdateIPUrlMap(
+    const std::string& ip,
+    const std::string& origin_of_final_url,
+    const std::string& method,
+    const std::string& referrer,
+    const ResourceType resource_type) {
+  if (ip.empty() || origin_of_final_url.empty())
     return;
 
   auto it = browse_info_->ips.find(ip);
   if (it == browse_info_->ips.end()) {
     if (browse_info_->ips.size() < kMaxIPsPerBrowse) {
       std::vector<IPUrlInfo> url_infos;
-      url_infos.push_back(IPUrlInfo(url, method, referrer, resource_type));
+      url_infos.push_back(
+          IPUrlInfo(origin_of_final_url, method, referrer, resource_type));
       browse_info_->ips.insert(make_pair(ip, url_infos));
     }
   } else if (it->second.size() < kMaxUrlsPerIP) {
-    it->second.push_back(IPUrlInfo(url, method, referrer, resource_type));
+    it->second.push_back(
+        IPUrlInfo(origin_of_final_url, method, referrer, resource_type));
   }
 }
 

@@ -532,6 +532,29 @@ bool ServerCacheReplayer::RetrieveAndDecompressStoredHTTP(
   return true;
 }
 
+// Determines the Autofill Server Behavior from command line parameter.
+AutofillServerBehaviorType ParseAutofillServerBehaviorType() {
+  std::string autofill_server_option =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          kAutofillServerBehaviorParam);
+  VLOG(1) << "Autofill Server Behavior was:`" << autofill_server_option << "`.";
+  if (autofill_server_option.empty() ||
+      base::EqualsCaseInsensitiveASCII(autofill_server_option, "SavedCache")) {
+    return AutofillServerBehaviorType::kSavedCache;
+  } else if (base::EqualsCaseInsensitiveASCII(autofill_server_option,
+                                              "ProductionServer")) {
+    return AutofillServerBehaviorType::kProductionServer;
+  } else if (base::EqualsCaseInsensitiveASCII(autofill_server_option,
+                                              "OnlyLocalHeuristics")) {
+    return AutofillServerBehaviorType::kOnlyLocalHeuristics;
+  } else {
+    CHECK(false) << "Unrecognized command line value give for `"
+                 << kAutofillServerBehaviorParam << "` argument: `"
+                 << autofill_server_option << "`";
+    return AutofillServerBehaviorType::kSavedCache;
+  }
+}
+
 // Gives a pair that contains the HTTP text split in 2, where the first
 // element is the HTTP head and the second element is the HTTP body.
 std::pair<std::string, std::string> SplitHTTP(const std::string& http_text) {
@@ -590,6 +613,11 @@ ServerCacheReplayer::~ServerCacheReplayer() {}
 ServerCacheReplayer::ServerCacheReplayer(const base::FilePath& json_file_path,
                                          int options)
     : split_requests_by_form_(SplitRequestsByForm(options)) {
+  // If the behavior type is not cache, we can skip setup.
+  if (test::ParseAutofillServerBehaviorType() !=
+      AutofillServerBehaviorType::kSavedCache)
+    return;
+
   // Using CHECK is fine here since ServerCacheReplayer will only be used for
   // testing and we prefer the test to crash than being in an inconsistent state
   // when the cache could not be properly populated from the JSON file.
@@ -681,6 +709,7 @@ bool ServerCacheReplayer::GetResponseForQuery(
 ServerUrlLoader::ServerUrlLoader(
     std::unique_ptr<ServerCacheReplayer> cache_replayer)
     : cache_replayer_(std::move(cache_replayer)),
+      autofill_server_behavior_type_(ParseAutofillServerBehaviorType()),
       interceptor_(base::BindLambdaForTesting(
           [&](content::URLLoaderInterceptor::RequestParams* params) -> bool {
             return InterceptAutofillRequest(params);
@@ -693,6 +722,19 @@ ServerUrlLoader::ServerUrlLoader(
 
 ServerUrlLoader::~ServerUrlLoader() {}
 
+bool WriteNotFoundResponse(
+    content::URLLoaderInterceptor::RequestParams* params) {
+  // Give back 404 error to the server if there is not match in cache.
+  constexpr char kNoKeyMatchHTTPErrorHeaders[] = "HTTP/2.0 404 Not Found";
+  constexpr char kNoKeyMatchHTTPErrorBody[] =
+      "could not find response matching request";
+  VLOG(1) << "Served Autofill error response: " << kNoKeyMatchHTTPErrorBody;
+  content::URLLoaderInterceptor::WriteResponse(
+      std::string(kNoKeyMatchHTTPErrorHeaders),
+      std::string(kNoKeyMatchHTTPErrorBody), params->client.get());
+  return true;
+}
+
 bool ServerUrlLoader::InterceptAutofillRequest(
     content::URLLoaderInterceptor::RequestParams* params) {
   static const char kDefaultAutofillServerQueryURL[] =
@@ -702,6 +744,20 @@ bool ServerUrlLoader::InterceptAutofillRequest(
   // Let all requests that are not autofill queries go to WPR.
   if (request_url.find(kDefaultAutofillServerQueryURL) == std::string::npos) {
     return false;
+  }
+
+  // Check what the set behavior type is.
+  //   For Production Server, return false to say don't intercept.
+  //   For Only Local Heuristics, write empty server response.
+  //   For Saved Cache, continue on and look for a response in the cache.
+  switch (autofill_server_behavior_type_) {
+    case AutofillServerBehaviorType::kProductionServer:
+      return false;
+    case AutofillServerBehaviorType::kOnlyLocalHeuristics:
+      return WriteNotFoundResponse(params);
+    case AutofillServerBehaviorType::kSavedCache:
+    default:
+      break;
   }
 
   // Intercept autofill query and serve back response from cache.
@@ -738,15 +794,7 @@ bool ServerUrlLoader::InterceptAutofillRequest(
   std::string http_response;
   if (!cache_replayer_->GetResponseForQuery(query_request_statusor.ValueOrDie(),
                                             &http_response)) {
-    // Give back 404 error to the server if there is not match in cache.
-    constexpr char kNoKeyMatchHTTPErrorHeaders[] = "HTTP/2.0 404 Not Found";
-    constexpr char kNoKeyMatchHTTPErrorBody[] =
-        "could not find response matching request";
-    VLOG(1) << "Served Autofill error response: " << kNoKeyMatchHTTPErrorBody;
-    content::URLLoaderInterceptor::WriteResponse(
-        std::string(kNoKeyMatchHTTPErrorHeaders),
-        std::string(kNoKeyMatchHTTPErrorBody), params->client.get());
-    return true;
+    return WriteNotFoundResponse(params);
   }
   // Give back cache response HTTP content.
   auto http_pair = SplitHTTP(http_response);

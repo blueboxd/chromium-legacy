@@ -91,6 +91,9 @@ vars = {
   # the gn arg 'use_clang_coverage').
   'checkout_clang_coverage_tools': False,
 
+  # Fetch clang-tidy into the same bin/ directory as our clang binary.
+  'checkout_clang_tidy': False,
+
   # By default do not check out the Oculus SDK. Only available for Googlers.
   'checkout_oculus_sdk' : 'checkout_src_internal and checkout_win',
 
@@ -172,11 +175,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'b2d24e11f1a008a67e85eec03b9532cb16515266',
+  'skia_revision': '3517aa7b14ad52aa662bf38932f2ba358a9f8318',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '4547e0be7faffbc4b81702219226b67e833b8635',
+  'v8_revision': '5a2f2203c80defe0adc943a2c15ff51da7b24196',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -184,15 +187,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'e5c2089fc52ae7eb3be58e24737824a2cb85216c',
+  'angle_revision': '49135f689abdd7736f03eac81e8331e7463ca4f7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '157ba260ea72ad11ae439521391f4057353fed8c',
+  'swiftshader_revision': 'd684c7fdd3e18e1c2cb8c9b76bab80327d089398',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '918e27142db5cc9a85b5eec458b891c947ad17b1',
+  'pdfium_revision': '4bd03e886ac45e84e7d1dbf56f6d860f6e5552a5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -235,7 +238,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'c9ce95e0e9a8ada2ca6a7f5eaa5e3f4cea1ba641',
+  'catapult_revision': 'a6511cb49d585cdb9a81a8a99aa7c2adfd244ed9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -243,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '32cd3a0fcc7a34ea0c3831cd447c70f359dd9400',
+  'devtools_frontend_revision': '98ea80082239f0e36df38ed9f3b6b0269b0ad1ea',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -299,11 +302,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'shaderc_revision': 'ebf36174fd09393596852ac3009e80f233d89630',
+  'shaderc_revision': 'b3b39103d6becf903547d889bf357e27c6c71f8d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'e8e9d5daf59fcf19f1a2e1b36e8da7437e0264f5',
+  'dawn_revision': '280b96ea8de35e145be4878ca53b6eecf7f38e67',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -861,7 +864,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'b2f0eb83d73582d4a82e13ceb78b096542d8b3a5',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '652057cb9c42b645b96d2cf1f6e574c8504669a4',
       'condition': 'checkout_linux',
   },
 
@@ -886,7 +889,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'ee67b97daaad4373320b6f60b078d5b22d1a15b6',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '812a14697dd6193c0815a1bdb0c23462bfcb8cd3',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1292,7 +1295,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'dea119e02f51a3eddc8985107d86fd8b2843d5dc',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'a2f49a2797bf34ee7084f8b6d9532449dbd4ef49',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1493,7 +1496,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'dd55f3ca8f2ea716ca917a4aaf36f0729fe902b1',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '3c4fda2ed8140a330634c0a2704a3cf0311a89de',
+    Var('webrtc_git') + '/src.git' + '@' + '1e51a388bcf7b644bf4f1a2fb09363f866c67fcf',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1563,7 +1566,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@98593d5894205fb997e216a591e62669ba68a43d',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@1159fec7d02e9218c24ee84f37c39d2f68ec391c',
     'condition': 'checkout_src_internal',
   },
 
@@ -3498,6 +3501,15 @@ hooks = [
     'condition': 'checkout_clang_coverage_tools',
     'action': ['python', 'src/tools/clang/scripts/update.py',
                '--package=coverage_tools'],
+  },
+  {
+    # This is also supposed to support the same set of platforms as 'clang'
+    # above. LLVM ToT support isn't provided at the moment.
+    'name': 'clang_tidy',
+    'pattern': '.',
+    'condition': 'checkout_clang_tidy',
+    'action': ['python', 'src/tools/clang/scripts/update.py',
+               '--package=clang-tidy'],
   },
   {
     # Mac doesn't use lld so it's not included in the default clang bundle

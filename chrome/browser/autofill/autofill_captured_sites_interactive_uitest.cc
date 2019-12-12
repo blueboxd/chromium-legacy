@@ -48,6 +48,7 @@
 #include "components/autofill/core/common/autofill_util.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
+#include "net/dns/mock_host_resolver.h"
 #include "services/network/public/cpp/data_element.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -215,6 +216,13 @@ class AutofillCapturedSitesInteractiveTest
     // the raw pointer will be nullptr.
     server_url_loader_.reset(nullptr);
     AutofillUiTest::TearDownOnMainThread();
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    // Allow access exception to live Autofill Server for
+    // overriding cache replay behavior.
+    host_resolver()->AllowDirectLookup("clients1.google.com");
+    AutofillUiTest::SetUpInProcessBrowserTestFixture();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

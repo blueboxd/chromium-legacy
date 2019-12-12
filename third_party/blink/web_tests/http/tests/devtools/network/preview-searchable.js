@@ -73,11 +73,13 @@
 
 
   function trySearches(request, searches, callback) {
+    var networkPanel = UI.panels.network;
     TestRunner.addSniffer(Network.RequestPreviewView.prototype, '_doShowPreview', async function() {
       previewViewHandled(searches, callback, await this._contentViewPromise);
+      networkPanel._hideRequestPanel();
     });
-    var networkPanel = UI.panels.network;
-    networkPanel._showRequest(request);
+    networkPanel._onRequestSelected({data: request});
+    networkPanel._showRequestPanel();
     var itemView = networkPanel._networkItemView;
     itemView._selectTab('preview');
   }

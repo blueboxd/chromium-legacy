@@ -83,13 +83,12 @@ void GaiaAuthFetcherIOS::CancelRequest() {
 
 void GaiaAuthFetcherIOS::OnFetchComplete(const GURL& url,
                                          const std::string& data,
-                                         const net::URLRequestStatus& status,
+                                         net::Error net_error,
                                          int response_code) {
   DVLOG(2) << "Response " << url.spec() << ", code = " << response_code << "\n";
   DVLOG(2) << "data: " << data << "\n";
   SetPendingFetch(false);
-  DispatchFetchedRequest(url, data, static_cast<net::Error>(status.error()),
-                         response_code);
+  DispatchFetchedRequest(url, data, net_error, response_code);
 }
 
 void GaiaAuthFetcherIOS::SetShouldUseGaiaAuthFetcherIOSForTesting(

@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL generated constructor prototype property document.registerElement is not a function
+Harness: the test ran to completion.
+

@@ -56,7 +56,7 @@ template("system_webview_apk_tmpl") {
         defined(use_trichrome_library) && use_trichrome_library
 
     if (!_use_trichrome_library) {
-      deps += [ "//android_webview:monochrome_webview_assets" ]
+      deps += [ "//android_webview:standalone_webview_assets" ]
     }
 
     # Flag whether additional deps and libs should be included for each ABI.

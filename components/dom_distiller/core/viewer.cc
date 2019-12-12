@@ -56,10 +56,7 @@ const char kSansSerifCssClass[] = "sans-serif";
 const char kMonospaceCssClass[] = "monospace";
 
 std::string GetPlatformSpecificCss() {
-#if defined(OS_IOS)
-  return ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
-      IDR_DISTILLER_IOS_CSS);
-#elif defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
   return "";
 #else  // Desktop
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(

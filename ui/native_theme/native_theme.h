@@ -364,6 +364,8 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_TabTitleColorActive,
     kColorId_TabTitleColorInactive,
     kColorId_TabBottomBorder,
+    kColorId_TabHighlightBackground,
+    kColorId_TabHighlightFocusedBackground,
     // Textfield
     kColorId_TextfieldDefaultColor,
     kColorId_TextfieldDefaultBackground,

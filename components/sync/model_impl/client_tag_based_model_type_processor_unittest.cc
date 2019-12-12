@@ -1988,29 +1988,6 @@ class WalletDataClientTagBasedModelTypeProcessorTest
   ModelType GetModelType() override { return AUTOFILL_WALLET_DATA; }
 };
 
-// Tests that updates for Wallet data without client tags get client tags
-// assigned, and not dropped.
-// TODO(crbug.com/874001): Remove this feature-specific logic when the right
-// solution for Wallet data has been decided.
-TEST_F(WalletDataClientTagBasedModelTypeProcessorTest,
-       ShouldCreateClientTagsForWallet) {
-  InitializeToReadyState();
-
-  // Commit an item.
-  UpdateResponseDataList updates;
-  updates.push_back(worker()->GenerateUpdateData(
-      ClientTagHash(), GenerateSpecifics(kKey1, kValue1), 1, "k1"));
-  sync_pb::GarbageCollectionDirective garbage_collection_directive;
-  garbage_collection_directive.set_version_watermark(1);
-  worker()->UpdateWithGarbageCollection(std::move(updates),
-                                        garbage_collection_directive);
-
-  // Verify that the data was stored.
-  EXPECT_EQ(1U, db()->metadata_count());
-  EXPECT_EQ(1U, db()->data_count());
-  EXPECT_FALSE(db()->GetMetadata(kKey1).client_tag_hash().empty());
-}
-
 // Tests that a real local change wins over a remote encryption-only change.
 TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldIgnoreRemoteEncryption) {
   InitializeToReadyState();

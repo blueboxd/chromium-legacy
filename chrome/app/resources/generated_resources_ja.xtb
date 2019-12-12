@@ -1926,7 +1926,7 @@
 <translation id="3714195043138862580">このデモデバイスはプロビジョニングを解除されている状態です。</translation>
 <translation id="3714633008798122362">ウェブ カレンダー</translation>
 <translation id="3719826155360621982">トップページ</translation>
-<translation id="3721119614952978349">あなたと Google</translation>
+<translation id="3721119614952978349">Google の設定</translation>
 <translation id="3722108462506185496">仮想マシンサービスの起動中にエラーが発生しました。もう一度お試しください。</translation>
 <translation id="3725367690636977613">ページ</translation>
 <translation id="3726137731714254362">ここからフォルダを削除した場合、共有は停止されますがファイルは削除されません。</translation>
@@ -2766,7 +2766,6 @@
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> - <ph name="PROFILE_NAME" /></translation>
 <translation id="496185450405387901">このアプリは管理者によってインストールされています。</translation>
 <translation id="4964455510556214366">配置</translation>
-<translation id="4964673849688379040">確認しています...</translation>
 <translation id="4965808351167763748">このデバイスでハングアウト Meet を実行するように設定してもよろしいですか？</translation>
 <translation id="496888482094675990">ファイル アプリを使えば、Google ドライブ、外部ストレージ、Chrome OS デバイスに保存したファイルにすぐにアクセスできます。</translation>
 <translation id="4971412780836297815">完了後に開く</translation>

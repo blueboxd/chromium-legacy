@@ -10,23 +10,23 @@
 @class NSUserNotificationCenter;
 
 @implementation XPCTransactionHandler {
-  bool transactionOpen_;
+  bool _transactionOpen;
 }
 
 - (instancetype)init {
   if ((self = [super init])) {
-    transactionOpen_ = false;
+    _transactionOpen = false;
   }
   return self;
 }
 
 - (void)openTransactionIfNeeded {
   @synchronized(self) {
-    if (transactionOpen_) {
+    if (_transactionOpen) {
       return;
     }
     xpc_transaction_begin();
-    transactionOpen_ = true;
+    _transactionOpen = true;
   }
 }
 
@@ -35,9 +35,9 @@
     NSUserNotificationCenter* notificationCenter =
         [NSUserNotificationCenter defaultUserNotificationCenter];
     NSUInteger showing = [[notificationCenter deliveredNotifications] count];
-    if (showing == 0 && transactionOpen_) {
+    if (showing == 0 && _transactionOpen) {
       xpc_transaction_end();
-      transactionOpen_ = false;
+      _transactionOpen = false;
     }
   }
 }

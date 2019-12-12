@@ -60,7 +60,7 @@ void GaiaAuthFetcherIOSBridge::OnURLFetchSuccess(const std::string& data,
     return;
   }
   GURL url = FinishPendingRequest();
-  delegate_->OnFetchComplete(url, data, net::URLRequestStatus(), response_code);
+  delegate_->OnFetchComplete(url, data, net::OK, response_code);
 }
 
 void GaiaAuthFetcherIOSBridge::OnURLFetchFailure(int error, int response_code) {
@@ -68,8 +68,7 @@ void GaiaAuthFetcherIOSBridge::OnURLFetchFailure(int error, int response_code) {
     return;
   }
   GURL url = FinishPendingRequest();
-  delegate_->OnFetchComplete(url, std::string(),
-                             net::URLRequestStatus::FromError(error),
+  delegate_->OnFetchComplete(url, std::string(), static_cast<net::Error>(error),
                              response_code);
 }
 

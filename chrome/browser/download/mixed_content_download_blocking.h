@@ -48,7 +48,8 @@ enum class InsecureDownloadSecurityStatus {
   kInitiatorInferredSecureFileInsecure = 7,
   kInitiatorInferredInsecureFileSecure = 8,
   kInitiatorInferredInsecureFileInsecure = 9,
-  kMaxValue = kInitiatorInferredInsecureFileInsecure,
+  kDownloadIgnored = 10,
+  kMaxValue = kDownloadIgnored,
 };
 
 // These values are logged to UMA. Entries should not be renumbered and numeric

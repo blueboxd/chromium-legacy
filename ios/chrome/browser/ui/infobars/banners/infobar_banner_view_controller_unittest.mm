@@ -47,15 +47,18 @@ TEST_F(InfobarBannerViewControllerTest, TestBannerButtonPressed) {
 }
 
 TEST_F(InfobarBannerViewControllerTest, TestTextConfiguration) {
-  view_controller_.titleText = @"title";
-  view_controller_.subTitleText = @"subtitle";
-  view_controller_.buttonText = @"buttonText";
+  NSString* const kTitle = @"title";
+  NSString* const kSubtitleText = @"subtitle";
+  NSString* const kButtonText = @"buttonText";
+  [view_controller_ setTitleText:kTitle];
+  [view_controller_ setSubtitleText:kSubtitleText];
+  [view_controller_ setButtonText:kButtonText];
   // Add view_controller_ to the UI Hierarchy to make sure views are created and
   // retained correctly.
   [scoped_key_window_.Get() setRootViewController:view_controller_];
-  ASSERT_EQ(view_controller_.titleLabel.text, @"title");
-  ASSERT_EQ(view_controller_.subTitleLabel.text, @"subtitle");
-  ASSERT_EQ(view_controller_.infobarButton.titleLabel.text, @"buttonText");
+  ASSERT_EQ(view_controller_.titleLabel.text, kTitle);
+  ASSERT_EQ(view_controller_.subTitleLabel.text, kSubtitleText);
+  ASSERT_EQ(view_controller_.infobarButton.titleLabel.text, kButtonText);
 }
 
 TEST_F(InfobarBannerViewControllerTest, TestSubtitleLabelHidden) {

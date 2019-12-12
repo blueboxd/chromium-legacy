@@ -299,8 +299,8 @@ class BASE_EXPORT RepeatingTimer : public internal::TimerBase {
 };
 
 //-----------------------------------------------------------------------------
-// A simple, one-shot timer with the retained user task.  See usage notes at the
-// top of the file.
+// A simple, one-shot timer with the retained user_task which is reused for
+// multiple invocations of Start(). See usage notes at the top of the file.
 class BASE_EXPORT RetainingOneShotTimer : public internal::TimerBase {
  public:
   RetainingOneShotTimer();

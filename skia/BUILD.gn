@@ -27,7 +27,11 @@ skia_support_pdf = !is_ios && enable_basic_printing
 skia_support_skottie = true
 
 declare_args() {
-  enable_skia_wuffs_gif = false
+  # If, in the future, this configuration option is deleted entirely, we can
+  # also probably delete any mention of the "libgifcodec" third party library
+  # from the top level DEPS and the third_party/.gitignore files.
+  enable_skia_wuffs_gif = true
+
   skia_whitelist_serialized_typefaces = false
 }
 

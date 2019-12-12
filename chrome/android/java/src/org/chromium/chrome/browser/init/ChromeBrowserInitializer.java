@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.init;
 
 import android.app.Activity;
-import android.content.Context;
 import android.os.Build;
 import android.os.Process;
 import android.os.StrictMode;
@@ -94,16 +93,6 @@ public class ChromeBrowserInitializer {
             sChromeBrowserInitializer = new ChromeBrowserInitializer();
         }
         return sChromeBrowserInitializer;
-    }
-
-    /**
-     * This class is an application specific object that orchestrates the app initialization.
-     * @deprecated Use getInstance with no arguments instead.
-     * @param context The context to get the application context from.
-     * @return The singleton instance of {@link ChromeBrowserInitializer}.
-     */
-    public static ChromeBrowserInitializer getInstance(Context context) {
-        return getInstance();
     }
 
     /**

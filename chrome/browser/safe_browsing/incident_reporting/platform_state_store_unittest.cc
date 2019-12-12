@@ -5,6 +5,7 @@
 #include "chrome/browser/safe_browsing/incident_reporting/platform_state_store.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 
@@ -12,8 +13,8 @@
 
 #include <stdint.h>
 
-#include "base/json/json_reader.h"
 #include "base/macros.h"
+#include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -38,15 +39,8 @@ std::unique_ptr<base::DictionaryValue> CreateTestIncidentsSentPref() {
       "\"2\":{\"spam\":\"1234\",\"blorf\":\"5\"},"
       "\"0\":{\"whaa\":\"0\",\"wha?\":\"9876\"}"
       "}";
-  base::JSONReader reader;
-
-  std::unique_ptr<base::Value> root(reader.ReadDeprecated(kData));
-  EXPECT_TRUE(root);
-  base::DictionaryValue* incidents_sent = nullptr;
-  EXPECT_TRUE(root->GetAsDictionary(&incidents_sent));
-  // Relinquish ownership to |incidents_sent|.
-  ignore_result(root.release());
-  return base::WrapUnique(incidents_sent);
+  return base::DictionaryValue::From(
+      base::Value::ToUniquePtrValue(base::test::ParseJson(kData)));
 }
 
 }  // namespace
@@ -63,10 +57,10 @@ TEST(PlatformStateStoreTest, DeserializeEmpty) {
 
 // Tests that serialize followed by deserialize doesn't lose data.
 TEST(PlatformStateStoreTest, RoundTrip) {
-  std::unique_ptr<base::DictionaryValue> incidents_sent(
-      CreateTestIncidentsSentPref());
+  std::unique_ptr<base::DictionaryValue> incidents_sent =
+      CreateTestIncidentsSentPref();
+  ASSERT_TRUE(incidents_sent);
   std::string data;
-
   SerializeIncidentsSent(incidents_sent.get(), &data);
 
   // Make sure the serialized data matches expectations to ensure compatibility.

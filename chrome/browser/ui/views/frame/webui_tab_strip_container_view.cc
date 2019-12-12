@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/i18n/message_formatter.h"
 #include "base/i18n/number_formatting.h"
 #include "base/logging.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_view_class_properties.h"
 #include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_view.h"
@@ -166,8 +168,7 @@ WebUITabStripContainerView::~WebUITabStripContainerView() {
 }
 
 bool WebUITabStripContainerView::UseTouchableTabStrip() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kWebUITabStrip) &&
+  return base::FeatureList::IsEnabled(features::kWebUITabStrip) &&
          ui::MaterialDesignController::touch_ui();
 }
 

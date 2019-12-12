@@ -81,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(MojoSandboxTest, SubprocessSharedBuffer) {
   test_service->CreateSharedBuffer(
       kTestMessage,
       base::BindOnce(
-          [](const base::Closure& quit_closure, bool* got_response,
+          [](base::OnceClosure quit_closure, bool* got_response,
              mojo::ScopedSharedBufferHandle buffer) {
             ASSERT_TRUE(buffer.is_valid());
             mojo::ScopedSharedBufferMapping mapping =
@@ -91,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(MojoSandboxTest, SubprocessSharedBuffer) {
                                  kTestMessage.size());
             EXPECT_EQ(kTestMessage, contents);
             *got_response = true;
-            quit_closure.Run();
+            std::move(quit_closure).Run();
           },
           run_loop.QuitClosure(), &got_response));
   run_loop.Run();

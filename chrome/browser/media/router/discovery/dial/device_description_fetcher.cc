@@ -11,7 +11,6 @@
 #include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
 #include "net/base/ip_address.h"
 #include "net/http/http_response_headers.h"
-#include "services/network/public/cpp/resource_response.h"
 
 constexpr char kApplicationUrlHeaderName[] = "Application-URL";
 

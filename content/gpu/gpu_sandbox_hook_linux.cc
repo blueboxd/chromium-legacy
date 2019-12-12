@@ -196,6 +196,13 @@ void AddAmdGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
   }
 }
 
+void AddIntelGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
+  // TODO(hob): Whitelist all valid render node paths.
+  static const char* const kReadWriteList[] = {"/dev/dri/renderD128"};
+  for (const char* item : kReadWriteList)
+    permissions->push_back(BrokerFilePermission::ReadWrite(item));
+}
+
 void AddArmGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
   // On ARM we're enabling the sandbox before the X connection is made,
   // so we need to allow access to |.Xauthority|.
@@ -282,6 +289,10 @@ std::vector<BrokerFilePermission> FilePermissionsForGpu(
     }
     if (options.use_amd_specific_policies) {
       AddAmdGpuWhitelist(&permissions);
+      return permissions;
+    }
+    if (options.use_intel_specific_policies) {
+      AddIntelGpuWhitelist(&permissions);
       return permissions;
     }
   }

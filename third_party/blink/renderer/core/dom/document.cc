@@ -8096,17 +8096,6 @@ void Document::DidEnforceInsecureNavigationsSet() {
           GetSecurityContext().InsecureNavigationsToUpgrade()));
 }
 
-void Document::CountDetachingNodeAccessInDOMNodeRemovedHandler() {
-  auto state = GetInDOMNodeRemovedHandlerState();
-  DCHECK_NE(state, InDOMNodeRemovedHandlerState::kNone);
-  UseCounter::Count(
-      *this,
-      state == InDOMNodeRemovedHandlerState::kDOMNodeRemoved
-          ? WebFeature::kDOMNodeRemovedEventHandlerAccessDetachingNode
-          : WebFeature::
-                kDOMNodeRemovedFromDocumentEventHandlerAccessDetachingNode);
-}
-
 void Document::SetShadowCascadeOrder(ShadowCascadeOrder order) {
   DCHECK_NE(order, ShadowCascadeOrder::kShadowCascadeNone);
   if (order == shadow_cascade_order_)

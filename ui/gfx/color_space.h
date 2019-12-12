@@ -21,11 +21,6 @@
 // These forward declarations are used to give IPC code friend access to private
 // fields of gfx::ColorSpace for the purpose of serialization and
 // deserialization.
-namespace IPC {
-template <class P>
-struct ParamTraits;
-}  // namespace IPC
-
 namespace mojo {
 template <class T, class U>
 struct StructTraits;
@@ -305,7 +300,6 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // order.
   float custom_transfer_params_[7] = {0, 0, 0, 0, 0, 0, 0};
 
-  friend struct IPC::ParamTraits<ColorSpace>;
   friend struct mojo::StructTraits<gfx::mojom::ColorSpaceDataView,
                                    gfx::ColorSpace>;
 };

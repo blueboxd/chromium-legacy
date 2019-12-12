@@ -102,11 +102,11 @@ void ShowFirstRunDialog(Profile* profile) {
 }  // namespace first_run
 
 @implementation FirstRunDialogController {
-  base::scoped_nsobject<FirstRunDialogViewController> viewController_;
+  base::scoped_nsobject<FirstRunDialogViewController> _viewController;
 }
 
 - (instancetype)init {
-  viewController_.reset([[FirstRunDialogViewController alloc]
+  _viewController.reset([[FirstRunDialogViewController alloc]
       initWithStatsCheckboxInitiallyChecked:StatsCheckboxDefault()
               defaultBrowserCheckboxVisible:shell_integration::
                                                 CanSetAsDefaultBrowser()]);
@@ -115,12 +115,12 @@ void ShowFirstRunDialog(Profile* profile) {
   // window, so that we can find out what the content view's frame is supposed
   // to be for use here.
   base::scoped_nsobject<NSWindow> window([[NSWindow alloc]
-      initWithContentRect:[[viewController_ view] frame]
+      initWithContentRect:[[_viewController view] frame]
                 styleMask:NSTitledWindowMask
                   backing:NSBackingStoreBuffered
                     defer:YES]);
-  [window setContentView:[viewController_ view]];
-  [window setTitle:[viewController_ windowTitle]];
+  [window setContentView:[_viewController view]];
+  [window setTitle:[_viewController windowTitle]];
 
   self = [super initWithWindow:window.get()];
 
@@ -178,11 +178,11 @@ void ShowFirstRunDialog(Profile* profile) {
 }
 
 - (BOOL)isStatsReportingEnabled {
-  return [viewController_ isStatsReportingEnabled];
+  return [_viewController isStatsReportingEnabled];
 }
 
 - (BOOL)isMakeDefaultBrowserEnabled {
-  return [viewController_ isMakeDefaultBrowserEnabled];
+  return [_viewController isMakeDefaultBrowserEnabled];
 }
 
 @end

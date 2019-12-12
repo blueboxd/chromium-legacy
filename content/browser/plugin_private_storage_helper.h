@@ -36,7 +36,7 @@ void ClearPluginPrivateDataOnFileTaskRunner(
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
     const base::Time begin,
     const base::Time end,
-    const base::Closure& callback);
+    base::OnceClosure callback);
 
 }  // namespace content
 

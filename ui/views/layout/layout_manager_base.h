@@ -49,6 +49,8 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
   gfx::Size GetPreferredSize(const View* host) const override;
   gfx::Size GetMinimumSize(const View* host) const override;
   int GetPreferredHeightForWidth(const View* host, int width) const override;
+  SizeBounds GetAvailableSize(const View* host,
+                              const View* view) const override;
   void Layout(View* host) final;
 
  protected:
@@ -157,6 +159,8 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
   }
 
  private:
+  friend class LayoutManagerBaseAvailableSizeTest;
+
   // Holds bookkeeping data used to determine inclusion of children in the
   // layout.
   struct ChildInfo {

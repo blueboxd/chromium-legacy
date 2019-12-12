@@ -1113,6 +1113,8 @@ void ClientControlledShellSurface::UpdateFrame() {
 
       UpdateCaptionButtonModel();
     }
+    DCHECK_EQ(ash::FrameHeader::Get(widget_),
+              wide_frame_->header_view()->GetFrameHeader());
   } else {
     if (wide_frame_) {
       update_frame = true;
@@ -1125,6 +1127,8 @@ void ClientControlledShellSurface::UpdateFrame() {
 
       UpdateCaptionButtonModel();
     }
+    DCHECK_EQ(ash::FrameHeader::Get(widget_),
+              GetFrameView()->GetHeaderView()->GetFrameHeader());
     UpdateFrameWidth();
   }
   // The autohide should be applied when the window state is in

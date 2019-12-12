@@ -86,7 +86,7 @@ class SnapshotBrowserTest : public ContentBrowserTest {
   void SetupTestServer() {
     // Use an embedded test server so we can open multiple windows in
     // the same renderer process, all referring to the same origin.
-    embedded_test_server()->RegisterRequestHandler(base::Bind(
+    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
         &SnapshotBrowserTest::HandleRequest, base::Unretained(this)));
     ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -240,8 +240,8 @@ IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, SingleWindowTest) {
     // seems difficult to figure out the colorspace transformation
     // required to make these color comparisons.
     rwhi->GetSnapshotFromBrowser(
-        base::Bind(&SnapshotBrowserTest::SyncSnapshotCallback,
-                   base::Unretained(this), base::Unretained(rwhi)),
+        base::BindOnce(&SnapshotBrowserTest::SyncSnapshotCallback,
+                       base::Unretained(this), base::Unretained(rwhi)),
         true);
     while (expected_snapshots_.size() > 0) {
       base::RunLoop().RunUntilIdle();
@@ -308,8 +308,8 @@ IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, MAYBE_SyncMultiWindowTest) {
       // seems difficult to figure out the colorspace transformation
       // required to make these color comparisons.
       rwhi->GetSnapshotFromBrowser(
-          base::Bind(&SnapshotBrowserTest::SyncSnapshotCallback,
-                     base::Unretained(this), base::Unretained(rwhi)),
+          base::BindOnce(&SnapshotBrowserTest::SyncSnapshotCallback,
+                         base::Unretained(this), base::Unretained(rwhi)),
           true);
     }
 
@@ -374,8 +374,8 @@ IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, MAYBE_AsyncMultiWindowTest) {
       // seems difficult to figure out the colorspace transformation
       // required to make these color comparisons.
       rwhi->GetSnapshotFromBrowser(
-          base::Bind(&SnapshotBrowserTest::AsyncSnapshotCallback,
-                     base::Unretained(this), base::Unretained(rwhi)),
+          base::BindOnce(&SnapshotBrowserTest::AsyncSnapshotCallback,
+                         base::Unretained(this), base::Unretained(rwhi)),
           true);
       ++num_remaining_async_snapshots_;
     }

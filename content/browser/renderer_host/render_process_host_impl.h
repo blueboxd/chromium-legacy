@@ -815,11 +815,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   template <typename InterfaceType>
   using AddInterfaceCallback =
-      base::Callback<void(mojo::InterfaceRequest<InterfaceType>)>;
+      base::RepeatingCallback<void(mojo::InterfaceRequest<InterfaceType>)>;
 
   template <typename InterfaceType>
   using AddReceiverCallback =
-      base::Callback<void(mojo::PendingReceiver<InterfaceType>)>;
+      base::RepeatingCallback<void(mojo::PendingReceiver<InterfaceType>)>;
 
   template <typename CallbackType>
   struct InterfaceGetter;
@@ -828,11 +828,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   struct InterfaceGetter<AddInterfaceCallback<InterfaceType>> {
     static void GetInterfaceOnUIThread(
         base::WeakPtr<RenderProcessHostImpl> weak_host,
-        const AddInterfaceCallback<InterfaceType>& callback,
+        AddInterfaceCallback<InterfaceType> callback,
         mojo::InterfaceRequest<InterfaceType> request) {
       if (!weak_host)
         return;
-      callback.Run(std::move(request));
+      std::move(callback).Run(std::move(request));
     }
   };
 
@@ -840,11 +840,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   struct InterfaceGetter<AddReceiverCallback<InterfaceType>> {
     static void GetInterfaceOnUIThread(
         base::WeakPtr<RenderProcessHostImpl> weak_host,
-        const AddReceiverCallback<InterfaceType>& callback,
+        AddReceiverCallback<InterfaceType> callback,
         mojo::PendingReceiver<InterfaceType> receiver) {
       if (!weak_host)
         return;
-      callback.Run(std::move(receiver));
+      std::move(callback).Run(std::move(receiver));
     }
   };
 
@@ -853,10 +853,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // method will never run beyond the next invocation of Cleanup().
   template <typename CallbackType>
   void AddUIThreadInterface(service_manager::BinderRegistry* registry,
-                            const CallbackType& callback) {
+                            CallbackType callback) {
     registry->AddInterface(
-        base::Bind(&InterfaceGetter<CallbackType>::GetInterfaceOnUIThread,
-                   instance_weak_factory_->GetWeakPtr(), callback),
+        base::BindRepeating(
+            &InterfaceGetter<CallbackType>::GetInterfaceOnUIThread,
+            instance_weak_factory_->GetWeakPtr(), std::move(callback)),
         base::CreateSingleThreadTaskRunner({BrowserThread::UI}));
   }
 

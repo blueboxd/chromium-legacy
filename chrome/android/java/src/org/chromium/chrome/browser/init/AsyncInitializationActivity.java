@@ -315,7 +315,7 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
         mModalDialogManager = createModalDialogManager();
 
         mStartupDelayed = shouldDelayBrowserStartup();
-        ChromeBrowserInitializer.getInstance(this).handlePreNativeStartup(this);
+        ChromeBrowserInitializer.getInstance().handlePreNativeStartup(this);
     }
 
     /**
@@ -496,7 +496,7 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
     @Override
     public final void onCreateWithNative() {
         mLifecycleDispatcher.onCreateWithNative();
-        ChromeBrowserInitializer.getInstance(this).handlePostNativeStartup(true, this);
+        ChromeBrowserInitializer.getInstance().handlePostNativeStartup(true, this);
     }
 
     @CallSuper

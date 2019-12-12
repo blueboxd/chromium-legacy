@@ -62,7 +62,7 @@ class SessionHistoryTest : public ContentBrowserTest {
 
     SetupCrossSiteRedirector(embedded_test_server());
     embedded_test_server()->RegisterRequestHandler(
-        base::Bind(&HandleEchoTitleRequest, "/echotitle"));
+        base::BindRepeating(&HandleEchoTitleRequest, "/echotitle"));
 
     ASSERT_TRUE(embedded_test_server()->Start());
     EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));

@@ -192,16 +192,33 @@ Status DevToolsClientImpl::ConnectIfNecessary() {
           "window.cdc_adoQpoasnfa76pfcZLmcfl_Symbol = window.Symbol;"
           "}) ();";
       params.SetString("source", script);
-
-      Timeout small = Timeout(base::TimeDelta::FromSeconds(1));
-      Status status = SendCommandWithTimeout(
-          "Page.addScriptToEvaluateOnNewDocument", params, &small);
+      Status status(kOk);
+      for (int attempt = 0; attempt < 3; attempt++) {
+        Timeout small = Timeout(base::TimeDelta::FromSeconds(1));
+        status = SendCommandWithTimeout("Page.addScriptToEvaluateOnNewDocument",
+                                        params, &small);
+        if (status.IsOk())
+          break;
+        else if (status.code() == kTimeout)
+          continue;
+        else
+          return status;
+      }
       if (status.IsError())
         return status;
 
       params.Clear();
       params.SetString("expression", script);
-      status = SendCommandWithTimeout("Runtime.evaluate", params, &small);
+      for (int attempt = 0; attempt < 3; attempt++) {
+        Timeout small = Timeout(base::TimeDelta::FromSeconds(1));
+        status = SendCommandWithTimeout("Runtime.evaluate", params, &small);
+        if (status.IsOk())
+          break;
+        else if (status.code() == kTimeout)
+          continue;
+        else
+          return status;
+      }
       if (status.IsError())
         return status;
     }

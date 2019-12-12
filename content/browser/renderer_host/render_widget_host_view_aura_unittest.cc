@@ -6151,11 +6151,11 @@ class InputMethodResultAuraTest : public InputMethodAuraTestBase {
   ~InputMethodResultAuraTest() override {}
 
  protected:
-  const IPC::Message* RunAndReturnIPCSent(const base::Closure closure,
+  const IPC::Message* RunAndReturnIPCSent(base::OnceClosure closure,
                                           MockRenderProcessHost* process,
                                           int32_t message_id) {
     process->sink().ClearMessages();
-    closure.Run();
+    std::move(closure).Run();
     return process->sink().GetFirstMessageMatching(message_id);
   }
 
@@ -6165,9 +6165,9 @@ class InputMethodResultAuraTest : public InputMethodAuraTestBase {
 
 // This test verifies ui::TextInputClient::SetCompositionText.
 TEST_F(InputMethodResultAuraTest, SetCompositionText) {
-  base::Closure ime_call =
-      base::Bind(&ui::TextInputClient::SetCompositionText,
-                 base::Unretained(text_input_client()), ui::CompositionText());
+  base::RepeatingClosure ime_call = base::BindRepeating(
+      &ui::TextInputClient::SetCompositionText,
+      base::Unretained(text_input_client()), ui::CompositionText());
   for (auto index : active_view_sequence_) {
     ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
     ime_call.Run();
@@ -6181,7 +6181,7 @@ TEST_F(InputMethodResultAuraTest, SetCompositionText) {
 
 // This test is for ui::TextInputClient::ConfirmCompositionText.
 TEST_F(InputMethodResultAuraTest, ConfirmCompositionText) {
-  base::Closure ime_call = base::Bind(
+  base::RepeatingClosure ime_call = base::BindRepeating(
       &ui::TextInputClient::ConfirmCompositionText,
       base::Unretained(text_input_client()), /** keep_selection */ true);
   for (auto index : active_view_sequence_) {
@@ -6213,9 +6213,9 @@ TEST_F(InputMethodResultAuraTest, ConfirmCompositionText) {
 
 // This test is for ui::TextInputClient::ClearCompositionText.
 TEST_F(InputMethodResultAuraTest, ClearCompositionText) {
-  base::Closure ime_call =
-      base::Bind(&ui::TextInputClient::ClearCompositionText,
-                 base::Unretained(text_input_client()));
+  base::RepeatingClosure ime_call =
+      base::BindRepeating(&ui::TextInputClient::ClearCompositionText,
+                          base::Unretained(text_input_client()));
   for (auto index : active_view_sequence_) {
     ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
     SetHasCompositionTextToTrue();
@@ -6230,9 +6230,9 @@ TEST_F(InputMethodResultAuraTest, ClearCompositionText) {
 
 // This test is for ui::TextInputClient::InsertText with empty text.
 TEST_F(InputMethodResultAuraTest, FinishComposingText) {
-  base::Closure ime_call =
-      base::Bind(&ui::TextInputClient::InsertText,
-                 base::Unretained(text_input_client()), base::string16());
+  base::RepeatingClosure ime_call = base::BindRepeating(
+      &ui::TextInputClient::InsertText, base::Unretained(text_input_client()),
+      base::string16());
   for (auto index : active_view_sequence_) {
     ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
     SetHasCompositionTextToTrue();
@@ -6247,9 +6247,9 @@ TEST_F(InputMethodResultAuraTest, FinishComposingText) {
 
 // This test is for ui::TextInputClient::InsertText with non-empty text.
 TEST_F(InputMethodResultAuraTest, CommitText) {
-  base::Closure ime_call = base::Bind(&ui::TextInputClient::InsertText,
-                                      base::Unretained(text_input_client()),
-                                      base::UTF8ToUTF16("hello"));
+  base::RepeatingClosure ime_call = base::BindRepeating(
+      &ui::TextInputClient::InsertText, base::Unretained(text_input_client()),
+      base::UTF8ToUTF16("hello"));
   for (auto index : active_view_sequence_) {
     ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
     ime_call.Run();
@@ -6264,9 +6264,9 @@ TEST_F(InputMethodResultAuraTest, CommitText) {
 // This test is for RenderWidgetHostViewAura::FinishImeCompositionSession which
 // is in response to a mouse click during an ongoing composition.
 TEST_F(InputMethodResultAuraTest, FinishImeCompositionSession) {
-  base::Closure ime_finish_session_call =
-      base::Bind(&RenderWidgetHostViewEventHandler::FinishImeCompositionSession,
-                 base::Unretained(tab_view()->event_handler()));
+  base::RepeatingClosure ime_finish_session_call = base::BindRepeating(
+      &RenderWidgetHostViewEventHandler::FinishImeCompositionSession,
+      base::Unretained(tab_view()->event_handler()));
   for (auto index : active_view_sequence_) {
     ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
     SetHasCompositionTextToTrue();
@@ -6281,7 +6281,7 @@ TEST_F(InputMethodResultAuraTest, FinishImeCompositionSession) {
 
 // This test is for ui::TextInputClient::ChangeTextDirectionAndLayoutAlignment.
 TEST_F(InputMethodResultAuraTest, ChangeTextDirectionAndLayoutAlignment) {
-  base::Closure ime_finish_session_call = base::Bind(
+  base::RepeatingClosure ime_finish_session_call = base::BindRepeating(
       base::IgnoreResult(
           &RenderWidgetHostViewAura::ChangeTextDirectionAndLayoutAlignment),
       base::Unretained(tab_view()), base::i18n::LEFT_TO_RIGHT);

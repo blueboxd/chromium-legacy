@@ -42,7 +42,7 @@ void DownloadItemImplDelegate::DetermineDownloadTarget(
 
 bool DownloadItemImplDelegate::ShouldCompleteDownload(
     DownloadItemImpl* download,
-    const base::Closure& complete_callback) {
+    base::OnceClosure complete_callback) {
   return true;
 }
 

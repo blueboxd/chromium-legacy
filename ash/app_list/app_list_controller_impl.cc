@@ -126,7 +126,7 @@ void SetAssistantPrivacyInfoDismissed() {
 // Whether a window will be shown over the applist when shown in tablet mode.
 bool HasVisibleWindows() {
   std::vector<aura::Window*> window_list =
-      Shell::Get()->mru_window_tracker()->BuildMruWindowList(
+      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal(
           DesksMruType::kActiveDesk);
   for (auto* window : window_list) {
     if (window->TargetVisibility())

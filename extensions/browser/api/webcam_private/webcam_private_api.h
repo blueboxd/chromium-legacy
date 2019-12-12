@@ -202,6 +202,23 @@ class WebcamPrivateResetFunction : public ExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(WebcamPrivateResetFunction);
 };
 
+class WebcamPrivateSetHomeFunction : public ExtensionFunction {
+ public:
+  WebcamPrivateSetHomeFunction();
+  DECLARE_EXTENSION_FUNCTION("webcamPrivate.setHome", WEBCAMPRIVATE_SET_HOME)
+
+ protected:
+  ~WebcamPrivateSetHomeFunction() override;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+ private:
+  void OnSetHomeWebcam(bool success);
+
+  DISALLOW_COPY_AND_ASSIGN(WebcamPrivateSetHomeFunction);
+};
+
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_WEBCAM_PRIVATE_WEBCAM_PRIVATE_API_H_

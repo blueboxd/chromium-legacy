@@ -607,6 +607,57 @@ public class ChunkedTextElementAdapterTest {
 
         assertThat(imageDrawable.getBounds())
                 .isEqualTo(new Rect(0, 0, STYLE_WIDTH_PX, STYLE_HEIGHT_PX));
+        assertThat(containerDrawable.getBounds())
+                .isEqualTo(new Rect(0, 0, STYLE_WIDTH_PX, STYLE_HEIGHT_PX));
+    }
+
+    @Test
+    public void testAddImageChunk_setsImageAndDimsWidthNotSpecified() {
+        when(mMockStyleProvider.hasWidth()).thenReturn(true);
+        when(mMockStyleProvider.getWidthSpecPx(mContext)).thenReturn(-1);
+        when(mMockStyleProvider.hasHeight()).thenReturn(true);
+        when(mMockStyleProvider.getHeightSpecPx(mContext)).thenReturn(STYLE_HEIGHT_PX);
+        when(mMockStyleProvider.hasPreLoadFill()).thenReturn(true);
+        Drawable preLoadFill = new ColorDrawable(Color.CYAN);
+        when(mMockStyleProvider.createPreLoadFill()).thenReturn(preLoadFill);
+
+        // Required to set up the local mFrameContext member var.
+        mAdapter.createAdapter(asElement(TextElement.getDefaultInstance()), mFrameContext);
+
+        mAdapter.addImageChunk(mFrameContext, mTextView, mSpannable, IMAGE_CHUNK);
+
+        ImageSpan[] imageSpans = mSpannable.getSpans(0, 1, ImageSpan.class);
+        LayerDrawable containerDrawable = (LayerDrawable) imageSpans[0].getDrawable();
+
+        ArgumentCaptor<ImageSpanDrawableCallback> imageCallbackCaptor =
+                ArgumentCaptor.forClass(ImageSpanDrawableCallback.class);
+        verify(mMockAssetProvider)
+                .getImage(eq(IMAGE_CHUNK_IMAGE), eq(-1), eq(STYLE_HEIGHT_PX),
+                        imageCallbackCaptor.capture());
+
+        int aspectRatio = 4;
+        Drawable imageDrawable = new ColorDrawable(123) {
+            @Override
+            public int getIntrinsicWidth() {
+                return 11 * aspectRatio;
+            }
+
+            @Override
+            public int getIntrinsicHeight() {
+                return 11;
+            }
+        };
+
+        // Activate the image loading callback
+        imageCallbackCaptor.getValue().accept(imageDrawable);
+
+        // Assert that we set the image on the span
+        assertThat(containerDrawable.getDrawable(0)).isSameInstanceAs(imageDrawable);
+
+        assertThat(imageDrawable.getBounds())
+                .isEqualTo(new Rect(0, 0, STYLE_HEIGHT_PX * 4, STYLE_HEIGHT_PX));
+        assertThat(containerDrawable.getBounds())
+                .isEqualTo(new Rect(0, 0, STYLE_HEIGHT_PX * 4, STYLE_HEIGHT_PX));
     }
 
     @Test

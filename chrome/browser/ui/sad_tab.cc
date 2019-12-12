@@ -56,9 +56,9 @@ void RecordEvent(bool feedback, ui_metrics::SadTabEvent event) {
 
 constexpr char kCategoryTagCrash[] = "Crash";
 
-bool ShouldShowFeedbackButton() {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  const int kMinSecondsBetweenCrashesForFeedbackButton = 10;
+// Return true if this function has been called in the last 10 seconds.
+bool IsRepeatedlyCrashing() {
+  const int kMaxSecondsSinceLastCrash = 10;
 
   static int64_t last_called_ts = 0;
   base::TimeTicks last_called(base::TimeTicks::UnixEpoch());
@@ -66,20 +66,20 @@ bool ShouldShowFeedbackButton() {
   if (last_called_ts)
     last_called = base::TimeTicks::FromInternalValue(last_called_ts);
 
-  bool should_show = (base::TimeTicks().Now() - last_called).InSeconds() <
-                     kMinSecondsBetweenCrashesForFeedbackButton;
+  bool crashed_recently = (base::TimeTicks().Now() - last_called).InSeconds() <
+                          kMaxSecondsSinceLastCrash;
 
   last_called_ts = base::TimeTicks().Now().ToInternalValue();
-  return should_show;
-#else
-  return false;
-#endif
+  return crashed_recently;
 }
 
 bool AreOtherTabsOpen() {
   size_t tab_count = 0;
-  for (auto* browser : *BrowserList::GetInstance())
+  for (auto* browser : *BrowserList::GetInstance()) {
     tab_count += browser->tab_strip_model()->count();
+    if (tab_count > 1U)
+      break;
+  }
   return (tab_count > 1U);
 }
 
@@ -113,7 +113,7 @@ bool SadTab::ShouldShow(base::TerminationStatus status) {
 }
 
 int SadTab::GetTitle() {
-  if (!show_feedback_button_)
+  if (!is_repeatedly_crashing_)
     return IDS_SAD_TAB_TITLE;
   switch (kind_) {
 #if defined(OS_CHROMEOS)
@@ -143,14 +143,14 @@ int SadTab::GetInfoMessage() {
       return IDS_KILLED_TAB_BY_OOM_MESSAGE;
 #endif
     case SAD_TAB_KIND_OOM:
-      if (show_feedback_button_)
+      if (is_repeatedly_crashing_)
         return AreOtherTabsOpen() ? IDS_SAD_TAB_OOM_MESSAGE_TABS
                                   : IDS_SAD_TAB_OOM_MESSAGE_NOTABS;
       return IDS_SAD_TAB_MESSAGE;
     case SAD_TAB_KIND_CRASHED:
     case SAD_TAB_KIND_KILLED:
-      return show_feedback_button_ ? IDS_SAD_TAB_RELOAD_TRY
-                                   : IDS_SAD_TAB_MESSAGE;
+      return is_repeatedly_crashing_ ? IDS_SAD_TAB_RELOAD_TRY
+                                     : IDS_SAD_TAB_MESSAGE;
   }
   NOTREACHED();
   return 0;
@@ -171,7 +171,7 @@ const char* SadTab::GetHelpLinkURL() {
 }
 
 std::vector<int> SadTab::GetSubMessages() {
-  if (!show_feedback_button_)
+  if (!is_repeatedly_crashing_)
     return std::vector<int>();
 
   switch (kind_) {
@@ -185,7 +185,7 @@ std::vector<int> SadTab::GetSubMessages() {
     case SAD_TAB_KIND_KILLED:
       std::vector<int> message_ids = {IDS_SAD_TAB_RELOAD_RESTART_BROWSER,
                                       IDS_SAD_TAB_RELOAD_RESTART_DEVICE};
-      // Only show incognito suggestion if not already in Incognito mode.
+      // Only show Incognito suggestion if not already in Incognito mode.
       if (!web_contents_->GetBrowserContext()->IsOffTheRecord())
         message_ids.insert(message_ids.begin(), IDS_SAD_TAB_RELOAD_INCOGNITO);
 #if defined(OS_MACOSX) || defined(OS_LINUX)
@@ -264,8 +264,14 @@ void SadTab::PerformAction(SadTab::Action action) {
 SadTab::SadTab(content::WebContents* web_contents, SadTabKind kind)
     : web_contents_(web_contents),
       kind_(kind),
-      show_feedback_button_(ShouldShowFeedbackButton()),
+      is_repeatedly_crashing_(IsRepeatedlyCrashing()),
+      show_feedback_button_(false),
       recorded_paint_(false) {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // Only Google Chrome-branded browsers may show the Feedback button.
+  show_feedback_button_ = is_repeatedly_crashing_;
+#endif
+
   switch (kind) {
     case SAD_TAB_KIND_CRASHED:
       UMA_SAD_TAB_COUNTER("Tabs.SadTab.CrashCreated");

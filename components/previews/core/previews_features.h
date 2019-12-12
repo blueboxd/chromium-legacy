@@ -20,7 +20,6 @@ extern const base::Feature kResourceLoadingHintsUserConsistentStudy;
 extern const base::Feature kLitePageServerPreviews;
 extern const base::Feature kLitePageServerPreviewsUserConsistentStudy;
 extern const base::Feature kSlowPageTriggering;
-extern const base::Feature kOfflinePreviewsFalsePositivePrevention;
 extern const base::Feature kCoinFlipHoldback;
 extern const base::Feature kExcludedMediaSuffixes;
 extern const base::Feature kDeferAllScriptPreviews;

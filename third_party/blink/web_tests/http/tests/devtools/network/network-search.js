@@ -40,15 +40,15 @@
     return element;
   }
 
-  function networkPanelShown() {
+  function networkItemSelected() {
     return new Promise(resolve => {
-      function checkShown() {
-        if (UI.panels.network._networkItemView)
-          resolve(UI.panels.network._networkItemView);
+      function checkSelected() {
+        if (UI.panels.network._networkLogView._dataGrid.selectedNode)
+          resolve(UI.panels.network._networkLogView._dataGrid.selectedNode);
         else
-          setTimeout(checkShown, 0);
+          setTimeout(checkSelected, 0);
       }
-      checkShown();
+      checkSelected();
     });
   }
 
@@ -79,12 +79,9 @@
 
     TestRunner.addResult('Clicking on search result');
     const link = lastResult.listItemElement.getElementsByClassName('devtools-link')[0];
-    const revealLinePromise = TestRunner.addSnifferPromise(SourceFrame.SourceFrame.prototype, 'revealPosition');
     link.click();
-    const itemView = await networkPanelShown();
-    TestRunner.addResult(`Selected tab: ${itemView.selectedTabId}, URL: ${itemView.request().url()}`);
-    const lineNumber = await revealLinePromise;
-    TestRunner.addResult(`Line number: ${lineNumber}`);
+    const requestNode = await networkItemSelected();
+    TestRunner.addResult(`Selected Node Name: ${requestNode._request.name().trimMiddle(100)}, URL: ${requestNode._request.url()}`);
     TestRunner.completeTest();
   }
 })();

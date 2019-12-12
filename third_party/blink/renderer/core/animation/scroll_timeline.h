@@ -106,11 +106,12 @@ class CORE_EXPORT ScrollTimeline final : public AnimationTimeline {
   Timing::FillMode fill_;
 };
 
-DEFINE_TYPE_CASTS(ScrollTimeline,
-                  AnimationTimeline,
-                  value,
-                  value->IsScrollTimeline(),
-                  value.IsScrollTimeline());
+template <>
+struct DowncastTraits<ScrollTimeline> {
+  static bool AllowFrom(const AnimationTimeline& value) {
+    return value.IsScrollTimeline();
+  }
+};
 
 }  // namespace blink
 

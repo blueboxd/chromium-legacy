@@ -715,7 +715,9 @@ $ $OUTDIR/bin/monochrome_public_bundle launch --args="--fake-feature-module-inst
 When running the install code, the Foo DFM module will be emulated.
 This will be the case in production right after installing the module. Emulation
 will last until Play Store has a chance to install your module as a true split.
-This usually takes about a day.
+This usually takes about a day. After it has been installed, it will be updated
+atomically alongside Chrome. Always check that it is installed and available
+before invoking code within the DFM.
 
 *** note
 **Warning:** There are subtle differences between emulating a module and

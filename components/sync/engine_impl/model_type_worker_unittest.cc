@@ -1633,6 +1633,26 @@ TEST_F(ModelTypeWorkerTest,
   EXPECT_TRUE(data.specifics.bookmark().guid().empty());
 }
 
+TEST_F(ModelTypeWorkerTest,
+       PopulateUpdateResponseDataForWalletDataWithMissingClientTagHash) {
+  NormalInitialize();
+  UpdateResponseData response_data;
+  DirectoryCryptographer cryptographer;
+
+  // Set up the entity with an arbitrary value for an arbitrary field in the
+  // specifics (so that it _has_ autofill wallet specifics).
+  sync_pb::SyncEntity entity;
+  entity.mutable_specifics()->mutable_autofill_wallet()->set_type(
+      sync_pb::AutofillWalletSpecifics::POSTAL_ADDRESS);
+
+  ASSERT_EQ(ModelTypeWorker::SUCCESS,
+            ModelTypeWorker::PopulateUpdateResponseData(
+                &cryptographer, AUTOFILL_WALLET_DATA, entity, &response_data));
+
+  // The client tag hash gets filled in by the worker.
+  EXPECT_FALSE(response_data.entity->client_tag_hash.value().empty());
+}
+
 class GetLocalChangesRequestTest : public testing::Test {
  public:
   GetLocalChangesRequestTest();

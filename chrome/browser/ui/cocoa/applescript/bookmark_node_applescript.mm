@@ -25,7 +25,7 @@ using bookmarks::BookmarkNode;
 
 @implementation BookmarkNodeAppleScript
 
-@synthesize tempTitle = tempTitle_;
+@synthesize tempTitle = _tempTitle;
 
 - (id)init {
   if ((self = [super init])) {
@@ -44,7 +44,7 @@ using bookmarks::BookmarkNode;
 }
 
 - (void)dealloc {
-  [tempTitle_ release];
+  [_tempTitle release];
   [super dealloc];
 }
 
@@ -60,7 +60,7 @@ using bookmarks::BookmarkNode;
     // (eg user deleting a folder) the applescript runtime calls
     // bookmarkFolders/bookmarkItems in BookmarkFolderAppleScript
     // and this particular bookmark item/folder is never returned.
-    bookmarkNode_ = aBookmarkNode;
+    _bookmarkNode = aBookmarkNode;
 
     base::scoped_nsobject<NSNumber> numID(
         [[NSNumber alloc] initWithLongLong:aBookmarkNode->id()]);
@@ -75,7 +75,7 @@ using bookmarks::BookmarkNode;
   // (eg user deleting a folder) the applescript runtime calls
   // bookmarkFolders/bookmarkItems in BookmarkFolderAppleScript
   // and this particular bookmark item/folder is never returned.
-  bookmarkNode_ = aBookmarkNode;
+  _bookmarkNode = aBookmarkNode;
 
   base::scoped_nsobject<NSNumber> numID(
       [[NSNumber alloc] initWithLongLong:aBookmarkNode->id()]);
@@ -85,17 +85,17 @@ using bookmarks::BookmarkNode;
 }
 
 - (NSString*)title {
-  if (!bookmarkNode_)
-    return tempTitle_;
+  if (!_bookmarkNode)
+    return _tempTitle;
 
-  return base::SysUTF16ToNSString(bookmarkNode_->GetTitle());
+  return base::SysUTF16ToNSString(_bookmarkNode->GetTitle());
 }
 
 - (void)setTitle:(NSString*)aTitle {
   // If the scripter enters |make new bookmarks folder with properties
   // {title:"foo"}|, the node has not yet been created so title is stored in the
   // temp title.
-  if (!bookmarkNode_) {
+  if (!_bookmarkNode) {
     [self setTempTitle:aTitle];
     return;
   }
@@ -104,12 +104,12 @@ using bookmarks::BookmarkNode;
   if (!model)
     return;
 
-  model->SetTitle(bookmarkNode_, base::SysNSStringToUTF16(aTitle));
+  model->SetTitle(_bookmarkNode, base::SysNSStringToUTF16(aTitle));
 }
 
 - (NSNumber*)index {
-  const BookmarkNode* parent = bookmarkNode_->parent();
-  int index = parent->GetIndexOf(bookmarkNode_);
+  const BookmarkNode* parent = _bookmarkNode->parent();
+  int index = parent->GetIndexOf(_bookmarkNode);
   // NOTE: AppleScript is 1-Based.
   return [NSNumber numberWithInt:index+1];
 }

@@ -421,7 +421,8 @@ class TopControlsSlideControllerTest : public InProcessBrowserTest {
     aura::Window* browser_window = browser()->window()->GetNativeWindow();
     ui::test::EventGenerator event_generator(browser_window->GetRootWindow(),
                                              browser_window);
-    const gfx::Point start_point = event_generator.current_screen_location();
+    const gfx::Point start_point =
+        browser_window->GetBoundsInScreen().CenterPoint();
     const gfx::Point end_point =
         start_point +
         gfx::Vector2d(0, direction == ScrollDirection::kDown ? -100 : 100);
@@ -718,6 +719,9 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       contents, get_js_function_body(false /* should_focus */), &bool_result));
   EXPECT_TRUE(bool_result);
+  // Evaluate an empty sentence to make sure that the event processing is done
+  // in the content.
+  ignore_result(content::EvalJs(contents, ";"));
   ScrollAndExpectTopChromeToBe(ScrollDirection::kDown,
                                TopChromeShownState::kFullyHidden);
 }
@@ -892,9 +896,6 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestDropDowns) {
   OpenUrlAtIndex(embedded_test_server()->GetURL("/top_controls_scroll.html"),
                  0);
 
-  aura::Window* browser_window = browser()->window()->GetNativeWindow();
-  ui::test::EventGenerator event_generator(browser_window->GetRootWindow());
-
   // Send a mouse click event that should open the popup drop-down menu of the
   // <select> html element on the page.
   // Note that if a non-main-frame widget is created, its LayerTreeHostImpl's
@@ -908,23 +909,31 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestDropDowns) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   PageStateUpdateWaiter page_state_update_waiter(contents);
-  event_generator.MoveMouseTo(54, 173);
-  event_generator.ClickLeftButton();
   page_state_update_waiter.Wait();
 
-  // Verify that the element has been focused.
+  // Programmatically focus the <select> element, and verify that the element
+  // has been focused.
+  EXPECT_EQ(true, content::EvalJs(contents, "focusSelectElement();"));
   EXPECT_EQ(true, content::EvalJs(contents, "selectFocused;"));
 
-  // Now send a mouse click event that should select the forth option in the
-  // drop-down menu.
-  event_generator.MoveMouseTo(54, 300);
-  event_generator.ClickLeftButton();
-
+  // Hit <enter> on the keyboard, then <down> three times, then <enter> again to
+  // select the fourth option.
+  aura::Window* browser_window = browser()->window()->GetNativeWindow();
+  ui::test::EventGenerator event_generator(browser_window->GetRootWindow());
+  auto send_key_event = [&event_generator](ui::KeyboardCode keycode) {
+    event_generator.PressKey(keycode, ui::EF_NONE);
+    event_generator.ReleaseKey(keycode, ui::EF_NONE);
+  };
+  send_key_event(ui::VKEY_RETURN);
+  send_key_event(ui::VKEY_DOWN);
+  send_key_event(ui::VKEY_DOWN);
+  send_key_event(ui::VKEY_DOWN);
+  send_key_event(ui::VKEY_RETURN);
   // Evaluate an empty sentence to make sure that the event processing is done
   // in the content.
   ignore_result(content::EvalJs(contents, ";"));
 
-  // Verify that the selected option has changed and the forth option is
+  // Verify that the selected option has changed and the fourth option is
   // selected.
   EXPECT_EQ(true, content::EvalJs(contents, "selectChanged;"));
   EXPECT_EQ("4", content::EvalJs(contents, "getSelectedValue();"));

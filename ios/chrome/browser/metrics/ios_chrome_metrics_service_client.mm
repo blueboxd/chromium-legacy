@@ -317,6 +317,9 @@ void IOSChromeMetricsServiceClient::CollectFinalHistograms() {
     UMA_HISTOGRAM_MEMORY_KB(
         "Memory.Browser",
         (task_info_data.resident_size - task_info_data.reusable) / 1024);
+    UMA_HISTOGRAM_MEMORY_LARGE_MB(
+        "Memory.Browser.MemoryFootprint",
+        (task_info_data.phys_footprint) / 1024 / 1024);
   }
 
   std::move(collect_final_metrics_done_callback_).Run();

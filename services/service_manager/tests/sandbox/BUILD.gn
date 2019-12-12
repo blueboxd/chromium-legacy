@@ -19,6 +19,7 @@ source_set("sandbox") {
     data = [
       "//base/test/data/pe_image/pe_image_test_32.dll",
       "//base/test/data/pe_image/pe_image_test_64.dll",
+      "//base/test/data/pe_image/pe_image_test_arm64.dll",
     ]
   }
 }

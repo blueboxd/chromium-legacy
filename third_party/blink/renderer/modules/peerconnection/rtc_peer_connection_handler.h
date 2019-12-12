@@ -252,6 +252,11 @@ class MODULES_EXPORT RTCPeerConnectionHandler
     // video, then false).
     bool rtcp_mux = false;
   };
+  enum class CancellableBooleanOperationResult {
+    kCancelled,
+    kSuccess,
+    kFailure,
+  };
 
   webrtc::SessionDescriptionInterface* CreateNativeSessionDescription(
       const String& sdp,
@@ -300,7 +305,7 @@ class MODULES_EXPORT RTCPeerConnectionHandler
   void RemoveTrackUnifiedPlanOnSignalingThread(
       rtc::scoped_refptr<webrtc::RtpSenderInterface> sender,
       blink::TransceiverStateSurfacer* transceiver_state_surfacer,
-      bool* result);
+      CancellableBooleanOperationResult* result);
   Vector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOfferInternal(
       blink::RTCSessionDescriptionRequest* request,
       webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options);

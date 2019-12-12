@@ -64,7 +64,7 @@ public class UpdateNotificationControllerImpl implements UpdateNotificationContr
             "org.chromium.chrome.browser.omaha.update_notification_state_extra";
     private static final String UPDATE_NOTIFICATION_TAG =
             "org.chromium.chrome.browser.omaha.update_notification_tag";
-    private static final String PREF_LAST_TIME_UPDATE_NOTIFICATION_KEY =
+    public static final String PREF_LAST_TIME_UPDATE_NOTIFICATION_KEY =
             "pref_last_timestamp_update_notification_pushed_key";
     private final Callback<UpdateStatusProvider.UpdateStatus> mObserver = status -> {
         mUpdateStatus = status;

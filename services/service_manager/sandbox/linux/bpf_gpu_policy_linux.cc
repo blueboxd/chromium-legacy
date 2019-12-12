@@ -38,9 +38,15 @@ GpuProcessPolicy::~GpuProcessPolicy() {}
 // Main policy for x86_64/i386. Extended by CrosArmGpuProcessPolicy.
 ResultExpr GpuProcessPolicy::EvaluateSyscall(int sysno) const {
   switch (sysno) {
-#if !defined(OS_CHROMEOS)
-    case __NR_ftruncate:
+#if defined(OS_CHROMEOS)
+    case __NR_memfd_create:
+#else   // !defined(OS_CHROMEOS)
     case __NR_fallocate:
+#endif  // defined(OS_CHROMEOS)
+    case __NR_ftruncate:
+#if defined(__i386__) || defined(__arm__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
+    case __NR_ftruncate64:
 #endif
     case __NR_ioctl:
       return Allow();

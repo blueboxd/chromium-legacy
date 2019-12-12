@@ -54,7 +54,7 @@ namespace {
 #if defined(OS_CHROMEOS)
 std::unique_ptr<media::VideoCaptureJpegDecoder> CreateGpuJpegDecoder(
     media::VideoCaptureJpegDecoder::DecodeDoneCB decode_done_cb,
-    base::Callback<void(const std::string&)> send_log_message_cb) {
+    base::RepeatingCallback<void(const std::string&)> send_log_message_cb) {
   auto io_task_runner =
       base::CreateSingleThreadTaskRunner({content::BrowserThread::IO});
   return std::make_unique<media::ScopedVideoCaptureJpegDecoder>(

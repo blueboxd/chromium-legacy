@@ -5,14 +5,13 @@
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 
 #include "components/viz/service/display/overlay_candidate_list.h"
-#include "components/viz/service/display/overlay_candidate_validator_strategy.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace viz {
 
 OverlayStrategySingleOnTop::OverlayStrategySingleOnTop(
-    OverlayCandidateValidatorStrategy* capability_checker)
+    OverlayProcessorUsingStrategy* capability_checker)
     : capability_checker_(capability_checker) {
   DCHECK(capability_checker);
 }

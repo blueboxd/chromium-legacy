@@ -293,8 +293,10 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Dawn_SkiaGL) {
 
   // Clear the shared image to green using Dawn.
   {
-    wgpu::Texture texture = wgpu::Texture::Acquire(
-        dawn_representation->BeginAccess(WGPUTextureUsage_OutputAttachment));
+    auto scoped_access = dawn_representation->BeginScopedAccess(
+        WGPUTextureUsage_OutputAttachment);
+    ASSERT_TRUE(scoped_access);
+    wgpu::Texture texture = wgpu::Texture::Acquire(scoped_access->texture());
 
     wgpu::RenderPassColorAttachmentDescriptor color_desc;
     color_desc.attachment = texture.CreateView();
@@ -316,8 +318,6 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Dawn_SkiaGL) {
     wgpu::Queue queue = device.CreateQueue();
     queue.Submit(1, &commands);
   }
-
-  dawn_representation->EndAccess();
 
   // Next create a SharedImageRepresentationSkia to read back the texture data.
   auto skia_representation = shared_image_representation_factory_->ProduceSkia(

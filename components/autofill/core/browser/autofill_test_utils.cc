@@ -470,6 +470,29 @@ CreditCard GetRandomCreditCard(CreditCard::RecordType record_type) {
   return credit_card;
 }
 
+CreditCardCloudTokenData GetCreditCardCloudTokenData1() {
+  CreditCardCloudTokenData data;
+  data.masked_card_id = "data1_id";
+  data.suffix = ASCIIToUTF16("1111");
+  data.exp_month = 1;
+  base::StringToInt(NextYear(), &data.exp_year);
+  data.card_art_url = "fake url 1";
+  data.instrument_token = "fake token 1";
+  return data;
+}
+
+CreditCardCloudTokenData GetCreditCardCloudTokenData2() {
+  CreditCardCloudTokenData data;
+  data.masked_card_id = "data2_id";
+  data.suffix = ASCIIToUTF16("2222");
+  data.exp_month = 2;
+  base::StringToInt(NextYear(), &data.exp_year);
+  data.exp_year += 1;
+  data.card_art_url = "fake url 2";
+  data.instrument_token = "fake token 2";
+  return data;
+}
+
 void SetProfileInfo(AutofillProfile* profile,
                     const char* first_name,
                     const char* middle_name,

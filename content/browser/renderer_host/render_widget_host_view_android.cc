@@ -1717,7 +1717,8 @@ InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
   if (input_event.GetType() == blink::WebInputEvent::kGestureTapDown ||
       input_event.GetType() == blink::WebInputEvent::kTouchStart) {
     GpuProcessHost::CallOnIO(GPU_PROCESS_KIND_SANDBOXED,
-                             false /* force_create */, base::Bind(&WakeUpGpu));
+                             false /* force_create */,
+                             base::BindOnce(&WakeUpGpu));
   }
 
   return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;

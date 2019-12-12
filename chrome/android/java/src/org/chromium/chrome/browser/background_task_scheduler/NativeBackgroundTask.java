@@ -105,8 +105,7 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
         }
 
         assert beforeNativeResult == StartBeforeNativeResult.LOAD_NATIVE;
-        runWithNative(context,
-                buildStartWithNativeRunnable(context, taskParameters, wrappedCallback),
+        runWithNative(buildStartWithNativeRunnable(context, taskParameters, wrappedCallback),
                 buildRescheduleRunnable(wrappedCallback));
         return true;
     }
@@ -128,14 +127,13 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
      * going to be rescheduled, by issuing a {@see TaskFinishedCallback} with parameter set to
      * <c>true</c>.
      *
-     * @param context the current context
      * @param startWithNativeRunnable A runnable that will execute #onStartTaskWithNative, after the
      *    native is loaded.
      * @param rescheduleRunnable A runnable that will be called to reschedule the task in case
      *    native initialization fails.
      */
-    private final void runWithNative(final Context context, final Runnable startWithNativeRunnable,
-            final Runnable rescheduleRunnable) {
+    private final void runWithNative(
+            final Runnable startWithNativeRunnable, final Runnable rescheduleRunnable) {
         if (isNativeLoadedInFullBrowserMode()) {
             mRunningInServiceManagerOnlyMode = false;
             mExternalUma.reportNativeTaskStarted(mTaskId, mRunningInServiceManagerOnlyMode);
@@ -178,9 +176,9 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
                 }
 
                 try {
-                    ChromeBrowserInitializer.getInstance(context).handlePreNativeStartup(parts);
+                    ChromeBrowserInitializer.getInstance().handlePreNativeStartup(parts);
 
-                    ChromeBrowserInitializer.getInstance(context).handlePostNativeStartup(
+                    ChromeBrowserInitializer.getInstance().handlePostNativeStartup(
                             true /* isAsync */, parts);
                 } catch (ProcessInitException e) {
                     Log.e(TAG, "Background Launch Error", e);

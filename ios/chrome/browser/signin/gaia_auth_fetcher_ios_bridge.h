@@ -10,8 +10,8 @@
 
 #include "base/macros.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
+#include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_request_status.h"
 
 class GURL;
 @class NSURLRequest;
@@ -37,7 +37,7 @@ class GaiaAuthFetcherIOSBridge {
     // Called when the request is done.
     virtual void OnFetchComplete(const GURL& url,
                                  const std::string& data,
-                                 const net::URLRequestStatus& status,
+                                 net::Error net_error,
                                  int response_code) = 0;
 
     DISALLOW_COPY_AND_ASSIGN(GaiaAuthFetcherIOSBridgeDelegate);

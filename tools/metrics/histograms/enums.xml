@@ -21520,6 +21520,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="1423" label="ENTERPRISEREPORTINGPRIVATE_SETDEVICEDATA"/>
   <int value="1424" label="ENTERPRISEREPORTINGPRIVATE_GETDEVICEINFO"/>
   <int value="1425" label="PRINTING_GETPRINTERS"/>
+  <int value="1426" label="WEBCAMPRIVATE_SET_HOME"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -25043,13 +25044,15 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="2498" label="ServiceWorkerImportScriptNotInstalled"/>
   <int value="2499" label="NestedDedicatedWorker"/>
   <int value="2500" label="ClientHintsMetaAcceptCHLifetime"/>
-  <int value="2501" label="DOMNodeRemovedEventDelayed"/>
-  <int value="2502" label="DOMNodeRemovedEventHandlerAccessDetachingNode"/>
-  <int value="2503" label="DOMNodeRemovedEventListenedAtNonTarget"/>
-  <int value="2504" label="DOMNodeRemovedFromDocumentEventDelayed"/>
+  <int value="2501" label="OBSOLETE_DOMNodeRemovedEventDelayed"/>
+  <int value="2502"
+      label="OBSOLETE_DOMNodeRemovedEventHandlerAccessDetachingNode"/>
+  <int value="2503" label="OBSOLETE_DOMNodeRemovedEventListenedAtNonTarget"/>
+  <int value="2504" label="OBSOLETE_DOMNodeRemovedFromDocumentEventDelayed"/>
   <int value="2505"
-      label="DOMNodeRemovedFromDocumentEventHandlerAccessDetachingNode"/>
-  <int value="2506" label="DOMNodeRemovedFromDocumentEventListenedAtNonTarget"/>
+      label="OBSOLETE_DOMNodeRemovedFromDocumentEventHandlerAccessDetachingNode"/>
+  <int value="2506"
+      label="OBSOLETE_DOMNodeRemovedFromDocumentEventListenedAtNonTarget"/>
   <int value="2507" label="CSSFillAvailableLogicalWidth"/>
   <int value="2508" label="CSSFillAvailableLogicalHeight"/>
   <int value="2509" label="PopupOpenWhileFileChooserOpened"/>
@@ -25697,6 +25700,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3116" label="ClientHintsUAMobile"/>
   <int value="3117"
       label="V8VideoPlaybackQuality_CorruptedVideoFrames_AttributeGetter"/>
+  <int value="3118" label="LongTaskBufferFull"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -30915,6 +30919,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="6" label="Below probability limit"/>
   <int value="7" label="Trigger string mismatch"/>
   <int value="8" label="Not regular browser"/>
+  <int value="9" label="Incognito mode disabled"/>
 </enum>
 
 <enum name="HeapProfilingMode">
@@ -31828,6 +31833,18 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="18" label="GMS call result status is not successful"/>
   <int value="19" label="Success with selection"/>
   <int value="20" label="Duplicate entry"/>
+</enum>
+
+<enum name="IDBAction">
+  <int value="0" label="BackingStoreOpenAttempt">
+    Recorded when the there is an attempt to open the backing store from disk,
+    where it wasn't previously opened. This can happen during the API calls
+    IDBFactory::Open, GetDatabaseNames, GetDatabaseInfo, and DeleteDatabase.
+  </int>
+  <int value="1" label="DatabaseDeleteAttempt">
+    Recorded when there is an attempt to delete the database using the
+    IDBFactory::DeleteDatabase API.
+  </int>
 </enum>
 
 <enum name="IDBContextForcedCloseReason">
@@ -33121,6 +33138,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="8" label="Secure download initiated by inferred-insecure source"/>
   <int value="9"
       label="Insecure download initiated by inferred-insecure source"/>
+  <int value="10" label="Download ignored as not relevant for blocking"/>
 </enum>
 
 <enum name="InsignificantPlaybackReason">
@@ -36285,6 +36303,7 @@ from previous Chrome versions.
   <int value="-1768672408" label="ChromeDuplex:disabled"/>
   <int value="-1768308156" label="OmniboxDedupeGoogleDriveURLs:enabled"/>
   <int value="-1767470652" label="out-of-process-pdf"/>
+  <int value="-1766791501" label="WebUITabStrip:enabled"/>
   <int value="-1766648764" label="OmniboxShortBookmarkSuggestions:disabled"/>
   <int value="-1766162197" label="AppServiceInstanceRegistry:enabled"/>
   <int value="-1766129470" label="DataSaverLiteModeRebranding:disabled"/>
@@ -38421,6 +38440,7 @@ from previous Chrome versions.
   <int value="975104092" label="show-taps"/>
   <int value="976079108" label="TouchpadOverscrollHistoryNavigation:disabled"/>
   <int value="976278412" label="google-password-manager:enabled"/>
+  <int value="977968353" label="WebUITabStrip:disabled"/>
   <int value="978712907" label="PrintServerUi:disabled"/>
   <int value="979445973" label="OmniboxSpareRenderer:enabled"/>
   <int value="980396200" label="enable-new-korean-ime"/>

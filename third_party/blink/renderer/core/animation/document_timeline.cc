@@ -146,8 +146,8 @@ HeapVector<Member<Animation>> DocumentTimeline::getAnimations() {
                                  !animation->effect()->IsInEffect())) {
       continue;
     }
-    if (animation->effect()->IsKeyframeEffect()) {
-      Element* target = ToKeyframeEffect(animation->effect())->target();
+    if (auto* effect = DynamicTo<KeyframeEffect>(animation->effect())) {
+      Element* target = effect->target();
       if (!target || !target->isConnected() ||
           document_ != target->GetDocument()) {
         continue;

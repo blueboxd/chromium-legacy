@@ -602,7 +602,7 @@
 <translation id="1832511806131704864">Телефон өзгерісі жаңартылды</translation>
 <translation id="1834503245783133039">Жүктеп алынбады: <ph name="FILE_NAME" /></translation>
 <translation id="1834583737373831634">MIDI құрылғылары</translation>
-<translation id="1835261175655098052">Linux жүйесін жаңарту</translation>
+<translation id="1835261175655098052">Linux жүйесінің жаңа нұсқасын орнату</translation>
 <translation id="1838374766361614909">Іздеуді тазарту</translation>
 <translation id="1841545962859478868">Құрылғы әкімшісі келесіні қадағалауы мүмкін:</translation>
 <translation id="1841616161104323629">Құрылғы жазбасы жоқ.</translation>
@@ -1491,7 +1491,7 @@
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" жұптастырылған</translation>
 <translation id="3092699946856346803">SIM картаңызды салып, қайталап көріңіз.</translation>
 <translation id="3101709781009526431">Күні мен уақыты</translation>
-<translation id="3103941660000130485">Linux жүйесін жаңарту кезінде қате шықты</translation>
+<translation id="3103941660000130485">Linux жүйесінің жаңа нұсқасын орнату кезінде қате шықты</translation>
 <translation id="310671807099593501">Сайт Bluetooth функциясын пайдалануда</translation>
 <translation id="3115147772012638511">Кэш күтілуде…</translation>
 <translation id="3115580024857770654">Барлығын жию</translation>
@@ -1674,7 +1674,7 @@
 <translation id="338583716107319301">Бөлгіш</translation>
 <translation id="338691029516748599"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> желі, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, сигнал күші: <ph name="SIGNAL_STRENGTH" />%, әкімшіңіз басқарады, қосылу</translation>
 <translation id="3387614642886316601">Жетілдірілген емле тексеру құралын пайдалану</translation>
-<translation id="3390741581549395454">Linux қолданбалары мен файлдарының сақтық көшірмесі жасалды. Жаңарту көп ұзамай басталады.</translation>
+<translation id="3390741581549395454">Linux қолданбалары мен файлдарының сақтық көшірмесі жасалды. Жаңа нұсқа орнату көп ұзамай басталады.</translation>
 <translation id="3396800784455899911">"Қабылдау және жалғастыру" түймесін басып, аталған Google қызметтеріне қатысты жоғарыда сипатталған өңдеулерге келісесіз.</translation>
 <translation id="3399432415385675819">Хабарландырулар өшіріледі</translation>
 <translation id="3400390787768057815"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> Герц) – байланысқан</translation>
@@ -1960,7 +1960,7 @@
 <translation id="37613671848467444">&amp;Инкогнито терезесінде ашу</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{USB құрылғысы арқылы байланысу}other{# USB құрылғысы арқылы байланысу}}</translation>
 <translation id="3765246971671567135">Офлайн демо режиміндегі саясат оқылмады.</translation>
-<translation id="3767376082821709728">Сіз кірген жаңа сайттар хабарландырулар жібереді.</translation>
+<translation id="3767376082821709728">Сіз кірген жаңа сайттар хабарландырулар жібере алмайды.</translation>
 <translation id="3768037234834996183">Параметрлеріңіз синхрондалуда…</translation>
 <translation id="377050016711188788">Балмұздақ</translation>
 <translation id="3771294271822695279">Бейне файлдары</translation>
@@ -2647,7 +2647,7 @@
 <translation id="4804756772600045300">Жалғастырсаңыз, ADB түзетуі іске қосылып, Android қолданбалары жасалады және тексеріледі. Google растамаған тексеру қолданбаларының орнатылуына ADB түзетуінің рұқсат беретінін ескеріңіз.</translation>
 <translation id="4804818685124855865">Ажырату</translation>
 <translation id="4804827417948292437">Авокадо</translation>
-<translation id="4805077164141082536">Жаңартпас бұрын, қазіргі Linux контейнерінің сақтық көшірмесін жасағаныңыз жөн.</translation>
+<translation id="4805077164141082536">Жаңа нұсқаны орнатпас бұрын, қазіргі Linux контейнерінің сақтық көшірмесін жасағаныңыз жөн.</translation>
 <translation id="4807098396393229769">Картадағы ат</translation>
 <translation id="4808319664292298116"><ph name="DOMAIN" /> сайтынан VR режиміне өтесіз бе?</translation>
 <translation id="4808667324955055115">Қалқымалы терезелерге тыйым салынған</translation>
@@ -2763,7 +2763,6 @@
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> - <ph name="PROFILE_NAME" /></translation>
 <translation id="496185450405387901">Бұл қолданбаны әкімшіңіз орнатты.</translation>
 <translation id="4964455510556214366">Реттеу</translation>
-<translation id="4964673849688379040">Тексеруде...</translation>
 <translation id="4965808351167763748">Шынымен бұл құрылғыны Hangouts Meet қызметін іске қосу үшін реттегіңіз келе ме?</translation>
 <translation id="496888482094675990">Файлдар қолданбасы Google Drive қызметінде, сыртқы жадта немесе Chrome OS құрылғысында сақталған файлдарыңызға жылдам кіру мүмкіндігін береді.</translation>
 <translation id="4971412780836297815">Аяқталғанда ашу</translation>
@@ -3429,7 +3428,7 @@
 <translation id="5925147183566400388">Сертификат тәжірибесі мәлімдемесінің көрсеткіші</translation>
 <translation id="592880897588170157">PDF файлдарын Chrome браузерінде автоматты ашудың орнына оларды жүктеп алыңыз</translation>
 <translation id="5931146425219109062">Сіз кіретін веб-сайттардағы барлық деректеріңізді оқу және өзгерту</translation>
-<translation id="5932124097031739492">Linux жаңартылды.</translation>
+<translation id="5932124097031739492">Linux жүйесінің жаңа нұсқасы орнатылды.</translation>
 <translation id="5932224571077948991">Сайтта мазалайтын не жалған ақпаратты жарнамалар көрсетіледі</translation>
 <translation id="59324397759951282"><ph name="MANUFACTURER_NAME" /> ұсынған USB құрылғысы</translation>
 <translation id="5932881020239635062">Сериялық</translation>
@@ -5020,7 +5019,7 @@
 <translation id="8213577208796878755">Басқа бір қолжетімді құрылғы.</translation>
 <translation id="8214489666383623925">Файлды ашу…</translation>
 <translation id="8214962590150211830">Бұл тұлғаны өшіру</translation>
-<translation id="8215295261562449873">Linux жүйесін жаңартпас бұрын, "Жүктеп алынғандар" қалтасында қолданбалар мен файлдардың сақтық көшірмесін жасаңыз.</translation>
+<translation id="8215295261562449873">Linux жүйесінің жаңа нұсқасын орнатпас бұрын, "Жүктеп алынғандар" қалтасында қолданбалар мен файлдардың сақтық көшірмесін жасаңыз.</translation>
 <translation id="8217399928341212914">Бірнеше файлды автоматты жүктеуге салынған тыйымды сақтау</translation>
 <translation id="8221491193165283816">Әдетте хабарландыруларға тыйым саласыз. Осы сайттың сізге хабарландыру жіберуіне рұқсат ету үшін осы жерді басыңыз.</translation>
 <translation id="8225265270453771718">Қолданба терезесін бөлісу</translation>
@@ -5227,7 +5226,7 @@
 <translation id="8523849605371521713">Саясат арқылы қосылған</translation>
 <translation id="8524783101666974011">Карталарды Google есептік жазбасына сақтау</translation>
 <translation id="8525306231823319788">Толық экран</translation>
-<translation id="8526666462501866815">Linux жүйесін жаңартудан бас тарту</translation>
+<translation id="8526666462501866815">Linux жүйесінің жаңа нұсқасын орнатудан бас тарту</translation>
 <translation id="8528074251912154910">Тілдерді қосу</translation>
 <translation id="8528962588711550376">Кіріп жатырсыз.</translation>
 <translation id="8529925957403338845">Жылдам тетеринг байланысы орнатылмады</translation>
@@ -5235,7 +5234,7 @@
 <translation id="8535005006684281994">Netscape сертификат жаңалау URL мекенжайы</translation>
 <translation id="8538358978858059843">Google Cast үшін бұлт қызметтерін қосу керек пе?</translation>
 <translation id="8539727552378197395">Жоқ (HttpOnly)</translation>
-<translation id="8539766201049804895">Жаңарту</translation>
+<translation id="8539766201049804895">Жаңа нұсқа орнату</translation>
 <translation id="8540608333167683902"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> желі, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, сигнал күші: <ph name="SIGNAL_STRENGTH" />%, мәліметтер</translation>
 <translation id="8543556556237226809">Егер сұрақтарыңыз болса, профиліңізді басқаратын адаммен хабарласыңыз.</translation>
 <translation id="8545575359873600875">Кешіріңіз, құпия сөзіңізді растау мүмкін болмады. Бұл бақыланатын пайдаланушының басқарушысы құпия сөзді жақында өзгерткен болуы мүмкін. Солай болса, жаңа құпия сөз келесі рет кіргеніңізде қолданылады. Ескі құпия сөзіңізді пайдаланып көріңіз.</translation>

@@ -1292,6 +1292,7 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
 
       if (shelf_widget_->hotseat_widget()->IsExtended())
         return HotseatState::kExtended;
+
       // |drag_amount_| is relative to the top of the hotseat when the drag
       // begins with an extended hotseat. Correct for this to get
       // |total_amount_dragged|.
@@ -1772,7 +1773,9 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
       return;
     }
 
-    const bool move_shelf_with_hotseat = visibility_state() == SHELF_AUTO_HIDE;
+    const bool move_shelf_with_hotseat =
+        !Shell::Get()->overview_controller()->InOverviewSession() &&
+        visibility_state() == SHELF_AUTO_HIDE;
     if (move_shelf_with_hotseat) {
       // Do not allow the shelf to be dragged more than |shelf_size| from the
       // bottom of the display.
@@ -2302,9 +2305,11 @@ bool ShelfLayoutManager::StartShelfDrag(
     return false;
 
   drag_status_ = kDragInProgress;
-  drag_auto_hide_state_ = visibility_state() == SHELF_AUTO_HIDE
-                              ? auto_hide_state()
-                              : SHELF_AUTO_HIDE_SHOWN;
+  drag_auto_hide_state_ =
+      (!Shell::Get()->overview_controller()->InOverviewSession() &&
+       visibility_state() == SHELF_AUTO_HIDE)
+          ? auto_hide_state()
+          : SHELF_AUTO_HIDE_SHOWN;
   MaybeSetupHotseatDrag(event_in_screen);
   if (hotseat_is_in_drag_) {
     DCHECK(!hotseat_presentation_time_recorder_);
@@ -2539,6 +2544,9 @@ bool ShelfLayoutManager::ShouldChangeVisibilityAfterDrag(
   // SHELF_AUTO_HIDE_SHOWN. See details in IsVisible. Dragging on SHELF_VISIBLE
   // shelf should not change its visibility since it should be kept visible.
   if (visibility_state() == SHELF_VISIBLE)
+    return false;
+
+  if (Shell::Get()->overview_controller()->InOverviewSession())
     return false;
 
   if (event_in_screen.type() == ui::ET_GESTURE_SCROLL_END ||

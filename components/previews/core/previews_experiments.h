@@ -221,10 +221,6 @@ int ResourceLoadingHintsPreviewsInflationPercent();
 // bytes to for inflating the original_bytes count.
 int ResourceLoadingHintsPreviewsInflationBytes();
 
-// The maximum number of pref entries that should be kept by
-// PreviewsOfflineHelper.
-size_t OfflinePreviewsHelperMaxPrefSize();
-
 // Forces the coin flip holdback, if enabled, to always come up "holdback".
 bool ShouldOverrideNavigationCoinFlipToHoldback();
 

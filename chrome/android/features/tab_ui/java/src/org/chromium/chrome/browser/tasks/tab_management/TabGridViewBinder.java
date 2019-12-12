@@ -176,6 +176,8 @@ class TabGridViewBinder {
                             model.get(TabProperties.CARD_ANIMATION_STATUS), isSelected);
         } else if (TabProperties.IS_INCOGNITO == propertyKey) {
             updateColor(view, model.get(TabProperties.IS_INCOGNITO), TabProperties.UiType.CLOSABLE);
+        } else if (TabProperties.ACCESSIBILITY_DELEGATE == propertyKey) {
+            view.setAccessibilityDelegate(model.get(TabProperties.ACCESSIBILITY_DELEGATE));
         }
     }
 

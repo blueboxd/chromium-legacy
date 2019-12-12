@@ -59,7 +59,8 @@ FaviconServiceImpl::FaviconServiceImpl(
     history::HistoryService* history_service)
     : favicon_client_(std::move(favicon_client)),
       history_service_(history_service) {
-  DCHECK(history_service_);
+  // TODO(https://crbug.com/1024959): convert to DCHECK once crash is resolved.
+  CHECK(history_service_);
 }
 
 FaviconServiceImpl::~FaviconServiceImpl() {}

@@ -10,12 +10,14 @@
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/hats/hats_service.h"
 #include "chrome/browser/ui/hats/hats_service_factory.h"
 #include "chrome/browser/ui/views/hats/hats_bubble_view.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/version_info/version_info.h"
@@ -216,4 +218,17 @@ IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, ProfileOldEnoughToShow) {
                                   base::TimeDelta::FromDays(31));
   GetHatsService()->LaunchSatisfactionSurvey();
   EXPECT_TRUE(HatsBubbleShown());
+}
+
+IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, IncognitoModeDisabledNoShow) {
+  SetMetricsConsent(true);
+  // Disable incognito mode for this profile.
+  PrefService* pref_service = browser()->profile()->GetPrefs();
+  pref_service->SetInteger(prefs::kIncognitoModeAvailability,
+                           IncognitoModePrefs::DISABLED);
+  EXPECT_EQ(IncognitoModePrefs::DISABLED,
+            IncognitoModePrefs::GetAvailability(pref_service));
+
+  GetHatsService()->LaunchSatisfactionSurvey();
+  EXPECT_FALSE(HatsBubbleShown());
 }

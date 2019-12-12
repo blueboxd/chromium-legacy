@@ -656,25 +656,6 @@ void ClientTagBasedModelTypeProcessor::OnCommitCompleted(
   }
 }
 
-// Populates the client tag hashes for every update entity in |updates|.
-void PopulateClientTagsForWalletData(const ModelType& type,
-                                     ModelTypeSyncBridge* bridge,
-                                     UpdateResponseDataList* updates) {
-  DCHECK(bridge->SupportsGetClientTag());
-  UpdateResponseDataList updates_with_client_tags;
-  for (std::unique_ptr<UpdateResponseData>& update : *updates) {
-    DCHECK(update);
-    if (update->entity->parent_id == "0") {
-      // Ignore the permanent root node. Other places in this file detect them
-      // by having empty client tags; this cannot be used for wallet_data as no
-      // wallet_data entity has a client tag.
-      continue;
-    }
-    update->entity->client_tag_hash = ClientTagHash::FromUnhashed(
-        type, bridge->GetClientTag(*update->entity));
-  }
-}
-
 // Returns whether the state has a version_watermark based GC directive, which
 // tells us to clear all sync data that's stored locally.
 bool HasClearAllDirective(const sync_pb::ModelTypeState& model_type_state) {
@@ -692,17 +673,6 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
 
   if (!ValidateUpdate(model_type_state, updates)) {
     return;
-  }
-
-  if (type_ == AUTOFILL_WALLET_DATA) {
-    // The client tag based processor requires client tags to function properly.
-    // However, the wallet data type does not have any client tags. This hacky
-    // code manually asks the bridge to create the client tags for each update,
-    // so that we can still use this processor. A proper fix would be to either
-    // fully use client tags, or to use a different processor.
-    // TODO(crbug.com/874001): Remove this feature-specific logic when the right
-    // solution for Wallet data has been decided.
-    PopulateClientTagsForWalletData(type_, bridge_, &updates);
   }
 
   base::Optional<ModelError> error;

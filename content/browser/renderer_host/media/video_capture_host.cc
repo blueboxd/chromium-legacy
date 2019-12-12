@@ -206,8 +206,8 @@ void VideoCaptureHost::Start(
   controllers_[controller_id] = base::WeakPtr<VideoCaptureController>();
   media_stream_manager_->video_capture_manager()->ConnectClient(
       session_id, params, controller_id, this,
-      base::Bind(&VideoCaptureHost::OnControllerAdded,
-                 weak_factory_.GetWeakPtr(), device_id));
+      base::BindOnce(&VideoCaptureHost::OnControllerAdded,
+                     weak_factory_.GetWeakPtr(), device_id));
 }
 
 void VideoCaptureHost::Stop(const base::UnguessableToken& device_id) {

@@ -16,7 +16,7 @@ class Profile;
 // Represents a window class.
 @interface WindowAppleScript : ElementAppleScript {
  @private
-  Browser* browser_;  // weak.
+  Browser* _browser;  // weak.
 }
 
 // Creates a new window, returns nil if there is an error.

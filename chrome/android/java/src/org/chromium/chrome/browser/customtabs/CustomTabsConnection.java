@@ -202,8 +202,6 @@ public class CustomTabsConnection {
     private @Nullable String mTrustedPublisherUrlPackage;
 
     private final HiddenTabHolder mHiddenTabHolder = new HiddenTabHolder();
-    /** @deprecated Use {@link ContextUtils} instead */
-    protected final Context mContext;
     protected final SessionDataHolder mSessionDataHolder;
     @VisibleForTesting
     final ClientManager mClientManager;
@@ -228,7 +226,6 @@ public class CustomTabsConnection {
      */
     public CustomTabsConnection() {
         super();
-        mContext = ContextUtils.getApplicationContext();
         mClientManager = new ClientManager();
         mLogRequests = CommandLine.getInstance().hasSwitch(LOG_SERVICE_REQUESTS);
         mSessionDataHolder =
@@ -374,7 +371,7 @@ public class CustomTabsConnection {
     /** Warmup activities that should only happen once. */
     private static void initializeBrowser(final Context context) {
         ThreadUtils.assertOnUiThread();
-        ChromeBrowserInitializer.getInstance(context).handleSynchronousStartupWithGpuWarmUp();
+        ChromeBrowserInitializer.getInstance().handleSynchronousStartupWithGpuWarmUp();
         ChildProcessLauncherHelper.warmUp(context, true);
     }
 
@@ -822,8 +819,7 @@ public class CustomTabsConnection {
     private void maybePreconnectToRedirectEndpoint(
             CustomTabsSessionToken session, String url, Intent intent) {
         // For the preconnection to not be a no-op, we need more than just the native library.
-        if (!ChromeBrowserInitializer.getInstance(ContextUtils.getApplicationContext())
-                        .hasNativeInitializationCompleted()) {
+        if (!ChromeBrowserInitializer.getInstance().hasNativeInitializationCompleted()) {
             return;
         }
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_REDIRECT_PRECONNECT)) return;
@@ -882,8 +878,7 @@ public class CustomTabsConnection {
         ThreadUtils.assertOnUiThread();
 
         if (!intent.hasExtra(PARALLEL_REQUEST_URL_KEY)) return ParallelRequestStatus.NO_REQUEST;
-        if (!ChromeBrowserInitializer.getInstance(ContextUtils.getApplicationContext())
-                        .hasNativeInitializationCompleted()) {
+        if (!ChromeBrowserInitializer.getInstance().hasNativeInitializationCompleted()) {
             return ParallelRequestStatus.FAILURE_NOT_INITIALIZED;
         }
         if (!mClientManager.getAllowParallelRequestForSession(session)) {

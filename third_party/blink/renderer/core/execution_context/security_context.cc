@@ -183,10 +183,17 @@ bool SecurityContext::IsFeatureEnabled(
     mojom::FeaturePolicyFeature feature,
     PolicyValue threshold_value,
     base::Optional<mojom::FeaturePolicyDisposition>* disposition) const {
+  // Use Document Policy to determine feature availability, but only if all of
+  // the following are true:
+  // * The DocumentPolicy RuntimeEnabledFeature is not disabled,
+  // * Document policy has been set on this object, and
+  // * Document policy infrastructure actually supports the feature.
+  // If any of those are false, assume true (enabled) here. Otherwise, check
+  // this object's policy.
   bool document_policy_result =
-      !(RuntimeEnabledFeatures::DocumentPolicyEnabled() && document_policy_) ||
-      (document_policy_->IsFeatureSupported(feature) &&
-       document_policy_->IsFeatureEnabled(feature, threshold_value));
+      !RuntimeEnabledFeatures::DocumentPolicyEnabled() || !document_policy_ ||
+      !document_policy_->IsFeatureSupported(feature) ||
+      document_policy_->IsFeatureEnabled(feature, threshold_value);
 
   FeatureEnabledState state = GetFeatureEnabledState(feature, threshold_value);
   if (state == FeatureEnabledState::kEnabled)

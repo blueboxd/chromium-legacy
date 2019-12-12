@@ -38,7 +38,7 @@ public class PassphraseActivity extends AppCompatActivity
         // may be started explicitly from Android notifications.
         // During a normal user flow the ChromeTabbedActivity would start the Chrome browser
         // process and this wouldn't be necessary.
-        ChromeBrowserInitializer.getInstance(this).handleSynchronousStartup();
+        ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
         assert ProfileSyncService.get() != null;
         getSupportFragmentManager().addOnBackStackChangedListener(this);
     }

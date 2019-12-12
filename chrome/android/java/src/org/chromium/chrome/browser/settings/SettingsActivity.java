@@ -87,7 +87,7 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         // from Android notifications, when Android is restoring Settings after Chrome was
         // killed, or for tests. This should happen before super.onCreate() because it might
         // recreate a fragment, and a fragment might depend on the native library.
-        ChromeBrowserInitializer.getInstance(this).handleSynchronousStartup();
+        ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
 
         super.onCreate(savedInstanceState);
 

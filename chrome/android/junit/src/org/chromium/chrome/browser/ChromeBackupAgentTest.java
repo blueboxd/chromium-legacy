@@ -25,7 +25,6 @@ import static org.mockito.Mockito.when;
 import android.app.backup.BackupDataInput;
 import android.app.backup.BackupDataOutput;
 import android.app.backup.BackupManager;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.ParcelFileDescriptor;
 
@@ -125,7 +124,7 @@ public class ChromeBackupAgentTest {
                 .thenReturn(new boolean[] {true});
 
         // Mock initializing the browser
-        doReturn(true).when(mAgent).initializeBrowser(any(Context.class));
+        doReturn(true).when(mAgent).initializeBrowser();
 
         // Mock the AsyncTaskRunner.
         mTaskRunner = mock(AsyncInitTaskRunner.class);
@@ -330,7 +329,7 @@ public class ChromeBackupAgentTest {
         BackupDataOutput backupData = mock(BackupDataOutput.class);
         ParcelFileDescriptor mockState = mock(ParcelFileDescriptor.class);
 
-        doReturn(false).when(mAgent).initializeBrowser(any(Context.class));
+        doReturn(false).when(mAgent).initializeBrowser();
 
         BackupManagerShadow.clearDataChangedCalls();
         mAgent.onBackup(null, backupData, mockState);
@@ -349,7 +348,7 @@ public class ChromeBackupAgentTest {
         assertThat(BackupManagerShadow.getDataChangedCalls(), equalTo(1));
 
         // Check that a successful backup resets the failure count
-        doReturn(true).when(mAgent).initializeBrowser(any(Context.class));
+        doReturn(true).when(mAgent).initializeBrowser();
         // A successful backup needs a real state file, or lots more mocking.
         File stateFile = File.createTempFile("Test", "");
         ParcelFileDescriptor newState =
@@ -487,7 +486,7 @@ public class ChromeBackupAgentTest {
                 ParcelFileDescriptor.open(stateFile, ParcelFileDescriptor.parseMode("w"));
 
         BackupDataInput backupData = createMockBackupData();
-        doReturn(false).when(mAgent).initializeBrowser(any(Context.class));
+        doReturn(false).when(mAgent).initializeBrowser();
 
         // Do a restore.
         mAgent.onRestore(backupData, 0, newState);
@@ -572,7 +571,7 @@ public class ChromeBackupAgentTest {
         ChromeBackupAgent agent = new ChromeBackupAgent();
         ChromeBrowserInitializer initializer = mock(ChromeBrowserInitializer.class);
         ChromeBrowserInitializer.setForTesting(initializer);
-        assertTrue(agent.initializeBrowser(ContextUtils.getApplicationContext()));
+        assertTrue(agent.initializeBrowser());
     }
 
     /**
@@ -585,7 +584,7 @@ public class ChromeBackupAgentTest {
         ChromeBackupAgent agent = new ChromeBackupAgent();
         ChromeBrowserInitializer initializer = mock(ChromeBrowserInitializer.class);
         ChromeBrowserInitializer.setForTesting(initializer);
-        assertFalse(agent.initializeBrowser(ContextUtils.getApplicationContext()));
+        assertFalse(agent.initializeBrowser());
         verifyNoMoreInteractions(initializer);
     }
 }

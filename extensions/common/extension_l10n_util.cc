@@ -23,8 +23,10 @@
 #include "base/values.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/file_util.h"
+#include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/message_bundle.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
@@ -153,6 +155,16 @@ std::string LocaleForLocalization() {
 }  // namespace
 
 namespace extension_l10n_util {
+
+GzippedMessagesPermission GetGzippedMessagesPermissionForExtension(
+    const extensions::Extension* extension) {
+  // Component extensions are part of the chromium or chromium OS source and
+  // as such are considered a trusted source.
+  return (extension &&
+          extension->location() == extensions::Manifest::Location::COMPONENT)
+             ? GzippedMessagesPermission::kAllowForTrustedSource
+             : GzippedMessagesPermission::kDisallow;
+}
 
 void SetProcessLocale(const std::string& locale) {
   GetProcessLocale() = locale;

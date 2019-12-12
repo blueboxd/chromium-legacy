@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_controller.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_base_view_controller+internal.h"
 
+#include "base/format_macros.h"
 #import "base/logging.h"
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row_cell.h"
@@ -72,6 +73,9 @@
     // semantic content attribute reset before the cell is displayed (and before
     // this method is called).
     rowCell.omniboxSemanticContentAttribute = self.semanticContentAttribute;
+
+    rowCell.accessibilityIdentifier = [NSString
+        stringWithFormat:@"omnibox suggestion %" PRIuNS, indexPath.row];
   }
 }
 

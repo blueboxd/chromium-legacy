@@ -409,10 +409,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         try (TraceEvent te = TraceEvent.scoped("ChromeActivity.performPostInflationStartup")) {
             super.performPostInflationStartup();
 
-            mShareDelegate = new ShareDelegateImpl(mRootUiCoordinator.getBottomSheetController(),
-                    getActivityTabProvider(), new ShareDelegateImpl.ShareSheetDelegate());
-            mShareDelegateSupplier.set(mShareDelegate);
-
             Intent intent = getIntent();
             if (intent != null && getSavedInstanceState() == null) {
                 VrModuleProvider.getDelegate().maybeHandleVrIntentPreNative(this, intent);
@@ -457,6 +453,12 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             ((BottomContainer) findViewById(R.id.bottom_container))
                     .initialize(mFullscreenManager,
                             mManualFillingComponent.getKeyboardExtensionViewResizer());
+
+            // Should be called after TabModels are initialized.
+            mShareDelegate = new ShareDelegateImpl(mRootUiCoordinator.getBottomSheetController(),
+                    getActivityTabProvider(), new ShareDelegateImpl.ShareSheetDelegate(),
+                    getCurrentTabCreator());
+            mShareDelegateSupplier.set(mShareDelegate);
 
             // If onStart was called before postLayoutInflation (because inflation was done in a
             // background thread) then make sure to call the relevant methods belatedly.
@@ -852,7 +854,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (!mStarted) return; // Sync state reporting should work only in started state.
         if (mContextReporter != null || getActivityTab() == null) return;
 
-        final SyncController syncController = SyncController.get(this);
+        final SyncController syncController = SyncController.get();
         final ProfileSyncService syncService = ProfileSyncService.get();
 
         if (syncController != null && syncController.isSyncingUrlsWithKeystorePassphrase()) {

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_APP_SERVICE_APP_WINDOW_LAUNCHER_ITEM_CONTROLLER_H_
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_APP_SERVICE_APP_WINDOW_LAUNCHER_ITEM_CONTROLLER_H_
 
+#include <set>
+
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 
 // Shelf item delegate for extension app windows.
@@ -21,14 +23,20 @@ class AppServiceAppWindowLauncherItemController
   AppServiceAppWindowLauncherItemController& operator=(
       const AppServiceAppWindowLauncherItemController&) = delete;
 
-  // aura::WindowObserver overrides:
-  void OnWindowTitleChanged(aura::Window* window) override;
-
   // AppWindowLauncherItemController:
   AppMenuItems GetAppMenuItems(int event_flags) override;
 
+  // aura::WindowObserver overrides:
+  void OnWindowTitleChanged(aura::Window* window) override;
+
+  void AddTaskId(int task_id);
+  void RemoveTaskId(int task_id);
+  bool HasAnyTasks() const;
+
  private:
   bool IsChromeApp();
+
+  std::set<int> task_ids_;
 };
 
 #endif  // CHROME_BROWSER_UI_ASH_LAUNCHER_APP_SERVICE_APP_WINDOW_LAUNCHER_ITEM_CONTROLLER_H_

@@ -2650,7 +2650,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4804756772600045300">Hvis du fortsætter, aktiveres ADB-fejlretning til oprettelse og test af Android-apps. Bemærk! ADB-fejlretning giver mulighed for at installere testapps, der ikke er blevet bekræftet af Google.</translation>
 <translation id="4804818685124855865">Afbryd</translation>
 <translation id="4804827417948292437">Avocado</translation>
-<translation id="4805077164141082536">Vii anbefaler, at du sikkerhedskopierer din aktuelle Linux-container, før du opgraderer.</translation>
+<translation id="4805077164141082536">Vi anbefaler, at du sikkerhedskopierer din aktuelle Linux-container, før du opgraderer.</translation>
 <translation id="4807098396393229769">Navn på kort</translation>
 <translation id="4808319664292298116">Vil du starte VR fra <ph name="DOMAIN" />?</translation>
 <translation id="4808667324955055115">Pop op-vinduer er blokeret:</translation>
@@ -2766,7 +2766,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> – <ph name="PROFILE_NAME" /></translation>
 <translation id="496185450405387901">Denne app blev installeret af din administrator.</translation>
 <translation id="4964455510556214366">Opstilling</translation>
-<translation id="4964673849688379040">Kontrollerer...</translation>
 <translation id="4965808351167763748">Er du sikker på, at du vil konfigurere denne enhed til at køre Hangouts Meet?</translation>
 <translation id="496888482094675990">Appen Filer giver hurtig adgang til filer, som du har gemt i Google Drev, på et eksternt lager eller på din Chrome OS-enhed.</translation>
 <translation id="4971412780836297815">Åbn, når den er fuldført</translation>

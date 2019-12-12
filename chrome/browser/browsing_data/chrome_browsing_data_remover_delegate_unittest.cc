@@ -129,10 +129,11 @@
 #include "components/user_manager/scoped_user_manager.h"
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
 #include "chrome/common/chrome_paths.h"
+#include "components/crash/content/app/crashpad.h"
 #include "components/upload_list/crash_upload_list.h"
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+#endif  // defined(OS_LINUX)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/mock_extension_special_storage_policy.h"
@@ -2958,8 +2959,16 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, WipeOriginVerifierData) {
 }
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, WipeCrashData) {
+#if !defined(OS_CHROMEOS)
+  // This test applies only when using a logfile of Crash uploads. Chrome Linux
+  // will use Crashpad's database instead of the logfile. Chrome Chrome OS
+  // continues to use the logfile even when Crashpad is enabled.
+  if (crash_reporter::IsCrashpadEnabled()) {
+    GTEST_SKIP();
+  }
+#endif
   base::FilePath crash_dir_path;
   base::PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dir_path);
   base::FilePath upload_log_path =

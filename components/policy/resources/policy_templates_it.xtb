@@ -1,15 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
-<translation id="1001649754854402482">Consente di attivare le mitigazioni dei controlli <ph name="CORS" /> nella nuova implementazione <ph name="CORS" />, consentendo alle estensioni di mantenere un comportamento compatibile e a <ph name="PRODUCT_NAME" /> di inviare le intestazioni specificate senza controlli <ph name="CORS" />.
-
-      Se questo elenco viene lasciato vuoto, <ph name="PRODUCT_NAME" /> prova a eseguire le estensioni in modalità compatibili e non introduce modifiche <ph name="API" /> per la versione 79 di <ph name="PRODUCT_NAME" />, come spiegato all'indirizzo <ph name="WEB_REQUEST_API_MANUAL" />.
-
-      Se per questo elenco vengono impostati nomi di intestazioni di richieste <ph name="HTTP" />, il controllo <ph name="CORS" /> ignorerà le intestazioni elencate e attiverà la mitigazione per le estensioni.
-
-      Se questo elenco non viene impostato, entrambe le mitigazioni spiegate sopra non vengono applicate.
-
-      Per informazioni dettagliate su <ph name="CORS" />, visita la pagina <ph name="CORS_HELP_URL" />.</translation>
 <translation id="1002439864875515590">Se questa norma non viene configurata o se viene impostata una stringa vuota, non verrà mostrata un'opzione di completamento automatico durante il flusso di accesso dell'utente in <ph name="PRODUCT_OS_NAME" />.
       Se per questa norma viene impostata una stringa che rappresenta un nome di dominio, durante l'accesso dell'utente in <ph name="PRODUCT_OS_NAME" /> verrà mostrata un'opzione di completamento automatico che consentirà all'utente di digitare soltanto il nome utente senza l'estensione del nome di dominio.  L'utente potrà sovrascrivere l'estensione del nome di dominio.
       Se il valore della norma non è un dominio valido, la norma non sarà applicata.</translation>
@@ -195,7 +186,7 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
 <translation id="1291880496936992484">Avviso. RC4 sarà rimosso completamente da <ph name="PRODUCT_NAME" /> dopo la versione 52 (nel periodo di settembre 2016), dopodiché questa norma non sarà più attiva.
 
       Se la norma non viene impostata o se viene impostata su false, i pacchetti di crittografia RC4 in TLS non saranno attivati. In alternativa, la norma può essere impostata su true per mantenere la compatibilità con un server obsoleto. Si tratta di una soluzione temporanea ed è necessario configurare nuovamente il server.</translation>
-<translation id="1294263471858445589">Attiva l'autenticazione ambientale nelle sessioni normali e in modalità in incognito.</translation>
+<translation id="1294263471858445589">Attiva l'autenticazione ambientale nelle sessioni standard e in modalità in incognito.</translation>
 <translation id="1295737447968372331">Attiva la dettatura sulla schermata di accesso</translation>
 <translation id="1297182715641689552">Utilizza uno script proxy .pac</translation>
 <translation id="1297961932043741908">Imposta un limite sui megabyte di memoria che una istanza singola di Chrome può usare.</translation>
@@ -402,9 +393,9 @@ Se l'impostazione è disattivata o non è stata configurata, gli utenti aziendal
 <translation id="1654087023995670109">Applica modalità ospite del browser</translation>
 <translation id="1655229863189977773">Imposta le dimensioni della cache su disco in byte</translation>
 <translation id="166427968280387991">Server proxy</translation>
-<translation id="1667071842533245879">Consente di impostare un elenco di pattern URL che specificano i siti non autorizzati a mostrare contenuti misti (ossia contenuti HTTP su siti HTTPS) bloccabili (ossia attivi) e per i quali contenuti misti bloccabili facoltativi (ossia passivi) verranno aggiornati.
+<translation id="1667071842533245879">Consente di impostare un elenco di pattern URL che specifica i siti non autorizzati a mostrare contenuti misti (ossia contenuti HTTP su siti HTTPS) bloccabili (ossia attivi) e per i quali i contenuti misti bloccabili facoltativi (ossia passivi) verranno aggiornati.
 
-          Se questo criterio non viene impostato, i contenuti misti bloccabili verranno bloccati e quelli bloccabili facoltativi verranno aggiornati, ma gli utenti potranno configurare eccezioni per consentirli per siti specifici.</translation>
+          Se questo criterio non viene impostato, i contenuti misti bloccabili verranno bloccati e quelli bloccabili facoltativi verranno aggiornati, ma gli utenti potranno configurare eccezioni per consentire i contenuti misti per siti specifici.</translation>
 <translation id="1667877109169174750">Se questo criterio è impostato su true, le opzioni di accessibilità vengono visualizzate sempre nel menu della barra delle applicazioni.
 
           Se questo criterio è impostato su false, le opzioni di accessibilità non vengono mai visualizzate nel menu della barra delle applicazioni.
@@ -1487,9 +1478,9 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
           Se questo criterio non viene impostato, il comportamento <ph name="ATTRIBUTE_SAMESITE_NAME" /> predefinito per i cookie per cui non è specificato un attributo <ph name="ATTRIBUTE_SAMESITE_NAME" /> dipenderà dalla configurazione personale dell'utente della funzionalità <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" />, che potrebbe essere impostata in base a una prova pubblica o tramite l'attivazione o disattivazione del flag <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" />.</translation>
 <translation id="3304662785258434098">Consente di stabilire se gli utenti possono aggiungere eccezioni per consentire contenuti misti per siti specifici.
 
-          Questo criterio può essere ignorato per pattern URL specifici usando i criteri "InsecureContentAllowedForUrls" e "InsecureContentBlockedForUrls".
+          Questo criterio può essere ignorato per pattern URL specifici che possono essere elencati nei criteri "InsecureContentAllowedForUrls" e "InsecureContentBlockedForUrls".
 
-          Se questo criterio non viene impostato, gli utenti potranno aggiungere eccezioni per consentire contenuti misti bloccabili e disattivare l'autopropagazione dei contenuti misti bloccabili facoltativi.</translation>
+          Se questo criterio non viene impostato, gli utenti potranno aggiungere eccezioni per consentire contenuti misti bloccabili e disattivare gli aggiornamenti automatici dei contenuti misti bloccabili facoltativi.</translation>
 <translation id="3307971460556020865">Blocca i caricamenti e i download di file di grandi dimensioni</translation>
 <translation id="3312206664202507568">Consente di attivare una pagina su chrome://password-change che permette agli utenti SAML di cambiare le loro password SAML all'interno della sessione, il che assicura che le password SAML e quelle per la schermata di blocco rimangano sincronizzate.
 
@@ -1550,6 +1541,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 
       In caso contrario, la norma potrebbe essere impostata su uno dei seguenti valori: "tls1", "tls1.1" o "tls1.2". Se questa norma viene impostata, <ph name="PRODUCT_NAME" /> non utilizzerà versioni SSL/TLS precedenti alla versione specificata. I valori non riconosciuti verranno ignorati.</translation>
 <translation id="34160070798637152">Consente di controllare la configurazione di rete a livello di dispositivo.</translation>
+<translation id="3417130629744653218">Consenti ai siti web di chiedere se esistono metodi di pagamento disponibili</translation>
 <translation id="3417418267404583991">Se questa norma viene impostata su true o non viene configurata, in <ph name="PRODUCT_OS_NAME" /> verranno attivati gli accessi come ospite. Gli accessi come ospite sono sessioni utente anonime che non richiedono password.
 
       Se questa norma viene impostata su false, in <ph name="PRODUCT_OS_NAME" /> non sarà possibile avviare sessioni Ospite.</translation>
@@ -1667,7 +1659,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="356579196325389849">Gli utenti possono configurare il canale di rilascio di Chrome OS</translation>
 <translation id="3575011234198230041">Autenticazione HTTP</translation>
 <translation id="3577251398714997599">Impostazione annunci per i siti con annunci invasivi</translation>
-<translation id="3577628175311752799">Utilizza un criterio relativo al referrer predefinito di no-referrer-when-downgrade.</translation>
+<translation id="3577628175311752799">Utilizza un criterio relativo al referrer predefinito no-referrer-when-downgrade.</translation>
 <translation id="357917253161699596">Consenti agli utenti di gestire i certificati utente</translation>
 <translation id="3583230441447348508">Consente di specificare un elenco di condivisioni di file di rete preconfigurate.
 
@@ -1897,6 +1889,13 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
           Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
 
           Se questo criterio non viene impostato, inizialmente la tastiera virtuale è disattivata nella schermata di accesso, ma l'utente può attivarla in qualsiasi momento.</translation>
+<translation id="3913530489429898348">Permette di consentire a <ph name="PRODUCT_NAME" /> di inviare documenti da stampare a <ph name="CLOUD_PRINT_NAME" />.  NOTA: questa impostazione incide soltanto sul supporto di <ph name="CLOUD_PRINT_NAME" /> in <ph name="PRODUCT_NAME" />.  Non impedisce agli utenti di inviare processi di stampa su siti web.
+
+      Se questa impostazione viene attivata o non viene configurata, gli utenti possono stampare con <ph name="CLOUD_PRINT_NAME" /> dalla finestra di dialogo di stampa di <ph name="PRODUCT_NAME" />.
+
+      Se questa impostazione viene disattivata, gli utenti non possono stampare con <ph name="CLOUD_PRINT_NAME" /> dalla finestra di dialogo di stampa di <ph name="PRODUCT_NAME" />.
+
+      Per mantenere rilevabili le destinazioni <ph name="CLOUD_PRINT_NAME" />, questo criterio deve essere impostato su true e il valore <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" /> non deve essere incluso nel criterio <ph name="POLICY_PRINTERTYPEDENYLIST" />.</translation>
 <translation id="391531815696899618">Consente di disattivare la sincronizzazione di Google Drive nell'app File di <ph name="PRODUCT_OS_NAME" /> quando è impostata su True. In tal caso, non vengono caricati dati in Google Drive.
 
           Se questa norma non viene impostata o è impostata su False, gli utenti potranno trasferire file in Google Drive.</translation>
@@ -1916,7 +1915,7 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
 
       Se la norma è impostata su true, i pacchetti di rete di monitoraggio (chiamati <ph name="HEARTBEATS_TERM" />) verranno inviati.
       Se la norma è impostata su false, i pacchetti non verranno inviati.</translation>
-<translation id="3950110092991281616">Attiva l'autenticazione ambientale solo nelle sessioni normali.</translation>
+<translation id="3950110092991281616">Attiva l'autenticazione ambientale solo nelle sessioni standard.</translation>
 <translation id="3950239119790560549">Limitazioni relative alla data/ora di aggiornamento</translation>
 <translation id="3956686688560604829">Utilizza la norma SiteList di Internet Explorer per il Supporto dei browser precedenti.</translation>
 <translation id="3958586912393694012">Consenti l'utilizzo di Smart Lock</translation>
@@ -2241,17 +2240,8 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="4453913621209182880">Consenti solo la stampa con immagini di sfondo</translation>
 <translation id="4454586530530448054">Se questo criterio è impostato, tutti i tipi di dati specificati verranno esclusi dalla sincronizzazione sia per Google Sync sia per la sincronizzazione dei profili roaming. Questa operazione può essere utile per ridurre le dimensioni del profilo roaming o per limitare il tipo di dati caricati sui server di Google Sync.
 
-      I tipi di dati correnti per questo criterio sono: "preferiti", "preferenze", "password", "compilazione automatica", "temi", "URLdigitati", "estensioni", "app", "schede", "configurazioneWiFi". Tali nomi fanno distinzione tra maiuscole e minuscole.</translation>
+      Attualmente i tipi di dati per questo criterio sono: "bookmarks", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs", "wifiConfiguration". Tali nomi fanno distinzione tra maiuscole e minuscole.</translation>
 <translation id="4454820008017317557">Mostra l'icona della barra degli strumenti di <ph name="PRODUCT_NAME" /></translation>
-<translation id="4458977366860064210">Consente di usare l'implementazione <ph name="CORS" /> legacy al posto della nuova implementazione <ph name="CORS" />.
-
-      Se questo criterio è impostato su True, viene usata l'implementazione legacy, che dovrebbe essere compatibile con le versioni precedenti.
-
-      Se questo criterio è impostato su False o non è impostato, viene usata la nuova implementazione, che potrebbe causare problemi di compatibilità per le aziende.
-
-      Questo criterio verrà rimosso dopo un paio di aggiornamenti.
-
-      Per informazioni dettagliate su <ph name="CORS" />, visita la pagina <ph name="CORS_HELP_URL" />.</translation>
 <translation id="4467952432486360968">Blocca cookie di terze parti</translation>
 <translation id="4474167089968829729">Attiva il salvataggio delle password in Gestione password</translation>
 <translation id="4476769083125004742">Se la norma viene impostata su <ph name="BLOCK_GEOLOCATION_SETTING" />, le app Android non possono accedere ai dati sulla posizione. Se la norma viene impostata su qualsiasi altro valore o non viene impostata, all'utente viene chiesta l'autorizzazione quando un'app Android vuole accedere ai dati sulla posizione.</translation>
@@ -2471,6 +2461,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       </translation>
 <translation id="4906194810004762807">Frequenza di aggiornamento per norma dispositivo</translation>
 <translation id="4917385247580444890">Forte</translation>
+<translation id="4919122295221518724">Attiva trattamento più restrittivo dei contenuti misti</translation>
 <translation id="4923806312383904642">Consenti a WebDriver di eseguire l'override delle norme non compatibili</translation>
 <translation id="4929721861648439998">Consente di attivare la funzione di accessibilità di audio in formato mono nella schermata di accesso.
 
@@ -2491,6 +2482,10 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="4970855112942626932">Disattiva accesso al browser</translation>
 <translation id="4978405676361550165">Se viene impostata la norma "OffHours", i criteri relativi ai dispositivi specificate vengono ignorate (vengono usate le impostazioni predefinite dei criteri) durante gli intervalli di tempo definiti. I criteri relativi ai dispositivi vengono riapplicati da Chrome ogni volta che inizia o finisce il periodo definito in "OffHours". L'utente verrà informato e obbligato a uscire dall'account quando vengono cambiate le impostazioni relative alla fine del periodo "OffHours" e ai criteri relativi ai dispositivi (ad esempio se l'utente ha eseguito l'accesso con un account non consentito).</translation>
 <translation id="4980635395568992380">Tipo di dati:</translation>
+<translation id="4980794848194997251">Questo criterio consente di stabilire il trattamento dei contenuti misti (contenuti HTTP in siti HTTPS) nel browser.
+       Se il criterio viene impostato su true o non viene impostato, viene eseguito l'upgrade automatico a HTTPS dei contenuti misti di audio e video (vale a dire che l'URL viene riscritto come HTTPS, senza una riserva se la risorsa non è disponibile tramite HTTPS) e nella barra degli URL viene mostrato un avviso "Non sicuro" per i contenuti misti delle immagini.
+       Se il criterio viene impostato su false, vengono disattivati gli upgrade automatici di audio e video e non viene mostrato un avviso per le immagini.
+       Questo criterio non influisce su tipi di contenuti misti diversi da audio, video e immagini.</translation>
 <translation id="4983201894483989687">Consenti esecuzione dei plug-in obsoleti</translation>
 <translation id="4986560318567565414">Percorso a Chrome per cambiare il browser alternativo.</translation>
 <translation id="4988291787868618635">Azione da compiere a raggiungimento ritardo inattività</translation>
@@ -2527,6 +2522,9 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="5056708224511062314">Ingrandimento dello schermo disattivato</translation>
 <translation id="5058573563327660283">Seleziona la strategia da utilizzare per liberare spazio su disco durante la pulizia automatica (obsoleta)</translation>
 <translation id="5067143124345820993">Whitelist di utenti con accesso</translation>
+<translation id="5073609397321802133">Se il criterio viene impostato su false, gli utenti non possono personalizzare lo sfondo della pagina Nuova scheda. L'eventuale sfondo personalizzato esistente viene rimosso definitivamente anche se il criterio viene impostato su true in un secondo momento.
+
+      Se il criterio viene impostato su true o non viene impostato, gli utenti possono personalizzare lo sfondo della pagina Nuova scheda.</translation>
 <translation id="5075834892754086022">Se la norma viene impostata, viene applicata la lunghezza di PIN minima
           configurata. (La lunghezza minima assoluta dei codici PIN è 1; i valori inferiori a 1
           vengono considerati pari a 1).
@@ -2704,11 +2702,11 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
       Se la norma viene impostata su True o non viene impostata, Crostini è abilitato per l'utente, a patto che anche le altre impostazioni lo permettano.
       Le tre norme, VirtualMachinesAllowed, CrostiniAllowed e DeviceUnaffiliatedCrostiniAllowed devono essere impostate su True affinché Crostini possa essere eseguito.
       Quando l'impostazione di questa norma viene modificata in False, la norma viene applicata all'avvio di nuovi contenitori Crostini, ma non determina l'arresto dei contenitori già in esecuzione.</translation>
-<translation id="5278367296164377827">Questo criterio aziendale si riferisce all'adattamento a breve termine e verrà rimosso in M82.
+<translation id="5278367296164377827">Questo criterio aziendale è finalizzato al periodo di transizione e verrà rimosso nella versione M82.
 
-      Il criterio relativo al referrer predefinito di Chrome sarà rafforzato passando dal relativo valore corrente no-referrer-when-downgrade al più sicuro strict-origin-when-cross-origin tramite un rilascio graduale della versione stabile di M80.
+      Il criterio relativo al referrer predefinito di Chrome sarà rafforzato passando dal relativo valore corrente no-referrer-when-downgrade al più sicuro strict-origin-when-cross-origin tramite un rilascio graduale della release stabile di M80.
 
-      Prima del lancio, questo criterio aziendale non avrà alcun effetto. Dopo il lancio, una volta attivato questo criterio aziendale, il criterio relativo al referrer predefinito di Chrome verrà impostato sul suo valore precedente a M80, no-referrer-when-downgrade.
+      Prima del lancio, questo criterio aziendale non avrà alcun effetto. Dopo il lancio, una volta attivato questo criterio aziendale, il criterio relativo al referrer predefinito di Chrome verrà impostato sul suo valore della pre-release M80, no-referrer-when-downgrade.
 
       Questo criterio aziendale è disattivato per impostazione predefinita.</translation>
 <translation id="5283457834853986457">Disattiva la ricerca dei plug-in (ritirata)</translation>
@@ -3457,7 +3455,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="6598235178374410284">Immagine avatar utente</translation>
 <translation id="6603004149426829878">Consente di inviare sempre al server i segnali relativi alla posizione disponibili durante le operazioni per stabilire il fuso orario</translation>
 <translation id="6607920041550065565">
-      Se viene impostato su false, questo criterio non consente di attivare la funzionalità Powerwash sul dispositivo. Si verifica un'eccezione se il criterio <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_NAME" /> è impostato su un valore che consente l'aggiornamento del firmware TPM e questo non era ancora stato aggiornato.
+      Se viene impostato su false, questo criterio non consente di attivare la funzionalità Powerwash sul dispositivo. Si verifica un'eccezione se il criterio <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_NAME" /> è impostato su un valore che consente l'aggiornamento del firmware TPM e tale firmware non era ancora stato aggiornato.
       Se viene impostato su true, consente di attivare la funzionalità Powerwash sul dispositivo.
       Se non viene configurato, il valore predefinito sarà true, consentendo al dispositivo di attivare la funzionalità Powerwash.
       </translation>
@@ -3494,13 +3492,14 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 <translation id="6652197835259177259">Impostazioni degli utenti gestiti localmente</translation>
 <translation id="6658245400435704251">Consente di specificare il numero di secondi massimo per cui un dispositivo può ritardare in modo casuale il download di un suo aggiornamento dal momento della pubblicazione dell'aggiornamento sul server. Il dispositivo può attendere una parte di questo tempo in termini di tempo reale e la parte rimanente in termini di numero di controlli della disponibilità di aggiornamenti. In ogni caso, la dispersione ha un limite massimo pari a un periodo di tempo costante in modo che un dispositivo non si blocchi mai in attesa di scaricare un aggiornamento.</translation>
 <translation id="6665670272107384733">Imposta la frequenza di inserimento della password per poter usare lo sblocco rapido</translation>
-<translation id="6672630473862787247">Attiva l'autenticazione ambientale nelle sessioni normali, Ospite e in modalità in incognito.</translation>
+<translation id="6672070613706645316">Consenti agli utenti di personalizzare lo sfondo della pagina Nuova scheda</translation>
+<translation id="6672630473862787247">Attiva l'autenticazione ambientale nelle sessioni standard, Ospite e in modalità in incognito.</translation>
 <translation id="6681229465468164801">Consente di impostare un elenco di pattern URL che specificano i siti che non possono richiedere all'utente l'accesso al dispositivo USB.
 
           Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultWebUsbGuardSetting", se impostata, oppure la configurazione personale dell'utente.
 
           I pattern URL di questa norma non devono essere in conflitto con quelli configurati tramite la norma WebUsbAskForUrls. Non viene specificato quale delle due norme debba avere precedenza se un URL presenta corrispondenze con entrambe.</translation>
-<translation id="6685903773201985073">Attiva l'autenticazione ambientale nelle sessioni normali e Ospite.</translation>
+<translation id="6685903773201985073">Attiva l'autenticazione ambientale nelle sessioni standard e Ospite.</translation>
 <translation id="6689792153960219308">Segnala lo stato dell'hardware</translation>
 <translation id="6698632841807204978">Attiva la stampa monocromatica</translation>
 <translation id="6699880231565102694">Abilita autenticazione a due fattori per gli host di accesso remoto</translation>
@@ -3557,7 +3556,7 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 <translation id="6856743875250214792">Questa norma è obsoleta ed è stata rimossa su M66, poiché era utilizzata solo per test interni e rappresenta un rischio per la sicurezza.
 
       Consente di specificare i flag da applicare all'avvio di <ph name="PRODUCT_NAME" />. I flag specificati vengono applicati soltanto alla schermata di accesso. I flag impostati tramite questa norma non vengono applicati anche alle sessioni utente.</translation>
-<translation id="685769593149966548">Imponi Livello massimo della Modalità con restrizioni per YouTube</translation>
+<translation id="685769593149966548">Imponi il livello massimo della Modalità con restrizioni per YouTube</translation>
 <translation id="6857824281777105940">Questa norma consente di stabilire se segnalare o meno dati di Navigazione sicura, incluso il numero dell'avviso di Navigazione sicura e il numero del relativo click-through.
 
       Se questa norma non viene impostata o viene impostata su True, i dati di Navigazione sicura vengono raccolti.
@@ -4026,6 +4025,14 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
       Se la norma non è impostata o viene impostata su 0, navigare a un URL designato ne comporta subito l'apertura in un browser alternativo.
 
       Se la norma viene impostata su un numero, Chrome mostra un messaggio per quel numero di millisecondi, quindi apre il browser alternativo.</translation>
+<translation id="7583419926951418342">Questo criterio consente di controllare i rapporti cloud di <ph name="PRODUCT_NAME" />, che consentono di caricare informazioni sul funzionamento del browser nella Console di amministrazione Google.
+
+      Se questo criterio non viene impostato o viene impostato su False, i dati non vengono raccolti o caricati.
+      Se questo criterio viene impostato su True, i dati vengono raccolti e caricati nella Console di amministrazione Google.
+      Per stabilire quali dati vengono caricati, usa i criteri del gruppo Estensione Chrome Reporting Extension.
+
+      Per <ph name="PRODUCT_NAME" />, questo criterio viene applicato soltanto se il computer viene registrato con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" />.
+      Per <ph name="PRODUCT_OS_NAME" />, questo criterio viene applicato sempre.</translation>
 <translation id="7586477707097444774">Per i cookie impostati per i domini corrispondenti a questi pattern verrà ripristinato il comportamento <ph name="ATTRIBUTE_SAMESITE_NAME" /> precedente. Se ripristini il comportamento precedente, i cookie per cui non è specificato un attributo <ph name="ATTRIBUTE_SAMESITE_NAME" /> vengono considerati come se avessero il valore "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />"; viene inoltre rimosso il requisito che richiede che i cookie "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" abbiano l'attributo "<ph name="ATTRIBUTE_SECURE_NAME" />". Per una descrizione completa, visita la pagina https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies.
 
           Per i cookie sui domini non previsti dai pattern specificati qui oppure per tutti i cookie se questo criterio non viene impostato, verrà utilizzato il valore predefinito globale del criterio <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME" />, se è impostato, oppure verrà utilizzata la configurazione personale dell'utente.
@@ -4107,21 +4114,21 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
       Questo criterio ha effetto solo per gli utenti non affiliati.
       </translation>
 <translation id="7683777542468165012">Aggiornamento dinamico delle norme</translation>
-<translation id="7684516445147212248">Se configuri questo criterio, l'autenticazione ambientale verrà attivata o disattivata per i profili ospite e in modalità in incognito in <ph name="PRODUCT_NAME" />.
+<translation id="7684516445147212248">Se configuri questo criterio, l'autenticazione ambientale verrà attivata o disattivata per i profili Ospite e in modalità in incognito in <ph name="PRODUCT_NAME" />.
 
-      L'autenticazione ambientale è l'autenticazione http con credenziali predefinite se non ne sono fornite altre esplicitamente tramite schemi NTLM/Kerberos/Negotiate challenge/response.
+      L'autenticazione ambientale è l'autenticazione http con credenziali predefinite, se non ne sono esplicitamente fornite altre tramite schemi challenge/response NTLM/Kerberos/Negotiate.
 
-      Se imposti <ph name="REGULAR_ONLY_OPTION_NAME" /> (valore 0), consenti l'autenticazione ambientale solo per le sessioni normali. Non sarà consentito eseguire l'autenticazione ambientale con le sessioni Ospite e in modalità in incognito.
+      Se imposti <ph name="REGULAR_ONLY_OPTION_NAME" /> (valore 0), consenti l'autenticazione ambientale solo per le sessioni standard. Non sarà consentito eseguire l'autenticazione ambientale con le sessioni Ospite e in modalità in incognito.
 
-      Se imposti <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (valore 1), consenti l'autenticazione ambientale per le sessioni normali e in modalità in incognito. Non sarà consentito eseguire l'autenticazione ambientale con le sessioni Ospite.
+      Se imposti <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (valore 1), consenti l'autenticazione ambientale per le sessioni standard e in modalità in incognito. Non sarà consentito eseguire l'autenticazione ambientale con le sessioni Ospite.
 
-      Se imposti <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (valore 2), consenti l'autenticazione ambientale per le sessioni normali e Ospite. Non sarà consentito eseguire l'autenticazione ambientale con le sessioni in modalità in incognito.
+      Se imposti <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (valore 2), consenti l'autenticazione ambientale per le sessioni standard e Ospite. Non sarà consentito eseguire l'autenticazione ambientale con le sessioni in modalità in incognito.
 
       Se imposti <ph name="ALL_OPTION_NAME" /> (valore 3), consenti l'autenticazione ambientale per tutte le sessioni.
 
-      Tieni presente che l'autenticazione ambientale è sempre consentita per i profili normali.
+      Tieni presente che l'autenticazione ambientale è sempre consentita per i profili standard.
 
-      Se il criterio non viene impostato, non sarà consentito eseguire l'autenticazione con le sessioni Ospite e in modalità in incognito nelle versioni future di <ph name="PRODUCT_NAME" /> poiché non saranno più consentite.</translation>
+      Se il criterio non viene impostato, nelle release future di <ph name="PRODUCT_NAME" /> non sarà possibile eseguire l'autenticazione ambientale con le sessioni Ospite e in modalità in incognito, dal momento che non sarà più consentita.</translation>
 <translation id="7687943045976362719">Se questa norma viene impostata, i tipi di contenuto specificati vengono gestiti da <ph name="PRODUCT_FRAME_NAME" />.
 
           Se la norma non viene impostata, verrà utilizzato per tutti i siti il renderer predefinito. (È possibile utilizzare la norma <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> per configurare il renderer predefinito).</translation>
@@ -4157,7 +4164,7 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
           Se questa impostazione è disabilitata o non è impostata, l'autenticazione a due fattori non sarà attiva e verrà utilizzato il comportamento predefinito che prevede l'uso di un PIN definito dall'utente.</translation>
 <translation id="7750991880413385988">Apri pagina Nuova scheda</translation>
 <translation id="7754704193130578113">Chiedi dove salvare il file prima di scaricarlo</translation>
-<translation id="7758378441185523981">Attiva l'autenticazione ambientale per alcuni tipi di profilo.</translation>
+<translation id="7758378441185523981">Attiva l'autenticazione ambientale in base ai tipi di profilo.</translation>
 <translation id="7761446981238915769">Configura l'elenco di app installate nella schermata di accesso</translation>
 <translation id="7763614521440615342">Mostra suggerimenti di contenuti nella pagina Nuova scheda</translation>
 <translation id="7765879851993224640">Consenti l'uso dell'accesso tramite Smart Lock.</translation>
@@ -4333,6 +4340,11 @@ Se attivi questa impostazione o non imposti un valore, la funzione Compilazione 
 
       Se questa norma non viene impostata, sul dispositivo viene utilizzato il formato predefinito di 24 ore.</translation>
 <translation id="8114382167597081590">Non imporre la Modalità con restrizioni su YouTube</translation>
+<translation id="8117921351531866504">Consente di stabilire se consentire o meno ai siti web di controllare se l'utente ha salvato dei metodi di pagamento.
+
+      Se questo criterio viene disattivato, ai siti web che usano l'API PaymentRequest.canMakePayment o PaymentRequest.hasEnrolledInstrument viene comunicato che non ci sono metodi di pagamento disponibili.
+
+      Se l'impostazione viene attivata o non viene configurata, i siti web possono controllare se l'utente ha salvato dei metodi di pagamento.</translation>
 <translation id="8118665053362250806">Imposta le dimensioni della cache su disco di supporto</translation>
 <translation id="8124468781472887384">Norma di accesso alla configurazione delle stampanti per i dispositivi.</translation>
 <translation id="8138009212169037227">Questa norma consente di stabilire se segnalare o meno i dati delle norme e data/ora del recupero delle norme.
@@ -4401,9 +4413,9 @@ Se la norma non viene configurata, la modalità ad alto contrasto viene inizialm
 <translation id="8186911565834244165">Consenti il feedback degli utenti</translation>
 <translation id="8214600119442850823">Consente di configurare Gestione password.</translation>
 <translation id="8217516105848565518">Questa norma è obsoleta. Al suo posto utilizza RemoteAccessHostDomainList.</translation>
-<translation id="8236323460664833038">Consente di impostare un elenco di pattern URL che specificano i siti autorizzati a visualizzare contenuti misti (ossia contenuti HTTP su siti HTTPS) bloccabili (ossia attivi) e per i quali aggiornamenti di contenuti misti bloccabili facoltativi verranno disattivati.
+<translation id="8236323460664833038">Consente di impostare un elenco di pattern URL che specificano i siti autorizzati a visualizzare contenuti misti (ossia contenuti HTTP su siti HTTPS) bloccabili (ossia attivi) e per i quali gli aggiornamenti dei contenuti misti bloccabili facoltativi verranno disattivati.
 
-          Se questo criterio non viene impostato, i contenuti misti bloccabili verranno bloccati e quelli bloccabili facoltativi verranno aggiornati, inoltre gli utenti potranno configurare eccezioni per consentirli per siti specifici.</translation>
+          Se questo criterio non viene impostato, i contenuti misti bloccabili verranno bloccati e quelli bloccabili facoltativi verranno aggiornati; inoltre, gli utenti potranno configurare eccezioni per consentire i contenuti misti per siti specifici.</translation>
 <translation id="8244171102276095471">Attiva i pacchetti di crittografia RC4 in TLS</translation>
 <translation id="8244525275280476362">Ritardo di recupero massimo dopo l'invalidazione di una norma</translation>
 <translation id="8256688113167012935">Controlla il nome account visualizzato da <ph name="PRODUCT_OS_NAME" /> nella schermata di accesso per il corrispondente account del dispositivo.
@@ -4686,6 +4698,17 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
       Se questa impostazione è attivata o non è impostata, la cronologia di navigazione e la cronologia dei download possono essere eliminate.
 
       Se questa impostazione è disattivata, la cronologia di navigazione e la cronologia dei download non possono essere eliminate.</translation>
+<translation id="8749803771700374502">Per le stampanti dei tipi inseriti nell'elenco di tipi non consentiti verranno disattivati il rilevamento o il recupero delle relative funzionalità.
+
+      L'inserimento di tutti i tipi di stampanti nell'elenco di tipi non consentiti comporta essenzialmente la disattivazione della stampa, perché non ci sarebbero destinazioni disponibili a cui inviare un documento da stampare.
+
+      L'inserimento del valore <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" /> nell'elenco di tipi non consentiti equivale all'impostazione del valore false per il criterio <ph name="POLICY_CLOUDPRINTSUBMITENABLED" />. Per mantenere rilevabili le destinazioni <ph name="CLOUD_PRINT_NAME" />, il criterio <ph name="POLICY_CLOUDPRINTSUBMITENABLED" /> deve essere impostato su true e il valore <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" /> non deve essere nell'elenco di tipi non consentiti.
+
+      Se il criterio non viene impostato o se l'elenco viene lasciato vuoto, potranno essere rilevati tutti i tipi di stampanti.
+
+      Le stampanti estensione sono note anche come destinazioni dei provider di stampa e includono le eventuali destinazioni appartenenti a un'estensione <ph name="PRODUCT_NAME" />.
+
+      Le stampanti locali sono note anche come destinazioni di stampa native e includono le destinazioni disponibili per le stampanti di computer locali e le stampanti di rete condivise.</translation>
 <translation id="8752541111574086388">Tieni presente che questo criterio è obsoleto e verrà rimosso nella versione 82 di <ph name="PRODUCT_OS_NAME" />. Usa il criterio <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale viene mostrata una finestra di dialogo di avviso quando viene usata la batteria.

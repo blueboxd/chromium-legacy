@@ -200,6 +200,13 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
   void CalculateChildBounds(const SizeBounds& size_bounds,
                             FlexLayoutData* data) const;
 
+  // Calculates available space for non-flex views.
+  void CalculateNonFlexAvailableSpace(
+      FlexLayoutData* data,
+      int available_space,
+      const ChildViewSpacing& child_spacing,
+      const FlexOrderToViewIndexMap& flex_views) const;
+
   // Gets the default value for a particular layout property, which will be used
   // if the property is not set on a child view being laid out (e.g.
   // kMarginsKey).

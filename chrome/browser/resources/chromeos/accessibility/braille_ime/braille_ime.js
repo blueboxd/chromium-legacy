@@ -76,7 +76,7 @@ BrailleIme.prototype = {
    * @const {string}
    * @private
    */
-  PORT_NAME: 'cvox.BrailleIme.Port',
+  PORT_NAME: 'BrailleIme.Port',
 
   /**
    * Identifier for the use standard keyboard option used in the menu and

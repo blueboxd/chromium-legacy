@@ -81,6 +81,7 @@
 #include "ui/android/window_android.h"
 #else  // !OS_ANDROID
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_controller_impl.h"
+#include "chrome/browser/ui/autofill/payments/save_upi_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/webauthn_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/webauthn_dialog_state.h"
 #include "chrome/browser/ui/autofill/payments/webauthn_dialog_view.h"
@@ -329,6 +330,15 @@ bool ChromeAutofillClient::CloseWebauthnDialog() {
 
   return false;
 }
+
+void ChromeAutofillClient::ConfirmSaveUpiIdLocally(
+    const std::string& upi_id,
+    base::OnceCallback<void(bool accept)> callback) {
+  autofill::SaveUPIBubbleControllerImpl::CreateForWebContents(web_contents());
+  autofill::SaveUPIBubbleControllerImpl* controller =
+      autofill::SaveUPIBubbleControllerImpl::FromWebContents(web_contents());
+  controller->OfferUpiIdLocalSave(upi_id, std::move(callback));
+}
 #endif
 
 void ChromeAutofillClient::ConfirmSaveAutofillProfile(
@@ -355,8 +365,7 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
               payments_client_->is_off_the_record())));
 #else
   // Do lazy initialization of SaveCardBubbleControllerImpl.
-  autofill::SaveCardBubbleControllerImpl::CreateForWebContents(
-      web_contents());
+  autofill::SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());
   autofill::SaveCardBubbleControllerImpl* controller =
       autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents());
   controller->OfferLocalSave(card, options, std::move(callback));
@@ -472,13 +481,10 @@ void ChromeAutofillClient::ShowAutofillPopup(
       element_bounds + client_area.OffsetFromOrigin();
 
   // Will delete or reuse the old |popup_controller_|.
-  popup_controller_ =
-      AutofillPopupControllerImpl::GetOrCreate(popup_controller_,
-                                               delegate,
-                                               web_contents(),
-                                               web_contents()->GetNativeView(),
-                                               element_bounds_in_screen_space,
-                                               text_direction);
+  popup_controller_ = AutofillPopupControllerImpl::GetOrCreate(
+      popup_controller_, delegate, web_contents(),
+      web_contents()->GetNativeView(), element_bounds_in_screen_space,
+      text_direction);
 
   popup_controller_->Show(suggestions, autoselect_first_suggestion, popup_type);
 }

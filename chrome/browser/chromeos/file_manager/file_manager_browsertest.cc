@@ -471,7 +471,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DirectoryTree, /* directory_tree.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("directoryTreeHorizontalScroll"),
+    ::testing::Values(TestCase("directoryTreeActiveDirectory"),
+                      TestCase("directoryTreeHorizontalScroll"),
                       TestCase("directoryTreeExpandHorizontalScroll"),
                       TestCase("directoryTreeVerticalScroll"),
                       TestCase("directoryTreeClippedWindowResize"),

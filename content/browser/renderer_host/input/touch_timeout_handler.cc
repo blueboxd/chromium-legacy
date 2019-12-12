@@ -41,8 +41,8 @@ TouchTimeoutHandler::TouchTimeoutHandler(
       mobile_timeout_delay_(mobile_timeout_delay),
       use_mobile_timeout_(false),
       pending_ack_state_(PENDING_ACK_NONE),
-      timeout_monitor_(
-          base::Bind(&TouchTimeoutHandler::OnTimeOut, base::Unretained(this))),
+      timeout_monitor_(base::BindRepeating(&TouchTimeoutHandler::OnTimeOut,
+                                           base::Unretained(this))),
       enabled_(true),
       enabled_for_current_sequence_(false),
       sequence_awaiting_uma_update_(false),

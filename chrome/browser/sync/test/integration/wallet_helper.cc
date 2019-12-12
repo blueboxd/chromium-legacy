@@ -28,6 +28,7 @@ using autofill::AutofillProfile;
 using autofill::AutofillTable;
 using autofill::AutofillWebDataService;
 using autofill::CreditCard;
+using autofill::CreditCardCloudTokenData;
 using autofill::PaymentsCustomerData;
 using autofill::PersonalDataManager;
 using autofill::data_util::TruncateUTF8;
@@ -188,6 +189,14 @@ void SetPaymentsCustomerDataOnDBSequence(
       ->SetPaymentsCustomerData(&customer_data);
 }
 
+void SetCreditCardCloudTokenDataOnDBSequence(
+    AutofillWebDataService* wds,
+    const std::vector<CreditCardCloudTokenData>& cloud_token_data) {
+  DCHECK(wds->GetDBTaskRunner()->RunsTasksInCurrentSequence());
+  AutofillTable::FromWebDatabase(wds->GetDatabase())
+      ->SetCreditCardCloudTokenData(cloud_token_data);
+}
+
 void GetServerCardsMetadataOnDBSequence(
     AutofillWebDataService* wds,
     std::map<std::string, AutofillMetadata>* cards_metadata) {
@@ -222,6 +231,7 @@ const char kDefaultCardID[] = "wallet card ID";
 const char kDefaultAddressID[] = "wallet address ID";
 const char kDefaultCustomerID[] = "deadbeef";
 const char kDefaultBillingAddressID[] = "billing address entity ID";
+const char kDefaultCreditCardCloudTokenDataID[] = "cloud token data ID";
 
 PersonalDataManager* GetPersonalDataManager(int index) {
   return autofill::PersonalDataManagerFactory::GetForProfile(
@@ -265,6 +275,15 @@ void SetPaymentsCustomerData(
       FROM_HERE, base::BindOnce(&SetPaymentsCustomerDataOnDBSequence,
                                 base::Unretained(wds.get()), customer_data));
   WaitForCurrentTasksToComplete(wds->GetDBTaskRunner());
+}
+
+void SetCreditCardCloudTokenData(
+    int profile,
+    const std::vector<autofill::CreditCardCloudTokenData>& cloud_token_data) {
+  scoped_refptr<AutofillWebDataService> wds = GetProfileWebDataService(profile);
+  wds->GetDBTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&SetCreditCardCloudTokenDataOnDBSequence,
+                                base::Unretained(wds.get()), cloud_token_data));
 }
 
 void UpdateServerCardMetadata(int profile, const CreditCard& credit_card) {
@@ -436,6 +455,28 @@ sync_pb::SyncEntity CreateSyncWalletAddress(const std::string& name,
   wallet_address->set_id(name);
   wallet_address->set_company_name(company);
   return result;
+}
+
+sync_pb::SyncEntity CreateSyncCreditCardCloudTokenData(
+    const std::string& cloud_token_data_id) {
+  sync_pb::SyncEntity entity;
+  entity.set_name(cloud_token_data_id);
+  entity.set_id_string(cloud_token_data_id);
+  entity.set_version(0);  // Will be overridden by the fake server.
+  entity.set_ctime(12345);
+  entity.set_mtime(12345);
+  sync_pb::AutofillWalletSpecifics* wallet_specifics =
+      entity.mutable_specifics()->mutable_autofill_wallet();
+  wallet_specifics->set_type(
+      sync_pb::AutofillWalletSpecifics::CREDIT_CARD_CLOUD_TOKEN_DATA);
+  sync_pb::WalletCreditCardCloudTokenData* cloud_token_data =
+      wallet_specifics->mutable_cloud_token_data();
+  cloud_token_data->set_instrument_token(cloud_token_data_id);
+  return entity;
+}
+
+sync_pb::SyncEntity CreateDefaultSyncCreditCardCloudTokenData() {
+  return CreateSyncCreditCardCloudTokenData(kDefaultCreditCardCloudTokenDataID);
 }
 
 void ExpectDefaultCreditCardValues(const CreditCard& card) {

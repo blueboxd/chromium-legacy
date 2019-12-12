@@ -524,7 +524,7 @@ def main(argv):
 
   argv = build_utils.ExpandFileArgs(argv)
   options, java_files = _ParseOptions(argv)
-  javac_path = build_utils.JAVA_PATH + 'c'
+  javac_path = build_utils.JAVAC_PATH
 
   javac_cmd = [
       javac_path,

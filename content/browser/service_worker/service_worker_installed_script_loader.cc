@@ -14,7 +14,7 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "net/base/ip_endpoint.h"
 #include "net/cert/cert_status_flags.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 
 namespace content {

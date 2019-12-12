@@ -357,7 +357,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // received without receiving any headers looks broken, anyways.
     if (!received_response_ && (!status_ || status_->error_code != net::OK)) {
       RecordLoadHistograms(
-          url_, static_cast<ResourceType>(resource_request_->resource_type),
+          url::Origin::Create(url_),
+          static_cast<ResourceType>(resource_request_->resource_type),
           status_ ? status_->error_code : net::ERR_ABORTED);
     }
   }

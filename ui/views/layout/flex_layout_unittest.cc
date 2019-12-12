@@ -2270,9 +2270,246 @@ TEST_F(FlexLayoutTest, Layout_OnlyCallsSetViewVisibilityWhenNecessary) {
   EXPECT_EQ(0, child2->GetSetVisibleCount());
 }
 
+// Available Size Tests -------------------------------------------------------
+
+TEST_F(FlexLayoutTest, GetAvailableSize_NoFlex) {
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetCollapseMargins(true);
+  layout_->SetMainAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetDefault(views::kMarginsKey, gfx::Insets(5));
+  MockView* const child1 = AddChild(Size(20, 10));
+  MockView* const child2 = AddChild(Size(10, 5));
+
+  // With no flex at preferred size views will get their preferred main axis
+  // size.
+  host_->SizeToPreferredSize();
+  EXPECT_EQ(SizeBounds(20, 10), host_->GetAvailableSize(child1));
+  EXPECT_EQ(SizeBounds(10, 10), host_->GetAvailableSize(child2));
+}
+
+TEST_F(FlexLayoutTest, GetAvailableSize_NoFlex_Margins) {
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetCollapseMargins(true);
+  layout_->SetMainAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  MockView* const child1 = AddChild(Size(20, 10));
+  child1->SetProperty(views::kMarginsKey, gfx::Insets(3, 5, 7, 5));
+  MockView* const child2 = AddChild(Size(10, 5));
+  child2->SetProperty(views::kMarginsKey, gfx::Insets(9, 5, 5, 5));
+
+  host_->SizeToPreferredSize();
+  EXPECT_EQ(SizeBounds(20, 10), host_->GetAvailableSize(child1));
+  EXPECT_EQ(SizeBounds(10, 6), host_->GetAvailableSize(child2));
+}
+
+TEST_F(FlexLayoutTest, GetAvailableSize_NoFlex_ExtraSize) {
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetCollapseMargins(true);
+  layout_->SetMainAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetDefault(views::kMarginsKey, gfx::Insets(5));
+  MockView* const child1 = AddChild(Size(20, 10));
+  MockView* const child2 = AddChild(Size(10, 5));
+
+  host_->SetSize({50, 25});
+  const int excess = host_->width() - host_->GetPreferredSize().width();
+  EXPECT_EQ(SizeBounds(child1->GetPreferredSize().width() + excess, 15),
+            host_->GetAvailableSize(child1));
+  EXPECT_EQ(SizeBounds(child2->GetPreferredSize().width() + excess, 15),
+            host_->GetAvailableSize(child2));
+}
+
+TEST_F(FlexLayoutTest, GetAvailableSize_NoFlex_Vertical) {
+  layout_->SetOrientation(LayoutOrientation::kVertical);
+  layout_->SetCollapseMargins(true);
+  layout_->SetMainAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStretch);
+  layout_->SetDefault(views::kMarginsKey, gfx::Insets(5));
+  MockView* const child1 = AddChild(Size(20, 10));
+  MockView* const child2 = AddChild(Size(10, 5));
+
+  host_->SetSize({35, 35});
+  const int excess = host_->height() - host_->GetPreferredSize().height();
+  EXPECT_EQ(SizeBounds(25, child1->GetPreferredSize().height() + excess),
+            host_->GetAvailableSize(child1));
+  EXPECT_EQ(SizeBounds(25, child2->GetPreferredSize().height() + excess),
+            host_->GetAvailableSize(child2));
+}
+
+TEST_F(FlexLayoutTest, GetAvailableSize_Flex_AllSameSize) {
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetCollapseMargins(true);
+  layout_->SetMainAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetDefault(views::kMarginsKey, gfx::Insets(5));
+  MockView* const child1 = AddChild(Size(20, 10));
+  MockView* const child2 = AddChild(Size(10, 5));
+  MockView* const child3 = AddChild(Size(5, 5));
+  child3->SetProperty(kFlexBehaviorKey, kUnboundedScaleToZero);
+  MockView* const child4 = AddChild(Size(5, 5));
+  child4->SetProperty(kFlexBehaviorKey, kUnboundedScaleToZero);
+
+  host_->SizeToPreferredSize();
+  // Each of these views can expand into both the view space and the margins for
+  // the third and fourth views (total 10 each).
+  EXPECT_EQ(SizeBounds(40, 10), host_->GetAvailableSize(child1));
+  EXPECT_EQ(SizeBounds(30, 10), host_->GetAvailableSize(child2));
+  // Each of these can expand into the view space and margin of the other.
+  EXPECT_EQ(SizeBounds(15, 10), host_->GetAvailableSize(child3));
+  EXPECT_EQ(SizeBounds(15, 10), host_->GetAvailableSize(child4));
+
+  // At minimum size there should be no excess available.
+  host_->SetSize(host_->GetMinimumSize());
+  EXPECT_EQ(SizeBounds(20, 10), host_->GetAvailableSize(child1));
+  EXPECT_EQ(SizeBounds(10, 10), host_->GetAvailableSize(child2));
+  EXPECT_EQ(SizeBounds(0, 10), host_->GetAvailableSize(child3));
+  EXPECT_EQ(SizeBounds(0, 10), host_->GetAvailableSize(child4));
+}
+
+TEST_F(FlexLayoutTest, GetAvailableSize_Flex_VariedMinimumSizes) {
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetCollapseMargins(true);
+  layout_->SetMainAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetDefault(views::kMarginsKey, gfx::Insets(5));
+  MockView* const child1 = AddChild(Size(20, 10));
+  MockView* const child2 = AddChild(Size(10, 5));
+  MockView* const child3 = AddChild(Size(10, 10), Size(7, 7));
+  child3->SetProperty(kFlexBehaviorKey, kUnboundedScaleToMinimum);
+  MockView* const child4 = AddChild(Size(12, 12), Size(5, 5));
+  child4->SetProperty(kFlexBehaviorKey, kUnboundedScaleToMinimum);
+
+  host_->SizeToPreferredSize();
+  // Since the third and fourth views can only shrink a certain amount, the
+  // excess available to the first two views is smaller than in previous tests.
+  EXPECT_EQ(SizeBounds(30, 12), host_->GetAvailableSize(child1));
+  EXPECT_EQ(SizeBounds(20, 12), host_->GetAvailableSize(child2));
+  // Each of these can only consume the difference between the other's minimum
+  // and preferred sizes (as per the flex rule).
+  EXPECT_EQ(SizeBounds(17, 12), host_->GetAvailableSize(child3));
+  EXPECT_EQ(SizeBounds(15, 12), host_->GetAvailableSize(child4));
+
+  // At minimum size there should be no excess available.
+  host_->SetSize(host_->GetMinimumSize());
+  EXPECT_EQ(SizeBounds(20, 10), host_->GetAvailableSize(child1));
+  EXPECT_EQ(SizeBounds(10, 10), host_->GetAvailableSize(child2));
+  EXPECT_EQ(SizeBounds(7, 10), host_->GetAvailableSize(child3));
+  EXPECT_EQ(SizeBounds(5, 10), host_->GetAvailableSize(child4));
+}
+
+TEST_F(FlexLayoutTest, GetAvailableSize_Flex_HiddenViews) {
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetCollapseMargins(true);
+  layout_->SetMainAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetDefault(views::kMarginsKey, gfx::Insets(5));
+  MockView* const child1 = AddChild(Size(20, 10));
+  MockView* const child2 = AddChild(Size(10, 5));
+  MockView* const child3 = AddChild(Size(5, 5));
+  child3->SetProperty(kFlexBehaviorKey, kDropOut);
+  MockView* const child4 = AddChild(Size(5, 5));
+  child4->SetProperty(kFlexBehaviorKey, kDropOut);
+
+  // Make the second child invisible. This should exclude it from the layout.
+  child2->SetVisible(false);
+
+  host_->SizeToPreferredSize();
+  // This view can expand into both the view space and the margins for the third
+  // and fourth views (total 10 each).
+  EXPECT_EQ(SizeBounds(40, 10), host_->GetAvailableSize(child1));
+  EXPECT_EQ(SizeBounds(), host_->GetAvailableSize(child2));
+  // These views can expand into each others' space.
+  EXPECT_EQ(SizeBounds(15, 10), host_->GetAvailableSize(child3));
+  EXPECT_EQ(SizeBounds(15, 10), host_->GetAvailableSize(child4));
+
+  // This should cause one of the third or fourth children to drop out, but both
+  // will still have some space available.
+  host_->SetSize({40, 20});
+  EXPECT_EQ(SizeBounds(30, 10), host_->GetAvailableSize(child1));
+  EXPECT_EQ(SizeBounds(), host_->GetAvailableSize(child2));
+  EXPECT_EQ(SizeBounds(5, 10), host_->GetAvailableSize(child3));
+  EXPECT_EQ(SizeBounds(5, 10), host_->GetAvailableSize(child4));
+
+  // At minimum size, there is no space for the third or fourth view.
+  host_->SetSize(host_->GetMinimumSize());
+  EXPECT_EQ(SizeBounds(20, 10), host_->GetAvailableSize(child1));
+  EXPECT_EQ(SizeBounds(), host_->GetAvailableSize(child2));
+  EXPECT_EQ(SizeBounds(0, 10), host_->GetAvailableSize(child3));
+  EXPECT_EQ(SizeBounds(0, 10), host_->GetAvailableSize(child4));
+}
+
+TEST_F(FlexLayoutTest, GetAvailableSize_Flex_DifferentWeights) {
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetCollapseMargins(true);
+  layout_->SetMainAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetDefault(views::kMarginsKey, gfx::Insets(5));
+  MockView* const child1 = AddChild(Size(20, 10));
+  MockView* const child2 = AddChild(Size(10, 5));
+  MockView* const child3 = AddChild(Size(12, 12), Size(7, 7));
+  child3->SetProperty(kFlexBehaviorKey, kFlex1ScaleToMinimumHighPriority);
+  MockView* const child4 = AddChild(Size(8, 8), Size(4, 4));
+  child4->SetProperty(kFlexBehaviorKey, kFlex1ScaleToMinimum);
+
+  host_->SetSize({80, 25});
+  const int excess = host_->width() - host_->GetPreferredSize().width();
+  const int child3_excess =
+      child3->GetPreferredSize().width() - child3->GetMinimumSize().width();
+  const int child4_excess =
+      child4->GetPreferredSize().width() - child4->GetMinimumSize().width();
+  // The first two views can take all of the excess plus the difference between
+  // minimum and preferred size for each of the third and fourth views.
+  EXPECT_EQ(SizeBounds(child1->GetPreferredSize().width() + excess +
+                           child3_excess + child4_excess,
+                       15),
+            host_->GetAvailableSize(child1));
+  EXPECT_EQ(SizeBounds(child2->GetPreferredSize().width() + excess +
+                           child3_excess + child4_excess,
+                       15),
+            host_->GetAvailableSize(child2));
+  // The third view has a higher priority, so it can take the excess plus the
+  // excess from the fourth view.
+  EXPECT_EQ(
+      SizeBounds(child3->GetPreferredSize().width() + excess + child4_excess,
+                 15),
+      host_->GetAvailableSize(child3));
+  // This view has the lowest priority so it can only take the excess space in
+  // the layout.
+  EXPECT_EQ(SizeBounds(child4->GetPreferredSize().width() + excess, 15),
+            host_->GetAvailableSize(child4));
+
+  // Same as above, but there is no overall excess.
+  host_->SizeToPreferredSize();
+  EXPECT_EQ(SizeBounds(child1->GetPreferredSize().width() + child3_excess +
+                           child4_excess,
+                       12),
+            host_->GetAvailableSize(child1));
+  EXPECT_EQ(SizeBounds(child2->GetPreferredSize().width() + child3_excess +
+                           child4_excess,
+                       12),
+            host_->GetAvailableSize(child2));
+  EXPECT_EQ(SizeBounds(child3->GetPreferredSize().width() + child4_excess, 12),
+            host_->GetAvailableSize(child3));
+  EXPECT_EQ(SizeBounds(child4->GetPreferredSize().width(), 12),
+            host_->GetAvailableSize(child4));
+
+  // At minimum size there is no excess; all views get their minimum size.
+  host_->SetSize(host_->GetMinimumSize());
+  EXPECT_EQ(SizeBounds(child1->GetPreferredSize().width(), 10),
+            host_->GetAvailableSize(child1));
+  EXPECT_EQ(SizeBounds(child2->GetPreferredSize().width(), 10),
+            host_->GetAvailableSize(child2));
+  EXPECT_EQ(SizeBounds(child3->GetMinimumSize().width(), 10),
+            host_->GetAvailableSize(child3));
+  EXPECT_EQ(SizeBounds(child4->GetMinimumSize().width(), 10),
+            host_->GetAvailableSize(child4));
+}
+
 // Specific Regression Cases ---------------------------------------------------
 
-// Test case (and example code) for crbug.com/1012119.
+// Test case (and example code) for crbug.com/1012119:
+// "FlexLayout ignores custom flex rule if it contradicts preferred size"
 TEST_F(FlexLayoutTest, FlexRuleContradictsPreferredSize) {
   const FlexSpecification custom_spec = FlexSpecification::ForCustomRule(
       base::BindRepeating([](const View*, const SizeBounds& maximum_size) {
@@ -2309,6 +2546,66 @@ TEST_F(FlexLayoutTest, FlexRuleContradictsPreferredSize) {
 
   host_->SetSize({1, 100});
   expected = {{}, {0, 0, 1, 100}};
+  EXPECT_EQ(expected, GetChildBounds());
+}
+
+// Test case (and example code) for crbug.com/1012136:
+// "FlexLayout makes children with preferred main axis size 0 invisible even if
+//  they are kUnbounded"
+TEST_F(FlexLayoutTest, PreferredSizeZeroPreventsFlex_Horizontal) {
+  const FlexSpecification spec_scale = FlexSpecification::ForSizeRule(
+      MinimumFlexSizeRule::kScaleToZero, MaximumFlexSizeRule::kUnbounded);
+  const FlexSpecification spec_snap =
+      FlexSpecification::ForSizeRule(MinimumFlexSizeRule::kPreferredSnapToZero,
+                                     MaximumFlexSizeRule::kUnbounded);
+
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  AddChild(gfx::Size(10, 10));
+  View* const v1 = AddChild(gfx::Size(0, 10));
+  View* const v2 = AddChild(gfx::Size(0, 10));
+  v1->SetProperty(kFlexBehaviorKey, spec_scale);
+  v2->SetProperty(kFlexBehaviorKey, spec_snap);
+
+  host_->SetSize({30, 15});
+  std::vector<gfx::Rect> expected{
+      {0, 0, 10, 10}, {10, 0, 10, 10}, {20, 0, 10, 10}};
+  EXPECT_EQ(expected, GetChildBounds());
+
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStretch);
+  host_->Layout();
+  expected = {{0, 0, 10, 15}, {10, 0, 10, 15}, {20, 0, 10, 15}};
+  EXPECT_EQ(expected, GetChildBounds());
+}
+
+// Test case (and example code) for crbug.com/1012136:
+// "FlexLayout makes children with preferred main axis size 0 invisible even if
+//  they are kUnbounded"
+TEST_F(FlexLayoutTest, PreferredSizeZeroPreventsFlex_Vertical) {
+  const FlexSpecification spec_scale = FlexSpecification::ForSizeRule(
+      MinimumFlexSizeRule::kScaleToZero, MaximumFlexSizeRule::kUnbounded);
+  const FlexSpecification spec_snap =
+      FlexSpecification::ForSizeRule(MinimumFlexSizeRule::kPreferredSnapToZero,
+                                     MaximumFlexSizeRule::kUnbounded);
+
+  layout_->SetOrientation(LayoutOrientation::kVertical);
+
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  AddChild(gfx::Size(10, 10));
+  View* const v1 = AddChild(gfx::Size(10, 0));
+  View* const v2 = AddChild(gfx::Size(10, 0));
+  v1->SetProperty(kFlexBehaviorKey, spec_scale);
+  v2->SetProperty(kFlexBehaviorKey, spec_snap);
+
+  host_->SetSize({15, 30});
+  std::vector<gfx::Rect> expected{
+      {0, 0, 10, 10}, {0, 10, 10, 10}, {0, 20, 10, 10}};
+  EXPECT_EQ(expected, GetChildBounds());
+
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStretch);
+  host_->Layout();
+  expected = {{0, 0, 15, 10}, {0, 10, 15, 10}, {0, 20, 15, 10}};
   EXPECT_EQ(expected, GetChildBounds());
 }
 

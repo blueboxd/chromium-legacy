@@ -224,14 +224,14 @@ class API_AVAILABLE(macos(10.11)) MTLLibraryCache {
 @implementation MTLDeviceProxy
 - (id)initWithDevice:(id<MTLDevice>)device {
   if (self = [super init]) {
-    device_.reset(device, base::scoped_policy::RETAIN);
-    libraryCache_ = std::make_unique<MTLLibraryCache>();
+    _device.reset(device, base::scoped_policy::RETAIN);
+    _libraryCache = std::make_unique<MTLLibraryCache>();
   }
   return self;
 }
 
 - (void)setProgressReporter:(gl::ProgressReporter*)progressReporter {
-  progressReporter_ = progressReporter;
+  _progressReporter = progressReporter;
 }
 
 // Wrappers that add a gl::ScopedProgressReporter around calls to the true
@@ -239,49 +239,49 @@ class API_AVAILABLE(macos(10.11)) MTLLibraryCache {
 // argument types are A0,A1,A2,A3, and the argument names are a0,a1,a2,a3.
 #define PROXY_METHOD0(R, fn) \
   -(R)fn {                   \
-    return [device_ fn];     \
+    return [_device fn];     \
   }
 #define PROXY_METHOD1(R, fn, A0) \
   -(R)fn : (A0)a0 {              \
-    return [device_ fn:a0];      \
+    return [_device fn:a0];      \
   }
 #define PROXY_METHOD2(R, fn, A0, a1, A1) \
   -(R)fn : (A0)a0 a1 : (A1)a1 {          \
-    return [device_ fn:a0 a1:a1];        \
+    return [_device fn:a0 a1:a1];        \
   }
 #define PROXY_METHOD3(R, fn, A0, a1, A1, a2, A2) \
   -(R)fn : (A0)a0 a1 : (A1)a1 : (A2)a2 {          \
-    return [device_ fn:a0 a1:a1 a2:a2];        \
+    return [_device fn:a0 a1:a1 a2:a2];        \
   }
 #define PROXY_METHOD0_SLOW(R, fn)                                  \
   -(R)fn {                                                         \
     TRACE_EVENT0("gpu", "-[MTLDevice " #fn "]");                   \
-    gl::ScopedProgressReporter scoped_reporter(progressReporter_); \
-    return [device_ fn];                                           \
+    gl::ScopedProgressReporter scoped_reporter(_progressReporter); \
+    return [_device fn];                                           \
   }
 #define PROXY_METHOD1_SLOW(R, fn, A0)                              \
   -(R)fn : (A0)a0 {                                                \
     TRACE_EVENT0("gpu", "-[MTLDevice " #fn ":]");                  \
-    gl::ScopedProgressReporter scoped_reporter(progressReporter_); \
-    return [device_ fn:a0];                                        \
+    gl::ScopedProgressReporter scoped_reporter(_progressReporter); \
+    return [_device fn:a0];                                        \
   }
 #define PROXY_METHOD2_SLOW(R, fn, A0, a1, A1)                      \
   -(R)fn : (A0)a0 a1 : (A1)a1 {                                    \
     TRACE_EVENT0("gpu", "-[MTLDevice " #fn ":" #a1 ":]");          \
-    gl::ScopedProgressReporter scoped_reporter(progressReporter_); \
-    return [device_ fn:a0 a1:a1];                                  \
+    gl::ScopedProgressReporter scoped_reporter(_progressReporter); \
+    return [_device fn:a0 a1:a1];                                  \
   }
 #define PROXY_METHOD3_SLOW(R, fn, A0, a1, A1, a2, A2)              \
   -(R)fn : (A0)a0 a1 : (A1)a1 a2 : (A2)a2 {                        \
     TRACE_EVENT0("gpu", "-[MTLDevice " #fn ":" #a1 ":" #a2 ":]");  \
-    gl::ScopedProgressReporter scoped_reporter(progressReporter_); \
-    return [device_ fn:a0 a1:a1 a2:a2];                            \
+    gl::ScopedProgressReporter scoped_reporter(_progressReporter); \
+    return [_device fn:a0 a1:a1 a2:a2];                            \
   }
 #define PROXY_METHOD4_SLOW(R, fn, A0, a1, A1, a2, A2, a3, A3)             \
   -(R)fn : (A0)a0 a1 : (A1)a1 a2 : (A2)a2 a3 : (A3)a3 {                   \
     TRACE_EVENT0("gpu", "-[MTLDevice " #fn ":" #a1 ":" #a2 ":" #a3 ":]"); \
-    gl::ScopedProgressReporter scoped_reporter(progressReporter_);        \
-    return [device_ fn:a0 a1:a1 a2:a2 a3:a3];                             \
+    gl::ScopedProgressReporter scoped_reporter(_progressReporter);        \
+    return [_device fn:a0 a1:a1 a2:a2 a3:a3];                             \
   }
 
 // Disable availability warnings for the calls to |device_| in the macros. (The
@@ -401,10 +401,10 @@ PROXY_METHOD2_SLOW(nullable id<MTLLibrary>,
   shaderKey.Set(sourceAsSysString);
   static crash_reporter::CrashKeyString<16> newLibraryCountKey(
       "MTLNewLibraryCount");
-  newLibraryCountKey.Set(base::NumberToString(libraryCache_->CacheMissCount()));
+  newLibraryCountKey.Set(base::NumberToString(_libraryCache->CacheMissCount()));
 
-  id<MTLLibrary> library = libraryCache_->NewLibraryWithSource(
-      device_, source, options, error, progressReporter_);
+  id<MTLLibrary> library = _libraryCache->NewLibraryWithSource(
+      _device, source, options, error, _progressReporter);
   shaderKey.Clear();
   newLibraryCountKey.Clear();
 
@@ -415,14 +415,14 @@ PROXY_METHOD2_SLOW(nullable id<MTLLibrary>,
   base::scoped_nsprotocol<id<MTLFunction>> vertexFunction(
       [library newFunctionWithName:@"vertexMain"]);
   if (vertexFunction) {
-    vertexSourceFunction_ = vertexFunction;
-    vertexSource_ = sourceAsSysString;
+    _vertexSourceFunction = vertexFunction;
+    _vertexSource = sourceAsSysString;
   }
   base::scoped_nsprotocol<id<MTLFunction>> fragmentFunction(
       [library newFunctionWithName:@"fragmentMain"]);
   if (fragmentFunction) {
-    fragmentSourceFunction_ = fragmentFunction;
-    fragmentSource_ = sourceAsSysString;
+    _fragmentSourceFunction = fragmentFunction;
+    _fragmentSource = sourceAsSysString;
   }
 
   return library;
@@ -448,23 +448,23 @@ PROXY_METHOD3_SLOW(void,
   // https://crbug.com/974219
   static crash_reporter::CrashKeyString<kShaderCrashDumpLength> vertexShaderKey(
       "MTLVertexSource");
-  if (vertexSourceFunction_ == [descriptor vertexFunction])
-    vertexShaderKey.Set(vertexSource_);
+  if (_vertexSourceFunction == [descriptor vertexFunction])
+    vertexShaderKey.Set(_vertexSource);
   else
     DLOG(WARNING) << "Failed to capture vertex shader.";
   static crash_reporter::CrashKeyString<kShaderCrashDumpLength>
       fragmentShaderKey("MTLFragmentSource");
-  if (fragmentSourceFunction_ == [descriptor fragmentFunction])
-    fragmentShaderKey.Set(fragmentSource_);
+  if (_fragmentSourceFunction == [descriptor fragmentFunction])
+    fragmentShaderKey.Set(_fragmentSource);
   else
     DLOG(WARNING) << "Failed to capture fragment shader.";
   static crash_reporter::CrashKeyString<16> newLibraryCountKey(
       "MTLNewLibraryCount");
-  newLibraryCountKey.Set(base::NumberToString(libraryCache_->CacheMissCount()));
+  newLibraryCountKey.Set(base::NumberToString(_libraryCache->CacheMissCount()));
 
   SCOPED_UMA_HISTOGRAM_TIMER("Gpu.MetalProxy.NewRenderPipelineStateTime");
   id<MTLRenderPipelineState> pipelineState = NewRenderPipelineStateWithRetry(
-      device_, descriptor, error, progressReporter_);
+      _device, descriptor, error, _progressReporter);
 
   vertexShaderKey.Clear();
   fragmentShaderKey.Clear();

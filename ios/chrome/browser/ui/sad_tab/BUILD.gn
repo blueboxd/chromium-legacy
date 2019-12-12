@@ -39,6 +39,7 @@ source_set("coordinator") {
   ]
   deps = [
     ":sad_tab",
+    "//components/ui_metrics",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",

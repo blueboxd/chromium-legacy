@@ -6,6 +6,45 @@
 
 (() => {
   /**
+   * Tests that when the current folder is changed, the 'active' attribute
+   * appears in the active folder .tree-row.
+   */
+  testcase.directoryTreeActiveDirectory = async () => {
+    const activeRow = '.tree-row[selected][active]';
+
+    // Open FilesApp on Downloads.
+    const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+
+    // Change to My files folder.
+    await navigateWithDirectoryTree(appId, '/My files');
+
+    // Check: the My files folder should be the active tree row.
+    const myFiles = await remoteCall.waitForElement(appId, activeRow);
+    chrome.test.assertTrue(myFiles.text.includes('My files'));
+
+    // Change to Downloads folder.
+    await navigateWithDirectoryTree(appId, '/My files/Downloads');
+
+    // Check: the Downloads folder should be the active tree row.
+    const downloads = await remoteCall.waitForElement(appId, activeRow);
+    chrome.test.assertTrue(downloads.text.includes('Downloads'));
+
+    // Change to Google Drive volume's My Drive folder.
+    await navigateWithDirectoryTree(appId, '/My Drive');
+
+    // Check: the My Drive folder should be the active tree row.
+    const myDrive = await remoteCall.waitForElement(appId, activeRow);
+    chrome.test.assertTrue(myDrive.text.includes('My Drive'));
+
+    // Change to Recent folder.
+    await navigateWithDirectoryTree(appId, '/Recent');
+
+    // Check: the Recent folder should be the active tree row.
+    const recent = await remoteCall.waitForElement(appId, activeRow);
+    chrome.test.assertTrue(recent.text.includes('Recent'));
+  };
+
+  /**
    * Tests that the directory tree can be vertically scrolled.
    */
   testcase.directoryTreeVerticalScroll = async () => {

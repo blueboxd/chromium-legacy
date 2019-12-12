@@ -45,7 +45,10 @@ group("telemetry_chrome_test") {
   }
 
   if (is_linux) {
-    data_deps += [ "//third_party/breakpad:dump_syms($host_toolchain)" ]
+    data_deps += [
+      "//third_party/breakpad:dump_syms($host_toolchain)",
+      "//third_party/crashpad/crashpad/tools:crashpad_database_util",
+    ]
   }
 
   if (is_mac) {

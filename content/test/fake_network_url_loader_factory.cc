@@ -7,8 +7,8 @@
 #include "base/strings/string_util.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_util.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace content {
 
@@ -101,11 +101,11 @@ void FakeNetworkURLLoaderFactory::CreateLoaderAndStart(
   net::HttpResponseInfo info;
   info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(response_info.headers));
-  network::ResourceResponseHead response;
-  response.headers = info.headers;
-  response.headers->GetMimeType(&response.mime_type);
-  response.network_accessed = response_info.network_accessed;
-  client_remote->OnReceiveResponse(response);
+  auto response = network::mojom::URLResponseHead::New();
+  response->headers = info.headers;
+  response->headers->GetMimeType(&response->mime_type);
+  response->network_accessed = response_info.network_accessed;
+  client_remote->OnReceiveResponse(std::move(response));
 
   uint32_t bytes_written = response_info.body.size();
   mojo::ScopedDataPipeProducerHandle producer_handle;

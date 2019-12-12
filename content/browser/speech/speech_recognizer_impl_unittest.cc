@@ -38,9 +38,9 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -553,7 +553,7 @@ TEST_F(SpeechRecognizerImplTest, ConnectionError) {
   const network::TestURLLoaderFactory::PendingRequest* pending_request;
   ASSERT_TRUE(GetUpstreamRequest(&pending_request));
   url_loader_factory_.AddResponse(
-      pending_request->request.url, network::ResourceResponseHead(), "",
+      pending_request->request.url, network::mojom::URLResponseHead::New(), "",
       network::URLLoaderCompletionStatus(net::ERR_CONNECTION_REFUSED));
 
   base::RunLoop().RunUntilIdle();
@@ -586,11 +586,12 @@ TEST_F(SpeechRecognizerImplTest, ServerError) {
 
   const network::TestURLLoaderFactory::PendingRequest* pending_request;
   ASSERT_TRUE(GetUpstreamRequest(&pending_request));
-  network::ResourceResponseHead response;
+  auto response = network::mojom::URLResponseHead::New();
   const char kHeaders[] = "HTTP/1.0 500 Internal Server Error";
-  response.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  response->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(kHeaders));
-  url_loader_factory_.AddResponse(pending_request->request.url, response, "",
+  url_loader_factory_.AddResponse(pending_request->request.url,
+                                  std::move(response), "",
                                   network::URLLoaderCompletionStatus());
 
   base::RunLoop().RunUntilIdle();

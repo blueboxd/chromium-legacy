@@ -23,6 +23,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.tab.Tab;
@@ -70,6 +71,9 @@ public final class EditUrlSuggestionTest {
     @Mock
     private View mSuggestionView;
 
+    @Mock
+    private LargeIconBridge mIconBridge;
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -91,7 +95,7 @@ public final class EditUrlSuggestionTest {
         mModel = new PropertyModel.Builder(EditUrlSuggestionProperties.ALL_KEYS).build();
 
         mProcessor = new EditUrlSuggestionProcessor(
-                mContext, null, mLocationBarDelegate, mSelectionHandler);
+                mContext, null, mLocationBarDelegate, mSelectionHandler, () -> mIconBridge);
         mProcessor.setActivityTabProvider(mTabProvider);
 
         when(mEditButton.getId()).thenReturn(R.id.url_edit_icon);

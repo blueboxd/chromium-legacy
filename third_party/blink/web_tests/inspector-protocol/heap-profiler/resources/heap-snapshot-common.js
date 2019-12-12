@@ -9,7 +9,7 @@
   await testRunner.loadScriptModule(
       '../../../../devtools-frontend/src/front_end/platform/utilities.js');
   await testRunner.loadScriptModule(
-      '../../../../devtools-frontend/src/front_end/common/UIString.js');
+      '../../../../devtools-frontend/src/front_end/common/common-legacy.js');
   await testRunner.loadScriptModule(
       '../../../../devtools-frontend/src/front_end/heap_snapshot_model/HeapSnapshotModel.js');
   await testRunner.loadScriptModule(

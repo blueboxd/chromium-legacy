@@ -235,10 +235,11 @@ void BodyReader::OnDataComplete() {
 
 struct ResponseMetadata {
   ResponseMetadata() = default;
-  explicit ResponseMetadata(const network::ResourceResponseHead& head)
-      : head(head) {}
+  explicit ResponseMetadata(network::mojom::URLResponseHeadPtr head)
+      : head(std::move(head)) {}
 
-  network::ResourceResponseHead head;
+  network::mojom::URLResponseHeadPtr head =
+      network::mojom::URLResponseHead::New();
   std::unique_ptr<net::RedirectInfo> redirect_info;
   mojo_base::BigBuffer cached_metadata;
   size_t encoded_length = 0;
@@ -887,7 +888,7 @@ Response InterceptionJob::InnerContinueRequest(
     if (modifications->modified_url.isJust()) {
       std::string location = modifications->modified_url.fromJust();
       CancelRequest();
-      auto* headers = response_metadata_->head.headers.get();
+      auto* headers = response_metadata_->head->headers.get();
       headers->RemoveHeader("location");
       headers->AddHeader("location: " + location);
       GURL redirect_url = create_loader_params_->request.url.Resolve(location);
@@ -897,7 +898,7 @@ Response InterceptionJob::InnerContinueRequest(
       return Response::OK();
     }
     client_->OnReceiveRedirect(*response_metadata_->redirect_info,
-                               response_metadata_->head);
+                               std::move(response_metadata_->head));
     return Response::OK();
   }
 
@@ -918,7 +919,7 @@ Response InterceptionJob::InnerContinueRequest(
     // TODO(caseq): report error if other modifications are present.
     DCHECK_EQ(State::kResponseReceived, state_);
     DCHECK(!body_reader_);
-    client_->OnReceiveResponse(response_metadata_->head);
+    client_->OnReceiveResponse(std::move(response_metadata_->head));
     response_metadata_.reset();
     loader_->ResumeReadingBodyFromNet();
     client_receiver_.Resume();
@@ -988,7 +989,7 @@ Response InterceptionJob::ProcessResponseOverride(
   DCHECK_LE(response_body_offset, body ? body->size() : 0);
   size_t body_size = body ? body->size() - response_body_offset : 0;
   response_metadata_ = std::make_unique<ResponseMetadata>();
-  network::ResourceResponseHead* head = &response_metadata_->head;
+  network::mojom::URLResponseHeadPtr& head = response_metadata_->head;
 
   head->request_time = start_time_;
   head->response_time = base::Time::Now();
@@ -1109,7 +1110,7 @@ void InterceptionJob::ProcessSetCookies(const net::HttpResponseHeaders& headers,
 void InterceptionJob::ProcessRedirectByClient(const GURL& redirect_url) {
   DCHECK(redirect_url.is_valid());
 
-  const net::HttpResponseHeaders& headers = *response_metadata_->head.headers;
+  const net::HttpResponseHeaders& headers = *response_metadata_->head->headers;
   const network::ResourceRequest& request = create_loader_params_->request;
 
   auto first_party_url_policy =
@@ -1127,12 +1128,12 @@ void InterceptionJob::ProcessRedirectByClient(const GURL& redirect_url) {
           false /* insecure_scheme_was_upgraded */, true /* copy_fragment */));
 
   client_->OnReceiveRedirect(*response_metadata_->redirect_info,
-                             response_metadata_->head);
+                             std::move(response_metadata_->head));
 }
 
 void InterceptionJob::SendResponse(scoped_refptr<base::RefCountedMemory> body,
                                    size_t offset) {
-  client_->OnReceiveResponse(response_metadata_->head);
+  client_->OnReceiveResponse(std::move(response_metadata_->head));
   if (response_metadata_->cached_metadata.size() != 0)
     client_->OnReceiveCachedMetadata(
         std::move(response_metadata_->cached_metadata));
@@ -1363,14 +1364,15 @@ void InterceptionJob::OnReceiveResponse(
   loader_->PauseReadingBodyFromNet();
   client_receiver_.Pause();
 
-  response_metadata_ = std::make_unique<ResponseMetadata>(head);
-
   auto request_info = BuildRequestInfo(head);
   const network::ResourceRequest& request = create_loader_params_->request;
   request_info->is_download =
       request_info->is_navigation &&
       (is_download_ || download_utils::IsDownload(
                            request.url, head->headers.get(), head->mime_type));
+
+  response_metadata_ = std::make_unique<ResponseMetadata>(std::move(head));
+
   NotifyClient(std::move(request_info));
 }
 
@@ -1379,7 +1381,7 @@ void InterceptionJob::OnReceiveRedirect(
     network::mojom::URLResponseHeadPtr head) {
   DCHECK_EQ(State::kRequestSent, state_);
   state_ = State::kRedirectReceived;
-  response_metadata_ = std::make_unique<ResponseMetadata>(head);
+  response_metadata_ = std::make_unique<ResponseMetadata>(head.Clone());
   response_metadata_->redirect_info =
       std::make_unique<net::RedirectInfo>(redirect_info);
 
@@ -1422,7 +1424,7 @@ void InterceptionJob::OnStartLoadingResponseBody(
     DCHECK(!body_reader_);
     std::move(pending_response_body_pipe_callback_)
         .Run(Response::OK(), std::move(body),
-             response_metadata_->head.mime_type);
+             response_metadata_->head->mime_type);
     return;
   }
   DCHECK_EQ(State::kResponseReceived, state_);

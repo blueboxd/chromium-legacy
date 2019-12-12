@@ -77,27 +77,27 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
 // (if necessary).
 - (id)initWithWebContentsImpl:(WebContentsImpl*)contents {
   if ((self = [super init])) {
-    webContents_ = contents;
-    canceled_ = false;
-    dragStartProcessID_ = content::ChildProcessHost::kInvalidUniqueID;
-    dragStartViewID_ = content::GlobalRoutingID(
+    _webContents = contents;
+    _canceled = false;
+    _dragStartProcessID = content::ChildProcessHost::kInvalidUniqueID;
+    _dragStartViewID = content::GlobalRoutingID(
         content::ChildProcessHost::kInvalidUniqueID, MSG_ROUTING_NONE);
   }
   return self;
 }
 
 - (DropData*)currentDropData {
-  return dropDataFiltered_.get();
+  return _dropDataFiltered.get();
 }
 
 - (void)setDragDelegate:(content::WebDragDestDelegate*)delegate {
-  delegate_ = delegate;
+  _delegate = delegate;
 }
 
 // Call to set whether or not we should allow the drop. Takes effect the
 // next time |-draggingUpdated:| is called.
 - (void)setCurrentOperation:(NSDragOperation)operation {
-  currentOperation_ = operation;
+  _currentOperation = operation;
 }
 
 // Given a point in window coordinates and a view in that window, return a
@@ -130,27 +130,27 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
 // entering and exiting).  One example is an interstitial page (e.g., safe
 // browsing warning).
 - (BOOL)onlyAllowsNavigation {
-  return webContents_->ShowingInterstitialPage();
+  return _webContents->ShowingInterstitialPage();
 }
 
 // Messages to send during the tracking of a drag, usually upon receiving
 // calls from the view system. Communicates the drag messages to WebCore.
 
 - (void)setDropData:(const DropData&)dropData {
-  dropDataUnfiltered_ = std::make_unique<DropData>(dropData);
+  _dropDataUnfiltered = std::make_unique<DropData>(dropData);
 }
 
 - (NSDragOperation)draggingEntered:(const DraggingInfo*)info {
   // Save off the RVH so we can tell if it changes during a drag. If it does,
   // we need to send a new enter message in draggingUpdated:.
-  currentRVH_ = webContents_->GetRenderViewHost();
+  _currentRVH = _webContents->GetRenderViewHost();
 
   gfx::PointF transformedPt;
-  if (!webContents_->GetRenderWidgetHostView()) {
+  if (!_webContents->GetRenderWidgetHostView()) {
     // TODO(ekaramad, paulmeyer): Find a better way than toggling |canceled_|.
     // This could happen when the renderer process for the top-level RWH crashes
     // (see https://crbug.com/670645).
-    canceled_ = true;
+    _canceled = true;
     return NSDragOperationNone;
   }
 
@@ -162,20 +162,20 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
 
   // Filter |dropDataUnfiltered_| by currentRWHForDrag_ to populate
   // |dropDataFiltered_|.
-  DCHECK(dropDataUnfiltered_);
+  DCHECK(_dropDataUnfiltered);
   std::unique_ptr<DropData> dropData =
-      std::make_unique<DropData>(*dropDataUnfiltered_);
-  currentRWHForDrag_ = targetRWH->GetWeakPtr();
-  currentRWHForDrag_->FilterDropData(dropData.get());
+      std::make_unique<DropData>(*_dropDataUnfiltered);
+  _currentRWHForDrag = targetRWH->GetWeakPtr();
+  _currentRWHForDrag->FilterDropData(dropData.get());
 
   NSDragOperation mask = info->operation_mask;
 
   // Give the delegate an opportunity to cancel the drag.
-  canceled_ = !webContents_->GetDelegate()->CanDragEnter(
-      webContents_,
+  _canceled = !_webContents->GetDelegate()->CanDragEnter(
+      _webContents,
       *dropData,
       static_cast<WebDragOperationsMask>(mask));
-  if (canceled_)
+  if (_canceled)
     return NSDragOperationNone;
 
   if ([self onlyAllowsNavigation]) {
@@ -184,47 +184,47 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
     return NSDragOperationNone;
   }
 
-  if (delegate_) {
-    delegate_->DragInitialize(webContents_);
-    delegate_->OnDragEnter();
+  if (_delegate) {
+    _delegate->DragInitialize(_webContents);
+    _delegate->OnDragEnter();
   }
 
-  dropDataFiltered_.swap(dropData);
+  _dropDataFiltered.swap(dropData);
 
-  currentRWHForDrag_->DragTargetDragEnter(
-      *dropDataFiltered_, transformedPt, info->location_in_screen,
+  _currentRWHForDrag->DragTargetDragEnter(
+      *_dropDataFiltered, transformedPt, info->location_in_screen,
       static_cast<WebDragOperationsMask>(mask), GetModifierFlags());
 
   // We won't know the true operation (whether the drag is allowed) until we
   // hear back from the renderer. For now, be optimistic:
-  currentOperation_ = NSDragOperationCopy;
-  return currentOperation_;
+  _currentOperation = NSDragOperationCopy;
+  return _currentOperation;
 }
 
 - (void)draggingExited {
-  DCHECK(currentRVH_);
-  if (currentRVH_ != webContents_->GetRenderViewHost())
+  DCHECK(_currentRVH);
+  if (_currentRVH != _webContents->GetRenderViewHost())
     return;
 
-  if (canceled_)
+  if (_canceled)
     return;
 
   if ([self onlyAllowsNavigation])
     return;
 
-  if (delegate_)
-    delegate_->OnDragLeave();
+  if (_delegate)
+    _delegate->OnDragLeave();
 
-  if (currentRWHForDrag_) {
-    currentRWHForDrag_->DragTargetDragLeave(gfx::PointF(), gfx::PointF());
-    currentRWHForDrag_.reset();
+  if (_currentRWHForDrag) {
+    _currentRWHForDrag->DragTargetDragLeave(gfx::PointF(), gfx::PointF());
+    _currentRWHForDrag.reset();
   }
-  dropDataUnfiltered_.reset();
-  dropDataFiltered_.reset();
+  _dropDataUnfiltered.reset();
+  _dropDataFiltered.reset();
 }
 
 - (NSDragOperation)draggingUpdated:(const DraggingInfo*)info {
-  if (canceled_) {
+  if (_canceled) {
     // TODO(ekaramad,paulmeyer): We probably shouldn't be checking for
     // |canceled_| twice in this method.
     return NSDragOperationNone;
@@ -240,27 +240,27 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
 
   // TODO(paulmeyer): The dragging delegates may now by invoked multiple times
   // per drag, even without the drag ever leaving the window.
-  if (targetRWH != currentRWHForDrag_.get()) {
-    if (currentRWHForDrag_) {
+  if (targetRWH != _currentRWHForDrag.get()) {
+    if (_currentRWHForDrag) {
       gfx::PointF transformedLeavePoint = info->location_in_view;
       gfx::PointF transformedScreenPoint = info->location_in_screen;
       content::RenderWidgetHostViewBase* rootView =
           static_cast<content::RenderWidgetHostViewBase*>(
-              webContents_->GetRenderWidgetHostView());
+              _webContents->GetRenderWidgetHostView());
       content::RenderWidgetHostViewBase* currentDragView =
           static_cast<content::RenderWidgetHostViewBase*>(
-              currentRWHForDrag_->GetView());
+              _currentRWHForDrag->GetView());
       rootView->TransformPointToCoordSpaceForView(
           transformedLeavePoint, currentDragView, &transformedLeavePoint);
       rootView->TransformPointToCoordSpaceForView(
           transformedScreenPoint, currentDragView, &transformedScreenPoint);
-      currentRWHForDrag_->DragTargetDragLeave(transformedLeavePoint,
+      _currentRWHForDrag->DragTargetDragLeave(transformedLeavePoint,
                                               transformedScreenPoint);
     }
     [self draggingEntered:info];
   }
 
-  if (canceled_)
+  if (_canceled)
     return NSDragOperationNone;
 
   if ([self onlyAllowsNavigation]) {
@@ -274,10 +274,10 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
                                 static_cast<WebDragOperationsMask>(mask),
                                 GetModifierFlags());
 
-  if (delegate_)
-    delegate_->OnDragOver();
+  if (_delegate)
+    _delegate->OnDragOver();
 
-  return currentOperation_;
+  return _currentOperation;
 }
 
 - (BOOL)performDragOperation:(const DraggingInfo*)info {
@@ -289,9 +289,9 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
   if (![self isValidDragTarget:targetRWH])
     return NO;
 
-  if (targetRWH != currentRWHForDrag_.get()) {
-    if (currentRWHForDrag_)
-      currentRWHForDrag_->DragTargetDragLeave(transformedPt,
+  if (targetRWH != _currentRWHForDrag.get()) {
+    if (_currentRWHForDrag)
+      _currentRWHForDrag->DragTargetDragLeave(transformedPt,
                                               info->location_in_screen);
     [self draggingEntered:info];
   }
@@ -299,7 +299,7 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
   // Check if we only allow navigation and navigate to a url on the pasteboard.
   if ([self onlyAllowsNavigation]) {
     if (info->url) {
-      webContents_->OpenURL(OpenURLParams(
+      _webContents->OpenURL(OpenURLParams(
           *info->url, Referrer(), WindowOpenDisposition::CURRENT_TAB,
           ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
       return YES;
@@ -308,16 +308,16 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
     }
   }
 
-  if (delegate_)
-    delegate_->OnDrop();
+  if (_delegate)
+    _delegate->OnDrop();
 
-  currentRVH_ = NULL;
+  _currentRVH = NULL;
 
-  targetRWH->DragTargetDrop(*dropDataFiltered_, transformedPt,
+  targetRWH->DragTargetDrop(*_dropDataFiltered, transformedPt,
                             info->location_in_screen, GetModifierFlags());
 
-  dropDataUnfiltered_.reset();
-  dropDataFiltered_.reset();
+  _dropDataUnfiltered.reset();
+  _dropDataFiltered.reset();
 
   return YES;
 }
@@ -325,20 +325,20 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
 - (content::RenderWidgetHostImpl*)
     GetRenderWidgetHostAtPoint:(const gfx::PointF&)viewPoint
                  transformedPt:(gfx::PointF*)transformedPt {
-  return webContents_->GetInputEventRouter()->GetRenderWidgetHostAtPoint(
-      webContents_->GetRenderViewHost()->GetWidget()->GetView(), viewPoint,
+  return _webContents->GetInputEventRouter()->GetRenderWidgetHostAtPoint(
+      _webContents->GetRenderViewHost()->GetWidget()->GetView(), viewPoint,
       transformedPt);
 }
 
 - (void)setDragStartTrackersForProcess:(int)processID {
-  dragStartProcessID_ = processID;
-  dragStartViewID_ = GetRenderViewHostID(webContents_->GetRenderViewHost());
+  _dragStartProcessID = processID;
+  _dragStartViewID = GetRenderViewHostID(_webContents->GetRenderViewHost());
 }
 
 - (bool)isValidDragTarget:(content::RenderWidgetHostImpl*)targetRWH {
-  return targetRWH->GetProcess()->GetID() == dragStartProcessID_ ||
-         GetRenderViewHostID(webContents_->GetRenderViewHost()) !=
-             dragStartViewID_;
+  return targetRWH->GetProcess()->GetID() == _dragStartProcessID ||
+         GetRenderViewHostID(_webContents->GetRenderViewHost()) !=
+             _dragStartViewID;
 }
 
 @end

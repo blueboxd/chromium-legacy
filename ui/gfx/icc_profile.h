@@ -15,6 +15,11 @@
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size);
 
+namespace IPC {
+template <class P>
+struct ParamTraits;
+}  // namespace IPC
+
 namespace gfx {
 
 // Used to represent a full ICC profile, usually retrieved from a monitor. It

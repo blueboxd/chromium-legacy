@@ -28,6 +28,18 @@ HashSet<T> Intersection(const HashSet<T>& a, const HashSet<T>& b) {
 
 namespace blink {
 
+FontMatchingMetrics::FontMatchingMetrics(bool top_level,
+                                         ukm::UkmRecorder* ukm_recorder,
+                                         ukm::SourceId source_id)
+    : top_level_(top_level),
+      ukm_recorder_(ukm_recorder),
+      source_id_(source_id) {
+  // Estimate of average page font use from anecdotal browsing session.
+  constexpr unsigned kEstimatedFontCount = 7;
+  local_fonts_succeeded_.ReserveCapacityForSize(kEstimatedFontCount);
+  local_fonts_failed_.ReserveCapacityForSize(kEstimatedFontCount);
+}
+
 void FontMatchingMetrics::ReportSuccessfulFontFamilyMatch(
     const AtomicString& font_family_name) {
   successful_font_families_.insert(font_family_name);
@@ -48,6 +60,16 @@ void FontMatchingMetrics::ReportWebFontFamily(
   web_font_families_.insert(font_family_name);
 }
 
+void FontMatchingMetrics::ReportSuccessfulLocalFontMatch(
+    const AtomicString& font_name) {
+  local_fonts_succeeded_.insert(font_name);
+}
+
+void FontMatchingMetrics::ReportFailedLocalFontMatch(
+    const AtomicString& font_name) {
+  local_fonts_failed_.insert(font_name);
+}
+
 void FontMatchingMetrics::PublishUkmMetrics() {
   ukm::builders::FontMatchAttempts(source_id_)
       .SetLoadContext(top_level_ ? kTopLevel : kSubFrame)
@@ -63,6 +85,10 @@ void FontMatchingMetrics::PublishUkmMetrics() {
       .SetWebFontFamilyFailures(ukm::GetExponentialBucketMin(
           Intersection(failed_font_families_, web_font_families_).size(),
           kUkmFontLoadCountBucketSpacing))
+      .SetLocalFontFailures(ukm::GetExponentialBucketMin(
+          local_fonts_failed_.size(), kUkmFontLoadCountBucketSpacing))
+      .SetLocalFontSuccesses(ukm::GetExponentialBucketMin(
+          local_fonts_succeeded_.size(), kUkmFontLoadCountBucketSpacing))
       .Record(ukm_recorder_);
 }
 

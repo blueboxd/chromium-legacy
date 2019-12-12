@@ -9,12 +9,12 @@
 #include "chrome/browser/ui/cocoa/notifications/notification_constants_mac.h"
 
 @implementation StubNotificationCenter {
-  base::scoped_nsobject<NSMutableArray> banners_;
+  base::scoped_nsobject<NSMutableArray> _banners;
 }
 
 - (instancetype)init {
   if ((self = [super init])) {
-    banners_.reset([[NSMutableArray alloc] init]);
+    _banners.reset([[NSMutableArray alloc] init]);
   }
   return self;
 }
@@ -29,11 +29,11 @@
 }
 
 - (void)deliverNotification:(NSUserNotification*)notification {
-  [banners_ addObject:notification];
+  [_banners addObject:notification];
 }
 
 - (NSArray*)deliveredNotifications {
-  return [[banners_ copy] autorelease];
+  return [[_banners copy] autorelease];
 }
 
 - (void)removeDeliveredNotification:(NSUserNotification*)notification {
@@ -43,21 +43,21 @@
       objectForKey:notification_constants::kNotificationProfileId];
   DCHECK(profileId);
   DCHECK(notificationId);
-  for (NSUserNotification* toast in banners_.get()) {
+  for (NSUserNotification* toast in _banners.get()) {
     NSString* toastId =
         [toast.userInfo objectForKey:notification_constants::kNotificationId];
     NSString* persistentProfileId = [toast.userInfo
         objectForKey:notification_constants::kNotificationProfileId];
     if ([toastId isEqualToString:notificationId] &&
         [persistentProfileId isEqualToString:profileId]) {
-      [banners_ removeObject:toast];
+      [_banners removeObject:toast];
       break;
     }
   }
 }
 
 - (void)removeAllDeliveredNotifications {
-  [banners_ removeAllObjects];
+  [_banners removeAllObjects];
 }
 
 // Need to provide a nop implementation of setDelegate as it is

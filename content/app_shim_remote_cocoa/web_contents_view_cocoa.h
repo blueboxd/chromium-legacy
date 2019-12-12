@@ -28,13 +28,13 @@ CONTENT_EXPORT
   // Instances of this class are owned by both host_ and AppKit. It is
   // possible for an instance to outlive its webContentsView_. The host_ must
   // call -clearHostAndView in its destructor.
-  remote_cocoa::mojom::WebContentsNSViewHost* host_;
+  remote_cocoa::mojom::WebContentsNSViewHost* _host;
 
   // The interface exported to views::Views that embed this as a sub-view.
-  ui::ViewsHostableView* viewsHostableView_;
+  ui::ViewsHostableView* _viewsHostableView;
 
-  base::scoped_nsobject<WebDragSource> dragSource_;
-  BOOL mouseDownCanMoveWindow_;
+  base::scoped_nsobject<WebDragSource> _dragSource;
+  BOOL _mouseDownCanMoveWindow;
 }
 
 // Set or un-set the mojo interface through which to communicate with the

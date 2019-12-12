@@ -63,15 +63,14 @@ void FilterBenignIpsOnIOThread(
 }
 }  // namespace
 
-IPUrlInfo::IPUrlInfo(const std::string& url,
+IPUrlInfo::IPUrlInfo(const std::string& origin_of_final_url,
                      const std::string& method,
                      const std::string& referrer,
                      const ResourceType& resource_type)
-      : url(url),
-        method(method),
-        referrer(referrer),
-        resource_type(resource_type) {
-}
+    : origin_of_final_url(origin_of_final_url),
+      method(method),
+      referrer(referrer),
+      resource_type(resource_type) {}
 
 IPUrlInfo::IPUrlInfo(const IPUrlInfo& other) = default;
 
@@ -101,7 +100,7 @@ static void AddMalwareIpUrlInfo(const std::string& ip,
         request->add_bad_ip_url_info();
     // We add the information about url on the bad ip.
     urlinfo->set_ip(ip);
-    urlinfo->set_url(it->url);
+    urlinfo->set_url(it->origin_of_final_url);
     urlinfo->set_method(it->method);
     urlinfo->set_referrer(it->referrer);
     urlinfo->set_resource_type(static_cast<int>(it->resource_type));

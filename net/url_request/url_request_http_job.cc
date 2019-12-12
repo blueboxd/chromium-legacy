@@ -83,15 +83,16 @@
 
 namespace {
 
-base::Value CookieExcludedNetLogParams(const std::string& operation,
-                                       const std::string& cookie_name,
-                                       const std::string& cookie_domain,
-                                       const std::string& cookie_path,
-                                       const std::string& exclusion_reason,
-                                       net::NetLogCaptureMode capture_mode) {
+base::Value CookieInclusionStatusNetLogParams(
+    const std::string& operation,
+    const std::string& cookie_name,
+    const std::string& cookie_domain,
+    const std::string& cookie_path,
+    const net::CanonicalCookie::CookieInclusionStatus& status,
+    net::NetLogCaptureMode capture_mode) {
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetStringKey("operation", operation);
-  dict.SetStringKey("exclusion_reason", exclusion_reason);
+  dict.SetStringKey("status", status.GetDebugString());
   if (net::NetLogCaptureIncludesSensitive(capture_mode)) {
     if (!cookie_name.empty())
       dict.SetStringKey("name", cookie_name);
@@ -653,17 +654,15 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
 
   if (request_->net_log().IsCapturing()) {
     for (const auto& cookie_and_status : maybe_sent_cookies) {
-      if (!cookie_and_status.status.IsInclude()) {
-        request_->net_log().AddEvent(
-            NetLogEventType::COOKIE_INCLUSION_STATUS,
-            [&](NetLogCaptureMode capture_mode) {
-              return CookieExcludedNetLogParams(
-                  "send", cookie_and_status.cookie.Name(),
-                  cookie_and_status.cookie.Domain(),
-                  cookie_and_status.cookie.Path(),
-                  cookie_and_status.status.GetDebugString(), capture_mode);
-            });
-      }
+      request_->net_log().AddEvent(
+          NetLogEventType::COOKIE_INCLUSION_STATUS,
+          [&](NetLogCaptureMode capture_mode) {
+            return CookieInclusionStatusNetLogParams(
+                "send", cookie_and_status.cookie.Name(),
+                cookie_and_status.cookie.Domain(),
+                cookie_and_status.cookie.Path(), cookie_and_status.status,
+                capture_mode);
+          });
     }
   }
 
@@ -773,16 +772,15 @@ void URLRequestHttpJob::OnSetCookieResult(
     base::Optional<CanonicalCookie> cookie,
     std::string cookie_string,
     CanonicalCookie::CookieInclusionStatus status) {
-  if (!status.IsInclude() && request_->net_log().IsCapturing()) {
-    request_->net_log().AddEvent(NetLogEventType::COOKIE_INCLUSION_STATUS,
-                                 [&](NetLogCaptureMode capture_mode) {
-                                   return CookieExcludedNetLogParams(
-                                       "store",
-                                       cookie ? cookie.value().Name() : "",
-                                       cookie ? cookie.value().Domain() : "",
-                                       cookie ? cookie.value().Path() : "",
-                                       status.GetDebugString(), capture_mode);
-                                 });
+  if (request_->net_log().IsCapturing()) {
+    request_->net_log().AddEvent(
+        NetLogEventType::COOKIE_INCLUSION_STATUS,
+        [&](NetLogCaptureMode capture_mode) {
+          return CookieInclusionStatusNetLogParams(
+              "store", cookie ? cookie.value().Name() : "",
+              cookie ? cookie.value().Domain() : "",
+              cookie ? cookie.value().Path() : "", status, capture_mode);
+        });
   }
   set_cookie_status_list_.emplace_back(std::move(cookie),
                                        std::move(cookie_string), status);

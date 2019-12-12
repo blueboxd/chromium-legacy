@@ -408,13 +408,16 @@ void DownloadManagerImpl::DetermineDownloadTarget(
 
 bool DownloadManagerImpl::ShouldCompleteDownload(
     download::DownloadItemImpl* item,
-    const base::Closure& complete_callback) {
+    base::OnceClosure complete_callback) {
   if (!delegate_ ||
-      delegate_->ShouldCompleteDownload(item, complete_callback)) {
+      delegate_->ShouldCompleteDownload(item, std::move(complete_callback))) {
     return true;
   }
   // Otherwise, the delegate has accepted responsibility to run the
   // callback when the download is ready for completion.
+  // TODO(qinmin): When returning false, the |complete_callback| should
+  // be run by this class eventually. To do so we can't pass ownership
+  // to |delegate_| unconditionally.
   return false;
 }
 

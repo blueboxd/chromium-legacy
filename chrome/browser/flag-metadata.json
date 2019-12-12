@@ -3110,8 +3110,10 @@
   },
   {
     "name": "reader-mode-heuristics",
-    "owners": [ "mdjones" ],
-    "expiry_milestone": 78
+    "owners": [ "mdjones", "wychen" ],
+    // This flag is a utility for testing Reader Mode heuristics or force
+    // enabling the feature on every page.
+    "expiry_milestone": -1
   },
   { "name": "reduce-display-notifications",
     "owners": [ "baileyberro", "zentaro" ],

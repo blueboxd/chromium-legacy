@@ -602,7 +602,7 @@
 <translation id="1832511806131704864">השינוי בטלפון עודכן</translation>
 <translation id="1834503245783133039">ההורדה נכשלה: <ph name="FILE_NAME" /></translation>
 <translation id="1834583737373831634">‏התקני MIDI</translation>
-<translation id="1835261175655098052">‏Linux שודרג</translation>
+<translation id="1835261175655098052">‏Linux שודרגה</translation>
 <translation id="1838374766361614909">ניקוי חיפוש</translation>
 <translation id="1841545962859478868">ייתכן שמנהל המכשיר עוקב אחרי:</translation>
 <translation id="1841616161104323629">רשומת מכשיר חסרה.</translation>
@@ -1186,7 +1186,7 @@
 <translation id="2665919335226618153">אוי, לא! היתה שגיאה במהלך הפרמוט.</translation>
 <translation id="2666990579225592931">פתיחת חלון במצב אורח</translation>
 <translation id="2667463864537187133">ניהול בדיקת איות</translation>
-<translation id="2669093958999339774">חסימת ההפרעה של בקשות להצגת התראות, ושימוש בחיווי בסרגל הכתובות במקום זאת</translation>
+<translation id="2669093958999339774">חסימה של בקשות קופצות למשלוח התראות: במקומן יוצג חיווי על החסימה בסרגל הכתובות</translation>
 <translation id="2670102641511624474">‏<ph name="APP_NAME" /> משתף כרטיסיית Chrome.</translation>
 <translation id="2670429602441959756">‏הדף הזה מכיל תכונות שעדיין אינן נתמכות ב-VR. אי אפשר להישאר כאן...</translation>
 <translation id="2671451824761031126">הסימניות וההגדרות שלך מוכנות</translation>
@@ -2763,7 +2763,6 @@
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> - <ph name="PROFILE_NAME" /></translation>
 <translation id="496185450405387901">האפליקציה הזו הותקנה על ידי מנהל המערכת.</translation>
 <translation id="4964455510556214366">סידור</translation>
-<translation id="4964673849688379040">בודק...</translation>
 <translation id="4965808351167763748">‏בחרת להגדיר שהמכשיר הזה יפעיל את Hangouts Meet. להמשיך?</translation>
 <translation id="496888482094675990">‏היישום 'קבצים' מספק גישה מהירה לקבצים ששמרת ב-Google Drive, באחסון חיצוני או במכשיר שלך עם מערכת הפעלה של Chrome.</translation>
 <translation id="4971412780836297815">פתח בסיום</translation>
@@ -3429,7 +3428,7 @@
 <translation id="5925147183566400388">מצביע על הצהרת הליכי אישור</translation>
 <translation id="592880897588170157">‏הורד קובצי PDF במקום לפתוח אותם ב-Chrome באופן אוטומטי</translation>
 <translation id="5931146425219109062">לקרוא ולשנות את כל הנתונים שלך באתרים שבהם אתה מבקר</translation>
-<translation id="5932124097031739492">‏Linux שודרג בהצלחה.</translation>
+<translation id="5932124097031739492">‏Linux שודרגה בהצלחה.</translation>
 <translation id="5932224571077948991">באתר מוצגות מודעות מפריעות או מטעות</translation>
 <translation id="59324397759951282">‏התקן USB של <ph name="MANUFACTURER_NAME" /></translation>
 <translation id="5932881020239635062">סידורי</translation>

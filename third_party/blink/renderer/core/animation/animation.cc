@@ -639,10 +639,10 @@ void Animation::CommitPendingPause(double ready_time) {
 
 bool Animation::Affects(const Element& element,
                         const CSSProperty& property) const {
-  if (!content_ || !content_->IsKeyframeEffect())
+  const auto* effect = DynamicTo<KeyframeEffect>(content_.Get());
+  if (!effect)
     return false;
 
-  const KeyframeEffect* effect = ToKeyframeEffect(content_.Get());
   return (effect->target() == &element) &&
          effect->Affects(PropertyHandle(property));
 }
@@ -1517,10 +1517,10 @@ Animation::CheckCanStartAnimationOnCompositor(
     const PaintArtifactCompositor* paint_artifact_compositor) const {
   CompositorAnimations::FailureReasons reasons =
       CheckCanStartAnimationOnCompositorInternal();
-  if (content_ && content_->IsKeyframeEffect()) {
-    reasons |= ToKeyframeEffect(content_.Get())
-                   ->CheckCanStartAnimationOnCompositor(
-                       paint_artifact_compositor, playback_rate_);
+
+  if (auto* keyframe_effect = DynamicTo<KeyframeEffect>(content_.Get())) {
+    reasons |= keyframe_effect->CheckCanStartAnimationOnCompositor(
+        paint_artifact_compositor, playback_rate_);
   }
   return reasons;
 }
@@ -1559,7 +1559,7 @@ Animation::CheckCanStartAnimationOnCompositorInternal() const {
 
   // An Animation without an effect cannot produce a visual, so there is no
   // reason to composite it.
-  if (!content_ || !content_->IsKeyframeEffect())
+  if (!IsA<KeyframeEffect>(content_.Get()))
     reasons |= CompositorAnimations::kInvalidAnimationOrEffect;
 
   // An Animation that is not playing will not produce a visual, so there is no
@@ -1612,8 +1612,8 @@ void Animation::StartAnimationOnCompositor(
 
   DCHECK(!start_time || !IsNull(start_time.value()));
   DCHECK_NE(compositor_group_, 0);
-  DCHECK(ToKeyframeEffect(content_.Get()));
-  ToKeyframeEffect(content_.Get())
+  DCHECK(To<KeyframeEffect>(content_.Get()));
+  To<KeyframeEffect>(content_.Get())
       ->StartAnimationOnCompositor(compositor_group_, start_time, time_offset,
                                    EffectivePlaybackRate());
 }
@@ -1656,7 +1656,7 @@ void Animation::SetCompositorPending(bool effect_changed) {
 
 void Animation::CancelAnimationOnCompositor() {
   if (HasActiveAnimationsOnCompositor()) {
-    ToKeyframeEffect(content_.Get())
+    To<KeyframeEffect>(content_.Get())
         ->CancelAnimationOnCompositor(GetCompositorAnimation());
   }
 
@@ -1666,22 +1666,22 @@ void Animation::CancelAnimationOnCompositor() {
 void Animation::RestartAnimationOnCompositor() {
   if (!HasActiveAnimationsOnCompositor())
     return;
-  if (ToKeyframeEffect(content_.Get())
+  if (To<KeyframeEffect>(content_.Get())
           ->CancelAnimationOnCompositor(GetCompositorAnimation()))
     SetCompositorPending(true);
 }
 
 void Animation::CancelIncompatibleAnimationsOnCompositor() {
-  if (content_ && content_->IsKeyframeEffect())
-    ToKeyframeEffect(content_.Get())
-        ->CancelIncompatibleAnimationsOnCompositor();
+  if (auto* keyframe_effect = DynamicTo<KeyframeEffect>(content_.Get()))
+    keyframe_effect->CancelIncompatibleAnimationsOnCompositor();
 }
 
 bool Animation::HasActiveAnimationsOnCompositor() {
-  if (!content_ || !content_->IsKeyframeEffect())
+  auto* keyframe_effect = DynamicTo<KeyframeEffect>(content_.Get());
+  if (!keyframe_effect)
     return false;
 
-  return ToKeyframeEffect(content_.Get())->HasActiveAnimationsOnCompositor();
+  return keyframe_effect->HasActiveAnimationsOnCompositor();
 }
 
 // Update current time of the animation. Refer to step 1 in:
@@ -1910,9 +1910,9 @@ void Animation::AttachCompositedLayers() {
     return;
 
   DCHECK(content_);
-  DCHECK(content_->IsKeyframeEffect());
+  DCHECK(IsA<KeyframeEffect>(*content_));
 
-  ToKeyframeEffect(content_.Get())->AttachCompositedLayers();
+  To<KeyframeEffect>(content_.Get())->AttachCompositedLayers();
 }
 
 void Animation::DetachCompositedLayers() {
@@ -2020,7 +2020,7 @@ void Animation::PauseForTesting(double pause_time) {
   if (HasActiveAnimationsOnCompositor()) {
     base::Optional<double> current_time = CurrentTimeInternal();
     DCHECK(current_time);
-    ToKeyframeEffect(content_.Get())
+    To<KeyframeEffect>(content_.Get())
         ->PauseAnimationForTestingOnCompositor(current_time.value());
   }
 
@@ -2046,10 +2046,11 @@ void Animation::DisableCompositedAnimationForTesting() {
 }
 
 void Animation::InvalidateKeyframeEffect(const TreeScope& tree_scope) {
-  if (!content_ || !content_->IsKeyframeEffect())
+  auto* keyframe_effect = DynamicTo<KeyframeEffect>(content_.Get());
+  if (!keyframe_effect)
     return;
 
-  Element* target = ToKeyframeEffect(content_.Get())->target();
+  Element* target = keyframe_effect->target();
 
   // TODO(alancutter): Remove dependency of this function on CSSAnimations.
   // This function makes the incorrect assumption that the animation uses

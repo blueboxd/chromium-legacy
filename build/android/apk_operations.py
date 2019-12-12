@@ -54,21 +54,6 @@ with devil_env.SysPath(
     os.path.join(_DIR_SOURCE_ROOT, 'build', 'android', 'gyp')):
   import bundletool
 
-# Matches messages only on pre-L (Dalvik) that are spammy and unimportant.
-_DALVIK_IGNORE_PATTERN = re.compile('|'.join([
-    r'^Added shared lib',
-    r'^Could not find ',
-    r'^DexOpt:',
-    r'^GC_',
-    r'^Late-enabling CheckJNI',
-    r'^Link of class',
-    r'^No JNI_OnLoad found in',
-    r'^Trying to load lib',
-    r'^Unable to resolve superclass',
-    r'^VFY:',
-    r'^WAIT_',
-    ]))
-
 BASE_MODULE = 'base'
 
 
@@ -571,15 +556,56 @@ class _LogcatProcessor(object):
       'ParsedLine',
       ['date', 'invokation_time', 'pid', 'tid', 'priority', 'tag', 'message'])
 
+  # Logcat tags for messages that are generally relevant but are not from PIDs
+  # associated with the apk.
+  _WHITELISTED_TAGS = {
+      'ActivityManager',  # Shows activity lifecycle messages.
+      'ActivityTaskManager',  # More activity lifecycle messages.
+      'AndroidRuntime',  # Java crash dumps
+      'DEBUG',  # Native crash dump.
+  }
+
+  # Matches messages only on pre-L (Dalvik) that are spammy and unimportant.
+  _DALVIK_IGNORE_PATTERN = re.compile('|'.join([
+      r'^Added shared lib',
+      r'^Could not find ',
+      r'^DexOpt:',
+      r'^GC_',
+      r'^Late-enabling CheckJNI',
+      r'^Link of class',
+      r'^No JNI_OnLoad found in',
+      r'^Trying to load lib',
+      r'^Unable to resolve superclass',
+      r'^VFY:',
+      r'^WAIT_',
+  ]))
+
   def __init__(self, device, package_name, deobfuscate=None, verbose=False):
     self._device = device
     self._package_name = package_name
     self._verbose = verbose
     self._deobfuscator = deobfuscate
+    # Process ID for the app's main process (with no :name suffix).
     self._primary_pid = None
+    # Set of all Process IDs that belong to the app.
     self._my_pids = set()
+    # Set of all Process IDs that we've parsed at some point.
     self._seen_pids = set()
+    # Start proc 22953:com.google.chromeremotedesktop/
+    self._pid_pattern = re.compile(r'Start proc (\d+):{}/'.format(package_name))
+    # START u0 {act=android.intent.action.MAIN \
+    # cat=[android.intent.category.LAUNCHER] \
+    # flg=0x10000000 pkg=com.google.chromeremotedesktop} from uid 2000
+    self._start_pattern = re.compile(r'START .*pkg=' + package_name)
+
+    self.nonce = 'Chromium apk_operations.py nonce={}'.format(random.random())
+    # Holds lines buffered on start-up, before we find our nonce message.
+    self._initial_buffered_lines = []
     self._UpdateMyPids()
+    # Give preference to PID reported by "ps" over those found from
+    # _start_pattern. There can be multiple "Start proc" messages from prior
+    # runs of the app.
+    self._found_initial_pid = self._primary_pid != None
 
   def _UpdateMyPids(self):
     # We intentionally do not clear self._my_pids to make sure that the
@@ -666,27 +692,61 @@ class _LogcatProcessor(object):
           parsed_line.date, parsed_line.invokation_time, pid_str, tid_str,
           priority, tag, message))
 
-  def ProcessLine(self, line, fast=False):
+  def _TriggerNonceFound(self):
+    # Once the nonce is hit, we have confidence that we know which lines
+    # belong to the current run of the app. Process all of the buffered lines.
+    if self._primary_pid:
+      for args in self._initial_buffered_lines:
+        self._PrintParsedLine(*args)
+    self._initial_buffered_lines = None
+    self.nonce = None
+
+  def ProcessLine(self, line):
     if not line or line.startswith('------'):
       return
+
+    if self.nonce and self.nonce in line:
+      self._TriggerNonceFound()
+
+    nonce_found = self.nonce is None
+
     log = self._ParseLine(line)
     if log.pid not in self._seen_pids:
       self._seen_pids.add(log.pid)
-      if not fast:
+      if nonce_found:
+        # Update list of owned PIDs each time a new PID is encountered.
         self._UpdateMyPids()
 
+    # Search for "Start proc $pid:$package_name/" message.
+    if not nonce_found:
+      # Capture logs before the nonce. Start with the most recent "am start".
+      if self._start_pattern.match(log.message):
+        self._initial_buffered_lines = []
+
+      # If we didn't find the PID via "ps", then extract it from log messages.
+      # This will happen if the app crashes too quickly.
+      if not self._found_initial_pid:
+        m = self._pid_pattern.match(log.message)
+        if m:
+          # Find the most recent "Start proc" line before the nonce.
+          # Track only the primary pid in this mode.
+          # The main use-case is to find app logs when no current PIDs exist.
+          # E.g.: When the app crashes on launch.
+          self._primary_pid = m.group(1)
+          self._my_pids.clear()
+          self._my_pids.add(m.group(1))
+
     owned_pid = log.pid in self._my_pids
-    if fast and not owned_pid:
-      return
     if owned_pid and not self._verbose and log.tag == 'dalvikvm':
-      if _DALVIK_IGNORE_PATTERN.match(log.message):
+      if self._DALVIK_IGNORE_PATTERN.match(log.message):
         return
 
-    if owned_pid or self._verbose or (
-        log.priority == 'F' or  # Java crash dump
-        log.tag == 'ActivityManager' or  # Android system
-        log.tag == 'DEBUG'):  # Native crash dump
-      self._PrintParsedLine(log, not owned_pid)
+    if owned_pid or self._verbose or (log.priority == 'F' or  # Java crash dump
+                                      log.tag in self._WHITELISTED_TAGS):
+      if nonce_found:
+        self._PrintParsedLine(log, not owned_pid)
+      else:
+        self._initial_buffered_lines.append((log, not owned_pid))
 
 
 def _RunLogcat(device, package_name, mapping_path, verbose):
@@ -702,12 +762,10 @@ def _RunLogcat(device, package_name, mapping_path, verbose):
   try:
     logcat_processor = _LogcatProcessor(
         device, package_name, deobfuscate, verbose)
-    nonce = 'apk_wrappers.py nonce={}'.format(random.random())
-    device.RunShellCommand(['log', nonce])
-    fast = True
+    device.RunShellCommand(['log', logcat_processor.nonce])
     for line in device.adb.Logcat(logcat_format='threadtime'):
       try:
-        logcat_processor.ProcessLine(line, fast)
+        logcat_processor.ProcessLine(line)
       except:
         sys.stderr.write('Failed to process line: ' + line + '\n')
         # Skip stack trace for the common case of the adb server being
@@ -715,8 +773,6 @@ def _RunLogcat(device, package_name, mapping_path, verbose):
         if 'unexpected EOF' in line:
           sys.exit(1)
         raise
-      if fast and nonce in line:
-        fast = False
   except KeyboardInterrupt:
     pass  # Don't show stack trace upon Ctrl-C
   finally:

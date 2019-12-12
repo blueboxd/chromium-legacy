@@ -12,9 +12,6 @@
     <dimen name="menu_drawable_padding">16dp</dimen>
     <dimen name="menu_padding_start">16dp</dimen>
 
-    <!-- DualControlLayout dimensions -->
-    <dimen name="dual_control_margin_between_items">8dp</dimen>
-
     <!-- RadioButton(WithDescription)Layout dimensions -->
     <dimen name="default_vertical_margin_between_items">8dp</dimen>
 

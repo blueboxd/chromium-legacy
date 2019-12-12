@@ -397,6 +397,9 @@ void AppServiceAppWindowLauncherController::OnItemDelegateDiscarded(
     VLOG(1) << "Item controller was released externally for the app "
             << delegate->shelf_id().app_id << ".";
 
+    if (arc_tracker_)
+      arc_tracker_->OnItemDelegateDiscarded(app_window->shelf_id());
+
     UnregisterAppWindow(it.second.get());
   }
 }

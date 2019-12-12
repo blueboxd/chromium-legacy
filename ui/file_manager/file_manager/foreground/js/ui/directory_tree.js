@@ -1847,6 +1847,9 @@ class DirectoryTree extends cr.ui.Tree {
   constructor() {
     super();
 
+    /** @type {?HTMLElement} */
+    this.activeRow_ = null;
+
     /** @type {NavigationListModel} */
     this.dataModel_ = null;
 
@@ -2245,6 +2248,18 @@ class DirectoryTree extends cr.ui.Tree {
    */
   onCurrentDirectoryChanged_(event) {
     this.selectByEntry(event.newDirEntry);
+
+    const selectedItem = this.selectedItem;
+
+    if (this.activeRow_) {
+      this.activeRow_.removeAttribute('active');
+    }
+
+    this.activeRow_ = selectedItem ? selectedItem.rowElement : null;
+    if (this.activeRow_) {
+      this.activeRow_.setAttribute('active', '');
+    }
+
     this.updateSubDirectories(false /* recursive */, () => {});
   }
 

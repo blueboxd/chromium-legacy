@@ -346,6 +346,7 @@ group("gn_all") {
       "//ui/android:ui_junit_tests",
       "//weblayer/public/java:client_aar",
       "//weblayer/shell/android:weblayer_shell_apk",
+      "//weblayer/shell/android:weblayer_support_apk",
     ]
     deps -= [
       "//net:net_perftests",
@@ -834,6 +835,10 @@ if ((is_linux || is_win) && enable_remoting && !use_ozone) {
       "//remoting/host:host",
       "//tools/traffic_annotation/summary:annotations_xml",
     ]
+
+    if (is_win) {
+      deps += [ "//chrome/chrome_cleaner:shipped_binaries" ]
+    }
   }
 }
 

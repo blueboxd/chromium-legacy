@@ -426,6 +426,8 @@ bool StartSandboxLinux(gpu::GpuWatchdogThread* watchdog_thread,
   service_manager::SandboxLinux::Options sandbox_options;
   sandbox_options.use_amd_specific_policies =
       gpu_info && angle::IsAMD(gpu_info->active_gpu().vendor_id);
+  sandbox_options.use_intel_specific_policies =
+      gpu_info && angle::IsIntel(gpu_info->active_gpu().vendor_id);
   sandbox_options.accelerated_video_decode_enabled =
       !gpu_prefs.disable_accelerated_video_decode;
   sandbox_options.accelerated_video_encode_enabled =

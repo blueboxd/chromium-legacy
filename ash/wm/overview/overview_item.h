@@ -260,6 +260,8 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
     unclipped_size_ = unclipped_size;
   }
 
+  void set_activate_on_unminimized(bool val) { activate_on_unminimized_ = val; }
+
   views::ImageButton* GetCloseButtonForTesting();
   float GetCloseButtonOpacityForTesting() const;
   float GetTitlebarOpacityForTesting() const;
@@ -408,6 +410,13 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   bool disable_mask_ = false;
 
   bool prepared_for_overview_ = false;
+
+  // If true, the next time |window_| is uniminimized, we will activate it (and
+  // end overview). Done this way because some windows (ARC app windows) have
+  // their window states changed async, so we need to wait until the window is
+  // fully unminimized before activation as opposed to having two consecutive
+  // calls.
+  bool activate_on_unminimized_ = false;
 
   // This has a value when there is a snapped window, or a window about to be
   // snapped (triggering a splitview preview area). This will be set when items

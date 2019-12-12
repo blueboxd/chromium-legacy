@@ -103,8 +103,10 @@ FormDataImporter::FormDataImporter(AutofillClient* client,
                                                   payments_client,
                                                   app_locale,
                                                   personal_data_manager)),
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
       upi_vpa_save_manager_(
-          std::make_unique<UpiVpaSaveManager>(personal_data_manager)),
+          std::make_unique<UpiVpaSaveManager>(client, personal_data_manager)),
+#endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
       local_card_migration_manager_(
           std::make_unique<LocalCardMigrationManager>(client,
                                                       payments_client,
@@ -112,7 +114,8 @@ FormDataImporter::FormDataImporter(AutofillClient* client,
                                                       personal_data_manager)),
 
       personal_data_manager_(personal_data_manager),
-      app_locale_(app_locale) {}
+      app_locale_(app_locale) {
+}
 
 FormDataImporter::~FormDataImporter() {}
 
@@ -120,7 +123,7 @@ void FormDataImporter::ImportFormData(const FormStructure& submitted_form,
                                       bool profile_autofill_enabled,
                                       bool credit_card_autofill_enabled) {
   std::unique_ptr<CreditCard> imported_credit_card;
-  base::Optional<std::string> detected_vpa;
+  base::Optional<std::string> detected_upi_id;
 
   bool is_credit_card_upstream_enabled =
       credit_card_save_manager_->IsCreditCardUploadEnabled();
@@ -131,12 +134,14 @@ void FormDataImporter::ImportFormData(const FormStructure& submitted_form,
   ImportFormData(submitted_form, profile_autofill_enabled,
                  credit_card_autofill_enabled,
                  /*should_return_local_card=*/is_credit_card_upstream_enabled,
-                 &imported_credit_card, &detected_vpa);
+                 &imported_credit_card, &detected_upi_id);
 
-  if (detected_vpa && credit_card_autofill_enabled &&
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  if (detected_upi_id && credit_card_autofill_enabled &&
       base::FeatureList::IsEnabled(features::kAutofillSaveAndFillVPA)) {
-    upi_vpa_save_manager_->OfferLocalSave(*detected_vpa);
+    upi_vpa_save_manager_->OfferLocalSave(*detected_upi_id);
   }
+#endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
   // If no card was successfully imported from the form, return.
   if (imported_credit_card_record_type_ ==
@@ -224,7 +229,7 @@ bool FormDataImporter::ImportFormData(
     bool credit_card_autofill_enabled,
     bool should_return_local_card,
     std::unique_ptr<CreditCard>* imported_credit_card,
-    base::Optional<std::string>* imported_vpa) {
+    base::Optional<std::string>* imported_upi_id) {
   // We try the same |form| for both credit card and address import/update.
   // - ImportCreditCard may update an existing card, or fill
   //   |imported_credit_card| with an extracted card. See .h for details of
@@ -236,7 +241,7 @@ bool FormDataImporter::ImportFormData(
   if (credit_card_autofill_enabled) {
     cc_import = ImportCreditCard(submitted_form, should_return_local_card,
                                  imported_credit_card);
-    *imported_vpa = ImportVPA(submitted_form);
+    *imported_upi_id = ImportUpiId(submitted_form);
   }
   // - ImportAddressProfiles may eventually save or update one or more address
   //   profiles.
@@ -245,7 +250,7 @@ bool FormDataImporter::ImportFormData(
     address_import = ImportAddressProfiles(submitted_form);
   }
 
-  if (cc_import || address_import || imported_vpa->has_value())
+  if (cc_import || address_import || imported_upi_id->has_value())
     return true;
 
   personal_data_manager_->MarkObserversInsufficientFormDataForImport();
@@ -547,7 +552,7 @@ CreditCard FormDataImporter::ExtractCreditCardFromForm(
   return candidate_credit_card;
 }
 
-base::Optional<std::string> FormDataImporter::ImportVPA(
+base::Optional<std::string> FormDataImporter::ImportUpiId(
     const FormStructure& form) {
   for (const auto& field : form) {
     if (IsUPIVirtualPaymentAddress(field->value))

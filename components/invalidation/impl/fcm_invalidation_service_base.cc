@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/i18n/time_formatting.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/invalidation/impl/fcm_network_handler.h"
@@ -188,7 +188,7 @@ base::DictionaryValue FCMInvalidationServiceBase::CollectDebugData() const {
 
 void FCMInvalidationServiceBase::ReportInvalidatorState(
     syncer::InvalidatorState state) {
-  UMA_HISTOGRAM_ENUMERATION("Invalidations.StatusChanged", state);
+  base::UmaHistogramEnumeration("Invalidations.StatusChanged", state);
 }
 
 bool FCMInvalidationServiceBase::IsStarted() const {
@@ -284,8 +284,7 @@ void FCMInvalidationServiceBase::OnDeleteInstanceIDCompleted(
   // Note: |client_id_| and the pref were already cleared when we initiated the
   // deletion.
 
-  UMA_HISTOGRAM_ENUMERATION("FCMInvalidations.ResetClientIDStatus", result,
-                            instance_id::InstanceID::Result::LAST_RESULT + 1);
+  base::UmaHistogramEnumeration("FCMInvalidations.ResetClientIDStatus", result);
 
   diagnostic_info_.instance_id_cleared = base::Time::Now();
 

@@ -131,4 +131,9 @@
       test_name)
 #endif  // ENABLE_OPENXR
 
+// Helper class to disable a specific runtime of the above
+#define WEBXR_VR_DISABLE_TEST_ON(runtime) \
+  if (t->GetRuntimeType() == runtime)     \
+  return
+
 #endif  // CHROME_BROWSER_VR_TEST_MULTI_CLASS_BROWSER_TEST_H_

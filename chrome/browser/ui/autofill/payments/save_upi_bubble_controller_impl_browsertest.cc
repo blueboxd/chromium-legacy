@@ -1,0 +1,41 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ui/autofill/payments/save_upi_bubble_controller_impl.h"
+
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/test/test_browser_dialog.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace autofill {
+
+class SaveUPIBubbleControllerImplTest : public DialogBrowserTest {
+ public:
+  SaveUPIBubbleControllerImplTest() = default;
+  ~SaveUPIBubbleControllerImplTest() override = default;
+
+  // DialogBrowserTest:
+  void ShowUi(const std::string& name) override {
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+
+    // Do lazy initialization of SaveUPIBubbleControllerImpl.
+    SaveUPIBubbleControllerImpl::CreateForWebContents(web_contents);
+    controller_ = SaveUPIBubbleControllerImpl::FromWebContents(web_contents);
+    DCHECK(controller_);
+
+    controller_->OfferUpiIdLocalSave("user@indianbank", base::DoNothing());
+  }
+
+ private:
+  SaveUPIBubbleControllerImpl* controller_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(SaveUPIBubbleControllerImplTest);
+};
+
+IN_PROC_BROWSER_TEST_F(SaveUPIBubbleControllerImplTest, InvokeUi) {
+  ShowAndVerifyUi();
+}
+
+}  // namespace autofill

@@ -105,8 +105,13 @@ namespace content {
 
 namespace {
 
-base::LazyInstance<StoragePartitionImpl::CreateNetworkFactoryCallback>::Leaky
-    g_url_loader_factory_callback_for_test = LAZY_INSTANCE_INITIALIZER;
+// A callback to create a URLLoaderFactory that is used in tests.
+StoragePartitionImpl::CreateNetworkFactoryCallback&
+GetCreateURLLoaderFactoryCallback() {
+  static base::NoDestructor<StoragePartitionImpl::CreateNetworkFactoryCallback>
+      create_factory_callback;
+  return *create_factory_callback;
+}
 
 void OnClearedCookies(base::OnceClosure callback, uint32_t num_deleted) {
   // The final callback needs to happen from UI thread.
@@ -933,14 +938,13 @@ int StoragePartitionImpl::GenerateQuotaClientMask(uint32_t remove_mask) {
 // static
 void StoragePartitionImpl::
     SetGetURLLoaderFactoryForBrowserProcessCallbackForTesting(
-        const CreateNetworkFactoryCallback& url_loader_factory_callback) {
+        CreateNetworkFactoryCallback url_loader_factory_callback) {
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(url_loader_factory_callback.is_null() ||
-         g_url_loader_factory_callback_for_test.Get().is_null())
+  DCHECK(!url_loader_factory_callback || !GetCreateURLLoaderFactoryCallback())
       << "It is not expected that this is called with non-null callback when "
       << "another overriding callback is already set.";
-  g_url_loader_factory_callback_for_test.Get() = url_loader_factory_callback;
+  GetCreateURLLoaderFactoryCallback() = std::move(url_loader_factory_callback);
 }
 
 // Helper for deleting quota managed data from a partition.
@@ -2008,7 +2012,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     const base::Time begin,
     const base::Time end) {
   DCHECK_NE(remove_mask_, 0u);
-  DCHECK(!callback_.is_null());
+  DCHECK(callback_);
 
   base::ScopedClosureRunner synchronous_clear_operations(
       CreateTaskCompletionClosure(TracingDataType::kSynchronous));
@@ -2090,8 +2094,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
             base::WrapRefCounted(filesystem_context), storage_origin,
             std::move(origin_matcher),
             base::WrapRefCounted(special_storage_policy), begin, end,
-            base::AdaptCallbackForRepeating(
-                CreateTaskCompletionClosure(TracingDataType::kPluginPrivate))));
+            CreateTaskCompletionClosure(TracingDataType::kPluginPrivate)));
   }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 }
@@ -2291,8 +2294,7 @@ StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessInternal(
   // Create the URLLoaderFactory as needed, but make sure not to reuse a
   // previously created one if the test override has changed.
   if (url_loader_factory && url_loader_factory.is_connected() &&
-      is_test_url_loader_factory !=
-          g_url_loader_factory_callback_for_test.Get().is_null()) {
+      is_test_url_loader_factory != !GetCreateURLLoaderFactoryCallback()) {
     return url_loader_factory.get();
   }
 
@@ -2307,7 +2309,7 @@ StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessInternal(
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableWebSecurity);
   url_loader_factory.reset();
-  if (g_url_loader_factory_callback_for_test.Get().is_null()) {
+  if (!GetCreateURLLoaderFactoryCallback()) {
     GetNetworkContext()->CreateURLLoaderFactory(
         url_loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
     is_test_url_loader_factory = false;
@@ -2317,8 +2319,8 @@ StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessInternal(
   mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory;
   GetNetworkContext()->CreateURLLoaderFactory(
       original_factory.InitWithNewPipeAndPassReceiver(), std::move(params));
-  url_loader_factory.Bind(g_url_loader_factory_callback_for_test.Get().Run(
-      std::move(original_factory)));
+  url_loader_factory.Bind(
+      GetCreateURLLoaderFactoryCallback().Run(std::move(original_factory)));
   is_test_url_loader_factory = true;
   return url_loader_factory.get();
 }

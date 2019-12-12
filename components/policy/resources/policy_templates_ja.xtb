@@ -1,15 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
-<translation id="1001649754854402482">新しい <ph name="CORS" /> の実装で <ph name="CORS" /> チェックの緩和措置を有効にして、拡張機能の互換性のある動作が保たれるように、また <ph name="PRODUCT_NAME" /> で <ph name="CORS" /> チェックなしに指定ヘッダーが送信されるようにします。
-
-      このリストを空に設定した場合、<ph name="PRODUCT_NAME" /> では拡張機能が互換性を保つように実行され、<ph name="PRODUCT_NAME" /> 79 での <ph name="API" /> の変更（<ph name="WEB_REQUEST_API_MANUAL" /> を参照）は適用されません。
-
-      このリストを <ph name="HTTP" /> リクエスト ヘッダー名を含めて設定した場合は、拡張機能向けの緩和措置が有効になることに加えて、リストにあるヘッダーが <ph name="CORS" /> チェックで無視されます。
-
-      このリストを設定しない場合、上記の緩和措置はいずれも適用されません。
-
-      <ph name="CORS" /> の詳細については、<ph name="CORS_HELP_URL" /> をご覧ください。</translation>
 <translation id="1002439864875515590">このポリシーが空の文字列または未設定の場合は、<ph name="PRODUCT_OS_NAME" /> でユーザーのログインフロー時にオートコンプリートのオプションは表示されません。
       このポリシーがドメイン名を表す文字列に設定されている場合は、<ph name="PRODUCT_OS_NAME" /> でユーザーがログインする際にオートコンプリートのオプションが表示されます。この場合、ユーザーはドメイン名の部分を省略してユーザー名を入力するだけで済みます。また、ユーザーはこのドメイン名の部分を上書きすることもできます。
       ポリシーの値が有効なドメインではない場合、ポリシーは適用されません。</translation>
@@ -566,7 +557,7 @@
 <translation id="186719019195685253">AC 電源での実行時、アイドル時間に到達したときに行う操作</translation>
 <translation id="1875371246345730828">このポリシーでは、ログイン画面の SAML フロー中にデバイス識別情報のリモート証明書の使用を許可する URL を設定します。
 
-      具体的に、URL がこのポリシーの指定パターンの 1 つに一致する場合、その URL ではリモート証明書の要求に対する応答を含む HTTP ヘッダーを受信し、デバイスの識別情報と状態を認証することができます。
+      具体的には、URL がこのポリシーの指定パターンの 1 つに一致する場合、その URL ではリモート証明書の要求に対する応答を含む HTTP ヘッダーを受信し、デバイスの識別情報と状態を認証することができます。
 
       このポリシーを未設定のままにするか空のリストに設定した場合は、どの URL にもログイン画面でのリモート証明書の使用は許可されません。
 
@@ -1498,11 +1489,11 @@
 <translation id="3303653927512453822">すべての Cookie を以前の <ph name="ATTRIBUTE_SAMESITE_NAME" /> 動作に戻します。以前の動作に戻すと、<ph name="ATTRIBUTE_SAMESITE_NAME" /> 属性のない Cookie は「<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />」が指定されたものとして扱われます。また、「<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />」の Cookie に「<ph name="ATTRIBUTE_SECURE_NAME" />」属性は必須ではなくなります。詳細については https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies をご覧ください。
 
           このポリシーを設定した場合、<ph name="ATTRIBUTE_SAMESITE_NAME" /> 属性のない Cookie のデフォルトの <ph name="ATTRIBUTE_SAMESITE_NAME" /> 動作は、ユーザーが個人設定で <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 機能をどのように設定しているか（公開テストで設定、あるいは <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> フラグで有効または無効に設定）に応じて決まります。</translation>
-<translation id="3304662785258434098">特定のサイトについて混合コンテンツを許可する例外をユーザーが追加できるかどうかを設定できます。
+<translation id="3304662785258434098">特定のサイトで混合コンテンツを許可する例外をユーザーが追加できるかどうかを設定できます。
 
           特定の URL パターンに対しては、このポリシーよりも「InsecureContentAllowedForUrls」ポリシーと「InsecureContentBlockedForUrls」ポリシーを優先できます。
 
-          このポリシーを設定しない場合、ユーザーはブロック可能な混合コンテンツを許可する例外を追加し、任意でブロック可能な混合コンテンツの自動アップグレードを無効にできます。</translation>
+          このポリシーを設定しない場合、ユーザーは、ブロック可能な混合コンテンツを許可する例外を追加し、任意でブロック可能な混合コンテンツの自動アップグレードを無効にできます。</translation>
 <translation id="3307971460556020865">大きなファイルのアップロードとダウンロードをブロックする</translation>
 <translation id="3312206664202507568">chrome://password-change ページを有効にします。SAML ユーザーはこのページでセッション中に SAML パスワードを変更して、SAML パスワードとデバイスのロック画面のパスワードを常に同期できます。
 
@@ -1563,6 +1554,7 @@
 
       このポリシーを設定する場合、「tls1」、「tls1.1」、「tls1.2」のいずれかの値を指定できます。<ph name="PRODUCT_NAME" /> では、指定されたバージョンより小さい SSL / TLS バージョンは使用されません。認識されない値は無視されます。</translation>
 <translation id="34160070798637152">デバイス共通のネットワーク設定を制御します。</translation>
+<translation id="3417130629744653218">利用可能なお支払い方法の問い合わせをウェブサイトに許可します。</translation>
 <translation id="3417418267404583991">このポリシーを true に設定した場合または未設定の場合、<ph name="PRODUCT_OS_NAME" /> ではゲスト ログインが有効になります。ゲスト ログインは匿名ユーザーのセッションで、パスワードが不要です。
 
       このポリシーを false に設定した場合、<ph name="PRODUCT_OS_NAME" /> ではゲスト セッションを開始できません。</translation>
@@ -1912,6 +1904,13 @@
           このポリシーを設定した場合、ユーザーによる変更やオーバーライドはできません。
 
           このポリシーを設定しない場合、仮想キーボードは初期設定ではログイン画面で無効ですが、ユーザーはいつでも有効にできます。</translation>
+<translation id="3913530489429898348"><ph name="PRODUCT_NAME" /> でドキュメントを <ph name="CLOUD_PRINT_NAME" />に送信して印刷できるようにします。注: このポリシーでは、<ph name="PRODUCT_NAME" /> で <ph name="CLOUD_PRINT_NAME" />を使用できるようにするかどうかのみを管理します。有効に設定しても、ユーザーがウェブサイトで印刷ジョブを送信できなくなるわけではありません。
+
+      このポリシーを有効に設定するか、未設定のままにした場合、ユーザーは <ph name="PRODUCT_NAME" /> の印刷ダイアログから <ph name="CLOUD_PRINT_NAME" />で印刷できるようになります。
+
+      このポリシーを無効に設定した場合、ユーザーは <ph name="PRODUCT_NAME" /> の印刷ダイアログから <ph name="CLOUD_PRINT_NAME" />で印刷できなくなります。
+
+      <ph name="CLOUD_PRINT_NAME" />を送信先として選択できるようにするには、このポリシーを true に設定し、「<ph name="POLICY_PRINTERTYPEDENYLIST" />」ポリシーで「<ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" />」を指定しないようにします。</translation>
 <translation id="391531815696899618">True に設定されている場合、<ph name="PRODUCT_OS_NAME" /> ファイル アプリでの Google ドライブの同期が無効になります。その場合、Google ドライブにデータはアップロードされません。
 
           未設定の場合、または False に設定されている場合、ユーザーは Google ドライブにファイルを転送できます。</translation>
@@ -2260,17 +2259,8 @@
 <translation id="4453913621209182880">背景のグラフィックありの印刷のみを許可する</translation>
 <translation id="4454586530530448054">このポリシーを設定した場合、指定したすべてのデータタイプが Google Sync とローミング プロファイルの同期から除外されます。これにより、ローミング プロファイルのサイズを抑えたり、Google Sync サーバーにアップロードされるデータのタイプを制限したりできます。
 
-      現在、このポリシーで指定できるデータタイプは次のとおりです。"bookmarks"、"preferences"、"passwords"、"autofill"、"themes"、"typedUrls"、"extensions"、"apps"、"tabs"、"wifiConfiguration"データタイプの名前は大文字と小文字が区別されます。</translation>
+      現在、このポリシーで指定できるデータタイプは次のとおりです。"bookmarks"、"preferences"、"passwords"、"autofill"、"themes"、"typedUrls"、"extensions"、"apps"、"tabs"、"wifiConfiguration"データタイプの名前では大文字と小文字が区別されます。</translation>
 <translation id="4454820008017317557"><ph name="PRODUCT_NAME" /> ツールバー アイコンを表示する</translation>
-<translation id="4458977366860064210">新しい <ph name="CORS" /> の実装ではなく以前の <ph name="CORS" /> の実装を使用します。
-
-      True に設定した場合は、以前のバージョンと互換性のある以前の実装が使用されます。
-
-      False または未設定のままにした場合は新しい実装が使用されますが、その場合、互換性に関する企業特有の問題が発生する可能性があります。
-
-      このポリシーは数回のマイルストーンを経て削除される予定です。
-
-      <ph name="CORS" /> の詳細については、<ph name="CORS_HELP_URL" /> をご覧ください。</translation>
 <translation id="4467952432486360968">サードパーティの Cookie をブロックする</translation>
 <translation id="4474167089968829729">パスワード マネージャへのパスワード保存を有効にする</translation>
 <translation id="4476769083125004742">このポリシーを <ph name="BLOCK_GEOLOCATION_SETTING" /> に設定した場合、Android アプリは位置情報にアクセスできません。このポリシーを他の値に設定するか未設定のままにした場合、Android アプリで位置情報へのアクセスが必要になったときには、ユーザーに同意が求められます。</translation>
@@ -2491,6 +2481,7 @@
       </translation>
 <translation id="4906194810004762807">デバイスポリシーの更新間隔</translation>
 <translation id="4917385247580444890">強い</translation>
+<translation id="4919122295221518724">混合コンテンツの厳密な取り扱いを有効にする</translation>
 <translation id="4923806312383904642">WebDriver による互換性のないポリシーのオーバーライドを許可する</translation>
 <translation id="4929721861648439998">ログイン画面でモノラル音声ユーザー補助機能を有効にします。
 
@@ -2511,6 +2502,10 @@
 <translation id="4970855112942626932">ブラウザのログインを無効にする</translation>
 <translation id="4978405676361550165">「OffHours」ポリシーが設定されている場合、指定されたデバイス ポリシーは、定義された時間間隔の間は無視されます（ポリシーのデフォルト設定が使用されます）。「OffHours」の開始または終了のイベントが発生するたびに、Chrome によってデバイス ポリシーが再適用されます。「OffHours」の時間が終了し、デバイス ポリシーの設定が変更されたとき（許可されたアカウント以外でユーザーがログインしたときなど）には、ユーザーは通知を受けたうえで強制的にログアウトされます。</translation>
 <translation id="4980635395568992380">データ タイプ:</translation>
+<translation id="4980794848194997251">このポリシーでは、ブラウザでの混合コンテンツ（HTTPS サイトに含まれる HTTP コンテンツ）の取り扱い方法を管理します。
+       このポリシーを true に設定するか、未設定のままにした場合、音声および動画の混合コンテンツは HTTPS に自動アップグレードされ（URL を HTTPS として書き換え、HTTPS でリソースを利用できない場合も代替表示しないなど）、画像の混合コンテンツには「安全ではありません」という警告が URL バーに表示されます。
+       このポリシーを false に設定した場合、音声および動画の混合コンテンツの自動アップグレードと、画像の混合コンテンツの警告表示は行われません。
+       このポリシーは、音声、動画、画像以外の混合コンテンツには影響しません。</translation>
 <translation id="4983201894483989687">古いプラグインの実行を許可する</translation>
 <translation id="4986560318567565414">代替ブラウザから Chrome への切り替えに使用するパスです。</translation>
 <translation id="4988291787868618635">アイドル時間に到達したときに行われる操作</translation>
@@ -2546,6 +2541,9 @@
 <translation id="5056708224511062314">画面拡大鏡を無効にする</translation>
 <translation id="5058573563327660283">自動クリーンアップ時にディスクの空き容量を増やす方法を選択する（サポート終了）</translation>
 <translation id="5067143124345820993">ログイン ユーザーのホワイト リスト</translation>
+<translation id="5073609397321802133">このポリシーを false に設定した場合、ユーザーは新しいタブページの背景をカスタイマイズできなくなります。既存のカスタムの背景は削除され、後からこのポリシーを true に設定しても元に戻すことはできません。
+
+      このポリシーを true に設定するか、未設定のままにした場合、ユーザーは新しいタブページの背景をカスタイマイズできます。</translation>
 <translation id="5075834892754086022">このポリシーを設定した場合、設定された PIN の最小桁数が適用されます（PIN の最小桁数として 1 より小さい値は指定できません。1 より小さい値は 1 として扱われます）。
 
           このポリシーが未設定の場合、PIN の最小桁数として 6 桁が適用されます。これがおすすめの最小桁数です。</translation>
@@ -3516,13 +3514,14 @@
 <translation id="6652197835259177259">ローカルの管理対象ユーザーの設定</translation>
 <translation id="6658245400435704251">最初にアップデートがサーバーにプッシュされた時刻から、デバイスによるアップデートのダウンロードをランダムに遅延できる最大時間を秒数で指定します。デバイスは、この時間の一部を実際の経過時間として、残りの時間をアップデート チェックとして待機できます。どのような場合でも、係数にはある一定の時間の上限があるため、アップデートのダウンロードを永遠に待機してデバイスが停止し続けることはありません。</translation>
 <translation id="6665670272107384733">ロックのクイック解除機能を使用するために必要なパスワード入力の頻度を設定する</translation>
-<translation id="6672630473862787247">通常、シークレット モード、ゲストのセッションでアンビエント認証を有効にします。</translation>
+<translation id="6672070613706645316">ユーザーに新しいタブページの背景のカスタマイズを許可する</translation>
+<translation id="6672630473862787247">通常セッション、シークレット モード、ゲスト セッションでアンビエント認証を有効にします。</translation>
 <translation id="6681229465468164801">ユーザーに対する USB デバイスへのアクセス リクエストを許可しないサイトを表す URL パターンのリストを設定します。
 
           このポリシーが未設定の場合は、すべてのサイトに対してグローバルなデフォルト値（「DefaultWebUsbGuardSetting」ポリシーで値が設定されている場合はその値、設定されていない場合はユーザーの個人設定の値）が使用されます。
 
           このポリシーで指定する URL パターンは、WebUsbAskForUrls ポリシーで指定する URL パターンと競合しないようにする必要があります。URL が両方のポリシーのパターンに一致する場合、どちらのポリシーが優先されるかは決まっていません。</translation>
-<translation id="6685903773201985073">ゲストと標準のセッションでアンビエント認証を有効にします。</translation>
+<translation id="6685903773201985073">ゲスト セッションと標準セッションでアンビエント認証を有効にします。</translation>
 <translation id="6689792153960219308">ハードウェア ステータスを報告する</translation>
 <translation id="6698632841807204978">白黒印刷を有効にする</translation>
 <translation id="6699880231565102694">リモート アクセス ホストの 2 段階認証プロセスを有効にする</translation>
@@ -4045,6 +4044,14 @@
       このポリシーを設定しないか、0 に設定した場合、指定された URL にアクセスすると、すぐに代替ブラウザが開きます。
 
       このポリシーに数字を設定した場合、その数字のミリ秒間メッセージが表示され、その後で代替ブラウザが開きます。</translation>
+<translation id="7583419926951418342">このポリシーでは、<ph name="PRODUCT_NAME" /> のクラウド レポートを管理します。クラウド レポートでは、ブラウザの操作に関する情報が Google 管理コンソールにアップロードされます。
+
+      このポリシーを未設定のままにするか、False に設定した場合、データの収集やアップロードは行われません。
+      このポリシーを True に設定した場合は、データが収集され、Google 管理コンソールにアップロードされます。
+      アップロードされるデータの種類を管理するには、Chrome レポート拡張機能グループのポリシーを使用してください。
+
+      <ph name="PRODUCT_NAME" /> に対しては、このポリシーは <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> で登録されたパソコンでのみ有効です。
+      <ph name="PRODUCT_OS_NAME" /> に対しては、このポリシーは常に有効です。</translation>
 <translation id="7586477707097444774">ここで指定したパターンに一致するドメインに設定されている Cookie を、以前の <ph name="ATTRIBUTE_SAMESITE_NAME" /> 動作に戻します。以前の動作に戻すと、<ph name="ATTRIBUTE_SAMESITE_NAME" /> 属性のない Cookie は「<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />」が指定されたものとして扱われます。また、「<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />」の Cookie に「<ph name="ATTRIBUTE_SECURE_NAME" />」属性は必須ではなくなります。詳細については https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies をご覧ください。
 
           ここで指定したパターンに一致しないドメインの Cookie（またはこのポリシーが未設定の場合はすべての Cookie）には、グローバルなデフォルト値（<ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME" /> ポリシーで値が設定されている場合はその値、設定されていない場合はユーザーの個人設定の値）が使用されます。
@@ -4122,7 +4129,7 @@
 
       アンビエント認証は、NTLM/Kerberos/Negotiate challenge/response スキームで明示的な認証情報が指定されていない場合に使用される、デフォルトの認証情報による HTTP 認証です。
 
-      <ph name="REGULAR_ONLY_OPTION_NAME" />（値 0）に設定すると、標準のセッションでのみアンビエント認証が許可されます。シークレット モードとゲストのセッションではアンビエント認証は許可されません。
+      <ph name="REGULAR_ONLY_OPTION_NAME" />（値 0）に設定すると、標準のセッションでのみアンビエント認証が許可されます。シークレット モードとゲスト セッションではアンビエント認証は許可されません。
 
       <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" />（値 1）に設定すると、シークレット モードと標準のセッションでアンビエント認証が許可されます。ゲスト セッションではアンビエント認証は許可されません。
 
@@ -4132,7 +4139,7 @@
 
       なお、標準のプロフィールでは常にアンビエント認証が許可されます。
 
-      このポリシーを未設定のままにした場合、<ph name="PRODUCT_NAME" /> の今後のリリースでは、シークレット モードとゲストのセッションでアンビエント認証が許可されないため、使用できなくなります。</translation>
+      このポリシーを未設定のままにした場合、<ph name="PRODUCT_NAME" /> の今後のリリースでは、シークレット モードとゲスト セッションでのアンビエント認証は許可されず、使用できなくなります。</translation>
 <translation id="7687943045976362719">このポリシーが設定されている場合、指定されたコンテンツ タイプは <ph name="PRODUCT_FRAME_NAME" /> で処理されます。
 
           このポリシーが未設定の場合、デフォルトのレンダラがすべてのサイトで使用されます（<ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> ポリシーを使用してデフォルトのレンダラを設定することもできます）。</translation>
@@ -4343,6 +4350,11 @@
 
       このポリシーが設定されていない場合、デバイスではデフォルトとして時刻が 24 時間形式で表示されます。</translation>
 <translation id="8114382167597081590">YouTube で制限付きモードを強制しない</translation>
+<translation id="8117921351531866504">保存されているお支払い方法の確認をウェブサイトに許可するかどうかを設定します。
+
+      このポリシーを無効に設定した場合、PaymentRequest.canMakePayment や PaymentRequest.hasEnrolledInstrument の API を使用するウェブサイトには、利用できるお支払い方法がないことが通知されます。
+
+      このポリシーを有効に設定するか、未設定のままにした場合、ウェブサイトは保存されているお支払い方法があるかどうかを確認できます。</translation>
 <translation id="8118665053362250806">メディア ディスクのキャッシュ サイズを設定します</translation>
 <translation id="8124468781472887384">デバイス プリンタの設定へのアクセス ポリシー</translation>
 <translation id="8138009212169037227">このポリシーでは、ポリシーデータとポリシーの取得日時について、レポートを作成するかどうかを管理します。
@@ -4713,6 +4725,17 @@
       このポリシーが有効な場合、または設定されていない場合、閲覧とダウンロードの履歴は削除可能です。
 
       この設定が無効な場合、閲覧とダウンロードの履歴は削除できません。</translation>
+<translation id="8749803771700374502">拒否リストで指定したプリンタタイプを送信先として選択したり、機能を取得したりできないようにします。
+
+      拒否リストですべてのプリンタタイプを指定すると、印刷するドキュメントの送信先として何も選択できなくなるため、印刷は実質的に無効化されます。
+
+      拒否リストで「<ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" />」を指定すると、「<ph name="POLICY_CLOUDPRINTSUBMITENABLED" />」ポリシーを false に設定した場合と同じ結果になります。<ph name="CLOUD_PRINT_NAME" />を送信先として選択できるようにするには、「<ph name="POLICY_CLOUDPRINTSUBMITENABLED" />」ポリシーを true に設定し、拒否リストで「<ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" />」を指定しないようにします。
+
+      このポリシーを設定しない場合または空のリストを指定した場合、すべてのプリンタタイプが選択可能になります。
+
+      拡張機能プリンタは、印刷プロバイダの送信先のことで、<ph name="PRODUCT_NAME" /> の拡張機能で利用できる送信先が該当します。
+
+      ローカル プリンタは、ネイティブ印刷の送信先のことで、ローカルマシンや共有ネットワークのプリンタで利用できる送信先が該当します。</translation>
 <translation id="8752541111574086388">このポリシーはサポートが終了しており、<ph name="PRODUCT_OS_NAME" /> バージョン 82 で削除されます。代わりに <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> を使用してください。
 
           バッテリーでの使用中、ユーザー入力が行われなくなってから警告ダイアログを表示するまでの時間を指定します。

@@ -51,6 +51,7 @@ void ExecuteCodeFunction::GetFileURLAndMaybeLocalizeInBackground(
     const std::string& extension_id,
     const base::FilePath& extension_path,
     const std::string& extension_default_locale,
+    extension_l10n_util::GzippedMessagesPermission gzip_permission,
     bool might_require_localization,
     std::string* data) {
   // TODO(karandeepb): Limit scope of ScopedBlockingCall.
@@ -72,7 +73,8 @@ void ExecuteCodeFunction::GetFileURLAndMaybeLocalizeInBackground(
 
   std::unique_ptr<SubstitutionMap> localization_messages(
       file_util::LoadMessageBundleSubstitutionMap(extension_path, extension_id,
-                                                  extension_default_locale));
+                                                  extension_default_locale,
+                                                  gzip_permission));
 
   std::string error;
   MessageBundle::ReplaceMessagesWithExternalDictionary(*localization_messages,
@@ -85,9 +87,10 @@ ExecuteCodeFunction::GetFileURLAndLocalizeComponentResourceInBackground(
     const std::string& extension_id,
     const base::FilePath& extension_path,
     const std::string& extension_default_locale,
+    extension_l10n_util::GzippedMessagesPermission gzip_permission,
     bool might_require_localization) {
   GetFileURLAndMaybeLocalizeInBackground(
-      extension_id, extension_path, extension_default_locale,
+      extension_id, extension_path, extension_default_locale, gzip_permission,
       might_require_localization, data.get());
 
   return data;
@@ -226,10 +229,12 @@ bool ExecuteCodeFunction::LoadFile(const std::string& file,
   std::string extension_default_locale;
   extension()->manifest()->GetString(manifest_keys::kDefaultLocale,
                                      &extension_default_locale);
+  auto gzip_permission =
+      extension_l10n_util::GetGzippedMessagesPermissionForExtension(
+          extension());
   // TODO(lazyboy): |extension_id| should not be empty(), turn this into a
   // DCHECK.
   bool might_require_localization = ShouldInsertCSS() && !extension_id.empty();
-
   int resource_id = 0;
   const ComponentExtensionResourceManager*
       component_extension_resource_manager =
@@ -250,7 +255,8 @@ bool ExecuteCodeFunction::LoadFile(const std::string& file,
         base::BindOnce(&ExecuteCodeFunction::
                            GetFileURLAndLocalizeComponentResourceInBackground,
                        this, std::move(data), extension_id, extension_path,
-                       extension_default_locale, might_require_localization),
+                       extension_default_locale, gzip_permission,
+                       might_require_localization),
         base::BindOnce(&ExecuteCodeFunction::DidLoadAndLocalizeFile, this,
                        resource_.relative_path().AsUTF8Unsafe(),
                        true /* We assume this call always succeeds */));
@@ -259,7 +265,7 @@ bool ExecuteCodeFunction::LoadFile(const std::string& file,
         base::BindOnce(
             &ExecuteCodeFunction::GetFileURLAndMaybeLocalizeInBackground, this,
             extension_id, extension_path, extension_default_locale,
-            might_require_localization);
+            gzip_permission, might_require_localization);
 
     auto file_reader = base::MakeRefCounted<FileReader>(
         resource_, std::move(get_file_and_l10n_callback),

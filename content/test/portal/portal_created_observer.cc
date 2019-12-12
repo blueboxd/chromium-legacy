@@ -10,6 +10,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/portal/portal.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/test/portal/portal_interceptor_for_testing.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 
@@ -56,6 +57,10 @@ void PortalCreatedObserver::AdoptPortal(
   RenderFrameProxyHost* proxy_host = portal_->CreateProxyAndAttachPortal();
   std::move(callback).Run(
       proxy_host->GetRoutingID(),
+      static_cast<RenderWidgetHostViewBase*>(proxy_host->frame_tree_node()
+                                                 ->render_manager()
+                                                 ->GetRenderWidgetHostView())
+          ->GetFrameSinkId(),
       proxy_host->frame_tree_node()->current_replication_state(),
       portal->GetDevToolsFrameToken());
 

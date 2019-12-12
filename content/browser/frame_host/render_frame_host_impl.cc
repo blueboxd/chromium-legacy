@@ -4566,6 +4566,10 @@ void RenderFrameHostImpl::AdoptPortal(
   RenderFrameProxyHost* proxy_host = portal->CreateProxyAndAttachPortal();
   std::move(callback).Run(
       proxy_host->GetRoutingID(),
+      static_cast<RenderWidgetHostViewBase*>(proxy_host->frame_tree_node()
+                                                 ->render_manager()
+                                                 ->GetRenderWidgetHostView())
+          ->GetFrameSinkId(),
       proxy_host->frame_tree_node()->current_replication_state(),
       portal->GetDevToolsFrameToken());
 }

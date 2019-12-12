@@ -11,8 +11,8 @@
 #include "net/base/data_url.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace content {
 
@@ -60,10 +60,10 @@ void DataURLLoaderFactory::CreateLoaderAndStart(
 
   std::string data;
   scoped_refptr<net::HttpResponseHeaders> headers;
-  network::ResourceResponseHead response;
-  net::Error result =
-      net::DataURL::BuildResponse(*url, request.method, &response.mime_type,
-                                  &response.charset, &data, &response.headers);
+  auto response = network::mojom::URLResponseHead::New();
+  net::Error result = net::DataURL::BuildResponse(
+      *url, request.method, &response->mime_type, &response->charset, &data,
+      &response->headers);
   url_ = GURL();  // Don't need it anymore.
 
   mojo::Remote<network::mojom::URLLoaderClient> client_remote(
@@ -73,7 +73,7 @@ void DataURLLoaderFactory::CreateLoaderAndStart(
     return;
   }
 
-  client_remote->OnReceiveResponse(response);
+  client_remote->OnReceiveResponse(std::move(response));
 
   mojo::ScopedDataPipeProducerHandle producer;
   mojo::ScopedDataPipeConsumerHandle consumer;

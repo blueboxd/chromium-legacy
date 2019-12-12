@@ -22,20 +22,20 @@
 @interface WebMenuRunner : NSObject {
  @private
   // The native menu control.
-  base::scoped_nsobject<NSMenu> menu_;
+  base::scoped_nsobject<NSMenu> _menu;
 
   // A flag set to YES if a menu item was chosen, or NO if the menu was
   // dismissed without selecting an item.
-  BOOL menuItemWasChosen_;
+  BOOL _menuItemWasChosen;
 
   // The index of the selected menu item.
-  int index_;
+  int _index;
 
   // The font size being used for the menu.
-  CGFloat fontSize_;
+  CGFloat _fontSize;
 
   // Whether the menu should be displayed right-aligned.
-  BOOL rightAligned_;
+  BOOL _rightAligned;
 }
 
 // Initializes the MenuDelegate with a list of items sent from WebKit.

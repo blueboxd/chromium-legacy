@@ -183,10 +183,10 @@ def StreamingConvertTrace(_, load_vaddrs, more_info, fallback_monochrome,
         symbol.ARCH = arch
     ResolveCrashSymbol(list(useful_lines), more_info, llvm_symbolizer)
 
+  preprocessor = PreProcessLog(load_vaddrs, apks_directory)
   for line in iter(sys.stdin.readline, b''):
     print line,
-    maybe_line, maybe_so_dir = PreProcessLog(load_vaddrs,
-                                             apks_directory)([line])
+    maybe_line, maybe_so_dir = preprocessor([line])
     useful_lines.extend(maybe_line)
     so_dirs.extend(maybe_so_dir)
     if in_stack:
@@ -334,7 +334,13 @@ class PreProcessLog:
       match = _TRACE_LINE.match(line)
       if match:
         lib, symbol_present = match.group('lib', 'symbol_present')
-        if os.path.splitext(lib)[1] == '.apk' and symbol_present:
+        extension = os.path.splitext(lib)[1]
+        if extension == '.so' and '.apk!' in lib:
+          # For Android Q+, where trace lines have "...base.apk!libchrome.so",
+          # convert the ! to a / so that the line parses like a conventional
+          # library line.
+          line = line.replace('.apk!', '.apk/')
+        elif extension == '.apk' and symbol_present:
           soname = self._DetectSharedLibrary(lib, symbol_present)
           if soname:
             line = line.replace('/' + os.path.basename(lib), '/' + soname)
@@ -516,7 +522,7 @@ def GetUncompressedSharedLibraryFromAPK(apkname, offset):
                          file_name_len + extra_field_len)
           f.seek(file_offset)
           if offset == file_offset and f.read(4) == "\x7fELF":
-            soname = infoList.filename
+            soname = infoList.filename.replace('crazy.', '')
             sosize = infoList.file_size
             break
   return soname, sosize

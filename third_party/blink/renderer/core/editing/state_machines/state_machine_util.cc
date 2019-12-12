@@ -38,7 +38,7 @@ bool IsIndicSyllabicCategoryVirama(uint32_t code_point) {
 
 bool IsGraphemeBreak(UChar32 prev_code_point, UChar32 next_code_point) {
   // The following breaking rules come from Unicode Standard Annex #29 on
-  // Unicode Text Segmaentation. See http://www.unicode.org/reports/tr29/
+  // Unicode Text Segmentation. See http://www.unicode.org/reports/tr29/
   int prev_prop =
       u_getIntPropertyValue(prev_code_point, UCHAR_GRAPHEME_CLUSTER_BREAK);
   int next_prop =
@@ -84,6 +84,13 @@ bool IsGraphemeBreak(UChar32 prev_code_point, UChar32 next_code_point) {
   if (Character::IsRegionalIndicator(prev_code_point) &&
       Character::IsRegionalIndicator(next_code_point))
     NOTREACHED() << "Do not use this function for regional indicators.";
+
+  // This is an exception for Myanmar IMEs that uses zwnj character as base
+  // character during a composition to avoid merging the actively composed text
+  // into the previous character. We intentionally diverge from UAX#29.
+  // Please see crbug.com/1027695 for more details.
+  if (next_code_point == kZeroWidthNonJoinerCharacter)
+    return true;
 
   // Rule GB9, x (Extend | ZWJ)
   // Rule GB9a, x SpacingMark

@@ -579,6 +579,10 @@
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #endif
 
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+#include "chrome/browser/ui/webui/tab_strip/chrome_content_browser_client_tab_strip_part.h"
+#endif
+
 using base::FileDescriptor;
 using content::BrowserThread;
 using content::BrowserURLHandler;
@@ -1141,6 +1145,10 @@ ChromeContentBrowserClient::ChromeContentBrowserClient(
   extra_parts_.push_back(new ChromeContentBrowserClientChromeOsPart);
 #endif  // defined(OS_CHROMEOS)
 
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+  extra_parts_.push_back(new ChromeContentBrowserClientTabStripPart);
+#endif
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extra_parts_.push_back(new ChromeContentBrowserClientExtensionsPart);
 #endif
@@ -1593,21 +1601,6 @@ bool ChromeContentBrowserClient::ShouldLockToOrigin(
   }
 #endif
   return true;
-}
-
-const char*
-ChromeContentBrowserClient::GetInitiatorSchemeBypassingDocumentBlocking() {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Don't block responses for extension processes or for content scripts.
-  // TODO(creis): When every extension fetch (including content scripts) has
-  // been made to go through an extension-specific URLLoaderFactory, this
-  // mechanism ought to work by enumerating the host permissions from the
-  // extension manifest, and forwarding them on to the network service while
-  // brokering the URLLoaderFactory.
-  return extensions::kExtensionScheme;
-#else
-  return nullptr;
-#endif
 }
 
 bool ChromeContentBrowserClient::ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(

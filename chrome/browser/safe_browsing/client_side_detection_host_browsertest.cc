@@ -37,7 +37,8 @@ bool FindExpectedIPUrlInfo(const IPUrlInfo& expected_info,
   auto result = std::find_if(
       ip_url_vector.begin(), ip_url_vector.end(),
       [expected_info](const IPUrlInfo& ip_url_info) {
-        return expected_info.url == ip_url_info.url &&
+        return expected_info.origin_of_final_url ==
+                   ip_url_info.origin_of_final_url &&
                expected_info.method == ip_url_info.method &&
                expected_info.referrer == ip_url_info.referrer &&
                expected_info.resource_type == ip_url_info.resource_type;
@@ -64,13 +65,12 @@ IN_PROC_BROWSER_TEST_F(ClientSideDetectionHostBrowserTest,
   EXPECT_EQ(1u, browse_info->ips.size());
   const std::vector<IPUrlInfo>& ip_urls =
       browse_info->ips[embedded_test_server()->base_url().host()];
-  IPUrlInfo expected_result_1(
-      embedded_test_server()->GetURL("/safe_browsing/malware_image.png").spec(),
-      "GET", page_url.spec(), content::ResourceType::kImage);
-  IPUrlInfo expected_result_2(embedded_test_server()
-                                  ->GetURL("/safe_browsing/malware_iframe.html")
-                                  .spec(),
-                              "GET", page_url.spec(),
+  url::Origin expected_origin_of_final_url =
+      url::Origin::Create(embedded_test_server()->GetURL("/"));
+  IPUrlInfo expected_result_1(expected_origin_of_final_url.Serialize(), "GET",
+                              page_url.spec(), content::ResourceType::kImage);
+  IPUrlInfo expected_result_2(expected_origin_of_final_url.Serialize(), "GET",
+                              page_url.spec(),
                               content::ResourceType::kSubFrame);
   EXPECT_TRUE(FindExpectedIPUrlInfo(expected_result_1, ip_urls));
   EXPECT_TRUE(FindExpectedIPUrlInfo(expected_result_2, ip_urls));

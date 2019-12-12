@@ -99,7 +99,7 @@ HeapVector<Member<Animation>> Animatable::getAnimations(
   for (const auto& animation :
        element->GetDocument().Timeline().getAnimations()) {
     DCHECK(animation->effect());
-    Element* target = ToKeyframeEffect(animation->effect())->target();
+    Element* target = To<KeyframeEffect>(animation->effect())->target();
     if (element == target || (use_subtree && element->contains(target))) {
       // DocumentTimeline::getAnimations should only give us animations that are
       // either current or in effect.

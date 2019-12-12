@@ -14,6 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/common/extension_l10n_util.h"
 
 namespace content {
 class BrowserContext;
@@ -46,6 +47,7 @@ class CastExtensionMessageFilter : public content::BrowserMessageFilter {
       const std::vector<base::FilePath>& extension_paths,
       const std::string& main_extension_id,
       const std::string& default_locale,
+      extension_l10n_util::GzippedMessagesPermission gzip_permission,
       IPC::Message* reply_msg);
 
   const int render_process_id_;

@@ -105,7 +105,7 @@ LIBLOUIS_TEST_F('testBackTranslateComputerBraille', function(liblouis) {
 
 LIBLOUIS_TEST_F('testTranslateGermanGrade2Braille', function(liblouis) {
   // This is one of the moderately large tables.
-  this.withTranslator(liblouis, 'de-g2.ctb', function(translator) {
+  this.withTranslator(liblouis, 'de-de-g2.ctb', function(translator) {
     translator.translate(
         'München', [],
         this.newCallback(function(cells, textToBraille, brailleToText) {

@@ -43,8 +43,7 @@ public class DefaultSearchEnginePromoDialogTest {
         TestThreadUtils.runOnUiThreadBlocking(new Callable<Void>() {
             @Override
             public Void call() {
-                ChromeBrowserInitializer.getInstance(InstrumentationRegistry.getTargetContext())
-                        .handleSynchronousStartup();
+                ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
 
                 LocaleManager mockManager = new LocaleManager() {
                     @Override

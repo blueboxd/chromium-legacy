@@ -330,11 +330,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool ShouldLockToOrigin(BrowserContext* browser_context,
                                   const GURL& effective_url);
 
-  // Returns the scheme of request initiator that should be ignored by
-  // cross-origin read blocking.  nullptr can be returned to indicate that no
-  // exceptions should be granted based on initiator's scheme.
-  virtual const char* GetInitiatorSchemeBypassingDocumentBlocking();
-
   // Returns true if everything embedded inside a document with given scheme
   // should be treated as first-party content. |scheme| will be in canonical
   // (lowercased) form. |is_embedded_origin_secure| refers to whether the origin

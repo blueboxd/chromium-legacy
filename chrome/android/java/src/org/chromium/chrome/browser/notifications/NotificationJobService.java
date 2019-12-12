@@ -73,7 +73,7 @@ public class NotificationJobService extends JobService {
         intent.putExtras(new Bundle(extras));
 
         ThreadUtils.assertOnUiThread();
-        NotificationService.dispatchIntentOnUIThread(this, intent);
+        NotificationService.dispatchIntentOnUIThread(intent);
 
         // TODO(crbug.com/685197): Return true here and call jobFinished to release the wake
         // lock only after the event has been completely handled by the service worker.

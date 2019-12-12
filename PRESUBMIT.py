@@ -369,7 +369,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^components/webdata/',
   '^components/webdata_services/',
   '^components/wifi/',
-  '^content/browser/',
   '^device/bluetooth/',
   '^extensions/',
   '^google_apis/dive/',

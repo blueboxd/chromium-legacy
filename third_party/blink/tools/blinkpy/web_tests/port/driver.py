@@ -193,7 +193,7 @@ class Driver(object):
             self._profiler = ProfilerFactory.create_profiler(
                 self._port.host,
                 self._port._path_to_driver(),  # pylint: disable=protected-access
-                self._port.results_directory(),
+                self._port.artifacts_directory(),
                 profiler_name)
         else:
             self._profiler = None

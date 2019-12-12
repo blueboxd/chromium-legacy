@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/strings/string_piece.h"
 #include "base/version.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/printing/printer_configuration.h"
@@ -161,6 +162,14 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
                               const Printer::PpdReference& ref,
                               const std::string& manufacturer)>;
 
+  // Result of a ResolvePpdLicense call. If |result| is SUCCESS, then
+  // |license_name| will be used to indicate the license associated with the
+  // requested PPD. If |license_name| is empty, then the requested PPD does not
+  // require a license.
+  using ResolvePpdLicenseCallback =
+      base::OnceCallback<void(CallbackResultCode result,
+                              const std::string& license_name)>;
+
   // Result of a ReverseLookup call.  If the result code is SUCCESS, then
   // |manufactuer| and |model| contain the strings that could have generated
   // the reference being looked up.
@@ -204,6 +213,16 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
   // |cb| will be called on the invoking thread, and will be sequenced.
   virtual void ResolvePpd(const Printer::PpdReference& reference,
                           ResolvePpdCallback cb) = 0;
+
+  // Retrieves the name of the PPD license associated with the given printer
+  // |effective_make_and_model|. If the name of the retrieved license is empty,
+  // then the PPD does not require a license. If |effective_make_and_model| is
+  // already present in the cache, then |cb| will fire immediately. Otherwise,
+  // the PpdIndex will be fetched in order to retrieve the associated license.
+  //
+  // |cb| will be called on the invoking thread, and will be sequenced.
+  virtual void ResolvePpdLicense(base::StringPiece effective_make_and_model,
+                                 ResolvePpdLicenseCallback cb) = 0;
 
   // For a given PpdReference, retrieve the make and model strings used to
   // construct that reference.

@@ -133,7 +133,7 @@ void GPUBuffer::setSubData(uint64_t dst_byte_offset,
                            ExceptionState& exception_state) {
   const uint8_t* src_base =
       reinterpret_cast<const uint8_t*>(src.BaseAddressMaybeOnStack());
-  size_t src_byte_length = src.ByteLength();
+  size_t src_byte_length = src.ByteLengthAsSizeT();
 
   if (src_byte_offset > src_byte_length) {
     exception_state.ThrowRangeError("srcOffset is too large");

@@ -38,8 +38,7 @@ public class LocaleManagerTest {
         TestThreadUtils.runOnUiThreadBlocking(new Callable<Void>() {
             @Override
             public Void call() {
-                ChromeBrowserInitializer.getInstance(InstrumentationRegistry.getTargetContext())
-                        .handleSynchronousStartup();
+                ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
                 return null;
             }
         });

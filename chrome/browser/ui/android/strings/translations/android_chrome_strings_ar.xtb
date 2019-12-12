@@ -232,7 +232,7 @@
 <translation id="2650751991977523696">هل تريد تنزيل الملف مرة أخرى؟</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{ملف صوتي واحد (#)}zero{# ملف صوتي}two{ملفان صوتيان (#)}few{# ملفات صوتية}many{# ملفًا صوتيًا}other{# ملف صوتي}}</translation>
 <translation id="2653659639078652383">إرسال</translation>
-<translation id="2669093958999339774">منع رسائل الإشعارات من إزعاجك، وعرض رسائل أقل ظهورًا بدلاً من ذلك</translation>
+<translation id="2669093958999339774">منع رسائل الإشعارات من إزعاجك، وعرض رسائل أقل بروزًا بدلاً من ذلك</translation>
 <translation id="2677748264148917807">الخروج</translation>
 <translation id="2704606927547763573">تم النسخ</translation>
 <translation id="2707726405694321444">تحديث الصفحة</translation>
@@ -783,7 +783,7 @@
 <translation id="6710213216561001401">السابق</translation>
 <translation id="671481426037969117">انقضى وقت موقّت <ph name="FQDN" />، وسيبدأ عمله مرّةً أخرى غدًا.</translation>
 <translation id="6738867403308150051">جارٍ التنزيل…</translation>
-<translation id="6746124502594467657">الانتقال إلى أسفل</translation>
+<translation id="6746124502594467657">الانتقال إلى الأسفل</translation>
 <translation id="6766622839693428701">يمكنك التمرير السريع للأسفل للإغلاق.</translation>
 <translation id="6766758767654711248">انقر للانتقال إلى موقع الويب</translation>
 <translation id="6767294960381293877">قائمة الأجهزة التي يمكن مشاركة علامة تبويب معها، مفتوحة على طول النصف السفلي من الشاشة.</translation>
@@ -1036,7 +1036,7 @@
 <translation id="857943718398505171">مسموح بها (موصى بها)</translation>
 <translation id="8583805026567836021">محو بيانات الحساب</translation>
 <translation id="860043288473659153">اسم حامل البطاقة</translation>
-<translation id="8609465669617005112">التحريك إلى أعلى</translation>
+<translation id="8609465669617005112">الانتقال إلى الأعلى</translation>
 <translation id="8616006591992756292">‏قد يتضمّن حسابك على Google نماذج أخرى من سجلّ التصفّح في <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">‏هل تريد فتح عنوان URL المقترح والمحدد في المحتوى الذي تم تنزيله؟</translation>
 <translation id="8636825310635137004">للحصول على علامات التبويب من أجهزتك الأخرى، شغِّل المزامنة.</translation>

@@ -29,8 +29,7 @@
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
-#include "components/viz/service/display/overlay_candidate_validator.h"
-#include "components/viz/service/display/overlay_processor.h"
+#include "components/viz/service/display/overlay_processor_mac.h"
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_gles2_interface.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
@@ -49,13 +48,6 @@ namespace {
 const gfx::Rect kOverlayRect(0, 0, 256, 256);
 const gfx::PointF kUVTopLeft(0.1f, 0.2f);
 const gfx::PointF kUVBottomRight(1.0f, 1.0f);
-
-class CALayerValidator : public OverlayCandidateValidator {
- public:
-  bool AllowCALayerOverlays() const override { return true; }
-  bool AllowDCLayerOverlays() const override { return false; }
-  bool NeedsSurfaceOccludingDamageRect() const override { return false; }
-};
 
 class OverlayOutputSurface : public OutputSurface {
  public:
@@ -100,10 +92,11 @@ class OverlayOutputSurface : public OutputSurface {
   unsigned bind_framebuffer_count_ = 0;
 };
 
-class CATestOverlayProcessor : public OverlayProcessor {
+class CATestOverlayProcessor : public OverlayProcessorMac {
  public:
   CATestOverlayProcessor()
-      : OverlayProcessor(std::make_unique<CALayerValidator>()) {}
+      : OverlayProcessorMac(true /* could_overlay */,
+                            true /* enable_ca_overlay */) {}
 };
 
 std::unique_ptr<RenderPass> CreateRenderPass() {

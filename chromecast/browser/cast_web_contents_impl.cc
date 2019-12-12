@@ -739,7 +739,8 @@ void CastWebContentsImpl::ResourceLoadComplete(
       metrics::CastMetricsHelper::GetInstance();
   metrics_helper->RecordApplicationEventWithValue(
       "Cast.Platform.ResourceRequestError", net_error);
-  LOG(ERROR) << "Resource \"" << resource_load_info.url << "\" failed to load "
+  LOG(ERROR) << "Resource \"" << resource_load_info.original_url << "\""
+             << " failed to load "
              << " with net_error=" << net_error
              << ", description=" << net::ErrorToShortString(net_error);
   shell::CastBrowserProcess::GetInstance()->connectivity_checker()->Check();

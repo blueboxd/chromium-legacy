@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.share.qrcode.QrCodeShareActivity;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
@@ -38,27 +39,34 @@ import java.util.List;
  * Implementation of share interface. Mostly a wrapper around ShareSheetCoordinator.
  */
 public class ShareDelegateImpl implements ShareDelegate {
-    private BottomSheetController mBottomSheetController;
-    private final ShareSheetDelegate mDelegate;
     static final String CANONICAL_URL_RESULT_HISTOGRAM = "Mobile.CanonicalURLResult";
+
+    private final BottomSheetController mBottomSheetController;
+    private final ShareSheetDelegate mDelegate;
+    private final ActivityTabProvider mActivityTabProvider;
+    private final TabCreatorManager.TabCreator mTabCreator;
+
     private static boolean sScreenshotCaptureSkippedForTesting;
-    private ActivityTabProvider mActivityTabProvider;
 
     /**
      * Construct a new {@link ShareDelegateImpl}.
      * @param controller The BottomSheetController for the current activity.
+     * @param tabProvider The ActivityTabProvider for the current visible tab.
+     * @param delegate The ShareSheetDelegate for the current activity.
+     * @param tabCreator The TabCreator for the current selected {@link TabModel}.
      */
     public ShareDelegateImpl(BottomSheetController controller, ActivityTabProvider tabProvider,
-            ShareSheetDelegate delegate) {
+            ShareSheetDelegate delegate, TabCreatorManager.TabCreator tabCreator) {
         mBottomSheetController = controller;
         mDelegate = delegate;
         mActivityTabProvider = tabProvider;
+        mTabCreator = tabCreator;
     }
 
     // ShareDelegate implementation.
     @Override
     public void share(ShareParams params) {
-        mDelegate.share(params, mBottomSheetController, mActivityTabProvider);
+        mDelegate.share(params, mBottomSheetController, mActivityTabProvider, mTabCreator);
     }
 
     // ShareDelegate implementation.
@@ -112,7 +120,7 @@ public class ShareDelegateImpl implements ShareDelegate {
 
         OfflinePageUtils.maybeShareOfflinePage(currentTab, (ShareParams p) -> {
             if (p != null) {
-                mDelegate.share(p, mBottomSheetController, mActivityTabProvider);
+                share(p);
             } else {
                 WindowAndroid window = currentTab.getWindowAndroid();
                 // Could not share as an offline page.
@@ -151,7 +159,7 @@ public class ShareDelegateImpl implements ShareDelegate {
                         .setShareDirectly(shareDirectly)
                         .setSaveLastUsed(!shareDirectly)
                         .setScreenshotUri(blockingUri);
-        mDelegate.share(builder.build(), mBottomSheetController, mActivityTabProvider);
+        share(builder.build());
         if (shareDirectly) {
             RecordUserAction.record("MobileMenuDirectShare");
         } else {
@@ -245,12 +253,12 @@ public class ShareDelegateImpl implements ShareDelegate {
          * Trigger the share action for the specified params.
          */
         void share(ShareParams params, BottomSheetController controller,
-                ActivityTabProvider tabProvider) {
+                ActivityTabProvider tabProvider, TabCreatorManager.TabCreator tabCreator) {
             if (params.shareDirectly()) {
                 ShareHelper.shareDirectly(params);
             } else if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB)) {
                 ShareSheetCoordinator coordinator =
-                        new ShareSheetCoordinator(controller, tabProvider);
+                        new ShareSheetCoordinator(controller, tabProvider, tabCreator);
                 // TODO(crbug/1009124): open custom share sheet.
                 coordinator.showShareSheet(params);
             } else if (ShareHelper.TargetChosenReceiver.isSupported()) {

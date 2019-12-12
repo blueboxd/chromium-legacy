@@ -26,11 +26,11 @@
            fontSize:(CGFloat)fontSize
        rightAligned:(BOOL)rightAligned {
   if ((self = [super init])) {
-    menu_.reset([[NSMenu alloc] initWithTitle:@""]);
-    [menu_ setAutoenablesItems:NO];
-    index_ = -1;
-    fontSize_ = fontSize;
-    rightAligned_ = rightAligned;
+    _menu.reset([[NSMenu alloc] initWithTitle:@""]);
+    [_menu setAutoenablesItems:NO];
+    _index = -1;
+    _fontSize = fontSize;
+    _rightAligned = rightAligned;
     for (size_t i = 0; i < items.size(); ++i)
       [self addItem:items[i]];
   }
@@ -39,12 +39,12 @@
 
 - (void)addItem:(const content::MenuItem&)item {
   if (item.type == content::MenuItem::SEPARATOR) {
-    [menu_ addItem:[NSMenuItem separatorItem]];
+    [_menu addItem:[NSMenuItem separatorItem]];
     return;
   }
 
   NSString* title = base::SysUTF16ToNSString(item.label);
-  NSMenuItem* menuItem = [menu_ addItemWithTitle:title
+  NSMenuItem* menuItem = [_menu addItemWithTitle:title
                                           action:@selector(menuItemSelected:)
                                    keyEquivalent:@""];
   if (!item.tool_tip.empty()) {
@@ -60,7 +60,7 @@
       [[NSMutableDictionary alloc] initWithCapacity:3]);
   base::scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
       [[NSMutableParagraphStyle alloc] init]);
-  [paragraphStyle setAlignment:rightAligned_ ? NSRightTextAlignment
+  [paragraphStyle setAlignment:_rightAligned ? NSRightTextAlignment
                                              : NSLeftTextAlignment];
   NSWritingDirection writingDirection =
       item.rtl ? NSWritingDirectionRightToLeft
@@ -77,7 +77,7 @@
     [attrs setObject:directionArray forKey:NSWritingDirectionAttributeName];
   }
 
-  [attrs setObject:[NSFont menuFontOfSize:fontSize_]
+  [attrs setObject:[NSFont menuFontOfSize:_fontSize]
             forKey:NSFontAttributeName];
 
   base::scoped_nsobject<NSAttributedString> attrTitle(
@@ -92,7 +92,7 @@
   NSCharacterSet* whitespaceSet = [NSCharacterSet whitespaceCharacterSet];
   [menuItem setTitle:[title stringByTrimmingCharactersInSet:whitespaceSet]];
 
-  [menuItem setTag:[menu_ numberOfItems] - 1];
+  [menuItem setTag:[_menu numberOfItems] - 1];
 }
 
 // Reflects the result of the user's interaction with the popup menu. If NO, the
@@ -100,11 +100,11 @@
 // user clicked outside the menu region or hit the escape key. If YES, the user
 // selected an item from the menu.
 - (BOOL)menuItemWasChosen {
-  return menuItemWasChosen_;
+  return _menuItemWasChosen;
 }
 
 - (void)menuItemSelected:(id)sender {
-  menuItemWasChosen_ = YES;
+  _menuItemWasChosen = YES;
 }
 
 - (void)runMenuInView:(NSView*)view
@@ -115,24 +115,24 @@
   // popup button, which is the expected Mac popup menu behavior.
   base::scoped_nsobject<NSPopUpButtonCell> cell(
       [[NSPopUpButtonCell alloc] initTextCell:@"" pullsDown:NO]);
-  [cell setMenu:menu_];
+  [cell setMenu:_menu];
   // We use selectItemWithTag below so if the index is out-of-bounds nothing
   // bad happens.
   [cell selectItemWithTag:index];
 
-  if (rightAligned_) {
+  if (_rightAligned) {
     [cell setUserInterfaceLayoutDirection:
               NSUserInterfaceLayoutDirectionRightToLeft];
     // setUserInterfaceLayoutDirection for NSMenu is supported on macOS 10.11+.
     SEL sel = @selector(setUserInterfaceLayoutDirection:);
-    if ([menu_ respondsToSelector:sel]) {
+    if ([_menu respondsToSelector:sel]) {
       NSUserInterfaceLayoutDirection direction =
           NSUserInterfaceLayoutDirectionRightToLeft;
       NSMethodSignature* signature =
           [NSMenu instanceMethodSignatureForSelector:sel];
       NSInvocation* invocation =
           [NSInvocation invocationWithMethodSignature:signature];
-      [invocation setTarget:menu_.get()];
+      [invocation setTarget:_menu.get()];
       [invocation setSelector:sel];
       [invocation setArgument:&direction atIndex:2];
       [invocation invoke];
@@ -160,15 +160,15 @@
   [dummyView removeFromSuperview];
 
   if ([self menuItemWasChosen])
-    index_ = [cell indexOfSelectedItem];
+    _index = [cell indexOfSelectedItem];
 }
 
 - (void)hide {
-  [menu_ cancelTracking];
+  [_menu cancelTracking];
 }
 
 - (int)indexOfSelectedItem {
-  return index_;
+  return _index;
 }
 
 @end  // WebMenuRunner

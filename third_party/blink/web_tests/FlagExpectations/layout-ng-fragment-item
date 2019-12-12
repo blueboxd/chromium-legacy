@@ -1525,8 +1525,6 @@ crbug.com/982194 fast/spatial-navigation/snav-first-rtl-fragment-offscreen.html 
 crbug.com/982194 fast/spatial-navigation/snav-search-focused-scroller-first.html [ Failure Pass ]
 crbug.com/982194 fragmentation/repeating-thead-under-repeating-thead.html [ Pass ]
 crbug.com/982194 http/tests/devtools/application-panel/storage-view-reports-quota.js [ Timeout ]
-crbug.com/982194 http/tests/devtools/audits/audits-limited-run.js [ Pass ]
-crbug.com/982194 http/tests/devtools/audits/audits-successful-run.js [ Pass ]
 crbug.com/982194 http/tests/devtools/elements/edit/edit-dom-actions-2.js [ Pass Timeout ]
 crbug.com/982194 http/tests/devtools/elements/highlight/highlight-dom-updates.js [ Pass Timeout ]
 crbug.com/982194 http/tests/devtools/elements/styles-4/styles-update-from-js.js [ Failure Timeout ]

@@ -22,7 +22,7 @@
 // tear-down process. Is responsible for deleting itself when done.
 @interface ContentShellWindowDelegate : NSObject<NSWindowDelegate> {
  @private
-  content::Shell* shell_;
+  content::Shell* _shell;
 }
 - (id)initWithShell:(content::Shell*)shell;
 @end
@@ -31,7 +31,7 @@
 
 - (id)initWithShell:(content::Shell*)shell {
   if ((self = [super init])) {
-    shell_ = shell;
+    _shell = shell;
   }
   return self;
 }
@@ -46,25 +46,25 @@
   // Don't leave a dangling pointer if the window lives beyond
   // this method. See crbug.com/719830.
   [window setDelegate:nil];
-  delete shell_;
+  delete _shell;
   [self release];
 
   return YES;
 }
 
 - (void)performAction:(id)sender {
-  shell_->ActionPerformed([sender tag]);
+  _shell->ActionPerformed([sender tag]);
 }
 
 - (void)takeURLStringValueFrom:(id)sender {
-  shell_->URLEntered(base::SysNSStringToUTF8([sender stringValue]));
+  _shell->URLEntered(base::SysNSStringToUTF8([sender stringValue]));
 }
 
 @end
 
 @interface CrShellWindow : UnderlayOpenGLHostingWindow {
  @private
-  content::Shell* shell_;
+  content::Shell* _shell;
 }
 - (void)setShell:(content::Shell*)shell;
 - (void)showDevTools:(id)sender;
@@ -73,11 +73,11 @@
 @implementation CrShellWindow
 
 - (void)setShell:(content::Shell*)shell {
-  shell_ = shell;
+  _shell = shell;
 }
 
 - (void)showDevTools:(id)sender {
-  shell_->ShowDevTools();
+  _shell->ShowDevTools();
 }
 
 @end

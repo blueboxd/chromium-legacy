@@ -28,7 +28,7 @@ using content::DropData;
 - (id)initWithViewsHostableView:(ui::ViewsHostableView*)v {
   self = [super initWithFrame:NSZeroRect];
   if (self != nil) {
-    viewsHostableView_ = v;
+    _viewsHostableView = v;
     [self registerDragTypes];
 
     [[NSNotificationCenter defaultCenter]
@@ -94,14 +94,14 @@ using content::DropData;
 }
 
 - (void)mouseEvent:(NSEvent*)theEvent {
-  if (!host_)
+  if (!_host)
     return;
-  host_->OnMouseEvent([theEvent type] == NSMouseMoved,
+  _host->OnMouseEvent([theEvent type] == NSMouseMoved,
                       [theEvent type] == NSMouseExited);
 }
 
 - (void)setMouseDownCanMoveWindow:(BOOL)canMove {
-  mouseDownCanMoveWindow_ = canMove;
+  _mouseDownCanMoveWindow = canMove;
 }
 
 - (BOOL)mouseDownCanMoveWindow {
@@ -111,35 +111,35 @@ using content::DropData;
   // its subviews do paint their entire frames. Returning NO here
   // saves us the effort of overriding this method in every possible
   // subview.
-  return mouseDownCanMoveWindow_;
+  return _mouseDownCanMoveWindow;
 }
 
 - (void)pasteboard:(NSPasteboard*)sender provideDataForType:(NSString*)type {
-  [dragSource_ lazyWriteToPasteboard:sender forType:type];
+  [_dragSource lazyWriteToPasteboard:sender forType:type];
 }
 
 - (void)startDragWithDropData:(const DropData&)dropData
             dragOperationMask:(NSDragOperation)operationMask
                         image:(NSImage*)image
                        offset:(NSPoint)offset {
-  if (!host_)
+  if (!_host)
     return;
-  dragSource_.reset([[WebDragSource alloc]
-           initWithHost:host_
+  _dragSource.reset([[WebDragSource alloc]
+           initWithHost:_host
                    view:self
                dropData:&dropData
                   image:image
                  offset:offset
              pasteboard:[NSPasteboard pasteboardWithName:NSDragPboard]
       dragOperationMask:operationMask]);
-  [dragSource_ startDrag];
+  [_dragSource startDrag];
 }
 
 // NSDraggingSource methods
 
 - (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal {
-  if (dragSource_)
-    return [dragSource_ draggingSourceOperationMaskForLocal:isLocal];
+  if (_dragSource)
+    return [_dragSource draggingSourceOperationMaskForLocal:isLocal];
   // No web drag source - this is the case for dragging a file from the
   // downloads manager. Default to copy operation. Note: It is desirable to
   // allow the user to either move or copy, but this requires additional
@@ -151,10 +151,10 @@ using content::DropData;
 - (void)draggedImage:(NSImage*)anImage
              endedAt:(NSPoint)screenPoint
            operation:(NSDragOperation)operation {
-  [dragSource_ endDragAt:screenPoint operation:operation];
+  [_dragSource endDragAt:screenPoint operation:operation];
 
   // Might as well throw out this object now.
-  dragSource_.reset();
+  _dragSource.reset();
 }
 
 // Called when a drag initiated in our view moves.
@@ -166,7 +166,7 @@ using content::DropData;
   if (![dropDest isFileURL])
     return nil;
 
-  NSString* fileName = [dragSource_ dragPromisedFileTo:[dropDest path]];
+  NSString* fileName = [_dragSource dragPromisedFileTo:[dropDest path]];
   if (!fileName)
     return nil;
 
@@ -176,60 +176,60 @@ using content::DropData;
 // NSDraggingDestination methods
 
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
-  if (!host_)
+  if (!_host)
     return NSDragOperationNone;
 
   // Fill out a DropData from pasteboard.
   DropData dropData;
   content::PopulateDropDataFromPasteboard(&dropData,
                                           [sender draggingPasteboard]);
-  host_->SetDropData(dropData);
+  _host->SetDropData(dropData);
 
   auto draggingInfo = DraggingInfo::New();
   [self populateDraggingInfo:draggingInfo.get() fromNSDraggingInfo:sender];
   uint32_t result = 0;
-  host_->DraggingEntered(std::move(draggingInfo), &result);
+  _host->DraggingEntered(std::move(draggingInfo), &result);
   return result;
 }
 
 - (void)draggingExited:(id<NSDraggingInfo>)sender {
-  if (!host_)
+  if (!_host)
     return;
-  host_->DraggingExited();
+  _host->DraggingExited();
 }
 
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender {
-  if (!host_)
+  if (!_host)
     return NSDragOperationNone;
   auto draggingInfo = DraggingInfo::New();
   [self populateDraggingInfo:draggingInfo.get() fromNSDraggingInfo:sender];
   uint32_t result = 0;
-  host_->DraggingUpdated(std::move(draggingInfo), &result);
+  _host->DraggingUpdated(std::move(draggingInfo), &result);
   return result;
 }
 
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
-  if (!host_)
+  if (!_host)
     return NO;
   auto draggingInfo = DraggingInfo::New();
   [self populateDraggingInfo:draggingInfo.get() fromNSDraggingInfo:sender];
   bool result = false;
-  host_->PerformDragOperation(std::move(draggingInfo), &result);
+  _host->PerformDragOperation(std::move(draggingInfo), &result);
   return result;
 }
 
 - (void)clearViewsHostableView {
-  viewsHostableView_ = nullptr;
+  _viewsHostableView = nullptr;
 }
 
 - (void)setHost:(remote_cocoa::mojom::WebContentsNSViewHost*)host {
   if (!host)
-    [dragSource_ clearHostAndWebContentsView];
-  host_ = host;
+    [_dragSource clearHostAndWebContentsView];
+  _host = host;
 }
 
 - (void)viewDidBecomeFirstResponder:(NSNotification*)notification {
-  if (!host_)
+  if (!_host)
     return;
 
   NSView* view = [notification object];
@@ -254,11 +254,11 @@ using content::DropData;
     default:
       return;
   }
-  host_->OnBecameFirstResponder(direction);
+  _host->OnBecameFirstResponder(direction);
 }
 
 - (void)updateWebContentsVisibility {
-  if (!host_)
+  if (!_host)
     return;
   Visibility visibility = Visibility::kVisible;
   if ([self isHiddenOrHasHiddenAncestor] || ![self window])
@@ -267,7 +267,7 @@ using content::DropData;
 //    visibility = Visibility::kVisible;
   else
     visibility = Visibility::kVisible;
-  host_->OnWindowVisibilityChanged(visibility);
+  _host->OnWindowVisibilityChanged(visibility);
 }
 
 - (void)resizeSubviewsWithOldSize:(NSSize)oldBoundsSize {
@@ -323,7 +323,7 @@ using content::DropData;
 
 // ViewsHostable protocol implementation.
 - (ui::ViewsHostableView*)viewsHostableView {
-  return viewsHostableView_;
+  return _viewsHostableView;
 }
 
 @end

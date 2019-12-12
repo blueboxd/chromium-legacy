@@ -21,15 +21,15 @@
 @end
 
 @implementation TextInputFlagChangeWaiter {
-  RenderWidgetHostViewCocoa* rwhv_cocoa_;
-  std::unique_ptr<base::RunLoop> run_loop_;
+  RenderWidgetHostViewCocoa* _rwhv_cocoa;
+  std::unique_ptr<base::RunLoop> _run_loop;
 }
 
 - (instancetype)initWithRenderWidgetHostViewCocoa:
     (RenderWidgetHostViewCocoa*)rwhv_cocoa {
   if ((self = [super init])) {
-    rwhv_cocoa_ = rwhv_cocoa;
-    [rwhv_cocoa_ addObserver:self
+    _rwhv_cocoa = rwhv_cocoa;
+    [_rwhv_cocoa addObserver:self
                   forKeyPath:@"textInputFlags"
                      options:NSKeyValueObservingOptionNew
                      context:nullptr];
@@ -39,18 +39,18 @@
 }
 
 - (void)dealloc {
-  [rwhv_cocoa_ removeObserver:self forKeyPath:@"textInputFlags"];
+  [_rwhv_cocoa removeObserver:self forKeyPath:@"textInputFlags"];
   [super dealloc];
 }
 
 - (void)reset {
-  run_loop_ = std::make_unique<base::RunLoop>();
+  _run_loop = std::make_unique<base::RunLoop>();
 }
 
 - (void)waitWithTimeout:(NSTimeInterval)timeout {
   base::RunLoop::ScopedRunTimeoutForTest run_timeout(
-      base::TimeDelta::FromSecondsD(timeout), run_loop_->QuitClosure());
-  run_loop_->Run();
+      base::TimeDelta::FromSecondsD(timeout), _run_loop->QuitClosure());
+  _run_loop->Run();
 
   [self reset];
 }
@@ -59,7 +59,7 @@
                       ofObject:(id)object
                         change:(NSDictionary<NSKeyValueChangeKey, id>*)change
                        context:(void*)context {
-  run_loop_->Quit();
+  _run_loop->Quit();
 }
 @end
 

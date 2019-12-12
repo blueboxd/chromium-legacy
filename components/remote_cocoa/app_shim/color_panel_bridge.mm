@@ -20,7 +20,7 @@ remote_cocoa::ColorPanelBridge* g_current_panel_bridge = nullptr;
  @protected
   // We don't call DidChooseColor if the change wasn't caused by the user
   // interacting with the panel.
-  BOOL nonUserChange_;
+  BOOL _nonUserChange;
 }
 // Called from NSNotificationCenter.
 - (void)windowWillClose:(NSNotification*)notification;
@@ -60,15 +60,15 @@ remote_cocoa::ColorPanelBridge* g_current_panel_bridge = nullptr;
 - (void)windowWillClose:(NSNotification*)notification {
   if (g_current_panel_bridge)
     g_current_panel_bridge->host()->DidCloseColorPanel();
-  nonUserChange_ = NO;
+  _nonUserChange = NO;
 }
 
 - (void)didChooseColor:(NSColorPanel*)panel {
-  if (nonUserChange_) {
-    nonUserChange_ = NO;
+  if (_nonUserChange) {
+    _nonUserChange = NO;
     return;
   }
-  nonUserChange_ = NO;
+  _nonUserChange = NO;
   NSColor* color = [panel color];
   if ([[color colorSpaceName] isEqualToString:NSNamedColorSpace]) {
     color = [color colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
@@ -109,7 +109,7 @@ remote_cocoa::ColorPanelBridge* g_current_panel_bridge = nullptr;
 }
 
 - (void)setColor:(NSColor*)color {
-  nonUserChange_ = YES;
+  _nonUserChange = YES;
   [[NSColorPanel sharedColorPanel] setColor:color];
 }
 @end

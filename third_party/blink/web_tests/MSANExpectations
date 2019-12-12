@@ -88,8 +88,6 @@ crbug.com/902685 [ Linux ] virtual/split-http-cache-not-site-per-process/http/te
 crbug.com/902685 [ Linux ] virtual/split-http-cache-not-site-per-process/http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Pass Timeout ]
 
 # Timing out consistenly on WebKit Linux Trusty MSAN
-crbug.com/798957 [ Linux ] http/tests/devtools/audits/audits-limited-run.js [ Skip ]
-crbug.com/798957 [ Linux ] http/tests/devtools/audits/audits-successful-run.js [ Skip ]
 crbug.com/824455 [ Linux ] external/wpt/webaudio/idlharness.https.html [ Skip ]
 
 # Memory allocation hooks are disabled on ASAN/MSAN

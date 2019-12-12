@@ -13,6 +13,11 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/service/gpu_init.h"
+#include "media/gpu/buildflags.h"
+
+#if BUILDFLAG(USE_VAAPI)
+#include "media/gpu/vaapi/vaapi_wrapper.h"
+#endif
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -50,6 +55,10 @@ void InProcessGpuThread::Init() {
   auto gpu_init = std::make_unique<gpu::GpuInit>();
   gpu_init->InitializeInProcess(base::CommandLine::ForCurrentProcess(),
                                 gpu_preferences_);
+
+#if BUILDFLAG(USE_VAAPI)
+  media::VaapiWrapper::PreSandboxInitialization();
+#endif
 
   GetContentClient()->SetGpuInfo(gpu_init->gpu_info());
 

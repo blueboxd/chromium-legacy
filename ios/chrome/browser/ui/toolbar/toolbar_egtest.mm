@@ -328,26 +328,31 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::NewTabPageOmnibox()]
       performAction:grey_typeText(@"a")];
-  [[EarlGrey selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(@"a"),
-                                                 grey_kindOfClassName(
-                                                     @"OmniboxPopupRow"),
-                                                 nil)]
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_descendant(
+                                       grey_accessibilityLabel(@"a")),
+                                   grey_kindOfClassName(@"OmniboxPopupRowCell"),
+                                   nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText(@"b")];
-  [[EarlGrey selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(@"ab"),
-                                                 grey_kindOfClassName(
-                                                     @"OmniboxPopupRow"),
-                                                 nil)]
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_descendant(
+                                       grey_accessibilityLabel(@"ab")),
+                                   grey_kindOfClassName(@"OmniboxPopupRowCell"),
+                                   nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText(@"C")];
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityLabel(@"abC"),
-                                   grey_kindOfClassName(@"OmniboxPopupRow"),
+                                   grey_descendant(
+                                       grey_accessibilityLabel(@"abC")),
+                                   grey_kindOfClassName(@"OmniboxPopupRowCell"),
                                    nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
@@ -355,8 +360,9 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
       performAction:grey_typeText(@"1")];
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityLabel(@"abC1"),
-                                   grey_kindOfClassName(@"OmniboxPopupRow"),
+                                   grey_descendant(
+                                       grey_accessibilityLabel(@"abC1")),
+                                   grey_kindOfClassName(@"OmniboxPopupRowCell"),
                                    nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
@@ -364,8 +370,9 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
       performAction:grey_typeText(@"2")];
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityLabel(@"abC12"),
-                                   grey_kindOfClassName(@"OmniboxPopupRow"),
+                                   grey_descendant(
+                                       grey_accessibilityLabel(@"abC12")),
+                                   grey_kindOfClassName(@"OmniboxPopupRowCell"),
                                    nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
@@ -373,8 +380,9 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
       performAction:grey_typeText(@"@")];
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityLabel(@"abC12@"),
-                                   grey_kindOfClassName(@"OmniboxPopupRow"),
+                                   grey_descendant(
+                                       grey_accessibilityLabel(@"abC12@")),
+                                   grey_kindOfClassName(@"OmniboxPopupRowCell"),
                                    nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
@@ -382,8 +390,9 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
       performAction:grey_typeText(@"{")];
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityLabel(@"abC12@{"),
-                                   grey_kindOfClassName(@"OmniboxPopupRow"),
+                                   grey_descendant(
+                                       grey_accessibilityLabel(@"abC12@{")),
+                                   grey_kindOfClassName(@"OmniboxPopupRowCell"),
                                    nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
@@ -391,8 +400,9 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
       performAction:grey_typeText(@"#")];
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityLabel(@"abC12@{#"),
-                                   grey_kindOfClassName(@"OmniboxPopupRow"),
+                                   grey_descendant(
+                                       grey_accessibilityLabel(@"abC12@{#")),
+                                   grey_kindOfClassName(@"OmniboxPopupRowCell"),
                                    nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
@@ -432,12 +442,8 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
       performAction:grey_tap()];
 
   // Verify that the omnibox contains "/.com"
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityLabel(@"/.com"),
-                                   grey_kindOfClassName(@"OmniboxPopupRow"),
-                                   nil)]
-      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText("/.com")]
+      assertWithMatcher:grey_notNil()];
 }
 
 @end

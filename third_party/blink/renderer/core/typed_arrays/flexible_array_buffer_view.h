@@ -19,7 +19,7 @@ class CORE_EXPORT FlexibleArrayBufferView {
   FlexibleArrayBufferView() : small_data_(nullptr), small_length_(0) {}
 
   void SetFull(DOMArrayBufferView* full) { full_ = full; }
-  void SetSmall(void* data, uint32_t length) {
+  void SetSmall(void* data, size_t length) {
     small_data_ = data;
     small_length_ = length;
   }
@@ -51,9 +51,15 @@ class CORE_EXPORT FlexibleArrayBufferView {
     return IsFull() ? full_->deprecatedByteOffsetAsUnsigned() : 0;
   }
 
-  unsigned ByteLength() const {
+  size_t ByteLengthAsSizeT() const {
     DCHECK(!IsEmpty());
-    return IsFull() ? full_->deprecatedByteLengthAsUnsigned() : small_length_;
+    return IsFull() ? full_->byteLengthAsSizeT() : small_length_;
+  }
+
+  unsigned DeprecatedByteLengthAsUnsigned() const {
+    DCHECK(!IsEmpty());
+    return IsFull() ? base::checked_cast<unsigned>(full_->byteLengthAsSizeT())
+                    : base::checked_cast<unsigned>(small_length_);
   }
 
   operator bool() const { return !IsEmpty(); }
@@ -62,7 +68,7 @@ class CORE_EXPORT FlexibleArrayBufferView {
   Member<DOMArrayBufferView> full_;
 
   void* small_data_;
-  uint32_t small_length_;
+  size_t small_length_;
   DISALLOW_COPY_AND_ASSIGN(FlexibleArrayBufferView);
 };
 

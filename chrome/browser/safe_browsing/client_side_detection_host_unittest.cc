@@ -481,7 +481,7 @@ class ClientSideDetectionHostTestBase : public ChromeRenderViewHostTestHarness {
     ASSERT_EQ(expect.size(), result.size());
 
     for (unsigned int i = 0; i < expect.size(); ++i) {
-      EXPECT_EQ(expect[i].url, result[i].url);
+      EXPECT_EQ(expect[i].origin_of_final_url, result[i].origin_of_final_url);
       EXPECT_EQ(expect[i].method, result[i].method);
       EXPECT_EQ(expect[i].referrer, result[i].referrer);
       EXPECT_EQ(expect[i].resource_type, result[i].resource_type);
@@ -1312,7 +1312,9 @@ TEST_F(ClientSideDetectionHostTest, TestPreClassificationWhitelistedByPolicy) {
 TEST_F(ClientSideDetectionHostTest,
        SubresourceResponseStartedSkipsMissingIPAddress) {
   auto resource_load_info = content::mojom::ResourceLoadInfo::New();
-  resource_load_info->url = GURL("http://host1.com");
+  resource_load_info->original_url = GURL("http://host1.com");
+  resource_load_info->origin_of_final_url =
+      url::Origin::Create(resource_load_info->original_url);
   resource_load_info->referrer = GURL("http://host2.com");
   resource_load_info->method = "GET";
   resource_load_info->resource_type = content::ResourceType::kSubFrame;

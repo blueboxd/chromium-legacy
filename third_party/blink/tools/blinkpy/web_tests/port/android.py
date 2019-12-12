@@ -663,7 +663,7 @@ class ChromiumAndroidDriver(driver.Driver):
             symfs_path = self._find_or_create_symfs()
             kallsyms_path = self._update_kallsyms_cache(symfs_path)
             # FIXME: We should pass this some sort of "Bridge" object abstraction around ADB instead of a path/device pair.
-            self._profiler = AndroidPerf(self._port.host, self._port._path_to_driver(), self._port.results_directory(),
+            self._profiler = AndroidPerf(self._port.host, self._port._path_to_driver(), self._port.artifacts_directory(),
                                          self._device, symfs_path, kallsyms_path)
             # FIXME: This is a layering violation and should be moved to Port.check_sys_deps
             # once we have an abstraction around an adb_path/device_serial pair to make it
@@ -701,7 +701,7 @@ class ChromiumAndroidDriver(driver.Driver):
         if 'ANDROID_SYMFS' in env:
             symfs_path = env['ANDROID_SYMFS']
         else:
-            symfs_path = fs.join(self._port.results_directory(), 'symfs')
+            symfs_path = fs.join(self._port.artifacts_directory(), 'symfs')
             _log.debug('ANDROID_SYMFS not set, using %s', symfs_path)
 
         # find the installed path, and the path of the symboled built library

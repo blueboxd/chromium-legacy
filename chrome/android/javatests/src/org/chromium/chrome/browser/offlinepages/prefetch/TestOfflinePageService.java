@@ -4,9 +4,7 @@
 
 package org.chromium.chrome.browser.offlinepages.prefetch;
 
-import android.content.Context;
 import android.os.Bundle;
-import android.support.test.InstrumentationRegistry;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -275,16 +273,12 @@ public class TestOfflinePageService {
         final String senderId =
                 FakeInstanceIDWithSubtype.getAuthorizedEntityForSubtype(prefetchSubtype);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Context context = InstrumentationRegistry.getInstrumentation()
-                                      .getTargetContext()
-                                      .getApplicationContext();
-
             Bundle extras = new Bundle();
             extras.putString("pageBundle", operationName);
             extras.putString("subtype", prefetchSubtype); // is this necessary?
 
             GCMMessage message = new GCMMessage(senderId, extras);
-            ChromeBrowserInitializer.getInstance(context).handleSynchronousStartup();
+            ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
             GCMDriver.dispatchMessage(message);
         });
         return operationName;

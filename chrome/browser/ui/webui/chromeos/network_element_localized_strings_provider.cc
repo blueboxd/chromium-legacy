@@ -69,6 +69,13 @@ constexpr webui::LocalizedString kElementLocalizedStrings[] = {
     {"networkListItemNotConnected", IDS_NETWORK_LIST_NOT_CONNECTED},
     {"networkListItemNoNetwork", IDS_NETWORK_LIST_NO_NETWORK},
     {"vpnNameTemplate", IDS_NETWORK_LIST_THIRD_PARTY_VPN_NAME_TEMPLATE},
+    {"networkIconLabelEthernet", IDS_NETWORK_ICON_LABEL_ETHERNET},
+    {"networkIconLabelVpn", IDS_NETWORK_ICON_LABEL_VPN},
+    {"networkIconLabelOff", IDS_NETWORK_ICON_LABEL_NETWORK_OFF},
+    {"networkIconLabelNoNetwork", IDS_NETWORK_ICON_LABEL_NO_NETWORK},
+    {"networkIconLabelConnecting", IDS_NETWORK_ICON_LABEL_CONNECTING},
+    {"networkIconLabelNotConnected", IDS_NETWORK_ICON_LABEL_NOT_CONNECTED},
+    {"networkIconLabelSignalStrength", IDS_NETWORK_ICON_LABEL_SIGNAL_STRENGTH},
 };
 
 }  //  namespace

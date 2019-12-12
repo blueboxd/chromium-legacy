@@ -25,7 +25,6 @@
 
 #include "third_party/blink/renderer/core/dom/class_collection.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
-#include "third_party/blink/renderer/core/dom/node_child_removal_tracker.h"
 #include "third_party/blink/renderer/core/dom/node_rare_data.h"
 #include "third_party/blink/renderer/core/html/document_all_name_collection.h"
 #include "third_party/blink/renderer/core/html/document_name_collection.h"
@@ -201,12 +200,7 @@ unsigned HTMLCollection::length() const {
 }
 
 Element* HTMLCollection::item(unsigned offset) const {
-  Element* element = collection_items_cache_.NodeAt(*this, offset);
-  if (element && element->GetDocument().InDOMNodeRemovedHandler()) {
-    if (NodeChildRemovalTracker::IsBeingRemoved(*element))
-      GetDocument().CountDetachingNodeAccessInDOMNodeRemovedHandler();
-  }
-  return element;
+  return collection_items_cache_.NodeAt(*this, offset);
 }
 
 static inline bool IsMatchingHTMLElement(const HTMLCollection& html_collection,

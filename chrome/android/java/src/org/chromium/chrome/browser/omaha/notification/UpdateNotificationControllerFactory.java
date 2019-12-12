@@ -17,7 +17,7 @@ public class UpdateNotificationControllerFactory {
     public static UpdateNotificationController create(ChromeActivity activity) {
         if (ChromeFeatureList.isEnabled(
                     ChromeFeatureList.UPDATE_NOTIFICATION_SCHEDULING_INTEGRATION)) {
-            return new UpdateNotificationScheduleCoordinator(activity);
+            return new UpdateNotificationServiceBridge(activity);
         }
         return new UpdateNotificationControllerImpl(activity);
     }

@@ -587,9 +587,13 @@ TEST_P(SharedImageBackingFactoryD3DTest, Dawn_SkiaGL) {
     auto dawn_representation =
         shared_image_representation_factory_->ProduceDawn(mailbox,
                                                           device.Get());
+    ASSERT_TRUE(dawn_representation);
 
-    wgpu::Texture texture = wgpu::Texture::Acquire(
-        dawn_representation->BeginAccess(WGPUTextureUsage_OutputAttachment));
+    auto scoped_access = dawn_representation->BeginScopedAccess(
+        WGPUTextureUsage_OutputAttachment);
+    ASSERT_TRUE(scoped_access);
+
+    wgpu::Texture texture = wgpu::Texture::Acquire(scoped_access->texture());
 
     wgpu::RenderPassColorAttachmentDescriptor color_desc;
     color_desc.attachment = texture.CreateView();
@@ -610,8 +614,6 @@ TEST_P(SharedImageBackingFactoryD3DTest, Dawn_SkiaGL) {
 
     wgpu::Queue queue = device.CreateQueue();
     queue.Submit(1, &commands);
-
-    dawn_representation->EndAccess();
   }
 
   CheckSkiaPixels(mailbox, size);

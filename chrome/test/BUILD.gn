@@ -1233,6 +1233,7 @@ if (!is_android) {
       "../browser/ui/autofill/payments/card_unmask_prompt_view_browsertest.cc",
       "../browser/ui/autofill/payments/card_unmask_prompt_view_tester.h",
       "../browser/ui/autofill/payments/save_card_bubble_controller_impl_browsertest.cc",
+      "../browser/ui/autofill/payments/save_upi_bubble_controller_impl_browsertest.cc",
       "../browser/ui/bookmarks/bookmark_browsertest.cc",
       "../browser/ui/browser_browsertest.cc",
       "../browser/ui/browser_command_controller_browsertest.cc",
@@ -2743,7 +2744,10 @@ if (!is_android) {
     }
 
     if (enable_webui_tab_strip) {
-      sources += [ "../browser/ui/webui/tab_strip/tab_strip_ui_browsertest.cc" ]
+      sources += [
+        "../browser/ui/webui/tab_strip/chrome_content_browser_client_tab_strip_part_browsertest.cc",
+        "../browser/ui/webui/tab_strip/tab_strip_ui_browsertest.cc",
+      ]
     }
 
     if (enable_spellcheck) {

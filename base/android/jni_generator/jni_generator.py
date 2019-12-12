@@ -1565,7 +1565,9 @@ See SampleForTests.java for more details.
       'for 64-bit, use long.')
   parser.add_argument('--cpp', default='cpp', help='The path to cpp command.')
   parser.add_argument(
-      '--javap', default='javap', help='The path to javap command.')
+      '--javap',
+      default=build_utils.JAVAP_PATH,
+      help='The path to javap command.')
   parser.add_argument(
       '--enable_profiling',
       action='store_true',

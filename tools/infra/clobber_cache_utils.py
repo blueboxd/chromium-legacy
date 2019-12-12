@@ -80,7 +80,12 @@ def add_common_args(argument_parser):
   argument_parser.add_argument('-n', '--dry-run', action='store_true')
 
 
-def clobber_caches(swarming_server, pool, cache, mount_rel_path, dry_run):
+def clobber_caches(swarming_server,
+                   pool,
+                   cache,
+                   mount_rel_path,
+                   dry_run,
+                   bot_id=None):
   """Clobber caches on bots.
 
   The set of bots in `pool` in `swarming_server` with a cache named `cache` will
@@ -98,8 +103,12 @@ def clobber_caches(swarming_server, pool, cache, mount_rel_path, dry_run):
     * dry_run - Whether a dry-run should be performed where the commands that
       would be executed to trigger the clobber task are printed rather than
       actually triggering the clobber task.
+    * bot_id - optional, the id of the bot that you wish to clobber.
   """
-  bots = _get_bots(swarming_server, pool, cache)
+  if bot_id:
+    bots = [bot_id]
+  else:
+    bots = _get_bots(swarming_server, pool, cache)
 
   print('The following bots will be clobbered:')
   print()

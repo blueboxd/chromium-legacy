@@ -491,7 +491,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         results = json.loads(
             host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
         test_results = results['tests']['passes']['error.html']
-        self.assertEqual(test_results['artifacts']['stderr'], ['passes/error-stderr.txt'])
+        self.assertEqual(test_results['artifacts']['stderr'], ['layout-test-results/passes/error-stderr.txt'])
 
     def test_crash_log_is_saved(self):
         host = MockHost()
@@ -508,8 +508,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
         test_results = results['tests']['failures']['unexpected']['crash.html']
         self.assertEqual(test_results['artifacts']['crash_log'], [
-            'failures/unexpected/crash-crash-log.txt',
-            'retry_1/failures/unexpected/crash-crash-log.txt'])
+            'layout-test-results/failures/unexpected/crash-crash-log.txt',
+            'layout-test-results/retry_1/failures/unexpected/crash-crash-log.txt'])
 
     def test_crash_log_is_saved_after_delay(self):
         host = MockHost()
@@ -527,8 +527,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
         test_results = results['tests']['failures']['unexpected']['crash-with-delayed-log.html']
         self.assertEqual(test_results['artifacts']['crash_log'], [
-            'failures/unexpected/crash-with-delayed-log-crash-log.txt',
-            'retry_1/failures/unexpected/crash-with-delayed-log-crash-log.txt'])
+            'layout-test-results/failures/unexpected/crash-with-delayed-log-crash-log.txt',
+            'layout-test-results/retry_1/failures/unexpected/crash-with-delayed-log-crash-log.txt'])
 
     def test_reftest_mismatch_with_text_mismatch_only_writes_stderr_once(self):
         # test that there is no exception when two failure types, FailureTextMismatch and
@@ -570,8 +570,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
         test_results = results['tests']['failures']['unexpected']['crash-with-sample.html']
         self.assertEqual(test_results['artifacts']['sample_file'], [
-            'failures/unexpected/crash-with-sample-sample.txt',
-            'retry_1/failures/unexpected/crash-with-sample-sample.txt'])
+            'layout-test-results/failures/unexpected/crash-with-sample-sample.txt',
+            'layout-test-results/retry_1/failures/unexpected/crash-with-sample-sample.txt'])
 
     @unittest.skip('Need to make subprocesses use mock filesystem')
     def test_crash_sample_file_is_saved_multiple_jobs(self):
@@ -586,8 +586,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
         test_results = results['tests']['failures']['unexpected']['crash-with-sample.html']
         self.assertEqual(test_results['artifacts']['sample_file'], [
-            'failures/unexpected/crash-with-sample-sample.txt',
-            'retry_1/failures/unexpected/crash-with-sample-sample.txt'])
+            'layout-test-results/failures/unexpected/crash-with-sample-sample.txt',
+            'layout-test-results/retry_1/failures/unexpected/crash-with-sample-sample.txt'])
 
     def test_reftest_crash_log_is_saved(self):
         host = MockHost()
@@ -606,8 +606,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
         test_results = results['tests']['failures']['unexpected']['crash-reftest.html']
         self.assertEqual(test_results['artifacts']['crash_log'], [
-            'failures/unexpected/crash-reftest-crash-log.txt',
-            'retry_1/failures/unexpected/crash-reftest-crash-log.txt'])
+            'layout-test-results/failures/unexpected/crash-reftest-crash-log.txt',
+            'layout-test-results/retry_1/failures/unexpected/crash-reftest-crash-log.txt'])
 
     def test_test_list(self):
         host = MockHost()
@@ -886,7 +886,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         with host.filesystem.mkdtemp() as tmpdir:
             _, _, user = logging_run(['--results-directory=' + str(tmpdir), '--order', 'natural'],
                                      tests_included=True, host=host)
-            self.assertEqual(user.opened_urls, [abspath_to_uri(host.platform, host.filesystem.join(tmpdir, 'results.html'))])
+            self.assertEqual(user.opened_urls, [abspath_to_uri(host.platform, host.filesystem.join(
+                tmpdir, 'layout-test-results', 'results.html'))])
 
     def test_results_directory_default(self):
         # We run a configuration that should fail, to generate output, then
@@ -903,7 +904,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         host.filesystem.maybe_make_directory('/tmp/cwd')
         host.filesystem.chdir('/tmp/cwd')
         _, _, user = logging_run(['--results-directory=foo'], tests_included=True, host=host)
-        self.assertEqual(user.opened_urls, [abspath_to_uri(host.platform, '/tmp/cwd/foo/results.html')])
+        self.assertEqual(user.opened_urls, [abspath_to_uri(host.platform, '/tmp/cwd/foo/layout-test-results/results.html')])
 
     def test_retrying_default_value(self):
         # Do not retry when the test list is explicit.
@@ -970,8 +971,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
         test_results = results['tests']['failures']['unexpected']['leak.html']
         self.assertEqual(test_results['artifacts']['leak_log'], [
-            'failures/unexpected/leak-leak-log.txt',
-            'retry_1/failures/unexpected/leak-leak-log.txt'])
+            'layout-test-results/failures/unexpected/leak-leak-log.txt',
+            'layout-test-results/retry_1/failures/unexpected/leak-leak-log.txt'])
 
     def test_unexpected_text_mismatch(self):
         host = MockHost()
@@ -983,20 +984,20 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
         test_results = results['tests']['failures']['unexpected']['text-mismatch-overlay.html']
         self.assertEqual(test_results['artifacts']['actual_text'], [
-            'failures/unexpected/text-mismatch-overlay-actual.txt',
-            'retry_1/failures/unexpected/text-mismatch-overlay-actual.txt'])
+            'layout-test-results/failures/unexpected/text-mismatch-overlay-actual.txt',
+            'layout-test-results/retry_1/failures/unexpected/text-mismatch-overlay-actual.txt'])
         self.assertEqual(test_results['artifacts']['expected_text'], [
-            'failures/unexpected/text-mismatch-overlay-expected.txt',
-            'retry_1/failures/unexpected/text-mismatch-overlay-expected.txt'])
+            'layout-test-results/failures/unexpected/text-mismatch-overlay-expected.txt',
+            'layout-test-results/retry_1/failures/unexpected/text-mismatch-overlay-expected.txt'])
         self.assertEqual(test_results['artifacts']['text_diff'], [
-            'failures/unexpected/text-mismatch-overlay-diff.txt',
-            'retry_1/failures/unexpected/text-mismatch-overlay-diff.txt'])
+            'layout-test-results/failures/unexpected/text-mismatch-overlay-diff.txt',
+            'layout-test-results/retry_1/failures/unexpected/text-mismatch-overlay-diff.txt'])
         self.assertEqual(test_results['artifacts']['pretty_text_diff'], [
-            'failures/unexpected/text-mismatch-overlay-pretty-diff.html',
-            'retry_1/failures/unexpected/text-mismatch-overlay-pretty-diff.html'])
+            'layout-test-results/failures/unexpected/text-mismatch-overlay-pretty-diff.html',
+            'layout-test-results/retry_1/failures/unexpected/text-mismatch-overlay-pretty-diff.html'])
         self.assertEqual(test_results['artifacts']['overlay'], [
-            'failures/unexpected/text-mismatch-overlay-overlay.html',
-            'retry_1/failures/unexpected/text-mismatch-overlay-overlay.html'])
+            'layout-test-results/failures/unexpected/text-mismatch-overlay-overlay.html',
+            'layout-test-results/retry_1/failures/unexpected/text-mismatch-overlay-overlay.html'])
 
     def test_unexpected_no_text_baseline(self):
         host = MockHost()
@@ -1008,15 +1009,15 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
         test_results = results['tests']['failures']['unexpected']['no-text-baseline.html']
         self.assertEqual(test_results['artifacts']['actual_text'], [
-            'failures/unexpected/no-text-baseline-actual.txt',
-            'retry_1/failures/unexpected/no-text-baseline-actual.txt'])
+            'layout-test-results/failures/unexpected/no-text-baseline-actual.txt',
+            'layout-test-results/retry_1/failures/unexpected/no-text-baseline-actual.txt'])
         self.assertNotIn('expected_text', test_results['artifacts'])
         self.assertEqual(test_results['artifacts']['text_diff'], [
-            'failures/unexpected/no-text-baseline-diff.txt',
-            'retry_1/failures/unexpected/no-text-baseline-diff.txt'])
+            'layout-test-results/failures/unexpected/no-text-baseline-diff.txt',
+            'layout-test-results/retry_1/failures/unexpected/no-text-baseline-diff.txt'])
         self.assertEqual(test_results['artifacts']['pretty_text_diff'], [
-            'failures/unexpected/no-text-baseline-pretty-diff.html',
-            'retry_1/failures/unexpected/no-text-baseline-pretty-diff.html'])
+            'layout-test-results/failures/unexpected/no-text-baseline-pretty-diff.html',
+            'layout-test-results/retry_1/failures/unexpected/no-text-baseline-pretty-diff.html'])
         self.assertNotIn('overlay', test_results['artifacts'])
 
     def test_unexpected_no_text_generated(self):
@@ -1029,15 +1030,15 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
         test_results = results['tests']['failures']['unexpected']['no-text-generated.html']
         self.assertEqual(test_results['artifacts']['expected_text'], [
-            'failures/unexpected/no-text-generated-expected.txt',
-            'retry_1/failures/unexpected/no-text-generated-expected.txt'])
+            'layout-test-results/failures/unexpected/no-text-generated-expected.txt',
+            'layout-test-results/retry_1/failures/unexpected/no-text-generated-expected.txt'])
         self.assertNotIn('actual_text', test_results['artifacts'])
         self.assertEqual(test_results['artifacts']['text_diff'], [
-            'failures/unexpected/no-text-generated-diff.txt',
-            'retry_1/failures/unexpected/no-text-generated-diff.txt'])
+            'layout-test-results/failures/unexpected/no-text-generated-diff.txt',
+            'layout-test-results/retry_1/failures/unexpected/no-text-generated-diff.txt'])
         self.assertEqual(test_results['artifacts']['pretty_text_diff'], [
-            'failures/unexpected/no-text-generated-pretty-diff.html',
-            'retry_1/failures/unexpected/no-text-generated-pretty-diff.html'])
+            'layout-test-results/failures/unexpected/no-text-generated-pretty-diff.html',
+            'layout-test-results/retry_1/failures/unexpected/no-text-generated-pretty-diff.html'])
         self.assertNotIn('overlay', test_results['artifacts'])
 
     def test_reftest_mismatching_image(self):
@@ -1050,20 +1051,20 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
         test_results = results['tests']['failures']['unexpected']['reftest.html']
         self.assertEqual(test_results['artifacts']['actual_image'], [
-            'failures/unexpected/reftest-actual.png',
-            'retry_1/failures/unexpected/reftest-actual.png'])
+            'layout-test-results/failures/unexpected/reftest-actual.png',
+            'layout-test-results/retry_1/failures/unexpected/reftest-actual.png'])
         self.assertEqual(test_results['artifacts']['expected_image'], [
-            'failures/unexpected/reftest-expected.png',
-            'retry_1/failures/unexpected/reftest-expected.png'])
+            'layout-test-results/failures/unexpected/reftest-expected.png',
+            'layout-test-results/retry_1/failures/unexpected/reftest-expected.png'])
         self.assertEqual(test_results['artifacts']['image_diff'], [
-            'failures/unexpected/reftest-diff.png',
-            'retry_1/failures/unexpected/reftest-diff.png'])
+            'layout-test-results/failures/unexpected/reftest-diff.png',
+            'layout-test-results/retry_1/failures/unexpected/reftest-diff.png'])
         self.assertEqual(test_results['artifacts']['pretty_image_diff'], [
-            'failures/unexpected/reftest-diffs.html',
-            'retry_1/failures/unexpected/reftest-diffs.html'])
+            'layout-test-results/failures/unexpected/reftest-diffs.html',
+            'layout-test-results/retry_1/failures/unexpected/reftest-diffs.html'])
         self.assertEqual(test_results['artifacts']['reference_file_mismatch'],  [
-            'failures/unexpected/reftest-expected.html',
-            'retry_1/failures/unexpected/reftest-expected.html'])
+            'layout-test-results/failures/unexpected/reftest-expected.html',
+            'layout-test-results/retry_1/failures/unexpected/reftest-expected.html'])
 
     def test_reftest_failure_matching_image(self):
         host = MockHost()
@@ -1076,7 +1077,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         test_results = results['tests']['failures']['unexpected']['mismatch.html']
         self.assertIn('reference_file_match', test_results['artifacts'])
         self.assertEqual(test_results['artifacts']['reference_file_match'],
-                         ['failures/unexpected/mismatch-expected-mismatch.html'])
+                         ['layout-test-results/failures/unexpected/mismatch-expected-mismatch.html'])
 
     def test_unexpected_image_mismatch(self):
         host = MockHost()
@@ -1088,17 +1089,17 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
         test_results = results['tests']['failures']['unexpected']['image-mismatch.html']
         self.assertEqual(test_results['artifacts']['actual_image'], [
-            'failures/unexpected/image-mismatch-actual.png',
-            'retry_1/failures/unexpected/image-mismatch-actual.png'])
+            'layout-test-results/failures/unexpected/image-mismatch-actual.png',
+            'layout-test-results/retry_1/failures/unexpected/image-mismatch-actual.png'])
         self.assertEqual(test_results['artifacts']['expected_image'], [
-            'failures/unexpected/image-mismatch-expected.png',
-            'retry_1/failures/unexpected/image-mismatch-expected.png'])
+            'layout-test-results/failures/unexpected/image-mismatch-expected.png',
+            'layout-test-results/retry_1/failures/unexpected/image-mismatch-expected.png'])
         self.assertEqual(test_results['artifacts']['image_diff'], [
-            'failures/unexpected/image-mismatch-diff.png',
-            'retry_1/failures/unexpected/image-mismatch-diff.png'])
+            'layout-test-results/failures/unexpected/image-mismatch-diff.png',
+            'layout-test-results/retry_1/failures/unexpected/image-mismatch-diff.png'])
         self.assertEqual(test_results['artifacts']['pretty_image_diff'], [
-            'failures/unexpected/image-mismatch-diffs.html',
-            'retry_1/failures/unexpected/image-mismatch-diffs.html'])
+            'layout-test-results/failures/unexpected/image-mismatch-diffs.html',
+            'layout-test-results/retry_1/failures/unexpected/image-mismatch-diffs.html'])
 
     def test_unexpected_no_image_generated(self):
         host = MockHost()
@@ -1111,8 +1112,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         test_results = results['tests']['failures']['unexpected']['no-image-generated.html']
         self.assertNotIn('actual_image', test_results['artifacts'])
         self.assertEqual(test_results['artifacts']['expected_image'], [
-            'failures/unexpected/no-image-generated-expected.png',
-            'retry_1/failures/unexpected/no-image-generated-expected.png'])
+            'layout-test-results/failures/unexpected/no-image-generated-expected.png',
+            'layout-test-results/retry_1/failures/unexpected/no-image-generated-expected.png'])
         self.assertNotIn('image_diff', test_results['artifacts'])
         self.assertNotIn('pretty_image_diff', test_results['artifacts'])
 
@@ -1127,8 +1128,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         test_results = results['tests']['failures']['unexpected']['no-image-baseline.html']
         self.assertNotIn('expected_image', test_results['artifacts'])
         self.assertEqual(test_results['artifacts']['actual_image'], [
-            'failures/unexpected/no-image-baseline-actual.png',
-            'retry_1/failures/unexpected/no-image-baseline-actual.png'])
+            'layout-test-results/failures/unexpected/no-image-baseline-actual.png',
+            'layout-test-results/retry_1/failures/unexpected/no-image-baseline-actual.png'])
         self.assertNotIn('image_diff', test_results['artifacts'])
         self.assertNotIn('pretty_image_diff', test_results['artifacts'])
 
@@ -1142,11 +1143,11 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
         test_results = results['tests']['failures']['unexpected']['audio-mismatch.html']
         self.assertEqual(test_results['artifacts']['actual_audio'], [
-            'failures/unexpected/audio-mismatch-actual.wav',
-            'retry_1/failures/unexpected/audio-mismatch-actual.wav'])
+            'layout-test-results/failures/unexpected/audio-mismatch-actual.wav',
+            'layout-test-results/retry_1/failures/unexpected/audio-mismatch-actual.wav'])
         self.assertEqual(test_results['artifacts']['expected_audio'], [
-            'failures/unexpected/audio-mismatch-expected.wav',
-            'retry_1/failures/unexpected/audio-mismatch-expected.wav'])
+            'layout-test-results/failures/unexpected/audio-mismatch-expected.wav',
+            'layout-test-results/retry_1/failures/unexpected/audio-mismatch-expected.wav'])
 
     def test_unexpected_audio_missing_baseline(self):
         host = MockHost()
@@ -1158,8 +1159,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
         test_results = results['tests']['failures']['unexpected']['no-audio-baseline.html']
         self.assertEqual(test_results['artifacts']['actual_audio'], [
-            'failures/unexpected/no-audio-baseline-actual.wav',
-            'retry_1/failures/unexpected/no-audio-baseline-actual.wav'])
+            'layout-test-results/failures/unexpected/no-audio-baseline-actual.wav',
+            'layout-test-results/retry_1/failures/unexpected/no-audio-baseline-actual.wav'])
 
     def test_unexpected_no_audio_generated(self):
         host = MockHost()
@@ -1171,8 +1172,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
         test_results = results['tests']['failures']['unexpected']['no-audio-generated.html']
         self.assertEqual(test_results['artifacts']['expected_audio'], [
-            'failures/unexpected/no-audio-generated-expected.wav',
-            'retry_1/failures/unexpected/no-audio-generated-expected.wav'])
+            'layout-test-results/failures/unexpected/no-audio-generated-expected.wav',
+            'layout-test-results/retry_1/failures/unexpected/no-audio-generated-expected.wav'])
 
     def test_retrying_uses_retry_directories(self):
         host = MockHost()

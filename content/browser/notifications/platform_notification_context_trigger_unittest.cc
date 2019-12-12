@@ -72,6 +72,13 @@ class PlatformNotificationContextTriggerTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  void TearDown() override {
+    // Destroy the context and allow its background tasks to run to close the
+    // database.
+    platform_notification_context_.reset();
+    task_environment_.RunUntilIdle();
+  }
+
   // Callback to provide when writing a notification to the database.
   void DidWriteNotificationData(bool success,
                                 const std::string& notification_id) {

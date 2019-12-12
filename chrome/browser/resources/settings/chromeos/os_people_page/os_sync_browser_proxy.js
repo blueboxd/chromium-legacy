@@ -48,6 +48,13 @@ cr.define('settings', function() {
     didNavigateAwayFromOsSyncPage() {}
 
     /**
+     * Sets whether the OS sync feature should be enabled. Sync will not start
+     * until the user either navigates away from the page or closes settings.
+     * @param {boolean} enabled
+     */
+    setOsSyncFeatureEnabled(enabled) {}
+
+    /**
      * Sets which types of data to sync.
      * @param {!settings.OsSyncPrefs} osSyncPrefs
      */
@@ -66,6 +73,11 @@ cr.define('settings', function() {
     /** @override */
     didNavigateAwayFromOsSyncPage() {
       chrome.send('DidNavigateAwayFromOsSyncPage');
+    }
+
+    /** @override */
+    setOsSyncFeatureEnabled(enabled) {
+      return chrome.send('SetOsSyncFeatureEnabled', [enabled]);
     }
 
     /** @override */

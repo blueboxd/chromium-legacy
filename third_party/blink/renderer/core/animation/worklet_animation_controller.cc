@@ -86,7 +86,7 @@ void WorkletAnimationController::ScrollSourceCompositingStateChanged(
   DCHECK(ScrollTimeline::HasActiveScrollTimeline(node));
   for (const auto& animation : animations_.Values()) {
     if (animation->GetTimeline()->IsScrollTimeline() &&
-        ToScrollTimeline(animation->GetTimeline())->scrollSource() == node) {
+        To<ScrollTimeline>(animation->GetTimeline())->scrollSource() == node) {
       InvalidateAnimation(*animation);
     }
   }

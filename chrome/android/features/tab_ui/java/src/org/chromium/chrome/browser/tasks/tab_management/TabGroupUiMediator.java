@@ -9,7 +9,6 @@ import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.annotations.CheckDiscard;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ThemeColorProvider;
@@ -44,7 +43,6 @@ public class TabGroupUiMediator {
     /**
      * An interface to control the TabGroupUi component.
      */
-    @CheckDiscard("crbug.com/1022827")
     interface TabGroupUiController {
         /**
          * Setup the drawable in TabGroupUi left button with a drawable ID.
@@ -235,13 +233,11 @@ public class TabGroupUiMediator {
         }
     }
 
-    @CheckDiscard("crbug.com/1022827")
     void setupLeftButtonDrawable(int drawableId) {
         mToolbarPropertyModel.set(
                 TabStripToolbarViewProperties.LEFT_BUTTON_DRAWABLE_ID, drawableId);
     }
 
-    @CheckDiscard("crbug.com/1022827")
     void setupLeftButtonOnClickListener(View.OnClickListener listener) {
         mToolbarPropertyModel.set(
                 TabStripToolbarViewProperties.LEFT_BUTTON_ON_CLICK_LISTENER, listener);
@@ -286,6 +282,11 @@ public class TabGroupUiMediator {
             mResetHandler.resetStripWithListOfTabs(listOfTabs);
             mIsTabGroupUiVisible = true;
         }
+        boolean isDuetTabStripIntegrationEnabled =
+                FeatureUtilities.isDuetTabStripIntegrationAndroidEnabled()
+                && FeatureUtilities.isBottomToolbarEnabled();
+        assert (mVisibilityController == null) == isDuetTabStripIntegrationEnabled;
+        if (isDuetTabStripIntegrationEnabled) return;
         mVisibilityController.setBottomControlsVisible(mIsTabGroupUiVisible);
     }
 

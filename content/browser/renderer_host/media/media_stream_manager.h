@@ -282,7 +282,7 @@ class CONTENT_EXPORT MediaStreamManager
   // Called by the tests to specify a factory for creating
   // FakeMediaStreamUIProxys to be used for generated streams.
   void UseFakeUIFactoryForTests(
-      base::Callback<std::unique_ptr<FakeMediaStreamUIProxy>(void)>
+      base::RepeatingCallback<std::unique_ptr<FakeMediaStreamUIProxy>(void)>
           fake_ui_factory);
 
   // Register and unregister a new callback for receiving native log entries.
@@ -532,7 +532,7 @@ class CONTENT_EXPORT MediaStreamManager
   // All non-closed request. Must be accessed on IO thread.
   DeviceRequests requests_;
 
-  base::Callback<std::unique_ptr<FakeMediaStreamUIProxy>(void)>
+  base::RepeatingCallback<std::unique_ptr<FakeMediaStreamUIProxy>(void)>
       fake_ui_factory_;
 
   // Maps render process hosts to log callbacks. Used on the IO thread.

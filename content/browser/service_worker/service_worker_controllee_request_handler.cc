@@ -28,7 +28,6 @@
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/resource_request_body.h"
-#include "services/network/public/cpp/resource_response_info.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)

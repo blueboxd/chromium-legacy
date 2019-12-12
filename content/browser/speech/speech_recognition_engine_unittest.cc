@@ -23,9 +23,9 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/speech/speech_recognition_error.mojom.h"
@@ -562,11 +562,11 @@ void SpeechRecognitionEngineTest::ProvideMockResponseStartDownstreamIfNeeded() {
       GetDownstreamRequest();
   ASSERT_TRUE(downstream_request);
 
-  network::ResourceResponseHead head;
+  auto head = network::mojom::URLResponseHead::New();
   std::string headers("HTTP/1.1 200 OK\n\n");
-  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(headers));
-  downstream_request->client->OnReceiveResponse(head);
+  downstream_request->client->OnReceiveResponse(std::move(head));
 
   mojo::DataPipe data_pipe;
   downstream_request->client->OnStartLoadingResponseBody(
@@ -630,11 +630,11 @@ void SpeechRecognitionEngineTest::CloseMockDownstream(
     const network::TestURLLoaderFactory::PendingRequest* downstream_request =
         GetDownstreamRequest();
     ASSERT_TRUE(downstream_request);
-    network::ResourceResponseHead head;
+    auto head = network::mojom::URLResponseHead::New();
     std::string headers("HTTP/1.1 500 Server Sad\n\n");
-    head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+    head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
         net::HttpUtil::AssembleRawHeaders(headers));
-    downstream_request->client->OnReceiveResponse(head);
+    downstream_request->client->OnReceiveResponse(std::move(head));
     // Wait for the response to be handled.
     base::RunLoop().RunUntilIdle();
     return;

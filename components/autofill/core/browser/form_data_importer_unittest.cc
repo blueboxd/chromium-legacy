@@ -2897,9 +2897,10 @@ TEST_F(FormDataImporterTest, ImportFormData_HiddenCreditCardFormAfterEntered) {
   EXPECT_EQ(0, expected_card.Compare(*results[0]));
 }
 
-// Ensures that no VPA value is returned when there's a credit card and no VPA.
+// Ensures that no UPI ID value is returned when there's a credit card and no
+// UPI ID.
 TEST_F(FormDataImporterTest,
-       ImportFormData_DontSetVPAWhenOnlyCreditCardExists) {
+       ImportFormData_DontSetUpiIdWhenOnlyCreditCardExists) {
   // Simulate a form submission with a new credit card.
   FormData form;
   form.url = GURL("https://wwww.foo.com");
@@ -2910,12 +2911,13 @@ TEST_F(FormDataImporterTest,
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
   std::unique_ptr<CreditCard> imported_credit_card;
-  base::Optional<std::string> imported_vpa;
+  base::Optional<std::string> imported_upi_id;
   EXPECT_TRUE(form_data_importer_->ImportFormData(
       form_structure, /*profile_autofill_enabled=*/true,
       /*credit_card_autofill_enabled=*/true,
-      /*should_return_local_card=*/true, &imported_credit_card, &imported_vpa));
-  ASSERT_FALSE(imported_vpa.has_value());
+      /*should_return_local_card=*/true, &imported_credit_card,
+      &imported_upi_id));
+  ASSERT_FALSE(imported_upi_id.has_value());
 }
 
 TEST_F(FormDataImporterTest, DontDuplicateFullServerCard) {
@@ -3324,31 +3326,32 @@ TEST_F(FormDataImporterTest,
       AutofillMetrics::MASKED_SERVER_CARD_EXPIRATION_DATE_DID_NOT_MATCH, 1);
 }
 
-TEST_F(FormDataImporterTest, ImportVPA) {
+TEST_F(FormDataImporterTest, ImportUpiId) {
   FormData form;
   form.url = GURL("https://wwww.foo.com");
 
   FormFieldData field;
-  test::CreateTestFormField("VPA:", "vpa", "user@indianbank", "text", &field);
+  test::CreateTestFormField("UPI ID:", "upi_id", "user@indianbank", "text",
+                            &field);
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
 
   std::unique_ptr<CreditCard> imported_credit_card;  // Discarded.
-  base::Optional<std::string> imported_vpa;
+  base::Optional<std::string> imported_upi_id;
 
   EXPECT_TRUE(form_data_importer_->ImportFormData(
       form_structure, /*profile_autofill_enabled=*/false,
       /*credit_card_autofill_enabled=*/true,
       /*should_return_local_card=*/false, &imported_credit_card,
-      &imported_vpa));
+      &imported_upi_id));
 
-  ASSERT_TRUE(imported_vpa.has_value());
-  EXPECT_EQ(imported_vpa.value(), "user@indianbank");
+  ASSERT_TRUE(imported_upi_id.has_value());
+  EXPECT_EQ(imported_upi_id.value(), "user@indianbank");
 }
 
-TEST_F(FormDataImporterTest, ImportVPADisabled) {
+TEST_F(FormDataImporterTest, ImportUpiIdDisabled) {
   FormData form;
   form.url = GURL("https://wwww.foo.com");
 
@@ -3371,27 +3374,28 @@ TEST_F(FormDataImporterTest, ImportVPADisabled) {
   EXPECT_FALSE(imported_vpa.has_value());
 }
 
-TEST_F(FormDataImporterTest, ImportVPAIgnoreNonVPA) {
+TEST_F(FormDataImporterTest, ImportUpiIdIgnoreNonUpiId) {
   FormData form;
   form.url = GURL("https://wwww.foo.com");
 
   FormFieldData field;
-  test::CreateTestFormField("VPA:", "vpa", "user@gmail.com", "text", &field);
+  test::CreateTestFormField("UPI ID:", "upi_id", "user@gmail.com", "text",
+                            &field);
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
 
   std::unique_ptr<CreditCard> imported_credit_card;  // Discarded.
-  base::Optional<std::string> imported_vpa;
+  base::Optional<std::string> imported_upi_id;
 
   EXPECT_FALSE(form_data_importer_->ImportFormData(
       form_structure, /*profile_autofill_enabled=*/false,
       /*credit_card_autofill_enabled=*/false,
       /*should_return_local_card=*/false, &imported_credit_card,
-      &imported_vpa));
+      &imported_upi_id));
 
-  EXPECT_FALSE(imported_vpa.has_value());
+  EXPECT_FALSE(imported_upi_id.has_value());
 }
 
 }  // namespace autofill

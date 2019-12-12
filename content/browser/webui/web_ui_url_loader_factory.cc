@@ -58,7 +58,7 @@ void CallOnError(
 }
 
 void ReadData(
-    scoped_refptr<network::ResourceResponse> headers,
+    network::mojom::URLResponseHeadPtr headers,
     const ui::TemplateReplacements* replacements,
     bool replace_in_js,
     scoped_refptr<URLDataSourceImpl> data_source,
@@ -112,11 +112,11 @@ void ReadData(
   // assumed to be fully buffered (as opposed to streamed from the network),
   // otherwise the media player will get confused and refuse to play.
   // Content delivered via chrome:// URLs is assumed fully buffered.
-  headers->head.content_length = output_size;
+  headers->content_length = output_size;
 
   mojo::Remote<network::mojom::URLLoaderClient> client(
       std::move(client_remote));
-  client->OnReceiveResponse(headers->head);
+  client->OnReceiveResponse(std::move(headers));
 
   client->OnStartLoadingResponseBody(std::move(pipe_consumer_handle));
   network::URLLoaderCompletionStatus status(net::OK);
@@ -127,7 +127,7 @@ void ReadData(
 }
 
 void DataAvailable(
-    scoped_refptr<network::ResourceResponse> headers,
+    network::mojom::URLResponseHeadPtr headers,
     const ui::TemplateReplacements* replacements,
     bool replace_in_js,
     scoped_refptr<URLDataSourceImpl> source,
@@ -139,9 +139,9 @@ void DataAvailable(
   base::CreateSequencedTaskRunner(
       {base::ThreadPool(), base::TaskPriority::USER_BLOCKING, base::MayBlock(),
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
-      ->PostTask(FROM_HERE,
-                 base::BindOnce(ReadData, headers, replacements, replace_in_js,
-                                source, std::move(client_remote), bytes));
+      ->PostTask(FROM_HERE, base::BindOnce(ReadData, std::move(headers),
+                                           replacements, replace_in_js, source,
+                                           std::move(client_remote), bytes));
 }
 
 void StartURLLoader(
@@ -176,10 +176,9 @@ void StartURLLoader(
   scoped_refptr<net::HttpResponseHeaders> headers =
       URLDataManagerBackend::GetHeaders(source, path, origin_header);
 
-  scoped_refptr<network::ResourceResponse> resource_response(
-      new network::ResourceResponse);
-  resource_response->head.headers = headers;
-  resource_response->head.mime_type = source->source()->GetMimeType(path);
+  auto resource_response = network::mojom::URLResponseHead::New();
+  resource_response->headers = headers;
+  resource_response->mime_type = source->source()->GetMimeType(path);
   // TODO: fill all the time related field i.e. request_time response_time
   // request_start response_start
 
@@ -198,7 +197,7 @@ void StartURLLoader(
   // the value for |replacements| on the IO thread. Since |replacements| is
   // owned by |source| keep a reference to it in the callback.
   URLDataSource::GotDataCallback data_available_callback = base::BindOnce(
-      DataAvailable, resource_response, replacements, replace_in_js,
+      DataAvailable, std::move(resource_response), replacements, replace_in_js,
       base::RetainedRef(source), base::Passed(&client_remote));
 
   // TODO(jam): once we only have this code path for WebUI, and not the

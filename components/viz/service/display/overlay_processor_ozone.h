@@ -1,0 +1,50 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_PROCESSOR_OZONE_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_PROCESSOR_OZONE_H_
+
+#include "components/viz/service/display/overlay_candidate_validator_strategy.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/public/overlay_candidates_ozone.h"
+
+namespace viz {
+
+class VIZ_SERVICE_EXPORT OverlayProcessorOzone
+    : public OverlayProcessorUsingStrategy {
+ public:
+  OverlayProcessorOzone(
+      bool overlay_enabled,
+      std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates,
+      std::vector<OverlayStrategy> available_strategies);
+  ~OverlayProcessorOzone() override;
+  void InitializeStrategies() override;
+
+  bool IsOverlaySupported() const override;
+
+  bool NeedsSurfaceOccludingDamageRect() const override;
+
+  // Override OverlayProcessorUsingStrategy.
+  void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
+  void SetValidatorViewportSize(const gfx::Size& size) override {}
+  // Disables overlays when software mirroring display. This only needs to be
+  // implemented for Chrome OS.
+  void SetSoftwareMirrorMode(bool software_mirror_mode) override;
+
+  void CheckOverlaySupport(
+      const OverlayProcessorInterface::OutputSurfaceOverlayPlane* primary_plane,
+      OverlayCandidateList* surfaces) override;
+  gfx::Rect GetOverlayDamageRectForOutputSurface(
+      const OverlayCandidate& overlay) const override;
+
+ private:
+  const bool overlay_enabled_;
+
+  std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates_;
+  const std::vector<OverlayStrategy> available_strategies_;
+  bool software_mirror_active_ = false;
+};
+}  // namespace viz
+
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_PROCESSOR_OZONE_H_

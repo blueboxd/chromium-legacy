@@ -209,6 +209,9 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
     return pending_visual_properties_.is_pinch_gesture_active;
   }
 
+  // Called when the associated FrameSinkId has changed.
+  void FrameSinkIdChanged(const viz::FrameSinkId& frame_sink_id);
+
  private:
   RenderFrameProxy(int routing_id);
 

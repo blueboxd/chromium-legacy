@@ -3439,7 +3439,7 @@ void ComponentUpdaterPolicyTest::VerifyExpectations(bool update_disabled) {
                   update_disabled ? " updatedisabled=\"true\"" : "")));
   } else if (base::StartsWith(request, R"({"request":{)",
                               base::CompareCase::SENSITIVE)) {
-    const auto root = base::JSONReader().ReadDeprecated(request);
+    const auto root = base::JSONReader::Read(request);
     ASSERT_TRUE(root);
     const auto* update_check =
         root->FindKey("request")->FindKey("app")->GetList()[0].FindKey(

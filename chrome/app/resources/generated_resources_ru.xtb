@@ -1035,7 +1035,7 @@
 <translation id="2464089476039395325">HTTP-прокси</translation>
 <translation id="2468205691404969808">Использовать файлы cookie, чтобы запомнить ваши предпочтения, даже если вы не открываете эти страницы</translation>
 <translation id="2468402215065996499">Тамагочи</translation>
-<translation id="2469259292033957819">У вас нет сохранённых принтеров.</translation>
+<translation id="2469259292033957819">У вас нет сохраненных принтеров.</translation>
 <translation id="2469375675106140201">Настроить проверку правописания</translation>
 <translation id="247051149076336810">URL общей папки</translation>
 <translation id="2470702053775288986">Неподдерживаемые расширения отключены</translation>
@@ -1924,7 +1924,7 @@
 <translation id="3714195043138862580">Демонстрационное устройство было деинициализировано.</translation>
 <translation id="3714633008798122362">веб-календарь</translation>
 <translation id="3719826155360621982">Главная страница</translation>
-<translation id="3721119614952978349">Вы и Google</translation>
+<translation id="3721119614952978349">Я и Google</translation>
 <translation id="3722108462506185496">Не удалось запустить сервис виртуальной машины. Повторите попытку.</translation>
 <translation id="3725367690636977613">стр.</translation>
 <translation id="3726137731714254362">Удаление папок из этого списка повлечет только прекращение доступа к ним, но не удаление самих файлов.</translation>
@@ -2764,7 +2764,6 @@
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> (<ph name="PROFILE_NAME" />)</translation>
 <translation id="496185450405387901">Это приложение установлено администратором</translation>
 <translation id="4964455510556214366">Расположение</translation>
-<translation id="4964673849688379040">Проверка...</translation>
 <translation id="4965808351167763748">Использовать это устройство для запуска Hangouts Meet?</translation>
 <translation id="496888482094675990">С помощью приложения "Файлы" можно быстро открыть документы с Google Диска, устройства под управлением Chrome OS или из внешнего хранилища.</translation>
 <translation id="4971412780836297815">Открыть по завершении</translation>
@@ -3236,7 +3235,7 @@
 <translation id="5646558797914161501">Бизнесмен</translation>
 <translation id="5648166631817621825">Последние 7 дней</translation>
 <translation id="5649053991847567735">Автоматическое скачивание</translation>
-<translation id="5653154844073528838">Сохранённых принтеров: <ph name="PRINTER_COUNT" />.</translation>
+<translation id="5653154844073528838">Сохраненных принтеров: <ph name="PRINTER_COUNT" />.</translation>
 <translation id="5656845498778518563">Отправка отзыва в Google</translation>
 <translation id="5657667036353380798">Для установки внешнего расширения требуется версия Chrome <ph name="MINIMUM_CHROME_VERSION" /> или выше.</translation>
 <translation id="5658415415603568799">В целях безопасности через 20 часов вам потребуется ввести пароль.</translation>
@@ -4100,7 +4099,7 @@
 <translation id="6930036377490597025">Внешний электронный ключ или встроенный датчик</translation>
 <translation id="6935286146439255109">Отсутствует лоток для бумаги</translation>
 <translation id="693807610556624488">При записи данных на устройстве <ph name="DEVICE_NAME" /> превышена максимальная длина атрибута.</translation>
-<translation id="6938386202199793006">У вас 1 сохранённый принтер.</translation>
+<translation id="6938386202199793006">У вас 1 сохраненный принтер.</translation>
 <translation id="6941937518557314510">Войдите в <ph name="TOKEN_NAME" />, чтобы авторизоваться на <ph name="HOST_NAME" /> при помощи своего сертификата.</translation>
 <translation id="6943176775188458830">Отменить печать</translation>
 <translation id="6943836128787782965">Произошла ошибка запроса HTTP GET</translation>

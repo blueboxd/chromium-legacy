@@ -11,7 +11,7 @@
 @interface ShellCrApplication : NSApplication<CrAppProtocol,
                                               CrAppControlProtocol> {
  @private
-  BOOL handlingSendEvent_;
+  BOOL _handlingSendEvent;
 }
 
 // CrAppProtocol:

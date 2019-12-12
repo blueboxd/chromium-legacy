@@ -295,6 +295,12 @@ test("accessibility_unittests") {
     ]
   }
 
+  if (!is_chromeos) {
+    # NativeViewAccessible, on which this test heavily depends, is not
+    # implemented on Chrome OS.
+    sources += [ "platform/ax_platform_node_base_unittest.cc" ]
+  }
+
   deps = [
     ":accessibility",
     ":ax_constants_mojo",

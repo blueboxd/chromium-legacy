@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.IntDef;
 
+import org.chromium.base.Supplier;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.chrome.R;
@@ -27,7 +28,6 @@ import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.ui.base.Clipboard;
@@ -127,11 +127,8 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
     /** Edge size (in pixels) of the favicon. Used to request best matching favicon from cache. */
     private final int mDesiredFaviconWidthPx;
 
-    /** Supplies Profile information. */
-    private Profile mCurrentUserProfile;
-
     /** Supplies site favicons. */
-    private LargeIconBridge mLargeIconBridge;
+    private final Supplier<LargeIconBridge> mIconBridgeSupplier;
 
     /** Supplies additional control over suggestion model. */
     private final SuggestionHost mSuggestionHost;
@@ -141,12 +138,14 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
      * @param selectionHandler A mechanism for handling selection of the edit URL suggestion item.
      */
     public EditUrlSuggestionProcessor(Context context, SuggestionHost suggestionHost,
-            LocationBarDelegate locationBarDelegate, SuggestionSelectionHandler selectionHandler) {
+            LocationBarDelegate locationBarDelegate, SuggestionSelectionHandler selectionHandler,
+            Supplier<LargeIconBridge> iconBridgeSupplier) {
         mLocationBarDelegate = locationBarDelegate;
         mSelectionHandler = selectionHandler;
         mDesiredFaviconWidthPx = context.getResources().getDimensionPixelSize(
                 R.dimen.omnibox_suggestion_favicon_size);
         mSuggestionHost = suggestionHost;
+        mIconBridgeSupplier = iconBridgeSupplier;
     }
 
     /**
@@ -208,24 +207,21 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
     public void populateModel(OmniboxSuggestion suggestion, PropertyModel model, int position) {
         model.set(EditUrlSuggestionProperties.TEXT_CLICK_LISTENER, this);
         model.set(EditUrlSuggestionProperties.BUTTON_CLICK_LISTENER, this);
-
-        // Lazily create LargeIconBridge in case Profile is reported ahead on Native initialized.
-        if (mEnableSuggestionFavicons && mLargeIconBridge == null && mCurrentUserProfile != null) {
-            mLargeIconBridge = new LargeIconBridge(mCurrentUserProfile);
-        }
-
-        if (mLargeIconBridge != null) {
-            mLargeIconBridge.getLargeIconForUrl(mLastProcessedSuggestion.getUrl(),
-                    mDesiredFaviconWidthPx,
-                    (Bitmap icon, int fallbackColor, boolean isFallbackColorDefault,
-                            int iconType) -> {
-                        model.set(EditUrlSuggestionProperties.SITE_FAVICON, icon);
-                    });
-        }
-
         if (mOriginalTitle == null) mOriginalTitle = mTabProvider.get().getTitle();
         model.set(EditUrlSuggestionProperties.TITLE_TEXT, mOriginalTitle);
         model.set(EditUrlSuggestionProperties.URL_TEXT, mLastProcessedSuggestion.getUrl());
+        fetchIcon(model, mLastProcessedSuggestion.getUrl());
+    }
+
+    private void fetchIcon(PropertyModel model, String url) {
+        if (!mEnableSuggestionFavicons || url == null) return;
+
+        final LargeIconBridge iconBridge = mIconBridgeSupplier.get();
+        if (iconBridge == null) return;
+
+        iconBridge.getLargeIconForUrl(url, mDesiredFaviconWidthPx,
+                (Bitmap icon, int fallbackColor, boolean isFallbackColorDefault,
+                        int iconType) -> model.set(EditUrlSuggestionProperties.SITE_FAVICON, icon));
     }
 
     @Override
@@ -239,16 +235,6 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
 
     @Override
     public void recordSuggestionUsed(OmniboxSuggestion suggestion, PropertyModel model) {}
-
-    /**
-     * Updates the profile used for extracting website favicons.
-     * @param profile The profile to be used.
-     */
-    public void setProfile(Profile profile) {
-        if (mCurrentUserProfile == profile) return;
-        mCurrentUserProfile = profile;
-        mLargeIconBridge = null;
-    }
 
     /**
      * @param provider A means of accessing the activity's tab.

@@ -84,6 +84,8 @@ class ASH_PUBLIC_EXPORT FrameHeader : public views::AnimationDelegateViews {
   // views::AnimationDelegateViews:
   void AnimationProgressed(const gfx::Animation* animation) override;
 
+  void UpdateFrameHeaderKey();
+
  protected:
   FrameHeader(views::Widget* target_widget, views::View* view);
 

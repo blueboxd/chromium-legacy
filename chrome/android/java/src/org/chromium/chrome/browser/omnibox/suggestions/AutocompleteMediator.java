@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
@@ -165,6 +166,7 @@ class AutocompleteMediator
     private ActivityTabTabObserver mTabObserver;
 
     private ImageFetcher mImageFetcher;
+    private LargeIconBridge mIconBridge;
 
     public AutocompleteMediator(Context context, AutocompleteDelegate delegate,
             UrlBarEditingTextStateProvider textProvider, PropertyModel listPropertyModel) {
@@ -175,14 +177,27 @@ class AutocompleteMediator
         mCurrentModels = new ArrayList<>();
         mAutocomplete = new AutocompleteController(this);
         mHandler = new Handler();
-        Supplier<ImageFetcher> imageFetcherSupplier = this::getImageFetcher;
-        mBasicSuggestionProcessor = new BasicSuggestionProcessor(mContext, this, textProvider);
+
+        final Supplier<ImageFetcher> imageFetcherSupplier = createImageFetcherSupplier();
+        final Supplier<LargeIconBridge> iconBridgeSupplier = createIconBridgeSupplier();
+
+        mBasicSuggestionProcessor =
+                new BasicSuggestionProcessor(mContext, this, textProvider, iconBridgeSupplier);
         mAnswerSuggestionProcessor =
                 new AnswerSuggestionProcessor(mContext, this, textProvider, imageFetcherSupplier);
-        mEditUrlProcessor = new EditUrlSuggestionProcessor(
-                mContext, this, delegate, (suggestion) -> onSelection(suggestion, 0));
+        mEditUrlProcessor = new EditUrlSuggestionProcessor(mContext, this, delegate,
+                (suggestion) -> onSelection(suggestion, 0), iconBridgeSupplier);
         mEntitySuggestionProcessor =
                 new EntitySuggestionProcessor(mContext, this, imageFetcherSupplier);
+
+        mOverviewModeObserver = new EmptyOverviewModeObserver() {
+            @Override
+            public void onOverviewModeStartedShowing(boolean showToolbar) {
+                if (mDataProvider.shouldShowLocationBarInOverviewMode()) {
+                    AutocompleteControllerJni.get().prefetchZeroSuggestResults();
+                }
+            }
+        };
     }
 
     public void destroy() {
@@ -216,16 +231,57 @@ class AutocompleteMediator
         notifyPropertyModelsChanged();
     }
 
-    private ImageFetcher getImageFetcher() {
-        if (getCurrentProfile() == null) {
-            return null;
-        }
-        if (mImageFetcher == null) {
-            mImageFetcher = ImageFetcherFactory.createImageFetcher(
-                    ImageFetcherConfig.IN_MEMORY_ONLY,
-                    GlobalDiscardableReferencePool.getReferencePool(), MAX_IMAGE_CACHE_SIZE);
-        }
-        return mImageFetcher;
+    /**
+     * Create a new supplier that returns ImageFetcher instances.
+     * Consumers of this call:
+     * - should never cache the returned object, since its lifecycle is bound to external
+     *   objects, such as Profile,
+     * - should always check for null ahead of using returned value. ImageFetcher may not be
+     *   constructed if Profile is not yet initialized.
+     *
+     * @return Supplier returning ImageFetcher.
+     */
+    private Supplier<ImageFetcher> createImageFetcherSupplier() {
+        return new Supplier<ImageFetcher>() {
+            @Override
+            public ImageFetcher get() {
+                if (getCurrentProfile() == null) {
+                    return null;
+                }
+                if (mImageFetcher == null) {
+                    mImageFetcher = ImageFetcherFactory.createImageFetcher(
+                            ImageFetcherConfig.IN_MEMORY_ONLY,
+                            GlobalDiscardableReferencePool.getReferencePool(),
+                            MAX_IMAGE_CACHE_SIZE);
+                }
+                return mImageFetcher;
+            }
+        };
+    }
+
+    /**
+     * Create a new supplier that returns LargeIconBridge instances.
+     * Consumers of this call:
+     * - should never cache the returned object, since its lifecycle is bound to external
+     *   objects, such as Profile,
+     * - should always check for null ahead of using returned value. LargeIconBridge may not be
+     *   constructed if Profile is not yet initialized.
+     *
+     * @return Supplier returning LargeIconBridge.
+     */
+    private Supplier<LargeIconBridge> createIconBridgeSupplier() {
+        return new Supplier<LargeIconBridge>() {
+            @Override
+            public LargeIconBridge get() {
+                if (getCurrentProfile() == null) {
+                    return null;
+                }
+                if (mIconBridge == null) {
+                    mIconBridge = new LargeIconBridge(getCurrentProfile());
+                }
+                return mIconBridge;
+            }
+        };
     }
 
     private Profile getCurrentProfile() {
@@ -305,17 +361,9 @@ class AutocompleteMediator
      *         listen to state changes.
      */
     public void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
-        assert overviewModeBehavior != null;
+        assert mOverviewModeBehavior == null;
 
         mOverviewModeBehavior = overviewModeBehavior;
-        mOverviewModeObserver = new EmptyOverviewModeObserver() {
-            @Override
-            public void onOverviewModeStartedShowing(boolean showToolbar) {
-                if (mDataProvider.shouldShowLocationBarInOverviewMode()) {
-                    AutocompleteControllerJni.get().prefetchZeroSuggestResults();
-                }
-            }
-        };
         mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
     }
 
@@ -486,8 +534,7 @@ class AutocompleteMediator
      */
     void setAutocompleteProfile(Profile profile) {
         mAutocomplete.setProfile(profile);
-        mBasicSuggestionProcessor.setProfile(profile);
-        if (mEditUrlProcessor != null) mEditUrlProcessor.setProfile(profile);
+        mIconBridge = null;
     }
 
     /**

@@ -173,7 +173,6 @@
           "--browser=android-webview",
           "--upload-results",
           "--test-shard-map-filename=android_nexus5x_webview_perf_map.json",
-          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_webview_test_suite",
@@ -220,7 +219,6 @@
           "--browser=android-webview",
           "--upload-results",
           "--test-shard-map-filename=android_nexus6_webview_perf_map.json",
-          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_webview_test_suite",
@@ -912,8 +910,7 @@
           "-v",
           "--browser=android-webview-google",
           "--upload-results",
-          "--test-shard-map-filename=android-go_webview-perf_map.json",
-          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
+          "--test-shard-map-filename=android-go_webview-perf_map.json"
         ],
         "isolate_name": "performance_webview_test_suite",
         "merge": {
@@ -1333,8 +1330,7 @@
           "-v",
           "--browser=android-webview-google",
           "--upload-results",
-          "--test-shard-map-filename=android-pixel2_webview-perf_map.json",
-          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
+          "--test-shard-map-filename=android-pixel2_webview-perf_map.json"
         ],
         "isolate_name": "performance_webview_test_suite",
         "merge": {

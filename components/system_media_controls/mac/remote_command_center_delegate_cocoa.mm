@@ -22,7 +22,7 @@ API_AVAILABLE(macos(10.12.2))
 - (instancetype)initWithDelegate:
     (system_media_controls::internal::RemoteCommandCenterDelegate*)delegate {
   if (self = [super init]) {
-    delegate_ = delegate;
+    _delegate = delegate;
 
     // Initialize all commands as disabled.
     MPRemoteCommandCenter* commandCenter =
@@ -55,17 +55,17 @@ API_AVAILABLE(macos(10.12.2))
   MPRemoteCommandCenter* commandCenter =
       [MPRemoteCommandCenter sharedCommandCenter];
   if (event.command == commandCenter.pauseCommand) {
-    delegate_->OnPause();
+    _delegate->OnPause();
   } else if (event.command == commandCenter.playCommand) {
-    delegate_->OnPlay();
+    _delegate->OnPlay();
   } else if (event.command == commandCenter.stopCommand) {
-    delegate_->OnStop();
+    _delegate->OnStop();
   } else if (event.command == commandCenter.togglePlayPauseCommand) {
-    delegate_->OnPlayPause();
+    _delegate->OnPlayPause();
   } else if (event.command == commandCenter.nextTrackCommand) {
-    delegate_->OnNext();
+    _delegate->OnNext();
   } else if (event.command == commandCenter.previousTrackCommand) {
-    delegate_->OnPrevious();
+    _delegate->OnPrevious();
   }
   return MPRemoteCommandHandlerStatusSuccess;
 }

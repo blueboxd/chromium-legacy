@@ -38,10 +38,14 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Pair;
 import android.view.View;
+import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 
 import androidx.annotation.IntDef;
 
@@ -53,7 +57,9 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
@@ -83,6 +89,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.util.UrlUtilitiesJni;
+import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
@@ -191,6 +198,8 @@ public class TabListMediatorUnitTest {
     SharedPreferences.Editor mRemoveEditor;
     @Mock
     UrlUtilities.Natives mUrlUtilitiesJniMock;
+    @Mock
+    TabListMediator.TabGridAccessibilityHelper mTabGridAccessibilityHelper;
 
     @Captor
     ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
@@ -1534,6 +1543,95 @@ public class TabListMediatorUnitTest {
         mMediatorTabGroupModelFilterObserver.didMoveTabOutOfGroup(mTab2, POSITION1);
         assertEquals(TAB1_URL, mModel.get(POSITION1).model.get(TabProperties.URL));
         assertEquals(TAB2_URL, mModel.get(POSITION2).model.get(TabProperties.URL));
+    }
+
+    @Test
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
+            ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID,
+            ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+    // clang-format off
+    public void testOnInitializeAccessibilityNodeInfo() {
+        // clang-format on
+        setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
+
+        // Setup related mocks and initialize needed components.
+        AccessibilityNodeInfo accessibilityNodeInfo = mock(AccessibilityNodeInfo.class);
+        AccessibilityAction action1 = new AccessibilityAction(R.id.move_tab_left, "left");
+        AccessibilityAction action2 = new AccessibilityAction(R.id.move_tab_right, "right");
+        AccessibilityAction action3 = new AccessibilityAction(R.id.move_tab_up, "up");
+        doReturn(new ArrayList<>(Arrays.asList(action1, action2, action3)))
+                .when(mTabGridAccessibilityHelper)
+                .getPotentialActionsForView(mItemView1);
+        InOrder accessibilityNodeInfoInOrder = Mockito.inOrder(accessibilityNodeInfo);
+        assertNull(mMediator.getAccessibilityDelegateForTesting());
+        mMediator.setupAccessibilityDelegate(mTabGridAccessibilityHelper);
+        View.AccessibilityDelegate delegate = mMediator.getAccessibilityDelegateForTesting();
+        assertNotNull(delegate);
+
+        delegate.onInitializeAccessibilityNodeInfo(mItemView1, accessibilityNodeInfo);
+
+        accessibilityNodeInfoInOrder.verify(accessibilityNodeInfo).addAction(eq(action1));
+        accessibilityNodeInfoInOrder.verify(accessibilityNodeInfo).addAction(eq(action2));
+        accessibilityNodeInfoInOrder.verify(accessibilityNodeInfo).addAction(eq(action3));
+    }
+
+    @Test
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
+            ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID,
+            ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+    // clang-format off
+    public void testPerformAccessibilityAction() {
+        // clang-format on
+        setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
+        assertThat(mModel.get(0).model.get(TabProperties.TAB_ID), equalTo(TAB1_ID));
+        assertThat(mModel.get(1).model.get(TabProperties.TAB_ID), equalTo(TAB2_ID));
+
+        // Setup related mocks and initialize needed components.
+        Bundle args = mock(Bundle.class);
+        int action = R.id.move_tab_left;
+        // Mock that the action indicates that tab2 will move left and thus tab2 and tab1 should
+        // switch positions.
+        doReturn(new Pair<>(1, 0))
+                .when(mTabGridAccessibilityHelper)
+                .getPositionsOfReorderAction(mItemView1, action);
+        assertNull(mMediator.getAccessibilityDelegateForTesting());
+        mMediator.setupAccessibilityDelegate(mTabGridAccessibilityHelper);
+        View.AccessibilityDelegate delegate = mMediator.getAccessibilityDelegateForTesting();
+        assertNotNull(delegate);
+
+        delegate.performAccessibilityAction(mItemView1, action, args);
+
+        assertThat(mModel.get(1).model.get(TabProperties.TAB_ID), equalTo(TAB1_ID));
+        assertThat(mModel.get(0).model.get(TabProperties.TAB_ID), equalTo(TAB2_ID));
+    }
+
+    @Test
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
+            ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID,
+            ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+    // clang-format off
+    public void testPerformAccessibilityAction_InvalidIndex() {
+        // clang-format on
+        setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
+        assertThat(mModel.get(0).model.get(TabProperties.TAB_ID), equalTo(TAB1_ID));
+        assertThat(mModel.get(1).model.get(TabProperties.TAB_ID), equalTo(TAB2_ID));
+
+        // Setup related mocks and initialize needed components.
+        Bundle args = mock(Bundle.class);
+        int action = R.id.move_tab_left;
+        // Mock that the action indicates that tab2 will move to position 2 which is invalid.
+        doReturn(new Pair<>(1, 2))
+                .when(mTabGridAccessibilityHelper)
+                .getPositionsOfReorderAction(mItemView1, action);
+        assertNull(mMediator.getAccessibilityDelegateForTesting());
+        mMediator.setupAccessibilityDelegate(mTabGridAccessibilityHelper);
+        View.AccessibilityDelegate delegate = mMediator.getAccessibilityDelegateForTesting();
+        assertNotNull(delegate);
+
+        delegate.performAccessibilityAction(mItemView1, action, args);
+
+        assertThat(mModel.get(0).model.get(TabProperties.TAB_ID), equalTo(TAB1_ID));
+        assertThat(mModel.get(1).model.get(TabProperties.TAB_ID), equalTo(TAB2_ID));
     }
 
     private void initAndAssertAllProperties() {

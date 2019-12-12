@@ -42,7 +42,7 @@ namespace gfx {
 
 namespace {
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_IOS)
 // The returned string will have at least one character besides the ellipsis
 // on either side of '@'; if that's impossible, a single ellipsis is returned.
 // If possible, only the username is elided. Otherwise, the domain is elided
@@ -219,7 +219,7 @@ base::string16 ElideText(const base::string16& text,
                          const FontList& font_list,
                          float available_pixel_width,
                          ElideBehavior behavior) {
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_IOS)
   DCHECK_NE(behavior, FADE_TAIL);
   std::unique_ptr<RenderText> render_text = RenderText::CreateRenderText();
 

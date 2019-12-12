@@ -57,7 +57,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImplDelegate {
   // false and call the provided callback at some future point.  This function
   // may be called repeatedly.
   virtual bool ShouldCompleteDownload(DownloadItemImpl* download,
-                                      const base::Closure& complete_callback);
+                                      base::OnceClosure complete_callback);
 
   // Allows the delegate to override the opening of a download. If it returns
   // true then it's responsible for opening the item, and the |callback| is not

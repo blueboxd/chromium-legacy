@@ -120,6 +120,10 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
         return gfx::kGoogleGrey500;
       case NativeTheme::kColorId_TabBottomBorder:
         return gfx::kGoogleGrey800;
+      case NativeTheme::kColorId_TabHighlightBackground:
+        return gfx::kGoogleGrey800;
+      case NativeTheme::kColorId_TabHighlightFocusedBackground:
+        return SkColorSetRGB(0x32, 0x36, 0x39);
 
       // Table
       case NativeTheme::kColorId_TableBackground:
@@ -302,6 +306,10 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       return gfx::kGoogleGrey700;
     case NativeTheme::kColorId_TabBottomBorder:
       return gfx::kGoogleGrey300;
+    case NativeTheme::kColorId_TabHighlightBackground:
+      return gfx::kGoogleBlue050;
+    case NativeTheme::kColorId_TabHighlightFocusedBackground:
+      return gfx::kGoogleBlue100;
 
     // Textfield
     case NativeTheme::kColorId_TextfieldDefaultColor:

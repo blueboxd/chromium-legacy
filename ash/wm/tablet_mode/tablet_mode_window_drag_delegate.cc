@@ -113,6 +113,7 @@ TabletModeWindowDragDelegate::~TabletModeWindowDragDelegate() {
     }
   }
 
+  split_view_controller_->OnWindowDragCanceled();
   Shell::Get()->UpdateShelfVisibility();
 }
 

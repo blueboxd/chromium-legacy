@@ -536,7 +536,6 @@ TEST_F(GaiaAuthFetcherTest, LogOutSuccess) {
 
 TEST_F(GaiaAuthFetcherTest, LogOutFailure) {
   net::Error error_no = net::ERR_CONNECTION_RESET;
-  net::URLRequestStatus status(net::URLRequestStatus::FAILED, error_no);
 
   GoogleServiceAuthError expected_error =
       GoogleServiceAuthError::FromConnectionError(error_no);

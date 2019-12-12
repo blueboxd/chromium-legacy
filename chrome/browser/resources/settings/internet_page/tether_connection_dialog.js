@@ -134,7 +134,8 @@ Polymer({
         managedProperties.typeProperties.tether.signalStrength :
         0;
     const networkTypeString = this.i18n('OncTypeTether');
-    return this.i18n('networkStrength', networkTypeString, signalStrength);
+    return this.i18n(
+        'networkIconLabelSignalStrength', networkTypeString, signalStrength);
   },
 
   /**

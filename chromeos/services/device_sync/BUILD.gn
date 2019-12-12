@@ -239,7 +239,6 @@ static_library("test_support") {
     "//chromeos/services/device_sync/proto:test_support",
     "//chromeos/services/device_sync/public/cpp",
     "//chromeos/services/device_sync/public/mojom",
-    "//chromeos/services/device_sync/public/mojom:unit_tests",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -300,6 +299,7 @@ source_set("unit_tests") {
     "//chromeos/services/device_sync/public/cpp:test_support",
     "//chromeos/services/device_sync/public/cpp:unit_tests",
     "//chromeos/services/device_sync/public/mojom",
+    "//chromeos/services/device_sync/public/mojom:unit_tests",
     "//components/gcm_driver:test_support",
     "//components/prefs:test_support",
     "//components/signin/public/identity_manager:test_support",

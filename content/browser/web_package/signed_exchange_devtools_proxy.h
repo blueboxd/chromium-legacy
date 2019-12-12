@@ -14,8 +14,7 @@
 #include "base/unguessable_token.h"
 #include "content/browser/web_package/signed_exchange_error.h"
 #include "content/common/content_export.h"
-#include "services/network/public/cpp/resource_response.h"
-#include "services/network/public/mojom/url_response_head.mojom-forward.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 class GURL;
 

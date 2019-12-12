@@ -108,11 +108,11 @@ TouchSelectionControllerClientAura::TouchSelectionControllerClientAura(
       internal_client_(rwhva),
       active_client_(&internal_client_),
       active_menu_client_(this),
-      quick_menu_timer_(
-          FROM_HERE,
-          base::TimeDelta::FromMilliseconds(kQuickMenuDelayInMs),
-          base::Bind(&TouchSelectionControllerClientAura::ShowQuickMenu,
-                     base::Unretained(this))),
+      quick_menu_timer_(FROM_HERE,
+                        base::TimeDelta::FromMilliseconds(kQuickMenuDelayInMs),
+                        base::BindRepeating(
+                            &TouchSelectionControllerClientAura::ShowQuickMenu,
+                            base::Unretained(this))),
       quick_menu_requested_(false),
       touch_down_(false),
       scroll_in_progress_(false),

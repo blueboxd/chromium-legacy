@@ -108,4 +108,23 @@ SharedImageRepresentationOverlay::BeginScopedReadAccess(bool needs_gl_image) {
       needs_gl_image ? GetGLImage() : nullptr);
 }
 
+SharedImageRepresentationDawn::ScopedAccess::ScopedAccess(
+    util::PassKey<SharedImageRepresentationDawn> /* pass_key */,
+    SharedImageRepresentationDawn* representation,
+    WGPUTexture texture)
+    : representation_(representation), texture_(texture) {}
+
+SharedImageRepresentationDawn::ScopedAccess::~ScopedAccess() {
+  representation_->EndAccess();
+}
+
+std::unique_ptr<SharedImageRepresentationDawn::ScopedAccess>
+SharedImageRepresentationDawn::BeginScopedAccess(WGPUTextureUsage usage) {
+  WGPUTexture texture = BeginAccess(usage);
+  if (!texture)
+    return nullptr;
+  return std::make_unique<ScopedAccess>(
+      util::PassKey<SharedImageRepresentationDawn>(), this, texture);
+}
+
 }  // namespace gpu

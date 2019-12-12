@@ -4153,10 +4153,12 @@ blink::WebRemoteFrame* RenderFrameImpl::AdoptPortal(
   int proxy_routing_id = MSG_ROUTING_NONE;
   base::UnguessableToken devtools_frame_token;
   FrameReplicationState replicated_state;
-  GetFrameHost()->AdoptPortal(portal_token, &proxy_routing_id,
+  viz::FrameSinkId frame_sink_id;
+  GetFrameHost()->AdoptPortal(portal_token, &proxy_routing_id, &frame_sink_id,
                               &replicated_state, &devtools_frame_token);
   RenderFrameProxy* proxy = RenderFrameProxy::CreateProxyForPortal(
       this, proxy_routing_id, devtools_frame_token, portal_element);
+  proxy->FrameSinkIdChanged(frame_sink_id);
   proxy->SetReplicatedState(replicated_state);
   return proxy->web_frame();
 }

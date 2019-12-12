@@ -85,6 +85,8 @@ std::string GetDownloadBlockingExtensionMetricName(
       return GetDLBlockingHistogramName(
           kInsecureDownloadExtensionInitiatorInferredInsecure,
           kInsecureDownloadHistogramTargetInsecure);
+    case InsecureDownloadSecurityStatus::kDownloadIgnored:
+      NOTREACHED();
   }
   NOTREACHED();
   return std::string();
@@ -142,6 +144,44 @@ bool ShouldBlockFileAsMixedContent(const base::FilePath& path,
       "exe", "scr", "msi", "vb",  "dmg", "pkg", "crx",
       "gz",  "zip", "bz2", "rar", "7z",  "tar",
   };
+
+  auto download_source = item.GetDownloadSource();
+  auto transition_type = item.GetTransitionType();
+
+  // Ignore downloads that don't qualify for blocking. At a minimum, this
+  // includes:
+  //  - retries/reloads (since the original DL would have been blocked, and
+  //    initiating context is lost on retry anyway),
+  //  - anything triggered directly from the address bar or similar.
+  //  - internal-Chrome downloads (e.g. downloading profile photos),
+  //  - webview/CCT,
+  //  - anything extension related,
+  //  - etc.
+  //
+  // TODO(1029062): INTERNAL_API is also used for background fetch. That
+  // probably isn't the correct behavior, since INTERNAL_API is otherwise used
+  // for Chrome stuff. Background fetch should probably be HTTPS-only.
+  //
+  // We permit DownloadSource::CONTEXT_MENU and DownloadSource::WEB_CONTENTS_API
+  // since we infer their 'initiator' as the tab page, below. However,
+  // eventually they will receive differing treatment.
+  if (download_source == DownloadSource::RETRY ||
+      (transition_type & ui::PAGE_TRANSITION_RELOAD) ||
+      (transition_type & ui::PAGE_TRANSITION_TYPED) ||
+      (transition_type & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) ||
+      (transition_type & ui::PAGE_TRANSITION_FORWARD_BACK) ||
+      (transition_type & ui::PAGE_TRANSITION_AUTO_TOPLEVEL) ||
+      (transition_type & ui::PAGE_TRANSITION_AUTO_BOOKMARK) ||
+      (transition_type & ui::PAGE_TRANSITION_FROM_API) ||
+      download_source == DownloadSource::OFFLINE_PAGE ||
+      download_source == DownloadSource::INTERNAL_API ||
+      download_source == DownloadSource::EXTENSION_API ||
+      download_source == DownloadSource::EXTENSION_INSTALLER) {
+    base::UmaHistogramEnumeration(
+        kInsecureDownloadHistogramName,
+        InsecureDownloadSecurityStatus::kDownloadIgnored);
+    return false;
+  }
 
   // Evaluate download security
   const GURL& dl_url = item.GetURL();

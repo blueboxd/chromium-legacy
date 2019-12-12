@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -73,7 +74,8 @@ enum class ShouldShowSurveyReasons {
   kNoBelowProbabilityLimit = 6,
   kNoTriggerStringMismatch = 7,
   kNoNotRegularBrowser = 8,
-  kMaxValue = kNoNotRegularBrowser,
+  kNoIncognitoDisabled = 9,
+  kMaxValue = kNoIncognitoDisabled,
 };
 
 }  // namespace
@@ -107,9 +109,19 @@ void HatsService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 void HatsService::LaunchSatisfactionSurvey() {
   if (ShouldShowSurvey(kHatsSurveyTriggerSatisfaction)) {
     Browser* browser = chrome::FindLastActive();
-    // Never show HaTS bubble in Incognito mode.
+    // Never show HaTS bubble for Incognito mode.
     if (browser && browser->is_type_normal() &&
         profiles::IsRegularOrGuestSession(browser)) {
+      // Incognito mode needs to be enabled to create an off-the-record profile
+      // for HaTS dialog.
+      if (IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) ==
+          IncognitoModePrefs::DISABLED) {
+        UMA_HISTOGRAM_ENUMERATION(
+            kHatsShouldShowSurveyReasonHistogram,
+            ShouldShowSurveyReasons::kNoIncognitoDisabled);
+        return;
+      }
+
       UMA_HISTOGRAM_ENUMERATION(kHatsShouldShowSurveyReasonHistogram,
                                 ShouldShowSurveyReasons::kYes);
       browser->window()->ShowHatsBubble(en_site_id_);

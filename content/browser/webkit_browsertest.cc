@@ -30,10 +30,10 @@ bool AbortOnEndInterceptor(URLLoaderInterceptor::RequestParams* params) {
   net::HttpResponseInfo info;
   info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(headers));
-  network::ResourceResponseHead response;
-  response.headers = info.headers;
-  response.headers->GetMimeType(&response.mime_type);
-  params->client->OnReceiveResponse(response);
+  auto response = network::mojom::URLResponseHead::New();
+  response->headers = info.headers;
+  response->headers->GetMimeType(&response->mime_type);
+  params->client->OnReceiveResponse(std::move(response));
 
   std::string body = "some data\r\n";
   uint32_t bytes_written = body.size();

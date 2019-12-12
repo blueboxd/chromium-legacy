@@ -493,7 +493,7 @@ TEST_F(AccessibilitySelectionTest, SetSelectionInDisplayNone) {
 // endpoints.
 //
 
-TEST_F(AccessibilitySelectionTest, SetSelectionAroundListBullet) {
+TEST_P(ParameterizedAccessibilitySelectionTest, SetSelectionAroundListBullet) {
   SetBodyInnerHTML(R"HTML(
       <div role="main">
         <ul>
@@ -565,21 +565,36 @@ TEST_F(AccessibilitySelectionTest, SetSelectionAroundListBullet) {
   EXPECT_EQ(text_2, extended_selection.Extent().AnchorNode());
   EXPECT_EQ(7, extended_selection.Extent().OffsetInContainerNode());
 
+  std::string expectations;
+  if (LayoutNGEnabled()) {
+    expectations =
+        "++<GenericContainer>\n"
+        "++++<Main>\n"
+        "++++++<List>\n"
+        "++++++++<ListItem>\n"
+        "++++++++++<ListMarker: \xE2\x80\xA2 >\n"
+        "^++++++++++++<StaticText: ^\xE2\x80\xA2 >\n"
+        "++++++++++<StaticText: Item 1.>\n"
+        "++++++++<ListItem>\n"
+        "++++++++++<ListMarker: \xE2\x80\xA2 >\n"
+        "++++++++++++<StaticText: \xE2\x80\xA2 >\n"
+        "++++++++++<StaticText: Item 2.|>\n";
+  } else {
+    expectations =
+        "++<GenericContainer>\n"
+        "++++<Main>\n"
+        "++++++<List>\n"
+        "++++++++<ListItem>\n"
+        "++++++++++<ListMarker: \xE2\x80\xA2 >\n"
+        "^++++++++++<StaticText: Item 1.>\n"
+        "++++++++<ListItem>\n"
+        "++++++++++<ListMarker: \xE2\x80\xA2 >\n"
+        "++++++++++<StaticText: Item 2.|>\n";
+  }
+
   // The |AXSelection| should remain unaffected by any shrinking and should
   // include both list bullets.
-  EXPECT_EQ(
-      "++<GenericContainer>\n"
-      "++++<Main>\n"
-      "++++++<List>\n"
-      "++++++++<ListItem>\n"
-      "++++++++++<ListMarker: \xE2\x80\xA2 >\n"
-      "^++++++++++++<StaticText: ^\xE2\x80\xA2 >\n"
-      "++++++++++<StaticText: Item 1.>\n"
-      "++++++++<ListItem>\n"
-      "++++++++++<ListMarker: \xE2\x80\xA2 >\n"
-      "++++++++++++<StaticText: \xE2\x80\xA2 >\n"
-      "++++++++++<StaticText: Item 2.|>\n",
-      GetSelectionText(ax_selection));
+  EXPECT_EQ(expectations, GetSelectionText(ax_selection));
 }
 
 //
@@ -1731,8 +1746,8 @@ TEST_F(AccessibilitySelectionTest, ARIAHidden) {
   RunSelectionTest("aria-hidden");
 }
 
-TEST_F(AccessibilitySelectionTest, List) {
-  RunSelectionTest("list");
+TEST_P(ParameterizedAccessibilitySelectionTest, List) {
+  ParameterizedAccessibilitySelectionTest::RunSelectionTest("list");
 }
 
 TEST_F(AccessibilitySelectionTest, SVG) {

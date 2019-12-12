@@ -253,7 +253,7 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
 
                 TestThreadUtils.runOnUiThreadBlocking(() -> {
                     // Ensure SyncController is registered with the new AndroidSyncSettings.
-                    AndroidSyncSettings.get().registerObserver(SyncController.get(mContext));
+                    AndroidSyncSettings.get().registerObserver(SyncController.get());
                     mFakeServerHelper = FakeServerHelper.get();
                 });
                 FakeServerHelper.useFakeServer(mContext);

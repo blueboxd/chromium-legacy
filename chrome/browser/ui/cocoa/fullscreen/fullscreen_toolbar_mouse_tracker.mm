@@ -20,20 +20,20 @@ const CGFloat kTrackingAreaAdditionalThreshold = 50;
 @interface FullscreenToolbarMouseTracker () {
   // The frame for the tracking area. The value is the toolbar's frame with
   // additional height added at the bottom.
-  NSRect trackingAreaFrame_;
+  NSRect _trackingAreaFrame;
 
   // The tracking area associated with the toolbar. This tracking area is used
   // to keep the toolbar active if the menubar had animated out but the mouse
   // is still on the toolbar.
-  base::scoped_nsobject<CrTrackingArea> trackingArea_;
+  base::scoped_nsobject<CrTrackingArea> _trackingArea;
 
   // Keeps the menu bar from hiding until the mouse exits the tracking area.
-  std::unique_ptr<ScopedMenuBarLock> menuBarLock_;
+  std::unique_ptr<ScopedMenuBarLock> _menuBarLock;
 
   // The content view for the window.
-  NSView* contentView_;  // weak
+  NSView* _contentView;  // weak
 
-  FullscreenToolbarController* controller_;  // weak
+  FullscreenToolbarController* _controller;  // weak
 }
 
 @end
@@ -43,7 +43,7 @@ const CGFloat kTrackingAreaAdditionalThreshold = 50;
 - (instancetype)initWithFullscreenToolbarController:
     (FullscreenToolbarController*)controller {
   if ((self = [super init])) {
-    controller_ = controller;
+    _controller = controller;
   }
 
   return self;
@@ -56,57 +56,57 @@ const CGFloat kTrackingAreaAdditionalThreshold = 50;
 
 - (void)updateTrackingArea {
   // Remove the tracking area if the toolbar and menu bar aren't both visible.
-  if ([controller_ toolbarFraction] == 0 || ![NSMenu menuBarVisible]) {
+  if ([_controller toolbarFraction] == 0 || ![NSMenu menuBarVisible]) {
     [self removeTrackingArea];
-    menuBarLock_.reset();
+    _menuBarLock.reset();
     return;
   }
 
-  if (trackingArea_) {
+  if (_trackingArea) {
     // If |trackingArea_|'s rect matches |trackingAreaFrame_|, quit early.
-    if (NSEqualRects(trackingAreaFrame_, [trackingArea_ rect]))
+    if (NSEqualRects(_trackingAreaFrame, [_trackingArea rect]))
       return;
 
     [self removeTrackingArea];
   }
 
-  contentView_ = [[[controller_ delegate] window] contentView];
+  _contentView = [[[_controller delegate] window] contentView];
 
-  trackingArea_.reset([[CrTrackingArea alloc]
-      initWithRect:trackingAreaFrame_
+  _trackingArea.reset([[CrTrackingArea alloc]
+      initWithRect:_trackingAreaFrame
            options:NSTrackingMouseEnteredAndExited | NSTrackingActiveInKeyWindow
              owner:self
           userInfo:nil]);
 
-  [contentView_ addTrackingArea:trackingArea_];
+  [_contentView addTrackingArea:_trackingArea];
 }
 
 - (void)updateToolbarFrame:(NSRect)frame {
-  NSRect contentBounds = [[[[controller_ delegate] window] contentView] bounds];
-  trackingAreaFrame_ = frame;
-  trackingAreaFrame_.origin.y -= kTrackingAreaAdditionalThreshold;
-  trackingAreaFrame_.size.height =
-      NSMaxY(contentBounds) - trackingAreaFrame_.origin.y;
+  NSRect contentBounds = [[[[_controller delegate] window] contentView] bounds];
+  _trackingAreaFrame = frame;
+  _trackingAreaFrame.origin.y -= kTrackingAreaAdditionalThreshold;
+  _trackingAreaFrame.size.height =
+      NSMaxY(contentBounds) - _trackingAreaFrame.origin.y;
 
   [self updateTrackingArea];
 }
 
 - (void)removeTrackingArea {
-  if (!trackingArea_)
+  if (!_trackingArea)
     return;
 
-  DCHECK(contentView_);
-  [contentView_ removeTrackingArea:trackingArea_];
-  trackingArea_.reset();
-  contentView_ = nil;
+  DCHECK(_contentView);
+  [_contentView removeTrackingArea:_trackingArea];
+  _trackingArea.reset();
+  _contentView = nil;
 }
 
 - (void)mouseEntered:(NSEvent*)event {
-  menuBarLock_ = std::make_unique<ScopedMenuBarLock>();
+  _menuBarLock = std::make_unique<ScopedMenuBarLock>();
 }
 
 - (void)mouseExited:(NSEvent*)event {
-  menuBarLock_.reset();
+  _menuBarLock.reset();
 }
 
 @end

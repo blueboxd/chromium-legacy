@@ -39,6 +39,14 @@ TestAutofillBubbleHandler::ShowLocalCardMigrationBubble(
   return local_card_migration_bubble_view_.get();
 }
 
+SaveUPIBubble* TestAutofillBubbleHandler::ShowSaveUPIBubble(
+    content::WebContents* contents,
+    SaveUPIBubbleController* controller) {
+  if (!save_upi_bubble_)
+    save_upi_bubble_ = std::make_unique<TestSaveUPIBubble>();
+  return save_upi_bubble_.get();
+}
+
 void TestAutofillBubbleHandler::OnPasswordSaved() {}
 
 void TestAutofillBubbleHandler::HideSignInPromo() {}

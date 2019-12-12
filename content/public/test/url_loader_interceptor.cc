@@ -554,11 +554,11 @@ void URLLoaderInterceptor::WriteResponse(
   net::HttpResponseInfo info;
   info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(headers));
-  network::ResourceResponseHead response;
-  response.headers = info.headers;
-  response.headers->GetMimeType(&response.mime_type);
-  response.ssl_info = std::move(ssl_info);
-  client->OnReceiveResponse(response);
+  auto response = network::mojom::URLResponseHead::New();
+  response->headers = info.headers;
+  response->headers->GetMimeType(&response->mime_type);
+  response->ssl_info = std::move(ssl_info);
+  client->OnReceiveResponse(std::move(response));
 
   uint32_t bytes_written = body.size();
   mojo::DataPipe data_pipe(body.size());

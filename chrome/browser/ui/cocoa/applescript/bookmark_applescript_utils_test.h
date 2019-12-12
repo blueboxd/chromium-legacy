@@ -14,8 +14,8 @@
 
 // Used to emulate an active running script, useful for testing purposes.
 @interface FakeScriptCommand : NSScriptCommand {
-  Method originalMethod_;
-  Method alternateMethod_;
+  Method _originalMethod;
+  Method _alternateMethod;
 }
 @end
 

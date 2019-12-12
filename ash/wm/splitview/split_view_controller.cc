@@ -808,6 +808,11 @@ void SplitViewController::OnWindowDragEnded(
   }
 }
 
+void SplitViewController::OnWindowDragCanceled() {
+  if (split_view_divider_)
+    split_view_divider_->OnWindowDragEnded();
+}
+
 void SplitViewController::AddObserver(SplitViewObserver* observer) {
   observers_.AddObserver(observer);
 }

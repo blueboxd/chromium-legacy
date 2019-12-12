@@ -22,8 +22,8 @@ using LocationUpdateCallback = base::RepeatingCallback<void(const NSPoint&)>;
 // MouseCursorOverlayController::Observer.
 @interface MouseCursorOverlayTracker : NSObject {
  @private
-  LocationUpdateCallback callback_;
-  ui::ScopedCrTrackingArea trackingArea_;
+  LocationUpdateCallback _callback;
+  ui::ScopedCrTrackingArea _trackingArea;
 }
 - (instancetype)initWithCallback:(LocationUpdateCallback)callback
                          andView:(NSView*)nsView;
@@ -35,36 +35,36 @@ using LocationUpdateCallback = base::RepeatingCallback<void(const NSPoint&)>;
 - (instancetype)initWithCallback:(LocationUpdateCallback)callback
                          andView:(NSView*)nsView {
   if ((self = [super init])) {
-    callback_ = std::move(callback);
+    _callback = std::move(callback);
     constexpr NSTrackingAreaOptions kTrackingOptions =
         NSTrackingMouseMoved | NSTrackingMouseEnteredAndExited |
         NSTrackingActiveInKeyWindow | NSTrackingInVisibleRect |
         NSTrackingEnabledDuringMouseDrag;
-    trackingArea_.reset([[CrTrackingArea alloc] initWithRect:NSZeroRect
+    _trackingArea.reset([[CrTrackingArea alloc] initWithRect:NSZeroRect
                                                      options:kTrackingOptions
                                                        owner:self
                                                     userInfo:nil]);
-    [nsView addTrackingArea:trackingArea_.get()];
+    [nsView addTrackingArea:_trackingArea.get()];
   }
   return self;
 }
 
 - (void)stopTracking:(NSView*)nsView {
-  [nsView removeTrackingArea:trackingArea_.get()];
-  trackingArea_.reset();
-  callback_.Reset();
+  [nsView removeTrackingArea:_trackingArea.get()];
+  _trackingArea.reset();
+  _callback.Reset();
 }
 
 - (void)mouseMoved:(NSEvent*)theEvent {
-  callback_.Run([theEvent locationInWindow]);
+  _callback.Run([theEvent locationInWindow]);
 }
 
 - (void)mouseEntered:(NSEvent*)theEvent {
-  callback_.Run([theEvent locationInWindow]);
+  _callback.Run([theEvent locationInWindow]);
 }
 
 - (void)mouseExited:(NSEvent*)theEvent {
-  callback_.Run([theEvent locationInWindow]);
+  _callback.Run([theEvent locationInWindow]);
 }
 
 @end

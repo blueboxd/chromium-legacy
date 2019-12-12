@@ -511,11 +511,10 @@ MediaStreamManager::MediaStreamManager(
     media::AudioSystem* audio_system,
     scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
     std::unique_ptr<VideoCaptureProvider> video_capture_provider)
-    : audio_system_(audio_system),
-      fake_ui_factory_() {
+    : audio_system_(audio_system) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseFakeUIForMediaStream)) {
-    fake_ui_factory_ = base::Bind([] {
+    fake_ui_factory_ = base::BindRepeating([] {
       return std::make_unique<FakeMediaStreamUIProxy>(
           /*tests_use_fake_render_frame_hosts=*/false);
     });
@@ -1827,7 +1826,7 @@ void MediaStreamManager::OnResume() {
 }
 
 void MediaStreamManager::UseFakeUIFactoryForTests(
-    base::Callback<std::unique_ptr<FakeMediaStreamUIProxy>(void)>
+    base::RepeatingCallback<std::unique_ptr<FakeMediaStreamUIProxy>(void)>
         fake_ui_factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   fake_ui_factory_ = std::move(fake_ui_factory);

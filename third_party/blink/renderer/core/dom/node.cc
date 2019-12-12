@@ -366,12 +366,6 @@ ContainerNode* Node::parentNode() const {
   return IsShadowRoot() ? nullptr : ParentOrShadowHostNode();
 }
 
-ContainerNode* Node::ParentNodeWithCounting() const {
-  if (GetFlag(kInDOMNodeRemovedHandler))
-    GetDocument().CountDetachingNodeAccessInDOMNodeRemovedHandler();
-  return IsShadowRoot() ? nullptr : ParentOrShadowHostNode();
-}
-
 NodeList* Node::childNodes() {
   ThreadState::MainThreadGCForbiddenScope gc_forbidden;
   auto* this_node = DynamicTo<ContainerNode>(this);

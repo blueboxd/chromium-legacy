@@ -69,7 +69,7 @@ typedef long long CrCoreCursorType;
 
 @interface CrCoreCursor : NSCursor {
  @private
-  CrCoreCursorType type_;
+  CrCoreCursorType _type;
 }
 
 + (id)cursorWithType:(CrCoreCursorType)type;
@@ -91,13 +91,13 @@ typedef long long CrCoreCursorType;
 
 - (id)initWithType:(CrCoreCursorType)type {
   if ((self = [super init])) {
-    type_ = type;
+    _type = type;
   }
   return self;
 }
 
 - (CrCoreCursorType)_coreCursorType {
-  return type_;
+  return _type;
 }
 
 @end

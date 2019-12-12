@@ -96,6 +96,11 @@ ExpandArrowView::ExpandArrowView(ContentsView* contents_view,
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
+  // ExpandArrowView draws its own focus, removing FocusRing prevents double
+  // focus.
+  // TODO(pbos): Replace ::OnPaint focus painting with FocusRing +
+  // HighlightPathGenerator usage.
+  SetInstallFocusRingOnFocus(false);
   SetInkDropMode(InkDropMode::ON);
 
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_APP_LIST_EXPAND_BUTTON));

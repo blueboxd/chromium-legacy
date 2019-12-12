@@ -17,7 +17,7 @@
 
 - (instancetype)initWithDelegate:(ViewsScrollbarBridgeDelegate*)delegate {
   if ((self = [super init])) {
-    delegate_ = delegate;
+    _delegate = delegate;
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(onScrollerStyleChanged:)
@@ -28,18 +28,18 @@
 }
 
 - (void)dealloc {
-  DCHECK(!delegate_);
+  DCHECK(!_delegate);
   [super dealloc];
 }
 
 - (void)clearDelegate {
-  delegate_ = nullptr;
+  _delegate = nullptr;
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (void)onScrollerStyleChanged:(NSNotification*)notification {
-  if (delegate_)
-    delegate_->OnScrollerStyleChanged();
+  if (_delegate)
+    _delegate->OnScrollerStyleChanged();
 }
 
 + (NSScrollerStyle)getPreferredScrollerStyle {

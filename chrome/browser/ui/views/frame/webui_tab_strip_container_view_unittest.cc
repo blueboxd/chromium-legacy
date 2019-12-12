@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/views/frame/webui_tab_strip_container_view.h"
 
 #include "base/command_line.h"
+#include "base/test/scoped_feature_list.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/common/chrome_switches.h"
@@ -21,13 +23,13 @@ class WebUITabStripContainerViewTest : public TestWithBrowserView {
     // times on different platforms.
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kTopChromeTouchUi, switches::kTopChromeTouchUiEnabled);
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kWebUITabStrip);
+    feature_override_.InitAndEnableFeature(features::kWebUITabStrip);
   }
 
   ~WebUITabStripContainerViewTest() override = default;
 
  private:
+  base::test::ScopedFeatureList feature_override_;
   ui::test::MaterialDesignControllerTestAPI touch_mode_;
 };
 

@@ -36,7 +36,7 @@
          presentsModal:NO
                   type:InfobarType::kInfobarTypeConfirm];
   self.bannerViewController.titleText = kInfobarBannerTitleLabel;
-  self.bannerViewController.subTitleText = kInfobarBannerSubtitleLabel;
+  self.bannerViewController.subtitleText = kInfobarBannerSubtitleLabel;
   self.bannerViewController.buttonText = kInfobarBannerButtonLabel;
   self.containerViewController.bannerViewController = self.bannerViewController;
 

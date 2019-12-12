@@ -22,6 +22,7 @@
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
@@ -51,6 +52,7 @@ namespace chromeos {
 namespace {
 
 const char kEpsonGenericPPD[] = "epson generic escpr printer";
+const char kLicenseKey[] = "license";
 
 // Holds a metadata_v2 reverse-index response
 struct ReverseIndexJSON {
@@ -65,6 +67,14 @@ struct ReverseIndexJSON {
 
   // Restrictions for this manufacturer
   PpdProvider::Restrictions restrictions;
+};
+
+struct PpdLicenseJSON {
+  // Canonical name of printer
+  std::string effective_make_and_model;
+
+  // Name of associated license. If empty, then there is no associated license.
+  std::string license;
 };
 
 // Holds a metadata_v2 manufacturers response
@@ -98,6 +108,9 @@ struct PpdIndexJSON {
 
   // Ppd filename
   std::string ppd_filename;
+
+  // Name of associated license. If empty, then there is no associated license.
+  std::string license;
 };
 
 // A queued request to download printer information for a manufacturer.
@@ -117,6 +130,23 @@ struct PrinterResolutionQueueEntry {
   PpdProvider::ResolvePrintersCallback cb;
 
   DISALLOW_COPY_AND_ASSIGN(PrinterResolutionQueueEntry);
+};
+
+struct PpdLicenseQueueEntry {
+  PpdLicenseQueueEntry() = default;
+  PpdLicenseQueueEntry(const PpdLicenseQueueEntry&) = delete;
+  PpdLicenseQueueEntry& operator=(const PpdLicenseQueueEntry&) = delete;
+  PpdLicenseQueueEntry(PpdLicenseQueueEntry&& other) = default;
+  ~PpdLicenseQueueEntry() = default;
+
+  // Canonical printer name.
+  std::string effective_make_and_model;
+
+  // URL we are going to pull from.
+  GURL url;
+
+  // User callback upon completion of request.
+  PpdProvider::ResolvePpdLicenseCallback cb;
 };
 
 // A queued request to download reverse index information for a make and model
@@ -311,6 +341,15 @@ bool FetchFile(const GURL& url, std::string* file_contents) {
   return base::ReadFileToString(path, file_contents);
 }
 
+std::string ComputeLicense(const base::Value& dict) {
+  std::string license;
+  const std::string* found = dict.FindStringKey(kLicenseKey);
+  if (found) {
+    license = *found;
+  }
+  return license;
+}
+
 // Constructs and returns a printers' restrictions parsed from |dict|.
 PpdProvider::Restrictions ComputeRestrictions(const base::Value& dict) {
   DCHECK(dict.is_dict());
@@ -398,7 +437,8 @@ class PpdProviderImpl : public PpdProvider {
     FT_PPD_INDEX,      // Master ppd index.
     FT_PPD,            // A Ppd file.
     FT_REVERSE_INDEX,  // List of sharded printers from a manufacturer
-    FT_USB_DEVICES     // USB device id to canonical name map.
+    FT_USB_DEVICES,    // USB device id to canonical name map.
+    FT_LICENSE,        // License information for a PPD file.
   };
 
   PpdProviderImpl(const std::string& browser_locale,
@@ -571,6 +611,9 @@ class PpdProviderImpl : public PpdProvider {
                           PpdProvider::INTERNAL_ERROR);
       ppd_resolution_queue_.pop_front();
     }
+    if (!ppd_license_resolution_queue_.empty()) {
+      StartFetch(ppd_license_resolution_queue_.front().url, FT_LICENSE);
+    }
   }
 
   void ResolvePrinters(const std::string& manufacturer,
@@ -640,6 +683,34 @@ class PpdProviderImpl : public PpdProvider {
                                     lowercase_reference, std::move(cb)));
   }
 
+  void ResolvePpdLicense(base::StringPiece effective_make_and_model,
+                         ResolvePpdLicenseCallback cb) override {
+    if (effective_make_and_model.empty()) {
+      LOG(WARNING) << "Cannot resolve an empty make and model";
+      PostResolvePpdLicenseFailure(PpdProvider::NOT_FOUND, std::move(cb));
+      return;
+    }
+
+    // In v2 metadata, we work with lowercased effective_make_and_models.
+    std::string lowercase_effective_make_and_model =
+        base::ToLowerASCII(effective_make_and_model);
+
+    // Check to see if |lowercase_effective_make_and_model| is already present
+    // in |cached_licenses_|.
+    auto iter = cached_licenses_.find(lowercase_effective_make_and_model);
+    if (iter != cached_licenses_.end()) {
+      PostResolvePpdLicenseSuccess(std::move(cb), iter->second);
+      return;
+    }
+
+    PpdLicenseQueueEntry entry;
+    entry.effective_make_and_model = lowercase_effective_make_and_model;
+    entry.url = GetPpdIndexURL(lowercase_effective_make_and_model);
+    entry.cb = std::move(cb);
+    ppd_license_resolution_queue_.push_back(std::move(entry));
+    MaybeStartFetch();
+  }
+
   void ReverseLookup(const std::string& effective_make_and_model,
                      ReverseLookupCallback cb) override {
     if (effective_make_and_model.empty()) {
@@ -688,6 +759,9 @@ class PpdProviderImpl : public PpdProvider {
       case FT_USB_DEVICES:
         OnUsbFetchComplete();
         break;
+      case FT_LICENSE:
+        OnLicenseFetchComplete();
+        break;
       default:
         LOG(DFATAL) << "Unknown fetch source";
     }
@@ -715,6 +789,12 @@ class PpdProviderImpl : public PpdProvider {
     return GURL(base::StringPrintf("%s/metadata_v2/index-%02d.json",
                                    options_.ppd_server_root.c_str(),
                                    ppd_index_shard));
+  }
+
+  // Return the URL of the index shard associated with
+  // |effective_make_and_model|.
+  GURL GetPpdIndexURL(const std::string& effective_make_and_model) {
+    return GetPpdIndexURL(IndexShard(effective_make_and_model));
   }
 
   // Return the ppd index shard number from its |url|.
@@ -998,6 +1078,9 @@ class PpdProviderImpl : public PpdProvider {
       for (const auto& entry : contents) {
         cached_ppd_index.insert(
             {entry.effective_make_and_model, entry.ppd_filename});
+        // Cache the license information while we have it.
+        cached_licenses_.insert(
+            {entry.effective_make_and_model, entry.license});
       }
     }
   }
@@ -1027,6 +1110,43 @@ class PpdProviderImpl : public PpdProvider {
                           PpdProvider::SUCCESS);
     }
     ppd_resolution_queue_.pop_front();
+  }
+
+  // This is called when |fetch_| should have just downloaded an index file. If
+  // the index was downloaded successfully it is used to to determine the PPD
+  // license associated with a printer.
+  void OnLicenseFetchComplete() {
+    DCHECK(!ppd_license_resolution_queue_.empty());
+    std::vector<PpdLicenseJSON> contents;
+    PpdProvider::CallbackResultCode code =
+        ValidateAndParseLicenseJSON(&contents);
+    PpdLicenseQueueEntry entry =
+        std::move(ppd_license_resolution_queue_.front());
+    ppd_license_resolution_queue_.pop_front();
+
+    if (code != PpdProvider::SUCCESS) {
+      LOG(ERROR) << "Request Failed or failed to parse index contents";
+      PostResolvePpdLicenseFailure(code, std::move(entry.cb));
+      return;
+    }
+
+    auto found =
+        std::find_if(contents.begin(), contents.end(),
+                     [&entry](const PpdLicenseJSON& license_json) -> bool {
+                       return license_json.effective_make_and_model ==
+                              entry.effective_make_and_model;
+                     });
+
+    if (found == contents.end()) {
+      LOG(ERROR) << "Failed to lookup printer in retrieved license response";
+      PostResolvePpdLicenseFailure(PpdProvider::NOT_FOUND, std::move(entry.cb));
+      return;
+    }
+
+    // Place the resolved license into the cache
+    cached_licenses_.insert({found->effective_make_and_model, found->license});
+
+    PostResolvePpdLicenseSuccess(std::move(entry.cb), found->license);
   }
 
   // This is called when |fetch_| should have just downloaded a reverse index
@@ -1350,6 +1470,35 @@ class PpdProviderImpl : public PpdProvider {
     }
   }
 
+  // Attempts to parse the PpdIndexJSON reply to |fetcher| into the passed
+  // contents. This function differs from ValidateAndParsePpdIndexJSON in that
+  // here were are only concerned with the value of the optional "license" field
+  // and not the name of the PPD file. Returns PpdProvider::SUCCESS on valid
+  // JSON formatting and filled |contents|, clears |contents| otherwise.
+  PpdProvider::CallbackResultCode ValidateAndParseLicenseJSON(
+      std::vector<PpdLicenseJSON>* contents) {
+    contents->clear();
+
+    base::Value::ListStorage top_list;
+    auto ret = ParseAndValidateJSONFormat(&top_list, 2);
+    if (ret != PpdProvider::SUCCESS) {
+      LogJSONValidationError("PpdIndex", ret);
+      return ret;
+    }
+
+    for (const auto& entry : top_list) {
+      base::span<const base::Value> list = entry.GetList();
+      PpdLicenseJSON license_json;
+      license_json.effective_make_and_model = list[0].GetString();
+      if (list.size() == 3) {
+        license_json.license = ComputeLicense(list[2]);
+      }
+      contents->push_back(std::move(license_json));
+    }
+
+    return PpdProvider::SUCCESS;
+  }
+
   // Attempts to parse a ReverseIndexJSON reply to |fetcher| into the passed
   // contents. Returns PpdProvider::SUCCESS on valid JSON formatting and filled
   // |contents|, clears |contents| otherwise.
@@ -1476,7 +1625,10 @@ class PpdProviderImpl : public PpdProvider {
       PpdIndexJSON pij_entry;
       pij_entry.effective_make_and_model = list[0].GetString();
       pij_entry.ppd_filename = list[1].GetString();
-
+      // Compute the license information in order to cache it for later.
+      if (list.size() == 3) {
+        pij_entry.license = ComputeLicense(list[2]);
+      }
       contents->push_back(pij_entry);
     }
     return PpdProvider::SUCCESS;
@@ -1533,6 +1685,23 @@ class PpdProviderImpl : public PpdProvider {
     // This look up is done asynchronously since we will later be using a server
     // look up for the manufacturer name.
     RunPpdReferenceResolutionNotFound(std::move(cb), manufacturer);
+  }
+
+  void PostResolvePpdLicenseSuccess(ResolvePpdLicenseCallback cb,
+                                    const std::string& license) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(cb), PpdProvider::SUCCESS, license));
+  }
+
+  // Convenience function for issuing a failure response to ResolvePpdLicense().
+  // Posts the callback |cb| with the given |result|. The value of the returned
+  // license string should not matter since there is an error response.
+  void PostResolvePpdLicenseFailure(CallbackResultCode result,
+                                    ResolvePpdLicenseCallback cb) {
+    DCHECK_NE(result, PpdProvider::SUCCESS);
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(cb), result, std::string()));
   }
 
   void PostReverseLookupFailure(CallbackResultCode result,
@@ -1595,6 +1764,10 @@ class PpdProviderImpl : public PpdProvider {
   std::unordered_map<int, std::unordered_map<std::string, std::string>>
       cached_ppd_idxs_;
 
+  // Caches mappings between effective_make_and_model values and the name of
+  // their associated license.
+  std::unordered_map<std::string, std::string> cached_licenses_;
+
   // Queued ResolveManufacturers() calls.  We will simultaneously resolve
   // all queued requests, so no need for a deque here.
   std::vector<ResolveManufacturersCallback> manufacturers_resolution_queue_;
@@ -1608,6 +1781,9 @@ class PpdProviderImpl : public PpdProvider {
   // Queued ResolvePpdReference() requests.
   base::circular_deque<PpdReferenceResolutionQueueEntry>
       ppd_reference_resolution_queue_;
+
+  // Queued ResolvePpdLicense() requests;
+  base::circular_deque<PpdLicenseQueueEntry> ppd_license_resolution_queue_;
 
   // Queued ReverseIndex() calls.
   base::circular_deque<ReverseIndexQueueEntry> reverse_index_resolution_queue_;

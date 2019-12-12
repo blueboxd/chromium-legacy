@@ -118,7 +118,7 @@ Super CA
                 <DIV >
                 </DIV>
                 <DIV >
-                    <BUTTON class=origin-button text-button type=button role=button aria-haspopup=true >
+                    <BUTTON class=origin-button text-button type=button role=button >
 Open full certificate details
                     </BUTTON>
                 </DIV>

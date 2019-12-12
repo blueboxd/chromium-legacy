@@ -25,7 +25,7 @@
 <translation id="7151209024774799310">从标签页组中移除标签页</translation>
 <translation id="7559245342362162951">以全屏网格状视图显示组中的标签页</translation>
 <translation id="7792771145871471484">查看建议。</translation>
-<translation id="7966321538264951561">关闭建议。</translation>
+<translation id="7966321538264951561">忽略此建议。</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{关闭 <ph name="TABS_COUNT_ONE" /> 个所选标签页}other{关闭 <ph name="TABS_COUNT_MANY" /> 个所选标签页}}</translation>
 <translation id="9150694013019234766">在屏幕底部附近的标签页组中切换标签页</translation>
 <translation id="9169594135889675189">向组中添加新标签页</translation>

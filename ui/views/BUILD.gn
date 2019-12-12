@@ -1123,6 +1123,7 @@ test("views_unittests") {
     "layout/grid_layout_unittest.cc",
     "layout/layout_manager_base_unittest.cc",
     "layout/normalized_geometry_unittest.cc",
+    "layout/proposed_layout_unittest.cc",
     "metadata/metadata_unittest.cc",
     "metadata/type_conversion_unittest.cc",
     "paint_info_unittest.cc",

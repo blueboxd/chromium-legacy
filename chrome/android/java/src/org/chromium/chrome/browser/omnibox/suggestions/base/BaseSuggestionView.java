@@ -119,17 +119,26 @@ public class BaseSuggestionView extends SimpleHorizontalLayoutView {
         mContentView.setContentView(view);
     }
 
-    /** Sets the delegate for the actions on the suggestion view. */
+    /** @return Embedded suggestion content view. */
+    public View getContentView() {
+        return mContentView.getContentView();
+    }
+
+    /**
+     * Set the delegate for the actions on the suggestion view.
+     *
+     * @param delegate Delegate receiving user events.
+     */
     void setDelegate(SuggestionViewDelegate delegate) {
         mDelegate = delegate;
     }
 
-    /** Return widget holding suggestion decoration icon. */
+    /** @return Widget holding suggestion decoration icon. */
     RoundedCornerImageView getSuggestionImageView() {
         return mContentView.getImageView();
     }
 
-    /** Return widget holding action icon. */
+    /** @return Widget holding action icon. */
     ImageView getActionImageView() {
         return mActionView;
     }

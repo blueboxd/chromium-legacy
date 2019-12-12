@@ -54,7 +54,7 @@ class TestHatsWebDialog : public HatsWebDialog {
   void OnMainFrameResourceLoadComplete(
       const content::mojom::ResourceLoadInfo& resource_load_info) {
     if (resource_load_info.net_error == net::Error::OK &&
-        resource_load_info.url == resource_url_) {
+        resource_load_info.original_url == resource_url_) {
       // The resource is loaded successfully.
       resource_loaded_ = true;
     }

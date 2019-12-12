@@ -28,8 +28,8 @@ import android.widget.Spinner;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.settings.MainPreferences;
 import org.chromium.chrome.browser.settings.SettingsUtils;
-import org.chromium.chrome.browser.ui.widget.FadingEdgeScrollView;
 import org.chromium.chrome.browser.widget.prefeditor.EditorDialog;
+import org.chromium.components.browser_ui.widget.FadingEdgeScrollView;
 
 /** Base class for Autofill editors (e.g. credit cards and profiles). */
 public abstract class AutofillEditorBase

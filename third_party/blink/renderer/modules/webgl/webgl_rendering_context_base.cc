@@ -2032,7 +2032,7 @@ void WebGLRenderingContextBase::bufferSubData(
   if (isContextLost())
     return;
   DCHECK(data);
-  BufferSubDataImpl(target, offset, data.ByteLength(),
+  BufferSubDataImpl(target, offset, data.DeprecatedByteLengthAsUnsigned(),
                     data.BaseAddressMaybeOnStack());
 }
 

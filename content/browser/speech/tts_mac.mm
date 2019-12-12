@@ -19,7 +19,7 @@ class TtsPlatformImplMac;
 
 @interface ChromeTtsDelegate : NSObject <NSSpeechSynthesizerDelegate> {
  @private
-  TtsPlatformImplMac* ttsImplMac_;  // weak.
+  TtsPlatformImplMac* _ttsImplMac;  // weak.
 }
 
 - (id)initWithPlatformImplMac:(TtsPlatformImplMac*)ttsImplMac;
@@ -39,8 +39,8 @@ class TtsPlatformImplMac;
 //    crash when trying to call willSpeakWord.
 @interface SingleUseSpeechSynthesizer : NSSpeechSynthesizer {
  @private
-  base::scoped_nsobject<NSString> utterance_;
-  bool didSpeak_;
+  base::scoped_nsobject<NSString> _utterance;
+  bool _didSpeak;
 }
 
 - (id)initWithUtterance:(NSString*)utterance;
@@ -317,14 +317,14 @@ TtsPlatformImplMac* TtsPlatformImplMac::GetInstance() {
 
 - (id)initWithPlatformImplMac:(TtsPlatformImplMac*)ttsImplMac {
   if ((self = [super init])) {
-    ttsImplMac_ = ttsImplMac;
+    _ttsImplMac = ttsImplMac;
   }
   return self;
 }
 
 - (void)speechSynthesizer:(NSSpeechSynthesizer*)sender
         didFinishSpeaking:(BOOL)finished_speaking {
-  ttsImplMac_->OnSpeechEvent(sender, content::TTS_EVENT_END, 0, -1, "");
+  _ttsImplMac->OnSpeechEvent(sender, content::TTS_EVENT_END, 0, -1, "");
 }
 
 - (void)speechSynthesizer:(NSSpeechSynthesizer*)sender
@@ -335,7 +335,7 @@ TtsPlatformImplMac* TtsPlatformImplMac::GetInstance() {
   if (word_range.location > [string length])
     return;
 
-  ttsImplMac_->OnSpeechEvent(sender, content::TTS_EVENT_WORD,
+  _ttsImplMac->OnSpeechEvent(sender, content::TTS_EVENT_WORD,
                              word_range.location, word_range.length, "");
 }
 
@@ -349,7 +349,7 @@ TtsPlatformImplMac* TtsPlatformImplMac::GetInstance() {
     return;
 
   std::string message_utf8 = base::SysNSStringToUTF8(message);
-  ttsImplMac_->OnSpeechEvent(sender, content::TTS_EVENT_ERROR, character_index,
+  _ttsImplMac->OnSpeechEvent(sender, content::TTS_EVENT_ERROR, character_index,
                              -1, message_utf8);
 }
 
@@ -360,17 +360,17 @@ TtsPlatformImplMac* TtsPlatformImplMac::GetInstance() {
 - (id)initWithUtterance:(NSString*)utterance {
   self = [super init];
   if (self) {
-    utterance_.reset([utterance retain]);
-    didSpeak_ = false;
+    _utterance.reset([utterance retain]);
+    _didSpeak = false;
   }
   return self;
 }
 
 - (bool)startSpeakingRetainedUtterance {
-  CHECK(!didSpeak_);
-  CHECK(utterance_);
-  didSpeak_ = true;
-  return [super startSpeakingString:utterance_];
+  CHECK(!_didSpeak);
+  CHECK(_utterance);
+  _didSpeak = true;
+  return [super startSpeakingString:_utterance];
 }
 
 - (bool)startSpeakingString:(NSString*)utterance {

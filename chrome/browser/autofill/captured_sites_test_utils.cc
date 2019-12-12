@@ -330,8 +330,8 @@ void TestRecipeReplayer::SetUpCommandLine(base::CommandLine* command_line) {
       base::StringPrintf(
           "MAP *:80 127.0.0.1:%d,"
           "MAP *:443 127.0.0.1:%d,"
-          // Uncomment to use the live autofill prediction server.
-          // "EXCLUDE clients1.google.com,"
+          // Set to always exclude, allows cache_replayer overwrite
+          "EXCLUDE clients1.google.com,"
           "EXCLUDE localhost",
           kHostHttpPort, kHostHttpsPort));
   command_line->AppendSwitchASCII(

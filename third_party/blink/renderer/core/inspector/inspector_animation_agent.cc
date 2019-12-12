@@ -167,14 +167,14 @@ InspectorAnimationAgent::BuildObjectForAnimation(blink::Animation& animation) {
 
   if (animation.effect()) {
     animation_effect_object =
-        BuildObjectForAnimationEffect(ToKeyframeEffect(animation.effect()));
+        BuildObjectForAnimationEffect(To<KeyframeEffect>(animation.effect()));
 
     if (animation.IsCSSTransition()) {
       animation_type = AnimationType::CSSTransition;
     } else {
       animation_effect_object->setKeyframesRule(
           BuildObjectForAnimationKeyframes(
-              ToKeyframeEffect(animation.effect())));
+              To<KeyframeEffect>(animation.effect())));
 
       if (animation.IsCSSAnimation())
         animation_type = AnimationType::CSSAnimation;
@@ -274,15 +274,15 @@ blink::Animation* InspectorAnimationAgent::AnimationClone(
     blink::Animation* animation) {
   const String id = String::Number(animation->SequenceNumber());
   if (!id_to_animation_clone_.at(id)) {
-    KeyframeEffect* old_effect = ToKeyframeEffect(animation->effect());
+    auto* old_effect = To<KeyframeEffect>(animation->effect());
     DCHECK(old_effect->Model()->IsKeyframeEffectModel());
     KeyframeEffectModelBase* old_model = old_effect->Model();
     KeyframeEffectModelBase* new_model = nullptr;
     // Clone EffectModel.
     // TODO(samli): Determine if this is an animations bug.
     if (old_model->IsStringKeyframeEffectModel()) {
-      StringKeyframeEffectModel* old_string_keyframe_model =
-          ToStringKeyframeEffectModel(old_model);
+      auto* old_string_keyframe_model =
+          To<StringKeyframeEffectModel>(old_model);
       KeyframeVector old_keyframes = old_string_keyframe_model->GetFrames();
       StringKeyframeVector new_keyframes;
       for (auto& old_keyframe : old_keyframes)
@@ -290,8 +290,8 @@ blink::Animation* InspectorAnimationAgent::AnimationClone(
       new_model =
           MakeGarbageCollected<StringKeyframeEffectModel>(new_keyframes);
     } else if (old_model->IsTransitionKeyframeEffectModel()) {
-      TransitionKeyframeEffectModel* old_transition_keyframe_model =
-          ToTransitionKeyframeEffectModel(old_model);
+      auto* old_transition_keyframe_model =
+          To<TransitionKeyframeEffectModel>(old_model);
       KeyframeVector old_keyframes = old_transition_keyframe_model->GetFrames();
       TransitionKeyframeVector new_keyframes;
       for (auto& old_keyframe : old_keyframes)
@@ -380,7 +380,7 @@ Response InspectorAnimationAgent::resolveAnimation(
     return response;
   if (id_to_animation_clone_.at(animation_id))
     animation = id_to_animation_clone_.at(animation_id);
-  const Element* element = ToKeyframeEffect(animation->effect())->target();
+  const Element* element = To<KeyframeEffect>(animation->effect())->target();
   Document* document = element->ownerDocument();
   LocalFrame* frame = document ? document->GetFrame() : nullptr;
   ScriptState* script_state =
@@ -419,7 +419,7 @@ String InspectorAnimationAgent::CreateCSSId(blink::Animation& animation) {
       &GetCSSPropertyTransitionTimingFunction(),
   };
 
-  KeyframeEffect* effect = ToKeyframeEffect(animation.effect());
+  auto* effect = To<KeyframeEffect>(animation.effect());
   Vector<const CSSProperty*> css_properties;
   if (animation.IsCSSAnimation()) {
     for (const CSSProperty* property : g_animation_properties)

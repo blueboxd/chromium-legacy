@@ -49,8 +49,7 @@ class TabStripUIBrowserTest : public InProcessBrowserTest {
     // In this test, we create our own TabStripUI instance with a mock
     // Embedder. Disable the production one to avoid conflicting with
     // it.
-    base::CommandLine::ForCurrentProcess()->RemoveSwitch(
-        switches::kWebUITabStrip);
+    feature_override_.InitAndDisableFeature(features::kWebUITabStrip);
     InProcessBrowserTest::SetUp();
   }
 

@@ -84,12 +84,12 @@ class CONTENT_EXPORT StoragePartitionImpl
   // Passing a null callback will restore the default behavior.
   // This method must be called either on the UI thread or before threads start.
   // This callback is run on the UI thread.
-  using CreateNetworkFactoryCallback =
-      base::Callback<mojo::PendingRemote<network::mojom::URLLoaderFactory>(
+  using CreateNetworkFactoryCallback = base::RepeatingCallback<
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>(
           mojo::PendingRemote<network::mojom::URLLoaderFactory>
               original_factory)>;
   static void SetGetURLLoaderFactoryForBrowserProcessCallbackForTesting(
-      const CreateNetworkFactoryCallback& url_loader_factory_callback);
+      CreateNetworkFactoryCallback url_loader_factory_callback);
 
   void OverrideQuotaManagerForTesting(
       storage::QuotaManager* quota_manager);

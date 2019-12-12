@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/autofill/autofill_bubble_handler.h"
 #include "chrome/browser/ui/autofill/payments/local_card_migration_bubble.h"
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_view.h"
+#include "chrome/browser/ui/autofill/payments/save_upi_bubble.h"
 
 namespace autofill {
 
@@ -19,6 +20,10 @@ class TestLocalCardMigrationBubbleView final : public LocalCardMigrationBubble {
 };
 
 class TestSaveCardBubbleView final : public SaveCardBubbleView {
+  void Hide() override {}
+};
+
+class TestSaveUPIBubble final : public SaveUPIBubble {
   void Hide() override {}
 };
 
@@ -39,6 +44,9 @@ class TestAutofillBubbleHandler : public AutofillBubbleHandler {
       content::WebContents* web_contents,
       LocalCardMigrationBubbleController* controller,
       bool is_user_gesture) override;
+  SaveUPIBubble* ShowSaveUPIBubble(
+      content::WebContents* contents,
+      SaveUPIBubbleController* controller) override;
   void OnPasswordSaved() override;
   void HideSignInPromo() override;
 
@@ -46,6 +54,7 @@ class TestAutofillBubbleHandler : public AutofillBubbleHandler {
   std::unique_ptr<TestLocalCardMigrationBubbleView>
       local_card_migration_bubble_view_;
   std::unique_ptr<TestSaveCardBubbleView> save_card_bubble_view_;
+  std::unique_ptr<TestSaveUPIBubble> save_upi_bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillBubbleHandler);
 };

@@ -232,7 +232,7 @@
 <translation id="2650751991977523696">האם להוריד את הקובץ שוב?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{קובץ אודיו אחד (#)}two{# קובצי אודיו}many{# קובצי אודיו}other{# קובצי אודיו}}</translation>
 <translation id="2653659639078652383">שלח</translation>
-<translation id="2669093958999339774">חסימת ההפרעה של בקשות להצגת התראות, ושימוש בחיווי בסרגל הכתובות במקום זאת</translation>
+<translation id="2669093958999339774">חסימה של בקשות קופצות למשלוח התראות: במקומן יוצג חיווי על החסימה בסרגל הכתובות</translation>
 <translation id="2677748264148917807">יציאה</translation>
 <translation id="2704606927547763573">הועתק</translation>
 <translation id="2707726405694321444">רענן את הדף</translation>

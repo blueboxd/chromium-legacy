@@ -145,10 +145,8 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
         }
 
         try {
-            ChromeBrowserInitializer.getInstance(getApplicationContext())
-                    .handlePreNativeStartup(parts);
-            ChromeBrowserInitializer.getInstance(getApplicationContext())
-                    .handlePostNativeStartup(true, parts);
+            ChromeBrowserInitializer.getInstance().handlePreNativeStartup(parts);
+            ChromeBrowserInitializer.getInstance().handlePostNativeStartup(true, parts);
         } catch (Exception e) {
             // We don't want to exit, as the user should still be able to clear all browsing data.
             Log.e(TAG, "Unable to load native library.", e);

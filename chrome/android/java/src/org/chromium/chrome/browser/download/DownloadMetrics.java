@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.download;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -100,7 +99,6 @@ public class DownloadMetrics {
     }
 
     private static boolean isNativeLoaded() {
-        return ChromeBrowserInitializer.getInstance(ContextUtils.getApplicationContext())
-                .hasNativeInitializationCompleted();
+        return ChromeBrowserInitializer.getInstance().hasNativeInitializationCompleted();
     }
 }

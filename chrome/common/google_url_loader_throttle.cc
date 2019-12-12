@@ -6,7 +6,6 @@
 
 #include "chrome/common/net/safe_search_util.h"
 #include "components/variations/net/variations_http_headers.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

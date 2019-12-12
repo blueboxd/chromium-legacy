@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/resource_response.h"
 
 namespace chromecast {
 

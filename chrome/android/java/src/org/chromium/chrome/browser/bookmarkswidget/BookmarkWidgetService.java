@@ -306,7 +306,7 @@ public class BookmarkWidgetService extends RemoteViewsService {
         public void onCreate() {
             // Required to be applied here redundantly to prevent crashes in the cases where the
             // package data is deleted or the Chrome application forced to stop.
-            ChromeBrowserInitializer.getInstance(mContext).handleSynchronousStartup();
+            ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
             if (isWidgetNewlyCreated()) {
                 RecordUserAction.record("BookmarkNavigatorWidgetAdded");
             }

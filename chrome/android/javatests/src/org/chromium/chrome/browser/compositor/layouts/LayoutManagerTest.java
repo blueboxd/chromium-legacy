@@ -506,10 +506,8 @@ public class LayoutManagerTest implements MockTabModelDelegate {
     @Before
     public void setUp() {
         // Load the browser process.
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            ChromeBrowserInitializer.getInstance(InstrumentationRegistry.getTargetContext())
-                    .handleSynchronousStartup();
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { ChromeBrowserInitializer.getInstance().handleSynchronousStartup(); });
     }
 
     private void runToolbarSideSwipeTestOnCurrentModel(

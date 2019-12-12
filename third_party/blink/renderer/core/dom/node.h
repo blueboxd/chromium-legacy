@@ -895,13 +895,6 @@ class CORE_EXPORT Node : public EventTarget {
     return GetFlag(kHasDuplicateAttributes);
   }
 
-  void SetInDOMNodeRemovedHandler(bool flag) {
-    SetFlag(flag, kInDOMNodeRemovedHandler);
-  }
-  bool InDOMNodeRemovedHandler() const {
-    return GetFlag(kInDOMNodeRemovedHandler);
-  }
-
   bool IsEffectiveRootScroller() const;
 
   // If the node is a plugin, then this returns its WebPluginContainer.
@@ -960,10 +953,7 @@ class CORE_EXPORT Node : public EventTarget {
 
     kHasDuplicateAttributes = 1 << 29,
 
-    // Temporary flag for some UseCounter items. crbug.com/859391.
-    kInDOMNodeRemovedHandler = 1 << 30,
-
-    kForceReattachLayoutTree = 1 << 31,
+    kForceReattachLayoutTree = 1 << 30,
 
     kDefaultNodeFlags = kIsFinishedParsingChildrenFlag,
   };

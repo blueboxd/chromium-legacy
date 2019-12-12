@@ -129,11 +129,6 @@ bool ContentBrowserClient::ShouldLockToOrigin(BrowserContext* browser_context,
   return true;
 }
 
-const char*
-ContentBrowserClient::GetInitiatorSchemeBypassingDocumentBlocking() {
-  return nullptr;
-}
-
 bool ContentBrowserClient::ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
     base::StringPiece scheme,
     bool is_embedded_origin_secure) {

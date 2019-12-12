@@ -45,7 +45,6 @@ import org.chromium.chrome.browser.omnibox.status.StatusViewCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinatorTestUtils;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
-import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionView;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -810,7 +809,7 @@ public class OmniboxTest {
                     locationBar.getAutocompleteCoordinator());
             Assert.assertEquals(expectedSuggestionCount, suggestionsList.getChildCount());
             for (int i = 0; i < suggestionsList.getChildCount(); i++) {
-                SuggestionView suggestionView = (SuggestionView) suggestionsList.getChildAt(i);
+                View suggestionView = suggestionsList.getChildAt(i);
                 Assert.assertEquals(
                         String.format(Locale.getDefault(),
                                 "Incorrect layout direction of suggestion at index %d", i),

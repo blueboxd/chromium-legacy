@@ -30,28 +30,29 @@ REMOTE_COCOA_APP_SHIM_EXPORT
                                                  NSServicesMenuRequestor> {
  @private
   // Weak, reset by clearView.
-  remote_cocoa::NativeWidgetNSWindowBridge* bridge_;
+  remote_cocoa::NativeWidgetNSWindowBridge* _bridge;
 
   // A tracking area installed to enable mouseMoved events.
-  ui::ScopedCrTrackingArea cursorTrackingArea_;
+  ui::ScopedCrTrackingArea _cursorTrackingArea;
 
   // The keyDown event currently being handled, nil otherwise.
-  NSEvent* keyDownEvent_;
+  NSEvent* _keyDownEvent;
 
   // Whether there's an active key down event which is not handled yet.
-  BOOL hasUnhandledKeyDownEvent_;
+  BOOL _hasUnhandledKeyDownEvent;
 
   // Whether any -insertFoo: selector (e.g. -insertNewLine:) was passed to
   // -doCommandBySelector: during the processing of this keyDown. These must
   // always be dispatched as a ui::KeyEvent in -keyDown:.
-  BOOL wantsKeyHandledForInsert_;
+  BOOL _wantsKeyHandledForInsert;
 
   // The last tooltip text, used to limit updates.
-  base::string16 lastTooltipText_;
+  base::string16 _lastTooltipText;
 }
 
 @property(readonly, nonatomic) remote_cocoa::NativeWidgetNSWindowBridge* bridge;
 @property(assign, nonatomic) BOOL drawMenuBackgroundForBlur;
+@property(assign, nonatomic) NSEvent* keyDownEventForTesting;
 
 // Initialize the NSView -> views::View bridge. |viewToHost| must be non-NULL.
 - (instancetype)initWithBridge:(remote_cocoa::NativeWidgetNSWindowBridge*)bridge

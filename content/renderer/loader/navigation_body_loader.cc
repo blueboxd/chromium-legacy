@@ -9,7 +9,6 @@
 #include "content/renderer/loader/code_cache_loader_impl.h"
 #include "content/renderer/loader/resource_load_stats.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
@@ -144,7 +143,8 @@ void NavigationBodyLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
 void NavigationBodyLoader::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle handle) {
   TRACE_EVENT1("loading", "NavigationBodyLoader::OnStartLoadingResponseBody",
-               "url", resource_load_info_->url.possibly_invalid_spec());
+               "url",
+               resource_load_info_->original_url.possibly_invalid_spec());
   DCHECK(!has_received_body_handle_);
   DCHECK(!has_received_completion_);
   has_received_body_handle_ = true;
@@ -178,7 +178,7 @@ void NavigationBodyLoader::StartLoadingBody(
     WebNavigationBodyLoader::Client* client,
     bool use_isolated_code_cache) {
   TRACE_EVENT1("loading", "NavigationBodyLoader::StartLoadingBody", "url",
-               resource_load_info_->url.possibly_invalid_spec());
+               resource_load_info_->original_url.possibly_invalid_spec());
   client_ = client;
 
   base::Time response_head_response_time = response_head_->response_time;
@@ -189,7 +189,8 @@ void NavigationBodyLoader::StartLoadingBody(
   if (use_isolated_code_cache) {
     code_cache_loader_ = std::make_unique<CodeCacheLoaderImpl>();
     code_cache_loader_->FetchFromCodeCache(
-        blink::mojom::CodeCacheType::kJavascript, resource_load_info_->url,
+        blink::mojom::CodeCacheType::kJavascript,
+        resource_load_info_->original_url,
         base::BindOnce(&NavigationBodyLoader::CodeCacheReceived,
                        weak_factory_.GetWeakPtr(),
                        response_head_response_time));
@@ -232,7 +233,7 @@ void NavigationBodyLoader::OnConnectionClosed() {
 
 void NavigationBodyLoader::OnReadable(MojoResult unused) {
   TRACE_EVENT1("loading", "NavigationBodyLoader::OnReadable", "url",
-               resource_load_info_->url.possibly_invalid_spec());
+               resource_load_info_->original_url.possibly_invalid_spec());
   if (has_seen_end_of_data_ || is_deferred_ || is_in_on_readable_)
     return;
   // Protect against reentrancy:
@@ -251,7 +252,7 @@ void NavigationBodyLoader::OnReadable(MojoResult unused) {
 
 void NavigationBodyLoader::ReadFromDataPipe() {
   TRACE_EVENT1("loading", "NavigationBodyLoader::ReadFromDataPipe", "url",
-               resource_load_info_->url.possibly_invalid_spec());
+               resource_load_info_->original_url.possibly_invalid_spec());
   uint32_t num_bytes_consumed = 0;
   while (!is_deferred_) {
     const void* buffer = nullptr;
@@ -304,8 +305,8 @@ void NavigationBodyLoader::NotifyCompletionIfAppropriate() {
 
   base::Optional<blink::WebURLError> error;
   if (status_.error_code != net::OK) {
-    error =
-        WebURLLoaderImpl::PopulateURLError(status_, resource_load_info_->url);
+    error = WebURLLoaderImpl::PopulateURLError(
+        status_, resource_load_info_->original_url);
   }
 
   NotifyResourceLoadCompleted(render_frame_id_, std::move(resource_load_info_),

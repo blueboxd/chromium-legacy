@@ -19,6 +19,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/system/system_monitor.h"
+#include "base/test/gmock_move_support.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
@@ -51,7 +52,6 @@ using ::testing::_;
 using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
-using ::testing::SaveArg;
 
 namespace content {
 
@@ -66,7 +66,7 @@ constexpr const char* kDepthVideoDeviceId = "stub_device_1 (depth)";
 constexpr media::VideoCaptureApi kStubCaptureApi =
     media::VideoCaptureApi::LINUX_V4L2_SINGLE_PLANE;
 
-void AudioInputDevicesEnumerated(base::Closure quit_closure,
+void AudioInputDevicesEnumerated(base::OnceClosure quit_closure,
                                  media::AudioDeviceDescriptions* out,
                                  const MediaDeviceEnumeration& enumeration) {
   for (const auto& info : enumeration[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT]) {
@@ -102,8 +102,8 @@ class MockMediaStreamDispatcherHost
   // Accessor to private functions.
   void OnGenerateStream(int page_request_id,
                         const blink::StreamControls& controls,
-                        const base::Closure& quit_closure) {
-    quit_closures_.push(quit_closure);
+                        base::OnceClosure quit_closure) {
+    quit_closures_.push(std::move(quit_closure));
     MediaStreamDispatcherHost::GenerateStream(
         page_request_id, controls, false,
         blink::mojom::StreamSelectionInfo::New(
@@ -121,8 +121,8 @@ class MockMediaStreamDispatcherHost
   void OnOpenDevice(int page_request_id,
                     const std::string& device_id,
                     blink::mojom::MediaStreamType type,
-                    const base::Closure& quit_closure) {
-    quit_closures_.push(quit_closure);
+                    base::OnceClosure quit_closure) {
+    quit_closures_.push(std::move(quit_closure));
     MediaStreamDispatcherHost::OpenDevice(
         page_request_id, device_id, type,
         base::BindOnce(&MockMediaStreamDispatcherHost::OnDeviceOpened,
@@ -172,9 +172,8 @@ class MockMediaStreamDispatcherHost
     OnStreamStarted(label);
 
     // Notify that the event have occurred.
-    base::Closure quit_closure = quit_closures_.front();
+    task_runner_->PostTask(FROM_HERE, std::move(quit_closures_.front()));
     quit_closures_.pop();
-    task_runner_->PostTask(FROM_HERE, std::move(quit_closure));
 
     label_ = label;
     audio_devices_ = audio_devices;
@@ -185,9 +184,8 @@ class MockMediaStreamDispatcherHost
                                 blink::mojom::MediaStreamRequestResult result) {
     OnStreamGenerationFailure(request_id, result);
     if (!quit_closures_.empty()) {
-      base::Closure quit_closure = quit_closures_.front();
+      task_runner_->PostTask(FROM_HERE, std::move(quit_closures_.front()));
       quit_closures_.pop();
-      task_runner_->PostTask(FROM_HERE, std::move(quit_closure));
     }
 
     label_.clear();
@@ -206,9 +204,8 @@ class MockMediaStreamDispatcherHost
   void OnDeviceOpened(bool success,
                       const std::string& label,
                       const blink::MediaStreamDevice& device) {
-    base::Closure quit_closure = quit_closures_.front();
+    task_runner_->PostTask(FROM_HERE, std::move(quit_closures_.front()));
     quit_closures_.pop();
-    task_runner_->PostTask(FROM_HERE, std::move(quit_closure));
     if (success) {
       label_ = label;
       opened_device_ = device;
@@ -217,7 +214,7 @@ class MockMediaStreamDispatcherHost
   }
 
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::queue<base::Closure> quit_closures_;
+  base::queue<base::OnceClosure> quit_closures_;
   mojo::Receiver<blink::mojom::MediaStreamDeviceObserver> receiver_{this};
 };
 
@@ -229,11 +226,11 @@ class MockMediaStreamUIProxy : public FakeMediaStreamUIProxy {
       base::OnceClosure stop,
       content::MediaStreamUI::SourceCallback source,
       MediaStreamUIProxy::WindowIdCallback window_id_callback) override {
-    // gmock cannot handle move-only types:
-    MockOnStarted(base::AdaptCallbackForRepeating(std::move(stop)));
+    // gmock cannot handle move-only types, so no std::move().
+    MockOnStarted(stop);
   }
 
-  MOCK_METHOD1(MockOnStarted, void(base::Closure stop));
+  MOCK_METHOD1(MockOnStarted, void(base::OnceClosure& stop));
 };
 
 class MediaStreamDispatcherHostTest : public testing::Test {
@@ -328,8 +325,8 @@ class MediaStreamDispatcherHostTest : public testing::Test {
 
   virtual void SetupFakeUI(bool expect_started) {
     media_stream_manager_->UseFakeUIFactoryForTests(
-        base::Bind(&MediaStreamDispatcherHostTest::CreateMockUI,
-                   base::Unretained(this), expect_started));
+        base::BindRepeating(&MediaStreamDispatcherHostTest::CreateMockUI,
+                            base::Unretained(this), expect_started));
   }
 
   void GenerateStreamAndWaitForResult(int page_request_id,
@@ -812,14 +809,14 @@ TEST_F(MediaStreamDispatcherHostTest, StopGeneratedStreams) {
 TEST_F(MediaStreamDispatcherHostTest, CloseFromUI) {
   blink::StreamControls controls(false, true);
 
-  base::Closure close_callback;
-  media_stream_manager_->UseFakeUIFactoryForTests(base::Bind(
-      [](base::Closure* close_callback) {
+  base::OnceClosure close_callback;
+  media_stream_manager_->UseFakeUIFactoryForTests(base::BindRepeating(
+      [](base::OnceClosure* close_callback) {
         std::unique_ptr<FakeMediaStreamUIProxy> stream_ui =
             std::make_unique<MockMediaStreamUIProxy>();
         EXPECT_CALL(*static_cast<MockMediaStreamUIProxy*>(stream_ui.get()),
                     MockOnStarted(_))
-            .WillOnce(SaveArg<0>(close_callback));
+            .WillOnce(MoveArg<0>(close_callback));
         return stream_ui;
       },
       &close_callback));
@@ -829,9 +826,9 @@ TEST_F(MediaStreamDispatcherHostTest, CloseFromUI) {
   EXPECT_EQ(host_->audio_devices_.size(), 0u);
   EXPECT_EQ(host_->video_devices_.size(), 1u);
 
-  ASSERT_FALSE(close_callback.is_null());
+  ASSERT_TRUE(close_callback);
   EXPECT_CALL(*host_, OnDeviceStopSuccess());
-  close_callback.Run();
+  std::move(close_callback).Run();
   base::RunLoop().RunUntilIdle();
 }
 

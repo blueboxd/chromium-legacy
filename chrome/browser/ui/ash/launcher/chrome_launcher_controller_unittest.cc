@@ -3438,6 +3438,7 @@ TEST_F(ChromeLauncherControllerTest, Active) {
 
   // Creates a new app window.
   int initial_item_count = model_->item_count();
+  AddExtension(extension1_.get());
   V2App app_1(profile(), extension1_.get());
   EXPECT_TRUE(app_1.window()->GetNativeWindow()->IsVisible());
   EXPECT_EQ(initial_item_count + 1, model_->item_count());
@@ -3449,7 +3450,7 @@ TEST_F(ChromeLauncherControllerTest, Active) {
   ASSERT_TRUE(app_item_controller_1);
   ui::BaseWindow* last_active =
       GetLastActiveWindowForItemController(app_item_controller_1);
-  EXPECT_EQ(app_1.window()->GetBaseWindow(), last_active);
+  EXPECT_EQ(app_1.window()->GetNativeWindow(), last_active->GetNativeWindow());
   // Change the status so that we can verify it gets reset when the active
   // window changes.
   launcher_controller_->SetItemStatus(app_item_delegate_1->shelf_id(),
@@ -3457,6 +3458,7 @@ TEST_F(ChromeLauncherControllerTest, Active) {
 
   // Creates another app window, which should become active and reset |app_1|'s
   // status (to running).
+  AddExtension(extension2_.get());
   V2App app_2(profile(), extension2_.get());
   EXPECT_TRUE(app_2.window()->GetNativeWindow()->IsVisible());
   EXPECT_EQ(initial_item_count + 2, model_->item_count());
@@ -3467,7 +3469,7 @@ TEST_F(ChromeLauncherControllerTest, Active) {
       app_item_delegate_2->AsAppWindowLauncherItemController();
   ASSERT_TRUE(app_item_controller_2);
   last_active = GetLastActiveWindowForItemController(app_item_controller_2);
-  EXPECT_EQ(app_2.window()->GetBaseWindow(), last_active);
+  EXPECT_EQ(app_2.window()->GetNativeWindow(), last_active->GetNativeWindow());
   const ash::ShelfItem* shelf_item_1 =
       launcher_controller_->GetItem(app_item_delegate_1->shelf_id());
   ASSERT_TRUE(shelf_item_1);

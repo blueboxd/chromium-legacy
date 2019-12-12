@@ -1422,14 +1422,14 @@ void BrowserAccessibilityManager::UseCustomDeviceScaleFactorForTesting(
 
 BrowserAccessibility* BrowserAccessibilityManager::CachingAsyncHitTest(
     const gfx::Point& screen_point) {
+  BrowserAccessibilityManager* root_manager = GetRootManager();
+  if (root_manager && root_manager != this)
+    return root_manager->CachingAsyncHitTest(screen_point);
+
   gfx::Point scaled_point =
       IsUseZoomForDSFEnabled()
           ? ScaleToRoundedPoint(screen_point, device_scale_factor())
           : screen_point;
-
-  BrowserAccessibilityManager* root_manager = GetRootManager();
-  if (root_manager && root_manager != this)
-    return root_manager->CachingAsyncHitTest(scaled_point);
 
   if (delegate_) {
     // This triggers an asynchronous request to compute the true object that's

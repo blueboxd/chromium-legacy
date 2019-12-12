@@ -27,7 +27,7 @@ namespace content {
 
 namespace {
 
-typedef base::Callback<void(bool)> OnCompleted;
+using OnCompleted = base::OnceCallback<void(bool)>;
 
 }  // namespace
 
@@ -39,14 +39,13 @@ class DragDownloadFile::DragDownloadFileUI
                      const Referrer& referrer,
                      const std::string& referrer_encoding,
                      WebContents* web_contents,
-                     const OnCompleted& on_completed)
-      : on_completed_(on_completed),
+                     OnCompleted on_completed)
+      : on_completed_(std::move(on_completed)),
         url_(url),
         referrer_(referrer),
         referrer_encoding_(referrer_encoding),
-        web_contents_(web_contents),
-        download_item_(nullptr) {
-    DCHECK(!on_completed_.is_null());
+        web_contents_(web_contents) {
+    DCHECK(on_completed_);
     DCHECK(web_contents_);
     // May be called on any thread.
     // Do not call weak_ptr_factory_.GetWeakPtr() outside the UI thread.
@@ -122,7 +121,7 @@ class DragDownloadFile::DragDownloadFileUI
       DCHECK(!item ||
              item->GetLastReason() != download::DOWNLOAD_INTERRUPT_REASON_NONE);
       base::PostTask(FROM_HERE, {BrowserThread::UI},
-                     base::BindOnce(on_completed_, false));
+                     base::BindOnce(std::move(on_completed_), false));
       return;
     }
     DCHECK_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
@@ -138,12 +137,11 @@ class DragDownloadFile::DragDownloadFileUI
     if (state == download::DownloadItem::COMPLETE ||
         state == download::DownloadItem::CANCELLED ||
         state == download::DownloadItem::INTERRUPTED) {
-      if (!on_completed_.is_null()) {
+      if (on_completed_) {
         base::PostTask(
             FROM_HERE, {BrowserThread::UI},
-            base::BindOnce(on_completed_,
+            base::BindOnce(std::move(on_completed_),
                            state == download::DownloadItem::COMPLETE));
-        on_completed_.Reset();
       }
       download_item_->RemoveObserver(this);
       download_item_ = nullptr;
@@ -154,12 +152,11 @@ class DragDownloadFile::DragDownloadFileUI
   void OnDownloadDestroyed(download::DownloadItem* item) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK_EQ(download_item_, item);
-    if (!on_completed_.is_null()) {
+    if (on_completed_) {
       const bool is_complete =
           download_item_->GetState() == download::DownloadItem::COMPLETE;
       base::PostTask(FROM_HERE, {BrowserThread::UI},
-                     base::BindOnce(on_completed_, is_complete));
-      on_completed_.Reset();
+                     base::BindOnce(std::move(on_completed_), is_complete));
     }
     download_item_->RemoveObserver(this);
     download_item_ = nullptr;
@@ -170,7 +167,7 @@ class DragDownloadFile::DragDownloadFileUI
   Referrer referrer_;
   std::string referrer_encoding_;
   WebContents* web_contents_;
-  download::DownloadItem* download_item_;
+  download::DownloadItem* download_item_ = nullptr;
 
   // Only used in the callback from DownloadManager::DownloadUrl().
   base::WeakPtrFactory<DragDownloadFileUI> weak_ptr_factory_{this};
@@ -184,15 +181,12 @@ DragDownloadFile::DragDownloadFile(const base::FilePath& file_path,
                                    const Referrer& referrer,
                                    const std::string& referrer_encoding,
                                    WebContents* web_contents)
-    : file_path_(file_path),
-      file_(std::move(file)),
-      state_(INITIALIZED),
-      drag_ui_(nullptr) {
+    : file_path_(file_path), file_(std::move(file)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  drag_ui_ =
-      new DragDownloadFileUI(url, referrer, referrer_encoding, web_contents,
-                             base::Bind(&DragDownloadFile::DownloadCompleted,
-                                        weak_ptr_factory_.GetWeakPtr()));
+  drag_ui_ = new DragDownloadFileUI(
+      url, referrer, referrer_encoding, web_contents,
+      base::BindOnce(&DragDownloadFile::DownloadCompleted,
+                     weak_ptr_factory_.GetWeakPtr()));
   DCHECK(!file_path_.empty());
 }
 

@@ -22,37 +22,61 @@
       .list-item > div {
         flex: 1;
       }
+
+      div[label-disabled] {
+        opacity: var(--cr-disabled-opacity);
+      }
     </style>
     <div class="settings-box first">
-      <div id="featureEnabledLabel" class="start">
-        PLACEHOLDER Enable OS sync
+      <!-- TODO(jamescook): Replace this section with the sync status component.
+           For now, just use placeholder strings.
+           TODO(jamescook): UI for sync error states.
+           TODO(jamescook): Passphrase support. -->
+      <div id="featureLabel" class="start">
+        Chrome OS sync PLACEHOLDER
       </div>
-      <cr-toggle checked="{{osSyncPrefs.featureEnabled}}"
-                 on-change="onFeatureEnabledChanged_"
-                 aria-labelledby="featureEnabledLabel">
-      </cr-toggle>
+      <cr-button id="turnOnSyncButton"
+          class="action-button"
+          on-click="onTurnOnSyncButtonClick_"
+          aria-describedby="featureLabel"
+          hidden="[[osSyncFeatureEnabled]]">
+        Turn on PLACEHOLDER
+      </cr-button>
+      <cr-button id="turnOffSyncButton"
+          on-click="onTurnOffSyncButtonClick_"
+          aria-describedby="featureLabel"
+          hidden="[[!osSyncFeatureEnabled]]">
+        Turn off PLACEHOLDER
+      </cr-button>
     </div>
-    <!-- TODO(jamescook): Hide or disable everything when feature is off. -->
     <div class="settings-box">
-      <div id="syncEverythingCheckboxLabel" class="start">
+      <div id="syncEverythingCheckboxLabel"
+          class="start"
+          label-disabled$="[[!osSyncFeatureEnabled]]">
         $i18n{syncEverythingCheckboxLabel}
       </div>
       <cr-toggle id="syncAllOsTypesControl"
           checked="{{osSyncPrefs.syncAllOsTypes}}"
           on-change="onSyncAllOsTypesChanged_"
+          disabled="[[!osSyncFeatureEnabled]]"
           aria-labelledby="syncEverythingCheckboxLabel">
       </cr-toggle>
     </div>
 
     <div class="list-frame" id="sync-data-types">
       <div class="list-item" hidden="[[!osSyncPrefs.osAppsRegistered]]">
-        <div id="osAppsCheckboxLabel">
+        <div id="osAppsCheckboxLabel"
+            label-disabled$="[[isDataTypeToggleDisabled_(
+                osSyncFeatureEnabled,
+                osSyncPrefs.syncAllOsTypes,
+                osSyncPrefs.osAppsEnforced)]]">
           $i18n{syncOsAppsCheckboxLabel}
         </div>
         <cr-toggle id="osAppsControl"
             checked="{{osSyncPrefs.osAppsSynced}}"
             on-change="onSingleSyncDataTypeChanged_"
-            disabled="[[shouldSyncCheckboxBeDisabled_(
+            disabled="[[isDataTypeToggleDisabled_(
+                osSyncFeatureEnabled,
                 osSyncPrefs.syncAllOsTypes,
                 osSyncPrefs.osAppsEnforced)]]"
             aria-labelledby="osAppsCheckboxLabel">
@@ -60,13 +84,18 @@
       </div>
 
       <div class="list-item" hidden="[[!osSyncPrefs.osPreferencesRegistered]]">
-        <div id="osSettingsCheckboxLabel">
+        <div id="osSettingsCheckboxLabel"
+            label-disabled$="[[isDataTypeToggleDisabled_(
+                osSyncFeatureEnabled,
+                osSyncPrefs.syncAllOsTypes,
+                osSyncPrefs.osPreferencesEnforced)]]">
           $i18n{syncOsSettingsCheckboxLabel}
         </div>
         <cr-toggle id="osPreferencesControl"
             checked="{{osSyncPrefs.osPreferencesSynced}}"
             on-change="onSingleSyncDataTypeChanged_"
-            disabled="[[shouldSyncCheckboxBeDisabled_(
+            disabled="[[isDataTypeToggleDisabled_(
+                osSyncFeatureEnabled,
                 osSyncPrefs.syncAllOsTypes,
                 osSyncPrefs.osPreferencesEnforced)]]"
             aria-labelledby="osSettingsCheckboxLabel">
@@ -74,12 +103,17 @@
       </div>
 
       <div class="list-item" hidden="[[!osSyncPrefs.printersRegistered]]">
-        <div id="printersCheckboxLabel">
+        <div id="printersCheckboxLabel"
+            label-disabled$="[[isDataTypeToggleDisabled_(
+                osSyncFeatureEnabled,
+                osSyncPrefs.syncAllOsTypes,
+                osSyncPrefs.printersEnforced)]]">
           $i18n{syncPrintersCheckboxLabel}
         </div>
         <cr-toggle checked="{{osSyncPrefs.printersSynced}}"
             on-change="onSingleSyncDataTypeChanged_"
-            disabled="[[shouldSyncCheckboxBeDisabled_(
+            disabled="[[isDataTypeToggleDisabled_(
+                osSyncFeatureEnabled,
                 osSyncPrefs.syncAllOsTypes,
                 osSyncPrefs.printersEnforced)]]"
             aria-labelledby="printersCheckboxLabel">
@@ -88,12 +122,17 @@
 
       <div class="list-item"
            hidden="[[!osSyncPrefs.wifiConfigurationsRegistered]]">
-        <div id="wifiConfigurationsCheckboxLabel">
+        <div id="wifiConfigurationsCheckboxLabel"
+            label-disabled$="[[isDataTypeToggleDisabled_(
+                osSyncFeatureEnabled,
+                osSyncPrefs.syncAllOsTypes,
+                osSyncPrefs.wifiConfigurationsEnforced)]]">
           $i18n{wifiConfigurationsCheckboxLabel}
         </div>
         <cr-toggle checked="{{osSyncPrefs.wifiConfigurationsSynced}}"
             on-change="onSingleSyncDataTypeChanged_"
-            disabled="[[shouldSyncCheckboxBeDisabled_(
+            disabled="[[isDataTypeToggleDisabled_(
+                osSyncFeatureEnabled,
                 osSyncPrefs.syncAllOsTypes,
                 osSyncPrefs.wifiConfigurationsEnforced)]]"
             aria-labelledby="wifiConfigurationsCheckboxLabel">

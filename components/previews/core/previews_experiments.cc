@@ -504,12 +504,6 @@ int ResourceLoadingHintsPreviewsInflationBytes() {
       GetResourceLoadingHintsFeature(), kResourceLoadingHintsInflationBytes, 0);
 }
 
-size_t OfflinePreviewsHelperMaxPrefSize() {
-  return GetFieldTrialParamByFeatureAsInt(
-      features::kOfflinePreviewsFalsePositivePrevention, "max_pref_entries",
-      100);
-}
-
 bool ShouldOverrideNavigationCoinFlipToHoldback() {
   return base::GetFieldTrialParamByFeatureAsBool(
       features::kCoinFlipHoldback, "force_coin_flip_always_holdback", false);

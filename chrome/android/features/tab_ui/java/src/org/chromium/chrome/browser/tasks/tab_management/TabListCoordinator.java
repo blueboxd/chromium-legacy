@@ -216,6 +216,7 @@ public class TabListCoordinator implements Destroyable {
             mMediator.registerOrientationListener(gridLayoutManager);
             mMediator.updateSpanCountForOrientation(
                     gridLayoutManager, context.getResources().getConfiguration().orientation);
+            mMediator.setupAccessibilityDelegate(mRecyclerView);
         } else if (mMode == TabListMode.STRIP || mMode == TabListMode.CAROUSEL
                 || mMode == TabListMode.LIST) {
             mRecyclerView.setLayoutManager(new LinearLayoutManager(context,

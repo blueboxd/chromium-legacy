@@ -74,17 +74,27 @@ class VIZ_SERVICE_EXPORT CALayerOverlay {
 
 typedef std::vector<CALayerOverlay> CALayerOverlayList;
 
-// Returns true if all quads in the root render pass have been replaced by
-// CALayerOverlays.
-bool ProcessForCALayerOverlays(
-    DisplayResourceProvider* resource_provider,
-    const gfx::RectF& display_rect,
-    const QuadList& quad_list,
-    const base::flat_map<RenderPassId, cc::FilterOperations*>&
-        render_pass_filters,
-    const base::flat_map<RenderPassId, cc::FilterOperations*>&
-        render_pass_backdrop_filters,
-    CALayerOverlayList* ca_layer_overlays);
+// TODO(weiliangc): Eventually fold this class into OverlayProcessorMac and fold
+// CALayerOverlay into OverlayCandidate.
+class VIZ_SERVICE_EXPORT CALayerOverlayProcessor {
+ public:
+  CALayerOverlayProcessor() = default;
+  virtual ~CALayerOverlayProcessor() = default;
+
+  // Returns true if all quads in the root render pass have been replaced by
+  // CALayerOverlays. Virtual for testing.
+  virtual bool ProcessForCALayerOverlays(
+      DisplayResourceProvider* resource_provider,
+      const gfx::RectF& display_rect,
+      const QuadList& quad_list,
+      const base::flat_map<RenderPassId, cc::FilterOperations*>&
+          render_pass_filters,
+      const base::flat_map<RenderPassId, cc::FilterOperations*>&
+          render_pass_backdrop_filters,
+      CALayerOverlayList* ca_layer_overlays) const;
+
+  DISALLOW_COPY_AND_ASSIGN(CALayerOverlayProcessor);
+};
 
 }  // namespace viz
 

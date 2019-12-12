@@ -44,6 +44,7 @@ class ExploreSurfaceViewBinder {
         if (model.get(FEED_SURFACE_COORDINATOR) == null) return;
 
         View feedSurfaceView = model.get(FEED_SURFACE_COORDINATOR).getView();
+        assert feedSurfaceView != null;
         if (isShowing) {
             parentView.addView(feedSurfaceView);
             // We only need to make room for the top and bottom bar if in the TWOPANE surface {@link

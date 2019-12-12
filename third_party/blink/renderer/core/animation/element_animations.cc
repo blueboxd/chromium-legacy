@@ -87,8 +87,8 @@ void ElementAnimations::UpdateAnimationFlags(ComputedStyle& style) {
     const Animation& animation = *entry.key;
     DCHECK(animation.effect());
     // FIXME: Needs to consider AnimationGroup once added.
-    DCHECK(animation.effect()->IsKeyframeEffect());
-    const KeyframeEffect& effect = *ToKeyframeEffect(animation.effect());
+    DCHECK(IsA<KeyframeEffect>(animation.effect()));
+    const auto& effect = *To<KeyframeEffect>(animation.effect());
     if (!effect.IsCurrent())
       continue;
     UpdateAnimationFlagsForEffect(effect, style);
@@ -177,8 +177,8 @@ bool ElementAnimations::AnimationsPreserveAxisAlignment() const {
   for (const auto& entry : animations_) {
     const Animation& animation = *entry.key;
     DCHECK(animation.effect());
-    DCHECK(animation.effect()->IsKeyframeEffect());
-    const KeyframeEffect& effect = *ToKeyframeEffect(animation.effect());
+    DCHECK(IsA<KeyframeEffect>(animation.effect()));
+    const auto& effect = *To<KeyframeEffect>(animation.effect());
     if (!effect.AnimationsPreserveAxisAlignment())
       return false;
   }

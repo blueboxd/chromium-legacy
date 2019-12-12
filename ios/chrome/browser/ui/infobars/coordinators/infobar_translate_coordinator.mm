@@ -509,17 +509,17 @@ NSString* const kTranslateNotificationSnackbarCategory =
          presentsModal:self.hasBadge
                   type:InfobarType::kInfobarTypeTranslate];
   [self updateBannerTextForCurrentTranslateStep];
-  self.bannerViewController.iconImage =
-      [UIImage imageNamed:@"infobar_translate_icon"];
-  self.bannerViewController.optionalAccessibilityLabel =
-      self.bannerViewController.titleText;
+  [self.bannerViewController
+      setIconImage:[UIImage imageNamed:@"infobar_translate_icon"]];
+  [self.bannerViewController
+      setBannerAccessibilityLabel:[self bannerTitleText]];
 }
 
 // Updates the banner's text for |self.currentStep|.
 - (void)updateBannerTextForCurrentTranslateStep {
-  self.bannerViewController.titleText = [self bannerTitleText];
-  self.bannerViewController.buttonText = [self infobarButtonText];
-  self.bannerViewController.subTitleText = [self bannerSubtitleText];
+  [self.bannerViewController setTitleText:[self bannerTitleText]];
+  [self.bannerViewController setButtonText:[self infobarButtonText]];
+  [self.bannerViewController setSubtitleText:[self bannerSubtitleText]];
 }
 
 // Returns the title text of the banner depending on the |currentStep|.

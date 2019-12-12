@@ -196,7 +196,7 @@ void KeyframeEffect::SetKeyframes(StringKeyframeVector keyframes) {
   Model()->SetComposite(
       EffectInput::ResolveCompositeOperation(Model()->Composite(), keyframes));
 
-  ToStringKeyframeEffectModel(Model())->SetFrames(keyframes);
+  To<StringKeyframeEffectModel>(Model())->SetFrames(keyframes);
 
   // Changing the keyframes will invalidate any sampled effect, as well as
   // potentially affect the effect owner.

@@ -278,6 +278,7 @@
 <translation id="2250931979407627383">Zošiť hrebeňovou väzbou vľavo</translation>
 <translation id="225207911366869382">Táto hodnota už pre toto pravidlo nie je podporovaná.</translation>
 <translation id="2258928405015593961">Zadajte dátum vypršania platnosti v budúcnosti a skúste to znova</translation>
+<translation id="225943865679747347">Kód chyby: <ph name="ERROR_CODE" /></translation>
 <translation id="2262243747453050782">Chyba protokolu HTTP</translation>
 <translation id="2263079731045660823">Aktualizujte informácie automatického dopĺňania kreditných kariet v nastaveniach Chromu</translation>
 <translation id="2267047181501709434">Prebieha overenie totožnosti…</translation>

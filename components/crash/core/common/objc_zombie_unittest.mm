@@ -13,7 +13,7 @@
 
 @interface ZombieCxxDestructTest : NSObject
 {
-  base::scoped_nsobject<id> aRef_;
+  base::scoped_nsobject<id> _aRef;
 }
 - (instancetype)initWith:(id)anObject;
 @end
@@ -22,7 +22,7 @@
 - (instancetype)initWith:(id)anObject {
   self = [super init];
   if (self) {
-    aRef_.reset([anObject retain]);
+    _aRef.reset([anObject retain]);
   }
   return self;
 }

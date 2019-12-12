@@ -60,9 +60,9 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
 
 - (instancetype)initWithCameraDevice:(ICCameraDevice*)cameraDevice {
   if ((self = [super init])) {
-    camera_.reset([cameraDevice retain]);
-    [camera_ setDelegate:self];
-    closing_ = false;
+    _camera.reset([cameraDevice retain]);
+    [_camera setDelegate:self];
+    _closing = false;
   }
   return self;
 }
@@ -70,34 +70,34 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
 - (void)dealloc {
   // Make sure the session was closed and listener set to null
   // before destruction.
-  DCHECK(![camera_ delegate]);
-  DCHECK(!listener_);
+  DCHECK(![_camera delegate]);
+  DCHECK(!_listener);
   [super dealloc];
 }
 
 - (void)setListener:(base::WeakPtr<storage_monitor::ImageCaptureDeviceListener>)
         listener {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  listener_ = listener;
+  _listener = listener;
 }
 
 - (void)open {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(listener_);
-  [camera_ requestOpenSession];
+  DCHECK(_listener);
+  [_camera requestOpenSession];
 }
 
 - (void)close {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  closing_ = true;
-  [camera_ cancelDownload];
-  [camera_ requestCloseSession];
-  [camera_ setDelegate:nil];
-  listener_.reset();
+  _closing = true;
+  [_camera cancelDownload];
+  [_camera requestCloseSession];
+  [_camera setDelegate:nil];
+  _listener.reset();
 }
 
 - (void)eject {
-  [camera_ requestEjectOrDisconnect];
+  [_camera requestEjectOrDisconnect];
 }
 
 - (void)downloadFile:(const std::string&)name
@@ -105,7 +105,7 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Find the file with that name and start download.
-  for (ICCameraItem* item in [camera_ mediaFiles]) {
+  for (ICCameraItem* item in [_camera mediaFiles]) {
     std::string itemName = storage_monitor::PathForCameraItem(item).value();
     if (itemName == name) {
       // To create save options for ImageCapture, we need to
@@ -123,7 +123,7 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
       options[ICSaveAsFilename] = saveFilename;
       options[ICOverwrite] = @YES;
 
-      [camera_ requestDownloadFile:base::mac::ObjCCastStrict<ICCameraFile>(item)
+      [_camera requestDownloadFile:base::mac::ObjCCastStrict<ICCameraFile>(item)
                            options:options
                   downloadDelegate:self
                didDownloadSelector:
@@ -133,8 +133,8 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
     }
   }
 
-  if (listener_)
-    listener_->DownloadedFile(name, base::File::FILE_ERROR_NOT_FOUND);
+  if (_listener)
+    _listener->DownloadedFile(name, base::File::FILE_ERROR_NOT_FOUND);
 }
 
 - (void)cameraDevice:(ICCameraDevice*)camera didAddItem:(ICCameraItem*)item {
@@ -151,8 +151,8 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
   info.creation_time = storage_monitor::NSDateToBaseTime([item creationDate]);
   info.last_accessed = info.last_modified;
 
-  if (listener_)
-    listener_->ItemAdded(path.value(), info);
+  if (_listener)
+    _listener->ItemAdded(path.value(), info);
 }
 
 - (void)cameraDevice:(ICCameraDevice*)camera didAddItems:(NSArray*)items {
@@ -162,33 +162,33 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
 
 - (void)didRemoveDevice:(ICDevice*)device {
   device.delegate = NULL;
-  if (listener_)
-    listener_->DeviceRemoved();
+  if (_listener)
+    _listener->DeviceRemoved();
 }
 
 // Notifies that a session was opened with the given device; potentially
 // with an error.
 - (void)device:(ICDevice*)device didOpenSessionWithError:(NSError*)error {
   if (error)
-    [self didRemoveDevice:camera_];
+    [self didRemoveDevice:_camera];
 }
 
 - (void)device:(ICDevice*)device didEncounterError:(NSError*)error {
-  if (error && listener_)
-    listener_->DeviceRemoved();
+  if (error && _listener)
+    _listener->DeviceRemoved();
 }
 
 // When this message is received, all media metadata is now loaded.
 - (void)deviceDidBecomeReadyWithCompleteContentCatalog:(ICDevice*)device {
-  if (listener_)
-    listener_->NoMoreItems();
+  if (_listener)
+    _listener->NoMoreItems();
 }
 
 - (void)didDownloadFile:(ICCameraFile*)file
                   error:(NSError*)error
                 options:(NSDictionary*)options
             contextInfo:(void*)contextInfo {
-  if (closing_)
+  if (_closing)
     return;
 
   std::string name = storage_monitor::PathForCameraItem(file).value();
@@ -196,8 +196,8 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
   if (error) {
     DVLOG(1) << "error..."
              << base::SysNSStringToUTF8([error localizedDescription]);
-    if (listener_)
-      listener_->DownloadedFile(name, base::File::FILE_ERROR_FAILED);
+    if (_listener)
+      _listener->DownloadedFile(name, base::File::FILE_ERROR_FAILED);
     return;
   }
 
@@ -205,8 +205,8 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
   std::string saveAsFilename =
       base::SysNSStringToUTF8(options[ICSaveAsFilename]);
   if (savedFilename == saveAsFilename) {
-    if (listener_)
-      listener_->DownloadedFile(name, base::File::FILE_OK);
+    if (_listener)
+      _listener->DownloadedFile(name, base::File::FILE_OK);
     return;
   }
 
@@ -225,7 +225,7 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
       base::Bind(&storage_monitor::RenameFile, savedPath, saveAsPath),
-      base::Bind(&storage_monitor::ReturnRenameResultToListener, listener_,
+      base::Bind(&storage_monitor::ReturnRenameResultToListener, _listener,
                  name));
 }
 

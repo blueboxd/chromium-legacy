@@ -39,21 +39,21 @@ enum {
 
 @interface ShellContextMenuDelegate : NSObject<NSMenuDelegate> {
  @private
-  content::ShellWebContentsViewDelegate* delegate_;
+  content::ShellWebContentsViewDelegate* _delegate;
 }
 @end
 
 @implementation ShellContextMenuDelegate
 - (id)initWithDelegate:(content::ShellWebContentsViewDelegate*) delegate {
   if ((self = [super init])) {
-    delegate_ = delegate;
+    _delegate = delegate;
   }
   return self;
 }
 
 - (void)itemSelected:(id)sender {
   NSInteger tag = [sender tag];
-  delegate_->ActionPerformed(tag);
+  _delegate->ActionPerformed(tag);
 }
 @end
 

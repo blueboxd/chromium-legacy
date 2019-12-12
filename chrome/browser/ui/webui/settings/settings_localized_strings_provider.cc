@@ -1614,13 +1614,6 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
       {"tetherConnectionConnectButton",
        IDS_SETTINGS_INTERNET_TETHER_CONNECTION_CONNECT_BUTTON},
       {"tetherEnableBluetooth", IDS_ENABLE_BLUETOOTH},
-      {"ethernetNetwork", IDS_SETTINGS_INTERNET_ETHERNET_NETWORK},
-      {"vpnNetwork", IDS_SETTINGS_INTERNET_VPN_NETWORK},
-      {"networkOff", IDS_SETTINGS_INTERNET_NETWORK_OFF},
-      {"networkNoNetwork", IDS_SETTINGS_INTERNET_NETWORK_NO_NETWORK},
-      {"networkConnecting", IDS_SETTINGS_INTERNET_NETWORK_CONNECTING},
-      {"networkNotConnected", IDS_SETTINGS_INTERNET_NETWORK_NOT_CONNECTED},
-      {"networkStrength", IDS_SETTINGS_INTERNET_NETWORK_STRENGTH},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 

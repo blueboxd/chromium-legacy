@@ -290,21 +290,18 @@ class SplitCacheContentBrowserTest : public ContentBrowserTest {
     RenderFrameHostImpl* main_frame = static_cast<RenderFrameHostImpl*>(
         shell()->web_contents()->GetMainFrame());
 
-    GURL main_url = main_frame->frame_tree_node()->current_url();
-    observer.WaitForResourceCompletion(main_url);
+    observer.WaitForResourceCompletion(url);
 
     if (sub_frame.is_valid()) {
       EXPECT_EQ(1U, main_frame->frame_tree_node()->child_count());
       NavigateFrameToURL(main_frame->frame_tree_node()->child_at(0), sub_frame);
       EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-      GURL sub_frame_url =
-          main_frame->frame_tree_node()->child_at(0)->current_url();
-      observer.WaitForResourceCompletion(sub_frame_url);
+      observer.WaitForResourceCompletion(sub_frame);
       EXPECT_EQ(subframe_navigation_resource_cached,
-                (*observer.FindResource(sub_frame_url))->was_cached);
+                (*observer.FindResource(sub_frame))->was_cached);
     }
 
-    return (*observer.FindResource(main_url))->was_cached;
+    return (*observer.FindResource(url))->was_cached;
   }
 
   // Loads a dedicated worker script and checks to see whether or not the

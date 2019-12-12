@@ -61,6 +61,8 @@ class TestFontSelector : public FontSelector {
       const AtomicString& font_family_name) override {}
   void ReportFailedFontFamilyMatch(
       const AtomicString& font_family_name) override {}
+  void ReportSuccessfulLocalFontMatch(const AtomicString& font_name) override {}
+  void ReportFailedLocalFontMatch(const AtomicString& font_name) override {}
   ExecutionContext* GetExecutionContext() const override { return nullptr; }
   FontFaceCache* GetFontFaceCache() override { return nullptr; }
 

@@ -17,7 +17,7 @@ class RemoteCommandCenterDelegate;
 API_AVAILABLE(macos(10.12.2))
 @interface RemoteCommandCenterDelegateCocoa : NSObject {
  @private
-  system_media_controls::internal::RemoteCommandCenterDelegate* delegate_;
+  system_media_controls::internal::RemoteCommandCenterDelegate* _delegate;
 }
 
 - (instancetype)initWithDelegate:

@@ -26,7 +26,6 @@ import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.On
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionListViewBinder.SuggestionListViewHolder;
 import org.chromium.chrome.browser.omnibox.suggestions.answer.AnswerSuggestionViewBinder;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionView;
-import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionView;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewViewBinder;
 import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionViewBinder;
@@ -118,8 +117,9 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
                 // clang-format off
                 adapter.registerType(
                         OmniboxSuggestionUiType.DEFAULT,
-                        () -> new SuggestionView(mListView.getContext()),
-                        SuggestionViewViewBinder::bind);
+                        () -> new BaseSuggestionView(mListView.getContext(),
+                                                     R.layout.omnibox_basic_suggestion),
+                        new SuggestionViewViewBinder());
 
                 adapter.registerType(
                         OmniboxSuggestionUiType.EDIT_URL_SUGGESTION,

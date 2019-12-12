@@ -212,19 +212,6 @@ void CountFiringEventListeners(const Event& event,
                               counted_event.feature, document))
       return;
   }
-
-  if (event.eventPhase() == Event::kCapturingPhase ||
-      event.eventPhase() == Event::kBubblingPhase) {
-    if (CheckTypeThenUseCount(
-            event, event_type_names::kDOMNodeRemoved,
-            WebFeature::kDOMNodeRemovedEventListenedAtNonTarget, document))
-      return;
-    if (CheckTypeThenUseCount(
-            event, event_type_names::kDOMNodeRemovedFromDocument,
-            WebFeature::kDOMNodeRemovedFromDocumentEventListenedAtNonTarget,
-            document))
-      return;
-  }
 }
 
 void RegisterWithScheduler(ExecutionContext* execution_context,

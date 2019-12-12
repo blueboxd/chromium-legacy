@@ -90,8 +90,8 @@ public class NotificationService extends IntentService {
             return;
         }
 
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                () -> { dispatchIntentOnUIThread(NotificationService.this, intent); });
+        PostTask.runOrPostTask(
+                UiThreadTaskTraits.DEFAULT, () -> { dispatchIntentOnUIThread(intent); });
     }
 
     /**
@@ -100,8 +100,8 @@ public class NotificationService extends IntentService {
      *
      * @param intent The intent containing the notification's information.
      */
-    static void dispatchIntentOnUIThread(Context context, Intent intent) {
-        ChromeBrowserInitializer.getInstance(context).handleSynchronousStartup();
+    static void dispatchIntentOnUIThread(Intent intent) {
+        ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
 
         // Warm up the WebappRegistry, as we need to check if this notification should launch a
         // standalone web app. This no-ops if the registry is already initialized and warmed,

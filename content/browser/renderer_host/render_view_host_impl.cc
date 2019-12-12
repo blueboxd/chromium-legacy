@@ -249,10 +249,11 @@ RenderViewHostImpl::RenderViewHostImpl(
   if (!is_active())
     GetWidget()->UpdatePriority();
 
-  close_timeout_.reset(new TimeoutMonitor(base::Bind(
-      &RenderViewHostImpl::ClosePageTimeout, weak_factory_.GetWeakPtr())));
+  close_timeout_ = std::make_unique<TimeoutMonitor>(base::BindRepeating(
+      &RenderViewHostImpl::ClosePageTimeout, weak_factory_.GetWeakPtr()));
 
-  input_device_change_observer_.reset(new InputDeviceChangeObserver(this));
+  input_device_change_observer_ =
+      std::make_unique<InputDeviceChangeObserver>(this);
 
   GetWidget()->set_owner_delegate(this);
 }

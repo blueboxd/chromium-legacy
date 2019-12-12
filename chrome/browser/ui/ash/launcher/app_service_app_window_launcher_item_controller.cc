@@ -87,6 +87,18 @@ void AppServiceAppWindowLauncherItemController::OnWindowTitleChanged(
   }
 }
 
+void AppServiceAppWindowLauncherItemController::AddTaskId(int task_id) {
+  task_ids_.insert(task_id);
+}
+
+void AppServiceAppWindowLauncherItemController::RemoveTaskId(int task_id) {
+  task_ids_.erase(task_id);
+}
+
+bool AppServiceAppWindowLauncherItemController::HasAnyTasks() const {
+  return !task_ids_.empty();
+}
+
 bool AppServiceAppWindowLauncherItemController::IsChromeApp() {
   Profile* const profile = ChromeLauncherController::instance()->profile();
   apps::AppServiceProxy* const proxy =

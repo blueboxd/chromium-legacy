@@ -165,6 +165,9 @@ void TransactionImpl::Put(
   params->put_mode = mode;
   params->callback = std::move(aborting_callback);
   params->index_keys = index_keys;
+  // This is decremented in IndexedDBDatabase::PutOperation.
+  transaction_->set_in_flight_memory(transaction_->in_flight_memory() +
+                                     output_value.SizeEstimate());
   transaction_->ScheduleTask(BindWeakOperation(
       &IndexedDBDatabase::PutOperation, connection->database()->AsWeakPtr(),
       std::move(params)));

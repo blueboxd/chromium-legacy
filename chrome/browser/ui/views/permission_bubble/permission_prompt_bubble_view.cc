@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/bubble_anchor_util_views.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
-#include "chrome/browser/ui/views/front_eliding_title_label.h"
+#include "chrome/browser/ui/views/title_origin_label.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/insets.h"
@@ -109,7 +109,7 @@ void PermissionPromptBubbleView::AddedToWidget() {
     // There is a risk of URL spoofing from origins that are too wide to fit in
     // the bubble; elide origins from the front to prevent this.
     GetBubbleFrameView()->SetTitleView(
-        CreateFrontElidingTitleLabel(GetWindowTitle()));
+        CreateTitleOriginLabel(GetWindowTitle()));
   }
 }
 

@@ -88,11 +88,11 @@ class Observer : public BrowserListObserver, public AvatarMenuObserver {
 
 - (id)initWithMainMenuItem:(NSMenuItem*)item {
   if ((self = [super init])) {
-    mainMenuItem_ = item;
+    _mainMenuItem = item;
 
     base::scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:
         l10n_util::GetNSStringWithFixup(IDS_PROFILES_OPTIONS_GROUP_NAME)]);
-    [mainMenuItem_ setSubmenu:menu];
+    [_mainMenuItem setSubmenu:menu];
 
     // This object will be constructed as part of nib loading, which happens
     // before the message loop starts and g_browser_process is available.
@@ -105,19 +105,19 @@ class Observer : public BrowserListObserver, public AvatarMenuObserver {
 }
 
 - (IBAction)switchToProfileFromMenu:(id)sender {
-  avatarMenu_->SwitchToProfile([sender tag], false,
+  _avatarMenu->SwitchToProfile([sender tag], false,
                                ProfileMetrics::SWITCH_PROFILE_MENU);
 }
 
 - (IBAction)switchToProfileFromDock:(id)sender {
   // Explicitly bring to the foreground when taking action from the dock.
   [NSApp activateIgnoringOtherApps:YES];
-  avatarMenu_->SwitchToProfile([sender tag], false,
+  _avatarMenu->SwitchToProfile([sender tag], false,
                                ProfileMetrics::SWITCH_PROFILE_DOCK);
 }
 
 - (IBAction)editProfile:(id)sender {
-  avatarMenu_->EditProfile(avatarMenu_->GetActiveProfileIndex());
+  _avatarMenu->EditProfile(_avatarMenu->GetActiveProfileIndex());
 }
 
 - (IBAction)newProfile:(id)sender {
@@ -128,11 +128,11 @@ class Observer : public BrowserListObserver, public AvatarMenuObserver {
 - (BOOL)insertItemsIntoMenu:(NSMenu*)menu
                    atOffset:(NSInteger)offset
                    fromDock:(BOOL)dock {
-  if (!avatarMenu_)
+  if (!_avatarMenu)
     return NO;
 
   // Don't show the list of profiles in the dock if only one profile exists.
-  if (dock && avatarMenu_->GetNumberOfItems() <= 1)
+  if (dock && _avatarMenu->GetNumberOfItems() <= 1)
     return NO;
 
   if (dock) {
@@ -146,8 +146,8 @@ class Observer : public BrowserListObserver, public AvatarMenuObserver {
     [menu insertItem:header atIndex:offset++];
   }
 
-  for (size_t i = 0; i < avatarMenu_->GetNumberOfItems(); ++i) {
-    const AvatarMenu::Item& itemData = avatarMenu_->GetItemAt(i);
+  for (size_t i = 0; i < _avatarMenu->GetNumberOfItems(); ++i) {
+    const AvatarMenu::Item& itemData = _avatarMenu->GetItemAt(i);
     NSString* name = base::SysUTF16ToNSString(itemData.name);
     SEL action = dock ? @selector(switchToProfileFromDock:)
                       : @selector(switchToProfileFromMenu:);
@@ -180,8 +180,8 @@ class Observer : public BrowserListObserver, public AvatarMenuObserver {
   if (!IsAddPersonEnabled())
     return [menuItem action] != @selector(newProfile:);
 
-  size_t index = avatarMenu_->GetActiveProfileIndex();
-  if (avatarMenu_->GetNumberOfItems() <= index) {
+  size_t index = _avatarMenu->GetActiveProfileIndex();
+  if (_avatarMenu->GetNumberOfItems() <= index) {
     ValidateMenuItemSelector currentSelector = UNKNOWN_SELECTOR;
     if ([menuItem action] == @selector(newProfile:))
       currentSelector = NEW_PROFILE;
@@ -195,7 +195,7 @@ class Observer : public BrowserListObserver, public AvatarMenuObserver {
                           activeProfile->IsGuestSession());
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "Profile.ValidateMenuItemInvalidIndex.ProfileCount",
-        avatarMenu_->GetNumberOfItems(),
+        _avatarMenu->GetNumberOfItems(),
         1, 20, 20);
     UMA_HISTOGRAM_ENUMERATION("Profile.ValidateMenuItemInvalidIndex.Selector",
                               currentSelector,
@@ -204,7 +204,7 @@ class Observer : public BrowserListObserver, public AvatarMenuObserver {
     return NO;
   }
 
-  const AvatarMenu::Item& itemData = avatarMenu_->GetItemAt(index);
+  const AvatarMenu::Item& itemData = _avatarMenu->GetItemAt(index);
   if ([menuItem action] == @selector(switchToProfileFromDock:) ||
       [menuItem action] == @selector(switchToProfileFromMenu:)) {
     if (!itemData.legacy_supervised)
@@ -222,15 +222,15 @@ class Observer : public BrowserListObserver, public AvatarMenuObserver {
 // Private /////////////////////////////////////////////////////////////////////
 
 - (NSMenu*)menu {
-  return [mainMenuItem_ submenu];
+  return [_mainMenuItem submenu];
 }
 
 - (void)initializeMenu {
-  observer_ = std::make_unique<ProfileMenuControllerInternal::Observer>(self);
-  avatarMenu_ = std::make_unique<AvatarMenu>(
+  _observer = std::make_unique<ProfileMenuControllerInternal::Observer>(self);
+  _avatarMenu = std::make_unique<AvatarMenu>(
       &g_browser_process->profile_manager()->GetProfileAttributesStorage(),
-      observer_.get(), nullptr);
-  avatarMenu_->RebuildMenu();
+      _observer.get(), nullptr);
+  _avatarMenu->RebuildMenu();
 
   [[self menu] addItem:[NSMenuItem separatorItem]];
 
@@ -255,7 +255,7 @@ class Observer : public BrowserListObserver, public AvatarMenuObserver {
 // menu item and menu need to be updated to reflect that.
 - (void)activeBrowserChangedTo:(Browser*)browser {
   // Tell the menu that the browser has changed.
-  avatarMenu_->ActiveBrowserChanged(browser);
+  _avatarMenu->ActiveBrowserChanged(browser);
 
   // If |browser| is NULL, it may be because the current profile was deleted
   // and there are no other loaded profiles. In this case, calling
@@ -274,11 +274,11 @@ class Observer : public BrowserListObserver, public AvatarMenuObserver {
   // avatarMenu_->GetActiveProfileIndex() as the index might be
   // incorrect if -activeBrowserChangedTo: is called while we deleting the
   // active profile and closing all its browser windows.
-  avatarMenu_->RebuildMenu();
+  _avatarMenu->RebuildMenu();
 
   // Update the state for the menu items.
-  for (size_t i = 0; i < avatarMenu_->GetNumberOfItems(); ++i) {
-    const AvatarMenu::Item& itemData = avatarMenu_->GetItemAt(i);
+  for (size_t i = 0; i < _avatarMenu->GetNumberOfItems(); ++i) {
+    const AvatarMenu::Item& itemData = _avatarMenu->GetItemAt(i);
     [[[self menu] itemWithTag:itemData.menu_index]
         setState:itemData.active ? NSOnState : NSOffState];
   }
@@ -295,7 +295,7 @@ class Observer : public BrowserListObserver, public AvatarMenuObserver {
 
   BOOL hasContent = [self insertItemsIntoMenu:menu atOffset:0 fromDock:NO];
 
-  [mainMenuItem_ setHidden:!hasContent];
+  [_mainMenuItem setHidden:!hasContent];
 }
 
 - (NSMenuItem*)createItemWithTitle:(NSString*)title action:(SEL)sel {

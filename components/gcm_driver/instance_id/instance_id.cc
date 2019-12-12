@@ -20,15 +20,6 @@ InstanceID::InstanceID(const std::string& app_id, gcm::GCMDriver* gcm_driver)
 
 InstanceID::~InstanceID() {}
 
-void InstanceID::SetTokenRefreshCallback(const TokenRefreshCallback& callback) {
-  token_refresh_callback_ = callback;
-}
-
-void InstanceID::NotifyTokenRefresh(bool update_id) {
-  if (!token_refresh_callback_.is_null())
-    token_refresh_callback_.Run(app_id_, update_id);
-}
-
 void InstanceID::GetEncryptionInfo(const std::string& authorized_entity,
                                    GetEncryptionInfoCallback callback) {
   gcm_driver_->GetEncryptionProviderInternal()->GetEncryptionInfo(

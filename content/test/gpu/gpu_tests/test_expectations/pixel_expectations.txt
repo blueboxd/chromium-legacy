@@ -179,23 +179,18 @@ crbug.com/974380 [ win ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorke
 crbug.com/974380 [ mac ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker [ Skip ]
 crbug.com/974383 [ mac ] Pixel_CanvasDisplayLinearRGBAccelerated2D [ Skip ]
 
-# Fails when the browser features SkiaRenderer & Vulkan are enabled on Android
-crbug.com/991289 [ android skia-renderer use-vulkan ] Pixel_CSS3DBlueBox [ Skip ]
-crbug.com/991291 [ android android-chromium skia-renderer use-vulkan ] Pixel_Video_Context_Loss_VP9 [ Skip ]
+# Skia Renderer, producing incorrect color in one quadrant
+crbug.com/1008450 [ android use-vulkan skia-renderer ] Pixel_Video_BackdropFilter [ Skip ]
+crbug.com/1008450 [ android skia-renderer ] Pixel_Video_MP4_Rounded_Corner [ Skip ]
 
-# Fails when the browser features SkiaRenderer & GL are enabled on Android.
-# The more specific matching criteria is to prevent collisions with other expectations.
-crbug.com/1008456 [ android android-chromium skia-renderer use-gl no-use-vulkan ] Pixel_Video_Context_Loss_VP9 [ Skip ]
-crbug.com/969864 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_MP4 [ Skip ]
-crbug.com/969864 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_MP4_FourColors_Aspect_4x3 [ Skip ]
-crbug.com/969864 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_MP4_FourColors_Rot_180 [ Skip ]
-crbug.com/969864 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_MP4_FourColors_Rot_270 [ Skip ]
-crbug.com/969864 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_MP4_FourColors_Rot_90 [ Skip ]
-crbug.com/969864 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_VP9 [ Skip ]
+# Skia Renderer Vulkan producing inccorect negative result
+crbug.com/1033113 [ android android-chromium skia-renderer use-vulkan ] Pixel_Video_Context_Loss_VP9 [ Skip ]
 
-# Fails on Android SkiaRenderer, both GL and Vulkan
-crbug.com/1008450 [ android skia-renderer ] Pixel_Video_BackdropFilter [ Skip ]
-crbug.com/1007019 [ android skia-renderer ] Pixel_Video_MP4_Rounded_Corner [ Skip ]
+# Skia Renderer EGL timesout, fails to load minidump
+crbug.com/1033121 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_MP4_FourColors_Aspect_4x3 [ Skip ]
+crbug.com/1033121 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_MP4_FourColors_Rot_180 [ Skip ]
+crbug.com/1033121 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_MP4_FourColors_Rot_270 [ Skip ]
+crbug.com/1033121 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_MP4_FourColors_Rot_90 [ Skip ]
 
 # Produces blank images on Intel HD 630 w/ Mesa 19.0.2
 crbug.com/976861 [ linux intel-0x5912 ] Pixel_OffscreenCanvasTransferToImageBitmap [ Skip ]

@@ -425,12 +425,16 @@ chromium_builder(
 chromium_builder(
     name = 'win32-archive-dbg',
     cores = 32,
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_DEFAULT,
 )
 
 chromium_builder(
     name = 'win32-archive-rel',
     cores = 32,
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_DEFAULT,
 )
 
@@ -1031,6 +1035,8 @@ fuzz_libfuzzer_builder(
 
 fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Windows ASan',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_DEFAULT,
 )
 
@@ -1179,6 +1185,8 @@ fyi_builder(
 
 fyi_builder(
     name = 'win-pixel-builder-rel',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = None,
 )
 
@@ -1204,6 +1212,8 @@ def fyi_celab_builder(*, name, **kwargs):
 
 fyi_celab_builder(
     name = 'win-celab-builder-rel',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 fyi_celab_builder(
@@ -1393,22 +1403,30 @@ def fyi_windows_builder(*, name, os=os.WINDOWS_DEFAULT, **kwargs):
 
 fyi_windows_builder(
     name = 'Win 10 Fast Ring',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_10,
 )
 
 fyi_windows_builder(
     name = 'win32-arm64-rel',
     cpu = cpu.X86,
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     goma_jobs = goma.jobs.J150,
 )
 
 fyi_windows_builder(
     name = 'win-annotator-rel',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     execution_timeout = 16 * time.hour,
 )
 
 fyi_windows_builder(
     name = 'Mojo Windows',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 
@@ -2160,6 +2178,8 @@ memory_builder(
 memory_builder(
     name = 'win-asan',
     cores = 32,
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_DEFAULT,
 )
 
@@ -2218,27 +2238,39 @@ def swangle_windows_builder(*, name, **kwargs):
   )
 
 swangle_windows_builder(
-    name = 'win-swangle-tot-angle-x64'
+    name = 'win-swangle-tot-angle-x64',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 swangle_windows_builder(
-    name = 'win-swangle-tot-angle-x86'
+    name = 'win-swangle-tot-angle-x86',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 swangle_windows_builder(
-    name = 'win-swangle-tot-swiftshader-x64'
+    name = 'win-swangle-tot-swiftshader-x64',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 swangle_windows_builder(
-    name = 'win-swangle-tot-swiftshader-x86'
+    name = 'win-swangle-tot-swiftshader-x86',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 swangle_windows_builder(
-    name = 'win-swangle-x64'
+    name = 'win-swangle-x64',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 swangle_windows_builder(
-    name = 'win-swangle-x86'
+    name = 'win-swangle-x86',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 
@@ -2252,6 +2284,8 @@ def win_builder(*, name, os=os.WINDOWS_DEFAULT, **kwargs):
 
 win_builder(
     name = 'WebKit Win10',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 win_builder(
@@ -2301,4 +2335,6 @@ win_builder(
     name = 'Windows deterministic',
     executable = luci.recipe(name = 'swarming/deterministic_build'),
     execution_timeout = 6 * time.hour,
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )

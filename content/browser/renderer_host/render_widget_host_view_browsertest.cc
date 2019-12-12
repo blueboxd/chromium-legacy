@@ -112,13 +112,12 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
   }
 
   // Callback when using CopyFromSurface() API.
-  void FinishCopyFromSurface(const base::Closure& quit_closure,
+  void FinishCopyFromSurface(base::OnceClosure quit_closure,
                              const SkBitmap& bitmap) {
     ++callback_invoke_count_;
     if (!bitmap.drawsNothing())
       ++frames_captured_;
-    if (!quit_closure.is_null())
-      quit_closure.Run();
+    std::move(quit_closure).Run();
   }
 
  protected:

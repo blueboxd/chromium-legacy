@@ -10,7 +10,6 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.base.annotations.CheckDiscard;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -191,13 +190,11 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
     public void onPauseWithNative() {}
 
     // TabGroupUiController implementation.
-    @CheckDiscard("crbug.com/1022827")
     @Override
     public void setupLeftButtonDrawable(int drawableId) {
         mMediator.setupLeftButtonDrawable(drawableId);
     }
 
-    @CheckDiscard("crbug.com/1022827")
     @Override
     public void setupLeftButtonOnClickListener(View.OnClickListener listener) {
         mMediator.setupLeftButtonOnClickListener(listener);
@@ -206,7 +203,6 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
     /**
      * @return {@link TabGroupUiMediator.TabGroupUiController} to control the TabGroupUi.
      */
-    @CheckDiscard("crbug.com/1022827")
     TabGroupUiMediator.TabGroupUiController getTabGroupUiController() {
         return this;
     }

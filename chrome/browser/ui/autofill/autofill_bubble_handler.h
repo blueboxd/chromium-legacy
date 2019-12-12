@@ -16,6 +16,8 @@ class LocalCardMigrationBubble;
 class LocalCardMigrationBubbleController;
 class SaveCardBubbleView;
 class SaveCardBubbleController;
+class SaveUPIBubble;
+class SaveUPIBubbleController;
 
 // Responsible for receiving calls from controllers and showing autofill
 // bubbles.
@@ -38,6 +40,10 @@ class AutofillBubbleHandler {
       content::WebContents* web_contents,
       LocalCardMigrationBubbleController* controller,
       bool is_user_gesture) = 0;
+
+  virtual SaveUPIBubble* ShowSaveUPIBubble(
+      content::WebContents* contents,
+      SaveUPIBubbleController* controller) = 0;
 
   // TODO(crbug.com/964127): Wait for the integration with sign in after local
   // save to be landed to see if we need to merge password saved and credit card

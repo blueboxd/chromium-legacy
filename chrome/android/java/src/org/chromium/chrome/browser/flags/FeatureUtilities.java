@@ -25,7 +25,6 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
@@ -114,7 +113,6 @@ public class FeatureUtilities {
      */
     public static void cacheNativeFlags() {
         cacheCommandLineOnNonRootedEnabled();
-        FirstRunUtils.cacheFirstRunPrefs();
         cacheBottomToolbarEnabled();
         cacheAdaptiveToolbarEnabled();
         cacheLabeledBottomToolbarEnabled();

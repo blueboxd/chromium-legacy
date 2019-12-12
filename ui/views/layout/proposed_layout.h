@@ -6,6 +6,7 @@
 #define UI_VIEWS_LAYOUT_PROPOSED_LAYOUT_H_
 
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/layout/layout_types.h"
 #include "ui/views/views_export.h"
 
 namespace views {
@@ -15,6 +16,8 @@ class View;
 // Represents layout information for a child view within a host being laid
 // out.
 struct VIEWS_EXPORT ChildLayout {
+  // Note that comparison ignores available size; as two layouts with the same
+  // geometry are the same even if the available size is different.
   bool operator==(const ChildLayout& other) const;
   bool operator!=(const ChildLayout& other) const { return !(*this == other); }
 
@@ -23,6 +26,7 @@ struct VIEWS_EXPORT ChildLayout {
   View* child_view = nullptr;
   bool visible = false;
   gfx::Rect bounds;
+  SizeBounds available_size;
 };
 
 // Contains a full layout specification for the children of the host view.

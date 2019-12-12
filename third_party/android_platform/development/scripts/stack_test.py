@@ -106,7 +106,7 @@ class StackDecodeTest(unittest.TestCase):
       f.write(data)
 
   # Build a dummy APK with native libraries in it.
-  def _MakeApk(self, apk, libs, apk_dir, out_dir):
+  def _MakeApk(self, apk, libs, apk_dir, out_dir, crazy):
     apk_file = os.path.join(apk_dir, apk)
     with zipfile.ZipFile(apk_file, 'w') as archive:
       for lib in libs:
@@ -116,9 +116,10 @@ class StackDecodeTest(unittest.TestCase):
         self._MakeElf(library_file)
 
         # Add the library to the APK.
+        name_in_apk = 'crazy.' + lib if crazy else lib
         zipalign.AddToZipHermetic(
             archive,
-            lib,
+            name_in_apk,
             src_path=library_file,
             compress=False,
             alignment=0x1000)
@@ -134,7 +135,7 @@ class StackDecodeTest(unittest.TestCase):
     lines = [line.strip() for line in lines]
     return [line for line in lines if line]
 
-  def _RunCase(self, logcat, expected, apks):
+  def _RunCase(self, logcat, expected, apks, crazy=False):
     # Set up staging directories.
     temp = self._temp_dir
     out_dir = os.path.join(temp, 'out', 'Debug')
@@ -148,7 +149,7 @@ class StackDecodeTest(unittest.TestCase):
     # Create test APKs, with .so libraries in them, that are real enough to
     # trick the stack decoder.
     for name, libs in apks.items():
-      self._MakeApk(name, libs, apk_dir, out_dir)
+      self._MakeApk(name, libs, apk_dir, out_dir, crazy)
 
     symbolizer = FakeSymbolizer(out_dir)
 
@@ -277,6 +278,34 @@ class StackDecodeTest(unittest.TestCase):
       ''')
     expected_decode = textwrap.dedent('''
       00000274   monochrome32::Func_274       monochrome32.cc:1:1
+      ''')
+    self._RunCase(input_trace, expected_decode, apks)
+
+  def test_CrazyUncompressedLibraries(self):
+    # Here, the library in the APK is prefixed with "crazy.", as in
+    # ChromeModern.
+    apks = {
+        'chrome.apk': ['libchrome.so'],
+    }
+    input_trace = textwrap.dedent('''
+      DEBUG : #01 pc 00000174  /path==/base.apk (offset 0x00001000)
+      ''')
+    expected_decode = textwrap.dedent('''
+      00000174   chrome::Func_174         chrome.cc:1:1
+      ''')
+    self._RunCase(input_trace, expected_decode, apks, crazy=True)
+
+  def test_AndroidQ(self):
+    apks = {
+        'chrome.apk': ['libchrome.so'],
+    }
+    # Android Q helpfully prints both APK and library, so we don't need to do
+    # any matching, as long as we can parse this.
+    input_trace = textwrap.dedent('''
+      DEBUG : #01 pc 00000174  /path==/base.apk!libchrome.so (offset 0x00001000)
+      ''')
+    expected_decode = textwrap.dedent('''
+      00000174   chrome::Func_174         chrome.cc:1:1
       ''')
     self._RunCase(input_trace, expected_decode, apks)
 

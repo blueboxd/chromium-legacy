@@ -896,16 +896,19 @@ void RootWindowController::InitLayoutManagers() {
   // Make it easier to resize windows that partially overlap the shelf. Must
   // occur after the ShelfLayoutManager is constructed by ShelfWidget.
   aura::Window* shelf_container = GetContainer(kShellWindowId_ShelfContainer);
-  shelf_container->SetEventTargeter(
-      std::make_unique<ShelfWindowTargeter>(shelf_container, shelf_.get()));
+  shelf_container->SetEventTargeter(std::make_unique<ShelfWindowTargeter>(
+      shelf_container, shelf_.get(),
+      true /*extend_touch_area_for_auto_hidden_shelf*/));
   aura::Window* shelf_control_container =
       GetContainer(kShellWindowId_ShelfControlContainer);
   shelf_control_container->SetEventTargeter(
-      std::make_unique<ShelfWindowTargeter>(shelf_control_container,
-                                            shelf_.get()));
+      std::make_unique<ShelfWindowTargeter>(
+          shelf_control_container, shelf_.get(),
+          false /*extend_touch_area_for_auto_hidden_shelf*/));
   aura::Window* status_container = GetContainer(kShellWindowId_StatusContainer);
-  status_container->SetEventTargeter(
-      std::make_unique<ShelfWindowTargeter>(status_container, shelf_.get()));
+  status_container->SetEventTargeter(std::make_unique<ShelfWindowTargeter>(
+      status_container, shelf_.get(),
+      false /*extend_touch_area_for_auto_hidden_shelf*/));
 }
 
 void RootWindowController::CreateContainers() {

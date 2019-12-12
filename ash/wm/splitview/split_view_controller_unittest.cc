@@ -644,6 +644,136 @@ TEST_P(SplitViewControllerTest, SplitDividerBasicTest) {
   EXPECT_FALSE(split_view_divider());
 }
 
+// Tests that the split divider has correct state after a window is destroyed
+// while being dragged from the top.
+TEST_P(SplitViewControllerTest,
+       DividerSetAsAlwaysOnTopAfterWindowDestroyedDuringDraggingFromTop) {
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window3 = CreateTestWindow();
+  window2->SetProperty(aura::client::kAppType,
+                       static_cast<int>(AppType::BROWSER));
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  // The divider should start always on top.
+  EXPECT_NE(ui::ZOrderLevel::kNormal,
+            split_view_divider()->divider_widget()->GetZOrderLevel());
+  // The divider should not be always on top while a window is being dragged.
+  std::unique_ptr<WindowResizer> resizer =
+      CreateWindowResizer(window2.get(), gfx::Point(400, 0), HTCAPTION,
+                          ::wm::WINDOW_MOVE_SOURCE_TOUCH);
+  EXPECT_EQ(ui::ZOrderLevel::kNormal,
+            split_view_divider()->divider_widget()->GetZOrderLevel());
+  // If the dragged window is destroyed, the divider should be back to always on
+  // top, consistent with if the drag ends gracefully.
+  resizer.reset();
+  window2.reset();
+  EXPECT_NE(ui::ZOrderLevel::kNormal,
+            split_view_divider()->divider_widget()->GetZOrderLevel());
+  // |SplitViewDivider::is_dragging_window_| should be false, but instead of
+  // checking its value directly, we test for what may go wrong if it is true.
+  // If |SplitViewDivider::is_dragging_window_| is true, then the following call
+  // to |SplitViewController::SnapWindow| will set the divider to always on top,
+  // which is fine, but then the call to |wm::ActivateWindow| will change it
+  // back to not always on top (see |SplitViewDivider::OnWindowActivated|).
+  split_view_controller()->SnapWindow(window3.get(),
+                                      SplitViewController::RIGHT);
+  EXPECT_NE(ui::ZOrderLevel::kNormal,
+            split_view_divider()->divider_widget()->GetZOrderLevel());
+  wm::ActivateWindow(window3.get());
+  EXPECT_NE(ui::ZOrderLevel::kNormal,
+            split_view_divider()->divider_widget()->GetZOrderLevel());
+}
+
+// Tests that the split divider has correct state after a window is destroyed
+// while being dragged from overview.
+TEST_P(SplitViewControllerTest,
+       DividerSetAsAlwaysOnTopAfterWindowDestroyedDuringDraggingFromOverview) {
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window3 = CreateTestWindow();
+  ToggleOverview();
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  // The divider should start always on top.
+  EXPECT_NE(ui::ZOrderLevel::kNormal,
+            split_view_divider()->divider_widget()->GetZOrderLevel());
+  // The divider should not be always on top while a window is being dragged.
+  OverviewSession* overview_session =
+      Shell::Get()->overview_controller()->overview_session();
+  OverviewItem* overview_item =
+      overview_session->GetOverviewItemForWindow(window2.get());
+  gfx::PointF drag_point = overview_item->target_bounds().CenterPoint();
+  overview_session->InitiateDrag(overview_item, drag_point,
+                                 /*is_touch_dragging=*/false);
+  drag_point.Offset(5.f, 0.f);
+  overview_session->Drag(overview_item, drag_point);
+  EXPECT_EQ(ui::ZOrderLevel::kNormal,
+            split_view_divider()->divider_widget()->GetZOrderLevel());
+  // If the dragged window is destroyed, the divider should be back to always on
+  // top, consistent with if the drag ends gracefully.
+  window2.reset();
+  EXPECT_NE(ui::ZOrderLevel::kNormal,
+            split_view_divider()->divider_widget()->GetZOrderLevel());
+  // |SplitViewDivider::is_dragging_window_| should be false, but instead of
+  // checking its value directly, we test for what may go wrong if it is true.
+  // If |SplitViewDivider::is_dragging_window_| is true, then the following call
+  // to |SplitViewController::SnapWindow| will set the divider to always on top,
+  // which is fine, but then the call to |wm::ActivateWindow| will change it
+  // back to not always on top (see |SplitViewDivider::OnWindowActivated|).
+  split_view_controller()->SnapWindow(window3.get(),
+                                      SplitViewController::RIGHT);
+  EXPECT_NE(ui::ZOrderLevel::kNormal,
+            split_view_divider()->divider_widget()->GetZOrderLevel());
+  wm::ActivateWindow(window3.get());
+  EXPECT_NE(ui::ZOrderLevel::kNormal,
+            split_view_divider()->divider_widget()->GetZOrderLevel());
+}
+
+// Tests that the split divider has correct state after a window drag from
+// overview is canceled.
+TEST_P(SplitViewControllerTest,
+       DividerSetAsAlwaysOnTopAfterWindowDragFromOverviewReset) {
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window3 = CreateTestWindow();
+  ToggleOverview();
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  // The divider should start always on top.
+  EXPECT_NE(ui::ZOrderLevel::kNormal,
+            split_view_divider()->divider_widget()->GetZOrderLevel());
+  // The divider should not be always on top while a window is being dragged.
+  OverviewSession* overview_session =
+      Shell::Get()->overview_controller()->overview_session();
+  OverviewItem* overview_item =
+      overview_session->GetOverviewItemForWindow(window2.get());
+  gfx::PointF drag_point = overview_item->target_bounds().CenterPoint();
+  overview_session->InitiateDrag(overview_item, drag_point,
+                                 /*is_touch_dragging=*/false);
+  drag_point.Offset(5.f, 0.f);
+  overview_session->Drag(overview_item, drag_point);
+  EXPECT_EQ(ui::ZOrderLevel::kNormal,
+            split_view_divider()->divider_widget()->GetZOrderLevel());
+  // If the drag is canceled, the divider should be back to always on top,
+  // consistent with if the drag ends gracefully.
+  overview_session->ResetDraggedWindowGesture();
+  EXPECT_NE(ui::ZOrderLevel::kNormal,
+            split_view_divider()->divider_widget()->GetZOrderLevel());
+  // |SplitViewDivider::is_dragging_window_| should be false, but instead of
+  // checking its value directly, we test for what may go wrong if it is true.
+  // If |SplitViewDivider::is_dragging_window_| is true, then the following call
+  // to |SplitViewController::SnapWindow| will set the divider to always on top,
+  // which is fine, but then the call to |wm::ActivateWindow| will change it
+  // back to not always on top (see |SplitViewDivider::OnWindowActivated|).
+  split_view_controller()->SnapWindow(window3.get(),
+                                      SplitViewController::RIGHT);
+  EXPECT_NE(ui::ZOrderLevel::kNormal,
+            split_view_divider()->divider_widget()->GetZOrderLevel());
+  wm::ActivateWindow(window3.get());
+  EXPECT_NE(ui::ZOrderLevel::kNormal,
+            split_view_divider()->divider_widget()->GetZOrderLevel());
+}
+
 // Verifys that the bounds of the two windows in splitview are as expected.
 TEST_P(SplitViewControllerTest, SplitDividerWindowBounds) {
   const gfx::Rect bounds(0, 0, 400, 400);

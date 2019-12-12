@@ -168,6 +168,19 @@ void CSSFontSelector::ReportFailedFontFamilyMatch(
       font_family_name);
 }
 
+void CSSFontSelector::ReportSuccessfulLocalFontMatch(
+    const AtomicString& font_name) {
+  DCHECK(document_);
+  document_->GetFontMatchingMetrics()->ReportSuccessfulLocalFontMatch(
+      font_name);
+}
+
+void CSSFontSelector::ReportFailedLocalFontMatch(
+    const AtomicString& font_name) {
+  DCHECK(document_);
+  document_->GetFontMatchingMetrics()->ReportFailedLocalFontMatch(font_name);
+}
+
 void CSSFontSelector::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(font_face_cache_);

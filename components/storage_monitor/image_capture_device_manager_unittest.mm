@@ -32,7 +32,7 @@ const char kTestFileContents[] = "test";
 
 @interface MockICCameraDevice : ICCameraDevice {
  @private
-  base::scoped_nsobject<NSMutableArray> allMediaFiles_;
+  base::scoped_nsobject<NSMutableArray> _allMediaFiles;
 }
 
 - (void)addMediaFile:(ICCameraFile*)file;
@@ -70,13 +70,13 @@ const char kTestFileContents[] = "test";
 }
 
 - (NSArray*)mediaFiles {
-  return allMediaFiles_;
+  return _allMediaFiles;
 }
 
 - (void)addMediaFile:(ICCameraFile*)file {
-  if (!allMediaFiles_.get())
-    allMediaFiles_.reset([[NSMutableArray alloc] init]);
-  [allMediaFiles_ addObject:file];
+  if (!_allMediaFiles.get())
+    _allMediaFiles.reset([[NSMutableArray alloc] init]);
+  [_allMediaFiles addObject:file];
 }
 
 // This method does approximately what the internal ImageCapture platform
@@ -115,7 +115,7 @@ const char kTestFileContents[] = "test";
 
 @interface MockICCameraFolder : ICCameraFolder {
  @private
-  base::scoped_nsobject<NSString> name_;
+  base::scoped_nsobject<NSString> _name;
 }
 
 - (instancetype)initWithName:(NSString*)name;
@@ -126,13 +126,13 @@ const char kTestFileContents[] = "test";
 
 - (instancetype)initWithName:(NSString*)name {
   if ((self = [super init])) {
-    name_.reset([name retain]);
+    _name.reset([name retain]);
   }
   return self;
 }
 
 - (NSString*)name {
-  return name_;
+  return _name;
 }
 
 - (ICCameraFolder*)parentFolder {
@@ -143,9 +143,9 @@ const char kTestFileContents[] = "test";
 
 @interface MockICCameraFile : ICCameraFile {
  @private
-  base::scoped_nsobject<NSString> name_;
-  base::scoped_nsobject<NSDate> date_;
-  base::scoped_nsobject<MockICCameraFolder> parent_;
+  base::scoped_nsobject<NSString> _name;
+  base::scoped_nsobject<NSDate> _date;
+  base::scoped_nsobject<MockICCameraFolder> _parent;
 }
 
 - (instancetype)init:(NSString*)name;
@@ -160,22 +160,22 @@ const char kTestFileContents[] = "test";
     base::scoped_nsobject<NSDateFormatter> iso8601day(
         [[NSDateFormatter alloc] init]);
     [iso8601day setDateFormat:@"yyyy-MM-dd"];
-    name_.reset([name retain]);
-    date_.reset([[iso8601day dateFromString:@"2012-12-12"] retain]);
+    _name.reset([name retain]);
+    _date.reset([[iso8601day dateFromString:@"2012-12-12"] retain]);
   }
   return self;
 }
 
 - (void)setParent:(NSString*)parent {
-  parent_.reset([[MockICCameraFolder alloc] initWithName:parent]);
+  _parent.reset([[MockICCameraFolder alloc] initWithName:parent]);
 }
 
 - (ICCameraFolder*)parentFolder {
-  return parent_.get();
+  return _parent.get();
 }
 
 - (NSString*)name {
-  return name_;
+  return _name;
 }
 
 - (NSString*)UTI {
@@ -183,11 +183,11 @@ const char kTestFileContents[] = "test";
 }
 
 - (NSDate*)modificationDate {
-  return date_.get();
+  return _date.get();
 }
 
 - (NSDate*)creationDate {
-  return date_.get();
+  return _date.get();
 }
 
 - (off_t)fileSize {

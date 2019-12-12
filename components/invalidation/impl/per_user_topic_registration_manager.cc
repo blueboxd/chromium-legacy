@@ -15,7 +15,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
@@ -277,8 +277,9 @@ void PerUserTopicRegistrationManager::UpdateSubscribedTopics(
     const std::string& instance_id_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   instance_id_token_ = instance_id_token;
-  UMA_HISTOGRAM_ENUMERATION("FCMInvalidations.TokenStateOnRegistrationRequest",
-                            DropAllSavedSubscriptionsOnTokenChange());
+  base::UmaHistogramEnumeration(
+      "FCMInvalidations.TokenStateOnRegistrationRequest",
+      DropAllSavedSubscriptionsOnTokenChange());
 
   for (const auto& topic : topics) {
     // If the topic isn't subscribed yet, schedule the subscription.

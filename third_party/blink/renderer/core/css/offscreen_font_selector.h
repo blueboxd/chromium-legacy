@@ -34,6 +34,10 @@ class CORE_EXPORT OffscreenFontSelector : public FontSelector {
   void ReportFailedFontFamilyMatch(
       const AtomicString& font_family_name) override;
 
+  void ReportSuccessfulLocalFontMatch(const AtomicString& font_name) override;
+
+  void ReportFailedLocalFontMatch(const AtomicString& font_name) override;
+
   scoped_refptr<FontData> GetFontData(const FontDescription&,
                                       const AtomicString&) override;
   void WillUseFontData(const FontDescription&,

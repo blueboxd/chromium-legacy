@@ -23,28 +23,33 @@ const SyncPrefsIndividualDataTypes = [
 Polymer({
   is: 'os-sync-controls',
 
-  behaviors: [WebUIListenerBehavior],
+  behaviors: [
+    settings.RouteObserverBehavior,
+    WebUIListenerBehavior,
+  ],
 
   properties: {
     hidden: {
       type: Boolean,
-      value: false,
-      computed: 'syncControlsHidden_(' +
-          'syncStatus.signedIn, syncStatus.disabled, syncStatus.hasError)',
+      value: true,
+      computed: 'syncControlsHidden_(osSyncPrefs)',
       reflectToAttribute: true,
     },
 
     /**
-     * The current OS sync preferences.
+     * Whether the OS sync feature is enabled. This object does not directly
+     * manipulate prefs so we can defer turning on OS sync until the user
+     * navigates away from the page.
+     */
+    osSyncFeatureEnabled: Boolean,
+
+    /**
+     * The current OS sync preferences. Cached so we can restore individual
+     * toggle state when turning "sync everything" on and off, without affecting
+     * the underlying chrome prefs.
      * @type {settings.OsSyncPrefs|undefined}
      */
     osSyncPrefs: Object,
-
-    /**
-     * The current sync status, supplied by the parent.
-     * @type {settings.SyncStatus}
-     */
-    syncStatus: Object,
   },
 
   /** @private {?settings.OsSyncBrowserProxy} */
@@ -66,16 +71,19 @@ Polymer({
   attached: function() {
     this.addWebUIListener(
         'os-sync-prefs-changed', this.handleOsSyncPrefsChanged_.bind(this));
-
-    // Request the initial SyncPrefs and start the sync engine if necessary.
-    if (settings.getCurrentRoute() == settings.routes.OS_SYNC) {
-      this.browserProxy_.didNavigateToOsSyncPage();
-    }
   },
 
-  /** @override */
-  detached: function() {
-    if (settings.routes.OS_SYNC.contains(settings.getCurrentRoute())) {
+  /**
+   * settings.RouteObserverBehavior
+   * @param {!settings.Route|undefined} newRoute
+   * @param {!settings.Route|undefined} oldRoute
+   * @protected
+   */
+  currentRouteChanged: function(newRoute, oldRoute) {
+    if (newRoute == settings.routes.OS_SYNC) {
+      this.browserProxy_.didNavigateToOsSyncPage();
+    }
+    if (oldRoute == settings.routes.OS_SYNC) {
       this.browserProxy_.didNavigateAwayFromOsSyncPage();
     }
   },
@@ -84,18 +92,28 @@ Polymer({
    * Handler for when the sync preferences are updated.
    * @private
    */
-  handleOsSyncPrefsChanged_: function(osSyncPrefs) {
+  handleOsSyncPrefsChanged_: function(osSyncFeatureEnabled, osSyncPrefs) {
+    this.osSyncFeatureEnabled = osSyncFeatureEnabled;
     this.osSyncPrefs = osSyncPrefs;
+
+    // If the feature is disabled the checkboxes appear toggled off, regardless
+    // of the underlying chrome pref.
+    if (!this.osSyncFeatureEnabled) {
+      this.set('osSyncPrefs.syncAllOsTypes', false);
+      for (const dataType of SyncPrefsIndividualDataTypes) {
+        this.set(['osSyncPrefs', dataType], false);
+      }
+    }
   },
 
-  /**
-   * Handler for when the feature enabled checkbox is changed.
-   * @param {!Event} event
-   * @private
-   */
-  onFeatureEnabledChanged_: function(event) {
-    this.set('osSyncPrefs.featureEnabled', !!event.target.checked);
-    this.sendOsSyncDatatypes_();
+  /** @private */
+  onTurnOnSyncButtonClick_: function() {
+    this.browserProxy_.setOsSyncFeatureEnabled(true);
+  },
+
+  /** @private */
+  onTurnOffSyncButtonClick_: function() {
+    this.browserProxy_.setOsSyncFeatureEnabled(false);
   },
 
   /**
@@ -143,12 +161,14 @@ Polymer({
   },
 
   /**
+   * @param {boolean} syncFeatureEnabled
    * @param {boolean} syncAllOsTypes
    * @param {boolean} enforced
-   * @return {boolean} Whether the sync checkbox should be disabled.
+   * @return {boolean} Whether a sync data type toggle should be disabled.
    */
-  shouldSyncCheckboxBeDisabled_: function(syncAllOsTypes, enforced) {
-    return syncAllOsTypes || enforced;
+  isDataTypeToggleDisabled_: function(
+      syncFeatureEnabled, syncAllOsTypes, enforced) {
+    return !syncFeatureEnabled || syncAllOsTypes || !!enforced;
   },
 
   /**
@@ -156,18 +176,9 @@ Polymer({
    * @private
    */
   syncControlsHidden_: function() {
-    if (!this.syncStatus) {
-      // Show sync controls by default.
-      return false;
-    }
-
-    if (!this.syncStatus.signedIn || this.syncStatus.disabled) {
-      return true;
-    }
-
-    // TODO(jamescook): Passphrase support.
-    return !!this.syncStatus.hasError &&
-        this.syncStatus.statusAction !== settings.StatusAction.ENTER_PASSPHRASE;
+    // Hide everything until the initial prefs are received from C++,
+    // otherwise there is a visible layout reshuffle on first load.
+    return !this.osSyncPrefs;
   },
 });
 })();

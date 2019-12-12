@@ -13,7 +13,8 @@
   requestFoo.setResourceType(types.XHR);
   requestFoo.setRequestIdForTest('foo');
   TestRunner.addResult('Showing request foo');
-  panel._showRequest(requestFoo);
+  panel._onRequestSelected({data: requestFoo});
+  panel._showRequestPanel();
   TestRunner.addResult('Network Item View: ' + (panel._networkItemView && panel._networkItemView.isShowing()));
 
   TestRunner.addResult('Hiding request');

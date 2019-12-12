@@ -3391,6 +3391,32 @@ be describing additional metrics about the same event.
       If the font family name was matched in the top-level frame or a sub-frame.
     </summary>
   </metric>
+  <metric name="LocalFontFailures">
+    <summary>
+      The count of failed attempts to match @font-face src:local rules.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="LocalFontSuccesses">
+    <summary>
+      The count of successful attempts to match @font-face src:local rules.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
   <metric name="SystemFontFamilyFailures">
     <summary>
       The count of system font family match attempts that failed.

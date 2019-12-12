@@ -24,6 +24,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
+import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.metrics.VariationsSession;
@@ -256,6 +257,7 @@ public class ChromeActivitySessionTracker {
      */
     private void cacheNativeFlags() {
         if (mIsFinishedCachingNativeFlags) return;
+        FirstRunUtils.cacheFirstRunPrefs();
         FeatureUtilities.cacheNativeFlags();
         mIsFinishedCachingNativeFlags = true;
     }

@@ -46,7 +46,7 @@ class TestOptions(object):
     self.includes = _INCLUDES
     self.ptr_type = 'long'
     self.cpp = 'cpp'
-    self.javap = 'javap'
+    self.javap = 'mock-javap'
     self.native_exports_optional = True
     self.enable_profiling = False
     self.enable_tracing = False

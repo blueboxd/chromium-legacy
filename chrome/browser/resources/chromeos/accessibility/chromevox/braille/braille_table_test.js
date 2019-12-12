@@ -28,7 +28,7 @@ ChromeVoxBrailleTableTest.prototype = {
  */
 TEST_F('ChromeVoxBrailleTableTest', 'testGetAllAndValidate', function() {
   BrailleTable.getAll(this.newCallback(function(tables) {
-    expectEquals(160, tables.length);
+    expectEquals(166, tables.length);
     assertNotNullNorUndefined(
         BrailleTable.forId(tables, 'en-US-g1'),
         'Can\'t find US English grade 1 table');
@@ -66,8 +66,8 @@ TEST_F('ChromeVoxBrailleTableTest', 'testGetUncontracted', function() {
     }
     expectUncontracted('en-US-comp8', 'en-US-g2');
     expectUncontracted('en-US-comp8', 'en-US-comp8');
-    expectUncontracted('ar-g1', 'ar-g1');
     expectUncontracted('sv-comp8', 'sv-g1');
-    expectUncontracted('de-comp8', 'de-g2');
+    expectUncontracted('ar-g1', 'ar-g1');
+    expectUncontracted('de-comp8', 'de-CH-g2');
   }));
 });

@@ -638,7 +638,7 @@ public class ChromeBrowserProvider extends ContentProvider {
         synchronized (mLoadNativeLock) {
             PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
                 if (mNativeChromeBrowserProvider != 0) return;
-                ChromeBrowserInitializer.getInstance(getContext()).handleSynchronousStartup();
+                ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
                 ensureNativeSideInitialized();
             });
         }

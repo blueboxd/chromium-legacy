@@ -297,8 +297,8 @@ class VideoCaptureManagerTest : public testing::Test {
     VideoCaptureControllerID client_id = base::UnguessableToken::Create();
     vcm_->ConnectClient(
         session_id, params, client_id, frame_observer_.get(),
-        base::Bind(&VideoCaptureManagerTest::OnGotControllerCallback,
-                   base::Unretained(this), client_id, expect_success));
+        base::BindOnce(&VideoCaptureManagerTest::OnGotControllerCallback,
+                       base::Unretained(this), client_id, expect_success));
     base::RunLoop().RunUntilIdle();
     return client_id;
   }

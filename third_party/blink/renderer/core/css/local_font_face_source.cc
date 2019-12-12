@@ -38,8 +38,16 @@ bool LocalFontFaceSource::IsLocalNonBlocking() const {
 
 bool LocalFontFaceSource::IsLocalFontAvailable(
     const FontDescription& font_description) const {
-  return FontCache::GetFontCache()->IsPlatformFontUniqueNameMatchAvailable(
-      font_description, font_name_);
+  // TODO(crbug.com/1027158): Remove metrics code after metrics collected.
+  // TODO(crbug.com/1025945): Properly handle Windows prior to 10 and Android.
+  bool font_available =
+      FontCache::GetFontCache()->IsPlatformFontUniqueNameMatchAvailable(
+          font_description, font_name_);
+  if (font_available)
+    font_selector_->ReportSuccessfulLocalFontMatch(font_name_);
+  else
+    font_selector_->ReportFailedLocalFontMatch(font_name_);
+  return font_available;
 }
 
 scoped_refptr<SimpleFontData>

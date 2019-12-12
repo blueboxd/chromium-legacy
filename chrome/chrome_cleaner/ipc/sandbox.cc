@@ -323,10 +323,21 @@ ResultCode StartSandboxTarget(const base::CommandLine& sandbox_command_line,
       DWORD exit_code = -1;
       BOOL result = ::GetExitCodeProcess(process_handle.Handle(), &exit_code);
       DCHECK(result);
-      LOG(ERROR)
-          << "Sandboxed process exited before signaling it was initialized, "
-             "exit code: "
-          << exit_code;
+      // Windows error codes such as 0xC0000005 and 0xC0000409 are much easier
+      // to recognize and differentiate in hex.
+      if (static_cast<int>(exit_code) < -100) {
+        LOG(ERROR)
+            << "Sandboxed process exited before signaling it was initialized, "
+               "exit code: 0x"
+            << std::hex << exit_code;
+      } else {
+        // Print other error codes as a signed integer so that small negative
+        // numbers are also recognizable.
+        LOG(ERROR)
+            << "Sandboxed process exited before signaling it was initialized, "
+               "exit code: "
+            << static_cast<int>(exit_code);
+      }
     } else {
       PLOG(ERROR) << "::WaitForMultipleObjects returned an unexpected error, "
                   << wait_result;

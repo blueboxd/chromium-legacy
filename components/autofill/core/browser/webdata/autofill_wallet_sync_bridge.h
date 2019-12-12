@@ -25,6 +25,7 @@ class AutofillTable;
 class AutofillWebDataBackend;
 class AutofillWebDataService;
 class CreditCard;
+struct CreditCardCloudTokenData;
 struct PaymentsCustomerData;
 
 // Sync bridge responsible for propagating local changes to the processor and
@@ -107,6 +108,12 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
   bool SetWalletAddresses(std::vector<AutofillProfile> wallet_addresses,
                           bool notify_metadata_bridge);
 
+  // Sets |cloud_token_data| to this client and returns whether any change has
+  // been applied (i.e., whether |cloud_token_data| was different from the local
+  // data).
+  bool SetCreditCardCloudTokenData(
+      const std::vector<CreditCardCloudTokenData>& cloud_token_data);
+
   // Computes a "diff" (items added, items removed) of two vectors of items,
   // which should be either CreditCard or AutofillProfile. This is used for
   // three purposes:
@@ -116,6 +123,13 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
   // 2) Recording metrics on the number of added/removed items.
   template <class Item>
   AutofillWalletDiff<Item> ComputeAutofillWalletDiff(
+      const std::vector<std::unique_ptr<Item>>& old_data,
+      const std::vector<Item>& new_data);
+
+  // A simpler version of ComputeAutofillWalletDiff that only returns true if
+  // there is any difference.
+  template <class Item>
+  bool ShouldResetAutofillWalletData(
       const std::vector<std::unique_ptr<Item>>& old_data,
       const std::vector<Item>& new_data);
 

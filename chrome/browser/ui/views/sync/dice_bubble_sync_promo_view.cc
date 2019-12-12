@@ -31,10 +31,9 @@ DiceBubbleSyncPromoView::DiceBubbleSyncPromoView(
   DCHECK(!profile->IsGuestSession());
   std::vector<AccountInfo> accounts;
   // Signin promos can be shown in incognito, they use an empty account list.
-  if (profile->IsRegularProfile()) {
-    DCHECK(AccountConsistencyModeManager::IsDiceEnabledForProfile(profile));
+  if (profile->IsRegularProfile())
     accounts = signin_ui_util::GetAccountsForDicePromos(profile);
-  }
+
   // Always show the accounts promo message for now.
   const int title_resource_id = accounts_promo_message_resource_id;
 

@@ -73,11 +73,6 @@ const base::Feature kLitePageServerPreviewsUserConsistentStudy{
 const base::Feature kSlowPageTriggering{"PreviewsSlowPageTriggering",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables the use of a pref to only trigger Offline Previews when there is a
-// high chance that there is one to serve.
-const base::Feature kOfflinePreviewsFalsePositivePrevention{
-    "OfflinePreviewsFalsePositivePrevention", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables a per-page load holdback experiment using a random coin flip.
 const base::Feature kCoinFlipHoldback{"PreviewsCoinFlipHoldback_UKMOnly",
                                       base::FEATURE_DISABLED_BY_DEFAULT};

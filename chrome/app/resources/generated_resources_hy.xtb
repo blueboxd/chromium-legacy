@@ -2077,7 +2077,7 @@
 <translation id="3909791450649380159">Կտ&amp;րել</translation>
 <translation id="3911824782900911339">Նոր ներդիրի էջ</translation>
 <translation id="3915280005470252504">Ձայնային որոնում</translation>
-<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Նորից փորձեք։ Մնացած փորձերի քանակը՝ <ph name="ATTEMPTS_LEFT" /></translation>
+<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Նորից փորձեք։ Մնացել է <ph name="ATTEMPTS_LEFT" /> փորձ։</translation>
 <translation id="3916445069167113093">Այս տեսակի ֆայլը կարող է վնասել ձեր համակարգիչը: Ներբեռնե՞լ <ph name="FILE_NAME" /> ֆայլը:</translation>
 <translation id="3918972485393593704">Ուղարկել մանրամասները Google-ին</translation>
 <translation id="3919145445993746351">Ձեր ընդլայնումները բոլոր համակարգիչներում օգտագործելու համար միացրեք համաժամացումը</translation>
@@ -2767,7 +2767,6 @@
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> – <ph name="PROFILE_NAME" /></translation>
 <translation id="496185450405387901">Այս հավելվածը տեղադրել է ձեր ադմինիստրատորը։</translation>
 <translation id="4964455510556214366">Դասավորորություն</translation>
-<translation id="4964673849688379040">Ստուգում…</translation>
 <translation id="4965808351167763748">Կարգավորե՞լ Hangouts Meet-ն այս սարքում</translation>
 <translation id="496888482094675990">«Ֆայլեր» ծրագիրն ապահովում է արագ մուտք դեպի ֆայլեր, որոնք դուք պահել եք Google Drive-ում, արտաքին հիշողությունում կամ ձեր Chrome OS սարքում:</translation>
 <translation id="4971412780836297815">Բացել ավարտվելուն պես</translation>
@@ -3241,7 +3240,7 @@
 <translation id="5646558797914161501">Բիզնեսմեն</translation>
 <translation id="5648166631817621825">Վերջին 7 օրվա</translation>
 <translation id="5649053991847567735">Ավտոմատ ներբեռնումներ</translation>
-<translation id="5653154844073528838">Դուք <ph name="PRINTER_COUNT" /> պահված տպիչ ունեք։</translation>
+<translation id="5653154844073528838">Դուք ունեք <ph name="PRINTER_COUNT" /> պահված տպիչ։</translation>
 <translation id="5656845498778518563">Հետադարձ կապ Google-ի հետ</translation>
 <translation id="5657667036353380798">Արտաքին ընդլայնումը տեղադրելու համար պահանջվում է Chrome-ի <ph name="MINIMUM_CHROME_VERSION" /> կամ ավելի նոր տարբերակ:</translation>
 <translation id="5658415415603568799">Լրացուցիչ անվտանգության համար Smart Lock-ը ձեզ կխնդրի մուտքագրել գաղտնաբառը 20 ժամ անց։</translation>
@@ -4105,7 +4104,7 @@
 <translation id="6930036377490597025">Անվտանգության արտաքին բանալի կամ ներկառուցված սկաներ</translation>
 <translation id="6935286146439255109">Թղթի պնակը բացակայում է</translation>
 <translation id="693807610556624488">Գրելու գործողությունը հետևյալ սարքում գերազանցում է ատրիբուտի թույլատրելի առավելագույն երկարությունը՝ «<ph name="DEVICE_NAME" />»:</translation>
-<translation id="6938386202199793006">Դուք 1 պահված տպիչ ունեք։</translation>
+<translation id="6938386202199793006">Դուք ունեք 1 պահված տպիչ։</translation>
 <translation id="6941937518557314510">Մուտք գործեք, <ph name="TOKEN_NAME" />, որպեսզի իսկորոշվեք <ph name="HOST_NAME" />-ում ձեր վկայագրի միջոցով:</translation>
 <translation id="6943176775188458830">Չեղարկել տպումը</translation>
 <translation id="6943836128787782965">HTTP GET-ի սխալ</translation>

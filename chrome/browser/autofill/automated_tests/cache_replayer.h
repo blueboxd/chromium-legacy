@@ -39,6 +39,19 @@ std::string GetKeyFromQueryRequest(const AutofillQueryContents& query_request);
 
 enum class RequestType { kLegacyQueryProtoGET, kLegacyQueryProtoPOST };
 
+// Switch `--autofill-server-type` is used to override the default behavior of
+// using the cached responses from the wpr archive. The valid values match the
+// enum AutofillServerBehaviorType below. Options are:
+// SavedCache, ProductionServer, or OnlyLocalHeuristics.
+constexpr char kAutofillServerBehaviorParam[] = "autofill-server-type";
+enum class AutofillServerBehaviorType {
+  kSavedCache,          // Uses cached responses. This is the Default.
+  kProductionServer,    // Connects to live Autofill Server for recommendations.
+  kOnlyLocalHeuristics  // Test with local heuristic recommendations only.
+};
+// Check for command line flags to determine Autofill Server Behavior type.
+AutofillServerBehaviorType ParseAutofillServerBehaviorType();
+
 // Replayer for Autofill Server cache. Can be used in concurrency.
 class ServerCacheReplayer {
  public:
@@ -115,6 +128,9 @@ class ServerUrlLoader {
 
   // Cache replayer component that is used to replay cached responses.
   std::unique_ptr<ServerCacheReplayer> cache_replayer_;
+
+  // Describes what behavior we want from the autofill server requests
+  AutofillServerBehaviorType autofill_server_behavior_type_;
 
   // Interceptor that intercepts Autofill Server calls.
   content::URLLoaderInterceptor interceptor_;

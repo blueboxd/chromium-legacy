@@ -112,8 +112,6 @@ crbug.com/451577 [ Mac ] http/tests/devtools/network/network-domain-filter.js [ 
 
 crbug.com/510337 cssom/cssvalue-comparison.html [ Slow ]
 
-crbug.com/680917 http/tests/devtools/audits/ [ Slow ]
-
 # These tests are intentionally SLOW because of throttled loading.
 crbug.com/73609 http/tests/media/video-play-stall.html [ Slow ]
 crbug.com/73609 http/tests/media/video-preload-metadata.html [ Slow ]
@@ -389,8 +387,6 @@ crbug.com/874695 http/tests/cookies/same-site/framed.https.html [ Slow ]
 crbug.com/874695 http/tests/credentialmanager/credentialscontainer-create-with-virtual-authenticator.html [ Slow ]
 crbug.com/874695 http/tests/credentialmanager/credentialscontainer-get-origins.html [ Slow ]
 crbug.com/874695 http/tests/credentialmanager/register-then-sign.html [ Slow ]
-crbug.com/874695 http/tests/devtools/audits/audits-limited-run.js [ Slow ]
-crbug.com/874695 http/tests/devtools/audits/audits-successful-run.js [ Slow ]
 crbug.com/874695 http/tests/devtools/console/console-correct-suggestions.js [ Slow ]
 crbug.com/874695 http/tests/devtools/editor/text-editor-formatter.js [ Slow ]
 crbug.com/874695 http/tests/devtools/inspect-iframe-from-different-domain.js [ Slow ]

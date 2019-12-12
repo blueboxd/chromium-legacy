@@ -256,6 +256,8 @@ def UpdatePackage(package_name):
   if package_name == 'clang':
     stamp_file = STAMP_FILE
     package_file = 'clang'
+  elif package_name == 'clang-tidy':
+    package_file = 'clang-tidy'
   elif package_name == 'lld_mac':
     package_file = 'lld'
     if sys.platform != 'darwin':

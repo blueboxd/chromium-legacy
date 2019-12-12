@@ -99,7 +99,7 @@ using testing::_;
 
 @interface MockRenderWidgetHostViewMacDelegate
     : NSObject<RenderWidgetHostViewMacDelegate> {
-  BOOL unhandledWheelEventReceived_;
+  BOOL _unhandledWheelEventReceived;
 }
 
 @property(nonatomic) BOOL unhandledWheelEventReceived;
@@ -108,19 +108,19 @@ using testing::_;
 
 @implementation MockRenderWidgetHostViewMacDelegate
 
-@synthesize unhandledWheelEventReceived = unhandledWheelEventReceived_;
+@synthesize unhandledWheelEventReceived = _unhandledWheelEventReceived;
 
 - (void)rendererHandledWheelEvent:(const blink::WebMouseWheelEvent&)event
                          consumed:(BOOL)consumed {
   if (!consumed)
-    unhandledWheelEventReceived_ = true;
+    _unhandledWheelEventReceived = true;
 }
 
 - (void)rendererHandledGestureScrollEvent:(const blink::WebGestureEvent&)event
                                  consumed:(BOOL)consumed {
   if (!consumed &&
       event.GetType() == blink::WebInputEvent::kGestureScrollUpdate)
-    unhandledWheelEventReceived_ = true;
+    _unhandledWheelEventReceived = true;
 }
 
 - (void)touchesBeganWithEvent:(NSEvent*)event {}
@@ -140,16 +140,16 @@ using testing::_;
 @end
 
 @implementation FakeTextCheckingResult {
-  base::scoped_nsobject<NSString> replacementString_;
+  base::scoped_nsobject<NSString> _replacementString;
 }
-@synthesize range = range_;
+@synthesize range = _range;
 
 + (FakeTextCheckingResult*)resultWithRange:(NSRange)range
                          replacementString:(NSString*)replacementString {
   FakeTextCheckingResult* result =
       [[[FakeTextCheckingResult alloc] init] autorelease];
-  result->range_ = range;
-  result->replacementString_.reset([replacementString retain]);
+  result->_range = range;
+  result->_replacementString.reset([replacementString retain]);
   return result;
 }
 
@@ -160,7 +160,7 @@ using testing::_;
 }
 
 - (NSString*)replacementString {
-  return replacementString_;
+  return _replacementString;
 }
 @end
 
@@ -171,9 +171,9 @@ using testing::_;
 @implementation FakeSpellChecker {
   base::mac::ScopedBlock<void (^)(NSInteger sequenceNumber,
                                   NSArray<NSTextCheckingResult*>* candidates)>
-      lastCompletionHandler_;
+      _lastCompletionHandler;
 }
-@synthesize sequenceNumber = sequenceNumber_;
+@synthesize sequenceNumber = _sequenceNumber;
 
 - (NSInteger)
 requestCandidatesForSelectedRange:(NSRange)selectedRange
@@ -188,15 +188,15 @@ requestCandidatesForSelectedRange:(NSRange)selectedRange
                                         NSArray<NSTextCheckingResult*>*
                                             candidates))completionHandler
     NS_AVAILABLE_MAC(10_12_2) {
-  sequenceNumber_ += 1;
-  lastCompletionHandler_.reset([completionHandler copy]);
-  return sequenceNumber_;
+  _sequenceNumber += 1;
+  _lastCompletionHandler.reset([completionHandler copy]);
+  return _sequenceNumber;
 }
 
 - (base::mac::ScopedBlock<void (^)(NSInteger sequenceNumber,
                                    NSArray<NSTextCheckingResult*>* candidates)>)
     takeCompletionHandler {
-  return std::move(lastCompletionHandler_);
+  return std::move(_lastCompletionHandler);
 }
 
 @end

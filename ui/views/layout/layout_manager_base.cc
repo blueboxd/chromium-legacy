@@ -39,6 +39,17 @@ int LayoutManagerBase::GetPreferredHeightForWidth(const View* host,
   return cached_height_for_width_->height();
 }
 
+SizeBounds LayoutManagerBase::GetAvailableSize(const View* host,
+                                               const View* view) const {
+  DCHECK_EQ(host_view_, host);
+  if (cached_layout_size_) {
+    for (const auto& child_layout : cached_layout_.child_layouts)
+      if (child_layout.child_view == view)
+        return child_layout.available_size;
+  }
+  return SizeBounds();
+}
+
 void LayoutManagerBase::Layout(View* host) {
   DCHECK_EQ(host_view_, host);
   // A handful of views will cause invalidations while they are being

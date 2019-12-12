@@ -156,10 +156,8 @@ public class SettingsActivityTest {
     @Feature({"Preferences"})
     @Policies.Add({ @Policies.Item(key = "DefaultSearchProviderEnabled", string = "false") })
     public void testSearchEnginePreference_DisabledIfNoDefaultSearchEngine() throws Exception {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            ChromeBrowserInitializer.getInstance(InstrumentationRegistry.getTargetContext())
-                    .handleSynchronousStartup();
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { ChromeBrowserInitializer.getInstance().handleSynchronousStartup(); });
 
         ensureTemplateUrlServiceLoaded();
         CriteriaHelper.pollUiThread(Criteria.equals(true, new Callable<Boolean>() {

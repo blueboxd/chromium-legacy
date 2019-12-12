@@ -38,6 +38,6 @@ public class GCMBackgroundService extends IntentService {
         }
 
         PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT,
-                () -> ChromeGcmListenerService.dispatchMessageToDriver(this, message));
+                () -> ChromeGcmListenerService.dispatchMessageToDriver(message));
     }
 }

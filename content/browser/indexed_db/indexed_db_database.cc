@@ -1125,6 +1125,8 @@ Status IndexedDBDatabase::PutOperation(
   DCHECK_NE(transaction->mode(), blink::mojom::IDBTransactionMode::ReadOnly);
   bool key_was_generated = false;
   Status s = Status::OK();
+  transaction->set_in_flight_memory(transaction->in_flight_memory() -
+                                    params->value.SizeEstimate());
 
   if (!IsObjectStoreIdInMetadata(params->object_store_id)) {
     IndexedDBDatabaseError error = CreateError(
@@ -1617,6 +1619,8 @@ std::unique_ptr<IndexedDBConnection> IndexedDBDatabase::CreateConnection(
     scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
     IndexedDBExecutionContextConnectionTracker::Handle
         execution_context_connection_handle) {
+  const int render_process_id =
+      execution_context_connection_handle.render_process_id();
   std::unique_ptr<IndexedDBConnection> connection =
       std::make_unique<IndexedDBConnection>(
           std::move(execution_context_connection_handle),
@@ -1628,6 +1632,7 @@ std::unique_ptr<IndexedDBConnection> IndexedDBDatabase::CreateConnection(
                          weak_factory_.GetWeakPtr()),
           database_callbacks);
   connections_.insert(connection.get());
+  backing_store_->GrantChildProcessPermissions(render_process_id);
   return connection;
 }
 

@@ -32,6 +32,7 @@ const char kOpenSerialWebcamError[] = "Can't open serial webcam.";
 const char kGetWebcamPTZError[] = "Can't get web camera pan/tilt/zoom.";
 const char kSetWebcamPTZError[] = "Can't set web camera pan/tilt/zoom.";
 const char kResetWebcamError[] = "Can't reset web camera.";
+const char kSetHomeWebcamError[] = "Can't set home position";
 
 }  // namespace
 
@@ -510,6 +511,29 @@ ExtensionFunction::ResponseAction WebcamPrivateResetFunction::Run() {
 
 void WebcamPrivateResetFunction::OnResetWebcam(bool success) {
   Respond(success ? NoArguments() : Error(kResetWebcamError));
+}
+
+WebcamPrivateSetHomeFunction::WebcamPrivateSetHomeFunction() {}
+
+WebcamPrivateSetHomeFunction::~WebcamPrivateSetHomeFunction() {}
+
+ExtensionFunction::ResponseAction WebcamPrivateSetHomeFunction::Run() {
+  std::unique_ptr<webcam_private::SetHome::Params> params(
+      webcam_private::SetHome::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  Webcam* webcam = WebcamPrivateAPI::Get(browser_context())
+                       ->GetWebcam(extension_id(), params->webcam_id);
+  if (!webcam)
+    return RespondNow(Error(kUnknownWebcam));
+
+  webcam->SetHome(
+      base::Bind(&WebcamPrivateSetHomeFunction::OnSetHomeWebcam, this));
+  return did_respond() ? AlreadyResponded() : RespondLater();
+}
+
+void WebcamPrivateSetHomeFunction::OnSetHomeWebcam(bool success) {
+  Respond(success ? NoArguments() : Error(kSetHomeWebcamError));
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<WebcamPrivateAPI>>::

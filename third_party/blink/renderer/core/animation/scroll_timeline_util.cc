@@ -19,7 +19,7 @@ std::unique_ptr<CompositorScrollTimeline> ToCompositorScrollTimeline(
   if (!timeline || timeline->IsDocumentTimeline())
     return nullptr;
 
-  ScrollTimeline* scroll_timeline = ToScrollTimeline(timeline);
+  auto* scroll_timeline = To<ScrollTimeline>(timeline);
   Node* scroll_source = scroll_timeline->ResolvedScrollSource();
   base::Optional<CompositorElementId> element_id =
       GetCompositorScrollElementId(scroll_source);

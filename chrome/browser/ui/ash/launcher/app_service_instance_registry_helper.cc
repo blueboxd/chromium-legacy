@@ -169,7 +169,10 @@ aura::Window* AppServiceInstanceRegistryHelper::GetWindow(
     content::WebContents* contents) {
   std::string app_id = launcher_controller_helper_->GetAppID(contents);
   aura::Window* window = contents->GetNativeView();
-  if (app_id.empty() || IsWebApp(app_id))
+
+  // If |app_id| is empty, it is a browser tab. Returns the toplevel window in
+  // this case.
+  if (app_id.empty())
     window = window->GetToplevelWindow();
   return window;
 }

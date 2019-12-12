@@ -22,11 +22,12 @@ public class QrCodeScanCoordinator implements QrCodeDialogTab {
      * The QrCodeScanCoordinator constructor.
      * @param context The context to use for user permissions.
      */
-    public QrCodeScanCoordinator(Context context) {
+    public QrCodeScanCoordinator(Context context, QrCodeScanMediator.NavigationObserver observer,
+            QrCodeScanMediator.TabCreator tabCreator) {
         PropertyModel scanViewModel = new PropertyModel(QrCodeScanViewProperties.ALL_KEYS);
-        mMediator = new QrCodeScanMediator(context, scanViewModel);
+        mMediator = new QrCodeScanMediator(context, scanViewModel, observer, tabCreator);
 
-        mScanView = new QrCodeScanView(context);
+        mScanView = new QrCodeScanView(context, mMediator::onPreviewFrame);
         PropertyModelChangeProcessor.create(scanViewModel, mScanView, new QrCodeScanViewBinder());
     }
 

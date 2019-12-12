@@ -48,8 +48,8 @@ For maintainers:
 
 -   The source lives in
     [third_party/blink/tools/wpt_import.py](../../third_party/blink/tools/wpt_import.py).
--   If the importer starts misbehaving, it could be disabled by turning off the
-    auto-import mode by landing [this CL](https://crrev.com/c/617479/).
+-   If the importer starts misbehaving, it can be disabled by landing a
+    [CL to skip the update step](https://crrev.com/c/1961906/).
 
 ### Failures caused by automatic imports.
 

@@ -48,6 +48,10 @@ public class CastWebContentsView extends FrameLayout {
         addView(LayoutInflater.from(getContext())
                         .inflate(R.layout.cast_web_contents_activity, null),
                 matchParent);
+
+        // Adds a transparent view on top to allow a highlight rectangule to be drawn when
+        // accessibility is turned on.
+        addView(new View(getContext()), matchParent);
     }
 
     public void onStart(Bundle startArgumentsBundle) {

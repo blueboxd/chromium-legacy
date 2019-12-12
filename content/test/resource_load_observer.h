@@ -41,7 +41,7 @@ class ResourceLoadObserver : public WebContentsObserver {
   // Use this method with the SCOPED_TRACE macro, so it shows the caller context
   // if it fails.
   void CheckResourceLoaded(
-      const GURL& url,
+      const GURL& original_url,
       const GURL& referrer,
       const std::string& load_method,
       content::ResourceType resource_type,
@@ -54,11 +54,11 @@ class ResourceLoadObserver : public WebContentsObserver {
       const base::TimeTicks& after_request);
 
   // Returns the resource with the given url if found, otherwise nullptr.
-  mojom::ResourceLoadInfoPtr* FindResource(const GURL& url);
+  mojom::ResourceLoadInfoPtr* FindResource(const GURL& original_url);
 
   void Reset();
 
-  void WaitForResourceCompletion(const GURL& url);
+  void WaitForResourceCompletion(const GURL& original_url);
 
  private:
   // WebContentsObserver implementation:
@@ -73,7 +73,7 @@ class ResourceLoadObserver : public WebContentsObserver {
   std::vector<GURL> memory_cached_loaded_urls_;
   std::vector<mojom::ResourceLoadInfoPtr> resource_load_infos_;
   std::vector<bool> resource_is_associated_with_main_frame_;
-  GURL waiting_url_;
+  GURL waiting_original_url_;
   base::OnceClosure waiting_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceLoadObserver);

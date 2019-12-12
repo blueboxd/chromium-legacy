@@ -964,7 +964,7 @@ public class TabImpl implements Tab {
      */
     void showRenderedPage() {
         updateTitle();
-        hideNativePage(true, null);
+        if (mNativePage != null) hideNativePage(true, null);
     }
 
     void updateWindowAndroid(WindowAndroid windowAndroid) {

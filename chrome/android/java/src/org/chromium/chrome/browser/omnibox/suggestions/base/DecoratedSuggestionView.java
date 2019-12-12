@@ -51,7 +51,12 @@ class DecoratedSuggestionView extends SimpleHorizontalLayoutView {
         addView(mContentView);
     }
 
-    /** Returns widget holding suggestion decoration icon.  */
+    /** @return Embedded suggestion content view.  */
+    View getContentView() {
+        return mContentView;
+    }
+
+    /** @return Widget holding suggestion decoration icon.  */
     RoundedCornerImageView getImageView() {
         return mSuggestionIcon;
     }

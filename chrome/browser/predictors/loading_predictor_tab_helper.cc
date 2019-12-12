@@ -139,7 +139,8 @@ void LoadingPredictorTabHelper::DidLoadResourceFromMemoryCache(
     return;
 
   content::mojom::ResourceLoadInfo resource_load_info;
-  resource_load_info.url = url;
+  resource_load_info.original_url = url;
+  resource_load_info.origin_of_final_url = url::Origin::Create(url);
   resource_load_info.mime_type = mime_type;
   resource_load_info.resource_type = resource_type;
   resource_load_info.method = "GET";

@@ -26,6 +26,7 @@
 #include "components/autofill/core/browser/data_model/autofill_metadata.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card_cloud_token_data.h"
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -411,7 +412,8 @@ bool AutofillTable::CreateTablesIfNecessary() {
           InitServerCardMetadataTable() && InitServerAddressesTable() &&
           InitServerAddressMetadataTable() && InitAutofillSyncMetadataTable() &&
           InitModelTypeStateTable() && InitPaymentsCustomerDataTable() &&
-          InitPaymentsUPIVPATable());
+          InitPaymentsUPIVPATable() &&
+          InitServerCreditCardCloudTokenDataTable());
 }
 
 bool AutofillTable::IsSyncable() {
@@ -1608,6 +1610,72 @@ void AutofillTable::SetServerAddressesData(
   transaction.Commit();
 }
 
+void AutofillTable::SetCreditCardCloudTokenData(
+    const std::vector<CreditCardCloudTokenData>& credit_card_cloud_token_data) {
+  sql::Transaction transaction(db_);
+  if (!transaction.Begin())
+    return;
+
+  // Deletes all old values.
+  sql::Statement delete_cloud_token(
+      db_->GetUniqueStatement("DELETE FROM server_card_cloud_token_data"));
+  delete_cloud_token.Run();
+
+  // Inserts new values.
+  sql::Statement insert_cloud_token(
+      db_->GetUniqueStatement("INSERT INTO server_card_cloud_token_data("
+                              "id,"                 // 0
+                              "suffix,"             // 1
+                              "exp_month,"          // 2
+                              "exp_year,"           // 3
+                              "card_art_url,"       // 4
+                              "instrument_token) "  // 5
+                              "VALUES (?,?,?,?,?,?)"));
+
+  for (const CreditCardCloudTokenData& data : credit_card_cloud_token_data) {
+    insert_cloud_token.BindString(0, data.masked_card_id);
+    insert_cloud_token.BindString16(1, data.suffix);
+    insert_cloud_token.BindString16(2, data.ExpirationMonthAsString());
+    insert_cloud_token.BindString16(3, data.Expiration4DigitYearAsString());
+    insert_cloud_token.BindString(4, data.card_art_url);
+    insert_cloud_token.BindString(5, data.instrument_token);
+    insert_cloud_token.Run();
+    insert_cloud_token.Reset(true);
+  }
+  transaction.Commit();
+}
+
+bool AutofillTable::GetCreditCardCloudTokenData(
+    std::vector<std::unique_ptr<CreditCardCloudTokenData>>*
+        credit_card_cloud_token_data) {
+  credit_card_cloud_token_data->clear();
+
+  sql::Statement s(
+      db_->GetUniqueStatement("SELECT "
+                              "id, "               // 0
+                              "suffix, "           // 1
+                              "exp_month, "        // 2
+                              "exp_year, "         // 3
+                              "card_art_url, "     // 4
+                              "instrument_token "  // 5
+                              "FROM server_card_cloud_token_data"));
+
+  while (s.Step()) {
+    int index = 0;
+    std::unique_ptr<CreditCardCloudTokenData> data =
+        std::make_unique<CreditCardCloudTokenData>();
+    data->masked_card_id = s.ColumnString(index++);
+    data->suffix = s.ColumnString16(index++);
+    data->SetExpirationMonthFromString(s.ColumnString16(index++));
+    data->SetExpirationYearFromString(s.ColumnString16(index++));
+    data->card_art_url = s.ColumnString(index++);
+    data->instrument_token = s.ColumnString(index++);
+    credit_card_cloud_token_data->push_back(std::move(data));
+  }
+
+  return s.Succeeded();
+}
+
 void AutofillTable::SetPaymentsCustomerData(
     const PaymentsCustomerData* customer_data) {
   sql::Transaction transaction(db_);
@@ -1689,6 +1757,11 @@ bool AutofillTable::ClearAllServerData() {
   sql::Statement customer_data(
       db_->GetUniqueStatement("DELETE FROM payments_customer_data"));
   customer_data.Run();
+  changed |= db_->GetLastChangeCount() > 0;
+
+  sql::Statement cloud_token_data(
+      db_->GetUniqueStatement("DELETE FROM server_card_cloud_token_data"));
+  cloud_token_data.Run();
   changed |= db_->GetLastChangeCount() > 0;
 
   transaction.Commit();
@@ -3131,6 +3204,22 @@ bool AutofillTable::InitPaymentsUPIVPATable() {
   if (!db_->DoesTableExist("payments_upi_vpa")) {
     if (!db_->Execute("CREATE TABLE payments_upi_vpa ("
                       "vpa VARCHAR)")) {
+      NOTREACHED();
+      return false;
+    }
+  }
+  return true;
+}
+
+bool AutofillTable::InitServerCreditCardCloudTokenDataTable() {
+  if (!db_->DoesTableExist("server_card_cloud_token_data")) {
+    if (!db_->Execute("CREATE TABLE server_card_cloud_token_data ( "
+                      "id VARCHAR, "
+                      "suffix VARCHAR, "
+                      "exp_month INTEGER DEFAULT 0, "
+                      "exp_year INTEGER DEFAULT 0, "
+                      "card_art_url VARCHAR, "
+                      "instrument_token VARCHAR)")) {
       NOTREACHED();
       return false;
     }

@@ -59,7 +59,7 @@ def main(host, argv):
     if args and args[0]:
         times_ms_path = args[0]
     else:
-        times_ms_path = host.filesystem.join(port.results_directory(), 'times_ms.json')
+        times_ms_path = host.filesystem.join(port.artifacts_directory(), 'times_ms.json')
 
     times_trie = json.loads(host.filesystem.read_text_file(times_ms_path))
 

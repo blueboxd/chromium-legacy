@@ -24,6 +24,7 @@ class LocalCardMigrationBubble;
 class LocalCardMigrationBubbleController;
 class SaveCardBubbleView;
 class SaveCardBubbleController;
+class SaveUPIBubble;
 
 class AutofillBubbleHandlerImpl : public AutofillBubbleHandler,
                                   public PersonalDataManagerObserver,
@@ -45,6 +46,9 @@ class AutofillBubbleHandlerImpl : public AutofillBubbleHandler,
       content::WebContents* web_contents,
       LocalCardMigrationBubbleController* controller,
       bool is_user_gesture) override;
+  SaveUPIBubble* ShowSaveUPIBubble(
+      content::WebContents* web_contents,
+      SaveUPIBubbleController* controller) override;
   void OnPasswordSaved() override;
   void HideSignInPromo() override;
 

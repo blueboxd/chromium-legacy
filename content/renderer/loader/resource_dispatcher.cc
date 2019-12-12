@@ -40,7 +40,6 @@
 #include "net/http/http_response_headers.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/loader/mime_sniffing_throttle.h"
@@ -161,8 +160,7 @@ void ResourceDispatcher::OnReceivedResponse(
     request_info->peer = std::move(new_peer);
   }
 
-  request_info->peer->OnReceivedResponse(
-      network::ResourceResponseHead(response_head));
+  request_info->peer->OnReceivedResponse(response_head.Clone());
   if (!GetPendingRequestInfo(request_id))
     return;
 
@@ -221,8 +219,8 @@ void ResourceDispatcher::OnReceivedRedirect(
                                     redirect_info.new_url);
 
   ToLocalURLResponseHead(*request_info, *response_head);
-  if (request_info->peer->OnReceivedRedirect(
-          redirect_info, network::ResourceResponseHead(response_head))) {
+  if (request_info->peer->OnReceivedRedirect(redirect_info,
+                                             response_head.Clone())) {
     // Double-check if the request is still around. The call above could
     // potentially remove it.
     request_info = GetPendingRequestInfo(request_id);

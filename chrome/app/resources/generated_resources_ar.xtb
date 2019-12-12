@@ -1189,7 +1189,7 @@
 <translation id="2665919335226618153">عذرًا، حدث خطأ أثناء التنسيق.</translation>
 <translation id="2666990579225592931">فتح نافذة "ضيف"</translation>
 <translation id="2667463864537187133">إدارة التدقيق الإملائي</translation>
-<translation id="2669093958999339774">منع رسائل الإشعارات من إزعاجك، وعرض رسائل أقل ظهورًا بدلاً من ذلك</translation>
+<translation id="2669093958999339774">منع رسائل الإشعارات من إزعاجك، وعرض رسائل أقل بروزًا بدلاً من ذلك</translation>
 <translation id="2670102641511624474">‏يشارك <ph name="APP_NAME" /> علامة تبويب متصفح Chrome.</translation>
 <translation id="2670429602441959756">‏تحتوي هذه الصفحة على ميزات لم يتم دعمها بعد في الواقع الافتراضي (VR). جارٍ الخروج...</translation>
 <translation id="2671451824761031126">الإشارات المرجعية والإعدادات جاهزة</translation>
@@ -1235,7 +1235,7 @@
 <translation id="2725200716980197196">تمت استعادة اتصال الشبكة</translation>
 <translation id="2727633948226935816">لا تذكرني مرة أخرى</translation>
 <translation id="2727712005121231835">الحجم الفعلي</translation>
-<translation id="2730029791981212295">‏الاحتفاظ بنسخة احتياطية من تطبيقات وملفات نظام التشغيل Linux</translation>
+<translation id="2730029791981212295">‏الاحتفاظ بنسخة احتياطية من تطبيقات نظام التشغيل Linux وملفاته</translation>
 <translation id="273093730430620027">هذه الصفحة تحاول الدخول إلى الكاميرا.</translation>
 <translation id="2731392572903530958">إعادة ف&amp;تح النافذة المغلقة</translation>
 <translation id="2731700343119398978">يرجى الانتظار...</translation>
@@ -1677,7 +1677,7 @@
 <translation id="338583716107319301">فاصل</translation>
 <translation id="338691029516748599">الشبكة <ph name="NETWORK_INDEX" /> من <ph name="NETWORK_COUNT" />، الشبكة <ph name="NETWORK_NAME" />، حالة الأمان <ph name="SECURITY_STATUS" />، قوة الإشارة <ph name="SIGNAL_STRENGTH" />%، يديرها المشرف، الاتصال</translation>
 <translation id="3387614642886316601">استخدام التدقيق الإملائي المُحسَّن</translation>
-<translation id="3390741581549395454">‏تم الاحتفاظ بنسخة احتياطية من تطبيقات وملفات نظام التشغيل Linux بنجاح. ستبدأ عملية الترقية بعد وقت قصير.</translation>
+<translation id="3390741581549395454">‏تم الاحتفاظ بنسخة احتياطية من تطبيقات نظام التشغيل Linux وملفاته بنجاح. ستبدأ عملية الترقية بعد وقت قصير.</translation>
 <translation id="3396800784455899911">‏بالنقر على الزر "قبول ومتابعة"، فأنت توافق على المعالجة الموضّحة أعلاه لخدمات Google هذه.</translation>
 <translation id="3399432415385675819">سيتم إيقاف الإشعارات</translation>
 <translation id="3400390787768057815">‏<ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> هرتز) - متداخل</translation>
@@ -2763,7 +2763,6 @@
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> - <ph name="PROFILE_NAME" /></translation>
 <translation id="496185450405387901">لقد ثبّت مشرفك هذا التطبيق.</translation>
 <translation id="4964455510556214366">الترتيب</translation>
-<translation id="4964673849688379040">جارٍ التحقق...</translation>
 <translation id="4965808351167763748">‏هل تريد بالتأكيد إعداد هذا الجهاز لتشغيل Hangouts Meet؟</translation>
 <translation id="496888482094675990">‏يوفر تطبيق الملفات وصولاً سريعًا إلى الملفات التي حفظتها على Google Drive، أو مساحة التخزين الخارجي، أو جهاز نظام التشغيل Chrome.</translation>
 <translation id="4971412780836297815">فتح عند اكتمال التنزيل</translation>
@@ -3974,7 +3973,7 @@
 <translation id="6740234557573873150">إيقاف <ph name="FILE_NAME" /> مؤقتًا</translation>
 <translation id="6742339027238151589">يمكن الدخول إليه بواسطة النص البرمجي</translation>
 <translation id="6745592621698551453">التحديث الآن</translation>
-<translation id="6746124502594467657">الانتقال إلى أسفل</translation>
+<translation id="6746124502594467657">الانتقال إلى الأسفل</translation>
 <translation id="674632704103926902">تفعيل السحب بعد النقر</translation>
 <translation id="6748217015615267851">العارض: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">يمكنك المتابعة، ولكن لن تتم استعادة إلا البيانات والإعدادات المتزامنة فقط. وسيتم فقد جميع البيانات المحلية.</translation>
@@ -5282,7 +5281,7 @@
 <translation id="8605428685123651449">‏ذاكرة SQLite</translation>
 <translation id="8606726445206553943">‏استخدام أجهزة MIDI</translation>
 <translation id="8608618451198398104">‏إضافة تذكرة Kerberos</translation>
-<translation id="8609465669617005112">التحريك إلى أعلى</translation>
+<translation id="8609465669617005112">الانتقال إلى الأعلى</translation>
 <translation id="8610103157987623234">تنسيق غير صحيح، يُرجى إعادة المحاولة</translation>
 <translation id="8615618338313291042">تطبيق وضع التصفح المتخفي: <ph name="APP_NAME" /></translation>
 <translation id="8619803522055190423">تظليل القطرات</translation>

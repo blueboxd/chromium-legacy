@@ -118,7 +118,7 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
 
   // Update the entries in browse_info_->ips map.
   void UpdateIPUrlMap(const std::string& ip,
-                      const std::string& url,
+                      const std::string& origin_of_final_url,
                       const std::string& method,
                       const std::string& referrer,
                       const content::ResourceType resource_type);

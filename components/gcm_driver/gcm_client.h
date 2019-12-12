@@ -76,8 +76,8 @@ class GCMClient {
     // Other errors.
     UNKNOWN_ERROR,
 
-    // Used for UMA. Keep LAST_RESULT up to date and sync with histograms.xml.
-    LAST_RESULT = UNKNOWN_ERROR
+    // Used for UMA. Keep kMaxValue up to date and sync with histograms.xml.
+    kMaxValue = UNKNOWN_ERROR
   };
 
   enum ChromePlatform {

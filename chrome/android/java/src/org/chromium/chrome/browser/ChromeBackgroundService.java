@@ -92,7 +92,7 @@ public class ChromeBackgroundService extends GcmTaskService {
     @VisibleForTesting
     protected void launchBrowser(Context context, String tag) {
         Log.i(TAG, "Launching browser");
-        ChromeBrowserInitializer.getInstance(this).handleSynchronousStartup();
+        ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
     }
 
     @VisibleForTesting

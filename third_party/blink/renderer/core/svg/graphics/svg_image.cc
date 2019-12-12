@@ -547,18 +547,10 @@ void SVGImage::DrawInternal(cc::PaintCanvas* canvas,
     // We can only draw the entire frame, clipped to the rect we want. So
     // compute where the top left of the image would be if we were drawing
     // without clipping, and translate accordingly.
-    FloatSize scale(dst_rect.Width() / src_rect.Width(),
-                    dst_rect.Height() / src_rect.Height());
-    FloatSize top_left_offset(src_rect.Location().X() * scale.Width(),
-                              src_rect.Location().Y() * scale.Height());
-    FloatPoint dest_offset = dst_rect.Location() - top_left_offset;
-    AffineTransform transform =
-        AffineTransform::Translation(dest_offset.X(), dest_offset.Y());
-    transform.Scale(scale.Width(), scale.Height());
-
     canvas->save();
     canvas->clipRect(EnclosingIntRect(dst_rect));
-    canvas->concat(AffineTransformToSkMatrix(transform));
+    canvas->concat(SkMatrix::MakeRectToRect(src_rect, dst_rect,
+                                            SkMatrix::kFill_ScaleToFit));
     canvas->drawPicture(PaintRecordForCurrentFrame(url));
     canvas->restore();
   }

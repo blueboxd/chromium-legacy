@@ -29,10 +29,6 @@ class COMPONENT_EXPORT(NETWORK_CPP) ContentSecurityPolicy {
   ContentSecurityPolicy(ContentSecurityPolicy&& other);
   ContentSecurityPolicy& operator=(const ContentSecurityPolicy& other);
 
-  // TODO(lfg): Temporary until network::ResourceResponseHead is converted to
-  // mojom.
-  operator mojom::ContentSecurityPolicyPtr() const;
-
   // Parses the Content-Security-Policy headers specified in |headers| while
   // requesting |request_url|. The |request_url| is used for violation
   // reporting, as specified in

@@ -2938,6 +2938,8 @@ jumbo_static_library("browser") {
       "updates/update_notification_config.cc",
       "updates/update_notification_config.h",
       "updates/update_notification_service.h",
+      "updates/update_notification_service_bridge.cc",
+      "updates/update_notification_service_bridge.h",
       "updates/update_notification_service_factory.cc",
       "updates/update_notification_service_factory.h",
       "updates/update_notification_service_impl.cc",

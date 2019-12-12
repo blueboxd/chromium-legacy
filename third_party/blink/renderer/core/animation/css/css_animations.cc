@@ -203,7 +203,7 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
 std::unique_ptr<TypedInterpolationValue> SampleAnimation(
     Animation* animation,
     double inherited_time) {
-  KeyframeEffect* effect = ToKeyframeEffect(animation->effect());
+  auto* effect = To<KeyframeEffect>(animation->effect());
   auto* inert_animation_for_sampling = MakeGarbageCollected<InertEffect>(
       effect->Model(), effect->SpecifiedTiming(), false, inherited_time);
   HeapVector<Member<Interpolation>> sample;
@@ -233,13 +233,13 @@ const KeyframeEffectModelBase* GetKeyframeEffectModelBase(
   if (!effect)
     return nullptr;
   const EffectModel* model = nullptr;
-  if (effect->IsKeyframeEffect())
-    model = ToKeyframeEffect(effect)->Model();
-  else if (effect->IsInertEffect())
-    model = ToInertEffect(effect)->Model();
+  if (auto* keyframe_effect = DynamicTo<KeyframeEffect>(effect))
+    model = keyframe_effect->Model();
+  else if (auto* inert_effect = DynamicTo<InertEffect>(effect))
+    model = inert_effect->Model();
   if (!model || !model->IsKeyframeEffectModel())
     return nullptr;
-  return ToKeyframeEffectModelBase(model);
+  return To<KeyframeEffectModelBase>(model);
 }
 
 }  // namespace
@@ -495,7 +495,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
 
   for (const auto& entry : pending_update_.AnimationsWithUpdates()) {
     if (entry.animation->effect()) {
-      KeyframeEffect* effect = ToKeyframeEffect(entry.animation->effect());
+      auto* effect = To<KeyframeEffect>(entry.animation->effect());
       effect->SetModel(entry.effect->Model());
       effect->UpdateSpecifiedTiming(entry.effect->SpecifiedTiming());
     }
@@ -546,7 +546,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     DCHECK(transitions_.Contains(property));
 
     Animation* animation = transitions_.Take(property).animation;
-    KeyframeEffect* effect = ToKeyframeEffect(animation->effect());
+    auto* effect = To<KeyframeEffect>(animation->effect());
     if (effect && effect->HasActiveAnimationsOnCompositor(property) &&
         pending_update_.NewTransitions().find(property) !=
             pending_update_.NewTransitions().end() &&
@@ -557,8 +557,8 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     // after cancelation, transitions must be downgraded or they'll fail
     // to be considered when retriggering themselves. This can happen if
     // the transition is captured through getAnimations then played.
-    if (animation->effect() && animation->effect()->IsKeyframeEffect())
-      ToKeyframeEffect(animation->effect())->DowngradeToNormal();
+    if (auto* effect = DynamicTo<KeyframeEffect>(animation->effect()))
+      effect->DowngradeToNormal();
     animation->Update(kTimingUpdateOnDemand);
   }
 
@@ -567,8 +567,8 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     if (transitions_.Contains(property)) {
       Animation* animation = transitions_.Take(property).animation;
       // Transition must be downgraded
-      if (animation->effect() && animation->effect()->IsKeyframeEffect())
-        ToKeyframeEffect(animation->effect())->DowngradeToNormal();
+      if (auto* effect = DynamicTo<KeyframeEffect>(animation->effect()))
+        effect->DowngradeToNormal();
     }
   }
 
@@ -656,8 +656,8 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
         return;
       }
       state.update.CancelTransition(property);
-      KeyframeEffect* effect =
-          ToKeyframeEffect(running_transition->animation->effect());
+      auto* effect =
+          To<KeyframeEffect>(running_transition->animation->effect());
       if (effect && effect->HasActiveAnimationsOnCompositor())
         retargeted_compositor_transition = running_transition;
       DCHECK(!state.animating_element->GetElementAnimations() ||

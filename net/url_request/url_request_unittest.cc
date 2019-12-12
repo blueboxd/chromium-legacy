@@ -6757,12 +6757,21 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
     EXPECT_EQ("path_cookie", req->maybe_stored_cookies()[2].cookie->Name());
     auto entries =
         net_log.GetEntriesWithType(NetLogEventType::COOKIE_INCLUSION_STATUS);
-    EXPECT_EQ(1u, entries.size());
+    EXPECT_EQ(3u, entries.size());
     EXPECT_EQ("{\"domain\":\"" + set_cookie_test_url.host() +
-                  "\",\"exclusion_reason\":\"EXCLUDE_USER_PREFERENCES, "
-                  "DO_NOT_WARN\",\"name\":\"not_stored_cookie\",\"operation\":"
-                  "\"store\",\"path\":\"/\"}",
+                  "\",\"name\":\"not_stored_cookie\",\"operation\":\"store\","
+                  "\"path\":\"/\",\"status\":\"EXCLUDE_USER_PREFERENCES, "
+                  "DO_NOT_WARN\"}",
               SerializeNetLogValueToJson(entries[0].params));
+    EXPECT_EQ("{\"domain\":\"" + set_cookie_test_url.host() +
+                  "\",\"name\":\"stored_cookie\",\"operation\":\"store\","
+                  "\"path\":\"/\",\"status\":\"INCLUDE, DO_NOT_WARN\"}",
+              SerializeNetLogValueToJson(entries[1].params));
+    EXPECT_EQ(
+        "{\"domain\":\"" + set_cookie_test_url.host() +
+            "\",\"name\":\"path_cookie\",\"operation\":\"store\","
+            "\"path\":\"/set-cookie\",\"status\":\"INCLUDE, DO_NOT_WARN\"}",
+        SerializeNetLogValueToJson(entries[2].params));
     net_log.Clear();
   }
   {
@@ -6794,16 +6803,15 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
         net_log.GetEntriesWithType(NetLogEventType::COOKIE_INCLUSION_STATUS);
     EXPECT_EQ(2u, entries.size());
     EXPECT_EQ("{\"domain\":\"" + set_cookie_test_url.host() +
-                  "\",\"exclusion_reason\":\"EXCLUDE_NOT_ON_PATH, "
-                  "EXCLUDE_USER_PREFERENCES, "
-                  "DO_NOT_WARN\",\"name\":\"path_cookie\",\"operation\":"
-                  "\"send\",\"path\":\"/set-cookie\"}",
+                  "\",\"name\":\"path_cookie\",\"operation\":\"send\",\"path\":"
+                  "\"/set-cookie\",\"status\":\"EXCLUDE_NOT_ON_PATH, "
+                  "EXCLUDE_USER_PREFERENCES, DO_NOT_WARN\"}",
               SerializeNetLogValueToJson(entries[0].params));
-    EXPECT_EQ("{\"domain\":\"" + set_cookie_test_url.host() +
-                  "\",\"exclusion_reason\":\"EXCLUDE_USER_PREFERENCES, "
-                  "DO_NOT_WARN\",\"name\":\"stored_cookie\",\"operation\":"
-                  "\"send\",\"path\":\"/\"}",
-              SerializeNetLogValueToJson(entries[1].params));
+    EXPECT_EQ(
+        "{\"domain\":\"" + set_cookie_test_url.host() +
+            "\",\"name\":\"stored_cookie\",\"operation\":\"send\",\"path\":\"/"
+            "\",\"status\":\"EXCLUDE_USER_PREFERENCES, DO_NOT_WARN\"}",
+        SerializeNetLogValueToJson(entries[1].params));
     net_log.Clear();
   }
   {
@@ -6825,12 +6833,12 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
     // Ensure that the potentially-sensitive |name|, |domain|, and |path| fields
     // are omitted, but other fields are logged as expected.
     EXPECT_EQ(
-        "{\"exclusion_reason\":\"EXCLUDE_NOT_ON_PATH, EXCLUDE_USER_PREFERENCES,"
-        " DO_NOT_WARN\",\"operation\":\"send\"}",
+        "{\"operation\":\"send\",\"status\":\"EXCLUDE_NOT_ON_PATH, "
+        "EXCLUDE_USER_PREFERENCES, DO_NOT_WARN\"}",
         SerializeNetLogValueToJson(entries[0].params));
     EXPECT_EQ(
-        "{\"exclusion_reason\":\"EXCLUDE_USER_PREFERENCES, DO_NOT_WARN\",\""
-        "operation\":\"send\"}",
+        "{\"operation\":\"send\",\"status\":\"EXCLUDE_USER_PREFERENCES, "
+        "DO_NOT_WARN\"}",
         SerializeNetLogValueToJson(entries[1].params));
 
     net_log.Clear();
@@ -6860,12 +6868,16 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
     EXPECT_TRUE(req->maybe_sent_cookies()[1].status.IsInclude());
     auto entries =
         net_log.GetEntriesWithType(NetLogEventType::COOKIE_INCLUSION_STATUS);
-    EXPECT_EQ(1u, entries.size());
+    EXPECT_EQ(2u, entries.size());
+    EXPECT_EQ(
+        "{\"domain\":\"" + set_cookie_test_url.host() +
+            "\",\"name\":\"path_cookie\",\"operation\":\"send\",\"path\":\"/"
+            "set-cookie\",\"status\":\"EXCLUDE_NOT_ON_PATH, DO_NOT_WARN\"}",
+        SerializeNetLogValueToJson(entries[0].params));
     EXPECT_EQ("{\"domain\":\"" + set_cookie_test_url.host() +
-                  "\",\"exclusion_reason\":\"EXCLUDE_NOT_ON_PATH, "
-                  "DO_NOT_WARN\",\"name\":\"path_cookie\",\"operation\":"
-                  "\"send\",\"path\":\"/set-cookie\"}",
-              SerializeNetLogValueToJson(entries[0].params));
+                  "\",\"name\":\"stored_cookie\",\"operation\":\"send\","
+                  "\"path\":\"/\",\"status\":\"INCLUDE, DO_NOT_WARN\"}",
+              SerializeNetLogValueToJson(entries[1].params));
     net_log.Clear();
   }
 }

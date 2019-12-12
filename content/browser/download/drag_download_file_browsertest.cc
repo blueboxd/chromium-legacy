@@ -21,7 +21,6 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
-#include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
@@ -50,12 +49,10 @@ class MockDownloadFileObserver : public ui::DownloadFileObserver {
 
 class DragDownloadFileTest : public ContentBrowserTest {
  public:
-  DragDownloadFileTest() {}
-  ~DragDownloadFileTest() override {}
+  DragDownloadFileTest() = default;
 
   void Succeed() {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+    base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(quit_closure_));
   }
 
   void FailFast() {
@@ -80,8 +77,15 @@ class DragDownloadFileTest : public ContentBrowserTest {
     return downloads_directory_.GetPath();
   }
 
+  void RunUntilSucceed() {
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
  private:
   base::ScopedTempDir downloads_directory_;
+  base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(DragDownloadFileTest);
 };
@@ -103,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(DragDownloadFileTest, DragDownloadFileTest_NetError) {
   ON_CALL(*observer.get(), OnDownloadCompleted(_))
       .WillByDefault(InvokeWithoutArgs(this, &DragDownloadFileTest::FailFast));
   file->Start(observer.get());
-  RunMessageLoop();
+  RunUntilSucceed();
 }
 
 IN_PROC_BROWSER_TEST_F(DragDownloadFileTest, DragDownloadFileTest_Complete) {
@@ -122,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(DragDownloadFileTest, DragDownloadFileTest_Complete) {
   ON_CALL(*observer.get(), OnDownloadAborted())
       .WillByDefault(InvokeWithoutArgs(this, &DragDownloadFileTest::FailFast));
   file->Start(observer.get());
-  RunMessageLoop();
+  RunUntilSucceed();
 }
 
 // TODO(benjhayden): Test Stop().

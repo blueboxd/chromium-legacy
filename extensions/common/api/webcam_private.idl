@@ -69,5 +69,10 @@ namespace webcamPrivate {
     // No configuration is returned through it.
     static void reset(DOMString webcamId, WebcamConfiguration config,
                       WebcamConfigurationCallback callback);
+
+    // Set home preset for a webcam. A callback is included here which is
+    // invoked when the function responds.
+    static void setHome(DOMString webcamId,
+                        WebcamConfigurationCallback callback);
   };
 };

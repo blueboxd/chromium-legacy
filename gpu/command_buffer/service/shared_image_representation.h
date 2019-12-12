@@ -238,14 +238,36 @@ class GPU_GLES2_EXPORT SharedImageRepresentationSkia
   virtual void EndReadAccess() = 0;
 };
 
-class SharedImageRepresentationDawn : public SharedImageRepresentation {
+class GPU_GLES2_EXPORT SharedImageRepresentationDawn
+    : public SharedImageRepresentation {
  public:
   SharedImageRepresentationDawn(SharedImageManager* manager,
                                 SharedImageBacking* backing,
                                 MemoryTypeTracker* tracker)
       : SharedImageRepresentation(manager, backing, tracker) {}
 
-  // TODO(penghuang): Add ScopedAccess helper class.
+  class GPU_GLES2_EXPORT ScopedAccess {
+   public:
+    ScopedAccess(util::PassKey<SharedImageRepresentationDawn> pass_key,
+                 SharedImageRepresentationDawn* representation,
+                 WGPUTexture texture);
+    ~ScopedAccess();
+
+    WGPUTexture texture() const { return texture_; }
+
+   private:
+    SharedImageRepresentationDawn* representation_ = nullptr;
+    WGPUTexture texture_ = 0;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedAccess);
+  };
+
+  // Calls BeginAccess and returns a ScopedAccess object which will EndAccess
+  // when it goes out of scope. The Representation must outlive the returned
+  // ScopedAccess.
+  std::unique_ptr<ScopedAccess> BeginScopedAccess(WGPUTextureUsage usage);
+
+ private:
   // This can return null in case of a Dawn validation error, for example if
   // usage is invalid.
   virtual WGPUTexture BeginAccess(WGPUTextureUsage usage) = 0;

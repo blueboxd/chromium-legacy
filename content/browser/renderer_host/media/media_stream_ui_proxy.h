@@ -73,7 +73,6 @@ class CONTENT_EXPORT MediaStreamUIProxy {
   void ProcessChangeSourceRequestFromUI(const DesktopMediaID& media_id);
   void OnWindowId(WindowIdCallback window_id_callback,
                   gfx::NativeViewId* window_id);
-  void OnCheckedAccess(base::Callback<void(bool)> callback, bool have_access);
 
   std::unique_ptr<Core, content::BrowserThread::DeleteOnUIThread> core_;
   ResponseCallback response_callback_;

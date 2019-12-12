@@ -108,7 +108,7 @@ content::mojom::ResourceLoadInfoPtr CreateResourceLoadInfo(
     content::ResourceType resource_type,
     bool always_access_network) {
   auto resource_load_info = content::mojom::ResourceLoadInfo::New();
-  resource_load_info->url = GURL(url);
+  resource_load_info->origin_of_final_url = url::Origin::Create(GURL(url));
   resource_load_info->original_url = GURL(url);
   resource_load_info->method = "GET";
   resource_load_info->resource_type = resource_type;
@@ -130,7 +130,8 @@ content::mojom::ResourceLoadInfoPtr CreateResourceLoadInfoWithRedirects(
     const std::vector<std::string>& redirect_chain,
     content::ResourceType resource_type) {
   auto resource_load_info = content::mojom::ResourceLoadInfo::New();
-  resource_load_info->url = GURL(redirect_chain.back());
+  resource_load_info->origin_of_final_url =
+      url::Origin::Create(GURL(redirect_chain.back()));
   resource_load_info->original_url = GURL(redirect_chain.front());
   resource_load_info->method = "GET";
   resource_load_info->resource_type = resource_type;
@@ -140,8 +141,9 @@ content::mojom::ResourceLoadInfoPtr CreateResourceLoadInfoWithRedirects(
   resource_load_info->network_info = common_network_info.Clone();
   for (size_t i = 0; i + 1 < redirect_chain.size(); ++i) {
     resource_load_info->redirect_info_chain.push_back(
-        content::mojom::RedirectInfo::New(GURL(redirect_chain[i]),
-                                          common_network_info.Clone()));
+        content::mojom::RedirectInfo::New(
+            url::Origin::Create(GURL(redirect_chain[i])),
+            common_network_info.Clone()));
   }
   return resource_load_info;
 }
@@ -313,7 +315,7 @@ std::ostream& operator<<(std::ostream& os, const CommonNetworkInfo& info) {
 }
 
 std::ostream& operator<<(std::ostream& os, const ResourceLoadInfo& info) {
-  return os << "[" << info.url.spec() << ","
+  return os << "[" << info.original_url.spec() << ","
             << static_cast<int>(info.resource_type) << "," << info.mime_type
             << "," << info.method << "," << *info.network_info << "]";
 }
@@ -324,7 +326,8 @@ bool operator==(const CommonNetworkInfo& lhs, const CommonNetworkInfo& rhs) {
 }
 
 bool operator==(const ResourceLoadInfo& lhs, const ResourceLoadInfo& rhs) {
-  return lhs.url == rhs.url && lhs.resource_type == rhs.resource_type &&
+  return lhs.original_url == rhs.original_url &&
+         lhs.resource_type == rhs.resource_type &&
          lhs.mime_type == rhs.mime_type && lhs.method == rhs.method &&
          *lhs.network_info == *rhs.network_info;
 }

@@ -384,8 +384,12 @@ bool SafeBrowsingUrlCheckerImpl::CanPerformFullURLLookup(const GURL& url) {
     return false;
 
   auto* rt_lookup_service = database_manager_->GetRealTimeUrlLookupService();
-  return rt_lookup_service && rt_lookup_service->CanCheckUrl(url) &&
-         !rt_lookup_service->IsInBackoffMode();
+  if (!rt_lookup_service || !rt_lookup_service->CanCheckUrl(url))
+    return false;
+
+  bool in_backoff = rt_lookup_service->IsInBackoffMode();
+  UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.RT.Backoff.State", in_backoff);
+  return !in_backoff;
 }
 
 void SafeBrowsingUrlCheckerImpl::OnBlockingPageComplete(bool proceed) {

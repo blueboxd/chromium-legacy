@@ -27,4 +27,22 @@ std::string GenerateSyncableBookmarkHash(
   return encode_output;
 }
 
+std::string GetUnhashedClientTagFromAutofillWalletSpecifics(
+    const sync_pb::AutofillWalletSpecifics& specifics) {
+  switch (specifics.type()) {
+    case sync_pb::AutofillWalletSpecifics::MASKED_CREDIT_CARD:
+      return specifics.masked_card().id();
+    case sync_pb::AutofillWalletSpecifics::POSTAL_ADDRESS:
+      return specifics.address().id();
+    case sync_pb::AutofillWalletSpecifics::CUSTOMER_DATA:
+      return specifics.customer_data().id();
+    case sync_pb::AutofillWalletSpecifics::CREDIT_CARD_CLOUD_TOKEN_DATA:
+      return specifics.cloud_token_data().instrument_token();
+    case sync_pb::AutofillWalletSpecifics::UNKNOWN:
+      NOTREACHED();
+      return std::string();
+  }
+  return std::string();
+}
+
 }  // namespace syncer

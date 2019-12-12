@@ -8,7 +8,7 @@
 
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
-#include "components/viz/service/display/overlay_candidate_validator.h"
+#include "components/viz/service/display_embedder/buffer_queue.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"

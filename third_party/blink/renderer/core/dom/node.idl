@@ -46,7 +46,7 @@
 
     [Affects=Nothing, Measure] readonly attribute boolean isConnected;
     [Affects=Nothing, PerWorldBindings] readonly attribute Document? ownerDocument;
-    [Affects=Nothing, PerWorldBindings, ImplementedAs=ParentNodeWithCounting] readonly attribute Node? parentNode;
+    [Affects=Nothing, PerWorldBindings] readonly attribute Node? parentNode;
     [Affects=Nothing, PerWorldBindings] readonly attribute Element? parentElement;
     [Affects=Nothing, ImplementedAs=hasChildren] boolean hasChildNodes();
     [Affects=Nothing, SameObject, PerWorldBindings] readonly attribute NodeList childNodes;

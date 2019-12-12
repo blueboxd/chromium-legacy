@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.sync;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Context;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -120,16 +119,6 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
             sInitialized = true;
         }
         return sInstance;
-    }
-
-    /**
-     * Retrieve the singleton instance of this class.
-     * @deprecated Use get with no arguments instead.
-     * @return the singleton instance.
-     */
-    @Nullable
-    public static SyncController get(Context context) {
-        return get();
     }
 
     /**

@@ -47,25 +47,46 @@
     "fileNames": "da-dk-g26.ctb"
   },
   {
-    "id": "de-g0",
-    "locale": "de",
+    "id": "de-CH-g0",
+    "locale": "de_CH",
     "dots": "6",
     "grade": "0",
-    "fileNames": "de-g0.utb"
+    "fileNames": "de-ch-g0.utb"
   },
   {
-    "id": "de-g1",
-    "locale": "de",
+    "id": "de-CH-g1",
+    "locale": "de_CH",
     "dots": "6",
     "grade": "1",
-    "fileNames": "de-g1.ctb"
+    "fileNames": "de-ch-g1.ctb"
   },
   {
-    "id": "de-g2",
-    "locale": "de",
+    "id": "de-CH-g2",
+    "locale": "de_CH",
     "dots": "6",
     "grade": "2",
-    "fileNames": "de-g2.ctb"
+    "fileNames": "de-ch-g2.ctb"
+  },
+  {
+    "id": "de-DE-g0",
+    "locale": "de_DE",
+    "dots": "6",
+    "grade": "0",
+    "fileNames": "de-de-g0.utb"
+  },
+  {
+    "id": "de-DE-g1",
+    "locale": "de_DE",
+    "dots": "6",
+    "grade": "1",
+    "fileNames": "de-de-g1.ctb"
+  },
+  {
+    "id": "de-DE-g2",
+    "locale": "de_DE",
+    "dots": "6",
+    "grade": "2",
+    "fileNames": "de-de-g2.ctb"
   },
   {
     "id": "de-comp8",
@@ -136,18 +157,17 @@
     "fileNames": "en-us-g2.ctb"
   },
   {
+    "id": "es-comp8",
+    "locale": "es",
+    "dots": "8",
+    "fileNames": "Es-Es-G0.utb"
+  },
+  {
     "id": "es-g1",
     "locale": "es",
     "dots": "6",
     "grade": "1",
     "fileNames": "es-g1.ctb"
-  },
-  {
-    "id": "es-g2",
-    "locale": "es",
-    "dots": "6",
-    "grade": "2",
-    "fileNames": "es-g2.ctb"
   },
   {
     "id": "et-comp8",
@@ -479,16 +499,9 @@
   {
     "locale": "en",
     "dots": "6",
-    "id": "en-us-comp6",
+    "id": "en-us-compbrl",
     "grade": "1",
-    "fileNames": "en-us-comp6.ctb"
-  },
-  {
-    "locale": "en",
-    "dots": "8",
-    "id": "en-us-comp8",
-    "grade": "1",
-    "fileNames": "en-us-comp8.ctb"
+    "fileNames": "en-us-compbrl.ctb"
   },
   {
     "locale": "vi",
@@ -533,6 +546,13 @@
     "fileNames": "mn-MN-g2.ctb"
   },
   {
+    "locale": "fi",
+    "dots": "6",
+    "id": "fi",
+    "grade": "1",
+    "fileNames": "fi.utb"
+  },
+  {
     "locale": "ne",
     "dots": "6",
     "id": "np-in-g1",
@@ -566,6 +586,13 @@
     "id": "et",
     "grade": "1",
     "fileNames": "et.ctb"
+  },
+  {
+    "locale": "el",
+    "dots": "6",
+    "id": "gr-bb",
+    "grade": "1",
+    "fileNames": "gr-bb.ctb"
   },
   {
     "locale": "bh",
@@ -787,9 +814,9 @@
   {
     "locale": "fi",
     "dots": "6",
-    "id": "fi1",
+    "id": "fi-fi",
     "grade": "1",
-    "fileNames": "fi1.ctb"
+    "fileNames": "fi-fi.ctb"
   },
   {
     "locale": "tsn",
@@ -818,6 +845,13 @@
     "id": "en-us-comp8-ext",
     "grade": "1",
     "fileNames": "en-us-comp8-ext.utb"
+  },
+  {
+    "locale": "es",
+    "dots": "6",
+    "id": "Es-Es-g1",
+    "grade": "1",
+    "fileNames": "Es-Es-g1.utb"
   },
   {
     "locale": "fi",
@@ -944,6 +978,13 @@
     "id": "da-dk-g26l-lit",
     "grade": "2",
     "fileNames": "da-dk-g26l-lit.ctb"
+  },
+  {
+    "locale": "ar",
+    "dots": "6",
+    "id": "ar-fa",
+    "grade": "1",
+    "fileNames": "ar-fa.utb"
   },
   {
     "locale": "da",

@@ -425,7 +425,11 @@ base::string16 AXPlatformNodeBase::GetHypertext() const {
 }
 
 base::string16 AXPlatformNodeBase::GetInnerText() const {
-  if (IsTextOnlyObject())
+  // TODO(https://crbug.com/1030703): The check for IsInvisibleOrIgnored()
+  // should not be needed. ChildAtIndex() and GetChildCount() are already
+  // supposed to skip over nodes that are invisible or ignored, but
+  // ViewAXPlatformNodeDelegate does not currently implement this behavior.
+  if (IsTextOnlyObject() && !IsInvisibleOrIgnored())
     return GetString16Attribute(ax::mojom::StringAttribute::kName);
 
   base::string16 text;

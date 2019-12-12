@@ -400,10 +400,18 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
 
   std::unique_ptr<SharedImageRepresentationFactory>
       shared_image_representation_factory_;
+
+  // Helper struct which holds a representation and its ScopedAccess, ensuring
+  // safe destruction order.
+  struct SharedImageRepresentationAndAccess {
+    std::unique_ptr<SharedImageRepresentationDawn> representation;
+    std::unique_ptr<SharedImageRepresentationDawn::ScopedAccess> access;
+  };
+
   // Map from the <ID, generation> pair for a wire texture to the shared image
-  // representation for it.
+  // representation and access for it.
   base::flat_map<std::tuple<uint32_t, uint32_t>,
-                 std::unique_ptr<SharedImageRepresentationDawn>>
+                 SharedImageRepresentationAndAccess>
       associated_shared_image_map_;
 
   std::unique_ptr<dawn_platform::Platform> dawn_platform_;
@@ -798,22 +806,26 @@ error::Error WebGPUDecoderImpl::HandleAssociateMailboxImmediate(
     return error::kInvalidArguments;
   }
 
-  WGPUTexture texture = shared_image->BeginAccess(wgpu_usage);
-  if (!texture) {
+  std::unique_ptr<SharedImageRepresentationDawn::ScopedAccess>
+      shared_image_access = shared_image->BeginScopedAccess(wgpu_usage);
+  if (!shared_image_access) {
     DLOG(ERROR) << "AssociateMailbox: Couldn't begin shared image access";
     return error::kInvalidArguments;
   }
 
   // Inject the texture in the dawn_wire::Server and remember which shared image
   // it is associated with.
-  if (!wire_server_->InjectTexture(texture, id, generation)) {
+  if (!wire_server_->InjectTexture(shared_image_access->texture(), id,
+                                   generation)) {
     DLOG(ERROR) << "AssociateMailbox: Invalid texture ID";
     return error::kInvalidArguments;
   }
 
   std::tuple<uint32_t, uint32_t> id_and_generation{id, generation};
+  SharedImageRepresentationAndAccess shared_image_representation_and_access{
+      std::move(shared_image), std::move(shared_image_access)};
   auto insertion = associated_shared_image_map_.emplace(
-      id_and_generation, std::move(shared_image));
+      id_and_generation, std::move(shared_image_representation_and_access));
 
   // InjectTexture already validated that the (ID, generation) can't have been
   // registered before.
@@ -839,7 +851,6 @@ error::Error WebGPUDecoderImpl::HandleDissociateMailbox(
     return error::kInvalidArguments;
   }
 
-  it->second->EndAccess();
   associated_shared_image_map_.erase(it);
   return error::kNoError;
 }

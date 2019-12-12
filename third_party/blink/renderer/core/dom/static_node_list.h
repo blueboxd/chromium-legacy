@@ -29,8 +29,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_STATIC_NODE_LIST_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_STATIC_NODE_LIST_H_
 
-#include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/node_child_removal_tracker.h"
 #include "third_party/blink/renderer/core/dom/node_list.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -75,13 +73,8 @@ unsigned StaticNodeTypeList<NodeType>::length() const {
 
 template <typename NodeType>
 NodeType* StaticNodeTypeList<NodeType>::item(unsigned index) const {
-  if (index < nodes_.size()) {
-    auto* node = nodes_[index].Get();
-    if (node->GetDocument().InDOMNodeRemovedHandler() &&
-        NodeChildRemovalTracker::IsBeingRemoved(*node))
-      node->GetDocument().CountDetachingNodeAccessInDOMNodeRemovedHandler();
-    return node;
-  }
+  if (index < nodes_.size())
+    return nodes_[index].Get();
   return nullptr;
 }
 

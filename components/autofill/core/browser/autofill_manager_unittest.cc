@@ -115,6 +115,9 @@ class MockAutofillClient : public TestAutofillClient {
 
   MOCK_METHOD0(ShouldShowSigninPromo, bool());
   MOCK_CONST_METHOD0(GetChannel, version_info::Channel());
+  MOCK_METHOD2(ConfirmSaveUpiIdLocally,
+               void(const std::string& upi_id,
+                    base::OnceCallback<void(bool user_decision)> callback));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillClient);
@@ -7736,14 +7739,24 @@ TEST_F(AutofillManagerTest,
 // Test that we import data when the field type is determined by the value and
 // without any heuristics on the attributes.
 TEST_F(AutofillManagerTest, ImportDataWhenValueDetected) {
+  const std::string test_upi_id_value = "user@indianbank";
+
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kAutofillSaveAndFillVPA);
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  EXPECT_CALL(autofill_client_, ConfirmSaveUpiIdLocally(test_upi_id_value, _))
+      .WillOnce([](std::string upi_id,
+                   base::OnceCallback<void(bool user_decision)> callback) {
+        std::move(callback).Run(true);
+      });
+#endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
   FormData form;
   form.url = GURL("https://wwww.foo.com");
 
   FormFieldData field;
-  test::CreateTestFormField("VPA:", "vpa", "", "text", &field);
+  test::CreateTestFormField("UPI ID:", "upi_id", "", "text", &field);
   form.fields.push_back(field);
 
   FormsSeen({form});
@@ -7753,23 +7766,30 @@ TEST_F(AutofillManagerTest, ImportDataWhenValueDetected) {
   form.submission_event =
       mojom::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
 
-  form.fields[0].value = ASCIIToUTF16("user@indianbank");
+  form.fields[0].value = base::UTF8ToUTF16(test_upi_id_value);
   FormSubmitted(form);
 
-  EXPECT_EQ(1, personal_data_.num_times_save_vpa_called());
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  // The feature is not implemented for mobile.
+  EXPECT_EQ(0, personal_data_.num_times_save_upi_id_called());
+#else
+  EXPECT_EQ(1, personal_data_.num_times_save_upi_id_called());
+#endif
 }
 
-// Test that we do not import VPA data when in incognito.
-TEST_F(AutofillManagerTest, DontImportVPAWhenIncognito) {
+// Test that we do not import UPI data when in incognito.
+TEST_F(AutofillManagerTest, DontImportUpiIdWhenIncognito) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kAutofillSaveAndFillVPA);
   autofill_driver_->SetIsIncognito(true);
 
+  EXPECT_CALL(autofill_client_, ConfirmSaveUpiIdLocally(_, _)).Times(0);
+
   FormData form;
   form.url = GURL("https://wwww.foo.com");
 
   FormFieldData field;
-  test::CreateTestFormField("VPA:", "vpa", "", "text", &field);
+  test::CreateTestFormField("UPI ID:", "upi_id", "", "text", &field);
   form.fields.push_back(field);
 
   FormsSeen({form});
@@ -7782,7 +7802,7 @@ TEST_F(AutofillManagerTest, DontImportVPAWhenIncognito) {
   form.fields[0].value = ASCIIToUTF16("user@indianbank");
   FormSubmitted(form);
 
-  EXPECT_EQ(0, personal_data_.num_times_save_vpa_called());
+  EXPECT_EQ(0, personal_data_.num_times_save_upi_id_called());
 }
 
 // Desktop only tests.

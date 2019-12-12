@@ -135,6 +135,7 @@ luci.list_view(
         'try/linux_optional_gpu_tests_rel',
         'try/linux_upload_clang',
         'try/linux-viz-rel',
+        'try/linux-wpt-fyi-rel',
         'try/ios-device',
         'try/ios-device-xcode-clang',
         'try/ios-simulator',

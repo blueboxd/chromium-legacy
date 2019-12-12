@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.share.qrcode.scan_tab;
 
 import android.content.Context;
+import android.hardware.Camera.PreviewCallback;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
@@ -15,6 +16,8 @@ import android.widget.FrameLayout;
 class QrCodeScanView {
     private final Context mContext;
     private final FrameLayout mView;
+    private final PreviewCallback mCameraCallback;
+
     private boolean mHasCameraPermission;
     private boolean mIsOnForeground;
     private CameraPreview mCameraPreview;
@@ -22,9 +25,11 @@ class QrCodeScanView {
     /**
      * The QrCodeScanView constructor.
      * @param context The context to use for user permissions.
+     * @param cameraCallback The callback to processing camera preview.
      */
-    public QrCodeScanView(Context context) {
+    public QrCodeScanView(Context context, PreviewCallback cameraCallback) {
         mContext = context;
+        mCameraCallback = cameraCallback;
 
         mView = new FrameLayout(context);
         mView.setLayoutParams(
@@ -64,7 +69,7 @@ class QrCodeScanView {
         }
 
         if (mHasCameraPermission) {
-            mCameraPreview = new CameraPreview(mContext);
+            mCameraPreview = new CameraPreview(mContext, mCameraCallback);
             mView.addView(mCameraPreview);
 
             updateCameraPreviewState();

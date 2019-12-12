@@ -66,21 +66,22 @@
         initWithDelegate:self
            presentsModal:self.hasBadge
                     type:InfobarType::kInfobarTypeSaveCard];
-    if (self.saveCardInfoBarDelegate->upload()) {
-      self.bannerViewController.buttonText =
-          l10n_util::GetNSString(IDS_IOS_AUTOFILL_SAVE_ELLIPSIS);
-    } else {
-      self.bannerViewController.buttonText =
-          base::SysUTF16ToNSString(self.saveCardInfoBarDelegate->GetButtonLabel(
-              ConfirmInfoBarDelegate::BUTTON_OK));
-    }
-    self.bannerViewController.titleText = base::SysUTF16ToNSString(
-        self.saveCardInfoBarDelegate->GetMessageText());
-    self.bannerViewController.subTitleText =
-        base::SysUTF16ToNSString(self.saveCardInfoBarDelegate->card_label());
+    [self.bannerViewController
+        setButtonText:self.saveCardInfoBarDelegate->upload()
+                          ? l10n_util::GetNSString(
+                                IDS_IOS_AUTOFILL_SAVE_ELLIPSIS)
+                          : base::SysUTF16ToNSString(
+                                self.saveCardInfoBarDelegate->GetButtonLabel(
+                                    ConfirmInfoBarDelegate::BUTTON_OK))];
+    [self.bannerViewController
+        setTitleText:base::SysUTF16ToNSString(
+                         self.saveCardInfoBarDelegate->GetMessageText())];
+    [self.bannerViewController
+        setSubtitleText:base::SysUTF16ToNSString(
+                            self.saveCardInfoBarDelegate->card_label())];
     gfx::Image icon = self.saveCardInfoBarDelegate->GetIcon();
     if (!icon.IsEmpty())
-      self.bannerViewController.iconImage = icon.ToUIImage();
+      [self.bannerViewController setIconImage:icon.ToUIImage()];
   }
 }
 

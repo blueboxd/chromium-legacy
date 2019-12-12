@@ -5,7 +5,7 @@
 <translation id="1181037720776840403">Eliminar</translation>
 <translation id="125153950246128346">Toca para ver outra pestana</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> pestana}other{<ph name="TABS_COUNT_MANY" /> pestanas}}</translation>
-<translation id="2569352796411618312">Suxestión: ultimamente non se utilizaron <ph name="NUMBER_OF_TABS" /> das túas pestanas. Queres pechalas?</translation>
+<translation id="2569352796411618312">Suxestión: <ph name="NUMBER_OF_TABS" /> das pestanas que tes abertas leva/n sen utilizarse un bo anaco. Queres pechala/s?</translation>
 <translation id="257674075312929031">Grupo</translation>
 <translation id="2613747923081026172">Crear grupo</translation>
 <translation id="2671423594960767771">Compartir grupo</translation>

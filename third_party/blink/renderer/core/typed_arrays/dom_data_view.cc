@@ -18,9 +18,9 @@ class DataView final : public ArrayBufferView {
   static scoped_refptr<DataView> Create(ArrayBuffer* buffer,
                                         size_t byte_offset,
                                         size_t byte_length) {
-    base::CheckedNumeric<uint32_t> checked_max = byte_offset;
+    base::CheckedNumeric<size_t> checked_max = byte_offset;
     checked_max += byte_length;
-    CHECK_LE(checked_max.ValueOrDie(), buffer->ByteLengthAsUnsigned());
+    CHECK_LE(checked_max.ValueOrDie(), buffer->ByteLengthAsSizeT());
     return base::AdoptRef(new DataView(buffer, byte_offset, byte_length));
   }
 

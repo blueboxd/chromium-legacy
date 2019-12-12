@@ -233,17 +233,18 @@ class SubresourceLoader : public network::mojom::URLLoader,
     handler_->MaybeFallbackForSubresourceRedirect(
         redirect_info,
         base::BindOnce(&SubresourceLoader::ContinueOnReceiveRedirect,
-                       weak_factory_.GetWeakPtr(),
-                       network::ResourceResponseHead(response_head)));
+                       weak_factory_.GetWeakPtr(), std::move(response_head)));
   }
 
   void ContinueOnReceiveRedirect(
-      const network::ResourceResponseHead& response_head,
+      network::mojom::URLResponseHeadPtr response_head,
       SingleRequestURLLoaderFactory::RequestHandler handler) {
-    if (handler)
+    if (handler) {
       CreateAndStartAppCacheLoader(std::move(handler));
-    else
-      remote_client_->OnReceiveRedirect(redirect_info_, response_head);
+    } else {
+      remote_client_->OnReceiveRedirect(redirect_info_,
+                                        std::move(response_head));
+    }
   }
 
   void OnUploadProgress(int64_t current_position,
@@ -273,7 +274,7 @@ class SubresourceLoader : public network::mojom::URLLoader,
       return;
     }
     handler_->MaybeFallbackForSubresourceResponse(
-        network::ResourceResponseHead(),
+        network::mojom::URLResponseHead::New(),
         base::BindOnce(&SubresourceLoader::ContinueOnComplete,
                        weak_factory_.GetWeakPtr(), status));
   }
@@ -383,21 +384,14 @@ void AppCacheSubresourceURLFactory::CreateLoaderAndStart(
       !policy->CanAccessDataForOrigin(appcache_host_->process_id(),
                                       request.request_initiator.value()) &&
       policy->HasSecurityState(appcache_host_->process_id())) {
-    const char* scheme_exception =
-        GetContentClient()
-            ->browser()
-            ->GetInitiatorSchemeBypassingDocumentBlocking();
-    if (!scheme_exception ||
-        request.request_initiator.value().scheme() != scheme_exception) {
-      static auto* initiator_origin_key = base::debug::AllocateCrashKeyString(
-          "initiator_origin", base::debug::CrashKeySize::Size64);
-      base::debug::SetCrashKeyString(
-          initiator_origin_key, request.request_initiator.value().Serialize());
+    static auto* initiator_origin_key = base::debug::AllocateCrashKeyString(
+        "initiator_origin", base::debug::CrashKeySize::Size64);
+    base::debug::SetCrashKeyString(
+        initiator_origin_key, request.request_initiator.value().Serialize());
 
-      mojo::ReportBadMessage(
-          "APPCACHE_SUBRESOURCE_URL_FACTORY_INVALID_INITIATOR");
-      return;
-    }
+    mojo::ReportBadMessage(
+        "APPCACHE_SUBRESOURCE_URL_FACTORY_INVALID_INITIATOR");
+    return;
   }
 
   // Subresource requests from renderer processes should not be allowed to use

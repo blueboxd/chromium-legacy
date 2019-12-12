@@ -5,11 +5,11 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_MANAGER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_MANAGER_H_
 
-#include <list>
 #include <map>
 #include <set>
 #include <string>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -53,7 +53,7 @@ class CONTENT_EXPORT VideoCaptureManager
 
   // Callback used to signal the completion of a controller lookup.
   using DoneCB =
-      base::Callback<void(const base::WeakPtr<VideoCaptureController>&)>;
+      base::OnceCallback<void(const base::WeakPtr<VideoCaptureController>&)>;
 
   explicit VideoCaptureManager(
       std::unique_ptr<VideoCaptureProvider> video_capture_provider,
@@ -93,7 +93,7 @@ class CONTENT_EXPORT VideoCaptureManager
                      const media::VideoCaptureParams& capture_params,
                      VideoCaptureControllerID client_id,
                      VideoCaptureControllerEventHandler* client_handler,
-                     const DoneCB& done_cb);
+                     DoneCB done_cb);
 
   // Called by VideoCaptureHost to remove |client_handler|. If this is the last
   // client of the device, the |controller| and its VideoCaptureDevice may be
@@ -195,7 +195,7 @@ class CONTENT_EXPORT VideoCaptureManager
 
   using SessionMap =
       std::map<media::VideoCaptureSessionId, blink::MediaStreamDevice>;
-  using DeviceStartQueue = std::list<CaptureDeviceStartRequest>;
+  using DeviceStartQueue = base::circular_deque<CaptureDeviceStartRequest>;
   using VideoCaptureDeviceDescriptor = media::VideoCaptureDeviceDescriptor;
   using VideoCaptureDeviceDescriptors = media::VideoCaptureDeviceDescriptors;
 
@@ -290,7 +290,7 @@ class CONTENT_EXPORT VideoCaptureManager
 
   // Queue to keep photo-associated requests waiting for a device to initialize,
   // bundles a session id token and an associated photo-related request.
-  std::list<std::pair<base::UnguessableToken, base::Closure>>
+  base::circular_deque<std::pair<base::UnguessableToken, base::OnceClosure>>
       photo_request_queue_;
 
   const std::unique_ptr<VideoCaptureProvider> video_capture_provider_;

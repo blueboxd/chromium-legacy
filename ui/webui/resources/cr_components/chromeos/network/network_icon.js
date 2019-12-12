@@ -59,7 +59,7 @@ Polymer({
     ariaLabel: {
       type: String,
       reflectToAttribute: true,
-      computed: 'computeAriaLabel_(networkState)'
+      computed: 'computeAriaLabel_(locale, networkState)'
     },
   },
 
@@ -115,10 +115,14 @@ Polymer({
   },
 
   /**
+   * @param {string} locale The current local which is passed only to ensure
+   * the aria label is updated when the locale changes.
+   * @param {!OncMojo.NetworkStateProperties|undefined} networkState The current
+   * networkState.
    * @return {string} A localized accessibility label for the icon.
    * @private
    */
-  computeAriaLabel_: function(networkState) {
+  computeAriaLabel_: function(locale, networkState) {
     // NOTE: getIconClass_() follows a very similar logic structure and both
     // functions should be updated together.
 
@@ -132,10 +136,10 @@ Polymer({
     // Ethernet and VPN connection labels don't attempt to describe the network
     // state like the icons, so there is only one string for each.
     if (type === mojom.NetworkType.kEthernet) {
-      return this.i18n('ethernetNetwork');
+      return this.i18nDynamic(locale, 'networkIconLabelEthernet');
     }
     if (type === mojom.NetworkType.kVPN) {
-      return this.i18n('vpnNetwork');
+      return this.i18nDynamic(locale, 'networkIconLabelVpn');
     }
 
     // networkTypeString will hold a localized, generic network type name:
@@ -143,11 +147,11 @@ Polymer({
     // full localized connection state string.
     let networkTypeString = '';
     if (type === mojom.NetworkType.kTether) {
-      networkTypeString = this.i18n('OncTypeTether');
+      networkTypeString = this.i18nDynamic(locale, 'OncTypeTether');
     } else if (OncMojo.networkTypeIsMobile(type)) {
-      networkTypeString = this.i18n('OncTypeCellular');
+      networkTypeString = this.i18nDynamic(locale, 'OncTypeCellular');
     } else {
-      networkTypeString = this.i18n('OncTypeWiFi');
+      networkTypeString = this.i18nDynamic(locale, 'OncTypeWiFi');
     }
 
     // When isListItem == true, we want to describe the network and signal
@@ -160,27 +164,31 @@ Polymer({
       // Networks with no guid are generally UI placeholders.
       if (!device || device.deviceState === mojom.DeviceStateType.kEnabled ||
           device.deviceState === mojom.DeviceStateType.kEnabling) {
-        return this.i18n('networkNoNetwork', networkTypeString);
+        return this.i18nDynamic(
+            locale, 'networkIconLabelNoNetwork', networkTypeString);
       }
-      return this.i18n('networkOff', networkTypeString);
+      return this.i18nDynamic(locale, 'networkIconLabelOff', networkTypeString);
     }
 
     const connectionState = this.networkState.connectionState;
     if (connectionState === mojom.ConnectionStateType.kConnecting) {
-      return this.i18n('networkConnecting', networkTypeString);
+      return this.i18nDynamic(
+          locale, 'networkIconLabelConnecting', networkTypeString);
     }
 
     if (!this.isListItem &&
         connectionState === mojom.ConnectionStateType.kNotConnected) {
       // We only show 'Not Connected' when we are not in a list.
-      return this.i18n('networkNotConnected', networkTypeString);
+      return this.i18nDynamic(
+          locale, 'networkIconLabelNotConnected', networkTypeString);
     }
 
     // Here we have a Cellular, Instant Tether, or Wi-Fi network with signal
     // strength available.
     const strength = OncMojo.getSignalStrength(this.networkState);
-    return this.i18n(
-        'networkStrength', networkTypeString, strength.toString(10));
+    return this.i18nDynamic(
+        locale, 'networkIconLabelSignalStrength', networkTypeString,
+        strength.toString(10));
   },
 
   /**

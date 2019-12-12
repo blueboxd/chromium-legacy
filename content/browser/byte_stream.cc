@@ -60,7 +60,7 @@ class ByteStreamWriterImpl : public ByteStreamWriter {
   bool Write(scoped_refptr<net::IOBuffer> buffer, size_t byte_count) override;
   void Flush() override;
   void Close(int status) override;
-  void RegisterCallback(const base::RepeatingClosure& source_callback) override;
+  void RegisterCallback(base::RepeatingClosure source_callback) override;
   size_t GetTotalBufferedBytes() const override;
 
   // PostTask target from |ByteStreamReaderImpl::MaybeUpdateInput|.
@@ -118,7 +118,7 @@ class ByteStreamReaderImpl : public ByteStreamReader {
   // Overridden from ByteStreamReader.
   StreamState Read(scoped_refptr<net::IOBuffer>* data, size_t* length) override;
   int GetStatus() const override;
-  void RegisterCallback(const base::RepeatingClosure& sink_callback) override;
+  void RegisterCallback(base::RepeatingClosure sink_callback) override;
 
   // PostTask target from |ByteStreamWriterImpl::Write| and
   // |ByteStreamWriterImpl::Close|.
@@ -244,9 +244,9 @@ void ByteStreamWriterImpl::Close(int status) {
 }
 
 void ByteStreamWriterImpl::RegisterCallback(
-    const base::Closure& source_callback) {
+    base::RepeatingClosure source_callback) {
   DCHECK(my_task_runner_->RunsTasksInCurrentSequence());
-  space_available_callback_ = source_callback;
+  space_available_callback_ = std::move(source_callback);
 }
 
 size_t ByteStreamWriterImpl::GetTotalBufferedBytes() const {
@@ -361,10 +361,10 @@ int ByteStreamReaderImpl::GetStatus() const {
 }
 
 void ByteStreamReaderImpl::RegisterCallback(
-    const base::Closure& sink_callback) {
+    base::RepeatingClosure sink_callback) {
   DCHECK(my_task_runner_->RunsTasksInCurrentSequence());
 
-  data_available_callback_ = sink_callback;
+  data_available_callback_ = std::move(sink_callback);
 }
 
 // static

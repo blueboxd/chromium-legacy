@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/animation_input_helpers.h"
 #include "third_party/blink/renderer/core/animation/computed_effect_timing.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/optional_effect_timing.h"
 #include "third_party/blink/renderer/core/animation/timing_calculations.h"
 #include "third_party/blink/renderer/core/animation/timing_input.h"
@@ -61,7 +62,7 @@ EffectTiming* AnimationEffect::getTiming() const {
 
 ComputedEffectTiming* AnimationEffect::getComputedTiming() const {
   return SpecifiedTiming().getComputedTiming(EnsureCalculated(),
-                                             IsKeyframeEffect());
+                                             IsA<KeyframeEffect>(this));
 }
 
 void AnimationEffect::updateTiming(OptionalEffectTiming* optional_timing,
@@ -91,7 +92,7 @@ void AnimationEffect::UpdateInheritedTime(base::Optional<double> inherited_time,
   const base::Optional<double> local_time = inherited_time;
   if (needs_update) {
     Timing::CalculatedTiming calculated = SpecifiedTiming().CalculateTimings(
-        local_time, direction, IsKeyframeEffect(), playback_rate);
+        local_time, direction, IsA<KeyframeEffect>(this), playback_rate);
 
     const bool was_canceled = calculated.phase != calculated_.phase &&
                               calculated.phase == Timing::kPhaseNone;

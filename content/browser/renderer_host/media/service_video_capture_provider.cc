@@ -124,9 +124,10 @@ ServiceVideoCaptureProvider::ServiceVideoCaptureProvider(
   } else if (features::IsVideoCaptureServiceEnabledForBrowserProcess()) {
     // Connect immediately and permanently when the service runs in-process.
     base::CreateSingleThreadTaskRunner({BrowserThread::IO})
-        ->PostTask(FROM_HERE,
-                   base::Bind(&ServiceVideoCaptureProvider::OnServiceStarted,
-                              weak_ptr_factory_.GetWeakPtr()));
+        ->PostTask(
+            FROM_HERE,
+            base::BindOnce(&ServiceVideoCaptureProvider::OnServiceStarted,
+                           weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

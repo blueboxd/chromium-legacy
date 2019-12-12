@@ -58,10 +58,10 @@ class CONTENT_EXPORT DragDownloadFile : public ui::DownloadFileProvider {
 
   base::FilePath file_path_;
   base::File file_;
-  State state_;
+  State state_ = INITIALIZED;
   scoped_refptr<ui::DownloadFileObserver> observer_;
   base::RunLoop nested_loop_;
-  DragDownloadFileUI* drag_ui_;
+  DragDownloadFileUI* drag_ui_ = nullptr;
   base::WeakPtrFactory<DragDownloadFile> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DragDownloadFile);

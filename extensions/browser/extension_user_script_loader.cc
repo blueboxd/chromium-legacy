@@ -153,8 +153,9 @@ SubstitutionMap* GetLocalizationMessages(
   auto iter = hosts_info.find(host_id);
   if (iter == hosts_info.end())
     return nullptr;
+  const ExtensionUserScriptLoader::PathAndLocaleInfo& info = iter->second;
   return file_util::LoadMessageBundleSubstitutionMap(
-      iter->second.first, host_id.id(), iter->second.second);
+      info.file_path, host_id.id(), info.default_locale, info.gzip_permission);
 }
 
 void LoadUserScripts(UserScriptList* user_scripts,
@@ -264,8 +265,10 @@ void ExtensionUserScriptLoader::UpdateHostsInfo(
       continue;
     if (hosts_info_.find(host_id) != hosts_info_.end())
       continue;
-    hosts_info_[host_id] = ExtensionSet::ExtensionPathAndDefaultLocale(
-        extension->path(), LocaleInfo::GetDefaultLocale(extension));
+    hosts_info_[host_id] = PathAndLocaleInfo{
+        extension->path(), LocaleInfo::GetDefaultLocale(extension),
+        extension_l10n_util::GetGzippedMessagesPermissionForExtension(
+            extension)};
   }
 }
 

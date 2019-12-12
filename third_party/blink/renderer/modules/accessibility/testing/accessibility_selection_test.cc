@@ -34,6 +34,8 @@ namespace {
 
 constexpr char kSelectionTestsRelativePath[] = "selection/";
 constexpr char kTestFileSuffix[] = ".html";
+constexpr char kLayoutNGSuffix[] = "-ax-layout-ng.txt";
+constexpr char kLayoutNGDisabledSuffix[] = "-ax-layout-ng-disabled.txt";
 constexpr char kAXTestExpectationSuffix[] = "-ax.txt";
 
 // Serialize accessibility subtree to selection text.
@@ -390,7 +392,8 @@ AXSelection AccessibilitySelectionTest::SetSelectionText(
 }
 
 void AccessibilitySelectionTest::RunSelectionTest(
-    const std::string& test_name) const {
+    const std::string& test_name,
+    const std::string& suffix) const {
   static const std::string separator_line = '\n' + std::string(80, '=') + '\n';
   const String relative_path = String::FromUTF8(kSelectionTestsRelativePath) +
                                String::FromUTF8(test_name);
@@ -407,7 +410,9 @@ void AccessibilitySelectionTest::RunSelectionTest(
       << test_file.Utf8()
       << "\nDid you forget to add a data dependency to the BUILD file?";
 
-  const String ax_file = test_path + String::FromUTF8(kAXTestExpectationSuffix);
+  const String ax_file =
+      test_path +
+      String::FromUTF8(suffix.empty() ? kAXTestExpectationSuffix : suffix);
   scoped_refptr<SharedBuffer> ax_file_buffer = ReadFromFile(ax_file);
   auto ax_file_chars = ax_file_buffer->CopyAs<Vector<char>>();
   std::string ax_file_contents;
@@ -434,6 +439,19 @@ void AccessibilitySelectionTest::RunSelectionTest(
   }
 
   EXPECT_EQ(ax_file_contents, actual_ax_file_contents);
+}
+
+ParameterizedAccessibilitySelectionTest::
+    ParameterizedAccessibilitySelectionTest(
+        LocalFrameClient* local_frame_client)
+    : ScopedLayoutNGForTest(GetParam()),
+      AccessibilitySelectionTest(local_frame_client) {}
+
+void ParameterizedAccessibilitySelectionTest::RunSelectionTest(
+    const std::string& test_name) const {
+  std::string suffix =
+      LayoutNGEnabled() ? kLayoutNGSuffix : kLayoutNGDisabledSuffix;
+  AccessibilitySelectionTest::RunSelectionTest(test_name, suffix);
 }
 
 }  // namespace test

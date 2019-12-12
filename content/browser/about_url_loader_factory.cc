@@ -5,8 +5,8 @@
 #include "content/browser/about_url_loader_factory.h"
 
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace content {
 
@@ -21,11 +21,11 @@ void AboutURLLoaderFactory::CreateLoaderAndStart(
     const network::ResourceRequest& request,
     mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  network::ResourceResponseHead response_head;
-  response_head.mime_type = "text/html";
+  auto response_head = network::mojom::URLResponseHead::New();
+  response_head->mime_type = "text/html";
   mojo::Remote<network::mojom::URLLoaderClient> client_remote(
       std::move(client));
-  client_remote->OnReceiveResponse(response_head);
+  client_remote->OnReceiveResponse(std::move(response_head));
 
   // Create a data pipe for transmitting the empty response. The |producer|
   // doesn't add any data.

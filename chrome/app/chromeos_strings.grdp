@@ -1687,6 +1687,30 @@
     Mobile data
   </message>
 
+
+  <!-- Network icon accessibility descriptions -->
+  <message name="IDS_NETWORK_ICON_LABEL_ETHERNET" desc="Network icon accessibility label for an Ethernet network.">
+    Ethernet network
+  </message>
+  <message name="IDS_NETWORK_ICON_LABEL_VPN" desc="Network icon accessibility label for a VPN network.">
+    VPN network
+  </message>
+  <message name="IDS_NETWORK_ICON_LABEL_NETWORK_OFF" desc="Network icon accessibility label for a network that is turned off.">
+    <ph name="NETWORK_TYPE">$1<ex>Instant Tethering</ex></ph> network, off
+  </message>
+  <message name="IDS_NETWORK_ICON_LABEL_NO_NETWORK" desc="Network icon accessibility label for a celluar or tether connection with no network available.">
+    <ph name="NETWORK_TYPE">$1<ex>Instant Tethering</ex></ph>, no network
+  </message>
+  <message name="IDS_NETWORK_ICON_LABEL_CONNECTING" desc="Network icon accessibility label for a network that is currently attempting to connect.">
+    <ph name="NETWORK_TYPE">$1<ex>Instant Tethering</ex></ph> network, connecting
+  </message>
+  <message name="IDS_NETWORK_ICON_LABEL_NOT_CONNECTED" desc="Network icon accessibility label for a network that is not connected.">
+    <ph name="NETWORK_TYPE">$1<ex>Instant Tethering</ex></ph> network, not connected
+  </message>
+  <message name="IDS_NETWORK_ICON_LABEL_SIGNAL_STRENGTH" desc="Network icon accessibility label for a network that is currently connected with signal strength percentage available.">
+    <ph name="NETWORK_TYPE">$1<ex>Instant Tethering</ex></ph> network, signal strength <ph name="SIGNAL_STRENGTH">$2<ex>80</ex></ph>%
+  </message>
+
   <!-- Common Network type strings -->
   <message name="IDS_NETWORK_TYPE_ETHERNET" desc="Label for Ethernet networks.">
     Ethernet

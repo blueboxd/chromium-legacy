@@ -33,7 +33,7 @@ Overview
 Main origin
                     </SPAN>
                 </LI>
-                <OL class=children expanded role=group >
+                <OL class=children expanded role=group aria-label=Main origin >
                     <LI role=treeitem class=security-main-view-reload-message >
                         <DIV class=selection fill >
                         </DIV>
@@ -51,7 +51,7 @@ Reload to view details
 Non-secure origins
                     </SPAN>
                 </LI>
-                <OL class=children expanded hidden role=group >
+                <OL class=children expanded hidden role=group aria-label=Non-secure origins >
                 </OL>
                 <LI role=treeitem class=parent always-parent expanded security-sidebar-origins aria-expanded=true >
                     <DIV class=selection fill >
@@ -60,7 +60,7 @@ Non-secure origins
 Secure origins
                     </SPAN>
                 </LI>
-                <OL class=children expanded role=group >
+                <OL class=children expanded role=group aria-label=Secure origins >
                     <LI role=treeitem class=security-sidebar-tree-item >
                         <DIV class=selection fill >
                         </DIV>
@@ -111,7 +111,7 @@ bar.test
 Unknown / canceled
                     </SPAN>
                 </LI>
-                <OL class=children expanded hidden role=group >
+                <OL class=children expanded hidden role=group aria-label=Unknown / canceled >
                 </OL>
             </OL>
         </DIV>
@@ -154,7 +154,7 @@ Overview
 Main origin
                     </SPAN>
                 </LI>
-                <OL class=children expanded hidden role=group >
+                <OL class=children expanded hidden role=group aria-label=Main origin >
                     <LI role=treeitem class=security-main-view-reload-message >
                         <DIV class=selection fill >
                         </DIV>
@@ -172,7 +172,7 @@ Reload to view details
 Non-secure origins
                     </SPAN>
                 </LI>
-                <OL class=children expanded hidden role=group >
+                <OL class=children expanded hidden role=group aria-label=Non-secure origins >
                 </OL>
                 <LI role=treeitem class=parent always-parent expanded security-sidebar-origins hidden aria-expanded=true >
                     <DIV class=selection fill >
@@ -181,7 +181,7 @@ Non-secure origins
 Secure origins
                     </SPAN>
                 </LI>
-                <OL class=children expanded hidden role=group >
+                <OL class=children expanded hidden role=group aria-label=Secure origins >
                     <LI role=treeitem class=security-sidebar-tree-item >
                         <DIV class=selection fill >
                         </DIV>
@@ -232,7 +232,7 @@ bar.test
 Unknown / canceled
                     </SPAN>
                 </LI>
-                <OL class=children expanded hidden role=group >
+                <OL class=children expanded hidden role=group aria-label=Unknown / canceled >
                 </OL>
             </OL>
         </DIV>
@@ -275,7 +275,7 @@ Overview
 Main origin
                     </SPAN>
                 </LI>
-                <OL class=children expanded role=group >
+                <OL class=children expanded role=group aria-label=Main origin >
                     <LI role=treeitem class=security-main-view-reload-message >
                         <DIV class=selection fill >
                         </DIV>
@@ -293,7 +293,7 @@ Reload to view details
 Non-secure origins
                     </SPAN>
                 </LI>
-                <OL class=children expanded role=group >
+                <OL class=children expanded role=group aria-label=Non-secure origins >
                 </OL>
                 <LI role=treeitem class=parent always-parent expanded security-sidebar-origins aria-expanded=true >
                     <DIV class=selection fill >
@@ -302,7 +302,7 @@ Non-secure origins
 Secure origins
                     </SPAN>
                 </LI>
-                <OL class=children expanded role=group >
+                <OL class=children expanded role=group aria-label=Secure origins >
                     <LI role=treeitem class=security-sidebar-tree-item >
                         <DIV class=selection fill >
                         </DIV>
@@ -353,7 +353,7 @@ bar.test
 Unknown / canceled
                     </SPAN>
                 </LI>
-                <OL class=children expanded role=group >
+                <OL class=children expanded role=group aria-label=Unknown / canceled >
                 </OL>
             </OL>
         </DIV>

@@ -111,7 +111,7 @@ TEST_F(
           assertEquals(
               'en-UEB-g2', this.manager.getDefaultTranslator().table.id);
           assertEquals(
-              'en-US-comp8', this.manager.getUncontractedTranslator().table.id);
+              'en-UEB-g1', this.manager.getUncontractedTranslator().table.id);
         });
         this.manager.refresh('en-UEB-g2');
       });

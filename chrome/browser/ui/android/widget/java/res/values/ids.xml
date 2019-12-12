@@ -5,10 +5,6 @@
      found in the LICENSE file. -->
 
 <resources>
-    <!-- DualControlLayout button ids -->
-    <item type="id" name="button_primary" />
-    <item type="id" name="button_secondary" />
-
     <!-- ViewHighlighter tags -->
     <item type="id" name="highlight_state" />
 </resources>

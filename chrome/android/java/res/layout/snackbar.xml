@@ -58,7 +58,7 @@
             android:visibility="visible"
             tools:ignore="ContentDescription"/>
 
-        <org.chromium.chrome.browser.snackbar.TemplatePreservingTextView
+        <org.chromium.chrome.browser.ui.widget.text.TemplatePreservingTextView
             android:id="@+id/snackbar_message"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

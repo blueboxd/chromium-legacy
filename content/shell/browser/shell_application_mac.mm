@@ -16,26 +16,26 @@
 
 @interface ShellCrApplication ()<NativeEventProcessor> {
   base::ObserverList<content::NativeEventProcessorObserver>::Unchecked
-      observers_;
+      _observers;
 }
 @end
 
 @implementation ShellCrApplication
 
 - (BOOL)isHandlingSendEvent {
-  return handlingSendEvent_;
+  return _handlingSendEvent;
 }
 
 - (void)sendEvent:(NSEvent*)event {
-  base::AutoReset<BOOL> scoper(&handlingSendEvent_, YES);
+  base::AutoReset<BOOL> scoper(&_handlingSendEvent, YES);
 
   content::ScopedNotifyNativeEventProcessorObserver scopedObserverNotifier(
-      &observers_, event);
+      &_observers, event);
   [super sendEvent:event];
 }
 
 - (void)setHandlingSendEvent:(BOOL)handlingSendEvent {
-  handlingSendEvent_ = handlingSendEvent;
+  _handlingSendEvent = handlingSendEvent;
 }
 
 - (IBAction)newDocument:(id)sender {
@@ -47,12 +47,12 @@
 
 - (void)addNativeEventProcessorObserver:
     (content::NativeEventProcessorObserver*)observer {
-  observers_.AddObserver(observer);
+  _observers.AddObserver(observer);
 }
 
 - (void)removeNativeEventProcessorObserver:
     (content::NativeEventProcessorObserver*)observer {
-  observers_.RemoveObserver(observer);
+  _observers.RemoveObserver(observer);
 }
 
 @end

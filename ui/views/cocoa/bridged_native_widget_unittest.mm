@@ -621,7 +621,7 @@ void BridgedNativeWidgetTest::MakeSelection(int start, int end) {
 }
 
 void BridgedNativeWidgetTest::SetKeyDownEvent(NSEvent* event) {
-  [ns_view_ setValue:event forKey:@"keyDownEvent_"];
+  ns_view_.keyDownEventForTesting = event;
 }
 
 void BridgedNativeWidgetTest::SetHandleKeyEventCallback(

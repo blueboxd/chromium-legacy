@@ -18,15 +18,19 @@ AutofillProfile CreateServerProfile(const std::string& server_id);
 CreditCard CreateServerCreditCard(const std::string& server_id);
 
 sync_pb::AutofillWalletSpecifics CreateAutofillWalletSpecificsForAddress(
-    const std::string& specifics_id);
+    const std::string& client_tag);
 
 sync_pb::AutofillWalletSpecifics CreateAutofillWalletSpecificsForCard(
-    const std::string& specifics_id,
+    const std::string& client_tag,
     const std::string& billing_address_id = "");
 
 sync_pb::AutofillWalletSpecifics
 CreateAutofillWalletSpecificsForPaymentsCustomerData(
-    const std::string& specifics_id);
+    const std::string& client_tag);
+
+sync_pb::AutofillWalletSpecifics
+CreateAutofillWalletSpecificsForCreditCardCloudTokenData(
+    const std::string& client_tag);
 
 }  // namespace autofill
 

@@ -194,8 +194,8 @@ class AmbientAuthenticationTestWithPolicy
     EXPECT_EQ(IsAmbientAuthAllowedForProfile(GetIncognitoProfile()),
               IsIncognitoAllowedInFeature() ||
                   IsIncognitoAllowedInPolicy(policy_value));
-// TODO(crbug.com/1030624): Adapt this test for chromeos guest sessions too once
-// we have device level policy for guests
+// ChromeOS guest sessions don't have the capability to
+// do ambient authentications.
 #if !defined(OS_CHROMEOS)
     EXPECT_EQ(
         IsAmbientAuthAllowedForProfile(GetGuestProfile()),

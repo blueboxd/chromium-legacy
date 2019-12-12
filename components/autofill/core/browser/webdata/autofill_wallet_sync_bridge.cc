@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/autofill_profile_sync_util.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card_cloud_token_data.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/webdata/autofill_sync_bridge_util.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
@@ -21,6 +22,7 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/sync/base/data_type_histogram.h"
+#include "components/sync/base/hash_util.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/model/mutable_data_batch.h"
@@ -37,55 +39,33 @@ namespace {
 // Address to this variable used as the user data key.
 static int kAutofillWalletSyncBridgeUserDataKey = 0;
 
-std::string GetSpecificsIdFromAutofillWalletSpecifics(
-    const AutofillWalletSpecifics& specifics) {
-  switch (specifics.type()) {
-    case AutofillWalletSpecifics::MASKED_CREDIT_CARD:
-      return specifics.masked_card().id();
-    case AutofillWalletSpecifics::POSTAL_ADDRESS:
-      return specifics.address().id();
-    case AutofillWalletSpecifics::CUSTOMER_DATA:
-      return specifics.customer_data().id();
-    case AutofillWalletSpecifics::CREDIT_CARD_CLOUD_TOKEN_DATA:
-      return specifics.cloud_token_data().masked_card_id();
-    case AutofillWalletSpecifics::UNKNOWN:
-      NOTREACHED();
-      return std::string();
-  }
-  return std::string();
-}
-
-std::string GetSpecificsIdFromAutofillProfile(const AutofillProfile& profile) {
-  // Both server_id and specifics_id are _not_ base64 encoded.
+std::string GetClientTagFromAutofillProfile(const AutofillProfile& profile) {
+  // Both server_id and client_tag are _not_ base64 encoded.
   return profile.server_id();
 }
 
-std::string GetSpecificsIdFromCreditCard(const CreditCard& card) {
-  // Both server_id and specifics_id are _not_ base64 encoded.
+std::string GetClientTagFromCreditCard(const CreditCard& card) {
+  // Both server_id and client_tag are _not_ base64 encoded.
   return card.server_id();
 }
 
-std::string GetSpecificsIdFromPaymentsCustomerData(
+std::string GetClientTagFromPaymentsCustomerData(
     const PaymentsCustomerData& customer_data) {
-  // Both customer_id and specifics_id are _not_ base64 encoded.
+  // Both customer_id and client_tag are _not_ base64 encoded.
   return customer_data.customer_id;
 }
 
-// Returns the client tag for wallet data specifics id.
-std::string GetClientTagForWalletDataSpecificsId(
-    const std::string& specifics_id) {
-  // Unlike for the wallet_metadata model type, the wallet_data expects
-  // specifics id directly as client tags.
-  return specifics_id;
+std::string GetClientTagFromCreditCardCloudTokenData(
+    const CreditCardCloudTokenData& cloud_token_data) {
+  return cloud_token_data.instrument_token;
 }
 
 // Returns the storage key to be used for wallet data for the specified wallet
-// data |specifics_id|.
-std::string GetStorageKeyForWalletDataSpecificsId(
-    const std::string& specifics_id) {
-  // We use the (non-base64-encoded) |specifics_id| directly as the storage key,
+// data |client_tag|.
+std::string GetStorageKeyForWalletDataClientTag(const std::string& client_tag) {
+  // We use the (non-base64-encoded) |client_tag| directly as the storage key,
   // this function only hides this definition from all its call sites.
-  return specifics_id;
+  return client_tag;
 }
 
 // Creates a EntityData object corresponding to the specified |address|.
@@ -95,7 +75,7 @@ std::unique_ptr<EntityData> CreateEntityDataFromAutofillServerProfile(
   auto entity_data = std::make_unique<EntityData>();
   entity_data->name =
       "Server profile " +
-      GetBase64EncodedId(GetSpecificsIdFromAutofillProfile(address));
+      GetBase64EncodedId(GetClientTagFromAutofillProfile(address));
 
   AutofillWalletSpecifics* wallet_specifics =
       entity_data->specifics.mutable_autofill_wallet();
@@ -110,7 +90,7 @@ std::unique_ptr<EntityData> CreateEntityDataFromCard(const CreditCard& card,
                                                      bool enforce_utf8) {
   auto entity_data = std::make_unique<EntityData>();
   entity_data->name =
-      "Server card " + GetBase64EncodedId(GetSpecificsIdFromCreditCard(card));
+      "Server card " + GetBase64EncodedId(GetClientTagFromCreditCard(card));
 
   AutofillWalletSpecifics* wallet_specifics =
       entity_data->specifics.mutable_autofill_wallet();
@@ -126,7 +106,7 @@ std::unique_ptr<EntityData> CreateEntityDataFromPaymentsCustomerData(
   auto entity_data = std::make_unique<EntityData>();
   entity_data->name =
       "Payments customer data " +
-      GetBase64EncodedId(GetSpecificsIdFromPaymentsCustomerData(customer_data));
+      GetBase64EncodedId(GetClientTagFromPaymentsCustomerData(customer_data));
 
   AutofillWalletSpecifics* wallet_specifics =
       entity_data->specifics.mutable_autofill_wallet();
@@ -134,6 +114,24 @@ std::unique_ptr<EntityData> CreateEntityDataFromPaymentsCustomerData(
   SetAutofillWalletSpecificsFromPaymentsCustomerData(customer_data,
                                                      wallet_specifics);
 
+  return entity_data;
+}
+
+// Creates a EntityData object corresponding to the specified
+// |cloud_token_data|.
+std::unique_ptr<EntityData> CreateEntityDataFromCreditCardCloudTokenData(
+    const CreditCardCloudTokenData& cloud_token_data,
+    bool enforce_utf8) {
+  auto entity_data = std::make_unique<EntityData>();
+  entity_data->name =
+      "Server card cloud token data " +
+      GetBase64EncodedId(
+          GetClientTagFromCreditCardCloudTokenData(cloud_token_data));
+
+  AutofillWalletSpecifics* wallet_specifics =
+      entity_data->specifics.mutable_autofill_wallet();
+  SetAutofillWalletSpecificsFromCreditCardCloudTokenData(
+      cloud_token_data, wallet_specifics, enforce_utf8);
   return entity_data;
 }
 
@@ -226,16 +224,15 @@ std::string AutofillWalletSyncBridge::GetClientTag(
     const syncer::EntityData& entity_data) {
   DCHECK(entity_data.specifics.has_autofill_wallet());
 
-  return GetClientTagForWalletDataSpecificsId(
-      GetSpecificsIdFromAutofillWalletSpecifics(
-          entity_data.specifics.autofill_wallet()));
+  return syncer::GetUnhashedClientTagFromAutofillWalletSpecifics(
+      entity_data.specifics.autofill_wallet());
 }
 
 std::string AutofillWalletSyncBridge::GetStorageKey(
     const syncer::EntityData& entity_data) {
   DCHECK(entity_data.specifics.has_autofill_wallet());
-  return GetStorageKeyForWalletDataSpecificsId(
-      GetSpecificsIdFromAutofillWalletSpecifics(
+  return GetStorageKeyForWalletDataClientTag(
+      syncer::GetUnhashedClientTagFromAutofillWalletSpecifics(
           entity_data.specifics.autofill_wallet()));
 }
 
@@ -269,9 +266,11 @@ void AutofillWalletSyncBridge::GetAllDataImpl(DataCallback callback,
 
   std::vector<std::unique_ptr<AutofillProfile>> profiles;
   std::vector<std::unique_ptr<CreditCard>> cards;
+  std::vector<std::unique_ptr<CreditCardCloudTokenData>> cloud_token_data;
   std::unique_ptr<PaymentsCustomerData> customer_data;
   if (!GetAutofillTable()->GetServerProfiles(&profiles) ||
       !GetAutofillTable()->GetServerCreditCards(&cards) ||
+      !GetAutofillTable()->GetCreditCardCloudTokenData(&cloud_token_data) ||
       !GetAutofillTable()->GetPaymentsCustomerData(&customer_data)) {
     change_processor()->ReportError(
         {FROM_HERE, "Failed to load entries from table."});
@@ -280,19 +279,26 @@ void AutofillWalletSyncBridge::GetAllDataImpl(DataCallback callback,
 
   auto batch = std::make_unique<syncer::MutableDataBatch>();
   for (const std::unique_ptr<AutofillProfile>& entry : profiles) {
-    batch->Put(GetStorageKeyForWalletDataSpecificsId(
-                   GetSpecificsIdFromAutofillProfile(*entry)),
+    batch->Put(GetStorageKeyForWalletDataClientTag(
+                   GetClientTagFromAutofillProfile(*entry)),
                CreateEntityDataFromAutofillServerProfile(*entry, enforce_utf8));
   }
   for (const std::unique_ptr<CreditCard>& entry : cards) {
-    batch->Put(GetStorageKeyForWalletDataSpecificsId(
-                   GetSpecificsIdFromCreditCard(*entry)),
-               CreateEntityDataFromCard(*entry, enforce_utf8));
+    batch->Put(
+        GetStorageKeyForWalletDataClientTag(GetClientTagFromCreditCard(*entry)),
+        CreateEntityDataFromCard(*entry, enforce_utf8));
+  }
+  for (const std::unique_ptr<CreditCardCloudTokenData>& entry :
+       cloud_token_data) {
+    batch->Put(
+        GetStorageKeyForWalletDataClientTag(
+            GetClientTagFromCreditCardCloudTokenData(*entry)),
+        CreateEntityDataFromCreditCardCloudTokenData(*entry, enforce_utf8));
   }
 
   if (customer_data) {
-    batch->Put(GetStorageKeyForWalletDataSpecificsId(
-                   GetSpecificsIdFromPaymentsCustomerData(*customer_data)),
+    batch->Put(GetStorageKeyForWalletDataClientTag(
+                   GetClientTagFromPaymentsCustomerData(*customer_data)),
                CreateEntityDataFromPaymentsCustomerData(*customer_data));
   }
   std::move(callback).Run(std::move(batch));
@@ -307,14 +313,17 @@ void AutofillWalletSyncBridge::SetSyncData(
   std::vector<CreditCard> wallet_cards;
   std::vector<AutofillProfile> wallet_addresses;
   std::vector<PaymentsCustomerData> customer_data;
+  std::vector<CreditCardCloudTokenData> cloud_token_data;
   PopulateWalletTypesFromSyncData(entity_data, &wallet_cards, &wallet_addresses,
-                                  &customer_data);
+                                  &customer_data, &cloud_token_data);
 
-  wallet_data_changed |= SetPaymentsCustomerData(std::move(customer_data));
   wallet_data_changed |=
       SetWalletCards(std::move(wallet_cards), notify_metadata_bridge);
   wallet_data_changed |=
       SetWalletAddresses(std::move(wallet_addresses), notify_metadata_bridge);
+  wallet_data_changed |= SetPaymentsCustomerData(std::move(customer_data));
+  wallet_data_changed |=
+      SetCreditCardCloudTokenData(std::move(cloud_token_data));
 
   // Commit the transaction to make sure the data and the metadata with the
   // new progress marker is written down (especially on Android where we
@@ -421,6 +430,22 @@ bool AutofillWalletSyncBridge::SetPaymentsCustomerData(
   return false;
 }
 
+bool AutofillWalletSyncBridge::SetCreditCardCloudTokenData(
+    const std::vector<CreditCardCloudTokenData>& cloud_token_data) {
+  AutofillTable* table = GetAutofillTable();
+  std::vector<std::unique_ptr<CreditCardCloudTokenData>> existing_data;
+  table->GetCreditCardCloudTokenData(&existing_data);
+
+  if (ShouldResetAutofillWalletData(existing_data, cloud_token_data)) {
+    table->SetCreditCardCloudTokenData(cloud_token_data);
+    return true;
+  }
+  return false;
+}
+
+// TODO(crbug.com/1020740): Move the shared code for ComputeAutofillWalletDiff
+// and ShouldResetAutofillWalletData into a util function in
+// autofill_sync_bridge_util.*.
 template <class Item>
 AutofillWalletSyncBridge::AutofillWalletDiff<Item>
 AutofillWalletSyncBridge::ComputeAutofillWalletDiff(
@@ -486,6 +511,36 @@ AutofillWalletSyncBridge::ComputeAutofillWalletDiff(
             new_data.size());
 
   return result;
+}
+
+template <class Item>
+bool AutofillWalletSyncBridge::ShouldResetAutofillWalletData(
+    const std::vector<std::unique_ptr<Item>>& old_data,
+    const std::vector<Item>& new_data) {
+  std::vector<const Item*> old_ptrs;
+  old_ptrs.reserve(old_data.size());
+  for (const std::unique_ptr<Item>& old_item : old_data)
+    old_ptrs.push_back(old_item.get());
+  std::vector<const Item*> new_ptrs;
+  new_ptrs.reserve(new_data.size());
+  for (const Item& new_item : new_data)
+    new_ptrs.push_back(&new_item);
+
+  if (old_ptrs.size() != new_ptrs.size())
+    return true;
+
+  // Sort our vectors.
+  auto compare_less = [](const Item* lhs, const Item* rhs) {
+    return lhs->Compare(*rhs) < 0;
+  };
+  std::sort(old_ptrs.begin(), old_ptrs.end(), compare_less);
+  std::sort(new_ptrs.begin(), new_ptrs.end(), compare_less);
+
+  auto compare_equal = [](const Item* lhs, const Item* rhs) {
+    return lhs->Compare(*rhs) == 0;
+  };
+  return !std::equal(old_ptrs.begin(), old_ptrs.end(), new_ptrs.begin(),
+                     compare_equal);
 }
 
 AutofillTable* AutofillWalletSyncBridge::GetAutofillTable() {

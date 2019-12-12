@@ -1,15 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
-<translation id="1001649754854402482">在新版 <ph name="CORS" /> 模式中啟用 <ph name="CORS" /> 檢查安全防護措施，讓擴充功能保持相容行為，並允許 <ph name="PRODUCT_NAME" /> 不需經過 <ph name="CORS" /> 檢查即可傳送指定標頭。
-
-      如果將這份清單設為空白，<ph name="PRODUCT_NAME" /> 會嘗試以相容方式執行擴充功能，且不會採用 <ph name="PRODUCT_NAME" /> 第 79 版的 <ph name="API" /> 變更，詳情請參閱 <ph name="WEB_REQUEST_API_MANUAL" />。
-
-      如果將這份清單設為具有 <ph name="HTTP" /> 要求標頭名稱，則 <ph name="CORS" /> 檢查將忽略此處列出的標頭，並啟用擴充功能的安全防護措施。
-
-      如果未設定這份清單，則不會套用上述兩種安全防護措施。
-
-      如要進一步瞭解 <ph name="CORS" />，請前往：<ph name="CORS_HELP_URL" />。</translation>
 <translation id="1002439864875515590">如果將這項政策設為空白字串或不設定，<ph name="PRODUCT_OS_NAME" />將不會在使用者登入流程中顯示自動完成選項。
       如果將這項政策設為代表網域名稱的字串，<ph name="PRODUCT_OS_NAME" />將會在使用者登入流程中顯示自動完成選項，使用者只需輸入自己的使用者名稱 (不含網域名稱延伸部分) 即可。使用者可以覆寫這個網域名稱的延伸部分。
       如果這項政策的值不是有效網域，系統就不會套用這項政策。</translation>
@@ -199,7 +190,7 @@
 <translation id="1291880496936992484">警告：自 <ph name="PRODUCT_NAME" /> 52 版 (將於 2016 年 9 月左右推出) 起，系統將全面移除 RC4，屆時這項政策將停止運作。
 
       如果未設定這項政策或將其設為 False，系統就不會在 TLS 中啟用 RC4 加密套件。您也可以將這項政策設為 True，以保持與過舊伺服器的相容性。這種方法是權宜之計，伺服器應重新設定，才是正確的做法。</translation>
-<translation id="1294263471858445589">在無痕模式工作階段和一般工作階段中啟用環境驗證。</translation>
+<translation id="1294263471858445589">在無痕模式工作階段和一般工作階段中啟用背景驗證。</translation>
 <translation id="1295737447968372331">在登入畫面上啟用語音輸入功能</translation>
 <translation id="1297182715641689552">使用 .pac Proxy 指令碼</translation>
 <translation id="1297961932043741908">設定單一 Chrome 例項可以使用的記憶體大小限制 (以 MB 為單位)。</translation>
@@ -559,7 +550,7 @@
 <translation id="186719019195685253">使用 AC 電源的情況下，系統在達到閒置延遲時間時所採取的動作</translation>
 <translation id="1875371246345730828">這項政策會設定哪些網址可在登入畫面的 SAML 流程中，取得使用裝置身分遠端認證機制的存取權。
 
-      具體來說，如果網址符合這項政策提供的其中一種模式，系統會允許該網址接收 HTTP 標頭 (其中包含對遠端認證機制驗證問題的回覆)，以認證裝置身分及裝置狀態。
+      具體來說，如果網址符合這項政策提供的其中一種模式，系統會允許該網址接收 HTTP 標頭 (其中包含對遠端認證機制驗證問題的回應)，以認證裝置身分及裝置狀態。
 
       如果不設定這項政策或將其設為空白，則系統不允許任何網址在登入畫面使用遠端認證機制。
 
@@ -1925,7 +1916,7 @@
 
       如果將這項政策設為 true，系統會傳送網路封包 (所謂的「<ph name="HEARTBEATS_TERM" />」)。
       如果設為 false 或未設定，系統就不會傳送任何封包。</translation>
-<translation id="3950110092991281616">僅在一般工作階段中啟用環境驗證功能。</translation>
+<translation id="3950110092991281616">僅在一般工作階段中啟用背景驗證功能。</translation>
 <translation id="3950239119790560549">更新時間限制</translation>
 <translation id="3956686688560604829">使用 Internet Explorer 的 SiteList 政策取得舊版瀏覽器支援。</translation>
 <translation id="3958586912393694012">允許使用 Smart Lock</translation>
@@ -2245,19 +2236,10 @@
 <translation id="4449545651113180484">將畫面以順時針方向旋轉 270 度</translation>
 <translation id="445270821089253489">控管 Chrome 回報的使用者與裝置資訊類型。</translation>
 <translation id="4453913621209182880">只允許使用背景圖形列印</translation>
-<translation id="4454586530530448054">如果設定了這項政策，所有指定的資料類型都會從同步處理作業中排除，包含 Google Sync 和漫遊設定檔的同步處理作業。這有助於減少漫遊設定檔的大小，或限制上傳到 Google Sync 伺服器的資料類型。
+<translation id="4454586530530448054">如果設定了這項政策，所有指定的資料類型都會從同步處理作業中排除，包含 Google Sync 和漫遊設定檔的同步處理作業。這有助於縮減漫遊設定檔的大小，或限制上傳到 Google Sync 伺服器的資料類型。
 
       這項政策目前涵蓋的資料類型為：「bookmarks」、「preferences」、「passwords」、「autofill」、「themes」、「typedUrls」、「extensions」、「apps」、「tabs」、「wifiConfiguration」。這些名稱有大小寫之分。</translation>
 <translation id="4454820008017317557">顯示 <ph name="PRODUCT_NAME" /> 工具列圖示</translation>
-<translation id="4458977366860064210">使用舊版 <ph name="CORS" /> 導入作業，而不使用新版 <ph name="CORS" />。
-
-     如果將這項政策設為 True，系統會使用舊版導入作業，該作業應與先前的版本相容。
-
-      如果將這項政策設為 False 或不予設定，系統會使用新版導入作業，這可能會導致企業特定的相容性問題。
-
-      這項政策將在日後的版本中移除。
-
-      如要進一步瞭解 <ph name="CORS" />，請前往：<ph name="CORS_HELP_URL" />。</translation>
 <translation id="4467952432486360968">封鎖第三方 Cookie</translation>
 <translation id="4474167089968829729">允許將密碼儲存到密碼管理員</translation>
 <translation id="4476769083125004742">如果將這項政策設為 <ph name="BLOCK_GEOLOCATION_SETTING" />，Android 應用程式將無法存取位置資訊。如果將這項政策設為任何其他值或不予設定，當 Android 應用程式要存取位置資訊時，會詢問使用者是否同意。</translation>
@@ -3487,13 +3469,13 @@
 <translation id="6652197835259177259">本機管理化環境下的使用者設定</translation>
 <translation id="6658245400435704251">指定裝置可以任意延遲下載某項更新的秒數上限 (以該項更新初次被推送到伺服器的時間為準)。你可以將這項裝置等待時間的其中一部分設定為等待的時間長度，剩下的部分則設定為檢查更新的次數。不論採取哪種方式，分散時間皆不得超過固定時間長度，這樣就可以避免裝置由於持續等待下載某項更新而停止回應。</translation>
 <translation id="6665670272107384733">設定使用者使用快速解鎖功能時需輸入密碼的頻率</translation>
-<translation id="6672630473862787247">在一般工作階段、無痕模式工作階段和訪客工作階段中啟用環境驗證。</translation>
+<translation id="6672630473862787247">在一般工作階段、無痕模式工作階段和訪客工作階段中啟用背景驗證。</translation>
 <translation id="6681229465468164801">允許你設定網址模式清單，指定禁止要求使用者授予 USB 裝置存取權的網站。
 
           如未設定這項政策，系統會根據「DefaultWebUsbGuardSetting」政策 (如有設定) 或使用者的個人設定，將通用預設值套用至所有網站。
 
           透過這項政策設定的網址模式與透過 WebUsbAskForUrls 設定的網址模式不可衝突，否則系統將無法判定應優先遵循哪一項政策。</translation>
-<translation id="6685903773201985073">在訪客工作階段和一般工作階段中啟用環境驗證。</translation>
+<translation id="6685903773201985073">在訪客工作階段和一般工作階段中啟用背景驗證。</translation>
 <translation id="6689792153960219308">回報硬體狀態</translation>
 <translation id="6698632841807204978">啟用單色列印</translation>
 <translation id="6699880231565102694">為遠端存取主機啟用雙重驗證機制</translation>
@@ -4090,21 +4072,21 @@
       這項政策只會影響無關聯的使用者。
       </translation>
 <translation id="7683777542468165012">動態政策更新</translation>
-<translation id="7684516445147212248">你可以透過這項政策指定是否可以在 <ph name="PRODUCT_NAME" /> 的無痕模式和訪客設定檔中執行環境驗證。
+<translation id="7684516445147212248">你可以透過這項政策指定是否可以在 <ph name="PRODUCT_NAME" /> 的無痕模式和訪客設定檔中執行背景驗證。
 
-      如果未透過 NTLM/Kerberos/交涉查問/回應配置提供明確的憑證，則環境驗證為包含預設憑證的 HTTP 驗證。
+      如果未透過 NTLM/Kerberos/Negotiate 問題詢答的驗證配置提供明確的憑證，則背景驗證為包含預設憑證的 HTTP 驗證。
 
-      如果設為 <ph name="REGULAR_ONLY_OPTION_NAME" /> (值為 0)，則只能在一般工作階段中執行環境驗證，不能在無痕模式工作階段和訪客工作階段中執行這項功能。
+      如果設為 <ph name="REGULAR_ONLY_OPTION_NAME" /> (值為 0)，則背景驗證作業只能在一般工作階段中執行，不能在無痕模式工作階段和訪客工作階段中執行。
 
-      如果設為 <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (值為 1)，則可以在無痕模式工作階段和一般工作階段中執行環境驗證，不能在訪客工作階段中執行這項功能。
+      如果設為 <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (值為 1)，則背景驗證作業可以在無痕模式工作階段和一般工作階段中執行，不能在訪客工作階段中執行。
 
-      如果設為 <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (值為 2)，則可以在訪客工作階段和一般工作階段中執行環境驗證，不能在無痕模式工作階段中執行這項功能。
+      如果設為 <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (值為 2)，則背景驗證作業可以在訪客工作階段和一般工作階段中執行，不能在無痕模式工作階段中執行。
 
-      如果設為 <ph name="ALL_OPTION_NAME" /> (值為 3)，則可以在所有工作階段中執行環境驗證。
+      如果設為 <ph name="ALL_OPTION_NAME" /> (值為 3)，則可以在所有工作階段中執行背景驗證。
 
-      請注意，系統一律允許在一般設定檔中執行環境驗證。
+      請注意，系統一律允許在一般設定檔中執行背景驗證。
 
-      如果不設定這項政策，在日後推出的 <ph name="PRODUCT_NAME" /> 版本中，使用者將無法在無痕模式工作階段和訪客工作階段中執行環境驗證，因為系統不允許這麼做。</translation>
+      如果不設定這項政策，在日後推出的 <ph name="PRODUCT_NAME" /> 版本中，使用者會因為系統不允許的緣故，無法在無痕模式工作階段和訪客工作階段中執行背景驗證。</translation>
 <translation id="7687943045976362719">如果設定這項政策，指定的內容類型會由 <ph name="PRODUCT_FRAME_NAME" />處理。
 
           如果不設定這項政策，所有網站都會使用預設轉譯器。(你可透過 <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> 政策設定預設轉譯器)。</translation>
@@ -4139,7 +4121,7 @@
           如果你停用這項設定或並未進行設置，系統就不會啟用雙重驗證機制，而預設行為則會改採用輸入使用者定義的 PIN。</translation>
 <translation id="7750991880413385988">開啟新分頁</translation>
 <translation id="7754704193130578113">下載每個檔案前先詢問儲存位置</translation>
-<translation id="7758378441185523981">為設定檔類型啟用環境驗證。</translation>
+<translation id="7758378441185523981">為設定檔類型啟用背景驗證。</translation>
 <translation id="7761446981238915769">設定登入畫面中的已安裝應用程式清單</translation>
 <translation id="7763614521440615342">在新分頁顯示內容建議</translation>
 <translation id="7765879851993224640">允許使用 Smart Lock 登入功能。</translation>

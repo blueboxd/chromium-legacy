@@ -55,10 +55,31 @@ class AccessibilitySelectionTest : public AccessibilityTest {
 
   // Compares two HTML files containing a DOM selection and the equivalent
   // accessibility selection.
-  void RunSelectionTest(const std::string& test_name) const;
+  void RunSelectionTest(const std::string& test_name,
+                        const std::string& suffix = std::string()) const;
 
  private:
 };
+
+class ParameterizedAccessibilitySelectionTest
+    : public testing::WithParamInterface<bool>,
+      private ScopedLayoutNGForTest,
+      public AccessibilitySelectionTest {
+ public:
+  ParameterizedAccessibilitySelectionTest(
+      LocalFrameClient* local_frame_client = nullptr);
+
+ protected:
+  // Compares two HTML files containing a DOM selection and the equivalent
+  // accessibility selection.
+  void RunSelectionTest(const std::string& test_name) const;
+
+  bool LayoutNGEnabled() const { return GetParam(); }
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         ParameterizedAccessibilitySelectionTest,
+                         testing::Bool());
 
 }  // namespace test
 }  // namespace blink

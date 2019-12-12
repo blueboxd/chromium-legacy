@@ -35,6 +35,8 @@ DIR_SOURCE_ROOT = os.environ.get('CHECKOUT_SOURCE_ROOT',
                                  os.pardir, os.pardir, os.pardir, os.pardir)))
 JAVA_PATH = os.path.join(DIR_SOURCE_ROOT, 'third_party', 'jdk', 'current',
                          'bin', 'java')
+JAVAC_PATH = JAVA_PATH + 'c'
+JAVAP_PATH = JAVA_PATH + 'p'
 RT_JAR_PATH = os.path.join(DIR_SOURCE_ROOT, 'third_party', 'jdk', 'extras',
                            'java_8', 'jre', 'lib', 'rt.jar')
 

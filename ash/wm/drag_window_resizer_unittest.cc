@@ -198,7 +198,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
                              display::Screen::GetScreen()->GetPrimaryDisplay());
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
   {
-    // Grab (0, 0) of the window and move the pointer to (775, 10).
+    // Grab (0, 0) of the window and move the pointer to (795, 10).
     std::unique_ptr<WindowResizer> resizer(
         CreateDragWindowResizer(window_.get(), gfx::Point(), HTCAPTION));
     ASSERT_TRUE(resizer.get());

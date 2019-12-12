@@ -47,7 +47,7 @@ std::string TestPersonalDataManager::SaveImportedCreditCard(
 }
 
 void TestPersonalDataManager::AddVPA(const std::string& profile) {
-  num_times_save_vpa_called_++;
+  num_times_save_upi_id_called_++;
 }
 
 void TestPersonalDataManager::AddProfile(const AutofillProfile& profile) {
@@ -187,6 +187,19 @@ void TestPersonalDataManager::LoadCreditCards() {
             AUTOFILL_CREDITCARDS_RESULT, std::move(credit_cards));
     OnWebDataServiceRequestDone(pending_server_creditcards_query_,
                                 std::move(result));
+  }
+}
+
+void TestPersonalDataManager::LoadCreditCardCloudTokenData() {
+  pending_server_creditcard_cloud_token_data_query_ = 127;
+  {
+    std::vector<std::unique_ptr<CreditCardCloudTokenData>> cloud_token_data;
+    server_credit_card_cloud_token_data_.swap(cloud_token_data);
+    std::unique_ptr<WDTypedResult> result = std::make_unique<
+        WDResult<std::vector<std::unique_ptr<CreditCardCloudTokenData>>>>(
+        AUTOFILL_CLOUDTOKEN_RESULT, std::move(cloud_token_data));
+    OnWebDataServiceRequestDone(
+        pending_server_creditcard_cloud_token_data_query_, std::move(result));
   }
 }
 

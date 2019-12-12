@@ -68,9 +68,10 @@ base::FilePath PlatformCrashpadInitialization(
   const char kPipeNameVar[] = "CHROME_CRASHPAD_PIPE_NAME";
   const char kServerUrlVar[] = "CHROME_CRASHPAD_SERVER_URL";
   std::unique_ptr<base::Environment> env(base::Environment::Create());
-  if (initial_client) {
-    CrashReporterClient* crash_reporter_client = GetCrashReporterClient();
 
+  CrashReporterClient* crash_reporter_client = GetCrashReporterClient();
+
+  if (initial_client) {
     base::string16 database_path_str;
     if (crash_reporter_client->GetCrashDumpLocation(&database_path_str))
       database_path = base::FilePath(database_path_str);
@@ -101,13 +102,6 @@ base::FilePath PlatformCrashpadInitialization(
                                 base::size(exe_file_path)));
 
       exe_file = base::FilePath(exe_file_path);
-    }
-
-    if (crash_reporter_client->GetShouldDumpLargerDumps()) {
-      const uint32_t kIndirectMemoryLimit = 4 * 1024 * 1024;
-      crashpad::CrashpadInfo::GetCrashpadInfo()
-          ->set_gather_indirectly_referenced_memory(
-              crashpad::TriState::kEnabled, kIndirectMemoryLimit);
     }
 
     // If the handler is embedded in the binary (e.g. chrome, setup), we
@@ -160,6 +154,13 @@ base::FilePath PlatformCrashpadInitialization(
     if (env->GetVar(kPipeNameVar, &pipe_name_utf8)) {
       GetCrashpadClient().SetHandlerIPCPipe(base::UTF8ToUTF16(pipe_name_utf8));
     }
+  }
+
+  if (crash_reporter_client->GetShouldDumpLargerDumps()) {
+    const uint32_t kIndirectMemoryLimit = 4 * 1024 * 1024;
+    crashpad::CrashpadInfo::GetCrashpadInfo()
+        ->set_gather_indirectly_referenced_memory(crashpad::TriState::kEnabled,
+                                                  kIndirectMemoryLimit);
   }
 
   return database_path;

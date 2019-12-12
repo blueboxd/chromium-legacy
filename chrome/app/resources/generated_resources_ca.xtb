@@ -1188,7 +1188,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2665919335226618153">S'ha produït un error durant la formatació.</translation>
 <translation id="2666990579225592931">Obre la finestra de convidat</translation>
 <translation id="2667463864537187133">Gestiona el corrector ortogràfic</translation>
-<translation id="2669093958999339774">Impedeix que les sol·licituds de notificacions t'interrompin i substitueix-les per un missatge més silenciós</translation>
+<translation id="2669093958999339774">Bloqueja les sol·licituds de notificacions per evitar interrupcions i utilitza un missatge més silenciós</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> està compartint una pestanya de Chrome.</translation>
 <translation id="2670429602441959756">Aquesta pàgina conté funcions que encara no s'admeten en RV. Se n'està sortint...</translation>
 <translation id="2671451824761031126">Les adreces d'interès i la configuració estan preparades</translation>
@@ -2763,7 +2763,6 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" />: <ph name="PROFILE_NAME" /></translation>
 <translation id="496185450405387901">L'administrador ha instal·lat aquesta aplicació.</translation>
 <translation id="4964455510556214366">Disposició</translation>
-<translation id="4964673849688379040">S'està comprovant…</translation>
 <translation id="4965808351167763748">Confirmes que vols configurar aquest dispositiu perquè executi Hangouts Meet?</translation>
 <translation id="496888482094675990">L'aplicació Fitxers permet accedir ràpidament als fitxers desats a Google Drive, a l'emmagatzematge extern o al dispositiu Chrome OS.</translation>
 <translation id="4971412780836297815">Obre quan acabi</translation>
@@ -4194,7 +4193,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7065534935986314333">Quant al Sistema</translation>
 <translation id="706626672220389329">S'ha produït un error en activar l'ús compartit especificat perquè ja està activat.</translation>
 <translation id="7066944511817949584">No s'ha pogut connectar amb "<ph name="DEVICE_NAME" />".</translation>
-<translation id="7067396782363924830">Colors de l'entorn</translation>
+<translation id="7067396782363924830">Colors d'ambient</translation>
 <translation id="7067725467529581407">No m'ho tornis a mostrar</translation>
 <translation id="7069811530847688087">Pot ser que <ph name="WEBSITE" /> requereixi un tipus de seguretat més nou o diferent</translation>
 <translation id="7070484045139057854">Aquesta extensió pot llegir i modificar les dades dels llocs web</translation>

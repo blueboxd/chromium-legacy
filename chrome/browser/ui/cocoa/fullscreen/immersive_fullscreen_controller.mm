@@ -21,13 +21,13 @@ const CGFloat kMenubarHideZoneHeight = 28;
 }  // namespace
 
 @interface ImmersiveFullscreenController () {
-  id<FullscreenToolbarContextDelegate> delegate_;  // weak
+  id<FullscreenToolbarContextDelegate> _delegate;  // weak
 
   // Used to track the mouse movements to show/hide the menu.
-  base::scoped_nsobject<CrTrackingArea> trackingArea_;
+  base::scoped_nsobject<CrTrackingArea> _trackingArea;
 
   // The content view for the window.
-  NSView* contentView_;  // weak
+  NSView* _contentView;  // weak
 
   // Tracks the currently requested system fullscreen mode, used to show or
   // hide the menubar. Its value is as follows:
@@ -36,10 +36,10 @@ const CGFloat kMenubarHideZoneHeight = 28;
   // screen
   // + |kFullScreenModeHideAll| - when the conditions don't meet the first two
   // modes.
-  base::mac::FullScreenMode systemFullscreenMode_;
+  base::mac::FullScreenMode _systemFullscreenMode;
 
   // True if the menubar should be shown on the screen.
-  BOOL isMenubarVisible_;
+  BOOL _isMenubarVisible;
 }
 
 // Whether the current screen is expected to have a menubar, regardless of
@@ -64,16 +64,16 @@ const CGFloat kMenubarHideZoneHeight = 28;
 - (instancetype)initWithDelegate:
     (id<FullscreenToolbarContextDelegate>)delegate {
   if ((self = [super init])) {
-    delegate_ = delegate;
-    systemFullscreenMode_ = base::mac::kFullScreenModeNormal;
+    _delegate = delegate;
+    _systemFullscreenMode = base::mac::kFullScreenModeNormal;
 
-    contentView_ = [[delegate_ window] contentView];
-    DCHECK(contentView_);
+    _contentView = [[_delegate window] contentView];
+    DCHECK(_contentView);
 
-    isMenubarVisible_ = NO;
+    _isMenubarVisible = NO;
 
     NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-    NSWindow* window = [delegate_ window];
+    NSWindow* window = [_delegate window];
 
     [nc addObserver:self
            selector:@selector(windowDidBecomeMain:)
@@ -102,9 +102,9 @@ const CGFloat kMenubarHideZoneHeight = 28;
 
 - (void)updateMenuBarAndDockVisibility {
   BOOL isMouseOnScreen = NSMouseInRect(
-      [NSEvent mouseLocation], [[delegate_ window] screen].frame, false);
+      [NSEvent mouseLocation], [[_delegate window] screen].frame, false);
 
-  if (!isMouseOnScreen || ![delegate_ isInImmersiveFullscreen])
+  if (!isMouseOnScreen || ![_delegate isInImmersiveFullscreen])
     [self setSystemFullscreenModeTo:base::mac::kFullScreenModeNormal];
   else if ([self shouldShowMenubar])
     [self setSystemFullscreenModeTo:base::mac::kFullScreenModeHideDock];
@@ -113,7 +113,7 @@ const CGFloat kMenubarHideZoneHeight = 28;
 }
 
 - (BOOL)shouldShowMenubar {
-  return [self doesScreenHaveMenubar] && isMenubarVisible_;
+  return [self doesScreenHaveMenubar] && _isMenubarVisible;
 }
 
 - (void)windowDidBecomeMain:(NSNotification*)notification {
@@ -125,7 +125,7 @@ const CGFloat kMenubarHideZoneHeight = 28;
 }
 
 - (BOOL)doesScreenHaveMenubar {
-  NSScreen* screen = [[delegate_ window] screen];
+  NSScreen* screen = [[_delegate window] screen];
   NSScreen* primaryScreen = [[NSScreen screens] firstObject];
   BOOL isWindowOnPrimaryScreen = [screen isEqual:primaryScreen];
 
@@ -135,24 +135,24 @@ return YES;
 }
 
 - (void)setSystemFullscreenModeTo:(base::mac::FullScreenMode)mode {
-  if (mode == systemFullscreenMode_)
+  if (mode == _systemFullscreenMode)
     return;
 
-  if (systemFullscreenMode_ == base::mac::kFullScreenModeNormal)
+  if (_systemFullscreenMode == base::mac::kFullScreenModeNormal)
     base::mac::RequestFullScreen(mode);
   else if (mode == base::mac::kFullScreenModeNormal)
-    base::mac::ReleaseFullScreen(systemFullscreenMode_);
+    base::mac::ReleaseFullScreen(_systemFullscreenMode);
   else
-    base::mac::SwitchFullScreenModes(systemFullscreenMode_, mode);
+    base::mac::SwitchFullScreenModes(_systemFullscreenMode, mode);
 
-  systemFullscreenMode_ = mode;
+  _systemFullscreenMode = mode;
 }
 
 - (void)setMenubarVisibility:(BOOL)visible {
-  if (isMenubarVisible_ == visible)
+  if (_isMenubarVisible == visible)
     return;
 
-  isMenubarVisible_ = visible;
+  _isMenubarVisible = visible;
   [self updateTrackingArea];
   [self updateMenuBarAndDockVisibility];
 }
@@ -161,8 +161,8 @@ return YES;
   [self removeTrackingArea];
 
   CGFloat trackingHeight =
-      isMenubarVisible_ ? kMenubarHideZoneHeight : kMenubarShowZoneHeight;
-  NSRect trackingFrame = [contentView_ bounds];
+      _isMenubarVisible ? kMenubarHideZoneHeight : kMenubarShowZoneHeight;
+  NSRect trackingFrame = [_contentView bounds];
   trackingFrame.origin.y = NSMaxY(trackingFrame) - trackingHeight;
   trackingFrame.size.height = trackingHeight;
 
@@ -172,21 +172,21 @@ return YES;
   // so the menubar won't get stuck.
   NSTrackingAreaOptions options =
       NSTrackingMouseEnteredAndExited | NSTrackingActiveInKeyWindow;
-  if (isMenubarVisible_)
+  if (_isMenubarVisible)
     options |= NSTrackingMouseMoved;
 
   // Create and add a new tracking area for |frame|.
-  trackingArea_.reset([[CrTrackingArea alloc] initWithRect:trackingFrame
+  _trackingArea.reset([[CrTrackingArea alloc] initWithRect:trackingFrame
                                                    options:options
                                                      owner:self
                                                   userInfo:nil]);
-  [contentView_ addTrackingArea:trackingArea_];
+  [_contentView addTrackingArea:_trackingArea];
 }
 
 - (void)removeTrackingArea {
-  if (trackingArea_) {
-    [contentView_ removeTrackingArea:trackingArea_];
-    trackingArea_.reset();
+  if (_trackingArea) {
+    [_contentView removeTrackingArea:_trackingArea];
+    _trackingArea.reset();
   }
 }
 
@@ -199,8 +199,8 @@ return YES;
 }
 
 - (void)mouseMoved:(NSEvent*)event {
-  [self setMenubarVisibility:[trackingArea_
-                                 mouseInsideTrackingAreaForView:contentView_]];
+  [self setMenubarVisibility:[_trackingArea
+                                 mouseInsideTrackingAreaForView:_contentView]];
 }
 
 @end

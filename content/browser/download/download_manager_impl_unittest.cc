@@ -81,8 +81,12 @@ class MockDownloadManagerDelegate : public DownloadManagerDelegate {
   MOCK_METHOD2(DetermineDownloadTarget,
                bool(download::DownloadItem*, DownloadTargetCallback*));
   MOCK_METHOD1(ShouldOpenFileBasedOnExtension, bool(const base::FilePath&));
-  MOCK_METHOD2(ShouldCompleteDownload,
-               bool(download::DownloadItem*, base::OnceClosure));
+  bool ShouldCompleteDownload(download::DownloadItem* item,
+                              base::OnceClosure cb) override {
+    return ShouldCompleteDownload_(item, cb);
+  }
+  MOCK_METHOD2(ShouldCompleteDownload_,
+               bool(download::DownloadItem*, base::OnceClosure&));
   bool ShouldOpenDownload(download::DownloadItem* item,
                           DownloadOpenDelayedCallback cb) override {
     return ShouldOpenDownload_(item, cb);
@@ -538,9 +542,9 @@ class DownloadManagerTest : public testing::Test {
 
   void DetermineDownloadTarget(download::DownloadItemImpl* item) {
     download_manager_->DetermineDownloadTarget(
-        item, base::Bind(
-            &DownloadManagerTest::DownloadTargetDeterminedCallback,
-            base::Unretained(this)));
+        item,
+        base::BindOnce(&DownloadManagerTest::DownloadTargetDeterminedCallback,
+                       base::Unretained(this)));
   }
 
   void OnInProgressDownloadManagerInitialized() {
@@ -717,9 +721,9 @@ TEST_F(DownloadManagerTest, GetDownloadByGuid) {
 
 namespace {
 
-base::Callback<bool(const GURL&)> GetSingleURLFilter(const GURL& url) {
-  return base::Bind(static_cast<bool (*)(const GURL&, const GURL&)>(operator==),
-                    GURL(url));
+base::RepeatingCallback<bool(const GURL&)> GetSingleURLFilter(const GURL& url) {
+  return base::BindRepeating(
+      [](const GURL& a, const GURL& b) { return a == b; }, url);
 }
 
 }  // namespace
@@ -737,7 +741,7 @@ TEST_F(DownloadManagerTest, RemoveDownloadsByURL) {
   EXPECT_CALL(GetMockDownloadItem(0), Remove());
   EXPECT_CALL(GetMockDownloadItem(1), Remove()).Times(0);
 
-  base::Callback<bool(const GURL&)> url_filter =
+  base::RepeatingCallback<bool(const GURL&)> url_filter =
       GetSingleURLFilter(download_urls_[0]);
   int remove_count = download_manager_->RemoveDownloadsByURLAndTime(
       std::move(url_filter), base::Time(), base::Time::Max());

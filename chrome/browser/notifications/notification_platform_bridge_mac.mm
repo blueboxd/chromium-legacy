@@ -510,45 +510,45 @@ bool NotificationPlatformBridgeMac::VerifyNotificationData(
 
 @implementation AlertDispatcherImpl {
   // The connection to the XPC server in charge of delivering alerts.
-  base::scoped_nsobject<NSXPCConnection> xpcConnection_;
+  base::scoped_nsobject<NSXPCConnection> _xpcConnection;
 
   // YES if the remote object has had |-setMachExceptionPort:| called
   // since the service was last started, interrupted, or invalidated.
   // If NO, then -serviceProxy will set the exception port.
-  BOOL setExceptionPort_;
+  BOOL _setExceptionPort;
 }
 
 - (instancetype)init {
 	return nil;
   if ((self = [super init])) {
-    xpcConnection_.reset([[NSXPCConnection alloc]
+    _xpcConnection.reset([[NSXPCConnection alloc]
         initWithServiceName:
             [NSString
                 stringWithFormat:notification_constants::kAlertXPCServiceName,
                                  [base::mac::OuterBundle() bundleIdentifier]]]);
-    xpcConnection_.get().remoteObjectInterface =
+    _xpcConnection.get().remoteObjectInterface =
         [NSXPCInterface interfaceWithProtocol:@protocol(NotificationDelivery)];
 
-    xpcConnection_.get().interruptionHandler = ^{
+    _xpcConnection.get().interruptionHandler = ^{
       // We will be getting this handler both when the XPC server crashes or
       // when it decides to close the connection.
       LOG(WARNING) << "AlertNotificationService: XPC connection interrupted.";
       RecordXPCEvent(INTERRUPTED);
-      setExceptionPort_ = NO;
+      _setExceptionPort = NO;
     };
 
-    xpcConnection_.get().invalidationHandler = ^{
+    _xpcConnection.get().invalidationHandler = ^{
       // This means that the connection should be recreated if it needs
       // to be used again.
       LOG(WARNING) << "AlertNotificationService: XPC connection invalidated.";
       RecordXPCEvent(INVALIDATED);
-      setExceptionPort_ = NO;
+      _setExceptionPort = NO;
     };
 
-    xpcConnection_.get().exportedInterface =
+    _xpcConnection.get().exportedInterface =
         [NSXPCInterface interfaceWithProtocol:@protocol(NotificationReply)];
-    xpcConnection_.get().exportedObject = self;
-    [xpcConnection_ resume];
+    _xpcConnection.get().exportedObject = self;
+    [_xpcConnection resume];
   }
 
   return self;
@@ -620,15 +620,15 @@ getDisplayedAlertsForProfileId:(NSString*)profileId
 // to going directly through the connection, since this will ensure that the
 // service has its exception port configured for crash reporting.
 - (id<NotificationDelivery>)serviceProxy {
-  id<NotificationDelivery> proxy = [xpcConnection_ remoteObjectProxy];
+  id<NotificationDelivery> proxy = [_xpcConnection remoteObjectProxy];
 
-  if (!setExceptionPort_) {
+  if (!_setExceptionPort) {
     base::mac::ScopedMachSendRight exceptionPort(
         crash_reporter::GetCrashpadClient().GetHandlerMachPort());
     base::scoped_nsobject<CrXPCMachPort> xpcPort(
         [[CrXPCMachPort alloc] initWithMachSendRight:std::move(exceptionPort)]);
     [proxy setMachExceptionPort:xpcPort];
-    setExceptionPort_ = YES;
+    _setExceptionPort = YES;
   }
 
   return proxy;

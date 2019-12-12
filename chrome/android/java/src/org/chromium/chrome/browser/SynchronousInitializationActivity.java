@@ -25,6 +25,6 @@ public abstract class SynchronousInitializationActivity extends ChromeBaseAppCom
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ChromeBrowserInitializer.getInstance(this).handleSynchronousStartup();
+        ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
     }
 }

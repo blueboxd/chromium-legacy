@@ -232,7 +232,7 @@
 <translation id="2650751991977523696">是否重新下载文件？</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# 个音频文件}other{# 个音频文件}}</translation>
 <translation id="2653659639078652383">提交</translation>
-<translation id="2669093958999339774">让网站改用更安静的方式传送消息（不再显示通知提示），以免打扰您</translation>
+<translation id="2669093958999339774">不直接弹出提示询问能否向您发送通知，改用更加静默的提示方式，以免造成打扰</translation>
 <translation id="2677748264148917807">离开</translation>
 <translation id="2704606927547763573">已复制</translation>
 <translation id="2707726405694321444">刷新网页</translation>

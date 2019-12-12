@@ -15,7 +15,7 @@ valid and trusted
         <DIV >
 The connection to this site is using a valid, trusted server certificate issued by Issuer.
         </DIV>
-        <BUTTON class=security-certificate-button text-button type=button role=button aria-haspopup=true >
+        <BUTTON class=origin-button text-button type=button role=button >
 View certificate
         </BUTTON>
     </DIV>

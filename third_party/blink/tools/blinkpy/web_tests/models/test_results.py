@@ -29,6 +29,7 @@
 import cPickle
 
 from blinkpy.web_tests.models import test_failures, test_expectations
+from blinkpy.web_tests.port.base import ARTIFACTS_SUB_DIR
 
 from blinkpy.common import path_finder
 
@@ -95,7 +96,7 @@ class TestResult(object):
         self.total_run_time = 0  # The time taken to run the test plus any references, compute diffs, etc.
         self.test_number = None
         self.artifacts = Artifacts(
-            self.results_directory, self.filesystem, retry_attempt,
+            self.results_directory, self.filesystem, retry_attempt, ARTIFACTS_SUB_DIR,
             repeat_tests=self.repeat_tests)
 
     def create_artifacts(self):

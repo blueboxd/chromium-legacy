@@ -419,11 +419,15 @@ blink_builder(
 
 blink_builder(
     name = 'win10-blink-rel',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 
 blink_builder(
     name = 'win7-blink-rel',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 
@@ -966,6 +970,8 @@ gpu_win_builder(
 
 gpu_win_builder(
     name = 'gpu-try-win10-nvidia-rel',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 gpu_win_builder(
@@ -1297,6 +1303,10 @@ linux_builder(
 )
 
 linux_builder(
+    name = 'linux-wpt-fyi-rel',
+)
+
+linux_builder(
     name = 'tricium-metrics-analysis',
     executable = luci.recipe(name = 'tricium_metrics'),
 )
@@ -1532,27 +1542,39 @@ def swangle_windows_builder(*, name, **kwargs):
   )
 
 swangle_windows_builder(
-    name = 'win-swangle-try-tot-angle-x64'
+    name = 'win-swangle-try-tot-angle-x64',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 swangle_windows_builder(
-    name = 'win-swangle-try-tot-angle-x86'
+    name = 'win-swangle-try-tot-angle-x86',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 swangle_windows_builder(
-    name = 'win-swangle-try-tot-swiftshader-x64'
+    name = 'win-swangle-try-tot-swiftshader-x64',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 swangle_windows_builder(
-    name = 'win-swangle-try-tot-swiftshader-x86'
+    name = 'win-swangle-try-tot-swiftshader-x86',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 swangle_windows_builder(
-    name = 'win-swangle-try-x64'
+    name = 'win-swangle-try-x64',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 swangle_windows_builder(
-    name = 'win-swangle-try-x86'
+    name = 'win-swangle-try-x86',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 
@@ -1567,16 +1589,22 @@ def win_builder(*, name, builderless=True, os=os.WINDOWS_DEFAULT, **kwargs):
 
 win_builder(
     name = 'win-annotator-rel',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 win_builder(
     name = 'win-asan',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     goma_jobs = goma.jobs.J150,
 )
 
 win_builder(
     name = 'win-celab-try-rel',
     executable = luci.recipe(name = 'celab'),
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     properties = {
         'exclude': 'chrome_only',
         'pool_name': 'celab-chromium-try',
@@ -1589,6 +1617,8 @@ win_builder(
     name = 'win-libfuzzer-asan-rel',
     builderless = False,
     executable = luci.recipe(name = 'chromium_libfuzzer_trybot'),
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
     tryjob = tryjob(),
 )
@@ -1602,6 +1632,8 @@ win_builder(
 
 win_builder(
     name = 'win10_chromium_x64_rel_ng_exp',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     builderless = False,
     os = os.WINDOWS_ANY,
 )
@@ -1617,6 +1649,8 @@ win_builder(
 
 win_builder(
     name = 'win_archive',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 win_builder(
@@ -1647,6 +1681,8 @@ win_builder(
 
 win_builder(
     name = 'win_mojo',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 win_builder(

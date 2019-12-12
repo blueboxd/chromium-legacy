@@ -1099,8 +1099,7 @@ void GCMDriverDesktop::GetInstanceIDData(
   // codes, the instance ID will assume no current ID and generate a new one
   // if the gcm client is not ready and we pass an empty string to the callback
   // below. We should fix this!
-  UMA_HISTOGRAM_ENUMERATION("GCM.GetInstanceIDData.ClientStarted", result,
-                            GCMClient::Result::LAST_RESULT + 1);
+  UMA_HISTOGRAM_ENUMERATION("GCM.GetInstanceIDData.ClientStarted", result);
   if (result != GCMClient::SUCCESS) {
     DLOG(ERROR)
         << "Unable to get the InstanceID data: cannot start the GCM Client";

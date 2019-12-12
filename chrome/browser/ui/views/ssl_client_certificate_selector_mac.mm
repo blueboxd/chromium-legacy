@@ -140,18 +140,18 @@ void ClearWindowTableViewDataSources(NSWindow* window) {
 
 @implementation SSLClientCertificateSelectorMac {
   // The list of SecIdentityRefs offered to the user.
-  base::scoped_nsobject<NSMutableArray> sec_identities_;
+  base::scoped_nsobject<NSMutableArray> _sec_identities;
 
   // The corresponding list of ClientCertIdentities.
-  net::ClientCertIdentityList cert_identities_;
+  net::ClientCertIdentityList _cert_identities;
 
   // A C++ object to bridge SSLClientAuthObserver notifications to us.
-  std::unique_ptr<SSLClientAuthObserverCocoaBridge> observer_;
+  std::unique_ptr<SSLClientAuthObserverCocoaBridge> _observer;
 
-  base::scoped_nsobject<SFChooseIdentityPanel> panel_;
+  base::scoped_nsobject<SFChooseIdentityPanel> _panel;
 
   // Invisible overlay window used to block interaction with the tab underneath.
-  views::Widget* overlayWindow_;
+  views::Widget* _overlayWindow;
 }
 
 - (instancetype)
@@ -162,7 +162,7 @@ initWithBrowserContext:(const content::BrowserContext*)browserContext
   DCHECK(browserContext);
   DCHECK(certRequestInfo);
   if ((self = [super init])) {
-    observer_ = std::make_unique<SSLClientAuthObserverCocoaBridge>(
+    _observer = std::make_unique<SSLClientAuthObserverCocoaBridge>(
         browserContext, certRequestInfo, std::move(delegate), self);
   }
   return self;
@@ -192,24 +192,24 @@ initWithBrowserContext:(const content::BrowserContext*)browserContext
          returnCode:(int)returnCode
             context:(void*)context {
   if (returnCode == NSModalResponseAbort) {
-    observer_->CancelCertificateSelection();
+    _observer->CancelCertificateSelection();
   } else if (returnCode == NSModalResponseOK ||
              returnCode == NSModalResponseCancel) {
     net::ClientCertIdentity* cert = nullptr;
     if (returnCode == NSModalResponseOK) {
-      NSUInteger index = [sec_identities_ indexOfObject:(id)[panel_ identity]];
+      NSUInteger index = [_sec_identities indexOfObject:(id)[_panel identity]];
       if (index != NSNotFound)
-        cert = cert_identities_[index].get();
+        cert = _cert_identities[index].get();
     }
 
     if (cert) {
-      observer_->CertificateSelected(
+      _observer->CertificateSelected(
           cert->certificate(),
           CreateSSLPrivateKeyForSecIdentity(cert->certificate(),
                                             cert->sec_identity_ref())
               .get());
     } else {
-      observer_->CertificateSelected(nullptr, nullptr);
+      _observer->CertificateSelected(nullptr, nullptr);
     }
   } else {
     DCHECK_EQ(NSModalResponseStop, returnCode);
@@ -222,7 +222,7 @@ initWithBrowserContext:(const content::BrowserContext*)browserContext
   // StopObserving() before making the OnCertSelectedByNotification() callback.
   // However, StopObserving() is idempotent so call it out of a deep paranoia
   // born of many a dangling pointer.
-  observer_->StopObserving();
+  _observer->StopObserving();
 
   // See comment at definition; this works around a bug.
   ClearWindowTableViewDataSources(sheet);
@@ -230,36 +230,36 @@ initWithBrowserContext:(const content::BrowserContext*)browserContext
   // Do not release SFChooseIdentityPanel here. Its -_okClicked: method, after
   // calling out to this method, keeps accessing its ivars, and if panel_ is the
   // last reference keeping it alive, it will crash.
-  panel_.autorelease();
+  _panel.autorelease();
 
-  overlayWindow_->Close();  // Asynchronously releases |self|.
+  _overlayWindow->Close();  // Asynchronously releases |self|.
 }
 
 - (void)createForWebContents:(content::WebContents*)webContents
                  clientCerts:(net::ClientCertIdentityList)inputClientCerts {
-  cert_identities_ = std::move(inputClientCerts);
+  _cert_identities = std::move(inputClientCerts);
 
-  sec_identities_.reset([[NSMutableArray alloc] init]);
-  for (const auto& cert : cert_identities_) {
+  _sec_identities.reset([[NSMutableArray alloc] init]);
+  for (const auto& cert : _cert_identities) {
     DCHECK(cert->sec_identity_ref());
-    [sec_identities_ addObject:(id)cert->sec_identity_ref()];
+    [_sec_identities addObject:(id)cert->sec_identity_ref()];
   }
 
   // Get the message to display:
   NSString* message = l10n_util::GetNSStringF(
       IDS_CLIENT_CERT_DIALOG_TEXT,
       base::ASCIIToUTF16(
-          observer_->cert_request_info()->host_and_port.ToString()));
+          _observer->cert_request_info()->host_and_port.ToString()));
 
   // Create and set up a system choose-identity panel.
-  panel_.reset([[SFChooseIdentityPanel alloc] init]);
-  [panel_ setInformativeText:message];
-  [panel_ setDefaultButtonTitle:l10n_util::GetNSString(IDS_OK)];
-  [panel_ setAlternateButtonTitle:l10n_util::GetNSString(IDS_CANCEL)];
+  _panel.reset([[SFChooseIdentityPanel alloc] init]);
+  [_panel setInformativeText:message];
+  [_panel setDefaultButtonTitle:l10n_util::GetNSString(IDS_OK)];
+  [_panel setAlternateButtonTitle:l10n_util::GetNSString(IDS_CANCEL)];
   base::ScopedCFTypeRef<SecPolicyRef> sslPolicy;
   if (net::x509_util::CreateSSLClientPolicy(sslPolicy.InitializeInto()) ==
       noErr) {
-    [panel_ setPolicies:(id)sslPolicy.get()];
+    [_panel setPolicies:(id)sslPolicy.get()];
   }
 }
 
@@ -267,23 +267,23 @@ initWithBrowserContext:(const content::BrowserContext*)browserContext
   // Closing the sheet using -[NSApp endSheet:] doesn't work, so use the private
   // method. If the sheet is already closed then this is a message send to nil
   // and thus a no-op.
-  [panel_ _dismissWithCode:response];
+  [_panel _dismissWithCode:response];
 }
 
 - (void)showSheetForWindow:(NSWindow*)window {
   NSString* title = l10n_util::GetNSString(IDS_CLIENT_CERT_DIALOG_TITLE);
-  [panel_ beginSheetForWindow:window
+  [_panel beginSheetForWindow:window
                 modalDelegate:self
                didEndSelector:@selector(sheetDidEnd:returnCode:context:)
                   contextInfo:nil
-                   identities:sec_identities_
+                   identities:_sec_identities
                       message:title];
-  observer_->StartObserving();
+  _observer->StartObserving();
 }
 
 - (void)setOverlayWindow:(views::Widget*)overlayWindow {
-  overlayWindow_ = overlayWindow;
-  observer_->SetOverlayWindow(overlayWindow_);
+  _overlayWindow = overlayWindow;
+  _observer->SetOverlayWindow(_overlayWindow);
 }
 
 @end
@@ -298,18 +298,18 @@ initWithBrowserContext:(const content::BrowserContext*)browserContext
 @end
 
 @implementation DeallocClosureCaller {
-  base::OnceClosure deallocClosure_;
+  base::OnceClosure _deallocClosure;
 }
 
 - (instancetype)initWithDeallocClosure:(base::OnceClosure)deallocClosure {
   if ((self = [super init])) {
-    deallocClosure_ = std::move(deallocClosure);
+    _deallocClosure = std::move(deallocClosure);
   }
   return self;
 }
 
 - (void)dealloc {
-  std::move(deallocClosure_).Run();
+  std::move(_deallocClosure).Run();
   [super dealloc];
 }
 

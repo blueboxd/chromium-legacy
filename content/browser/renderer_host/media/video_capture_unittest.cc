@@ -52,7 +52,7 @@ namespace content {
 
 namespace {
 
-void VideoInputDevicesEnumerated(base::Closure quit_closure,
+void VideoInputDevicesEnumerated(base::OnceClosure quit_closure,
                                  const std::string& salt,
                                  const url::Origin& security_origin,
                                  blink::WebMediaDeviceInfoArray* out,
@@ -108,8 +108,8 @@ class VideoCaptureTest : public testing::Test,
     media_stream_manager_ = std::make_unique<MediaStreamManager>(
         audio_system_.get(), audio_manager_->GetTaskRunner(),
         std::make_unique<FakeVideoCaptureProvider>());
-    media_stream_manager_->UseFakeUIFactoryForTests(
-        base::Bind(&VideoCaptureTest::CreateFakeUI, base::Unretained(this)));
+    media_stream_manager_->UseFakeUIFactoryForTests(base::BindRepeating(
+        &VideoCaptureTest::CreateFakeUI, base::Unretained(this)));
 
     // Create a Host and connect it to a simulated IPC channel.
     host_.reset(new VideoCaptureHost(0 /* render_process_id */,
@@ -291,7 +291,7 @@ class VideoCaptureTest : public testing::Test,
         /*tests_use_fake_render_frame_hosts=*/true);
   }
 
-  void OnDeviceOpened(base::Closure quit_closure,
+  void OnDeviceOpened(base::OnceClosure quit_closure,
                       bool success,
                       const std::string& label,
                       const blink::MediaStreamDevice& opened_device) {

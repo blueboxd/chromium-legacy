@@ -17,7 +17,10 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfShareActivity;
 import org.chromium.chrome.browser.share.qrcode.QrCodeCoordinator;
+import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -32,13 +35,19 @@ public class ShareSheetCoordinator {
 
     private final BottomSheetController mBottomSheetController;
     private final ActivityTabProvider mActivityTabProvider;
+    private final TabCreatorManager.TabCreator mTabCreator;
 
     /**
      * Constructs a new ShareSheetCoordinator.
+     * @param controller The BottomSheetController for the current activity.
+     * @param provider The ActivityTabProvider for the current visible tab.
+     * @param tabCreator The TabCreator for the current selected {@link TabModel}.
      */
-    public ShareSheetCoordinator(BottomSheetController controller, ActivityTabProvider provider) {
+    public ShareSheetCoordinator(BottomSheetController controller, ActivityTabProvider provider,
+            TabCreatorManager.TabCreator tabCreator) {
         mBottomSheetController = controller;
         mActivityTabProvider = provider;
+        mTabCreator = tabCreator;
     }
 
     protected void showShareSheet(ShareParams params) {
@@ -60,7 +69,7 @@ public class ShareSheetCoordinator {
                         .with(ShareSheetItemViewProperties.CLICK_LISTENER,
                                 (currentContext) -> {
                                     QrCodeCoordinator qrCodeCoordinator =
-                                            new QrCodeCoordinator(activity);
+                                            new QrCodeCoordinator(activity, this::createNewTab);
                                     qrCodeCoordinator.show();
                                 })
                         .build();
@@ -115,5 +124,10 @@ public class ShareSheetCoordinator {
         } else if (ShareSheetItemViewProperties.CLICK_LISTENER.equals(propertyKey)) {
             parent.setOnClickListener(model.get(ShareSheetItemViewProperties.CLICK_LISTENER));
         }
+    }
+
+    private void createNewTab(String url) {
+        mTabCreator.createNewTab(
+                new LoadUrlParams(url), TabLaunchType.FROM_LINK, mActivityTabProvider.get());
     }
 }

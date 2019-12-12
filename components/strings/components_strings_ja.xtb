@@ -278,6 +278,7 @@
 <translation id="2250931979407627383">端綴じ（左）</translation>
 <translation id="225207911366869382">この値は、このポリシーではサポートが終了しています。</translation>
 <translation id="2258928405015593961">有効期限に将来の日付を入力して、もう一度やり直してください</translation>
+<translation id="225943865679747347">エラー コード: <ph name="ERROR_CODE" /></translation>
 <translation id="2262243747453050782">HTTP エラーです</translation>
 <translation id="2263079731045660823">Chrome の設定で自動入力のクレジット カード情報を変更します</translation>
 <translation id="2267047181501709434">本人確認を行っています...</translation>

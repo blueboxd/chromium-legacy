@@ -475,18 +475,7 @@ void RenderFrameProxy::OnDidStartLoading() {
 
 void RenderFrameProxy::OnViewChanged(
     const FrameMsg_ViewChanged_Params& params) {
-  crashed_ = false;
-  // The same ParentLocalSurfaceIdAllocator cannot provide LocalSurfaceIds for
-  // two different frame sinks, so recreate it here.
-  if (frame_sink_id_ != params.frame_sink_id) {
-    parent_local_surface_id_allocator_ =
-        std::make_unique<viz::ParentLocalSurfaceIdAllocator>();
-  }
-  frame_sink_id_ = params.frame_sink_id;
-
-  // Resend the FrameRects and allocate a new viz::LocalSurfaceId when the view
-  // changes.
-  ResendVisualProperties();
+  FrameSinkIdChanged(params.frame_sink_id);
 }
 
 void RenderFrameProxy::OnDidStopLoading() {
@@ -925,6 +914,22 @@ RenderFrameProxy::GetRemoteAssociatedInterfaces() {
 void RenderFrameProxy::WasEvicted() {
   // On eviction, the last SurfaceId is invalidated. We need to allocate a new
   // id.
+  ResendVisualProperties();
+}
+
+void RenderFrameProxy::FrameSinkIdChanged(
+    const viz::FrameSinkId& frame_sink_id) {
+  crashed_ = false;
+  // The same ParentLocalSurfaceIdAllocator cannot provide LocalSurfaceIds for
+  // two different frame sinks, so recreate it here.
+  if (frame_sink_id_ != frame_sink_id) {
+    parent_local_surface_id_allocator_ =
+        std::make_unique<viz::ParentLocalSurfaceIdAllocator>();
+  }
+  frame_sink_id_ = frame_sink_id;
+
+  // Resend the FrameRects and allocate a new viz::LocalSurfaceId when the view
+  // changes.
   ResendVisualProperties();
 }
 

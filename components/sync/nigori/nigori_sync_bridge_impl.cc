@@ -664,12 +664,19 @@ void NigoriSyncBridgeImpl::AddTrustedVaultDecryptionKeys(
 
 void NigoriSyncBridgeImpl::EnableEncryptEverything() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
+  // This method is relevant only for Directory implementation. USS
+  // implementation catches that as part of SetEncryptionPassphrase(), which
+  // is always called together with this method.
+  // TODO(crbug.com/1033040): remove this method and clean up calling sides.
 }
 
 bool NigoriSyncBridgeImpl::IsEncryptEverythingEnabled() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
+  // This method is relevant only for Directory implementation and used only
+  // for testing.
+  // TODO(crbug.com/1033040): remove this method or at least append ForTesting
+  // suffix.
+  NOTREACHED();
   return false;
 }
 
@@ -733,18 +740,6 @@ bool NigoriSyncBridgeImpl::SetKeystoreKeys(
   // Note: we don't need to persist keystore keys here, because we will receive
   // Nigori node right after this method and persist all the data during
   // UpdateLocalState().
-  // TODO(crbug.com/922900): verify that this method is always called before
-  // update or init of Nigori node. If this is the case we don't need to touch
-  // cryptographer here. If this is not the case, old code is actually broken:
-  // 1. Receive and persist the Nigori node after key rotation on different
-  // client.
-  // 2. Browser crash.
-  // 3. After load we don't request new Nigori node from the server (we already
-  // have the newest one), so logic with simultaneous sending of Nigori node
-  // and keystore keys doesn't help. We don't request new keystore keys
-  // explicitly (we already have one). We can't decrypt and use Nigori node
-  // with old keystore keys.
-  NOTIMPLEMENTED();
   return true;
 }
 
@@ -1156,8 +1151,9 @@ void NigoriSyncBridgeImpl::MaybeNotifyBootstrapTokenUpdated() const {
       NOTREACHED();
       return;
     case NigoriSpecifics::KEYSTORE_PASSPHRASE:
-      // TODO(crbug.com/922900): notify about keystore bootstrap token updates.
-      NOTIMPLEMENTED();
+      // TODO(crbug.com/922900): notify about keystore bootstrap token updates
+      // if decided to support keystore keys migration on transit to Directory
+      // implementation.
       return;
     case NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE:
       // This may be problematic for the MIGRATION_DONE case because the local

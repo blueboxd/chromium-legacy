@@ -23,7 +23,7 @@ class REMOTE_COCOA_APP_SHIM_EXPORT ViewsScrollbarBridgeDelegate {
 REMOTE_COCOA_APP_SHIM_EXPORT
 @interface ViewsScrollbarBridge : NSObject {
  @private
-  ViewsScrollbarBridgeDelegate* delegate_;  // Weak. Owns this.
+  ViewsScrollbarBridgeDelegate* _delegate;  // Weak. Owns this.
 }
 
 // Initializes with the given delegate and registers for notifications on

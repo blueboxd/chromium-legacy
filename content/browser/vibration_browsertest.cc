@@ -32,8 +32,8 @@ class VibrationTest : public ContentBrowserTest,
     // it.
     service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
         device::mojom::kServiceName,
-        base::Bind(&VibrationTest::BindVibrationManager,
-                   base::Unretained(this)));
+        base::BindRepeating(&VibrationTest::BindVibrationManager,
+                            base::Unretained(this)));
   }
 
   ~VibrationTest() override {
@@ -47,7 +47,7 @@ class VibrationTest : public ContentBrowserTest,
   }
 
  protected:
-  bool TriggerVibrate(int duration, base::Closure vibrate_done) {
+  bool TriggerVibrate(int duration, base::OnceClosure vibrate_done) {
     vibrate_done_ = std::move(vibrate_done);
 
     bool result;
@@ -65,12 +65,12 @@ class VibrationTest : public ContentBrowserTest,
   void Vibrate(int64_t milliseconds, VibrateCallback callback) override {
     vibrate_milliseconds_ = milliseconds;
     std::move(callback).Run();
-    vibrate_done_.Run();
+    std::move(vibrate_done_).Run();
   }
   void Cancel(CancelCallback callback) override { std::move(callback).Run(); }
 
   int64_t vibrate_milliseconds_ = -1;
-  base::Closure vibrate_done_;
+  base::OnceClosure vibrate_done_;
   mojo::Receiver<device::mojom::VibrationManager> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VibrationTest);

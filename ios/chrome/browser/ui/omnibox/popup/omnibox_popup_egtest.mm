@@ -26,7 +26,7 @@ namespace {
 // Returns the popup row containing the |url| as suggestion.
 id<GREYMatcher> PopupRowWithUrl(GURL url) {
   return grey_allOf(
-      grey_kindOfClassName(@"OmniboxPopupRow"),
+      grey_kindOfClassName(@"OmniboxPopupRowCell"),
       grey_descendant(chrome_test_util::StaticTextWithAccessibilityLabel(
           base::SysUTF8ToNSString(url.GetContent()))),
       grey_sufficientlyVisible(), nil);

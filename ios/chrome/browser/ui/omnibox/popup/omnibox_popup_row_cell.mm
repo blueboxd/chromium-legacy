@@ -396,10 +396,6 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
              : self.detailTruncatingLabel.attributedText.string;
 }
 
-- (NSString*)accessibilityIdentifier {
-  return self.textTruncatingLabel.attributedText.string;
-}
-
 - (void)trailingButtonTapped {
   [self.delegate trailingButtonTappedForCell:self];
 }

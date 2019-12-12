@@ -20,6 +20,7 @@ def main(raw_args):
   parser.add_argument('--pool', required=True)
   parser.add_argument('--cache', required=True)
   parser.add_argument('--mount-rel-path')
+  parser.add_argument('--bot-id')
   args = parser.parse_args(raw_args)
 
   mount_rel_path = args.mount_rel_path
@@ -27,7 +28,8 @@ def main(raw_args):
     mount_rel_path = 'cache/%s' % args.cache
 
   clobber_cache_utils.clobber_caches(args.swarming_server, args.pool,
-                                     args.cache, mount_rel_path, args.dry_run)
+                                     args.cache, mount_rel_path, args.dry_run,
+                                     args.bot_id)
 
   return 0
 

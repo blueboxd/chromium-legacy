@@ -54,21 +54,25 @@ class TestShellDownloadManagerDelegate : public ShellDownloadManagerDelegate {
 
 class DownloadicidalObserver : public DownloadManager::Observer {
  public:
-  explicit DownloadicidalObserver(bool remove_download)
-      : remove_download_(remove_download) {}
+  explicit DownloadicidalObserver(bool remove_download,
+                                  base::OnceClosure after_closure)
+      : remove_download_(remove_download),
+        after_closure_(std::move(after_closure)) {}
   void OnDownloadCreated(DownloadManager* manager,
                          download::DownloadItem* item) override {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(
-                       [](bool remove_download, const base::Closure& closure,
+                       [](bool remove_download, base::OnceClosure closure,
                           download::DownloadItem* item) {
                          remove_download ? item->Remove() : item->Cancel(true);
-                         closure.Run();
+                         std::move(closure).Run();
                        },
-                       remove_download_, quit_closure_, item));
+                       remove_download_, std::move(after_closure_), item));
   }
-  base::Closure quit_closure_;
+
+ private:
   bool remove_download_;
+  base::OnceClosure after_closure_;
 };
 
 class SavePackageBrowserTest : public ContentBrowserTest {
@@ -105,9 +109,9 @@ class SavePackageBrowserTest : public ContentBrowserTest {
 
     {
       base::RunLoop run_loop;
-      DownloadicidalObserver download_item_killer(false);
+      DownloadicidalObserver download_item_killer(false,
+                                                  run_loop.QuitClosure());
       download_manager->AddObserver(&download_item_killer);
-      download_item_killer.quit_closure_ = run_loop.QuitClosure();
 
       scoped_refptr<SavePackage> save_package(
           new SavePackage(shell()->web_contents()));

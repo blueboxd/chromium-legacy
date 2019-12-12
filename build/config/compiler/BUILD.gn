@@ -1947,6 +1947,13 @@ if (is_win) {
       # Mac dead code stripping requires symbols.
       common_optimize_on_ldflags += [ "-Wl,-dead_strip" ]
     }
+
+    if (is_official_build) {
+      common_optimize_on_ldflags += [
+        "-Wl,-no_data_in_code_info",
+        "-Wl,-no_function_starts",
+      ]
+    }
   } else if (current_os != "aix") {
     # Non-Mac Posix flags.
     # Aix does not support these.

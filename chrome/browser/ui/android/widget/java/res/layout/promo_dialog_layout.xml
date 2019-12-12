@@ -24,7 +24,7 @@
             app:maxWidthLandscape="@dimen/dialog_max_width"
             app:maxWidthPortrait="@dimen/dialog_max_width" >
 
-        <org.chromium.chrome.browser.ui.widget.FadingEdgeScrollView
+        <org.chromium.components.browser_ui.widget.FadingEdgeScrollView
                 android:id="@+id/promo_container"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
@@ -51,7 +51,7 @@
                         android:scaleType="fitCenter"
                         tools:ignore="ContentDescription" />
 
-                <org.chromium.chrome.browser.ui.widget.BoundedLinearLayout
+                <org.chromium.components.browser_ui.widget.BoundedLinearLayout
                         android:id="@+id/scrollable_promo_content"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -73,10 +73,10 @@
                         android:layout_height="wrap_content"
                         app:leading="@dimen/text_size_medium_leading"
                         style="@style/TextAppearance.BlackBody" />
-                </org.chromium.chrome.browser.ui.widget.BoundedLinearLayout>
+                </org.chromium.components.browser_ui.widget.BoundedLinearLayout>
             </LinearLayout>
 
-        </org.chromium.chrome.browser.ui.widget.FadingEdgeScrollView>
+        </org.chromium.components.browser_ui.widget.FadingEdgeScrollView>
 
         <ViewStub
                 android:id="@+id/footer_stub"
@@ -86,7 +86,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-        <org.chromium.chrome.browser.ui.widget.DualControlLayout
+        <org.chromium.components.browser_ui.widget.DualControlLayout
                 android:id="@+id/button_bar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

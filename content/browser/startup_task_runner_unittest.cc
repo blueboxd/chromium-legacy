@@ -20,7 +20,6 @@
 namespace content {
 namespace {
 
-using base::Closure;
 using testing::_;
 using testing::Assign;
 using testing::Invoke;
@@ -119,11 +118,11 @@ TEST_F(StartupTaskRunnerTest, SynchronousExecution) {
   StartupTaskRunner runner(base::BindOnce(&Observer), proxy);
 
   StartupTask task1 =
-      base::Bind(&StartupTaskRunnerTest::Task1, base::Unretained(this));
+      base::BindOnce(&StartupTaskRunnerTest::Task1, base::Unretained(this));
   runner.AddTask(std::move(task1));
   EXPECT_EQ(GetLastTask(), 0);
   StartupTask task2 =
-      base::Bind(&StartupTaskRunnerTest::Task2, base::Unretained(this));
+      base::BindOnce(&StartupTaskRunnerTest::Task2, base::Unretained(this));
   runner.AddTask(std::move(task2));
 
   // Nothing should run until we tell them to.
@@ -157,11 +156,11 @@ TEST_F(StartupTaskRunnerTest, NullObserver) {
   StartupTaskRunner runner(base::OnceCallback<void(int)>(), proxy);
 
   StartupTask task1 =
-      base::Bind(&StartupTaskRunnerTest::Task1, base::Unretained(this));
+      base::BindOnce(&StartupTaskRunnerTest::Task1, base::Unretained(this));
   runner.AddTask(std::move(task1));
   EXPECT_EQ(GetLastTask(), 0);
   StartupTask task2 =
-      base::Bind(&StartupTaskRunnerTest::Task2, base::Unretained(this));
+      base::BindOnce(&StartupTaskRunnerTest::Task2, base::Unretained(this));
   runner.AddTask(std::move(task2));
 
   // Nothing should run until we tell them to.
@@ -191,12 +190,12 @@ TEST_F(StartupTaskRunnerTest, SynchronousExecutionFailedTask) {
 
   StartupTaskRunner runner(base::BindOnce(&Observer), proxy);
 
-  StartupTask task3 =
-      base::Bind(&StartupTaskRunnerTest::FailingTask, base::Unretained(this));
+  StartupTask task3 = base::BindOnce(&StartupTaskRunnerTest::FailingTask,
+                                     base::Unretained(this));
   runner.AddTask(std::move(task3));
   EXPECT_EQ(GetLastTask(), 0);
   StartupTask task2 =
-      base::Bind(&StartupTaskRunnerTest::Task2, base::Unretained(this));
+      base::BindOnce(&StartupTaskRunnerTest::Task2, base::Unretained(this));
   runner.AddTask(std::move(task2));
 
   // Nothing should run until we tell them to.
@@ -233,10 +232,10 @@ TEST_F(StartupTaskRunnerTest, AsynchronousExecution) {
   StartupTaskRunner runner(base::BindOnce(&Observer), proxy);
 
   StartupTask task1 =
-      base::Bind(&StartupTaskRunnerTest::Task1, base::Unretained(this));
+      base::BindOnce(&StartupTaskRunnerTest::Task1, base::Unretained(this));
   runner.AddTask(std::move(task1));
   StartupTask task2 =
-      base::Bind(&StartupTaskRunnerTest::Task2, base::Unretained(this));
+      base::BindOnce(&StartupTaskRunnerTest::Task2, base::Unretained(this));
   runner.AddTask(std::move(task2));
 
   // Nothing should run until we tell them to.
@@ -278,11 +277,11 @@ TEST_F(StartupTaskRunnerTest, AsynchronousExecutionFailedTask) {
 
   StartupTaskRunner runner(base::BindOnce(&Observer), proxy);
 
-  StartupTask task3 =
-      base::Bind(&StartupTaskRunnerTest::FailingTask, base::Unretained(this));
+  StartupTask task3 = base::BindOnce(&StartupTaskRunnerTest::FailingTask,
+                                     base::Unretained(this));
   runner.AddTask(std::move(task3));
   StartupTask task2 =
-      base::Bind(&StartupTaskRunnerTest::Task2, base::Unretained(this));
+      base::BindOnce(&StartupTaskRunnerTest::Task2, base::Unretained(this));
   runner.AddTask(std::move(task2));
 
   // Nothing should run until we tell them to.

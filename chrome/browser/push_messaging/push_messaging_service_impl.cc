@@ -95,13 +95,11 @@ void RecordUnsubscribeReason(blink::mojom::PushUnregistrationReason reason) {
 }
 
 void RecordUnsubscribeGCMResult(gcm::GCMClient::Result result) {
-  UMA_HISTOGRAM_ENUMERATION("PushMessaging.UnregistrationGCMResult", result,
-                            gcm::GCMClient::LAST_RESULT + 1);
+  UMA_HISTOGRAM_ENUMERATION("PushMessaging.UnregistrationGCMResult", result);
 }
 
 void RecordUnsubscribeIIDResult(InstanceID::Result result) {
-  UMA_HISTOGRAM_ENUMERATION("PushMessaging.UnregistrationIIDResult", result,
-                            InstanceID::LAST_RESULT + 1);
+  UMA_HISTOGRAM_ENUMERATION("PushMessaging.UnregistrationIIDResult", result);
 }
 
 blink::mojom::PermissionStatus ToPermissionStatus(

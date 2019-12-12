@@ -21,7 +21,7 @@ using bookmarks::BookmarkNode;
 
 @implementation BookmarkItemAppleScript
 
-@synthesize tempURL = tempURL_;
+@synthesize tempURL = _tempURL;
 
 - (id)init {
   if ((self = [super init])) {
@@ -31,7 +31,7 @@ using bookmarks::BookmarkNode;
 }
 
 - (void)dealloc {
-  [tempURL_ release];
+  [_tempURL release];
   [super dealloc];
 }
 
@@ -41,10 +41,10 @@ using bookmarks::BookmarkNode;
 }
 
 - (NSString*)URL {
-  if (!bookmarkNode_)
-    return tempURL_;
+  if (!_bookmarkNode)
+    return _tempURL;
 
-  return base::SysUTF8ToNSString(bookmarkNode_->url().spec());
+  return base::SysUTF8ToNSString(_bookmarkNode->url().spec());
 }
 
 - (void)setURL:(NSString*)aURL {
@@ -60,7 +60,7 @@ using bookmarks::BookmarkNode;
 
   // If a scripter sets a URL before the node is added, URL is saved at a
   // temporary location.
-  if (!bookmarkNode_) {
+  if (!_bookmarkNode) {
     [self setTempURL:aURL];
     return;
   }
@@ -74,7 +74,7 @@ using bookmarks::BookmarkNode;
     return;
   }
 
-  model->SetURL(bookmarkNode_, url);
+  model->SetURL(_bookmarkNode, url);
 }
 
 @end

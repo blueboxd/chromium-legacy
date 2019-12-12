@@ -127,8 +127,8 @@ class FormDataImporter {
                                        bool* hasDuplicateFieldType);
 
   // Go through the |form| fields and find a UPI/VPA value to import. The return
-  // value will be empty if no VPA was found.
-  base::Optional<std::string> ImportVPA(const FormStructure& form);
+  // value will be empty if no UPI ID was found.
+  base::Optional<std::string> ImportUpiId(const FormStructure& form);
 
   // Whether a dynamic change form is imported.
   bool from_dynamic_change_form_ = false;
@@ -143,8 +143,10 @@ class FormDataImporter {
   // Responsible for managing credit card save flows (local or upload).
   std::unique_ptr<CreditCardSaveManager> credit_card_save_manager_;
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   // Responsible for managing UPI/VPA save flows.
   std::unique_ptr<UpiVpaSaveManager> upi_vpa_save_manager_;
+#endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
   // Responsible for migrating locally saved credit cards to Google Pay.
   std::unique_ptr<LocalCardMigrationManager> local_card_migration_manager_;
@@ -212,7 +214,7 @@ class FormDataImporter {
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
                            ImportFormData_TwoAddressesOneCreditCard);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
-                           ImportFormData_DontSetVPAWhenOnlyCreditCardExists);
+                           ImportFormData_DontSetUpiIdWhenOnlyCreditCardExists);
   FRIEND_TEST_ALL_PREFIXES(
       FormDataImporterTest,
       Metrics_SubmittedServerCardExpirationStatus_FullServerCardMatch);
@@ -234,9 +236,9 @@ class FormDataImporter {
   FRIEND_TEST_ALL_PREFIXES(
       FormDataImporterTest,
       Metrics_SubmittedDifferentServerCardExpirationStatus_EmptyExpirationYear);
-  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest, ImportVPA);
-  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest, ImportVPADisabled);
-  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest, ImportVPAIgnoreNonVPA);
+  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest, ImportUpiId);
+  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest, ImportUpiIdDisabled);
+  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest, ImportUpiIdIgnoreNonUpiId);
 
   DISALLOW_COPY_AND_ASSIGN(FormDataImporter);
 };

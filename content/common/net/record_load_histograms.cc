@@ -13,7 +13,7 @@
 
 namespace content {
 
-void RecordLoadHistograms(const GURL& url,
+void RecordLoadHistograms(const url::Origin& origin,
                           ResourceType resource_type,
                           int net_error) {
   // Requests shouldn't complete with net::ERR_IO_PENDING.
@@ -21,13 +21,13 @@ void RecordLoadHistograms(const GURL& url,
 
   if (resource_type == ResourceType::kMainFrame) {
     base::UmaHistogramSparse("Net.ErrorCodesForMainFrame4", -net_error);
-    if (url.SchemeIsCryptographic()) {
-      if (url.host_piece() == "www.google.com") {
+    if (GURL::SchemeIsCryptographic(origin.scheme())) {
+      if (origin.host() == "www.google.com") {
         base::UmaHistogramSparse("Net.ErrorCodesForHTTPSGoogleMainFrame3",
                                  -net_error);
       }
 
-      if (net::IsTLS13ExperimentHost(url.host_piece())) {
+      if (net::IsTLS13ExperimentHost(origin.host())) {
         base::UmaHistogramSparse("Net.ErrorCodesForTLS13ExperimentMainFrame2",
                                  -net_error);
       }

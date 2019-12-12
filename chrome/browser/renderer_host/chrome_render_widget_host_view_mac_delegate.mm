@@ -35,20 +35,20 @@ using content::RenderViewHost;
 @end
 
 @implementation ChromeRenderWidgetHostViewMacDelegate {
-  BOOL resigningFirstResponder_;
+  BOOL _resigningFirstResponder;
 }
 
 - (id)initWithRenderWidgetHost:(content::RenderWidgetHost*)renderWidgetHost {
   self = [super init];
   if (self) {
-    renderWidgetHost_ = renderWidgetHost;
-    historySwiper_.reset([[HistorySwiper alloc] initWithDelegate:self]);
+    _renderWidgetHost = renderWidgetHost;
+    _historySwiper.reset([[HistorySwiper alloc] initWithDelegate:self]);
   }
   return self;
 }
 
 - (void)dealloc {
-  [historySwiper_ setDelegate:nil];
+  [_historySwiper setDelegate:nil];
   [super dealloc];
 }
 
@@ -56,44 +56,44 @@ using content::RenderViewHost;
 // delegate method if implemented. Return YES if the event is fully handled, or
 // NO if normal processing should take place.
 - (BOOL)handleEvent:(NSEvent*)event {
-  return [historySwiper_ handleEvent:event];
+  return [_historySwiper handleEvent:event];
 }
 
 // NSWindow events.
 
 - (void)beginGestureWithEvent:(NSEvent*)event {
-  [historySwiper_ beginGestureWithEvent:event];
+  [_historySwiper beginGestureWithEvent:event];
 }
 
 - (void)endGestureWithEvent:(NSEvent*)event {
-  [historySwiper_ endGestureWithEvent:event];
+  [_historySwiper endGestureWithEvent:event];
 }
 
 // This is a low level API which provides touches associated with an event.
 // It is used in conjunction with gestures to determine finger placement
 // on the trackpad.
 - (void)touchesMovedWithEvent:(NSEvent*)event {
-  [historySwiper_ touchesMovedWithEvent:event];
+  [_historySwiper touchesMovedWithEvent:event];
 }
 
 - (void)touchesBeganWithEvent:(NSEvent*)event {
-  [historySwiper_ touchesBeganWithEvent:event];
+  [_historySwiper touchesBeganWithEvent:event];
 }
 
 - (void)touchesCancelledWithEvent:(NSEvent*)event {
-  [historySwiper_ touchesCancelledWithEvent:event];
+  [_historySwiper touchesCancelledWithEvent:event];
 }
 
 - (void)touchesEndedWithEvent:(NSEvent*)event {
-  [historySwiper_ touchesEndedWithEvent:event];
+  [_historySwiper touchesEndedWithEvent:event];
 }
 
 // HistorySwiperDelegate methods
 
 - (BOOL)shouldAllowHistorySwiping {
-  if (!renderWidgetHost_)
+  if (!_renderWidgetHost)
     return NO;
-  RenderViewHost* renderViewHost = RenderViewHost::From(renderWidgetHost_);
+  RenderViewHost* renderViewHost = RenderViewHost::From(_renderWidgetHost);
   if (!renderViewHost)
     return NO;
   content::WebContents* webContents =
@@ -106,7 +106,7 @@ using content::RenderViewHost;
 }
 
 - (NSView*)viewThatWantsHistoryOverlay {
-  return renderWidgetHost_->GetView()->GetNativeView().GetNativeNSView();
+  return _renderWidgetHost->GetView()->GetNativeView().GetNativeNSView();
 }
 
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item
@@ -114,7 +114,7 @@ using content::RenderViewHost;
   SEL action = [item action];
 
   Profile* profile = Profile::FromBrowserContext(
-      renderWidgetHost_->GetProcess()->GetBrowserContext());
+      _renderWidgetHost->GetProcess()->GetBrowserContext());
   DCHECK(profile);
   PrefService* pref = profile->GetPrefs();
   const PrefService::Preference* spellCheckEnablePreference =
@@ -128,7 +128,7 @@ using content::RenderViewHost;
   // TODO(suzhe): Plumb the "can*" methods up from WebCore.
   if (action == @selector(checkSpelling:)) {
     *valid = spellCheckUserModifiable &&
-             (RenderViewHost::From(renderWidgetHost_) != nullptr);
+             (RenderViewHost::From(_renderWidgetHost) != nullptr);
     return YES;
   }
 
@@ -156,16 +156,16 @@ using content::RenderViewHost;
 
 - (void)rendererHandledWheelEvent:(const blink::WebMouseWheelEvent&)event
                          consumed:(BOOL)consumed {
-  [historySwiper_ rendererHandledWheelEvent:event consumed:consumed];
+  [_historySwiper rendererHandledWheelEvent:event consumed:consumed];
 }
 
 - (void)rendererHandledGestureScrollEvent:(const blink::WebGestureEvent&)event
                                  consumed:(BOOL)consumed {
-  [historySwiper_ rendererHandledGestureScrollEvent:event consumed:consumed];
+  [_historySwiper rendererHandledGestureScrollEvent:event consumed:consumed];
 }
 
 - (void)rendererHandledOverscrollEvent:(const ui::DidOverscrollParams&)params {
-  [historySwiper_ onOverscrolled:params];
+  [_historySwiper onOverscrolled:params];
 }
 
 // Spellchecking methods
@@ -181,7 +181,7 @@ using content::RenderViewHost;
   if (newWord != nil) {
     content::WebContents* webContents =
         content::WebContents::FromRenderViewHost(
-            RenderViewHost::From(renderWidgetHost_));
+            RenderViewHost::From(_renderWidgetHost));
     webContents->ReplaceMisspelling(base::SysNSStringToUTF16(newWord));
   }
 }
@@ -195,7 +195,7 @@ using content::RenderViewHost;
 // This is also called from the Edit -> Spelling -> Check Spelling menu item.
 - (void)checkSpelling:(id)sender {
   content::WebContents* webContents = content::WebContents::FromRenderViewHost(
-      RenderViewHost::From(renderWidgetHost_));
+      RenderViewHost::From(_renderWidgetHost));
   DCHECK(webContents && webContents->GetFocusedFrame());
 
   mojo::Remote<spellcheck::mojom::SpellCheckPanel>
@@ -220,7 +220,7 @@ using content::RenderViewHost;
   const bool visible = spellcheck_platform::SpellingPanelVisible();
 
   content::WebContents* webContents = content::WebContents::FromRenderViewHost(
-      RenderViewHost::From(renderWidgetHost_));
+      RenderViewHost::From(_renderWidgetHost));
   DCHECK(webContents && webContents->GetFocusedFrame());
 
   mojo::Remote<spellcheck::mojom::SpellCheckPanel>
@@ -231,7 +231,7 @@ using content::RenderViewHost;
 }
 
 - (void)toggleContinuousSpellChecking:(id)sender {
-  content::RenderProcessHost* host = renderWidgetHost_->GetProcess();
+  content::RenderProcessHost* host = _renderWidgetHost->GetProcess();
   Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
   DCHECK(profile);
   PrefService* pref = profile->GetPrefs();
@@ -244,7 +244,7 @@ using content::RenderViewHost;
 // If a dialog is visible, make its window key. See becomeFirstResponder.
 - (void)makeAnyDialogKey {
   if (const auto* contents = content::WebContents::FromRenderViewHost(
-          RenderViewHost::From(renderWidgetHost_))) {
+          RenderViewHost::From(_renderWidgetHost))) {
     if (const auto* manager =
             web_modal::WebContentsModalDialogManager::FromWebContents(
                 contents)) {
@@ -269,7 +269,7 @@ using content::RenderViewHost;
 // window should become key.
 - (void)resignFirstResponder {
   NSWindow* browserWindow =
-      [renderWidgetHost_->GetView()->GetNativeView().GetNativeNSView() window];
+      [_renderWidgetHost->GetView()->GetNativeView().GetNativeNSView() window];
   DCHECK(browserWindow);
 
   // If the browser window is already key, there's nothing to do.
@@ -287,7 +287,7 @@ using content::RenderViewHost;
 
   // Otherwise, temporarily set an ivar so that -windowDidBecomeKey, below,
   // doesn't immediately make the dialog key.
-  base::AutoReset<BOOL> scoped(&resigningFirstResponder_, YES);
+  base::AutoReset<BOOL> scoped(&_resigningFirstResponder, YES);
 
   // …then make the browser window key.
   [browserWindow makeKeyWindow];
@@ -296,10 +296,10 @@ using content::RenderViewHost;
 // If the browser window becomes key while the RenderWidgetHostView is first
 // responder, make the dialog key (if there is one).
 - (void)windowDidBecomeKey {
-  if (resigningFirstResponder_)
+  if (_resigningFirstResponder)
     return;
   NSView* view =
-      renderWidgetHost_->GetView()->GetNativeView().GetNativeNSView();
+      _renderWidgetHost->GetView()->GetNativeView().GetNativeNSView();
   if (view.window.firstResponder == view)
     [self makeAnyDialogKey];
 }

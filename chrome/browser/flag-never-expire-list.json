@@ -74,6 +74,7 @@
   "memlog-sampling-rate",
   "memlog-stack-mode",
   "overlay-strategies",
+  "reader-mode-heuristics",
   "set-market-url-for-testing",
   "show-autofill-type-predictions",
   "show-bluetooth-debug-log-toggle",

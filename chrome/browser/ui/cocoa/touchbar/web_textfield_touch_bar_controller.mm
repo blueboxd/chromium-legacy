@@ -31,7 +31,7 @@
 - (instancetype)initWithController:
     (BrowserWindowTouchBarController*)controller {
   if ((self = [super init])) {
-    controller_ = controller;
+    _controller = controller;
   }
 
   return self;
@@ -44,24 +44,24 @@
 
 - (void)showCreditCardAutofillWithController:
     (autofill::AutofillPopupController*)controller {
-  autofillTouchBarController_.reset(
+  _autofillTouchBarController.reset(
       [[CreditCardAutofillTouchBarController alloc]
           initWithController:controller]);
   [self invalidateTouchBar];
 }
 
 - (void)hideCreditCardAutofillTouchBar {
-  autofillTouchBarController_.reset();
+  _autofillTouchBarController.reset();
   [self invalidateTouchBar];
 }
 
 - (void)invalidateTouchBar {
-  [controller_ invalidateTouchBar];
+  [_controller invalidateTouchBar];
 }
 
 - (NSTouchBar*)makeTouchBar {
-  if (autofillTouchBarController_)
-    return [autofillTouchBarController_ makeTouchBar];
+  if (_autofillTouchBarController)
+    return [_autofillTouchBarController makeTouchBar];
   return nil;
 }
 

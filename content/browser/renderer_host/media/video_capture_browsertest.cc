@@ -130,7 +130,7 @@ class VideoCaptureBrowserTest : public ContentBrowserTest,
 
   ~VideoCaptureBrowserTest() override {}
 
-  void SetUpAndStartCaptureDeviceOnIOThread(base::Closure continuation) {
+  void SetUpAndStartCaptureDeviceOnIOThread(base::OnceClosure continuation) {
     video_capture_manager_ = media_stream_manager_->video_capture_manager();
     ASSERT_TRUE(video_capture_manager_);
     video_capture_manager_->RegisterListener(&mock_stream_provider_listener_);
@@ -139,7 +139,7 @@ class VideoCaptureBrowserTest : public ContentBrowserTest,
                        base::Unretained(this), std::move(continuation)));
   }
 
-  void TearDownCaptureDeviceOnIOThread(base::Closure continuation,
+  void TearDownCaptureDeviceOnIOThread(base::OnceClosure continuation,
                                        bool post_to_end_of_message_queue) {
     // DisconnectClient() must not be called synchronously from either the
     // |done_cb| passed to StartCaptureForClient() nor any callback made to a
@@ -150,7 +150,7 @@ class VideoCaptureBrowserTest : public ContentBrowserTest,
           FROM_HERE,
           base::BindOnce(
               &VideoCaptureBrowserTest::TearDownCaptureDeviceOnIOThread,
-              base::Unretained(this), continuation, false));
+              base::Unretained(this), std::move(continuation), false));
       return;
     }
 
@@ -158,8 +158,13 @@ class VideoCaptureBrowserTest : public ContentBrowserTest,
                                              &mock_controller_event_handler_,
                                              media::VideoCaptureError::kNone);
 
+    // Store the |continuation| so it is not lost when we go out of scope, since
+    // we can't store it in a lambda as gmock does not place nice and
+    // base::test::RunOnceClosure() doesn't work for this scenario.
+    close_callback_ = std::move(continuation);
     EXPECT_CALL(mock_stream_provider_listener_, Closed(_, _))
-        .WillOnce(InvokeWithoutArgs([continuation]() { continuation.Run(); }));
+        .WillOnce(
+            InvokeWithoutArgs([&]() { std::move(close_callback_).Run(); }));
 
     video_capture_manager_->Close(session_id_);
   }
@@ -188,7 +193,7 @@ class VideoCaptureBrowserTest : public ContentBrowserTest,
   }
 
   void OnDeviceDescriptorsReceived(
-      base::Closure continuation,
+      base::OnceClosure continuation,
       const media::VideoCaptureDeviceDescriptors& descriptors) {
     ASSERT_TRUE(params_.device_index_to_use < descriptors.size());
     const auto& descriptor = descriptors[params_.device_index_to_use];
@@ -203,17 +208,16 @@ class VideoCaptureBrowserTest : public ContentBrowserTest,
     video_capture_manager_->ConnectClient(
         session_id_, capture_params, stub_client_id_,
         &mock_controller_event_handler_,
-        base::Bind(&VideoCaptureBrowserTest::OnConnectClientToControllerAnswer,
-                   base::Unretained(this), std::move(continuation)));
+        base::BindOnce(
+            &VideoCaptureBrowserTest::OnConnectClientToControllerAnswer,
+            base::Unretained(this), std::move(continuation)));
   }
 
   void OnConnectClientToControllerAnswer(
-      base::Closure continuation,
+      base::OnceClosure continuation,
       const base::WeakPtr<VideoCaptureController>& controller) {
     ASSERT_TRUE(controller.get());
     controller_ = controller;
-    if (!continuation)
-      return;
     std::move(continuation).Run();
   }
 
@@ -226,6 +230,7 @@ class VideoCaptureBrowserTest : public ContentBrowserTest,
   base::UnguessableToken session_id_;
   const VideoCaptureControllerID stub_client_id_ =
       base::UnguessableToken::Create();
+  base::OnceClosure close_callback_;
   MockMediaStreamProviderListener mock_stream_provider_listener_;
   MockVideoCaptureControllerEventHandler mock_controller_event_handler_;
   base::WeakPtr<VideoCaptureController> controller_;
@@ -237,12 +242,12 @@ class VideoCaptureBrowserTest : public ContentBrowserTest,
 IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest, StartAndImmediatelyStop) {
   SetUpRequiringBrowserMainLoopOnMainThread();
   base::RunLoop run_loop;
-  auto quit_run_loop_on_current_thread_cb =
+  base::OnceClosure quit_run_loop_on_current_thread_cb =
       media::BindToCurrentLoop(run_loop.QuitClosure());
-  auto after_start_continuation =
-      base::Bind(&VideoCaptureBrowserTest::TearDownCaptureDeviceOnIOThread,
-                 base::Unretained(this),
-                 std::move(quit_run_loop_on_current_thread_cb), true);
+  base::OnceClosure after_start_continuation =
+      base::BindOnce(&VideoCaptureBrowserTest::TearDownCaptureDeviceOnIOThread,
+                     base::Unretained(this),
+                     std::move(quit_run_loop_on_current_thread_cb), true);
   base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
@@ -275,12 +280,12 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
   static const size_t kMaxFramesToReceive = 300;
   base::RunLoop run_loop;
 
-  auto quit_run_loop_on_current_thread_cb =
+  base::OnceClosure quit_run_loop_on_current_thread_cb =
       media::BindToCurrentLoop(run_loop.QuitClosure());
-  auto finish_test_cb =
-      base::Bind(&VideoCaptureBrowserTest::TearDownCaptureDeviceOnIOThread,
-                 base::Unretained(this),
-                 std::move(quit_run_loop_on_current_thread_cb), true);
+  base::OnceClosure finish_test_cb =
+      base::BindOnce(&VideoCaptureBrowserTest::TearDownCaptureDeviceOnIOThread,
+                     base::Unretained(this),
+                     std::move(quit_run_loop_on_current_thread_cb), true);
 
   bool must_wait_for_gpu_decode_to_start = false;
 #if defined(OS_CHROMEOS)
@@ -317,16 +322,15 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
             if ((received_frame_infos.size() >= kMinFramesToReceive &&
                  !must_wait_for_gpu_decode_to_start) ||
                 (received_frame_infos.size() == kMaxFramesToReceive)) {
-              finish_test_cb.Run();
+              std::move(finish_test_cb).Run();
             }
           }));
 
-  base::Closure do_nothing;
   base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &VideoCaptureBrowserTest::SetUpAndStartCaptureDeviceOnIOThread,
-          base::Unretained(this), std::move(do_nothing)));
+          base::Unretained(this), base::DoNothing::Once()));
   run_loop.Run();
 
   EXPECT_FALSE(must_wait_for_gpu_decode_to_start);

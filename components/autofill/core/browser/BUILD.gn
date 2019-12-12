@@ -88,6 +88,8 @@ jumbo_static_library("browser") {
     "data_model/contact_info.h",
     "data_model/credit_card.cc",
     "data_model/credit_card.h",
+    "data_model/credit_card_cloud_token_data.cc",
+    "data_model/credit_card_cloud_token_data.h",
     "data_model/data_model_utils.cc",
     "data_model/data_model_utils.h",
     "data_model/form_group.cc",
@@ -195,8 +197,6 @@ jumbo_static_library("browser") {
     "payments/strike_database_integrator_base.h",
     "payments/strike_database_integrator_test_strike_database.cc",
     "payments/strike_database_integrator_test_strike_database.h",
-    "payments/upi_vpa_save_manager.cc",
-    "payments/upi_vpa_save_manager.h",
     "payments/webauthn_callback_types.h",
     "personal_data_manager.cc",
     "personal_data_manager.h",
@@ -391,6 +391,10 @@ jumbo_static_library("browser") {
   }
 
   if (!is_android && !is_ios) {
+    sources += [
+      "payments/upi_vpa_save_manager.cc",
+      "payments/upi_vpa_save_manager.h",
+    ]
     deps += [
       "//ui/native_theme",
       "//ui/native_theme:native_theme_browser",

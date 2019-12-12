@@ -1127,7 +1127,7 @@ class LoadImageRequestObserver : public content::WebContentsObserver {
       content::RenderFrameHost* render_frame_host,
       const content::GlobalRequestID& request_id,
       const content::mojom::ResourceLoadInfo& resource_load_info) override {
-    if (resource_load_info.url.path() == path_) {
+    if (resource_load_info.original_url.path() == path_) {
       ASSERT_GT(resource_load_info.raw_body_bytes, 0);
       ASSERT_EQ(resource_load_info.mime_type, "image/png");
       run_loop_.Quit();

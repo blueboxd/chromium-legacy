@@ -10,8 +10,8 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
@@ -60,7 +60,6 @@ class PreviewsOfflineHelperTest : public ChromeRenderViewHostTestHarness {
 TEST_F(PreviewsOfflineHelperTest, TestAddRemovePages) {
   struct TestCase {
     std::string msg;
-    bool enable_feature;
     std::vector<std::string> add_fresh_pages;
     std::vector<std::string> add_expired_pages;
     std::vector<std::string> want_pages;
@@ -70,18 +69,7 @@ TEST_F(PreviewsOfflineHelperTest, TestAddRemovePages) {
   };
   const TestCase kTestCases[]{
       {
-          .msg = "All pages should return true when the feature is disabled",
-          .enable_feature = false,
-          .add_fresh_pages = {},
-          .add_expired_pages = {},
-          .want_pages = {"http://chromium.org"},
-          .not_want_pages = {},
-          .original_url = "",
-          .want_pref_size = 0,
-      },
-      {
           .msg = "Unknown page returns false",
-          .enable_feature = true,
           .add_fresh_pages = {},
           .add_expired_pages = {},
           .want_pages = {},
@@ -91,7 +79,6 @@ TEST_F(PreviewsOfflineHelperTest, TestAddRemovePages) {
       },
       {
           .msg = "Fresh page returns true",
-          .enable_feature = true,
           .add_fresh_pages = {"http://chromium.org"},
           .add_expired_pages = {},
           .want_pages = {"http://chromium.org"},
@@ -101,7 +88,6 @@ TEST_F(PreviewsOfflineHelperTest, TestAddRemovePages) {
       },
       {
           .msg = "Fresh page with the original URL returns true",
-          .enable_feature = true,
           .add_fresh_pages = {"http://chromium.org"},
           .add_expired_pages = {},
           .want_pages = {"http://google.com"},
@@ -111,7 +97,6 @@ TEST_F(PreviewsOfflineHelperTest, TestAddRemovePages) {
       },
       {
           .msg = "Expired page returns false",
-          .enable_feature = true,
           .add_fresh_pages = {},
           .add_expired_pages = {"http://chromium.org"},
           .want_pages = {},
@@ -121,7 +106,6 @@ TEST_F(PreviewsOfflineHelperTest, TestAddRemovePages) {
       },
       {
           .msg = "Expired then refreshed page returns true",
-          .enable_feature = true,
           .add_fresh_pages = {"http://chromium.org"},
           .add_expired_pages = {"http://chromium.org"},
           .want_pages = {"http://chromium.org"},
@@ -131,7 +115,6 @@ TEST_F(PreviewsOfflineHelperTest, TestAddRemovePages) {
       },
       {
           .msg = "URL Fragments don't matter",
-          .enable_feature = true,
           .add_fresh_pages = {"http://chromium.org"},
           .add_expired_pages = {},
           .want_pages = {"http://chromium.org",
@@ -142,7 +125,6 @@ TEST_F(PreviewsOfflineHelperTest, TestAddRemovePages) {
       },
       {
           .msg = "URLs with paths are different",
-          .enable_feature = true,
           .add_fresh_pages = {"http://chromium.org/fresh"},
           .add_expired_pages = {"http://chromium.org/old"},
           .want_pages = {"http://chromium.org/fresh"},
@@ -163,11 +145,6 @@ TEST_F(PreviewsOfflineHelperTest, TestAddRemovePages) {
     SCOPED_TRACE(test_case.msg);
 
     base::HistogramTester histogram_tester;
-
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitWithFeatureState(
-        previews::features::kOfflinePreviewsFalsePositivePrevention,
-        test_case.enable_feature);
 
     TestingPrefServiceSimple test_prefs;
     PreviewsOfflineHelper::RegisterProfilePrefs(test_prefs.registry());
@@ -200,16 +177,14 @@ TEST_F(PreviewsOfflineHelperTest, TestAddRemovePages) {
 
     histogram_tester.ExpectTotalCount(
         "Previews.Offline.FalsePositivePrevention.Allowed",
-        test_case.enable_feature
-            ? test_case.not_want_pages.size() + test_case.want_pages.size()
-            : 0);
+        test_case.not_want_pages.size() + test_case.want_pages.size());
 
-    if (test_case.enable_feature && test_case.not_want_pages.size() > 0) {
+    if (test_case.not_want_pages.size() > 0) {
       histogram_tester.ExpectBucketCount(
           "Previews.Offline.FalsePositivePrevention.Allowed", false,
           test_case.not_want_pages.size());
     }
-    if (test_case.enable_feature && test_case.want_pages.size() > 0) {
+    if (test_case.want_pages.size() > 0) {
       histogram_tester.ExpectBucketCount(
           "Previews.Offline.FalsePositivePrevention.Allowed", true,
           test_case.want_pages.size());
@@ -218,23 +193,28 @@ TEST_F(PreviewsOfflineHelperTest, TestAddRemovePages) {
 }
 
 TEST_F(PreviewsOfflineHelperTest, TestMaxPrefSize) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      previews::features::kOfflinePreviewsFalsePositivePrevention,
-      {{"max_pref_entries", "1"}});
-
   PreviewsOfflineHelper* helper = NewHelper(nullptr);
 
   base::Time first = base::Time::Now();
-  base::Time second = first + base::TimeDelta::FromMinutes(1);
+  base::Time second = first + base::TimeDelta::FromMilliseconds(1);
 
   helper->OfflinePageAdded(
       nullptr, MakeAddedPageItem("http://test.first.com", "", first));
-  EXPECT_TRUE(
-      helper->ShouldAttemptOfflinePreview(GURL("http://test.first.com")));
-
   helper->OfflinePageAdded(
       nullptr, MakeAddedPageItem("http://test.second.com", "", second));
+  EXPECT_TRUE(
+      helper->ShouldAttemptOfflinePreview(GURL("http://test.first.com")));
+  EXPECT_TRUE(
+      helper->ShouldAttemptOfflinePreview(GURL("http://test.second.com")));
+
+  // kOfflinePreviewsHelperMaxPrefSize = 100;
+  for (int i = 0; i < 99; i++) {
+    helper->OfflinePageAdded(
+        nullptr,
+        MakeAddedPageItem(base::StringPrintf("http://test.%d.com", i), "",
+                          second + base::TimeDelta::FromMilliseconds(i)));
+  }
+
   EXPECT_FALSE(
       helper->ShouldAttemptOfflinePreview(GURL("http://test.first.com")));
   EXPECT_TRUE(
@@ -242,10 +222,6 @@ TEST_F(PreviewsOfflineHelperTest, TestMaxPrefSize) {
 }
 
 TEST_F(PreviewsOfflineHelperTest, TestUpdateAllPrefEntries) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      previews::features::kOfflinePreviewsFalsePositivePrevention);
-
   base::HistogramTester histogram_tester;
 
   PreviewsOfflineHelper* helper = NewHelper(nullptr);
@@ -273,8 +249,6 @@ class PreviewsOfflinePagesIntegrationTest
  public:
   void SetUp() override {
     PreviewsOfflineHelperTest::SetUp();
-    scoped_feature_list_.InitAndEnableFeature(
-        previews::features::kOfflinePreviewsFalsePositivePrevention);
 
     // Sets up the factories for testing.
     offline_pages::OfflinePageModelFactory::GetInstance()
@@ -325,7 +299,6 @@ class PreviewsOfflinePagesIntegrationTest
   void SetLastPathCreatedByArchiver(const base::FilePath& file_path) override {}
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   offline_pages::OfflinePageModel* model_;
 };
 

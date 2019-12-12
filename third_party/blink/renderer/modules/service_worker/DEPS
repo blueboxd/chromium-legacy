@@ -15,7 +15,6 @@ specific_include_rules = {
     "fetch_respond_with_observer\.cc": [
         "+services/network/public/cpp/cross_origin_resource_policy.h",
         "+services/network/public/cpp/features.h",
-        "+services/network/public/cpp/resource_response_info.h",
     ],
     "service_worker_global_scope\.cc": [
         "+third_party/blink/renderer/modules/background_fetch",

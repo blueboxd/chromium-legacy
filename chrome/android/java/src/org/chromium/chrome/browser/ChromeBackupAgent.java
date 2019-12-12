@@ -8,7 +8,6 @@ import android.app.backup.BackupAgent;
 import android.app.backup.BackupDataInput;
 import android.app.backup.BackupDataOutput;
 import android.app.backup.BackupManager;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.ParcelFileDescriptor;
 
@@ -152,7 +151,7 @@ public class ChromeBackupAgent extends BackupAgent {
     // TODO (aberent) Refactor the tests to use a mocked ChromeBrowserInitializer, and make this
     // private again.
     @VisibleForTesting
-    boolean initializeBrowser(Context context) {
+    boolean initializeBrowser() {
         // Workaround for https://crbug.com/718166. The backup agent is sometimes being started in a
         // child process, before the child process loads its native library. If backup then loads
         // the native library the child process is left in a very confused state and crashes.
@@ -160,7 +159,7 @@ public class ChromeBackupAgent extends BackupAgent {
             Log.e(TAG, "Backup agent started from child process");
             return false;
         }
-        ChromeBrowserInitializer.getInstance(context).handleSynchronousStartup();
+        ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
         return true;
     }
 
@@ -175,8 +174,6 @@ public class ChromeBackupAgent extends BackupAgent {
     @Override
     public void onBackup(ParcelFileDescriptor oldState, BackupDataOutput data,
             ParcelFileDescriptor newState) throws IOException {
-        final ChromeBackupAgent backupAgent = this;
-
         final ArrayList<String> backupNames = new ArrayList<>();
         final ArrayList<byte[]> backupValues = new ArrayList<>();
 
@@ -185,7 +182,7 @@ public class ChromeBackupAgent extends BackupAgent {
             // Start the browser if necessary, so that Chrome can access the native
             // preferences. Although Chrome requests the backup, it doesn't happen
             // immediately, so by the time it does Chrome may not be running.
-            if (!initializeBrowser(backupAgent)) return false;
+            if (!initializeBrowser()) return false;
 
             String[] nativeBackupNames = ChromeBackupAgentJni.get().getBoolBackupNames(this);
             boolean[] nativeBackupValues = ChromeBackupAgentJni.get().getBoolBackupValues(this);
@@ -331,10 +328,9 @@ public class ChromeBackupAgent extends BackupAgent {
 
         // Chrome has to be running before it can check if the account exists. Because the native
         // library is already loaded Chrome startup should be fast.
-        final ChromeBackupAgent backupAgent = this;
         boolean browserStarted = PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
             // Start the browser if necessary.
-            return initializeBrowser(backupAgent);
+            return initializeBrowser();
         });
         if (!browserStarted) {
             // Something went wrong starting Chrome, skip the restore.

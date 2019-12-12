@@ -20,11 +20,11 @@
 #import "ui/base/cocoa/touch_bar_util.h"
 
 @interface BrowserWindowTouchBarController () {
-  NSWindow* window_;  // Weak.
+  NSWindow* _window;  // Weak.
 
-  base::scoped_nsobject<BrowserWindowDefaultTouchBar> defaultTouchBar_;
+  base::scoped_nsobject<BrowserWindowDefaultTouchBar> _defaultTouchBar;
 
-  base::scoped_nsobject<WebTextfieldTouchBarController> webTextfieldTouchBar_;
+  base::scoped_nsobject<WebTextfieldTouchBarController> _webTextfieldTouchBar;
 }
 @end
 
@@ -33,12 +33,12 @@
 - (instancetype)initWithBrowser:(Browser*)browser window:(NSWindow*)window {
   if ((self = [super init])) {
     DCHECK(browser);
-    window_ = window;
+    _window = window;
 
-    defaultTouchBar_.reset([[BrowserWindowDefaultTouchBar alloc] init]);
-    defaultTouchBar_.get().controller = self;
-    defaultTouchBar_.get().browser = browser;
-    webTextfieldTouchBar_.reset(
+    _defaultTouchBar.reset([[BrowserWindowDefaultTouchBar alloc] init]);
+    _defaultTouchBar.get().controller = self;
+    _defaultTouchBar.get().browser = browser;
+    _webTextfieldTouchBar.reset(
         [[WebTextfieldTouchBarController alloc] initWithController:self]);
   }
 
@@ -46,21 +46,21 @@
 }
 
 - (void)dealloc {
-  defaultTouchBar_.get().browser = nullptr;
+  _defaultTouchBar.get().browser = nullptr;
   [super dealloc];
 }
 
 - (void)invalidateTouchBar {
-  DCHECK([window_ respondsToSelector:@selector(setTouchBar:)]);
-  [window_ performSelector:@selector(setTouchBar:) withObject:nil];
+  DCHECK([_window respondsToSelector:@selector(setTouchBar:)]);
+  [_window performSelector:@selector(setTouchBar:) withObject:nil];
 }
 
 - (NSTouchBar*)makeTouchBar {
-  NSTouchBar* touchBar = [webTextfieldTouchBar_ makeTouchBar];
+  NSTouchBar* touchBar = [_webTextfieldTouchBar makeTouchBar];
   if (touchBar)
     return touchBar;
 
-  return [defaultTouchBar_ makeTouchBar];
+  return [_defaultTouchBar makeTouchBar];
 }
 
 @end
@@ -68,11 +68,11 @@
 @implementation BrowserWindowTouchBarController (ExposedForTesting)
 
 - (BrowserWindowDefaultTouchBar*)defaultTouchBar {
-  return defaultTouchBar_.get();
+  return _defaultTouchBar.get();
 }
 
 - (WebTextfieldTouchBarController*)webTextfieldTouchBar {
-  return webTextfieldTouchBar_.get();
+  return _webTextfieldTouchBar.get();
 }
 
 @end

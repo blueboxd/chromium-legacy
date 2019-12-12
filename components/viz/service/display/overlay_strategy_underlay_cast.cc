@@ -40,7 +40,7 @@ GetVideoGeometrySetter() {
 }  // namespace
 
 OverlayStrategyUnderlayCast::OverlayStrategyUnderlayCast(
-    OverlayCandidateValidatorStrategy* capability_checker)
+    OverlayProcessorUsingStrategy* capability_checker)
     : OverlayStrategyUnderlay(capability_checker) {}
 
 OverlayStrategyUnderlayCast::~OverlayStrategyUnderlayCast() {}

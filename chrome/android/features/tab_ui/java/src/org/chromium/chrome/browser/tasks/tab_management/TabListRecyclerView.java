@@ -18,12 +18,16 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.os.SystemClock;
 import android.support.v7.content.res.AppCompatResources;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
+import android.util.Pair;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -42,10 +46,15 @@ import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
 import org.chromium.ui.widget.ViewLookupCachingFrameLayout;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * A custom RecyclerView implementation for the tab grid, to handle show/hide logic in class.
  */
-class TabListRecyclerView extends RecyclerView {
+class TabListRecyclerView
+        extends RecyclerView implements TabListMediator.TabGridAccessibilityHelper {
     private static final String TAG = "TabListRecyclerView";
 
     private static final String MAX_DUTY_CYCLE_PARAM = "max-duty-cycle";
@@ -521,6 +530,74 @@ class TabListRecyclerView extends RecyclerView {
         setPadding(mOriginalPadding.left, mOriginalPadding.top, mOriginalPadding.right,
                 mOriginalPadding.bottom);
         setScrollBarStyle(SCROLLBARS_INSIDE_OVERLAY);
+    }
+
+    // TabGridAccessibilityHelper implementation.
+    // TODO(crbug.com/1032095): Add e2e tests for implementation below when tab grid is enabled for
+    // accessibility mode.
+    @Override
+    @SuppressLint("NewApi")
+    public List<AccessibilityAction> getPotentialActionsForView(View view) {
+        List<AccessibilityAction> actions = new ArrayList<>();
+        int position = getChildAdapterPosition(view);
+        if (position == -1) {
+            return actions;
+        }
+        assert getLayoutManager() instanceof GridLayoutManager;
+        GridLayoutManager layoutManager = (GridLayoutManager) getLayoutManager();
+        int spanCount = layoutManager.getSpanCount();
+        Context context = getContext();
+
+        AccessibilityAction leftAction = new AccessibilityNodeInfo.AccessibilityAction(
+                R.id.move_tab_left, context.getString(R.string.accessibility_tab_movement_left));
+        AccessibilityAction rightAction = new AccessibilityNodeInfo.AccessibilityAction(
+                R.id.move_tab_right, context.getString(R.string.accessibility_tab_movement_right));
+        AccessibilityAction topAction = new AccessibilityNodeInfo.AccessibilityAction(
+                R.id.move_tab_up, context.getString(R.string.accessibility_tab_movement_up));
+        AccessibilityAction downAction = new AccessibilityNodeInfo.AccessibilityAction(
+                R.id.move_tab_down, context.getString(R.string.accessibility_tab_movement_down));
+        actions.addAll(
+                new ArrayList<>(Arrays.asList(leftAction, rightAction, topAction, downAction)));
+
+        // Decide whether the tab can be moved left/right based on current index and span count.
+        if (position % spanCount == 0) {
+            actions.remove(leftAction);
+        } else if (position % spanCount == spanCount - 1) {
+            actions.remove(rightAction);
+        }
+        // Cannot move up if the tab is in the first row.
+        if (position < spanCount) {
+            actions.remove(topAction);
+        }
+        // Cannot move down if current tab is the last X tab where X is the span count.
+        if (getAdapter().getItemCount() - position <= spanCount) {
+            actions.remove(downAction);
+        }
+        // Cannot move the last tab to its right.
+        if (position == getAdapter().getItemCount() - 1) {
+            actions.remove(rightAction);
+        }
+        return actions;
+    }
+
+    @Override
+    public Pair<Integer, Integer> getPositionsOfReorderAction(View view, int action) {
+        int currentPosition = getChildAdapterPosition(view);
+        assert getLayoutManager() instanceof GridLayoutManager;
+        GridLayoutManager layoutManager = (GridLayoutManager) getLayoutManager();
+        int spanCount = layoutManager.getSpanCount();
+        int targetPosition = -1;
+
+        if (action == R.id.move_tab_left) {
+            targetPosition = currentPosition - 1;
+        } else if (action == R.id.move_tab_right) {
+            targetPosition = currentPosition + 1;
+        } else if (action == R.id.move_tab_up) {
+            targetPosition = currentPosition - spanCount;
+        } else if (action == R.id.move_tab_down) {
+            targetPosition = currentPosition + spanCount;
+        }
+        return new Pair<>(currentPosition, targetPosition);
     }
 
     @VisibleForTesting

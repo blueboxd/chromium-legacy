@@ -319,12 +319,15 @@ void OverviewSession::SelectWindow(OverviewItem* item) {
 
   // If the selected window is a minimized window, un-minimize it first before
   // activating it so that the window can use the scale-up animation instead of
-  // un-minimizing animation.
+  // un-minimizing animation. If minimized, the activation of the window will
+  // happen in OverviewItem which listens for window state changes.
   if (WindowState::Get(window)->IsMinimized()) {
+    item->set_activate_on_unminimized(true);
     ScopedAnimationDisabler disabler(window);
     WindowState::Get(window)->Unminimize();
-    item->SetOpacity(1.f);
+    return;
   }
+
   wm::ActivateWindow(window);
 }
 

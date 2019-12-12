@@ -27,6 +27,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.background_task_scheduler.ChromeBackgroundTaskFactory;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.background_task_scheduler.TaskIds;
@@ -52,6 +53,7 @@ public class BackgroundSchedulerTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         BackgroundTaskSchedulerFactory.setSchedulerForTesting(mTaskScheduler);
+        ChromeBackgroundTaskFactory.setAsDefault();
         doReturn(true)
                 .when(mTaskScheduler)
                 .schedule(eq(ContextUtils.getApplicationContext()), mTaskInfo.capture());

@@ -1269,7 +1269,7 @@ TEST_F(AnimationAnimationTestCompositing, PreCommitRecordsHistograms) {
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
 
-  ToKeyframeEffect(animation->effect())
+  To<KeyframeEffect>(animation->effect())
       ->SetKeyframes({start_keyframe, end_keyframe});
   UpdateAllLifecyclePhasesForTest();
   {
@@ -1307,7 +1307,7 @@ TEST_F(AnimationAnimationTestCompositing, SetKeyframesCausesCompositorPending) {
   keyframes.push_back(start_keyframe);
   keyframes.push_back(end_keyframe);
 
-  ToKeyframeEffect(animation->effect())->SetKeyframes(keyframes);
+  To<KeyframeEffect>(animation->effect())->SetKeyframes(keyframes);
 
   EXPECT_TRUE(animation->CompositorPendingForTesting());
 }

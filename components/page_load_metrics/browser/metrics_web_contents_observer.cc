@@ -309,8 +309,10 @@ void MetricsWebContentsObserver::ResourceLoadComplete(
     content::RenderFrameHost* render_frame_host,
     const content::GlobalRequestID& request_id,
     const content::mojom::ResourceLoadInfo& resource_load_info) {
-  if (!resource_load_info.url.SchemeIsHTTPOrHTTPS())
+  if (resource_load_info.origin_of_final_url.scheme() != url::kHttpScheme &&
+      resource_load_info.origin_of_final_url.scheme() != url::kHttpsScheme) {
     return;
+  }
 
   PageLoadTracker* tracker = GetTrackerOrNullForRequest(
       request_id, render_frame_host, resource_load_info.resource_type,
@@ -329,7 +331,7 @@ void MetricsWebContentsObserver::ResourceLoadComplete(
     const content::mojom::CommonNetworkInfoPtr& network_info =
         resource_load_info.network_info;
     ExtraRequestCompleteInfo extra_request_complete_info(
-        url::Origin::Create(resource_load_info.url),
+        resource_load_info.origin_of_final_url,
         network_info->remote_endpoint.value(),
         render_frame_host->GetFrameTreeNodeId(), resource_load_info.was_cached,
         resource_load_info.raw_body_bytes, original_content_length,

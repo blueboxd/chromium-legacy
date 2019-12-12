@@ -153,8 +153,8 @@ bool FCMNetworkHandler::IsListening() const {
 
 void FCMNetworkHandler::DidRetrieveToken(const std::string& subscription_token,
                                          InstanceID::Result result) {
-  UMA_HISTOGRAM_ENUMERATION("FCMInvalidations.InitialTokenRetrievalStatus",
-                            result, InstanceID::Result::LAST_RESULT + 1);
+  base::UmaHistogramEnumeration("FCMInvalidations.InitialTokenRetrievalStatus",
+                                result);
   diagnostic_info_.registration_result = result;
   diagnostic_info_.token = subscription_token;
   diagnostic_info_.instance_id_token_was_received = base::Time::Now();

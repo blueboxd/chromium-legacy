@@ -16,6 +16,10 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/arc/arc_util.h"
 
+namespace arc {
+class ArcAppShelfId;
+}
+
 namespace aura {
 class window;
 }
@@ -25,6 +29,7 @@ class Time;
 }
 
 class AppServiceAppWindowLauncherController;
+class AppServiceAppWindowLauncherItemController;
 class Profile;
 
 // AppServiceAppWindowArcTracker observes the ArcAppListPrefs to handle ARC app
@@ -47,6 +52,7 @@ class AppServiceAppWindowArcTracker : public ArcAppListPrefs::Observer,
   void OnWindowVisibilityChanging(aura::Window* window);
 
   // ArcAppListPrefs::Observer:
+  void OnAppRemoved(const std::string& app_id) override;
   void OnTaskCreated(int task_id,
                      const std::string& package_name,
                      const std::string& activity,
@@ -67,6 +73,9 @@ class AppServiceAppWindowArcTracker : public ArcAppListPrefs::Observer,
   // Removes the app window from |arc_window_candidates_|.
   void RemoveCandidateWindow(aura::Window* window);
 
+  // Removes controller from |app_shelf_group_to_controller_map_|.
+  void OnItemDelegateDiscarded(const ash::ShelfID& shelf_id);
+
   ash::ShelfID GetShelfId(int task_id) const;
 
  private:
@@ -75,9 +84,15 @@ class AppServiceAppWindowArcTracker : public ArcAppListPrefs::Observer,
   using TaskIdToArcAppWindowInfo =
       std::map<int, std::unique_ptr<ArcAppWindowInfo>>;
 
+  // Maps shelf group id to controller. Shelf group id is optional parameter for
+  // the Android task. If it is not set, app id is used instead.
+  using ShelfGroupToAppControllerMap =
+      std::map<arc::ArcAppShelfId, AppServiceAppWindowLauncherItemController*>;
+
   // Checks |arc_window_candidates_| and attaches controller when they
   // are ARC app windows and have task id.
   void CheckAndAttachControllers();
+  void AttachControllerToTask(int taskId);
 
   // arc::ArcSessionManager::Observer:
   void OnArcOptInManagementCheckStarted() override;
@@ -85,10 +100,13 @@ class AppServiceAppWindowArcTracker : public ArcAppListPrefs::Observer,
 
   void HandlePlayStoreLaunch(ArcAppWindowInfo* app_window_info);
 
+  std::vector<int> GetTaskIdsForApp(const std::string& arc_app_id) const;
+
   Profile* const observed_profile_;
   AppServiceAppWindowLauncherController* const app_service_controller_;
 
   TaskIdToArcAppWindowInfo task_id_to_arc_app_window_info_;
+  ShelfGroupToAppControllerMap app_shelf_group_to_controller_map_;
 
   // ARC app task id could be created after the window initialized.
   // |arc_window_candidates_| is used to record those initialized ARC app

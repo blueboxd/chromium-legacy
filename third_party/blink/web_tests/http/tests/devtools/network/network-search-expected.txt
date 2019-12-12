@@ -67,6 +67,5 @@ Case sensitive, regexp
   1request9-dosearch
 
 Clicking on search result
-Selected tab: response, URL: http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=9
-Line number: 0
+Selected Node Name: echo-payload.php?n=9, URL: http://127.0.0.1:8000/devtools/network/resources/echo-payload.php?n=9
 

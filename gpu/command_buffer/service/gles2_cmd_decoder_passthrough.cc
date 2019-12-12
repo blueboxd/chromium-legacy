@@ -1105,10 +1105,15 @@ void GLES2DecoderPassthroughImpl::Destroy(bool have_context) {
                          api()->glDeleteTransformFeedbacksFn(
                              1, &transform_feedback);
                        });
-  DeleteServiceObjects(&query_id_map_, have_context,
-                       [this](GLuint client_id, GLuint query) {
-                         api()->glDeleteQueriesFn(1, &query);
-                       });
+  DeleteServiceObjects(
+      &query_id_map_, have_context, [this](GLuint client_id, GLuint query) {
+        // glDeleteQueries is not loaded unless GL_EXT_occlusion_query_boolean
+        // is present. All queries must be emulated so they don't need to be
+        // deleted.
+        if (feature_info_->feature_flags().occlusion_query_boolean) {
+          api()->glDeleteQueriesFn(1, &query);
+        }
+      });
   DeleteServiceObjects(&vertex_array_id_map_, have_context,
                        [this](GLuint client_id, GLuint vertex_array) {
                          api()->glDeleteVertexArraysOESFn(1, &vertex_array);

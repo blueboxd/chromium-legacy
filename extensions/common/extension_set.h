@@ -25,7 +25,6 @@ class URLPatternSet;
 // Only one extension can be in the set with a given ID.
 class ExtensionSet {
  public:
-  typedef std::pair<base::FilePath, std::string> ExtensionPathAndDefaultLocale;
   typedef std::map<ExtensionId, scoped_refptr<const Extension>> ExtensionMap;
 
   // Iteration over the values of the map (given that it's an ExtensionSet,

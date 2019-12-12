@@ -33,16 +33,18 @@ class TextInputClientMacHelper {
 
   void WaitForStringFromRange(RenderWidgetHost* rwh, const gfx::Range& range) {
     GetStringFromRangeForRenderWidget(
-        rwh, range, base::Bind(&TextInputClientMacHelper::OnResult,
-                               base::Unretained(this)));
+        rwh, range,
+        base::BindOnce(&TextInputClientMacHelper::OnResult,
+                       base::Unretained(this)));
     loop_runner_ = new MessageLoopRunner();
     loop_runner_->Run();
   }
 
   void WaitForStringAtPoint(RenderWidgetHost* rwh, const gfx::Point& point) {
     GetStringAtPointForRenderWidget(
-        rwh, point, base::Bind(&TextInputClientMacHelper::OnResult,
-                               base::Unretained(this)));
+        rwh, point,
+        base::BindOnce(&TextInputClientMacHelper::OnResult,
+                       base::Unretained(this)));
     loop_runner_ = new MessageLoopRunner();
     loop_runner_->Run();
   }

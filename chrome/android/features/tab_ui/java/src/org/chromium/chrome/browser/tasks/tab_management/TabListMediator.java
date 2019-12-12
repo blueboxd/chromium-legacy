@@ -11,12 +11,16 @@ import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Pair;
 import android.view.View;
+import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
@@ -115,6 +119,30 @@ class TabListMediator {
          * @param tabId The id of the {@link Tab} that is used to update TabGridDialog.
          */
         void updateDialogContent(int tabId);
+    }
+
+    /**
+     * An interface to expose functionality needed to support reordering in grid layouts in
+     * accessibility mode.
+     */
+    public interface TabGridAccessibilityHelper {
+        /**
+         * This method gets the possible actions for reordering a tab in grid layout.
+         *
+         * @param view The host view that triggers the accessibility action.
+         * @return The list of possible {@link AccessibilityAction}s for host view.
+         */
+        List<AccessibilityAction> getPotentialActionsForView(View view);
+
+        /**
+         * This method gives the previous and target position of current reordering based on the
+         * host view and current action.
+         *
+         * @param view   The host view that triggers the accessibility action.
+         * @param action The id of the action.
+         * @return {@link Pair} that contains previous and target position of this action.
+         */
+        Pair<Integer, Integer> getPositionsOfReorderAction(View view, int action);
     }
 
     /**
@@ -361,6 +389,8 @@ class TabListMediator {
     private TabGroupTitleEditor mTabGroupTitleEditor;
 
     private TabGroupModelFilter.Observer mTabGroupObserver;
+
+    private View.AccessibilityDelegate mAccessibilityDelegate;
 
     /**
      * Interface for implementing a {@link Runnable} that takes a tabId for a generic action.
@@ -978,6 +1008,40 @@ class TabListMediator {
     }
 
     /**
+     * Setup the {@link View.AccessibilityDelegate} for grid layout.
+     * @param helper The {@link TabGridAccessibilityHelper} used to setup accessibility support.
+     */
+    void setupAccessibilityDelegate(TabGridAccessibilityHelper helper) {
+        if (!FeatureUtilities.isTabGroupsAndroidContinuationEnabled()) {
+            return;
+        }
+        mAccessibilityDelegate = new View.AccessibilityDelegate() {
+            @Override
+            public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+                    return;
+                }
+                for (AccessibilityAction action : helper.getPotentialActionsForView(host)) {
+                    info.addAction(action);
+                }
+            }
+
+            @Override
+            public boolean performAccessibilityAction(View host, int action, Bundle args) {
+                Pair<Integer, Integer> positions = helper.getPositionsOfReorderAction(host, action);
+                int currentPosition = positions.first;
+                int targetPosition = positions.second;
+                if (!isValidMovePosition(currentPosition) || !isValidMovePosition(targetPosition)) {
+                    return false;
+                }
+                mModel.move(currentPosition, targetPosition);
+                return true;
+            }
+        };
+    }
+
+    /**
      * Exposes a {@link TabGroupTitleEditor} to modify the title of a tab group.
      * @return The {@link TabGroupTitleEditor} used to modify the title of a tab group.
      */
@@ -1066,6 +1130,7 @@ class TabListMediator {
                                 selectedTabBackgroundDrawableId)
                         .with(TabProperties.TABSTRIP_FAVICON_BACKGROUND_COLOR_ID,
                                 tabstripFaviconBackgroundDrawableId)
+                        .with(TabProperties.ACCESSIBILITY_DELEGATE, mAccessibilityDelegate)
                         .build();
 
         if (mUiType == UiType.SELECTABLE) {
@@ -1223,5 +1288,10 @@ class TabListMediator {
      */
     void addSpecialItemToModel(int index, @UiType int uiType, PropertyModel model) {
         mModel.add(index, new SimpleRecyclerViewAdapter.ListItem(uiType, model));
+    }
+
+    @VisibleForTesting
+    View.AccessibilityDelegate getAccessibilityDelegateForTesting() {
+        return mAccessibilityDelegate;
     }
 }

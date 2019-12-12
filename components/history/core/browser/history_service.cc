@@ -474,7 +474,9 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFavicon(
     favicon_base::FaviconResultsCallback callback,
     base::CancelableTaskTracker* tracker) {
   TRACE_EVENT0("browser", "HistoryService::GetFavicons");
-  DCHECK(backend_task_runner_) << "History service being called after cleanup";
+  CHECK(backend_task_runner_) << "History service being called after cleanup";
+  // TODO(https://crbug.com/1024959): convert to DCHECK once crash is resolved.
+  CHECK(tracker);
   DCHECK(thread_checker_.CalledOnValidThread());
   return tracker->PostTaskAndReplyWithResult(
       backend_task_runner_.get(), FROM_HERE,

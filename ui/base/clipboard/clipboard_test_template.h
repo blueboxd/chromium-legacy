@@ -629,9 +629,9 @@ TYPED_TEST(ClipboardTest, DataTest) {
   EXPECT_EQ(payload, output);
 }
 
-// TODO(huangdarwin): Implement multiple raw types for AuraClipboard. This test
-// currently doesn't run on AuraClipboard because AuraClipboard only supports
-// one raw type.
+// TODO(https://crbug.com/1032161): Implement multiple raw types for
+// AuraClipboard. This test currently doesn't run on AuraClipboard because
+// AuraClipboard only supports one raw type.
 #if (!defined(USE_AURA) || defined(OS_WIN) || defined(USE_OZONE) || \
      defined(USE_X11)) &&                                           \
     !defined(OS_CHROMEOS)

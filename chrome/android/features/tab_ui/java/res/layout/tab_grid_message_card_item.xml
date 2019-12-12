@@ -18,7 +18,7 @@
         android:adjustViewBounds="true"
         android:importantForAccessibility="no"
         android:src="@drawable/ic_omnibox_page"/>
-    <org.chromium.chrome.browser.snackbar.TemplatePreservingTextView
+    <org.chromium.chrome.browser.ui.widget.text.TemplatePreservingTextView
         android:id="@+id/description"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

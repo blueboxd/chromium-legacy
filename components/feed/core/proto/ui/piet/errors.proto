@@ -214,6 +214,14 @@ enum ErrorCode {
     (client_error) = ERROR
   ] */;
 
+  // Bindings are not supported in Frames or within Bound Elements.
+  ERR_UNSUPPORTED_CONTEXT_FOR_BINDING = 11 /* [
+    // Bindings will not work in this context
+    (server_error) = ERROR,
+    // Clients might support bindings in this context.
+    (client_error) = WARNING
+  ] */;
+
   // ---------------------------------------------------------------------------
   // Missing required proto fields, or invalid values.
   // Fields start at ID 101.

@@ -18,7 +18,6 @@
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "google_apis/gaia/oauth2_access_token_manager_test_util.h"
-#include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -34,8 +33,7 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
       public ProfileOAuth2TokenServiceObserver {
  public:
   ProfileOAuth2TokenServiceIOSDelegateTest()
-      : factory_(nullptr),
-        client_(&prefs_),
+      : client_(&prefs_),
         token_available_count_(0),
         token_revoked_count_(0),
         tokens_loaded_count_(0),
@@ -54,8 +52,6 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
         prefs::kTokenServiceExcludedSecondaryAccounts);
 
     fake_provider_ = new FakeDeviceAccountsProvider();
-    factory_.SetFakeResponse(GaiaUrls::GetInstance()->oauth2_revoke_url(), "",
-                             net::HTTP_OK, net::URLRequestStatus::SUCCESS);
     oauth2_delegate_.reset(new ProfileOAuth2TokenServiceIOSDelegate(
         &client_, base::WrapUnique(fake_provider_), &account_tracker_));
     oauth2_delegate_->AddObserver(this);
@@ -106,7 +102,6 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
 
  protected:
   base::test::TaskEnvironment task_environment_;
-  net::FakeURLFetcherFactory factory_;
   TestingPrefServiceSimple prefs_;
   TestSigninClient client_;
   AccountTrackerService account_tracker_;

@@ -3,7 +3,7 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<org.chromium.chrome.browser.ui.widget.BoundedLinearLayout
+<org.chromium.components.browser_ui.widget.BoundedLinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:gravity="center"
@@ -27,4 +27,4 @@
         android:text="@string/signin_gms_updating"
         android:textAppearance="@style/TextAppearance.BlackBodyDefault"
         app:leading="@dimen/text_size_medium_leading" />
-</org.chromium.chrome.browser.ui.widget.BoundedLinearLayout>
+</org.chromium.components.browser_ui.widget.BoundedLinearLayout>

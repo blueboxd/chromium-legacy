@@ -11,7 +11,7 @@ import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.widget.LinearLayout;
 
-import org.chromium.chrome.browser.snackbar.TemplatePreservingTextView;
+import org.chromium.chrome.browser.ui.widget.text.TemplatePreservingTextView;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.widget.ButtonCompat;
 import org.chromium.ui.widget.ChromeImageView;

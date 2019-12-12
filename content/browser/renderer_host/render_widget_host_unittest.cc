@@ -1438,9 +1438,8 @@ TEST_F(RenderWidgetHostTest, IgnoreInputEvent) {
 
 TEST_F(RenderWidgetHostTest, KeyboardListenerIgnoresEvent) {
   host_->SetupForInputRouterTest();
-  host_->AddKeyPressEventCallback(
-      base::Bind(&RenderWidgetHostTest::KeyPressEventCallback,
-                 base::Unretained(this)));
+  host_->AddKeyPressEventCallback(base::BindRepeating(
+      &RenderWidgetHostTest::KeyPressEventCallback, base::Unretained(this)));
   handle_key_press_event_ = false;
   SimulateKeyboardEvent(WebInputEvent::kRawKeyDown);
 
@@ -1450,9 +1449,8 @@ TEST_F(RenderWidgetHostTest, KeyboardListenerIgnoresEvent) {
 TEST_F(RenderWidgetHostTest, KeyboardListenerSuppressFollowingEvents) {
   host_->SetupForInputRouterTest();
 
-  host_->AddKeyPressEventCallback(
-      base::Bind(&RenderWidgetHostTest::KeyPressEventCallback,
-                 base::Unretained(this)));
+  host_->AddKeyPressEventCallback(base::BindRepeating(
+      &RenderWidgetHostTest::KeyPressEventCallback, base::Unretained(this)));
 
   // The callback handles the first event
   handle_key_press_event_ = true;
@@ -1479,9 +1477,8 @@ TEST_F(RenderWidgetHostTest, KeyboardListenerSuppressFollowingEvents) {
 TEST_F(RenderWidgetHostTest, MouseEventCallbackCanHandleEvent) {
   host_->SetupForInputRouterTest();
 
-  host_->AddMouseEventCallback(
-      base::Bind(&RenderWidgetHostTest::MouseEventCallback,
-                 base::Unretained(this)));
+  host_->AddMouseEventCallback(base::BindRepeating(
+      &RenderWidgetHostTest::MouseEventCallback, base::Unretained(this)));
 
   handle_mouse_event_ = true;
   SimulateMouseEvent(WebInputEvent::kMouseDown);

@@ -960,6 +960,8 @@ IN_PROC_BROWSER_TEST_F(WebXrVrWmrBrowserTest, TestVoiceSelectRegistered) {
 // Equivalent to
 // WebXrVrInputTest#testControllerClicksRegisteredOnDaydream_WebXr.
 WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestControllerInputRegistered) {
+  // TODO(crbug.com/1033087): Test is flaky on OpenVR
+  WEBXR_VR_DISABLE_TEST_ON(XrBrowserTestBase::RuntimeType::RUNTIME_OPENVR);
   WebXrControllerInputMock my_mock;
 
   unsigned int controller_index = my_mock.CreateAndConnectMinimalGamepad();

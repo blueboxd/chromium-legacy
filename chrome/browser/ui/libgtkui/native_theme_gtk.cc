@@ -216,6 +216,10 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_TabBottomBorder:
       return GetBorderColor(GtkVersionCheck(3, 20) ? "GtkFrame#frame #border"
                                                    : "GtkFrame#frame");
+    case ui::NativeTheme::kColorId_TabHighlightBackground:
+      return GetBgColor("GtkNotebook#notebook #tab:checked");
+    case ui::NativeTheme::kColorId_TabHighlightFocusedBackground:
+      return GetBgColor("GtkNotebook#notebook:focus #tab:checked");
 
     // Textfield
     case ui::NativeTheme::kColorId_TextfieldDefaultColor:

@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.locale;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
 
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
 import org.junit.After;
@@ -51,8 +50,7 @@ public class LocaleManagerReferralTest {
         TestThreadUtils.runOnUiThreadBlocking(new Callable<Void>() {
             @Override
             public Void call() {
-                ChromeBrowserInitializer.getInstance(InstrumentationRegistry.getTargetContext())
-                        .handleSynchronousStartup();
+                ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
                 return null;
             }
         });

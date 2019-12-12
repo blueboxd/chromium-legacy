@@ -5,16 +5,29 @@
 #include "components/autofill/core/browser/payments/upi_vpa_save_manager.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 
 namespace autofill {
 
-UpiVpaSaveManager::UpiVpaSaveManager(PersonalDataManager* personal_data_manager)
-    : personal_data_manager_(personal_data_manager) {}
+UpiVpaSaveManager::UpiVpaSaveManager(AutofillClient* client,
+                                     PersonalDataManager* personal_data_manager)
+    : client_(client), personal_data_manager_(personal_data_manager) {}
+
+UpiVpaSaveManager::~UpiVpaSaveManager() = default;
 
 void UpiVpaSaveManager::OfferLocalSave(const std::string& upi_id) {
-  // TODO(crbug.com/986289): Ask user with a prompt before saving.
+  if (!personal_data_manager_)
+    return;
 
-  if (personal_data_manager_)
+  client_->ConfirmSaveUpiIdLocally(
+      upi_id, base::BindOnce(&UpiVpaSaveManager::OnUserDecidedOnLocalSave,
+                             weak_ptr_factory_.GetWeakPtr(), upi_id));
+}
+
+void UpiVpaSaveManager::OnUserDecidedOnLocalSave(const std::string& upi_id,
+                                                 bool accepted) {
+  // TODO(crbug.com/986289) Add metrics.
+  if (accepted)
     personal_data_manager_->AddVPA(upi_id);
 }
 

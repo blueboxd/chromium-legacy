@@ -2316,6 +2316,11 @@ void RTCPeerConnection::removeTrack(RTCRtpSender* sender,
       ThrowExceptionFromRTCError(error_or_transceiver.error(), exception_state);
       return;
     }
+    if (!error_or_transceiver.value()) {
+      // There is no transceiver to update - the operation was cancelled, such
+      // as if the transceiver was rolled back.
+      return;
+    }
     CreateOrUpdateTransceiver(error_or_transceiver.MoveValue());
   }
 }

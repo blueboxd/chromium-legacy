@@ -32,6 +32,8 @@ typedef enum {
   AUTOFILL_PROFILE_RESULT,      // WDResult<AutofillProfile>
   AUTOFILL_PROFILES_RESULT,     // WDResult<std::vector<
                                 //     std::unique_ptr<AutofillProfile>>>
+  AUTOFILL_CLOUDTOKEN_RESULT,   // WDResult<std::vector<std::unique_ptr<
+                                //     CreditCardCloudTokenData>>>
   AUTOFILL_CREDITCARD_RESULT,   // WDResult<CreditCard>
   AUTOFILL_CREDITCARDS_RESULT,  // WDResult<std::vector<
                                 //     std::unique_ptr<CreditCard>>>

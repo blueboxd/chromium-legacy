@@ -3,6 +3,12 @@
   "dependencies": {
    "crashpad_database_util": {
       "file_info": {
+        "linux_x86_64": {
+          "local_paths": [
+            "../../../out/Debug/crashpad_database_util",
+            "../../../out/Release/crashpad_database_util"
+          ]
+        },
         "mac_x86_64": {
           "local_paths": [
             "../../../out/Debug/crashpad_database_util",

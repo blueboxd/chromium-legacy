@@ -88,11 +88,9 @@ void TestAutofillClient::ShowAutofillSettings(bool show_credit_card_settings) {}
 void TestAutofillClient::ShowUnmaskPrompt(
     const CreditCard& card,
     UnmaskCardReason reason,
-    base::WeakPtr<CardUnmaskDelegate> delegate) {
-}
+    base::WeakPtr<CardUnmaskDelegate> delegate) {}
 
-void TestAutofillClient::OnUnmaskVerificationResult(PaymentsRpcResult result) {
-}
+void TestAutofillClient::OnUnmaskVerificationResult(PaymentsRpcResult result) {}
 
 void TestAutofillClient::ShowLocalCardMigrationDialog(
     base::OnceClosure show_migration_dialog_closure) {
@@ -134,6 +132,10 @@ void TestAutofillClient::UpdateWebauthnVerifyPendingCancelButton(
 bool TestAutofillClient::CloseWebauthnDialog() {
   return true;
 }
+
+void TestAutofillClient::ConfirmSaveUpiIdLocally(
+    const std::string& upi_id,
+    base::OnceCallback<void(bool accept)> callback) {}
 #endif
 
 void TestAutofillClient::ConfirmSaveAutofillProfile(
@@ -195,8 +197,7 @@ bool TestAutofillClient::HasCreditCardScanFeature() {
 }
 
 void TestAutofillClient::ScanCreditCard(
-    const CreditCardScanCallback& callback) {
-}
+    const CreditCardScanCallback& callback) {}
 
 void TestAutofillClient::ShowAutofillPopup(
     const gfx::RectF& element_bounds,
@@ -208,11 +209,9 @@ void TestAutofillClient::ShowAutofillPopup(
 
 void TestAutofillClient::UpdateAutofillPopupDataListValues(
     const std::vector<base::string16>& values,
-    const std::vector<base::string16>& labels) {
-}
+    const std::vector<base::string16>& labels) {}
 
-void TestAutofillClient::HideAutofillPopup() {
-}
+void TestAutofillClient::HideAutofillPopup() {}
 
 bool TestAutofillClient::IsAutocompleteEnabled() {
   return true;
@@ -220,13 +219,11 @@ bool TestAutofillClient::IsAutocompleteEnabled() {
 
 void TestAutofillClient::PropagateAutofillPredictions(
     content::RenderFrameHost* rfh,
-    const std::vector<FormStructure*>& forms) {
-}
+    const std::vector<FormStructure*>& forms) {}
 
 void TestAutofillClient::DidFillOrPreviewField(
     const base::string16& autofilled_value,
-    const base::string16& profile_full_name) {
-}
+    const base::string16& profile_full_name) {}
 
 bool TestAutofillClient::IsContextSecure() {
   // Simplified secure context check for tests.

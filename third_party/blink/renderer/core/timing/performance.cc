@@ -55,7 +55,6 @@
 #include "third_party/blink/renderer/core/timing/measure_memory/measure_memory_options.h"
 #include "third_party/blink/renderer/core/timing/performance_element_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_event_timing.h"
-#include "third_party/blink/renderer/core/timing/performance_long_task_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_mark.h"
 #include "third_party/blink/renderer/core/timing/performance_mark_options.h"
 #include "third_party/blink/renderer/core/timing/performance_measure.h"
@@ -262,10 +261,9 @@ PerformanceEntryVector Performance::getEntriesByTypeInternal(
       if (first_contentful_paint_timing_)
         entries.push_back(first_contentful_paint_timing_);
       break;
-    // Unsupported for LongTask, TaskAttribution.
-    // Per the spec, these entries can only be accessed via
-    // Performance Observer. No separate buffer is maintained.
     case PerformanceEntry::kLongTask:
+      for (const auto& entry : longtask_buffer_)
+        entries.push_back(entry);
       break;
     case PerformanceEntry::kTaskAttribution:
       break;
@@ -650,23 +648,6 @@ bool Performance::CanAddResourceTimingEntry() {
   return resource_timing_buffer_.size() < resource_timing_buffer_size_limit_;
 }
 
-void Performance::AddLongTaskTiming(base::TimeTicks start_time,
-                                    base::TimeTicks end_time,
-                                    const AtomicString& name,
-                                    const AtomicString& container_type,
-                                    const String& container_src,
-                                    const String& container_id,
-                                    const String& container_name) {
-  if (!HasObserverFor(PerformanceEntry::kLongTask))
-    return;
-
-  auto* entry = MakeGarbageCollected<PerformanceLongTaskTiming>(
-      MonotonicTimeToDOMHighResTimeStamp(start_time),
-      MonotonicTimeToDOMHighResTimeStamp(end_time), name, container_type,
-      container_src, container_id, container_name);
-  NotifyObserversOfEntry(*entry);
-}
-
 UserTiming& Performance::GetUserTiming() {
   if (!user_timing_)
     user_timing_ = MakeGarbageCollected<UserTiming>(*this);
@@ -971,6 +952,7 @@ void Performance::Trace(blink::Visitor* visitor) {
   visitor->Trace(event_timing_buffer_);
   visitor->Trace(layout_shift_buffer_);
   visitor->Trace(largest_contentful_paint_buffer_);
+  visitor->Trace(longtask_buffer_);
   visitor->Trace(navigation_timing_);
   visitor->Trace(user_timing_);
   visitor->Trace(first_paint_timing_);

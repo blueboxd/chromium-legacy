@@ -322,10 +322,6 @@ ContentSecurityPolicy& ContentSecurityPolicy::operator=(
   return *this;
 }
 
-ContentSecurityPolicy::operator mojom::ContentSecurityPolicyPtr() const {
-  return content_security_policy_ptr_.Clone();
-}
-
 bool ContentSecurityPolicy::Parse(const GURL& base_url,
                                   const net::HttpResponseHeaders& headers) {
   size_t iter = 0;

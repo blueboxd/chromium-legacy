@@ -625,4 +625,41 @@ TEST(LayoutManagerBase_ProposedLayoutTest, Equality) {
   EXPECT_TRUE(a == b);
 }
 
+class LayoutManagerBaseAvailableSizeTest : public testing::Test {
+ public:
+  void SetUp() override {
+    view_ = std::make_unique<View>();
+    layout_ =
+        view_->SetLayoutManager(std::make_unique<TestLayoutManagerBase>());
+  }
+
+  void SetCachedLayout(const ProposedLayout& layout) {
+    layout_->set_cached_layout_size(layout.host_size);
+    layout_->set_cached_layout(layout);
+  }
+
+  View* view() { return view_.get(); }
+  LayoutManagerBase* layout() { return layout_; }
+
+ private:
+  std::unique_ptr<View> view_;
+  LayoutManagerBase* layout_;
+};
+
+TEST_F(LayoutManagerBaseAvailableSizeTest, ReturnsCorrectValues) {
+  const SizeBounds kChild1Bounds{3, 7};
+  const SizeBounds kChild2Bounds{11, 13};
+  View* const child1 = view()->AddChildView(std::make_unique<View>());
+  View* const child2 = view()->AddChildView(std::make_unique<View>());
+  View not_a_child;
+
+  SetCachedLayout({{10, 10},
+                   {{child1, true, {1, 1, 1, 1}, kChild1Bounds},
+                    {child2, true, {2, 2, 2, 2}, kChild2Bounds}}});
+
+  EXPECT_EQ(kChild1Bounds, view()->GetAvailableSize(child1));
+  EXPECT_EQ(kChild2Bounds, view()->GetAvailableSize(child2));
+  EXPECT_EQ(SizeBounds(), view()->GetAvailableSize(&not_a_child));
+}
+
 }  // namespace views

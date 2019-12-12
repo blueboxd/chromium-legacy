@@ -170,7 +170,7 @@ void HatsWebDialog::OnMainFrameResourceLoadComplete(
   // TODO(weili): once the bug is fixed, we no longer need this check nor
   // |resource_loaded_|, remove them then.
   if (resource_load_info.net_error == net::Error::OK) {
-    if (resource_load_info.url.spec().find(kSurveyHost) == 0) {
+    if (resource_load_info.original_url.spec().find(kSurveyHost) == 0) {
       // The resource from survey host is loaded successfully.
       resource_loaded_ = true;
     }

@@ -58,7 +58,7 @@ public class WarmupManagerTest {
         TestThreadUtils.runOnUiThreadBlocking(new Callable<Void>() {
             @Override
             public Void call() {
-                ChromeBrowserInitializer.getInstance(mContext).handleSynchronousStartup();
+                ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
                 mWarmupManager = WarmupManager.getInstance();
                 return null;
             }

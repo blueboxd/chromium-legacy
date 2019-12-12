@@ -331,11 +331,8 @@ void ToolbarButton::OnGestureEvent(ui::GestureEvent* event) {
 
 void ToolbarButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   Button::GetAccessibleNodeData(node_data);
-  node_data->role = ax::mojom::Role::kButton;
   if (model_)
     node_data->SetHasPopup(ax::mojom::HasPopup::kMenu);
-  if (GetEnabled())
-    node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kPress);
 }
 
 std::unique_ptr<views::InkDrop> ToolbarButton::CreateInkDrop() {

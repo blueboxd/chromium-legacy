@@ -49,6 +49,8 @@ trichrome_library_android_manifest =
     "$target_gen_dir/trichrome_library_apk/AndroidManifest.xml"
 trichrome_library_64_32_android_manifest =
     "$target_gen_dir/trichrome_library_64_32_apk/AndroidManifest.xml"
+trichrome_library_32_android_manifest =
+    "$target_gen_dir/trichrome_library_32_apk/AndroidManifest.xml"
 
 app_hooks_impl = "java/src/org/chromium/chrome/browser/AppHooksImpl.java"
 _chrome_version_java_file = "$target_gen_dir/templates/org/chromium/chrome/browser/ChromeVersionConstants.java"
@@ -100,6 +102,15 @@ if (android_64bit_target_cpu) {
                   "manifest_package=$trichrome_library_package",
                 ]
   }
+
+  jinja_template("trichrome_library_32_android_manifest") {
+    input = "java/AndroidManifest_trichrome_library.xml"
+    output = trichrome_library_32_android_manifest
+    variables = trichrome_jinja_variables + [
+                  "trichrome_version=$trichrome_32_version_code",
+                  "manifest_package=$trichrome_library_package",
+                ]
+  }
 }
 
 generate_ui_locale_resources("ui_locale_string_resources") {
@@ -125,6 +136,7 @@ android_resources("chrome_app_java_resources") {
     "//chrome/browser/ui/android/styles:java_resources",
     "//chrome/browser/ui/android/widget:ui_widget_java_resources",
     "//components/autofill/android:autofill_java_resources",
+    "//components/browser_ui/widget/android:java_resources",
     "//components/policy:app_restrictions_resources",
     "//components/strings:components_locale_settings_grd",
     "//components/strings:components_strings_grd",
@@ -225,6 +237,8 @@ android_library("chrome_java") {
     "$google_play_services_package:google_play_services_gcm_java",
     "$google_play_services_package:google_play_services_iid_java",
     "$google_play_services_package:google_play_services_tasks_java",
+    "$google_play_services_package:google_play_services_vision_common_java",
+    "$google_play_services_package:google_play_services_vision_java",
     "//base:base_java",
     "//base:jni_java",
     "//chrome/android/features/keyboard_accessory:public_java",
@@ -253,6 +267,7 @@ android_library("chrome_java") {
     "//components/background_task_scheduler:background_task_scheduler_java",
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
     "//components/bookmarks/common/android:bookmarks_java",
+    "//components/browser_ui/widget/android:java",
     "//components/content_capture/android:java",
     "//components/contextual_search/content/common/mojom:mojom_java",
     "//components/crash/android:java",
@@ -776,6 +791,8 @@ android_library("chrome_test_java") {
     "//components/background_task_scheduler:background_task_scheduler_javatests",
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
     "//components/bookmarks/common/android:bookmarks_java",
+    "//components/browser_ui/widget/android:java",
+    "//components/browser_ui/widget/android:javatests",
     "//components/crash/android:java",
     "//components/dom_distiller/core/android:dom_distiller_core_java",
     "//components/download/internal/background_service:internal_java",
@@ -1856,6 +1873,30 @@ if (public_android_sdk) {
         ]
       }
     }
+
+    trichrome_library_apk_tmpl("trichrome_library_32_apk") {
+      apk_name = "TrichromeLibrary32"
+      android_manifest = trichrome_library_32_android_manifest
+      android_manifest_dep = ":trichrome_library_32_android_manifest"
+      is_64_bit_browser = false
+      include_64_bit_webview = false
+
+      if (trichrome_synchronized_proguard) {
+        shared_resources_whitelist_target =
+            "//android_webview:system_webview_apk"
+        shared_resources_whitelist_locales = locales
+        static_library_dependent_targets = [
+          {
+            name = "//android_webview:trichrome_webview_32_apk"
+            is_resource_ids_provider = true
+          },
+          {
+            name = ":trichrome_chrome_32_bundle"
+            is_resource_ids_provider = false
+          },
+        ]
+      }
+    }
   }
 }
 
@@ -2519,6 +2560,12 @@ if (public_android_sdk) {
   }
 
   if (android_64bit_target_cpu) {
+    monochrome_or_trichrome_public_bundle_tmpl("monochrome_32_public_bundle") {
+      bundle_suffix = "32"
+      is_64_bit_browser = false
+      include_64_bit_webview = false
+    }
+
     monochrome_or_trichrome_public_bundle_tmpl("monochrome_64_public_bundle") {
       bundle_suffix = "64"
       is_64_bit_browser = true
@@ -2544,6 +2591,13 @@ if (public_android_sdk) {
       bundle_suffix = "6432"
       is_64_bit_browser = true
       include_32_bit_webview = true
+      use_trichrome_library = true
+    }
+
+    monochrome_or_trichrome_public_bundle_tmpl("trichrome_chrome_32_bundle") {
+      bundle_suffix = "32"
+      is_64_bit_browser = false
+      include_64_bit_webview = false
       use_trichrome_library = true
     }
   }
@@ -2740,6 +2794,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchBackgroundTaskScheduler.java",
     "java/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchConfiguration.java",
     "java/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchedPagesNotifier.java",
+    "java/src/org/chromium/chrome/browser/omaha/notification/UpdateNotificationServiceBridge.java",
     "java/src/org/chromium/chrome/browser/omnibox/OmniboxPrerender.java",
     "java/src/org/chromium/chrome/browser/omnibox/OmniboxUrlEmphasizer.java",
     "java/src/org/chromium/chrome/browser/omnibox/OmniboxViewUtil.java",

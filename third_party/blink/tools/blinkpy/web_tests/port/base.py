@@ -106,10 +106,6 @@ SXG_WPT_FINGERPRINT = '0Rt4mT6SJXojEMHTnKnlJ/hBKMBcI4kteBlhR1eTTdk='
 # A convervative rule for names that are valid for file or directory names.
 VALID_FILE_NAME_REGEX = re.compile(r'^[\w\-=]+$')
 
-# This sub directory will be inside the results directory and it will
-# contain all the disc artifacts created by web tests
-ARTIFACTS_SUB_DIR = 'layout-test-results'
-
 class Port(object):
     """Abstract class for Port-specific hooks for the web_test package."""
 
@@ -1124,39 +1120,18 @@ class Port(object):
             return test_base
         return test_name
 
-    def bot_test_times_path(self):
-        # TODO(crbug.com/1030434): For the not_site_per_process_webkit_layout_tests step on linux,
-        # an exception is raised when merging the bot times json files. This happens  whenever they
-        # are outputted into the results directory. Temporarily we will return the bot times json
-        # file relative to the target directory.
-        return self._build_path('webkit_test_times', 'bot_times_ms.json')
-
     def results_directory(self):
-        """Returns the absolute path directory which will store all web tests outputted
-        files. It may include a sub directory for artifacts and it may store performance test results."""
+        """Returns the absolute path to the place to store the test results."""
         if not self._results_directory:
             option_val = self.get_option('results_directory') or self.default_results_directory()
-            # TODO(crbug.com/1027708): There are several blink tests step
-            # configuration files in the infra repository which append the
-            # layout-test-results to the value passed in for the
-            # --results-directory command line argument value. We need to
-            # remove the layout-test-results suffix for each blink tests step
-            # configuration file in the infra repository. Then we can stop
-            # removing the layout-test-results sub directory from the
-            # --results-directory command line argument value.
-            if self._filesystem.basename(option_val) == 'layout-test-results':
-                option_val = self.host.filesystem.dirname(option_val)
             self._results_directory = self._filesystem.abspath(option_val)
         return self._results_directory
 
-    def artifacts_directory(self):
-        """Returns path to artifacts sub directory of the results directory. This
-        directory will store test artifacts, which may include actual and expected
-        output from web tests."""
-        return self._filesystem.join(self.results_directory(), ARTIFACTS_SUB_DIR)
+    def bot_test_times_path(self):
+        return self._build_path('webkit_test_times', 'bot_times_ms.json')
 
     def perf_results_directory(self):
-        return self.results_directory()
+        return self._build_path()
 
     def inspector_build_directory(self):
         return self._build_path('resources', 'inspector')
@@ -1168,8 +1143,8 @@ class Port(object):
         return self._path_finder.path_from_blink_tools('apache_config')
 
     def default_results_directory(self):
-        """Returns the absolute path to the build directory."""
-        return self._build_path()
+        """Returns the absolute path to the default place to store the test results."""
+        return self._build_path('layout-test-results')
 
     def setup_test_run(self):
         """Performs port-specific work at the beginning of a test run."""
@@ -1259,27 +1234,27 @@ class Port(object):
         # be the case when the tests aren't run on the host platform.
         return False
 
-    def start_http_server(self, additional_dirs, number_of_drivers, output_dir=''):
+    def start_http_server(self, additional_dirs, number_of_drivers):
         """Start a web server. Raise an error if it can't start or is already running.
 
         Ports can stub this out if they don't need a web server to be running.
         """
         assert not self._http_server, 'Already running an http server.'
-        output_dir = output_dir or self.artifacts_directory()
-        server = apache_http.ApacheHTTP(self, output_dir,
+
+        server = apache_http.ApacheHTTP(self, self.results_directory(),
                                         additional_dirs=additional_dirs,
                                         number_of_servers=(number_of_drivers * 4))
         server.start()
         self._http_server = server
 
-    def start_websocket_server(self, output_dir=''):
+    def start_websocket_server(self):
         """Start a web server. Raise an error if it can't start or is already running.
 
         Ports can stub this out if they don't need a websocket server to be running.
         """
         assert not self._websocket_server, 'Already running a websocket server.'
-        output_dir = output_dir or self.artifacts_directory()
-        server = pywebsocket.PyWebSocket(self, output_dir)
+
+        server = pywebsocket.PyWebSocket(self, self.results_directory())
         server.start()
         self._websocket_server = server
 
@@ -1292,15 +1267,15 @@ class Port(object):
     def should_use_wptserve(test):
         return Port.is_wpt_test(test)
 
-    def start_wptserve(self, output_dir=''):
+    def start_wptserve(self):
         """Starts a WPT web server.
 
         Raises an error if it can't start or is already running.
         """
         assert not self._wpt_server, 'Already running a WPT server.'
-        output_dir = output_dir or self.artifacts_directory()
+
         # We currently don't support any output mechanism for the WPT server.
-        server = wptserve.WPTServe(self, output_dir)
+        server = wptserve.WPTServe(self, self.results_directory())
         server.start()
         self._wpt_server = server
 

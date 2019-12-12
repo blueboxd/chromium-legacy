@@ -25,7 +25,8 @@
 
 #if defined(USE_OZONE)
 #include "components/viz/service/display/overlay_candidate_list.h"
-#include "components/viz/service/display/overlay_processor_ozone.h"
+#include "components/viz/service/display/overlay_candidate_validator_strategy.h"
+#include "components/viz/service/display_embedder/overlay_candidate_validator_ozone.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 #endif  // defined(USE_OZONE)
 
@@ -63,14 +64,21 @@ class TestOverlayCandidatesOzone : public ui::OverlayCandidatesOzone {
   }
 };
 
-class TestOverlayProcessor : public viz::OverlayProcessorOzone {
+std::unique_ptr<viz::OverlayCandidateValidatorStrategy> CreateTestValidator() {
+  std::vector<viz::OverlayStrategy> strategies = {
+      viz::OverlayStrategy::kSingleOnTop, viz::OverlayStrategy::kUnderlay};
+  return std::make_unique<viz::OverlayCandidateValidatorOzone>(
+      std::make_unique<TestOverlayCandidatesOzone>(), std::move(strategies));
+}
+
+class TestOverlayProcessor : public viz::OverlayProcessorUsingStrategy {
  public:
   TestOverlayProcessor()
-      : OverlayProcessorOzone(true /* overlay_enabled */,
-                              std::make_unique<TestOverlayCandidatesOzone>(),
-                              std::vector<viz::OverlayStrategy>{
-                                  viz::OverlayStrategy::kSingleOnTop,
-                                  viz::OverlayStrategy::kUnderlay}) {}
+      : OverlayProcessorUsingStrategy(nullptr, CreateTestValidator()) {}
+
+  viz::OverlayCandidateValidatorStrategy* get_overlay_validator() const {
+    return overlay_validator_.get();
+  }
 };
 #endif  // defined(USE_OZONE)
 
@@ -188,8 +196,9 @@ class ReflectorImplTest : public testing::Test {
       viz::OverlayCandidateList* surfaces) {
     overlay_processor_->SetSoftwareMirrorMode(
         output_surface_->IsSoftwareMirrorMode());
-    DCHECK(overlay_processor_->IsOverlaySupported());
-    overlay_processor_->CheckOverlaySupport(output_surface_plane, surfaces);
+    DCHECK(overlay_processor_->get_overlay_validator());
+    overlay_processor_->get_overlay_validator()->CheckOverlaySupport(
+        output_surface_plane, surfaces);
   }
 #endif  // defined(USE_OZONE)
 

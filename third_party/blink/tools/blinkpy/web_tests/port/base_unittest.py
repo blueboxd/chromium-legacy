@@ -1091,7 +1091,7 @@ class PortTest(LoggingTestCase):
     def test_default_results_directory(self):
         port = self.make_port(options=optparse.Values({'target': 'Default', 'configuration': 'Release'}))
         # By default the results directory is in the build directory: out/<target>.
-        self.assertEqual(port.default_results_directory(), '/mock-checkout/out/Default')
+        self.assertEqual(port.default_results_directory(), '/mock-checkout/out/Default/layout-test-results')
 
     def test_results_directory(self):
         port = self.make_port(options=optparse.Values({'results_directory': 'some-directory/results'}))

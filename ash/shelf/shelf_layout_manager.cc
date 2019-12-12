@@ -214,7 +214,8 @@ base::Optional<InAppShelfGestures> CalculateHotseatGestureToRecord(
     HotseatState old_state,
     HotseatState current_state) {
   if (window_drag_result.has_value() &&
-      window_drag_result == ShelfWindowDragResult::kGoToOverviewMode &&
+      (window_drag_result == ShelfWindowDragResult::kGoToOverviewMode ||
+       window_drag_result == ShelfWindowDragResult::kGoToSplitviewMode) &&
       old_state == HotseatState::kHidden) {
     return InAppShelfGestures::kSwipeUpToShow;
   }

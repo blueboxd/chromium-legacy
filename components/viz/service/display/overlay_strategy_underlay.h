@@ -30,7 +30,7 @@ class VIZ_SERVICE_EXPORT OverlayStrategyUnderlay
   // If |allow_nonopaque_overlays| is true, then we don't require that the
   // the candidate is_opaque.
   OverlayStrategyUnderlay(
-      OverlayProcessorUsingStrategy* capability_checker,
+      OverlayCandidateValidatorStrategy* capability_checker,
       OpaqueMode opaque_mode = OpaqueMode::RequireOpaqueCandidates);
   ~OverlayStrategyUnderlay() override;
 
@@ -50,7 +50,7 @@ class VIZ_SERVICE_EXPORT OverlayStrategyUnderlay
   OverlayStrategy GetUMAEnum() const override;
 
  private:
-  OverlayProcessorUsingStrategy* capability_checker_;  // Weak.
+  OverlayCandidateValidatorStrategy* capability_checker_;  // Weak.
   OpaqueMode opaque_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayStrategyUnderlay);

@@ -59,7 +59,6 @@ class ServerBase(object):
 
         self._runtime_path = self._filesystem.join(tmpdir, 'WebKit')
         self._filesystem.maybe_make_directory(self._runtime_path)
-        self._filesystem.maybe_make_directory(self._output_dir)
 
         # Subclasses must override these fields.
         self._name = '<virtual>'

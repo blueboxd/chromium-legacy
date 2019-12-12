@@ -2394,12 +2394,25 @@ DirectoryTree.decorate =
      fakeEntriesVisible) => {
       el.__proto__ = DirectoryTree.prototype;
 
-      // TODO(crbug.com/992819): add overrides for the FILES_NG_ENABLED case.
+      if (util.isFilesNg()) {
+        directorytree.FILES_NG_ENABLED = true;
+        directorytree.rightIconSetPrefix = 'files20';
+        directorytree.createRowElementContent =
+            directorytree.createRowElementContentFilesNG;
+        directorytree.styleRowElementDepth =
+            directorytree.styleRowElementDepthFilesNG;
+        el.setAttribute('files-ng', '');
+      }
+
       Object.freeze(directorytree);
 
       /** @type {DirectoryTree} */ (el).decorateDirectoryTree(
           directoryModel, volumeManager, metadataModel, fileOperationManager,
           fakeEntriesVisible);
+
+      if (directorytree.FILES_NG_ENABLED) {
+        el.rowElementDepthStyleHandler = directorytree.styleRowElementDepth;
+      }
     };
 
 cr.defineProperty(DirectoryTree, 'contextMenuForSubitems', cr.PropertyKind.JS);

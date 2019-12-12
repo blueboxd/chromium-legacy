@@ -20,12 +20,15 @@
 #endif
 
 namespace viz {
+
+class OverlayCandidateValidatorStrategy;
+
 // Similar to underlay strategy plus Cast-specific handling of content bounds.
 class VIZ_SERVICE_EXPORT OverlayStrategyUnderlayCast
     : public OverlayStrategyUnderlay {
  public:
   explicit OverlayStrategyUnderlayCast(
-      OverlayProcessorUsingStrategy* capability_checker);
+      OverlayCandidateValidatorStrategy* capability_checker);
   ~OverlayStrategyUnderlayCast() override;
 
   bool Attempt(const SkMatrix44& output_color_matrix,

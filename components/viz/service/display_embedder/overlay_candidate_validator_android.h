@@ -25,8 +25,7 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidatorAndroid
   OverlayCandidateValidatorAndroid();
   ~OverlayCandidateValidatorAndroid() override;
 
-  OverlayProcessorUsingStrategy::StrategyList InitializeStrategies(
-      OverlayProcessorUsingStrategy* processor) override;
+  void InitializeStrategies() override;
   void CheckOverlaySupport(const PrimaryPlane* primary_plane,
                            OverlayCandidateList* surfaces) override;
   bool NeedsSurfaceOccludingDamageRect() const override;

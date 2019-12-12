@@ -69,29 +69,17 @@ const gfx::Transform kSwapTransform =
     gfx::Transform(0, 1, 1, 0, 0, 0);  // x,y -> y,x.
 const gfx::BufferFormat kDefaultBufferFormat = gfx::BufferFormat::RGBA_8888;
 
-class TestOverlayProcessor : public OverlayProcessorUsingStrategy {
+class TestOverlayCandidateValidator : public OverlayCandidateValidatorStrategy {
  public:
-  using PrimaryPlane = OverlayProcessorInterface::OutputSurfaceOverlayPlane;
-  TestOverlayProcessor()
-      : OverlayProcessorUsingStrategy(
-            nullptr,
-            std::unique_ptr<OverlayCandidateValidatorStrategy>()) {
-    InitializeStrategies();
-  }
-  ~TestOverlayProcessor() override = default;
+  size_t GetStrategyCount() const { return strategies_.size(); }
 
-  void InitializeStrategies() override {}
   bool NeedsSurfaceOccludingDamageRect() const override { return false; }
   void CheckOverlaySupport(const PrimaryPlane* primary_plane,
                            OverlayCandidateList* surfaces) override {}
-  size_t GetStrategyCount() const { return strategies_.size(); }
 };
 
-class FullscreenOverlayProcessor : public TestOverlayProcessor {
+class FullscreenOverlayValidator : public TestOverlayCandidateValidator {
  public:
-  FullscreenOverlayProcessor() : TestOverlayProcessor() {
-    InitializeStrategies();
-  }
   void InitializeStrategies() override {
     strategies_.push_back(std::make_unique<OverlayStrategyFullscreen>(this));
   }
@@ -102,12 +90,14 @@ class FullscreenOverlayProcessor : public TestOverlayProcessor {
   }
 };
 
-class DefaultOverlayProcessor : public TestOverlayProcessor {
+class SingleOverlayValidator : public TestOverlayCandidateValidator {
  public:
-  DefaultOverlayProcessor()
-      : TestOverlayProcessor(), expected_rects_(1, gfx::RectF(kOverlayRect)) {}
+  SingleOverlayValidator() : expected_rects_(1, gfx::RectF(kOverlayRect)) {}
 
-  void InitializeStrategies() override {}
+  void InitializeStrategies() override {
+    strategies_.push_back(std::make_unique<OverlayStrategySingleOnTop>(this));
+    strategies_.push_back(std::make_unique<OverlayStrategyUnderlay>(this));
+  }
   bool NeedsSurfaceOccludingDamageRect() const override { return true; }
   void CheckOverlaySupport(const PrimaryPlane* primary_plane,
                            OverlayCandidateList* surfaces) override {
@@ -115,6 +105,7 @@ class DefaultOverlayProcessor : public TestOverlayProcessor {
     // is optional, depending on whether this ran
     // through the full renderer and picked up the output surface, or not.
     ASSERT_EQ(1U, surfaces->size());
+
     OverlayCandidate& candidate = surfaces->back();
     for (const auto& r : expected_rects_) {
       const float kAbsoluteError = 0.01f;
@@ -146,40 +137,49 @@ class DefaultOverlayProcessor : public TestOverlayProcessor {
   std::vector<gfx::RectF> expected_rects_;
 };
 
-class SingleOverlayProcessor : public DefaultOverlayProcessor {
+class SingleOnTopOverlayValidator : public SingleOverlayValidator {
  public:
-  SingleOverlayProcessor() : DefaultOverlayProcessor() {
-    strategies_.push_back(std::make_unique<OverlayStrategySingleOnTop>(this));
-    strategies_.push_back(std::make_unique<OverlayStrategyUnderlay>(this));
-  }
-};
-
-class SingleOnTopOverlayProcessor : public DefaultOverlayProcessor {
- public:
-  SingleOnTopOverlayProcessor() : DefaultOverlayProcessor() {
+  void InitializeStrategies() override {
     strategies_.push_back(std::make_unique<OverlayStrategySingleOnTop>(this));
   }
 };
 
-class UnderlayOverlayProcessor : public DefaultOverlayProcessor {
+class UnderlayOverlayValidator : public SingleOverlayValidator {
  public:
-  UnderlayOverlayProcessor() : DefaultOverlayProcessor() {
+  void InitializeStrategies() override {
     strategies_.push_back(std::make_unique<OverlayStrategyUnderlay>(this));
   }
 };
 
-class TransparentUnderlayOverlayProcessor : public DefaultOverlayProcessor {
+class TransparentUnderlayOverlayValidator : public SingleOverlayValidator {
  public:
-  TransparentUnderlayOverlayProcessor() : DefaultOverlayProcessor() {
+  void InitializeStrategies() override {
     strategies_.push_back(std::make_unique<OverlayStrategyUnderlay>(
         this, OverlayStrategyUnderlay::OpaqueMode::AllowTransparentCandidates));
   }
 };
 
-class UnderlayCastOverlayProcessor : public DefaultOverlayProcessor {
+class UnderlayCastOverlayValidator : public SingleOverlayValidator {
  public:
-  UnderlayCastOverlayProcessor() : DefaultOverlayProcessor() {
+  void InitializeStrategies() override {
     strategies_.push_back(std::make_unique<OverlayStrategyUnderlayCast>(this));
+  }
+};
+
+class DefaultOverlayProcessor : public OverlayProcessorUsingStrategy {
+ public:
+  DefaultOverlayProcessor()
+      : OverlayProcessorUsingStrategy(
+            nullptr,
+            std::make_unique<SingleOverlayValidator>()) {}
+
+  size_t GetStrategyCount() const {
+    if (auto* validator = overlay_validator_.get()) {
+      return static_cast<TestOverlayCandidateValidator*>(validator)
+          ->GetStrategyCount();
+    }
+
+    return 0;
   }
 };
 
@@ -233,6 +233,25 @@ class OverlayOutputSurface : public OutputSurface {
  private:
   bool is_displayed_as_overlay_plane_;
   unsigned bind_framebuffer_count_ = 0;
+};
+
+template <typename OverlayCandidateValidatorType>
+class TypedOverlayProcessor : public OverlayProcessorUsingStrategy {
+ public:
+  explicit TypedOverlayProcessor(
+      std::unique_ptr<OverlayCandidateValidatorType> validator)
+      : OverlayProcessorUsingStrategy(nullptr, std::move(validator)) {}
+
+  OverlayCandidateValidatorType* GetTypedOverlayCandidateValidator() {
+    const OverlayCandidateValidatorStrategy* const_base_validator =
+        GetOverlayCandidateValidator();
+    // This function is used to modify the expectation of the validator, so
+    // first need to cast away the const.
+    auto* base_validator =
+        const_cast<OverlayCandidateValidatorStrategy*>(const_base_validator);
+    // Then cast to the test only types so the add expectation function exists.
+    return static_cast<OverlayCandidateValidatorType*>(base_validator);
+  }
 };
 
 std::unique_ptr<RenderPass> CreateRenderPass() {
@@ -477,8 +496,11 @@ SkMatrix GetNonIdentityColorMatrix() {
   return matrix;
 }
 
-template <typename OverlayProcessorType>
+template <typename OverlayCandidateValidatorType>
 class OverlayTest : public testing::Test {
+  using OverlayProcessorType =
+      TypedOverlayProcessor<OverlayCandidateValidatorType>;
+
  protected:
   void SetUp() override {
     provider_ = TestContextProvider::Create();
@@ -495,7 +517,8 @@ class OverlayTest : public testing::Test {
     child_provider_->BindToCurrentThread();
     child_resource_provider_ = std::make_unique<ClientResourceProvider>(true);
 
-    overlay_processor_ = std::make_unique<OverlayProcessorType>();
+    overlay_processor_ = std::make_unique<OverlayProcessorType>(
+        std::make_unique<OverlayCandidateValidatorType>());
   }
 
   void TearDown() override {
@@ -509,8 +532,9 @@ class OverlayTest : public testing::Test {
     provider_ = nullptr;
   }
 
-  void AddExpectedRectToOverlayProcessor(const gfx::RectF& rect) {
-    overlay_processor_->AddExpectedRect(rect);
+  void AddExpectedRectToOverlayValidator(const gfx::RectF& rect) {
+    overlay_processor_->GetTypedOverlayCandidateValidator()->AddExpectedRect(
+        rect);
   }
 
   scoped_refptr<TestContextProvider> provider_;
@@ -525,12 +549,12 @@ class OverlayTest : public testing::Test {
   std::vector<gfx::Rect> content_bounds_;
 };
 
-using FullscreenOverlayTest = OverlayTest<FullscreenOverlayProcessor>;
-using SingleOverlayOnTopTest = OverlayTest<SingleOnTopOverlayProcessor>;
-using UnderlayTest = OverlayTest<UnderlayOverlayProcessor>;
+using FullscreenOverlayTest = OverlayTest<FullscreenOverlayValidator>;
+using SingleOverlayOnTopTest = OverlayTest<SingleOnTopOverlayValidator>;
+using UnderlayTest = OverlayTest<UnderlayOverlayValidator>;
 using TransparentUnderlayTest =
-    OverlayTest<TransparentUnderlayOverlayProcessor>;
-using UnderlayCastTest = OverlayTest<UnderlayCastOverlayProcessor>;
+    OverlayTest<TransparentUnderlayOverlayValidator>;
+using UnderlayCastTest = OverlayTest<UnderlayCastOverlayValidator>;
 
 TEST(OverlayTest, OverlaysProcessorHasStrategy) {
   scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
@@ -545,7 +569,7 @@ TEST(OverlayTest, OverlaysProcessorHasStrategy) {
                                                 provider.get(),
                                                 shared_bitmap_manager.get());
 
-  auto overlay_processor = std::make_unique<TestOverlayProcessor>();
+  auto overlay_processor = std::make_unique<DefaultOverlayProcessor>();
   EXPECT_GE(2U, overlay_processor->GetStrategyCount());
 }
 
@@ -805,7 +829,7 @@ TEST_F(SingleOverlayOnTopTest, PrioritizeBiggerOne) {
                         child_resource_provider_.get(), child_provider_.get(),
                         pass->shared_quad_state_list.back(), pass.get(),
                         kSmallCandidateRect);
-  AddExpectedRectToOverlayProcessor(gfx::RectF(kSmallCandidateRect));
+  AddExpectedRectToOverlayValidator(gfx::RectF(kSmallCandidateRect));
 
   // Add a bigger quad below the previous one, but not occluded.
   const auto kBigCandidateRect = gfx::Rect(20, 20, 32, 32);
@@ -813,7 +837,7 @@ TEST_F(SingleOverlayOnTopTest, PrioritizeBiggerOne) {
       resource_provider_.get(), child_resource_provider_.get(),
       child_provider_.get(), pass->shared_quad_state_list.back(), pass.get(),
       kBigCandidateRect);
-  AddExpectedRectToOverlayProcessor(gfx::RectF(kBigCandidateRect));
+  AddExpectedRectToOverlayValidator(gfx::RectF(kBigCandidateRect));
 
   unsigned resource_big = quad_big->resource_id();
 
@@ -1383,7 +1407,7 @@ TEST_F(TransparentUnderlayTest, AllowsTransparentCandidates) {
 }
 
 TEST_F(SingleOverlayOnTopTest, AllowNotTopIfNotOccluded) {
-  AddExpectedRectToOverlayProcessor(gfx::RectF(kOverlayBottomRightRect));
+  AddExpectedRectToOverlayValidator(gfx::RectF(kOverlayBottomRightRect));
 
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
   CreateOpaqueQuadAt(resource_provider_.get(),
@@ -1407,7 +1431,7 @@ TEST_F(SingleOverlayOnTopTest, AllowNotTopIfNotOccluded) {
 }
 
 TEST_F(SingleOverlayOnTopTest, AllowTransparentOnTop) {
-  AddExpectedRectToOverlayProcessor(gfx::RectF(kOverlayBottomRightRect));
+  AddExpectedRectToOverlayValidator(gfx::RectF(kOverlayBottomRightRect));
 
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
   SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
@@ -1433,7 +1457,7 @@ TEST_F(SingleOverlayOnTopTest, AllowTransparentOnTop) {
 }
 
 TEST_F(SingleOverlayOnTopTest, AllowTransparentColorOnTop) {
-  AddExpectedRectToOverlayProcessor(gfx::RectF(kOverlayBottomRightRect));
+  AddExpectedRectToOverlayValidator(gfx::RectF(kOverlayBottomRightRect));
 
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
   CreateSolidColorQuadAt(pass->shared_quad_state_list.back(),
@@ -1567,7 +1591,7 @@ TEST_F(SingleOverlayOnTopTest, DoNotPromoteIfContentsDontChange) {
 }
 
 TEST_F(UnderlayTest, OverlayLayerUnderMainLayer) {
-  AddExpectedRectToOverlayProcessor(gfx::RectF(kOverlayBottomRightRect));
+  AddExpectedRectToOverlayValidator(gfx::RectF(kOverlayBottomRightRect));
 
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
   CreateFullscreenOpaqueQuad(resource_provider_.get(),
@@ -1687,7 +1711,7 @@ TEST_F(UnderlayTest, DamageSubtractedForConsecutiveIdenticalUnderlays) {
 TEST_F(UnderlayTest, DamageNotSubtractedForNonIdenticalConsecutiveUnderlays) {
   gfx::Rect overlay_rects[] = {kOverlayBottomRightRect, kOverlayRect};
   for (int i = 0; i < 2; ++i) {
-    AddExpectedRectToOverlayProcessor(gfx::RectF(overlay_rects[i]));
+    AddExpectedRectToOverlayValidator(gfx::RectF(overlay_rects[i]));
 
     std::unique_ptr<RenderPass> pass = CreateRenderPass();
 
@@ -1811,7 +1835,7 @@ TEST_F(UnderlayTest, DamageNotSubtractedWhenQuadsAboveOverlap) {
 }
 
 TEST_F(UnderlayTest, DamageSubtractedWhenQuadsAboveDontOverlap) {
-  AddExpectedRectToOverlayProcessor(gfx::RectF(kOverlayBottomRightRect));
+  AddExpectedRectToOverlayValidator(gfx::RectF(kOverlayBottomRightRect));
 
   for (int i = 0; i < 2; ++i) {
     std::unique_ptr<RenderPass> pass = CreateRenderPass();
@@ -1875,7 +1899,7 @@ TEST_F(UnderlayTest, PrimaryPlaneOverlayIsTransparentWithUnderlay) {
 }
 
 TEST_F(UnderlayTest, UpdateDamageWhenChangingUnderlays) {
-  AddExpectedRectToOverlayProcessor(gfx::RectF(kOverlayTopLeftRect));
+  AddExpectedRectToOverlayValidator(gfx::RectF(kOverlayTopLeftRect));
 
   for (size_t i = 0; i < 2; ++i) {
     std::unique_ptr<RenderPass> pass = CreateRenderPass();
@@ -2034,7 +2058,7 @@ TEST_F(UnderlayCastTest, FullScreenOverlayContentBounds) {
 }
 
 TEST_F(UnderlayCastTest, BlackOutsideOverlayContentBounds) {
-  AddExpectedRectToOverlayProcessor(gfx::RectF(kOverlayBottomRightRect));
+  AddExpectedRectToOverlayValidator(gfx::RectF(kOverlayBottomRightRect));
 
   const gfx::Rect kLeftSide(0, 0, 128, 256);
   const gfx::Rect kTopRight(128, 0, 128, 128);
@@ -2114,7 +2138,7 @@ TEST_F(UnderlayCastTest, RoundOverlayContentBounds) {
   // Check rounding behaviour on overlay quads.  Be conservative (content
   // potentially visible on boundary).
   const gfx::Rect overlay_rect(1, 1, 8, 8);
-  AddExpectedRectToOverlayProcessor(gfx::RectF(1.5f, 1.5f, 8, 8));
+  AddExpectedRectToOverlayValidator(gfx::RectF(1.5f, 1.5f, 8, 8));
 
   gfx::Transform transform;
   transform.Translate(0.5f, 0.5f);
@@ -2145,7 +2169,7 @@ TEST_F(UnderlayCastTest, RoundContentBounds) {
   // rect).
   gfx::Rect overlay_rect = kOverlayRect;
   overlay_rect.Inset(0, 0, 1, 1);
-  AddExpectedRectToOverlayProcessor(gfx::RectF(0.5f, 0.5f, 255, 255));
+  AddExpectedRectToOverlayValidator(gfx::RectF(0.5f, 0.5f, 255, 255));
 
   gfx::Transform transform;
   transform.Translate(0.5f, 0.5f);
@@ -2220,8 +2244,10 @@ TEST_F(UnderlayCastTest, PrimaryPlaneOverlayIsAlwaysTransparent) {
 }
 #endif
 
-#if defined(USE_OZONE) || defined(OS_ANDROID)
+#if defined(USE_OZONE) || defined(OS_ANDROID) || defined(OS_MACOSX)
 class OverlayInfoRendererGL : public GLRenderer {
+  using OverlayProcessorType = TypedOverlayProcessor<SingleOverlayValidator>;
+
  public:
   OverlayInfoRendererGL(const RendererSettings* settings,
                         OutputSurface* output_surface,
@@ -2253,9 +2279,10 @@ class OverlayInfoRendererGL : public GLRenderer {
     EXPECT_GE(current_frame()->overlay_list.back().resource_id, 0U);
   }
 
-  void AddExpectedRectToOverlayProcessor(const gfx::RectF& rect) {
+  void AddExpectedRectToOverlayValidator(const gfx::RectF& rect) {
     DCHECK(overlay_processor_);
-    static_cast<SingleOverlayProcessor*>(overlay_processor_.get())
+    static_cast<OverlayProcessorType*>(overlay_processor_.get())
+        ->GetTypedOverlayCandidateValidator()
         ->AddExpectedRect(rect);
   }
 
@@ -2263,8 +2290,9 @@ class OverlayInfoRendererGL : public GLRenderer {
     expect_overlays_ = expect_overlays;
   }
 
-  void SetOverlayProcessor() {
-    overlay_processor_.reset(new SingleOverlayProcessor());
+  void SetOverlayProcessorWithValidator(
+      std::unique_ptr<SingleOverlayValidator> validator) {
+    overlay_processor_.reset(new OverlayProcessorType(std::move(validator)));
   }
 
  private:
@@ -2284,6 +2312,8 @@ class MockOverlayScheduler {
 };
 
 class GLRendererWithOverlaysTest : public testing::Test {
+  using OverlayProcessorType = TypedOverlayProcessor<SingleOverlayValidator>;
+
  protected:
   GLRendererWithOverlaysTest() {
     provider_ = TestContextProvider::Create();
@@ -2312,7 +2342,8 @@ class GLRendererWithOverlaysTest : public testing::Test {
     renderer_->Initialize();
     renderer_->SetVisible(true);
     if (use_validator) {
-      renderer_->SetOverlayProcessor();
+      renderer_->SetOverlayProcessorWithValidator(
+          std::make_unique<SingleOverlayValidator>());
     }
   }
 
@@ -2336,8 +2367,8 @@ class GLRendererWithOverlaysTest : public testing::Test {
     renderer_->DidReceiveTextureInUseResponses(responses);
   }
 
-  void AddExpectedRectToOverlayProcessor(const gfx::RectF& rect) {
-    renderer_->AddExpectedRectToOverlayProcessor(rect);
+  void AddExpectedRectToOverlayValidator(const gfx::RectF& rect) {
+    renderer_->AddExpectedRectToOverlayValidator(rect);
   }
 
   RendererSettings settings_;
@@ -2355,7 +2386,7 @@ TEST_F(GLRendererWithOverlaysTest, OverlayQuadNotDrawn) {
   bool use_validator = true;
   Init(use_validator);
   renderer_->set_expect_overlays(true);
-  AddExpectedRectToOverlayProcessor(gfx::RectF(kOverlayBottomRightRect));
+  AddExpectedRectToOverlayValidator(gfx::RectF(kOverlayBottomRightRect));
 
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
 

@@ -38,7 +38,7 @@ def main(argv):
         txt = host.filesystem.read_text_file(
             host.filesystem.join(
                 host.port_factory.get(
-                    options=options).artifacts_directory(),
+                    options=options).results_directory(),
                 'full_results.json'))
 
     if txt.startswith('ADD_RESULTS(') and txt.endswith(');'):

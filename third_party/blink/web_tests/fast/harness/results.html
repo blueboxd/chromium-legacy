@@ -1113,10 +1113,8 @@ const GUI = {
         let perIterationArtifact = Object();
         for(let [name, paths] of Object.entries(test.artifacts)){
           for(let path of paths){
-            const is_retry_artifact_path = (path.startsWith('layout-test-results/retry_') ||
-                                            path.startsWith('layout-test-results\\retry_'));
-            if(iteration == 0 && !is_retry_artifact_path ||
-               iteration > 0 && is_retry_artifact_path){
+            if(iteration == 0 && !path.startsWith('retry_') ||
+               iteration > 0 && path.startsWith('retry_' + iteration)){
               if(!perIterationArtifact.hasOwnProperty(name)){
                 perIterationArtifact[name] = [];
               }

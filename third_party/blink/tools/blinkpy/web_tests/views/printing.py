@@ -79,7 +79,7 @@ class Printer(object):
     def print_config(self, port):
         self._print_default("Using port '%s'" % port.name())
         self._print_default('Test configuration: %s' % port.test_configuration())
-        self._print_default('View the test results at file://%s/results.html' % port.artifacts_directory())
+        self._print_default('View the test results at file://%s/results.html' % port.results_directory())
         if self._options.order == 'random':
             self._print_default('Using random order with seed: %d' % self._options.seed)
 

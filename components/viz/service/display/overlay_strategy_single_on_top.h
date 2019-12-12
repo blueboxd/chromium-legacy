@@ -16,7 +16,7 @@ class VIZ_SERVICE_EXPORT OverlayStrategySingleOnTop
     : public OverlayProcessorUsingStrategy::Strategy {
  public:
   explicit OverlayStrategySingleOnTop(
-      OverlayProcessorUsingStrategy* capability_checker);
+      OverlayCandidateValidatorStrategy* capability_checker);
   ~OverlayStrategySingleOnTop() override;
 
   bool Attempt(const SkMatrix44& output_color_matrix,
@@ -39,7 +39,7 @@ class VIZ_SERVICE_EXPORT OverlayStrategySingleOnTop
                   const OverlayCandidate& candidate,
                   QuadList::Iterator candidate_iterator);
 
-  OverlayProcessorUsingStrategy* capability_checker_;  // Weak.
+  OverlayCandidateValidatorStrategy* capability_checker_;  // Weak.
 
   ResourceId previous_frame_resource_id_ = kInvalidResourceId;
   size_t same_resource_id_frames_count_ = 0;

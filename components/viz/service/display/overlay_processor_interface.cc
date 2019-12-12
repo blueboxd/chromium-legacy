@@ -11,13 +11,6 @@
 #include "components/viz/service/display/overlay_processor_mac.h"
 #elif defined(OS_WIN)
 #include "components/viz/service/display/overlay_processor_win.h"
-#elif defined(OS_ANDROID)
-#include "components/viz/service/display/overlay_candidate_validator_strategy.h"
-#include "components/viz/service/display/overlay_processor_using_strategy.h"
-#elif defined(USE_OZONE)
-#include "components/viz/service/display/overlay_processor_ozone.h"
-#include "ui/ozone/public/overlay_manager_ozone.h"
-#include "ui/ozone/public/ozone_platform.h"
 #else
 #include "components/viz/service/display/overlay_candidate_validator_strategy.h"
 #include "components/viz/service/display/overlay_processor_using_strategy.h"
@@ -93,22 +86,8 @@ OverlayProcessorInterface::CreateOverlayProcessor(
   return base::WrapUnique(new OverlayProcessorWin(
       enable_dc_overlay, std::make_unique<DCLayerOverlayProcessor>(
                              capabilities, renderer_settings)));
-#elif defined(USE_OZONE)
-  bool overlay_enabled = surface_handle != gpu::kNullSurfaceHandle;
-  overlay_enabled &= !renderer_settings.overlay_strategies.empty();
-  std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates;
-  if (overlay_enabled) {
-    auto* overlay_manager =
-        ui::OzonePlatform::GetInstance()->GetOverlayManager();
-    overlay_candidates =
-        overlay_manager->CreateOverlayCandidates(surface_handle);
-  }
-  return std::make_unique<OverlayProcessorOzone>(
-      overlay_enabled, std::move(overlay_candidates),
-      std::move(renderer_settings.overlay_strategies));
-#else  // defined(OS_ANDROID) || Default
-  // TODO(weiliangc): Add a stub class for the default case for platforms where
-  // we could not overlay.
+
+#else  // defined(USE_OZONE) || defined(OS_ANDROID) || Default
   auto validator = OverlayCandidateValidatorStrategy::Create(
       surface_handle, capabilities, renderer_settings);
   return base::WrapUnique(new OverlayProcessorUsingStrategy(

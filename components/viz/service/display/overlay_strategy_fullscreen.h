@@ -10,6 +10,8 @@
 #include "components/viz/service/viz_service_export.h"
 
 namespace viz {
+
+class OverlayCandidateValidatorStrategy;
 // Overlay strategy to promote a single full screen quad to an overlay.
 // The promoted quad should have all the property of the framebuffer and it
 // should be possible to use it as such.
@@ -17,7 +19,7 @@ class VIZ_SERVICE_EXPORT OverlayStrategyFullscreen
     : public OverlayProcessorUsingStrategy::Strategy {
  public:
   explicit OverlayStrategyFullscreen(
-      OverlayProcessorUsingStrategy* capability_checker);
+      OverlayCandidateValidatorStrategy* capability_checker);
   ~OverlayStrategyFullscreen() override;
 
   bool Attempt(const SkMatrix44& output_color_matrix,
@@ -33,7 +35,7 @@ class VIZ_SERVICE_EXPORT OverlayStrategyFullscreen
   OverlayStrategy GetUMAEnum() const override;
 
  private:
-  OverlayProcessorUsingStrategy* capability_checker_;  // Weak.
+  OverlayCandidateValidatorStrategy* capability_checker_;  // Weak.
 
   DISALLOW_COPY_AND_ASSIGN(OverlayStrategyFullscreen);
 };

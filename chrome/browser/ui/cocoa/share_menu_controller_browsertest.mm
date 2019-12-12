@@ -36,7 +36,7 @@
 // don't appear to be present when inheriting from vanilla
 // |NSSharingService|.
 @synthesize subject;
-@synthesize sharedItem = _sharedItem;
+@synthesize sharedItem = sharedItem_;
 
 - (void)performWithItems:(NSArray*)items {
   [self setSharedItem:[items firstObject]];

@@ -77,11 +77,11 @@
   }
 
   if ((self = [super init])) {
-    _browser = new Browser(Browser::CreateParams(aProfile, false));
-    chrome::NewTab(_browser);
-    _browser->window()->Show();
+    browser_ = new Browser(Browser::CreateParams(aProfile, false));
+    chrome::NewTab(browser_);
+    browser_->window()->Show();
     base::scoped_nsobject<NSNumber> numID(
-        [[NSNumber alloc] initWithInt:_browser->session_id().id()]);
+        [[NSNumber alloc] initWithInt:browser_->session_id().id()]);
     [self setUniqueID:numID];
   }
   return self;
@@ -97,9 +97,9 @@
     // It is safe to be weak, if a window goes away (eg user closing a window)
     // the applescript runtime calls appleScriptWindows in
     // BrowserCrApplication and this particular window is never returned.
-    _browser = aBrowser;
+    browser_ = aBrowser;
     base::scoped_nsobject<NSNumber> numID(
-        [[NSNumber alloc] initWithInt:_browser->session_id().id()]);
+        [[NSNumber alloc] initWithInt:browser_->session_id().id()]);
     [self setUniqueID:numID];
   }
   return self;
@@ -107,14 +107,14 @@
 
 - (NSWindow*)nativeHandle {
   // window() can be NULL during startup.
-  if (_browser->window())
-    return _browser->window()->GetNativeWindow().GetNativeNSWindow();
+  if (browser_->window())
+    return browser_->window()->GetNativeWindow().GetNativeNSWindow();
   return nil;
 }
 
 - (NSNumber*)activeTabIndex {
   // Note: applescript is 1-based, that is lists begin with index 1.
-  int activeTabIndex = _browser->tab_strip_model()->active_index() + 1;
+  int activeTabIndex = browser_->tab_strip_model()->active_index() + 1;
   if (!activeTabIndex) {
     return nil;
   }
@@ -124,15 +124,15 @@
 - (void)setActiveTabIndex:(NSNumber*)anActiveTabIndex {
   // Note: applescript is 1-based, that is lists begin with index 1.
   int atIndex = [anActiveTabIndex intValue] - 1;
-  if (atIndex >= 0 && atIndex < _browser->tab_strip_model()->count()) {
-    _browser->tab_strip_model()->ActivateTabAt(
+  if (atIndex >= 0 && atIndex < browser_->tab_strip_model()->count()) {
+    browser_->tab_strip_model()->ActivateTabAt(
         atIndex, {TabStripModel::GestureType::kOther});
   } else
     AppleScript::SetError(AppleScript::errInvalidTabIndex);
 }
 
 - (NSString*)mode {
-  Profile* profile = _browser->profile();
+  Profile* profile = browser_->profile();
   if (profile->IsOffTheRecord())
     return AppleScript::kIncognitoWindowMode;
   return AppleScript::kNormalWindowMode;
@@ -148,14 +148,14 @@
 - (TabAppleScript*)activeTab {
   TabAppleScript* currentTab =
       [[[TabAppleScript alloc] initWithWebContents:
-          _browser->tab_strip_model()->GetActiveWebContents()] autorelease];
+          browser_->tab_strip_model()->GetActiveWebContents()] autorelease];
   [currentTab setContainer:self
                   property:AppleScript::kTabsProperty];
   return currentTab;
 }
 
 - (NSArray*)tabs {
-  TabStripModel* tabStrip = _browser->tab_strip_model();
+  TabStripModel* tabStrip = browser_->tab_strip_model();
   NSMutableArray* tabs = [NSMutableArray arrayWithCapacity:tabStrip->count()];
 
   for (int i = 0; i < tabStrip->count(); ++i) {
@@ -183,7 +183,7 @@
   // Set how long it takes a tab to be created.
   base::TimeTicks newTabStartTime = base::TimeTicks::Now();
   content::WebContents* contents = chrome::AddSelectedTabWithURL(
-      _browser,
+      browser_,
       GURL(chrome::kChromeUINewTabURL),
       ui::PAGE_TRANSITION_TYPED);
   CoreTabHelper* core_tab_helper = CoreTabHelper::FromWebContents(contents);
@@ -199,7 +199,7 @@
 
   // Set how long it takes a tab to be created.
   base::TimeTicks newTabStartTime = base::TimeTicks::Now();
-  NavigateParams params(_browser, GURL(chrome::kChromeUINewTabURL),
+  NavigateParams params(browser_, GURL(chrome::kChromeUINewTabURL),
                         ui::PAGE_TRANSITION_TYPED);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   params.tabstrip_index = index;
@@ -212,9 +212,9 @@
 }
 
 - (void)removeFromTabsAtIndex:(int)index {
-  if (index < 0 || index >= _browser->tab_strip_model()->count())
+  if (index < 0 || index >= browser_->tab_strip_model()->count())
     return;
-  _browser->tab_strip_model()->CloseWebContentsAt(
+  browser_->tab_strip_model()->CloseWebContentsAt(
       index, TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
 }
 
@@ -256,8 +256,8 @@
   AppleScript::LogAppleScriptUMA(AppleScript::AppleScriptCommand::WINDOW_CLOSE);
 
   // window() can be NULL during startup.
-  if (_browser->window())
-    _browser->window()->Close();
+  if (browser_->window())
+    browser_->window()->Close();
 }
 
 @end

@@ -15,6 +15,7 @@
 namespace blink {
 
 class BackgroundSyncOptions;
+class ExceptionState;
 class ScriptPromise;
 class ScriptPromiseResolver;
 class ScriptState;
@@ -37,7 +38,8 @@ class PeriodicSyncManager final : public ScriptWrappable {
   // IDL exposed interface
   ScriptPromise registerPeriodicSync(ScriptState* script_state,
                                      const String& tag,
-                                     const BackgroundSyncOptions* options);
+                                     const BackgroundSyncOptions* options,
+                                     ExceptionState& exception_state);
   ScriptPromise getTags(ScriptState* script_state);
   ScriptPromise unregister(ScriptState* script_state, const String& tag);
 

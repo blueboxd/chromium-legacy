@@ -22,9 +22,10 @@ class UI_BASE_EXPORT CursorThemeManagerLinux {
 
   static CursorThemeManagerLinux* GetInstance();
 
-  virtual std::string GetCursorThemeName() = 0;
-  virtual int GetCursorThemeSize() = 0;
+  // Adds |observer| and makes initial OnCursorThemNameChanged() and/or
+  // OnCursorThemeSizeChanged() calls if the respective settings were set.
   void AddObserver(CursorThemeManagerLinuxObserver* observer);
+
   void RemoveObserver(CursorThemeManagerLinuxObserver* observer);
 
  protected:
@@ -34,6 +35,9 @@ class UI_BASE_EXPORT CursorThemeManagerLinux {
   cursor_theme_observers() {
     return cursor_theme_observers_;
   }
+
+  virtual std::string GetCursorThemeName() = 0;
+  virtual int GetCursorThemeSize() = 0;
 
  private:
   static CursorThemeManagerLinux* instance_;

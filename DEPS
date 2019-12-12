@@ -175,7 +175,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '3517aa7b14ad52aa662bf38932f2ba358a9f8318',
+  'skia_revision': 'a5909925e3a8514ceb837320aad66cf38879065f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -187,7 +187,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '49135f689abdd7736f03eac81e8331e7463ca4f7',
+  'angle_revision': '3c75d244d6f9ef1eb9f6f010f01828658fe9d38a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -238,7 +238,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'a6511cb49d585cdb9a81a8a99aa7c2adfd244ed9',
+  'catapult_revision': '4082c9147bb3d872b1d6456447a5b563da8b87d8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -306,7 +306,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '280b96ea8de35e145be4878ca53b6eecf7f38e67',
+  'dawn_revision': 'af094e6a88d01073a4e5e15fa1b268a72bbb73aa',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -889,7 +889,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '812a14697dd6193c0815a1bdb0c23462bfcb8cd3',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '8b34eb4d1e76ae1a94ffce09dbc2a1fbc75d551c',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1566,7 +1566,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@1159fec7d02e9218c24ee84f37c39d2f68ec391c',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@88ba4611111e0cc6ed77e3e94925706e2b30da36',
     'condition': 'checkout_src_internal',
   },
 

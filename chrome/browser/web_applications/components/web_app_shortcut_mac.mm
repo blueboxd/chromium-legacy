@@ -69,8 +69,8 @@
 // terminates. On termination, it will run the specified callback on the UI
 // thread and release itself.
 @interface TerminationObserver : NSObject {
-  base::scoped_nsobject<NSRunningApplication> _app;
-  base::OnceClosure _callback;
+  base::scoped_nsobject<NSRunningApplication> app_;
+  base::OnceClosure callback_;
 }
 - (id)initWithRunningApplication:(NSRunningApplication*)app
                         callback:(base::OnceClosure)callback;
@@ -81,11 +81,11 @@
                         callback:(base::OnceClosure)callback {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (self = [super init]) {
-    _callback = std::move(callback);
-    _app.reset(app, base::scoped_policy::RETAIN);
+    callback_ = std::move(callback);
+    app_.reset(app, base::scoped_policy::RETAIN);
     // Note that |observeValueForKeyPath| will be called with the initial value
     // within the |addObserver| call.
-    [_app addObserver:self
+    [app_ addObserver:self
            forKeyPath:@"isTerminated"
               options:NSKeyValueObservingOptionNew |
                       NSKeyValueObservingOptionInitial
@@ -117,11 +117,11 @@
   // If |onTerminated| is called repeatedly (which in theory it should not),
   // then ensure that we only call removeObserver and release once by doing an
   // early-out if |callback_| has already been made.
-  if (!_callback)
+  if (!callback_)
     return;
-  std::move(_callback).Run();
-  DCHECK(!_callback);
-  [_app removeObserver:self forKeyPath:@"isTerminated" context:nullptr];
+  std::move(callback_).Run();
+  DCHECK(!callback_);
+  [app_ removeObserver:self forKeyPath:@"isTerminated" context:nullptr];
   [self release];
 }
 @end

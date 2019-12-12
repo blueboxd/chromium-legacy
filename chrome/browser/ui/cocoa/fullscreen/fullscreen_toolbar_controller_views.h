@@ -17,10 +17,10 @@ class BrowserView;
 @interface FullscreenToolbarControllerViews
     : FullscreenToolbarController<FullscreenToolbarContextDelegate> {
  @private
-  BrowserView* _browserView;  // weak
+  BrowserView* browserView_;  // weak
 
   // Since dealloc() may need to access the native view, we retain it here.
-  base::scoped_nsobject<BridgedContentView> _ns_view;
+  base::scoped_nsobject<BridgedContentView> ns_view_;
 }
 
 // Designated initializer.

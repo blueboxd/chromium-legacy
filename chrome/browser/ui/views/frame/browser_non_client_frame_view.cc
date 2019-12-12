@@ -413,6 +413,7 @@ SkColor BrowserNonClientFrameView::GetThemeOrDefaultColor(int color_id) const {
 
 SkColor BrowserNonClientFrameView::GetUnthemedColor(int color_id) const {
   DCHECK(!frame_->ShouldUseTheme());
-  return ThemeProperties::GetDefaultColor(color_id,
-                                          browser_view_->IsIncognito());
+  return ThemeProperties::GetDefaultColor(
+      color_id, browser_view_->IsIncognito(),
+      GetNativeTheme()->ShouldUseDarkColors());
 }

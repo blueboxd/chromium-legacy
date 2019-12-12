@@ -25,7 +25,6 @@
 #include "components/autofill/core/browser/data_model/autofill_metadata.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
-#include "components/autofill/core/browser/data_model/credit_card_cloud_token_data.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
@@ -2627,42 +2626,6 @@ TEST_F(AutofillTableTest, SetGetPaymentsCustomerData_MultipleSet) {
   std::unique_ptr<PaymentsCustomerData> output;
   ASSERT_TRUE(table_->GetPaymentsCustomerData(&output));
   EXPECT_EQ(input3, *output);
-}
-
-TEST_F(AutofillTableTest, SetGetCreditCardCloudData_OneTimeSet) {
-  std::vector<CreditCardCloudTokenData> inputs;
-  inputs.push_back(test::GetCreditCardCloudTokenData1());
-  inputs.push_back(test::GetCreditCardCloudTokenData2());
-  table_->SetCreditCardCloudTokenData(inputs);
-
-  std::vector<std::unique_ptr<CreditCardCloudTokenData>> outputs;
-  ASSERT_TRUE(table_->GetCreditCardCloudTokenData(&outputs));
-  EXPECT_EQ(outputs.size(), inputs.size());
-  EXPECT_EQ(0, outputs[0]->Compare(test::GetCreditCardCloudTokenData1()));
-  EXPECT_EQ(0, outputs[1]->Compare(test::GetCreditCardCloudTokenData2()));
-}
-
-TEST_F(AutofillTableTest, SetGetCreditCardCloudData_MultipleSet) {
-  std::vector<CreditCardCloudTokenData> inputs;
-  CreditCardCloudTokenData input1 = test::GetCreditCardCloudTokenData1();
-  inputs.push_back(input1);
-  table_->SetCreditCardCloudTokenData(inputs);
-
-  inputs.clear();
-  CreditCardCloudTokenData input2 = test::GetCreditCardCloudTokenData2();
-  inputs.push_back(input2);
-  table_->SetCreditCardCloudTokenData(inputs);
-
-  std::vector<std::unique_ptr<CreditCardCloudTokenData>> outputs;
-  ASSERT_TRUE(table_->GetCreditCardCloudTokenData(&outputs));
-  EXPECT_EQ(1u, outputs.size());
-  EXPECT_EQ(0, outputs[0]->Compare(test::GetCreditCardCloudTokenData2()));
-}
-
-TEST_F(AutofillTableTest, GetCreditCardCloudData_NoData) {
-  std::vector<std::unique_ptr<CreditCardCloudTokenData>> output;
-  ASSERT_TRUE(table_->GetCreditCardCloudTokenData(&output));
-  EXPECT_TRUE(output.empty());
 }
 
 const size_t kMaxCount = 2;

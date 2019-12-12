@@ -3274,7 +3274,7 @@
             ]
         }
     ],
-    "InterestFeedContentSuggestionsFeedUI": [
+    "InterestFeedContentSuggestions": [
         {
             "platforms": [
                 "android"

@@ -80,7 +80,7 @@
             android:title="@string/menu_reader_mode_prefs"
             android:icon="@drawable/reader_mode_prefs_icon" />
         <item android:id="@+id/preferences_id"
-            android:title="@string/menu_preferences" />
+            android:title="@string/menu_settings" />
         <item android:id="@+id/help_id"
             android:title="@string/menu_help" />
         <item android:id="@+id/enter_vr_id"
@@ -101,7 +101,7 @@
         <item android:id="@+id/menu_group_tabs"
             android:title="@string/menu_group_tabs" />
         <item android:id="@id/preferences_id"
-            android:title="@string/menu_preferences" />
+            android:title="@string/menu_settings" />
     </group>
 
     <!-- Items shown only in the tab switcher when start surface is enabled -->
@@ -126,7 +126,7 @@
         <item android:id="@+id/menu_group_tabs"
             android:title="@string/menu_group_tabs" />
         <item android:id="@id/preferences_id"
-            android:title="@string/menu_preferences" />
+            android:title="@string/menu_settings" />
     </group>
 
     <!-- Items shown only when the tablet has no visible tabs -->
@@ -137,6 +137,6 @@
         <item android:id="@id/new_incognito_tab_menu_id"
             android:title="@string/menu_new_incognito_tab" />
         <item android:id="@id/preferences_id"
-            android:title="@string/menu_preferences" />
+            android:title="@string/menu_settings" />
     </group>
 </menu>

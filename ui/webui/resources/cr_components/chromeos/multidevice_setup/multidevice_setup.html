@@ -20,11 +20,11 @@
         box-sizing: border-box;
         color: var(--google-grey-700);
         font-size: 13px;
-        height: var(--multidevice-setup-height, 640px);
+        height: 100%;
         line-height: 16px;
         margin: auto;
-        padding: 60px 32px 32px 32px;
-        width: var(--multidevice-setup-width, var(--default-ui-width));
+        max-width: var(--multidevice-setup-width, var(--default-ui-width));
+        padding: 32px;
       }
 
       iron-pages {
@@ -38,7 +38,10 @@
           height: auto;
           margin-bottom: calc(4 * var(--narrow-button-bar-padding));
           padding: 32px 32px 0 32px;
-          width: var(--narrow-ui-width);
+        }
+
+        iron-pages {
+          padding: 0;
         }
 
         /*
@@ -50,13 +53,13 @@
           background: rgba(255, 255, 255, 0.9);
           bottom: 0;
           height: var(--narrow-button-bar-padding);
-          left: var(--narrow-button-bar-padding);
+          left: var(--narrow-button-bar-margin);
           padding: var(--narrow-button-bar-padding)
-                   var(--narrow-button-bar-padding)
+                   0
                    calc(2 * var(--narrow-button-bar-padding))
-                   var(--narrow-button-bar-padding);
+                   0;
           position: fixed;
-          right: var(--narrow-button-bar-padding);
+          right: var(--narrow-button-bar-margin);
         }
       }
     </style>

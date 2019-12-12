@@ -8,7 +8,9 @@
 #include <memory>
 
 #include "ash/public/cpp/default_scale_factor_retriever.h"
+#include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 class Profile;
 
@@ -36,6 +38,10 @@ class ArcServiceLauncher {
 
   // Returns a global instance.
   static ArcServiceLauncher* Get();
+
+  // Must be called early in startup.
+  void Initialize(mojo::PendingRemote<ash::mojom::CrosDisplayConfigController>
+                      display_config);
 
   // Called just before most of BrowserContextKeyedService instance creation.
   // Set the given |profile| to ArcSessionManager, if the profile is allowed

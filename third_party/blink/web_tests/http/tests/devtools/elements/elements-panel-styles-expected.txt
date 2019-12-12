@@ -9,16 +9,17 @@ border-top-left-radius: 5px;
 border-top-right-radius: 5px;
     5px - .foo elements-panel-styles.css:21 -> elements-panel-styles.css:21:7
 color: rgb(0, 0, 255);
-    blue - .foo, .foo::before elements-panel-styles.css:34 -> elements-panel-styles.css:34:21
+    blue - .foo, .foo::before elements-panel-styles.css:35 -> elements-panel-styles.css:35:21
     OVERLOADED black - .foo elements-panel-styles.css:21 -> elements-panel-styles.css:21:7
     OVERLOADED red - #container elements-panel-styles.css:10 -> elements-panel-styles.css:10:13
-    OVERLOADED magenta !important - html elements-panel-styles.css:61 -> elements-panel-styles.css:61:7
+    OVERLOADED magenta !important - html elements-panel-styles.css:67 -> elements-panel-styles.css:67:7
     OVERLOADED -internal-root-color - html user agent stylesheet
 content: "[before Foo]";
-    "[before Foo]" - .foo, .foo::before elements-panel-styles.css:34 -> elements-panel-styles.css:34:21
+    "[before Foo]" - .foo, .foo::before elements-panel-styles.css:35 -> elements-panel-styles.css:35:21
 display: block;
     OVERLOADED none - element.style
-    block !important - .foo, .foo::before elements-panel-styles.css:34 -> elements-panel-styles.css:34:21
+    block !important - .foo, .foo::before elements-panel-styles.css:35 -> elements-panel-styles.css:35:21
+    OVERLOADED list-item - .foo elements-panel-styles.css:21 -> elements-panel-styles.css:21:7
     OVERLOADED block - div user agent stylesheet
 font-family: serif;
     serif - #container elements-panel-styles.css:10 -> elements-panel-styles.css:10:13
@@ -68,16 +69,17 @@ body .foo { (elements-pa…tyles.css:6 -> elements-panel-styles.css:6:12)
 /-- overloaded --/     text-indent: 10px;
 
 [expanded] 
-.foo { (elements-pa…yles.css:53 -> elements-panel-styles.css:53:7)
+.foo { (elements-pa…yles.css:59 -> elements-panel-styles.css:59:7)
 
 [expanded] 
-.foo, .foo::before { (elements-pa…yles.css:34 -> elements-panel-styles.css:34:21)
+.foo, .foo::before { (elements-pa…yles.css:35 -> elements-panel-styles.css:35:21)
     content: "[before Foo]";
     color: blue;
     display: block !important;
 
 [expanded] 
 .foo { (elements-pa…yles.css:21 -> elements-panel-styles.css:21:7)
+/-- overloaded --/     display: list-item;
 /-- overloaded --/     color: black;
     margin-left: 1px;
     margin: 10px 0 2px;
@@ -124,7 +126,7 @@ body { (elements-pa…tyles.css:1 -> elements-panel-styles.css:1:7)
 
 ======== Inherited from html ========
 [expanded] 
-html { (elements-pa…yles.css:61 -> elements-panel-styles.css:61:7)
+html { (elements-pa…yles.css:67 -> elements-panel-styles.css:67:7)
 /-- overloaded --/     color: magenta !important;
 
 [expanded] 
@@ -133,27 +135,33 @@ html { (user agent stylesheet)
 
 ======== Pseudo ::before element ========
 [expanded] 
-.foo::before { (elements-pa…yles.css:57 -> elements-panel-styles.css:57:15)
+.foo::before { (elements-pa…yles.css:63 -> elements-panel-styles.css:63:15)
 
 [expanded] 
-.foo::before { (elements-pa…yles.css:40 -> elements-panel-styles.css:40:15)
+.foo::before { (elements-pa…yles.css:41 -> elements-panel-styles.css:41:15)
     color: red;
 
 [expanded] 
-.foo, .foo::before { (elements-pa…yles.css:34 -> elements-panel-styles.css:34:21)
+.foo, .foo::before { (elements-pa…yles.css:35 -> elements-panel-styles.css:35:21)
     content: "[before Foo]";
 /-- overloaded --/     color: blue;
     display: block !important;
 
 ======== Pseudo ::after element ========
 [expanded] 
-.foo::after { (elements-pa…yles.css:48 -> elements-panel-styles.css:48:14)
+.foo::after { (elements-pa…yles.css:49 -> elements-panel-styles.css:49:14)
     font-family: courier;
     content: "[after Foo 2]";
 
 [expanded] 
-.foo::after { (elements-pa…yles.css:44 -> elements-panel-styles.css:44:14)
+.foo::after { (elements-pa…yles.css:45 -> elements-panel-styles.css:45:14)
 /-- overloaded --/     content: "[after Foo]";
     color: green;
+
+======== Pseudo ::marker element ========
+[expanded] 
+.foo::marker { (elements-pa…yles.css:54 -> elements-panel-styles.css:54:15)
+    content: "[marker Foo]";
+    color: cyan;
 
 

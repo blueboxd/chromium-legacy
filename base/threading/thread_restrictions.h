@@ -144,7 +144,6 @@ class BrowserShutdownProfileDumper;
 class BrowserTestBase;
 class CategorizedWorkerPool;
 class DesktopCaptureDevice;
-class GpuProcessTransportFactory;
 class InProcessUtilityThread;
 class NestedMessagePumpAndroid;
 class RenderWidgetHostViewMac;
@@ -357,7 +356,6 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class AdjustOOMScoreHelper;
   friend class android_webview::ScopedAllowInitGLBindings;
   friend class content::BrowserProcessSubThread;
-  friend class content::GpuProcessTransportFactory;
   friend class content::RenderWidgetHostViewMac;  // http://crbug.com/121917
   friend class content::WebContentsViewMac;
   friend class cronet::CronetPrefsManager;

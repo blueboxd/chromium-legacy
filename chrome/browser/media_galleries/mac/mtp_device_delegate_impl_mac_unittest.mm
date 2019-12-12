@@ -35,7 +35,7 @@ const char kTestFileContents[] = "test";
 
 @interface MockMTPICCameraDevice : ICCameraDevice {
  @private
-  base::scoped_nsobject<NSMutableArray> _allMediaFiles;
+  base::scoped_nsobject<NSMutableArray> allMediaFiles_;
 }
 
 - (void)addMediaFile:(ICCameraFile*)file;
@@ -71,13 +71,13 @@ const char kTestFileContents[] = "test";
 }
 
 - (NSArray*)mediaFiles {
-  return _allMediaFiles;
+  return allMediaFiles_;
 }
 
 - (void)addMediaFile:(ICCameraFile*)file {
-  if (!_allMediaFiles.get())
-    _allMediaFiles.reset([[NSMutableArray alloc] init]);
-  [_allMediaFiles addObject:file];
+  if (!allMediaFiles_.get())
+    allMediaFiles_.reset([[NSMutableArray alloc] init]);
+  [allMediaFiles_ addObject:file];
 }
 
 - (void)requestDownloadFile:(ICCameraFile*)file
@@ -113,8 +113,8 @@ const char kTestFileContents[] = "test";
 
 @interface MockMTPICCameraFile : ICCameraFile {
  @private
-  base::scoped_nsobject<NSString> _name;
-  base::scoped_nsobject<NSDate> _date;
+  base::scoped_nsobject<NSString> name_;
+  base::scoped_nsobject<NSDate> date_;
 }
 
 - (id)init:(NSString*)name;
@@ -128,14 +128,14 @@ const char kTestFileContents[] = "test";
     base::scoped_nsobject<NSDateFormatter> iso8601day(
         [[NSDateFormatter alloc] init]);
     [iso8601day setDateFormat:@"yyyy-MM-dd"];
-    _name.reset([name retain]);
-    _date.reset([[iso8601day dateFromString:@"2012-12-12"] retain]);
+    name_.reset([name retain]);
+    date_.reset([[iso8601day dateFromString:@"2012-12-12"] retain]);
   }
   return self;
 }
 
 - (NSString*)name {
-  return _name.get();
+  return name_.get();
 }
 
 - (NSString*)UTI {
@@ -143,11 +143,11 @@ const char kTestFileContents[] = "test";
 }
 
 - (NSDate*)modificationDate {
-  return _date.get();
+  return date_.get();
 }
 
 - (NSDate*)creationDate {
-  return _date.get();
+  return date_.get();
 }
 
 - (off_t)fileSize {

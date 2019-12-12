@@ -20,9 +20,9 @@ import android.widget.ListView;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.chrome.browser.util.ViewUtils;
+import org.chromium.components.browser_ui.styles.ChromeColors;
 
 import java.util.ArrayList;
 

@@ -239,6 +239,10 @@ struct AutocompleteMatch {
   // like entity, personalized, profile or postfix.
   static bool IsSpecializedSearchType(Type type);
 
+  // Convenience function to check if |type| is a search history type -
+  // usually this surfaces a clock icon to the user.
+  static bool IsSearchHistoryType(Type type);
+
   // If this match is a submatch, returns the parent's type, otherwise this
   // match's type.
   Type GetDemotionType() const;

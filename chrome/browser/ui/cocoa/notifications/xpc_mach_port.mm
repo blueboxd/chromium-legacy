@@ -29,20 +29,20 @@ NSString* const kCrSendRight = @"org.chromium.xpc.MachSendRight";
 }  // namespace
 
 @implementation CrXPCMachPort {
-  base::mac::ScopedMachSendRight _port;
+  base::mac::ScopedMachSendRight port_;
 }
 
 - (instancetype)initWithMachSendRight:
     (base::mac::ScopedMachSendRight)sendRight {
   if ((self = [super init])) {
     DCHECK(sendRight.is_valid());
-    _port = std::move(sendRight);
+    port_ = std::move(sendRight);
   }
   return self;
 }
 
 - (base::mac::ScopedMachSendRight)takeRight {
-  return std::move(_port);
+  return std::move(port_);
 }
 
 // NSCoding:
@@ -56,19 +56,19 @@ NSString* const kCrSendRight = @"org.chromium.xpc.MachSendRight";
     if (!xpcObject)
       return nil;
 
-    _port.reset(xpc_mach_send_copy_right(xpcObject));
+    port_.reset(xpc_mach_send_copy_right(xpcObject));
   }
   return self;
 }
 
 - (void)encodeWithCoder:(NSCoder*)coder {
   DCHECK([coder isKindOfClass:NSClassFromString(@"NSXPCEncoder")]);
-  DCHECK(_port.is_valid());
+  DCHECK(port_.is_valid());
 
   id coderAsId = coder;
 
   base::scoped_nsobject<OS_xpc_mach_send> xpcObject(
-      xpc_mach_send_create(_port.get()));
+      xpc_mach_send_create(port_.get()));
   [coderAsId encodeXPCObject:xpcObject forKey:kCrSendRight];
 }
 

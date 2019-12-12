@@ -41,11 +41,11 @@ class HighlighterResultView : public views::View {
 
   void Animate(const gfx::RectF& bounds,
                HighlighterGestureType gesture_type,
-               const base::Closure& done);
+               base::OnceClosure done);
 
  private:
-  void FadeIn(const base::TimeDelta& duration, const base::Closure& done);
-  void FadeOut(const base::Closure& done);
+  void FadeIn(const base::TimeDelta& duration, base::OnceClosure done);
+  void FadeOut(base::OnceClosure done);
 
   std::unique_ptr<views::Widget> widget_;
   std::unique_ptr<ui::Layer> result_layer_;

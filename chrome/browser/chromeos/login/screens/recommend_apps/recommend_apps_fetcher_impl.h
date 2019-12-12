@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher.h"
 #include "components/arc/arc_features_parser.h"
 #include "extensions/browser/api/system_display/display_info_provider.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace base {
@@ -31,10 +32,6 @@ class URLLoaderFactory;
 
 class SimpleURLLoader;
 }  // namespace network
-
-namespace service_manager {
-class Connector;
-}
 
 namespace chromeos {
 
@@ -64,7 +61,8 @@ class RecommendAppsFetcherImpl : public RecommendAppsFetcher {
  public:
   RecommendAppsFetcherImpl(
       RecommendAppsFetcherDelegate* delegate,
-      service_manager::Connector* connector,
+      mojo::PendingRemote<ash::mojom::CrosDisplayConfigController>
+          display_config,
       network::mojom::URLLoaderFactory* url_loader_factory);
   ~RecommendAppsFetcherImpl() override;
 
@@ -146,7 +144,6 @@ class RecommendAppsFetcherImpl : public RecommendAppsFetcher {
 
   RecommendAppsFetcherDelegate* delegate_;
 
-  service_manager::Connector* connector_;
   network::mojom::URLLoaderFactory* url_loader_factory_;
   std::unique_ptr<network::SimpleURLLoader> app_list_loader_;
 

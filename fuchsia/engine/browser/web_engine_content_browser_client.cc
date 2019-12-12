@@ -106,6 +106,10 @@ void WebEngineContentBrowserClient::OverrideWebkitPrefs(
 
   if (allow_insecure_content_)
     web_prefs->allow_running_insecure_content = true;
+
+  // Allow videos to autoplay.
+  // TODO(crbug.com/1033272): Provide a FIDL API to configure AutoplayPolicy.
+  web_prefs->autoplay_policy = content::AutoplayPolicy::kNoUserGestureRequired;
 }
 
 void WebEngineContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(

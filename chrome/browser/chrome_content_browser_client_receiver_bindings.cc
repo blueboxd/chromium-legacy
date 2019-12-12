@@ -41,9 +41,6 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/download/android/available_offline_content_provider.h"
-#elif defined(OS_CHROMEOS)
-#include "chrome/browser/ash_service_registry.h"
-#include "services/service_manager/public/cpp/service.h"
 #elif defined(OS_WIN)
 #include "chrome/browser/win/conflicts/module_database.h"
 #include "chrome/browser/win/conflicts/module_event_sink_impl.h"
@@ -334,11 +331,4 @@ void ChromeContentBrowserClient::RunServiceInstance(
     return;
   }
 #endif
-
-#if defined(OS_CHROMEOS)
-  auto service = ash_service_registry::HandleServiceRequest(
-      service_name, std::move(*receiver));
-  if (service)
-    service_manager::Service::RunAsyncUntilTermination(std::move(service));
-#endif  // defined(OS_CHROMEOS)
 }

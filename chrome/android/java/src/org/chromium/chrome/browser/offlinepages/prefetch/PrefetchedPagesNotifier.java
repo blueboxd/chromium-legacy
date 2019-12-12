@@ -135,7 +135,7 @@ public class PrefetchedPagesNotifier {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             PendingIntentProvider settingsIntent =
                     getPendingBroadcastFor(context, SettingsReceiver.class);
-            builder.addAction(R.drawable.settings_cog, context.getString(R.string.preferences),
+            builder.addAction(R.drawable.settings_cog, context.getString(R.string.settings),
                     settingsIntent,
                     NotificationUmaTracker.ActionType.OFFLINE_CONTENT_SUGGESTION_SETTINGS);
         }

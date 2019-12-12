@@ -371,7 +371,7 @@ public class LocaleManager {
         Snackbar snackbar = Snackbar.make(title, mSnackbarController, Snackbar.TYPE_NOTIFICATION,
                 Snackbar.UMA_SPECIAL_LOCALE);
         snackbar.setDuration(SNACKBAR_DURATION_MS);
-        snackbar.setAction(context.getString(R.string.preferences), null);
+        snackbar.setAction(context.getString(R.string.settings), null);
         manager.showSnackbar(snackbar);
     }
 

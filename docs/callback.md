@@ -8,11 +8,11 @@ The templated `base::Callback<>` class is a generalized function object.
 Together with the `base::Bind()` function in base/bind.h, they provide a
 type-safe method for performing partial application of functions.
 
-Partial application (or "currying") is the process of binding a subset of a
-function's arguments to produce another function that takes fewer arguments.
-This can be used to pass around a unit of delayed execution, much like lexical
-closures are used in other languages. For example, it is used in Chromium code
-to schedule tasks on different MessageLoops.
+Partial application is the process of binding a subset of a function's arguments
+to produce another function that takes fewer arguments. This can be used to pass
+around a unit of delayed execution, much like lexical closures are used in other
+languages. For example, it is used in Chromium code to schedule tasks on
+different MessageLoops.
 
 A callback with no unbound input parameters (`base::Callback<void()>`) is
 called a `base::Closure`. Note that this is NOT the same as what other
@@ -260,7 +260,7 @@ pointer.
 base::Closure cb = base::Bind(&MyClass::MyFunc, this, 23, "hello world");
 ```
 
-### Partial Binding Of Parameters (Currying)
+### Partial Binding Of Parameters
 
 You can specify some parameters when you create the callback, and specify the
 rest when you execute the callback.
@@ -281,12 +281,12 @@ void AnotherFunc(const std::string& file) {
 };
 ```
 
-This technique is known as [Currying](http://en.wikipedia.org/wiki/Currying). It
-should be used in lieu of creating an adapter class that holds the bound
-arguments. Notice also that the `"MyPrefix: "` argument is actually a
-`const char*`, while `DisplayIntWithPrefix` actually wants a
-`const std::string&`. Like normal function dispatch, `base::Bind`, will coerce
-parameter types if possible.
+This technique is known as [partial
+application](http://en.wikipedia.org/wiki/Partial_application). It should be
+used in lieu of creating an adapter class that holds the bound arguments. Notice
+also that the `"MyPrefix: "` argument is actually a `const char*`, while
+`DisplayIntWithPrefix` actually wants a `const std::string&`. Like normal
+function dispatch, `base::Bind`, will coerce parameter types if possible.
 
 ### Avoiding Copies With Callback Parameters
 

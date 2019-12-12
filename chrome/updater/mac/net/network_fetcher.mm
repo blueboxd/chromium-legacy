@@ -43,9 +43,9 @@ using DownloadToFileCompleteCallback =
 
 @implementation CHUpdaterNetworkController {
  @protected
-  ResponseStartedCallback _responseStartedCallback;
-  ProgressCallback _progressCallback;
-  scoped_refptr<base::SingleThreadTaskRunner> _callbackRunner;
+  ResponseStartedCallback responseStartedCallback_;
+  ProgressCallback progressCallback_;
+  scoped_refptr<base::SingleThreadTaskRunner> callbackRunner_;
 }
 
 - (instancetype)initWithResponseStartedCallback:
@@ -53,9 +53,9 @@ using DownloadToFileCompleteCallback =
                                progressCallback:
                                    (ProgressCallback)progressCallback {
   if (self == [super init]) {
-    _responseStartedCallback = std::move(responseStartedCallback);
-    _progressCallback = progressCallback;
-    _callbackRunner = base::ThreadTaskRunnerHandle::Get();
+    responseStartedCallback_ = std::move(responseStartedCallback);
+    progressCallback_ = progressCallback;
+    callbackRunner_ = base::ThreadTaskRunnerHandle::Get();
   }
   return self;
 }
@@ -84,8 +84,8 @@ using DownloadToFileCompleteCallback =
 @end
 
 @implementation CHUpdaterNetworkDataDelegate {
-  PostRequestCompleteCallback _postRequestCompleteCallback;
-  base::scoped_nsobject<NSMutableData> _downloadedData;
+  PostRequestCompleteCallback postRequestCompleteCallback_;
+  base::scoped_nsobject<NSMutableData> downloadedData_;
 }
 
 - (instancetype)
@@ -97,7 +97,7 @@ using DownloadToFileCompleteCallback =
   if (self ==
       [super initWithResponseStartedCallback:std::move(responseStartedCallback)
                             progressCallback:progressCallback]) {
-    _postRequestCompleteCallback = std::move(postRequestCompleteCallback);
+    postRequestCompleteCallback_ = std::move(postRequestCompleteCallback);
   }
   return self;
 }
@@ -107,10 +107,10 @@ using DownloadToFileCompleteCallback =
 - (void)URLSession:(NSURLSession*)session
           dataTask:(NSURLSessionDataTask*)dataTask
     didReceiveData:(NSData*)data {
-  if (_downloadedData == nil) {
-    _downloadedData.reset([[NSMutableData alloc] init]);
+  if (downloadedData_ == nil) {
+    downloadedData_.reset([[NSMutableData alloc] init]);
   }
-  [_downloadedData appendData:data];
+  [downloadedData_ appendData:data];
 
   int64_t current = 0;
 
@@ -120,8 +120,8 @@ using DownloadToFileCompleteCallback =
   } else {
     current = 100;
   }
-  _callbackRunner->PostTask(FROM_HERE,
-                            base::BindOnce(_progressCallback, current));
+  callbackRunner_->PostTask(FROM_HERE,
+                            base::BindOnce(progressCallback_, current));
   [dataTask resume];
 }
 
@@ -132,8 +132,8 @@ using DownloadToFileCompleteCallback =
     didReceiveResponse:(NSURLResponse*)response
      completionHandler:
          (void (^)(NSURLSessionResponseDisposition))completionHandler {
-  _callbackRunner->PostTask(
-      FROM_HERE, base::BindOnce(std::move(_responseStartedCallback),
+  callbackRunner_->PostTask(
+      FROM_HERE, base::BindOnce(std::move(responseStartedCallback_),
                                 [(NSHTTPURLResponse*)response statusCode],
                                 dataTask.countOfBytesExpectedToReceive));
   if (completionHandler) {
@@ -161,9 +161,9 @@ using DownloadToFileCompleteCallback =
     retryAfterResult = [xRetryAfter intValue];
   }
 
-  _callbackRunner->PostTask(
+  callbackRunner_->PostTask(
       FROM_HERE,
-      base::BindOnce(std::move(_postRequestCompleteCallback),
+      base::BindOnce(std::move(postRequestCompleteCallback_),
                      std::make_unique<std::string>(
                          base::SysNSStringToUTF8(response.description)),
                      error.code, std::string(base::SysNSStringToUTF8(etag)),
@@ -184,8 +184,8 @@ using DownloadToFileCompleteCallback =
 @end
 
 @implementation CHUpdaterNetworkDownloadDelegate {
-  base::FilePath _filePath;
-  DownloadToFileCompleteCallback _downloadToFileCompleteCallback;
+  base::FilePath filePath_;
+  DownloadToFileCompleteCallback downloadToFileCompleteCallback_;
 }
 
 - (instancetype)
@@ -198,8 +198,8 @@ using DownloadToFileCompleteCallback =
   if (self ==
       [super initWithResponseStartedCallback:std::move(responseStartedCallback)
                             progressCallback:progressCallback]) {
-    _filePath = filePath;
-    _downloadToFileCompleteCallback = std::move(downloadToFileCompleteCallback);
+    filePath_ = filePath;
+    downloadToFileCompleteCallback_ = std::move(downloadToFileCompleteCallback);
   }
   return self;
 }
@@ -223,10 +223,10 @@ using DownloadToFileCompleteCallback =
   const base::FilePath tempPath =
       base::mac::NSStringToFilePath([location path]);
   base::File::Error fileError;
-  if (!base::ReplaceFile(tempPath, _filePath, &fileError)) {
+  if (!base::ReplaceFile(tempPath, filePath_, &fileError)) {
     DLOG(ERROR)
         << "Failed to move the downloaded file from the temporary location: "
-        << tempPath << "to: " << _filePath
+        << tempPath << "to: " << filePath_
         << " Error: " << base::File::ErrorToString(fileError);
   }
 }
@@ -239,15 +239,15 @@ using DownloadToFileCompleteCallback =
   [super URLSession:session task:task didCompleteWithError:error];
 
   NSHTTPURLResponse* response = (NSHTTPURLResponse*)task.response;
-  NSURL* destination = base::mac::FilePathToNSURL(_filePath);
+  NSURL* destination = base::mac::FilePathToNSURL(filePath_);
   NSString* filePath = [destination path];
   NSDictionary<NSFileAttributeKey, id>* attributes =
       [[NSFileManager defaultManager] attributesOfItemAtPath:filePath
                                                        error:nil];
   NSNumber* fileSizeAttribute = attributes[NSFileSize];
   int64_t fileSize = [fileSizeAttribute integerValue];
-  _callbackRunner->PostTask(
-      FROM_HERE, base::BindOnce(std::move(_downloadToFileCompleteCallback),
+  callbackRunner_->PostTask(
+      FROM_HERE, base::BindOnce(std::move(downloadToFileCompleteCallback_),
                                 response.statusCode, fileSize));
 }
 

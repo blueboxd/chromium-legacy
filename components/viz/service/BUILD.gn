@@ -60,6 +60,8 @@ viz_component("service") {
     "display/overlay_candidate.h",
     "display/overlay_candidate_list.cc",
     "display/overlay_candidate_list.h",
+    "display/overlay_candidate_validator.cc",
+    "display/overlay_candidate_validator.h",
     "display/overlay_processor_interface.cc",
     "display/overlay_processor_interface.h",
     "display/program_binding.cc",
@@ -239,14 +241,21 @@ viz_component("service") {
     sources += [
       "display/ca_layer_overlay.cc",
       "display/ca_layer_overlay.h",
-      "display/overlay_processor_mac.cc",
-      "display/overlay_processor_mac.h",
+      "display_embedder/overlay_candidate_validator_mac.cc",
+      "display_embedder/overlay_candidate_validator_mac.h",
       "display_embedder/software_output_device_mac.cc",
       "display_embedder/software_output_device_mac.h",
     ]
 
     deps += [ "//ui/accelerated_widget_mac" ]
     libs = [ "IOSurface.framework" ]
+  }
+
+  if (is_mac || is_win) {
+    sources += [
+      "display/overlay_processor.cc",
+      "display/overlay_processor.h",
+    ]
   }
 
   if (is_linux || is_android || use_ozone) {
@@ -307,10 +316,10 @@ viz_component("service") {
     sources += [
       "display/dc_layer_overlay.cc",
       "display/dc_layer_overlay.h",
-      "display/overlay_processor_win.cc",
-      "display/overlay_processor_win.h",
       "display_embedder/output_device_backing.cc",
       "display_embedder/output_device_backing.h",
+      "display_embedder/overlay_candidate_validator_win.cc",
+      "display_embedder/overlay_candidate_validator_win.h",
       "display_embedder/software_output_device_win.cc",
       "display_embedder/software_output_device_win.h",
     ]

@@ -32,10 +32,10 @@ import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TrustedCdn;
-import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.WebContents;
@@ -412,8 +412,7 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
                 // is NONE, but the security indicator should be shown on all devices.
                 if (mNativeLocationBarModelAndroid != 0
                         && SecurityStateModel.isSchemeCryptographic(url)) {
-                    return SecurityStateModel.shouldDowngradeNeutralStylingForWebContents(
-                                   getActiveWebContents(), url)
+                    return SecurityStateModel.shouldDowngradeNeutralStyling(securityLevel, url)
                             ? R.drawable.omnibox_not_secure_warning
                             : R.drawable.omnibox_info;
                 }
@@ -426,8 +425,7 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
                 if (mNativeLocationBarModelAndroid == 0) {
                     return R.drawable.omnibox_info;
                 }
-                if (SecurityStateModel.shouldDowngradeNeutralStylingForWebContents(
-                            getActiveWebContents(), url)) {
+                if (SecurityStateModel.shouldDowngradeNeutralStyling(securityLevel, url)) {
                     return R.drawable.omnibox_not_secure_warning;
                 }
                 return R.drawable.omnibox_info;

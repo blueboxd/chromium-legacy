@@ -12,11 +12,11 @@
 @interface ElementAppleScript : NSObject {
  @protected
   // Used by the applescript runtime to identify each unique scriptable object.
-  NSNumber* _uniqueID;
+  NSNumber* uniqueID_;
   // Used by object specifier to find a scriptable object's place in a
   // collection.
-  id _container;
-  NSString* _containerProperty;
+  id container_;
+  NSString* containerProperty_;
 }
 
 @property(nonatomic, copy) NSNumber* uniqueID;

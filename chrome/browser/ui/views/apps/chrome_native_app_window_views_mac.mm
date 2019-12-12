@@ -18,7 +18,7 @@
 @interface ResizeNotificationObserver : NSObject {
  @private
   // Weak. Owns us.
-  ChromeNativeAppWindowViewsMac* _nativeAppWindow;
+  ChromeNativeAppWindowViewsMac* nativeAppWindow_;
 }
 - (id)initForNativeAppWindow:(ChromeNativeAppWindowViewsMac*)nativeAppWindow;
 - (void)onWindowWillStartLiveResize:(NSNotification*)notification;
@@ -31,7 +31,7 @@
 
 - (id)initForNativeAppWindow:(ChromeNativeAppWindowViewsMac*)nativeAppWindow {
   if ((self = [super init])) {
-    _nativeAppWindow = nativeAppWindow;
+    nativeAppWindow_ = nativeAppWindow;
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(onWindowWillStartLiveResize:)
@@ -58,20 +58,20 @@
 }
 
 - (void)onWindowWillStartLiveResize:(NSNotification*)notification {
-  _nativeAppWindow->OnWindowWillStartLiveResize();
+  nativeAppWindow_->OnWindowWillStartLiveResize();
 }
 
 - (void)onWindowWillExitFullScreen:(NSNotification*)notification {
-  _nativeAppWindow->OnWindowWillExitFullScreen();
+  nativeAppWindow_->OnWindowWillExitFullScreen();
 }
 
 - (void)onWindowDidExitFullScreen:(NSNotification*)notification {
-  _nativeAppWindow->OnWindowDidExitFullScreen();
+  nativeAppWindow_->OnWindowDidExitFullScreen();
 }
 
 - (void)stopObserving {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  _nativeAppWindow = nullptr;
+  nativeAppWindow_ = nullptr;
 }
 
 @end

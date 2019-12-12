@@ -82,6 +82,8 @@ class TabModel {
     FROM_LAUNCH_NEW_INCOGNITO_TAB,
     // Opened a non-restored tab during the startup process
     FROM_STARTUP,
+    // Opened from the start surface.
+    FROM_START_SURFACE,
     // Must be last.
     SIZE
   };

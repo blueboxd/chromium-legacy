@@ -1436,15 +1436,26 @@ gfx::Size V4L2Device::AllocatedSizeFromV4L2Format(
     }
     visible_size.SetSize(base::checked_cast<int>(format.fmt.pix_mp.width),
                          base::checked_cast<int>(format.fmt.pix_mp.height));
-    frame_format = Fourcc::FromV4L2PixFmt(format.fmt.pix_mp.pixelformat)
-                       .ToVideoPixelFormat();
+    const uint32_t pix_fmt = format.fmt.pix_mp.pixelformat;
+    const auto frame_fourcc = Fourcc::FromV4L2PixFmt(pix_fmt);
+    if (!frame_fourcc) {
+      VLOGF(1) << "Unsupported format " << FourccToString(pix_fmt);
+      return coded_size;
+    }
+    frame_format = frame_fourcc->ToVideoPixelFormat();
   } else {
     bytesperline = base::checked_cast<int>(format.fmt.pix.bytesperline);
     sizeimage = base::checked_cast<int>(format.fmt.pix.sizeimage);
     visible_size.SetSize(base::checked_cast<int>(format.fmt.pix.width),
                          base::checked_cast<int>(format.fmt.pix.height));
-    frame_format =
-        Fourcc::FromV4L2PixFmt(format.fmt.pix.pixelformat).ToVideoPixelFormat();
+    const uint32_t fourcc = format.fmt.pix.pixelformat;
+    const auto frame_fourcc = Fourcc::FromV4L2PixFmt(fourcc);
+    if (!frame_fourcc) {
+      VLOGF(1) << "Unsupported format " << FourccToString(fourcc);
+      return coded_size;
+    }
+    frame_format = frame_fourcc ? frame_fourcc->ToVideoPixelFormat()
+                                : PIXEL_FORMAT_UNKNOWN;
   }
 
   // V4L2 does not provide per-plane bytesperline (bpl) when different
@@ -1602,13 +1613,13 @@ base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
   }
   const v4l2_pix_format_mplane& pix_mp = format.fmt.pix_mp;
   const uint32_t& pix_fmt = pix_mp.pixelformat;
-  const VideoPixelFormat video_format =
-      Fourcc::FromV4L2PixFmt(pix_fmt).ToVideoPixelFormat();
-  if (video_format == PIXEL_FORMAT_UNKNOWN) {
+  const auto video_fourcc = Fourcc::FromV4L2PixFmt(pix_fmt);
+  if (!video_fourcc) {
     VLOGF(1) << "Failed to convert pixel format to VideoPixelFormat: "
              << FourccToString(pix_fmt);
     return base::nullopt;
   }
+  const VideoPixelFormat video_format = video_fourcc->ToVideoPixelFormat();
   const size_t num_buffers = pix_mp.num_planes;
   const size_t num_color_planes = VideoFrame::NumPlanes(video_format);
   if (num_color_planes == 0) {
@@ -1689,9 +1700,9 @@ base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
 
 // static
 size_t V4L2Device::GetNumPlanesOfV4L2PixFmt(uint32_t pix_fmt) {
-  Fourcc fourcc = Fourcc::FromV4L2PixFmt(pix_fmt);
-  if (fourcc.IsMultiPlanar()) {
-    return VideoFrame::NumPlanes(fourcc.ToVideoPixelFormat());
+  base::Optional<Fourcc> fourcc = Fourcc::FromV4L2PixFmt(pix_fmt);
+  if (fourcc && fourcc->IsMultiPlanar()) {
+    return VideoFrame::NumPlanes(fourcc->ToVideoPixelFormat());
   }
   return 1u;
 }

@@ -9,7 +9,7 @@
         <item name="android:windowLightStatusBar">false</item>
     </style>
 
-    <style name="Theme.Chromium.Preferences" parent="Base.V21.Theme.Chromium.Preferences">
+    <style name="Theme.Chromium.Settings" parent="Base.V21.Theme.Chromium.Settings">
         <item name="android:statusBarColor">@android:color/black</item>
         <item name="android:windowLightStatusBar">false</item>
     </style>

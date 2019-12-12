@@ -41,10 +41,8 @@ class ContextProviderCommandBuffer;
 
 namespace content {
 
-// A replacement for GpuProcessTransportFactory to be used when running viz. In
-// this configuration the display compositor is located in the viz process
-// instead of in the browser process. Any interaction with the display
-// compositor must happen over IPC.
+// Interface implementations to interact with the display compositor in the viz
+// process.
 class VizProcessTransportFactory : public ui::ContextFactory,
                                    public ImageTransportFactory,
                                    public viz::ContextLostObserver {

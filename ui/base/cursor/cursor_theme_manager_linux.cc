@@ -26,6 +26,12 @@ CursorThemeManagerLinux::~CursorThemeManagerLinux() = default;
 void CursorThemeManagerLinux::AddObserver(
     CursorThemeManagerLinuxObserver* observer) {
   cursor_theme_observers_.AddObserver(observer);
+  std::string name = GetCursorThemeName();
+  if (!name.empty())
+    observer->OnCursorThemeNameChanged(name);
+  int size = GetCursorThemeSize();
+  if (size)
+    observer->OnCursorThemeSizeChanged(size);
 }
 
 void CursorThemeManagerLinux::RemoveObserver(

@@ -68,9 +68,9 @@ bool ShouldHandleKeyboardEvent(const content::NativeWebKeyboardEvent& event) {
 API_AVAILABLE(macos(10.12.2))
 @interface BrowserWindowTouchBarViewsDelegate
     : NSObject<WindowTouchBarDelegate> {
-  Browser* _browser;  // Weak.
-  NSWindow* _window;  // Weak.
-  base::scoped_nsobject<BrowserWindowTouchBarController> _touchBarController;
+  Browser* browser_;  // Weak.
+  NSWindow* window_;  // Weak.
+  base::scoped_nsobject<BrowserWindowTouchBarController> touchBarController_;
 }
 
 - (BrowserWindowTouchBarController*)touchBarController;
@@ -81,24 +81,24 @@ API_AVAILABLE(macos(10.12.2))
 
 - (instancetype)initWithBrowser:(Browser*)browser window:(NSWindow*)window {
   if ((self = [super init])) {
-    _browser = browser;
-    _window = window;
+    browser_ = browser;
+    window_ = window;
   }
 
   return self;
 }
 
 - (BrowserWindowTouchBarController*)touchBarController {
-  return _touchBarController.get();
+  return touchBarController_.get();
 }
 
 - (NSTouchBar*)makeTouchBar API_AVAILABLE(macos(10.12.2)) {
-  if (!_touchBarController) {
-    _touchBarController.reset([[BrowserWindowTouchBarController alloc]
-        initWithBrowser:_browser
-                 window:_window]);
+  if (!touchBarController_) {
+    touchBarController_.reset([[BrowserWindowTouchBarController alloc]
+        initWithBrowser:browser_
+                 window:window_]);
   }
-  return [_touchBarController makeTouchBar];
+  return [touchBarController_ makeTouchBar];
 }
 
 @end

@@ -34,7 +34,7 @@ const NSTimeInterval kTimeDeltaFuzzFactor = 1.0;
 // The content view of the window that draws a custom frame.
 @interface ConfirmQuitFrameView : NSView {
  @private
-  NSTextField* _message;  // Weak, owned by the view hierarchy.
+  NSTextField* message_;  // Weak, owned by the view hierarchy.
 }
 - (void)setMessageText:(NSString*)text;
 @end
@@ -46,14 +46,14 @@ const NSTimeInterval kTimeDeltaFuzzFactor = 1.0;
     base::scoped_nsobject<NSTextField> message(
         // The frame will be fixed up when |-setMessageText:| is called.
         [[NSTextField alloc] initWithFrame:NSZeroRect]);
-    _message = message.get();
-    [_message setEditable:NO];
-    [_message setSelectable:NO];
-    [_message setBezeled:NO];
-    [_message setDrawsBackground:NO];
-    [_message setFont:[NSFont boldSystemFontOfSize:24]];
-    [_message setTextColor:[NSColor whiteColor]];
-    [self addSubview:_message];
+    message_ = message.get();
+    [message_ setEditable:NO];
+    [message_ setSelectable:NO];
+    [message_ setBezeled:NO];
+    [message_ setDrawsBackground:NO];
+    [message_ setFont:[NSFont boldSystemFontOfSize:24]];
+    [message_ setTextColor:[NSColor whiteColor]];
+    [self addSubview:message_];
   }
   return self;
 }
@@ -83,13 +83,13 @@ const NSTimeInterval kTimeDeltaFuzzFactor = 1.0;
   [attrString addAttribute:NSShadowAttributeName
                      value:textShadow
                      range:NSMakeRange(0, [text length])];
-  [_message setAttributedStringValue:attrString];
+  [message_ setAttributedStringValue:attrString];
 
   // Fixup the frame of the string.
-  [_message sizeToFit];
-  NSRect messageFrame = [_message frame];
+  [message_ sizeToFit];
+  NSRect messageFrame = [message_ frame];
   NSRect frameInViewSpace =
-      [_message convertRect:[[self window] frame] fromView:nil];
+      [message_ convertRect:[[self window] frame] fromView:nil];
 
   if (NSWidth(messageFrame) > NSWidth(frameInViewSpace))
     frameInViewSpace.size.width = NSWidth(messageFrame) + kHorizontalPadding;
@@ -97,9 +97,9 @@ const NSTimeInterval kTimeDeltaFuzzFactor = 1.0;
   messageFrame.origin.x = NSWidth(frameInViewSpace) / 2 - NSMidX(messageFrame);
   messageFrame.origin.y = NSHeight(frameInViewSpace) / 2 - NSMidY(messageFrame);
 
-  [[self window] setFrame:[_message convertRect:frameInViewSpace toView:nil]
+  [[self window] setFrame:[message_ convertRect:frameInViewSpace toView:nil]
                   display:YES];
-  [_message setFrame:messageFrame];
+  [message_ setFrame:messageFrame];
 }
 
 @end
@@ -111,7 +111,7 @@ const NSTimeInterval kTimeDeltaFuzzFactor = 1.0;
 // complete, this will release itself.
 @interface FadeAllWindowsAnimation : NSAnimation<NSAnimationDelegate> {
  @private
-  NSApplication* _application;
+  NSApplication* application_;
 }
 - (id)initWithApplication:(NSApplication*)app
         animationDuration:(NSTimeInterval)duration;
@@ -124,14 +124,14 @@ const NSTimeInterval kTimeDeltaFuzzFactor = 1.0;
         animationDuration:(NSTimeInterval)duration {
   if ((self = [super initWithDuration:duration
                        animationCurve:NSAnimationLinear])) {
-    _application = app;
+    application_ = app;
     [self setDelegate:self];
   }
   return self;
 }
 
 - (void)setCurrentProgress:(NSAnimationProgress)progress {
-  for (NSWindow* window in [_application windows]) {
+  for (NSWindow* window in [application_ windows]) {
     if (chrome::FindBrowserWithWindow(window))
       [window setAlphaValue:1.0 - progress];
   }
@@ -188,13 +188,13 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
     NSRect frame = [[window contentView] frame];
     base::scoped_nsobject<ConfirmQuitFrameView> frameView(
         [[ConfirmQuitFrameView alloc] initWithFrame:frame]);
-    _contentView = frameView.get();
-    [window setContentView:_contentView];
+    contentView_ = frameView.get();
+    [window setContentView:contentView_];
 
     // Set the proper string.
     NSString* message = l10n_util::GetNSStringF(IDS_CONFIRM_TO_QUIT_DESCRIPTION,
         base::SysNSStringToUTF16([[self class] keyCommandString]));
-    [_contentView setMessageText:message];
+    [contentView_ setMessageText:message];
   }
   return self;
 }

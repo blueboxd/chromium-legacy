@@ -33,8 +33,10 @@ UpdateNotificationServiceFactory::UpdateNotificationServiceFactory()
 
 KeyedService* UpdateNotificationServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
+  auto* schedule_service =
+      NotificationScheduleServiceFactory::GetForBrowserContext(context);
   return static_cast<KeyedService*>(
-      new updates::UpdateNotificationServiceImpl());
+      new updates::UpdateNotificationServiceImpl(schedule_service));
 }
 
 content::BrowserContext*

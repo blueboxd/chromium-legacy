@@ -38,25 +38,13 @@ jboolean JNI_SecurityStateModel_IsSchemeCryptographic(
 }
 
 // static
-jboolean JNI_SecurityStateModel_ShouldDowngradeNeutralStylingForWebContents(
+jboolean JNI_SecurityStateModel_ShouldDowngradeNeutralStyling(
     JNIEnv* env,
-    const JavaParamRef<jobject>& jweb_contents,
+    jint jsecurity_level,
     const JavaParamRef<jstring>& jurl) {
-  content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(jweb_contents);
-  DCHECK(web_contents);
-  SecurityStateTabHelper::CreateForWebContents(web_contents);
-  SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(web_contents);
-  DCHECK(helper);
-
-  // Icon shouldn't be downgraded while the URL is loading.
-  if (!helper->GetVisibleSecurityState()->connection_info_initialized) {
-    return false;
-  }
-
   GURL url(ConvertJavaStringToUTF16(env, jurl));
+  auto security_level =
+      static_cast<security_state::SecurityLevel>(jsecurity_level);
   return security_state::ShouldDowngradeNeutralStyling(
-      helper->GetSecurityLevel(), url,
-      base::BindRepeating(&content::IsOriginSecure));
+      security_level, url, base::BindRepeating(&content::IsOriginSecure));
 }

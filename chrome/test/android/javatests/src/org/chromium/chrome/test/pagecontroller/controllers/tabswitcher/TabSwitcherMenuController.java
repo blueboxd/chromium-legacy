@@ -31,7 +31,7 @@ public class TabSwitcherMenuController extends PageController {
                     Ui2Locators.withTextString(R.string.menu_close_all_tabs));
     private static final IUi2Locator LOCATOR_SETTINGS =
             Ui2Locators.withPath(Ui2Locators.withAnyResEntry(R.id.menu_item_text),
-                    Ui2Locators.withTextString(R.string.menu_preferences));
+                    Ui2Locators.withTextString(R.string.menu_settings));
 
     private static final TabSwitcherMenuController sInstance = new TabSwitcherMenuController();
     public static TabSwitcherMenuController getInstance() {

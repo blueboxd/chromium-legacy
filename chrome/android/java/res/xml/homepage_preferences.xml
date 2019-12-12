@@ -14,6 +14,6 @@
     <Preference
         android:key="homepage_edit"
         android:title="@string/options_homepage_edit_label"
-        android:fragment="org.chromium.chrome.browser.settings.HomepageEditor" />
+        android:fragment="org.chromium.chrome.browser.settings.homepage.HomepageEditor" />
 
 </PreferenceScreen>

@@ -14,8 +14,6 @@ class RendererSettings;
 
 // This class can be used to answer questions about possible overlay
 // configurations for a particular output device.
-// TODO(weiliangc): Its functionalities should be merged into subclass of
-// OverlayProcessor.
 class VIZ_SERVICE_EXPORT OverlayCandidateValidatorStrategy {
  public:
   static std::unique_ptr<OverlayCandidateValidatorStrategy> Create(

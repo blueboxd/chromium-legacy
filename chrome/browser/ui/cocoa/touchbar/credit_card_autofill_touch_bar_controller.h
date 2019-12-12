@@ -14,7 +14,7 @@ class AutofillPopupController;
 }
 
 @interface CreditCardAutofillTouchBarController : NSObject<NSTouchBarDelegate> {
-  autofill::AutofillPopupController* _controller;  // weak
+  autofill::AutofillPopupController* controller_;  // weak
 }
 
 - (instancetype)initWithController:

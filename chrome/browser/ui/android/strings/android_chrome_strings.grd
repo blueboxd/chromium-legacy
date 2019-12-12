@@ -296,7 +296,7 @@ CHAR-LIMIT guidelines:
       </message>
 
       <!-- Main Preferences -->
-      <message name="IDS_PREFERENCES" desc="Title for Chrome's Settings.">
+      <message name="IDS_SETTINGS" desc="Title for Chrome's Settings.">
         Settings
       </message>
       <message name="IDS_MENU_HELP" desc="Menu item for opening the help page. [CHAR-LIMIT=27]">
@@ -2937,7 +2937,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_MENU_READER_MODE_PREFS" desc="Menu item to show reader mode preferences pane, which allows users to change the appearance (font size, theme, etc.) of the page. [CHAR-LIMIT=27]">
         Appearance
       </message>
-      <message name="IDS_MENU_PREFERENCES" desc="Menu item for opening browser preferences. [CHAR-LIMIT=27]">
+      <message name="IDS_MENU_SETTINGS" desc="Menu item for opening browser settings. [CHAR-LIMIT=27]">
         Settings
       </message>
       <message name="IDS_MENU_CLOSE_ALL_TABS" desc="Menu item for closing all open tabs. [CHAR-LIMIT=27]">

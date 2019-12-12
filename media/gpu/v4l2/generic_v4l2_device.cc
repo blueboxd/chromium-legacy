@@ -228,8 +228,12 @@ EGLImageKHR GenericV4L2Device::CreateEGLImage(
     return EGL_NO_IMAGE_KHR;
   }
 
-  VideoPixelFormat vf_format =
-      Fourcc::FromV4L2PixFmt(v4l2_pixfmt).ToVideoPixelFormat();
+  const auto vf_format_fourcc = Fourcc::FromV4L2PixFmt(v4l2_pixfmt);
+  if (!vf_format_fourcc) {
+    VLOGF(1) << "Unrecognized pixel format " << FourccToString(v4l2_pixfmt);
+    return EGL_NO_IMAGE_KHR;
+  }
+  const VideoPixelFormat vf_format = vf_format_fourcc->ToVideoPixelFormat();
   // Number of components, as opposed to the number of V4L2 planes, which is
   // just a buffer count.
   size_t num_planes = VideoFrame::NumPlanes(vf_format);
@@ -293,8 +297,12 @@ scoped_refptr<gl::GLImage> GenericV4L2Device::CreateGLImage(
     const std::vector<base::ScopedFD>& dmabuf_fds) {
   DVLOGF(3);
   DCHECK(CanCreateEGLImageFrom(fourcc));
-  VideoPixelFormat vf_format =
-      Fourcc::FromV4L2PixFmt(fourcc).ToVideoPixelFormat();
+  const auto vf_format_fourcc = Fourcc::FromV4L2PixFmt(fourcc);
+  if (!vf_format_fourcc) {
+    VLOGF(1) << "Unrecognized pixel format " << FourccToString(fourcc);
+    return nullptr;
+  }
+  const VideoPixelFormat vf_format = vf_format_fourcc->ToVideoPixelFormat();
   size_t num_planes = VideoFrame::NumPlanes(vf_format);
   DCHECK_LE(num_planes, 3u);
   DCHECK_LE(dmabuf_fds.size(), num_planes);

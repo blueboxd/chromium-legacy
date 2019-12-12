@@ -382,17 +382,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
 
   enable_viz_ = features::IsVizDisplayCompositorEnabled();
 
-  if (!enable_viz_) {
-#if !defined(OS_ANDROID)
-    // Software compositing is not supported or used on Android.
-    //
-    // The BrowserMainLoop is null in unit tests, but they do not use
-    // compositing and report SharedBitmapIds.
-    if (BrowserMainLoop* main_loop = BrowserMainLoop::GetInstance())
-      shared_bitmap_manager_ = main_loop->GetServerSharedBitmapManager();
-#endif
-  }
-
   delegate_->RenderWidgetCreated(this);
   render_frame_metadata_provider_.AddObserver(this);
 }

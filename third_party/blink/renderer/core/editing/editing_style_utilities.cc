@@ -238,6 +238,9 @@ const CSSValue* EditingStyleUtilities::BackgroundColorValueInEffect(
 
 void EditingStyleUtilities::StripUAStyleRulesForMarkupSanitization(
     EditingStyle* style) {
+  if (!style->Style())
+    return;
+
   // This is a hacky approach to avoid 'font-family: ""' appearing in
   // sanitized markup.
   // TODO(editing-dev): Implement a non-hacky fix up for all properties

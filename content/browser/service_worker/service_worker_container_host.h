@@ -344,34 +344,6 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-environment-execution-ready-flag
   bool is_execution_ready() const;
 
-  // For service worker clients. The flow is kInitial -> kResponseCommitted ->
-  // kExecutionReady.
-  //
-  // - kInitial: The initial phase.
-  // - kResponseCommitted: The response for the main resource has been
-  //   committed to the renderer. This client's URL should no longer change.
-  // - kExecutionReady: This client can be exposed to JavaScript as a Client
-  //   object.
-  // TODO(https://crbug.com/931087): Move this enum into the private section.
-  enum class ClientPhase { kInitial, kResponseCommitted, kExecutionReady };
-
-  // Sets |execution_ready_| and runs execution ready callbacks.
-  // TODO(https://crbug.com/931087): Move this function into the private
-  // section.
-  void SetExecutionReady();
-
-  // TODO(https://crbug.com/931087): Move this function into the private
-  // section.
-  void TransitionToClientPhase(ClientPhase new_phase);
-
-  // For service worker clients. Returns false if it's not yet time to send the
-  // renderer information about the controller. Basically returns false if this
-  // client is still loading so due to potential redirects the initial
-  // controller has not yet been decided.
-  // TODO(https://crbug.com/931087): Move this function into the private
-  // section.
-  bool IsControllerDecided() const;
-
   const base::UnguessableToken& fetch_request_window_id() const {
     return fetch_request_window_id_;
   }
@@ -451,7 +423,21 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
 
   void ReturnRegistrationForReadyIfNeeded();
 
+  // Sets |execution_ready_| and runs execution ready callbacks.
+  void SetExecutionReady();
+
   void RunExecutionReadyCallbacks();
+
+  // For service worker clients. The flow is kInitial -> kResponseCommitted ->
+  // kExecutionReady.
+  //
+  // - kInitial: The initial phase.
+  // - kResponseCommitted: The response for the main resource has been
+  //   committed to the renderer. This client's URL should no longer change.
+  // - kExecutionReady: This client can be exposed to JavaScript as a Client
+  //   object.
+  enum class ClientPhase { kInitial, kResponseCommitted, kExecutionReady };
+  void TransitionToClientPhase(ClientPhase new_phase);
 
   // Sets the controller to |controller_registration_->active_version()| or null
   // if there is no associated registration.

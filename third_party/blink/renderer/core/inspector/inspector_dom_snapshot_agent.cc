@@ -546,8 +546,8 @@ void InspectorDOMSnapshotAgent::VisitContainerChildren(Node* container,
 
 void InspectorDOMSnapshotAgent::VisitPseudoElements(Element* parent,
                                                     int parent_index) {
-  for (PseudoId pseudo_id :
-       {kPseudoIdFirstLetter, kPseudoIdBefore, kPseudoIdAfter}) {
+  for (PseudoId pseudo_id : {kPseudoIdFirstLetter, kPseudoIdBefore,
+                             kPseudoIdAfter, kPseudoIdMarker}) {
     if (Node* pseudo_node = parent->GetPseudoElement(pseudo_id))
       VisitNode(pseudo_node, parent_index);
   }

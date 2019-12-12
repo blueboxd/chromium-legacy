@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-#include "ash/public/mojom/constants.mojom.h"
+#include "ash/public/ash_interfaces.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/strings/string_number_conversions.h"
@@ -14,8 +14,6 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/devices/touchscreen_device.h"
@@ -42,12 +40,8 @@ bool IsWhiteListedVendorId(uint16_t vendor_id) {
 }  // namespace
 
 OobeDisplayChooser::OobeDisplayChooser() {
-  // |connector| may be null in tests.
-  auto* connector = content::GetSystemConnector();
-  if (connector) {
-    connector->Connect(ash::mojom::kServiceName,
-                       cros_display_config_.BindNewPipeAndPassReceiver());
-  }
+  ash::BindCrosDisplayConfigController(
+      cros_display_config_.BindNewPipeAndPassReceiver());
 }
 
 OobeDisplayChooser::~OobeDisplayChooser() {}

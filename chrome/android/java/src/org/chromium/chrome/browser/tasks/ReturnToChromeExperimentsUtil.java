@@ -135,7 +135,7 @@ public final class ReturnToChromeExperimentsUtil {
         LoadUrlParams params = new LoadUrlParams(url);
         params.setTransitionType(transition | PageTransition.FROM_ADDRESS_BAR);
         chromeActivity.getTabCreator(model.isIncognito())
-                .createNewTab(params, TabLaunchType.FROM_CHROME_UI, null);
+                .createNewTab(params, TabLaunchType.FROM_START_SURFACE, null);
 
         if (transition == PageTransition.AUTO_BOOKMARK) {
             RecordUserAction.record("Suggestions.Tile.Tapped.GridTabSwitcher");

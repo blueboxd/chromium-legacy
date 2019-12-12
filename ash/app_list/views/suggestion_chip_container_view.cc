@@ -29,7 +29,7 @@ namespace {
 constexpr int kChipSpacing = 8;
 
 // The minimum allowed number of suggestion chips shown in the container
-// (provided that the suggestoin chip results contain at least than number of
+// (provided that the suggestion chip results contain at least that number of
 // items).
 constexpr int kMinimumSuggestionChipNumber = 3;
 

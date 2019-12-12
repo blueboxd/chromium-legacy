@@ -27,7 +27,7 @@ async_test(function(test) {
             assert_unreached('subscribe() must not succeed without an active service worker');
         }, function(e) {
             assert_equals(e.name, 'AbortError');
-            assert_equals(e.message, 'Subscription failed - no active Service Worker');
+            assert_equals(e.message, 'Failed to execute \'subscribe\' on \'PushManager\': Subscription failed - no active Service Worker');
             return service_worker_unregister_and_done(test, workerScope);
         })
         .catch(unreached_rejection(test));

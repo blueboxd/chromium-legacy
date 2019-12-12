@@ -15,8 +15,11 @@ namespace ui {
 class UI_BASE_EXPORT CursorThemeManagerLinuxObserver
     : public base::CheckedObserver {
  public:
+  // |cursor_theme_name| will be nonempty.
   virtual void OnCursorThemeNameChanged(
       const std::string& cursor_theme_name) = 0;
+
+  // |cursor_theme_size| will be nonzero.
   virtual void OnCursorThemeSizeChanged(int cursor_theme_size) = 0;
 
  protected:

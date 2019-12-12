@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/fingerprint.mojom.h"
@@ -16,10 +17,6 @@
 #include "ui/base/user_activity/user_activity_observer.h"
 #include "ui/chromeos/ui_chromeos_export.h"
 #include "ui/events/devices/input_device_event_observer.h"
-
-namespace service_manager {
-class Connector;
-}
 
 namespace ui {
 
@@ -34,8 +31,9 @@ class UI_CHROMEOS_EXPORT UserActivityPowerManagerNotifier
  public:
   // Registers and unregisters itself as an observer of |detector| on
   // construction and destruction.
-  UserActivityPowerManagerNotifier(UserActivityDetector* detector,
-                                   service_manager::Connector* connector);
+  UserActivityPowerManagerNotifier(
+      UserActivityDetector* detector,
+      mojo::PendingRemote<device::mojom::Fingerprint> fingerprint);
   ~UserActivityPowerManagerNotifier() override;
 
   // InputDeviceEventObserver implementation.

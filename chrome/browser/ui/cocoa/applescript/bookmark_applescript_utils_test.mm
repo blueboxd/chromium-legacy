@@ -20,11 +20,11 @@ static FakeScriptCommand* kFakeCurrentCommand;
 
 - (id)init {
   if ((self = [super init])) {
-    _originalMethod = class_getClassMethod([NSScriptCommand class],
+    originalMethod_ = class_getClassMethod([NSScriptCommand class],
                                            @selector(currentCommand));
-    _alternateMethod = class_getClassMethod([self class],
+    alternateMethod_ = class_getClassMethod([self class],
                                             @selector(currentCommand));
-    method_exchangeImplementations(_originalMethod, _alternateMethod);
+    method_exchangeImplementations(originalMethod_, alternateMethod_);
     kFakeCurrentCommand = self;
   }
   return self;
@@ -35,7 +35,7 @@ static FakeScriptCommand* kFakeCurrentCommand;
 }
 
 - (void)dealloc {
-  method_exchangeImplementations(_originalMethod, _alternateMethod);
+  method_exchangeImplementations(originalMethod_, alternateMethod_);
   kFakeCurrentCommand = nil;
   [super dealloc];
 }

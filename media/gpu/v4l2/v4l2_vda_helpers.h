@@ -8,6 +8,8 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
+#include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/chromeos/image_processor.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -21,10 +23,10 @@ class V4L2Device;
 // Note: this namespace can be removed once the V4L2VDA is deprecated.
 namespace v4l2_vda_helpers {
 
-// Returns a usable input format of image processor. Return 0 if not found.
-uint32_t FindImageProcessorInputFormat(V4L2Device* vda_device);
-// Return a usable output format of image processor. Return 0 if not found.
-uint32_t FindImageProcessorOutputFormat(V4L2Device* ip_device);
+// Returns a usable input format of image processor, or nullopt if not found.
+base::Optional<Fourcc> FindImageProcessorInputFormat(V4L2Device* vda_device);
+// Return a usable output format of image processor, or nullopt if not found.
+base::Optional<Fourcc> FindImageProcessorOutputFormat(V4L2Device* ip_device);
 
 // Create and return an image processor for the given parameters, or nullptr
 // if it cannot be created.
@@ -43,8 +45,8 @@ uint32_t FindImageProcessorOutputFormat(V4L2Device* ip_device);
 // |client_task_runner| is the task runner for interacting with image processor.
 // |error_cb| is the error callback passed to V4L2ImageProcessor::Create().
 std::unique_ptr<ImageProcessor> CreateImageProcessor(
-    uint32_t vda_output_format,
-    uint32_t ip_output_format,
+    const Fourcc vda_output_format,
+    const Fourcc ip_output_format,
     const gfx::Size& vda_output_coded_size,
     const gfx::Size& ip_output_coded_size,
     const gfx::Size& visible_size,

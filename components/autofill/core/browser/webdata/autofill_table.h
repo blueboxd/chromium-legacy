@@ -35,7 +35,6 @@ class AutofillProfile;
 class AutofillTableEncryptor;
 class AutofillTableTest;
 class CreditCard;
-struct CreditCardCloudTokenData;
 struct FormFieldData;
 struct PaymentsCustomerData;
 
@@ -196,20 +195,6 @@ struct PaymentsCustomerData;
 //                      TODO(crbug.com/682326): Remove deprecated columns.
 //   unmask_date        The date this card was unmasked in units of
 //                      Time::ToInternalValue. Added in version 64.
-//
-// server_card_cloud_token_data
-//                      Stores data related to Cloud Primary Account Number
-//                      (CPAN) of server credit cards. Each card can have
-//                      multiple entries.
-//
-//   id                 The server ID, which matches an ID from the
-//                      masked_credit_cards table.
-//   suffix             Last 4-5 digits of the Cloud Primary Account Number.
-//   exp_month          Expiration month associated with the CPAN.
-//   exp_year           Four-digit Expiration year associated with the CPAN.
-//   card_art_url       URL of the card art to be displayed for CPAN.
-//   instrument_token   Opaque identifier for the cloud token associated with
-//                      the payment instrument.
 //
 // server_card_metadata
 //                      Metadata (currently, usage data) about server credit
@@ -447,14 +432,6 @@ class AutofillTable : public WebDatabaseTable,
   void SetServerCardsData(const std::vector<CreditCard>& credit_cards);
   void SetServerAddressesData(const std::vector<AutofillProfile>& profiles);
 
-  // Setters and getters related to the CreditCardCloudTokenData of server
-  // cards. Used by AutofillWalletSyncBridge to interact with the stored data.
-  void SetCreditCardCloudTokenData(const std::vector<CreditCardCloudTokenData>&
-                                       credit_card_cloud_token_data);
-  bool GetCreditCardCloudTokenData(
-      std::vector<std::unique_ptr<CreditCardCloudTokenData>>*
-          credit_card_cloud_token_data);
-
   // Setters and getters related to the Google Payments customer data.
   // Passing null to the setter will clear the data.
   void SetPaymentsCustomerData(const PaymentsCustomerData* customer_data);
@@ -658,7 +635,6 @@ class AutofillTable : public WebDatabaseTable,
   bool InitModelTypeStateTable();
   bool InitPaymentsCustomerDataTable();
   bool InitPaymentsUPIVPATable();
-  bool InitServerCreditCardCloudTokenDataTable();
 
   std::unique_ptr<AutofillTableEncryptor> autofill_table_encryptor_;
 

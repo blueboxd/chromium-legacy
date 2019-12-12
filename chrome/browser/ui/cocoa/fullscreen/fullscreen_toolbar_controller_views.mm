@@ -12,18 +12,18 @@
 
 - (id)initWithBrowserView:(BrowserView*)browserView {
   if ((self = [super initWithDelegate:self]))
-    _browserView = browserView;
+    browserView_ = browserView;
 
   return self;
 }
 
 - (void)layoutToolbar {
-  _browserView->Layout();
+  browserView_->Layout();
   [super layoutToolbar];
 }
 
 - (BOOL)isInAnyFullscreenMode {
-  return _browserView->IsFullscreen();
+  return browserView_->IsFullscreen();
 }
 
 - (BOOL)isFullscreenTransitionInProgress {
@@ -37,13 +37,13 @@
 }
 
 - (NSWindow*)window {
-  NSWindow* ns_window = _browserView->GetNativeWindow().GetNativeNSWindow();
-  if (!_ns_view) {
+  NSWindow* ns_window = browserView_->GetNativeWindow().GetNativeNSWindow();
+  if (!ns_view_) {
     auto* host =
         views::NativeWidgetMacNSWindowHost::GetFromNativeWindow(ns_window);
     if (host) {
       if (auto* bridge = host->GetInProcessNSWindowBridge())
-        _ns_view.reset([bridge->ns_view() retain]);
+        ns_view_.reset([bridge->ns_view() retain]);
       else
         DLOG(ERROR) << "Cannot retain remote NSView.";
     }

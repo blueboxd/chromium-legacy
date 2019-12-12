@@ -328,8 +328,8 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
   for (const auto& targeted_event : event_generator_) {
     if (targeted_event.event_params.event ==
         ui::AXEventGenerator::Event::LOAD_COMPLETE) {
-      tree_.language_detection_manager->DetectLanguage(tree_.root());
-      tree_.language_detection_manager->LabelLanguage(tree_.root());
+      tree_.language_detection_manager->DetectLanguages(tree_.root());
+      tree_.language_detection_manager->LabelLanguages(tree_.root());
       break;
     }
   }

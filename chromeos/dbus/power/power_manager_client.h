@@ -137,6 +137,12 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerManagerClient {
     // observer is ready for suspend.
     virtual void DarkSuspendImminent() {}
 
+    // Called when the browser is about to request shutdown. Shutdown is
+    // deferred until all observers' implementations of this method have
+    // finished running.
+    virtual void ShutdownRequested(
+        power_manager::RequestShutdownReason reason) {}
+
     // Called when the power button is pressed or released.
     virtual void PowerButtonEventReceived(bool down,
                                           const base::TimeTicks& timestamp) {}

@@ -11,13 +11,13 @@
 
 @interface FullscreenToolbarVisibilityLockController () {
   // Stores the objects that are locking the toolbar visibility.
-  base::scoped_nsobject<NSMutableSet> _visibilityLocks;
+  base::scoped_nsobject<NSMutableSet> visibilityLocks_;
 
   // Our owner.
-  FullscreenToolbarController* _owner;  // weak
+  FullscreenToolbarController* owner_;  // weak
 
   // The object managing the fullscreen toolbar's animations.
-  FullscreenToolbarAnimationController* _animationController;  // weak
+  FullscreenToolbarAnimationController* animationController_;  // weak
 }
 
 @end
@@ -29,47 +29,47 @@ initWithFullscreenToolbarController:(FullscreenToolbarController*)owner
                 animationController:
                     (FullscreenToolbarAnimationController*)animationController {
   if ((self = [super init])) {
-    _animationController = animationController;
-    _owner = owner;
+    animationController_ = animationController;
+    owner_ = owner;
 
     // Create the toolbar visibility lock set; 10 is arbitrary, but should
     // hopefully be big enough to hold all locks that'll ever be needed.
-    _visibilityLocks.reset([[NSMutableSet setWithCapacity:10] retain]);
+    visibilityLocks_.reset([[NSMutableSet setWithCapacity:10] retain]);
   }
 
   return self;
 }
 
 - (BOOL)isToolbarVisibilityLocked {
-  return [_visibilityLocks count];
+  return [visibilityLocks_ count];
 }
 
 - (BOOL)isToolbarVisibilityLockedForOwner:(id)owner {
-  return [_visibilityLocks containsObject:owner];
+  return [visibilityLocks_ containsObject:owner];
 }
 
 - (void)lockToolbarVisibilityForOwner:(id)owner withAnimation:(BOOL)animate {
   if ([self isToolbarVisibilityLockedForOwner:owner])
     return;
 
-  [_visibilityLocks addObject:owner];
+  [visibilityLocks_ addObject:owner];
 
   if (animate)
-    _animationController->AnimateToolbarIn();
+    animationController_->AnimateToolbarIn();
   else
-    [_owner layoutToolbar];
+    [owner_ layoutToolbar];
 }
 
 - (void)releaseToolbarVisibilityForOwner:(id)owner withAnimation:(BOOL)animate {
   if (![self isToolbarVisibilityLockedForOwner:owner])
     return;
 
-  [_visibilityLocks removeObject:owner];
+  [visibilityLocks_ removeObject:owner];
 
   if (animate)
-    _animationController->AnimateToolbarOutIfPossible();
+    animationController_->AnimateToolbarOutIfPossible();
   else
-    [_owner layoutToolbar];
+    [owner_ layoutToolbar];
 }
 
 @end

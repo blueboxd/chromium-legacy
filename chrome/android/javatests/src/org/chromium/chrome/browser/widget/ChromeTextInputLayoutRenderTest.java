@@ -68,14 +68,14 @@ public class ChromeTextInputLayoutRenderTest extends DummyUiActivityTestCase {
         final Activity activity = getActivity();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mInputLayout = new ChromeTextInputLayout(
-                    new ContextThemeWrapper(activity, R.style.Theme_Chromium_Preferences));
+                    new ContextThemeWrapper(activity, R.style.Theme_Chromium_Settings));
             ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             mInputLayout.setLayoutParams(layoutParams);
             mInputLayout.setBackgroundColor(mFakeBgColor);
             ((ViewGroup) activity.findViewById(android.R.id.content)).addView(mInputLayout);
             mEditText = new AppCompatEditText(
-                    new ContextThemeWrapper(activity, R.style.Theme_Chromium_Preferences));
+                    new ContextThemeWrapper(activity, R.style.Theme_Chromium_Settings));
             mInputLayout.addView(mEditText);
             mInputLayout.setHint(LABEL);
             RenderTestRule.sanitize(mEditText);

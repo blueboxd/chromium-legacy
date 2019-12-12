@@ -39,7 +39,8 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/child_process_host.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "printing/backend/print_backend.h"
@@ -208,11 +209,11 @@ class PrinterDiscoverySessionHostImpl
       public chromeos::CupsPrintersManager::Observer {
  public:
   PrinterDiscoverySessionHostImpl(
-      mojo::InterfaceRequest<mojom::PrinterDiscoverySessionHost> request,
+      mojo::PendingReceiver<mojom::PrinterDiscoverySessionHost> receiver,
       mojom::PrinterDiscoverySessionInstancePtr instance,
       ArcPrintServiceImpl* service,
       Profile* profile)
-      : binding_(this, std::move(request)),
+      : receiver_(this, std::move(receiver)),
         instance_(std::move(instance)),
         service_(service),
         printers_manager_(
@@ -220,7 +221,7 @@ class PrinterDiscoverySessionHostImpl
                 profile)),
         configurer_(chromeos::PrinterConfigurer::Create(profile)) {
     printers_manager_->AddObserver(this);
-    binding_.set_connection_error_handler(MakeErrorHandler());
+    receiver_.set_disconnect_handler(MakeErrorHandler());
     instance_.set_connection_error_handler(MakeErrorHandler());
   }
 
@@ -334,7 +335,7 @@ class PrinterDiscoverySessionHostImpl
   }
 
   // Binds |this|.
-  mojo::Binding<mojom::PrinterDiscoverySessionHost> binding_;
+  mojo::Receiver<mojom::PrinterDiscoverySessionHost> receiver_;
 
   mojom::PrinterDiscoverySessionInstancePtr instance_;
   ArcPrintServiceImpl* const service_;
@@ -376,14 +377,14 @@ printing::DuplexMode FromArcDuplexMode(mojom::PrintDuplexMode mode) {
 class PrintJobHostImpl : public mojom::PrintJobHost,
                          public content::NotificationObserver {
  public:
-  PrintJobHostImpl(mojo::InterfaceRequest<mojom::PrintJobHost> request,
+  PrintJobHostImpl(mojo::PendingReceiver<mojom::PrintJobHost> receiver,
                    mojom::PrintJobInstancePtr instance,
                    ArcPrintServiceImpl* service,
                    chromeos::CupsPrintJobManager* job_manager,
                    std::unique_ptr<printing::PrintSettings> settings,
                    base::File file,
                    size_t data_size)
-      : binding_(this, std::move(request)),
+      : receiver_(this, std::move(receiver)),
         instance_(std::move(instance)),
         service_(service),
         job_manager_(job_manager) {
@@ -401,7 +402,7 @@ class PrintJobHostImpl : public mojom::PrintJobHost,
         base::BindOnce(&CreateQueryOnIOThread, std::move(settings),
                        base::BindOnce(&PrintJobHostImpl::OnSetSettingsDone,
                                       weak_ptr_factory_.GetWeakPtr())));
-    binding_.set_connection_error_handler(MakeErrorHandler());
+    receiver_.set_disconnect_handler(MakeErrorHandler());
     instance_.set_connection_error_handler(MakeErrorHandler());
   }
 
@@ -502,7 +503,7 @@ class PrintJobHostImpl : public mojom::PrintJobHost,
   }
 
   // Binds the lifetime of |this| to the Mojo connection.
-  mojo::Binding<mojom::PrintJobHost> binding_;
+  mojo::Receiver<mojom::PrintJobHost> receiver_;
 
   mojom::PrintJobInstancePtr instance_;
   ArcPrintServiceImpl* const service_;

@@ -17,10 +17,6 @@ namespace keyboard {
 class KeyboardUIFactory;
 }
 
-namespace service_manager {
-class Connector;
-}
-
 namespace ui {
 class ContextFactory;
 class ContextFactoryPrivate;
@@ -39,9 +35,6 @@ struct ASH_EXPORT ShellInitParams {
   ui::ContextFactory* context_factory = nullptr;                 // Non-owning.
   ui::ContextFactoryPrivate* context_factory_private = nullptr;  // Non-owning.
   PrefService* local_state = nullptr;                            // Non-owning.
-
-  // Connector used by Shell to establish connections.
-  service_manager::Connector* connector = nullptr;
 
   // Factory for creating the virtual keyboard UI. Must be non-null.
   std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory;

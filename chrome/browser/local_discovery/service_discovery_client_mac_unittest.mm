@@ -20,8 +20,8 @@
 
 @interface TestNSNetService : NSNetService {
  @private
-  base::scoped_nsobject<NSData> _data;
-  base::scoped_nsobject<NSArray> _addresses;
+  base::scoped_nsobject<NSData> data_;
+  base::scoped_nsobject<NSArray> addresses_;
 }
 - (id)initWithData:(NSData*)data;
 - (void)setAddresses:(NSArray*)addresses;
@@ -31,21 +31,21 @@
 
 - (id)initWithData:(NSData*)data {
   if ((self = [super initWithDomain:@"" type:@"_tcp." name:@"Test.123"])) {
-    _data.reset([data retain]);
+    data_.reset([data retain]);
   }
   return self;
 }
 
 - (void)setAddresses:(NSArray*)addresses {
-  _addresses.reset([addresses copy]);
+  addresses_.reset([addresses copy]);
 }
 
 - (NSArray*)addresses {
-  return _addresses;
+  return addresses_;
 }
 
 - (NSData*)TXTRecordData {
-  return _data;
+  return data_;
 }
 
 @end

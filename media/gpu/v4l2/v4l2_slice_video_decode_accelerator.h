@@ -18,9 +18,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/decode_surface_handler.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/media_gpu_export.h"
@@ -287,7 +289,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
                         GLuint client_texture_id,
                         GLuint texture_id,
                         const gfx::Size& size,
-                        uint32_t fourcc);
+                        const Fourcc fourcc);
 
   // Performed on decoder_thread_ as a consequence of poll() on decoder_thread_
   // returning an event. Typically this means that there are output or capture
@@ -415,7 +417,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
 
   VideoCodecProfile video_profile_;
   uint32_t input_format_fourcc_;
-  uint32_t output_format_fourcc_;
+  base::Optional<Fourcc> output_format_fourcc_;
   gfx::Size coded_size_;
 
   struct BitstreamBufferRef;
@@ -500,7 +502,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // The V4L2Device GLImage is created from.
   scoped_refptr<V4L2Device> gl_image_device_;
   // The format of GLImage.
-  uint32_t gl_image_format_fourcc_;
+  base::Optional<Fourcc> gl_image_format_fourcc_;
   // The logical dimensions of GLImage buffer in pixels.
   gfx::Size gl_image_size_;
   // Number of planes for GLImage.

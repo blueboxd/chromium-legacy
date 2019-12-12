@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_options.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_options_init.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
@@ -56,10 +57,10 @@ ScriptPromise PushManager::subscribe(
     const PushSubscriptionOptionsInit* options_init,
     ExceptionState& exception_state) {
   if (!registration_->active()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kAbortError,
-                          "Subscription failed - no active Service Worker"));
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kAbortError,
+        "Subscription failed - no active Service Worker");
+    return ScriptPromise();
   }
 
   PushSubscriptionOptions* options =
@@ -87,10 +88,9 @@ ScriptPromise PushManager::subscribe(
           DynamicTo<Document>(ExecutionContext::From(script_state))) {
     LocalFrame* frame = document->GetFrame();
     if (!document->domWindow() || !frame) {
-      return ScriptPromise::RejectWithDOMException(
-          script_state, MakeGarbageCollected<DOMException>(
-                            DOMExceptionCode::kInvalidStateError,
-                            "Document is detached from window."));
+      exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                        "Document is detached from window.");
+      return ScriptPromise();
     }
 
     PushMessagingClient* messaging_client = PushMessagingClient::From(frame);
@@ -126,10 +126,9 @@ ScriptPromise PushManager::permissionState(
   if (auto* document =
           DynamicTo<Document>(ExecutionContext::From(script_state))) {
     if (!document->domWindow() || !document->GetFrame()) {
-      return ScriptPromise::RejectWithDOMException(
-          script_state, MakeGarbageCollected<DOMException>(
-                            DOMExceptionCode::kInvalidStateError,
-                            "Document is detached from window."));
+      exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                        "Document is detached from window.");
+      return ScriptPromise();
     }
   }
 

@@ -845,6 +845,8 @@ void GtkUi::OnThemeChanged(GtkSettings* settings, GtkParamSpec* param) {
 void GtkUi::OnCursorThemeNameChanged(GtkSettings* settings,
                                      GtkParamSpec* param) {
   std::string cursor_theme_name = GetCursorThemeName();
+  if (cursor_theme_name.empty())
+    return;
   for (auto& observer : cursor_theme_observers())
     observer.OnCursorThemeNameChanged(cursor_theme_name);
 }
@@ -852,6 +854,8 @@ void GtkUi::OnCursorThemeNameChanged(GtkSettings* settings,
 void GtkUi::OnCursorThemeSizeChanged(GtkSettings* settings,
                                      GtkParamSpec* param) {
   int cursor_theme_size = GetCursorThemeSize();
+  if (!cursor_theme_size)
+    return;
   for (auto& observer : cursor_theme_observers())
     observer.OnCursorThemeSizeChanged(cursor_theme_size);
 }

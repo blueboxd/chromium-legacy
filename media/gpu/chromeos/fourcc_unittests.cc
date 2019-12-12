@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/optional.h"
 #include "media/gpu/chromeos/fourcc.h"
 
 #include "base/logging.h"
@@ -20,44 +21,37 @@ namespace media {
 #if BUILDFLAG(USE_V4L2_CODEC)
 TEST(FourccTest, V4L2PixFmtToVideoPixelFormat) {
   EXPECT_EQ(PIXEL_FORMAT_NV12,
-            Fourcc::FromV4L2PixFmt(V4L2_PIX_FMT_NV12).ToVideoPixelFormat());
+            Fourcc::FromV4L2PixFmt(V4L2_PIX_FMT_NV12)->ToVideoPixelFormat());
   EXPECT_EQ(PIXEL_FORMAT_NV12,
-            Fourcc::FromV4L2PixFmt(V4L2_PIX_FMT_NV12M).ToVideoPixelFormat());
+            Fourcc::FromV4L2PixFmt(V4L2_PIX_FMT_NV12M)->ToVideoPixelFormat());
 
   EXPECT_EQ(PIXEL_FORMAT_NV12,
-            Fourcc::FromV4L2PixFmt(V4L2_PIX_FMT_MT21C).ToVideoPixelFormat());
+            Fourcc::FromV4L2PixFmt(V4L2_PIX_FMT_MT21C)->ToVideoPixelFormat());
   EXPECT_EQ(PIXEL_FORMAT_NV12,
             Fourcc::FromV4L2PixFmt(ComposeFourcc('M', 'M', '2', '1'))
-                .ToVideoPixelFormat());
+                ->ToVideoPixelFormat());
 
   EXPECT_EQ(PIXEL_FORMAT_I420,
-            Fourcc::FromV4L2PixFmt(V4L2_PIX_FMT_YUV420).ToVideoPixelFormat());
+            Fourcc::FromV4L2PixFmt(V4L2_PIX_FMT_YUV420)->ToVideoPixelFormat());
   EXPECT_EQ(PIXEL_FORMAT_I420,
-            Fourcc::FromV4L2PixFmt(V4L2_PIX_FMT_YUV420M).ToVideoPixelFormat());
+            Fourcc::FromV4L2PixFmt(V4L2_PIX_FMT_YUV420M)->ToVideoPixelFormat());
 
   EXPECT_EQ(PIXEL_FORMAT_YV12,
-            Fourcc::FromV4L2PixFmt(V4L2_PIX_FMT_YVU420).ToVideoPixelFormat());
+            Fourcc::FromV4L2PixFmt(V4L2_PIX_FMT_YVU420)->ToVideoPixelFormat());
   EXPECT_EQ(PIXEL_FORMAT_YV12,
-            Fourcc::FromV4L2PixFmt(V4L2_PIX_FMT_YVU420M).ToVideoPixelFormat());
+            Fourcc::FromV4L2PixFmt(V4L2_PIX_FMT_YVU420M)->ToVideoPixelFormat());
 
   EXPECT_EQ(PIXEL_FORMAT_I422,
-            Fourcc::FromV4L2PixFmt(V4L2_PIX_FMT_YUV422M).ToVideoPixelFormat());
+            Fourcc::FromV4L2PixFmt(V4L2_PIX_FMT_YUV422M)->ToVideoPixelFormat());
 
   // Noted that previously in V4L2Device::V4L2PixFmtToVideoPixelFormat(),
   // V4L2_PIX_FMT_RGB32 maps to PIXEL_FORMAT_ARGB. However, the mapping was
   // wrong. It should be mapped to PIXEL_FORMAT_BGRA.
   EXPECT_EQ(PIXEL_FORMAT_BGRA,
-            Fourcc::FromV4L2PixFmt(V4L2_PIX_FMT_RGB32).ToVideoPixelFormat());
+            Fourcc::FromV4L2PixFmt(V4L2_PIX_FMT_RGB32)->ToVideoPixelFormat());
 
   // Randomly pick an unmapped v4l2 fourcc.
-#if DCHECK_IS_ON()
-  EXPECT_DEATH(
-      { Fourcc::FromV4L2PixFmt(V4L2_PIX_FMT_Z16).ToVideoPixelFormat(); },
-      "Unmapped V4L2PixFmt: Z16");
-#else   // DCHECK_IS_ON()
-  EXPECT_EQ(PIXEL_FORMAT_UNKNOWN,
-            Fourcc::FromV4L2PixFmt(V4L2_PIX_FMT_Z16).ToVideoPixelFormat());
-#endif  // DCHECK_IS_ON()
+  EXPECT_EQ(base::nullopt, Fourcc::FromV4L2PixFmt(V4L2_PIX_FMT_Z16));
 }
 
 TEST(FourccTest, VideoPixelFormatToV4L2PixFmt) {

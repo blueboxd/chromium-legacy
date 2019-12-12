@@ -1458,7 +1458,10 @@ TEST_F(AutocompleteResultTest, SortAndCullPreferEntitiesFillIntoEditMustMatch) {
   // The entity suggestion won't be chosen in this case because it has a non-
   // matching value for fill_into_edit.
   EXPECT_EQ(1UL, result.size());
-  EXPECT_EQ(AutocompleteMatchType::SEARCH_SUGGEST, result.match_at(0)->type);
+  // But the final type will have the specialized Search History type, since
+  // that's consumed into the final match during the merge step.
+  EXPECT_EQ(AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED,
+            result.match_at(0)->type);
   EXPECT_EQ(1100, result.match_at(0)->relevance);
   EXPECT_TRUE(result.match_at(0)->allowed_to_be_default_match);
   EXPECT_EQ(base::ASCIIToUTF16("oo"),

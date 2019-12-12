@@ -204,11 +204,15 @@ class ThemeProperties {
 
   // Returns the default tint for the given tint |id| TINT_* enum value.
   // Returns an HSL value of {-1, -1, -1} if |id| is invalid.
-  static color_utils::HSL GetDefaultTint(int id, bool incognito);
+  static color_utils::HSL GetDefaultTint(int id,
+                                         bool incognito,
+                                         bool dark_mode = false);
 
   // Returns the default color for the given color |id| COLOR_* enum value.
   // Returns gfx::kPlaceholderColor if |id| is invalid.
-  static SkColor GetDefaultColor(int id, bool incognito);
+  static SkColor GetDefaultColor(int id,
+                                 bool incognito,
+                                 bool dark_mode = false);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ThemeProperties);

@@ -28,10 +28,6 @@ sync_pb::AutofillWalletSpecifics
 CreateAutofillWalletSpecificsForPaymentsCustomerData(
     const std::string& client_tag);
 
-sync_pb::AutofillWalletSpecifics
-CreateAutofillWalletSpecificsForCreditCardCloudTokenData(
-    const std::string& client_tag);
-
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_SYNC_BRIDGE_TEST_UTIL_H_

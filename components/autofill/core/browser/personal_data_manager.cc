@@ -306,7 +306,6 @@ void PersonalDataManager::Init(
 
   LoadProfiles();
   LoadCreditCards();
-  LoadCreditCardCloudTokenData();
   LoadPaymentsCustomerData();
 
   // Check if profile cleanup has already been performed this major version.
@@ -322,7 +321,9 @@ void PersonalDataManager::Init(
 PersonalDataManager::~PersonalDataManager() {
   CancelPendingLocalQuery(&pending_profiles_query_);
   CancelPendingLocalQuery(&pending_creditcards_query_);
-  CancelPendingServerQueries();
+  CancelPendingServerQuery(&pending_server_profiles_query_);
+  CancelPendingServerQuery(&pending_server_creditcards_query_);
+  CancelPendingServerQuery(&pending_customer_data_query_);
 }
 
 void PersonalDataManager::Shutdown() {
@@ -385,7 +386,6 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
     std::unique_ptr<WDTypedResult> result) {
   DCHECK(pending_profiles_query_ || pending_server_profiles_query_ ||
          pending_creditcards_query_ || pending_server_creditcards_query_ ||
-         pending_server_creditcard_cloud_token_data_query_ ||
          pending_customer_data_query_);
 
   if (!result) {
@@ -398,8 +398,6 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
       pending_server_creditcards_query_ = 0;
     else if (h == pending_server_profiles_query_)
       pending_server_profiles_query_ = 0;
-    else if (h == pending_server_creditcard_cloud_token_data_query_)
-      pending_server_creditcard_cloud_token_data_query_ = 0;
     else if (h == pending_customer_data_query_)
       pending_customer_data_query_ = 0;
   } else {
@@ -433,13 +431,6 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
             ResetFullServerCards();
         }
         break;
-      case AUTOFILL_CLOUDTOKEN_RESULT:
-        DCHECK_EQ(h, pending_server_creditcard_cloud_token_data_query_)
-            << "received credit card cloud token data from invalid request.";
-        ReceiveLoadedDbValues(
-            h, result.get(), &pending_server_creditcard_cloud_token_data_query_,
-            &server_credit_card_cloud_token_data_);
-        break;
       case AUTOFILL_CUSTOMERDATA_RESULT:
         DCHECK_EQ(h, pending_customer_data_query_)
             << "received customer data from invalid request.";
@@ -461,7 +452,6 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
   if (pending_profiles_query_ == 0 && pending_creditcards_query_ == 0 &&
       pending_server_profiles_query_ == 0 &&
       pending_server_creditcards_query_ == 0 &&
-      pending_server_creditcard_cloud_token_data_query_ == 0 &&
       pending_customer_data_query_ == 0 &&
       database_helper_->GetServerDatabase()) {
     // On initial data load, is_data_loaded_ will be false here.
@@ -880,7 +870,6 @@ void PersonalDataManager::ClearAllServerData() {
   server_credit_cards_.clear();
   server_profiles_.clear();
   payments_customer_data_.reset();
-  server_credit_card_cloud_token_data_.clear();
 }
 
 void PersonalDataManager::ClearAllLocalData() {
@@ -1095,22 +1084,9 @@ PaymentsCustomerData* PersonalDataManager::GetPaymentsCustomerData() const {
   return payments_customer_data_ ? payments_customer_data_.get() : nullptr;
 }
 
-std::vector<CreditCardCloudTokenData*>
-PersonalDataManager::GetCreditCardCloudTokenData() const {
-  std::vector<CreditCardCloudTokenData*> result;
-  if (!IsAutofillWalletImportEnabled())
-    return result;
-
-  result.reserve(server_credit_card_cloud_token_data_.size());
-  for (const auto& data : server_credit_card_cloud_token_data_)
-    result.push_back(data.get());
-  return result;
-}
-
 void PersonalDataManager::Refresh() {
   LoadProfiles();
   LoadCreditCards();
-  LoadCreditCardCloudTokenData();
   LoadPaymentsCustomerData();
 }
 
@@ -1621,16 +1597,6 @@ void PersonalDataManager::LoadCreditCards() {
   }
 }
 
-void PersonalDataManager::LoadCreditCardCloudTokenData() {
-  if (!database_helper_->GetServerDatabase())
-    return;
-
-  CancelPendingServerQuery(&pending_server_creditcard_cloud_token_data_query_);
-
-  pending_server_creditcard_cloud_token_data_query_ =
-      database_helper_->GetServerDatabase()->GetCreditCardCloudTokenData(this);
-}
-
 void PersonalDataManager::CancelPendingLocalQuery(
     WebDataServiceBase::Handle* handle) {
   if (*handle) {
@@ -1656,10 +1622,15 @@ void PersonalDataManager::CancelPendingServerQuery(
 }
 
 void PersonalDataManager::CancelPendingServerQueries() {
-  CancelPendingServerQuery(&pending_server_profiles_query_);
-  CancelPendingServerQuery(&pending_server_creditcards_query_);
-  CancelPendingServerQuery(&pending_customer_data_query_);
-  CancelPendingServerQuery(&pending_server_creditcard_cloud_token_data_query_);
+  if (pending_server_profiles_query_) {
+    CancelPendingServerQuery(&pending_server_profiles_query_);
+  }
+  if (pending_server_creditcards_query_) {
+    CancelPendingServerQuery(&pending_server_creditcards_query_);
+  }
+  if (pending_customer_data_query_) {
+    CancelPendingServerQuery(&pending_customer_data_query_);
+  }
 }
 
 void PersonalDataManager::LoadPaymentsCustomerData() {

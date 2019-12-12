@@ -190,7 +190,7 @@ HighlighterResultView::~HighlighterResultView() = default;
 
 void HighlighterResultView::Animate(const gfx::RectF& bounds,
                                     HighlighterGestureType gesture_type,
-                                    const base::Closure& done) {
+                                    base::OnceClosure done) {
   ui::Layer* layer = widget_->GetLayer();
 
   base::TimeDelta delay;
@@ -232,13 +232,14 @@ void HighlighterResultView::Animate(const gfx::RectF& bounds,
   layer->SetOpacity(0);
 
   animation_timer_ = std::make_unique<base::OneShotTimer>();
-  animation_timer_->Start(FROM_HERE, delay,
-                          base::Bind(&HighlighterResultView::FadeIn,
-                                     base::Unretained(this), duration, done));
+  animation_timer_->Start(
+      FROM_HERE, delay,
+      base::BindOnce(&HighlighterResultView::FadeIn, base::Unretained(this),
+                     duration, std::move(done)));
 }
 
 void HighlighterResultView::FadeIn(const base::TimeDelta& duration,
-                                   const base::Closure& done) {
+                                   base::OnceClosure done) {
   ui::Layer* layer = widget_->GetLayer();
 
   {
@@ -257,11 +258,11 @@ void HighlighterResultView::FadeIn(const base::TimeDelta& duration,
   animation_timer_->Start(
       FROM_HERE,
       duration + base::TimeDelta::FromMilliseconds(kResultFadeoutDelayMs),
-      base::Bind(&HighlighterResultView::FadeOut, base::Unretained(this),
-                 done));
+      base::BindOnce(&HighlighterResultView::FadeOut, base::Unretained(this),
+                     std::move(done)));
 }
 
-void HighlighterResultView::FadeOut(const base::Closure& done) {
+void HighlighterResultView::FadeOut(base::OnceClosure done) {
   ui::Layer* layer = widget_->GetLayer();
 
   base::TimeDelta duration =
@@ -273,7 +274,7 @@ void HighlighterResultView::FadeOut(const base::Closure& done) {
   layer->SetOpacity(0);
 
   animation_timer_ = std::make_unique<base::OneShotTimer>();
-  animation_timer_->Start(FROM_HERE, duration, done);
+  animation_timer_->Start(FROM_HERE, duration, std::move(done));
 }
 
 }  // namespace ash

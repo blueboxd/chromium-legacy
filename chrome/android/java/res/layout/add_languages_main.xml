@@ -13,6 +13,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <include layout="@layout/preferences_action_bar_shadow"/>
+    <include layout="@layout/settings_action_bar_shadow"/>
 
 </FrameLayout>

@@ -7,13 +7,25 @@
 
 #include "chrome/browser/updates/update_notification_service.h"
 
-#include "chrome/browser/notifications/scheduler/public/client_overview.h"
+#include <memory>
+
+#include "base/memory/weak_ptr.h"
+
+namespace notifications {
+struct ClientOverview;
+struct NotificationData;
+class NotificationScheduleService;
+struct ScheduleParams;
+}  // namespace notifications
 
 namespace updates {
 
+struct UpdateNotificationConfig;
+
 class UpdateNotificationServiceImpl : public UpdateNotificationService {
  public:
-  UpdateNotificationServiceImpl();
+  UpdateNotificationServiceImpl(
+      notifications::NotificationScheduleService* schedule_service);
   ~UpdateNotificationServiceImpl() override;
 
  private:
@@ -22,7 +34,19 @@ class UpdateNotificationServiceImpl : public UpdateNotificationService {
 
   // Called after querying the |ClientOverview| struct from scheduler system
   // completed.
-  void OnClientOverviewQueried(notifications::ClientOverview overview);
+  void OnClientOverviewQueried(notifications::NotificationData data,
+                               notifications::ClientOverview overview);
+
+  // Build notification ScheduleParams for update notification.
+  notifications::ScheduleParams BuildScheduleParams();
+
+  // Used to schedule notification to show in the future. Must outlive this
+  // class.
+  notifications::NotificationScheduleService* schedule_service_;
+
+  std::unique_ptr<UpdateNotificationConfig> config_;
+
+  base::WeakPtrFactory<UpdateNotificationServiceImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UpdateNotificationServiceImpl);
 };

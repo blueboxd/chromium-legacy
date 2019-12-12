@@ -190,9 +190,6 @@ class AutofillWebDataBackendImpl
   // Returns the PaymentsCustomerData from the database.
   std::unique_ptr<WDTypedResult> GetPaymentsCustomerData(WebDatabase* db);
 
-  // Returns the CreditCardCloudTokenData from the database.
-  std::unique_ptr<WDTypedResult> GetCreditCardCloudTokenData(WebDatabase* db);
-
   WebDatabase::State ClearAllServerData(WebDatabase* db);
   WebDatabase::State ClearAllLocalData(WebDatabase* db);
 

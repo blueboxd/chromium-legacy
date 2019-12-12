@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_SMS_FETCHER_H_
 #define CONTENT_PUBLIC_BROWSER_SMS_FETCHER_H_
 
+#include <string>
+
 #include "base/observer_list_types.h"
 #include "content/common/content_export.h"
 

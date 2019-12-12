@@ -9,7 +9,7 @@ import android.widget.FrameLayout.LayoutParams;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
-import org.chromium.chrome.browser.ui.styles.ChromeColors;
+import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 /**

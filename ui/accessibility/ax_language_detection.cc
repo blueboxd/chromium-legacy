@@ -101,20 +101,20 @@ AXLanguageDetectionManager::AXLanguageDetectionManager()
                                       kShortTextIdentifierMaxByteLength) {}
 AXLanguageDetectionManager::~AXLanguageDetectionManager() = default;
 
-// Detect language for a subtree rooted at the given subtree_root.
-void AXLanguageDetectionManager::DetectLanguage(AXNode* subtree_root) {
-  TRACE_EVENT0("accessibility", "AXLanguageInfo::DetectLanguage");
+// Detect languages for a subtree rooted at the given subtree_root.
+void AXLanguageDetectionManager::DetectLanguages(AXNode* subtree_root) {
+  TRACE_EVENT0("accessibility", "AXLanguageInfo::DetectLanguages");
   DCHECK(subtree_root);
   if (!::switches::IsExperimentalAccessibilityLanguageDetectionEnabled()) {
     return;
   }
 
-  DetectLanguageForSubtree(subtree_root);
+  DetectLanguagesForSubtree(subtree_root);
 }
 
-// Detect language for a subtree rooted at the given subtree_root.
+// Detect languages for a subtree rooted at the given subtree_root.
 // Will not check feature flag.
-void AXLanguageDetectionManager::DetectLanguageForSubtree(
+void AXLanguageDetectionManager::DetectLanguagesForSubtree(
     AXNode* subtree_root) {
   // Only perform detection for kStaticText(s).
   //
@@ -124,19 +124,19 @@ void AXLanguageDetectionManager::DetectLanguageForSubtree(
   // Since kInlineTextBox(es) contain text from their parent, any detection on
   // them is redundant. Instead they can inherit the detected language.
   if (subtree_root->data().role == ax::mojom::Role::kStaticText) {
-    DetectLanguageForNode(subtree_root);
+    DetectLanguagesForNode(subtree_root);
   } else {
     // Otherwise, recurse into children for detection.
     for (AXNode* child : subtree_root->children()) {
-      DetectLanguageForSubtree(child);
+      DetectLanguagesForSubtree(child);
     }
   }
 }
 
-// Detect language for a single node.
+// Detect languages for a single node.
 // Will not descend into children.
 // Will not check feature flag.
-void AXLanguageDetectionManager::DetectLanguageForNode(AXNode* node) {
+void AXLanguageDetectionManager::DetectLanguagesForNode(AXNode* node) {
   // TODO(chrishall): implement strategy for nodes which are too small to get
   // reliable language detection results. Consider combination of
   // concatenation and bubbling up results.
@@ -176,10 +176,10 @@ void AXLanguageDetectionManager::DetectLanguageForNode(AXNode* node) {
   }
 }
 
-// Label language for each node in the subtree rooted at the given subtree_root.
-// This relies on DetectLanguage having already been run.
-void AXLanguageDetectionManager::LabelLanguage(AXNode* subtree_root) {
-  TRACE_EVENT0("accessibility", "AXLanguageInfo::LabelLanguage");
+// Label languages for each node in the subtree rooted at the given
+// subtree_root. This relies on DetectLanguages having already been run.
+void AXLanguageDetectionManager::LabelLanguages(AXNode* subtree_root) {
+  TRACE_EVENT0("accessibility", "AXLanguageInfo::LabelLanguages");
 
   DCHECK(subtree_root);
 
@@ -187,24 +187,25 @@ void AXLanguageDetectionManager::LabelLanguage(AXNode* subtree_root) {
     return;
   }
 
-  LabelLanguageForSubtree(subtree_root);
+  LabelLanguagesForSubtree(subtree_root);
 }
 
-// Label language for each node in the subtree rooted at the given subtree_root.
-// Will not check feature flag.
-void AXLanguageDetectionManager::LabelLanguageForSubtree(AXNode* subtree_root) {
-  LabelLanguageForNode(subtree_root);
+// Label languages for each node in the subtree rooted at the given
+// subtree_root. Will not check feature flag.
+void AXLanguageDetectionManager::LabelLanguagesForSubtree(
+    AXNode* subtree_root) {
+  LabelLanguagesForNode(subtree_root);
 
   // Recurse into children to continue labelling.
   for (AXNode* child : subtree_root->children()) {
-    LabelLanguageForSubtree(child);
+    LabelLanguagesForSubtree(child);
   }
 }
 
-// Detect language for a single node.
+// Label languages for a single node.
 // Will not descend into children.
 // Will not check feature flag.
-void AXLanguageDetectionManager::LabelLanguageForNode(AXNode* node) {
+void AXLanguageDetectionManager::LabelLanguagesForNode(AXNode* node) {
   AXLanguageInfo* lang_info = node->GetLanguageInfo();
 
   // lang_info is only attached by Detect when it thinks a node is interesting,

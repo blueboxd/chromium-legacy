@@ -55,11 +55,11 @@
 
 @implementation SSLCertificateViewerMac {
   // The corresponding list of certificates.
-  base::scoped_nsobject<NSArray> _certificates;
-  base::scoped_nsobject<SFCertificatePanel> _panel;
+  base::scoped_nsobject<NSArray> certificates_;
+  base::scoped_nsobject<SFCertificatePanel> panel_;
 
   // Invisible overlay window used to block interaction with the tab underneath.
-  views::Widget* _overlayWindow;
+  views::Widget* overlayWindow_;
 }
 
 - (instancetype)initWithCertificate:(net::X509Certificate*)certificate
@@ -71,7 +71,7 @@
     if (!certChain)
       return self;
     NSArray* certificates = base::mac::CFToNSCast(certChain.get());
-    _certificates.reset([certificates retain]);
+    certificates_.reset([certificates retain]);
   }
 
   // Explicitly disable revocation checking, regardless of user preferences
@@ -111,17 +111,17 @@
     return self;
   }
 
-  _panel.reset([[SFCertificatePanel alloc] init]);
-  [_panel setPolicies:base::mac::CFToNSCast(policies.get())];
+  panel_.reset([[SFCertificatePanel alloc] init]);
+  [panel_ setPolicies:base::mac::CFToNSCast(policies.get())];
   return self;
 }
 
 - (void)showCertificateSheet:(NSWindow*)window {
-  [_panel beginSheetForWindow:window
+  [panel_ beginSheetForWindow:window
                 modalDelegate:self
                didEndSelector:@selector(sheetDidEnd:returnCode:context:)
                   contextInfo:nil
-                 certificates:_certificates
+                 certificates:certificates_
                     showGroup:YES];
 }
 
@@ -129,18 +129,18 @@
   // Closing the sheet using -[NSApp endSheet:] doesn't work so use the private
   // method. If the sheet is already closed then this is a call on nil and thus
   // a no-op.
-  [_panel _dismissWithCode:NSModalResponseCancel];
+  [panel_ _dismissWithCode:NSModalResponseCancel];
 }
 
 - (void)sheetDidEnd:(NSWindow*)parent
          returnCode:(NSInteger)returnCode
             context:(void*)context {
-  _overlayWindow->Close();  // Asynchronously releases |self|.
-  _panel.reset();
+  overlayWindow_->Close();  // Asynchronously releases |self|.
+  panel_.reset();
 }
 
 - (void)setOverlayWindow:(views::Widget*)overlayWindow {
-  _overlayWindow = overlayWindow;
+  overlayWindow_ = overlayWindow;
 }
 
 @end

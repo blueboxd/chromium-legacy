@@ -14,7 +14,6 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/test/shell_test_api.h"
-#include "ash/public/mojom/constants.mojom.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -23,10 +22,8 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/system_display/display_info_provider_chromeos.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "extensions/common/api/system_display.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/display_switches.h"
@@ -67,20 +64,13 @@ class DisplayInfoProviderChromeosTest : public ChromeAshTestBase {
     // interface and doesn't own any classes this should be fine.
     cros_display_config_ = std::make_unique<ash::CrosDisplayConfig>();
 
-    // Create a local service manager connector to handle requests to
-    // ash::mojom::CrosDisplayConfigController.
-    mojo::PendingReceiver<service_manager::mojom::Connector> receiver;
-    connector_ = service_manager::Connector::Create(&receiver);
-    service_manager::Connector::TestApi test_api(connector_.get());
-    test_api.OverrideBinderForTesting(
-        service_manager::ServiceFilter::ByName(ash::mojom::kServiceName),
-        ash::mojom::CrosDisplayConfigController::Name_,
-        base::BindRepeating(&DisplayInfoProviderChromeosTest::
-                                AddCrosDisplayConfigControllerReceiver,
-                            base::Unretained(this)));
-    // Provide the local connector to DisplayInfoProviderChromeOS.
+    // Initialize the DisplayInfoProviderChromeOS with a remote connected to our
+    // local implementation.
+    mojo::PendingRemote<ash::mojom::CrosDisplayConfigController> display_config;
+    cros_display_config_->BindReceiver(
+        display_config.InitWithNewPipeAndPassReceiver());
     DisplayInfoProvider::InitializeForTesting(
-        new DisplayInfoProviderChromeOS(connector_.get()));
+        new DisplayInfoProviderChromeOS(std::move(display_config)));
 
     // Wait for TabletModeController to take its initial state from the power
     // manager.
@@ -94,13 +84,6 @@ class DisplayInfoProviderChromeosTest : public ChromeAshTestBase {
     cros_display_config_.reset();
 
     ChromeAshTestBase::TearDown();
-  }
-
-  void AddCrosDisplayConfigControllerReceiver(
-      mojo::ScopedMessagePipeHandle handle) {
-    cros_display_config_->BindReceiver(
-        mojo::PendingReceiver<ash::mojom::CrosDisplayConfigController>(
-            std::move(handle)));
   }
 
   float GetDisplayZoom(int64_t display_id) {
@@ -202,8 +185,6 @@ class DisplayInfoProviderChromeosTest : public ChromeAshTestBase {
   }
 
  private:
-  content::TestServiceManagerContext service_manager_context_;
-  std::unique_ptr<service_manager::Connector> connector_;
   std::unique_ptr<ash::CrosDisplayConfig> cros_display_config_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayInfoProviderChromeosTest);

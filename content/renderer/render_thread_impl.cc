@@ -982,10 +982,14 @@ void RenderThreadImpl::InitializeWebKit(mojo::BinderMap* binders) {
 
   blink_platform_impl_.reset(
       new RendererBlinkPlatformImpl(main_thread_scheduler_.get()));
-  SetRuntimeFeaturesDefaultsAndUpdateFromArgs(command_line);
+  // This, among other things, enables any feature marked "test" in
+  // runtime_enabled_features. It is run before
+  // SetRuntimeFeaturesDefaultsAndUpdateFromArgs() so that command line
+  // arguments take precedence over (and can disable) "test" features.
   GetContentClient()
       ->renderer()
       ->SetRuntimeFeaturesDefaultsBeforeBlinkInitialization();
+  SetRuntimeFeaturesDefaultsAndUpdateFromArgs(command_line);
   blink::Initialize(blink_platform_impl_.get(), binders,
                     main_thread_scheduler_.get());
 

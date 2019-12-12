@@ -32,19 +32,19 @@ crashpad::SimpleStringDictionary* GetCrashpadAnnotations() {
 }  // namespace
 
 @implementation AlertNotificationService {
-  XPCTransactionHandler* _transactionHandler;
+  XPCTransactionHandler* transactionHandler_;
 
   // Ensures that the XPC service has been configured for crash reporting.
   // Other messages should not be sent to a new instance of the service
   // before -setMachExceptionPort: is called.
   // Because XPC callouts occur on a concurrent dispatch queue, this must be
   // accessed in a @synchronized(self) block.
-  BOOL _didSetExceptionPort;
+  BOOL didSetExceptionPort_;
 }
 
 - (instancetype)initWithTransactionHandler:(XPCTransactionHandler*)handler {
   if ((self = [super init])) {
-    _transactionHandler = handler;
+    transactionHandler_ = handler;
   }
   return self;
 }
@@ -57,13 +57,13 @@ crashpad::SimpleStringDictionary* GetCrashpadAnnotations() {
   }
 
   @synchronized(self) {
-    if (_didSetExceptionPort) {
+    if (didSetExceptionPort_) {
       return;
     }
 
     crashpad::CrashpadClient client;
-    _didSetExceptionPort = client.SetHandlerMachPort(std::move(sendRight));
-    DCHECK(_didSetExceptionPort);
+    didSetExceptionPort_ = client.SetHandlerMachPort(std::move(sendRight));
+    DCHECK(didSetExceptionPort_);
 
     crashpad::CrashpadInfo::GetCrashpadInfo()->set_simple_annotations(
         GetCrashpadAnnotations());
@@ -71,7 +71,7 @@ crashpad::SimpleStringDictionary* GetCrashpadAnnotations() {
 }
 
 - (void)deliverNotification:(NSDictionary*)notificationData {
-  DCHECK(_didSetExceptionPort);
+  DCHECK(didSetExceptionPort_);
 
   base::scoped_nsobject<NotificationBuilder> builder(
       [[NotificationBuilder alloc] initWithDictionary:notificationData]);
@@ -79,12 +79,12 @@ crashpad::SimpleStringDictionary* GetCrashpadAnnotations() {
   NSUserNotification* toast = [builder buildUserNotification];
   [[NSUserNotificationCenter defaultUserNotificationCenter]
       deliverNotification:toast];
-  [_transactionHandler openTransactionIfNeeded];
+  [transactionHandler_ openTransactionIfNeeded];
 }
 
 - (void)closeNotificationWithId:(NSString*)notificationId
                   withProfileId:(NSString*)profileId {
-  DCHECK(_didSetExceptionPort);
+  DCHECK(didSetExceptionPort_);
 
   NSUserNotificationCenter* notificationCenter =
       [NSUserNotificationCenter defaultUserNotificationCenter];
@@ -99,18 +99,18 @@ crashpad::SimpleStringDictionary* GetCrashpadAnnotations() {
     if ([candidateId isEqualToString:notificationId] &&
         [profileId isEqualToString:candidateProfileId]) {
       [notificationCenter removeDeliveredNotification:candidate];
-      [_transactionHandler closeTransactionIfNeeded];
+      [transactionHandler_ closeTransactionIfNeeded];
       break;
     }
   }
 }
 
 - (void)closeAllNotifications {
-  DCHECK(_didSetExceptionPort);
+  DCHECK(didSetExceptionPort_);
 
   [[NSUserNotificationCenter defaultUserNotificationCenter]
       removeAllDeliveredNotifications];
-  [_transactionHandler closeTransactionIfNeeded];
+  [transactionHandler_ closeTransactionIfNeeded];
 }
 
 - (void)getDisplayedAlertsForProfileId:(NSString*)profileId

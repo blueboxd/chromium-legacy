@@ -102,7 +102,7 @@ std::string DescriptionForNSEvent(NSEvent* event) {
 
 @interface BrowserCrApplication ()<NativeEventProcessor> {
   base::ObserverList<content::NativeEventProcessorObserver>::Unchecked
-      _observers;
+      observers_;
 }
 @end
 
@@ -289,11 +289,11 @@ std::string DescriptionForNSEvent(NSEvent* event) {
 }
 
 - (BOOL)isHandlingSendEvent {
-  return _handlingSendEvent;
+  return handlingSendEvent_;
 }
 
 - (void)setHandlingSendEvent:(BOOL)handlingSendEvent {
-  _handlingSendEvent = handlingSendEvent;
+  handlingSendEvent_ = handlingSendEvent;
 }
 
 - (void)sendEvent:(NSEvent*)event {
@@ -321,7 +321,7 @@ std::string DescriptionForNSEvent(NSEvent* event) {
       default: {
         base::mac::ScopedSendingEvent sendingEventScoper;
         content::ScopedNotifyNativeEventProcessorObserver
-            scopedObserverNotifier(&_observers, event);
+            scopedObserverNotifier(&observers_, event);
         [super sendEvent:event];
       }
     }
@@ -349,12 +349,12 @@ std::string DescriptionForNSEvent(NSEvent* event) {
 
 - (void)addNativeEventProcessorObserver:
     (content::NativeEventProcessorObserver*)observer {
-  _observers.AddObserver(observer);
+  observers_.AddObserver(observer);
 }
 
 - (void)removeNativeEventProcessorObserver:
     (content::NativeEventProcessorObserver*)observer {
-  _observers.RemoveObserver(observer);
+  observers_.RemoveObserver(observer);
 }
 
 @end

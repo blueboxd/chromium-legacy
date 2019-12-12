@@ -48,7 +48,7 @@ android_resources("java_resources") {
   custom_package = "org.chromium.chrome.browser.ui.appmenu"
   resource_dirs = [ "java/res" ]
   deps = [
-    "//chrome/browser/ui/android/styles:java_resources",
+    "//components/browser_ui/styles/android:java_resources",
     "//third_party/android_deps:com_android_support_design_java",
     "//ui/android:ui_java_resources",
   ]

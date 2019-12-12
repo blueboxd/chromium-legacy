@@ -74,17 +74,6 @@ public class ChromeBrowserInitializer {
     private boolean mNetworkChangeNotifierInitializationComplete;
 
     /**
-     * A callback to be executed when there is a new version available in Play Store.
-     */
-    public interface OnNewVersionAvailableCallback extends Runnable {
-        /**
-         * Set the update url to get the new version available.
-         * @param updateUrl The url to be used.
-         */
-        void setUpdateUrl(String updateUrl);
-    }
-
-    /**
      * This class is an application specific object that orchestrates the app initialization.
      * @return The singleton instance of {@link ChromeBrowserInitializer}.
      */

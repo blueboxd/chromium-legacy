@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/public/mojom/constants.mojom.h"
 #include "base/bind.h"
 
 namespace ash {

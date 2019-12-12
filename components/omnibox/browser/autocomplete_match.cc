@@ -254,8 +254,10 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
       return vector_icons::kSearchIcon;
 
     case Type::SEARCH_HISTORY:
-    case Type::SEARCH_SUGGEST_PERSONALIZED:
+    case Type::SEARCH_SUGGEST_PERSONALIZED: {
+      DCHECK(IsSearchHistoryType(type));
       return omnibox::kClockIcon;
+    }
 
     case Type::EXTENSION_APP_DEPRECATED:
       return omnibox::kExtensionAppIcon;
@@ -604,6 +606,12 @@ bool AutocompleteMatch::IsSpecializedSearchType(Type type) {
          type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL ||
          type == AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED ||
          type == AutocompleteMatchType::SEARCH_SUGGEST_PROFILE;
+}
+
+// static
+bool AutocompleteMatch::IsSearchHistoryType(Type type) {
+  return type == AutocompleteMatchType::SEARCH_HISTORY ||
+         type == AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED;
 }
 
 AutocompleteMatch::Type AutocompleteMatch::GetDemotionType() const {
@@ -1142,6 +1150,12 @@ void AutocompleteMatch::UpgradeMatchWithPropertiesFrom(
       inline_autocompletion = duplicate_match.inline_autocompletion;
       is_navigational_title_match = duplicate_match.is_navigational_title_match;
     }
+  }
+
+  // For Search non-history matches, absorb any Search History type.
+  if (IsSearchType(type) && fill_into_edit == duplicate_match.fill_into_edit &&
+      !IsSearchHistoryType(type) && IsSearchHistoryType(duplicate_match.type)) {
+    type = duplicate_match.type;
   }
 
   // And always absorb the higher relevance score of duplicates.

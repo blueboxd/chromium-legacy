@@ -152,6 +152,7 @@ crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/misc/tex
 crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
 crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/misc/texture-upload-size.html [ Failure ]
 crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/video/* [ Failure ]
+crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/misc/texture-npot-video.html [ Failure ]
 
 # TODO(kbr): re-enable suppression for same test below once fixed.
 crbug.com/angleproject/2103 [ win ] conformance/glsl/bugs/sampler-struct-function-arg.html [ Skip ]

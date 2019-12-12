@@ -38,9 +38,6 @@ class SpeechSynthesisVoice final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SpeechSynthesisVoice* Create(
-      mojom::blink::SpeechSynthesisVoicePtr mojom_voice);
-
   explicit SpeechSynthesisVoice(
       mojom::blink::SpeechSynthesisVoicePtr mojom_voice);
   ~SpeechSynthesisVoice() override;

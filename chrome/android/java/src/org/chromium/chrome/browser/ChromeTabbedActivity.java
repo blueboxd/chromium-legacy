@@ -1856,6 +1856,14 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
             return true;
         }
 
+        // If the current tab is created from the start surface, then the back button should close
+        // the tab and go back to the start surface.
+        if (type == TabLaunchType.FROM_START_SURFACE) {
+            getCurrentTabModel().closeTab(currentTab);
+            toggleOverview();
+            return true;
+        }
+
         final boolean shouldCloseTab = backShouldCloseTab(currentTab);
 
         // Minimize the app if either:

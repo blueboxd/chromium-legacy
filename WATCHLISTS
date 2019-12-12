@@ -1924,6 +1924,9 @@
                     '|third_party/blink/web_tests/external/wpt/webauthn/'\
                     '|third_party/microsoft_webauthn/',
     },
+    'webcodecs': {
+        'filepath': 'third_party/blink/renderer/modules/webcodecs/',
+    },
     'webgpu': {
         'filepath': 'third_party/blink/renderer/modules/webgpu/',
     },
@@ -2758,6 +2761,7 @@
     'web_package': ['twifkak+watch@chromium.org'],
     'web_share': ['mgiuca+watch@chromium.org'],
     'webauthn': ['webauthn-reviews@chromium.org'],
+    'webcodecs': ['feature-media-reviews@chromium.org'],
     'webgpu': ['cwallez+watch@chromium.org',
                'kainino+watch@chromium.org'],
     'weblayer': ['cricke+watch@chromium.org',

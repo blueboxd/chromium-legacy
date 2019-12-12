@@ -13,7 +13,7 @@
 namespace media {
 namespace v4l2_vda_helpers {
 
-uint32_t FindImageProcessorInputFormat(V4L2Device* vda_device) {
+base::Optional<Fourcc> FindImageProcessorInputFormat(V4L2Device* vda_device) {
   std::vector<uint32_t> processor_input_formats =
       V4L2ImageProcessor::GetSupportedInputFormats();
 
@@ -24,14 +24,14 @@ uint32_t FindImageProcessorInputFormat(V4L2Device* vda_device) {
                   processor_input_formats.end(),
                   fmtdesc.pixelformat) != processor_input_formats.end()) {
       DVLOGF(3) << "Image processor input format=" << fmtdesc.description;
-      return fmtdesc.pixelformat;
+      return Fourcc::FromV4L2PixFmt(fmtdesc.pixelformat);
     }
     ++fmtdesc.index;
   }
-  return 0;
+  return base::nullopt;
 }
 
-uint32_t FindImageProcessorOutputFormat(V4L2Device* ip_device) {
+base::Optional<Fourcc> FindImageProcessorOutputFormat(V4L2Device* ip_device) {
   // Prefer YVU420 and NV12 because ArcGpuVideoDecodeAccelerator only supports
   // single physical plane.
   static constexpr uint32_t kPreferredFormats[] = {V4L2_PIX_FMT_NV12,
@@ -54,16 +54,16 @@ uint32_t FindImageProcessorOutputFormat(V4L2Device* ip_device) {
   for (uint32_t processor_output_format : processor_output_formats) {
     if (ip_device->CanCreateEGLImageFrom(processor_output_format)) {
       DVLOGF(3) << "Image processor output format=" << processor_output_format;
-      return processor_output_format;
+      return Fourcc::FromV4L2PixFmt(processor_output_format);
     }
   }
 
-  return 0;
+  return base::nullopt;
 }
 
 std::unique_ptr<ImageProcessor> CreateImageProcessor(
-    uint32_t vda_output_format,
-    uint32_t ip_output_format,
+    const Fourcc vda_output_format,
+    const Fourcc ip_output_format,
     const gfx::Size& vda_output_coded_size,
     const gfx::Size& ip_output_coded_size,
     const gfx::Size& visible_size,
@@ -76,12 +76,10 @@ std::unique_ptr<ImageProcessor> CreateImageProcessor(
   //     |image_processor_device_| from V4L2VideoDecodeAccelerator.
   auto image_processor = V4L2ImageProcessor::Create(
       std::move(client_task_runner), image_processor_device,
-      ImageProcessor::PortConfig(Fourcc::FromV4L2PixFmt(vda_output_format),
-                                 vda_output_coded_size, {}, visible_size,
-                                 {VideoFrame::STORAGE_DMABUFS}),
-      ImageProcessor::PortConfig(Fourcc::FromV4L2PixFmt(ip_output_format),
-                                 ip_output_coded_size, {}, visible_size,
-                                 {VideoFrame::STORAGE_DMABUFS}),
+      ImageProcessor::PortConfig(vda_output_format, vda_output_coded_size, {},
+                                 visible_size, {VideoFrame::STORAGE_DMABUFS}),
+      ImageProcessor::PortConfig(ip_output_format, ip_output_coded_size, {},
+                                 visible_size, {VideoFrame::STORAGE_DMABUFS}),
       image_processor_output_mode, nb_buffers, std::move(error_cb));
   if (!image_processor)
     return nullptr;

@@ -58,18 +58,4 @@ CreateAutofillWalletSpecificsForPaymentsCustomerData(
   return wallet_specifics;
 }
 
-sync_pb::AutofillWalletSpecifics
-CreateAutofillWalletSpecificsForCreditCardCloudTokenData(
-    const std::string& client_tag) {
-  sync_pb::AutofillWalletSpecifics wallet_specifics;
-  wallet_specifics.set_type(
-      sync_pb::AutofillWalletSpecifics_WalletInfoType::
-          AutofillWalletSpecifics_WalletInfoType_CREDIT_CARD_CLOUD_TOKEN_DATA);
-
-  sync_pb::WalletCreditCardCloudTokenData* cloud_token_data_specifics =
-      wallet_specifics.mutable_cloud_token_data();
-  cloud_token_data_specifics->set_instrument_token(client_tag);
-  return wallet_specifics;
-}
-
 }  // namespace autofill

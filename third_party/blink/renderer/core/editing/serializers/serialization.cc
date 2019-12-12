@@ -794,12 +794,17 @@ static Document* CreateStagingDocumentForMarkupSanitization() {
 String SanitizeMarkupWithContext(const String& raw_markup,
                                  unsigned fragment_start,
                                  unsigned fragment_end) {
+  if (raw_markup.IsEmpty())
+    return g_empty_string;
+
   Document* staging_document = CreateStagingDocumentForMarkupSanitization();
   Element* body = staging_document->body();
 
   DocumentFragment* fragment = CreateFragmentFromMarkupWithContext(
       *staging_document, raw_markup, fragment_start, fragment_end, KURL(),
       kDisallowScriptingAndPluginContent);
+  if (!fragment)
+    return g_empty_string;
 
   body->appendChild(fragment);
   staging_document->UpdateStyleAndLayout();

@@ -20,9 +20,8 @@ struct AutofillMetadata;
 class AutofillProfile;
 class AutofillWebDataService;
 class CreditCard;
-struct CreditCardCloudTokenData;
-struct PaymentsCustomerData;
 class PersonalDataManager;
+struct PaymentsCustomerData;
 }  // namespace autofill
 
 namespace sync_pb {
@@ -36,7 +35,6 @@ extern const char kDefaultCardID[];
 extern const char kDefaultAddressID[];
 extern const char kDefaultCustomerID[];
 extern const char kDefaultBillingAddressID[];
-extern const char kDefaultCreditCardCloudTokenDataID[];
 
 // Used to access the personal data manager within a particular sync profile.
 autofill::PersonalDataManager* GetPersonalDataManager(int index)
@@ -61,10 +59,6 @@ void SetServerProfiles(int profile,
 void SetPaymentsCustomerData(
     int profile,
     const autofill::PaymentsCustomerData& customer_data);
-
-void SetCreditCardCloudTokenData(
-    int profile,
-    const std::vector<autofill::CreditCardCloudTokenData>& cloud_token_data);
 
 void UpdateServerCardMetadata(int profile,
                               const autofill::CreditCard& credit_card);
@@ -105,10 +99,6 @@ sync_pb::SyncEntity CreateDefaultSyncWalletAddress();
 
 sync_pb::SyncEntity CreateSyncWalletAddress(const std::string& name,
                                             const std::string& company);
-
-sync_pb::SyncEntity CreateSyncCreditCardCloudTokenData(
-    const std::string& cloud_token_data_id);
-sync_pb::SyncEntity CreateDefaultSyncCreditCardCloudTokenData();
 
 // TODO(sebsg): Instead add a function to create a card, and one to inject in
 // the server. Then compare the cards directly.

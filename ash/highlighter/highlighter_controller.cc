@@ -148,8 +148,8 @@ void HighlighterController::UpdatePointerView(ui::TouchEvent* event) {
   interrupted_stroke_timer_ = std::make_unique<base::OneShotTimer>();
   interrupted_stroke_timer_->Start(
       FROM_HERE, base::TimeDelta::FromMilliseconds(kInterruptedStrokeTimeoutMs),
-      base::Bind(&HighlighterController::RecognizeGesture,
-                 base::Unretained(this)));
+      base::BindOnce(&HighlighterController::RecognizeGesture,
+                     base::Unretained(this)));
 }
 
 void HighlighterController::RecognizeGesture() {
@@ -179,8 +179,8 @@ void HighlighterController::RecognizeGesture() {
 
   highlighter_view_->Animate(
       box.CenterPoint(), gesture_type,
-      base::Bind(&HighlighterController::DestroyHighlighterView,
-                 base::Unretained(this)));
+      base::BindOnce(&HighlighterController::DestroyHighlighterView,
+                     base::Unretained(this)));
 
   // |box| is not guaranteed to be inside the screen bounds, clip it.
   // Not converting |box| to gfx::Rect here to avoid accumulating rounding
@@ -199,9 +199,10 @@ void HighlighterController::RecognizeGesture() {
       observer.OnHighlighterSelectionRecognized(selection_rect);
 
     result_view_ = std::make_unique<HighlighterResultView>(current_window);
-    result_view_->Animate(box, gesture_type,
-                          base::Bind(&HighlighterController::DestroyResultView,
-                                     base::Unretained(this)));
+    result_view_->Animate(
+        box, gesture_type,
+        base::BindOnce(&HighlighterController::DestroyResultView,
+                       base::Unretained(this)));
 
     recognized_gesture_counter_++;
     CallExitCallback();

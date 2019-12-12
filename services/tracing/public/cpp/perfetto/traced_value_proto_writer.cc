@@ -53,6 +53,7 @@ class ProtoWriter final : public TracedValue::Writer {
         stream_(&buffer_) {
     proto_.Reset(&stream_);
     buffer_.set_writer(&stream_);
+    stream_.Reset(buffer_.GetNewBuffer());
     node_stack_.emplace(ProtoValueHandle(&proto_));
     proto_.set_nested_type(ProtoValue::DICT);
   }

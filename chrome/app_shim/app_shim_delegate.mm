@@ -11,18 +11,18 @@
 
 - (id)initWithController:(AppShimController*)controller {
   if (self = [super init])
-    _appShimController = controller;
+    appShimController_ = controller;
   return self;
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification*)notification {
-  _appShimController->OnAppFinishedLaunching();
+  appShimController_->OnAppFinishedLaunching();
 }
 
 - (BOOL)application:(NSApplication*)app openFile:(NSString*)filename {
   std::vector<base::FilePath> filePaths = {
       base::mac::NSStringToFilePath(filename)};
-  _appShimController->OpenFiles(filePaths);
+  appShimController_->OpenFiles(filePaths);
   return YES;
 }
 
@@ -30,14 +30,14 @@
   std::vector<base::FilePath> filePaths;
   for (NSString* filename in filenames)
     filePaths.push_back(base::mac::NSStringToFilePath(filename));
-  _appShimController->OpenFiles(filePaths);
+  appShimController_->OpenFiles(filePaths);
   [app replyToOpenOrPrint:NSApplicationDelegateReplySuccess];
 }
 
 - (void)applicationWillBecomeActive:(NSNotification*)notification {
   // TODO(https://crbug.com/829689): There should be no arguments to this mojo
   // method.
-  return _appShimController->host()->FocusApp(
+  return appShimController_->host()->FocusApp(
       chrome::mojom::AppShimFocusType::kNormal, std::vector<base::FilePath>());
 }
 

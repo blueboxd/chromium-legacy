@@ -11,16 +11,16 @@
 
 @interface TestDelayed : NSObject {
  @private
-  BOOL _didWork;
-  TestDelayed* _next;
+  BOOL didWork_;
+  TestDelayed* next_;
 }
 @property(readonly, nonatomic) BOOL didWork;
 @property(assign, nonatomic) TestDelayed* next;
 @end
 
 @implementation TestDelayed
-@synthesize didWork = _didWork;
-@synthesize next = _next;
+@synthesize didWork = didWork_;
+@synthesize next = next_;
 
 - (id)init {
   if ((self = [super init])) {
@@ -30,8 +30,8 @@
 }
 
 - (void)doWork {
-  _didWork = YES;
-  [_next performSelector:@selector(doWork) withObject:nil afterDelay:0];
+  didWork_ = YES;
+  [next_ performSelector:@selector(doWork) withObject:nil afterDelay:0];
 }
 @end
 

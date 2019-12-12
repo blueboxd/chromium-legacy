@@ -13,7 +13,7 @@
     <style include="multidevice-setup-shared">
       #selector-and-details-container {
         @apply --layout-horizontal;
-        margin-top: 48px;
+        margin-top: 32px;
         min-height: 246px;
       }
 
@@ -44,6 +44,7 @@
       }
 
       #deviceSelectionContainer {
+        @apply --layout-vertical;
         color: var(--paper-grey-600);
       }
 
@@ -78,7 +79,7 @@
 
       #footnote {
         color: var(--paper-grey-600);
-        margin-top: 12px;
+        padding-top: 12px;
       }
 
       #multidevice-summary-message a {
@@ -113,7 +114,6 @@
         <div id="selector-and-details-container">
           <div id="deviceSelectionContainer" class="flex">
             [[getDeviceSelectionHeader_(devices)]]
-            <div class="flex"></div>
             <div id="singleDeviceName"
                 hidden$="[[!doesDeviceListHaveOneElement_(devices)]]">
               [[getFirstDeviceNameInList_(devices)]]
@@ -131,8 +131,13 @@
                 </template>
               </select>
             </div>
+            <div class="flex"></div>
             <div id="page-icon-container">
               <div id="page-icon"></div>
+            </div>
+            <div class="flex"></div>
+            <div id="footnote">
+              [[i18nAdvancedDynamic_(locale, 'startSetupPageFootnote')]]
             </div>
           </div>
           <div id="feature-details-container" class="flex">
@@ -160,9 +165,6 @@
               </span>
             </div>
           </div>
-        </div>
-        <div id="footnote">
-          [[i18nAdvancedDynamic_(locale, 'startSetupPageFootnote')]]
         </div>
       </div>
     </ui-page>

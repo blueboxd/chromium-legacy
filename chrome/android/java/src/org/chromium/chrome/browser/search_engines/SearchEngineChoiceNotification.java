@@ -109,7 +109,7 @@ public final class SearchEngineChoiceNotification {
                 .make(context.getString(R.string.search_engine_choice_prompt),
                         new NotificationSnackbarController(context), Snackbar.TYPE_NOTIFICATION,
                         Snackbar.UMA_SEARCH_ENGINE_CHOICE_NOTIFICATION)
-                .setAction(context.getString(R.string.preferences), null)
+                .setAction(context.getString(R.string.settings), null)
                 .setDuration((int) TimeUnit.SECONDS.toMillis(durationSeconds))
                 .setSingleLine(false)
                 .setTheme(Snackbar.Theme.GOOGLE);

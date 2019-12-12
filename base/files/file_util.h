@@ -390,6 +390,7 @@ BASE_EXPORT int ReadFile(const FilePath& filename, char* data, int max_size);
 
 // Writes the given buffer into the file, overwriting any data that was
 // previously there.  Returns the number of bytes written, or -1 on error.
+// If file doesn't exist, it gets created with read/write permissions for all.
 BASE_EXPORT int WriteFile(const FilePath& filename, const char* data,
                           int size);
 

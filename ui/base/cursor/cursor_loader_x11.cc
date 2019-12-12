@@ -83,11 +83,8 @@ CursorLoaderX11::CursorLoaderX11()
     : display_(gfx::GetXDisplay()),
       invisible_cursor_(CreateInvisibleCursor(), gfx::GetXDisplay()) {
   auto* cursor_theme_manager = CursorThemeManagerLinux::GetInstance();
-  if (cursor_theme_manager) {
+  if (cursor_theme_manager)
     cursor_theme_observer_.Add(cursor_theme_manager);
-    OnCursorThemeNameChanged(cursor_theme_manager->GetCursorThemeName());
-    OnCursorThemeSizeChanged(cursor_theme_manager->GetCursorThemeSize());
-  }
 }
 
 CursorLoaderX11::~CursorLoaderX11() {

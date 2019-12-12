@@ -19,6 +19,7 @@ body .foo {
 }
 
 .foo {
+    display: list-item;
     color: black;
     margin-left: 1px;
     margin: 10px 0 2px;
@@ -48,6 +49,11 @@ body .foo {
 .foo::after {
     font-family: courier;
     content: "[after Foo 2]";
+}
+
+.foo::marker {
+    content: "[marker Foo]";
+    color: cyan;
 }
 
 .foo {

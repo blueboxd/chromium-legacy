@@ -21,9 +21,9 @@ class PrefService;
 // Note: Your xib file should have "Visible at launch" UNCHECKED, so that the
 // initial repositioning is not visible.
 @interface WindowSizeAutosaver : NSObject {
-  NSWindow* _window;  // weak
-  PrefService* _prefService;  // weak
-  const char* _path;
+  NSWindow* window_;  // weak
+  PrefService* prefService_;  // weak
+  const char* path_;
 }
 
 - (id)initWithWindow:(NSWindow*)window

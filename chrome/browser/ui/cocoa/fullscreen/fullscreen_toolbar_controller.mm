@@ -20,54 +20,54 @@
 
 - (id)initWithDelegate:(id<FullscreenToolbarContextDelegate>)delegate {
   if ((self = [super init])) {
-    _animationController =
+    animationController_ =
         std::make_unique<FullscreenToolbarAnimationController>(self);
-    _visibilityLockController.reset(
+    visibilityLockController_.reset(
         [[FullscreenToolbarVisibilityLockController alloc]
             initWithFullscreenToolbarController:self
-                            animationController:_animationController.get()]);
+                            animationController:animationController_.get()]);
   }
 
-  _delegate = delegate;
+  delegate_ = delegate;
   return self;
 }
 
 - (void)dealloc {
-  DCHECK(!_inFullscreenMode);
+  DCHECK(!inFullscreenMode_);
   [super dealloc];
 }
 
 - (void)enterFullscreenMode {
-  DCHECK(!_inFullscreenMode);
-  _inFullscreenMode = YES;
+  DCHECK(!inFullscreenMode_);
+  inFullscreenMode_ = YES;
 
-  if ([_delegate isInImmersiveFullscreen]) {
-    _immersiveFullscreenController.reset(
-        [[ImmersiveFullscreenController alloc] initWithDelegate:_delegate]);
-    [_immersiveFullscreenController updateMenuBarAndDockVisibility];
+  if ([delegate_ isInImmersiveFullscreen]) {
+    immersiveFullscreenController_.reset(
+        [[ImmersiveFullscreenController alloc] initWithDelegate:delegate_]);
+    [immersiveFullscreenController_ updateMenuBarAndDockVisibility];
   } else {
-    _menubarTracker.reset([[FullscreenMenubarTracker alloc]
+    menubarTracker_.reset([[FullscreenMenubarTracker alloc]
         initWithFullscreenToolbarController:self]);
-    _mouseTracker.reset([[FullscreenToolbarMouseTracker alloc]
+    mouseTracker_.reset([[FullscreenToolbarMouseTracker alloc]
         initWithFullscreenToolbarController:self]);
   }
 }
 
 - (void)exitFullscreenMode {
-  DCHECK(_inFullscreenMode);
-  _inFullscreenMode = NO;
+  DCHECK(inFullscreenMode_);
+  inFullscreenMode_ = NO;
 
-  _animationController->StopAnimationAndTimer();
+  animationController_->StopAnimationAndTimer();
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 
-  _menubarTracker.reset();
-  _mouseTracker.reset();
-  _immersiveFullscreenController.reset();
+  menubarTracker_.reset();
+  mouseTracker_.reset();
+  immersiveFullscreenController_.reset();
 }
 
 - (void)revealToolbarForWebContents:(content::WebContents*)contents
                        inForeground:(BOOL)inForeground {
-  _animationController->AnimateToolbarForTabstripChanges(contents,
+  animationController_->AnimateToolbarForTabstripChanges(contents,
                                                          inForeground);
 }
 
@@ -79,73 +79,73 @@
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
     return kHideFraction;
 
-  switch (_toolbarStyle) {
+  switch (toolbarStyle_) {
     case FullscreenToolbarStyle::TOOLBAR_PRESENT:
       return kShowFraction;
     case FullscreenToolbarStyle::TOOLBAR_NONE:
       return kHideFraction;
     case FullscreenToolbarStyle::TOOLBAR_HIDDEN:
-      if (_animationController->IsAnimationRunning())
-        return _animationController->GetToolbarFractionFromProgress();
+      if (animationController_->IsAnimationRunning())
+        return animationController_->GetToolbarFractionFromProgress();
 
       if ([self mustShowFullscreenToolbar])
         return kShowFraction;
 
-      return [_menubarTracker menubarFraction];
+      return [menubarTracker_ menubarFraction];
   }
 }
 
 - (FullscreenToolbarStyle)toolbarStyle {
-  return _toolbarStyle;
+  return toolbarStyle_;
 }
 
 - (BOOL)mustShowFullscreenToolbar {
-  if (!_inFullscreenMode)
+  if (!inFullscreenMode_)
     return NO;
 
-  if (_toolbarStyle == FullscreenToolbarStyle::TOOLBAR_PRESENT)
+  if (toolbarStyle_ == FullscreenToolbarStyle::TOOLBAR_PRESENT)
     return YES;
 
-  if (_toolbarStyle == FullscreenToolbarStyle::TOOLBAR_NONE)
+  if (toolbarStyle_ == FullscreenToolbarStyle::TOOLBAR_NONE)
     return NO;
 
-  FullscreenMenubarState menubarState = [_menubarTracker state];
+  FullscreenMenubarState menubarState = [menubarTracker_ state];
   return menubarState == FullscreenMenubarState::SHOWN ||
-         [_visibilityLockController isToolbarVisibilityLocked];
+         [visibilityLockController_ isToolbarVisibilityLocked];
 }
 
 - (void)updateToolbarFrame:(NSRect)frame {
-  if (_mouseTracker.get())
-    [_mouseTracker updateToolbarFrame:frame];
+  if (mouseTracker_.get())
+    [mouseTracker_ updateToolbarFrame:frame];
 }
 
 - (void)layoutToolbar {
-  _animationController->ToolbarDidUpdate();
-  [_mouseTracker updateTrackingArea];
+  animationController_->ToolbarDidUpdate();
+  [mouseTracker_ updateTrackingArea];
 }
 
 - (BOOL)isInFullscreen {
-  return _inFullscreenMode;
+  return inFullscreenMode_;
 }
 
 - (FullscreenMenubarTracker*)menubarTracker {
-  return _menubarTracker.get();
+  return menubarTracker_.get();
 }
 
 - (FullscreenToolbarVisibilityLockController*)visibilityLockController {
-  return _visibilityLockController.get();
+  return visibilityLockController_.get();
 }
 
 - (ImmersiveFullscreenController*)immersiveFullscreenController {
-  return _immersiveFullscreenController.get();
+  return immersiveFullscreenController_.get();
 }
 
 - (void)setToolbarStyle:(FullscreenToolbarStyle)style {
-  _toolbarStyle = style;
+  toolbarStyle_ = style;
 }
 
 - (id<FullscreenToolbarContextDelegate>)delegate {
-  return _delegate;
+  return delegate_;
 }
 
 @end
@@ -153,19 +153,19 @@
 @implementation FullscreenToolbarController (ExposedForTesting)
 
 - (FullscreenToolbarAnimationController*)animationController {
-  return _animationController.get();
+  return animationController_.get();
 }
 
 - (void)setMenubarTracker:(FullscreenMenubarTracker*)tracker {
-  _menubarTracker.reset([tracker retain]);
+  menubarTracker_.reset([tracker retain]);
 }
 
 - (void)setMouseTracker:(FullscreenToolbarMouseTracker*)tracker {
-  _mouseTracker.reset([tracker retain]);
+  mouseTracker_.reset([tracker retain]);
 }
 
 - (void)setTestFullscreenMode:(BOOL)isInFullscreen {
-  _inFullscreenMode = isInFullscreen;
+  inFullscreenMode_ = isInFullscreen;
 }
 
 @end

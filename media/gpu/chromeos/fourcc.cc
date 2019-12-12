@@ -189,14 +189,10 @@ VideoPixelFormat Fourcc::ToVideoPixelFormat() const {
 
 #if BUILDFLAG(USE_V4L2_CODEC)
 // static
-Fourcc Fourcc::FromV4L2PixFmt(uint32_t v4l2_pix_fmt) {
+base::Optional<Fourcc> Fourcc::FromV4L2PixFmt(uint32_t v4l2_pix_fmt) {
   // We can do that because we adopt the same internal definition of Fourcc as
   // V4L2.
-  auto fourcc = FromUint32(v4l2_pix_fmt);
-  if (fourcc)
-    return *fourcc;
-  NOTREACHED() << "Unmapped V4L2PixFmt: " << FourccToString(v4l2_pix_fmt);
-  return Fourcc();
+  return FromUint32(v4l2_pix_fmt);
 }
 
 uint32_t Fourcc::ToV4L2PixFmt() const {

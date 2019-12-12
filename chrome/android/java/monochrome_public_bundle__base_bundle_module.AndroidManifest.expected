@@ -269,15 +269,15 @@
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
         android:exported="false"
-        android:label="@string/preferences"
+        android:label="@string/settings"
         android:name="org.chromium.chrome.browser.settings.SettingsActivity"
-        android:theme="@style/Theme.Chromium.Preferences"/>
+        android:theme="@style/Theme.Chromium.Settings"/>
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
         android:exported="false"
         android:label="@string/storage_management_activity_label"
         android:name="org.chromium.chrome.browser.settings.website.ManageSpaceActivity"
-        android:theme="@style/Theme.Chromium.Preferences.ManageSpace"/>
+        android:theme="@style/Theme.Chromium.Settings.ManageSpace"/>
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
         android:exported="false"

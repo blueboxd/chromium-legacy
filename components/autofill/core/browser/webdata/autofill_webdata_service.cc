@@ -245,15 +245,6 @@ WebDataServiceBase::Handle AutofillWebDataService::GetPaymentsCustomerData(
       consumer);
 }
 
-WebDataServiceBase::Handle AutofillWebDataService::GetCreditCardCloudTokenData(
-    WebDataServiceConsumer* consumer) {
-  return wdbs_->ScheduleDBTaskWithResult(
-      FROM_HERE,
-      Bind(&AutofillWebDataBackendImpl::GetCreditCardCloudTokenData,
-           autofill_backend_),
-      consumer);
-}
-
 void AutofillWebDataService::ClearAllServerData() {
   wdbs_->ScheduleDBTask(
       FROM_HERE,

@@ -382,7 +382,7 @@ class RasterBufferProviderTest
       worker_context_provider_ = base::MakeRefCounted<viz::TestContextProvider>(
           std::make_unique<viz::TestContextSupport>(),
           std::move(worker_gl_owned), std::move(worker_ri_owned),
-          nullptr /* sii */, true /* support_locking */);
+          true /* support_locking */);
       worker_context_provider_->BindToCurrentThread();
     } else {
       worker_context_provider_ = viz::TestContextProvider::CreateWorker();

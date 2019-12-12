@@ -40,74 +40,74 @@ class TabMenuBridge;
                                     NSApplicationDelegate> {
  @private
   // Manages the state of the command menu items.
-  std::unique_ptr<CommandUpdater> _menuState;
+  std::unique_ptr<CommandUpdater> menuState_;
 
   // The profile last used by a Browser. It is this profile that was used to
   // build the user-data specific main menu items.
-  Profile* _lastProfile;
+  Profile* lastProfile_;
 
   // The ProfileObserver observes the ProfileAttrbutesStorage and gets notified
   // when a profile has been deleted.
   std::unique_ptr<AppControllerProfileObserver>
-      _profileAttributesStorageObserver;
+      profileAttributesStorageObserver_;
 
   // Management of the bookmark menu which spans across all windows
   // (and Browser*s). |profileBookmarkMenuBridgeMap_| is a cache that owns one
   // pointer to a BookmarkMenuBridge for each profile. |bookmarkMenuBridge_| is
   // a weak pointer that is updated to match the corresponding cache entry
   // during a profile switch.
-  BookmarkMenuBridge* _bookmarkMenuBridge;
+  BookmarkMenuBridge* bookmarkMenuBridge_;
   std::map<base::FilePath, std::unique_ptr<BookmarkMenuBridge>>
-      _profileBookmarkMenuBridgeMap;
+      profileBookmarkMenuBridgeMap_;
 
-  std::unique_ptr<HistoryMenuBridge> _historyMenuBridge;
+  std::unique_ptr<HistoryMenuBridge> historyMenuBridge_;
 
   // Controller that manages main menu items for packaged apps.
-  base::scoped_nsobject<AppShimMenuController> _appShimMenuController;
+  base::scoped_nsobject<AppShimMenuController> appShimMenuController_;
 
   // The profile menu, which appears right before the Help menu. It is only
   // available when multiple profiles is enabled.
-  base::scoped_nsobject<ProfileMenuController> _profileMenuController;
+  base::scoped_nsobject<ProfileMenuController> profileMenuController_;
 
   // Controller for the macOS system share menu.
-  base::scoped_nsobject<ShareMenuController> _shareMenuController;
+  base::scoped_nsobject<ShareMenuController> shareMenuController_;
 
-  std::unique_ptr<TabMenuBridge> _tabMenuBridge;
+  std::unique_ptr<TabMenuBridge> tabMenuBridge_;
 
   // If we're told to open URLs (in particular, via |-application:openFiles:| by
   // Launch Services) before we've launched the browser, we queue them up in
   // |startupUrls_| so that they can go in the first browser window/tab.
-  std::vector<GURL> _startupUrls;
-  BOOL _startupComplete;
+  std::vector<GURL> startupUrls_;
+  BOOL startupComplete_;
 
   // Outlets for the close tab/window menu items so that we can adjust the
   // commmand-key equivalent depending on the kind of window and how many
   // tabs it has.
-  NSMenuItem* _closeTabMenuItem;
-  NSMenuItem* _closeWindowMenuItem;
+  NSMenuItem* closeTabMenuItem_;
+  NSMenuItem* closeWindowMenuItem_;
 
   // If we are expecting a workspace change in response to a reopen
   // event, the time we got the event. A null time otherwise.
-  base::TimeTicks _reopenTime;
+  base::TimeTicks reopenTime_;
 
-  std::unique_ptr<PrefChangeRegistrar> _profilePrefRegistrar;
-  PrefChangeRegistrar _localPrefRegistrar;
+  std::unique_ptr<PrefChangeRegistrar> profilePrefRegistrar_;
+  PrefChangeRegistrar localPrefRegistrar_;
 
   // Displays a notification when quitting while apps are running.
-  scoped_refptr<QuitWithAppsController> _quitWithAppsController;
+  scoped_refptr<QuitWithAppsController> quitWithAppsController_;
 
   // Responsible for maintaining all state related to the Handoff feature.
-  base::scoped_nsobject<HandoffManager> _handoffManager;
+  base::scoped_nsobject<HandoffManager> handoffManager_;
 
   // Observes changes to the active URL.
   std::unique_ptr<HandoffActiveURLObserverBridge>
-      _handoff_active_url_observer_bridge;
+      handoff_active_url_observer_bridge_;
 
   // This will be true after receiving a NSWorkspaceWillPowerOffNotification.
-  BOOL _isPoweringOff;
+  BOOL isPoweringOff_;
 
   // Request to keep the browser alive during that object's lifetime.
-  std::unique_ptr<ScopedKeepAlive> _keep_alive;
+  std::unique_ptr<ScopedKeepAlive> keep_alive_;
 }
 
 @property(readonly, nonatomic) BOOL startupComplete;

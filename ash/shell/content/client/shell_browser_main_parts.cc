@@ -31,11 +31,9 @@
 #include "chromeos/network/network_handler.h"
 #include "components/exo/file_helper.h"
 #include "content/public/browser/context_factory.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "net/base/net_module.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ui_base_features.h"
@@ -103,7 +101,6 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   shell_init_params.context_factory = content::GetContextFactory();
   shell_init_params.context_factory_private =
       content::GetContextFactoryPrivate();
-  shell_init_params.connector = content::GetSystemConnector();
   shell_init_params.keyboard_ui_factory =
       std::make_unique<TestKeyboardUIFactory>();
 

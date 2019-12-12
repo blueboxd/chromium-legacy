@@ -46,14 +46,14 @@ class HighlighterView : public fast_ink::FastInkView {
   void AddGap();
   void Animate(const gfx::PointF& pivot,
                HighlighterGestureType gesture_type,
-               const base::Closure& done);
+               base::OnceClosure done);
 
  private:
   friend class HighlighterControllerTestApi;
 
   void FadeOut(const gfx::PointF& pivot,
                HighlighterGestureType gesture_type,
-               const base::Closure& done);
+               base::OnceClosure done);
   void ScheduleUpdateBuffer();
   void UpdateBuffer();
   void Draw(gfx::Canvas& canvas);

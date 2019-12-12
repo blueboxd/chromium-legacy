@@ -136,8 +136,8 @@ class MEDIA_GPU_EXPORT Fourcc {
                                      bool single_planar = true);
 #if BUILDFLAG(USE_V4L2_CODEC)
   // Converts a V4L2PixFmt to Fourcc.
-  // Returns Fourcc::INVALID for invalid input.
-  static Fourcc FromV4L2PixFmt(uint32_t v4l2_pix_fmt);
+  // Returns nullopt for invalid input.
+  static base::Optional<Fourcc> FromV4L2PixFmt(uint32_t v4l2_pix_fmt);
 #endif  // BUILDFLAG(USE_V4L2_CODEC)
 #if BUILDFLAG(USE_VAAPI)
   // Converts a VAFourCC to Fourcc.

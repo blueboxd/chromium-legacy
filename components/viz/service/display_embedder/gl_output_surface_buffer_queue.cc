@@ -11,12 +11,9 @@
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
-#include "gpu/GLES2/gl2extchromium.h"
+#include "components/viz/service/display_embedder/buffer_queue.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
-#include "gpu/command_buffer/common/sync_token.h"
-#include "ui/gl/buffer_format_utils.h"
 #include "ui/gl/gl_enums.h"
 
 namespace viz {
@@ -27,10 +24,8 @@ GLOutputSurfaceBufferQueue::GLOutputSurfaceBufferQueue(
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     gfx::BufferFormat buffer_format)
     : GLOutputSurface(context_provider, surface_handle),
-      texture_target_(gpu::GetBufferTextureTarget(
-          gfx::BufferUsage::SCANOUT,
-          buffer_format,
-          context_provider_->ContextCapabilities())) {
+      current_texture_(0u),
+      fbo_(0u) {
   capabilities_.only_invalidates_damage_rect = false;
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.flipped_output_surface = true;
@@ -43,47 +38,31 @@ GLOutputSurfaceBufferQueue::GLOutputSurfaceBufferQueue(
   // implementation.
   capabilities_.max_frames_pending = 2;
 
-  // It is safe to pass a raw pointer to *this because |buffer_queue_| is fully
-  // owned and it doesn't use the SyncTokenProvider after it's destroyed.
   buffer_queue_ = std::make_unique<BufferQueue>(
-      context_provider->SharedImageInterface(), buffer_format,
-      gpu_memory_buffer_manager, surface_handle, /*sync_token_provider=*/this);
+      context_provider->ContextGL(), buffer_format, gpu_memory_buffer_manager,
+      surface_handle, context_provider->ContextCapabilities());
   context_provider_->ContextGL()->GenFramebuffers(1, &fbo_);
 }
 
 GLOutputSurfaceBufferQueue::~GLOutputSurfaceBufferQueue() {
-  auto* gl = context_provider_->ContextGL();
   DCHECK_NE(0u, fbo_);
-  gl->DeleteFramebuffers(1, &fbo_);
-  if (stencil_buffer_)
-    gl->DeleteRenderbuffers(1, &stencil_buffer_);
-
-  // Freeing the BufferQueue here ensures that *this is fully alive in case the
-  // BufferQueue needs the SyncTokenProvider functionality.
-  buffer_queue_.reset();
-  fbo_ = 0u;
-  stencil_buffer_ = 0u;
+  context_provider_->ContextGL()->DeleteFramebuffers(1, &fbo_);
 }
 
 void GLOutputSurfaceBufferQueue::BindFramebuffer() {
   auto* gl = context_provider_->ContextGL();
   gl->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
   DCHECK(buffer_queue_);
-  gpu::SyncToken creation_sync_token;
-  const gpu::Mailbox current_buffer =
-      buffer_queue_->GetCurrentBuffer(&creation_sync_token);
-  if (current_buffer.IsZero())
+  unsigned stencil;
+  current_texture_ = buffer_queue_->GetCurrentBuffer(&stencil);
+  if (!current_texture_)
     return;
   // TODO(andrescj): if the texture hasn't changed since the last call to
   // BindFrameBuffer(), we may be able to avoid mutating the FBO which may lead
   // to performance improvements.
-  gl->WaitSyncTokenCHROMIUM(creation_sync_token.GetConstData());
-  current_texture_ =
-      gl->CreateAndTexStorage2DSharedImageCHROMIUM(current_buffer.name);
-  gl->BeginSharedImageAccessDirectCHROMIUM(
-      current_texture_, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
   gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                           texture_target_, current_texture_, 0);
+                           buffer_queue_->texture_target(), current_texture_,
+                           0);
 
 #if DCHECK_IS_ON() && defined(OS_CHROMEOS)
   const GLenum result = gl->CheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -91,17 +70,9 @@ void GLOutputSurfaceBufferQueue::BindFramebuffer() {
     DLOG(ERROR) << " Incomplete fb: " << gl::GLEnums::GetStringError(result);
 #endif
 
-  // Reshape() must be called to go from using a stencil buffer to not using it.
-  DCHECK(use_stencil_ || !stencil_buffer_);
-  if (use_stencil_ && !stencil_buffer_) {
-    gl->GenRenderbuffers(1, &stencil_buffer_);
-    CHECK_NE(stencil_buffer_, 0u);
-    gl->BindRenderbuffer(GL_RENDERBUFFER, stencil_buffer_);
-    gl->RenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8,
-                            reshape_size_.width(), reshape_size_.height());
-    gl->BindRenderbuffer(GL_RENDERBUFFER, 0);
+  if (stencil) {
     gl->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
-                                GL_RENDERBUFFER, stencil_buffer_);
+                                GL_RENDERBUFFER, stencil);
   }
 }
 
@@ -117,25 +88,16 @@ void GLOutputSurfaceBufferQueue::Reshape(const gfx::Size& size,
                                          bool has_alpha,
                                          bool use_stencil) {
   reshape_size_ = size;
-  use_stencil_ = use_stencil;
   GLOutputSurface::Reshape(size, device_scale_factor, color_space, has_alpha,
                            use_stencil);
-  DCHECK(buffer_queue_);
-
-  const bool freed_buffers = buffer_queue_->Reshape(size, color_space);
-  if (freed_buffers || (stencil_buffer_ && !use_stencil)) {
+  if (buffer_queue_->Reshape(size, device_scale_factor, color_space,
+                             use_stencil)) {
     auto* gl = context_provider_->ContextGL();
     gl->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
-    if (freed_buffers) {
-      gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                               texture_target_, 0, 0);
-    }
+    gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                             buffer_queue_->texture_target(), 0, 0);
     gl->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
                                 GL_RENDERBUFFER, 0);
-    if (stencil_buffer_) {
-      gl->DeleteRenderbuffers(1, &stencil_buffer_);
-      stencil_buffer_ = 0u;
-    }
   }
 }
 
@@ -149,8 +111,6 @@ void GLOutputSurfaceBufferQueue::SwapBuffers(OutputSurfaceFrame frame) {
 
   gfx::Rect damage_rect =
       frame.sub_buffer_rect ? *frame.sub_buffer_rect : gfx::Rect(swap_size_);
-  context_provider_->ContextGL()->EndSharedImageAccessDirectCHROMIUM(
-      current_texture_);
   buffer_queue_->SwapBuffers(damage_rect);
 
   GLOutputSurface::SwapBuffers(std::move(frame));
@@ -161,8 +121,7 @@ gfx::Rect GLOutputSurfaceBufferQueue::GetCurrentFramebufferDamage() const {
 }
 
 uint32_t GLOutputSurfaceBufferQueue::GetFramebufferCopyTextureFormat() {
-  return base::strict_cast<GLenum>(
-      gl::BufferFormatToGLInternalFormat(buffer_queue_->buffer_format()));
+  return buffer_queue_->internal_format();
 }
 
 bool GLOutputSurfaceBufferQueue::IsDisplayedAsOverlayPlane() const {
@@ -194,20 +153,6 @@ void GLOutputSurfaceBufferQueue::DidReceiveSwapBuffersAck(
 
   if (force_swap)
     client()->SetNeedsRedrawRect(gfx::Rect(swap_size_));
-}
-
-gpu::SyncToken GLOutputSurfaceBufferQueue::GenSyncToken() {
-  // This should only be called as long as the BufferQueue is alive. We cannot
-  // use |buffer_queue_| to detect this because in the dtor, |buffer_queue_|
-  // becomes nullptr before BufferQueue's dtor is called, so GenSyncToken()
-  // would be called after |buffer_queue_| is nullptr when in fact, the
-  // BufferQueue is still alive. Hence, we use |fbo_| to detect that the
-  // BufferQueue is still alive.
-  DCHECK(fbo_);
-  gpu::SyncToken sync_token;
-  context_provider_->ContextGL()->GenUnverifiedSyncTokenCHROMIUM(
-      sync_token.GetData());
-  return sync_token;
 }
 
 void GLOutputSurfaceBufferQueue::SetDisplayTransformHint(

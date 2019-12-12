@@ -14,39 +14,39 @@
 #include "chrome/browser/ui/cocoa/notifications/notification_constants_mac.h"
 
 @implementation StubAlertDispatcher {
-  base::scoped_nsobject<NSMutableArray> _alerts;
+  base::scoped_nsobject<NSMutableArray> alerts_;
 }
 
 - (instancetype)init {
   if ((self = [super init])) {
-    _alerts.reset([[NSMutableArray alloc] init]);
+    alerts_.reset([[NSMutableArray alloc] init]);
   }
   return self;
 }
 
 - (void)dispatchNotification:(NSDictionary*)data {
-  [_alerts addObject:data];
+  [alerts_ addObject:data];
 }
 
 - (void)closeNotificationWithId:(NSString*)notificationId
                   withProfileId:(NSString*)profileId {
   DCHECK(profileId);
   DCHECK(notificationId);
-  for (NSDictionary* toast in _alerts.get()) {
+  for (NSDictionary* toast in alerts_.get()) {
     NSString* toastId =
         [toast objectForKey:notification_constants::kNotificationId];
     NSString* persistentProfileId =
         [toast objectForKey:notification_constants::kNotificationProfileId];
     if ([toastId isEqualToString:notificationId] &&
         [persistentProfileId isEqualToString:profileId]) {
-      [_alerts removeObject:toast];
+      [alerts_ removeObject:toast];
       break;
     }
   }
 }
 
 - (void)closeAllNotifications {
-  [_alerts removeAllObjects];
+  [alerts_ removeAllObjects];
 }
 
 - (void)
@@ -70,7 +70,7 @@ getDisplayedAlertsForProfileId:(NSString*)profileId
 }
 
 - (NSArray*)alerts {
-  return [[_alerts copy] autorelease];
+  return [[alerts_ copy] autorelease];
 }
 
 @end

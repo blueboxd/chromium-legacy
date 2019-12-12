@@ -102,6 +102,7 @@ if (public_android_sdk) {
       "@WrappedPath(apks/WebLayerShellSystemWebView.apk)",
       "--support-apk-path",
       "@WrappedPath(apks/TrichromeLibrary.apk)",
+      "--support-apk-path",
       "@WrappedPath(apks/TrichromeWebView.apk)",
       "--switch-webview-to",
       system_webview_package_name,

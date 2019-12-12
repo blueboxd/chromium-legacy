@@ -138,6 +138,7 @@ void SmartChargingManager::PowerChanged(
 }
 
 void SmartChargingManager::PowerManagerBecameAvailable(bool available) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!available) {
     return;
   }
@@ -145,6 +146,18 @@ void SmartChargingManager::PowerManagerBecameAvailable(bool available) {
   chromeos::PowerManagerClient::Get()->GetScreenBrightnessPercent(
       base::BindOnce(&SmartChargingManager::OnReceiveScreenBrightnessPercent,
                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+void SmartChargingManager::ShutdownRequested(
+    power_manager::RequestShutdownReason reason) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  LogEvent(UserChargingEvent::Event::SHUTDOWN);
+}
+
+void SmartChargingManager::SuspendImminent(
+    power_manager::SuspendImminent::Reason reason) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  LogEvent(UserChargingEvent::Event::SUSPEND);
 }
 
 void SmartChargingManager::PopulateUserChargingEventProto(

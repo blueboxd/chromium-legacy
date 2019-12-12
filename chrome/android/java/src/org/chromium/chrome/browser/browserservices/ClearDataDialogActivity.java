@@ -51,25 +51,27 @@ public class ClearDataDialogActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this,
-                android.R.style.Theme_DeviceDefault_Light_Dialog_Alert)
-                .setTitle(getString(R.string.twa_clear_data_dialog_title,
-                        getAppNameFromIntent(getIntent())))
-                .setMessage(R.string.twa_clear_data_dialog_message)
-                .setPositiveButton(R.string.preferences, (ignored1, ignored2) -> {
-                    recordDecision(true);
-                    openSettings();
-                    finish();
-                })
-                .setNegativeButton(R.string.twa_clear_data_dialog_keep_data,
-                        (ignored1, ignored2) -> {
-                    recordDecision(false);
-                    finish();
-                })
-                .setOnCancelListener((ignored) -> {
-                    recordDecision(false);
-                    finish();
-                });
+        AlertDialog.Builder builder =
+                new AlertDialog
+                        .Builder(this, android.R.style.Theme_DeviceDefault_Light_Dialog_Alert)
+                        .setTitle(getString(R.string.twa_clear_data_dialog_title,
+                                getAppNameFromIntent(getIntent())))
+                        .setMessage(R.string.twa_clear_data_dialog_message)
+                        .setPositiveButton(R.string.settings,
+                                (ignored1, ignored2) -> {
+                                    recordDecision(true);
+                                    openSettings();
+                                    finish();
+                                })
+                        .setNegativeButton(R.string.twa_clear_data_dialog_keep_data,
+                                (ignored1, ignored2) -> {
+                                    recordDecision(false);
+                                    finish();
+                                })
+                        .setOnCancelListener((ignored) -> {
+                            recordDecision(false);
+                            finish();
+                        });
 
         builder.create().show();
     }

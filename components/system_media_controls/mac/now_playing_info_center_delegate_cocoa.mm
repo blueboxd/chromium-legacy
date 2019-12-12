@@ -71,7 +71,7 @@
   [_nowPlayingInfo setObject:[NSNumber numberWithDouble:0]
                       forKey:MPMediaItemPropertyPlaybackDuration];
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  [nowPlayingInfo_ setObject:@"Chrome" forKey:MPMediaItemPropertyTitle];
+  [_nowPlayingInfo setObject:@"Chrome" forKey:MPMediaItemPropertyTitle];
 #else
   [_nowPlayingInfo setObject:@"Chromium" forKey:MPMediaItemPropertyTitle];
 #endif

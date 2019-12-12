@@ -72,8 +72,10 @@ SpeechSynthesis::SpeechSynthesis(ExecutionContext* context)
 void SpeechSynthesis::OnSetVoiceList(
     Vector<mojom::blink::SpeechSynthesisVoicePtr> mojom_voices) {
   voice_list_.clear();
-  for (auto& mojom_voice : mojom_voices)
-    voice_list_.push_back(SpeechSynthesisVoice::Create(std::move(mojom_voice)));
+  for (auto& mojom_voice : mojom_voices) {
+    voice_list_.push_back(
+        MakeGarbageCollected<SpeechSynthesisVoice>(std::move(mojom_voice)));
+  }
   VoicesDidChange();
 }
 

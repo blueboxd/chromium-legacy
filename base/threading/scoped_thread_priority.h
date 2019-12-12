@@ -7,7 +7,6 @@
 
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
-#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -79,11 +78,6 @@ class BASE_EXPORT ScopedMayLoadLibraryAtBackgroundPriority {
 };
 
 }  // namespace internal
-
-// Feature for mitigation of DLL loading on a background thread.
-#if defined(OS_WIN)
-BASE_EXPORT extern const base::Feature kBoostThreadPriorityOnLibraryLoading;
-#endif  // OS_WIN
 
 }  // namespace base
 

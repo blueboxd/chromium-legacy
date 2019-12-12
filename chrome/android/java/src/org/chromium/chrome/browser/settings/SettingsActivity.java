@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
+import org.chromium.chrome.browser.settings.homepage.HomepageEditor;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.ui.UiUtils;
 
@@ -48,7 +49,7 @@ import org.chromium.ui.UiUtils;
  *
  * If the main fragment is not an instance of {@link PreferenceFragmentCompat} (e.g. {@link
  * HomepageEditor}) or overrides {@link PreferenceFragmentCompat}'s layout, add the following:
- * 1) preferences_action_bar_shadow.xml to the custom XML hierarchy and
+ * 1) settings_action_bar_shadow.xml to the custom XML hierarchy and
  * 2) an OnScrollChangedListener to the main content's view's view tree observer via
  *    {@link SettingsUtils#getShowShadowOnScrollListener(View, View)}.
  */
@@ -167,7 +168,7 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
 
         // Append action bar shadow to layout.
         View inflatedView = getLayoutInflater().inflate(
-                R.layout.preferences_action_bar_shadow, findViewById(android.R.id.content));
+                R.layout.settings_action_bar_shadow, findViewById(android.R.id.content));
 
         // Display shadow on scroll.
         recyclerView.getViewTreeObserver().addOnScrollChangedListener(

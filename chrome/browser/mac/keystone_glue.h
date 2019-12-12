@@ -70,36 +70,36 @@ extern NSString* const kAutoupdateStatusErrorMessages;
  @protected
 
   // Data for Keystone registration
-  base::scoped_nsobject<NSString> _productID;
-  base::scoped_nsobject<NSString> _appPath;
-  base::scoped_nsobject<NSString> _url;
-  base::scoped_nsobject<NSString> _version;
-  std::string _channel;  // Logically: dev, beta, or stable.
+  base::scoped_nsobject<NSString> productID_;
+  base::scoped_nsobject<NSString> appPath_;
+  base::scoped_nsobject<NSString> url_;
+  base::scoped_nsobject<NSString> version_;
+  std::string channel_;  // Logically: dev, beta, or stable.
   // Cached location of the brand file.
-  base::scoped_nsobject<NSString> _brandFile;
+  base::scoped_nsobject<NSString> brandFile_;
 
   // And the Keystone registration itself, with the active timer
-  base::scoped_nsobject<KSRegistration> _registration;
-  NSTimer* _timer;  // strong
-  BOOL _registrationActive;
-  Class _ksUnsignedReportingAttributeClass;
+  base::scoped_nsobject<KSRegistration> registration_;
+  NSTimer* timer_;  // strong
+  BOOL registrationActive_;
+  Class ksUnsignedReportingAttributeClass_;
 
   // The most recent kAutoupdateStatusNotification notification posted.
-  base::scoped_nsobject<NSNotification> _recentNotification;
+  base::scoped_nsobject<NSNotification> recentNotification_;
 
   // The authorization object, when it needs to persist because it's being
   // carried across threads.
-  base::mac::ScopedAuthorizationRef _authorization;
+  base::mac::ScopedAuthorizationRef authorization_;
 
   // YES if a synchronous promotion operation is in progress (promotion during
   // installation).
-  BOOL _synchronousPromotion;
+  BOOL synchronousPromotion_;
 
   // YES if an update was ever successfully installed by -installUpdate.
-  BOOL _updateSuccessfullyInstalled;
+  BOOL updateSuccessfullyInstalled_;
 
   // The object to use to watch for the staging key.
-  base::scoped_nsobject<CrStagingKeyWatcher> _stagingKeyWatcher;
+  base::scoped_nsobject<CrStagingKeyWatcher> stagingKeyWatcher_;
 }
 
 // Return the default Keystone Glue object.

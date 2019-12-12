@@ -17,7 +17,7 @@ class AppShimController;
 @interface AppShimDelegate
     : NSObject<NSApplicationDelegate, NSUserInterfaceValidations> {
  @private
-  AppShimController* _appShimController;  // Weak, owns |this|
+  AppShimController* appShimController_;  // Weak, owns |this|
 }
 - (id)initWithController:(AppShimController*)controller;
 @end

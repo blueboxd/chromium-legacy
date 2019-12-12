@@ -27,9 +27,9 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
-import org.chromium.chrome.browser.settings.HomepageEditor;
-import org.chromium.chrome.browser.settings.HomepagePreferences;
 import org.chromium.chrome.browser.settings.SettingsActivity;
+import org.chromium.chrome.browser.settings.homepage.HomepageEditor;
+import org.chromium.chrome.browser.settings.homepage.HomepageSettings;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -237,12 +237,12 @@ public class PartnerHomepageIntegrationTest {
     private void toggleHomepageSwitchPreference(boolean expected) {
         // Launch preference activity with Homepage settings fragment.
         SettingsActivity homepagePreferenceActivity =
-                mActivityTestRule.startSettingsActivity(HomepagePreferences.class.getName());
+                mActivityTestRule.startSettingsActivity(HomepageSettings.class.getName());
         PreferenceFragmentCompat fragment =
                 (PreferenceFragmentCompat) homepagePreferenceActivity.getSupportFragmentManager()
                         .findFragmentById(android.R.id.content);
         ChromeSwitchPreference preference = (ChromeSwitchPreference) fragment.findPreference(
-                HomepagePreferences.PREF_HOMEPAGE_SWITCH);
+                HomepageSettings.PREF_HOMEPAGE_SWITCH);
         Assert.assertNotNull(preference);
 
         // Click toggle and verify that checked state matches expectation.

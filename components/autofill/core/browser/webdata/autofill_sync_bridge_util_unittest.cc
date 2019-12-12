@@ -9,7 +9,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
-#include "components/autofill/core/browser/data_model/credit_card_cloud_token_data.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/webdata/autofill_sync_bridge_test_util.h"
@@ -85,25 +84,17 @@ TEST_F(AutofillSyncBridgeUtilTest, PopulateWalletTypesFromSyncData) {
       SpecificsToEntity(CreateAutofillWalletSpecificsForPaymentsCustomerData(
                             /*specifics_id=*/"deadbeef"),
                         /*client_tag=*/"customer-deadbeef")));
-  entity_data.push_back(EntityChange::CreateAdd(
-      "data1", SpecificsToEntity(
-                   CreateAutofillWalletSpecificsForCreditCardCloudTokenData(
-                       /*specifics_id=*/"data1"),
-                   /*client_tag=*/"token-data1")));
 
   std::vector<CreditCard> wallet_cards;
   std::vector<AutofillProfile> wallet_addresses;
   std::vector<PaymentsCustomerData> customer_data;
-  std::vector<CreditCardCloudTokenData> cloud_token_data;
   PopulateWalletTypesFromSyncData(entity_data, &wallet_cards, &wallet_addresses,
-                                  &customer_data, &cloud_token_data);
+                                  &customer_data);
 
   ASSERT_EQ(1U, wallet_cards.size());
   ASSERT_EQ(1U, wallet_addresses.size());
 
   EXPECT_EQ("deadbeef", customer_data.back().customer_id);
-
-  EXPECT_EQ("data1", cloud_token_data.back().instrument_token);
 
   // Make sure the card's billing address id is equal to the address' server id.
   EXPECT_EQ(wallet_addresses.back().server_id(),

@@ -186,7 +186,8 @@ id<GREYMatcher> RequiredSelectorEditorFieldMatcher(int string_id) {
 
 // Tests accessibility on the Payment Request contact info page, and add contact
 // info page.
-- (void)testAccessibilityOnPaymentRequestContactInfoAndSubPages {
+// TODO(crbug.com/1033214): Re-enable Payment Request tests.
+- (void)DISABLED_testAccessibilityOnPaymentRequestContactInfoAndSubPages {
   [[[EarlGrey selectElementWithMatcher:ContactInfoCellMatcher(&_profile)]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
                                                   kScrollDisplacement)

@@ -67,6 +67,7 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
                                          "es_ES",
                                          "es_MX",
                                          "fr_BE",
+                                         "it",
                                          "nb",
                                          "nl",
                                          "nn",

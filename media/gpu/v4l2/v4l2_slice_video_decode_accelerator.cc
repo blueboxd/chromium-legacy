@@ -150,7 +150,6 @@ V4L2SliceVideoDecodeAccelerator::V4L2SliceVideoDecodeAccelerator(
       decoder_thread_("V4L2SliceVideoDecodeAcceleratorThread"),
       video_profile_(VIDEO_CODEC_PROFILE_UNKNOWN),
       input_format_fourcc_(0),
-      output_format_fourcc_(0),
       state_(kUninitialized),
       output_mode_(Config::OutputMode::ALLOCATE),
       decoder_flushing_(false),
@@ -160,7 +159,6 @@ V4L2SliceVideoDecodeAccelerator::V4L2SliceVideoDecodeAccelerator(
       egl_display_(egl_display),
       bind_image_cb_(bind_image_cb),
       make_context_current_cb_(make_context_current_cb),
-      gl_image_format_fourcc_(0),
       gl_image_planes_count_(0),
       weak_this_factory_(this) {
   weak_this_ = weak_this_factory_.GetWeakPtr();
@@ -495,17 +493,17 @@ bool V4L2SliceVideoDecodeAccelerator::SetupFormats() {
   // output format or not may depend on the input format.
   memset(&fmtdesc, 0, sizeof(fmtdesc));
   fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-  output_format_fourcc_ = 0;
+  output_format_fourcc_ = base::nullopt;
   while (device_->Ioctl(VIDIOC_ENUM_FMT, &fmtdesc) == 0) {
     if (device_->CanCreateEGLImageFrom(fmtdesc.pixelformat)) {
-      output_format_fourcc_ = fmtdesc.pixelformat;
+      output_format_fourcc_ = Fourcc::FromV4L2PixFmt(fmtdesc.pixelformat);
       break;
     }
     ++fmtdesc.index;
   }
 
   DCHECK(!image_processor_device_);
-  if (output_format_fourcc_ == 0) {
+  if (!output_format_fourcc_) {
     VLOGF(2) << "Could not find a usable output format. Trying image processor";
     if (!V4L2ImageProcessor::IsSupported()) {
       VLOGF(1) << "Image processor not available";
@@ -518,25 +516,26 @@ bool V4L2SliceVideoDecodeAccelerator::SetupFormats() {
     }
     output_format_fourcc_ =
         v4l2_vda_helpers::FindImageProcessorInputFormat(device_.get());
-    if (output_format_fourcc_ == 0) {
+    if (!output_format_fourcc_) {
       VLOGF(1) << "Can't find a usable input format from image processor";
       return false;
     }
     gl_image_format_fourcc_ = v4l2_vda_helpers::FindImageProcessorOutputFormat(
         image_processor_device_.get());
-    if (gl_image_format_fourcc_ == 0) {
+    if (!gl_image_format_fourcc_) {
       VLOGF(1) << "Can't find a usable output format from image processor";
       return false;
     }
-    gl_image_planes_count_ =
-        V4L2Device::GetNumPlanesOfV4L2PixFmt(gl_image_format_fourcc_);
-    output_planes_count_ =
-        V4L2Device::GetNumPlanesOfV4L2PixFmt(output_format_fourcc_);
+    gl_image_planes_count_ = V4L2Device::GetNumPlanesOfV4L2PixFmt(
+        gl_image_format_fourcc_->ToV4L2PixFmt());
+    output_planes_count_ = V4L2Device::GetNumPlanesOfV4L2PixFmt(
+        output_format_fourcc_->ToV4L2PixFmt());
     gl_image_device_ = image_processor_device_;
   } else {
     gl_image_format_fourcc_ = output_format_fourcc_;
     output_planes_count_ = gl_image_planes_count_ =
-        V4L2Device::GetNumPlanesOfV4L2PixFmt(output_format_fourcc_);
+        V4L2Device::GetNumPlanesOfV4L2PixFmt(
+            output_format_fourcc_->ToV4L2PixFmt());
     gl_image_device_ = device_;
   }
 
@@ -544,11 +543,12 @@ bool V4L2SliceVideoDecodeAccelerator::SetupFormats() {
   // driver once it extracts it from the stream.
   memset(&format, 0, sizeof(format));
   format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-  format.fmt.pix_mp.pixelformat = output_format_fourcc_;
-  format.fmt.pix_mp.num_planes =
-      V4L2Device::GetNumPlanesOfV4L2PixFmt(output_format_fourcc_);
+  format.fmt.pix_mp.pixelformat = output_format_fourcc_->ToV4L2PixFmt();
+  format.fmt.pix_mp.num_planes = V4L2Device::GetNumPlanesOfV4L2PixFmt(
+      output_format_fourcc_->ToV4L2PixFmt());
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_FMT, &format);
-  DCHECK_EQ(format.fmt.pix_mp.pixelformat, output_format_fourcc_);
+  DCHECK_EQ(format.fmt.pix_mp.pixelformat,
+            output_format_fourcc_->ToV4L2PixFmt());
 
   DCHECK_EQ(static_cast<size_t>(format.fmt.pix_mp.num_planes),
             output_planes_count_);
@@ -579,7 +579,7 @@ bool V4L2SliceVideoDecodeAccelerator::CreateImageProcessor() {
            : ImageProcessor::OutputMode::IMPORT);
 
   image_processor_ = v4l2_vda_helpers::CreateImageProcessor(
-      output_format_fourcc_, gl_image_format_fourcc_, coded_size_,
+      *output_format_fourcc_, *gl_image_format_fourcc_, coded_size_,
       gl_image_size_, decoder_->GetVisibleRect().size(),
       output_buffer_map_.size(), image_processor_device_,
       image_processor_output_mode,
@@ -682,7 +682,8 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
     gl_image_size_ = pic_size;
     size_t planes_count;
     if (!V4L2ImageProcessor::TryOutputFormat(
-            output_format_fourcc_, gl_image_format_fourcc_, coded_size_,
+            output_format_fourcc_->ToV4L2PixFmt(),
+            gl_image_format_fourcc_->ToV4L2PixFmt(), coded_size_,
             &gl_image_size_, &planes_count)) {
       VLOGF(1) << "Failed to get output size and plane count of IP";
       return false;
@@ -706,8 +707,7 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
             << ", pic size=" << pic_size.ToString()
             << ", coded size=" << coded_size_.ToString();
 
-  VideoPixelFormat pixel_format =
-      Fourcc::FromV4L2PixFmt(gl_image_format_fourcc_).ToVideoPixelFormat();
+  VideoPixelFormat pixel_format = gl_image_format_fourcc_->ToVideoPixelFormat();
   child_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -1337,7 +1337,7 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
     format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
     format.fmt.pix_mp.width = new_frame_size.width();
     format.fmt.pix_mp.height = new_frame_size.height();
-    format.fmt.pix_mp.pixelformat = output_format_fourcc_;
+    format.fmt.pix_mp.pixelformat = output_format_fourcc_->ToV4L2PixFmt();
     format.fmt.pix_mp.num_planes = output_planes_count_;
     if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0) {
       VPLOGF(1) << "Failed with frame size adjusted by client: "
@@ -1436,8 +1436,7 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
       }
 
       int plane_horiz_bits_per_pixel = VideoFrame::PlaneHorizontalBitsPerPixel(
-          Fourcc::FromV4L2PixFmt(gl_image_format_fourcc_).ToVideoPixelFormat(),
-          0);
+          gl_image_format_fourcc_->ToVideoPixelFormat(), 0);
       ImportBufferForPictureTask(
           output_record.picture_id, std::move(passed_dmabuf_fds),
           gl_image_size_.width() * plane_horiz_bits_per_pixel / 8);
@@ -1458,7 +1457,7 @@ void V4L2SliceVideoDecodeAccelerator::CreateGLImageFor(
     GLuint client_texture_id,
     GLuint texture_id,
     const gfx::Size& size,
-    uint32_t fourcc) {
+    const Fourcc fourcc) {
   DVLOGF(3) << "index=" << buffer_index;
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(texture_id, 0u);
@@ -1476,8 +1475,8 @@ void V4L2SliceVideoDecodeAccelerator::CreateGLImageFor(
     return;
   }
 
-  scoped_refptr<gl::GLImage> gl_image =
-      gl_image_device_->CreateGLImage(size, fourcc, passed_dmabuf_fds);
+  scoped_refptr<gl::GLImage> gl_image = gl_image_device_->CreateGLImage(
+      size, fourcc.ToV4L2PixFmt(), passed_dmabuf_fds);
   if (!gl_image) {
     VLOGF(1) << "Could not create GLImage,"
              << " index=" << buffer_index << " texture_id=" << texture_id;
@@ -1519,8 +1518,7 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureForImportTask(
     gfx::NativePixmapHandle handle) {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
-  if (pixel_format !=
-      Fourcc::FromV4L2PixFmt(gl_image_format_fourcc_).ToVideoPixelFormat()) {
+  if (pixel_format != gl_image_format_fourcc_->ToVideoPixelFormat()) {
     VLOGF(1) << "Unsupported import format: "
              << VideoPixelFormatToString(pixel_format);
     NOTIFY_ERROR(INVALID_ARGUMENT);
@@ -1590,11 +1588,11 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
   // However the size of PictureBuffer might not be adjusted by ARC++. So we
   // keep this until ARC++ side is fixed.
   int plane_horiz_bits_per_pixel = VideoFrame::PlaneHorizontalBitsPerPixel(
-      Fourcc::FromV4L2PixFmt(gl_image_format_fourcc_).ToVideoPixelFormat(), 0);
+      gl_image_format_fourcc_->ToVideoPixelFormat(), 0);
   if (plane_horiz_bits_per_pixel == 0 ||
       (stride * 8) % plane_horiz_bits_per_pixel != 0) {
-    VLOGF(1) << "Invalid format " << gl_image_format_fourcc_ << " or stride "
-             << stride;
+    VLOGF(1) << "Invalid format " << gl_image_format_fourcc_->ToString()
+             << " or stride " << stride;
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }
@@ -1635,8 +1633,7 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
     // of assuming the image size will be enough (we may have extra information
     // between planes).
     auto layout = VideoFrameLayout::Create(
-        Fourcc::FromV4L2PixFmt(gl_image_format_fourcc_).ToVideoPixelFormat(),
-        gl_image_size_);
+        gl_image_format_fourcc_->ToVideoPixelFormat(), gl_image_size_);
     if (!layout) {
       VLOGF(1) << "Cannot create layout!";
       NOTIFY_ERROR(INVALID_ARGUMENT);
@@ -1661,7 +1658,7 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
                        weak_this_, index, picture_buffer_id,
                        std::move(passed_dmabuf_fds), iter->client_texture_id,
                        iter->texture_id, gl_image_size_,
-                       gl_image_format_fourcc_));
+                       *gl_image_format_fourcc_));
   }
 
   // Buffer is now ready to be used.
@@ -2322,7 +2319,7 @@ void V4L2SliceVideoDecodeAccelerator::FrameProcessed(
                        media::DuplicateFDs(frame->DmabufFds()),
                        ip_output_record.client_texture_id,
                        ip_output_record.texture_id, gl_image_size_,
-                       gl_image_format_fourcc_));
+                       *gl_image_format_fourcc_));
   }
 
   DCHECK(!surfaces_at_ip_.empty());

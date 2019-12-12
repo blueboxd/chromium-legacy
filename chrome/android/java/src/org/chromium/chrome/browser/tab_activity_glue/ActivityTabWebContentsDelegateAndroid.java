@@ -338,7 +338,6 @@ public class ActivityTabWebContentsDelegateAndroid extends TabWebContentsDelegat
     @Override
     public void enterFullscreenModeForTab(boolean prefersNavigationBar) {
         ChromeFullscreenManager manager = getFullscreenManager();
-        android.util.Log.i("crdebug", "enterFS cfm: " + manager);
         if (manager != null) {
             manager.onEnterFullscreen(mTab, new FullscreenOptions(prefersNavigationBar));
         }

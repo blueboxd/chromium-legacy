@@ -18,8 +18,8 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.browser.coordinator.CoordinatorLayoutForPointer;
-import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.components.browser_ui.styles.ChromeColors;
 
 // The view of the tasks surface.
 class TasksView extends CoordinatorLayoutForPointer {

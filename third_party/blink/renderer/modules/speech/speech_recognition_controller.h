@@ -60,7 +60,6 @@ class SpeechRecognitionController final
              bool interim_results,
              uint32_t max_alternatives);
 
-  static SpeechRecognitionController* Create(LocalFrame& frame);
   static SpeechRecognitionController* From(LocalFrame* frame) {
     return Supplement<LocalFrame>::From<SpeechRecognitionController>(frame);
   }

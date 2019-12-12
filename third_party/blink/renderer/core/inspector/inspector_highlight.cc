@@ -278,6 +278,8 @@ std::unique_ptr<protocol::DictionaryValue> BuildElementInfo(Element* element) {
       class_names.Append("::before");
     else if (pseudo_element->GetPseudoId() == kPseudoIdAfter)
       class_names.Append("::after");
+    else if (pseudo_element->GetPseudoId() == kPseudoIdMarker)
+      class_names.Append("::marker");
   }
   if (!class_names.IsEmpty())
     element_info->setString("className", class_names.ToString());

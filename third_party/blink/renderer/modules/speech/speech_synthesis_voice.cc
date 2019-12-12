@@ -27,11 +27,6 @@
 
 namespace blink {
 
-SpeechSynthesisVoice* SpeechSynthesisVoice::Create(
-    mojom::blink::SpeechSynthesisVoicePtr voice) {
-  return MakeGarbageCollected<SpeechSynthesisVoice>(std::move(voice));
-}
-
 SpeechSynthesisVoice::SpeechSynthesisVoice(
     mojom::blink::SpeechSynthesisVoicePtr mojom_voice)
     : mojom_voice_(std::move(mojom_voice)) {}

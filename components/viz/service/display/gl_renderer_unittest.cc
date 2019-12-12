@@ -48,15 +48,13 @@
 #include "ui/gfx/transform.h"
 #include "ui/latency/latency_info.h"
 
-#if defined(OS_WIN)
-#include "components/viz/service/display/overlay_processor_win.h"
-#elif defined(OS_MACOSX)
-#include "components/viz/service/display/overlay_processor_mac.h"
-#elif defined(OS_ANDROID) || defined(USE_OZONE)
+#if defined(OS_ANDROID) || defined(USE_OZONE)
 #include "components/viz/service/display/overlay_candidate_validator_strategy.h"
 #include "components/viz/service/display/overlay_processor_using_strategy.h"
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
+#elif defined(OS_WIN) || defined(OS_MACOSX)
+#include "components/viz/service/display/overlay_processor.h"
 #else  // Default
 #include "components/viz/service/display/overlay_candidate_validator_strategy.h"
 #include "components/viz/service/display/overlay_processor_using_strategy.h"
@@ -2208,56 +2206,26 @@ TEST_F(MockOutputSurfaceTest, BackbufferDiscard) {
   Mock::VerifyAndClearExpectations(output_surface_.get());
 }
 
-#if defined(OS_WIN)
-class TestDCLayerOverlayProcessor : public DCLayerOverlayProcessor {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+class TestOverlayCandidateValidator : public OverlayCandidateValidator {
  public:
-  TestDCLayerOverlayProcessor() : DCLayerOverlayProcessor() {}
-  ~TestDCLayerOverlayProcessor() override = default;
-  MOCK_METHOD5(Process,
-               void(DisplayResourceProvider* resource_provider,
-                    const gfx::RectF& display_rect,
-                    RenderPassList* render_passes,
-                    gfx::Rect* damage_rect,
-                    DCLayerOverlayList* dc_layer_overlays));
+  MOCK_CONST_METHOD0(AllowCALayerOverlays, bool());
+  MOCK_CONST_METHOD0(AllowDCLayerOverlays, bool());
+  MOCK_CONST_METHOD0(NeedsSurfaceOccludingDamageRect, bool());
 };
-class TestOverlayProcessor : public OverlayProcessorWin {
+
+class TestOverlayProcessor : public OverlayProcessor {
  public:
+  explicit TestOverlayProcessor(
+      std::unique_ptr<OverlayCandidateValidator> validator)
+      : OverlayProcessor(std::move(validator)) {}
   TestOverlayProcessor()
-      : OverlayProcessorWin(true /* enable_dc_overlay */,
-                            std::make_unique<TestDCLayerOverlayProcessor>()) {}
+      : OverlayProcessor(std::make_unique<TestOverlayCandidateValidator>()) {}
   ~TestOverlayProcessor() override = default;
 
-  TestDCLayerOverlayProcessor* GetTestProcessor() {
-    return static_cast<TestDCLayerOverlayProcessor*>(GetOverlayProcessor());
-  }
-};
-#elif defined(OS_MACOSX)
-class MockCALayerOverlayProcessor : public CALayerOverlayProcessor {
- public:
-  MockCALayerOverlayProcessor() = default;
-  ~MockCALayerOverlayProcessor() override = default;
-
-  MOCK_CONST_METHOD6(
-      ProcessForCALayerOverlays,
-      bool(DisplayResourceProvider* resource_provider,
-           const gfx::RectF& display_rect,
-           const QuadList& quad_list,
-           const base::flat_map<RenderPassId, cc::FilterOperations*>&
-               render_pass_filters,
-           const base::flat_map<RenderPassId, cc::FilterOperations*>&
-               render_pass_backdrop_filters,
-           CALayerOverlayList* ca_layer_overlays));
-};
-
-class TestOverlayProcessor : public OverlayProcessorMac {
- public:
-  TestOverlayProcessor()
-      : OverlayProcessorMac(std::make_unique<MockCALayerOverlayProcessor>()) {}
-  ~TestOverlayProcessor() override = default;
-
-  const MockCALayerOverlayProcessor* GetTestProcessor() const {
-    return static_cast<const MockCALayerOverlayProcessor*>(
-        GetOverlayProcessor());
+  const TestOverlayCandidateValidator* GetTestValidator() const {
+    return static_cast<const TestOverlayCandidateValidator*>(
+        GetOverlayCandidateValidator());
   }
 };
 
@@ -2386,11 +2354,9 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
 
   TestOverlayProcessor* processor = new TestOverlayProcessor();
   renderer.SetOverlayProcessor(processor);
-#if defined(OS_MACOSX)
-  const MockCALayerOverlayProcessor* mock_ca_processor =
-      processor->GetTestProcessor();
-#elif defined(OS_WIN)
-  TestDCLayerOverlayProcessor* dc_processor = processor->GetTestProcessor();
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  const TestOverlayCandidateValidator* validator =
+      processor->GetTestValidator();
 #endif
 
   gfx::Size viewport_size(1, 1);
@@ -2423,20 +2389,16 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
 #if defined(USE_OZONE) || defined(OS_ANDROID)
   EXPECT_CALL(processor->strategy(), Attempt(_, _, _, _, _, _, _)).Times(0);
 #elif defined(OS_MACOSX)
-  EXPECT_CALL(*mock_ca_processor, ProcessForCALayerOverlays(_, _, _, _, _, _))
-      .Times(0);
+  EXPECT_CALL(*validator, AllowCALayerOverlays()).Times(0);
 #elif defined(OS_WIN)
-  EXPECT_CALL(*dc_processor, Process(_, _, _, _, _)).Times(0);
+  EXPECT_CALL(*validator, AllowDCLayerOverlays()).Times(0);
 #endif
   DrawFrame(&renderer, viewport_size);
 #if defined(USE_OZONE) || defined(OS_ANDROID)
   Mock::VerifyAndClearExpectations(&processor->strategy());
-#elif defined(OS_MACOSX)
+#elif defined(OS_WIN) || defined(OS_MACOSX)
   Mock::VerifyAndClearExpectations(
-      const_cast<MockCALayerOverlayProcessor*>(mock_ca_processor));
-#elif defined(OS_WIN)
-  Mock::VerifyAndClearExpectations(
-      const_cast<TestDCLayerOverlayProcessor*>(dc_processor));
+      const_cast<TestOverlayCandidateValidator*>(validator));
 #endif
 
   // Without a copy request Attempt() should be called once.
@@ -2455,10 +2417,9 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
 #if defined(USE_OZONE) || defined(OS_ANDROID)
   EXPECT_CALL(processor->strategy(), Attempt(_, _, _, _, _, _, _)).Times(1);
 #elif defined(OS_MACOSX)
-  EXPECT_CALL(*mock_ca_processor, ProcessForCALayerOverlays(_, _, _, _, _, _))
-      .Times(1);
+  EXPECT_CALL(*validator, AllowCALayerOverlays()).Times(1);
 #elif defined(OS_WIN)
-  EXPECT_CALL(*dc_processor, Process(_, _, _, _, _)).Times(1);
+  EXPECT_CALL(*validator, AllowDCLayerOverlays()).Times(1);
 #endif
   DrawFrame(&renderer, viewport_size);
 
@@ -2912,6 +2873,13 @@ TEST_F(GLRendererPartialSwapTest, SetDrawRectangle_NoPartialSwap) {
   RunTest(false, true);
 }
 
+class DCLayerValidator : public OverlayCandidateValidator {
+ public:
+  bool AllowCALayerOverlays() const override { return false; }
+  bool AllowDCLayerOverlays() const override { return true; }
+  bool NeedsSurfaceOccludingDamageRect() const override { return true; }
+};
+
 // Test that SetEnableDCLayersCHROMIUM is properly called when enabling
 // and disabling DC layers.
 TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
@@ -2969,7 +2937,8 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
                           parent_resource_provider.get());
   renderer.Initialize();
   renderer.SetVisible(true);
-  TestOverlayProcessor* processor = new TestOverlayProcessor();
+  TestOverlayProcessor* processor =
+      new TestOverlayProcessor(std::make_unique<DCLayerValidator>());
   renderer.SetOverlayProcessor(processor);
 
   gfx::Size viewport_size(100, 100);
@@ -3209,6 +3178,13 @@ TEST_F(GLRendererSwapWithBoundsTest, NonEmpty) {
 #endif  // defined(USE_OZONE) || defined(OS_ANDROID)
 
 #if defined(OS_MACOSX)
+class CALayerValidator : public OverlayCandidateValidator {
+ public:
+  bool AllowCALayerOverlays() const override { return true; }
+  bool AllowDCLayerOverlays() const override { return false; }
+  bool NeedsSurfaceOccludingDamageRect() const override { return false; }
+};
+
 class MockCALayerGLES2Interface : public TestGLES2Interface {
  public:
   MOCK_METHOD6(ScheduleCALayerSharedStateCHROMIUM,
@@ -3266,10 +3242,11 @@ class CALayerGLRendererTest : public GLRendererTest {
     renderer_->Initialize();
     renderer_->SetVisible(true);
 
-    // The Mac TestOverlayProcessor default to enable CALayer overlays, then all
-    // damage is removed and we can skip the root RenderPass, swapping empty.
-    OverlayProcessorMac* processor =
-        new OverlayProcessorMac(std::make_unique<CALayerOverlayProcessor>());
+    // This validator allows the renderer to make CALayer overlays. If all
+    // quads can be turned into CALayer overlays, then all damage is removed and
+    // we can skip the root RenderPass, swapping empty.
+    TestOverlayProcessor* processor =
+        new TestOverlayProcessor(std::make_unique<CALayerValidator>());
     renderer_->SetOverlayProcessor(processor);
   }
 

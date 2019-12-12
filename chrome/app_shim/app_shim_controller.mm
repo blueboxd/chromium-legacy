@@ -45,7 +45,7 @@
 // profile menu NSMenuItems) and C++ (the mojo methods called by
 // AppShimController).
 @interface ProfileMenuTarget : NSObject {
-  AppShimController* _controller;
+  AppShimController* controller_;
 }
 - (id)initWithController:(AppShimController*)controller;
 - (void)clearController;
@@ -54,17 +54,17 @@
 @implementation ProfileMenuTarget
 - (id)initWithController:(AppShimController*)controller {
   if (self = [super init])
-    _controller = controller;
+    controller_ = controller;
   return self;
 }
 
 - (void)clearController {
-  _controller = nullptr;
+  controller_ = nullptr;
 }
 
 - (void)profileMenuItemSelected:(id)sender {
-  if (_controller)
-    _controller->ProfileMenuItemSelected([sender tag]);
+  if (controller_)
+    controller_->ProfileMenuItemSelected([sender tag]);
 }
 
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {

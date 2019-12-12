@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
+#include "media/base/video_types.h"
 #include "media/gpu/buildflags.h"
 #include "media/gpu/chromeos/libyuv_image_processor.h"
 #include "media/gpu/macros.h"
@@ -41,38 +42,44 @@ std::unique_ptr<ImageProcessor> CreateV4L2ImageProcessorWithInputCandidates(
   const std::vector<uint32_t> supported_output_formats =
       V4L2ImageProcessor::GetSupportedOutputFormats();
   std::vector<Fourcc> supported_fourccs;
-  for (const auto& format : supported_output_formats)
-    supported_fourccs.push_back(Fourcc::FromV4L2PixFmt(format));
+  for (const auto& format : supported_output_formats) {
+    const auto fourcc = Fourcc::FromV4L2PixFmt(format);
+    if (!fourcc) {
+      VLOGF(1) << "unsupported image processor format "
+               << FourccToString(format) << ", skipping...";
+      continue;
+    }
+    supported_fourccs.push_back(*fourcc);
+  }
 
-  const uint32_t output_format =
-      out_format_picker.Run(supported_fourccs).ToV4L2PixFmt();
-  if (!output_format)
+  const Fourcc output_fourcc = out_format_picker.Run(supported_fourccs);
+  if (!output_fourcc)
     return nullptr;
 
   const auto supported_input_pixfmts =
       V4L2ImageProcessor::GetSupportedInputFormats();
   for (const auto& input_candidate : input_candidates) {
-    const uint32_t input_pixfmt = input_candidate.first.ToV4L2PixFmt();
+    const Fourcc input_fourcc = input_candidate.first;
     const gfx::Size& input_size = input_candidate.second;
 
     if (std::find(supported_input_pixfmts.begin(),
-                  supported_input_pixfmts.end(),
-                  input_pixfmt) == supported_input_pixfmts.end()) {
+                  supported_input_pixfmts.end(), input_fourcc.ToV4L2PixFmt()) ==
+        supported_input_pixfmts.end()) {
       continue;
     }
 
     // Try to get an image size as close as possible to the final size.
     gfx::Size output_size(visible_size.width(), visible_size.height());
     size_t num_planes = 0;
-    if (!V4L2ImageProcessor::TryOutputFormat(input_pixfmt, output_format,
-                                             input_size, &output_size,
-                                             &num_planes)) {
+    if (!V4L2ImageProcessor::TryOutputFormat(
+            input_fourcc.ToV4L2PixFmt(), output_fourcc.ToV4L2PixFmt(),
+            input_size, &output_size, &num_planes)) {
       VLOGF(2) << "Failed to get output size and plane count of IP";
       continue;
     }
 
     return v4l2_vda_helpers::CreateImageProcessor(
-        input_pixfmt, output_format, input_size, output_size, visible_size,
+        input_fourcc, output_fourcc, input_size, output_size, visible_size,
         num_buffers, V4L2Device::Create(), ImageProcessor::OutputMode::IMPORT,
         std::move(client_task_runner), std::move(error_cb));
   }

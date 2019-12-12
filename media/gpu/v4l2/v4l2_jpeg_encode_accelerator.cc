@@ -400,7 +400,7 @@ bool V4L2JpegEncodeAccelerator::EncodedInstance::SetInputBufferFormat(
   struct v4l2_format format;
   input_buffer_pixelformat_ = 0;
   for (const auto input_pix_fmt : input_pix_fmt_candidates) {
-    DCHECK_EQ(Fourcc::FromV4L2PixFmt(input_pix_fmt).ToVideoPixelFormat(),
+    DCHECK_EQ(Fourcc::FromV4L2PixFmt(input_pix_fmt)->ToVideoPixelFormat(),
               PIXEL_FORMAT_I420);
     memset(&format, 0, sizeof(format));
     format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
@@ -1233,7 +1233,7 @@ bool V4L2JpegEncodeAccelerator::EncodedInstanceDmaBuf::SetInputBufferFormat(
   struct v4l2_format format;
   input_buffer_pixelformat_ = 0;
   for (const auto input_pix_fmt : input_pix_fmt_candidates) {
-    DCHECK_EQ(Fourcc::FromV4L2PixFmt(input_pix_fmt).ToVideoPixelFormat(),
+    DCHECK_EQ(Fourcc::FromV4L2PixFmt(input_pix_fmt)->ToVideoPixelFormat(),
               PIXEL_FORMAT_NV12);
     memset(&format, 0, sizeof(format));
     format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;

@@ -263,7 +263,6 @@ _BANNED_IOS_EGTEST_FUNCTIONS = (
 _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^android_webview/browser/',
   '^apps/',
-  '^ash/',
   '^base/callback.h',  # Intentional.
   '^chrome/app/',
   '^chrome/browser/',

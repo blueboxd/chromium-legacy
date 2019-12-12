@@ -4,7 +4,6 @@
 
 #include "base/threading/scoped_thread_priority.h"
 
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,18 +24,10 @@ namespace {
 class ScopedThreadPriorityTest : public testing::Test {
  protected:
   void SetUp() override {
-#if defined(OS_WIN)
-    scoped_features_.InitWithFeatures({kBoostThreadPriorityOnLibraryLoading},
-                                      {});
-#endif  // OS_WIN
-
     // Ensures the default thread priority is set.
     ASSERT_EQ(ThreadPriority::NORMAL,
               PlatformThread::GetCurrentThreadPriority());
   }
-
- private:
-  test::ScopedFeatureList scoped_features_;
 };
 
 #if defined(OS_WIN)

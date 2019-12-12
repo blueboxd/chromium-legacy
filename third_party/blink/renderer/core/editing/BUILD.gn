@@ -414,6 +414,7 @@ jumbo_source_set("unit_tests") {
     "selection_controller_test.cc",
     "selection_modifier_test.cc",
     "selection_template_test.cc",
+    "serializers/serialization_test.cc",
     "serializers/styled_markup_serializer_test.cc",
     "set_selection_options_test.cc",
     "spellcheck/idle_spell_check_controller_test.cc",

@@ -34,16 +34,16 @@ const CGFloat kMenuBarLockPadding = 50;
 @end
 
 @implementation MenuRevealMonitor {
-  base::mac::ScopedBlock<void (^)(double)> _change_handler;
-  base::scoped_nsobject<NSTitlebarAccessoryViewController> _accVC;
+  base::mac::ScopedBlock<void (^)(double)> change_handler_;
+  base::scoped_nsobject<NSTitlebarAccessoryViewController> accVC_;
 }
 
 - (instancetype)initWithWindow:(NSWindow*)window
                  changeHandler:(void (^)(double))handler {
   if ((self = [super init])) {
-    _change_handler.reset([handler copy]);
-    _accVC.reset([[NSTitlebarAccessoryViewController alloc] init]);
-    auto* accVC = _accVC.get();
+    change_handler_.reset([handler copy]);
+    accVC_.reset([[NSTitlebarAccessoryViewController alloc] init]);
+    auto* accVC = accVC_.get();
     accVC.view = [[[NSView alloc] initWithFrame:NSZeroRect] autorelease];
     [accVC addObserver:self
             forKeyPath:@"revealAmount"
@@ -55,8 +55,8 @@ const CGFloat kMenuBarLockPadding = 50;
 }
 
 - (void)dealloc {
-  [_accVC removeObserver:self forKeyPath:@"revealAmount"];
-  [_accVC removeFromParentViewController];
+  [accVC_ removeObserver:self forKeyPath:@"revealAmount"];
+  [accVC_ removeFromParentViewController];
   [super dealloc];
 }
 
@@ -67,7 +67,7 @@ const CGFloat kMenuBarLockPadding = 50;
   double revealAmount =
       base::mac::ObjCCastStrict<NSNumber>(change[NSKeyValueChangeNewKey])
           .doubleValue;
-  _change_handler.get()(revealAmount);
+  change_handler_.get()(revealAmount);
 }
 @end
 
@@ -81,15 +81,15 @@ const CGFloat kMenuBarLockPadding = 50;
 @end
 
 @implementation ImmersiveToolbarOverlayView {
-  ui::ScopedCrTrackingArea _trackingArea;
-  std::unique_ptr<ScopedMenuBarLock> _menuBarLock;
+  ui::ScopedCrTrackingArea trackingArea_;
+  std::unique_ptr<ScopedMenuBarLock> menuBarLock_;
 }
-@synthesize menuBarLockingEnabled = _menuBarLockingEnabled;
+@synthesize menuBarLockingEnabled = menuBarLockingEnabled_;
 
 - (void)setMenuBarLockingEnabled:(BOOL)menuBarLockingEnabled {
-  if (menuBarLockingEnabled == _menuBarLockingEnabled)
+  if (menuBarLockingEnabled == menuBarLockingEnabled_)
     return;
-  _menuBarLockingEnabled = menuBarLockingEnabled;
+  menuBarLockingEnabled_ = menuBarLockingEnabled;
   [self updateTrackingArea];
 }
 
@@ -98,24 +98,24 @@ const CGFloat kMenuBarLockPadding = 50;
   trackingRect.origin.y -= kMenuBarLockPadding;
   trackingRect.size.height += kMenuBarLockPadding;
 
-  if (CrTrackingArea* trackingArea = _trackingArea.get()) {
-    if (_menuBarLockingEnabled && NSEqualRects(trackingRect, trackingArea.rect))
+  if (CrTrackingArea* trackingArea = trackingArea_.get()) {
+    if (menuBarLockingEnabled_ && NSEqualRects(trackingRect, trackingArea.rect))
       return;
     else
       [self removeTrackingArea:trackingArea];
   }
 
-  if (_menuBarLockingEnabled) {
-    _trackingArea.reset([[CrTrackingArea alloc]
+  if (menuBarLockingEnabled_) {
+    trackingArea_.reset([[CrTrackingArea alloc]
         initWithRect:trackingRect
              options:NSTrackingMouseEnteredAndExited |
                      NSTrackingActiveInKeyWindow
                owner:self
             userInfo:nil]);
-    [self addTrackingArea:_trackingArea.get()];
+    [self addTrackingArea:trackingArea_.get()];
   } else {
-    _trackingArea.reset();
-    _menuBarLock.reset();
+    trackingArea_.reset();
+    menuBarLock_.reset();
   }
 }
 
@@ -132,11 +132,11 @@ const CGFloat kMenuBarLockPadding = 50;
 }
 
 - (void)mouseEntered:(NSEvent*)event {
-  _menuBarLock = std::make_unique<ScopedMenuBarLock>();
+  menuBarLock_ = std::make_unique<ScopedMenuBarLock>();
 }
 
 - (void)mouseExited:(NSEvent*)event {
-  _menuBarLock.reset();
+  menuBarLock_.reset();
 }
 
 @end

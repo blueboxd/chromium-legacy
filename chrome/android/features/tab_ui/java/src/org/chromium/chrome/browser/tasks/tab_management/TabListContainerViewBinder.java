@@ -16,7 +16,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerP
 import android.support.v7.widget.LinearLayoutManager;
 import android.widget.FrameLayout;
 
-import org.chromium.chrome.browser.ui.styles.ChromeColors;
+import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 

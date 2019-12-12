@@ -130,38 +130,26 @@ bool AcceleratedStaticBitmapImage::CopyToTexture(
   // wasting overhead.
   DCHECK(mailbox_texture_holder_->IsCrossThread() ||
          dest_gl != ContextProviderWrapper()->ContextProvider()->ContextGL());
-
-  bool is_shared_image = mailbox_texture_holder_->GetMailbox().IsSharedImage();
+  DCHECK(mailbox_texture_holder_->GetMailbox().IsSharedImage());
 
   // Get a texture id that |destProvider| knows about and copy from it.
   dest_gl->WaitSyncTokenCHROMIUM(
       mailbox_texture_holder_->GetSyncToken().GetConstData());
-  GLuint source_texture_id;
-  if (is_shared_image) {
-    source_texture_id = dest_gl->CreateAndTexStorage2DSharedImageCHROMIUM(
-        mailbox_texture_holder_->GetMailbox().name);
-    dest_gl->BeginSharedImageAccessDirectCHROMIUM(
-        source_texture_id, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
-  } else {
-    source_texture_id = dest_gl->CreateAndConsumeTextureCHROMIUM(
-        mailbox_texture_holder_->GetMailbox().name);
-  }
+  GLuint source_texture_id = dest_gl->CreateAndTexStorage2DSharedImageCHROMIUM(
+      mailbox_texture_holder_->GetMailbox().name);
+  dest_gl->BeginSharedImageAccessDirectCHROMIUM(
+      source_texture_id, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
   dest_gl->CopySubTextureCHROMIUM(
       source_texture_id, 0, dest_target, dest_texture_id, dest_level,
       dest_point.X(), dest_point.Y(), source_sub_rectangle.X(),
       source_sub_rectangle.Y(), source_sub_rectangle.Width(),
       source_sub_rectangle.Height(), unpack_flip_y ? GL_FALSE : GL_TRUE,
       GL_FALSE, unpack_premultiply_alpha ? GL_FALSE : GL_TRUE);
-  if (is_shared_image) {
     dest_gl->EndSharedImageAccessDirectCHROMIUM(source_texture_id);
-  }
-  // This drops the |destGL| context's reference on our |m_mailbox|, but it's
-  // still held alive by our SkImage.
   dest_gl->DeleteTextures(1, &source_texture_id);
 
   // We need to update the texture holder's sync token to ensure that when this
-  // image is deleted, the texture resource will not be recycled by skia before
-  // the above texture copy has completed.
+  // mailbox is recycled or deleted, it is done after the copy operation above.
   gpu::SyncToken sync_token;
   dest_gl->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
   mailbox_texture_holder_->UpdateSyncToken(sync_token);

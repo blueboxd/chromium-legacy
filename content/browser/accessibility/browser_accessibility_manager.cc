@@ -464,8 +464,8 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
 
     // Also, perform the initial run of language detection.
     // TODO(chrishall): we will want to run this more often for dynamic pages.
-    tree_->language_detection_manager->DetectLanguage(tree_->root());
-    tree_->language_detection_manager->LabelLanguage(tree_->root());
+    tree_->language_detection_manager->DetectLanguages(tree_->root());
+    tree_->language_detection_manager->LabelLanguages(tree_->root());
   }
 
   // Allow derived classes to do event post-processing.

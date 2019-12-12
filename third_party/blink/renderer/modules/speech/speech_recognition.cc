@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/modules/speech/speech_recognition_error_event.h"
 #include "third_party/blink/renderer/modules/speech/speech_recognition_event.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -107,7 +108,7 @@ void SpeechRecognition::ResultRetrieved(
     HeapVector<Member<SpeechRecognitionAlternative>> alternatives;
     alternatives.ReserveInitialCapacity(result->hypotheses.size());
     for (const auto& hypothesis : result->hypotheses) {
-      alternatives.push_back(SpeechRecognitionAlternative::Create(
+      alternatives.push_back(MakeGarbageCollected<SpeechRecognitionAlternative>(
           hypothesis->utterance, hypothesis->confidence));
     }
     aggregated_results.push_back(SpeechRecognitionResult::Create(

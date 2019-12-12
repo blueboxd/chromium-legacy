@@ -7,13 +7,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/debug/alias.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/power_monitor/power_monitor.h"
-#include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -21,7 +19,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "gpu/config/gpu_crash_keys.h"
-#include "gpu/ipc/common/result_codes.h"
 #include "ui/gl/shader_tracking.h"
 
 #if defined(OS_WIN)
@@ -452,12 +449,8 @@ void GpuWatchdogThreadImplV1::DeliberatelyTerminateToRecoverFromHang() {
 
   GpuWatchdogHistogram(GpuWatchdogThreadEvent::kGpuWatchdogKill);
 
-  // Use RESULT_CODE_HUNG so this crash is separated from other
-  // EXCEPTION_ACCESS_VIOLATION buckets for UMA analysis.
-  // Create a crash dump first. TerminateCurrentProcessImmediately will not
-  // create a dump.
-  base::debug::DumpWithoutCrashing();
-  base::Process::TerminateCurrentProcessImmediately(RESULT_CODE_HUNG);
+  // Deliberately crash the process to create a crash dump.
+  *((volatile int*)0) = 0x1337;
 
   terminated = true;
 }

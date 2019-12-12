@@ -23,11 +23,13 @@
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "media/base/limits.h"
 #include "media/base/video_decoder_config.h"
+#include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/chromeos/image_processor.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/media_gpu_export.h"
@@ -261,7 +263,7 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
                          std::vector<base::ScopedFD> dmabuf_fds,
                          GLuint texture_id,
                          const gfx::Size& size,
-                         uint32_t fourcc);
+                         const Fourcc fourcc);
 
   // Take the EGLImage |egl_image|, created for |picture_buffer_id|, and use it
   // for OutputRecord at |buffer_index|.
@@ -588,7 +590,7 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // Chosen input format for video_profile_.
   uint32_t input_format_fourcc_;
   // Chosen output format.
-  uint32_t output_format_fourcc_;
+  base::Optional<Fourcc> output_format_fourcc_;
 
   // Image processor device, if one is in use.
   scoped_refptr<V4L2Device> image_processor_device_;
@@ -598,7 +600,7 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // The V4L2Device EGLImage is created from.
   scoped_refptr<V4L2Device> egl_image_device_;
   // The format of EGLImage.
-  uint32_t egl_image_format_fourcc_;
+  base::Optional<Fourcc> egl_image_format_fourcc_;
   // The logical dimensions of EGLImage buffer in pixels.
   gfx::Size egl_image_size_;
   // Number of planes for EGLImage.

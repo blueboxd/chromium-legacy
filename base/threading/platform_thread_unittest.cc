@@ -5,9 +5,9 @@
 #include <stddef.h>
 
 #include "base/compiler_specific.h"
+#include "base/process/process.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -287,27 +287,12 @@ TEST(PlatformThreadTest, MAYBE_SetCurrentThreadPriority) {
 }
 
 #if defined(OS_WIN)
-// Test changing a created thread's priority, with the
-// kWindowsThreadModeBackground feature enabled.
-TEST(PlatformThreadTest, SetCurrentThreadPriorityWithThreadModeBackground) {
-  test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kWindowsThreadModeBackground);
-  TestSetCurrentThreadPriority();
-}
-
-// Test changing a created thread's priority, with the
-// kWindowsThreadModeBackground feature enabled, in an IDLE_PRIORITY_CLASS
-// process (regression test for https://crbug.com/901483).
+// Test changing a created thread's priority in an IDLE_PRIORITY_CLASS process
+// (regression test for https://crbug.com/901483).
 TEST(PlatformThreadTest,
      SetCurrentThreadPriorityWithThreadModeBackgroundIdleProcess) {
   ::SetPriorityClass(Process::Current().Handle(), IDLE_PRIORITY_CLASS);
-
-  test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kWindowsThreadModeBackground);
   TestSetCurrentThreadPriority();
-
   ::SetPriorityClass(Process::Current().Handle(), NORMAL_PRIORITY_CLASS);
 }
 #endif  // defined(OS_WIN)

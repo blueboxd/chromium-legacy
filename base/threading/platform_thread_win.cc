@@ -188,12 +188,6 @@ bool CreateThreadInternal(size_t stack_size,
 
 }  // namespace
 
-namespace features {
-// TODO(https://crbug.com/872820): Cleanup this experiment after M80 branch.
-const Feature kWindowsThreadModeBackground{"WindowsThreadModeBackground",
-                                           FEATURE_ENABLED_BY_DEFAULT};
-}  // namespace features
-
 namespace internal {
 
 void AssertMemoryPriority(HANDLE thread, int memory_priority) {
@@ -339,23 +333,10 @@ bool PlatformThread::CanIncreaseThreadPriority(ThreadPriority priority) {
 
 // static
 void PlatformThread::SetCurrentThreadPriorityImpl(ThreadPriority priority) {
-  // A DCHECK is triggered on FeatureList initialization if the state of a
-  // feature has been checked before. We only want to trigger that DCHECK if the
-  // priority has been set to BACKGROUND before, so we are careful not to access
-  // the state of the feature needlessly. We don't DCHECK here because it is ok
-  // if the FeatureList is never initialized in the process (e.g. in tests).
-  //
-  // TODO(fdoray): Remove experiment code. https://crbug.com/872820
-  const bool use_thread_mode_background =
-      (priority == ThreadPriority::BACKGROUND
-           ? FeatureList::IsEnabled(features::kWindowsThreadModeBackground)
-           : (FeatureList::GetInstance() &&
-              FeatureList::IsEnabled(features::kWindowsThreadModeBackground)));
-
   PlatformThreadHandle::Handle thread_handle =
       PlatformThread::CurrentHandle().platform_handle();
 
-  if (use_thread_mode_background && priority != ThreadPriority::BACKGROUND) {
+  if (priority != ThreadPriority::BACKGROUND) {
     // Exit background mode if the new priority is not BACKGROUND. This is a
     // no-op if not in background mode.
     ::SetThreadPriority(thread_handle, THREAD_MODE_BACKGROUND_END);
@@ -368,9 +349,11 @@ void PlatformThread::SetCurrentThreadPriorityImpl(ThreadPriority priority) {
       // Using THREAD_MODE_BACKGROUND_BEGIN instead of THREAD_PRIORITY_LOWEST
       // improves input latency and navigation time. See
       // https://docs.google.com/document/d/16XrOwuwTwKWdgPbcKKajTmNqtB4Am8TgS9GjbzBYLc0
-      desired_priority = use_thread_mode_background
-                             ? THREAD_MODE_BACKGROUND_BEGIN
-                             : THREAD_PRIORITY_LOWEST;
+      //
+      // MSDN recommends THREAD_MODE_BACKGROUND_BEGIN for threads that perform
+      // background work, as it reduces disk and memory priority in addition to
+      // CPU priority.
+      desired_priority = THREAD_MODE_BACKGROUND_BEGIN;
       break;
     case ThreadPriority::NORMAL:
       desired_priority = THREAD_PRIORITY_NORMAL;
@@ -394,7 +377,7 @@ void PlatformThread::SetCurrentThreadPriorityImpl(ThreadPriority priority) {
   DPLOG_IF(ERROR, !success) << "Failed to set thread priority to "
                             << desired_priority;
 
-  if (use_thread_mode_background && priority == ThreadPriority::BACKGROUND) {
+  if (priority == ThreadPriority::BACKGROUND) {
     // In a background process, THREAD_MODE_BACKGROUND_BEGIN lowers the memory
     // and I/O priorities but not the CPU priority (kernel bug?). Use
     // THREAD_PRIORITY_LOWEST to also lower the CPU priority.

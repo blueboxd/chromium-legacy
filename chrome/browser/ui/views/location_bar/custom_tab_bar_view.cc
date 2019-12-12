@@ -53,19 +53,6 @@
 
 namespace {
 
-constexpr SkColor kDefaultCustomTabBarBackgroundColor = SK_ColorWHITE;
-
-// The frame color is different on ChromeOS and other platforms because Ash
-// specifies its own default frame color, which is not exposed through
-// BrowserNonClientFrameView::GetFrameColor.
-SkColor GetDefaultFrameColor() {
-#if defined(OS_CHROMEOS)
-  return ash::kDefaultFrameColor;
-#else
-  return ThemeProperties::GetDefaultColor(ThemeProperties::COLOR_FRAME, false);
-#endif
-}
-
 std::unique_ptr<views::ImageButton> CreateCloseButton(
     views::ButtonListener* listener,
     SkColor color) {
@@ -186,15 +173,19 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
   base::Optional<SkColor> optional_theme_color =
       browser_->app_controller()->GetThemeColor();
 
-  // If we have a theme color, use that, otherwise fall back to the default
-  // frame color.
-  title_bar_color_ = optional_theme_color.value_or(GetDefaultFrameColor());
+  const bool dark_mode = GetNativeTheme()->ShouldUseDarkColors();
+  const SkColor default_frame_color =
+#if defined(OS_CHROMEOS)
+      // Ash system frames differ from ChromeOS browser frames.
+      ash::kDefaultFrameColor;
+#else
+      ThemeProperties::GetDefaultColor(ThemeProperties::COLOR_FRAME, false,
+                                       dark_mode);
+#endif
 
-  // Match the default frame colors if using dark colors.
-  background_color_ =
-      ui::NativeTheme::GetInstanceForNativeUi()->ShouldUseDarkColors()
-          ? GetDefaultFrameColor()
-          : kDefaultCustomTabBarBackgroundColor;
+  title_bar_color_ = optional_theme_color.value_or(default_frame_color);
+
+  background_color_ = dark_mode ? default_frame_color : SK_ColorWHITE;
 
   SetBackground(views::CreateSolidBackground(background_color_));
 

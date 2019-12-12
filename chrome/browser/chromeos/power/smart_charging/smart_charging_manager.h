@@ -47,6 +47,8 @@ class SmartChargingManager : public ui::UserActivityObserver,
       const power_manager::BacklightBrightnessChange& change) override;
   void PowerChanged(const power_manager::PowerSupplyProperties& proto) override;
   void PowerManagerBecameAvailable(bool available) override;
+  void ShutdownRequested(power_manager::RequestShutdownReason reason) override;
+  void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
 
  private:
   friend class SmartChargingManagerTest;

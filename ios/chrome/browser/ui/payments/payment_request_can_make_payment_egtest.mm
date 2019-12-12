@@ -94,7 +94,8 @@ const char kCanMakePaymentMethodIdentifierPage[] =
 
 // Tests canMakePayment() when visa is required, user doesn't have a visa
 // instrument and the user is in incognito mode.
-- (void)testCanMakePaymentIsNotSupportedInIncognitoMode {
+// TODO(crbug.com/1033214): Re-enable Payment Request tests.
+- (void)DISABLED_testCanMakePaymentIsNotSupportedInIncognitoMode {
   // Open an Incognito tab.
   [ChromeEarlGreyUI openToolsMenu];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -128,7 +129,8 @@ const char kCanMakePaymentMethodIdentifierPage[] =
 // Tests canMakePayment() when visa is required, user has a visa instrument,
 // user is in incognito mode, but user has not allowed canMakePayment to return
 // a truthful value.
-- (void)testCanMakePaymentIsSupportedInIncognitoModeNoUserConsent {
+// TODO(crbug.com/1033214): Re-enable Payment Request tests.
+- (void)DISABLED_testCanMakePaymentIsSupportedInIncognitoModeNoUserConsent {
   // Disallow canMakePayment to return a truthful value.
   PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
   prefs->SetBoolean(payments::kCanMakePaymentEnabled, false);

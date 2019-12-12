@@ -59,7 +59,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="end"
             android:gravity="center"
-            android:text="@string/preferences"
+            android:text="@string/settings"
             app:verticalInset="0dp"
             style="@style/TextButton" />
     </LinearLayout>

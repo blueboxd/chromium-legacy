@@ -30,18 +30,18 @@ NSString* const kNotificationSettingsButtonTag = @"settingsButton";
 }  // namespace
 
 @implementation NotificationBuilder {
-  base::scoped_nsobject<NSMutableDictionary> _notificationData;
+  base::scoped_nsobject<NSMutableDictionary> notificationData_;
 }
 
 - (instancetype)initWithCloseLabel:(NSString*)closeLabel
                       optionsLabel:(NSString*)optionsLabel
                      settingsLabel:(NSString*)settingsLabel {
   if ((self = [super init])) {
-    _notificationData.reset([[NSMutableDictionary alloc] init]);
-    [_notificationData setObject:closeLabel forKey:kNotificationCloseButtonTag];
-    [_notificationData setObject:optionsLabel
+    notificationData_.reset([[NSMutableDictionary alloc] init]);
+    [notificationData_ setObject:closeLabel forKey:kNotificationCloseButtonTag];
+    [notificationData_ setObject:optionsLabel
                           forKey:kNotificationOptionsButtonTag];
-    [_notificationData setObject:settingsLabel
+    [notificationData_ setObject:settingsLabel
                           forKey:kNotificationSettingsButtonTag];
   }
   return self;
@@ -49,33 +49,33 @@ NSString* const kNotificationSettingsButtonTag = @"settingsButton";
 
 - (instancetype)initWithDictionary:(NSDictionary*)data {
   if ((self = [super init])) {
-    _notificationData.reset([data copy]);
+    notificationData_.reset([data copy]);
   }
   return self;
 }
 
 - (void)setTitle:(NSString*)title {
   if (title.length)
-    [_notificationData setObject:title forKey:kNotificationTitle];
+    [notificationData_ setObject:title forKey:kNotificationTitle];
 }
 
 - (void)setSubTitle:(NSString*)subTitle {
   if (subTitle.length)
-    [_notificationData setObject:subTitle forKey:kNotificationSubTitle];
+    [notificationData_ setObject:subTitle forKey:kNotificationSubTitle];
 }
 
 - (void)setContextMessage:(NSString*)contextMessage {
   if (contextMessage.length)
-    [_notificationData setObject:contextMessage
+    [notificationData_ setObject:contextMessage
                           forKey:kNotificationInformativeText];
 }
 
 - (void)setIcon:(NSImage*)icon {
   if (icon) {
     if ([icon conformsToProtocol:@protocol(NSSecureCoding)]) {
-      [_notificationData setObject:icon forKey:kNotificationImage];
+      [notificationData_ setObject:icon forKey:kNotificationImage];
     } else {  // NSImage only conforms to NSSecureCoding from 10.10 onwards.
-      [_notificationData setObject:[icon TIFFRepresentation]
+      [notificationData_ setObject:[icon TIFFRepresentation]
                             forKey:kNotificationImage];
     }
   }
@@ -84,47 +84,47 @@ NSString* const kNotificationSettingsButtonTag = @"settingsButton";
 - (void)setButtons:(NSString*)primaryButton
     secondaryButton:(NSString*)secondaryButton {
   DCHECK(primaryButton.length);
-  [_notificationData setObject:primaryButton forKey:kNotificationButtonOne];
+  [notificationData_ setObject:primaryButton forKey:kNotificationButtonOne];
   if (secondaryButton.length) {
-    [_notificationData setObject:secondaryButton forKey:kNotificationButtonTwo];
+    [notificationData_ setObject:secondaryButton forKey:kNotificationButtonTwo];
   }
 }
 
 - (void)setTag:(NSString*)tag {
   if (tag.length)
-    [_notificationData setObject:tag forKey:kNotificationTag];
+    [notificationData_ setObject:tag forKey:kNotificationTag];
 }
 
 - (void)setOrigin:(NSString*)origin {
   if (origin.length)
-    [_notificationData setObject:origin
+    [notificationData_ setObject:origin
                           forKey:notification_constants::kNotificationOrigin];
 }
 
 - (void)setNotificationId:(NSString*)notificationId {
   DCHECK(notificationId.length);
-  [_notificationData setObject:notificationId
+  [notificationData_ setObject:notificationId
                         forKey:notification_constants::kNotificationId];
 }
 
 - (void)setProfileId:(NSString*)profileId {
   DCHECK(profileId.length);
-  [_notificationData setObject:profileId
+  [notificationData_ setObject:profileId
                         forKey:notification_constants::kNotificationProfileId];
 }
 
 - (void)setIncognito:(BOOL)incognito {
-  [_notificationData setObject:[NSNumber numberWithBool:incognito]
+  [notificationData_ setObject:[NSNumber numberWithBool:incognito]
                         forKey:notification_constants::kNotificationIncognito];
 }
 
 - (void)setNotificationType:(NSNumber*)notificationType {
-  [_notificationData setObject:notificationType
+  [notificationData_ setObject:notificationType
                         forKey:notification_constants::kNotificationType];
 }
 
 - (void)setShowSettingsButton:(BOOL)showSettingsButton {
-  [_notificationData
+  [notificationData_
       setObject:[NSNumber numberWithBool:showSettingsButton]
          forKey:notification_constants::kNotificationHasSettingsButton];
 }
@@ -132,37 +132,37 @@ NSString* const kNotificationSettingsButtonTag = @"settingsButton";
 - (NSUserNotification*)buildUserNotification {
   base::scoped_nsobject<NSUserNotification> toast(
       [[NSUserNotification alloc] init]);
-  [toast setTitle:[_notificationData objectForKey:kNotificationTitle]];
-  [toast setSubtitle:[_notificationData objectForKey:kNotificationSubTitle]];
-  [toast setInformativeText:[_notificationData
+  [toast setTitle:[notificationData_ objectForKey:kNotificationTitle]];
+  [toast setSubtitle:[notificationData_ objectForKey:kNotificationSubTitle]];
+  [toast setInformativeText:[notificationData_
                                 objectForKey:kNotificationInformativeText]];
 
   // Icon
-  if ([_notificationData objectForKey:kNotificationImage]) {
+  if ([notificationData_ objectForKey:kNotificationImage]) {
     if ([[NSImage class] conformsToProtocol:@protocol(NSSecureCoding)]) {
-      NSImage* image = [_notificationData objectForKey:kNotificationImage];
+      NSImage* image = [notificationData_ objectForKey:kNotificationImage];
       [toast setContentImage:image];
     } else {  // NSImage only conforms to NSSecureCoding from 10.10 onwards.
       base::scoped_nsobject<NSImage> image([[NSImage alloc]
-          initWithData:[_notificationData objectForKey:kNotificationImage]]);
+          initWithData:[notificationData_ objectForKey:kNotificationImage]]);
       [toast setContentImage:image];
     }
   }
 
   // Type (needed to define the buttons)
-  NSNumber* type = [_notificationData
+  NSNumber* type = [notificationData_
       objectForKey:notification_constants::kNotificationType];
 
   // Extensions don't have a settings button.
-  NSNumber* showSettingsButton = [_notificationData
+  NSNumber* showSettingsButton = [notificationData_
       objectForKey:notification_constants::kNotificationHasSettingsButton];
 
   // Buttons
   if ([toast respondsToSelector:@selector(_showsButtons)]) {
-    DCHECK([_notificationData objectForKey:kNotificationCloseButtonTag]);
-    DCHECK([_notificationData objectForKey:kNotificationSettingsButtonTag]);
-    DCHECK([_notificationData objectForKey:kNotificationOptionsButtonTag]);
-    DCHECK([_notificationData
+    DCHECK([notificationData_ objectForKey:kNotificationCloseButtonTag]);
+    DCHECK([notificationData_ objectForKey:kNotificationSettingsButtonTag]);
+    DCHECK([notificationData_ objectForKey:kNotificationOptionsButtonTag]);
+    DCHECK([notificationData_
         objectForKey:notification_constants::kNotificationHasSettingsButton]);
 
     BOOL settingsButton = [showSettingsButton boolValue];
@@ -171,17 +171,17 @@ NSString* const kNotificationSettingsButtonTag = @"settingsButton";
     // A default close button label is provided by the platform but we
     // explicitly override it in case the user decides to not
     // use the OS language in Chrome.
-    [toast setOtherButtonTitle:[_notificationData
+    [toast setOtherButtonTitle:[notificationData_
                                    objectForKey:kNotificationCloseButtonTag]];
 
     // Display the Settings button as the action button if there are either no
     // developer-provided action buttons, or the alternate action menu is not
     // available on this Mac version. This avoids needlessly showing the menu.
-    if (![_notificationData objectForKey:kNotificationButtonOne] ||
+    if (![notificationData_ objectForKey:kNotificationButtonOne] ||
         ![toast respondsToSelector:@selector(_alwaysShowAlternateActionMenu)]) {
       if (settingsButton) {
         [toast setActionButtonTitle:
-                   [_notificationData
+                   [notificationData_
                        objectForKey:kNotificationSettingsButtonTag]];
       } else {
         [toast setHasActionButton:NO];
@@ -195,19 +195,19 @@ NSString* const kNotificationSettingsButtonTag = @"settingsButton";
       DCHECK(
           [toast respondsToSelector:@selector(_alternateActionButtonTitles)]);
       [toast
-          setActionButtonTitle:[_notificationData
+          setActionButtonTitle:[notificationData_
                                    objectForKey:kNotificationOptionsButtonTag]];
       [toast setValue:@YES forKey:@"_alwaysShowAlternateActionMenu"];
 
       NSMutableArray* buttons = [NSMutableArray arrayWithCapacity:3];
       [buttons
-          addObject:[_notificationData objectForKey:kNotificationButtonOne]];
-      if ([_notificationData objectForKey:kNotificationButtonTwo]) {
+          addObject:[notificationData_ objectForKey:kNotificationButtonOne]];
+      if ([notificationData_ objectForKey:kNotificationButtonTwo]) {
         [buttons
-            addObject:[_notificationData objectForKey:kNotificationButtonTwo]];
+            addObject:[notificationData_ objectForKey:kNotificationButtonTwo]];
       }
       if (settingsButton) {
-        [buttons addObject:[_notificationData
+        [buttons addObject:[notificationData_
                                objectForKey:kNotificationSettingsButtonTag]];
       }
 
@@ -217,30 +217,30 @@ NSString* const kNotificationSettingsButtonTag = @"settingsButton";
 
   // Tag
   if ([toast respondsToSelector:@selector(setIdentifier:)] &&
-      [_notificationData objectForKey:kNotificationTag]) {
-    [toast setValue:[_notificationData objectForKey:kNotificationTag]
+      [notificationData_ objectForKey:kNotificationTag]) {
+    [toast setValue:[notificationData_ objectForKey:kNotificationTag]
              forKey:@"identifier"];
   }
 
   NSString* origin =
-      [_notificationData
+      [notificationData_
           objectForKey:notification_constants::kNotificationOrigin]
-          ? [_notificationData
+          ? [notificationData_
                 objectForKey:notification_constants::kNotificationOrigin]
           : @"";
   DCHECK(
-      [_notificationData objectForKey:notification_constants::kNotificationId]);
+      [notificationData_ objectForKey:notification_constants::kNotificationId]);
   NSString* notificationId =
-      [_notificationData objectForKey:notification_constants::kNotificationId];
+      [notificationData_ objectForKey:notification_constants::kNotificationId];
 
-  DCHECK([_notificationData
+  DCHECK([notificationData_
       objectForKey:notification_constants::kNotificationProfileId]);
-  NSString* profileId = [_notificationData
+  NSString* profileId = [notificationData_
       objectForKey:notification_constants::kNotificationProfileId];
 
-  DCHECK([_notificationData
+  DCHECK([notificationData_
       objectForKey:notification_constants::kNotificationIncognito]);
-  NSNumber* incognito = [_notificationData
+  NSNumber* incognito = [notificationData_
       objectForKey:notification_constants::kNotificationIncognito];
 
   toast.get().userInfo = @{
@@ -256,7 +256,7 @@ NSString* const kNotificationSettingsButtonTag = @"settingsButton";
 }
 
 - (NSDictionary*)buildDictionary {
-  return [[_notificationData copy] autorelease];
+  return [[notificationData_ copy] autorelease];
 }
 
 @end

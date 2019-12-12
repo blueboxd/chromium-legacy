@@ -38,14 +38,12 @@ public class SecurityStateModel {
     /**
      * Returns whether to use a danger icon instead of an info icon in the URL bar.
      *
-     * @param webContents The web contents to check.
+     * @param securityLevel The ConnectionSecurityLevel of the page.
      * @param url The URL to check.
      * @return Whether to downgrade the info icon to a danger triangle.
      */
-    public static boolean shouldDowngradeNeutralStylingForWebContents(
-            WebContents webContents, String url) {
-        return SecurityStateModelJni.get().shouldDowngradeNeutralStylingForWebContents(
-                webContents, url);
+    public static boolean shouldDowngradeNeutralStyling(int securityLevel, String url) {
+        return SecurityStateModelJni.get().shouldDowngradeNeutralStyling(securityLevel, url);
     }
 
     private SecurityStateModel() {}
@@ -54,6 +52,6 @@ public class SecurityStateModel {
     interface Natives {
         int getSecurityLevelForWebContents(WebContents webContents);
         boolean isSchemeCryptographic(String url);
-        boolean shouldDowngradeNeutralStylingForWebContents(WebContents webContents, String url);
+        boolean shouldDowngradeNeutralStyling(int securityLevel, String url);
     }
 }

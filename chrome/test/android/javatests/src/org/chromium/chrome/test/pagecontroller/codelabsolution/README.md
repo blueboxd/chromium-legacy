@@ -91,7 +91,7 @@ import org.chromium.chrome.test.pagecontroller.utils.Ui2Locators;
 public class SettingsControllerForCodelab extends PageController {
     // TODO: Replace null with a an actual locator.  (Hint, see Ui2Locators.with*.)
     private static final IUi2Locator LOCATOR_SETTINGS =
-            Ui2Locators.withTextString(R.string.preferences);
+            Ui2Locators.withTextString(R.string.settings);
 
     // TODO: (Hint, you may need more IUi2Locators than just LOCATOR_SETTINGS,
     // add them here.
@@ -242,7 +242,7 @@ public class ChromeMenu extends PageController {
 ...
 +    private static final IUi2Locator LOCATOR_SETTINGS_FOR_CODELAB =
 +            Ui2Locators.withPath(Ui2Locators.withAnyResEntry(R.id.menu_item_text),
-+                    Ui2Locators.withTextString(R.string.menu_preferences));
++                    Ui2Locators.withTextString(R.string.menu_settings));
 ...
 +    public SettingsControllerForCodelab openSettingsForCodelab() {
 +        mUtils.click(LOCATOR_SETTINGS_FOR_CODELAB);

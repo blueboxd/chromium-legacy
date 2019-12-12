@@ -326,10 +326,10 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
 @implementation AppController
 
-@synthesize startupComplete = _startupComplete;
+@synthesize startupComplete = startupComplete_;
 
 - (void)dealloc {
-  [[_closeTabMenuItem menu] setDelegate:nil];
+  [[closeTabMenuItem_ menu] setDelegate:nil];
   [super dealloc];
 }
 
@@ -382,10 +382,10 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
            object:nil];
 
   NSMenu* fileMenu = [[[NSApp mainMenu] itemWithTag:IDC_FILE_MENU] submenu];
-  _closeTabMenuItem = [fileMenu itemWithTag:IDC_CLOSE_TAB];
-  DCHECK(_closeTabMenuItem);
-  _closeWindowMenuItem = [fileMenu itemWithTag:IDC_CLOSE_WINDOW];
-  DCHECK(_closeWindowMenuItem);
+  closeTabMenuItem_ = [fileMenu itemWithTag:IDC_CLOSE_TAB];
+  DCHECK(closeTabMenuItem_);
+  closeWindowMenuItem_ = [fileMenu itemWithTag:IDC_CLOSE_WINDOW];
+  DCHECK(closeWindowMenuItem_);
 
   // Set up the command updater for when there are no windows open
   [self initMenuState];
@@ -433,8 +433,8 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
 - (BOOL)tryToTerminateApplication:(NSApplication*)app {
   // Reset this now that we've received the call to terminate.
-  BOOL isPoweringOff = _isPoweringOff;
-  _isPoweringOff = NO;
+  BOOL isPoweringOff = isPoweringOff_;
+  isPoweringOff_ = NO;
 
   // Check for in-process downloads, and prompt the user if they really want
   // to quit (and thus cancel downloads). Only check if we're not already
@@ -451,7 +451,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   // Check for active apps. If quitting is prevented, only close browsers and
   // sessions.
   if (!browser_shutdown::IsTryingToQuit() && !isPoweringOff &&
-      _quitWithAppsController.get() && !_quitWithAppsController->ShouldQuit()) {
+      quitWithAppsController_.get() && !quitWithAppsController_->ShouldQuit()) {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kHostedAppQuitNotification)) {
       return NO;
@@ -527,17 +527,17 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
   // Tell BrowserList not to keep the browser process alive. Once all the
   // browsers get dealloc'd, it will stop the RunLoop and fall back into main().
-  _keep_alive.reset();
+  keep_alive_.reset();
 
   // Reset all pref watching, as this object outlives the prefs system.
-  _profilePrefRegistrar.reset();
-  _localPrefRegistrar.RemoveAll();
+  profilePrefRegistrar_.reset();
+  localPrefRegistrar_.RemoveAll();
 
   [self unregisterEventHandlers];
 
-  _appShimMenuController.reset();
+  appShimMenuController_.reset();
 
-  _profileBookmarkMenuBridgeMap.clear();
+  profileBookmarkMenuBridgeMap_.clear();
 }
 
 - (void)didEndMainMessageLoop {
@@ -556,27 +556,27 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 // otherwise leave it as the normal cmd-w. Capitalization of the key equivalent
 // affects whether the shift modifier is used.
 - (void)adjustCloseWindowMenuItemKeyEquivalent:(BOOL)enableCloseTabShortcut {
-  [_closeWindowMenuItem setKeyEquivalent:(enableCloseTabShortcut ? @"W" :
+  [closeWindowMenuItem_ setKeyEquivalent:(enableCloseTabShortcut ? @"W" :
                                                                    @"w")];
-  [_closeWindowMenuItem setKeyEquivalentModifierMask:NSCommandKeyMask];
+  [closeWindowMenuItem_ setKeyEquivalentModifierMask:NSCommandKeyMask];
 }
 
 // If the window has a tab controller, make "close tab" take over cmd-w,
 // otherwise it shouldn't have any key-equivalent because it should be disabled.
 - (void)adjustCloseTabMenuItemKeyEquivalent:(BOOL)enableCloseTabShortcut {
   if (enableCloseTabShortcut) {
-    [_closeTabMenuItem setKeyEquivalent:@"w"];
-    [_closeTabMenuItem setKeyEquivalentModifierMask:NSCommandKeyMask];
+    [closeTabMenuItem_ setKeyEquivalent:@"w"];
+    [closeTabMenuItem_ setKeyEquivalentModifierMask:NSCommandKeyMask];
   } else {
-    [_closeTabMenuItem setKeyEquivalent:@""];
-    [_closeTabMenuItem setKeyEquivalentModifierMask:0];
+    [closeTabMenuItem_ setKeyEquivalent:@""];
+    [closeTabMenuItem_ setKeyEquivalentModifierMask:0];
   }
 }
 
 // See if the focused window window has tabs, and adjust the key equivalents for
 // Close Tab/Close Window accordingly.
 - (void)menuNeedsUpdate:(NSMenu*)menu {
-  DCHECK(menu == [_closeTabMenuItem menu]);
+  DCHECK(menu == [closeTabMenuItem_ menu]);
   [self updateMenuItemKeyEquivalents];
 }
 
@@ -597,12 +597,12 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
     return;
 
   if (browser->is_type_normal()) {
-    _tabMenuBridge = std::make_unique<TabMenuBridge>(
+    tabMenuBridge_ = std::make_unique<TabMenuBridge>(
         browser->tab_strip_model(),
         [[NSApp mainMenu] itemWithTag:IDC_TAB_MENU]);
-    _tabMenuBridge->BuildMenu();
+    tabMenuBridge_->BuildMenu();
   } else {
-    _tabMenuBridge.reset();
+    tabMenuBridge_.reset();
   }
 
   [self windowChangedToProfile:browser->profile()->GetOriginalProfile()];
@@ -616,9 +616,9 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 }
 
 - (void)activeSpaceDidChange:(NSNotification*)notify {
-  if (_reopenTime.is_null() ||
+  if (reopenTime_.is_null() ||
       ![NSApp isActive] ||
-      (base::TimeTicks::Now() - _reopenTime).InMilliseconds() >
+      (base::TimeTicks::Now() - reopenTime_).InMilliseconds() >
       kWorkspaceChangeTimeoutMs) {
     return;
   }
@@ -626,7 +626,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   // The last applicationShouldHandleReopen:hasVisibleWindows: call
   // happened during a space change. Now that the change has
   // completed, raise browser windows.
-  _reopenTime = base::TimeTicks();
+  reopenTime_ = base::TimeTicks();
   std::set<gfx::NativeWindow> browserWindows;
   for (auto* browser : *BrowserList::GetInstance())
     browserWindows.insert(browser->window()->GetNativeWindow());
@@ -638,7 +638,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 - (void)willPowerOff:(NSNotification*)notify {
   // Don't attempt any shutdown here. Cocoa will shortly call
   // -[BrowserCrApplication terminate:].
-  _isPoweringOff = YES;
+  isPoweringOff_ = YES;
 }
 
 - (void)checkForAnyKeyWindows {
@@ -670,9 +670,9 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 }
 
 - (void)openStartupUrls {
-  DCHECK(_startupComplete);
-  [self openUrlsReplacingNTP:_startupUrls];
-  _startupUrls.clear();
+  DCHECK(startupComplete_);
+  [self openUrlsReplacingNTP:startupUrls_];
+  startupUrls_.clear();
 }
 
 - (void)openUrlsReplacingNTP:(const std::vector<GURL>&)urls {
@@ -688,8 +688,8 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   // and may break existing message loop design.
 
   // If the browser hasn't started yet, just queue up the URLs.
-  if (!_startupComplete) {
-    _startupUrls.insert(_startupUrls.end(), urls.begin(), urls.end());
+  if (!startupComplete_) {
+    startupUrls_.insert(startupUrls_.end(), urls.begin(), urls.end());
     return;
   }
 
@@ -740,7 +740,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
   // Notify BrowserList to keep the application running so it doesn't go away
   // when all the browser windows get closed.
-  _keep_alive.reset(new ScopedKeepAlive(KeepAliveOrigin::APP_CONTROLLER,
+  keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::APP_CONTROLLER,
                                         KeepAliveRestartOption::DISABLED));
 
   [self setUpdateCheckInterval];
@@ -751,14 +751,14 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
   // If enabled, keep Chrome alive when apps are open instead of quitting all
   // apps.
-  _quitWithAppsController = new QuitWithAppsController();
+  quitWithAppsController_ = new QuitWithAppsController();
 
   // Dynamically update shortcuts for "Close Window" and "Close Tab" menu items.
-  [[_closeTabMenuItem menu] setDelegate:self];
+  [[closeTabMenuItem_ menu] setDelegate:self];
 
   // Instantiate the ProfileAttributesStorage observer so that we can get
   // notified when a profile is deleted.
-  _profileAttributesStorageObserver.reset(new AppControllerProfileObserver(
+  profileAttributesStorageObserver_.reset(new AppControllerProfileObserver(
       g_browser_process->profile_manager(), self));
 
   // Record the path to the (browser) app bundle; this is used by the app mode
@@ -774,7 +774,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   // Makes "Services" menu items available.
   [self registerServicesMenuTypesTo:[notify object]];
 
-  _startupComplete = YES;
+  startupComplete_ = YES;
 
   Browser* browser = chrome::FindLastActive();
   content::WebContents* activeWebContents = nullptr;
@@ -785,14 +785,14 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
   PrefService* localState = g_browser_process->local_state();
   if (localState) {
-    _localPrefRegistrar.Init(localState);
-    _localPrefRegistrar.Add(
+    localPrefRegistrar_.Init(localState);
+    localPrefRegistrar_.Add(
         prefs::kAllowFileSelectionDialogs,
         base::Bind(&chrome::BrowserCommandController::UpdateOpenFileState,
-                   _menuState.get()));
+                   menuState_.get()));
   }
 
-  _handoff_active_url_observer_bridge.reset(
+  handoff_active_url_observer_bridge_.reset(
       new HandoffActiveURLObserverBridge(self));
 
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
@@ -904,15 +904,15 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   // to the old profile.
   // In a browser test, the application is not brought to the front, so
   // |lastProfile_| might be null.
-  if (!_lastProfile || profilePath == _lastProfile->GetPath()) {
+  if (!lastProfile_ || profilePath == lastProfile_->GetPath()) {
     // Force windowChangedToProfile: to set the lastProfile_ and also update the
     // relevant menuBridge objects.
-    _lastProfile = nullptr;
+    lastProfile_ = nullptr;
     [self windowChangedToProfile:g_browser_process->profile_manager()->
         GetLastUsedProfile()];
   }
 
-  _profileBookmarkMenuBridgeMap.erase(profilePath);
+  profileBookmarkMenuBridgeMap_.erase(profilePath);
 }
 
 // Returns true if there is a modal window (either window- or application-
@@ -940,8 +940,8 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   if (action == @selector(commandDispatch:) ||
       action == @selector(commandFromDock:)) {
     NSInteger tag = [item tag];
-    if (_menuState &&  // NULL in tests.
-        _menuState->SupportsCommand(tag)) {
+    if (menuState_ &&  // NULL in tests.
+        menuState_->SupportsCommand(tag)) {
       switch (tag) {
         // The File Menu commands are not automatically disabled by Cocoa when a
         // dialog sheet obscures the browser window, so we disable several of
@@ -966,7 +966,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
           enable = ![self keyWindowIsModal];
           break;
         default:
-          enable = _menuState->IsCommandEnabled(tag) ?
+          enable = menuState_->IsCommandEnabled(tag) ?
                    ![self keyWindowIsModal] : NO;
       }
     }
@@ -1022,7 +1022,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   // If not between -applicationDidFinishLaunching: and
   // -applicationWillTerminate:, ignore. This can happen when events are sitting
   // in the event queue while the browser is shutting down.
-  if (!_keep_alive)
+  if (!keep_alive_)
     return;
 
   NSInteger tag = [sender tag];
@@ -1203,7 +1203,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
         // target space before calling this method.
         //
         // See http://crbug.com/309656.
-        _reopenTime = base::TimeTicks::Now();
+        reopenTime_ = base::TimeTicks::Now();
       } else {
         ui::FocusWindowSetOnCurrentSpace(browserWindows);
       }
@@ -1253,25 +1253,25 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 }
 
 - (void)initMenuState {
-  _menuState = std::make_unique<CommandUpdaterImpl>(nullptr);
-  _menuState->UpdateCommandEnabled(IDC_NEW_TAB, true);
-  _menuState->UpdateCommandEnabled(IDC_NEW_WINDOW, true);
-  _menuState->UpdateCommandEnabled(IDC_NEW_INCOGNITO_WINDOW, true);
-  _menuState->UpdateCommandEnabled(IDC_OPEN_FILE, true);
-  _menuState->UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA, true);
-  _menuState->UpdateCommandEnabled(IDC_RESTORE_TAB, false);
-  _menuState->UpdateCommandEnabled(IDC_FOCUS_LOCATION, true);
-  _menuState->UpdateCommandEnabled(IDC_FOCUS_SEARCH, true);
-  _menuState->UpdateCommandEnabled(IDC_SHOW_BOOKMARK_MANAGER, true);
-  _menuState->UpdateCommandEnabled(IDC_SHOW_HISTORY, true);
-  _menuState->UpdateCommandEnabled(IDC_SHOW_DOWNLOADS, true);
-  _menuState->UpdateCommandEnabled(IDC_MANAGE_EXTENSIONS, true);
-  _menuState->UpdateCommandEnabled(IDC_HELP_PAGE_VIA_MENU, true);
-  _menuState->UpdateCommandEnabled(IDC_IMPORT_SETTINGS, true);
+  menuState_ = std::make_unique<CommandUpdaterImpl>(nullptr);
+  menuState_->UpdateCommandEnabled(IDC_NEW_TAB, true);
+  menuState_->UpdateCommandEnabled(IDC_NEW_WINDOW, true);
+  menuState_->UpdateCommandEnabled(IDC_NEW_INCOGNITO_WINDOW, true);
+  menuState_->UpdateCommandEnabled(IDC_OPEN_FILE, true);
+  menuState_->UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA, true);
+  menuState_->UpdateCommandEnabled(IDC_RESTORE_TAB, false);
+  menuState_->UpdateCommandEnabled(IDC_FOCUS_LOCATION, true);
+  menuState_->UpdateCommandEnabled(IDC_FOCUS_SEARCH, true);
+  menuState_->UpdateCommandEnabled(IDC_SHOW_BOOKMARK_MANAGER, true);
+  menuState_->UpdateCommandEnabled(IDC_SHOW_HISTORY, true);
+  menuState_->UpdateCommandEnabled(IDC_SHOW_DOWNLOADS, true);
+  menuState_->UpdateCommandEnabled(IDC_MANAGE_EXTENSIONS, true);
+  menuState_->UpdateCommandEnabled(IDC_HELP_PAGE_VIA_MENU, true);
+  menuState_->UpdateCommandEnabled(IDC_IMPORT_SETTINGS, true);
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   menuState_->UpdateCommandEnabled(IDC_FEEDBACK, true);
 #endif
-  _menuState->UpdateCommandEnabled(IDC_TASK_MANAGER, true);
+  menuState_->UpdateCommandEnabled(IDC_TASK_MANAGER, true);
 }
 
 // Conditionally adds the Profile menu to the main menu bar.
@@ -1287,19 +1287,19 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   // The controller will unhide the menu if necessary.
   [profileMenu setHidden:YES];
 
-  _profileMenuController.reset(
+  profileMenuController_.reset(
       [[ProfileMenuController alloc] initWithMainMenuItem:profileMenu]);
 }
 
 - (void)initShareMenu {
-  _shareMenuController.reset([[ShareMenuController alloc] init]);
+  shareMenuController_.reset([[ShareMenuController alloc] init]);
   NSMenu* mainMenu = [NSApp mainMenu];
   NSMenu* fileMenu = [[mainMenu itemWithTag:IDC_FILE_MENU] submenu];
   NSString* shareMenuTitle = l10n_util::GetNSString(IDS_SHARE_MAC);
   NSMenuItem* shareMenuItem = [fileMenu itemWithTitle:shareMenuTitle];
   base::scoped_nsobject<NSMenu> shareSubmenu(
       [[NSMenu alloc] initWithTitle:shareMenuTitle]);
-  [shareSubmenu setDelegate:_shareMenuController];
+  [shareSubmenu setDelegate:shareMenuController_];
   [shareMenuItem setSubmenu:shareSubmenu];
 }
 
@@ -1328,8 +1328,8 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 // Return null if Chrome is not ready or there is no ProfileManager.
 - (Profile*)lastProfile {
   // Return the profile of the last-used Browser, if available.
-  if (_lastProfile)
-    return _lastProfile;
+  if (lastProfile_)
+    return lastProfile_;
 
   if (![self isProfileReady])
     return nullptr;
@@ -1372,8 +1372,8 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 // through the ProcessSingleton, and it calls StartupBrowserCreator. It's best
 // to bottleneck the openings through that for uniform handling.
 - (void)openUrls:(const std::vector<GURL>&)urls {
-  if (!_startupComplete) {
-    _startupUrls.insert(_startupUrls.end(), urls.begin(), urls.end());
+  if (!startupComplete_) {
+    startupUrls_.insert(startupUrls_.end(), urls.begin(), urls.end());
     return;
   }
   // Pick the last used browser from a regular profile to open the urls.
@@ -1468,7 +1468,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   NSMenu* dockMenu = [[[NSMenu alloc] initWithTitle: @""] autorelease];
   Profile* profile = [self lastProfile];
 
-  BOOL profilesAdded = [_profileMenuController insertItemsIntoMenu:dockMenu
+  BOOL profilesAdded = [profileMenuController_ insertItemsIntoMenu:dockMenu
                                                           atOffset:0
                                                           fromDock:YES];
   if (profilesAdded)
@@ -1533,34 +1533,34 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 }
 
 - (const std::vector<GURL>&)startupUrls {
-  return _startupUrls;
+  return startupUrls_;
 }
 
 - (BookmarkMenuBridge*)bookmarkMenuBridge {
-  return _bookmarkMenuBridge;
+  return bookmarkMenuBridge_;
 }
 
 - (HistoryMenuBridge*)historyMenuBridge {
-  return _historyMenuBridge.get();
+  return historyMenuBridge_.get();
 }
 
 - (TabMenuBridge*)tabMenuBridge {
-  return _tabMenuBridge.get();
+  return tabMenuBridge_.get();
 }
 
 - (void)initAppShimMenuController {
-  if (!_appShimMenuController)
-    _appShimMenuController.reset([[AppShimMenuController alloc] init]);
+  if (!appShimMenuController_)
+    appShimMenuController_.reset([[AppShimMenuController alloc] init]);
 }
 
 - (void)windowChangedToProfile:(Profile*)profile {
-  if (_lastProfile == profile)
+  if (lastProfile_ == profile)
     return;
 
   // Before tearing down the menu controller bridges, return the history menu to
   // its initial state.
-  if (_historyMenuBridge)
-    _historyMenuBridge->ResetMenu();
+  if (historyMenuBridge_)
+    historyMenuBridge_->ResetMenu();
 
   // Rebuild the menus with the new profile. The bookmarks submenu is cached to
   // avoid slowdowns when switching between profiles with large numbers of
@@ -1572,9 +1572,9 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   NSMenuItem* bookmarkItem = [[NSApp mainMenu] itemWithTag:IDC_BOOKMARKS_MENU];
   BOOL hidden = [bookmarkItem isHidden];
   [bookmarkItem setHidden:NO];
-  _lastProfile = profile;
+  lastProfile_ = profile;
 
-  auto& entry = _profileBookmarkMenuBridgeMap[profile->GetPath()];
+  auto& entry = profileBookmarkMenuBridgeMap_[profile->GetPath()];
   if (!entry) {
     // This creates a deep copy, but only the first 3 items in the root menu
     // are really wanted. This can probably be optimized, but lazy-loading of
@@ -1587,26 +1587,26 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
     // Clear bookmarks from the old profile.
     entry->ClearBookmarkMenu();
   }
-  _bookmarkMenuBridge = entry.get();
+  bookmarkMenuBridge_ = entry.get();
 
   // No need to |BuildMenu| here.  It is done lazily upon menu access.
-  [bookmarkItem setSubmenu:_bookmarkMenuBridge->BookmarkMenu()];
+  [bookmarkItem setSubmenu:bookmarkMenuBridge_->BookmarkMenu()];
   [bookmarkItem setHidden:hidden];
 
-  _historyMenuBridge.reset(new HistoryMenuBridge(_lastProfile));
-  _historyMenuBridge->BuildMenu();
+  historyMenuBridge_.reset(new HistoryMenuBridge(lastProfile_));
+  historyMenuBridge_->BuildMenu();
 
   chrome::BrowserCommandController::
       UpdateSharedCommandsForIncognitoAvailability(
-          _menuState.get(), _lastProfile);
-  _profilePrefRegistrar.reset(new PrefChangeRegistrar());
-  _profilePrefRegistrar->Init(_lastProfile->GetPrefs());
-  _profilePrefRegistrar->Add(
+          menuState_.get(), lastProfile_);
+  profilePrefRegistrar_.reset(new PrefChangeRegistrar());
+  profilePrefRegistrar_->Init(lastProfile_->GetPrefs());
+  profilePrefRegistrar_->Add(
       prefs::kIncognitoModeAvailability,
       base::Bind(&chrome::BrowserCommandController::
                      UpdateSharedCommandsForIncognitoAvailability,
-                 _menuState.get(),
-                 _lastProfile));
+                 menuState_.get(),
+                 lastProfile_));
 }
 
 - (void)updateMenuItemKeyEquivalents {
@@ -1680,12 +1680,12 @@ return NO;
 #pragma mark - Handoff Manager
 
 - (void)passURLToHandoffManager:(const GURL&)handoffURL {
-  [_handoffManager updateActiveURL:handoffURL];
+  [handoffManager_ updateActiveURL:handoffURL];
 }
 
 - (void)updateHandoffManager:(content::WebContents*)webContents {
-  if (!_handoffManager)
-    _handoffManager.reset([[HandoffManager alloc] init]);
+  if (!handoffManager_)
+    handoffManager_.reset([[HandoffManager alloc] init]);
 
   GURL handoffURL = [self handoffURLFromWebContents:webContents];
   [self passURLToHandoffManager:handoffURL];

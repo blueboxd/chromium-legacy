@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"
+#include "media/base/video_types.h"
 #include "media/base/video_util.h"
 #include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
 #include "media/gpu/chromeos/fourcc.h"
@@ -262,28 +263,34 @@ bool V4L2SliceVideoDecoder::SetupOutputFormat(const gfx::Size& size,
   std::vector<std::pair<Fourcc, gfx::Size>> candidates;
   for (const uint32_t& pixfmt : device_->EnumerateSupportedPixelformats(
            V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE)) {
+    const auto candidate = Fourcc::FromV4L2PixFmt(pixfmt);
+    if (!candidate) {
+      DVLOGF(1) << "Pixel format " << FourccToString(pixfmt)
+                << " is not supported, skipping...";
+      continue;
+    }
+
     base::Optional<struct v4l2_format> format =
         output_queue_->SetFormat(pixfmt, size, 0);
-    if (format) {
-      gfx::Size adjusted_size(format->fmt.pix_mp.width,
-                              format->fmt.pix_mp.height);
-      candidates.push_back(
-          std::make_pair(Fourcc::FromV4L2PixFmt(pixfmt), adjusted_size));
-    }
+    if (!format)
+      continue;
+
+    gfx::Size adjusted_size(format->fmt.pix_mp.width,
+                            format->fmt.pix_mp.height);
+    candidates.push_back(std::make_pair(*candidate, adjusted_size));
   }
 
   // Ask the pipeline to pick the output format.
-  base::Optional<Fourcc> fourcc =
+  const base::Optional<Fourcc> fourcc =
       client_->PickDecoderOutputFormat(candidates, visible_rect);
   if (!fourcc) {
     VLOGF(1) << "Failed to pick a output format.";
     return false;
   }
-  const uint32_t pixfmt = fourcc->ToV4L2PixFmt();
 
   // We successfully picked the output format. Now setup output format again.
   base::Optional<struct v4l2_format> format =
-      output_queue_->SetFormat(pixfmt, size, 0);
+      output_queue_->SetFormat(fourcc->ToV4L2PixFmt(), size, 0);
   DCHECK(format);
   gfx::Size adjusted_size(format->fmt.pix_mp.width, format->fmt.pix_mp.height);
   DCHECK_EQ(adjusted_size.width() % 16, 0);
@@ -303,7 +310,7 @@ bool V4L2SliceVideoDecoder::SetupOutputFormat(const gfx::Size& size,
   DmabufVideoFramePool* pool = client_->GetVideoFramePool();
   if (pool) {
     base::Optional<GpuBufferLayout> layout = pool->RequestFrames(
-        Fourcc::FromV4L2PixFmt(pixfmt), adjusted_size, visible_rect,
+        *fourcc, adjusted_size, visible_rect,
         GetNaturalSize(visible_rect, pixel_aspect_ratio_), num_output_frames_);
     if (!layout) {
       VLOGF(1) << "Failed to setup format to VFPool";
@@ -311,9 +318,8 @@ bool V4L2SliceVideoDecoder::SetupOutputFormat(const gfx::Size& size,
     }
     if (layout->size() != adjusted_size) {
       VLOGF(1) << "The size adjusted by VFPool is different from one "
-               << "adjusted by a video driver. fourcc: "
-               << FourccToString(pixfmt) << ", (video driver v.s. VFPool) "
-               << adjusted_size.ToString()
+               << "adjusted by a video driver. fourcc: " << fourcc->ToString()
+               << ", (video driver v.s. VFPool) " << adjusted_size.ToString()
                << " != " << layout->size().ToString();
       return false;
     }

@@ -35,7 +35,7 @@
         }, error => {
           assert_equals(error.name, 'InvalidStateError');
           assert_equals(
-              error.message, 'Registration failed - no active Service Worker');
+              error.message, 'Failed to execute \'register\' on \'PeriodicSyncManager\': Registration failed - no active Service Worker');
           return service_worker_unregister_and_done(test, workerScope);
         })
         .catch(unreached_rejection(test));

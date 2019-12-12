@@ -6,7 +6,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/settings"
-        android:title="@string/preferences" />
+        android:title="@string/settings" />
     <item
         android:id="@+id/send_feedback"
         android:title="@string/autofill_assistant_send_feedback" />

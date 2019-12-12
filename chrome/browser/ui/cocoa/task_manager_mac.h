@@ -30,23 +30,23 @@ class TaskManagerMac;
                           NSTableViewDelegate,
                           NSMenuDelegate> {
  @private
-  NSTableView* _tableView;
-  NSButton* _endProcessButton;
-  task_manager::TaskManagerMac* _taskManagerMac;     // weak
-  task_manager::TaskManagerTableModel* _tableModel;  // weak
+  NSTableView* tableView_;
+  NSButton* endProcessButton_;
+  task_manager::TaskManagerMac* taskManagerMac_;     // weak
+  task_manager::TaskManagerTableModel* tableModel_;  // weak
 
-  base::scoped_nsobject<WindowSizeAutosaver> _size_saver;
+  base::scoped_nsobject<WindowSizeAutosaver> size_saver_;
 
   // These contain a permutation of [0..|tableModel_->RowCount() - 1|]. Used to
   // implement sorting.
-  std::vector<int> _viewToModelMap;
-  std::vector<int> _modelToViewMap;
+  std::vector<int> viewToModelMap_;
+  std::vector<int> modelToViewMap_;
 
   // Descriptor of the current sort column.
-  task_manager::TableSortDescriptor _currentSortDescriptor;
+  task_manager::TableSortDescriptor currentSortDescriptor_;
 
   // Re-entrancy flag to allow meddling with the sort descriptor.
-  BOOL _withinSortDescriptorsDidChange;
+  BOOL withinSortDescriptorsDidChange_;
 }
 
 // Creates and shows the task manager's window.

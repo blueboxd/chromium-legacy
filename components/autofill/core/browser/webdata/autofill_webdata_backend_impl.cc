@@ -10,7 +10,6 @@
 #include "base/single_thread_task_runner.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
-#include "components/autofill/core/browser/data_model/credit_card_cloud_token_data.h"
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
@@ -542,17 +541,6 @@ AutofillWebDataBackendImpl::GetPaymentsCustomerData(WebDatabase* db) {
   AutofillTable::FromWebDatabase(db)->GetPaymentsCustomerData(&customer_data);
   return std::make_unique<WDResult<std::unique_ptr<PaymentsCustomerData>>>(
       AUTOFILL_CUSTOMERDATA_RESULT, std::move(customer_data));
-}
-
-std::unique_ptr<WDTypedResult>
-AutofillWebDataBackendImpl::GetCreditCardCloudTokenData(WebDatabase* db) {
-  DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
-  std::vector<std::unique_ptr<CreditCardCloudTokenData>> cloud_token_data;
-  AutofillTable::FromWebDatabase(db)->GetCreditCardCloudTokenData(
-      &cloud_token_data);
-  return std::make_unique<
-      WDResult<std::vector<std::unique_ptr<CreditCardCloudTokenData>>>>(
-      AUTOFILL_CLOUDTOKEN_RESULT, std::move(cloud_token_data));
 }
 
 WebDatabase::State AutofillWebDataBackendImpl::ClearAllServerData(

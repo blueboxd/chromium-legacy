@@ -260,16 +260,15 @@ std::string ThemeProperties::TilingToString(int tiling) {
 }
 
 // static
-color_utils::HSL ThemeProperties::GetDefaultTint(int id, bool incognito) {
+color_utils::HSL ThemeProperties::GetDefaultTint(int id,
+                                                 bool incognito,
+                                                 bool dark_mode) {
   DCHECK(id != TINT_FRAME_INCOGNITO && id != TINT_FRAME_INCOGNITO_INACTIVE)
       << "These values should be queried via their respective non-incognito "
          "equivalents and an appropriate |incognito| value.";
 
   // If you change these defaults, you must increment the version number in
   // browser_theme_pack.cc.
-
-  const bool dark_mode =
-      ui::NativeTheme::GetInstanceForNativeUi()->ShouldUseDarkColors();
 
   // TINT_BUTTONS is used by ThemeService::GetDefaultColor() for both incognito
   // and dark mode, and so must be applied to both.
@@ -279,6 +278,13 @@ color_utils::HSL ThemeProperties::GetDefaultTint(int id, bool incognito) {
   if ((id == TINT_FRAME) && incognito)
     return {-1, 0.7, 0.075};  // #DEE1E6 -> kGoogleGrey900
   if (id == TINT_FRAME_INACTIVE) {
+    // |dark_mode| is only true here when attempting to tint the Windows native
+    // frame color while in dark mode.  The goal in this case is to match the
+    // difference between Chrome default dark mode active and inactive frames,
+    // so return a shift that matches that.
+    if (dark_mode)
+      return {0.59, 0.53, 0.567};  // kGoogleGrey900 -> kGoogleGrey800
+
     if (incognito)
       return {0.57, 0.65, 0.1405};  // #DEE1E6 -> kGoogleGrey800
     return {-1, -1, 0.642};         // #DEE1E6 -> #E7EAED
@@ -288,13 +294,15 @@ color_utils::HSL ThemeProperties::GetDefaultTint(int id, bool incognito) {
 }
 
 // static
-SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
+SkColor ThemeProperties::GetDefaultColor(int id,
+                                         bool incognito,
+                                         bool dark_mode) {
   if (incognito) {
     base::Optional<SkColor> incognito_color = GetIncognitoColor(id);
     if (incognito_color.has_value())
       return incognito_color.value();
   }
-  if (ui::NativeTheme::GetInstanceForNativeUi()->ShouldUseDarkColors()) {
+  if (dark_mode) {
     base::Optional<SkColor> dark_mode_color = GetDarkModeColor(id);
     if (dark_mode_color.has_value())
       return dark_mode_color.value();

@@ -8,8 +8,11 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/notifications/scheduler/public/notification_params.h"
 #include "components/keyed_service/core/keyed_service.h"
+
+namespace notifications {
+struct NotificationData;
+}  // namespace notifications
 
 namespace updates {
 

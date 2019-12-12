@@ -5,12 +5,8 @@
 #include "components/viz/service/display/overlay_processor_interface.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "components/viz/common/display/renderer_settings.h"
-
-#if defined(OS_MACOSX)
-#include "components/viz/service/display/overlay_processor_mac.h"
-#elif defined(OS_WIN)
-#include "components/viz/service/display/overlay_processor_win.h"
+#if defined(OS_MACOSX) || defined(OS_WIN)
+#include "components/viz/service/display/overlay_processor.h"
 #else
 #include "components/viz/service/display/overlay_candidate_validator_strategy.h"
 #include "components/viz/service/display/overlay_processor_using_strategy.h"
@@ -72,27 +68,23 @@ OverlayProcessorInterface::CreateOverlayProcessor(
     gpu::SurfaceHandle surface_handle,
     const OutputSurface::Capabilities& capabilities,
     const RendererSettings& renderer_settings) {
-#if defined(OS_MACOSX)
-  bool could_overlay = surface_handle != gpu::kNullSurfaceHandle;
-  could_overlay &= capabilities.supports_surfaceless;
-  bool enable_ca_overlay = could_overlay && renderer_settings.allow_overlays;
-
-  return base::WrapUnique(
-      new OverlayProcessorMac(could_overlay, enable_ca_overlay));
-#elif defined(OS_WIN)
-  bool enable_dc_overlay = surface_handle != gpu::kNullSurfaceHandle;
-  enable_dc_overlay &= !capabilities.supports_surfaceless;
-  enable_dc_overlay &= capabilities.supports_dc_layers;
-  return base::WrapUnique(new OverlayProcessorWin(
-      enable_dc_overlay, std::make_unique<DCLayerOverlayProcessor>(
-                             capabilities, renderer_settings)));
-
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  auto validator = OverlayCandidateValidator::Create(
+      surface_handle, capabilities, renderer_settings);
+  auto processor = base::WrapUnique(new OverlayProcessor(std::move(validator)));
 #else  // defined(USE_OZONE) || defined(OS_ANDROID) || Default
   auto validator = OverlayCandidateValidatorStrategy::Create(
       surface_handle, capabilities, renderer_settings);
-  return base::WrapUnique(new OverlayProcessorUsingStrategy(
+  auto processor = base::WrapUnique(new OverlayProcessorUsingStrategy(
       skia_output_surface, std::move(validator)));
 #endif
+
+#if defined(OS_WIN)
+  processor->InitializeDCOverlayProcessor(
+      std::make_unique<DCLayerOverlayProcessor>(capabilities,
+                                                renderer_settings));
+#endif
+  return processor;
 }
 
 OverlayProcessorInterface::OutputSurfaceOverlayPlane

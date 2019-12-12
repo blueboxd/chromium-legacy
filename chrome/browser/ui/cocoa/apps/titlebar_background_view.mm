@@ -51,15 +51,15 @@
                                    xRadius:cornerRadius
                                    yRadius:cornerRadius] addClip];
   if ([[self window] isMainWindow] || [[self window] isKeyWindow])
-    [_color set];
+    [color_ set];
   else
-    [_inactiveColor set];
+    [inactiveColor_ set];
   NSRectFill(rect);
 }
 
 - (void)setColor:(NSColor*)color inactiveColor:(NSColor*)inactiveColor {
-  _color.reset([color retain]);
-  _inactiveColor.reset([inactiveColor retain]);
+  color_.reset([color retain]);
+  inactiveColor_.reset([inactiveColor retain]);
 }
 
 @end

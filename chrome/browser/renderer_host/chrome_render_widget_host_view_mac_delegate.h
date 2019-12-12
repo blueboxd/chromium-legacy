@@ -20,10 +20,10 @@ class RenderWidgetHost;
 @interface ChromeRenderWidgetHostViewMacDelegate
     : NSObject<RenderWidgetHostViewMacDelegate> {
  @private
-  content::RenderWidgetHost* _renderWidgetHost;  // weak
+  content::RenderWidgetHost* renderWidgetHost_;  // weak
 
   // Responsible for 2-finger swipes history navigation.
-  base::scoped_nsobject<HistorySwiper> _historySwiper;
+  base::scoped_nsobject<HistorySwiper> historySwiper_;
 }
 
 - (id)initWithRenderWidgetHost:(content::RenderWidgetHost*)renderWidgetHost;

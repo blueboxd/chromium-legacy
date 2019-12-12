@@ -14,7 +14,7 @@
 // This class is scheduled with a delayed selector to quit the message pump.
 @interface CocoaQuitTask : NSObject {
  @private
-  base::MessagePumpNSRunLoop* _pump;
+  base::MessagePumpNSRunLoop* pump_;
 }
 - (id)initWithMessagePump:(base::MessagePumpNSRunLoop*)pump;
 - (void)doQuit;
@@ -23,13 +23,13 @@
 @implementation CocoaQuitTask
 - (id)initWithMessagePump:(base::MessagePumpNSRunLoop*)pump {
   if ((self = [super init])) {
-    _pump = pump;
+    pump_ = pump;
   }
   return self;
 }
 
 - (void)doQuit {
-  _pump->Quit();
+  pump_->Quit();
 }
 @end
 

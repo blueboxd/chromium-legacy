@@ -72,6 +72,16 @@ class SmartChargingManagerTest : public ChromeRenderViewHostTestHarness {
     smart_charging_manager_->ScreenBrightnessChanged(change);
   }
 
+  void ReportShutdownEvent() {
+    smart_charging_manager_->ShutdownRequested(
+        power_manager::RequestShutdownReason::REQUEST_SHUTDOWN_FOR_USER);
+  }
+
+  void ReportSuspendEvent() {
+    smart_charging_manager_->SuspendImminent(
+        power_manager::SuspendImminent::LID_CLOSED);
+  }
+
   void FireTimer() { smart_charging_manager_->OnTimerFired(); }
 
   void InitializeBrightness(const double level) {
@@ -192,6 +202,24 @@ TEST_F(SmartChargingManagerTest, UserEventCounts) {
   EXPECT_EQ(proto.features().num_recent_touch_events(), 2);
   EXPECT_EQ(proto.features().num_recent_key_events(), 3);
   EXPECT_EQ(proto.features().num_recent_stylus_events(), 4);
+}
+
+TEST_F(SmartChargingManagerTest, ShutdownAndSuspend) {
+  ReportPowerChangeEvent(power_manager::PowerSupplyProperties::DISCONNECTED,
+                         25.0f);
+  // Suspend.
+  ReportSuspendEvent();
+  EXPECT_EQ(GetUserChargingEvent().features().battery_percentage(), 25);
+  EXPECT_EQ(GetUserChargingEvent().event().event_id(), 0);
+  EXPECT_EQ(GetUserChargingEvent().event().reason(),
+            UserChargingEvent::Event::SUSPEND);
+
+  // Shutdown.
+  ReportShutdownEvent();
+  EXPECT_EQ(GetUserChargingEvent().features().battery_percentage(), 25);
+  EXPECT_EQ(GetUserChargingEvent().event().event_id(), 1);
+  EXPECT_EQ(GetUserChargingEvent().event().reason(),
+            UserChargingEvent::Event::SHUTDOWN);
 }
 
 }  // namespace power

@@ -9,16 +9,6 @@
 #include "base/trace_event/trace_event.h"
 
 namespace base {
-
-#if defined(OS_WIN)
-// Enable the boost of thread priority when the code may load a library. The
-// thread priority boost is required to avoid priority inversion on the loader
-// lock.
-// TODO(https://crbug.com/872820): Cleanup this experiment after M80 branch.
-constexpr base::Feature kBoostThreadPriorityOnLibraryLoading{
-    "BoostThreadPriorityOnLibraryLoading", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // OS_WIN
-
 namespace internal {
 
 ScopedMayLoadLibraryAtBackgroundPriority::
@@ -30,9 +20,6 @@ ScopedMayLoadLibraryAtBackgroundPriority::
 
 bool ScopedMayLoadLibraryAtBackgroundPriority::OnScopeFirstEntered() {
 #if defined(OS_WIN)
-  if (!base::FeatureList::IsEnabled(kBoostThreadPriorityOnLibraryLoading))
-    return true;
-
   const base::ThreadPriority priority =
       PlatformThread::GetCurrentThreadPriority();
   if (priority == base::ThreadPriority::BACKGROUND) {

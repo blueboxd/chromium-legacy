@@ -56,7 +56,7 @@
         android:order="9"
         android:title="@string/prefs_notifications"/>
     <Preference
-        android:fragment="org.chromium.chrome.browser.settings.HomepagePreferences"
+        android:fragment="org.chromium.chrome.browser.settings.homepage.HomepageSettings"
         android:key="homepage"
         android:order="10"
         android:title="@string/options_homepage_title"/>

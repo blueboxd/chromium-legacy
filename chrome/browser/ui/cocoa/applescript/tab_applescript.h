@@ -18,14 +18,14 @@ class Profile;
 // Represents a tab scriptable item in applescript.
 @interface TabAppleScript : ElementAppleScript {
  @private
-  content::WebContents* _webContents;  // weak.
+  content::WebContents* webContents_;  // weak.
 
-  Profile* _profile;  // weak.
+  Profile* profile_;  // weak.
 
   // Contains the temporary URL when a user creates a new folder/item with
   // url specified like
   // |make new tab with properties {url:"http://google.com"}|.
-  NSString* _tempURL;
+  NSString* tempURL_;
 }
 
 // Doesn't actually create the tab here but just assigns the ID, tab is created

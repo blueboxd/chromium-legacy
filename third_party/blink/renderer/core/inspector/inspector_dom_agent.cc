@@ -173,6 +173,9 @@ bool InspectorDOMAgent::GetPseudoElementType(PseudoId pseudo_id,
     case kPseudoIdAfter:
       *type = protocol::DOM::PseudoTypeEnum::After;
       return true;
+    case kPseudoIdMarker:
+      *type = protocol::DOM::PseudoTypeEnum::Marker;
+      return RuntimeEnabledFeatures::CSSMarkerPseudoElementEnabled();
     case kPseudoIdBackdrop:
       *type = protocol::DOM::PseudoTypeEnum::Backdrop;
       return true;
@@ -330,6 +333,8 @@ void InspectorDOMAgent::Unbind(Node* node, NodeToIdMap* nodes_map) {
       Unbind(element->GetPseudoElement(kPseudoIdBefore), nodes_map);
     if (element->GetPseudoElement(kPseudoIdAfter))
       Unbind(element->GetPseudoElement(kPseudoIdAfter), nodes_map);
+    if (element->GetPseudoElement(kPseudoIdMarker))
+      Unbind(element->GetPseudoElement(kPseudoIdMarker), nodes_map);
 
     if (auto* link_element = DynamicTo<HTMLLinkElement>(*element)) {
       if (link_element->IsImport() && link_element->import())
@@ -1669,7 +1674,8 @@ std::unique_ptr<protocol::Array<protocol::DOM::Node>>
 InspectorDOMAgent::BuildArrayForPseudoElements(Element* element,
                                                NodeToIdMap* nodes_map) {
   if (!element->GetPseudoElement(kPseudoIdBefore) &&
-      !element->GetPseudoElement(kPseudoIdAfter))
+      !element->GetPseudoElement(kPseudoIdAfter) &&
+      !element->GetPseudoElement(kPseudoIdMarker))
     return nullptr;
 
   auto pseudo_elements =
@@ -1681,6 +1687,10 @@ InspectorDOMAgent::BuildArrayForPseudoElements(Element* element,
   if (element->GetPseudoElement(kPseudoIdAfter)) {
     pseudo_elements->emplace_back(BuildObjectForNode(
         element->GetPseudoElement(kPseudoIdAfter), 0, false, nodes_map));
+  }
+  if (element->GetPseudoElement(kPseudoIdMarker)) {
+    pseudo_elements->emplace_back(BuildObjectForNode(
+        element->GetPseudoElement(kPseudoIdMarker), 0, false, nodes_map));
   }
   return pseudo_elements;
 }

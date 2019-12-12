@@ -158,10 +158,10 @@ extensions::AppWindowRegistry::AppWindowList GetAppWindowsForNSWindow(
 // doppelganger just copies the item and sets a new action.
 @interface DoppelgangerMenuItem : NSObject {
  @private
-  base::scoped_nsobject<NSMenuItem> _menuItem;
-  base::scoped_nsobject<NSMenuItem> _sourceItem;
-  base::scoped_nsobject<NSString> _sourceKeyEquivalent;
-  int _resourceId;
+  base::scoped_nsobject<NSMenuItem> menuItem_;
+  base::scoped_nsobject<NSMenuItem> sourceItem_;
+  base::scoped_nsobject<NSString> sourceKeyEquivalent_;
+  int resourceId_;
 }
 
 @property(readonly, nonatomic) NSMenuItem* menuItem;
@@ -190,7 +190,7 @@ extensions::AppWindowRegistry::AppWindowList GetAppWindowsForNSWindow(
 @implementation DoppelgangerMenuItem
 
 - (NSMenuItem*)menuItem {
-  return _menuItem;
+  return menuItem_;
 }
 
 - (id)initWithController:(AppShimMenuController*)controller
@@ -200,16 +200,16 @@ extensions::AppWindowRegistry::AppWindowList GetAppWindowsForNSWindow(
                   action:(SEL)action
            keyEquivalent:(NSString*)keyEquivalent {
   if ((self = [super init])) {
-    _sourceItem.reset([GetItemByTag(menuTag, itemTag) retain]);
-    DCHECK(_sourceItem);
-    _sourceKeyEquivalent.reset([[_sourceItem keyEquivalent] copy]);
-    _menuItem.reset([[NSMenuItem alloc]
-        initWithTitle:[_sourceItem title]
+    sourceItem_.reset([GetItemByTag(menuTag, itemTag) retain]);
+    DCHECK(sourceItem_);
+    sourceKeyEquivalent_.reset([[sourceItem_ keyEquivalent] copy]);
+    menuItem_.reset([[NSMenuItem alloc]
+        initWithTitle:[sourceItem_ title]
                action:action
         keyEquivalent:keyEquivalent]);
-    [_menuItem setTarget:controller];
-    [_menuItem setTag:itemTag];
-    _resourceId = resourceId;
+    [menuItem_ setTarget:controller];
+    [menuItem_ setTag:itemTag];
+    resourceId_ = resourceId;
   }
   return self;
 }
@@ -219,11 +219,11 @@ extensions::AppWindowRegistry::AppWindowList GetAppWindowsForNSWindow(
         targetItemTag:(NSInteger)targetItemTag
         keyEquivalent:(NSString*)keyEquivalent {
   if ((self = [super init])) {
-    _menuItem.reset([GetItemByTag(menuTag, targetItemTag) copy]);
-    _sourceItem.reset([GetItemByTag(menuTag, sourceItemTag) retain]);
-    DCHECK(_menuItem);
-    DCHECK(_sourceItem);
-    _sourceKeyEquivalent.reset([[_sourceItem keyEquivalent] copy]);
+    menuItem_.reset([GetItemByTag(menuTag, targetItemTag) copy]);
+    sourceItem_.reset([GetItemByTag(menuTag, sourceItemTag) retain]);
+    DCHECK(menuItem_);
+    DCHECK(sourceItem_);
+    sourceKeyEquivalent_.reset([[sourceItem_ keyEquivalent] copy]);
   }
   return self;
 }
@@ -234,11 +234,11 @@ extensions::AppWindowRegistry::AppWindowList GetAppWindowsForNSWindow(
   // original keyboard shortcut, regardless of any overrides set in OSX).
   // In order to let the app menu items have a different action, we remove the
   // key equivalent of the original items and restore them later.
-  [_sourceItem setKeyEquivalent:@""];
-  if (!_resourceId)
+  [sourceItem_ setKeyEquivalent:@""];
+  if (!resourceId_)
     return;
 
-  [_menuItem setTitle:l10n_util::GetNSStringF(_resourceId,
+  [menuItem_ setTitle:l10n_util::GetNSStringF(resourceId_,
                                               base::UTF8ToUTF16(app->name()))];
 }
 
@@ -246,7 +246,7 @@ extensions::AppWindowRegistry::AppWindowList GetAppWindowsForNSWindow(
   // Restore the keyboard shortcut to Chrome. This just needs to be set back to
   // the original keyboard shortcut, regardless of any overrides in OSX. The
   // overrides still work as they are based on the title of the menu item.
-  [_sourceItem setKeyEquivalent:_sourceKeyEquivalent];
+  [sourceItem_ setKeyEquivalent:sourceKeyEquivalent_];
 }
 
 @end
@@ -291,28 +291,28 @@ extensions::AppWindowRegistry::AppWindowList GetAppWindowsForNSWindow(
 }
 
 - (void)buildAppMenuItems {
-  _aboutDoppelganger.reset([[DoppelgangerMenuItem alloc]
+  aboutDoppelganger_.reset([[DoppelgangerMenuItem alloc]
       initWithController:self
                  menuTag:IDC_CHROME_MENU
                  itemTag:IDC_ABOUT
               resourceId:IDS_ABOUT_MAC
                   action:nil
            keyEquivalent:@""]);
-  _hideDoppelganger.reset([[DoppelgangerMenuItem alloc]
+  hideDoppelganger_.reset([[DoppelgangerMenuItem alloc]
       initWithController:self
                  menuTag:IDC_CHROME_MENU
                  itemTag:IDC_HIDE_APP
               resourceId:IDS_HIDE_APP_MAC
                   action:@selector(hideCurrentPlatformApp)
            keyEquivalent:@"h"]);
-  _quitDoppelganger.reset([[DoppelgangerMenuItem alloc]
+  quitDoppelganger_.reset([[DoppelgangerMenuItem alloc]
       initWithController:self
                  menuTag:IDC_CHROME_MENU
                  itemTag:IDC_EXIT
               resourceId:IDS_EXIT_MAC
                   action:@selector(quitCurrentPlatformApp)
            keyEquivalent:@"q"]);
-  _newDoppelganger.reset([[DoppelgangerMenuItem alloc]
+  newDoppelganger_.reset([[DoppelgangerMenuItem alloc]
       initWithController:self
                  menuTag:IDC_FILE_MENU
                  itemTag:IDC_NEW_WINDOW
@@ -321,22 +321,22 @@ extensions::AppWindowRegistry::AppWindowList GetAppWindowsForNSWindow(
            keyEquivalent:@"n"]);
   // Since the "Close Window" menu item will have the same shortcut as "Close
   // Tab" on the Chrome menu, we need to create a doppelganger.
-  _closeWindowDoppelganger.reset([[DoppelgangerMenuItem alloc]
+  closeWindowDoppelganger_.reset([[DoppelgangerMenuItem alloc]
                 initWithMenuTag:IDC_FILE_MENU
                   sourceItemTag:IDC_CLOSE_TAB
                   targetItemTag:IDC_CLOSE_WINDOW
                   keyEquivalent:@"w"]);
   // For apps, the "Window" part of "New Window" is dropped to match the default
   // menu set given to Cocoa Apps.
-  [[_newDoppelganger menuItem] setTitle:l10n_util::GetNSString(IDS_NEW_MAC)];
-  _openDoppelganger.reset([[DoppelgangerMenuItem alloc]
+  [[newDoppelganger_ menuItem] setTitle:l10n_util::GetNSString(IDS_NEW_MAC)];
+  openDoppelganger_.reset([[DoppelgangerMenuItem alloc]
       initWithController:self
                  menuTag:IDC_FILE_MENU
                  itemTag:IDC_OPEN_FILE
               resourceId:0
                   action:nil
            keyEquivalent:@"o"]);
-  _allToFrontDoppelganger.reset([[DoppelgangerMenuItem alloc]
+  allToFrontDoppelganger_.reset([[DoppelgangerMenuItem alloc]
       initWithController:self
                  menuTag:IDC_WINDOW_MENU
                  itemTag:IDC_ALL_WINDOWS_FRONT
@@ -345,47 +345,47 @@ extensions::AppWindowRegistry::AppWindowList GetAppWindowsForNSWindow(
            keyEquivalent:@""]);
 
   // The app's menu.
-  _appMenuItem.reset([[NSMenuItem alloc] initWithTitle:@""
+  appMenuItem_.reset([[NSMenuItem alloc] initWithTitle:@""
                                                 action:nil
                                          keyEquivalent:@""]);
   base::scoped_nsobject<NSMenu> appMenu([[NSMenu alloc] initWithTitle:@""]);
-  [_appMenuItem setSubmenu:appMenu];
+  [appMenuItem_ setSubmenu:appMenu];
   [appMenu setAutoenablesItems:NO];
 
-  [appMenu addItem:[_aboutDoppelganger menuItem]];
-  [[_aboutDoppelganger menuItem] setEnabled:NO];  // Not implemented yet.
+  [appMenu addItem:[aboutDoppelganger_ menuItem]];
+  [[aboutDoppelganger_ menuItem] setEnabled:NO];  // Not implemented yet.
   [appMenu addItem:[NSMenuItem separatorItem]];
-  [appMenu addItem:[_hideDoppelganger menuItem]];
+  [appMenu addItem:[hideDoppelganger_ menuItem]];
   [appMenu addItem:[NSMenuItem separatorItem]];
-  [appMenu addItem:[_quitDoppelganger menuItem]];
+  [appMenu addItem:[quitDoppelganger_ menuItem]];
 
   // File menu.
-  _fileMenuItem.reset([NewTopLevelItemFrom(IDC_FILE_MENU) retain]);
-  [[_fileMenuItem submenu] addItem:[_newDoppelganger menuItem]];
-  [[_fileMenuItem submenu] addItem:[_openDoppelganger menuItem]];
-  [[_fileMenuItem submenu] addItem:[NSMenuItem separatorItem]];
-  [[_fileMenuItem submenu] addItem:[_closeWindowDoppelganger menuItem]];
+  fileMenuItem_.reset([NewTopLevelItemFrom(IDC_FILE_MENU) retain]);
+  [[fileMenuItem_ submenu] addItem:[newDoppelganger_ menuItem]];
+  [[fileMenuItem_ submenu] addItem:[openDoppelganger_ menuItem]];
+  [[fileMenuItem_ submenu] addItem:[NSMenuItem separatorItem]];
+  [[fileMenuItem_ submenu] addItem:[closeWindowDoppelganger_ menuItem]];
 
   // Edit menu. We copy the menu because the last two items, "Start Dictation"
   // and "Special Characters" are added by OSX, so we can't copy them
   // explicitly.
-  _editMenuItem.reset([[[NSApp mainMenu] itemWithTag:IDC_EDIT_MENU] copy]);
+  editMenuItem_.reset([[[NSApp mainMenu] itemWithTag:IDC_EDIT_MENU] copy]);
 
   // View menu. Remove "Always Show Bookmark Bar" and separator.
-  _viewMenuItem.reset([[[NSApp mainMenu] itemWithTag:IDC_VIEW_MENU] copy]);
-  RemoveMenuItemWithTag(_viewMenuItem, IDC_SHOW_BOOKMARK_BAR, YES);
+  viewMenuItem_.reset([[[NSApp mainMenu] itemWithTag:IDC_VIEW_MENU] copy]);
+  RemoveMenuItemWithTag(viewMenuItem_, IDC_SHOW_BOOKMARK_BAR, YES);
 
   // History menu.
-  _historyMenuItem.reset([NewTopLevelItemFrom(IDC_HISTORY_MENU) retain]);
-  AddDuplicateItem(_historyMenuItem, IDC_HISTORY_MENU, IDC_BACK);
-  AddDuplicateItem(_historyMenuItem, IDC_HISTORY_MENU, IDC_FORWARD);
+  historyMenuItem_.reset([NewTopLevelItemFrom(IDC_HISTORY_MENU) retain]);
+  AddDuplicateItem(historyMenuItem_, IDC_HISTORY_MENU, IDC_BACK);
+  AddDuplicateItem(historyMenuItem_, IDC_HISTORY_MENU, IDC_FORWARD);
 
   // Window menu.
-  _windowMenuItem.reset([NewTopLevelItemFrom(IDC_WINDOW_MENU) retain]);
-  AddDuplicateItem(_windowMenuItem, IDC_WINDOW_MENU, IDC_MINIMIZE_WINDOW);
-  AddDuplicateItem(_windowMenuItem, IDC_WINDOW_MENU, IDC_MAXIMIZE_WINDOW);
-  [[_windowMenuItem submenu] addItem:[NSMenuItem separatorItem]];
-  [[_windowMenuItem submenu] addItem:[_allToFrontDoppelganger menuItem]];
+  windowMenuItem_.reset([NewTopLevelItemFrom(IDC_WINDOW_MENU) retain]);
+  AddDuplicateItem(windowMenuItem_, IDC_WINDOW_MENU, IDC_MINIMIZE_WINDOW);
+  AddDuplicateItem(windowMenuItem_, IDC_WINDOW_MENU, IDC_MAXIMIZE_WINDOW);
+  [[windowMenuItem_ submenu] addItem:[NSMenuItem separatorItem]];
+  [[windowMenuItem_ submenu] addItem:[allToFrontDoppelganger_ menuItem]];
 }
 
 - (void)registerEventHandlers {
@@ -445,26 +445,26 @@ extensions::AppWindowRegistry::AppWindowList GetAppWindowsForNSWindow(
 }
 
 - (void)appBecameMain:(const Extension*)app {
-  if (_appId == app->id())
+  if (appId_ == app->id())
     return;
 
-  if (!_appId.empty())
+  if (!appId_.empty())
     [self removeMenuItems];
 
-  _appId = app->id();
+  appId_ = app->id();
   [self addMenuItems:app];
 }
 
 - (void)chromeBecameMain {
-  if (_appId.empty())
+  if (appId_.empty())
     return;
 
-  _appId.clear();
+  appId_.clear();
   [self removeMenuItems];
 }
 
 - (void)addMenuItems:(const Extension*)app {
-  DCHECK_EQ(_appId, app->id());
+  DCHECK_EQ(appId_, app->id());
   NSString* title = base::SysUTF8ToNSString(app->name());
 
   // Hide Chrome menu items.
@@ -472,54 +472,54 @@ extensions::AppWindowRegistry::AppWindowList GetAppWindowsForNSWindow(
   for (NSMenuItem* item in [mainMenu itemArray])
     [item setHidden:YES];
 
-  [_aboutDoppelganger enableForApp:app];
-  [_hideDoppelganger enableForApp:app];
-  [_quitDoppelganger enableForApp:app];
-  [_newDoppelganger enableForApp:app];
-  [_openDoppelganger enableForApp:app];
-  [_closeWindowDoppelganger enableForApp:app];
+  [aboutDoppelganger_ enableForApp:app];
+  [hideDoppelganger_ enableForApp:app];
+  [quitDoppelganger_ enableForApp:app];
+  [newDoppelganger_ enableForApp:app];
+  [openDoppelganger_ enableForApp:app];
+  [closeWindowDoppelganger_ enableForApp:app];
 
-  [_appMenuItem setTitle:base::SysUTF8ToNSString(_appId)];
-  [[_appMenuItem submenu] setTitle:title];
+  [appMenuItem_ setTitle:base::SysUTF8ToNSString(appId_)];
+  [[appMenuItem_ submenu] setTitle:title];
 
-  [mainMenu addItem:_appMenuItem];
-  [mainMenu addItem:_fileMenuItem];
+  [mainMenu addItem:appMenuItem_];
+  [mainMenu addItem:fileMenuItem_];
 
-  SetItemWithTagVisible(_editMenuItem,
+  SetItemWithTagVisible(editMenuItem_,
                         IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE,
                         app->is_hosted_app(), true);
-  SetItemWithTagVisible(_editMenuItem, IDC_FIND_MENU, app->is_hosted_app(),
+  SetItemWithTagVisible(editMenuItem_, IDC_FIND_MENU, app->is_hosted_app(),
                         false);
-  [mainMenu addItem:_editMenuItem];
+  [mainMenu addItem:editMenuItem_];
 
   if (app->is_hosted_app()) {
-    [mainMenu addItem:_viewMenuItem];
-    [mainMenu addItem:_historyMenuItem];
+    [mainMenu addItem:viewMenuItem_];
+    [mainMenu addItem:historyMenuItem_];
   }
-  [mainMenu addItem:_windowMenuItem];
+  [mainMenu addItem:windowMenuItem_];
 }
 
 - (void)removeMenuItems {
   NSMenu* mainMenu = [NSApp mainMenu];
-  [mainMenu removeItem:_appMenuItem];
-  [mainMenu removeItem:_fileMenuItem];
-  if ([mainMenu indexOfItem:_viewMenuItem] >= 0)
-    [mainMenu removeItem:_viewMenuItem];
-  if ([mainMenu indexOfItem:_historyMenuItem] >= 0)
-    [mainMenu removeItem:_historyMenuItem];
-  [mainMenu removeItem:_editMenuItem];
-  [mainMenu removeItem:_windowMenuItem];
+  [mainMenu removeItem:appMenuItem_];
+  [mainMenu removeItem:fileMenuItem_];
+  if ([mainMenu indexOfItem:viewMenuItem_] >= 0)
+    [mainMenu removeItem:viewMenuItem_];
+  if ([mainMenu indexOfItem:historyMenuItem_] >= 0)
+    [mainMenu removeItem:historyMenuItem_];
+  [mainMenu removeItem:editMenuItem_];
+  [mainMenu removeItem:windowMenuItem_];
 
   // Restore the Chrome main menu bar.
   for (NSMenuItem* item in [mainMenu itemArray])
     [item setHidden:NO];
 
-  [_aboutDoppelganger disable];
-  [_hideDoppelganger disable];
-  [_quitDoppelganger disable];
-  [_newDoppelganger disable];
-  [_openDoppelganger disable];
-  [_closeWindowDoppelganger disable];
+  [aboutDoppelganger_ disable];
+  [hideDoppelganger_ disable];
+  [quitDoppelganger_ disable];
+  [newDoppelganger_ disable];
+  [openDoppelganger_ disable];
+  [closeWindowDoppelganger_ disable];
 }
 
 - (void)quitCurrentPlatformApp {

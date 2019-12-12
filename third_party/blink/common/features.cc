@@ -450,11 +450,11 @@ const base::Feature kLowLatencyCanvas2dImageChromium {
 
 // Enables the use of shared image swap chains for low latency 2d canvas.
 const base::Feature kLowLatencyCanvas2dSwapChain{
-    "LowLatencyCanvas2dSwapChain", base::FEATURE_DISABLED_BY_DEFAULT};
+    "LowLatencyCanvas2dSwapChain", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the use of shared image swap chains for low latency webgl canvas.
-const base::Feature kLowLatencyWebGLSwapChain{
-    "LowLatencyWebGLSwapChain", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kLowLatencyWebGLSwapChain{"LowLatencyWebGLSwapChain",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

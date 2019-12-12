@@ -4,8 +4,9 @@
 # found in the LICENSE file.
 
 import argparse
-import sys
 import os
+import subprocess
+import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), os.pardir, os.pardir,
                                 'build', 'android'))
@@ -16,15 +17,17 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--shell-apk-path', type=os.path.abspath, required=True,
                       help='Absolute path to the WebLayer shell APK to use.')
-  parser.add_argument('--support-apk-path', nargs='+', type=os.path.abspath,
-                      required=True,
-                      help='Absolute path to the WebLayer support APKs to use.')
+  parser.add_argument('--support-apk-path', action='append',
+                      type=os.path.abspath, required=True,
+                      help='Absolute path to the WebLayer support APKs to '
+                      'use. Specify multiple times for multiple paths.')
   parser.add_argument('--switch-webview-to', type=str, required=False,
                       help='Package name to set as the WebView implementation.')
   parser.add_argument('-d', '--device', dest='devices', action='append',
                       default=[],
                       help='Target device for apk to install on. Enter multiple'
                            ' times for multiple devices.')
+  parser.add_argument('remaining_args', nargs=argparse.REMAINDER)
   args = parser.parse_args()
 
   devil_chromium.Initialize()
@@ -43,7 +46,26 @@ def main():
       device.SetWebViewImplementation(args.switch_webview_to)
       print 'Done'
 
-    device.adb.Shell('monkey -p org.chromium.weblayer.shell 1')
+    if os.path.basename(args.shell_apk_path) == 'WebLayerShell.apk':
+      # When launching weblayer shell use 'weblayer_shell_apk', which supports
+      # more options.
+      launch_cmd = [os.path.join(os.path.dirname(args.shell_apk_path),
+                                 os.pardir, 'bin', 'weblayer_shell_apk'),
+                    'launch']
+      launch_cmd.extend(args.remaining_args)
+      subprocess.call(launch_cmd)
+    elif (os.path.basename(args.shell_apk_path) ==
+          'WebLayerShellSystemWebView.apk'):
+      # When launching weblayer shell use 'weblayer_shell_apk', which supports
+      # more options.
+      launch_cmd = [os.path.join(os.path.dirname(args.shell_apk_path),
+                                 os.pardir, 'bin',
+                                 'weblayer_shell_system_webview_apk'),
+                    'launch']
+      launch_cmd.extend(args.remaining_args)
+      subprocess.call(launch_cmd)
+    else:
+      device.adb.Shell('monkey -p org.chromium.weblayer.shell 1')
 
   device_utils.DeviceUtils.parallel(devices).pMap(install)
 

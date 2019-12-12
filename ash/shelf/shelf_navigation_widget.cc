@@ -25,6 +25,10 @@
 namespace ash {
 namespace {
 
+// The duration of the back button opacity animation.
+constexpr base::TimeDelta kBackButtonOpacityAnimationDuration =
+    base::TimeDelta::FromMilliseconds(50);
+
 bool IsTabletMode() {
   return Shell::Get()->tablet_mode_controller() &&
          Shell::Get()->tablet_mode_controller()->InTabletMode();
@@ -335,7 +339,7 @@ void ShelfNavigationWidget::UpdateLayout() {
                                         : views::View::FocusBehavior::NEVER);
   ui::ScopedLayerAnimationSettings settings(
       GetBackButton()->layer()->GetAnimator());
-  settings.SetTransitionDuration(animation_duration);
+  settings.SetTransitionDuration(kBackButtonOpacityAnimationDuration);
   settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   settings.AddObserver(this);

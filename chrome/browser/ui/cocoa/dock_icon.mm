@@ -37,9 +37,9 @@ constexpr int64_t kUpdateFrequencyMs = 200;
 // A view that draws our dock tile.
 @interface DockTileView : NSView {
  @private
-  int _downloads;
-  BOOL _indeterminate;
-  float _progress;
+  int downloads_;
+  BOOL indeterminate_;
+  float progress_;
 }
 
 // Indicates how many downloads are in progress.
@@ -56,9 +56,9 @@ constexpr int64_t kUpdateFrequencyMs = 200;
 
 @implementation DockTileView
 
-@synthesize downloads = _downloads;
-@synthesize indeterminate = _indeterminate;
-@synthesize progress = _progress;
+@synthesize downloads = downloads_;
+@synthesize indeterminate = indeterminate_;
+@synthesize progress = progress_;
 
 - (void)drawRect:(NSRect)dirtyRect {
   // Not -[NSApplication applicationIconImage]; that fails to return a pasted
@@ -70,7 +70,7 @@ constexpr int64_t kUpdateFrequencyMs = 200;
             operation:NSCompositeSourceOver
              fraction:1.0];
 
-  if (_downloads == 0)
+  if (downloads_ == 0)
     return;
 
   const CGFloat badgeSize = NSWidth(self.bounds) * kBadgeFraction;
@@ -102,12 +102,12 @@ constexpr int64_t kUpdateFrequencyMs = 200;
   [backgroundPath fill];
 
   // Stroke
-  if (!_indeterminate) {
+  if (!indeterminate_) {
     NSBezierPath* strokePath;
-    if (_progress >= 1.0) {
+    if (progress_ >= 1.0) {
       strokePath = [NSBezierPath bezierPathWithOvalInRect:badgeRect];
     } else {
-      CGFloat endAngle = 90.0 - 360.0 * _progress;
+      CGFloat endAngle = 90.0 - 360.0 * progress_;
       if (endAngle < 0.0)
         endAngle += 360.0;
       strokePath = [NSBezierPath bezierPath];
@@ -130,7 +130,7 @@ constexpr int64_t kUpdateFrequencyMs = 200;
   base::scoped_nsobject<NSNumberFormatter> formatter(
       [[NSNumberFormatter alloc] init]);
   NSString* countString =
-      [formatter stringFromNumber:[NSNumber numberWithInt:_downloads]];
+      [formatter stringFromNumber:[NSNumber numberWithInt:downloads_]];
 
   CGFloat countFontSize = 24;
   NSSize countSize = NSZeroSize;
@@ -202,12 +202,12 @@ constexpr int64_t kUpdateFrequencyMs = 200;
       base::TimeDelta::FromMilliseconds(kUpdateFrequencyMs);
 
   base::TimeTicks now = base::TimeTicks::Now();
-  base::TimeDelta timeSinceLastUpdate = now - _lastUpdate;
-  if (!_forceUpdate && timeSinceLastUpdate < updateFrequency)
+  base::TimeDelta timeSinceLastUpdate = now - lastUpdate_;
+  if (!forceUpdate_ && timeSinceLastUpdate < updateFrequency)
     return;
 
-  _lastUpdate = now;
-  _forceUpdate = NO;
+  lastUpdate_ = now;
+  forceUpdate_ = NO;
 
   NSDockTile* dockTile = [[NSApplication sharedApplication] dockTile];
 
@@ -221,7 +221,7 @@ constexpr int64_t kUpdateFrequencyMs = 200;
 
   if (downloads != [dockTileView downloads]) {
     [dockTileView setDownloads:downloads];
-    _forceUpdate = YES;
+    forceUpdate_ = YES;
   }
 }
 
@@ -232,7 +232,7 @@ constexpr int64_t kUpdateFrequencyMs = 200;
 
   if (indeterminate != [dockTileView indeterminate]) {
     [dockTileView setIndeterminate:indeterminate];
-    _forceUpdate = YES;
+    forceUpdate_ = YES;
   }
 }
 

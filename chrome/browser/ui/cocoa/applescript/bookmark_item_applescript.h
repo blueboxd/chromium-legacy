@@ -15,7 +15,7 @@
   // Contains the temporary title when a user creates a new item with
   // title specified like
   // |make new bookmarks item with properties {title:"foo"}|.
-  NSString* _tempURL;
+  NSString* tempURL_;
 }
 
 // Assigns a node, sets its unique ID and also copies temporary values.

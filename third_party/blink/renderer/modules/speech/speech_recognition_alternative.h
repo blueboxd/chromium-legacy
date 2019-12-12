@@ -37,8 +37,6 @@ class MODULES_EXPORT SpeechRecognitionAlternative final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SpeechRecognitionAlternative* Create(const String&, double);
-
   SpeechRecognitionAlternative(const String&, double);
 
   const String& transcript() const { return transcript_; }

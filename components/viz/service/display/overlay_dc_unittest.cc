@@ -28,7 +28,8 @@
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
-#include "components/viz/service/display/overlay_processor_win.h"
+#include "components/viz/service/display/overlay_candidate_validator.h"
+#include "components/viz/service/display/overlay_processor.h"
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_gles2_interface.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
@@ -47,6 +48,13 @@ namespace {
 
 const gfx::Rect kOverlayRect(0, 0, 256, 256);
 const gfx::Rect kOverlayBottomRightRect(128, 128, 128, 128);
+
+class DCLayerValidator : public OverlayCandidateValidator {
+ public:
+  bool AllowCALayerOverlays() const override { return false; }
+  bool AllowDCLayerOverlays() const override { return true; }
+  bool NeedsSurfaceOccludingDamageRect() const override { return true; }
+};
 
 class OverlayOutputSurface : public OutputSurface {
  public:
@@ -100,11 +108,10 @@ class OverlayOutputSurface : public OutputSurface {
   unsigned bind_framebuffer_count_ = 0;
 };
 
-class DCTestOverlayProcessor : public OverlayProcessorWin {
+class DCTestOverlayProcessor : public OverlayProcessor {
  public:
   DCTestOverlayProcessor()
-      : OverlayProcessorWin(true, std::make_unique<DCLayerOverlayProcessor>()) {
-  }
+      : OverlayProcessor(std::make_unique<DCLayerValidator>()) {}
 };
 
 std::unique_ptr<RenderPass> CreateRenderPass() {

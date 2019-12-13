@@ -161,7 +161,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
 
   // ARIA attributes.
   ax::mojom::Role AriaRoleAttribute() const final;
-  bool HasAriaAttribute() const override;
 
   // AX name calculation.
   String GetName(ax::mojom::NameFrom&,

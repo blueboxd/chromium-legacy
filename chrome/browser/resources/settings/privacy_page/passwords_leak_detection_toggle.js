@@ -31,7 +31,24 @@ Polymer({
       type: Boolean,
       computed: 'computePasswordsLeakDetectionAvailable_(prefs.*)',
     },
+
+    // A "virtual" preference that is use to control the associated toggle
+    // independently of the preference it represents. This is updated with
+    // the registered setPasswordsLeakDetectionPref_ observer. Changes to
+    // the real preference are handled in onPasswordsLeakDetectionChange_
+    /** @private {chrome.settingsPrivate.PrefObject} */
+    passwordsLeakDetectionPref_: {
+      type: Object,
+      value: function() {
+        return /** @type {chrome.settingsPrivate.PrefObject} */ ({});
+      },
+    },
   },
+
+  observers: [
+    'setPasswordsLeakDetectionPref_(userSignedIn_,' +
+        'passwordsLeakDetectionAvailable_)',
+  ],
 
   /** @override */
   ready: function() {
@@ -42,14 +59,6 @@ Polymer({
     syncBrowserProxy.getStoredAccounts().then(storedAccountsChanged);
     this.addWebUIListener('stored-accounts-updated', storedAccountsChanged);
     // </if>
-
-    // Even though we already set checked="[[getCheckedLeakDetection_(...)]]"
-    // in the DOM, this might be overridden within prefValueChanged_ of
-    // SettingsBooleanControlBehaviorImpl which gets invoked once we navigate to
-    // sync_page.html. Re-computing the checked value here once fixes this
-    // problem.
-    this.$.passwordsLeakDetectionCheckbox.checked =
-        this.getCheckedLeakDetection_();
   },
 
   /**
@@ -72,14 +81,6 @@ Polymer({
   },
 
   /**
-   * @return {boolean}
-   * @private
-   */
-  getCheckedLeakDetection_: function() {
-    return this.userSignedIn_ && this.passwordsLeakDetectionAvailable_;
-  },
-
-  /**
    * @return {string}
    * @private
    */
@@ -96,5 +97,30 @@ Polymer({
    */
   getDisabledLeakDetection_: function() {
     return !this.userSignedIn_ || !this.getPref('safebrowsing.enabled').value;
+  },
+
+  /** @private */
+  onPasswordsLeakDetectionChange_: function() {
+    this.setPrefValue(
+        'profile.password_manager_leak_detection',
+        this.$.passwordsLeakDetectionCheckbox.checked);
+  },
+
+  /** @private */
+  setPasswordsLeakDetectionPref_: function() {
+    if (this.prefs == undefined) {
+      return;
+    }
+    const passwordManagerLeakDetectionPref =
+        this.getPref('profile.password_manager_leak_detection');
+    const prefValue =
+        this.userSignedIn_ && this.passwordsLeakDetectionAvailable_;
+    this.passwordsLeakDetectionPref_ = {
+      key: '',
+      type: chrome.settingsPrivate.PrefType.BOOLEAN,
+      value: prefValue,
+      enforcement: passwordManagerLeakDetectionPref.enforcement,
+      controlledBy: passwordManagerLeakDetectionPref.controlledBy,
+    };
   },
 });

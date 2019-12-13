@@ -142,7 +142,7 @@ class PerfBenchmark(benchmark.Benchmark):
 
     return fieldtrial_util.GenerateArgs(
         os.path.join(variations_dir, 'fieldtrial_testing_config.json'),
-        [self.FixupTargetOS(possible_browser.target_os)])
+        self.FixupTargetOS(possible_browser.target_os))
 
   @staticmethod
   def _GetPossibleBuildDirectories(chrome_src_dir, browser_type):

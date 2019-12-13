@@ -7,7 +7,7 @@
 #include "base/feature_list.h"
 #include "base/system/sys_info.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -27,7 +27,7 @@ const size_t kStorageControllerTotalCacheLimitInBytes = 5 * 1024 * 1024;
 mojo::PendingRemote<mojom::blink::StoragePartitionService>
 GetAndCreateStorageInterface() {
   mojo::PendingRemote<mojom::blink::StoragePartitionService> pending_remote;
-  Platform::Current()->GetInterfaceProvider()->GetInterface(
+  Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
       pending_remote.InitWithNewPipeAndPassReceiver());
   return pending_remote;
 }

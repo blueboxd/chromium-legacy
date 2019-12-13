@@ -24,14 +24,30 @@ if (enable_resource_whitelist_generation) {
 }
 
 if (public_android_sdk) {
+  template("standalone_system_webview_apk_tmpl") {
+    system_webview_apk_tmpl(target_name) {
+      forward_variables_from(invoker, "*")
+      android_manifest = system_webview_android_manifest
+      android_manifest_dep =
+          "//android_webview/nonembedded:system_webview_manifest"
+      deps = upstream_only_webview_deps
+      min_sdk_version = 21
+    }
+  }
+
   # Standalone WebView APK.
-  system_webview_apk_tmpl("system_webview_apk") {
-    android_manifest = system_webview_android_manifest
-    android_manifest_dep =
-        "//android_webview/nonembedded:system_webview_manifest"
-    deps = upstream_only_webview_deps
+  standalone_system_webview_apk_tmpl("system_webview_apk") {
     apk_name = "SystemWebView"
-    min_sdk_version = 21
+  }
+
+  if (android_64bit_target_cpu) {
+    # This target builds a 32-bit only Webview on a 64-bit config, analogous to
+    # what's built on a 32-bit config. This lets all Webviews build on a single
+    # configuration.
+    standalone_system_webview_apk_tmpl("system_webview_32_apk") {
+      apk_name = "SystemWebView32"
+      include_64_bit_webview = false
+    }
   }
 
   android_resource_sizes_test("resource_sizes_system_webview_apk") {
@@ -618,17 +634,15 @@ if (android_64bit_target_cpu) {
   }
 }
 
-android_assets("standalone_webview_assets") {
-  deps = [
-    "//third_party/icu:icu_assets",
-  ]
+android_assets("webview_primary_abi_assets") {
   if (use_v8_context_snapshot) {
-    deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
+    deps = [
+      "//tools/v8_context_snapshot:v8_context_snapshot_assets",
+    ]
   } else {
-    deps += [ "//v8:v8_external_startup_data_assets" ]
-  }
-  if (android_64bit_target_cpu) {
-    deps += [ ":v8_snapshot_secondary_abi_assets" ]
+    deps = [
+      "//v8:v8_external_startup_data_assets",
+    ]
   }
 }
 
@@ -644,11 +658,27 @@ android_assets("monochrome_webview_primary_abi_assets") {
 }
 
 if (android_64bit_target_cpu) {
+  android_assets("webview_secondary_abi_assets") {
+    deps = [
+      ":v8_snapshot_secondary_abi_assets",
+    ]
+  }
+
   android_assets("monochrome_webview_secondary_abi_assets") {
     deps = [
       "//third_party/icu:icu_assets",
     ]
     deps += [ ":v8_snapshot_secondary_abi_assets" ]
+  }
+}
+
+android_assets("weblayer_webview_assets") {
+  deps = [
+    ":webview_primary_abi_assets",
+    "//third_party/icu:icu_assets",
+  ]
+  if (android_64bit_target_cpu) {
+    deps += [ ":webview_secondary_abi_assets" ]
   }
 }
 

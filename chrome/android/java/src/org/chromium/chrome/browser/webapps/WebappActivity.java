@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProv
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityBrowserControlsVisibilityManager;
 import org.chromium.chrome.browser.customtabs.BaseCustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabAppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.features.ImmersiveModeController;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
@@ -97,7 +98,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     private WebappActivityTabController mTabController;
     private SplashController mSplashController;
     private TabObserverRegistrar mTabObserverRegistrar;
-    private WebappDelegateFactory mDelegateFactory;
+    private CustomTabDelegateFactory mDelegateFactory;
 
     private WebappDisclosureSnackbarController mDisclosureSnackbarController;
 
@@ -362,7 +363,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         mBrowserControlsVisibilityManager = component.resolveBrowserControlsVisibilityManager();
         mSplashController = component.resolveSplashController();
         mTabObserverRegistrar = component.resolveTabObserverRegistrar();
-        mDelegateFactory = component.resolveWebappDelegateFactory();
+        mDelegateFactory = component.resolveTabDelegateFactory();
 
         mStatusBarColorProvider.setUseTabThemeColor(true /* useTabThemeColor */);
 

@@ -6,8 +6,8 @@
 
 #include <utility>
 
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom-blink.h"
-#include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_error.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_messaging_type_converters.h"
@@ -43,7 +43,7 @@ PushProvider* PushProvider::From(ServiceWorkerRegistration* registration) {
 // static
 mojom::blink::PushMessaging* PushProvider::GetPushMessagingRemote() {
   if (!push_messaging_manager_) {
-    Platform::Current()->GetInterfaceProvider()->GetInterface(
+    Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
         push_messaging_manager_.BindNewPipeAndPassReceiver());
   }
 

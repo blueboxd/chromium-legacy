@@ -67,8 +67,8 @@ void CastDialogView::ShowDialogWithToolbarAction(
     Browser* browser,
     const base::Time& start_time) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  DCHECK(browser_view->toolbar()->browser_actions());
   views::View* action_view = browser_view->toolbar()->cast_button();
+  DCHECK(action_view);
   ShowDialog(action_view, views::BubbleBorder::TOP_RIGHT, controller,
              browser->profile(), start_time);
 }

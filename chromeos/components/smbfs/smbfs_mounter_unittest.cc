@@ -4,10 +4,13 @@
 
 #include "chromeos/components/smbfs/smbfs_mounter.h"
 
+#include <string.h>
+
 #include <memory>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/files/file_util.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
@@ -21,6 +24,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
@@ -37,6 +41,9 @@ constexpr char kSharePath[] = "smb://server/share";
 constexpr char kMountDir[] = "bar";
 constexpr base::FilePath::CharType kMountPath[] = FILE_PATH_LITERAL("/foo/bar");
 constexpr int kChildInvitationFd = 42;
+constexpr char kUsername[] = "username";
+constexpr char kWorkgroup[] = "example.com";
+constexpr char kPassword[] = "myverysecurepassword";
 
 class MockDelegate : public SmbFsHost::Delegate {
  public:
@@ -207,9 +214,19 @@ MULTIPROCESS_TEST_MAIN(SmbFsMain) {
                     mojo::PendingRemote<mojom::SmbFsDelegate> delegate,
                     mojom::SmbFsBootstrap::MountShareCallback callback) {
         EXPECT_EQ(options->share_path, kSharePath);
-        EXPECT_TRUE(options->username.empty());
-        EXPECT_TRUE(options->workgroup.empty());
-        EXPECT_TRUE(options->password.empty());
+        EXPECT_EQ(options->username, kUsername);
+        EXPECT_EQ(options->workgroup, kWorkgroup);
+        ASSERT_TRUE(options->password);
+        EXPECT_EQ(options->password->length,
+                  static_cast<int32_t>(strlen(kPassword)));
+        std::string password_buf(options->password->length, 'a');
+        base::ScopedFD fd =
+            mojo::UnwrapPlatformHandle(std::move(options->password->fd))
+                .TakeFD();
+        EXPECT_TRUE(base::ReadFromFD(fd.get(), &(password_buf.front()),
+                                     options->password->length));
+        EXPECT_EQ(password_buf, kPassword);
+
         EXPECT_FALSE(options->allow_ntlm);
 
         delegate_remote = std::move(delegate);
@@ -278,8 +295,12 @@ TEST_F(SmbFsMounterE2eTest, MountSuccess) {
         run_loop.Quit();
       });
 
+  SmbFsMounter::MountOptions mount_options;
+  mount_options.username = kUsername;
+  mount_options.workgroup = kWorkgroup;
+  mount_options.password = kPassword;
   std::unique_ptr<SmbFsMounter> mounter = std::make_unique<SmbFsMounter>(
-      kSharePath, kMountDir, SmbFsMounter::MountOptions(), &mock_delegate_,
+      kSharePath, kMountDir, mount_options, &mock_delegate_,
       &mock_disk_mount_manager_);
   mounter->Mount(callback);
 

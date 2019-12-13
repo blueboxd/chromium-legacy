@@ -42,9 +42,9 @@ bool GetAllSync(blink::mojom::StorageArea* area,
                 std::vector<blink::mojom::KeyValuePtr>* data_out);
 
 // Unlike GetAllSync above, this method uses
-// mojo::MakeRequestAssociatedWithDedicatedPipe for the GetAllCallback object's
-// binding to the area. This can be necessary if the area is an
-// implementation and not a binding with it's own pipe already.
+// mojo::BindNewEndpointAndPassDedicatedReceiverForTesting for the
+// GetAllCallback object's receiver to the area. This can be necessary if the
+// area is an implementation and not a receiver with it's own pipe already.
 bool GetAllSyncOnDedicatedPipe(
     blink::mojom::StorageArea* area,
     std::vector<blink::mojom::KeyValuePtr>* data_out);

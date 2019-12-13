@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "google_apis/gaia/oauth2_api_call_flow.h"
+#include "net/cookies/canonical_cookie.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/gurl.h"
 
@@ -21,10 +22,6 @@ class OAuth2MintTokenFlowTest;
 
 namespace base {
 class Value;
-}
-
-namespace net {
-class CanonicalCookie;
 }
 
 extern const char kOAuth2MintTokenApiCallResultHistogram[];
@@ -79,16 +76,12 @@ struct RemoteConsentResolutionData {
   RemoteConsentResolutionData();
   ~RemoteConsentResolutionData();
 
-  RemoteConsentResolutionData(const RemoteConsentResolutionData& other) =
-      delete;
+  RemoteConsentResolutionData(const RemoteConsentResolutionData& other);
   RemoteConsentResolutionData& operator=(
-      const RemoteConsentResolutionData& other) = delete;
-
-  RemoteConsentResolutionData(RemoteConsentResolutionData&& other);
-  RemoteConsentResolutionData& operator=(RemoteConsentResolutionData&& other);
+      const RemoteConsentResolutionData& other);
 
   GURL url;
-  std::vector<std::unique_ptr<net::CanonicalCookie>> cookies;
+  net::CookieList cookies;
 
   bool operator==(const RemoteConsentResolutionData& rhs) const;
 };

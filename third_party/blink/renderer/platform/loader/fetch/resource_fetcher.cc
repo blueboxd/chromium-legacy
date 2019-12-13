@@ -39,10 +39,10 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/request_destination.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
-#include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -2126,7 +2126,7 @@ void ResourceFetcher::RevalidateStaleResource(Resource* stale_resource) {
 
 mojom::blink::BlobRegistry* ResourceFetcher::GetBlobRegistry() {
   if (!blob_registry_remote_) {
-    Platform::Current()->GetInterfaceProvider()->GetInterface(
+    Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
         blob_registry_remote_.BindNewPipeAndPassReceiver(task_runner_));
   }
   return blob_registry_remote_.get();

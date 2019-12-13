@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/world_safe_v8_reference.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/bindings/shared_persistent.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -73,17 +72,19 @@ class CORE_EXPORT ScriptValue final {
 
   ScriptValue(v8::Isolate* isolate, v8::Local<v8::Value> value)
       : isolate_(isolate),
-        value_(SharedPersistent<v8::Value>::Create(isolate, value)) {
+        value_(
+            MakeGarbageCollected<WorldSafeV8ReferenceWrapper>(isolate, value)) {
     DCHECK(isolate_);
   }
 
   template <typename T>
   ScriptValue(v8::Isolate* isolate, v8::MaybeLocal<T> value)
       : isolate_(isolate),
-        value_(value.IsEmpty() ? nullptr
-                               : SharedPersistent<v8::Value>::Create(
-                                     isolate,
-                                     value.ToLocalChecked())) {
+        value_(value.IsEmpty()
+                   ? MakeGarbageCollected<WorldSafeV8ReferenceWrapper>()
+                   : MakeGarbageCollected<WorldSafeV8ReferenceWrapper>(
+                         isolate,
+                         value.ToLocalChecked())) {
     DCHECK(isolate_);
   }
 
@@ -144,7 +145,7 @@ class CORE_EXPORT ScriptValue final {
 
   void Clear() {
     isolate_ = nullptr;
-    value_.reset();
+    value_.Clear();
   }
 
   v8::Local<v8::Value> V8Value() const;
@@ -157,12 +158,44 @@ class CORE_EXPORT ScriptValue final {
 
   static ScriptValue CreateNull(v8::Isolate*);
 
-  void Trace(Visitor* visitor) {}
+  void Trace(Visitor* visitor) { visitor->Trace(value_); }
 
  private:
+  // WorldSafeV8ReferenceWrapper wraps a WorldSafeV8Reference so that it can be
+  // used on both the stack and heaps. WorldSafeV8Reference cannot be used on
+  // the stack because the conservative scanning does not know how to trace
+  // TraceWrapperV8Reference.
+  class CORE_EXPORT WorldSafeV8ReferenceWrapper
+      : public GarbageCollected<WorldSafeV8ReferenceWrapper> {
+   public:
+    WorldSafeV8ReferenceWrapper() = default;
+    WorldSafeV8ReferenceWrapper(v8::Isolate* isolate,
+                                v8::Local<v8::Value> value)
+        : value_(isolate, value) {}
+
+    virtual ~WorldSafeV8ReferenceWrapper() = default;
+    void Trace(blink::Visitor* visitor) { visitor->Trace(value_); }
+
+    v8::Local<v8::Value> Get(ScriptState* script_state) const {
+      return value_.Get(script_state);
+    }
+
+    v8::Local<v8::Value> GetAcrossWorld(ScriptState* script_state) const {
+      return value_.GetAcrossWorld(script_state);
+    }
+
+    bool IsEmpty() const { return value_.IsEmpty(); }
+
+    bool operator==(const WorldSafeV8ReferenceWrapper& other) const {
+      return value_ == other.value_;
+    }
+
+   private:
+    WorldSafeV8Reference<v8::Value> value_;
+  };
+
   v8::Isolate* isolate_ = nullptr;
-  // TODO(crbug.com/1029738): Use WorldSafeV8Reference once bug is fixed.
-  scoped_refptr<SharedPersistent<v8::Value>> value_;
+  Member<WorldSafeV8ReferenceWrapper> value_;
 };
 
 template <>

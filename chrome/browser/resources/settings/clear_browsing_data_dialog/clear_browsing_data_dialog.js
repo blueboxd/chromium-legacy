@@ -127,21 +127,6 @@ Polymer({
     },
 
     /**
-     * This flag is used to conditionally show the footer for the dialog.
-     * @private
-     */
-    diceEnabled_: {
-      type: Boolean,
-      value: function() {
-        let diceEnabled = false;
-        // <if expr="not chromeos">
-        diceEnabled = loadTimeData.getBoolean('diceEnabled');
-        // </if>
-        return diceEnabled;
-      },
-    },
-
-    /**
      * Time in ms, when the dialog was opened.
      * @private
      */
@@ -443,6 +428,10 @@ Polymer({
    * @private
    */
   shouldShowFooter_: function() {
-    return this.diceEnabled_ && !!this.syncStatus && !!this.syncStatus.signedIn;
+    let showFooter = false;
+    // <if expr="not chromeos">
+    showFooter = !!this.syncStatus && !!this.syncStatus.signedIn;
+    // </if>
+    return showFooter;
   },
 });

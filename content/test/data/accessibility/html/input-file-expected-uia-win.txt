@@ -1,4 +1,4 @@
 document
-++group IsControlElement=false
+++group
 ++++button Name='Choose File'
 ++++++button Name='Choose File'

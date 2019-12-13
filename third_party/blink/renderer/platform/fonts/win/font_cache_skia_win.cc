@@ -42,7 +42,7 @@
 #include "base/debug/alias.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
-#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/fonts/bitmap_glyphs_block_list.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
@@ -229,7 +229,7 @@ void FontCache::SetStatusFontMetrics(const wchar_t* family_name,
 void FontCache::EnsureServiceConnected() {
   if (service_)
     return;
-  Platform::Current()->GetInterfaceProvider()->GetInterface(
+  Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
       service_.BindNewPipeAndPassReceiver());
 }
 

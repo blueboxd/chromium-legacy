@@ -348,6 +348,9 @@ class BASE_EXPORT SequenceManagerImpl
   std::unique_ptr<trace_event::ConvertableToTraceFormat>
   AsValueWithSelectorResult(internal::WorkQueue* selected_work_queue,
                             bool force_verbose) const;
+  void AsValueWithSelectorResultInto(trace_event::TracedValue*,
+                                     internal::WorkQueue* selected_work_queue,
+                                     bool force_verbose) const;
 
   // Used in construction of TaskQueueImpl to obtain an AtomicFlag which it can
   // use to request reload by ReloadEmptyWorkQueues. The lifetime of

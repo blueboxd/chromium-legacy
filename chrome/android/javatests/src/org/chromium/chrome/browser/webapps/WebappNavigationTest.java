@@ -36,9 +36,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
-import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
-import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.test.MockCertVerifierRuleAndroid;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -334,25 +332,6 @@ public class WebappNavigationTest {
                 ChromeActivityTestRule.waitFor(ChromeTabbedActivity.class);
         ChromeTabUtils.waitForTabPageLoaded(tabbedChrome.getActivityTab(),
                 WebappTestPage.getServiceWorkerUrl(mActivityTestRule.getTestServer()));
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"Webapps"})
-    @RetryOnFailure
-    public void testRegularLinkToExternalApp() throws Exception {
-        runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent());
-
-        InterceptNavigationDelegateImpl navigationDelegate = TestThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> InterceptNavigationDelegateImpl.get(
-                                mActivityTestRule.getActivity().getActivityTab()));
-
-        addAnchorAndClick(YOUTUBE_URL, "_self");
-
-        waitForExternalAppOrIntentPicker();
-        Assert.assertEquals(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
-                navigationDelegate.getLastOverrideUrlLoadingResultForTests());
     }
 
     @Test

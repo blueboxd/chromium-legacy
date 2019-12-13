@@ -245,7 +245,14 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
   CreateDiceTurnSyncOnHelperParams create_dice_turn_sync_on_helper_params_;
 };
 
-TEST_F(DiceSigninUiUtilTest, EnableSyncWithExistingAccount) {
+// TODO(https://crbug.com/1014790): Timeout on Mac10.12 and Win10.
+#if defined(OS_MACOSX) || defined(OS_WIN)
+#define MAYBE_EnableSyncWithExistingAccount \
+  DISABLED_EnableSyncWithExistingAccount
+#else
+#define MAYBE_EnableSyncWithExistingAccount EnableSyncWithExistingAccount
+#endif
+TEST_F(DiceSigninUiUtilTest, MAYBE_EnableSyncWithExistingAccount) {
   CoreAccountId account_id =
       GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
           kMainGaiaID, kMainEmail, "refresh_token", false,
@@ -356,7 +363,14 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithAccountThatNeedsReauth) {
   }
 }
 
-TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithNoTab) {
+// TODO(https://crbug.com/1014790): Timeout on Mac10.12, Win7 and Win10.
+#if defined(OS_MACOSX) || defined(OS_WIN)
+#define MAYBE_EnableSyncForNewAccountWithNoTab \
+  DISABLED_EnableSyncForNewAccountWithNoTab
+#else
+#define MAYBE_EnableSyncForNewAccountWithNoTab EnableSyncForNewAccountWithNoTab
+#endif
+TEST_F(DiceSigninUiUtilTest, MAYBE_EnableSyncForNewAccountWithNoTab) {
   base::HistogramTester histogram_tester;
   base::UserActionTester user_action_tester;
 
@@ -385,7 +399,16 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithNoTab) {
       active_contents->GetVisibleURL());
 }
 
-TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithNoTabWithExisting) {
+// TODO(https://crbug.com/1014790): Timeout on Mac10.12.
+#if defined(OS_MACOSX)
+#define MAYBE_EnableSyncForNewAccountWithNoTabWithExisting \
+  DISABLED_EnableSyncForNewAccountWithNoTabWithExisting
+#else
+#define MAYBE_EnableSyncForNewAccountWithNoTabWithExisting \
+  EnableSyncForNewAccountWithNoTabWithExisting
+#endif
+TEST_F(DiceSigninUiUtilTest,
+       MAYBE_EnableSyncForNewAccountWithNoTabWithExisting) {
   base::HistogramTester histogram_tester;
   base::UserActionTester user_action_tester;
 
@@ -410,7 +433,15 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithNoTabWithExisting) {
                 "Signin_SigninNewAccountExistingAccount_FromBookmarkBubble"));
 }
 
-TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithOneTab) {
+// TODO(https://crbug.com/1014790): Timeout on Mac10.12 and Win7.
+#if defined(OS_MACOSX) || defined(OS_WIN)
+#define MAYBE_EnableSyncForNewAccountWithOneTab \
+  DISABLED_EnableSyncForNewAccountWithOneTab
+#else
+#define MAYBE_EnableSyncForNewAccountWithOneTab \
+  EnableSyncForNewAccountWithOneTab
+#endif
+TEST_F(DiceSigninUiUtilTest, MAYBE_EnableSyncForNewAccountWithOneTab) {
   base::HistogramTester histogram_tester;
   base::UserActionTester user_action_tester;
   AddTab(browser(), GURL("http://foo/1"));
@@ -440,7 +471,13 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithOneTab) {
       active_contents->GetVisibleURL());
 }
 
-TEST_F(DiceSigninUiUtilTest, GetAccountsForDicePromos) {
+// TODO(https://crbug.com/1014790): Timeout on Mac10.12.
+#if defined(OS_MACOSX)
+#define MAYBE_GetAccountsForDicePromos DISABLED_GetAccountsForDicePromos
+#else
+#define MAYBE_GetAccountsForDicePromos GetAccountsForDicePromos
+#endif
+TEST_F(DiceSigninUiUtilTest, MAYBE_GetAccountsForDicePromos) {
   // Should start off with no accounts.
   std::vector<AccountInfo> accounts = GetAccountsForDicePromos(profile());
   EXPECT_TRUE(accounts.empty());
@@ -448,7 +485,13 @@ TEST_F(DiceSigninUiUtilTest, GetAccountsForDicePromos) {
   // TODO(tangltom): Flesh out this test.
 }
 
-TEST_F(DiceSigninUiUtilTest, MergeDiceSigninTab) {
+// TODO(https://crbug.com/1014790): Timeout on Mac10.12 and Win7.
+#if defined(OS_MACOSX) || defined(OS_WIN)
+#define MAYBE_MergeDiceSigninTab DISABLED_MergeDiceSigninTab
+#else
+#define MAYBE_MergeDiceSigninTab MergeDiceSigninTab
+#endif
+TEST_F(DiceSigninUiUtilTest, MAYBE_MergeDiceSigninTab) {
   base::UserActionTester user_action_tester;
   EnableSync(AccountInfo(), false);
   EXPECT_EQ(
@@ -497,8 +540,17 @@ TEST_F(DiceSigninUiUtilTest,
       *profile_manager()->profile_attributes_storage(), profile()));
 }
 
-TEST_F(DiceSigninUiUtilTest,
-       ShouldShowAnimatedIdentityOnOpeningWindow_ReturnsTrueForMultiSignin) {
+// TODO(https://crbug.com/1014790): Timeout on Mac10.12 and Win7.
+#if defined(OS_MACOSX) || defined(OS_WIN)
+#define MAYBE_ShouldShowAnimatedIdentityOnOpeningWindow_ReturnsTrueForMultiSignin \
+  DISABLED_ShouldShowAnimatedIdentityOnOpeningWindow_ReturnsTrueForMultiSignin
+#else
+#define MAYBE_ShouldShowAnimatedIdentityOnOpeningWindow_ReturnsTrueForMultiSignin \
+  ShouldShowAnimatedIdentityOnOpeningWindow_ReturnsTrueForMultiSignin
+#endif
+TEST_F(
+    DiceSigninUiUtilTest,
+    MAYBE_ShouldShowAnimatedIdentityOnOpeningWindow_ReturnsTrueForMultiSignin) {
   GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
       kMainGaiaID, kMainEmail, "refresh_token", false,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
@@ -516,9 +568,17 @@ TEST_F(DiceSigninUiUtilTest,
       *profile_manager()->profile_attributes_storage(), profile()));
 }
 
+// TODO(https://crbug.com/1014790): Timeout on Mac10.12.
+#if defined(OS_MACOSX)
+#define MAYBE_ShouldShowAnimatedIdentityOnOpeningWindow_ReturnsFalseForSingleProfileSingleSignin \
+  DISABLED_ShouldShowAnimatedIdentityOnOpeningWindow_ReturnsFalseForSingleProfileSingleSignin
+#else
+#define MAYBE_ShouldShowAnimatedIdentityOnOpeningWindow_ReturnsFalseForSingleProfileSingleSignin \
+  ShouldShowAnimatedIdentityOnOpeningWindow_ReturnsFalseForSingleProfileSingleSignin
+#endif
 TEST_F(
     DiceSigninUiUtilTest,
-    ShouldShowAnimatedIdentityOnOpeningWindow_ReturnsFalseForSingleProfileSingleSignin) {
+    MAYBE_ShouldShowAnimatedIdentityOnOpeningWindow_ReturnsFalseForSingleProfileSingleSignin) {
   GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
       kMainGaiaID, kMainEmail, "refresh_token", false,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);

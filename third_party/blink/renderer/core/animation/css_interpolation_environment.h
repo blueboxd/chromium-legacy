@@ -86,11 +86,12 @@ class CSSInterpolationEnvironment : public InterpolationEnvironment {
   StyleCascade::Resolver* cascade_resolver_ = nullptr;
 };
 
-DEFINE_TYPE_CASTS(CSSInterpolationEnvironment,
-                  InterpolationEnvironment,
-                  value,
-                  value->IsCSS(),
-                  value.IsCSS());
+template <>
+struct DowncastTraits<CSSInterpolationEnvironment> {
+  static bool AllowFrom(const InterpolationEnvironment& value) {
+    return value.IsCSS();
+  }
+};
 
 }  // namespace blink
 

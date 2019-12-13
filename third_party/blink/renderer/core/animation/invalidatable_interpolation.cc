@@ -200,7 +200,7 @@ void InvalidatableInterpolation::SetFlagIfInheritUsed(
   if (!property_.IsCSSProperty() && !property_.IsPresentationAttribute())
     return;
   StyleResolverState& state =
-      ToCSSInterpolationEnvironment(environment).GetState();
+      To<CSSInterpolationEnvironment>(environment).GetState();
   if (!state.ParentStyle())
     return;
   const CSSValue* start_value =

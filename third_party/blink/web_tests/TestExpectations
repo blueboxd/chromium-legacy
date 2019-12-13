@@ -4464,7 +4464,6 @@ crbug.com/874302 external/wpt/wasm/serialization/module/broadcastchannel-success
 crbug.com/874302 external/wpt/wasm/serialization/module/broadcastchannel-success.html [ Timeout ]
 
 crbug.com/877286 external/wpt/wasm/serialization/module/no-transferring.html [ Failure ]
-crbug.com/877296 external/wpt/wasm/serialization/module/window-serviceworker-failure.https.html [ Failure ]
 
 crbug.com/831509 external/wpt/service-workers/service-worker/skip-waiting-installed.https.html [ Failure Pass ]
 
@@ -6007,6 +6006,11 @@ crbug.com/1011466 http/tests/devtools/tracing/timeline-network/timeline-network-
 crbug.com/1011466 virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-aggregated-details.js [ Pass Failure ]
 crbug.com/1011466 virtual/threaded/http/tests/devtools/tracing/timeline-network/timeline-network-resource-details.js [ Pass Failure ]
 
+# Tests that json modules load correctly within the context of service workers
+crbug.com/967018 external/wpt/html/semantics/scripting-1/the-script-element/json-module/json-module-service-worker-test.https.tentative.html [ Failure ]
+crbug.com/967018 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/json-module/json-module-service-worker-test.https.tentative.html [ Failure ]
+crbug.com/967018 virtual/web-components-v0-disabled/external/wpt/html/semantics/scripting-1/the-script-element/json-module/json-module-service-worker-test.https.tentative.html [ Failure ]
+
 # Sheriff 2019-11-04
 crbug.com/1021407 [ Retina Release ] virtual/audio-service/media/video-controls-rendering.html [ Pass Failure ]
 crbug.com/1021407 [ Mac10.11 ] virtual/audio-service/media/controls/video-overlay-cast-dark-rendering.html [ Pass Failure ]
@@ -6085,6 +6089,7 @@ crbug.com/1030258 http/tests/devtools/resource-har-conversion.js [ Pass Failure 
 crbug.com/1030258 http/tests/devtools/components/cookie-parser.js [ Pass Failure ]
 crbug.com/1030258 http/tests/devtools/network/network-columns-visible.js [ Pass Failure ]
 crbug.com/1029521 virtual/threaded/external/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Pass Failure Timeout ]
+crbug.com/1026879 http/tests/devtools/network/network-cookies-pane.js [ Pass Failure ]
 
 # Enable scroll-snap tests on impl thread
 # These are currently failing on Mac which needs more investigation, snap-scrolls-visual-viewport seems flaky
@@ -6123,3 +6128,18 @@ crbug.com/963183 http/tests/devtools/unit/viewport-datagrid-items-expandable-att
 # Temporarily disabled for landing changes to treeoutline in DevTools
 crbug.com/1033213 http/tests/devtools/security/interstitial-sidebar.js [ Pass Failure ]
 crbug.com/1033213 http/tests/devtools/security/mixed-content-sidebar.js [ Pass Failure ]
+
+# Temporarily disabled for landing changes to source formatter in DevTools
+crbug.com/1004203 http/tests/devtools/sources/debugger-ui/script-formatter-breakpoints-2.js [ Pass Failure ]
+crbug.com/1004203 http/tests/devtools/sources/debugger-ui/script-formatter-breakpoints-3.js [ Pass Failure ]
+crbug.com/1004203 http/tests/devtools/sources/formatter-css.js [ Pass Failure ]
+crbug.com/1004203 http/tests/devtools/sources/formatter-js.js [ Pass Failure ]
+crbug.com/1004203 http/tests/devtools/sources/inline-styles-scripts-locations.js [ Pass Failure ]
+crbug.com/1004203 http/tests/devtools/startup/sources/debugger/linkifier.js [ Pass Failure ]
+crbug.com/1004203 http/tests/devtools/startup/sources/debugger/script-formatter-breakpoints-1.js [ Pass Failure ]
+crbug.com/1004203 http/tests/devtools/startup/sources/debugger/script-formatter-breakpoints-4.js [ Pass Failure ]
+crbug.com/1004203 http/tests/devtools/startup/sources/debugger/script-formatter-breakpoints-inline-with-sourceURL.js [ Pass Failure ]
+
+# Sheriff 2019-12-13
+crbug.com/1032451 [ Win7 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/idlharness.https.window.html [ Failure ]
+crbug.com/1033852 [ Win7 ] virtual/omt-worker-fetch/external/wpt/fetch/api/idlharness.any.sharedworker.html [ Failure ]

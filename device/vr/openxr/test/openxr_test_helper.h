@@ -122,7 +122,7 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   XrResult ValidateXrPosefIsIdentity(const XrPosef& pose) const;
   XrResult ValidateViews(uint32_t view_capacity_input, XrView* views) const;
 
-  // Properties of the mock OpenXR runtime that does not change are created
+  // Properties of the mock OpenXR runtime that do not change are created
   static constexpr const char* const kExtensions[] = {
       XR_KHR_D3D11_ENABLE_EXTENSION_NAME};
   static constexpr uint32_t kDimension = 128;
@@ -150,6 +150,8 @@ class OpenXrTestHelper : public device::ServiceTestHook {
       "/reference_space/stage";
   static constexpr const char* kViewReferenceSpacePath =
       "/reference_space/view";
+  static constexpr const char* kUnboundedReferenceSpacePath =
+      "/reference_space/unbounded";
 
   static constexpr uint32_t kNumExtensionsSupported = base::size(kExtensions);
   static constexpr uint32_t kNumViews = base::size(kViewConfigurationViews);

@@ -20,6 +20,9 @@ import java.util.function.Consumer;
  */
 @TargetApi(24) // for java.util.function.Consumer.
 public class FakeDirectActionReporter implements DirectActionReporter {
+    /** List of action definitions available to tests. */
+    public final List<FakeDefinition> mActions = new ArrayList<>();
+
     private final Consumer<List<String>> mCallback;
     private final List<String> mDirectActions = new ArrayList<>();
 
@@ -43,7 +46,59 @@ public class FakeDirectActionReporter implements DirectActionReporter {
 
     @Override
     public DirectActionReporter.Definition addDirectAction(String actionId) {
+        FakeDefinition action = new FakeDefinition(actionId);
+        mActions.add(action);
         mDirectActions.add(actionId);
-        return null;
+        return action;
+    }
+
+    /**
+     * A simple action definition for testing.
+     *
+     * TODO(crbug.com/806868): Share these fakes. There is another one in
+     * chrome/android/junit/...directactions/
+     */
+    public static class FakeDefinition implements Definition {
+        /** Action name string. */
+        public final String mId;
+        /** Parameter list for this action definition. */
+        public List<FakeParameter> mParameters = new ArrayList<>();
+        /** Result list for this action definition. */
+        public List<FakeParameter> mResults = new ArrayList<>();
+
+        FakeDefinition(String id) {
+            mId = id;
+        }
+
+        @Override
+        public Definition withParameter(String name, @Type int type, boolean required) {
+            mParameters.add(new FakeParameter(name, type, required));
+            return this;
+        }
+
+        @Override
+        public Definition withResult(String name, @Type int type) {
+            mResults.add(new FakeParameter(name, type, true));
+            return this;
+        }
+    }
+
+    /** A simple parameter definition for testing. */
+    public static class FakeParameter {
+        /** Pamater name string. */
+        public final String mName;
+
+        /** Parameter type. */
+        @Type
+        public final int mType;
+
+        /** Whether the parameter is required or not. */
+        public final boolean mRequired;
+
+        FakeParameter(String name, @Type int type, boolean required) {
+            mName = name;
+            mType = type;
+            mRequired = required;
+        }
     }
 }

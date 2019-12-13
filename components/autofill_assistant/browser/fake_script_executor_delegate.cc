@@ -165,4 +165,13 @@ bool FakeScriptExecutorDelegate::SetForm(
     base::OnceCallback<void(const ClientStatus&)> cancel_callback) {
   return true;
 }
+
+UserModel* FakeScriptExecutorDelegate::GetUserModel() {
+  return nullptr;
+}
+
+EventHandler* FakeScriptExecutorDelegate::GetEventHandler() {
+  return nullptr;
+}
+
 }  // namespace autofill_assistant

@@ -1,5 +1,5 @@
 document
-++group IsControlElement=false
+++group
 ++++description Name='This is to check '
 ++++description Name='italic property'
 ++++description Name=' using i tag.'

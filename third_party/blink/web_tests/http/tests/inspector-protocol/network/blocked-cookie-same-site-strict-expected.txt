@@ -17,7 +17,8 @@ Javascript initiated navigation blocked cookies: [
       "httpOnly": false,
       "secure": false,
       "session": true,
-      "sameSite": "Strict"
+      "sameSite": "Strict",
+      "priority": "Medium"
     }
   }
 ]
@@ -37,7 +38,8 @@ Javascript initiated subresource blocked cookies: [
       "httpOnly": false,
       "secure": false,
       "session": true,
-      "sameSite": "Strict"
+      "sameSite": "Strict",
+      "priority": "Medium"
     }
   }
 ]

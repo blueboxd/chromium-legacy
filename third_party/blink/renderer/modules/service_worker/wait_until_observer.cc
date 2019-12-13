@@ -274,6 +274,10 @@ void WaitUntilObserver::MaybeCompleteEvent() {
       service_worker_global_scope->DidHandleExtendableMessageEvent(event_id_,
                                                                    status);
       break;
+    case kMessageerror:
+      service_worker_global_scope->DidHandleExtendableMessageEvent(event_id_,
+                                                                   status);
+      break;
     case kNotificationClick:
       service_worker_global_scope->DidHandleNotificationClickEvent(event_id_,
                                                                    status);

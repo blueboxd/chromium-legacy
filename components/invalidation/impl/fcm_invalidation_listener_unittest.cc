@@ -40,6 +40,8 @@ class TestFCMSyncNetworkChannel : public FCMSyncNetworkChannel {
       const base::RepeatingCallback<void(const base::DictionaryValue&)>&
           callback) override {}
 
+  using FCMSyncNetworkChannel::DeliverIncomingMessage;
+  using FCMSyncNetworkChannel::DeliverToken;
   using FCMSyncNetworkChannel::NotifyChannelStateChange;
 };
 
@@ -248,13 +250,14 @@ class FCMInvalidationListenerTest : public testing::Test {
   void FireInvalidate(const Topic& topic,
                       int64_t version,
                       const std::string& payload) {
-    listener_.Invalidate(payload, topic, topic, version);
+    fcm_sync_network_channel_->DeliverIncomingMessage(payload, topic, topic,
+                                                      version);
   }
 
   void EnableNotifications() {
     fcm_sync_network_channel_->NotifyChannelStateChange(
         FcmChannelState::ENABLED);
-    listener_.InformTokenReceived("token");
+    fcm_sync_network_channel_->DeliverToken("token");
   }
 
   void DisableNotifications(FcmChannelState state) {

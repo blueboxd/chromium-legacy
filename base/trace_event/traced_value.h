@@ -24,8 +24,9 @@ namespace trace_event {
 
 class BASE_EXPORT TracedValue : public ConvertableToTraceFormat {
  public:
-  TracedValue();
-  explicit TracedValue(size_t capacity, bool force_json = false);
+  // TODO(oysteine): |capacity| is not used in any production code. Consider
+  // removing it.
+  explicit TracedValue(size_t capacity = 0);
   ~TracedValue() override;
 
   void EndDictionary();
@@ -111,8 +112,6 @@ class BASE_EXPORT TracedValue : public ConvertableToTraceFormat {
     virtual void EstimateTraceMemoryOverhead(
         TraceEventMemoryOverhead* overhead) = 0;
 
-    virtual std::unique_ptr<base::Value> ToBaseValue() const = 0;
-
     virtual bool IsPickleWriter() const = 0;
     virtual bool IsProtoWriter() const = 0;
   };
@@ -120,7 +119,9 @@ class BASE_EXPORT TracedValue : public ConvertableToTraceFormat {
   typedef std::unique_ptr<Writer> (*WriterFactoryCallback)(size_t capacity);
   static void SetWriterFactoryCallback(WriterFactoryCallback callback);
 
-  // Public for tests only.
+ protected:
+  TracedValue(size_t capacity, bool forced_json);
+
   std::unique_ptr<base::Value> ToBaseValue() const;
 
  private:
@@ -132,6 +133,34 @@ class BASE_EXPORT TracedValue : public ConvertableToTraceFormat {
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(TracedValue);
+};
+
+// TracedValue that is convertable to JSON format. This has lower performance
+// than the default TracedValue in production code, and should be used only for
+// testing and debugging. Should be avoided in tracing. It's for
+// testing/debugging code calling value dumping function designed for tracing,
+// like the following:
+//
+//   TracedValueJSON value;
+//   AsValueInto(&value);  // which is designed for tracing.
+//   return value.ToJSON();
+//
+// If the code is merely for testing/debugging, base::Value should be used
+// instead.
+class BASE_EXPORT TracedValueJSON : public TracedValue {
+ public:
+  explicit TracedValueJSON(size_t capacity = 0)
+      : TracedValue(capacity, /*forced_josn*/ true) {}
+
+  using TracedValue::ToBaseValue;
+
+  // Converts the value into a JSON string without formatting. Suitable for
+  // printing a simple value or printing a value in a single line context.
+  std::string ToJSON() const;
+
+  // Converts the value into a formatted JSON string, with indentation, spaces
+  // and new lines for better human readability of complex values.
+  std::string ToFormattedJSON() const;
 };
 
 }  // namespace trace_event

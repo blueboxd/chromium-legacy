@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 // Test for overload resolution for the string-like USVString
-// argument.
+// argument. Also for constructor operations.
 interface TestInterfaceConstructor4 {
-    constructor(TestInterfaceConstructor4 testInterface4Arg);
-    constructor(USVString usvStringArg);
+    [CallWith=ScriptState, RaisesException] constructor(TestInterfaceConstructor4 testInterface4Arg);
+    [CallWith=ScriptState, RaisesException] constructor(USVString usvStringArg);
 };

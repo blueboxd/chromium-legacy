@@ -349,7 +349,13 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, DefaultFlow) {
   EXPECT_TRUE(prefs->GetBoolean(syncer::prefs::kOsSyncFeatureEnabled));
 }
 
-IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, UserCanDisable) {
+// TODO(https://crbug.com/1033916) Flaky on linux-chromeos-dbg.
+#if !defined(NDEBUG)
+#define MAYBE_UserCanDisable DISABLED_UserCanDisable
+#else
+#define MAYBE_UserCanDisable UserCanDisable
+#endif
+IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, MAYBE_UserCanDisable) {
   LoginToSyncConsentScreen();
 
   // Wait for content to load.

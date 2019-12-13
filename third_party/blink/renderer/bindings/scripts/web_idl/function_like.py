@@ -242,11 +242,10 @@ class OverloadGroup(WithIdentifier):
         # step 1. If one type includes a nullable type and the other type either
         #   includes a nullable type, is a union type with flattened member
         #   types including a dictionary type, or is a dictionary type, ...
-        type1_nullable = (idl_type1.does_include_nullable_type
-                          or idl_type1.unwrap().is_dictionary)
-        type2_nullable = (idl_type2.does_include_nullable_type
-                          or idl_type2.unwrap().is_dictionary)
-        if type1_nullable and type2_nullable:
+        if ((idl_type1.does_include_nullable_type
+             and idl_type2.does_include_nullable_or_dict)
+                or (idl_type2.does_include_nullable_type
+                    and idl_type1.does_include_nullable_or_dict)):
             return False
 
         type1 = idl_type1.unwrap()

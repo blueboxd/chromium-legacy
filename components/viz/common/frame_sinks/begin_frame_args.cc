@@ -141,6 +141,12 @@ void BeginFrameArgs::AsProtozeroInto(
 #endif
 }
 
+std::string BeginFrameArgs::ToString() const {
+  base::trace_event::TracedValueJSON value;
+  AsValueInto(&value);
+  return value.ToJSON();
+}
+
 BeginFrameAck::BeginFrameAck()
     : source_id(0),
       sequence_number(BeginFrameArgs::kInvalidFrameNumber),

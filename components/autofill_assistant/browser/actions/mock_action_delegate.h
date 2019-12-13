@@ -20,6 +20,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
+class EventHandler;
+class UserModel;
 
 class MockActionDelegate : public ActionDelegate {
  public:
@@ -223,6 +225,8 @@ class MockActionDelegate : public ActionDelegate {
            base::RepeatingCallback<void(const FormProto::Result*)>
                changed_callback,
            base::OnceCallback<void(const ClientStatus&)> cancel_callback));
+  MOCK_METHOD0(GetUserModel, UserModel*());
+  MOCK_METHOD0(GetEventHandler, EventHandler*());
 
   void WaitForWindowHeightChange(
       base::OnceCallback<void(const ClientStatus&)> callback) override {

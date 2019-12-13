@@ -93,8 +93,6 @@ enum class CookieSourceScheme {
 };
 
 // Returns the Set-Cookie header priority token corresponding to |priority|.
-//
-// TODO(mkwst): Remove this once its callsites are refactored.
 NET_EXPORT std::string CookiePriorityToString(CookiePriority priority);
 
 // Converts the Set-Cookie header priority token |priority| to a CookiePriority.

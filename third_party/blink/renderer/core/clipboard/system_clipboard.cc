@@ -7,7 +7,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -36,7 +36,7 @@ SystemClipboard& SystemClipboard::GetInstance() {
 }
 
 SystemClipboard::SystemClipboard() {
-  Platform::Current()->GetInterfaceProvider()->GetInterface(
+  Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
       clipboard_.BindNewPipeAndPassReceiver());
 }
 

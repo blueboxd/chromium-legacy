@@ -74,7 +74,7 @@ public class AutofillAssistantCollectUserDataTestHelper {
             mDateRangeEndSection = coordinator.getView().findViewWithTag(
                     AssistantTagsForTesting.COLLECT_USER_DATA_DATE_RANGE_END_TAG);
             mTermsSection = coordinator.getView().findViewWithTag(
-                    AssistantTagsForTesting.COLLECT_USER_DATA_TERMS_SECTION_TAG);
+                    AssistantTagsForTesting.COLLECT_USER_DATA_RADIO_TERMS_SECTION_TAG);
             mDividers = findViewsWithTag(coordinator.getView(), DIVIDER_TAG);
             mContactList = (AssistantChoiceList) (findViewsWithTag(
                     mContactSection, COLLECT_USER_DATA_CHOICE_LIST)

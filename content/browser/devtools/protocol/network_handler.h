@@ -110,6 +110,7 @@ class NetworkHandler : public DevToolsDomainHandler,
                  Maybe<bool> http_only,
                  Maybe<std::string> same_site,
                  Maybe<double> expires,
+                 Maybe<std::string> priority,
                  std::unique_ptr<SetCookieCallback> callback) override;
   void SetCookies(
       std::unique_ptr<protocol::Array<Network::CookieParam>> cookies,

@@ -4,10 +4,15 @@
 
 #include "cc/tiles/software_image_decode_cache_utils.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "base/atomic_sequence_num.h"
+#include "base/bind_helpers.h"
 #include "base/hash/hash.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/process/memory.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/tiles/mipmap_util.h"
 #include "ui/gfx/skia_util.h"
@@ -44,11 +49,15 @@ SkImageInfo CreateImageInfo(const SkISize& size, SkColorType color_type) {
                            kPremul_SkAlphaType);
 }
 
+// Does *not* return nullptr.
 std::unique_ptr<base::DiscardableMemory> AllocateDiscardable(
-    const SkImageInfo& info) {
+    const SkImageInfo& info,
+    base::OnceClosure on_no_memory) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"), "AllocateDiscardable");
-  return base::DiscardableMemoryAllocator::GetInstance()
-      ->AllocateLockedDiscardableMemory(info.minRowBytes() * info.height());
+  size_t size = info.minRowBytes() * info.height();
+  auto* allocator = base::DiscardableMemoryAllocator::GetInstance();
+  return allocator->AllocateLockedDiscardableMemoryWithRetryOrDie(
+      size, std::move(on_no_memory));
 }
 
 }  // namespace
@@ -59,15 +68,16 @@ SoftwareImageDecodeCacheUtils::DoDecodeImage(
     const CacheKey& key,
     const PaintImage& paint_image,
     SkColorType color_type,
-    PaintImage::GeneratorClientId client_id) {
+    PaintImage::GeneratorClientId client_id,
+    base::OnceClosure on_no_memory) {
   SkISize target_size =
       SkISize::Make(key.target_size().width(), key.target_size().height());
   DCHECK(target_size == paint_image.GetSupportedDecodeSize(target_size));
 
   SkImageInfo target_info = CreateImageInfo(target_size, color_type);
   std::unique_ptr<base::DiscardableMemory> target_pixels =
-      AllocateDiscardable(target_info);
-  if (!target_pixels || !target_pixels->data())
+      AllocateDiscardable(target_info, std::move(on_no_memory));
+  if (!target_pixels->data())
     return nullptr;
 
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
@@ -94,9 +104,10 @@ SoftwareImageDecodeCacheUtils::GenerateCacheEntryFromCandidate(
   SkISize target_size =
       SkISize::Make(key.target_size().width(), key.target_size().height());
   SkImageInfo target_info = CreateImageInfo(target_size, color_type);
+  // TODO(crbug.com/983348): If this turns into a crasher, pass an actual
+  // "free memory" closure.
   std::unique_ptr<base::DiscardableMemory> target_pixels =
-      AllocateDiscardable(target_info);
-  DCHECK(target_pixels);
+      AllocateDiscardable(target_info, base::DoNothing());
 
   if (key.type() == CacheKey::kSubrectOriginal) {
     DCHECK(needs_extract_subset);

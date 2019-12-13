@@ -73,7 +73,6 @@ class CodeGenContext(object):
             "member_like",
             "property_",
             "return_type",
-            "v8_class",
         )
 
         # Define public readonly properties of this class.
@@ -230,12 +229,6 @@ class CodeGenContext(object):
         if self.operation:
             return self.operation.return_type
         return None
-
-    @property
-    def v8_class(self):
-        if not self.idl_definition:
-            return None
-        return name_style.class_("v8", self.idl_definition.identifier)
 
 
 CodeGenContext.init()

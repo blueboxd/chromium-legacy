@@ -410,3 +410,7 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_bw_sampler_remove_packets_once_per_congestion_event,
     false)
+
+// If true, QuicSentPacketManager will cap ack_delay to
+// peer_advertized_ack_delay before using it.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_sanitize_ack_delay, false)

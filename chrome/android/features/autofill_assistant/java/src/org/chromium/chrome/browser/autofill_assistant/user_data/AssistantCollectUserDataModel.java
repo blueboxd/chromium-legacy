@@ -148,7 +148,7 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     public static final WritableObjectPropertyKey<String> TERMS_REQUIRE_REVIEW_TEXT =
             new WritableObjectPropertyKey<>();
 
-    public static final WritableObjectPropertyKey<String> THIRDPARTY_PRIVACY_NOTICE_TEXT =
+    public static final WritableObjectPropertyKey<String> PRIVACY_NOTICE_TEXT =
             new WritableObjectPropertyKey<>();
 
     public static final WritableObjectPropertyKey<View> GENERIC_USER_INTERFACE =
@@ -164,7 +164,7 @@ public class AssistantCollectUserDataModel extends PropertyModel {
                 REQUIRE_BILLING_POSTAL_CODE, BILLING_POSTAL_CODE_MISSING_TEXT, REQUEST_DATE_RANGE,
                 DATE_RANGE_START, DATE_RANGE_START_LABEL, DATE_RANGE_END, DATE_RANGE_END_LABEL,
                 PREPENDED_SECTIONS, APPENDED_SECTIONS, TERMS_REQUIRE_REVIEW_TEXT,
-                THIRDPARTY_PRIVACY_NOTICE_TEXT, GENERIC_USER_INTERFACE);
+                PRIVACY_NOTICE_TEXT, GENERIC_USER_INTERFACE);
 
         /**
          * Set initial state for basic type properties (others are implicitly null).
@@ -392,8 +392,8 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     }
 
     @CalledByNative
-    private void setThirdPartyPrivacyNoticeText(String text) {
-        set(THIRDPARTY_PRIVACY_NOTICE_TEXT, text);
+    private void setPrivacyNoticeText(String text) {
+        set(PRIVACY_NOTICE_TEXT, text);
     }
 
     @CalledByNative

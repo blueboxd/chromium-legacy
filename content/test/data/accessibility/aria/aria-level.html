@@ -1,4 +1,5 @@
 <!--
+@BLINK-ALLOW:hierarchicalLevel*
 @MAC-ALLOW:AXSubrole=AXOutlineRow
 @MAC-ALLOW:AXDisclosing*
 @MAC-ALLOW:AXDisclosureLevel*
@@ -21,6 +22,7 @@
 <h2 role="heading" aria-level="4">Level 4</h2>
 <h5 role="heading">Level 5</h5>
 
+<!-- aria-level for tree items -->
 <div role="tree">
   <div role="treeitem" aria-expanded="true">
     Tree item at level 1
@@ -42,5 +44,15 @@
   </tr>
 </table>
 
+<!-- aria-level for list items -->
+<div role="listitem">List item at level 1</div>
+<div role="listitem" aria-level="3">List item at level 3</div>
+<div role="list">
+  <div role="listitem" aria-level="2">List item at level 2</div>
+  <div role="list">
+    <div role="listitem">List item at level 2</div>
+    <div role="listitem" aria-level="7">List item at level 7</div>
+  </div>
+</div>
 </body>
 </html>

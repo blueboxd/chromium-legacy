@@ -16,7 +16,8 @@ Javascript initiated subresource blocked set-cookies: [
       "httpOnly": false,
       "secure": false,
       "session": true,
-      "sameSite": "Lax"
+      "sameSite": "Lax",
+      "priority": "Medium"
     }
   }
 ]

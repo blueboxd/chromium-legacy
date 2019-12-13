@@ -18,12 +18,9 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantCollectUserDataModel_jni.h"
-#include "chrome/android/features/autofill_assistant/jni_headers/AssistantColor_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantDetailsModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantDetails_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantDialogButton_jni.h"
-#include "chrome/android/features/autofill_assistant/jni_headers/AssistantDimension_jni.h"
-#include "chrome/android/features/autofill_assistant/jni_headers/AssistantDrawable_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantFormInput_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantFormModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantHeaderModel_jni.h"
@@ -32,8 +29,9 @@
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantInfoPopup_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantOverlayModel_jni.h"
-#include "chrome/android/features/autofill_assistant/jni_headers/AssistantViewFactory_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AutofillAssistantUiController_jni.h"
+#include "chrome/browser/android/autofill_assistant/generic_ui_controller_android.h"
+#include "chrome/browser/android/autofill_assistant/ui_controller_android_utils.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -45,6 +43,7 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/controller.h"
+#include "components/autofill_assistant/browser/event_handler.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/rectf.h"
@@ -85,139 +84,6 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaDateTime(
   return Java_AssistantCollectUserDataModel_createAssistantDateTime(
       env, (int)proto.date().year(), proto.date().month(), proto.date().day(),
       proto.time().hour(), proto.time().minute(), proto.time().second());
-}
-
-// Returns the pixelsize of |proto| in |jcontext|, or |nullopt| if |proto| is
-// invalid.
-base::Optional<int> GetPixelSize(
-    JNIEnv* env,
-    base::android::ScopedJavaLocalRef<jobject> jcontext,
-    const ClientDimensionProto& proto) {
-  switch (proto.size_case()) {
-    case ClientDimensionProto::kDp:
-      return Java_AssistantDimension_getPixelSizeDp(env, jcontext, proto.dp());
-      break;
-    case ClientDimensionProto::kWidthFactor:
-      return Java_AssistantDimension_getPixelSizeWidthFactor(
-          env, jcontext, proto.width_factor());
-      break;
-    case ClientDimensionProto::kHeightFactor:
-      return Java_AssistantDimension_getPixelSizeHeightFactor(
-          env, jcontext, proto.height_factor());
-      break;
-    case ClientDimensionProto::SIZE_NOT_SET:
-      return base::nullopt;
-  }
-}
-
-// Returns the pixelsize of |proto| in |jcontext|, or |default_value| if |proto|
-// is invalid.
-int GetPixelSizeOrDefault(JNIEnv* env,
-                          base::android::ScopedJavaLocalRef<jobject> jcontext,
-                          const ClientDimensionProto& proto,
-                          int default_value) {
-  auto size = GetPixelSize(env, jcontext, proto);
-  if (size) {
-    return *size;
-  }
-  return default_value;
-}
-
-// Returns a 32-bit integer representing |color_string| in Java, or null if
-// |color_string| is invalid.
-base::android::ScopedJavaLocalRef<jobject> CreateJavaColor(
-    JNIEnv* env,
-    const std::string& color_string) {
-  if (!Java_AssistantColor_isValidColorString(
-          env, base::android::ConvertUTF8ToJavaString(env, color_string))) {
-    DVLOG(1) << "Encountered invalid color string: " << color_string;
-    return nullptr;
-  }
-
-  return Java_AssistantColor_createFromString(
-      env, base::android::ConvertUTF8ToJavaString(env, color_string));
-}
-
-// Returns a 32-bit integer representing |proto| in Java, or null if
-// |proto| is invalid.
-base::android::ScopedJavaLocalRef<jobject> GetJavaColor(
-    JNIEnv* env,
-    base::android::ScopedJavaLocalRef<jobject> jcontext,
-    const ColorProto& proto) {
-  switch (proto.color_case()) {
-    case ColorProto::kResourceIdentifier:
-      if (!Java_AssistantColor_isValidResourceIdentifier(
-              env, jcontext,
-              base::android::ConvertUTF8ToJavaString(
-                  env, proto.resource_identifier()))) {
-        DVLOG(1) << "Encountered invalid color resource identifier: "
-                 << proto.resource_identifier();
-        return nullptr;
-      }
-      return Java_AssistantColor_createFromResource(
-          env, jcontext,
-          base::android::ConvertUTF8ToJavaString(env,
-                                                 proto.resource_identifier()));
-    case ColorProto::kParseableColor:
-      return CreateJavaColor(env, proto.parseable_color());
-    case ColorProto::COLOR_NOT_SET:
-      return nullptr;
-  }
-}
-
-base::android::ScopedJavaLocalRef<jobject> CreateJavaDrawable(
-    JNIEnv* env,
-    base::android::ScopedJavaLocalRef<jobject> jcontext,
-    const DrawableProto& proto) {
-  switch (proto.drawable_case()) {
-    case DrawableProto::kResourceIdentifier:
-      if (!Java_AssistantDrawable_isValidDrawableResource(
-              env, jcontext,
-              base::android::ConvertUTF8ToJavaString(
-                  env, proto.resource_identifier()))) {
-        DVLOG(1) << "Encountered invalid drawable resource identifier: "
-                 << proto.resource_identifier();
-        return nullptr;
-      }
-      return Java_AssistantDrawable_createFromResource(
-          env, base::android::ConvertUTF8ToJavaString(
-                   env, proto.resource_identifier()));
-      break;
-    case DrawableProto::kBitmap: {
-      int width_pixels =
-          GetPixelSizeOrDefault(env, jcontext, proto.bitmap().width(), 0);
-      int height_pixels =
-          GetPixelSizeOrDefault(env, jcontext, proto.bitmap().height(), 0);
-      return Java_AssistantDrawable_createFromUrl(
-          env,
-          base::android::ConvertUTF8ToJavaString(env, proto.bitmap().url()),
-          width_pixels, height_pixels);
-    }
-    case DrawableProto::kShape: {
-      switch (proto.shape().shape_case()) {
-        case ShapeDrawableProto::kRectangle: {
-          auto jbackground_color =
-              GetJavaColor(env, jcontext, proto.shape().background_color());
-          auto jstroke_color =
-              GetJavaColor(env, jcontext, proto.shape().stroke_color());
-          int stroke_width_pixels = GetPixelSizeOrDefault(
-              env, jcontext, proto.shape().stroke_width(), 0);
-          int corner_radius_pixels = GetPixelSizeOrDefault(
-              env, jcontext, proto.shape().rectangle().corner_radius(), 0);
-          return Java_AssistantDrawable_createRectangleShape(
-              env, jbackground_color, jstroke_color, stroke_width_pixels,
-              corner_radius_pixels);
-          break;
-        }
-        case ShapeDrawableProto::SHAPE_NOT_SET:
-          return nullptr;
-      }
-      break;
-    }
-    case DrawableProto::DRAWABLE_NOT_SET:
-      return nullptr;
-      break;
-  }
 }
 
 base::android::ScopedJavaLocalRef<jobject> CreateJavaDialogButton(
@@ -306,113 +172,6 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaLoginChoiceList(
   return jlist;
 }
 
-base::android::ScopedJavaLocalRef<jobject> CreateJavaViewContainer(
-    JNIEnv* env,
-    base::android::ScopedJavaLocalRef<jobject> jcontext,
-    base::android::ScopedJavaLocalRef<jstring> jidentifier,
-    const ViewContainerProto& proto) {
-  base::android::ScopedJavaLocalRef<jobject> jcontainer = nullptr;
-  switch (proto.container_case()) {
-    case ViewContainerProto::kLinearLayout:
-      jcontainer = Java_AssistantViewFactory_createLinearLayout(
-          env, jcontext, jidentifier, proto.linear_layout().orientation());
-      break;
-    case ViewContainerProto::CONTAINER_NOT_SET:
-      NOTREACHED();
-      return nullptr;
-  }
-  return jcontainer;
-}
-
-base::android::ScopedJavaLocalRef<jobject> CreateJavaTextView(
-    JNIEnv* env,
-    base::android::ScopedJavaLocalRef<jobject> jcontext,
-    base::android::ScopedJavaLocalRef<jstring> jidentifier,
-    const TextViewProto& proto) {
-  base::android::ScopedJavaLocalRef<jstring> jtext_appearance = nullptr;
-  if (proto.has_text_appearance()) {
-    jtext_appearance =
-        base::android::ConvertUTF8ToJavaString(env, proto.text_appearance());
-  }
-  return Java_AssistantViewFactory_createTextView(
-      env, jcontext, jidentifier,
-      base::android::ConvertUTF8ToJavaString(env, proto.text()),
-      jtext_appearance);
-}
-
-// Forward declaration to allow recursive calls.
-base::android::ScopedJavaLocalRef<jobject> CreateJavaView(
-    JNIEnv* env,
-    base::android::ScopedJavaLocalRef<jobject> jcontext,
-    const ViewProto& proto);
-
-base::android::ScopedJavaLocalRef<jobject> CreateJavaView(
-    JNIEnv* env,
-    base::android::ScopedJavaLocalRef<jobject> jcontext,
-    const ViewProto& proto) {
-  auto jidentifier =
-      base::android::ConvertUTF8ToJavaString(env, proto.identifier());
-  base::android::ScopedJavaLocalRef<jobject> jview = nullptr;
-  switch (proto.view_case()) {
-    case ViewProto::kViewContainer:
-      jview = CreateJavaViewContainer(env, jcontext, jidentifier,
-                                      proto.view_container());
-      break;
-    case ViewProto::kTextView:
-      jview = CreateJavaTextView(env, jcontext, jidentifier, proto.text_view());
-      break;
-    case ViewProto::kDividerView:
-      jview = Java_AssistantViewFactory_createDividerView(env, jcontext,
-                                                          jidentifier);
-      break;
-    case ViewProto::kImageView: {
-      auto jimage =
-          CreateJavaDrawable(env, jcontext, proto.image_view().image());
-      if (!jimage) {
-        LOG(ERROR) << "Failed to create image for " << proto.identifier();
-        return nullptr;
-      }
-      jview = Java_AssistantViewFactory_createImageView(env, jcontext,
-                                                        jidentifier, jimage);
-      break;
-    }
-    case ViewProto::VIEW_NOT_SET:
-      NOTREACHED();
-      return nullptr;
-  }
-  if (!jview) {
-    LOG(ERROR) << "Failed to create view " << proto.identifier();
-    return nullptr;
-  }
-
-  if (proto.has_attributes()) {
-    Java_AssistantViewFactory_setViewAttributes(
-        env, jview, jcontext, proto.attributes().padding_start(),
-        proto.attributes().padding_top(), proto.attributes().padding_end(),
-        proto.attributes().padding_bottom(),
-        CreateJavaDrawable(env, jcontext, proto.attributes().background()));
-  }
-  if (proto.has_layout_params()) {
-    Java_AssistantViewFactory_setViewLayoutParams(
-        env, jview, jcontext, proto.layout_params().layout_width(),
-        proto.layout_params().layout_height(),
-        proto.layout_params().layout_weight(),
-        proto.layout_params().margin_start(),
-        proto.layout_params().margin_top(), proto.layout_params().margin_end(),
-        proto.layout_params().margin_bottom(),
-        proto.layout_params().layout_gravity());
-  }
-
-  if (proto.view_case() == ViewProto::kViewContainer) {
-    for (const auto& child : proto.view_container().views()) {
-      Java_AssistantViewFactory_addViewToContainer(
-          env, jview, CreateJavaView(env, jcontext, child));
-    }
-  }
-
-  return jview;
-}
-
 // Creates the java equivalent to the text inputs specified in |section|.
 base::android::ScopedJavaLocalRef<jobject> CreateJavaTextInputsForSection(
     JNIEnv* env,
@@ -493,7 +252,8 @@ UiControllerAndroid::UiControllerAndroid(
     : overlay_delegate_(this),
       header_delegate_(this),
       collect_user_data_delegate_(this),
-      form_delegate_(this) {
+      form_delegate_(this),
+      generic_ui_delegate_(this) {
   java_object_ = Java_AutofillAssistantUiController_create(
       env, jactivity,
       /* allowTabSwitching= */
@@ -714,9 +474,11 @@ void UiControllerAndroid::OnOverlayColorsChanged(
   JNIEnv* env = AttachCurrentThread();
   auto overlay_model = GetOverlayModel();
   Java_AssistantOverlayModel_setBackgroundColor(
-      env, overlay_model, CreateJavaColor(env, colors.background));
+      env, overlay_model,
+      ui_controller_android_utils::GetJavaColor(env, colors.background));
   Java_AssistantOverlayModel_setHighlightBorderColor(
-      env, overlay_model, CreateJavaColor(env, colors.highlight_border));
+      env, overlay_model,
+      ui_controller_android_utils::GetJavaColor(env, colors.highlight_border));
 }
 
 void UiControllerAndroid::AllowShowingSoftKeyboard(bool enabled) {
@@ -739,6 +501,11 @@ void UiControllerAndroid::OnFeedbackButtonClicked() {
   Java_AutofillAssistantUiController_showFeedback(
       env, java_object_,
       base::android::ConvertUTF8ToJavaString(env, GetDebugContext()));
+}
+
+void UiControllerAndroid::OnViewEvent(const EventHandler::EventKey& key,
+                                      const ValueProto& value) {
+  ui_delegate_->DispatchEvent(key, value);
 }
 
 void UiControllerAndroid::Shutdown(Metrics::DropOutReason reason) {
@@ -1061,6 +828,8 @@ void UiControllerAndroid::Detach() {
   if (!ui_delegate_)
     return;
 
+  collect_user_data_generic_ui_controller_.reset();
+
   // Capture the debug context, for including into a feedback possibly sent
   // later.
   captured_debug_context_ = ui_delegate_->GetDebugContext();
@@ -1137,6 +906,7 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
   JNIEnv* env = AttachCurrentThread();
   auto jmodel = GetCollectUserDataModel();
   if (!collect_user_data_options) {
+    collect_user_data_generic_ui_controller_.reset();
     Java_AssistantCollectUserDataModel_setGenericUserInterface(env, jmodel,
                                                                nullptr);
     Java_AssistantCollectUserDataModel_setVisible(env, jmodel, false);
@@ -1208,10 +978,10 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
       env, jmodel,
       base::android::ConvertUTF8ToJavaString(
           env, collect_user_data_options->terms_require_review_text));
-  Java_AssistantCollectUserDataModel_setThirdPartyPrivacyNoticeText(
+  Java_AssistantCollectUserDataModel_setPrivacyNoticeText(
       env, jmodel,
       base::android::ConvertUTF8ToJavaString(
-          env, collect_user_data_options->thirdparty_privacy_notice_text));
+          env, collect_user_data_options->privacy_notice_text));
 
   Java_AssistantCollectUserDataModel_setPrependedSections(
       env, jmodel,
@@ -1224,11 +994,16 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
   if (collect_user_data_options->generic_user_interface.has_value()) {
     auto jcontext =
         Java_AutofillAssistantUiController_getContext(env, java_object_);
-    auto jview = CreateJavaView(
-        env, jcontext,
-        collect_user_data_options->generic_user_interface->root_view());
-    Java_AssistantCollectUserDataModel_setGenericUserInterface(env, jmodel,
-                                                               jview);
+    collect_user_data_generic_ui_controller_ =
+        GenericUiControllerAndroid::CreateFromProto(
+            *collect_user_data_options->generic_user_interface, jcontext,
+            generic_ui_delegate_.GetJavaObject(), ui_delegate_->GetUserModel(),
+            ui_delegate_->GetEventHandler());
+    Java_AssistantCollectUserDataModel_setGenericUserInterface(
+        env, jmodel,
+        collect_user_data_generic_ui_controller_ != nullptr
+            ? collect_user_data_generic_ui_controller_->GetRootView()
+            : nullptr);
   }
 
   Java_AssistantCollectUserDataModel_setVisible(env, jmodel, true);
@@ -1454,20 +1229,22 @@ void UiControllerAndroid::OnClientSettingsChanged(
     const auto& image = *(settings.overlay_image);
     auto jcontext =
         Java_AutofillAssistantUiController_getContext(env, java_object_);
-    int image_size =
-        GetPixelSizeOrDefault(env, jcontext, image.image_size(), 0);
-    int top_margin =
-        GetPixelSizeOrDefault(env, jcontext, image.image_top_margin(), 0);
-    int bottom_margin =
-        GetPixelSizeOrDefault(env, jcontext, image.image_bottom_margin(), 0);
-    int text_size = GetPixelSizeOrDefault(env, jcontext, image.text_size(), 0);
+    int image_size = ui_controller_android_utils::GetPixelSizeOrDefault(
+        env, jcontext, image.image_size(), 0);
+    int top_margin = ui_controller_android_utils::GetPixelSizeOrDefault(
+        env, jcontext, image.image_top_margin(), 0);
+    int bottom_margin = ui_controller_android_utils::GetPixelSizeOrDefault(
+        env, jcontext, image.image_bottom_margin(), 0);
+    int text_size = ui_controller_android_utils::GetPixelSizeOrDefault(
+        env, jcontext, image.text_size(), 0);
 
     Java_AssistantOverlayModel_setOverlayImage(
         env, GetOverlayModel(),
         base::android::ConvertUTF8ToJavaString(env, image.image_url()),
         image_size, top_margin, bottom_margin,
         base::android::ConvertUTF8ToJavaString(env, image.text()),
-        CreateJavaColor(env, image.text_color()), text_size);
+        ui_controller_android_utils::GetJavaColor(env, image.text_color()),
+        text_size);
   } else {
     Java_AssistantOverlayModel_clearOverlayImage(env, GetOverlayModel());
   }

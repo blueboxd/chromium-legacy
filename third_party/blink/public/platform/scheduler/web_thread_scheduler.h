@@ -36,6 +36,7 @@ namespace blink {
 namespace scheduler {
 
 enum class WebRendererProcessType;
+class WebWidgetScheduler;
 
 class BLINK_PLATFORM_EXPORT WebThreadScheduler {
  public:
@@ -78,9 +79,6 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   // Returns the compositor task runner.
   virtual scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner();
 
-  // Returns the input task runner.
-  virtual scoped_refptr<base::SingleThreadTaskRunner> InputTaskRunner();
-
   virtual scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner();
 
   // Returns the cleanup task runner, which is for cleaning up.
@@ -94,6 +92,10 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
 
   // Creates a WebThread implementation for the renderer main thread.
   virtual std::unique_ptr<Thread> CreateMainThread();
+
+  // Creates a WebWidgetScheduler implementation. Must be called from the main
+  // thread.
+  virtual std::unique_ptr<WebWidgetScheduler> CreateWidgetScheduler();
 
   // Returns a new WebRenderWidgetSchedulingState.  The signals from this will
   // be used to make scheduling decisions.

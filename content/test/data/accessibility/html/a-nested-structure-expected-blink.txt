@@ -5,19 +5,19 @@ rootWebArea
 ++++++++staticText name='Header 1'
 ++++++++++inlineTextBox name='Header 1'
 ++++++list
-++++++++listItem
+++++++++listItem hierarchicalLevel=1
 ++++++++++listMarker name='• '
 ++++++++++++staticText name='• '
 ++++++++++++++inlineTextBox name='• '
 ++++++++++staticText name='List element 1'
 ++++++++++++inlineTextBox name='List element 1'
-++++++++listItem
+++++++++listItem hierarchicalLevel=1
 ++++++++++listMarker name='• '
 ++++++++++++staticText name='• '
 ++++++++++++++inlineTextBox name='• '
 ++++++++++staticText name='List element 2'
 ++++++++++++inlineTextBox name='List element 2'
-++++++++listItem
+++++++++listItem hierarchicalLevel=1
 ++++++++++listMarker name='• '
 ++++++++++++staticText name='• '
 ++++++++++++++inlineTextBox name='• '

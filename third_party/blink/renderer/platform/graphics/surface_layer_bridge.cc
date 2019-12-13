@@ -14,8 +14,8 @@
 #include "components/viz/common/surfaces/surface_info.h"
 #include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom-blink.h"
-#include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -33,7 +33,7 @@ SurfaceLayerBridge::SurfaceLayerBridge(
       frame_sink_id_(Platform::Current()->GenerateFrameSinkId()),
       parent_frame_sink_id_(parent_frame_sink_id) {
   mojo::Remote<mojom::blink::EmbeddedFrameSinkProvider> provider;
-  Platform::Current()->GetInterfaceProvider()->GetInterface(
+  Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
       provider.BindNewPipeAndPassReceiver());
   // TODO(xlai): Ensure OffscreenCanvas commit() is still functional when a
   // frame-less HTML canvas's document is reparenting under another frame.

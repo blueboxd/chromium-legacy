@@ -57,8 +57,7 @@ bool CheckBeginFrameContinuity(BeginFrameObserver* observer,
   if (!last_args.IsValid() || (args.frame_time > last_args.frame_time)) {
     DCHECK((args.source_id != last_args.source_id) ||
            (args.sequence_number > last_args.sequence_number))
-        << "current " << args.AsValue()->ToString() << ", last "
-        << last_args.AsValue()->ToString();
+        << "current " << args.ToString() << ", last " << last_args.ToString();
     return true;
   }
   return false;
@@ -88,8 +87,8 @@ void BeginFrameObserverBase::OnBeginFrame(const BeginFrameArgs& args) {
   DCHECK_GE(args.frame_time, last_begin_frame_args_.frame_time);
   DCHECK(args.sequence_number > last_begin_frame_args_.sequence_number ||
          args.source_id != last_begin_frame_args_.source_id)
-      << "current " << args.AsValue()->ToString() << ", last "
-      << last_begin_frame_args_.AsValue()->ToString();
+      << "current " << args.ToString() << ", last "
+      << last_begin_frame_args_.ToString();
   bool used = OnBeginFrameDerivedImpl(args);
   if (used) {
     last_begin_frame_args_ = args;
@@ -359,8 +358,7 @@ void DelayBasedBeginFrameSource::IssueBeginFrameToObserver(
     if (args.type == BeginFrameArgs::MISSED) {
       DCHECK(args.sequence_number > last_args.sequence_number ||
              args.source_id != last_args.source_id)
-          << "missed " << args.AsValue()->ToString() << ", last "
-          << last_args.AsValue()->ToString();
+          << "missed " << args.ToString() << ", last " << last_args.ToString();
     }
     FilterAndIssueBeginFrame(obs, args);
   }

@@ -162,9 +162,9 @@ void PendingAnimations::NotifyCompositorAnimationStarted(
       waiting_for_compositor_animation_start_.push_back(animation);
       continue;
     }
-    DCHECK(animation->timeline()->IsDocumentTimeline());
+    DCHECK(IsA<DocumentTimeline>(animation->timeline()));
     animation->NotifyReady(monotonic_animation_start_time -
-                           ToDocumentTimeline(animation->timeline())
+                           To<DocumentTimeline>(animation->timeline())
                                ->ZeroTime()
                                .since_origin()
                                .InSecondsF());

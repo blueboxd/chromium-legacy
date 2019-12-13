@@ -4,11 +4,13 @@
 
 #include "ipc/ipc_test_base.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel_mojo.h"
@@ -17,15 +19,9 @@ IPCChannelMojoTestBase::IPCChannelMojoTestBase() = default;
 IPCChannelMojoTestBase::~IPCChannelMojoTestBase() = default;
 
 void IPCChannelMojoTestBase::Init(const std::string& test_client_name) {
-  InitWithCustomMessageLoop(test_client_name,
-                            std::make_unique<base::MessageLoop>());
-}
-
-void IPCChannelMojoTestBase::InitWithCustomMessageLoop(
-    const std::string& test_client_name,
-    std::unique_ptr<base::MessageLoop> message_loop) {
   handle_ = helper_.StartChild(test_client_name);
-  message_loop_ = std::move(message_loop);
+  task_environment_ =
+      std::make_unique<base::test::SingleThreadTaskEnvironment>();
 }
 
 bool IPCChannelMojoTestBase::WaitForClientShutdown() {
@@ -33,7 +29,7 @@ bool IPCChannelMojoTestBase::WaitForClientShutdown() {
 }
 
 void IPCChannelMojoTestBase::TearDown() {
-  if (message_loop_)
+  if (task_environment_)
     base::RunLoop().RunUntilIdle();
 }
 

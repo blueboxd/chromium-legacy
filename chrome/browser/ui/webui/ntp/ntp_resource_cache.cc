@@ -319,6 +319,8 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
   replacements["hideTooltipIcon"] =
       CookieControlsHandler::ShouldEnforceCookieControls(profile_) ? ""
                                                                    : "hidden";
+  replacements["cookieControlsToolTipIcon"] =
+      CookieControlsHandler::GetEnforcementIcon(profile_);
   replacements["cookieControlsTooltipText"] = l10n_util::GetStringFUTF8(
       IDS_NEW_TAB_OTR_COOKIE_CONTROLS_CONTROLLED_TOOLTIP_TEXT,
       l10n_util::GetStringUTF16(IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE),

@@ -45,4 +45,5 @@
   attribute EventHandler onfetch;
   attribute EventHandler oninstall;
   attribute EventHandler onmessage;
+  attribute EventHandler onmessageerror;
 };

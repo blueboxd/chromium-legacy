@@ -43,9 +43,6 @@ AXNode* g_node_from_last_show_context_menu;
 // default action was called from.
 AXNode* g_node_from_last_default_action;
 
-// A global indicating that AXPlatformNodeDelegate objects are web content.
-bool g_is_web_content = false;
-
 // A simple implementation of AXTreeObserver to catch when AXNodes are
 // deleted so we can delete their wrappers.
 class TestAXTreeObserver : public AXTreeObserver {
@@ -98,10 +95,6 @@ const AXNode* TestAXNodeWrapper::GetNodeFromLastDefaultAction() {
 std::unique_ptr<base::AutoReset<float>> TestAXNodeWrapper::SetScaleFactor(
     float value) {
   return std::make_unique<base::AutoReset<float>>(&g_scale_factor, value);
-}
-
-void TestAXNodeWrapper::SetGlobalIsWebContent(bool is_web_content) {
-  g_is_web_content = is_web_content;
 }
 
 TestAXNodeWrapper::~TestAXNodeWrapper() {
@@ -279,10 +272,6 @@ gfx::NativeViewAccessible TestAXNodeWrapper::GetFocus() {
 
 bool TestAXNodeWrapper::IsMinimized() const {
   return minimized_;
-}
-
-bool TestAXNodeWrapper::IsWebContent() const {
-  return g_is_web_content;
 }
 
 // Walk the AXTree and ensure that all wrappers are created

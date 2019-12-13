@@ -7,7 +7,6 @@
 #include <set>
 #include <vector>
 
-#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/checked_math.h"
@@ -1952,15 +1951,9 @@ void PropertyTrees::AsValueInto(base::trace_event::TracedValue* value) const {
 }
 
 std::string PropertyTrees::ToString() const {
-  base::trace_event::TracedValue value(0, /*force_json=*/true);
+  base::trace_event::TracedValueJSON value;
   AsValueInto(&value);
-  std::string str;
-  base::JSONWriter::WriteWithOptions(
-      *value.ToBaseValue(),
-      base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION |
-          base::JSONWriter::OPTIONS_PRETTY_PRINT,
-      &str);
-  return str;
+  return value.ToFormattedJSON();
 }
 
 CombinedAnimationScale PropertyTrees::GetAnimationScales(

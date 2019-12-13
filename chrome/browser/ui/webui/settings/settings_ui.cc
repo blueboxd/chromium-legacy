@@ -284,13 +284,9 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 #if defined(OS_CHROMEOS)
   // This is the browser settings page.
   html_source->AddBoolean("isOSSettings", false);
-  // If false, hides OS-specific settings (like networks) in browser settings.
-  html_source->AddBoolean(
-      "showOSSettings",
-      !base::FeatureList::IsEnabled(chromeos::features::kSplitSettings));
-#else
-  html_source->AddBoolean("showOSSettings", false);
 #endif
+  // TODO(crbug.com/1026455): Delete this as part of the SplitSettings cleanup.
+  html_source->AddBoolean("showOSSettings", false);
 
   AddSettingsPageUIHandler(
       base::WrapUnique(AboutHandler::Create(html_source, profile)));

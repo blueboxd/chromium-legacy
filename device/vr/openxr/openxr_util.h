@@ -8,6 +8,9 @@
 #include "third_party/openxr/src/include/openxr/openxr.h"
 
 namespace device {
+struct OpenXRInstanceMetadata {
+  bool unboundedReferenceSpaceSupported;
+};
 
 // These macros aren't common in Chromium and generally discouraged, so define
 // all OpenXR helper macros here so they can be kept track of. This file
@@ -45,7 +48,8 @@ XrPosef PoseIdentity();
 
 XrResult GetSystem(XrInstance instance, XrSystemId* system);
 
-XrResult CreateInstance(XrInstance* instance);
+XrResult CreateInstance(XrInstance* instance,
+                        OpenXRInstanceMetadata* metadata = nullptr);
 
 }  // namespace device
 

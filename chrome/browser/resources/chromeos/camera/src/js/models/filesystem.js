@@ -31,13 +31,6 @@ cca.models.FileSystem = function() {
 cca.models.FileSystem.THUMBNAIL_PREFIX = 'thumb-';
 
 /**
- * Width of thumbnail.
- * @type {number}
- * @const
- */
-cca.models.FileSystem.THUMBNAIL_WIDTH = 480;
-
-/**
  * Directory in the internal file system.
  * @type {DirectoryEntry}
  */
@@ -88,29 +81,30 @@ cca.models.FileSystem.initInternalTempDir_ = function() {
  */
 cca.models.FileSystem.initExternalDir_ = function() {
   return new Promise((resolve) => {
-    cca.proxy.browserProxy.getVolumeList((volumes) => {
-      if (volumes) {
-        for (var i = 0; i < volumes.length; i++) {
-          var volumeId = volumes[i].volumeId;
-          if (volumeId.indexOf('downloads:Downloads') !== -1 ||
-              volumeId.indexOf('downloads:MyFiles') !== -1) {
-            cca.proxy.browserProxy.requestFileSystem(
-                volumes[i], (fs) => resolve([fs && fs.root, volumeId]));
-            return;
-          }
+           cca.proxy.browserProxy.getVolumeList((volumes) => {
+             if (volumes) {
+               for (var i = 0; i < volumes.length; i++) {
+                 var volumeId = volumes[i].volumeId;
+                 if (volumeId.indexOf('downloads:Downloads') !== -1 ||
+                     volumeId.indexOf('downloads:MyFiles') !== -1) {
+                   cca.proxy.browserProxy.requestFileSystem(
+                       volumes[i], (fs) => resolve([fs && fs.root, volumeId]));
+                   return;
+                 }
+               }
+             }
+             resolve([null, null]);
+           });
+         })
+      .then(([dir, volumeId]) => {
+        if (volumeId && volumeId.indexOf('downloads:MyFiles') !== -1) {
+          return cca.models.FileSystem.readDir_(dir).then((entries) => {
+            return entries.find(
+                (entry) => entry.name === 'Downloads' && entry.isDirectory);
+          });
         }
-      }
-      resolve([null, null]);
-    });
-  }).then(([dir, volumeId]) => {
-    if (volumeId && volumeId.indexOf('downloads:MyFiles') !== -1) {
-      return cca.models.FileSystem.readDir_(dir).then((entries) => {
-        return entries.find(
-            (entry) => entry.name === 'Downloads' && entry.isDirectory);
+        return dir;
       });
-    }
-    return dir;
-  });
 };
 
 /**
@@ -130,7 +124,8 @@ cca.models.FileSystem.initialize = function(promptMigrate) {
   });
   var checkMigrated = new Promise((resolve) => {
     if (chrome.chromeosInfoPrivate) {
-      chrome.chromeosInfoPrivate.get(['cameraMediaConsolidated'],
+      chrome.chromeosInfoPrivate.get(
+          ['cameraMediaConsolidated'],
           (values) => resolve(values['cameraMediaConsolidated']));
     } else {
       resolve(false);
@@ -230,20 +225,22 @@ cca.models.FileSystem.migratePictures = function() {
 
   var migratePicture = (pictureEntry, thumbnailEntry) => {
     var name = cca.models.FileSystem.regulatePictureName(pictureEntry);
-    return cca.models.FileSystem.getFile(
-        externalDir, name, true).then((entry) => {
-      return new Promise((resolve, reject) => {
-        pictureEntry.copyTo(externalDir, entry.name, (result) => {
-          if (result.name !== pictureEntry.name && thumbnailEntry) {
-            // Thumbnails can be recreated later if failing to rename them here.
-            thumbnailEntry.moveTo(internalDir,
-                cca.models.FileSystem.getThumbnailName(result));
-          }
-          pictureEntry.remove(() => {});
-          resolve();
-        }, reject);
-      });
-    });
+    return cca.models.FileSystem.getFile(externalDir, name, true)
+        .then((entry) => {
+          return new Promise((resolve, reject) => {
+            pictureEntry.copyTo(externalDir, entry.name, (result) => {
+              if (result.name !== pictureEntry.name && thumbnailEntry) {
+                // Thumbnails can be recreated later if failing to rename them
+                // here.
+                thumbnailEntry.moveTo(
+                    internalDir,
+                    cca.models.FileSystem.getThumbnailName(result));
+              }
+              pictureEntry.remove(() => {});
+              resolve();
+            }, reject);
+          });
+        });
   };
 
   return cca.models.FileSystem.readDir_(internalDir).then((internalEntries) => {
@@ -293,7 +290,7 @@ cca.models.FileSystem.regulatePictureName = function(entry) {
  * @param {DirectoryEntry} dir Directory to be written into.
  * @param {string} name Name of the file.
  * @param {!Blob} blob Data of the file to be saved.
- * @return {!Promise<FileEntry>} Promise for the result.
+ * @return {!Promise<?FileEntry>} Promise for the result.
  * @private
  */
 cca.models.FileSystem.saveToFile_ = function(dir, name, blob) {
@@ -312,12 +309,21 @@ cca.models.FileSystem.saveToFile_ = function(dir, name, blob) {
  * Saves photo blob or metadata blob into predefined default location.
  * @param {!Blob} blob Data of the photo to be saved.
  * @param {string} filename Filename of the photo to be saved.
- * @return {!Promise<FileEntry>} Promise for the result.
+ * @return {!Promise<?FileEntry>} Promise for the result.
  */
 cca.models.FileSystem.saveBlob = function(blob, filename) {
   const dir =
       cca.models.FileSystem.externalDir || cca.models.FileSystem.internalDir;
   return cca.models.FileSystem.saveToFile_(dir, filename, blob);
+};
+
+/**
+ * Gets metadata of the file.
+ * @param {!FileEntry} file
+ * @return {!Promise<!Object>}
+ */
+cca.models.FileSystem.getMetadata = function(file) {
+  return new Promise((resolve) => file.getMetadata(resolve));
 };
 
 /**
@@ -391,26 +397,8 @@ cca.models.FileSystem.saveVideo = async function(tempfile, filename) {
 cca.models.FileSystem.getThumbnailName = function(entry) {
   var thumbnailName = cca.models.FileSystem.THUMBNAIL_PREFIX + entry.name;
   return (thumbnailName.substr(0, thumbnailName.lastIndexOf('.')) ||
-      thumbnailName) + '.jpg';
-};
-
-/**
- * Creates and saves the thumbnail of the given picture.
- * @param {boolean} isVideo Picture is a video.
- * @param {FileEntry} entry Picture's file entry whose thumbnail to be saved.
- * @return {!Promise<FileEntry>} Promise for the result.
- */
-cca.models.FileSystem.saveThumbnail = function(isVideo, entry) {
-  return cca.models.FileSystem.pictureURL(entry)
-      .then((url) => {
-        return cca.util.scalePicture(
-            url, isVideo, cca.models.FileSystem.THUMBNAIL_WIDTH);
-      })
-      .then((blob) => {
-        var thumbnailName = cca.models.FileSystem.getThumbnailName(entry);
-        return cca.models.FileSystem.saveToFile_(
-            cca.models.FileSystem.internalDir, thumbnailName, blob);
-      });
+          thumbnailName) +
+      '.jpg';
 };
 
 /**
@@ -473,35 +461,20 @@ cca.models.FileSystem.parseInternalEntries_ = function(
 };
 
 /**
- * Gets the picture and thumbnail entries.
- * @return {!Promise<!Array<!Array<FileEntry>|!Object<string, FileEntry>>>}
- *     Promise for the picture entries and the thumbnail entries mapped by
- *     thumbnail names.
+ * Gets the picture entries.
+ * @return {!Promise<!Array<!FileEntry>>} Promise for the picture entries.
  */
 cca.models.FileSystem.getEntries = function() {
-  return Promise.all([
-    cca.models.FileSystem.readDir_(cca.models.FileSystem.internalDir),
-    cca.models.FileSystem.readDir_(cca.models.FileSystem.externalDir),
-  ]).then(([internalEntries, externalEntries]) => {
-    var pictureEntries = [];
-    var thumbnailEntriesByName = {};
-
-    if (cca.models.FileSystem.externalDir) {
-      pictureEntries = externalEntries.filter((entry) => {
-        if (!cca.models.FileSystem.hasVideoPrefix(entry) &&
-            !cca.models.FileSystem.hasImagePrefix_(entry)) {
-          return false;
-        }
-        return entry.name.match(/_(\d{8})_(\d{6})(?: \((\d+)\))?/);
+  return cca.models.FileSystem.readDir_(cca.models.FileSystem.externalDir)
+      .then((entries) => {
+        return entries.filter((entry) => {
+          if (!cca.models.FileSystem.hasVideoPrefix(entry) &&
+              !cca.models.FileSystem.hasImagePrefix_(entry)) {
+            return false;
+          }
+          return entry.name.match(/_(\d{8})_(\d{6})(?: \((\d+)\))?/);
+        });
       });
-      cca.models.FileSystem.parseInternalEntries_(
-          internalEntries, thumbnailEntriesByName);
-    } else {
-      cca.models.FileSystem.parseInternalEntries_(
-          internalEntries, thumbnailEntriesByName, pictureEntries);
-    }
-    return [pictureEntries, thumbnailEntriesByName];
-  });
 };
 
 /**
@@ -528,18 +501,20 @@ cca.models.FileSystem.pictureURL = function(entry) {
  */
 cca.models.FileSystem.getFile = function(dir, name, create) {
   return new Promise((resolve, reject) => {
-    var options = create ? {create: true, exclusive: true} : {create: false};
-    dir.getFile(name, options, resolve, reject);
-  }).catch((error) => {
-    if (create && error.name === 'InvalidModificationError') {
-      // Avoid name conflicts for creating files.
-      return cca.models.FileSystem.getFile(dir,
-          cca.models.FileSystem.incrementFileName_(name), create);
-    } else if (!create && error.name === 'NotFoundError') {
-      return null;
-    }
-    throw error;
-  });
+           var options =
+               create ? {create: true, exclusive: true} : {create: false};
+           dir.getFile(name, options, resolve, reject);
+         })
+      .catch((error) => {
+        if (create && error.name === 'InvalidModificationError') {
+          // Avoid name conflicts for creating files.
+          return cca.models.FileSystem.getFile(
+              dir, cca.models.FileSystem.incrementFileName_(name), create);
+        } else if (!create && error.name === 'NotFoundError') {
+          return null;
+        }
+        throw error;
+      });
 };
 
 /**

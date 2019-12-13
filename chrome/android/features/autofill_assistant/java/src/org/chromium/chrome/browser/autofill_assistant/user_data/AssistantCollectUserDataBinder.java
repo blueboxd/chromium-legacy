@@ -290,11 +290,11 @@ class AssistantCollectUserDataBinder
             view.mTermsAsCheckboxSection.setTermsRequireReviewText(
                     model.get(AssistantCollectUserDataModel.TERMS_REQUIRE_REVIEW_TEXT));
             return true;
-        } else if (propertyKey == AssistantCollectUserDataModel.THIRDPARTY_PRIVACY_NOTICE_TEXT) {
-            view.mTermsSection.setThirdPartyPrivacyNoticeText(
-                    model.get(AssistantCollectUserDataModel.THIRDPARTY_PRIVACY_NOTICE_TEXT));
-            view.mTermsAsCheckboxSection.setThirdPartyPrivacyNoticeText(
-                    model.get(AssistantCollectUserDataModel.THIRDPARTY_PRIVACY_NOTICE_TEXT));
+        } else if (propertyKey == AssistantCollectUserDataModel.PRIVACY_NOTICE_TEXT) {
+            view.mTermsSection.setPrivacyNoticeText(
+                    model.get(AssistantCollectUserDataModel.PRIVACY_NOTICE_TEXT));
+            view.mTermsAsCheckboxSection.setPrivacyNoticeText(
+                    model.get(AssistantCollectUserDataModel.PRIVACY_NOTICE_TEXT));
             return true;
         } else if (propertyKey == AssistantCollectUserDataModel.GENERIC_USER_INTERFACE) {
             view.mGenericUserInterfaceContainer.removeAllViews();

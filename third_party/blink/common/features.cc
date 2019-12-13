@@ -67,6 +67,9 @@ const base::Feature kDisplayLocking{"DisplayLocking",
 const base::Feature kFastBorderRadius{"FastBorderRadius",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kJSONModules{"JSONModules",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable LayoutNG.
 const base::Feature kLayoutNG{"LayoutNG", base::FEATURE_ENABLED_BY_DEFAULT};
 

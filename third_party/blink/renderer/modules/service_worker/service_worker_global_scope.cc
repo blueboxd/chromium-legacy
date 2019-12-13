@@ -1325,8 +1325,8 @@ void ServiceWorkerGlobalScope::DispatchExtendableMessageEventInternal(
   String origin;
   if (!event->source_origin->IsOpaque())
     origin = event->source_origin->ToString();
-  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
-      this, WaitUntilObserver::kMessage, event_id);
+  WaitUntilObserver* observer = nullptr;
+  Event* event_to_dispatch = nullptr;
 
   if (event->source_info_for_client) {
     mojom::blink::ServiceWorkerClientInfoPtr client_info =
@@ -1337,8 +1337,34 @@ void ServiceWorkerGlobalScope::DispatchExtendableMessageEventInternal(
       source = MakeGarbageCollected<ServiceWorkerWindowClient>(*client_info);
     else
       source = MakeGarbageCollected<ServiceWorkerClient>(*client_info);
-    Event* event_to_dispatch = ExtendableMessageEvent::Create(
-        std::move(msg.message), origin, ports, source, observer);
+    // TODO(crbug.com/1018092): Factor out these security checks so they aren't
+    // duplicated in so many places.
+    if (msg.message->IsOriginCheckRequired()) {
+      const SecurityOrigin* target_origin =
+          GetExecutionContext()->GetSecurityOrigin();
+      if (!msg.sender_origin ||
+          !msg.sender_origin->IsSameOriginWith(target_origin)) {
+        observer = MakeGarbageCollected<WaitUntilObserver>(
+            this, WaitUntilObserver::kMessageerror, event_id);
+        event_to_dispatch = ExtendableMessageEvent::CreateError(
+            origin, ports, source, observer);
+      }
+    }
+    if (!event_to_dispatch) {
+      if (!msg.locked_agent_cluster_id ||
+          GetExecutionContext()->IsSameAgentCluster(
+              *msg.locked_agent_cluster_id)) {
+        observer = MakeGarbageCollected<WaitUntilObserver>(
+            this, WaitUntilObserver::kMessage, event_id);
+        event_to_dispatch = ExtendableMessageEvent::Create(
+            std::move(msg.message), origin, ports, source, observer);
+      } else {
+        observer = MakeGarbageCollected<WaitUntilObserver>(
+            this, WaitUntilObserver::kMessageerror, event_id);
+        event_to_dispatch = ExtendableMessageEvent::CreateError(
+            origin, ports, source, observer);
+      }
+    }
     DispatchExtendableEvent(event_to_dispatch, observer);
     return;
   }
@@ -1347,8 +1373,34 @@ void ServiceWorkerGlobalScope::DispatchExtendableMessageEventInternal(
             mojom::blink::kInvalidServiceWorkerVersionId);
   ::blink::ServiceWorker* source = ::blink::ServiceWorker::From(
       GetExecutionContext(), std::move(event->source_info_for_service_worker));
-  Event* event_to_dispatch = ExtendableMessageEvent::Create(
-      std::move(msg.message), origin, ports, source, observer);
+  // TODO(crbug.com/1018092): Factor out these security checks so they aren't
+  // duplicated in so many places.
+  if (msg.message->IsOriginCheckRequired()) {
+    const SecurityOrigin* target_origin =
+        GetExecutionContext()->GetSecurityOrigin();
+    if (!msg.sender_origin ||
+        !msg.sender_origin->IsSameOriginWith(target_origin)) {
+      observer = MakeGarbageCollected<WaitUntilObserver>(
+          this, WaitUntilObserver::kMessageerror, event_id);
+      event_to_dispatch =
+          ExtendableMessageEvent::CreateError(origin, ports, source, observer);
+    }
+  }
+  if (!event_to_dispatch) {
+    if (!msg.locked_agent_cluster_id ||
+        GetExecutionContext()->IsSameAgentCluster(
+            *msg.locked_agent_cluster_id)) {
+      observer = MakeGarbageCollected<WaitUntilObserver>(
+          this, WaitUntilObserver::kMessage, event_id);
+      event_to_dispatch = ExtendableMessageEvent::Create(
+          std::move(msg.message), origin, ports, source, observer);
+    } else {
+      observer = MakeGarbageCollected<WaitUntilObserver>(
+          this, WaitUntilObserver::kMessageerror, event_id);
+      event_to_dispatch =
+          ExtendableMessageEvent::CreateError(origin, ports, source, observer);
+    }
+  }
   DispatchExtendableEvent(event_to_dispatch, observer);
 }
 

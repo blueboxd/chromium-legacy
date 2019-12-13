@@ -16,16 +16,19 @@
 #include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/element_area.h"
+#include "components/autofill_assistant/browser/event_handler.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
 #include "components/autofill_assistant/browser/script_tracker.h"
 #include "components/autofill_assistant/browser/service.h"
+#include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/state.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/autofill_assistant/browser/ui_delegate.h"
 #include "components/autofill_assistant/browser/user_action.h"
 #include "components/autofill_assistant/browser/user_data.h"
+#include "components/autofill_assistant/browser/user_model.h"
 #include "components/autofill_assistant/browser/web/web_controller.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -46,9 +49,10 @@ class ControllerTest;
 // display, execution and so on. The instance of this object self deletes when
 // the web contents is being destroyed.
 class Controller : public ScriptExecutorDelegate,
-                   public UiDelegate,
+                   public virtual UiDelegate,
                    public ScriptTracker::Listener,
-                   private content::WebContentsObserver {
+                   private content::WebContentsObserver,
+                   public UserModel::Observer {
  public:
   // |web_contents|, |client| and |tick_clock| must remain valid for the
   // lifetime of the instance. Controller will take ownership of |service| if
@@ -199,6 +203,10 @@ class Controller : public ScriptExecutorDelegate,
                          bool selected) override;
   void AddObserver(ControllerObserver* observer) override;
   void RemoveObserver(const ControllerObserver* observer) override;
+  void DispatchEvent(const EventHandler::EventKey& key,
+                     const ValueProto& value) override;
+  UserModel* GetUserModel() override;
+  EventHandler* GetEventHandler() override;
 
  private:
   friend ControllerTest;
@@ -271,6 +279,10 @@ class Controller : public ScriptExecutorDelegate,
   void RenderProcessGone(base::TerminationStatus status) override;
   void OnWebContentsFocused(
       content::RenderWidgetHost* render_widget_host) override;
+
+  // Overrides autofill_assistant::UserModel::Observer:
+  void OnValueChanged(const std::string& identifier,
+                      const ValueProto& new_value) override;
 
   void OnTouchableAreaChanged(const RectF& visual_viewport,
                               const std::vector<RectF>& touchable_areas,
@@ -415,6 +427,9 @@ class Controller : public ScriptExecutorDelegate,
   // until the browser has left the |script_domain_| for which the decision was
   // taken.
   base::Optional<Metrics::DropOutReason> delayed_shutdown_reason_;
+
+  EventHandler event_handler_;
+  UserModel user_model_;
 
   base::WeakPtrFactory<Controller> weak_ptr_factory_{this};
 

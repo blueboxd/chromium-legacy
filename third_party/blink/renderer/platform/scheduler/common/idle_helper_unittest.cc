@@ -172,26 +172,12 @@ class IdleHelperForTest : public IdleHelper, public IdleHelper::Delegate {
 
 class BaseIdleHelperTest : public testing::Test {
  public:
-  BaseIdleHelperTest(
-      std::unique_ptr<base::MessageLoop> message_loop,
+  explicit BaseIdleHelperTest(
       base::TimeDelta required_quiescence_duration_before_long_idle_period)
-      : message_loop_(std::move(message_loop)),
-        test_task_runner_(base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+      : test_task_runner_(base::MakeRefCounted<base::TestMockTimeTaskRunner>(
             base::TestMockTimeTaskRunner::Type::kStandalone)) {
-    if (!message_loop_) {
-      sequence_manager_ =
-          base::sequence_manager::SequenceManagerForTest::Create(
-              nullptr, test_task_runner_,
-              test_task_runner_->GetMockTickClock());
-    } else {
-      // It's okay to use |test_task_runner_| just as a mock clock because
-      // it isn't bound to thread and all tasks will go through a MessageLoop.
-      sequence_manager_ =
-          base::sequence_manager::SequenceManagerForTest::CreateOnCurrentThread(
-              base::sequence_manager::SequenceManager::Settings::Builder()
-                  .SetTickClock(test_task_runner_->GetMockTickClock())
-                  .Build());
-    }
+    sequence_manager_ = base::sequence_manager::SequenceManagerForTest::Create(
+        nullptr, test_task_runner_, test_task_runner_->GetMockTickClock());
     scheduler_helper_ = std::make_unique<NonMainThreadSchedulerHelper>(
         sequence_manager_.get(), nullptr, TaskType::kInternalTest);
     idle_helper_ = std::make_unique<IdleHelperForTest>(
@@ -275,7 +261,6 @@ class BaseIdleHelperTest : public testing::Test {
     return idle_helper_->idle_queue_;
   }
 
-  std::unique_ptr<base::MessageLoop> message_loop_;
   scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
   std::unique_ptr<SequenceManager> sequence_manager_;
   std::unique_ptr<NonMainThreadSchedulerHelper> scheduler_helper_;
@@ -289,7 +274,7 @@ class BaseIdleHelperTest : public testing::Test {
 
 class IdleHelperTest : public BaseIdleHelperTest {
  public:
-  IdleHelperTest() : BaseIdleHelperTest(nullptr, base::TimeDelta()) {}
+  IdleHelperTest() : BaseIdleHelperTest(base::TimeDelta()) {}
 
   ~IdleHelperTest() override = default;
 
@@ -400,7 +385,7 @@ TEST_F(IdleHelperTest, TestIdleTaskExceedsDeadline) {
 class IdleHelperTestWithIdlePeriodObserver : public BaseIdleHelperTest {
  public:
   IdleHelperTestWithIdlePeriodObserver()
-      : BaseIdleHelperTest(nullptr, base::TimeDelta()) {}
+      : BaseIdleHelperTest(base::TimeDelta()) {}
 
   ~IdleHelperTestWithIdlePeriodObserver() override = default;
 
@@ -785,7 +770,6 @@ class IdleHelperWithQuiescencePeriodTest : public BaseIdleHelperTest {
 
   IdleHelperWithQuiescencePeriodTest()
       : BaseIdleHelperTest(
-            nullptr,
             base::TimeDelta::FromMilliseconds(kQuiescenceDelayMs)) {}
 
   ~IdleHelperWithQuiescencePeriodTest() override = default;

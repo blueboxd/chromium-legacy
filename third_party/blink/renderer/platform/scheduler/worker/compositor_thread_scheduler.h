@@ -40,9 +40,9 @@ class PLATFORM_EXPORT CompositorThreadScheduler
 
   // WebThreadScheduler:
   scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override;
-  scoped_refptr<base::SingleThreadTaskRunner> InputTaskRunner() override;
   bool ShouldYieldForHighPriorityWork() override;
   bool CanExceedIdleDeadlineIfRequired() const override;
   void AddTaskObserver(base::TaskObserver* task_observer) override;
@@ -66,9 +66,6 @@ class PLATFORM_EXPORT CompositorThreadScheduler
   void InitImpl() override;
 
  private:
-  scoped_refptr<NonMainThreadTaskQueue> input_task_queue_;
-  scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
-
   CompositorMetricsHelper compositor_metrics_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorThreadScheduler);

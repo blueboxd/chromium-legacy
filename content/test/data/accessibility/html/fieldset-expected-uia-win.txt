@@ -1,5 +1,5 @@
 document
 ++form
 ++++group Name='Browser Engines:'
-++++++description IsControlElement=false
+++++++description
 ++++++++description Name='Browser Engines:' IsControlElement=false

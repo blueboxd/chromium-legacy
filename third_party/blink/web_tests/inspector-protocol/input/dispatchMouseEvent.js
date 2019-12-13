@@ -91,6 +91,22 @@
     y: 200
   }));
   dumpError(await dp.Input.dispatchMouseEvent({
+    type: 'mousePressed',
+    button: 'back',
+    buttons: 0,
+    clickCount: 1,
+    x: 100,
+    y: 200
+  }));
+  dumpError(await dp.Input.dispatchMouseEvent({
+    type: 'mousePressed',
+    button: 'forward',
+    buttons: 8,
+    clickCount: 2,
+    x: 100,
+    y: 200
+  }));
+  dumpError(await dp.Input.dispatchMouseEvent({
     type: 'mouseWheel',
     x: 100,
     y: 200,

@@ -44,6 +44,7 @@ class InstalledScriptsManager {
     ContentSecurityPolicyResponseHeaders
     GetContentSecurityPolicyResponseHeaders();
     String GetReferrerPolicy();
+    String GetHttpContentType();
     network::mojom::IPAddressSpace GetResponseAddressSpace() const {
       return response_address_space_;
     }

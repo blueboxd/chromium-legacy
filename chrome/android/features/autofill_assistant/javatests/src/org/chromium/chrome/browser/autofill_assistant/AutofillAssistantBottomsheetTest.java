@@ -21,6 +21,7 @@ import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUi
 import static org.chromium.chrome.browser.autofill_assistant.proto.ConfigureBottomSheetProto.PeekMode.HANDLE;
 import static org.chromium.chrome.browser.autofill_assistant.proto.ConfigureBottomSheetProto.PeekMode.HANDLE_HEADER;
 import static org.chromium.chrome.browser.autofill_assistant.proto.ConfigureBottomSheetProto.PeekMode.HANDLE_HEADER_CAROUSELS;
+import static org.chromium.chrome.browser.autofill_assistant.proto.ConfigureBottomSheetProto.ViewportResizing.NO_RESIZE;
 import static org.chromium.chrome.browser.autofill_assistant.proto.ConfigureBottomSheetProto.ViewportResizing.RESIZE_LAYOUT_VIEWPORT;
 import static org.chromium.chrome.browser.autofill_assistant.proto.ConfigureBottomSheetProto.ViewportResizing.RESIZE_VISUAL_VIEWPORT;
 
@@ -39,7 +40,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
@@ -58,7 +58,6 @@ import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto.PresentationProto;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
-import org.chromium.chrome.browser.feed.library.common.functional.Function;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -87,7 +86,8 @@ public class AutofillAssistantBottomsheetTest {
         mTestRule.getActivity().getScrim().disableAnimationForTesting(true);
     }
 
-    private AutofillAssistantTestScript makeScript(ViewportResizing resizing, PeekMode peekMode) {
+    private AutofillAssistantTestScript makeScript(
+            ViewportResizing resizing, PeekMode peekMode, boolean withDetails) {
         ArrayList<ActionProto> list = new ArrayList<>();
         // Prompt.
         list.add((ActionProto) ActionProto.newBuilder()
@@ -109,13 +109,15 @@ public class AutofillAssistantBottomsheetTest {
                          .setFocusElement(FocusElementProto.newBuilder().setElement(
                                  ElementReferenceProto.newBuilder().addSelectors("p.bottom")))
                          .build());
-        // ShowDetails.
-        list.add((ActionProto) ActionProto.newBuilder()
-                         .setShowDetails(ShowDetailsProto.newBuilder().setDetails(
-                                 DetailsProto.newBuilder()
-                                         .setTitle("Details title")
-                                         .setShowImagePlaceholder(true)))
-                         .build());
+        if (withDetails) {
+            // ShowDetails.
+            list.add((ActionProto) ActionProto.newBuilder()
+                             .setShowDetails(ShowDetailsProto.newBuilder().setDetails(
+                                     DetailsProto.newBuilder()
+                                             .setTitle("Details title")
+                                             .setShowImagePlaceholder(true)))
+                             .build());
+        }
         // Add "Done" button.
         list.add((ActionProto) ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder().addChoices(
@@ -135,120 +137,109 @@ public class AutofillAssistantBottomsheetTest {
 
     @Test
     @MediumTest
-    @DisabledTest
     public void testNoResize() {
         AutofillAssistantTestService testService = new AutofillAssistantTestService(
-                Collections.singletonList(makeScript(RESIZE_LAYOUT_VIEWPORT, HANDLE)));
+                Collections.singletonList(makeScript(NO_RESIZE, HANDLE, false)));
         startAutofillAssistant(mTestRule.getActivity(), testService);
 
-        waitUntilViewMatchesCondition(withText("Hello world!"), isCompletelyDisplayed());
+        waitUntilViewMatchesCondition(withText("Focus element"), isCompletelyDisplayed());
         onView(withText("Focus element")).perform(click());
-        waitUntilViewMatchesCondition(withText("Details title"), isCompletelyDisplayed());
-        checkElementIsCoveredByBottomsheet("bottom");
+        checkElementIsCoveredByBottomsheet("bottom", true);
         onView(withId(R.id.swipe_indicator)).perform(swipeDownToMinimize());
+        waitUntilViewMatchesCondition(withText("Hello world!"), not(isDisplayed()));
         // Since no resizing of the viewport happens in this mode, the element is partially covered
         // even when the bottomsheet is minimized
-        waitUntilViewMatchesCondition(withText("Hello world!"), not(isDisplayed()));
-        checkElementIsCoveredByBottomsheet("bottom");
-        onView(withText("Details title")).check(matches(not(isDisplayed())));
+        checkElementIsCoveredByBottomsheet("bottom", true);
         onView(withText("Done")).check(matches(not(isDisplayed())));
         onView(withId(R.id.swipe_indicator)).perform(swipeUpToExpand());
-        checkElementIsCoveredByBottomsheet("bottom");
-        onView(withText("Details title")).check(matches(isCompletelyDisplayed()));
+        checkElementIsCoveredByBottomsheet("bottom", true);
+        waitUntilViewMatchesCondition(withText("Hello world!"), isDisplayed());
     }
 
     @Test
     @MediumTest
-    @DisabledTest
     public void testResizeLayoutViewport() {
         AutofillAssistantTestService testService = new AutofillAssistantTestService(
-                Collections.singletonList(makeScript(RESIZE_LAYOUT_VIEWPORT, HANDLE)));
+                Collections.singletonList(makeScript(RESIZE_LAYOUT_VIEWPORT, HANDLE, false)));
         startAutofillAssistant(mTestRule.getActivity(), testService);
 
-        waitUntilViewMatchesCondition(withText("Hello world!"), isCompletelyDisplayed());
+        waitUntilViewMatchesCondition(withText("Focus element"), isCompletelyDisplayed());
         onView(withText("Focus element")).perform(click());
-        waitUntilViewMatchesCondition(withText("Details title"), isCompletelyDisplayed());
-        checkElementIsCoveredByBottomsheet("bottom");
+        checkElementIsCoveredByBottomsheet("bottom", true);
         onView(withId(R.id.swipe_indicator)).perform(swipeDownToMinimize());
         // Minimizing the bottomsheet should completely uncover the bottom element.
         waitUntilViewMatchesCondition(withText("Hello world!"), not(isDisplayed()));
-        checkElementIsCoveredByBottomsheetByAtMost("bottom", 10);
-        onView(withText("Details title")).check(matches(not(isDisplayed())));
+        checkElementIsCoveredByBottomsheet("bottom", false);
         onView(withText("Done")).check(matches(not(isDisplayed())));
         onView(withId(R.id.swipe_indicator)).perform(swipeUpToExpand());
-        checkElementIsCoveredByBottomsheet("bottom");
-        onView(withText("Details title")).check(matches(isCompletelyDisplayed()));
+        checkElementIsCoveredByBottomsheet("bottom", true);
+        waitUntilViewMatchesCondition(withText("Hello world!"), isDisplayed());
     }
 
     @Test
     @MediumTest
-    @DisabledTest
     public void testResizeVisualViewport() {
         AutofillAssistantTestService testService = new AutofillAssistantTestService(
-                Collections.singletonList(makeScript(RESIZE_VISUAL_VIEWPORT, HANDLE)));
+                Collections.singletonList(makeScript(RESIZE_VISUAL_VIEWPORT, HANDLE, false)));
         startAutofillAssistant(mTestRule.getActivity(), testService);
 
-        waitUntilViewMatchesCondition(withText("Hello world!"), isCompletelyDisplayed());
+        waitUntilViewMatchesCondition(withText("Focus element"), isCompletelyDisplayed());
         onView(withText("Focus element")).perform(click());
-        waitUntilViewMatchesCondition(withText("Details title"), isCompletelyDisplayed());
         // The viewport should be resized so that the bottom element is not covered by the bottom
         // sheet.
-        checkElementIsCoveredByBottomsheetByAtMost("bottom", 10);
+        checkElementIsCoveredByBottomsheet("bottom", false);
         onView(withId(R.id.swipe_indicator)).perform(swipeDownToMinimize());
         waitUntilViewMatchesCondition(withText("Hello world!"), not(isDisplayed()));
-        checkElementIsCoveredByBottomsheetByAtMost("bottom", 10);
-        onView(withText("Details title")).check(matches(not(isDisplayed())));
+        checkElementIsCoveredByBottomsheet("bottom", false);
         onView(withText("Done")).check(matches(not(isDisplayed())));
         onView(withId(R.id.swipe_indicator)).perform(swipeUpToExpand());
-        checkElementIsCoveredByBottomsheet("bottom");
-        onView(withText("Details title")).check(matches(isCompletelyDisplayed()));
+        checkElementIsCoveredByBottomsheet("bottom", true);
+        waitUntilViewMatchesCondition(withText("Hello world!"), isDisplayed());
     }
 
     @Test
     @MediumTest
-    @DisabledTest
     public void testHandleHeader() {
         AutofillAssistantTestService testService = new AutofillAssistantTestService(
-                Collections.singletonList(makeScript(RESIZE_LAYOUT_VIEWPORT, HANDLE_HEADER)));
+                Collections.singletonList(makeScript(RESIZE_LAYOUT_VIEWPORT, HANDLE_HEADER, true)));
         startAutofillAssistant(mTestRule.getActivity(), testService);
 
-        waitUntilViewMatchesCondition(withText("Hello world!"), isCompletelyDisplayed());
+        waitUntilViewMatchesCondition(withText("Focus element"), isCompletelyDisplayed());
         onView(withText("Focus element")).perform(click());
         waitUntilViewMatchesCondition(withText("Details title"), isCompletelyDisplayed());
-        checkElementIsCoveredByBottomsheet("bottom");
+        checkElementIsCoveredByBottomsheet("bottom", true);
         onView(withId(R.id.swipe_indicator)).perform(swipeDownToMinimize());
-        checkElementIsCoveredByBottomsheetByAtMost("bottom", 10);
+        checkElementIsCoveredByBottomsheet("bottom", false);
         // The header should be visible even when minimized
         onView(withText("Hello world!")).check(matches(isCompletelyDisplayed()));
         onView(withText("Details title")).check(matches(not(isDisplayed())));
         onView(withText("Done")).check(matches(not(isDisplayed())));
         onView(withId(R.id.swipe_indicator)).perform(swipeUpToExpand());
-        checkElementIsCoveredByBottomsheet("bottom");
+        checkElementIsCoveredByBottomsheet("bottom", true);
         onView(withText("Details title")).check(matches(isCompletelyDisplayed()));
     }
 
     @Test
     @MediumTest
-    @DisabledTest
     public void testHandleHeaderCarousels() {
         AutofillAssistantTestService testService =
                 new AutofillAssistantTestService(Collections.singletonList(
-                        makeScript(RESIZE_LAYOUT_VIEWPORT, HANDLE_HEADER_CAROUSELS)));
+                        makeScript(RESIZE_LAYOUT_VIEWPORT, HANDLE_HEADER_CAROUSELS, true)));
         startAutofillAssistant(mTestRule.getActivity(), testService);
 
-        waitUntilViewMatchesCondition(withText("Hello world!"), isCompletelyDisplayed());
+        waitUntilViewMatchesCondition(withText("Focus element"), isCompletelyDisplayed());
         onView(withText("Focus element")).perform(click());
         waitUntilViewMatchesCondition(withText("Details title"), isCompletelyDisplayed());
-        checkElementIsCoveredByBottomsheet("bottom");
+        checkElementIsCoveredByBottomsheet("bottom", true);
         onView(withId(R.id.swipe_indicator)).perform(swipeDownToMinimize());
-        checkElementIsCoveredByBottomsheetByAtMost("bottom", 10);
+        checkElementIsCoveredByBottomsheet("bottom", false);
         // The header should be visible even when minimized
         onView(withText("Hello world!")).check(matches(isCompletelyDisplayed()));
         // The button gets initially hidden while swiping down but should reappear shortly after.
         waitUntilViewMatchesCondition(withText("Done"), isCompletelyDisplayed());
         onView(withText("Details title")).check(matches(not(isDisplayed())));
         onView(withId(R.id.swipe_indicator)).perform(swipeUpToExpand());
-        checkElementIsCoveredByBottomsheet("bottom");
+        checkElementIsCoveredByBottomsheet("bottom", true);
         onView(withText("Details title")).check(matches(isCompletelyDisplayed()));
     }
 
@@ -271,35 +262,18 @@ public class AutofillAssistantBottomsheetTest {
                 }, Press.FINGER));
     }
 
-    private void checkElementIsCoveredByBottomsheet(String elementId) {
-        validateElementsCoverageByBottomsheet(elementId,
-                (Integer percCovered)
-                        -> percCovered > 0,
-                "Time out while waiting for element '" + elementId
-                        + "' to become covered by bottomsheet.");
-    }
-
-    private void checkElementIsCoveredByBottomsheetByAtMost(String elementId, int maxPercCovered) {
-        validateElementsCoverageByBottomsheet(elementId,
-                (Integer percCovered)
-                        -> percCovered <= maxPercCovered,
-                "Time out while waiting for element '" + elementId
-                        + "' to become covered by bottomsheet by at most " + maxPercCovered + "%.");
-    }
-
-    // TODO: it would be better to merge this method with waitUntilViewMatchesCondition
-    /* Check whether the element is covered by the bottomsheet*/
-    private void validateElementsCoverageByBottomsheet(
-            String elementId, Function<Integer, Boolean> percValidation, String message) {
-        CriteriaHelper.pollInstrumentationThread(new Criteria(message) {
+    private void checkElementIsCoveredByBottomsheet(String elementId, boolean shouldBeCovered) {
+        CriteriaHelper.pollInstrumentationThread(new Criteria("Timeout while waiting for element '"
+                + elementId + "' to become " + (shouldBeCovered ? "covered" : "not covered")
+                + " by the bottomsheet") {
             @Override
             public boolean isSatisfied() {
                 try {
                     float y = GeneralLocation.TOP_CENTER.calculateCoordinates(
-                            mTestRule.getActivity().findViewById(R.id.bottom_sheet))[1];
+                            mTestRule.getActivity().findViewById(
+                                    R.id.autofill_assistant_bottom_sheet_toolbar))[1];
                     Rect el = getAbsoluteBoundingRect(elementId, mTestRule);
-                    int percCovered = (int) ((el.bottom - y) / (el.bottom - el.top) * 100);
-                    return percValidation.apply(percCovered);
+                    return el.bottom > y == shouldBeCovered;
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }

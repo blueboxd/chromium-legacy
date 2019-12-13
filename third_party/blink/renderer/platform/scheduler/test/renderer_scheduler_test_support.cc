@@ -32,10 +32,6 @@ class SimpleMockMainThreadScheduler : public WebMockThreadScheduler {
     return base::ThreadTaskRunnerHandle::Get();
   }
 
-  scoped_refptr<base::SingleThreadTaskRunner> InputTaskRunner() override {
-    return base::ThreadTaskRunnerHandle::Get();
-  }
-
   scoped_refptr<base::SingleThreadTaskRunner> CleanupTaskRunner() override {
     return base::ThreadTaskRunnerHandle::Get();
   }

@@ -19,15 +19,17 @@
       if (event.shiftKey)
         log('shiftKey');
       log('----Touches----');
-      for (var i = 0; i < event.touches.length; i++) {
-        var touch = event.touches[i];
-        log('id: ' + i);
-        log('pageX: ' + touch.pageX);
-        log('pageY: ' + touch.pageY);
-        log('radiusX: ' + touch.radiusX);
-        log('radiusY: ' + touch.radiusY);
-        log('rotationAngle: ' + touch.rotationAngle);
-        log('force: ' + touch.force);
+      if (event.touches) {
+        for (var i = 0; i < event.touches.length; i++) {
+          var touch = event.touches[i];
+          log('id: ' + i);
+          log('pageX: ' + touch.pageX);
+          log('pageY: ' + touch.pageY);
+          log('radiusX: ' + touch.radiusX);
+          log('radiusY: ' + touch.radiusY);
+          log('rotationAngle: ' + touch.rotationAngle);
+          log('force: ' + touch.force);
+        }
       }
       eventCount++;
       if (eventCount === expectedEventCount)
@@ -85,14 +87,29 @@
       'clickCount': 1,
       'x': 100,
       'y': 200
+    },
+    {
+      'type': 'mousePressed',
+      'button': 'forward',
+      'clickCount': 1,
+      'x': 100,
+      'y': 200
+    },
+    {
+      'type': 'mousePressed',
+      'button': 'back',
+      'clickCount': 1,
+      'x': 100,
+      'y': 200
     }
   ];
 
   await dp.Emulation.setTouchEmulationEnabled({enabled: true});
   await dp.Emulation.setEmitTouchEventsForMouse({enabled: true});
 
-  // Moving mouse while not pressed does not generate touch events.
-  await session.evaluate(`expectedEventCount = ${events.length - 2}`);
+  // Moving mouse while not pressed and press with button with forward/back
+  // button does not generate touch events.
+  await session.evaluate(`expectedEventCount = ${events.length - 4}`);
 
   var time = Number(new Date()) / 1000;
   for (var index = 0; index < events.length; index++) {

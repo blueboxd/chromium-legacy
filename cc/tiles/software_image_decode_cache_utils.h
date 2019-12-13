@@ -5,6 +5,10 @@
 #ifndef CC_TILES_SOFTWARE_IMAGE_DECODE_CACHE_UTILS_H_
 #define CC_TILES_SOFTWARE_IMAGE_DECODE_CACHE_UTILS_H_
 
+#include <limits>
+#include <memory>
+#include <string>
+
 #include "base/memory/discardable_memory.h"
 #include "base/memory/scoped_refptr.h"
 #include "cc/cc_export.h"
@@ -181,11 +185,15 @@ class SoftwareImageDecodeCacheUtils {
     bool cached_ = false;
   };
 
+  // |on_no_memory| is called when memory allocation fails in this function,
+  // before retrying it once. As a consequence, this should free memory, and
+  // importantly, address space as well.
   static std::unique_ptr<CacheEntry> DoDecodeImage(
       const CacheKey& key,
       const PaintImage& image,
       SkColorType color_type,
-      PaintImage::GeneratorClientId client_id);
+      PaintImage::GeneratorClientId client_id,
+      base::OnceClosure on_no_memory);
   static std::unique_ptr<CacheEntry> GenerateCacheEntryFromCandidate(
       const CacheKey& key,
       const DecodedDrawImage& candidate,

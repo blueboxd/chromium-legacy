@@ -179,11 +179,12 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   friend class AnimationDocumentTimelineTest;
 };
 
-DEFINE_TYPE_CASTS(DocumentTimeline,
-                  AnimationTimeline,
-                  timeline,
-                  timeline->IsDocumentTimeline(),
-                  timeline.IsDocumentTimeline());
+template <>
+struct DowncastTraits<DocumentTimeline> {
+  static bool AllowFrom(const AnimationTimeline& timeline) {
+    return timeline.IsDocumentTimeline();
+  }
+};
 
 }  // namespace blink
 

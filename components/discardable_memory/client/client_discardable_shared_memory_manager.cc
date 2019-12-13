@@ -221,9 +221,17 @@ ClientDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
 
   int32_t new_id = g_next_discardable_shared_memory_id.GetNext();
 
+  if (bytes_allocated_limit_for_testing_ &&
+      heap_->GetSize() >= bytes_allocated_limit_for_testing_) {
+    return nullptr;
+  }
+
   // Ask parent process to allocate a new discardable shared memory segment.
   std::unique_ptr<base::DiscardableSharedMemory> shared_memory =
       AllocateLockedDiscardableSharedMemory(allocation_size_in_bytes, new_id);
+
+  if (!shared_memory)
+    return nullptr;
 
   // Create span for allocated memory.
   // Spans are managed by |heap_| (the member of
@@ -382,16 +390,14 @@ ClientDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
   // This is likely address space exhaustion in the the browser process. We
   // don't want to crash the browser process for that, which is why the check is
   // here, and not there.
-  //
-  // TODO(crbug.com/983348): If this crashing a lot, fall back to a regular
-  // allocation in the renderer process.
   if (!region.IsValid())
-    base::TerminateBecauseOutOfMemory(size);
+    return nullptr;
 
   auto memory =
       std::make_unique<base::DiscardableSharedMemory>(std::move(region));
   if (!memory->Map(size))
-    base::TerminateBecauseOutOfMemory(size);
+    return nullptr;
+
   return memory;
 }
 

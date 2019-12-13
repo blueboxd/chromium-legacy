@@ -90,6 +90,10 @@ class TabSharingUIViewsBrowserTest : public InProcessBrowserTest {
                 int shared_tab_index,
                 size_t infobar_count = 1,
                 bool has_border = true) {
+#if defined(OS_CHROMEOS)
+    // TODO(https://crbug.com/1030925) fix contents border on ChromeOS.
+    has_border = false;
+#endif
     views::Widget* contents_border = GetContentsBorder(browser);
     EXPECT_EQ(has_border, contents_border != nullptr);
     auto capture_indicator = GetCaptureIndicator();
@@ -324,10 +328,15 @@ IN_PROC_BROWSER_TEST_F(MultipleTabSharingUIViewsBrowserTest, VerifyUi) {
   // Check that the border is only displayed on the last shared tab (known
   // limitation https://crbug.com/996631).
   views::Widget* contents_border = GetContentsBorder(browser());
+#if defined(OS_CHROMEOS)
+  // TODO(https://crbug.com/1030925) fix contents border on ChromeOS.
+  EXPECT_EQ(nullptr, contents_border);
+#else
   for (int i = 0; i < tab_count; ++i) {
     ActivateTab(browser(), i);
     EXPECT_EQ(i == 3, contents_border->IsVisible());
   }
+#endif
 }
 
 IN_PROC_BROWSER_TEST_F(MultipleTabSharingUIViewsBrowserTest, StopSharing) {

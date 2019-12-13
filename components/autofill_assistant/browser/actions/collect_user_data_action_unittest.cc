@@ -15,6 +15,7 @@
 #include "components/autofill_assistant/browser/actions/mock_action_delegate.h"
 #include "components/autofill_assistant/browser/mock_personal_data_manager.h"
 #include "components/autofill_assistant/browser/mock_website_login_fetcher.h"
+#include "components/autofill_assistant/browser/user_model.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -62,7 +63,7 @@ using ::testing::SizeIs;
 
 void SetRequiredTermsFields(CollectUserDataProto* data,
                             bool request_terms_and_conditions) {
-  data->set_thirdparty_privacy_notice_text("privacy");
+  data->set_privacy_notice_text("privacy");
 
   if (request_terms_and_conditions) {
     data->set_accept_terms_and_conditions_text("terms and conditions");
@@ -93,7 +94,7 @@ class CollectUserDataActionTest : public content::RenderViewHostTestHarness {
         .WillByDefault(
             Invoke([this](CollectUserDataOptions* collect_user_data_options) {
               std::move(collect_user_data_options->confirm_callback)
-                  .Run(&user_data_);
+                  .Run(&user_data_, &user_model_);
             }));
 
     ON_CALL(mock_website_login_fetcher_, OnGetLoginsForUrl(_, _))
@@ -115,6 +116,7 @@ class CollectUserDataActionTest : public content::RenderViewHostTestHarness {
   MockWebsiteLoginFetcher mock_website_login_fetcher_;
   MockActionDelegate mock_action_delegate_;
   UserData user_data_;
+  UserModel user_model_;
   ClientMemory client_memory_;
 };
 
@@ -132,7 +134,7 @@ TEST_F(CollectUserDataActionTest, FailsForMissingPrivacyText) {
 TEST_F(CollectUserDataActionTest, SucceedsForPrivacyTextPresent) {
   ActionProto action_proto;
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
-  collect_user_data_proto->set_thirdparty_privacy_notice_text("privacy");
+  collect_user_data_proto->set_privacy_notice_text("privacy");
   collect_user_data_proto->set_request_terms_and_conditions(false);
 
   ON_CALL(mock_action_delegate_, CollectUserData(_))
@@ -141,7 +143,7 @@ TEST_F(CollectUserDataActionTest, SucceedsForPrivacyTextPresent) {
             user_data_.succeed = true;
             user_data_.terms_and_conditions = ACCEPTED;
             std::move(collect_user_data_options->confirm_callback)
-                .Run(&user_data_);
+                .Run(&user_data_, &user_model_);
           }));
 
   EXPECT_CALL(
@@ -160,7 +162,7 @@ TEST_F(CollectUserDataActionTest, SucceedsForPrivacyTextPresent) {
 TEST_F(CollectUserDataActionTest, FailsForMissingTermsAcceptTextIfRequired) {
   ActionProto action_proto;
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
-  collect_user_data_proto->set_thirdparty_privacy_notice_text("privacy");
+  collect_user_data_proto->set_privacy_notice_text("privacy");
   collect_user_data_proto->set_request_terms_and_conditions(true);
   collect_user_data_proto->set_terms_require_review_text("terms review");
 
@@ -174,7 +176,7 @@ TEST_F(CollectUserDataActionTest, FailsForMissingTermsAcceptTextIfRequired) {
 TEST_F(CollectUserDataActionTest, FailsForMissingTermsReviewTextIfRequired) {
   ActionProto action_proto;
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
-  collect_user_data_proto->set_thirdparty_privacy_notice_text("privacy");
+  collect_user_data_proto->set_privacy_notice_text("privacy");
   collect_user_data_proto->set_request_terms_and_conditions(true);
   collect_user_data_proto->set_accept_terms_and_conditions_text(
       "terms and conditions");
@@ -190,7 +192,7 @@ TEST_F(CollectUserDataActionTest, FailsForMissingTermsReviewTextIfRequired) {
 TEST_F(CollectUserDataActionTest, SucceedsForCheckboxIfReviewTextMissing) {
   ActionProto action_proto;
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
-  collect_user_data_proto->set_thirdparty_privacy_notice_text("privacy");
+  collect_user_data_proto->set_privacy_notice_text("privacy");
   collect_user_data_proto->set_request_terms_and_conditions(true);
   collect_user_data_proto->set_accept_terms_and_conditions_text(
       "terms and conditions");
@@ -202,7 +204,7 @@ TEST_F(CollectUserDataActionTest, SucceedsForCheckboxIfReviewTextMissing) {
             user_data_.succeed = true;
             user_data_.terms_and_conditions = ACCEPTED;
             std::move(collect_user_data_options->confirm_callback)
-                .Run(&user_data_);
+                .Run(&user_data_, &user_model_);
           }));
 
   EXPECT_CALL(
@@ -221,7 +223,7 @@ TEST_F(CollectUserDataActionTest, SucceedsForCheckboxIfReviewTextMissing) {
 TEST_F(CollectUserDataActionTest, SucceedsForAllTermsTextPresent) {
   ActionProto action_proto;
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
-  collect_user_data_proto->set_thirdparty_privacy_notice_text("privacy");
+  collect_user_data_proto->set_privacy_notice_text("privacy");
   collect_user_data_proto->set_request_terms_and_conditions(true);
   collect_user_data_proto->set_accept_terms_and_conditions_text(
       "terms and conditions");
@@ -234,7 +236,7 @@ TEST_F(CollectUserDataActionTest, SucceedsForAllTermsTextPresent) {
             user_data_.succeed = true;
             user_data_.terms_and_conditions = ACCEPTED;
             std::move(collect_user_data_options->confirm_callback)
-                .Run(&user_data_);
+                .Run(&user_data_, &user_model_);
           }));
 
   EXPECT_CALL(
@@ -288,7 +290,7 @@ TEST_F(CollectUserDataActionTest, SelectLogin) {
             user_data_.login_choice_identifier.assign(
                 collect_user_data_options->login_choices[0].identifier);
             std::move(collect_user_data_options->confirm_callback)
-                .Run(&user_data_);
+                .Run(&user_data_, &user_model_);
           }));
 
   EXPECT_CALL(callback_,
@@ -385,7 +387,7 @@ TEST_F(CollectUserDataActionTest, SelectContactDetails) {
             user_data_.contact_profile =
                 std::make_unique<autofill::AutofillProfile>(contact_profile);
             std::move(collect_user_data_options->confirm_callback)
-                .Run(&user_data_);
+                .Run(&user_data_, &user_model_);
           }));
 
   EXPECT_CALL(callback_,
@@ -428,14 +430,16 @@ TEST_F(CollectUserDataActionTest, SelectPaymentMethod) {
                                     billing_profile.guid());
 
   ON_CALL(mock_action_delegate_, CollectUserData(_))
-      .WillByDefault(Invoke([=](CollectUserDataOptions*
-                                    collect_user_data_options) {
-        user_data_.card = std::make_unique<autofill::CreditCard>(credit_card);
-        user_data_.billing_address =
-            std::make_unique<autofill::AutofillProfile>(billing_profile);
-        user_data_.succeed = true;
-        std::move(collect_user_data_options->confirm_callback).Run(&user_data_);
-      }));
+      .WillByDefault(
+          Invoke([=](CollectUserDataOptions* collect_user_data_options) {
+            user_data_.card =
+                std::make_unique<autofill::CreditCard>(credit_card);
+            user_data_.billing_address =
+                std::make_unique<autofill::AutofillProfile>(billing_profile);
+            user_data_.succeed = true;
+            std::move(collect_user_data_options->confirm_callback)
+                .Run(&user_data_, &user_model_);
+          }));
 
   EXPECT_CALL(
       callback_,
@@ -492,7 +496,7 @@ TEST_F(CollectUserDataActionTest, ContactDetailsCanHandleUtf8) {
             user_data_.contact_profile =
                 std::make_unique<autofill::AutofillProfile>(contact_profile);
             std::move(collect_user_data_options->confirm_callback)
-                .Run(&user_data_);
+                .Run(&user_data_, &user_model_);
           }));
 
   EXPECT_CALL(
@@ -677,7 +681,7 @@ TEST_F(CollectUserDataActionTest, SelectDateTimeRange) {
             user_data_.date_time_range_start = actual_pickup_time;
             user_data_.date_time_range_end = actual_return_time;
             std::move(collect_user_data_options->confirm_callback)
-                .Run(&user_data_);
+                .Run(&user_data_, &user_model_);
           }));
 
   EXPECT_CALL(
@@ -705,7 +709,7 @@ TEST_F(CollectUserDataActionTest, StaticSectionValid) {
           Invoke([this](CollectUserDataOptions* collect_user_data_options) {
             user_data_.succeed = true;
             std::move(collect_user_data_options->confirm_callback)
-                .Run(&user_data_);
+                .Run(&user_data_, &user_model_);
           }));
 
   auto* static_section =
@@ -748,7 +752,7 @@ TEST_F(CollectUserDataActionTest, TextInputSectionValid) {
           Invoke([this](CollectUserDataOptions* collect_user_data_options) {
             user_data_.succeed = true;
             std::move(collect_user_data_options->confirm_callback)
-                .Run(&user_data_);
+                .Run(&user_data_, &user_model_);
           }));
 
   auto* text_input_section =
@@ -834,7 +838,7 @@ TEST_F(CollectUserDataActionTest, TextInputSectionWritesToClientMemory) {
             user_data_.succeed = true;
             user_data_.additional_values_to_store["key2"] = "modified";
             std::move(collect_user_data_options->confirm_callback)
-                .Run(&user_data_);
+                .Run(&user_data_, &user_model_);
           }));
 
   auto* text_input_section =
@@ -899,7 +903,7 @@ TEST_F(CollectUserDataActionTest, AllowedBasicCardNetworks) {
                 "01", "2020", user_data_.billing_address->guid());
 
             std::move(collect_user_data_options->confirm_callback)
-                .Run(&user_data_);
+                .Run(&user_data_, &user_model_);
           }));
 
   EXPECT_CALL(
@@ -1001,7 +1005,7 @@ TEST_F(CollectUserDataActionTest, AttachesProfiles) {
             EXPECT_EQ(user_data_.available_profiles[0]->Compare(profile), 0);
 
             std::move(collect_user_data_options->confirm_callback)
-                .Run(&user_data_);
+                .Run(&user_data_, nullptr);
           }));
 
   ActionProto action_proto;
@@ -1039,7 +1043,7 @@ TEST_F(CollectUserDataActionTest, InitialSelectsProfileAndShippingAddress) {
             EXPECT_EQ(user_data_.shipping_address->Compare(profile), 0);
 
             std::move(collect_user_data_options->confirm_callback)
-                .Run(&user_data_);
+                .Run(&user_data_, nullptr);
           }));
 
   ActionProto action_proto;
@@ -1082,7 +1086,7 @@ TEST_F(CollectUserDataActionTest, InitialSelectsProfileFromDefaultEmail) {
             EXPECT_EQ(user_data_.contact_profile->Compare(profile_b), 0);
 
             std::move(collect_user_data_options->confirm_callback)
-                .Run(&user_data_);
+                .Run(&user_data_, nullptr);
           }));
 
   ActionProto action_proto;
@@ -1124,7 +1128,7 @@ TEST_F(CollectUserDataActionTest, KeepsSelectedProfileAndShippingAddress) {
             EXPECT_EQ(user_data_.shipping_address->Compare(profile), 0);
 
             std::move(collect_user_data_options->confirm_callback)
-                .Run(&user_data_);
+                .Run(&user_data_, nullptr);
           }));
 
   ActionProto action_proto;
@@ -1212,20 +1216,22 @@ TEST_F(CollectUserDataActionTest, AttachesCreditCardsWithAddress) {
           Return(std::vector<autofill::CreditCard*>({&card_with_address})));
 
   ON_CALL(mock_action_delegate_, CollectUserData(_))
-      .WillByDefault(Invoke([=](CollectUserDataOptions*
-                                    collect_user_data_options) {
-        user_data_.succeed = true;
+      .WillByDefault(
+          Invoke([=](CollectUserDataOptions* collect_user_data_options) {
+            user_data_.succeed = true;
 
-        EXPECT_THAT(user_data_.available_payment_instruments, SizeIs(1));
-        EXPECT_EQ(user_data_.available_payment_instruments[0]->card->Compare(
-                      card_with_address),
-                  0);
-        EXPECT_EQ(user_data_.available_payment_instruments[0]
-                      ->billing_address->Compare(billing_address),
-                  0);
+            EXPECT_THAT(user_data_.available_payment_instruments, SizeIs(1));
+            EXPECT_EQ(
+                user_data_.available_payment_instruments[0]->card->Compare(
+                    card_with_address),
+                0);
+            EXPECT_EQ(user_data_.available_payment_instruments[0]
+                          ->billing_address->Compare(billing_address),
+                      0);
 
-        std::move(collect_user_data_options->confirm_callback).Run(&user_data_);
-      }));
+            std::move(collect_user_data_options->confirm_callback)
+                .Run(&user_data_, &user_model_);
+          }));
 
   ActionProto action_proto;
   auto* user_data = action_proto.mutable_collect_user_data();
@@ -1255,20 +1261,22 @@ TEST_F(CollectUserDataActionTest, AttachesCreditCardsWithoutAddress) {
           Return(std::vector<autofill::CreditCard*>({&card_without_address})));
 
   ON_CALL(mock_action_delegate_, CollectUserData(_))
-      .WillByDefault(Invoke([=](CollectUserDataOptions*
-                                    collect_user_data_options) {
-        user_data_.succeed = true;
+      .WillByDefault(
+          Invoke([=](CollectUserDataOptions* collect_user_data_options) {
+            user_data_.succeed = true;
 
-        EXPECT_THAT(user_data_.available_payment_instruments, SizeIs(1));
-        EXPECT_EQ(user_data_.available_payment_instruments[0]->card->Compare(
-                      card_without_address),
-                  0);
-        EXPECT_EQ(
-            user_data_.available_payment_instruments[0]->billing_address.get(),
-            nullptr);
+            EXPECT_THAT(user_data_.available_payment_instruments, SizeIs(1));
+            EXPECT_EQ(
+                user_data_.available_payment_instruments[0]->card->Compare(
+                    card_without_address),
+                0);
+            EXPECT_EQ(user_data_.available_payment_instruments[0]
+                          ->billing_address.get(),
+                      nullptr);
 
-        std::move(collect_user_data_options->confirm_callback).Run(&user_data_);
-      }));
+            std::move(collect_user_data_options->confirm_callback)
+                .Run(&user_data_, &user_model_);
+          }));
 
   ActionProto action_proto;
   auto* user_data = action_proto.mutable_collect_user_data();
@@ -1315,7 +1323,7 @@ TEST_F(CollectUserDataActionTest, InitialSelectsCardAndAddress) {
             EXPECT_EQ(user_data_.billing_address->Compare(billing_address), 0);
 
             std::move(collect_user_data_options->confirm_callback)
-                .Run(&user_data_);
+                .Run(&user_data_, nullptr);
           }));
 
   ActionProto action_proto;
@@ -1363,7 +1371,7 @@ TEST_F(CollectUserDataActionTest, KeepsSelectedCardAndAddress) {
             EXPECT_EQ(user_data_.billing_address->Compare(billing_address), 0);
 
             std::move(collect_user_data_options->confirm_callback)
-                .Run(&user_data_);
+                .Run(&user_data_, nullptr);
           }));
 
   ActionProto action_proto;

@@ -99,24 +99,10 @@ void {{type.id}}::AppendSerialized(std::vector<uint8_t>* out) const {
     {{config.crdtp.namespace}}::cbor::EnvelopeEncoder envelope_encoder;
     envelope_encoder.EncodeStart(out);
     out->push_back({{config.crdtp.namespace}}::cbor::EncodeIndefiniteLengthMapStart());
-
     {% for property in type.properties %}
-      {% set property_type = protocol.resolve_type(property) %}
       {% set property_field = "m_" + property.name %}
-      {% if property.optional %}
-        if ({{property_field}}.isJust()) {
-          {{config.crdtp.namespace}}::cbor::EncodeString8(
-	      {{config.crdtp.namespace}}::SpanFrom("{{property.name}}"), out);
-	  {{config.crdtp.namespace}}::SerializerTraits<{{property_type.raw_type}}>::Serialize(
-	      {{property_field}}.fromJust(), out);
-        }
-      {% else %}
-        {{config.crdtp.namespace}}::cbor::EncodeString8(
-	    {{config.crdtp.namespace}}::SpanFrom("{{property.name}}"), out);
-        {{config.crdtp.namespace}}::SerializerTraits<{{property_type.raw_type}}>::Serialize({{property_field}}, out);
-      {% endif %}
+      {{config.crdtp.namespace}}::SerializeField({{config.crdtp.namespace}}::SpanFrom("{{property.name}}"), {{property_field}}, out);
     {% endfor %}
-
     out->push_back({{config.crdtp.namespace}}::cbor::EncodeStop());
     envelope_encoder.EncodeStop(out);
 }

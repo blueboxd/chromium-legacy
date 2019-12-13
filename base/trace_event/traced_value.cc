@@ -11,6 +11,7 @@
 
 #include "base/bits.h"
 #include "base/containers/circular_deque.h"
+#include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
@@ -324,7 +325,7 @@ class PickleWriter final : public TracedValue::Writer {
                   pickle_.size());
   }
 
-  std::unique_ptr<base::Value> ToBaseValue() const override {
+  std::unique_ptr<base::Value> ToBaseValue() const {
     base::Value root(base::Value::Type::DICTIONARY);
     Value* cur_dict = &root;
     Value* cur_list = nullptr;
@@ -450,13 +451,14 @@ void TracedValue::SetWriterFactoryCallback(WriterFactoryCallback callback) {
   g_writer_factory_callback.store(callback);
 }
 
-TracedValue::TracedValue() : TracedValue(0) {}
+TracedValue::TracedValue(size_t capacity)
+    : TracedValue(capacity, /*forced_json*/ false) {}
 
-TracedValue::TracedValue(size_t capacity, bool force_json) {
+TracedValue::TracedValue(size_t capacity, bool forced_json) {
   DEBUG_PUSH_CONTAINER(kStackTypeDict);
 
-  writer_ = force_json ? std::make_unique<PickleWriter>(capacity)
-                       : CreateWriter(capacity);
+  writer_ = forced_json ? std::make_unique<PickleWriter>(capacity)
+                        : CreateWriter(capacity);
 }
 
 TracedValue::~TracedValue() {
@@ -587,7 +589,8 @@ void TracedValue::EndDictionary() {
 }
 
 std::unique_ptr<base::Value> TracedValue::ToBaseValue() const {
-  return writer_->ToBaseValue();
+  DCHECK(writer_->IsPickleWriter());
+  return static_cast<const PickleWriter*>(writer_.get())->ToBaseValue();
 }
 
 void TracedValue::AppendAsTraceFormat(std::string* out) const {
@@ -604,6 +607,22 @@ bool TracedValue::AppendToProto(ProtoAppender* appender) {
 void TracedValue::EstimateTraceMemoryOverhead(
     TraceEventMemoryOverhead* overhead) {
   writer_->EstimateTraceMemoryOverhead(overhead);
+}
+
+std::string TracedValueJSON::ToJSON() const {
+  std::string result;
+  AppendAsTraceFormat(&result);
+  return result;
+}
+
+std::string TracedValueJSON::ToFormattedJSON() const {
+  std::string str;
+  base::JSONWriter::WriteWithOptions(
+      *ToBaseValue(),
+      base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION |
+          base::JSONWriter::OPTIONS_PRETTY_PRINT,
+      &str);
+  return str;
 }
 
 }  // namespace trace_event

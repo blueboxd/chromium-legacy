@@ -25,7 +25,6 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
-#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
@@ -100,9 +99,9 @@ static GoogleServiceAuthError CreateAuthError(
   return GoogleServiceAuthError::FromServiceError(*message);
 }
 
-bool AreCookiesEqual(const std::unique_ptr<net::CanonicalCookie>& lhs,
-                     const std::unique_ptr<net::CanonicalCookie>& rhs) {
-  return lhs->IsEquivalent(*rhs);
+bool AreCookiesEqual(const net::CanonicalCookie& lhs,
+                     const net::CanonicalCookie& rhs) {
+  return lhs.IsEquivalent(rhs);
 }
 
 void RecordApiCallResult(OAuth2MintTokenApiCallResult result) {
@@ -129,9 +128,9 @@ bool IssueAdviceInfoEntry::operator ==(const IssueAdviceInfoEntry& rhs) const {
 RemoteConsentResolutionData::RemoteConsentResolutionData() = default;
 RemoteConsentResolutionData::~RemoteConsentResolutionData() = default;
 RemoteConsentResolutionData::RemoteConsentResolutionData(
-    RemoteConsentResolutionData&& other) = default;
+    const RemoteConsentResolutionData& other) = default;
 RemoteConsentResolutionData& RemoteConsentResolutionData::operator=(
-    RemoteConsentResolutionData&& other) = default;
+    const RemoteConsentResolutionData& other) = default;
 
 bool RemoteConsentResolutionData::operator==(
     const RemoteConsentResolutionData& rhs) const {
@@ -402,7 +401,7 @@ bool OAuth2MintTokenFlow::ParseRemoteConsentResponse(
 
   base::Time time_now = base::Time::Now();
   bool success = true;
-  std::vector<std::unique_ptr<net::CanonicalCookie>> cookies;
+  std::vector<net::CanonicalCookie> cookies;
   for (const auto& cookie_dict : cookie_list) {
     if (!cookie_dict.is_dict()) {
       success = false;
@@ -444,7 +443,7 @@ bool OAuth2MintTokenFlow::ParseRemoteConsentResponse(
             is_http_only ? *is_http_only : false,
             net::StringToCookieSameSite(same_site ? *same_site : ""),
             net::COOKIE_PRIORITY_DEFAULT);
-    cookies.push_back(std::move(cookie));
+    cookies.push_back(*cookie);
   }
 
   if (success) {

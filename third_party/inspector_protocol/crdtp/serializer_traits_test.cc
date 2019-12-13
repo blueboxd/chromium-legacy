@@ -7,14 +7,18 @@
 #include <array>
 #include "test_platform.h"
 
-// The purpose of this test is to ensure that the SerializerTraits<X>::Serialize
-// methods invoke the appropriate functions from cbor.h; so, it's usually
-// sufficient to compare with what cbor.h function invocations would produce,
-// rather than making assertions on the specific bytes emitted by the
-// SerializerTraits code.
+// The purpose of this test is to ensure that the
+// {Field}SerializerTraits<X>::Serialize methods invoke the appropriate
+// functions from cbor.h; so, it's usually sufficient to compare with what
+// cbor.h function invocations would produce, rather than making assertions on
+// the specific bytes emitted by the SerializerTraits code.
 
 namespace crdtp {
 namespace {
+// =============================================================================
+// SerializerTraits - Encodes field values of protocol objects in CBOR.
+// =============================================================================
+
 TEST(SerializerTraits, Bool) {
   std::vector<uint8_t> out;
   SerializerTraits<bool>::Serialize(true, &out);
@@ -95,19 +99,20 @@ TEST(SerializerTraits, VectorOfDomainSpecificType) {
   EXPECT_THAT(out, testing::ElementsAreArray(expected));
 }
 
-TEST(SerializerTraits, ConvenienceMethods) {
-  // Shows that SerializerTraits<Foo> allows unique_ptr and raw pointers.
+TEST(SerializerTraits, ConstRefAndUniquePtr) {
+  // Shows that SerializerTraits<Foo> allows unique_ptr.
   Foo foo(42);
   auto bar = std::make_unique<Foo>(21);
 
   std::vector<uint8_t> out;
-  SerializerTraits<Foo>::Serialize(foo, &out);   // const Foo&
-  SerializerTraits<Foo>::Serialize(bar, &out);   // std::unqique_ptr<Foo>
-  SerializerTraits<Foo>::Serialize(&foo, &out);  // &Foo
+  // In this case, |foo| is taken as a const Foo&.
+  SerializerTraits<Foo>::Serialize(foo, &out);
+  // In this case, |bar| is taken as a const std::unique_ptr<Foo>&.
+  SerializerTraits<std::unique_ptr<Foo>>::Serialize(bar, &out);
 
   std::vector<uint8_t> expected;
-  for (int32_t v : {42, 21, 42})
-    cbor::EncodeInt32(v, &expected);
+  cbor::EncodeInt32(42, &expected);
+  cbor::EncodeInt32(21, &expected);
 
   EXPECT_THAT(out, testing::ElementsAreArray(expected));
 }
@@ -143,6 +148,77 @@ TEST(SerializerTraits, Exported) {
 
   std::vector<uint8_t> expected;
   cbor::EncodeString8(SpanFrom(exported.msg), &expected);
+
+  EXPECT_THAT(out, testing::ElementsAreArray(expected));
+}
+
+// =============================================================================
+// FieldSerializerTraits - Encodes fields of protocol objects in CBOR
+// =============================================================================
+TEST(FieldSerializerTraits, RequiredField) {
+  std::string value = "Hello, world.";
+
+  std::vector<uint8_t> out;
+  SerializeField(SpanFrom("msg"), value, &out);
+
+  std::vector<uint8_t> expected;
+  cbor::EncodeString8(SpanFrom("msg"), &expected);
+  cbor::EncodeString8(SpanFrom(value), &expected);
+
+  EXPECT_THAT(out, testing::ElementsAreArray(expected));
+}
+
+template <typename T>
+class FieldSerializerTraits_MaybeTest : public ::testing::Test {};
+using MaybeTypes =
+    ::testing::Types<glue::detail::ValueMaybe<bool>,
+                     glue::detail::ValueMaybe<double>,
+                     glue::detail::ValueMaybe<int32_t>,
+                     glue::detail::ValueMaybe<std::string>,
+                     glue::detail::PtrMaybe<Foo>,
+                     glue::detail::PtrMaybe<std::vector<std::unique_ptr<Foo>>>>;
+TYPED_TEST_SUITE(FieldSerializerTraits_MaybeTest, MaybeTypes);
+
+TYPED_TEST(FieldSerializerTraits_MaybeTest, NoOutputForFieldsIfNotJust) {
+  std::vector<uint8_t> out;
+  SerializeField(SpanFrom("maybe"), TypeParam(), &out);
+  EXPECT_THAT(out, testing::ElementsAreArray(std::vector<uint8_t>()));
+}
+
+TEST(FieldSerializerTraits, MaybeBool) {
+  std::vector<uint8_t> out;
+  SerializeField(SpanFrom("true"), glue::detail::ValueMaybe<bool>(true), &out);
+  SerializeField(SpanFrom("false"), glue::detail::ValueMaybe<bool>(false),
+                 &out);
+
+  std::vector<uint8_t> expected;
+  cbor::EncodeString8(SpanFrom("true"), &expected);
+  expected.push_back(cbor::EncodeTrue());
+  cbor::EncodeString8(SpanFrom("false"), &expected);
+  expected.push_back(cbor::EncodeFalse());
+
+  EXPECT_THAT(out, testing::ElementsAreArray(expected));
+}
+
+TEST(FieldSerializerTraits, MaybeDouble) {
+  std::vector<uint8_t> out;
+  SerializeField(SpanFrom("dbl"), glue::detail::ValueMaybe<double>(3.14), &out);
+
+  std::vector<uint8_t> expected;
+  cbor::EncodeString8(SpanFrom("dbl"), &expected);
+  cbor::EncodeDouble(3.14, &expected);
+
+  EXPECT_THAT(out, testing::ElementsAreArray(expected));
+}
+
+TEST(FieldSerializerTraits, MaybePtrFoo) {
+  std::vector<uint8_t> out;
+  SerializeField(SpanFrom("foo"),
+                 glue::detail::PtrMaybe<Foo>(std::make_unique<Foo>(42)), &out);
+
+  std::vector<uint8_t> expected;
+  cbor::EncodeString8(SpanFrom("foo"), &expected);
+  cbor::EncodeInt32(42, &expected);  // Simplified relative to production.
 
   EXPECT_THAT(out, testing::ElementsAreArray(expected));
 }

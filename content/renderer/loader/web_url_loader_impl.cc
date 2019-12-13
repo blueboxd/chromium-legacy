@@ -64,8 +64,8 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/common/security/security_style.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
-#include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_http_load_info.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -811,7 +811,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
 
     mojo::PendingRemote<blink::mojom::BlobRegistry> download_to_blob_registry;
     if (request.PassResponsePipeToClient()) {
-      blink::Platform::Current()->GetInterfaceProvider()->GetInterface(
+      blink::Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
           download_to_blob_registry.InitWithNewPipeAndPassReceiver());
     }
     resource_dispatcher_->StartSync(

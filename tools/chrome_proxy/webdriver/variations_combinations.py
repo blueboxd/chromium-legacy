@@ -46,7 +46,7 @@ def GetExperimentArgs():
     my_platform = 'mac'
   else:
     raise Exception('unknown platform!')
-  return fieldtrial_util.GenerateArgs(config_path, [my_platform])
+  return fieldtrial_util.GenerateArgs(config_path, my_platform)
 
 def GenerateTestSuites():
   """A generator function that yields non-blacklisted tests to run.

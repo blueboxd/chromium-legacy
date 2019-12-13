@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "components/invalidation/impl/channels_states.h"
 #include "components/invalidation/impl/fcm_sync_network_channel.h"
-#include "components/invalidation/impl/invalidation_listener.h"
 #include "components/invalidation/impl/per_user_topic_registration_manager.h"
 #include "components/invalidation/impl/unacked_invalidation_set.h"
 #include "components/invalidation/public/ack_handler.h"
@@ -34,8 +33,7 @@ class TopicInvalidationMap;
 // these topics will get dispatched) and passes them to
 // PerUserTopicRegistrationManager for subscription or unsubscription.
 class FCMInvalidationListener
-    : public InvalidationListener,
-      public AckHandler,
+    : public AckHandler,
       public FCMSyncNetworkChannel::Observer,
       public PerUserTopicRegistrationManager::Observer {
  public:
@@ -62,13 +60,6 @@ class FCMInvalidationListener
   // called at any time.
   void UpdateInterestedTopics(const Topics& topics);
 
-  // InvalidationListener implementation.
-  void Invalidate(const std::string& payload,
-                  const std::string& private_topic,
-                  const std::string& public_topic,
-                  int64_t version) override;
-  void InformTokenReceived(const std::string& token) override;
-
   // AckHandler implementation.
   void Acknowledge(const invalidation::ObjectId& id,
                    const syncer::AckHandle& handle) override;
@@ -91,10 +82,21 @@ class FCMInvalidationListener
   void EmitSavedInvalidationsForTest(const TopicInvalidationMap& to_emit);
 
  private:
+  // Callbacks for the |network_channel_|.
+  void InvalidationReceived(const std::string& payload,
+                            const std::string& private_topic,
+                            const std::string& public_topic,
+                            int64_t version);
+  void TokenReceived(const std::string& instance_id_token);
+
+  // Passes the |interested_topics_| to |per_user_topic_registration_manager_|
+  // for subscription/unsubscription.
   void DoSubscriptionUpdate();
 
   void Stop();
 
+  // Derives overall state based on |subscription_channel_state_| and
+  // |fcm_network_state_|.
   InvalidatorState GetState() const;
 
   void EmitStateChange();

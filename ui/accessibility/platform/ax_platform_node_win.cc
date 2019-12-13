@@ -6600,12 +6600,12 @@ bool AXPlatformNodeWin::IsUIAControl() const {
       // text to be effectively repeated.
       auto* parent = FromNativeViewAccessible(GetDelegate()->GetParent());
       while (parent) {
-        const AXNodeData& data = parent->GetData();
-        if (IsCellOrTableHeader(data.role))
-          return false;
+        const ui::AXNodeData& data = parent->GetData();
         switch (data.role) {
           case ax::mojom::Role::kButton:
+          case ax::mojom::Role::kCell:
           case ax::mojom::Role::kCheckBox:
+          case ax::mojom::Role::kColumnHeader:
           case ax::mojom::Role::kGroup:
           case ax::mojom::Role::kHeading:
           case ax::mojom::Role::kLineBreak:
@@ -6619,6 +6619,7 @@ bool AXPlatformNodeWin::IsUIAControl() const {
           case ax::mojom::Role::kRadioButton:
           case ax::mojom::Role::kRow:
           case ax::mojom::Role::kRowGroup:
+          case ax::mojom::Role::kRowHeader:
           case ax::mojom::Role::kStaticText:
           case ax::mojom::Role::kSwitch:
           case ax::mojom::Role::kTab:
@@ -6630,57 +6631,6 @@ bool AXPlatformNodeWin::IsUIAControl() const {
         }
         parent = FromNativeViewAccessible(parent->GetParent());
       }
-    }
-    const AXNodeData& data = GetData();
-    // https://docs.microsoft.com/en-us/windows/win32/winauto/uiauto-treeoverview#control-view
-    // The control view also includes noninteractive UI items that contribute
-    // to the logical structure of the UI.
-    if (IsControl(data.role) || ComputeUIALandmarkType() ||
-        IsTableLike(data.role) || IsList(data.role)) {
-      return true;
-    }
-    if (IsImage(data.role)) {
-      // If the author provides an explicitly empty alt text attribute then
-      // the image is decorational and should not be considered as a control.
-      if (data.role == ax::mojom::Role::kImage &&
-          data.GetNameFrom() ==
-              ax::mojom::NameFrom::kAttributeExplicitlyEmpty) {
-        return false;
-      }
-      return true;
-    }
-    switch (data.role) {
-      case ax::mojom::Role::kArticle:
-      case ax::mojom::Role::kBlockquote:
-      case ax::mojom::Role::kDetails:
-      case ax::mojom::Role::kFigure:
-      case ax::mojom::Role::kFooter:
-      case ax::mojom::Role::kFooterAsNonLandmark:
-      case ax::mojom::Role::kHeader:
-      case ax::mojom::Role::kHeaderAsNonLandmark:
-      case ax::mojom::Role::kLabelText:
-      case ax::mojom::Role::kListBoxOption:
-      case ax::mojom::Role::kListItem:
-      case ax::mojom::Role::kMeter:
-      case ax::mojom::Role::kProgressIndicator:
-      case ax::mojom::Role::kSection:
-      case ax::mojom::Role::kSplitter:
-      case ax::mojom::Role::kTime:
-        return true;
-      default:
-        break;
-    }
-    // Classify generic containers that are not clickable or focusable and have
-    // no name, description, landmark type, and is not the root of editable
-    // content as not controls.
-    // Doing so helps Narrator find all the content of live regions.
-    if (!data.GetBoolAttribute(ax::mojom::BoolAttribute::kHasAriaAttribute) &&
-        !data.GetBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot) &&
-        data.GetStringAttribute(ax::mojom::StringAttribute::kName).empty() &&
-        data.GetStringAttribute(ax::mojom::StringAttribute::kDescription)
-            .empty() &&
-        !data.HasState(ax::mojom::State::kFocusable) && !data.IsClickable()) {
-      return false;
     }
     return true;
   }

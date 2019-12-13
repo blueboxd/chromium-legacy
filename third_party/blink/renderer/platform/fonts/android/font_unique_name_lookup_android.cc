@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/platform/fonts/android/font_unique_name_lookup_android.h"
 #include "mojo/public/mojom/base/shared_memory.mojom-blink.h"
-#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -86,7 +86,7 @@ void FontUniqueNameLookupAndroid::EnsureServiceConnected() {
   if (service_)
     return;
 
-  Platform::Current()->GetInterfaceProvider()->GetInterface(
+  Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
       service_.BindNewPipeAndPassReceiver());
 }
 

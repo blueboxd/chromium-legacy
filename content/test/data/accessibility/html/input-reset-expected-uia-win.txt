@@ -1,4 +1,4 @@
 document
-++group IsControlElement=false
+++group
 ++++textbox
 ++++button Name='Reset'

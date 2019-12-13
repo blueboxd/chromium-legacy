@@ -33,6 +33,8 @@ class BreadcrumbManagerKeyedService : public KeyedService {
   std::list<std::string> GetEvents(size_t event_count_limit);
 
   // Logs a breadcrumb event with message data |event|.
+  // NOTE: |event| must not include newline characters as newlines are used by
+  // BreadcrumbPersistentStore as a deliminator.
   void AddEvent(const std::string& event);
 
   // Adds and removes observers.

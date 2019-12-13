@@ -47,6 +47,7 @@ OpenXrApiWrapper::~OpenXrApiWrapper() {
 }
 
 void OpenXrApiWrapper::Reset() {
+  unbounded_space_ = XR_NULL_HANDLE;
   local_space_ = XR_NULL_HANDLE;
   stage_space_ = XR_NULL_HANDLE;
   view_space_ = XR_NULL_HANDLE;
@@ -68,7 +69,7 @@ void OpenXrApiWrapper::Reset() {
 bool OpenXrApiWrapper::Initialize() {
   Reset();
   session_ended_ = false;
-  if (XR_FAILED(CreateInstance(&instance_))) {
+  if (XR_FAILED(CreateInstance(&instance_, &instance_metadata_))) {
     return false;
   }
   DCHECK(HasInstance());
@@ -145,6 +146,8 @@ bool OpenXrApiWrapper::HasSpace(XrReferenceSpaceType type) const {
       return view_space_ != XR_NULL_HANDLE;
     case XR_REFERENCE_SPACE_TYPE_STAGE:
       return stage_space_ != XR_NULL_HANDLE;
+    case XR_REFERENCE_SPACE_TYPE_UNBOUNDED_MSFT:
+      return unbounded_space_ != XR_NULL_HANDLE;
     default:
       NOTREACHED();
       return false;
@@ -230,12 +233,18 @@ XrResult OpenXrApiWrapper::InitSession(
   RETURN_IF_XR_FAILED(
       CreateSpace(XR_REFERENCE_SPACE_TYPE_LOCAL, &local_space_));
   RETURN_IF_XR_FAILED(CreateSpace(XR_REFERENCE_SPACE_TYPE_VIEW, &view_space_));
-  RETURN_IF_XR_FAILED(CreateGamepadHelper(input_helper));
 
   // It's ok if stage_space_ fails since not all OpenXR devices are required to
   // support this reference space.
   CreateSpace(XR_REFERENCE_SPACE_TYPE_STAGE, &stage_space_);
   UpdateStageBounds();
+
+  if (instance_metadata_.unboundedReferenceSpaceSupported) {
+    RETURN_IF_XR_FAILED(
+        CreateSpace(XR_REFERENCE_SPACE_TYPE_UNBOUNDED_MSFT, &unbounded_space_));
+  }
+
+  RETURN_IF_XR_FAILED(CreateGamepadHelper(input_helper));
 
   // Since the objects in these arrays are used on every frame,
   // we don't want to create and destroy these objects every frame,

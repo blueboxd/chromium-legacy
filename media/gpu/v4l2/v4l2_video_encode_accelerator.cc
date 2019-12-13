@@ -461,10 +461,6 @@ void V4L2VideoEncodeAccelerator::Destroy() {
   // We're destroying; cancel all callbacks.
   client_ptr_factory_.reset();
 
-  // If a flush is pending, notify client that it did not finish.
-  if (flush_callback_)
-    std::move(flush_callback_).Run(false);
-
   encoder_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&V4L2VideoEncodeAccelerator::DestroyTask, weak_this_));
@@ -784,6 +780,12 @@ void V4L2VideoEncodeAccelerator::DestroyTask() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
 
   weak_this_factory_.InvalidateWeakPtrs();
+
+  // If a flush is pending, notify client that it did not finish.
+  if (flush_callback_) {
+    child_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(std::move(flush_callback_), false));
+  }
 
   // Stop streaming and the device_poll_thread_.
   StopDevicePoll();

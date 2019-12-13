@@ -150,6 +150,7 @@ action_with_pydeps("generate_bindings_example") {
   ]
   outputs = [
     "${bindings_output_dir}/core/v8/example_dictionary.cc",
+    "${bindings_output_dir}/core/v8/example_dictionary.h",
   ]
 
   args = [

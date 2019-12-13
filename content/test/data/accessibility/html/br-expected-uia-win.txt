@@ -1,7 +1,7 @@
 document
 ++separator Name='<newline>'
 ++description Name='Text line 1'
-++group IsControlElement=false
+++group
 ++++description Name='Text line 2'
 ++++separator Name='<newline>'
 ++++description Name='Text line 3'

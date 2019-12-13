@@ -150,6 +150,10 @@ void NGFragmentItemsBuilder::ConvertToPhysical(WritingMode writing_mode,
   DCHECK(!is_converted_to_physical_);
 #endif
 
+  // Children of lines have line-relative offsets. Use line-writing mode to
+  // convert their logical offsets.
+  const WritingMode line_writing_mode = ToLineWritingMode(writing_mode);
+
   std::unique_ptr<NGFragmentItem>* item_iter = items_.begin();
   const LogicalOffset* offset = offsets_.begin();
   for (; item_iter != items_.end(); ++item_iter, ++offset) {
@@ -175,7 +179,7 @@ void NGFragmentItemsBuilder::ConvertToPhysical(WritingMode writing_mode,
           // Use `kLtr` because inline items are after bidi-reoder, and that
           // their offset is visual, not logical.
           item->SetOffset(
-              offset->ConvertToPhysical(writing_mode, TextDirection::kLtr,
+              offset->ConvertToPhysical(line_writing_mode, TextDirection::kLtr,
                                         line_box_bounds.size, item->Size()) +
               line_box_bounds.offset);
         }

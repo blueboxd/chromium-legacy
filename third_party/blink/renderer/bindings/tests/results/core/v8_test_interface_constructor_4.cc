@@ -70,14 +70,21 @@ namespace test_interface_constructor_4_v8_internal {
 static void Constructor1(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceConstructor4_ConstructorCallback");
 
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kConstructionContext, "TestInterfaceConstructor4");
+  ScriptState* script_state = ScriptState::From(
+      info.NewTarget().As<v8::Object>()->CreationContext());
+
   TestInterfaceConstructor4* test_interface_4_arg;
   test_interface_4_arg = V8TestInterfaceConstructor4::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!test_interface_4_arg) {
-    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToConstruct("TestInterfaceConstructor4", ExceptionMessages::ArgumentNotOfType(0, "TestInterfaceConstructor4")));
+    exception_state.ThrowTypeError(ExceptionMessages::ArgumentNotOfType(0, "TestInterfaceConstructor4"));
     return;
   }
 
-  TestInterfaceConstructor4* impl = TestInterfaceConstructor4::Create(test_interface_4_arg);
+  TestInterfaceConstructor4* impl = TestInterfaceConstructor4::Create(script_state, test_interface_4_arg, exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
   v8::Local<v8::Object> wrapper = info.Holder();
   wrapper = impl->AssociateWithWrapper(info.GetIsolate(), V8TestInterfaceConstructor4::GetWrapperTypeInfo(), wrapper);
   V8SetReturnValue(info, wrapper);
@@ -87,13 +94,18 @@ static void Constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceConstructor4_ConstructorCallback");
 
   ExceptionState exception_state(info.GetIsolate(), ExceptionState::kConstructionContext, "TestInterfaceConstructor4");
+  ScriptState* script_state = ScriptState::From(
+      info.NewTarget().As<v8::Object>()->CreationContext());
 
   V8StringResource<> usv_string_arg;
   usv_string_arg = NativeValueTraits<IDLUSVString>::NativeValue(info.GetIsolate(), info[0], exception_state);
   if (exception_state.HadException())
     return;
 
-  TestInterfaceConstructor4* impl = TestInterfaceConstructor4::Create(usv_string_arg);
+  TestInterfaceConstructor4* impl = TestInterfaceConstructor4::Create(script_state, usv_string_arg, exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
   v8::Local<v8::Object> wrapper = info.Holder();
   wrapper = impl->AssociateWithWrapper(info.GetIsolate(), V8TestInterfaceConstructor4::GetWrapperTypeInfo(), wrapper);
   V8SetReturnValue(info, wrapper);

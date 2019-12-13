@@ -754,20 +754,20 @@ public class AutofillAssistantCollectUserDataUiTest {
 
     @Test
     @MediumTest
-    public void testThirdpartyPrivacyNotice() throws Exception {
+    public void testPrivacyNotice() throws Exception {
         AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
         AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(model);
         AutofillAssistantCollectUserDataTestHelper
                 .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
                 () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
 
-        TextView privacyNotice = viewHolder.mTermsSection.findViewById(
-                R.id.payment_request_3rd_party_privacy_notice);
+        TextView privacyNotice =
+                viewHolder.mTermsSection.findViewById(R.id.collect_data_privacy_notice);
 
         // Setting a text from "backend".
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            model.set(AssistantCollectUserDataModel.THIRDPARTY_PRIVACY_NOTICE_TEXT,
-                    "Thirdparty privacy notice");
+            model.set(
+                    AssistantCollectUserDataModel.PRIVACY_NOTICE_TEXT, "Thirdparty privacy notice");
             model.set(AssistantCollectUserDataModel.VISIBLE, true);
         });
 

@@ -33,21 +33,7 @@ CompositorThreadScheduler::CompositorThreadScheduler(
     base::sequence_manager::SequenceManager* sequence_manager)
     : NonMainThreadSchedulerImpl(sequence_manager,
                                  TaskType::kCompositorThreadTaskQueueDefault),
-      input_task_queue_(
-          base::FeatureList::IsEnabled(kHighPriorityInputOnCompositorThread)
-              ? helper()->NewTaskQueue(
-                    base::sequence_manager::TaskQueue::Spec("input_tq")
-                        .SetShouldMonitorQuiescence(true))
-              : nullptr),
-      input_task_runner_(input_task_queue_
-                             ? input_task_queue_->CreateTaskRunner(
-                                   TaskType::kCompositorThreadTaskQueueInput)
-                             : nullptr),
       compositor_metrics_helper_(helper()->HasCPUTimingForEachTask()) {
-  if (input_task_queue_) {
-    input_task_queue_->SetQueuePriority(
-        base::sequence_manager::TaskQueue::QueuePriority::kHighestPriority);
-  }
   DCHECK(!g_compositor_thread_scheduler);
   g_compositor_thread_scheduler = this;
 }
@@ -85,16 +71,14 @@ CompositorThreadScheduler::IdleTaskRunner() {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-CompositorThreadScheduler::InputTaskRunner() {
-  if (input_task_runner_)
-    return input_task_runner_;
-  return helper()->DefaultTaskRunner();
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
 CompositorThreadScheduler::V8TaskRunner() {
   NOTREACHED();
   return nullptr;
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+CompositorThreadScheduler::DefaultTaskRunner() {
+  return helper()->DefaultTaskRunner();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
@@ -128,7 +112,6 @@ void CompositorThreadScheduler::RemoveTaskObserver(
 }
 
 void CompositorThreadScheduler::Shutdown() {
-  input_task_queue_->ShutdownTaskQueue();
 }
 
 void CompositorThreadScheduler::OnIdleTaskPosted() {}

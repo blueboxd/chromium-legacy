@@ -1,4 +1,4 @@
 document
-++group IsControlElement=false
+++group
 ++++document Name='Empty iframe'
 ++++++document

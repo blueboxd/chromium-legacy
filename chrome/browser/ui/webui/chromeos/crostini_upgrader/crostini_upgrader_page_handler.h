@@ -15,10 +15,6 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
-namespace content {
-class WebContents;
-}  // namespace content
-
 namespace chromeos {
 
 class CrostiniUpgraderPageHandler
@@ -26,7 +22,6 @@ class CrostiniUpgraderPageHandler
       public crostini::CrostiniUpgraderUIObserver {
  public:
   CrostiniUpgraderPageHandler(
-      content::WebContents* web_contents,
       crostini::CrostiniUpgraderUIDelegate* upgrader_ui_delegate,
       mojo::PendingReceiver<chromeos::crostini_upgrader::mojom::PageHandler>
           pending_page_handler,
@@ -39,7 +34,6 @@ class CrostiniUpgraderPageHandler
   // chromeos::crostini_upgrader::mojom::PageHandler:
   void Backup() override;
   void Upgrade() override;
-  void Restore() override;
   void Cancel() override;
   void CancelBeforeStart() override;
   void Close() override;
@@ -52,14 +46,11 @@ class CrostiniUpgraderPageHandler
   void OnUpgradeProgress(const std::vector<std::string>& messages) override;
   void OnUpgradeSucceeded() override;
   void OnUpgradeFailed() override;
-  void OnRestoreProgress(int percent) override;
-  void OnRestoreSucceeded() override;
-  void OnRestoreFailed() override;
   void OnCanceled() override;
 
  private:
-  content::WebContents* web_contents_;                          // Not owned.
-  crostini::CrostiniUpgraderUIDelegate* upgrader_ui_delegate_;  // Not owned.
+  // Not owned.
+  crostini::CrostiniUpgraderUIDelegate* upgrader_ui_delegate_;
   mojo::Receiver<chromeos::crostini_upgrader::mojom::PageHandler> receiver_;
   mojo::Remote<chromeos::crostini_upgrader::mojom::Page> page_;
   base::OnceClosure close_dialog_callback_;

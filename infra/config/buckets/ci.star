@@ -497,7 +497,6 @@ def clang_builder(*, name, cores=32, properties=None, **kwargs):
 
 clang_builder(
     name = 'CFI Linux CF',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 clang_builder(

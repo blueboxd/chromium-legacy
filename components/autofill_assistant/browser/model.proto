@@ -1,0 +1,42 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+option java_package = "org.chromium.chrome.browser.autofill_assistant.proto";
+option java_multiple_files = true;
+
+package autofill_assistant;
+
+message ModelProto {
+  message ModelValue {
+    optional string identifier = 1;
+    optional ValueProto value = 2;
+  }
+  // Maps model identifiers to their values.
+  repeated ModelValue values = 1;
+}
+
+// Remember to update the comparison operator in |user_model.cc| when adding new
+// fields.
+message ValueProto {
+  oneof kind {
+    StringList strings = 1;
+    BooleanList booleans = 2;
+    IntList ints = 3;
+  }
+}
+
+message StringList {
+  repeated string values = 1;
+}
+
+message BooleanList {
+  repeated bool values = 1;
+}
+
+message IntList {
+  repeated int32 values = 1;
+}

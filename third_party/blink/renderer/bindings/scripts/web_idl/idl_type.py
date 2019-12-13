@@ -261,9 +261,18 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
     @property
     def does_include_nullable_type(self):
         """
-        Returns True if |self| includes a nulllable type.
+        Returns True if this type includes a nulllable type.
         https://heycam.github.io/webidl/#dfn-includes-a-nullable-type
-        @return bool
+        """
+        return False
+
+    @property
+    def does_include_nullable_or_dict(self):
+        """
+        Returns True if this type includes a nullable type or a dictionary type.
+
+        IdlType's own definition of "includes a dictionary type" just follows
+        the definition of "includes a nullable type".
         """
         return False
 
@@ -567,7 +576,6 @@ class SimpleType(IdlType):
     def __hash__(self):
         return hash(self._name)
 
-    # IdlType overrides
     @property
     def syntactic_form(self):
         return self._format_syntactic_form(self._name)
@@ -701,7 +709,6 @@ class DefinitionType(IdlType, WithIdentifier):
     def __hash__(self):
         return hash(self.identifier)
 
-    # IdlType overrides
     @property
     def syntactic_form(self):
         assert not self.extended_attributes
@@ -713,6 +720,10 @@ class DefinitionType(IdlType, WithIdentifier):
         assert not self.extended_attributes
         assert not self.is_optional
         return self.identifier
+
+    @property
+    def does_include_nullable_or_dict(self):
+        return self.is_dictionary
 
     @property
     def is_interface(self):
@@ -769,7 +780,6 @@ class TypedefType(IdlType, WithIdentifier):
     def __hash__(self):
         return hash(self.identifier)
 
-    # IdlType overrides
     @property
     def syntactic_form(self):
         assert not self.extended_attributes
@@ -789,6 +799,10 @@ class TypedefType(IdlType, WithIdentifier):
     @property
     def does_include_nullable_type(self):
         return self.original_type.does_include_nullable_type
+
+    @property
+    def does_include_nullable_or_dict(self):
+        return self.original_type.does_include_nullable_or_dict
 
     @property
     def is_typedef(self):
@@ -827,7 +841,6 @@ class _ArrayLikeType(IdlType):
     def __hash__(self):
         return hash((self.__class__, self.element_type))
 
-    # IdlType overrides
     def apply_to_all_composing_elements(self, callback):
         callback(self)
         self.element_type.apply_to_all_composing_elements(callback)
@@ -854,7 +867,6 @@ class SequenceType(_ArrayLikeType):
             debug_info=debug_info,
             pass_key=pass_key)
 
-    # IdlType overrides
     @property
     def syntactic_form(self):
         return self._format_syntactic_form('sequence<{}>'.format(
@@ -887,7 +899,6 @@ class FrozenArrayType(_ArrayLikeType):
             debug_info=debug_info,
             pass_key=pass_key)
 
-    # IdlType overrides
     @property
     def syntactic_form(self):
         return self._format_syntactic_form('FrozenArray<{}>'.format(
@@ -916,7 +927,6 @@ class VariadicType(_ArrayLikeType):
             debug_info=debug_info,
             pass_key=pass_key)
 
-    # IdlType overrides
     @property
     def syntactic_form(self):
         assert not self.extended_attributes
@@ -968,7 +978,6 @@ class RecordType(IdlType):
     def __hash__(self):
         return hash((self.__class__, self.key_type, self.value_type))
 
-    # IdlType overrides
     @property
     def syntactic_form(self):
         return self._format_syntactic_form('record<{}, {}>'.format(
@@ -1022,7 +1031,6 @@ class PromiseType(IdlType):
     def __hash__(self):
         return hash((self.__class__, self.result_type))
 
-    # IdlType overrides
     @property
     def syntactic_form(self):
         return self._format_syntactic_form('Promise<{}>'.format(
@@ -1043,10 +1051,7 @@ class PromiseType(IdlType):
 
     @property
     def result_type(self):
-        """
-        Returns the result type.
-        @return IdlType
-        """
+        """Returns the result type."""
         return self._result_type
 
 
@@ -1089,7 +1094,6 @@ class UnionType(IdlType):
                      functools.reduce(lambda x, idl_type: x + hash(idl_type),
                                       self.member_types, 0)))
 
-    # IdlType overrides
     @property
     def syntactic_form(self):
         return self._format_syntactic_form('({})'.format(' or '.join(
@@ -1109,6 +1113,11 @@ class UnionType(IdlType):
     def does_include_nullable_type(self):
         return any(
             member.does_include_nullable_type for member in self.member_types)
+
+    @property
+    def does_include_nullable_or_dict(self):
+        return any(member.does_include_nullable_or_dict
+                   for member in self.member_types)
 
     @property
     def is_union(self):
@@ -1160,7 +1169,6 @@ class NullableType(IdlType):
     def __hash__(self):
         return hash((self.__class__, self.inner_type))
 
-    # IdlType overrides
     @property
     def syntactic_form(self):
         assert not self.extended_attributes
@@ -1186,6 +1194,10 @@ class NullableType(IdlType):
 
     @property
     def does_include_nullable_type(self):
+        return True
+
+    @property
+    def does_include_nullable_or_dict(self):
         return True
 
     @property

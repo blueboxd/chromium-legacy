@@ -375,12 +375,13 @@ android_library("chrome_java") {
 
   srcjar_deps = [
     ":chrome_android_java_enums_srcjar",
-    ":chrome_android_java_switches_srcjar",
     ":chrome_android_java_google_api_keys_srcjar",
+    ":chrome_android_java_switches_srcjar",
     ":chrome_product_config",
     ":photo_picker_aidl",
     ":resource_id_javagen",
     ":sync_user_settings_enums_java",
+    ":vr_build_config",
     "//chrome:assist_ranker_prediction_enum_javagen",
     "//chrome:content_setting_javagen",
     "//chrome:content_settings_type_javagen",
@@ -388,15 +389,15 @@ android_library("chrome_java") {
     "//chrome:download_enum_javagen",
     "//chrome:instant_apps_reasons_enum_javagen",
     "//chrome:offline_pages_enum_javagen",
-    "//chrome:page_info_connection_type_javagen",
     "//chrome:page_info_action_javagen",
+    "//chrome:page_info_connection_type_javagen",
     "//chrome:partner_bookmarks_javagen",
     "//chrome:payments_journey_logger_enum_javagen",
     "//chrome:quick_action_category_enum_javagen",
     "//chrome:supervised_user_url_filter_enum_javagen",
-    "//chrome/browser/notifications/scheduler/public:jni_enums",
     "//chrome/browser:sharing_dialog_type_generated_enum",
     "//chrome/browser:sharing_send_message_result_generated_enum",
+    "//chrome/browser/notifications/scheduler/public:jni_enums",
     "//chrome/browser/supervised_user/supervised_user_error_page:enums_srcjar",
     "//chrome/browser/ui:tab_model_enums_java",
     "//components/autofill_assistant/browser:autofill_assistant_enums_java",
@@ -404,8 +405,8 @@ android_library("chrome_java") {
     "//components/browsing_data/core:clear_browsing_data_tab_java",
     "//components/consent_auditor:consent_auditor_java",
     "//components/data_reduction_proxy/core/browser:data_reduction_proxy_savings_cleared_enum_java",
-    "//components/favicon_base:favicon_base_enums_java",
     "//components/dom_distiller/core:distiller_type_java",
+    "//components/favicon_base:favicon_base_enums_java",
     "//components/infobars/core:infobar_enums_java",
     "//components/ntp_snippets:ntp_snippets_java_enums_srcjar",
     "//components/ntp_tiles:ntp_tiles_enums_java",
@@ -419,7 +420,6 @@ android_library("chrome_java") {
     "//components/ui_metrics:ui_metrics_enums_java",
     "//content/public/browser:contacts_picker_properties_requested_javagen",
     "//net:effective_connection_type_java",
-    ":vr_build_config",
   ]
 
   android_manifest_for_lint = chrome_public_android_manifest
@@ -456,8 +456,8 @@ android_library("chrome_java") {
 
   annotation_processor_deps = [
     "//base/android/jni_generator:jni_processor",
-    "//third_party/android_deps:dagger_processor",
     "//components/module_installer/android:module_interface_processor",
+    "//third_party/android_deps:dagger_processor",
   ]
 
   processor_args_javac = [ "dagger.fastInit=enabled" ]
@@ -712,13 +712,14 @@ process_version("chrome_version_constants") {
   output = _chrome_version_java_file
 }
 
-# Files used for both chrome tests and VR/AR tests
+# Files used for both chrome tests and VR/AR and autofill_assistant tests
 android_library("chrome_test_util_java") {
   testonly = true
 
   java_files = [
     "javatests/src/org/chromium/chrome/browser/customtabs/CustomTabActivityTestRule.java",
     "javatests/src/org/chromium/chrome/browser/customtabs/CustomTabsTestUtils.java",
+    "javatests/src/org/chromium/chrome/browser/directactions/FakeDirectActionReporter.java",
     "javatests/src/org/chromium/chrome/browser/media/RouterTestUtils.java",
     "javatests/src/org/chromium/chrome/browser/webapps/TestFetchStorageCallback.java",
     "javatests/src/org/chromium/chrome/browser/webapps/WebappActivityTestRule.java",
@@ -952,9 +953,9 @@ if (enable_vr || enable_arcore) {
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
+    "//third_party/android_sdk/androidx_browser:androidx_browser_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
-    "//third_party/android_sdk/androidx_browser:androidx_browser_java",
     "//third_party/junit",
     "//third_party/ub-uiautomator:ub_uiautomator_java",
     "//ui/android:ui_java",

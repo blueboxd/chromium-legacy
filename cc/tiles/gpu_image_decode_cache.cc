@@ -6,6 +6,10 @@
 
 #include <inttypes.h>
 
+#include <algorithm>
+#include <limits>
+#include <string>
+
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/containers/span.h"
@@ -1937,8 +1941,10 @@ void GpuImageDecodeCache::DecodeImageIfNecessary(const DrawImage& draw_image,
   sk_sp<SkImage> image_v;
   {
     base::AutoUnlock unlock(lock_);
-    backing_memory = base::DiscardableMemoryAllocator::GetInstance()
-                         ->AllocateLockedDiscardableMemory(image_data->size);
+    auto* allocator = base::DiscardableMemoryAllocator::GetInstance();
+    backing_memory = allocator->AllocateLockedDiscardableMemoryWithRetryOrDie(
+        image_data->size, base::BindOnce(&GpuImageDecodeCache::ClearCache,
+                                         base::Unretained(this)));
     sk_sp<SkColorSpace> color_space =
         ColorSpaceForImageDecode(draw_image, image_data->mode);
     auto release_proc = [](const void*, void*) {};

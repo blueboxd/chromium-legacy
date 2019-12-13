@@ -4,6 +4,8 @@
 
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/cursor/cursors_aura.h"

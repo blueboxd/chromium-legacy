@@ -1,18 +1,18 @@
 document
 ++document
 ++++document
-++++++group IsControlElement=false
+++++++group
 ++++++++description Name='My favorite browser is '
-++++++++group IsControlElement=false
+++++++++group
 ++++++++++description Name='ABC'
 ++++++++description Name=' '
-++++++++group IsControlElement=false
+++++++++group
 ++++++++++description Name='Chrome'
 ++++++++description Name='!'
 ++document
 ++++document
-++++++group IsControlElement=false
+++++++group
 ++++++++description Name='This test is to check '
-++++++++description IsControlElement=false
+++++++++description
 ++++++++++description Name='mark tag'
 ++++++++description Name='.'

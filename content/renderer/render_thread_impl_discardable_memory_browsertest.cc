@@ -18,6 +18,7 @@
 #include "base/memory/madv_free_discardable_memory_allocator_posix.h"
 #include "base/memory/madv_free_discardable_memory_posix.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "base/test/bind_test_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
@@ -179,6 +180,35 @@ IN_PROC_BROWSER_TEST_F(RenderThreadImplDiscardableMemoryBrowserTest,
   RunAllTasksUntilIdle();
 
   EXPECT_EQ(0U, discardable_memory_allocator()->GetBytesAllocated());
+}
+
+IN_PROC_BROWSER_TEST_F(RenderThreadImplDiscardableMemoryBrowserTest,
+                       CheckReleaseMemory) {
+  std::vector<std::unique_ptr<base::DiscardableMemory>> all_memory;
+  auto* allocator =
+      static_cast<discardable_memory::ClientDiscardableSharedMemoryManager*>(
+          discardable_memory_allocator());
+  constexpr size_t kMaxRegions = 10;
+  constexpr size_t kRegionSize = 4 * 1024 * 1024;
+
+  allocator->SetBytesAllocatedLimitForTesting(kMaxRegions * kRegionSize);
+
+  // Allocate the maximum amount of memory.
+  for (size_t i = 0; i < kMaxRegions; i++) {
+    auto region = allocator->AllocateLockedDiscardableMemoryWithRetryOrDie(
+        kRegionSize, base::DoNothing());
+    all_memory.push_back(std::move(region));
+  }
+
+  auto region = allocator->AllocateLockedDiscardableMemoryWithRetryOrDie(
+      kRegionSize, base::BindLambdaForTesting([&]() { all_memory.clear(); }));
+
+  // Checks that the memory reclaim callback was called, and that the allocation
+  // then succeeded. Allocation success is checked because the test has not
+  // crashed.
+  EXPECT_TRUE(all_memory.empty());
+
+  allocator->SetBytesAllocatedLimitForTesting(0);
 }
 
 }  // namespace

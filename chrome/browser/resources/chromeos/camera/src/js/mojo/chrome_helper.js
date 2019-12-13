@@ -2,22 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 /**
- * Namespace for the Camera app.
+ * The singleton instance of ChromeHelper. Initialized by the first
+ * invocation of getInstance().
+ * @type {?ChromeHelper}
  */
-var cca = cca || {};
-
-/**
- * Namespace for mojo.
- */
-cca.mojo = cca.mojo || {};
+let instance = null;
 
 /**
  * Communicates with Chrome.
  */
-cca.mojo.ChromeHelper = class {
+export class ChromeHelper {
   /**
    * @public
    */
@@ -116,19 +111,25 @@ cca.mojo.ChromeHelper = class {
   /**
    * Creates a new instance of ChromeHelper if it is not set. Returns the
    *     exist instance.
-   * @return {!cca.mojo.ChromeHelper} The singleton instance.
+   * @return {!ChromeHelper} The singleton instance.
    */
   static getInstance() {
-    if (this.instance === null) {
-      this.instance = new cca.mojo.ChromeHelper();
+    if (instance === null) {
+      instance = new ChromeHelper();
     }
-    return this.instance;
+    return instance;
   }
-};
+}
+
+/* eslint-disable no-undef */
 
 /**
- * The singleton instance of ChromeHelper. Initialized by the first
- * invocation of getInstance().
- * @type {?cca.mojo.ChromeHelper}
+ * @typedef {ChromeHelper}
  */
-cca.mojo.ChromeHelper.instance = null;
+cca.mojo.ChromeHelper;
+
+(/** @suppress {checkTypes} */ () => {
+  cca.mojo.ChromeHelper = ChromeHelper;
+})();
+
+/* eslint-enbale no-undef */

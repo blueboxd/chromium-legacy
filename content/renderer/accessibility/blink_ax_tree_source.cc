@@ -859,6 +859,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       dst->AddIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel,
                            src.HeadingLevel());
     } else if ((dst->role == ax::mojom::Role::kTreeItem ||
+                dst->role == ax::mojom::Role::kListItem ||
                 dst->role == ax::mojom::Role::kRow) &&
                src.HierarchicalLevel()) {
       dst->AddIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel,
@@ -1116,10 +1117,6 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
         TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kRole,
                                       role);
     }
-
-    // Presence of other ARIA attributes.
-    if (src.HasAriaAttribute())
-      dst->AddBoolAttribute(ax::mojom::BoolAttribute::kHasAriaAttribute, true);
 
     // Frames and iframes.
     WebFrame* frame = WebFrame::FromFrameOwnerElement(element);

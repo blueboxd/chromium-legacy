@@ -33,6 +33,7 @@
 
 namespace {
 
+#if !defined(OS_CHROMEOS)
 const int kContentsBorderThickness = 5;
 const float kContentsBorderOpacity = 0.50;
 const SkColor kContentsBorderColor = gfx::kGoogleBlue500;
@@ -71,8 +72,11 @@ void InitContentsBorderWidget(content::WebContents* contents) {
 
   browser_view->set_contents_border_widget(widget);
 }
+#endif
 
 void SetContentsBorderVisible(content::WebContents* contents, bool visible) {
+  // TODO(https://crbug.com/1030925) fix contents border on ChromeOS.
+#if !defined(OS_CHROMEOS)
   if (!contents)
     return;
   Browser* browser = chrome::FindBrowserWithWebContents(contents);
@@ -91,6 +95,7 @@ void SetContentsBorderVisible(content::WebContents* contents, bool visible) {
     contents_border_widget->Show();
   else
     contents_border_widget->Hide();
+#endif
 }
 
 base::string16 GetTabName(content::WebContents* tab) {
@@ -121,7 +126,10 @@ TabSharingUIViews::TabSharingUIViews(const content::DesktopMediaID& media_id,
   Observe(shared_tab_);
   shared_tab_name_ = GetTabName(shared_tab_);
   profile_ = ProfileManager::GetLastUsedProfileAllowedByPolicy();
+  // TODO(https://crbug.com/1030925) fix contents border on ChromeOS.
+#if !defined(OS_CHROMEOS)
   InitContentsBorderWidget(shared_tab_);
+#endif
 }
 
 TabSharingUIViews::~TabSharingUIViews() {

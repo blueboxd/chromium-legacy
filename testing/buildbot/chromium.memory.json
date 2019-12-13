@@ -15700,8 +15700,7 @@
       {
         "args": [
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/android.asan.services_unittests.filter"
+          "--recover-devices"
         ],
         "merge": {
           "args": [

@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/modules/gamepad/gamepad_dispatcher.h"
 
 #include "device/gamepad/public/cpp/gamepads.h"
-#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/modules/gamepad/gamepad_shared_memory_reader.h"
 #include "third_party/blink/renderer/modules/gamepad/navigator_gamepad.h"
@@ -46,7 +46,7 @@ GamepadDispatcher::~GamepadDispatcher() = default;
 
 void GamepadDispatcher::InitializeHaptics() {
   if (!gamepad_haptics_manager_remote_) {
-    Platform::Current()->GetInterfaceProvider()->GetInterface(
+    Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
         gamepad_haptics_manager_remote_.BindNewPipeAndPassReceiver(
             task_runner_));
   }

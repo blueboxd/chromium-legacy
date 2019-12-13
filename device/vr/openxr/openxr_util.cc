@@ -6,6 +6,7 @@
 
 #include <d3d11.h>
 #include <string>
+#include <vector>
 
 #include "base/stl_util.h"
 #include "base/version.h"
@@ -26,7 +27,8 @@ XrResult GetSystem(XrInstance instance, XrSystemId* system) {
   return xrGetSystem(instance, &system_info, system);
 }
 
-XrResult CreateInstance(XrInstance* instance) {
+XrResult CreateInstance(XrInstance* instance,
+                        OpenXRInstanceMetadata* metadata) {
   XrInstanceCreateInfo instance_create_info = {XR_TYPE_INSTANCE_CREATE_INFO};
 
   std::string application_name = version_info::GetProductName() + " " +
@@ -54,17 +56,47 @@ XrResult CreateInstance(XrInstance* instance) {
 
   instance_create_info.applicationInfo.apiVersion = XR_CURRENT_API_VERSION;
 
+  uint32_t extensionCount;
+  RETURN_IF_XR_FAILED(xrEnumerateInstanceExtensionProperties(
+      nullptr, 0, &extensionCount, nullptr));
+  std::vector<XrExtensionProperties> extensionProperties(
+      extensionCount, {XR_TYPE_EXTENSION_PROPERTIES});
+  RETURN_IF_XR_FAILED(xrEnumerateInstanceExtensionProperties(
+      nullptr, extensionCount, &extensionCount, extensionProperties.data()));
+
   // xrCreateInstance validates the list of extensions and returns
   // XR_ERROR_EXTENSION_NOT_PRESENT if an extension is not supported,
   // so we don't need to call xrEnumerateInstanceExtensionProperties
   // to validate these extensions.
-  const char* extensions[] = {
-      XR_KHR_D3D11_ENABLE_EXTENSION_NAME,
+  // Since the OpenXR backend only knows how to draw with D3D11 at the moment,
+  // the XR_KHR_D3D11_ENABLE_EXTENSION_NAME is required.
+  std::vector<const char*> extensions{XR_KHR_D3D11_ENABLE_EXTENSION_NAME};
+
+  // XR_MSFT_UNBOUNDED_REFERENCE_SPACE_EXTENSION_NAME, is required for optional
+  // functionality (unbounded reference spaces) and thus only requested if it is
+  // available.
+  auto extensionSupported = [&extensionProperties](const char* extensionName) {
+    return std::find_if(
+               extensionProperties.begin(), extensionProperties.end(),
+               [&extensionName](const XrExtensionProperties& properties) {
+                 return strcmp(properties.extensionName, extensionName) == 0;
+               }) != extensionProperties.end();
   };
 
+  const bool unboundedSpaceExtensionSupported =
+      extensionSupported(XR_MSFT_UNBOUNDED_REFERENCE_SPACE_EXTENSION_NAME);
+  if (unboundedSpaceExtensionSupported) {
+    extensions.push_back(XR_MSFT_UNBOUNDED_REFERENCE_SPACE_EXTENSION_NAME);
+  }
+
+  if (metadata != nullptr) {
+    metadata->unboundedReferenceSpaceSupported =
+        unboundedSpaceExtensionSupported;
+  }
+
   instance_create_info.enabledExtensionCount =
-      sizeof(extensions) / sizeof(extensions[0]);
-  instance_create_info.enabledExtensionNames = extensions;
+      static_cast<uint32_t>(extensions.size());
+  instance_create_info.enabledExtensionNames = extensions.data();
 
   return xrCreateInstance(&instance_create_info, instance);
 }

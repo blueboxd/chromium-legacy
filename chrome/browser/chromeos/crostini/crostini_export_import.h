@@ -9,7 +9,6 @@
 #include <memory>
 #include <string>
 
-#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -69,16 +68,19 @@ class CrostiniExportImport : public KeyedService,
         bool in_progress) = 0;
   };
 
-  using TrackerFactory = CrostiniExportImportStatusTracker::TrackerFactory;
+  using TrackerFactory =
+      base::OnceCallback<CrostiniExportImportStatusTracker*(ExportImportType,
+                                                            base::FilePath)>;
+
   struct OperationData {
     OperationData(ExportImportType type,
                   ContainerId id,
-                  std::unique_ptr<TrackerFactory> factory);
+                  TrackerFactory factory);
     ~OperationData();
 
     ExportImportType type;
     ContainerId container_id;
-    std::unique_ptr<TrackerFactory> tracker_factory;
+    TrackerFactory tracker_factory;
   };
 
   static CrostiniExportImport* GetForProfile(Profile* profile);
@@ -109,13 +111,6 @@ class CrostiniExportImport : public KeyedService,
                        base::FilePath path,
                        CrostiniManager::CrostiniResultCallback callback);
 
-  void ExportContainer(content::WebContents* web_contents,
-                       ContainerId container_id,
-                       std::unique_ptr<TrackerFactory> tracker_factory);
-  void ImportContainer(content::WebContents* web_contents,
-                       ContainerId container_id,
-                       std::unique_ptr<TrackerFactory> tracker_factory);
-
   // Cancel currently running export/import.
   void CancelOperation(ExportImportType type, ContainerId id);
 
@@ -142,10 +137,9 @@ class CrostiniExportImport : public KeyedService,
                            TestImportFailArchitecture);
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest, TestImportFailSpace);
 
-  OperationData* NewOperationData(
-      ExportImportType type,
-      ContainerId id,
-      std::unique_ptr<TrackerFactory> tracker_factory);
+  OperationData* NewOperationData(ExportImportType type,
+                                  ContainerId id,
+                                  TrackerFactory cb);
   OperationData* NewOperationData(ExportImportType type, ContainerId id);
   OperationData* NewOperationData(ExportImportType type);
 
@@ -207,14 +201,12 @@ class CrostiniExportImport : public KeyedService,
 
   std::string GetUniqueNotificationId();
 
-  using TrackerMap =
-      std::map<ContainerId, scoped_refptr<CrostiniExportImportStatusTracker>>;
-  scoped_refptr<CrostiniExportImportStatusTracker> RemoveTracker(
-      TrackerMap::iterator it);
+  CrostiniExportImportStatusTracker& RemoveTracker(
+      std::map<ContainerId, CrostiniExportImportStatusTracker*>::iterator it);
 
   Profile* profile_;
   scoped_refptr<ui::SelectFileDialog> select_folder_dialog_;
-  TrackerMap status_trackers_;
+  std::map<ContainerId, CrostiniExportImportStatusTracker*> status_trackers_;
   // |operation_data_storage_| persists the data required to complete an
   // operation while the file selection dialog is open/operation is in progress.
   std::unordered_map<OperationData*, std::unique_ptr<OperationData>>

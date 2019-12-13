@@ -1378,13 +1378,17 @@ public class VideoCaptureCamera2 extends VideoCapture {
         final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(id);
         if (cameraCharacteristics == null) return null;
         final int facing = cameraCharacteristics.get(CameraCharacteristics.LENS_FACING);
-        final int infoColor = cameraCharacteristics.get(
-                CameraCharacteristics.SENSOR_INFO_COLOR_FILTER_ARRANGEMENT);
+
+        boolean isInfrared = false;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            final int infoColor = cameraCharacteristics.get(
+                    CameraCharacteristics.SENSOR_INFO_COLOR_FILTER_ARRANGEMENT);
+            isInfrared =
+                    (infoColor == CameraCharacteristics.SENSOR_INFO_COLOR_FILTER_ARRANGEMENT_NIR);
+        }
         return "camera2 " + id + ", facing "
                 + ((facing == CameraCharacteristics.LENS_FACING_FRONT) ? "front" : "back")
-                + ((infoColor == CameraCharacteristics.SENSOR_INFO_COLOR_FILTER_ARRANGEMENT_NIR)
-                                ? " infrared"
-                                : "");
+                + (isInfrared ? " infrared" : "");
     }
 
     public static VideoCaptureFormat[] getDeviceSupportedFormats(int id) {

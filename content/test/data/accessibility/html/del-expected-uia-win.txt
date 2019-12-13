@@ -1,5 +1,5 @@
 document
-++group IsControlElement=false
+++group
 ++++description Name='I am '
-++++group IsControlElement=false
+++++group
 ++++++description Name='vegetarian'

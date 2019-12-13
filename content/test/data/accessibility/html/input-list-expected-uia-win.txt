@@ -1,5 +1,5 @@
 document
-++group IsControlElement=false
+++group
 ++++description
 ++++++description Name='Choose a pokemon '
 ++++++combobox Name='Choose a pokemon' ExpandCollapse.ExpandCollapseState='LeafNode'

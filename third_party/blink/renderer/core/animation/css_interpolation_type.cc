@@ -39,7 +39,7 @@ class ResolvedVariableChecker : public CSSInterpolationType::ConversionChecker {
  private:
   bool IsValid(const InterpolationEnvironment& environment,
                const InterpolationValue&) const final {
-    const auto& css_environment = ToCSSInterpolationEnvironment(environment);
+    const auto& css_environment = To<CSSInterpolationEnvironment>(environment);
     // TODO(alancutter): Just check the variables referenced instead of doing a
     // full CSSValue resolve.
     bool omit_animation_tainted = false;
@@ -101,7 +101,7 @@ class ResolvedRegisteredCustomPropertyChecker
  private:
   bool IsValid(const InterpolationEnvironment& environment,
                const InterpolationValue&) const final {
-    const auto& css_environment = ToCSSInterpolationEnvironment(environment);
+    const auto& css_environment = To<CSSInterpolationEnvironment>(environment);
     scoped_refptr<CSSVariableData> resolved_tokens = nullptr;
     if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
       const CSSValue* resolved = css_environment.Resolve(
@@ -111,7 +111,7 @@ class ResolvedRegisteredCustomPropertyChecker
     } else {
       DCHECK(css_environment.HasVariableResolver());
       bool cycle_detected = false;
-      resolved_tokens = ToCSSInterpolationEnvironment(environment)
+      resolved_tokens = To<CSSInterpolationEnvironment>(environment)
                             .VariableResolver()
                             .ResolveCustomPropertyAnimationKeyframe(
                                 *declaration_, cycle_detected);
@@ -154,8 +154,7 @@ InterpolationValue CSSInterpolationType::MaybeConvertSingleInternal(
     const InterpolationValue& underlying,
     ConversionCheckers& conversion_checkers) const {
   const CSSValue* value = To<CSSPropertySpecificKeyframe>(keyframe).Value();
-  const CSSInterpolationEnvironment& css_environment =
-      ToCSSInterpolationEnvironment(environment);
+  const auto& css_environment = To<CSSInterpolationEnvironment>(environment);
   const StyleResolverState& state = css_environment.GetState();
 
   if (!value)
@@ -200,8 +199,7 @@ InterpolationValue CSSInterpolationType::MaybeConvertCustomPropertyDeclaration(
     const CSSCustomPropertyDeclaration& declaration,
     const InterpolationEnvironment& environment,
     ConversionCheckers& conversion_checkers) const {
-  const CSSInterpolationEnvironment& css_environment =
-      ToCSSInterpolationEnvironment(environment);
+  const auto& css_environment = To<CSSInterpolationEnvironment>(environment);
   const StyleResolverState& state = css_environment.GetState();
 
   const AtomicString& name = declaration.GetName();
@@ -268,7 +266,7 @@ InterpolationValue CSSInterpolationType::MaybeConvertCustomPropertyDeclaration(
 InterpolationValue CSSInterpolationType::MaybeConvertUnderlyingValue(
     const InterpolationEnvironment& environment) const {
   const ComputedStyle& style =
-      ToCSSInterpolationEnvironment(environment).Style();
+      To<CSSInterpolationEnvironment>(environment).Style();
   if (!GetProperty().IsCSSCustomProperty()) {
     return MaybeConvertStandardPropertyUnderlyingValue(style);
   }
@@ -290,7 +288,7 @@ void CSSInterpolationType::Apply(
     const NonInterpolableValue* non_interpolable_value,
     InterpolationEnvironment& environment) const {
   StyleResolverState& state =
-      ToCSSInterpolationEnvironment(environment).GetState();
+      To<CSSInterpolationEnvironment>(environment).GetState();
 
   if (GetProperty().IsCSSCustomProperty()) {
     ApplyCustomPropertyValue(interpolable_value, non_interpolable_value, state);

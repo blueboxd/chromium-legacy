@@ -41,10 +41,10 @@ namespace {
 String AnimationDisplayName(const Animation& animation) {
   if (!animation.id().IsEmpty())
     return animation.id();
-  else if (animation.IsCSSAnimation())
-    return ToCSSAnimation(animation).animationName();
-  else if (animation.IsCSSTransition())
-    return ToCSSTransition(animation).transitionProperty();
+  else if (auto* css_animation = DynamicTo<CSSAnimation>(animation))
+    return css_animation->animationName();
+  else if (auto* css_transition = DynamicTo<CSSTransition>(animation))
+    return css_transition->transitionProperty();
   else
     return animation.id();
 }
@@ -169,14 +169,14 @@ InspectorAnimationAgent::BuildObjectForAnimation(blink::Animation& animation) {
     animation_effect_object =
         BuildObjectForAnimationEffect(To<KeyframeEffect>(animation.effect()));
 
-    if (animation.IsCSSTransition()) {
+    if (IsA<CSSTransition>(animation)) {
       animation_type = AnimationType::CSSTransition;
     } else {
       animation_effect_object->setKeyframesRule(
           BuildObjectForAnimationKeyframes(
               To<KeyframeEffect>(animation.effect())));
 
-      if (animation.IsCSSAnimation())
+      if (IsA<CSSAnimation>(animation))
         animation_type = AnimationType::CSSAnimation;
     }
   }
@@ -421,14 +421,13 @@ String InspectorAnimationAgent::CreateCSSId(blink::Animation& animation) {
 
   auto* effect = To<KeyframeEffect>(animation.effect());
   Vector<const CSSProperty*> css_properties;
-  if (animation.IsCSSAnimation()) {
+  if (IsA<CSSAnimation>(animation)) {
     for (const CSSProperty* property : g_animation_properties)
       css_properties.push_back(property);
-  } else if (animation.IsCSSTransition()) {
+  } else if (auto* css_transition = DynamicTo<CSSTransition>(animation)) {
     for (const CSSProperty* property : g_transition_properties)
       css_properties.push_back(property);
-    css_properties.push_back(
-        &ToCSSTransition(animation).TransitionCSSProperty());
+    css_properties.push_back(&css_transition->TransitionCSSProperty());
   } else {
     NOTREACHED();
   }
@@ -437,7 +436,7 @@ String InspectorAnimationAgent::CreateCSSId(blink::Animation& animation) {
   HeapVector<Member<CSSStyleDeclaration>> styles =
       css_agent_->MatchingStyles(element);
   Digestor digestor(kHashAlgorithmSha1);
-  digestor.UpdateUtf8(animation.IsCSSTransition()
+  digestor.UpdateUtf8(IsA<CSSTransition>(animation)
                           ? AnimationType::CSSTransition
                           : AnimationType::CSSAnimation);
   digestor.UpdateUtf8(animation.id());
@@ -509,15 +508,16 @@ DocumentTimeline& InspectorAnimationAgent::ReferenceTimeline() {
 double InspectorAnimationAgent::NormalizedStartTime(
     blink::Animation& animation) {
   double time_ms = animation.startTime().value_or(NullValue());
-  if (animation.timeline()->IsDocumentTimeline()) {
+  auto* document_timeline = DynamicTo<DocumentTimeline>(animation.timeline());
+  if (document_timeline) {
     if (ReferenceTimeline().PlaybackRate() == 0) {
-      time_ms += ReferenceTimeline().currentTime() -
-                 ToDocumentTimeline(animation.timeline())->currentTime();
+      time_ms +=
+          ReferenceTimeline().currentTime() - document_timeline->currentTime();
     } else {
-      time_ms += (ToDocumentTimeline(animation.timeline())->ZeroTime() -
-                  ReferenceTimeline().ZeroTime())
-                     .InMillisecondsF() *
-                 ReferenceTimeline().PlaybackRate();
+      time_ms +=
+          (document_timeline->ZeroTime() - ReferenceTimeline().ZeroTime())
+              .InMillisecondsF() *
+          ReferenceTimeline().PlaybackRate();
     }
   }
   // Round to the closest microsecond.

@@ -54,7 +54,5 @@
       android:layout_width="match_parent"
       android:layout_height="2dp"
       android:layout_marginStart="@dimen/autofill_assistant_bottombar_horizontal_spacing"
-      android:layout_marginEnd="@dimen/autofill_assistant_bottombar_horizontal_spacing"
-      app:colorBackground="@color/modern_secondary_color"
-      app:colorProgress="@color/default_text_color_blue"/>
+      android:layout_marginEnd="@dimen/autofill_assistant_bottombar_horizontal_spacing"/>
 </LinearLayout>

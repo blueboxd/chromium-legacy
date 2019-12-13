@@ -73,7 +73,8 @@ class RemoteModuleWatcherTest : public testing::Test,
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
-  // Binds a ModuleEventSinkRequest to this implementation of ModuleEventSink.
+  // Binds a PendingReceiver<ModuleEventSink> to this implementation of
+  // ModuleEventSink.
   mojo::Receiver<mojom::ModuleEventSink> receiver_{this};
 
   // Holds a handle to a loaded module.

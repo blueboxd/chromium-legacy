@@ -27,6 +27,7 @@
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/extensions/api/context_menus.h"
 #include "chrome/grit/chromium_strings.h"
@@ -660,10 +661,14 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
       base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)
           ? IDS_EXTENSIONS_UNPIN_FROM_TOOLBAR
           : IDS_EXTENSIONS_HIDE_BUTTON_IN_MENU);
-  base::string16 show_string =
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_BUTTON_IN_TOOLBAR);
-  base::string16 keep_string =
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_KEEP_BUTTON_IN_TOOLBAR);
+  base::string16 show_string = l10n_util::GetStringUTF16(
+      base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)
+          ? IDS_EXTENSIONS_PIN_TO_TOOLBAR
+          : IDS_EXTENSIONS_SHOW_BUTTON_IN_TOOLBAR);
+  base::string16 keep_string = l10n_util::GetStringUTF16(
+      base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)
+          ? IDS_EXTENSIONS_PIN_TO_TOOLBAR
+          : IDS_EXTENSIONS_KEEP_BUTTON_IN_TOOLBAR);
 
   {
     // Even page actions should have a visibility option.
@@ -682,6 +687,12 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
     int index = menu.GetIndexOfCommandId(visibility_command);
     EXPECT_NE(-1, index);
     EXPECT_EQ(hide_string, menu.GetLabelAt(index));
+
+    if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
+      // Pin before unpinning.
+      ToolbarActionsModel::Get(profile())->SetActionVisibility(
+          browser_action->id(), true);
+    }
     menu.ExecuteCommand(visibility_command, 0);
   }
 

@@ -124,7 +124,7 @@ base::Value BuildAllocatorsSummary(const AllocationMap& allocations) {
 }
 
 base::Value BuildMemoryMaps(const ExportParams& params) {
-  base::trace_event::TracedValue traced_value(0, /* force_json */ true);
+  base::trace_event::TracedValueJSON traced_value;
   memory_instrumentation::TracingObserver::MemoryMapsAsValueInto(
       params.maps, &traced_value, params.strip_path_from_mapped_files);
   return traced_value.ToBaseValue()->Clone();

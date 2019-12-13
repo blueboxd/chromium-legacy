@@ -512,18 +512,10 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
                                   IDS_SETTINGS_ABOUT_PAGE_RELEASE_NOTES);
   html_source->AddLocalizedString("aboutShowReleaseNotes",
                                   IDS_SETTINGS_ABOUT_PAGE_SHOW_RELEASE_NOTES);
-  if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)) {
-    html_source->AddLocalizedString("aboutGetHelpUsingChrome",
-                                    IDS_SETTINGS_GET_HELP_USING_CHROME);
-    html_source->AddLocalizedString("aboutPageTitle",
-                                    IDS_SETTINGS_ABOUT_PROGRAM);
-    html_source->AddLocalizedString("aboutProductTitle", IDS_PRODUCT_NAME);
-  } else {
-    html_source->AddLocalizedString("aboutGetHelpUsingChrome",
-                                    IDS_SETTINGS_GET_HELP_USING_CHROME_OS);
-    html_source->AddLocalizedString("aboutPageTitle", IDS_SETTINGS_ABOUT_OS);
-    html_source->AddLocalizedString("aboutProductTitle", IDS_PRODUCT_OS_NAME);
-  }
+  html_source->AddLocalizedString("aboutGetHelpUsingChrome",
+                                  IDS_SETTINGS_GET_HELP_USING_CHROME);
+  html_source->AddLocalizedString("aboutPageTitle", IDS_SETTINGS_ABOUT_PROGRAM);
+  html_source->AddLocalizedString("aboutProductTitle", IDS_PRODUCT_NAME);
 #else
   html_source->AddLocalizedString("aboutGetHelpUsingChrome",
                                   IDS_SETTINGS_GET_HELP_USING_CHROME);
@@ -766,8 +758,9 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
     {"themesGalleryUrl", IDS_THEMES_GALLERY_URL},
     {"chooseFromWebStore", IDS_SETTINGS_WEB_STORE},
 #if defined(OS_CHROMEOS)
-    {"personalizationPageTitle", IDS_OS_SETTINGS_PERSONALIZATION},
+    {"changePictureTitle", IDS_OS_SETTINGS_CHANGE_PICTURE_TITLE},
     {"openWallpaperApp", IDS_OS_SETTINGS_OPEN_WALLPAPER_APP},
+    {"personalizationPageTitle", IDS_OS_SETTINGS_PERSONALIZATION},
     {"setWallpaper", IDS_OS_SETTINGS_SET_WALLPAPER},
 #endif
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -779,16 +772,6 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
 #endif
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
-
-#if defined(OS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)) {
-    html_source->AddLocalizedString("changePictureTitle",
-                                    IDS_OS_SETTINGS_CHANGE_PICTURE_TITLE);
-  } else {
-    html_source->AddLocalizedString("changePictureTitle",
-                                    IDS_SETTINGS_CHANGE_PICTURE_DIALOG_TITLE);
-  }
-#endif
 }
 
 #if defined(OS_CHROMEOS)
@@ -1706,13 +1689,9 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
   html_source->AddString(
       "languagesLearnMoreURL",
       base::ASCIIToUTF16(chrome::kLanguageSettingsLearnMoreUrl));
-  // TODO(hsuregan): Remove once OS Browser split settings is complete.
   html_source->AddString(
       "languagesPageTitle",
-      l10n_util::GetStringUTF16(
-          base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)
-              ? IDS_SETTINGS_LANGUAGES_PAGE_TITLE
-              : IDS_OS_SETTINGS_LANGUAGES_AND_INPUT_PAGE_TITLE));
+      l10n_util::GetStringUTF16(IDS_SETTINGS_LANGUAGES_PAGE_TITLE));
 #else
   html_source->AddString(
       "languagesPageTitle",
@@ -2627,13 +2606,11 @@ void AddSearchStrings(content::WebUIDataSource* html_source, Profile* profile) {
   const bool is_assistant_allowed =
       assistant::IsAssistantAllowedForProfile(profile) ==
       ash::mojom::AssistantAllowedState::ALLOWED;
-  // SplitSettings moves Assistant to the OS settings window.
-  const bool assistant_in_browser_settings =
-      is_assistant_allowed && !chromeos::features::IsSplitSettingsEnabled();
 #endif
 
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"searchEnginesManage", IDS_SETTINGS_SEARCH_MANAGE_SEARCH_ENGINES},
+    {"searchPageTitle", IDS_SETTINGS_SEARCH},
 #if defined(OS_CHROMEOS)
     {"osSearchEngineLabel", IDS_OS_SETTINGS_SEARCH_ENGINE_LABEL},
     {"searchGoogleAssistant", IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT},
@@ -2645,16 +2622,10 @@ void AddSearchStrings(content::WebUIDataSource* html_source, Profile* profile) {
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 #if defined(OS_CHROMEOS)
-  html_source->AddLocalizedString("searchPageTitle",
-                                  assistant_in_browser_settings
-                                      ? IDS_SETTINGS_SEARCH_AND_ASSISTANT
-                                      : IDS_SETTINGS_SEARCH);
   html_source->AddLocalizedString("osSearchPageTitle",
                                   is_assistant_allowed
                                       ? IDS_SETTINGS_SEARCH_AND_ASSISTANT
                                       : IDS_SETTINGS_SEARCH);
-#else
-  html_source->AddLocalizedString("searchPageTitle", IDS_SETTINGS_SEARCH);
 #endif
 
   base::string16 search_explanation_text = l10n_util::GetStringFUTF16(

@@ -18,7 +18,6 @@
 #include "base/containers/flat_map.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
-#include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/metrics/histogram.h"
@@ -1026,15 +1025,9 @@ void LayerTreeHostImpl::FrameData::AsValueInto(
 }
 
 std::string LayerTreeHostImpl::FrameData::ToString() const {
-  base::trace_event::TracedValue value(0, /*force_json=*/true);
+  base::trace_event::TracedValueJSON value;
   AsValueInto(&value);
-  std::string str;
-  base::JSONWriter::WriteWithOptions(
-      *value.ToBaseValue(),
-      base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION |
-          base::JSONWriter::OPTIONS_PRETTY_PRINT,
-      &str);
-  return str;
+  return value.ToFormattedJSON();
 }
 
 DrawMode LayerTreeHostImpl::GetDrawMode() const {

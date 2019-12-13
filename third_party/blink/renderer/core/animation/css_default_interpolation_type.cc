@@ -31,7 +31,7 @@ InterpolationValue CSSDefaultInterpolationType::MaybeConvertSingle(
   }
 
   if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
-    css_value = ToCSSInterpolationEnvironment(environment)
+    css_value = To<CSSInterpolationEnvironment>(environment)
                     .Resolve(GetProperty(), css_value);
     if (!css_value)
       return nullptr;
@@ -48,7 +48,7 @@ void CSSDefaultInterpolationType::Apply(
   DCHECK(ToCSSDefaultNonInterpolableValue(non_interpolable_value)->CssValue());
   StyleBuilder::ApplyProperty(
       GetProperty().GetCSSPropertyName(),
-      ToCSSInterpolationEnvironment(environment).GetState(),
+      To<CSSInterpolationEnvironment>(environment).GetState(),
       *ToCSSDefaultNonInterpolableValue(non_interpolable_value)->CssValue());
 }
 

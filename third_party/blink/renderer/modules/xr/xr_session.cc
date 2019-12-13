@@ -514,7 +514,7 @@ ScriptPromise XRSession::requestReferenceSpace(
       break;
     }
     case XRReferenceSpace::Type::kTypeUnbounded:
-      if (immersive() && environment_integration_) {
+      if (immersive()) {
         reference_space = MakeGarbageCollected<XRReferenceSpace>(
             this, XRReferenceSpace::Type::kTypeUnbounded);
       }

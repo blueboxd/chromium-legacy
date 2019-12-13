@@ -80,8 +80,8 @@ class TestingWilcoDtcSupportdBridgeWrapper final {
       mojo_wilco_dtc_supportd_client_;
 
   // Temporary callback that allows to deliver the
-  // WilcoDtcSupportdServiceRequest value during the Mojo bootstrapping
-  // simulation by EstablishFakeMojoConnection().
+  // mojo::PendingReceiver<WilcoDtcSupportdService> value during the Mojo
+  // bootstrapping simulation by EstablishFakeMojoConnection().
   base::OnceCallback<void(
       mojo::PendingReceiver<wilco_dtc_supportd::mojom::WilcoDtcSupportdService>
           mojo_wilco_dtc_supportd_service_receiver)>

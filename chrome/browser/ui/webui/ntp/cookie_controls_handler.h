@@ -43,6 +43,8 @@ class CookieControlsHandler : public content::WebUIMessageHandler {
   // Whether cookie controls should appear enforced.
   static bool ShouldEnforceCookieControls(const Profile* profile);
 
+  static const char* GetEnforcementIcon(const Profile* profile);
+
   static bool GetToggleCheckedValue(const Profile* profile);
 
  private:

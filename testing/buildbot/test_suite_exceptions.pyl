@@ -1539,13 +1539,6 @@
     ],
   },
   'services_unittests': {
-    'modifications': {
-      'android-asan': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.asan.services_unittests.filter',
-        ],
-      },
-    },
     'remove_from': [
       # chromium.clang
       'ToTLinuxMSan',  # https://crbug.com/831676

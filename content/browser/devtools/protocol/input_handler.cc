@@ -135,21 +135,21 @@ bool GetMouseEventButton(const std::string& button,
   if (button.empty())
     return true;
 
-  if (button == Input::DispatchMouseEvent::ButtonEnum::None) {
+  if (button == Input::MouseButtonEnum::None) {
     *event_button = blink::WebMouseEvent::Button::kNoButton;
-  } else if (button == Input::DispatchMouseEvent::ButtonEnum::Left) {
+  } else if (button == Input::MouseButtonEnum::Left) {
     *event_button = blink::WebMouseEvent::Button::kLeft;
     *event_modifiers = blink::WebInputEvent::kLeftButtonDown;
-  } else if (button == Input::DispatchMouseEvent::ButtonEnum::Middle) {
+  } else if (button == Input::MouseButtonEnum::Middle) {
     *event_button = blink::WebMouseEvent::Button::kMiddle;
     *event_modifiers = blink::WebInputEvent::kMiddleButtonDown;
-  } else if (button == Input::DispatchMouseEvent::ButtonEnum::Right) {
+  } else if (button == Input::MouseButtonEnum::Right) {
     *event_button = blink::WebMouseEvent::Button::kRight;
     *event_modifiers = blink::WebInputEvent::kRightButtonDown;
-  } else if (button == Input::DispatchMouseEvent::ButtonEnum::Back) {
+  } else if (button == Input::MouseButtonEnum::Back) {
     *event_button = blink::WebMouseEvent::Button::kBack;
     *event_modifiers = blink::WebInputEvent::kBackButtonDown;
-  } else if (button == Input::DispatchMouseEvent::ButtonEnum::Forward) {
+  } else if (button == Input::MouseButtonEnum::Forward) {
     *event_button = blink::WebMouseEvent::Button::kForward;
     *event_modifiers = blink::WebInputEvent::kForwardButtonDown;
   } else {

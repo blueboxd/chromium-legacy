@@ -129,6 +129,11 @@ RangeAutomationHandler.prototype = {
       return;
     }
 
+    // Don't report changes in static text nodes which can be extremely noisy.
+    if (evt.target.role == RoleType.STATIC_TEXT) {
+      return;
+    }
+
     // Only report attribute changes on some *Option roles if it is selected.
     if ((evt.target.role == RoleType.MENU_LIST_OPTION ||
          evt.target.role == RoleType.LIST_BOX_OPTION) &&

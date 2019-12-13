@@ -932,24 +932,32 @@ std::unique_ptr<trace_event::ConvertableToTraceFormat>
 SequenceManagerImpl::AsValueWithSelectorResult(
     internal::WorkQueue* selected_work_queue,
     bool force_verbose) const {
+  auto state = std::make_unique<trace_event::TracedValue>();
+  AsValueWithSelectorResultInto(state.get(), selected_work_queue,
+                                force_verbose);
+  return std::move(state);
+}
+
+void SequenceManagerImpl::AsValueWithSelectorResultInto(
+    trace_event::TracedValue* state,
+    internal::WorkQueue* selected_work_queue,
+    bool force_verbose) const {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
-  std::unique_ptr<trace_event::TracedValue> state(
-      new trace_event::TracedValue());
   TimeTicks now = NowTicks();
   state->BeginArray("active_queues");
   for (auto* const queue : main_thread_only().active_queues)
-    queue->AsValueInto(now, state.get(), force_verbose);
+    queue->AsValueInto(now, state, force_verbose);
   state->EndArray();
   state->BeginArray("queues_to_gracefully_shutdown");
   for (const auto& pair : main_thread_only().queues_to_gracefully_shutdown)
-    pair.first->AsValueInto(now, state.get(), force_verbose);
+    pair.first->AsValueInto(now, state, force_verbose);
   state->EndArray();
   state->BeginArray("queues_to_delete");
   for (const auto& pair : main_thread_only().queues_to_delete)
-    pair.first->AsValueInto(now, state.get(), force_verbose);
+    pair.first->AsValueInto(now, state, force_verbose);
   state->EndArray();
   state->BeginDictionary("selector");
-  main_thread_only().selector.AsValueInto(state.get());
+  main_thread_only().selector.AsValueInto(state);
   state->EndDictionary();
   if (selected_work_queue) {
     state->SetString("selected_queue",
@@ -962,9 +970,8 @@ SequenceManagerImpl::AsValueWithSelectorResult(
 
   state->BeginArray("time_domains");
   for (auto* time_domain : main_thread_only().time_domains)
-    time_domain->AsValueInto(state.get());
+    time_domain->AsValueInto(state);
   state->EndArray();
-  return std::move(state);
 }
 
 void SequenceManagerImpl::OnTaskQueueEnabled(internal::TaskQueueImpl* queue) {
@@ -1119,8 +1126,9 @@ scoped_refptr<TaskQueue> SequenceManagerImpl::CreateTaskQueue(
 }
 
 std::string SequenceManagerImpl::DescribeAllPendingTasks() const {
-  return AsValueWithSelectorResult(nullptr, /* force_verbose */ true)
-      ->ToString();
+  trace_event::TracedValueJSON value;
+  AsValueWithSelectorResultInto(&value, nullptr, /* force_verbose */ true);
+  return value.ToJSON();
 }
 
 std::unique_ptr<NativeWorkHandle> SequenceManagerImpl::OnNativeWorkPending(

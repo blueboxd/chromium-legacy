@@ -522,7 +522,7 @@ Polymer({
       return false;
     }
 
-    return this.diceEnabled_ && !!this.syncStatus.syncSystemEnabled &&
+    return !!this.syncStatus.syncSystemEnabled &&
         !!this.syncStatus.signinAllowed;
   },
   // </if>

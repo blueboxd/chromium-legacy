@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -27,7 +27,7 @@ MIDIDispatcher::MIDIDispatcher(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(std::move(task_runner)) {
   TRACE_EVENT0("midi", "MIDIDispatcher::MIDIDispatcher");
-  Platform::Current()->GetInterfaceProvider()->GetInterface(
+  Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
       midi_session_provider_.BindNewPipeAndPassReceiver(task_runner_));
   midi_session_provider_->StartSession(
       midi_session_.BindNewPipeAndPassReceiver(),

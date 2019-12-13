@@ -63,7 +63,7 @@ void WaitableEvent::Wait() {
       scoped_blocking_call;
   if (waiting_is_blocking_) {
     event_activity.emplace(this);
-    scoped_blocking_call.emplace(BlockingType::MAY_BLOCK);
+    scoped_blocking_call.emplace(FROM_HERE, BlockingType::MAY_BLOCK);
   }
 
   DWORD result = WaitForSingleObject(handle_.Get(), INFINITE);
@@ -85,7 +85,7 @@ bool WaitableEvent::TimedWait(const TimeDelta& wait_delta) {
       scoped_blocking_call;
   if (waiting_is_blocking_) {
     event_activity.emplace(this);
-    scoped_blocking_call.emplace(BlockingType::MAY_BLOCK);
+    scoped_blocking_call.emplace(FROM_HERE, BlockingType::MAY_BLOCK);
   }
 
   // TimeTicks takes care of overflow but we special case is_max() nonetheless
@@ -125,7 +125,7 @@ bool WaitableEvent::TimedWait(const TimeDelta& wait_delta) {
 size_t WaitableEvent::WaitMany(WaitableEvent** events, size_t count) {
   DCHECK(count) << "Cannot wait on no events";
   internal::ScopedBlockingCallWithBaseSyncPrimitives scoped_blocking_call(
-      BlockingType::MAY_BLOCK);
+      FROM_HERE, BlockingType::MAY_BLOCK);
   // Record an event (the first) that this thread is blocking upon.
   debug::ScopedEventWaitActivity event_activity(events[0]);
 

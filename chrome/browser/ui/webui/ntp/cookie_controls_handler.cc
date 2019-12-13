@@ -21,6 +21,25 @@
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 
+namespace {
+static const char* kSettingsIcon = "cr:settings_icon";
+static const char* kPolicyIcon = "cr20:domain";
+
+enum class CookieControlsEnforcement {
+  kNoEnforcement,
+  kEnforcedByPolicy,
+  kEnforcedByCookieSetting
+};
+
+CookieControlsEnforcement GetCookieControlsEnforcement(const Profile* profile) {
+  if (profile->GetPrefs()->IsManagedPreference(prefs::kBlockThirdPartyCookies))
+    return CookieControlsEnforcement::kEnforcedByPolicy;
+  if (profile->GetPrefs()->GetBoolean(prefs::kBlockThirdPartyCookies))
+    return CookieControlsEnforcement::kEnforcedByCookieSetting;
+  return CookieControlsEnforcement::kNoEnforcement;
+}
+}  // namespace
+
 CookieControlsHandler::CookieControlsHandler() {}
 
 CookieControlsHandler::~CookieControlsHandler() {}
@@ -95,6 +114,7 @@ void CookieControlsHandler::SendCookieControlsUIChanges() {
   base::DictionaryValue dict;
   dict.SetBoolKey("enforced", ShouldEnforceCookieControls(profile));
   dict.SetBoolKey("checked", GetToggleCheckedValue(profile));
+  dict.SetStringKey("icon", GetEnforcementIcon(profile));
   FireWebUIListener("cookie-controls-changed", dict);
 }
 
@@ -111,7 +131,17 @@ bool CookieControlsHandler::ShouldHideCookieControlsUI(const Profile* profile) {
 
 bool CookieControlsHandler::ShouldEnforceCookieControls(
     const Profile* profile) {
-  return profile->GetPrefs()->IsManagedPreference(
-             prefs::kBlockThirdPartyCookies) ||
-         profile->GetPrefs()->GetBoolean(prefs::kBlockThirdPartyCookies);
+  return GetCookieControlsEnforcement(profile) !=
+         CookieControlsEnforcement::kNoEnforcement;
+}
+
+const char* CookieControlsHandler::GetEnforcementIcon(const Profile* profile) {
+  switch (GetCookieControlsEnforcement(profile)) {
+    case CookieControlsEnforcement::kEnforcedByPolicy:
+      return kPolicyIcon;
+    case CookieControlsEnforcement::kEnforcedByCookieSetting:
+      return kSettingsIcon;
+    case CookieControlsEnforcement::kNoEnforcement:
+      return "";
+  }
 }

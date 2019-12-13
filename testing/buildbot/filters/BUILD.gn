@@ -137,14 +137,6 @@ source_set("ozone_unittests_filters") {
   ]
 }
 
-source_set("services_unittests_filters") {
-  testonly = true
-
-  data = [
-    "//testing/buildbot/filters/android.asan.services_unittests.filter",
-  ]
-}
-
 source_set("unit_tests_filters") {
   testonly = true
 

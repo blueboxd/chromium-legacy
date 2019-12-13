@@ -2690,7 +2690,7 @@ if (enable_java_templates) {
   # Note also the peculiar use of java_files / java_sources_file. The content
   # of the java_files list and the java_sources_file file must match exactly.
   # This rule uses java_files only to list the inputs to the action that
-  # calls the javac.py script, but will pass the list of Java source files
+  # calls compile_java.py, but will pass the list of Java source files
   # with the '@${java_sources_file}" command-line syntax. Not a problem in
   # practice since this is only called from java_library_impl() that sets up
   # the variables properly.
@@ -2720,7 +2720,7 @@ if (enable_java_templates) {
   #    check for error-prone constructs in the language. If not provided,
   #    whether this is enabled depends on chromium_code and the global
   #    use_errorprone_java_compiler variable.
-  #  apk_name: Optional APK name. If provided, will tell javac.py to also
+  #  apk_name: Optional APK name. If provided, will tell compile_java.py to also
   #    generate an .apk.jar.info file under size-info/${apk_name}.apk.jar.info
   #  provider_configurations: Optional list of paths to Java service
   #    provider configuration files [1]. These will be copied under
@@ -2771,7 +2771,7 @@ if (enable_java_templates) {
     }
 
     action_with_pydeps(target_name) {
-      script = "//build/android/gyp/javac.py"
+      script = "//build/android/gyp/compile_java.py"
       depfile = "$target_gen_dir/$target_name.d"
       deps = _srcjar_deps
       if (defined(invoker.deps)) {
@@ -2780,8 +2780,10 @@ if (enable_java_templates) {
 
       outputs = [
         invoker.javac_jar_path,
-        invoker.javac_jar_path + ".info",
       ]
+      if (!invoker.enable_errorprone) {
+        outputs += [ invoker.javac_jar_path + ".info" ]
+      }
       inputs = invoker.java_files + _java_srcjars + [ _build_config ]
       if (invoker.java_files != []) {
         inputs += [ invoker.java_sources_file ]
@@ -3385,7 +3387,7 @@ if (enable_java_templates) {
             }
             javac_args += invoker.errorprone_args
           }
-          javac_jar_path = _javac_jar_path + ".errorprone.jar"
+          javac_jar_path = _javac_jar_path + ".errorprone.stamp"
         }
         _analysis_public_deps += [ ":$_compile_java_errorprone_target" ]
       }

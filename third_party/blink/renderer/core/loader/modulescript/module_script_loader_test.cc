@@ -4,8 +4,10 @@
 
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_loader.h"
 
+#include "base/test/scoped_feature_list.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
@@ -121,8 +123,7 @@ void ModuleScriptLoaderTestModulator::Trace(blink::Visitor* visitor) {
 
 }  // namespace
 
-class ModuleScriptLoaderTest : public PageTestBase,
-                               private ScopedJSONModulesForTest {
+class ModuleScriptLoaderTest : public PageTestBase {
   DISALLOW_COPY_AND_ASSIGN(ModuleScriptLoaderTest);
 
  public:
@@ -156,6 +157,7 @@ class ModuleScriptLoaderTest : public PageTestBase,
   const base::TickClock* GetTickClock() override {
     return platform_->test_task_runner()->GetMockTickClock();
   }
+  base::test::ScopedFeatureList scoped_feature_list_;
 
  protected:
   const KURL url_;
@@ -174,9 +176,9 @@ void ModuleScriptLoaderTest::SetUp() {
 }
 
 ModuleScriptLoaderTest::ModuleScriptLoaderTest()
-    : ScopedJSONModulesForTest(true),
-      url_("https://example.test"),
+    : url_("https://example.test"),
       security_origin_(SecurityOrigin::Create(url_)) {
+  scoped_feature_list_.InitAndEnableFeature(blink::features::kJSONModules);
   platform_->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
 }
 

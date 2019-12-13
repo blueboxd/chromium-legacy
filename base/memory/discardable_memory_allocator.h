@@ -10,7 +10,9 @@
 #include <memory>
 
 #include "base/base_export.h"
+#include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/discardable_memory.h"
 
 namespace base {
 class DiscardableMemory;
@@ -37,6 +39,19 @@ class BASE_EXPORT DiscardableMemoryAllocator {
   // heuristicly (via memory pressure notifications).
   virtual std::unique_ptr<DiscardableMemory> AllocateLockedDiscardableMemory(
       size_t size) = 0;
+
+  // Allocates discardable memory the same way |AllocateLockedDiscardableMemory|
+  // does. In case of failure, calls |on_no_memory| and retries once. As a
+  // consequence, |on_no_memory| should free some memory, and importantly,
+  // address space as well.
+  //
+  // In case of allocation failure after retry, terminates the process with
+  // an Out Of Memory status (for triage in crash reports).
+  //
+  // As a consequence, does *not* return nullptr.
+  std::unique_ptr<DiscardableMemory>
+  AllocateLockedDiscardableMemoryWithRetryOrDie(size_t size,
+                                                OnceClosure on_no_memory);
 
   // Gets the total number of bytes allocated by this allocator which have not
   // been discarded.

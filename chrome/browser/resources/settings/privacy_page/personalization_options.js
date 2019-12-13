@@ -53,6 +53,14 @@ Polymer({
       },
     },
 
+    /** @private {chrome.settingsPrivate.PrefObject} */
+    safeBrowsingReportingPref_: {
+      type: Object,
+      value: function() {
+        return /** @type {chrome.settingsPrivate.PrefObject} */ ({});
+      },
+    },
+
     /** @private */
     showRestart_: Boolean,
 
@@ -79,6 +87,10 @@ Polymer({
     },
   },
 
+  observers: [
+    'onSafeBrowsingReportingPrefChange_(prefs.safebrowsing.*)',
+  ],
+
   /**
    * @return {boolean}
    * @private
@@ -102,17 +114,33 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  getCheckedExtendedSafeBrowsing_: function() {
-    return !!this.getPref('safebrowsing.enabled').value &&
-        !!this.getPref('safebrowsing.scout_reporting_enabled').value;
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
   getDisabledExtendedSafeBrowsing_: function() {
     return !this.getPref('safebrowsing.enabled').value;
+  },
+
+  /** @private */
+  onSafeBrowsingReportingToggleChange_: function() {
+    this.setPrefValue(
+        'safebrowsing.scout_reporting_enabled',
+        this.$$('#safeBrowsingReportingToggle').checked);
+  },
+
+  /** @private */
+  onSafeBrowsingReportingPrefChange_: function() {
+    if (this.prefs == undefined) {
+      return;
+    }
+    const safeBrowsingScoutPref =
+        this.getPref('safebrowsing.scout_reporting_enabled');
+    const prefValue = !!this.getPref('safebrowsing.enabled').value &&
+        !!safeBrowsingScoutPref.value;
+    this.safeBrowsingReportingPref_ = {
+      key: '',
+      type: chrome.settingsPrivate.PrefType.BOOLEAN,
+      value: prefValue,
+      enforcement: safeBrowsingScoutPref.enforcement,
+      controlledBy: safeBrowsingScoutPref.controlledBy,
+    };
   },
 
   // <if expr="_google_chrome and not chromeos">

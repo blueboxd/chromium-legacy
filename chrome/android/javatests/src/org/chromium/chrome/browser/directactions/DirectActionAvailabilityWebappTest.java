@@ -49,6 +49,6 @@ public class DirectActionAvailabilityWebappTest {
         mWebAppActivityTestRule.startWebappActivity();
 
         assertThat(DirectActionTestUtils.setupActivityAndGetDirectAction(mWebAppActivityTestRule),
-                Matchers.containsInAnyOrder("go_back", "reload", "go_forward"));
+                Matchers.containsInAnyOrder("go_back", "reload", "go_forward", "find_in_page"));
     }
 }

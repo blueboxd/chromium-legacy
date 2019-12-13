@@ -379,7 +379,7 @@ bool CrostiniHandler::CheckEligibilityToChangeArcAdbSideloading() const {
 void CrostiniHandler::HandleRequestContainerUpgradeView(
     const base::ListValue* args) {
   CHECK_EQ(0U, args->GetSize());
-  chromeos::CrostiniUpgraderDialog::Show(base::DoNothing());
+  chromeos::CrostiniUpgraderDialog::Show(profile_, base::DoNothing());
 }
 
 }  // namespace settings

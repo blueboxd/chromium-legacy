@@ -51,16 +51,103 @@ def _CheckForDuplicateFeatures(enable_features, disable_features):
     raise Exception('Conflicting features set as both enabled and disabled: ' +
                     ', '.join(features_in_both))
 
-# Generate a list of command-line switches to enable field trials for the
-# provided config_path and platforms.
-def GenerateArgs(config_path, platforms):
+def _FindFeaturesOverriddenByArgs(args):
+  """Returns a list of the features enabled or disabled by the flags in args."""
+  overridden_features = []
+  for arg in args:
+    if (arg.startswith('--enable-features=')
+        or arg.startswith('--disable-features=')):
+      _, _, arg_val = arg.partition('=')
+      overridden_features.extend(arg_val.split(','))
+  return [f.split('<')[0] for f in overridden_features]
+
+def MergeFeaturesAndFieldTrialsArgs(args):
+  """Merges duplicate features and field trials arguments.
+
+  Merges multiple instances of --enable-features, --disable-features,
+  --force-fieldtrials and --force-fieldtrial-params. Any such merged flags are
+  moved to the end of the returned list. The original argument ordering is
+  otherwise maintained.
+  TODO(crbug.com/1033090): Add functionality to handle duplicate flags using the
+  Foo<Bar syntax. Currently, the implementation considers e.g. 'Foo', 'Foo<Bar'
+  and 'Foo<Baz' to be different. Also add functionality to handle cases where
+  the same trial is specified with different groups via --force-fieldtrials,
+  which isn't currently unhandled.
+
+  Args:
+    args: An iterable of strings representing command line arguments.
+
+  Returns:
+    A new list of strings representing the merged command line arguments.
+  """
+  merged_args = []
+  disable_features = set()
+  enable_features = set()
+  force_fieldtrials = set()
+  force_fieldtrial_params = set()
+  for arg in args:
+    if arg.startswith('--disable-features='):
+      disable_features.update(arg.split('=', 1)[1].split(','))
+    elif arg.startswith('--enable-features='):
+      enable_features.update(arg.split('=', 1)[1].split(','))
+    elif arg.startswith('--force-fieldtrials='):
+      # A trailing '/' is optional. Do not split by '/' as that would separate
+      # each group name from the corresponding trial name.
+      force_fieldtrials.add(arg.split('=', 1)[1].rstrip('/'))
+    elif arg.startswith('--force-fieldtrial-params='):
+      force_fieldtrial_params.update(arg.split('=', 1)[1].split(','))
+    else:
+      merged_args.append(arg)
+
+  # Sort arguments to ensure determinism.
+  if disable_features:
+    merged_args.append('--disable-features=%s' % ','.join(
+        sorted(disable_features)))
+  if enable_features:
+    merged_args.append('--enable-features=%s' % ','.join(
+        sorted(enable_features)))
+  if force_fieldtrials:
+    merged_args.append('--force-fieldtrials=%s' % '/'.join(
+        sorted(force_fieldtrials)))
+  if force_fieldtrial_params:
+    merged_args.append('--force-fieldtrial-params=%s' % ','.join(
+        sorted(force_fieldtrial_params)))
+
+  return merged_args
+
+def GenerateArgs(config_path, platform, override_args=None):
+  """Generates command-line flags for enabling field trials.
+
+  Generates a list of command-line switches to enable field trials for the
+  provided config_path and platform. If override_args is set, all field trials
+  that conflict with any listed --enable-features or --disable-features argument
+  are skipped.
+
+  Args:
+    config_path: The path to the fieldtrial testing config JSON file.
+    platform: A string representing the platform on which the tests will be run.
+    override_args (optional): An iterable of string command line arguments.
+
+  Returns:
+    A list of string command-line arguments.
+  """
   try:
     with open(config_path, 'r') as config_file:
       config = json.load(config_file)
   except (IOError, ValueError):
     return []
 
-  platform_studies = fieldtrial_to_struct.ConfigToStudies(config, platforms)
+  platform_studies = fieldtrial_to_struct.ConfigToStudies(config, [platform])
+
+  if override_args is None:
+    override_args = []
+  overriden_features_set = set(_FindFeaturesOverriddenByArgs(override_args))
+  # Should skip any experiment that will enable or disable a feature that is
+  # also enabled or disabled in the override_args.
+  def ShouldSkipExperiment(experiment):
+    experiment_features = (experiment.get('disable_features', [])
+                           + experiment.get('enable_features', []))
+    return not overriden_features_set.isdisjoint(experiment_features)
 
   studies = []
   params = []
@@ -72,6 +159,8 @@ def GenerateArgs(config_path, platforms):
     experiments = study['experiments']
     # For now, only take the first experiment.
     experiment = experiments[0]
+    if ShouldSkipExperiment(experiment):
+      continue
     selected_study = [study_name, experiment['name']]
     studies.extend(selected_study)
     param_list = []
@@ -117,7 +206,7 @@ def main():
           (sys.argv[2], supported_platforms))
     exit(-1)
 
-  generated_args = GenerateArgs(sys.argv[1], [sys.argv[2]])
+  generated_args = GenerateArgs(sys.argv[1], sys.argv[2])
   if print_shell_cmd:
     print(" ".join(map((lambda arg: '"{0}"'.format(arg)), generated_args)))
   else:

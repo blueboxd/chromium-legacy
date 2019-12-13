@@ -235,11 +235,11 @@ void FilterOperations::AsValueInto(
 }
 
 std::string FilterOperations::ToString() const {
-  base::trace_event::TracedValue value(0, /*force_json=*/true);
+  base::trace_event::TracedValueJSON value;
   value.BeginArray("FilterOperations");
   AsValueInto(&value);
   value.EndArray();
-  return value.ToString();
+  return value.ToJSON();
 }
 
 }  // namespace cc

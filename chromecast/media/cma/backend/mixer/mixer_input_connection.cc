@@ -171,6 +171,7 @@ MixerInputConnection::MixerInputConnection(
       io_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       max_queued_frames_(std::max(GetQueueSize(params), algorithm_fill_size_)),
       start_threshold_frames_(GetStartThreshold(params)),
+      never_timeout_connection_(params.never_timeout_connection()),
       fader_(this,
              params.has_fade_frames()
                  ? params.fade_frames()
@@ -371,6 +372,10 @@ void MixerInputConnection::OnConnectionError() {
 }
 
 void MixerInputConnection::OnInactivityTimeout() {
+  if (never_timeout_connection_) {
+    return;
+  }
+
   LOG(INFO) << "Timed out " << this << " due to inactivity";
   OnConnectionError();
 }

@@ -49,6 +49,18 @@ buttons: 0
 x: 100
 y: 200
 -----Event-----
+type: mousedown
+button: 3
+buttons: 8
+x: 100
+y: 200
+-----Event-----
+type: mousedown
+button: 4
+buttons: 24
+x: 100
+y: 200
+-----Event-----
 type: mousewheel
 button: 0
 buttons: 0

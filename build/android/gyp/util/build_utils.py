@@ -42,8 +42,8 @@ except NameError:
 
 
 @contextlib.contextmanager
-def TempDir():
-  dirname = tempfile.mkdtemp()
+def TempDir(**kwargs):
+  dirname = tempfile.mkdtemp(**kwargs)
   try:
     yield dirname
   finally:
@@ -442,8 +442,20 @@ def ZipDir(output, base_dir, compress_fn=None, zip_prefix_path=None):
     for f in files:
       inputs.append(os.path.join(root, f))
 
-  with AtomicOutput(output) as f:
-    DoZip(inputs, f, base_dir, compress_fn=compress_fn,
+  if isinstance(output, zipfile.ZipFile):
+    DoZip(
+        inputs,
+        output,
+        base_dir,
+        compress_fn=compress_fn,
+        zip_prefix_path=zip_prefix_path)
+  else:
+    with AtomicOutput(output) as f:
+      DoZip(
+          inputs,
+          f,
+          base_dir,
+          compress_fn=compress_fn,
           zip_prefix_path=zip_prefix_path)
 
 

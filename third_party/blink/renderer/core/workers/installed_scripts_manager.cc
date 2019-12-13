@@ -47,6 +47,10 @@ String InstalledScriptsManager::ScriptData::GetReferrerPolicy() {
   return headers_.Get(http_names::kReferrerPolicy);
 }
 
+String InstalledScriptsManager::ScriptData::GetHttpContentType() {
+  return headers_.Get(http_names::kContentType);
+}
+
 std::unique_ptr<Vector<String>>
 InstalledScriptsManager::ScriptData::CreateOriginTrialTokens() {
   return OriginTrialContext::ParseHeaderValue(

@@ -14,6 +14,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/android/autofill_assistant/assistant_collect_user_data_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_form_delegate.h"
+#include "chrome/browser/android/autofill_assistant/assistant_generic_ui_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_header_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_overlay_delegate.h"
 #include "components/autofill_assistant/browser/chip.h"
@@ -28,6 +29,7 @@
 
 namespace autofill_assistant {
 struct ClientSettings;
+class GenericUiControllerAndroid;
 
 // Starts and owns the UI elements required to display AA.
 //
@@ -113,6 +115,9 @@ class UiControllerAndroid : public ControllerObserver {
   // Called by AssistantHeaderDelegate:
   void OnFeedbackButtonClicked();
 
+  // Called by AssistantGenericUiDelegate:
+  void OnViewEvent(const EventHandler::EventKey& key, const ValueProto& value);
+
   // Called by AssistantCollectUserDataDelegate:
   void OnShippingAddressChanged(
       std::unique_ptr<autofill::AutofillProfile> address);
@@ -182,6 +187,7 @@ class UiControllerAndroid : public ControllerObserver {
   AssistantHeaderDelegate header_delegate_;
   AssistantCollectUserDataDelegate collect_user_data_delegate_;
   AssistantFormDelegate form_delegate_;
+  AssistantGenericUiDelegate generic_ui_delegate_;
 
   // What to do if undo is not pressed on the current snackbar.
   base::OnceCallback<void()> snackbar_action_;
@@ -228,6 +234,10 @@ class UiControllerAndroid : public ControllerObserver {
 
   // Java-side AutofillAssistantUiController object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
+
+  // Native controller for generic UI in collect user data action.
+  std::unique_ptr<GenericUiControllerAndroid>
+      collect_user_data_generic_ui_controller_;
 
   OverlayState desired_overlay_state_ = OverlayState::FULL;
   base::WeakPtrFactory<UiControllerAndroid> weak_ptr_factory_{this};

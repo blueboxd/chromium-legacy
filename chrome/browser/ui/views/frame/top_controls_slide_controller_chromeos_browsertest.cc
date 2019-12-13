@@ -477,8 +477,9 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, DisabledForHostedApps) {
       browser_view->GetActiveWebContents()));
 }
 
+// TODO(https://crbug.com/1033650) flaky on linux-chromeos-rel.
 IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
-                       EnabledOnlyForTabletNonImmersiveModes) {
+                       DISABLED_EnabledOnlyForTabletNonImmersiveModes) {
   EXPECT_FALSE(GetTabletModeEnabled());
   AddBlankTabAndShow(browser());
   // For a normal browser, the controller is created.
@@ -1117,7 +1118,9 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestPermissionBubble) {
+// TODO(https://crbug.com/1033651) flaky on linux-chromeos-rel.
+IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
+                       DISABLED_TestPermissionBubble) {
   ToggleTabletMode();
   ASSERT_TRUE(GetTabletModeEnabled());
   EXPECT_TRUE(top_controls_slide_controller()->IsEnabled());
@@ -1166,7 +1169,9 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestPermissionBubble) {
                                TopChromeShownState::kFullyHidden);
 }
 
-IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestToggleChromeVox) {
+// TODO(https://crbug.com/1033648) flaky on linux-chromeos-rel.
+IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
+                       DISABLED_TestToggleChromeVox) {
   ToggleTabletMode();
   ASSERT_TRUE(GetTabletModeEnabled());
   EXPECT_TRUE(top_controls_slide_controller()->IsEnabled());

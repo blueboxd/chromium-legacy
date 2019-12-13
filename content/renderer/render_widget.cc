@@ -84,6 +84,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_render_widget_scheduling_state.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
+#include "third_party/blink/public/platform/scheduler/web_widget_scheduler.h"
 #include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
@@ -1926,6 +1927,8 @@ void RenderWidget::InitCompositing(const ScreenInfo& screen_info) {
   blink::scheduler::WebThreadScheduler* main_thread_scheduler =
       compositor_deps_->GetWebMainThreadScheduler();
 
+  widget_scheduler_ = main_thread_scheduler->CreateWidgetScheduler();
+
   blink::scheduler::WebThreadScheduler* compositor_thread_scheduler =
       blink::scheduler::WebThreadScheduler::CompositorThreadScheduler();
   scoped_refptr<base::SingleThreadTaskRunner> compositor_input_task_runner;
@@ -1934,11 +1937,11 @@ void RenderWidget::InitCompositing(const ScreenInfo& screen_info) {
   // without a compositor thread.
   if (for_frame() && compositor_thread_scheduler) {
     compositor_input_task_runner =
-        compositor_thread_scheduler->InputTaskRunner();
+        compositor_thread_scheduler->DefaultTaskRunner();
   }
 
   input_event_queue_ = base::MakeRefCounted<MainThreadEventQueue>(
-      this, main_thread_scheduler->InputTaskRunner(), main_thread_scheduler,
+      this, widget_scheduler_->InputTaskRunner(), main_thread_scheduler,
       /*allow_raf_aligned_input=*/!compositor_never_visible_);
 
   // We only use an external input handler for frame RenderWidgets because only

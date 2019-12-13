@@ -113,6 +113,19 @@ Network::CertificateTransparencyCompliance SerializeCTPolicyCompliance(
 
 std::unique_ptr<Network::Cookie> BuildCookie(
     const net::CanonicalCookie& cookie) {
+  String cp;
+  switch (cookie.Priority()) {
+    case net::CookiePriority::COOKIE_PRIORITY_HIGH:
+      cp = Network::CookiePriorityEnum::High;
+      break;
+    case net::CookiePriority::COOKIE_PRIORITY_MEDIUM:
+      cp = Network::CookiePriorityEnum::Medium;
+      break;
+    case net::CookiePriority::COOKIE_PRIORITY_LOW:
+      cp = Network::CookiePriorityEnum::Low;
+      break;
+  }
+
   std::unique_ptr<Network::Cookie> devtools_cookie =
       Network::Cookie::Create()
           .SetName(cookie.Name())
@@ -126,6 +139,7 @@ std::unique_ptr<Network::Cookie> BuildCookie(
           .SetHttpOnly(cookie.IsHttpOnly())
           .SetSecure(cookie.IsSecure())
           .SetSession(!cookie.IsPersistent())
+          .SetPriority(cp)
           .Build();
 
   switch (cookie.SameSite()) {
@@ -238,7 +252,8 @@ std::unique_ptr<net::CanonicalCookie> MakeCookieFromProtocolValues(
     bool secure,
     bool http_only,
     const std::string& same_site,
-    double expires) {
+    double expires,
+    const std::string& priority) {
   std::string normalized_domain = domain;
 
   if (url_spec.empty() && domain.empty())
@@ -283,9 +298,17 @@ std::unique_ptr<net::CanonicalCookie> MakeCookieFromProtocolValues(
   if (same_site == Network::CookieSameSiteEnum::None)
     css = net::CookieSameSite::NO_RESTRICTION;
 
+  net::CookiePriority cp = net::CookiePriority::COOKIE_PRIORITY_MEDIUM;
+  if (priority == Network::CookiePriorityEnum::High)
+    cp = net::CookiePriority::COOKIE_PRIORITY_HIGH;
+  else if (priority == Network::CookiePriorityEnum::Medium)
+    cp = net::CookiePriority::COOKIE_PRIORITY_MEDIUM;
+  else if (priority == Network::CookiePriorityEnum::Low)
+    cp = net::CookiePriority::COOKIE_PRIORITY_LOW;
+
   return net::CanonicalCookie::CreateSanitizedCookie(
       url, name, value, normalized_domain, path, base::Time(), expiration_date,
-      base::Time(), secure, http_only, css, net::COOKIE_PRIORITY_DEFAULT);
+      base::Time(), secure, http_only, css, cp);
 }
 
 std::vector<GURL> ComputeCookieURLs(RenderFrameHostImpl* frame_host,
@@ -1126,6 +1149,7 @@ void NetworkHandler::SetCookie(const std::string& name,
                                Maybe<bool> http_only,
                                Maybe<std::string> same_site,
                                Maybe<double> expires,
+                               Maybe<std::string> priority,
                                std::unique_ptr<SetCookieCallback> callback) {
   if (!storage_partition_) {
     callback->sendFailure(Response::InternalError());
@@ -1140,7 +1164,7 @@ void NetworkHandler::SetCookie(const std::string& name,
   std::unique_ptr<net::CanonicalCookie> cookie = MakeCookieFromProtocolValues(
       name, value, url.fromMaybe(""), domain.fromMaybe(""), path.fromMaybe(""),
       secure.fromMaybe(false), http_only.fromMaybe(false),
-      same_site.fromMaybe(""), expires.fromMaybe(-1));
+      same_site.fromMaybe(""), expires.fromMaybe(-1), priority.fromMaybe(""));
 
   if (!cookie) {
     // TODO(caseq): Current logic is for compatability only.
@@ -1172,7 +1196,8 @@ void NetworkHandler::SetCookies(
             cookie->GetName(), cookie->GetValue(), cookie->GetUrl(""),
             cookie->GetDomain(""), cookie->GetPath(""),
             cookie->GetSecure(false), cookie->GetHttpOnly(false),
-            cookie->GetSameSite(""), cookie->GetExpires(-1));
+            cookie->GetSameSite(""), cookie->GetExpires(-1),
+            cookie->GetPriority(""));
     if (!net_cookie) {
       std::move(callback).Run(false);
       return;

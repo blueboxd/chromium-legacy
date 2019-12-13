@@ -89,10 +89,6 @@ ScopedBlockingCall::~ScopedBlockingCall() {
 namespace internal {
 
 ScopedBlockingCallWithBaseSyncPrimitives::
-    ScopedBlockingCallWithBaseSyncPrimitives(BlockingType blocking_type)
-    : ScopedBlockingCallWithBaseSyncPrimitives(FROM_HERE, blocking_type) {}
-
-ScopedBlockingCallWithBaseSyncPrimitives::
     ScopedBlockingCallWithBaseSyncPrimitives(const Location& from_here,
                                              BlockingType blocking_type)
     : UncheckedScopedBlockingCall(blocking_type) {

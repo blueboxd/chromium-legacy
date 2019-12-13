@@ -35,6 +35,8 @@ class ClientMemory;
 struct ClientSettings;
 class TriggerContext;
 class WebsiteLoginFetcher;
+class EventHandler;
+class UserModel;
 
 class ScriptExecutorDelegate {
  public:
@@ -86,6 +88,8 @@ class ScriptExecutorDelegate {
       std::unique_ptr<FormProto> form,
       base::RepeatingCallback<void(const FormProto::Result*)> changed_callback,
       base::OnceCallback<void(const ClientStatus&)> cancel_callback) = 0;
+  virtual UserModel* GetUserModel() = 0;
+  virtual EventHandler* GetEventHandler() = 0;
 
   // Makes no area of the screen touchable.
   void ClearTouchableElementArea() {

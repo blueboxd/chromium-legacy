@@ -12,8 +12,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/hyphenation/hyphenation.mojom-blink.h"
-#include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/text/character.h"
 #include "third_party/blink/renderer/platform/text/hyphenation/hyphenator_aosp.h"
@@ -51,7 +51,7 @@ using Hyphenator = android::Hyphenator;
 
 static mojo::Remote<mojom::blink::Hyphenation> ConnectToRemoteService() {
   mojo::Remote<mojom::blink::Hyphenation> service;
-  Platform::Current()->GetInterfaceProvider()->GetInterface(
+  Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
       service.BindNewPipeAndPassReceiver());
   return service;
 }

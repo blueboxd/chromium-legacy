@@ -732,9 +732,6 @@ enum BoolAttribute {
 
   // Indicates whether this node causes a page break
   kIsPageBreakingObject,
-
-  // True if the node has any ARIA attributes set.
-  kHasAriaAttribute,
 };
 
 enum IntListAttribute {

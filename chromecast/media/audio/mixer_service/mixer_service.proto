@@ -55,6 +55,10 @@ message OutputStreamParams {
 
   // If |true|, this stream will not be included in the mixer's stream counts.
   optional bool ignore_for_stream_count = 14;
+
+  // If |true|, the receiver will not close the stream after a period of
+  // inactivity.
+  optional bool never_timeout_connection = 15;
 }
 
 // Indicates that we want to start playing the sample with PTS |start_pts|

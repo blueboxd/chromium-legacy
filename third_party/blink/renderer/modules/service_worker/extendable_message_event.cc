@@ -53,6 +53,28 @@ ExtendableMessageEvent* ExtendableMessageEvent::Create(
   return event;
 }
 
+ExtendableMessageEvent* ExtendableMessageEvent::CreateError(
+    const String& origin,
+    MessagePortArray* ports,
+    ServiceWorkerClient* source,
+    WaitUntilObserver* observer) {
+  ExtendableMessageEvent* event =
+      MakeGarbageCollected<ExtendableMessageEvent>(origin, ports, observer);
+  event->source_as_client_ = source;
+  return event;
+}
+
+ExtendableMessageEvent* ExtendableMessageEvent::CreateError(
+    const String& origin,
+    MessagePortArray* ports,
+    ServiceWorker* source,
+    WaitUntilObserver* observer) {
+  ExtendableMessageEvent* event =
+      MakeGarbageCollected<ExtendableMessageEvent>(origin, ports, observer);
+  event->source_as_service_worker_ = source;
+  return event;
+}
+
 void ExtendableMessageEvent::source(
     ClientOrServiceWorkerOrMessagePort& result) const {
   if (source_as_client_)
@@ -131,5 +153,15 @@ ExtendableMessageEvent::ExtendableMessageEvent(
   if (serialized_data_)
     serialized_data_->RegisterMemoryAllocatedWithCurrentScriptContext();
 }
+
+ExtendableMessageEvent::ExtendableMessageEvent(const String& origin,
+                                               MessagePortArray* ports,
+                                               WaitUntilObserver* observer)
+    : ExtendableEvent(event_type_names::kMessageerror,
+                      ExtendableMessageEventInit::Create(),
+                      observer),
+      origin_(origin),
+      last_event_id_(String()),
+      ports_(ports) {}
 
 }  // namespace blink

@@ -15,6 +15,7 @@ window.addEventListener('load', function() {
     $('cookie-controls-tooltip-icon').hidden = !dict.enforced;
     $('cookie-controls-toggle').disabled = dict.enforced;
     $('cookie-controls-toggle').checked = dict.checked;
+    $('cookie-controls-toggle').iconClass = dict.icon;
   });
   $('cookie-controls-toggle').addEventListener('change', event => {
     chrome.send('cookieControlsToggleChanged', [event.detail]);

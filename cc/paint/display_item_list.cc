@@ -139,9 +139,21 @@ void DisplayItemList::EmitTraceSnapshot() const {
       CreateTracedValue(include_items));
 }
 
+std::string DisplayItemList::ToString() const {
+  base::trace_event::TracedValueJSON value;
+  AddToValue(&value, true);
+  return value.ToFormattedJSON();
+}
+
 std::unique_ptr<base::trace_event::TracedValue>
 DisplayItemList::CreateTracedValue(bool include_items) const {
   auto state = std::make_unique<base::trace_event::TracedValue>();
+  AddToValue(state.get(), include_items);
+  return state;
+}
+
+void DisplayItemList::AddToValue(base::trace_event::TracedValue* state,
+                                 bool include_items) const {
   state->BeginDictionary("params");
 
   gfx::Rect bounds;
@@ -164,8 +176,7 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
 
       MathUtil::AddToTracedValue(
           "visual_rect",
-          visual_rects[paint_op_buffer_.GetOpOffsetForTracing(op)],
-          state.get());
+          visual_rects[paint_op_buffer_.GetOpOffsetForTracing(op)], state);
 
       SkPictureRecorder recorder;
       SkCanvas* canvas = recorder.beginRecording(gfx::RectToSkRect(bounds));
@@ -184,7 +195,7 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
     state->EndArray();  // "items".
   }
 
-  MathUtil::AddToTracedValue("layer_rect", bounds, state.get());
+  MathUtil::AddToTracedValue("layer_rect", bounds, state);
   state->EndDictionary();  // "params".
 
   {
@@ -199,7 +210,6 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
     PictureDebugUtil::SerializeAsBase64(picture.get(), &b64_picture);
     state->SetString("skp64", b64_picture);
   }
-  return state;
 }
 
 void DisplayItemList::GenerateDiscardableImagesMetadata() {

@@ -44,7 +44,7 @@ class CookieStoreHost : public blink::mojom::CookieStore {
 
  private:
   // The raw pointer is safe because CookieStoreManager owns this instance via a
-  // mojo::BindingSet.
+  // mojo::UniqueReceiverSet.
   CookieStoreManager* const manager_;
 
   const url::Origin origin_;

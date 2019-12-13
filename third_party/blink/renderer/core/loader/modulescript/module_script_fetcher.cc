@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetcher.h"
 
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
@@ -64,14 +65,15 @@ bool ModuleScriptFetcher::WasModuleLoadSuccessful(
     return true;
   }
   // <spec step="13">If type is a JSON MIME type, then:</spec>
-  if (RuntimeEnabledFeatures::JSONModulesEnabled() &&
+  if (base::FeatureList::IsEnabled(blink::features::kJSONModules) &&
       MIMETypeRegistry::IsJSONMimeType(response.HttpContentType())) {
     *module_type = ModuleScriptCreationParams::ModuleType::kJSONModule;
     return true;
   }
-  String required_response_type = RuntimeEnabledFeatures::JSONModulesEnabled()
-                                      ? "JavaScript or JSON"
-                                      : "JavaScript";
+  String required_response_type =
+      base::FeatureList::IsEnabled(blink::features::kJSONModules)
+          ? "JavaScript or JSON"
+          : "JavaScript";
   String message =
       "Failed to load module script: The server responded with a non-" +
       required_response_type + " MIME type of \"" +

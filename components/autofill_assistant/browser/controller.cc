@@ -115,9 +115,13 @@ Controller::Controller(content::WebContents* web_contents,
                        : ServiceImpl::Create(web_contents->GetBrowserContext(),
                                              client_)),
       user_data_(std::make_unique<UserData>()),
-      navigating_to_new_document_(web_contents->IsWaitingForResponse()) {}
+      navigating_to_new_document_(web_contents->IsWaitingForResponse()) {
+  user_model_.AddObserver(this);
+}
 
-Controller::~Controller() = default;
+Controller::~Controller() {
+  user_model_.RemoveObserver(this);
+}
 
 const ClientSettings& Controller::GetSettings() {
   return settings_;
@@ -465,12 +469,25 @@ void Controller::SetChoiceSelected(int input_index,
   form_changed_callback_.Run(form_result_.get());
 }
 
+UserModel* Controller::GetUserModel() {
+  return &user_model_;
+}
+
+EventHandler* Controller::GetEventHandler() {
+  return &event_handler_;
+}
+
 void Controller::AddObserver(ControllerObserver* observer) {
   observers_.AddObserver(observer);
 }
 
 void Controller::RemoveObserver(const ControllerObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void Controller::DispatchEvent(const EventHandler::EventKey& key,
+                               const ValueProto& value) {
+  event_handler_.DispatchEvent(key, value);
 }
 
 ViewportMode Controller::GetViewportMode() {
@@ -975,7 +992,7 @@ void Controller::OnCollectUserDataContinueButtonClicked() {
   user_data_->succeed = true;
 
   SetCollectUserDataOptions(nullptr);
-  std::move(callback).Run(user_data_.get());
+  std::move(callback).Run(user_data_.get(), &user_model_);
 }
 
 void Controller::OnCollectUserDataAdditionalActionTriggered(int index) {
@@ -1419,6 +1436,12 @@ void Controller::OnWebContentsFocused(
     // This is only enabled when tab-switching is enabled.
     client_->AttachUI();
   }
+}
+
+void Controller::OnValueChanged(const std::string& identifier,
+                                const ValueProto& new_value) {
+  event_handler_.DispatchEvent({EventProto::kOnValueChanged, identifier},
+                               new_value);
 }
 
 void Controller::OnTouchableAreaChanged(

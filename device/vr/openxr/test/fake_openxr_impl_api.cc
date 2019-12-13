@@ -191,7 +191,9 @@ XrResult xrCreateReferenceSpace(XrSession session,
   RETURN_IF(
       create_info->referenceSpaceType != XR_REFERENCE_SPACE_TYPE_LOCAL &&
           create_info->referenceSpaceType != XR_REFERENCE_SPACE_TYPE_VIEW &&
-          create_info->referenceSpaceType != XR_REFERENCE_SPACE_TYPE_STAGE,
+          create_info->referenceSpaceType != XR_REFERENCE_SPACE_TYPE_STAGE &&
+          create_info->referenceSpaceType !=
+              XR_REFERENCE_SPACE_TYPE_UNBOUNDED_MSFT,
       XR_ERROR_REFERENCE_SPACE_UNSUPPORTED,
       "XrReferenceSpaceCreateInfo referenceSpaceType invalid");
   RETURN_IF_XR_FAILED(g_test_helper.ValidateXrPosefIsIdentity(

@@ -110,7 +110,7 @@
         focus-config="[[focusConfig_]]">
       <div route-path="default">
 <if expr="not chromeos">
-        <template is="dom-if" if="[[shouldShowSyncAccountControl_(diceEnabled_,
+        <template is="dom-if" if="[[shouldShowSyncAccountControl_(
             syncStatus.syncSystemEnabled, syncStatus.signinAllowed)]]">
           <settings-sync-account-control
               sync-status="[[syncStatus]]"

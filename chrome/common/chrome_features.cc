@@ -317,18 +317,15 @@ const base::Feature kDriveFcmInvalidations{"DriveFCMInvalidations",
 const base::Feature kPolicyFcmInvalidations{"PolicyFCMInvalidations",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables ambient authentication in incognito mode.
-// TODO(https://crbug.com/458508): Change to disabled by default after proper
-// notice to use the policy to activate when required, M79-M80.
+// Disables ambient authentication in incognito mode.
 const base::Feature kEnableAmbientAuthenticationInIncognito{
-    "EnableAmbientAuthenticationInIncognito", base::FEATURE_ENABLED_BY_DEFAULT};
+    "EnableAmbientAuthenticationInIncognito",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables ambient authentication in guest sessions.
-// TODO(https://crbug.com/458508): Change to disabled by default after proper
-// notice to use the policy to activate when required, M79-M80.
+// Disables ambient authentication in guest sessions.
 const base::Feature kEnableAmbientAuthenticationInGuestSession{
     "EnableAmbientAuthenticationInGuestSession",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if !defined(OS_ANDROID)
 // Upload enterprise cloud reporting without the extension.

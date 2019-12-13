@@ -312,7 +312,7 @@ void PlatformThread::Join(PlatformThreadHandle thread_handle) {
   base::debug::ScopedThreadJoinActivity thread_activity(&thread_handle);
 
   base::internal::ScopedBlockingCallWithBaseSyncPrimitives scoped_blocking_call(
-      base::BlockingType::MAY_BLOCK);
+      FROM_HERE, base::BlockingType::MAY_BLOCK);
 
   // Wait for the thread to exit.  It should already have terminated but make
   // sure this assumption is valid.

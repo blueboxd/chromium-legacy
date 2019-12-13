@@ -1,9 +1,9 @@
 document
-++region IsControlElement=false
+++region
 ++++description Name='This test is to check   pre<newline>formatting.'
-++group IsControlElement=false
+++group
 ++++description Name='This test is to check   pre<newline>formatting'
-++group IsControlElement=false
+++group
 ++++description Name='This test is to check   pre<newline>formatting.'
-++group IsControlElement=false
+++group
 ++++description Name='This test is to check pre formatting.'

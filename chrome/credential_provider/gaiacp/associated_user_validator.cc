@@ -198,9 +198,8 @@ bool AssociatedUserValidator::IsOnlineLoginStale(
       sid, base::UTF8ToUTF16(kKeyLastSuccessfulOnlineLoginMillis),
       last_login_millis, &last_login_size);
   if (FAILED(hr)) {
-    LOGFN(ERROR) << "GetUserProperty for "
-                 << kKeyLastSuccessfulOnlineLoginMillis
-                 << " failed. hr=" << putHR(hr);
+    LOGFN(INFO) << "GetUserProperty for " << kKeyLastSuccessfulOnlineLoginMillis
+                << " failed. hr=" << putHR(hr);
     // Fallback to the less obstructive option to not enforce login via google
     // when fetching the registry entry fails.
     return false;
@@ -212,14 +211,15 @@ bool AssociatedUserValidator::IsOnlineLoginStale(
   hr = GetGlobalFlag(base::UTF8ToUTF16(kKeyValidityPeriodInDays),
                      &validity_period_days);
   if (FAILED(hr)) {
-    LOGFN(ERROR) << "GetGlobalFlag for " << kKeyValidityPeriodInDays
-                 << " failed. hr=" << putHR(hr);
+    LOGFN(INFO) << "GetGlobalFlag for " << kKeyValidityPeriodInDays
+                << " failed. hr=" << putHR(hr);
     // Fallback to the less obstructive option to not enforce login via google
     // when fetching the registry entry fails.
     return false;
   }
 
-  long validity_period_in_millis = kDayInMillis * validity_period_days;
+  int64_t validity_period_in_millis =
+      kDayInMillis * static_cast<int64_t>(validity_period_days);
   long time_delta_from_last_login =
       base::Time::Now().ToDeltaSinceWindowsEpoch().InMilliseconds() -
       last_login_millis_int64;

@@ -122,6 +122,8 @@ struct VIZ_COMMON_EXPORT BeginFrameArgs {
   void AsValueInto(base::trace_event::TracedValue* dict) const;
   void AsProtozeroInto(perfetto::protos::pbzero::BeginFrameArgs* args) const;
 
+  std::string ToString() const;
+
   // The time at which the frame started. Used, for example, by animations to
   // decide to slow down or skip ahead.
   base::TimeTicks frame_time;

@@ -82,7 +82,8 @@ class FakeClient : public Client {
 // Same as non-mock, but provides default mock callbacks.
 struct MockCollectUserDataOptions : public CollectUserDataOptions {
   MockCollectUserDataOptions() {
-    base::MockOnceCallback<void(UserData*)> mock_confirm_callback;
+    base::MockOnceCallback<void(UserData*, const UserModel*)>
+        mock_confirm_callback;
     confirm_callback = mock_confirm_callback.Get();
     base::MockOnceCallback<void(int)> mock_actions_callback;
     additional_actions_callback = mock_actions_callback.Get();

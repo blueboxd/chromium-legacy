@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_observer.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_observer.h"
 
 #import "base/macros.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
-#import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
 #include "ios/web/public/test/web_task_environment.h"

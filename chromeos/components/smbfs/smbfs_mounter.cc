@@ -4,10 +4,12 @@
 
 #include "chromeos/components/smbfs/smbfs_mounter.h"
 
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/strcat.h"
 #include "chromeos/components/mojo_bootstrap/pending_connection_manager.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace smbfs {
 
@@ -106,8 +108,29 @@ void SmbFsMounter::OnMountEvent(
   mount_options->share_path = share_path_;
   mount_options->username = options_.username;
   mount_options->workgroup = options_.workgroup;
-  mount_options->password = options_.password;
   mount_options->allow_ntlm = options_.allow_ntlm;
+
+  if (!options_.password.empty()) {
+    if (options_.password.size() > mojom::Password::kMaxLength) {
+      LOG(WARNING) << "smbfs password too long";
+      ProcessMountError(mojom::MountError::kUnknown);
+      return;
+    }
+    int pipe_fds[2];
+    CHECK(base::CreateLocalNonBlockingPipe(pipe_fds));
+    base::ScopedFD pipe_read_end(pipe_fds[0]);
+    base::ScopedFD pipe_write_end(pipe_fds[1]);
+    // Write password to pipe.
+    CHECK(base::WriteFileDescriptor(pipe_write_end.get(),
+                                    options_.password.c_str(),
+                                    options_.password.size()));
+
+    mojom::PasswordPtr password = mojom::Password::New();
+    password->length = static_cast<int32_t>(options_.password.size());
+    password->fd = mojo::WrapPlatformHandle(
+        mojo::PlatformHandle(std::move(pipe_read_end)));
+    mount_options->password = std::move(password);
+  }
 
   mojo::PendingRemote<mojom::SmbFsDelegate> delegate_remote;
   mojo::PendingReceiver<mojom::SmbFsDelegate> delegate_receiver =

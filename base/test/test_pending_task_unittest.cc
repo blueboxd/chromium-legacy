@@ -19,9 +19,9 @@ TEST(TestPendingTaskTest, TraceSupport) {
   TRACE_EVENT1("test", "TestPendingTask::TraceSupport", "task", task.AsValue());
 
   // Just a basic check that the trace output has *something* in it.
-  std::unique_ptr<base::trace_event::ConvertableToTraceFormat> task_value(
-      task.AsValue());
-  EXPECT_THAT(task_value->ToString(), ::testing::HasSubstr("post_time"));
+  base::trace_event::TracedValueJSON task_value;
+  task.AsValueInto(&task_value);
+  EXPECT_THAT(task_value.ToJSON(), ::testing::HasSubstr("post_time"));
 }
 
 TEST(TestPendingTaskTest, ToString) {

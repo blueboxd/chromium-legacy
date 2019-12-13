@@ -76,6 +76,28 @@ cr.define('settings_personalization_options', function() {
       assertVisible(testElement.$$('#safeBrowsingReportingToggle'), true);
       assertFalse(!!testElement.$$('#signinAllowedToggle'));
     });
+
+    test('safeBrowsingReportingToggle', function() {
+      const safeBrowsingToggle = testElement.$$('#safeBrowsingToggle');
+      const safeBrowsingReportingToggle =
+          testElement.$$('#safeBrowsingReportingToggle');
+      assertTrue(safeBrowsingToggle.checked);
+      assertFalse(safeBrowsingReportingToggle.disabled);
+      assertTrue(safeBrowsingReportingToggle.checked);
+      safeBrowsingToggle.click();
+      Polymer.dom.flush();
+
+      assertFalse(safeBrowsingToggle.checked);
+      assertTrue(safeBrowsingReportingToggle.disabled);
+      assertFalse(safeBrowsingReportingToggle.checked);
+      assertTrue(testElement.prefs.safebrowsing.scout_reporting_enabled.value);
+      safeBrowsingToggle.click();
+      Polymer.dom.flush();
+
+      assertTrue(safeBrowsingToggle.checked);
+      assertFalse(safeBrowsingReportingToggle.disabled);
+      assertTrue(safeBrowsingReportingToggle.checked);
+    });
   });
 
   suite('PrivacySettingsRedesignTests', function() {

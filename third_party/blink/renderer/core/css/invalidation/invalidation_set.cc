@@ -366,11 +366,11 @@ void InvalidationSet::ToTracedValue(TracedValue* value) const {
 
 #ifndef NDEBUG
 void InvalidationSet::Show() const {
-  auto value = std::make_unique<TracedValue>();
-  value->BeginArray("InvalidationSet");
-  ToTracedValue(value.get());
-  value->EndArray();
-  fprintf(stderr, "%s\n", value->ToString().Ascii().c_str());
+  TracedValueJSON value;
+  value.BeginArray("InvalidationSet");
+  ToTracedValue(&value);
+  value.EndArray();
+  LOG(ERROR) << value.ToJSON().Ascii();
 }
 #endif  // NDEBUG
 

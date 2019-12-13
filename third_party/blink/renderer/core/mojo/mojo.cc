@@ -9,7 +9,7 @@
 
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -105,8 +105,8 @@ void Mojo::bindInterface(ScriptState* script_state,
       mojo::ScopedMessagePipeHandle::From(request_handle->TakeHandle());
 
   if (scope == "process") {
-    Platform::Current()->GetInterfaceProvider()->GetInterface(
-        name.c_str(), std::move(handle));
+    Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
+        mojo::GenericPendingReceiver(name, std::move(handle)));
     return;
   }
 

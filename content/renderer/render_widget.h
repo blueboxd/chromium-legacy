@@ -84,6 +84,7 @@ class SyncMessageFilter;
 namespace blink {
 namespace scheduler {
 class WebRenderWidgetSchedulingState;
+class WebWidgetScheduler;
 }
 struct WebDeviceEmulationParams;
 class WebDragData;
@@ -1159,6 +1160,8 @@ class CONTENT_EXPORT RenderWidget
   base::Optional<bool> has_touch_handlers_;
 
   uint32_t last_capture_sequence_number_ = 0u;
+
+  std::unique_ptr<blink::scheduler::WebWidgetScheduler> widget_scheduler_;
 
   base::WeakPtrFactory<RenderWidget> weak_ptr_factory_{this};
 

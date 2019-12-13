@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -207,9 +208,14 @@ void TouchpadPinchBrowserTest::EnsureNoScaleChangeWhenCanceled(
   EXPECT_FLOAT_EQ(starting_scale_factor * 2.0, last_scale_factor);
 }
 
-// If the synthetic wheel event for a touchpad pinch is canceled, we should not
-// change the page scale.
-IN_PROC_BROWSER_TEST_P(TouchpadPinchBrowserTest, WheelListenerPreventingPinch) {
+// TODO(https://crbug.com/1033907) Test is flaky on mac bots.
+#if defined(OS_MACOSX)
+#define MAYBE_WheelListenerPreventingPinch DISABLED_WheelListenerPreventingPinch
+#else
+#define MAYBE_WheelListenerPreventingPinch WheelListenerPreventingPinch
+#endif
+IN_PROC_BROWSER_TEST_P(TouchpadPinchBrowserTest,
+                       MAYBE_WheelListenerPreventingPinch) {
   LoadURL();
 
   EnsureNoScaleChangeWhenCanceled(

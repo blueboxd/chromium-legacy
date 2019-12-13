@@ -1,5 +1,5 @@
 document
-++group IsControlElement=false
+++group
 ++++description Name='This text contains '
 ++++description Name='subscript'
 ++++description Name=' text.'

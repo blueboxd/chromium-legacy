@@ -1,5 +1,5 @@
 document
-++group IsControlElement=false
+++group
 ++++menuitemradio SelectionItem.IsSelected=true
 ++++description Name='Radio0 '
 ++++menuitemradio SelectionItem.IsSelected=false

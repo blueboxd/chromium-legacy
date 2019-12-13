@@ -231,11 +231,6 @@ class DummyWebThreadScheduler : public WebThreadScheduler,
     return base::ThreadTaskRunnerHandle::Get();
   }
 
-  scoped_refptr<base::SingleThreadTaskRunner> InputTaskRunner() override {
-    DCHECK(WTF::IsMainThread());
-    return base::ThreadTaskRunnerHandle::Get();
-  }
-
   scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override {
     DCHECK(WTF::IsMainThread());
     return base::ThreadTaskRunnerHandle::Get();

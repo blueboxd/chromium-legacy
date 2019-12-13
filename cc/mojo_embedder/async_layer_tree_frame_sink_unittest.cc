@@ -96,7 +96,7 @@ TEST(AsyncLayerTreeFrameSinkTest,
                                 base::Unretained(&frame_sink_client)));
   // Closes the pipe, which should trigger calling DidLoseLayerTreeFrameSink()
   // (and quitting the RunLoop). There is no need to wait for BindToClient()
-  // to complete as mojo::Binding error callbacks are processed asynchronously.
+  // to complete as mojo::Receiver error callbacks are processed asynchronously.
   sink_receiver.reset();
   close_run_loop.Run();
 

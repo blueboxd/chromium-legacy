@@ -28,6 +28,8 @@
 #include "components/autofill_assistant/browser/top_padding.h"
 
 namespace autofill_assistant {
+class UserModel;
+
 // Class to execute an assistant script.
 class ScriptExecutor : public ActionDelegate,
                        public ScriptExecutorDelegate::Listener {
@@ -340,8 +342,10 @@ class ScriptExecutor : public ActionDelegate,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& element_status,
       const Result* interrupt_result);
-  void OnGetUserData(base::OnceCallback<void(UserData*)> callback,
-                     UserData* user_data);
+  void OnGetUserData(
+      base::OnceCallback<void(UserData*, const UserModel*)> callback,
+      UserData* user_data,
+      const UserModel* user_model);
   void OnAdditionalActionTriggered(base::OnceCallback<void(int)> callback,
                                    int index);
   void OnTermsAndConditionsLinkClicked(base::OnceCallback<void(int)> callback,

@@ -5,18 +5,13 @@
 
 <resources>
     <!-- TODO(crbuc.com/806868): Use a Chrome approved text appearance and remove this. -->
+    <!-- TODO(b/144417635): Move this to TextAppearance.BlackTitle1 with @font/accent_font_medium. -->
     <style name="TextAppearance.AssistantDetailsTitle" parent="TextAppearance.AccentMediumStyle">
         <item name="android:textColor">@color/default_text_color_list</item>
         <item name="android:textSize">@dimen/text_size_large</item>
     </style>
-    <style name="TextAppearance.AssistantDetailsPrice" parent="TextAppearance.AccentMediumStyle">
-        <item name="android:textColor">@color/default_text_color_list</item>
-        <item name="android:textSize">@dimen/text_size_medium</item>
+    <style name="TextAppearance.AssistantDetailsPrice" parent="TextAppearance.BlackBodyDefault">
         <item name="android:textStyle">bold</item>
-    </style>
-    <style name="TextAppearance.AssistantDetailsAttribution">
-        <item name="android:textColor">@color/modern_grey_500</item>
-        <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
     <style name="TextAppearance.AssistantBlackTitle" parent="TextAppearance.AccentMediumStyle">
         <item name="android:textColor">@color/default_text_color_list</item>

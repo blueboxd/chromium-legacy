@@ -9,17 +9,17 @@
 #include <string>
 #include <vector>
 #include "cbor.h"
+#include "glue.h"
 #include "serializable.h"
 #include "span.h"
 
 namespace crdtp {
 // =============================================================================
-// SerializerTraits - Helps encode field values of protocol objects in CBOR.
+// SerializerTraits - Encodes field values of protocol objects in CBOR.
 // =============================================================================
 //
-// A family of serialization functions which are used by the code generator
-// for the inspector protocol bindings to encode field values in CBOR.
-// Conceptually, it's this:
+// A family of serialization functions which are used by FieldSerializerTraits
+// (below) to encode field values in CBOR. Conceptually, it's this:
 //
 // Serialize(bool value, std::vector<uint8_t>* out);
 // Serialize(int32_t value, std::vector<uint8_t>* out);
@@ -34,8 +34,6 @@ namespace crdtp {
 // SerializerTraits<bool>::Serialize(bool value, std::vector<uint8_t>* out);
 // SerializerTraits<int32>::Serialize(int32_t value, std::vector<uint8_t>* out);
 // SerializerTraits<double>::Serialize(double value, std::vector<uint8_t>* out);
-//
-// Includes convenience methods for dereferencing raw and unique_ptr's.
 template <typename T>
 struct SerializerTraits {
   // |Serializable| (defined in serializable.h) already knows how to serialize
@@ -43,17 +41,6 @@ struct SerializerTraits {
   // protocol::Binary, etc.
   static void Serialize(const Serializable& value, std::vector<uint8_t>* out) {
     value.AppendSerialized(out);
-  }
-
-  // Convenience.
-  static void Serialize(const T* value, std::vector<uint8_t>* out) {
-    SerializerTraits<T>::Serialize(*value, out);
-  }
-
-  // Convenience.
-  static void Serialize(const std::unique_ptr<T>& value,
-                        std::vector<uint8_t>* out) {
-    SerializerTraits<T>::Serialize(*value, out);
   }
 
   // This method covers the Exported types, e.g. from V8 into Chromium.
@@ -113,21 +100,8 @@ struct SerializerTraits<std::vector<T>> {
       SerializerTraits<T>::Serialize(element, out);
     out->push_back(cbor::EncodeStop());
   }
-
-  // Convenience.
-  static void Serialize(const std::vector<T>* value,
-                        std::vector<uint8_t>* out) {
-    SerializerTraits<std::vector<T>>::Serialize(*value, out);
-  }
-
-  // Convenience.
-  static void Serialize(const std::unique_ptr<std::vector<T>>& value,
-                        std::vector<uint8_t>* out) {
-    SerializerTraits<std::vector<T>>::Serialize(*value, out);
-  }
 };
 
-// Convenience, esp. for elements of std::vector<std::unique_ptr<T>>.
 template <typename T>
 struct SerializerTraits<std::unique_ptr<T>> {
   static void Serialize(const std::unique_ptr<T>& value,
@@ -135,6 +109,55 @@ struct SerializerTraits<std::unique_ptr<T>> {
     SerializerTraits<T>::Serialize(*value, out);
   }
 };
+
+// =============================================================================
+// FieldSerializerTraits - Encodes fields of protocol objects in CBOR
+// =============================================================================
+//
+// The generated code (see TypeBuilder_cpp.template) invokes SerializeField,
+// which then instantiates the FieldSerializerTraits to emit the appropriate
+// existence checks / dereference for the field value. This avoids emitting
+// the field name if the value for an optional field isn't set.
+template <typename T>
+struct FieldSerializerTraits {
+  static void Serialize(span<uint8_t> field_name,
+                        const T& field_value,
+                        std::vector<uint8_t>* out) {
+    cbor::EncodeString8(field_name, out);
+    SerializerTraits<T>::Serialize(field_value, out);
+  }
+};
+
+template <typename T>
+struct FieldSerializerTraits<glue::detail::PtrMaybe<T>> {
+  static void Serialize(span<uint8_t> field_name,
+                        const glue::detail::PtrMaybe<T>& field_value,
+                        std::vector<uint8_t>* out) {
+    if (!field_value.isJust())
+      return;
+    cbor::EncodeString8(field_name, out);
+    SerializerTraits<T>::Serialize(*field_value.fromJust(), out);
+  }
+};
+
+template <typename T>
+struct FieldSerializerTraits<glue::detail::ValueMaybe<T>> {
+  static void Serialize(span<uint8_t> field_name,
+                        const glue::detail::ValueMaybe<T>& field_value,
+                        std::vector<uint8_t>* out) {
+    if (!field_value.isJust())
+      return;
+    cbor::EncodeString8(field_name, out);
+    SerializerTraits<T>::Serialize(field_value.fromJust(), out);
+  }
+};
+
+template <typename T>
+void SerializeField(span<uint8_t> field_name,
+                    const T& field_value,
+                    std::vector<uint8_t>* out) {
+  FieldSerializerTraits<T>::Serialize(field_name, field_value, out);
+}
 }  // namespace crdtp
 
 #endif  // CRDTP_SERIALIZER_TRAITS_H_

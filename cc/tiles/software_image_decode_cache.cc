@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/debug/stack_trace.h"
 #include "base/format_macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
@@ -367,8 +368,10 @@ SoftwareImageDecodeCache::DecodeImageIfNecessary(const CacheKey& key,
   // If we can use the original decode, we'll definitely need a decode.
   if (key.type() == CacheKey::kOriginal) {
     base::AutoUnlock release(lock_);
-    local_cache_entry = Utils::DoDecodeImage(key, paint_image, color_type_,
-                                             generator_client_id_);
+    local_cache_entry = Utils::DoDecodeImage(
+        key, paint_image, color_type_, generator_client_id_,
+        base::BindOnce(&SoftwareImageDecodeCache::ClearCache,
+                       base::Unretained(this)));
   } else {
     // Attempt to find a cached decode to generate a scaled/subrected decode
     // from.
@@ -395,8 +398,10 @@ SoftwareImageDecodeCache::DecodeImageIfNecessary(const CacheKey& key,
     DCHECK(!should_decode_to_scale || !key.is_nearest_neighbor());
     if (should_decode_to_scale) {
       base::AutoUnlock release(lock_);
-      local_cache_entry = Utils::DoDecodeImage(key, paint_image, color_type_,
-                                               generator_client_id_);
+      local_cache_entry = Utils::DoDecodeImage(
+          key, paint_image, color_type_, generator_client_id_,
+          base::BindOnce(&SoftwareImageDecodeCache::ClearCache,
+                         base::Unretained(this)));
     }
 
     // Couldn't decode to scale or find a cached candidate. Create the

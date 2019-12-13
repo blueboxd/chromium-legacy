@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/task_type_names.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/widget_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "v8/include/v8.h"
 
@@ -206,19 +207,8 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
           helper_.NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
                                    MainThreadTaskQueue::QueueType::kCompositor)
                                    .SetShouldMonitorQuiescence(true))),
-      input_task_queue_(helper_.NewTaskQueue(
-          MainThreadTaskQueue::QueueCreationParams(
-              MainThreadTaskQueue::QueueType::kInput)
-              .SetShouldMonitorQuiescence(true)
-              .SetFixedPriority(
-                  scheduling_settings_.high_priority_input
-                      ? base::make_optional(
-                            TaskQueue::QueuePriority::kHighestPriority)
-                      : base::nullopt))),
       compositor_task_queue_enabled_voter_(
           compositor_task_queue_->CreateQueueEnabledVoter()),
-      input_task_queue_enabled_voter_(
-          input_task_queue_->CreateQueueEnabledVoter()),
       memory_purge_task_queue_(helper_.NewTaskQueue(
           MainThreadTaskQueue::QueueCreationParams(
               MainThreadTaskQueue::QueueType::kIdle)
@@ -246,8 +236,6 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
   task_runners_.emplace(helper_.DefaultMainThreadTaskQueue(), nullptr);
   task_runners_.emplace(compositor_task_queue_,
                         compositor_task_queue_->CreateQueueEnabledVoter());
-  task_runners_.emplace(input_task_queue_,
-                        input_task_queue_->CreateQueueEnabledVoter());
 
   v8_task_queue_ = NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
       MainThreadTaskQueue::QueueType::kV8));
@@ -262,8 +250,6 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
       TaskType::kMainThreadTaskQueueCompositor);
   control_task_runner_ = helper_.ControlMainThreadTaskQueue()->CreateTaskRunner(
       TaskType::kMainThreadTaskQueueControl);
-  input_task_runner_ =
-      input_task_queue_->CreateTaskRunner(TaskType::kMainThreadTaskQueueInput);
   ipc_task_runner_ =
       ipc_task_queue_->CreateTaskRunner(TaskType::kMainThreadTaskQueueIPC);
   cleanup_task_runner_ = cleanup_task_queue_->CreateTaskRunner(
@@ -552,9 +538,6 @@ MainThreadSchedulerImpl::AnyThread::AnyThread(
           &main_thread_scheduler_impl->tracing_controller_) {}
 
 MainThreadSchedulerImpl::SchedulingSettings::SchedulingSettings() {
-  high_priority_input =
-      base::FeatureList::IsEnabled(kHighPriorityInputOnMainThread);
-
   low_priority_background_page =
       base::FeatureList::IsEnabled(kLowPriorityForBackgroundPages);
   best_effort_background_page =
@@ -662,6 +645,11 @@ std::unique_ptr<Thread> MainThreadSchedulerImpl::CreateMainThread() {
   return std::make_unique<MainThread>(this);
 }
 
+std::unique_ptr<WebWidgetScheduler>
+MainThreadSchedulerImpl::CreateWidgetScheduler() {
+  return std::make_unique<WidgetScheduler>(this);
+}
+
 scoped_refptr<base::SingleThreadTaskRunner>
 MainThreadSchedulerImpl::ControlTaskRunner() {
   return control_task_runner_;
@@ -670,12 +658,6 @@ MainThreadSchedulerImpl::ControlTaskRunner() {
 scoped_refptr<base::SingleThreadTaskRunner>
 MainThreadSchedulerImpl::DefaultTaskRunner() {
   return helper_.DefaultTaskRunner();
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-MainThreadSchedulerImpl::InputTaskRunner() {
-  helper_.CheckOnValidThread();
-  return input_task_runner_;
 }
 
 scoped_refptr<SingleThreadIdleTaskRunner>
@@ -707,11 +689,6 @@ scoped_refptr<MainThreadTaskQueue>
 MainThreadSchedulerImpl::CompositorTaskQueue() {
   helper_.CheckOnValidThread();
   return compositor_task_queue_;
-}
-
-scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::InputTaskQueue() {
-  helper_.CheckOnValidThread();
-  return input_task_queue_;
 }
 
 scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::V8TaskQueue() {
@@ -1954,13 +1931,26 @@ void MainThreadSchedulerImpl::CreateTraceEventObjectSnapshotLocked() const {
 
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 MainThreadSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
+  auto state = std::make_unique<base::trace_event::TracedValue>();
+  AsValueIntoLocked(state.get(), optional_now);
+  return std::move(state);
+}
+
+std::string MainThreadSchedulerImpl::ToString() const {
+  base::AutoLock lock(any_thread_lock_);
+  base::trace_event::TracedValueJSON value;
+  AsValueIntoLocked(&value, base::TimeTicks());
+  return value.ToJSON();
+}
+
+void MainThreadSchedulerImpl::AsValueIntoLocked(
+    base::trace_event::TracedValue* state,
+    base::TimeTicks optional_now) const {
   helper_.CheckOnValidThread();
   any_thread_lock_.AssertAcquired();
 
   if (optional_now.is_null())
     optional_now = helper_.NowTicks();
-  std::unique_ptr<base::trace_event::TracedValue> state(
-      new base::trace_event::TracedValue());
   state->SetBoolean(
       "has_visible_render_widget_with_touch_handler",
       main_thread_only().has_visible_render_widget_with_touch_handler);
@@ -2024,13 +2014,13 @@ MainThreadSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
   state->BeginDictionary("page_schedulers");
   for (PageSchedulerImpl* page_scheduler : main_thread_only().page_schedulers) {
     state->BeginDictionaryWithCopiedName(PointerToString(page_scheduler));
-    page_scheduler->AsValueInto(state.get());
+    page_scheduler->AsValueInto(state);
     state->EndDictionary();
   }
   state->EndDictionary();
 
   state->BeginDictionary("policy");
-  main_thread_only().current_policy.AsValueInto(state.get());
+  main_thread_only().current_policy.AsValueInto(state);
   state->EndDictionary();
 
   // TODO(skyostil): Can we somehow trace how accurate these estimates were?
@@ -2046,14 +2036,12 @@ MainThreadSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
           .InMillisecondsF());
   state->SetBoolean("in_idle_period", any_thread().in_idle_period);
 
-  any_thread().user_model.AsValueInto(state.get());
-  render_widget_scheduler_signals_.AsValueInto(state.get());
+  any_thread().user_model.AsValueInto(state);
+  render_widget_scheduler_signals_.AsValueInto(state);
 
   state->BeginDictionary("task_queue_throttler");
-  task_queue_throttler_->AsValueInto(state.get(), optional_now);
+  task_queue_throttler_->AsValueInto(state, optional_now);
   state->EndDictionary();
-
-  return std::move(state);
 }
 
 bool MainThreadSchedulerImpl::TaskQueuePolicy::IsQueueEnabled(

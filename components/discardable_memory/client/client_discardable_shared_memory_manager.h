@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/discardable_memory_allocator.h"
@@ -63,6 +65,9 @@ class DISCARDABLE_MEMORY_EXPORT ClientDiscardableSharedMemoryManager
   };
 
   size_t GetBytesAllocated() const override;
+  void SetBytesAllocatedLimitForTesting(size_t limit) {
+    bytes_allocated_limit_for_testing_ = limit;
+  }
 
  private:
   std::unique_ptr<base::DiscardableSharedMemory>
@@ -86,7 +91,8 @@ class DISCARDABLE_MEMORY_EXPORT ClientDiscardableSharedMemoryManager
       manager_mojo_;
 
   mutable base::Lock lock_;
-  std::unique_ptr<DiscardableSharedMemoryHeap> heap_;
+  std::unique_ptr<DiscardableSharedMemoryHeap> heap_ GUARDED_BY(lock_);
+  size_t bytes_allocated_limit_for_testing_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ClientDiscardableSharedMemoryManager);
 };

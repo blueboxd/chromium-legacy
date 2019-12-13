@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.customtabs.dependency_injection;
 
 import org.chromium.chrome.browser.customtabs.CustomTabCompositorContentInitializer;
+import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
 import org.chromium.chrome.browser.customtabs.CustomTabStatusBarColorProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabTaskDescriptionHelper;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
@@ -22,6 +23,7 @@ public interface BaseCustomTabActivityComponent extends ChromeActivityComponent 
     CustomTabActivityNavigationController resolveNavigationController();
     CustomTabActivityTabProvider resolveTabProvider();
     CustomTabCompositorContentInitializer resolveCompositorContentInitializer();
+    CustomTabDelegateFactory resolveTabDelegateFactory();
     CustomTabStatusBarColorProvider resolveCustomTabStatusBarColorProvider();
     CustomTabTaskDescriptionHelper resolveTaskDescriptionHelper();
     CustomTabToolbarCoordinator resolveToolbarCoordinator();

@@ -34,6 +34,7 @@ Polymer({
   is: 'settings-privacy-page',
 
   behaviors: [
+    PrefsBehavior,
     settings.RouteObserverBehavior,
     I18nBehavior,
     WebUIListenerBehavior,
@@ -65,6 +66,18 @@ Polymer({
       type: Boolean,
       value: function() {
         return loadTimeData.getBoolean('passwordsLeakDetectionEnabled');
+      },
+    },
+
+    /** @private {chrome.settingsPrivate.PrefObject} */
+    safeBrowsingReportingPref_: {
+      type: Object,
+      value: function() {
+        return /** @type {chrome.settingsPrivate.PrefObject} */ ({
+          key: '',
+          type: chrome.settingsPrivate.PrefType.BOOLEAN,
+          value: false,
+        });
       },
     },
 
@@ -231,6 +244,10 @@ Polymer({
     searchFilter_: String,
   },
 
+  observers: [
+    'onSafeBrowsingReportingPrefChange_(prefs.safebrowsing.*)',
+  ],
+
   /** @override */
   ready: function() {
     this.ContentSettingsTypes = settings.ContentSettingsTypes;
@@ -251,6 +268,39 @@ Polymer({
         this.handleSyncStatus_.bind(this));
     this.addWebUIListener(
         'sync-status-changed', this.handleSyncStatus_.bind(this));
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  getDisabledExtendedSafeBrowsing_: function() {
+    return !this.getPref('safebrowsing.enabled').value;
+  },
+
+  /** @private */
+  onSafeBrowsingReportingToggleChange_: function() {
+    this.setPrefValue(
+        'safebrowsing.scout_reporting_enabled',
+        this.$$('#safeBrowsingReportingToggle').checked);
+  },
+
+  /** @private */
+  onSafeBrowsingReportingPrefChange_: function() {
+    if (this.prefs == undefined) {
+      return;
+    }
+    const safeBrowsingScoutPref =
+        this.getPref('safebrowsing.scout_reporting_enabled');
+    const prefValue = !!this.getPref('safebrowsing.enabled').value &&
+        !!safeBrowsingScoutPref.value;
+    this.safeBrowsingReportingPref_ = {
+      key: '',
+      type: chrome.settingsPrivate.PrefType.BOOLEAN,
+      value: prefValue,
+      enforcement: safeBrowsingScoutPref.enforcement,
+      controlledBy: safeBrowsingScoutPref.controlledBy,
+    };
   },
 
   /**

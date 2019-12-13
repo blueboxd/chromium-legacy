@@ -25,7 +25,6 @@
 #include "ui/base/page_transition_types.h"
 
 class GURL;
-class Referrer;
 class SkBitmap;
 
 namespace gfx {
@@ -39,6 +38,7 @@ class HttpResponseHeaders;
 namespace content {
 
 class NavigationHandle;
+struct Referrer;
 class RenderViewHost;
 class TestRenderViewHost;
 class WebContentsTester;

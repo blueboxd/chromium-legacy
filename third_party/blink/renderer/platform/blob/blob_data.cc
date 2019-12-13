@@ -38,11 +38,11 @@
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom-blink.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/data_element.mojom-blink.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
-#include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/blob/blob_bytes_provider.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
@@ -88,7 +88,7 @@ mojom::blink::BlobRegistry* GetThreadSpecificRegistry() {
     // TODO(mek): Going through InterfaceProvider to get a
     // mojom::blink::BlobRegistry ends up going through the main thread. Ideally
     // workers wouldn't need to do that.
-    Platform::Current()->GetInterfaceProvider()->GetInterface(
+    Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
         (*registry).BindNewPipeAndPassReceiver());
   }
   return registry->get();

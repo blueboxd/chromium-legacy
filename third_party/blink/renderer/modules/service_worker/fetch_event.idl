@@ -5,10 +5,9 @@
 // https://w3c.github.io/ServiceWorker/#fetchevent-interface
 [
     ActiveScriptWrappable,
-    Constructor(DOMString type, FetchEventInit eventInitDict),
-    ConstructorCallWith=ScriptState,
     Exposed=ServiceWorker
 ] interface FetchEvent : ExtendableEvent {
+    [CallWith=ScriptState] constructor(DOMString type, FetchEventInit eventInitDict);
     [SameObject] readonly attribute Request request;
     readonly attribute DOMString clientId;
     readonly attribute DOMString resultingClientId;

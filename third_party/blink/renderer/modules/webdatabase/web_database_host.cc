@@ -9,8 +9,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/webdatabase/web_database.mojom-blink.h"
-#include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -27,7 +27,7 @@ WebDatabaseHost& WebDatabaseHost::GetInstance() {
 }
 
 void WebDatabaseHost::Init() {
-  Platform::Current()->GetInterfaceProvider()->GetInterface(
+  Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
       pending_remote_.InitWithNewPipeAndPassReceiver());
 }
 

@@ -7,12 +7,18 @@ package org.chromium.chrome.browser.autofill_assistant;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.typeText;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.isDescendantOfA;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.support.test.espresso.matcher.ViewMatchers.withTagValue;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.getElementValue;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.startAutofillAssistant;
@@ -32,6 +38,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.CollectUserDataProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.CollectUserDataProto.TermsAndConditionsState;
 import org.chromium.chrome.browser.autofill_assistant.proto.ElementReferenceProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto;
@@ -82,14 +89,18 @@ public class AutofillAssistantPaymentTest {
         mHelper.addDummyCreditCard(profileId);
 
         ArrayList<ActionProto> list = new ArrayList<>();
-        list.add((ActionProto) ActionProto.newBuilder()
-                         .setCollectUserData(
-                                 CollectUserDataProto.newBuilder()
-                                         .setRequestPaymentMethod(true)
-                                         .addSupportedBasicCardNetworks("visa")
-                                         .setThirdpartyPrivacyNoticeText("3rd party privacy text")
-                                         .setRequestTermsAndConditions(false))
-                         .build());
+        list.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setCollectUserData(CollectUserDataProto.newBuilder()
+                                                    .setRequestPaymentMethod(true)
+                                                    .addSupportedBasicCardNetworks("visa")
+                                                    .setPrivacyNoticeText("3rd party privacy text")
+                                                    .setShowTermsAsCheckbox(true)
+                                                    .setRequestTermsAndConditions(true)
+                                                    .setAcceptTermsAndConditionsText("accept terms")
+                                                    .setTermsAndConditionsState(
+                                                            TermsAndConditionsState.ACCEPTED))
+                        .build());
         list.add((ActionProto) ActionProto.newBuilder()
                          .setUseCard(UseCreditCardProto.newBuilder().setFormFieldElement(
                                  ElementReferenceProto.newBuilder().addSelectors("#card_number")))
@@ -111,6 +122,12 @@ public class AutofillAssistantPaymentTest {
         startAutofillAssistant(mTestRule.getActivity(), testService);
 
         waitUntilViewMatchesCondition(withText("Continue"), isCompletelyDisplayed());
+        onView(allOf(isDescendantOfA(withTagValue(
+                             is(AssistantTagsForTesting
+                                             .COLLECT_USER_DATA_CHECKBOX_TERMS_SECTION_TAG))),
+                       withId(R.id.collect_data_privacy_notice)))
+                .check(matches(isDisplayed()));
+
         onView(withText("Continue")).perform(click());
         waitUntilViewMatchesCondition(withId(R.id.card_unmask_input), isCompletelyDisplayed());
         onView(withId(R.id.card_unmask_input)).perform(typeText("123"));
@@ -121,5 +138,48 @@ public class AutofillAssistantPaymentTest {
         assertThat(getElementValue("cv2_number", getWebContents()), is("123"));
         assertThat(getElementValue("exp_month", getWebContents()), is("12"));
         assertThat(getElementValue("exp_year", getWebContents()), is("2050"));
+    }
+
+    /**
+     * Check that sending an empty privacy notice text removes the privacy notice section.
+     */
+    @Test
+    @MediumTest
+    public void testRemovePrivacyNotice() throws Exception {
+        String profileId = mHelper.addDummyProfile("John Doe", "johndoe@gmail.com");
+        mHelper.addDummyCreditCard(profileId);
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setCollectUserData(CollectUserDataProto.newBuilder()
+                                                    .setPrivacyNoticeText("")
+                                                    .setRequestTermsAndConditions(true)
+                                                    .setShowTermsAsCheckbox(true)
+                                                    .setAcceptTermsAndConditionsText("accept terms")
+                                                    .setTermsAndConditionsState(
+                                                            TermsAndConditionsState.ACCEPTED))
+                        .build());
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(
+                                 PromptProto.Choice.newBuilder()))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Continue")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        onView(allOf(isDescendantOfA(withTagValue(
+                             is(AssistantTagsForTesting
+                                             .COLLECT_USER_DATA_CHECKBOX_TERMS_SECTION_TAG))),
+                       withId(R.id.collect_data_privacy_notice)))
+                .check(matches(not(isDisplayed())));
     }
 }

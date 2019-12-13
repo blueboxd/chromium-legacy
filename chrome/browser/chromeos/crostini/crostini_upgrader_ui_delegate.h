@@ -8,10 +8,6 @@
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
 
-namespace content {
-class WebContents;
-}  // namespace content
-
 namespace crostini {
 
 struct ContainerId;
@@ -24,9 +20,6 @@ class CrostiniUpgraderUIObserver {
   virtual void OnUpgradeProgress(const std::vector<std::string>& messages) = 0;
   virtual void OnUpgradeSucceeded() = 0;
   virtual void OnUpgradeFailed() = 0;
-  virtual void OnRestoreProgress(int percent) = 0;
-  virtual void OnRestoreSucceeded() = 0;
-  virtual void OnRestoreFailed() = 0;
   virtual void OnCanceled() = 0;
 };
 
@@ -38,15 +31,10 @@ class CrostiniUpgraderUIDelegate {
   virtual void RemoveObserver(CrostiniUpgraderUIObserver* observer) = 0;
 
   // Back up the current container before upgrading
-  virtual void Backup(const ContainerId& container_id,
-                      content::WebContents* web_contents) = 0;
+  virtual void Backup() = 0;
 
   // Start the upgrade.
   virtual void Upgrade(const ContainerId& container_id) = 0;
-
-  // Restore the container to the backed up state if an upgrade has failed.
-  virtual void Restore(const ContainerId& container_id,
-                       content::WebContents* web_contents) = 0;
 
   // Cancel the ongoing upgrade.
   virtual void Cancel() = 0;

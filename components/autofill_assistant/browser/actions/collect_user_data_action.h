@@ -20,6 +20,7 @@
 #include "components/autofill_assistant/browser/website_login_fetcher.h"
 
 namespace autofill_assistant {
+class UserModel;
 
 // Shows a UI to collect user data required for subsequent actions.
 class CollectUserDataAction : public Action,
@@ -54,7 +55,8 @@ class CollectUserDataAction : public Action,
   void EndAction(const ClientStatus& status);
 
   void OnGetUserData(const CollectUserDataProto& collect_user_data,
-                     UserData* user_data);
+                     UserData* user_data,
+                     const UserModel* user_model);
   void OnAdditionalActionTriggered(int index);
   void OnTermsAndConditionsLinkClicked(int link);
 

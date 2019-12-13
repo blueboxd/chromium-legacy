@@ -30,11 +30,6 @@ luci.console_view(
             category = 'week1|linux|cfi',
         ),
         luci.console_view_entry(
-            builder = 'ci/CFI Linux CF',
-            category = 'week1|linux|cfi',
-            short_name = 'cf',
-        ),
-        luci.console_view_entry(
             builder = 'ci/Linux MSan Builder',
             category = 'week1|linux',
             short_name = 'msan',

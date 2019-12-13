@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_loader.h"
 
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -248,7 +249,7 @@ void ModuleScriptLoader::NotifyFetchFinished(
   // url, and options.</spec>
   switch (params->GetModuleType()) {
     case ModuleScriptCreationParams::ModuleType::kJSONModule:
-      DCHECK(RuntimeEnabledFeatures::JSONModulesEnabled());
+      DCHECK(base::FeatureList::IsEnabled(blink::features::kJSONModules));
       module_script_ = ValueWrapperSyntheticModuleScript::
           CreateJSONWrapperSyntheticModuleScript(params, modulator_);
       break;

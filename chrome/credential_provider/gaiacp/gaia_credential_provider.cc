@@ -385,12 +385,6 @@ HRESULT CGaiaCredentialProvider::CreateReauthCredentials(
 
   LOGFN(INFO) << "count=" << count;
 
-  if (!AssociatedUserValidator::Get()->HasInternetConnection()) {
-    // When there is no internet, do not associate GCPW as a reauth
-    // credential for all sids.
-    return S_OK;
-  }
-
   for (DWORD i = 0; i < count; ++i) {
     Microsoft::WRL::ComPtr<ICredentialProviderUser> user;
     hr = users->GetAt(i, &user);
@@ -431,16 +425,24 @@ HRESULT CGaiaCredentialProvider::CreateReauthCredentials(
     bool is_token_handle_valid_for_user =
         (AssociatedUserValidator::Get()->IsTokenHandleValidForUser(sid));
 
-    // (1) For a domain joined user, only check for token validity if the
+    // (1) If device doesn't have internet and if the device online login
+    // attempt is not stale, then don't add the reauth credential.
+    // Note: The stale online login attempt is checked only if IT admin
+    // configured "validity_period_in_days" registry entry.
+    // (2) For a domain joined user, only check for token validity if the
     // user id is not empty. If user id is empty, we should create the
     // reauth credential by default for all AD user sids.
-    // (2) For a non-domain joined user, just check if the token handle is
+    // (3) For a non-domain joined user, just check if the token handle is
     // valid. If valid, then no need to create a re-auth credential for
     // this sid.
-    if (CGaiaCredentialBase::IsAdToGoogleAssociationEnabled() &&
-        OSUserManager::Get()->IsUserDomainJoined(sid)) {
-      if (user_id[0] && is_token_handle_valid_for_user)
+    if (!AssociatedUserValidator::Get()->HasInternetConnection() &&
+        !AssociatedUserValidator::Get()->IsOnlineLoginStale(sid)) {
+      continue;
+    } else if (CGaiaCredentialBase::IsAdToGoogleAssociationEnabled() &&
+               OSUserManager::Get()->IsUserDomainJoined(sid)) {
+      if (user_id[0] && is_token_handle_valid_for_user) {
         continue;
+      }
     } else if (is_token_handle_valid_for_user) {
       // If the token handle is valid, no need to create a reauth credential.
       // The user can just sign in using their password.

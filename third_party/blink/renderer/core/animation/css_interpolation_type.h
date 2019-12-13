@@ -22,7 +22,7 @@ class CORE_EXPORT CSSInterpolationType : public InterpolationType {
    public:
     bool IsValid(const InterpolationEnvironment& environment,
                  const InterpolationValue& underlying) const final {
-      return IsValid(ToCSSInterpolationEnvironment(environment).GetState(),
+      return IsValid(To<CSSInterpolationEnvironment>(environment).GetState(),
                      underlying);
     }
 

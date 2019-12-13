@@ -41,11 +41,11 @@ void FCMInvalidationListener::Start(
       std::move(per_user_topic_registration_manager);
   per_user_topic_registration_manager_->Init();
   per_user_topic_registration_manager_->AddObserver(this);
-  network_channel_->SetMessageReceiver(base::BindRepeating(
-      &FCMInvalidationListener::Invalidate, weak_factory_.GetWeakPtr()));
-  network_channel_->SetTokenReceiver(
-      base::BindRepeating(&FCMInvalidationListener::InformTokenReceived,
+  network_channel_->SetMessageReceiver(
+      base::BindRepeating(&FCMInvalidationListener::InvalidationReceived,
                           weak_factory_.GetWeakPtr()));
+  network_channel_->SetTokenReceiver(base::BindRepeating(
+      &FCMInvalidationListener::TokenReceived, weak_factory_.GetWeakPtr()));
   subscription_channel_state_ = SubscriptionChannelState::ENABLED;
 
   network_channel_->StartListening();
@@ -59,10 +59,11 @@ void FCMInvalidationListener::UpdateInterestedTopics(const Topics& topics) {
   DoSubscriptionUpdate();
 }
 
-void FCMInvalidationListener::Invalidate(const std::string& payload,
-                                         const std::string& private_topic,
-                                         const std::string& public_topic,
-                                         int64_t version) {
+void FCMInvalidationListener::InvalidationReceived(
+    const std::string& payload,
+    const std::string& private_topic,
+    const std::string& public_topic,
+    int64_t version) {
   // Note: |public_topic| is empty for some invalidations (e.g. Drive). Prefer
   // using |*expected_public_topic| over |public_topic|.
   base::Optional<std::string> expected_public_topic =
@@ -116,8 +117,9 @@ void FCMInvalidationListener::EmitSavedInvalidations(
   delegate_->OnInvalidate(to_emit);
 }
 
-void FCMInvalidationListener::InformTokenReceived(const std::string& token) {
-  instance_id_token_ = token;
+void FCMInvalidationListener::TokenReceived(
+    const std::string& instance_id_token) {
+  instance_id_token_ = instance_id_token;
   DoSubscriptionUpdate();
 }
 

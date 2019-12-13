@@ -156,6 +156,7 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
 
   // Only used on the IO thread.
   bool audio_ready_for_playback_fired_ = false;
+  bool never_timeout_connection_ = false;
   base::OneShotTimer inactivity_timer_;
   bool connection_error_ = false;
   int buffer_pool_frames_ = 0;

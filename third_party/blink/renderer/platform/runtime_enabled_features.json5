@@ -881,9 +881,6 @@
       name: "IsolatedWorldCSP"
     },
     {
-      name: "JSONModules",
-    },
-    {
       name: "KeyboardFocusableScrollers",
       status: "experimental",
     },

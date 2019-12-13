@@ -1,4 +1,5 @@
 {{header}}
+%@BLINK-ALLOW:hierarchicalLevel*
 {{object 1 0}} <<
   /Type /Catalog
   /Pages 2 0 R

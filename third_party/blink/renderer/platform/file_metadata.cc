@@ -36,9 +36,9 @@
 #include "base/optional.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/filename_util.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/file/file_utilities.mojom-blink.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
-#include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/thread_specific.h"
@@ -92,14 +92,14 @@ void RebindFileUtilitiesForTesting() {
   if (host) {
     host.Unbind().reset();
   }
-  Platform::Current()->GetInterfaceProvider()->GetInterface(
+  Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
       host.BindNewPipeAndPassReceiver());
 }
 
 bool GetFileMetadata(const String& path, FileMetadata& metadata) {
   auto& host = GetFileUtilitiesHost();
   if (!host) {
-    Platform::Current()->GetInterfaceProvider()->GetInterface(
+    Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
         host.BindNewPipeAndPassReceiver());
   }
 

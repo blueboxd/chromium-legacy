@@ -226,10 +226,12 @@ void ScriptExecutor::WriteUserData(
   delegate_->WriteUserData(std::move(write_callback));
 }
 
-void ScriptExecutor::OnGetUserData(base::OnceCallback<void(UserData*)> callback,
-                                   UserData* user_data) {
+void ScriptExecutor::OnGetUserData(
+    base::OnceCallback<void(UserData*, const UserModel*)> callback,
+    UserData* user_data,
+    const UserModel* user_model) {
   delegate_->EnterState(AutofillAssistantState::RUNNING);
-  std::move(callback).Run(user_data);
+  std::move(callback).Run(user_data, user_model);
 }
 
 void ScriptExecutor::OnAdditionalActionTriggered(

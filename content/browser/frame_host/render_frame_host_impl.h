@@ -1221,6 +1221,16 @@ class CONTENT_EXPORT RenderFrameHostImpl
     cross_origin_embedder_policy_ = policy;
   }
 
+  // Semi-formal definition of COOP:
+  // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
+  network::mojom::CrossOriginOpenerPolicy cross_origin_opener_policy() const {
+    return cross_origin_opener_policy_;
+  }
+  void set_cross_origin_opener_policy(
+      network::mojom::CrossOriginOpenerPolicy policy) {
+    cross_origin_opener_policy_ = policy;
+  }
+
   // This function mimics DidCommitProvisionalLoad for navigations served from
   // the back-forward cache.
   void DidCommitBackForwardCacheNavigation(
@@ -2034,6 +2044,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy_ =
       network::mojom::CrossOriginEmbedderPolicy::kNone;
+
+  network::mojom::CrossOriginOpenerPolicy cross_origin_opener_policy_ =
+      network::mojom::CrossOriginOpenerPolicy::kUnsafeNone;
 
   // Track the site URL of the last site we committed successfully, as obtained
   // from SiteInstance::GetSiteURL.

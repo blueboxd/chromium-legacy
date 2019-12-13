@@ -19,19 +19,12 @@
 #include "mojo/core/test/mojo_test_base.h"
 #include "mojo/core/test/multiprocess_test_helper.h"
 
-namespace base {
-class MessageLoop;
-}
-
 class IPCChannelMojoTestBase : public testing::Test {
  public:
   IPCChannelMojoTestBase();
   ~IPCChannelMojoTestBase() override;
 
   void Init(const std::string& test_client_name);
-  void InitWithCustomMessageLoop(
-      const std::string& test_client_name,
-      std::unique_ptr<base::MessageLoop> message_loop);
 
   bool WaitForClientShutdown();
 
@@ -51,7 +44,7 @@ class IPCChannelMojoTestBase : public testing::Test {
   mojo::ScopedMessagePipeHandle TakeHandle();
 
  private:
-  std::unique_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::test::SingleThreadTaskEnvironment> task_environment_;
 
   mojo::ScopedMessagePipeHandle handle_;
   mojo::core::test::MultiprocessTestHelper helper_;

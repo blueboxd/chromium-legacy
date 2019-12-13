@@ -1310,28 +1310,30 @@ TEST_F('ChromeVoxEditingTest', 'GrammarErrors', function() {
       });
 });
 
-TEST_F('ChromeVoxEditingTest', 'CharacterTypedAfterNewLine', function() {
-  var mockFeedback = this.createMockFeedback();
-  this.runWithLoadedTree(
-      `
+// TODO(https://crbug.com/1033649) flaky on linux-chromeos-rel/dbg.
+TEST_F(
+    'ChromeVoxEditingTest', 'DISABLED_CharacterTypedAfterNewLine', function() {
+      var mockFeedback = this.createMockFeedback();
+      this.runWithLoadedTree(
+          `
     <div contenteditable role="textbox">
       <p>hello</p>
     </div>
   `,
-      function(root) {
-        var input = root.find({role: RoleType.TEXT_FIELD});
-        this.listenOnce(input, 'focus', function() {
-          mockFeedback.call(this.press(35 /* end */, {ctrl: true}))
-              .expectSpeech('hello')
-              .call(this.press(13 /* return */))
-              .expectSpeech('\n')
-              .call(this.press(65 /* a */))
-              .expectSpeech('a')
-              .replay();
-        });
-        input.focus();
-      });
-});
+          function(root) {
+            var input = root.find({role: RoleType.TEXT_FIELD});
+            this.listenOnce(input, 'focus', function() {
+              mockFeedback.call(this.press(35 /* end */, {ctrl: true}))
+                  .expectSpeech('hello')
+                  .call(this.press(13 /* return */))
+                  .expectSpeech('\n')
+                  .call(this.press(65 /* a */))
+                  .expectSpeech('a')
+                  .replay();
+            });
+            input.focus();
+          });
+    });
 
 TEST_F('ChromeVoxEditingTest', 'SelectAll', function() {
   var mockFeedback = this.createMockFeedback();

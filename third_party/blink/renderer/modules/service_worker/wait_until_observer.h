@@ -36,6 +36,7 @@ class MODULES_EXPORT WaitUntilObserver final
     kFetch,
     kInstall,
     kMessage,
+    kMessageerror,
     kNotificationClick,
     kNotificationClose,
     kPaymentRequest,

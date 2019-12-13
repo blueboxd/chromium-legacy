@@ -9,8 +9,8 @@ domain: 127.0.0.1
 remoteaddress: 127.0.0.1:8000
 type: xhr
 initiator: network-columns-visible.js:13Script
-cookies: 
-setcookies: 
+cookies: 0
+setcookies: 0
 priority: High
 cache-control: 
 connection: Keep-Alive

@@ -28,6 +28,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
+#include "third_party/blink/public/platform/scheduler/web_widget_scheduler.h"
 #include "third_party/blink/public/platform/web_mouse_wheel_event.h"
 #include "third_party/blink/public/platform/web_touch_event.h"
 #include "third_party/blink/renderer/platform/scheduler/common/features.h"
@@ -235,7 +236,6 @@ class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
   using MainThreadSchedulerImpl::ControlTaskQueue;
   using MainThreadSchedulerImpl::DefaultTaskQueue;
   using MainThreadSchedulerImpl::EstimateLongestJankFreeTaskDuration;
-  using MainThreadSchedulerImpl::InputTaskQueue;
   using MainThreadSchedulerImpl::OnIdlePeriodEnded;
   using MainThreadSchedulerImpl::OnIdlePeriodStarted;
   using MainThreadSchedulerImpl::OnPendingTasksChanged;
@@ -321,8 +321,7 @@ class MainThreadSchedulerImplTest : public testing::Test {
   }
 
   MainThreadSchedulerImplTest()
-      : MainThreadSchedulerImplTest({kHighPriorityInputOnMainThread},
-                                    {kPrioritizeCompositingAfterInput}) {}
+      : MainThreadSchedulerImplTest({}, {kPrioritizeCompositingAfterInput}) {}
 
   ~MainThreadSchedulerImplTest() override = default;
 
@@ -359,7 +358,6 @@ class MainThreadSchedulerImplTest : public testing::Test {
 
     default_task_runner_ = scheduler_->DefaultTaskQueue()->task_runner();
     compositor_task_runner_ = scheduler_->CompositorTaskQueue()->task_runner();
-    input_task_runner_ = scheduler_->InputTaskQueue()->task_runner();
     idle_task_runner_ = scheduler_->IdleTaskRunner();
     v8_task_runner_ = scheduler_->V8TaskQueue()->task_runner();
 
@@ -368,6 +366,9 @@ class MainThreadSchedulerImplTest : public testing::Test {
     main_frame_scheduler_ =
         FrameSchedulerImpl::Create(page_scheduler_.get(), nullptr, nullptr,
                                    FrameScheduler::FrameType::kMainFrame);
+
+    widget_scheduler_ = scheduler_->CreateWidgetScheduler();
+    input_task_runner_ = widget_scheduler_->InputTaskRunner();
 
     loading_control_task_runner_ =
         main_frame_scheduler_->FrameTaskQueueControllerForTest()
@@ -393,6 +394,7 @@ class MainThreadSchedulerImplTest : public testing::Test {
   }
 
   void TearDown() override {
+    widget_scheduler_.reset();
     main_frame_scheduler_.reset();
     page_scheduler_.reset();
     scheduler_->Shutdown();
@@ -824,6 +826,7 @@ class MainThreadSchedulerImplTest : public testing::Test {
   std::unique_ptr<MainThreadSchedulerImplForTest> scheduler_;
   std::unique_ptr<PageSchedulerImpl> page_scheduler_;
   std::unique_ptr<FrameSchedulerImpl> main_frame_scheduler_;
+  std::unique_ptr<WebWidgetScheduler> widget_scheduler_;
 
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
@@ -3208,10 +3211,7 @@ TEST_F(MainThreadSchedulerImplTest, Tracing) {
       FROM_HERE, base::BindOnce(NullTask),
       base::TimeDelta::FromMilliseconds(10));
 
-  std::unique_ptr<base::trace_event::ConvertableToTraceFormat> value =
-      scheduler_->AsValue(base::TimeTicks());
-  EXPECT_TRUE(value);
-  EXPECT_FALSE(value->ToString().empty());
+  EXPECT_FALSE(scheduler_->ToString().empty());
 }
 
 void RecordingTimeTestTask(
@@ -3413,7 +3413,7 @@ class CompositingExperimentWithExplicitSignalsTest
  public:
   CompositingExperimentWithExplicitSignalsTest()
       : MainThreadSchedulerImplTest(
-            {kHighPriorityInputOnMainThread, kPrioritizeCompositingAfterInput,
+            {kPrioritizeCompositingAfterInput,
              kUseExplicitSignalForTriggeringCompositingPrioritization,
              kUseWillBeginMainFrameForCompositingPrioritization},
             {}) {}
@@ -3449,7 +3449,7 @@ class CompositingExperimentWithImplicitSignalsTest
  public:
   CompositingExperimentWithImplicitSignalsTest()
       : MainThreadSchedulerImplTest(
-            {kHighPriorityInputOnMainThread, kPrioritizeCompositingAfterInput},
+            {kPrioritizeCompositingAfterInput},
             {kHighestPriorityForCompositingAfterInput,
              kUseExplicitSignalForTriggeringCompositingPrioritization,
              kUseWillBeginMainFrameForCompositingPrioritization}) {}

@@ -120,13 +120,13 @@ Animation* Animation::Create(AnimationEffect* effect,
                              AnimationTimeline* timeline,
                              ExceptionState& exception_state) {
   DCHECK(timeline);
-  if (!timeline->IsDocumentTimeline() && !timeline->IsScrollTimeline()) {
+  if (!IsA<DocumentTimeline>(timeline) && !timeline->IsScrollTimeline()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Invalid timeline. Animation requires a "
                                       "DocumentTimeline or ScrollTimeline");
     return nullptr;
   }
-  DCHECK(timeline->IsDocumentTimeline() || timeline->IsScrollTimeline());
+  DCHECK(IsA<DocumentTimeline>(timeline) || timeline->IsScrollTimeline());
 
   return MakeGarbageCollected<Animation>(
       timeline->GetDocument()->ContextDocument(), timeline, effect);
@@ -1553,8 +1553,8 @@ Animation::CheckCanStartAnimationOnCompositorInternal() const {
   // reason to composite it. Additionally, mutating the timeline playback rate
   // is a debug feature available via devtools; we don't support this on the
   // compositor currently and there is no reason to do so.
-  if (!timeline_ || (timeline_->IsDocumentTimeline() &&
-                     ToDocumentTimeline(timeline_)->PlaybackRate() != 1))
+  auto* document_timeline = DynamicTo<DocumentTimeline>(*timeline_);
+  if (!document_timeline || document_timeline->PlaybackRate() != 1)
     reasons |= CompositorAnimations::kInvalidAnimationOrEffect;
 
   // An Animation without an effect cannot produce a visual, so there is no
@@ -1578,7 +1578,7 @@ void Animation::StartAnimationOnCompositor(
     const PaintArtifactCompositor* paint_artifact_compositor) {
   DCHECK_EQ(CheckCanStartAnimationOnCompositor(paint_artifact_compositor),
             CompositorAnimations::kNoFailure);
-  DCHECK(timeline_->IsDocumentTimeline());
+  DCHECK(IsA<DocumentTimeline>(*timeline_));
 
   bool reversed = EffectivePlaybackRate() < 0;
 
@@ -1592,9 +1592,11 @@ void Animation::StartAnimationOnCompositor(
   // Asynchronous updates have an associated pending play or pending pause
   // task associated with them.
   if (start_time_ && !pending()) {
-    start_time =
-        ToDocumentTimeline(timeline_)->ZeroTime().since_origin().InSecondsF() +
-        start_time_.value();
+    start_time = To<DocumentTimeline>(*timeline_)
+                     .ZeroTime()
+                     .since_origin()
+                     .InSecondsF() +
+                 start_time_.value();
     if (reversed) {
       start_time =
           start_time.value() - (EffectEnd() / fabs(EffectivePlaybackRate()));
@@ -1888,7 +1890,7 @@ void Animation::DestroyCompositorAnimation() {
 void Animation::AttachCompositorTimeline() {
   if (compositor_animation_) {
     CompositorAnimationTimeline* timeline =
-        timeline_ ? ToDocumentTimeline(timeline_)->CompositorTimeline()
+        timeline_ ? To<DocumentTimeline>(*timeline_).CompositorTimeline()
                   : nullptr;
     if (timeline)
       timeline->AnimationAttached(*this);
@@ -1898,7 +1900,7 @@ void Animation::AttachCompositorTimeline() {
 void Animation::DetachCompositorTimeline() {
   if (compositor_animation_) {
     CompositorAnimationTimeline* timeline =
-        timeline_ ? ToDocumentTimeline(timeline_)->CompositorTimeline()
+        timeline_ ? To<DocumentTimeline>(*timeline_).CompositorTimeline()
                   : nullptr;
     if (timeline)
       timeline->AnimationDestroyed(*this);

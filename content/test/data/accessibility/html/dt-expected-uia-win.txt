@@ -1,6 +1,6 @@
 document
 ++list
-++++listitem IsControlElement=false
+++++listitem
 ++++++description Name='Coffee'
-++++description IsControlElement=false
+++++description
 ++++++description Name='Black hot drink'

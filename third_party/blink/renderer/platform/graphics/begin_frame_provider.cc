@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "services/viz/public/mojom/compositing/frame_timing_details.mojom-blink.h"
-#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "ui/gfx/mojom/presentation_feedback.mojom-blink.h"
@@ -64,7 +64,7 @@ void BeginFrameProvider::CreateCompositorFrameSinkIfNeeded() {
   base::PlatformThread::SetCurrentThreadPriority(base::ThreadPriority::DISPLAY);
 
   mojo::Remote<mojom::blink::EmbeddedFrameSinkProvider> provider;
-  Platform::Current()->GetInterfaceProvider()->GetInterface(
+  Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
       provider.BindNewPipeAndPassReceiver());
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =

@@ -14,8 +14,8 @@
 #include "components/viz/common/resources/single_release_callback.h"
 #include "services/viz/public/mojom/compositing/frame_timing_details.mojom-blink.h"
 #include "services/viz/public/mojom/hit_test/hit_test_region_list.mojom-blink.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom-blink.h"
-#include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
@@ -69,7 +69,7 @@ CanvasResourceDispatcher::CanvasResourceDispatcher(
 
   DCHECK(!sink_.is_bound());
   mojo::Remote<mojom::blink::EmbeddedFrameSinkProvider> provider;
-  Platform::Current()->GetInterfaceProvider()->GetInterface(
+  Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
       provider.BindNewPipeAndPassReceiver());
 
   DCHECK(provider);

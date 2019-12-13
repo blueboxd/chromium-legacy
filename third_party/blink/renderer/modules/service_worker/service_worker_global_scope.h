@@ -285,6 +285,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(activate, kActivate)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(fetch, kFetch)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(messageerror, kMessageerror)
 
   void Trace(blink::Visitor*) override;
 

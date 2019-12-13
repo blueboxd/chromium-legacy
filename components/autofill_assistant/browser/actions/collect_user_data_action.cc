@@ -24,6 +24,7 @@
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/user_data_util.h"
+#include "components/autofill_assistant/browser/user_model.h"
 #include "components/autofill_assistant/browser/website_login_fetcher_impl.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
@@ -412,7 +413,8 @@ void CollectUserDataAction::OnShowToUser(UserData* user_data,
     // complete immediately.
     if (only_login_requested) {
       user_data->succeed = true;
-      std::move(collect_user_data_options_->confirm_callback).Run(user_data);
+      std::move(collect_user_data_options_->confirm_callback)
+          .Run(user_data, nullptr);
       return;
     }
   }
@@ -437,7 +439,8 @@ void CollectUserDataAction::OnShowToUser(UserData* user_data,
 
 void CollectUserDataAction::OnGetUserData(
     const CollectUserDataProto& collect_user_data,
-    UserData* user_data) {
+    UserData* user_data,
+    const UserModel* user_model) {
   if (!callback_)
     return;
 
@@ -521,6 +524,16 @@ void CollectUserDataAction::OnGetUserData(
         ->set_is_terms_and_conditions_accepted(
             user_data->terms_and_conditions ==
             TermsAndConditionsState::ACCEPTED);
+
+    if (user_model != nullptr &&
+        collect_user_data.has_generic_user_interface()) {
+      *processed_action_proto_->mutable_collect_user_data_result()
+           ->mutable_model() =
+          collect_user_data.generic_user_interface().model();
+      user_model->UpdateProto(
+          processed_action_proto_->mutable_collect_user_data_result()
+              ->mutable_model());
+    }
   }
 
   EndAction(succeed ? ClientStatus(ACTION_APPLIED)
@@ -707,11 +720,8 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
         collect_user_data.terms_require_review_text();
   }
 
-  if (collect_user_data.thirdparty_privacy_notice_text().empty()) {
-    return false;
-  }
-  collect_user_data_options_->thirdparty_privacy_notice_text =
-      collect_user_data.thirdparty_privacy_notice_text();
+  collect_user_data_options_->privacy_notice_text =
+      collect_user_data.privacy_notice_text();
 
   collect_user_data_options_->default_email =
       delegate_->GetAccountEmailAddress();

@@ -49,8 +49,6 @@ class FetchUrlTest : public testing::Test,
         FROM_HERE, base::BindOnce(&FetchUrlTest::InitOnIO,
                                   base::Unretained(this), &event));
 
-    mojo::core::Init();
-
     event.Wait();
   }
 
@@ -62,6 +60,8 @@ class FetchUrlTest : public testing::Test,
                                   base::Unretained(this), &event));
     event.Wait();
   }
+
+  static void SetUpTestSuite() { mojo::core::Init(); }
 
   void InitOnIO(base::WaitableEvent* event) {
     scoped_refptr<URLRequestContextGetter> context_getter =

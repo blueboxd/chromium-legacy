@@ -8,6 +8,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/scheduler/test/web_fake_widget_scheduler.h"
 
 namespace blink {
 namespace scheduler {
@@ -22,7 +23,7 @@ std::unique_ptr<Thread> WebFakeThreadScheduler::CreateMainThread() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 WebFakeThreadScheduler::DefaultTaskRunner() {
-  return nullptr;
+  return base::ThreadTaskRunnerHandle::Get();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
@@ -31,13 +32,13 @@ WebFakeThreadScheduler::CompositorTaskRunner() {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-WebFakeThreadScheduler::InputTaskRunner() {
-  return base::ThreadTaskRunnerHandle::Get();
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
 WebFakeThreadScheduler::IPCTaskRunner() {
   return nullptr;
+}
+
+std::unique_ptr<WebWidgetScheduler>
+WebFakeThreadScheduler::CreateWidgetScheduler() {
+  return std::make_unique<WebFakeWidgetScheduler>();
 }
 
 std::unique_ptr<WebRenderWidgetSchedulingState>

@@ -9,6 +9,7 @@
 #include "base/time/time.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/service_worker/service_worker_consts.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
@@ -42,7 +43,11 @@ std::unique_ptr<net::HttpResponseInfo> CreateHttpResponseInfoAndCheckHeaders(
     return nullptr;
   }
 
-  if (!blink::IsSupportedJavascriptMimeType(response_head.mime_type)) {
+  // Remain consistent with logic in
+  // blink::InstalledServiceWorkerModuleScriptFetcher::Fetch()
+  if (!blink::IsSupportedJavascriptMimeType(response_head.mime_type) &&
+      !(base::FeatureList::IsEnabled(blink::features::kJSONModules) &&
+        blink::IsJSONMimeType(response_head.mime_type))) {
     *out_completion_status =
         network::URLLoaderCompletionStatus(net::ERR_INSECURE_RESPONSE);
     *out_error_message =

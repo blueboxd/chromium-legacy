@@ -106,22 +106,57 @@ def _ExtractTestsFromFilter(gtest_filter):
   return patterns
 
 
-def _PullCoverageFile(device, coverage_device_file, output_dir):
-  """Pulls coverage file on device to host directory.
+def _PullCoverageFiles(device, device_coverage_dir, output_dir):
+  """Pulls coverage files on device to host directory.
 
   Args:
     device: The working device.
-    coverage_device_file: The temporary coverage file on device.
+    device_coverage_dir: The directory to store coverage data on device.
     output_dir: The output directory on host.
   """
   try:
     if not os.path.exists(output_dir):
       os.makedirs(output_dir)
-    device.PullFile(coverage_device_file.name, output_dir)
+    device.PullFile(device_coverage_dir, output_dir)
+    if not os.listdir(os.path.join(output_dir, 'profraw')):
+      logging.warning('No coverage data was generated for this run')
   except (OSError, base_error.BaseError) as e:
     logging.warning('Failed to handle coverage data after tests: %s', e)
   finally:
-    coverage_device_file.close()
+    device.RemovePath(device_coverage_dir, force=True, recursive=True)
+
+
+def _GetDeviceCoverageDir(device):
+  """Gets the directory to generate coverage data on device.
+
+  Args:
+    device: The working device.
+
+  Returns:
+    The directory path on the device.
+  """
+  return posixpath.join(device.GetExternalStoragePath(), 'chrome', 'test',
+                        'coverage', 'profraw')
+
+
+def _GetLLVMProfilePath(device_coverage_dir, suite, coverage_index):
+  """Gets 'LLVM_PROFILE_FILE' environment variable path.
+
+  Dumping data to ONLY 1 file may cause warning and data overwrite in
+  browsertests, so that pattern "%2m" is used to expand to 2 raw profiles
+  at runtime.
+
+  Args:
+    device_coverage_dir: The directory to generate data on device.
+    suite: Test suite name.
+    coverage_index: The incremental index for this test suite.
+
+  Returns:
+    The path pattern for environment variable 'LLVM_PROFILE_FILE'.
+  """
+  return posixpath.join(device_coverage_dir,
+                        '_'.join([suite,
+                                  str(coverage_index), '%2m.profraw']))
 
 
 class _ApkDelegate(object):
@@ -139,6 +174,7 @@ class _ApkDelegate(object):
     self._wait_for_java_debugger = test_instance.wait_for_java_debugger
     self._tool = tool
     self._coverage_dir = test_instance.coverage_dir
+    self._coverage_index = 0
 
   def GetTestDataRoot(self, device):
     # pylint: disable=no-self-use
@@ -164,12 +200,10 @@ class _ApkDelegate(object):
     device_api = device.build_version_sdk
 
     if self._coverage_dir and device_api >= version_codes.LOLLIPOP:
-      coverage_device_file = device_temp_file.DeviceTempFile(
-          device.adb,
-          suffix='.profraw',
-          prefix=self._suite,
-          dir=device.GetExternalStoragePath())
-      extras[_EXTRA_COVERAGE_DEVICE_FILE] = coverage_device_file.name
+      device_coverage_dir = _GetDeviceCoverageDir(device)
+      extras[_EXTRA_COVERAGE_DEVICE_FILE] = _GetLLVMProfilePath(
+          device_coverage_dir, self._suite, self._coverage_index)
+      self._coverage_index += 1
 
     if ('timeout' in kwargs
         and gtest_test_instance.EXTRA_SHARD_NANO_TIMEOUT not in extras):
@@ -227,7 +261,9 @@ class _ApkDelegate(object):
         raise
       finally:
         if self._coverage_dir and device_api >= version_codes.LOLLIPOP:
-          _PullCoverageFile(device, coverage_device_file, self._coverage_dir)
+          _PullCoverageFiles(
+              device, device_coverage_dir,
+              os.path.join(self._coverage_dir, str(self._coverage_index)))
 
       # TODO(jbudorick): Remove this after resolving crbug.com/726880
       if device.PathExists(stdout_file.name):
@@ -264,8 +300,9 @@ class _ExeDelegate(object):
         os.path.basename(test_instance.exe_dist_dir))
     self._test_run = tr
     self._tool = tool
-    self._coverage_dir = test_instance.coverage_dir
     self._suite = test_instance.suite
+    self._coverage_dir = test_instance.coverage_dir
+    self._coverage_index = 0
 
   def GetTestDataRoot(self, device):
     # pylint: disable=no-self-use
@@ -303,12 +340,10 @@ class _ExeDelegate(object):
     }
 
     if self._coverage_dir:
-      coverage_device_file = device_temp_file.DeviceTempFile(
-          device.adb,
-          suffix='.profraw',
-          prefix=self._suite,
-          dir=device.GetExternalStoragePath())
-      env['LLVM_PROFILE_FILE'] = coverage_device_file.name
+      device_coverage_dir = _GetDeviceCoverageDir(device)
+      env['LLVM_PROFILE_FILE'] = _GetLLVMProfilePath(
+          device_coverage_dir, self._suite, self._coverage_index)
+      self._coverage_index += 1
 
     if self._tool != 'asan':
       env['UBSAN_OPTIONS'] = constants.UBSAN_OPTIONS
@@ -327,7 +362,9 @@ class _ExeDelegate(object):
         cmd, cwd=cwd, env=env, check_return=False, large_output=True, **kwargs)
 
     if self._coverage_dir:
-      _PullCoverageFile(device, coverage_device_file, self._coverage_dir)
+      _PullCoverageFiles(
+          device, device_coverage_dir,
+          os.path.join(self._coverage_dir, str(self._coverage_index)))
 
     return output
 

@@ -3159,7 +3159,7 @@ TEST_P(SimpleURLLoaderTest, OnUploadProgressCallback) {
   // net::test_server::<anonymous>::kRequestSizeLimit which is
   // 64Mb. We set a pretty large value in order to ensure multiple
   // progress update calls even on fast machines.
-  std::string long_string = GetLongUploadBody(63 * 1024 * 1024);
+  std::string long_string = GetLongUploadBody(31 * 1024 * 1024);
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =
       CreateHelperForURL(test_server_.GetURL("/echo"), "POST");
   test_helper->simple_url_loader()->AttachStringForUpload(long_string,

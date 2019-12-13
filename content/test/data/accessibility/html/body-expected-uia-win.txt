@@ -1,3 +1,3 @@
 document
-++group IsControlElement=false
+++group
 ++++description Name='This test is for body tag'

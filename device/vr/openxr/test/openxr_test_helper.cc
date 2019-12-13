@@ -231,6 +231,9 @@ XrSpace OpenXrTestHelper::CreateReferenceSpace(XrReferenceSpaceType type) {
     case XR_REFERENCE_SPACE_TYPE_STAGE:
       reference_spaces_[cur_space] = kStageReferenceSpacePath;
       break;
+    case XR_REFERENCE_SPACE_TYPE_UNBOUNDED_MSFT:
+      reference_spaces_[cur_space] = kUnboundedReferenceSpacePath;
+      break;
     default:
       NOTREACHED() << "Unsupported XrReferenceSpaceType: " << type;
   }

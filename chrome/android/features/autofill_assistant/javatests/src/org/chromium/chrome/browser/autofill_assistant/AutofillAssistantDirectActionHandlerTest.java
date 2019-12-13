@@ -35,15 +35,12 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.directactions.DirectActionHandler;
 import org.chromium.chrome.browser.directactions.DirectActionReporter;
-import org.chromium.chrome.browser.directactions.DirectActionReporter.Definition;
 import org.chromium.chrome.browser.directactions.DirectActionReporter.Type;
+import org.chromium.chrome.browser.directactions.FakeDirectActionReporter;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /** Tests the direct actions exposed by AA. */
 @RunWith(ChromeJUnit4ClassRunner.class)
@@ -89,7 +86,7 @@ public class AutofillAssistantDirectActionHandlerTest {
 
         assertEquals(1, reporter.mActions.size());
 
-        FakeDirectActionDefinition onboarding = reporter.mActions.get(0);
+        FakeDirectActionReporter.FakeDefinition onboarding = reporter.mActions.get(0);
         assertEquals("onboarding", onboarding.mId);
         assertEquals(2, onboarding.mParameters.size());
         assertEquals("name", onboarding.mParameters.get(0).mName);
@@ -114,7 +111,7 @@ public class AutofillAssistantDirectActionHandlerTest {
 
         assertEquals(1, reporter.mActions.size());
 
-        FakeDirectActionDefinition fetch = reporter.mActions.get(0);
+        FakeDirectActionReporter.FakeDefinition fetch = reporter.mActions.get(0);
         assertEquals("fetch_website_actions", fetch.mId);
         assertEquals(2, fetch.mParameters.size());
         assertEquals("user_name", fetch.mParameters.get(0).mName);
@@ -137,7 +134,7 @@ public class AutofillAssistantDirectActionHandlerTest {
         assertEquals(3, reporter.mActions.size());
 
         // Now we expect 3 dyamic actions "search", "action2" and "action2_alias".
-        FakeDirectActionDefinition search = reporter.mActions.get(0);
+        FakeDirectActionReporter.FakeDefinition search = reporter.mActions.get(0);
         assertEquals("search", search.mId);
         assertEquals(3, search.mParameters.size());
         assertEquals("experiment_ids", search.mParameters.get(0).mName);
@@ -150,7 +147,7 @@ public class AutofillAssistantDirectActionHandlerTest {
         assertEquals("success", search.mResults.get(0).mName);
         assertEquals(Type.BOOLEAN, search.mResults.get(0).mType);
 
-        FakeDirectActionDefinition action2 = reporter.mActions.get(1);
+        FakeDirectActionReporter.FakeDefinition action2 = reporter.mActions.get(1);
         assertEquals("action2", action2.mId);
         assertEquals(3, action2.mParameters.size());
         assertEquals("experiment_ids", action2.mParameters.get(0).mName);
@@ -163,7 +160,7 @@ public class AutofillAssistantDirectActionHandlerTest {
         assertEquals("success", action2.mResults.get(0).mName);
         assertEquals(Type.BOOLEAN, action2.mResults.get(0).mType);
 
-        FakeDirectActionDefinition action2Alias = reporter.mActions.get(2);
+        FakeDirectActionReporter.FakeDefinition action2Alias = reporter.mActions.get(2);
         assertEquals("action2_alias", action2Alias.mId);
         assertEquals(3, action2Alias.mParameters.size());
         assertEquals("experiment_ids", action2Alias.mParameters.get(0).mName);
@@ -188,7 +185,7 @@ public class AutofillAssistantDirectActionHandlerTest {
 
         assertEquals(1, reporter.mActions.size());
 
-        FakeDirectActionDefinition fetch = reporter.mActions.get(0);
+        FakeDirectActionReporter.FakeDefinition fetch = reporter.mActions.get(0);
         assertEquals("fetch_website_actions", fetch.mId);
         assertEquals(2, fetch.mParameters.size());
         assertEquals("user_name", fetch.mParameters.get(0).mName);
@@ -258,7 +255,7 @@ public class AutofillAssistantDirectActionHandlerTest {
         FakeDirectActionReporter reporter = new FakeDirectActionReporter();
         reportAvailableDirectActions(mHandler, reporter);
 
-        for (FakeDirectActionDefinition definition : reporter.mActions) {
+        for (FakeDirectActionReporter.FakeDefinition definition : reporter.mActions) {
             if (definition.mId.equals("onboarding")) {
                 return true;
             }
@@ -338,68 +335,6 @@ public class AutofillAssistantDirectActionHandlerTest {
 
         synchronized T getResult() {
             return mResult;
-        }
-    }
-
-    /**
-     * An implementation of DirectActionReporter that just keeps the definitions in a field.
-     *
-     * <p>TODO(b/134740534) There should be shared test utilities for that.
-     */
-    private static class FakeDirectActionReporter implements DirectActionReporter {
-        List<FakeDirectActionDefinition> mActions = new ArrayList<>();
-
-        @Override
-        public DirectActionReporter.Definition addDirectAction(String actionId) {
-            FakeDirectActionDefinition action = new FakeDirectActionDefinition(actionId);
-            mActions.add(action);
-            return action;
-        }
-
-        @Override
-        public void report() {}
-    }
-
-    /**
-     * A simple action definition for testing.
-     *
-     * TODO(crbug.com/806868): Share these fakes. There is another one in
-     * chrome/android/junit/...directactions/
-     */
-    private static class FakeDirectActionDefinition implements Definition {
-        final String mId;
-        List<FakeParameter> mParameters = new ArrayList<>();
-        List<FakeParameter> mResults = new ArrayList<>();
-
-        FakeDirectActionDefinition(String id) {
-            mId = id;
-        }
-
-        @Override
-        public Definition withParameter(String name, @Type int type, boolean required) {
-            mParameters.add(new FakeParameter(name, type, required));
-            return this;
-        }
-
-        @Override
-        public Definition withResult(String name, @Type int type) {
-            mResults.add(new FakeParameter(name, type, true));
-            return this;
-        }
-    }
-
-    /** A simple parameter definition for testing. */
-    private static class FakeParameter {
-        final String mName;
-
-        @Type
-        final int mType;
-        final boolean mRequired;
-
-        FakeParameter(String name, @Type int type, boolean required) {
-            mName = name;
-            mType = type;
-            mRequired = required;
         }
     }
 }

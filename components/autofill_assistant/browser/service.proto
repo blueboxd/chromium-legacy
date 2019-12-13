@@ -11,6 +11,8 @@ option java_multiple_files = true;
 package autofill_assistant;
 
 import "generic_ui.proto";
+import "model.proto";
+import "view_layout.proto";
 
 // A field trial containing the name of the trial and the name of the
 // randomly selected trial group.
@@ -500,6 +502,8 @@ message CollectUserDataResultProto {
   optional DateTimeProto date_time_start = 7;
   // The end of the date/time range, if requested.
   optional DateTimeProto date_time_end = 8;
+  // The values obtained by the generic user interface.
+  optional ModelProto model = 9;
 }
 
 message ProcessedActionProto {
@@ -1389,7 +1393,7 @@ message CollectUserDataProto {
   optional string terms_require_review_text = 20;
   // Privacy notice telling users that autofill assistant will send personal
   // data to a third party’s website.
-  optional string thirdparty_privacy_notice_text = 21;
+  optional string privacy_notice_text = 21;
   // Optionally allows confiriming through the given direct actions.
   optional DirectActionProto confirm_direct_action = 10;
   // Additional actions available to the user. This can be used for instance to

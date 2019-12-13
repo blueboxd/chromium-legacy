@@ -149,11 +149,15 @@ class __thisIsHereToForceASemicolonAfterThisMacro;
 #define USING_FAST_MALLOC_WITH_TYPE_NAME(type) \
   USING_FAST_MALLOC_INTERNAL(type, #type)
 
-// TOOD(omerkatz): replace this cast with std::atomic_ref (C++20) once it
+// TOOD(omerkatz): replace these casts with std::atomic_ref (C++20) once it
 // becomes available
 template <typename T>
-ALWAYS_INLINE std::atomic<T>* AsAtomicPtr(const T* t) {
-  return reinterpret_cast<std::atomic<T>*>(const_cast<T*>(t));
+ALWAYS_INLINE std::atomic<T>* AsAtomicPtr(T* t) {
+  return reinterpret_cast<std::atomic<T>*>(t);
+}
+template <typename T>
+ALWAYS_INLINE const std::atomic<T>* AsAtomicPtr(const T* t) {
+  return reinterpret_cast<const std::atomic<T>*>(t);
 }
 
 }  // namespace WTF

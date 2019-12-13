@@ -12,9 +12,11 @@ from .blink_v8_bridge import blink_type_info
 from .blink_v8_bridge import make_v8_to_blink_value
 from .code_node import CodeNode
 from .code_node import Likeliness
+from .code_node import ListNode
 from .code_node import SequenceNode
 from .code_node import SymbolScopeNode
 from .code_node import TextNode
+from .code_node_cxx import CxxFuncDeclNode
 from .code_node_cxx import CxxFuncDefNode
 from .code_node_cxx import CxxIfElseNode
 from .code_node_cxx import CxxLikelyIfNode
@@ -488,8 +490,119 @@ def make_dict_trace_def(cg_context):
     return func_def
 
 
-def generate_dictionaries(web_idl_database, output_dirs):
-    dictionary = web_idl_database.find("MediaDecodingConfiguration")
+def make_dict_class_def(cg_context):
+    assert isinstance(cg_context, CodeGenContext)
+
+    T = TextNode
+
+    dictionary = cg_context.dictionary
+
+    alias_base_class_node = None
+    if dictionary.inherited:
+        alias_base_class_node = T("using BaseClass = ${base_class_name};")
+
+    public_node = ListNode()
+
+    public_node.append(
+        T("""\
+static ${class_name}* Create();
+static ${class_name}* Create(
+    v8::Isolate* isolate,
+    v8::Local<v8::Object> v8_dictionary,
+    ExceptionState& exception_state);
+${class_name}() = default;
+~${class_name}() = default;
+
+void Trace(Visitor* visitor);
+"""))
+
+    # TODO(peria): Consider inlining these accessors.
+    for member in dictionary.own_members:
+        member_blink_type = blink_type_info(member.idl_type)
+        public_node.append(
+            CxxFuncDeclNode(
+                name=_blink_member_name(member).get_api,
+                return_type=member_blink_type.ref_t,
+                arg_decls=[],
+                const=True))
+        public_node.append(
+            CxxFuncDeclNode(
+                name=_blink_member_name(member).set_api,
+                arg_decls=[_format("{} value", member_blink_type.ref_t)],
+                return_type="void"))
+        public_node.append(
+            CxxFuncDeclNode(
+                name=_blink_member_name(member).has_api,
+                arg_decls=[],
+                return_type="bool",
+                const=True))
+
+    protected_node = ListNode()
+
+    protected_node.append(
+        T("""\
+bool FillWithMembers(
+    v8::Isolate* isolate,
+    v8::Local<v8::Object> creation_context,
+    v8::Local<v8::Object> v8_dictionary) const override;
+"""))
+
+    private_node = ListNode()
+
+    private_node.append(
+        T("""\
+static const v8::Eternal<v8::Name>* GetV8MemberNames(v8::Isolate*);
+
+bool FillWithOwnMembers(
+    v8::Isolate* isolate,
+    v8::Local<v8::Object> creation_context,
+    v8::Local<v8::Object> v8_dictionary) const;
+
+void FillMembers(
+    v8::Isolate* isolate,
+    v8::Local<v8::Object> v8_dictionary,
+    ExceptionState& exception_state);
+void FillMembersInternal(
+    v8::Isolate* isolate,
+    v8::Local<v8::Object> v8_dictionary,
+    ExceptionState& exception_state);
+"""))
+
+    # C++ member variables for values
+    # TODO(peria): Set default values.
+    for member in dictionary.own_members:
+        _1 = blink_type_info(member.idl_type).member_t
+        _2 = _blink_member_name(member).value_var
+        private_node.append(T(_format("{_1} {_2};", _1=_1, _2=_2)))
+
+    private_node.append(T(""))
+    # C++ member variables for precences
+    for member in dictionary.own_members:
+        if _does_use_presence_flag(member):
+            _1 = _blink_member_name(member).presence_var
+            private_node.append(T(_format("bool {_1} = false;", _1=_1)))
+
+    node = ListNode()
+    node.add_template_vars(cg_context.template_bindings())
+
+    node.extend([
+        T("class ${class_name} : public ${base_class_name} {"),
+        alias_base_class_node,
+        T("public:"),
+        public_node,
+        T(""),
+        T("protected:"),
+        protected_node,
+        T(""),
+        T("private:"),
+        private_node,
+        T("};"),
+    ])
+
+    return node
+
+
+def generate_dictionary_cc_file(dictionary, output_dirs):
     filename = "example_dictionary.cc"
     filepath = os.path.join(output_dirs['core'], filename)
 
@@ -504,7 +617,7 @@ def generate_dictionaries(web_idl_database, output_dirs):
     root_node = SymbolScopeNode(separator_last="\n")
     root_node.set_renderer(MakoRenderer())
 
-    code_node = SequenceNode()
+    code_node = ListNode()
 
     code_node.extend([
         TextNode("// static"),
@@ -532,3 +645,39 @@ def generate_dictionaries(web_idl_database, output_dirs):
     ])
 
     write_code_node_to_file(root_node, filepath)
+
+
+def generate_dictionary_h_file(dictionary, output_dirs):
+    filename = "example_dictionary.h"
+    filepath = os.path.join(output_dirs['core'], filename)
+
+    class_name = blink_class_name(dictionary)
+    base_class_name = (blink_class_name(dictionary.inherited)
+                       if dictionary.inherited else "bindings::DictionaryBase")
+    cg_context = CodeGenContext(
+        dictionary=dictionary,
+        class_name=class_name,
+        base_class_name=base_class_name)
+
+    root_node = SymbolScopeNode(separator_last="\n")
+    root_node.set_renderer(MakoRenderer())
+
+    code_node = ListNode()
+    code_node.extend([
+        make_dict_class_def(cg_context),
+    ])
+
+    root_node.extend([
+        make_copyright_header(),
+        TextNode(""),
+        enclose_with_namespace(code_node, name_style.namespace("blink")),
+    ])
+
+    write_code_node_to_file(root_node, filepath)
+
+
+def generate_dictionaries(web_idl_database, output_dirs):
+    dictionary = web_idl_database.find("InternalDictionary")
+
+    generate_dictionary_cc_file(dictionary, output_dirs)
+    generate_dictionary_h_file(dictionary, output_dirs)

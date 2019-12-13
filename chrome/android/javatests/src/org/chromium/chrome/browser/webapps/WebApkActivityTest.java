@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -16,9 +17,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -38,6 +42,7 @@ import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 /** Tests for WebApkActivity. */
@@ -199,7 +204,7 @@ public final class WebApkActivityTest {
      */
     @LargeTest
     @Test
-    public void testActivateWebApkLPlus() {
+    public void testActivateWebApkLPlus() throws Exception {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 
         // Launch WebAPK.
@@ -214,6 +219,8 @@ public final class WebApkActivityTest {
                 Intent.FLAG_ACTIVITY_NEW_TASK | ApiCompatibilityUtils.getActivityNewDocumentFlag());
         InstrumentationRegistry.getTargetContext().startActivity(intent);
         ChromeActivityTestRule.waitFor(mainClass);
+
+        waitForActivityState(webApkActivity, ActivityState.STOPPED);
 
         TabWebContentsDelegateAndroid tabDelegate =
                 TabTestUtils.getTabWebContentsDelegate(webApkActivity.getActivityTab());
@@ -241,5 +248,30 @@ public final class WebApkActivityTest {
         WebappRegistry.getInstance().register(webappId, callback);
         callback.waitForCallback(0);
         return WebappRegistry.getInstance().getWebappDataStorage(webappId);
+    }
+
+    private void waitForActivityState(Activity activity, @ActivityState int state)
+            throws Exception {
+        final CallbackHelper callbackHelper = new CallbackHelper();
+        final ApplicationStatus.ActivityStateListener activityStateListener =
+                (activity1, newState) -> {
+            if (newState == state) {
+                callbackHelper.notifyCalled();
+            }
+        };
+        try {
+            boolean correctState = TestThreadUtils.runOnUiThreadBlocking(() -> {
+                if (ApplicationStatus.getStateForActivity(activity) == state) {
+                    return true;
+                }
+                ApplicationStatus.registerStateListenerForActivity(activityStateListener, activity);
+                return false;
+            });
+            if (!correctState) {
+                callbackHelper.waitForCallback(0);
+            }
+        } finally {
+            ApplicationStatus.unregisterActivityStateListener(activityStateListener);
+        }
     }
 }

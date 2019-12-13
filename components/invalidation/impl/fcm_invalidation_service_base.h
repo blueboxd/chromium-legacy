@@ -9,7 +9,6 @@
 #include "base/time/time.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/invalidation/impl/fcm_invalidation_listener.h"
-#include "components/invalidation/impl/invalidation_listener.h"
 #include "components/invalidation/impl/invalidation_logger.h"
 #include "components/invalidation/impl/invalidator_registrar_with_memory.h"
 #include "components/invalidation/public/invalidation_handler.h"

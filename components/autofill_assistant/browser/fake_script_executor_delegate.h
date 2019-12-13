@@ -61,6 +61,8 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
       std::unique_ptr<FormProto> form,
       base::RepeatingCallback<void(const FormProto::Result*)> changed_callback,
       base::OnceCallback<void(const ClientStatus&)> cancel_callback) override;
+  UserModel* GetUserModel() override;
+  EventHandler* GetEventHandler() override;
   bool HasNavigationError() override;
   bool IsNavigatingToNewDocument() override;
   void RequireUI() override;

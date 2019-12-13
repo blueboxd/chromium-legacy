@@ -59,7 +59,8 @@ void AddConvertableToTraceFormat(
     return;
   }
 
-  std::string json = value->ToString();
+  std::string json;
+  value->AppendAsTraceFormat(&json);
   annotation->set_legacy_json_value(json.c_str());
 }
 

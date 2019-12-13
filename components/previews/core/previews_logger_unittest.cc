@@ -29,7 +29,7 @@ const size_t kMaximumNavigationLogs = 10;
 const size_t kMaximumDecisionLogs = 25;
 
 // Mock class to test correct MessageLog is passed back to the
-// mojo::InterventionsInternalsPagePtr.
+// mojo::InterventionsInternalsPage.
 class TestPreviewsLoggerObserver : public PreviewsLoggerObserver {
  public:
   TestPreviewsLoggerObserver()

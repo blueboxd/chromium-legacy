@@ -12,6 +12,7 @@ from .blink_v8_bridge import blink_class_name
 from .blink_v8_bridge import blink_type_info
 from .blink_v8_bridge import make_v8_to_blink_value
 from .blink_v8_bridge import make_v8_to_blink_value_variadic
+from .blink_v8_bridge import v8_bridge_class_name
 from .code_node import SequenceNode
 from .code_node import SymbolDefinitionNode
 from .code_node import SymbolNode
@@ -157,13 +158,13 @@ def bind_callback_local_vars(code_node, cg_context):
         # DOMWindow class.  Then, we'll have less hacks.
         if "CrossOrigin" in cg_context.member_like.extended_attributes:
             text = ("DOMWindow* ${blink_receiver} = "
-                    "${v8_class}::ToBlinkUnsafe(${v8_receiver});")
+                    "${class_name}::ToBlinkUnsafe(${v8_receiver});")
         else:
             text = ("LocalDOMWindow* ${blink_receiver} = To<LocalDOMWindow>("
-                    "${v8_class}::ToBlinkUnsafe(${v8_receiver}));")
+                    "${class_name}::ToBlinkUnsafe(${v8_receiver}));")
     else:
         pattern = ("{_1}* ${blink_receiver} = "
-                   "${v8_class}::ToBlinkUnsafe(${v8_receiver});")
+                   "${class_name}::ToBlinkUnsafe(${v8_receiver});")
         _1 = blink_class_name(cg_context.class_like)
         text = _format(pattern, _1=_1)
     local_vars.append(S("blink_receiver", text))
@@ -240,7 +241,7 @@ def _make_reflect_accessor_func_name(cg_context):
         return "setAttribute"
 
 
-def _make_reflect_process_enumerated_attributes(cg_context):
+def _make_reflect_process_keyword_state(cg_context):
     # https://html.spec.whatwg.org/C/#keywords-and-enumerated-attributes
 
     assert isinstance(cg_context, CodeGenContext)
@@ -293,6 +294,9 @@ def _make_reflect_process_enumerated_attributes(cg_context):
         branches.append(
             cond=True,
             body=F("${return_value} = {};", constant(invalid_default)))
+    else:
+        branches.append(
+            cond=True, body=F("${return_value} = {};", constant("")))
 
     return SequenceNode(nodes)
 
@@ -426,7 +430,7 @@ def bind_return_value(code_node, cg_context):
 
         if "ReflectOnly" in cg_context.member_like.extended_attributes:
             # [ReflectOnly]
-            node = _make_reflect_process_enumerated_attributes(cg_context)
+            node = _make_reflect_process_keyword_state(cg_context)
             if node:
                 nodes.append(T(""))
                 nodes.append(node)
@@ -446,7 +450,8 @@ def make_check_argument_length(cg_context):
     T = TextNode
 
     idl_type = cg_context.attribute.idl_type
-    if not (idl_type.does_include_nullable_type or idl_type.unwrap().is_any or
+    if not (idl_type.does_include_nullable_or_dict or idl_type.unwrap().is_any
+            or
             "TreatNonObjectAsNull" in idl_type.unwrap().extended_attributes):
         # ES undefined in ${info}[0] will cause a TypeError anyway, so omit the
         # check against the number of arguments.
@@ -471,7 +476,7 @@ def make_check_receiver(cg_context):
         return SequenceNode([
             T("// [LenientThis]"),
             CxxUnlikelyIfNode(
-                cond="!${v8_class}::HasInstance(${v8_receiver}, ${isolate})",
+                cond="!${class_name}::HasInstance(${v8_receiver}, ${isolate})",
                 body=T("return;")),
         ])
 
@@ -480,7 +485,7 @@ def make_check_receiver(cg_context):
             T("// Promise returning function: "
               "Convert a TypeError to a reject promise."),
             CxxUnlikelyIfNode(
-                cond="!${v8_class}::HasInstance(${v8_receiver}, ${isolate})",
+                cond="!${class_name}::HasInstance(${v8_receiver}, ${isolate})",
                 body=[
                     T("${exception_state}.ThrowTypeError("
                       "\"Illegal invocation\");"),
@@ -660,8 +665,7 @@ def _make_overload_dispatcher_per_arg_size(items):
         dispatch_if("{value}->IsUndefined()")
 
     # 12.3. if V is null or undefined, ...
-    func_like = find(
-        lambda t, u: t.does_include_nullable_type or u.is_dictionary)
+    func_like = find(lambda t, u: t.does_include_nullable_or_dict)
     if func_like:
         dispatch_if("{value}->IsNullOrUndefined()")
 
@@ -673,10 +677,10 @@ def _make_overload_dispatcher_per_arg_size(items):
     # Attempt to match from most derived to least derived.
     for func_like, idl_type in sorted(
             find_all_interfaces(), key=inheritance_length, reverse=True):
-        cgc = CodeGenContext(
-            interface=idl_type.unwrap().type_definition_object)
+        v8_bridge_name = v8_bridge_class_name(
+            idl_type.unwrap().type_definition_object)
         dispatch_if(
-            _format("{}::HasInstance(${isolate}, {value})", cgc.v8_class))
+            _format("{}::HasInstance(${isolate}, {value})", v8_bridge_name))
 
     is_typedef_name = lambda t, name: t.is_typedef and t.identifier == name
     func_like_a = find(
@@ -1232,7 +1236,7 @@ def bind_template_installer_local_vars(code_node, cg_context):
            "v8::Signature::New(${isolate}, ${interface_template});")),
         S("wrapper_type_info",
           ("const WrapperTypeInfo* const ${wrapper_type_info} = "
-           "${v8_class}::GetWrapperTypeInfo();")),
+           "${class_name}::GetWrapperTypeInfo();")),
     ])
 
     pattern = (
@@ -1317,7 +1321,8 @@ def generate_interfaces(web_idl_database, output_dirs):
 
     interface = web_idl_database.find("WorkerGlobalScope")
 
-    cg_context = CodeGenContext(interface=interface)
+    cg_context = CodeGenContext(
+        interface=interface, class_name=v8_bridge_class_name(interface))
 
     root_node = SymbolScopeNode(separator_last="\n")
     root_node.set_accumulator(CodeGenAccumulator())

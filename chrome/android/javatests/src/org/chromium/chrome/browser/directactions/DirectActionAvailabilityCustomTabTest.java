@@ -55,7 +55,7 @@ public class DirectActionAvailabilityCustomTabTest {
 
         assertThat(
                 DirectActionTestUtils.setupActivityAndGetDirectAction(mCustomTabActivityTestRule),
-                Matchers.containsInAnyOrder(
-                        "go_back", "reload", "go_forward", "bookmark_this_page", "preferences"));
+                Matchers.containsInAnyOrder("go_back", "reload", "go_forward", "bookmark_this_page",
+                        "preferences", "find_in_page"));
     }
 }

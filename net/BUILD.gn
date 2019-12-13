@@ -5550,7 +5550,6 @@ test("net_unittests") {
     "third_party/quiche/src/quic/core/quic_error_codes_test.cc",
     "third_party/quiche/src/quic/core/quic_flow_controller_test.cc",
     "third_party/quiche/src/quic/core/quic_framer_test.cc",
-    "third_party/quiche/src/quic/core/quic_ietf_framer_test.cc",
     "third_party/quiche/src/quic/core/quic_interval_set_test.cc",
     "third_party/quiche/src/quic/core/quic_interval_test.cc",
     "third_party/quiche/src/quic/core/quic_lru_cache_test.cc",
@@ -5955,8 +5954,8 @@ test("net_unittests") {
       "http/mock_gssapi_library_posix.h",
     ]
     data_deps += [
-      ":test_gssapi",
       ":test_badgssapi",
+      ":test_gssapi",
     ]
   }
 

@@ -255,7 +255,7 @@
         </cr-button>
       </div>
       <div slot="footer"
-          hidden="[[!shouldShowFooter_(syncStatus.signedIn, diceEnabled_)]]">
+          hidden="[[!shouldShowFooter_(syncStatus.signedIn)]]">
         <settings-sync-account-control sync-status="[[syncStatus]]"
             prefs="{{prefs}}" hide-buttons>
         </settings-sync-account-control>

@@ -35,12 +35,6 @@ cca.App = class {
     this.backgroundOps_ = backgroundOps;
 
     /**
-     * @type {!cca.models.Gallery}
-     * @private
-     */
-    this.gallery_ = new cca.models.Gallery();
-
-    /**
      * @type {!cca.device.PhotoConstraintsPreferrer}
      * @private
      */
@@ -65,7 +59,7 @@ cca.App = class {
      * @type {!cca.GalleryButton}
      * @private
      */
-    this.galleryButton_ = new cca.GalleryButton(this.gallery_);
+    this.galleryButton_ = new cca.GalleryButton();
 
     /**
      * @type {!cca.views.Camera}
@@ -80,7 +74,7 @@ cca.App = class {
             this.videoPreferrer_);
       } else {
         return new cca.views.Camera(
-            this.gallery_, this.infoUpdater_, this.photoPreferrer_,
+            this.galleryButton_, this.infoUpdater_, this.photoPreferrer_,
             this.videoPreferrer_, intent !== null ? intent.mode : Mode.PHOTO);
       }
     })();
@@ -174,8 +168,8 @@ cca.App = class {
         })
         .then((external) => {
           cca.state.set('ext-fs', external);
-          this.gallery_.addObserver(this.galleryButton_);
-          this.gallery_.load();
+          assert(cca.models.FileSystem.externalDir !== null);
+          this.galleryButton_.initialize(cca.models.FileSystem.externalDir);
           cca.nav.open('camera');
         })
         .catch((error) => {

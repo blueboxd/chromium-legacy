@@ -197,10 +197,10 @@ class CC_PAINT_EXPORT DisplayItemList
                              SkColor* color,
                              int max_ops_to_analyze = 1);
 
+  std::string ToString() const;
+
  private:
-  FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, TraceEmptyVisualRect);
-  FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, AsValueWithNoOps);
-  FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, AsValueWithOps);
+  friend class DisplayItemListTest;
   friend gpu::raster::RasterImplementation;
   friend gpu::raster::RasterImplementationGLES;
 
@@ -210,6 +210,7 @@ class CC_PAINT_EXPORT DisplayItemList
 
   std::unique_ptr<base::trace_event::TracedValue> CreateTracedValue(
       bool include_items) const;
+  void AddToValue(base::trace_event::TracedValue*, bool include_items) const;
 
   // If we're currently within a paired display item block, unions the
   // given visual rect with the begin display item's visual rect.

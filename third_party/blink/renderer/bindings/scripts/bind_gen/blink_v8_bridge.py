@@ -30,6 +30,15 @@ def blink_class_name(idl_definition):
         return name_style.class_(idl_definition.identifier)
 
 
+def v8_bridge_class_name(idl_definition):
+    """
+    Returns the name of V8-from/to-Blink bridge class.
+    """
+    assert isinstance(idl_definition, web_idl.Interface)
+
+    return name_style.class_("v8", idl_definition.identifier)
+
+
 def blink_type_info(idl_type):
     """
     Returns the types of Blink implementation corresponding to the given IDL
@@ -81,6 +90,14 @@ def blink_type_info(idl_type):
     if real_type.is_string:
         return TypeInfo("String", ref_fmt="{}&", is_nullable=True)
 
+    if real_type.is_buffer_source_type:
+        return TypeInfo(
+            'DOM{}'.format(real_type.keyword_typename),
+            member_fmt="Member<{}>",
+            ref_fmt="{}*",
+            value_fmt="{}*",
+            is_nullable=True)
+
     if real_type.is_symbol:
         assert False, "Blink does not support/accept IDL symbol type."
 
@@ -128,6 +145,8 @@ def blink_type_info(idl_type):
             return inner_type
         return TypeInfo(
             "base::Optional<{}>".format(inner_type.value_t), ref_fmt="{}&")
+
+    assert False, "Unknown type: {}".format(idl_type.syntactic_form)
 
 
 def native_value_tag(idl_type):

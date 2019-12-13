@@ -30,8 +30,8 @@
 
 // https://w3c.github.io/ServiceWorker/#extendableevent-interface
 [
-    Constructor(DOMString type, optional ExtendableEventInit eventInitDict),
     Exposed=ServiceWorker
 ] interface ExtendableEvent : Event {
+    constructor(DOMString type, optional ExtendableEventInit eventInitDict);
     [CallWith=ScriptState, RaisesException] void waitUntil(Promise<any> f);
 };

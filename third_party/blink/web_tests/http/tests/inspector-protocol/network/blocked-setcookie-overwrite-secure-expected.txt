@@ -14,7 +14,8 @@ set-cookie that would overwrite secure cookie blocked set-cookies: [
       "size": 9,
       "httpOnly": false,
       "secure": false,
-      "session": true
+      "session": true,
+      "priority": "Medium"
     }
   }
 ]

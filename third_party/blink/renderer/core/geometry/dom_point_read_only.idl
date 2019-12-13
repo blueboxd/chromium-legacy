@@ -17,7 +17,7 @@
     readonly attribute unrestricted double z;
     readonly attribute unrestricted double w;
 
-    [RaisesException] DOMPoint matrixTransform(optional DOMMatrixInit matrix);
+    [RaisesException, NewObject] DOMPoint matrixTransform(optional DOMMatrixInit matrix);
 
     [CallWith=ScriptState, ImplementedAs=toJSONForBinding] object toJSON();
 };

@@ -16,6 +16,8 @@
 <link rel="import" href="../lifetime_browser_proxy.html">
 <link rel="import" href="../people_page/sync_browser_proxy.html">
 <link rel="import" href="../people_page/signout_dialog.html">
+<link rel="import" href="../prefs/prefs.html">
+<link rel="import" href="../prefs/prefs_behavior.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_page/settings_animated_pages.html">
 <link rel="import" href="../settings_page/settings_subpage.html">
@@ -116,9 +118,12 @@
               </settings-passwords-leak-detection-toggle>
             </template>
             <settings-toggle-button id="safeBrowsingReportingToggle"
-                pref="{{prefs.safebrowsing.scout_reporting_enabled}}"
+                pref="[[safeBrowsingReportingPref_]]" no-set-pref
                 label="$i18n{safeBrowsingEnableExtendedReporting}"
-                sub-label="$i18n{safeBrowsingEnableExtendedReportingDesc}">
+                sub-label="$i18n{safeBrowsingEnableExtendedReportingDesc}"
+                disabled="[[getDisabledExtendedSafeBrowsing_(prefs.*)]]"
+                on-settings-boolean-control-change=
+                    "onSafeBrowsingReportingToggleChange_">
             </settings-toggle-button>
           </template>
 <if expr="not chromeos">

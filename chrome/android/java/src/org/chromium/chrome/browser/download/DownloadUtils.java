@@ -170,7 +170,7 @@ public class DownloadUtils {
         if (isTablet) {
             // Download Home shows up as a tab on tablets.
             LoadUrlParams params = new LoadUrlParams(UrlConstants.DOWNLOADS_URL);
-            if (tab == null || !((TabImpl) tab).isInitialized()) {
+            if (tab == null || !tab.isInitialized()) {
                 // Open a new tab, which pops Chrome into the foreground.
                 TabDelegate delegate = new TabDelegate(false);
                 delegate.createNewTab(params, TabLaunchType.FROM_CHROME_UI, null);

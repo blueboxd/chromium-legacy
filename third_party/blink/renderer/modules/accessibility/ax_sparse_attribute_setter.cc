@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/modules/accessibility/ax_sparse_attribute_setter.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 
 namespace blink {
@@ -74,16 +75,31 @@ class ObjectAttributeSetter : public AXSparseAttributeSetter {
  private:
   AXObjectAttribute attribute_;
 
+  QualifiedName GetAttributeQualifiedName() {
+    switch (attribute_) {
+      case AXObjectAttribute::kAriaActiveDescendant:
+        return html_names::kAriaActivedescendantAttr;
+      case AXObjectAttribute::kAriaDetails:
+        return html_names::kAriaDetailsAttr;
+      case AXObjectAttribute::kAriaErrorMessage:
+        return html_names::kAriaErrormessageAttr;
+      default:
+        NOTREACHED();
+    }
+    return g_null_name;
+  }
+
   void Run(const AXObject& obj,
            AXSparseAttributeClient& attribute_map,
            const AtomicString& value) override {
-    if (value.IsNull() || value.IsEmpty())
+    if (value.IsNull())
       return;
 
-    auto* element = DynamicTo<Element>(obj.GetNode());
+    Element* element = obj.GetElement();
     if (!element)
       return;
-    Element* target = element->GetTreeScope().getElementById(value);
+    const QualifiedName& q_name = GetAttributeQualifiedName();
+    Element* target = element->GetElementAttribute(q_name);
     if (!target)
       return;
     AXObject* ax_target = obj.AXObjectCache().GetOrCreate(target);
@@ -100,36 +116,41 @@ class ObjectVectorAttributeSetter : public AXSparseAttributeSetter {
  private:
   AXObjectVectorAttribute attribute_;
 
+  QualifiedName GetAttributeQualifiedName() {
+    switch (attribute_) {
+      case AXObjectVectorAttribute::kAriaControls:
+        return html_names::kAriaControlsAttr;
+      case AXObjectVectorAttribute::kAriaFlowTo:
+        return html_names::kAriaFlowtoAttr;
+      default:
+        NOTREACHED();
+    }
+    return g_null_name;
+  }
+
   void Run(const AXObject& obj,
            AXSparseAttributeClient& attribute_map,
            const AtomicString& value) override {
-    Node* node = obj.GetNode();
-    if (!node || !node->IsElementNode())
+    Element* element = obj.GetElement();
+    if (!element)
       return;
 
-    String attribute_value = value.GetString();
-    if (attribute_value.IsEmpty())
+    bool is_null = false;
+    HeapVector<Member<Element>> attr_associated_elements =
+        element->GetElementArrayAttribute(GetAttributeQualifiedName(), is_null);
+    if (is_null)
       return;
-
-    Vector<String> ids;
-    attribute_value.Split(' ', ids);
-    if (ids.IsEmpty())
-      return;
-
     HeapVector<Member<AXObject>> objects;
-    TreeScope& scope = node->GetTreeScope();
-    for (const auto& id : ids) {
-      if (Element* id_element = scope.getElementById(AtomicString(id))) {
-        AXObject* ax_id_element = obj.AXObjectCache().GetOrCreate(id_element);
-        if (!ax_id_element)
-          continue;
-        if (AXObject* parent = ax_id_element->ParentObject())
-          parent->UpdateChildrenIfNecessary();
-        if (!ax_id_element->AccessibilityIsIgnored())
-          objects.push_back(ax_id_element);
-      }
+    for (const auto& associated_element : attr_associated_elements) {
+      AXObject* ax_element =
+          obj.AXObjectCache().GetOrCreate(associated_element);
+      if (!ax_element)
+        continue;
+      if (AXObject* parent = ax_element->ParentObject())
+        parent->UpdateChildrenIfNecessary();
+      if (!ax_element->AccessibilityIsIgnored())
+        objects.push_back(ax_element);
     }
-
     attribute_map.AddObjectVectorAttribute(attribute_, objects);
   }
 };

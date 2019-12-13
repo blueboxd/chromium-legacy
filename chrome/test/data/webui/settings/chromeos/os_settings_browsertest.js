@@ -1077,4 +1077,26 @@ TEST_F('OSSettingsSmbPageTest', 'AllJsTests', () => {
   mocha.run();
 });
 
+// Test fixture for the Manage Accessibility page.
+// eslint-disable-next-line no-var
+var OSSettingsManageAccessibilityPageTest =
+    class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'a11y_page/manage_a11y_page.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      'manage_accessibility_page_tests.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsManageAccessibilityPageTest', 'AllJsTests', () => {
+  mocha.run();
+});
+
 GEN('#endif  // defined(NDEBUG)');

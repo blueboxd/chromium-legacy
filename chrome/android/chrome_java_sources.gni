@@ -1608,6 +1608,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/tab/TabIdManager.java",
   "java/src/org/chromium/chrome/browser/tab/TabImpl.java",
   "java/src/org/chromium/chrome/browser/tab/TabImportanceManager.java",
+  "java/src/org/chromium/chrome/browser/tab/TabHelpers.java",
+  "java/src/org/chromium/chrome/browser/tab/TabLifecycle.java",
   "java/src/org/chromium/chrome/browser/tab/TabObserver.java",
   "java/src/org/chromium/chrome/browser/tab/TabParentIntent.java",
   "java/src/org/chromium/chrome/browser/tab/TabRedirectHandler.java",

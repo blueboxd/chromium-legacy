@@ -239,6 +239,16 @@ class MODULES_EXPORT AXObjectCacheImpl
                       const Vector<String>& id_vector,
                       HeapVector<Member<AXObject>>& owned_children);
 
+  // Given an object that has explicitly set elements for aria-owns, update the
+  // internal state to reflect the new set of children owned by this object.
+  // Note that |owned_children| will be the AXObjects corresponding to the
+  // elements in |attr_associated_elements|. These elements are validated -
+  // exist in the DOM, and are a descendant of a shadow including ancestor.
+  void UpdateAriaOwnsFromAttrAssociatedElements(
+      const AXObject* owner,
+      const HeapVector<Member<Element>>& attr_associated_elements,
+      HeapVector<Member<AXObject>>& owned_children);
+
   bool MayHaveHTMLLabel(const HTMLElement& elem);
 
   // Synchronously returns whether or not we currently have permission to

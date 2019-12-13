@@ -42,7 +42,7 @@ public class TabFavicon extends TabWebContentsUserData {
     }
 
     private static TabFavicon get(Tab tab) {
-        if (tab == null || !((TabImpl) tab).isInitialized()) return null;
+        if (tab == null || !tab.isInitialized()) return null;
         return tab.getUserDataHost().getUserData(USER_DATA_KEY);
     }
 

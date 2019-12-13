@@ -156,10 +156,10 @@ Polymer({
 
     /** Overrides FocusRowBehavior. */
     getCustomEquivalent: function(sampleElement) {
-      if (sampleElement.getAttribute('focus-type') == 'cancel') {
+      if (sampleElement.getAttribute('focus-type') === 'cancel') {
         return this.$$('[focus-type="retry"]');
       }
-      if (sampleElement.getAttribute('focus-type') == 'retry') {
+      if (sampleElement.getAttribute('focus-type') === 'retry') {
         return this.$$('[focus-type="pauseOrResume"]');
       }
       return null;
@@ -203,7 +203,7 @@ Polymer({
      * @private
      */
     computeCompletelyOnDisk_: function() {
-      return this.data.state == States.COMPLETE &&
+      return this.data.state === States.COMPLETE &&
           !this.data.fileExternallyRemoved;
     },
 
@@ -235,7 +235,7 @@ Polymer({
      * @private
      */
     computeDate_: function() {
-      assert(typeof this.data.hideDate == 'boolean');
+      assert(typeof this.data.hideDate === 'boolean');
       if (this.data.hideDate) {
         return '';
       }
@@ -244,7 +244,7 @@ Polymer({
 
     /** @private @return {boolean} */
     computeDescriptionVisible_: function() {
-      return this.computeDescription_() != '';
+      return this.computeDescription_() !== '';
     },
 
     /**
@@ -313,8 +313,8 @@ Polymer({
         const dangerType = this.data.dangerType;
 
         if ((loadTimeData.getBoolean('requestsApVerdicts') &&
-             dangerType == DangerType.UNCOMMON_CONTENT) ||
-            dangerType == DangerType.SENSITIVE_CONTENT_WARNING) {
+             dangerType === DangerType.UNCOMMON_CONTENT) ||
+            dangerType === DangerType.SENSITIVE_CONTENT_WARNING) {
           return 'cr:error';
         }
 
@@ -341,8 +341,8 @@ Polymer({
      * @private
      */
     computeIsActive_: function() {
-      return this.data.state != States.CANCELLED &&
-          this.data.state != States.INTERRUPTED &&
+      return this.data.state !== States.CANCELLED &&
+          this.data.state !== States.INTERRUPTED &&
           !this.data.fileExternallyRemoved;
     },
 
@@ -351,7 +351,7 @@ Polymer({
      * @private
      */
     computeIsDangerous_: function() {
-      return this.data.state == States.DANGEROUS;
+      return this.data.state === States.DANGEROUS;
     },
 
     /**
@@ -359,7 +359,7 @@ Polymer({
      * @private
      */
     computeIsInProgress_: function() {
-      return this.data.state == States.IN_PROGRESS;
+      return this.data.state === States.IN_PROGRESS;
     },
 
     /**
@@ -368,10 +368,10 @@ Polymer({
      */
     computeIsMalware_: function() {
       return this.isDangerous_ &&
-          (this.data.dangerType == DangerType.DANGEROUS_CONTENT ||
-           this.data.dangerType == DangerType.DANGEROUS_HOST ||
-           this.data.dangerType == DangerType.DANGEROUS_URL ||
-           this.data.dangerType == DangerType.POTENTIALLY_UNWANTED);
+          (this.data.dangerType === DangerType.DANGEROUS_CONTENT ||
+           this.data.dangerType === DangerType.DANGEROUS_HOST ||
+           this.data.dangerType === DangerType.DANGEROUS_URL ||
+           this.data.dangerType === DangerType.POTENTIALLY_UNWANTED);
     },
 
     /** @private */
@@ -427,8 +427,8 @@ Polymer({
      * @private
      */
     computeShowCancel_: function() {
-      return this.data.state == States.IN_PROGRESS ||
-          this.data.state == States.PAUSED;
+      return this.data.state === States.IN_PROGRESS ||
+          this.data.state === States.PAUSED;
     },
 
     /**
@@ -465,7 +465,7 @@ Polymer({
      * @private
      */
     isIndeterminate_: function() {
-      return this.data.percent == -1;
+      return this.data.percent === -1;
     },
 
     /** @private */
@@ -501,7 +501,7 @@ Polymer({
         IconLoader.getInstance()
             .loadIcon(this.$['file-icon'], path)
             .then(success => {
-              if (path == this.data.filePath) {
+              if (path === this.data.filePath) {
                 this.useFileIcon_ = success;
               }
             });

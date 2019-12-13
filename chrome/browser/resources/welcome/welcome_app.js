@@ -106,7 +106,7 @@ Polymer({
     };
 
     // If the route changed, initialize the steps of modules for that route.
-    if (this.currentRoute_ != route) {
+    if (this.currentRoute_ !== route) {
       this.initializeModules(route).then(setStep);
     } else {
       setStep();
@@ -123,7 +123,7 @@ Polymer({
         .forEach(element => element.remove());
 
     // If it is on landing route, end here.
-    if (route == Routes.LANDING) {
+    if (route === Routes.LANDING) {
       return Promise.resolve();
     }
 
@@ -153,7 +153,7 @@ Polymer({
         ])
         .then(([canSetDefault]) => {
           modules = modules.filter(module => {
-            if (module == 'nux-set-as-default') {
+            if (module === 'nux-set-as-default') {
               return canSetDefault;
             }
 

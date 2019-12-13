@@ -53,7 +53,7 @@ Polymer({
 
   /** @return {boolean} Whether "Clear all" should be allowed. */
   canClearAll: function() {
-    return this.getSearchText().length == 0 && this.hasClearableDownloads;
+    return this.getSearchText().length === 0 && this.hasClearableDownloads;
   },
 
   /** @return {string} The full text being searched. */

@@ -12,7 +12,6 @@ import org.chromium.base.Callback;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
@@ -68,7 +67,7 @@ public class NavigationRecorder extends EmptyTabObserver {
             mWebContentsObserver = null;
         }
 
-        if (!((TabImpl) tab).isHidden()) mStartTimeMs = SystemClock.elapsedRealtime();
+        if (!tab.isHidden()) mStartTimeMs = SystemClock.elapsedRealtime();
     }
 
     @Override

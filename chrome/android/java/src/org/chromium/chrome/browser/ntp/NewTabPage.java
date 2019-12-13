@@ -231,7 +231,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
             mIsLoaded = true;
             NewTabPageUma.recordNTPImpression(NewTabPageUma.NTP_IMPRESSION_REGULAR);
             // If not visible when loading completes, wait until onShown is received.
-            if (!((TabImpl) mTab).isHidden()) recordNTPShown();
+            if (!mTab.isHidden()) recordNTPShown();
         }
     }
 
@@ -676,7 +676,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         assert !mIsDestroyed;
         assert !ViewCompat
                 .isAttachedToWindow(getView()) : "Destroy called before removed from window";
-        if (mIsLoaded && !((TabImpl) mTab).isHidden()) recordNTPHidden();
+        if (mIsLoaded && !mTab.isHidden()) recordNTPHidden();
 
         mNewTabPageManager.onDestroy();
         mTileGroupDelegate.destroy();

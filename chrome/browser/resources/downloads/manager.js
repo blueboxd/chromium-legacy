@@ -203,14 +203,14 @@ Polymer({
     this.$.toolbar.hasClearableDownloads =
         loadTimeData.getBoolean('allowDeletingHistory') &&
         this.items_.some(
-            ({state}) => state != States.DANGEROUS &&
-                state != States.IN_PROGRESS && state != States.PAUSED);
+            ({state}) => state !== States.DANGEROUS &&
+                state !== States.IN_PROGRESS && state !== States.PAUSED);
 
     if (this.inSearchMode_) {
       this.fire('iron-announce', {
-        text: this.items_.length == 0 ?
+        text: this.items_.length === 0 ?
             this.noDownloadsText_() :
-            (this.items_.length == 1 ?
+            (this.items_.length === 1 ?
                  loadTimeData.getStringF(
                      'searchResultsSingular', this.$.toolbar.getSearchText()) :
                  loadTimeData.getStringF(
@@ -336,7 +336,7 @@ Polymer({
         continue;
       }
       const prev = this.items_[i - 1];
-      current.hideDate = !!prev && prev.dateString == current.dateString;
+      current.hideDate = !!prev && prev.dateString === current.dateString;
     }
   },
 

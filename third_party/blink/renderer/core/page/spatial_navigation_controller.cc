@@ -69,6 +69,24 @@ void ClearFocusInExitedFrames(LocalFrame* old_frame,
   }
 }
 
+bool IsSkippableCandidate(const Element* element) {
+  // SpatNav tries to ignore certain, inconvenient focus candidates.
+  // If an element is recognized as focusable by
+  // SupportsSpatialNavigationFocus() but has one or several focusable
+  // descendant(s), then we might ignore it in favor for its focusable
+  // descendant(s).
+
+  if (element->GetIntegralAttribute(html_names::kTabindexAttr, -1) >= 0) {
+    // non-negative tabindex was set explicitly.
+    return false;
+  }
+
+  if (IsRootEditableElement(*element))
+    return false;
+
+  return true;
+}
+
 // Determines whether the given candidate is closer to the current interested
 // node (in the given direction) than the current best. If so, it'll replace
 // the current best.
@@ -76,7 +94,9 @@ static void ConsiderForBestCandidate(SpatialNavigationDirection direction,
                                      const FocusCandidate& current_interest,
                                      const FocusCandidate& candidate,
                                      FocusCandidate* best_candidate,
-                                     double* best_distance) {
+                                     double& best_distance,
+                                     FocusCandidate* previous_best_candidate,
+                                     double& previous_best_distance) {
   DCHECK(candidate.visible_node->IsElementNode());
   DCHECK(candidate.visible_node->GetLayoutObject());
 
@@ -96,9 +116,27 @@ static void ConsiderForBestCandidate(SpatialNavigationDirection direction,
   if (distance == kMaxDistance)
     return;
 
-  if (distance < *best_distance && IsUnobscured(candidate)) {
+  Element* candidate_element = To<Element>(candidate.visible_node.Get());
+  Element* best_candidate_element =
+      To<Element>(best_candidate->visible_node.Get());
+
+  if (candidate_element->IsDescendantOf(best_candidate_element) &&
+      IsSkippableCandidate(best_candidate_element) &&
+      best_candidate->rect_in_root_frame.Contains(
+          candidate.rect_in_root_frame)) {
+    // Revert to previous best_candidate because current best_candidate is
+    // a skippable candidate.
+    *best_candidate = *previous_best_candidate;
+    best_distance = previous_best_distance;
+
+    previous_best_distance = kMaxDistance;
+  }
+
+  if (distance < best_distance && IsUnobscured(candidate)) {
+    *previous_best_candidate = *best_candidate;
+    previous_best_distance = best_distance;
     *best_candidate = candidate;
-    *best_distance = distance;
+    best_distance = distance;
   }
 }
 
@@ -330,7 +368,8 @@ FocusCandidate SpatialNavigationController::FindNextCandidateInContainer(
   current_interest.focusable_node = interest_child_in_container;
   current_interest.visible_node = interest_child_in_container;
 
-  FocusCandidate best_candidate;
+  FocusCandidate best_candidate, previous_best_candidate;
+  double previous_best_distance = kMaxDistance;
   double best_distance = kMaxDistance;
   for (; element;
        element =
@@ -351,7 +390,8 @@ FocusCandidate SpatialNavigationController::FindNextCandidateInContainer(
       continue;
 
     ConsiderForBestCandidate(direction, current_interest, candidate,
-                             &best_candidate, &best_distance);
+                             &best_candidate, best_distance,
+                             &previous_best_candidate, previous_best_distance);
   }
 
   return best_candidate;

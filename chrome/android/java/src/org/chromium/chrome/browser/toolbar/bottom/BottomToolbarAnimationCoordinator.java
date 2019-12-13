@@ -12,6 +12,7 @@ import android.content.res.Resources;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.view.View;
+import android.view.ViewGroup.MarginLayoutParams;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
@@ -79,11 +80,16 @@ public class BottomToolbarAnimationCoordinator extends EmptyOverviewModeObserver
         Resources res = searchAccelerator.getResources();
         int height = res.getDimensionPixelOffset(R.dimen.search_accelerator_height);
         int width = res.getDimensionPixelOffset(R.dimen.search_accelerator_width);
+        int marginWidth = res.getDimensionPixelOffset(R.dimen.search_accelerator_width_margin);
         ValueAnimator widthAnimator = showBrowsingMode
                 ? ValueAnimator.ofInt(height, width) // extend
                 : ValueAnimator.ofInt(width, height); // shorten
         widthAnimator.addUpdateListener(animation -> {
-            searchAccelerator.getLayoutParams().width = (int) animation.getAnimatedValue();
+            MarginLayoutParams params = (MarginLayoutParams) searchAccelerator.getLayoutParams();
+            params.width = (int) animation.getAnimatedValue();
+            // Update margin to prevent neighbour views from moving close to search accelerator.
+            params.leftMargin = params.rightMargin =
+                    marginWidth + (width - (int) animation.getAnimatedValue()) / 2;
             searchAccelerator.requestLayout();
         });
         mBrowsingModeCoordinator.getSearchAccelerator().setImageResource(

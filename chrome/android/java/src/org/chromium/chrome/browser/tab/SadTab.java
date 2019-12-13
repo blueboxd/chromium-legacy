@@ -61,7 +61,7 @@ public class SadTab extends EmptyTabObserver implements UserData {
     }
 
     public static boolean isShowing(Tab tab) {
-        if (tab == null || !((TabImpl) tab).isInitialized()) return false;
+        if (tab == null || !tab.isInitialized()) return false;
         SadTab sadTab = get(tab);
         return sadTab != null ? sadTab.isShowing() : false;
     }

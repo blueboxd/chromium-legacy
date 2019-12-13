@@ -40,7 +40,6 @@ import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
 import org.chromium.chrome.browser.tab.TabHidingType;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
@@ -650,7 +649,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         int themeColor = TabThemeColorHelper.getColor(tab);
 
         boolean canUseLiveTexture = tab.getWebContents() != null && !SadTab.isShowing(tab)
-                && !isNativePage && !((TabImpl) tab).isHidden();
+                && !isNativePage && !tab.isHidden();
 
         layoutTab.initFromHost(TabThemeColorHelper.getBackgroundColor(tab), shouldStall(tab),
                 canUseLiveTexture, ToolbarColors.getToolbarSceneLayerBackground(tab),

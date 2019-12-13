@@ -125,7 +125,7 @@ Polymer({
    * @private
    */
   isSelectedBackground_: function(background) {
-    return background == this.selectedBackground_;
+    return background === this.selectedBackground_;
   },
 
   /** @private */
@@ -184,9 +184,9 @@ Polymer({
    * @private
    */
   onBackgroundKeyUp_: function(e) {
-    if (e.key == 'ArrowRight' || e.key == 'ArrowDown') {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
       this.changeFocus_(e.currentTarget, 1);
-    } else if (e.key == 'ArrowLeft' || e.key == 'ArrowUp') {
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
       this.changeFocus_(e.currentTarget, -1);
     } else {
       this.changeFocus_(e.currentTarget, 0);

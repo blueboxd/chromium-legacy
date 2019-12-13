@@ -175,11 +175,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '1521e6b24c19f30eda383bb00b26862894ae9182',
+  'skia_revision': '0678df30b5a56375ff6a4c21e6f0ecadb3493b7c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '7a24b354c073a6a9bc0ef197f58c79db0b0a9246',
+  'v8_revision': '67c7536f61350809f4b5b33e171de21a823bfa8d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -238,7 +238,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'b34e896a1257691dd04b3ddd8d02340415c9ca43',
+  'catapult_revision': '953ba804a145a8535cace0683699bbb6a45d0b2a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '0c787d3ac9cff5c5233c77bd65d3a4f43abf54ec',
+  'devtools_frontend_revision': '37fc8b16fc93dd0d6bde5562ba779b79e34b9820',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -337,7 +337,7 @@ vars = {
   # revisions.
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:ad9e442d92dcd9ee73a557428cfc336b55cbd533',
+  'gn_version': 'git_revision:6feb55993083dfd27b93da195c8a82a3a9529848',
 
   # Also, if you change these, update buildtools/DEPS too. Also update the
   # libc++ svn_revision in //buildtools/deps_revisions.gni.
@@ -1496,7 +1496,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'dd55f3ca8f2ea716ca917a4aaf36f0729fe902b1',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '977b26570247a4fb0f95167924e04ddb988ec0c2',
+    Var('webrtc_git') + '/src.git' + '@' + 'f2d6fe62f23f13b974d50baa9ef60426a242af03',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1566,7 +1566,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@97a175b7117c2dc53d95470076ceff270eadbe22',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c741d90d63c07d32644f52f24fda461038454f95',
     'condition': 'checkout_src_internal',
   },
 

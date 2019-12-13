@@ -2443,10 +2443,16 @@ bool AXNodeObject::NameFromLabelElement() const {
     return false;
 
   // Step 2B from: http://www.w3.org/TR/accname-aam-1.1
-  HeapVector<Member<Element>> elements;
+  // Try both spellings, but prefer aria-labelledby, which is the official spec.
+  const QualifiedName& attr =
+      HasAttribute(html_names::kAriaLabeledbyAttr) &&
+              !HasAttribute(html_names::kAriaLabelledbyAttr)
+          ? html_names::kAriaLabeledbyAttr
+          : html_names::kAriaLabelledbyAttr;
+  HeapVector<Member<Element>> elements_from_attribute;
   Vector<String> ids;
-  AriaLabelledbyElementVector(elements, ids);
-  if (ids.size() > 0)
+  ElementsFromAttribute(elements_from_attribute, attr, ids);
+  if (elements_from_attribute.size() > 0)
     return false;
 
   // Step 2C from: http://www.w3.org/TR/accname-aam-1.1
@@ -3045,6 +3051,21 @@ void AXNodeObject::ComputeAriaOwnsChildren(
     return;
   }
 
+  // We first check if the element has an explicitly set aria-owns association.
+  // Explicitly set elements are validated on setting time (that they are in a
+  // valid scope etc). The content attribute can contain ids that are not
+  // legally ownable.
+  Element* element = GetElement();
+  if (element && element->HasExplicitlySetAttrAssociatedElements(
+                     html_names::kAriaOwnsAttr)) {
+    bool is_null = false;
+    AXObjectCache().UpdateAriaOwnsFromAttrAssociatedElements(
+        this,
+        element->GetElementArrayAttribute(html_names::kAriaOwnsAttr, is_null),
+        owned_children);
+    return;
+  }
+
   // Case 2: aria-owns attribute
   TokenVectorFromAttribute(id_vector, html_names::kAriaOwnsAttr);
   AXObjectCache().UpdateAriaOwns(this, id_vector, owned_children);
@@ -3612,14 +3633,30 @@ String AXNodeObject::Description(ax::mojom::NameFrom name_from,
 
   // aria-describedby overrides any other accessible description, from:
   // http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
-  const AtomicString& aria_describedby =
-      GetAttribute(html_names::kAriaDescribedbyAttr);
-  if (!aria_describedby.IsNull()) {
-    if (description_sources)
-      description_sources->back().attribute_value = aria_describedby;
+  Element* element = GetElement();
+  if (!element)
+    return String();
 
-    Vector<String> ids;
-    description = TextFromAriaDescribedby(related_objects, ids);
+  Vector<String> ids;
+  HeapVector<Member<Element>> elements_from_attribute;
+  ElementsFromAttribute(elements_from_attribute,
+                        html_names::kAriaDescribedbyAttr, ids);
+  if (!elements_from_attribute.IsEmpty()) {
+    // TODO(meredithl): Determine description sources when |aria_describedby| is
+    // the empty string, in order to make devtools work with attr-associated
+    // elements.
+    if (description_sources) {
+      description_sources->back().attribute_value =
+          GetAttribute(html_names::kAriaDescribedbyAttr);
+    }
+    AXObjectSet visited;
+    description = TextFromElements(true, visited, elements_from_attribute,
+                                   related_objects);
+
+    for (auto& element : elements_from_attribute)
+      ids.push_back(element->GetIdAttribute());
+
+    TokenVectorFromAttribute(ids, html_names::kAriaDescribedbyAttr);
     AXObjectCache().UpdateReverseRelations(this, ids);
 
     if (!description.IsNull()) {
@@ -3681,7 +3718,7 @@ String AXNodeObject::Description(ax::mojom::NameFrom name_from,
 
   // table caption, 5.9.2 from:
   // http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
-  auto* table_element = DynamicTo<HTMLTableElement>(GetNode());
+  auto* table_element = DynamicTo<HTMLTableElement>(element);
   if (name_from != ax::mojom::NameFrom::kCaption && table_element) {
     description_from = ax::mojom::DescriptionFrom::kRelatedElement;
     if (description_sources) {

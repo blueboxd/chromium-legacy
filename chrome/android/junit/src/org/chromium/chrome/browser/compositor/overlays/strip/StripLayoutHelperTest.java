@@ -118,7 +118,7 @@ public class StripLayoutHelperTest {
         mIncognito = incognito;
         for (int i = 0; i < TEST_TAB_TITLES.length; i++) {
             mModel.addTab(TEST_TAB_TITLES[i]);
-            when(((TabImpl) mModel.getTabAt(i)).isHidden()).thenReturn(tabIndex != i);
+            when(mModel.getTabAt(i).isHidden()).thenReturn(tabIndex != i);
         }
         mModel.setIndex(tabIndex);
         mStripLayoutHelper.setTabModel(mModel, null);

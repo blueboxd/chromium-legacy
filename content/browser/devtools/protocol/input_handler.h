@@ -149,7 +149,6 @@ class InputHandler : public DevToolsDomainHandler, public Input::Backend {
   SyntheticPointerActionParams PrepareSyntheticPointerActionParams(
       SyntheticPointerActionParams::PointerActionType pointer_action_type,
       int id,
-      const std::string& button_name,
       double x,
       double y,
       int key_modifiers,

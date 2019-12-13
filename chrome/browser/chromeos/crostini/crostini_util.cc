@@ -96,7 +96,7 @@ void OnCrostiniRestarted(Profile* profile,
                          base::OnceClosure callback,
                          crostini::CrostiniResult result) {
   if (ShouldPromptContainerUpgrade()) {
-    chromeos::CrostiniUpgraderDialog::Show(profile, std::move(callback));
+    chromeos::CrostiniUpgraderDialog::Show(std::move(callback));
     return;
   }
   if (result != crostini::CrostiniResult::SUCCESS) {

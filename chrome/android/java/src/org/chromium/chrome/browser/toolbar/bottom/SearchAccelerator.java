@@ -11,15 +11,12 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.ThemeColorProvider.ThemeColorObserver;
 import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider.IncognitoStateObserver;
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
@@ -42,9 +39,6 @@ class SearchAccelerator extends ChromeImageButton
     /** A provider that notifies when incognito mode is entered or exited. */
     private IncognitoStateProvider mIncognitoStateProvider;
 
-    /** The search accelerator text label. */
-    private TextView mLabel;
-
     /** The wrapper View that contains the search accelerator and the label. */
     private View mWrapper;
 
@@ -56,19 +50,6 @@ class SearchAccelerator extends ChromeImageButton
         mBackground = ApiCompatibilityUtils.getDrawable(mResources, R.drawable.ntp_search_box);
         mBackground.mutate();
         setBackground(mBackground);
-    }
-
-    /**
-     * @param wrapper The wrapping View of this button.
-     */
-    public void setWrapperView(ViewGroup wrapper) {
-        mWrapper = wrapper;
-        mLabel = mWrapper.findViewById(R.id.search_accelerator_label);
-        if (FeatureUtilities.isLabeledBottomToolbarEnabled()) {
-            mLabel.setVisibility(View.VISIBLE);
-        } else {
-            mWrapper.setBackground(null);
-        }
     }
 
     @Override
@@ -112,7 +93,6 @@ class SearchAccelerator extends ChromeImageButton
     @Override
     public void onTintChanged(ColorStateList tint, boolean useLight) {
         ApiCompatibilityUtils.setImageTintList(this, tint);
-        if (mLabel != null) mLabel.setTextColor(tint);
     }
 
     @Override

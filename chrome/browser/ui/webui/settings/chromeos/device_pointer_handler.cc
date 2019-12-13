@@ -30,7 +30,6 @@ void PointerHandler::OnJavascriptAllowed() {
   }
 
   pointer_device_observer_->AddObserver(this);
-  pointer_device_observer_->CheckDevices();
 }
 
 void PointerHandler::OnJavascriptDisallowed() {
@@ -47,6 +46,9 @@ void PointerHandler::MouseExists(bool exists) {
 
 void PointerHandler::HandleInitialize(const base::ListValue* args) {
   AllowJavascript();
+
+  // CheckDevices() results in TouchpadExists() and MouseExists() being called.
+  pointer_device_observer_->CheckDevices();
 }
 
 }  // namespace settings

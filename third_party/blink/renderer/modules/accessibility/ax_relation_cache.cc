@@ -143,6 +143,32 @@ void AXRelationCache::MapOwnedChildren(const AXObject* owner,
   }
 }
 
+void AXRelationCache::UpdateAriaOwnsFromAttrAssociatedElements(
+    const AXObject* owner,
+    const HeapVector<Member<Element>>& attr_associated_elements,
+    HeapVector<Member<AXObject>>& validated_owned_children_result) {
+  // attr-associated elements have already had their scope validated, but they
+  // need to be further validated to determine if they introduce a cycle or are
+  // already owned by another element.
+  Vector<String> owned_id_vector;
+  for (const auto& element : attr_associated_elements) {
+    AXObject* child = GetOrCreate(element);
+
+    // TODO(meredithl): Determine how to update reverse relations for elements
+    // without an id.
+    if (element->GetIdAttribute())
+      owned_id_vector.push_back(element->GetIdAttribute());
+    if (IsValidOwnsRelation(const_cast<AXObject*>(owner), child))
+      validated_owned_children_result.push_back(GetOrCreate(element));
+  }
+
+  // Track reverse relations for future tree updates.
+  UpdateReverseRelations(owner, owned_id_vector);
+
+  // Update the internal mappings of owned children.
+  UpdateAriaOwnerToChildrenMapping(owner, validated_owned_children_result);
+}
+
 void AXRelationCache::UpdateAriaOwns(
     const AXObject* owner,
     const Vector<String>& owned_id_vector,
@@ -150,7 +176,6 @@ void AXRelationCache::UpdateAriaOwns(
   // Track reverse relations for future tree updates.
   UpdateReverseRelations(owner, owned_id_vector);
 
-  //
   // Figure out the ids that actually correspond to children that exist
   // and that we can legally own (not cyclical, not already owned, etc.) and
   // update the maps and |validated_owned_children_result| based on that.
@@ -167,11 +192,20 @@ void AXRelationCache::UpdateAriaOwns(
   for (const String& id_name : owned_id_vector) {
     Element* element = scope.getElementById(AtomicString(id_name));
     AXObject* child = GetOrCreate(element);
-    if (IsValidOwnsRelation(const_cast<AXObject*>(owner), child)) {
-      validated_owned_child_axids.push_back(child->AXObjectID());
+    if (IsValidOwnsRelation(const_cast<AXObject*>(owner), child))
       validated_owned_children_result.push_back(child);
-    }
   }
+
+  // Update the internal validated mapping of owned children.
+  UpdateAriaOwnerToChildrenMapping(owner, validated_owned_children_result);
+}
+
+void AXRelationCache::UpdateAriaOwnerToChildrenMapping(
+    const AXObject* owner,
+    HeapVector<Member<AXObject>>& validated_owned_children_result) {
+  Vector<AXID> validated_owned_child_axids;
+  for (auto& child : validated_owned_children_result)
+    validated_owned_child_axids.push_back(child->AXObjectID());
 
   // Compare this to the current list of owned children, and exit early if
   // there are no changes.

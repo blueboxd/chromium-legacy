@@ -7,15 +7,13 @@
 
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
 
-class Profile;
-
 namespace chromeos {
 
 class CrostiniUpgraderUI;
 
 class CrostiniUpgraderDialog : public SystemWebDialogDelegate {
  public:
-  static void Show(Profile* profile, base::OnceClosure launch_closure);
+  static void Show(base::OnceClosure launch_closure);
 
  private:
   explicit CrostiniUpgraderDialog(base::OnceClosure launch_closure);

@@ -21,8 +21,7 @@ GURL GetUrl() {
 
 namespace chromeos {
 
-void CrostiniUpgraderDialog::Show(Profile* profile,
-                                  base::OnceClosure launch_closure) {
+void CrostiniUpgraderDialog::Show(base::OnceClosure launch_closure) {
   auto* instance = SystemWebDialogDelegate::FindInstance(GetUrl().spec());
   if (instance) {
     instance->Focus();

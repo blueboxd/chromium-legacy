@@ -481,7 +481,7 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener {
                             mBottomSheetObserver = new EmptyBottomSheetObserver() {
                                 @Override
                                 public void onSheetStateChanged(int sheetState) {
-                                    if (((TabImpl) mTab).isHidden()) return;
+                                    if (mTab.isHidden()) return;
                                     mInfoBarContainerView.setVisibility(
                                             sheetState == BottomSheetController.SheetState.FULL
                                                     ? View.INVISIBLE

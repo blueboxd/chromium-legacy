@@ -89,7 +89,7 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
 
         @Override
         public void onDestroyed(Tab tab) {
-            if (((TabImpl) tab).isClosing() || !isInitiatorTabAlive()) {
+            if (tab.isClosing() || !isInitiatorTabAlive()) {
                 mStatus = Status.DESTROYED;
                 if (mActivity != null) mActivity.finish();
             }

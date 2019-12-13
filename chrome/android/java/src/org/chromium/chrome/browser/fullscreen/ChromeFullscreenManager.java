@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.tab.TabAttributes;
 import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
 import org.chromium.chrome.browser.tab.TabBrowserControlsOffsetHelper;
 import org.chromium.chrome.browser.tab.TabHidingType;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -786,7 +785,7 @@ public class ChromeFullscreenManager extends FullscreenManager
 
         Tab tab = getTab();
         if (tab != null) {
-            if (((TabImpl) tab).isInitialized()) {
+            if (tab.isInitialized()) {
                 if (offsetOverridden()) return true;
             } else {
                 assert false : "Accessing a destroyed tab, setTab should have been called";

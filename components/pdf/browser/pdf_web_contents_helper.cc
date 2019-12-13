@@ -101,6 +101,12 @@ void PDFWebContentsHelper::DidScroll() {
     end.SetEdgeEnd(ConvertToRoot(gfx::PointF(
         selection_right_.x(), selection_right_.y() + selection_right_height_)));
 
+    // TouchSelectionControllerClientAura needs these visible edges of selection
+    // to show the quick menu and context menu. Set the visible edges by the
+    // edges of |start| and |end|.
+    start.SetVisibleEdge(start.edge_start(), start.edge_end());
+    end.SetVisibleEdge(end.edge_start(), end.edge_end());
+
     // Don't do left/right comparison after setting type.
     // TODO(wjmaclean): When PDFium supports editing, we'll need to detect
     // start == end as *either* no selection, or an insertion point.

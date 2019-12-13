@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_UPGRADER_H_
 
 #include "base/callback_forward.h"
+#include "chrome/browser/chromeos/crostini/crostini_export_import_status_tracker.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_upgrader_ui_delegate.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -32,8 +33,11 @@ class CrostiniUpgrader : public KeyedService,
   // CrostiniUpgraderUIDelegate:
   void AddObserver(CrostiniUpgraderUIObserver* observer) override;
   void RemoveObserver(CrostiniUpgraderUIObserver* observer) override;
-  void Backup() override;
+  void Backup(const ContainerId& container_id,
+              content::WebContents* web_contents) override;
   void Upgrade(const ContainerId& container_id) override;
+  void Restore(const ContainerId& container_id,
+               content::WebContents* web_contents) override;
   void Cancel() override;
   void CancelBeforeStart() override;
 
@@ -49,7 +53,46 @@ class CrostiniUpgrader : public KeyedService,
  private:
   void OnCancel(CrostiniResult result);
   void OnBackup(CrostiniResult result);
+  void OnBackupProgress(int progress_percent);
   void OnUpgrade(CrostiniResult result);
+  void OnRestore(CrostiniResult result);
+  void OnRestoreProgress(int progress_percent);
+
+  class StatusTracker : public CrostiniExportImportStatusTracker {
+   public:
+    explicit StatusTracker(base::WeakPtr<CrostiniUpgrader> upgrader,
+                           ExportImportType type,
+                           base::FilePath path);
+
+    // CrostiniExportImportStatusTracker:
+    void SetStatusRunningUI(int progress_percent) override;
+    void SetStatusCancellingUI() override {}
+    void SetStatusDoneUI() override;
+    void SetStatusCancelledUI() override;
+    void SetStatusFailedWithMessageUI(Status status,
+                                      const base::string16& message) override;
+
+   protected:
+    ~StatusTracker() override;
+
+   private:
+    base::WeakPtr<CrostiniUpgrader> upgrader_;
+  };
+  friend class StatusTracker;
+
+  class TrackerFactory
+      : public CrostiniExportImportStatusTracker::TrackerFactory {
+   public:
+    explicit TrackerFactory(base::WeakPtr<CrostiniUpgrader> upgrader);
+    ~TrackerFactory() override;
+
+    scoped_refptr<CrostiniExportImportStatusTracker> Create(
+        ExportImportType type,
+        base::FilePath path) override;
+
+   private:
+    base::WeakPtr<CrostiniUpgrader> upgrader_;
+  };
 
   Profile* profile_;
   ContainerId container_id_;

@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelper;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.TabWebContentsObserver;
@@ -306,7 +305,7 @@ public class ChromeTabUtils {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // If a tab is hidden, don't wait for interactivity. See note in
             // TabPageInteractableObserver.
-            if (tab.isUserInteractable() || ((TabImpl) tab).isHidden()) {
+            if (tab.isUserInteractable() || tab.isHidden()) {
                 interactableCallback.notifyCalled();
                 return;
             }

@@ -5484,9 +5484,6 @@ if (!is_android) {
       "../browser/apps/platform_apps/app_window_interactive_uitest.cc",
       "../browser/apps/platform_apps/app_window_interactive_uitest_base.cc",
       "../browser/apps/platform_apps/app_window_interactive_uitest_base.h",
-      "../browser/autofill/autofill_interactive_uitest.cc",
-      "../browser/autofill/autofill_uitest.cc",
-      "../browser/autofill/autofill_uitest.h",
       "../browser/browser_keyevents_browsertest.cc",
       "../browser/devtools/devtools_sanity_interactive_browsertest.cc",
       "../browser/extensions/api/extension_action/browser_action_interactive_test.cc",
@@ -5569,6 +5566,16 @@ if (!is_android) {
       "base/window_contents_as_string_win.h",
       "ppapi/ppapi_interactive_browsertest.cc",
     ]
+
+    # TODO(https://crbug.com/967588): This suite of autofill tests flakily
+    # timeout on Windows 7.
+    if (!is_win) {
+      sources += [
+        "../browser/autofill/autofill_interactive_uitest.cc",
+        "../browser/autofill/autofill_uitest.cc",
+        "../browser/autofill/autofill_uitest.h",
+      ]
+    }
 
     if (is_win && use_aura) {
       sources += [ "../browser/ui/views/autofill/autofill_accessibility_win_browsertest.cc" ]

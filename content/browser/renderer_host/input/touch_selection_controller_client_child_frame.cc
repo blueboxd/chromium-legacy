@@ -46,9 +46,19 @@ void TouchSelectionControllerClientChildFrame::
   transformed_selection_start.SetEdge(
       rwhv_->TransformPointToRootCoordSpaceF(selection_start_.edge_start()),
       rwhv_->TransformPointToRootCoordSpaceF(selection_start_.edge_end()));
+  transformed_selection_start.SetVisibleEdge(
+      rwhv_->TransformPointToRootCoordSpaceF(
+          selection_start_.visible_edge_start()),
+      rwhv_->TransformPointToRootCoordSpaceF(
+          selection_start_.visible_edge_end()));
   transformed_selection_end.SetEdge(
       rwhv_->TransformPointToRootCoordSpaceF(selection_end_.edge_start()),
       rwhv_->TransformPointToRootCoordSpaceF(selection_end_.edge_end()));
+  transformed_selection_end.SetVisibleEdge(
+      rwhv_->TransformPointToRootCoordSpaceF(
+          selection_end_.visible_edge_start()),
+      rwhv_->TransformPointToRootCoordSpaceF(
+          selection_end_.visible_edge_end()));
 
   manager_->UpdateClientSelectionBounds(transformed_selection_start,
                                         transformed_selection_end, this, this);

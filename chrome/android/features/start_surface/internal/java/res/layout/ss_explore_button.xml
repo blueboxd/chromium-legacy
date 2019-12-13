@@ -12,6 +12,8 @@
     <org.chromium.ui.widget.ChromeImageView
         android:id="@+id/ss_explore_button"
         style="@style/SplitToolbarButton"
+        android:clickable="false"
+        android:importantForAccessibility="no"
         android:src="@drawable/ic_explore" />
     <TextView
         android:id="@+id/ss_explore_button_label"

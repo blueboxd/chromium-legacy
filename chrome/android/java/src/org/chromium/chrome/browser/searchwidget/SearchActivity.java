@@ -38,7 +38,6 @@ import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -299,7 +298,7 @@ public class SearchActivity extends AsyncInitializationActivity
 
     @Override
     protected void onDestroy() {
-        if (mTab != null && ((TabImpl) mTab).isInitialized()) ((TabImpl) mTab).destroy();
+        if (mTab != null && mTab.isInitialized()) mTab.destroy();
         super.onDestroy();
     }
 

@@ -36,50 +36,19 @@
 
             <include layout="@layout/toolbar_space" />
 
-            <LinearLayout
-                android:layout_width="72dp"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:id="@+id/new_tab_button_wrapper"
-                android:background="?attr/selectableItemBackground"
-                android:layout_gravity="top"
-                android:layout_marginTop="6dp"
-                android:contentDescription="@string/accessibility_toolbar_btn_new_tab" >
-
-                <org.chromium.chrome.browser.toolbar.bottom.BottomToolbarNewTabButton
-                    android:id="@+id/tab_switcher_new_tab_button"
-                    android:layout_width="@dimen/search_accelerator_height"
-                    android:layout_height="@dimen/search_accelerator_height"
-                    android:layout_gravity="center"
-                    android:paddingTop="@dimen/search_accelerator_height_padding"
-                    android:paddingBottom="@dimen/search_accelerator_height_padding"
-                    android:importantForAccessibility="no"
-                    android:clickable="false" />
-
-                <TextView
-                    android:id="@+id/new_tab_button_label"
-                    style="@style/BottomToolbarLabel"
-                    android:paddingTop="0dp"
-                    android:text="@string/accessibility_toolbar_btn_new_tab" />
-
-            </LinearLayout>
+            <org.chromium.chrome.browser.toolbar.bottom.BottomToolbarNewTabButton
+                android:id="@+id/tab_switcher_new_tab_button"
+                android:layout_width="@dimen/search_accelerator_height"
+                android:layout_height="@dimen/search_accelerator_height"
+                android:layout_gravity="center"
+                android:contentDescription="@string/accessibility_toolbar_btn_new_tab"
+                android:paddingTop="@dimen/search_accelerator_height_padding"
+                android:paddingBottom="@dimen/search_accelerator_height_padding" />
 
             <include layout="@layout/toolbar_space" />
 
-            <LinearLayout
-                android:id="@+id/labeled_menu_button_wrapper"
-                style="@style/BottomToolbarButtonWrapper"
-                android:contentDescription="@string/accessibility_toolbar_btn_menu" >
-
-                <include layout="@layout/bottom_toolbar_menu_button"
-                    style="@style/SplitToolbarButton" />
-
-                <TextView
-                    android:id="@+id/menu_button_label"
-                    style="@style/BottomToolbarLabel"
-                    android:text="@string/more" />
-
-            </LinearLayout>
+            <include layout="@layout/bottom_toolbar_menu_button"
+                style="@style/SplitToolbarButton" />
 
         </LinearLayout>
 

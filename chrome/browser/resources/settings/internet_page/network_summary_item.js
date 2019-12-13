@@ -326,6 +326,31 @@ Polymer({
   },
 
   /**
+   * @param {!OncMojo.NetworkStateProperties} activeNetworkState
+   * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
+   * @param {!Array<!OncMojo.NetworkStateProperties>} networkStateList
+   * @return {boolean}
+   * @private
+   */
+  isItemActionable_: function(
+      activeNetworkState, deviceState, networkStateList) {
+    // The boolean logic here matches onShowDetailsTap_ method that handles the
+    // item click event.
+
+    if (!this.deviceIsEnabled_(this.deviceState)) {
+      // When device is disabled, tapping the item flips the enable toggle. So
+      // the item is actionable only when the toggle is enabled.
+      return this.enableToggleIsEnabled_(this.deviceState);
+    }
+
+    // Item is actionable if tapping should show either networks subpage or the
+    // network details page.
+    return this.shouldShowSubpage_(this.deviceState, this.networkStateList) ||
+        !!(this.activeNetworkState && this.activeNetworkState.guid) ||
+        this.networkStateList.length > 0;
+  },
+
+  /**
    * Event triggered when the enable button is toggled.
    * @param {!Event} event
    * @private

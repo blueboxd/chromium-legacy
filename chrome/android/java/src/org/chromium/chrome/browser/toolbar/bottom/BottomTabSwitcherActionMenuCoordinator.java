@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.toolbar.bottom;
 
-import android.content.res.Resources;
 import android.view.View;
 import android.view.View.OnLongClickListener;
 
@@ -41,11 +40,11 @@ public class BottomTabSwitcherActionMenuCoordinator extends TabSwitcherActionMen
         rectProvider.setIncludePadding(true);
 
         // space between the icon and the border of the wrapper
-        Resources resources = anchorView.getResources();
-        int paddingLeft =
-                resources.getDimensionPixelOffset(R.dimen.bottom_toolbar_button_wrapper_width)
-                - resources.getDimensionPixelOffset(R.dimen.split_toolbar_button_width);
-        rectProvider.setInsetPx(paddingLeft, 0, 0, 0);
+        int toolbarHeight = anchorView.getHeight();
+        int iconHeight =
+                anchorView.getResources().getDimensionPixelSize(R.dimen.toolbar_icon_height);
+        int padding = (toolbarHeight - iconHeight) / 2;
+        rectProvider.setInsetPx(0, padding, padding / 2, 0);
 
         return rectProvider;
     }

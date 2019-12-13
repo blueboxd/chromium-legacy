@@ -12,6 +12,8 @@
     <org.chromium.ui.widget.ChromeImageView
         android:id="@+id/ss_home_button"
         style="@style/SplitToolbarButton"
+        android:clickable="false"
+        android:importantForAccessibility="no"
         android:src="@drawable/ic_home" />
     <TextView
         android:id="@+id/ss_home_button_label"

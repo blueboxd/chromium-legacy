@@ -278,7 +278,7 @@
     <dimen name="toolbar_identity_disc_size_duet">32dp</dimen>
 
     <!-- Bottom Toolbar -->
-    <dimen name="split_toolbar_button_height">24dp</dimen>
+    <dimen name="split_toolbar_button_height">56dp</dimen>
     <dimen name="split_toolbar_button_width">@dimen/split_toolbar_button_height</dimen>
     <dimen name="bottom_toolbar_button_wrapper_width">56dp</dimen>
 
@@ -329,6 +329,7 @@
     <dimen name="search_accelerator_width">64dp</dimen>
     <dimen name="search_accelerator_height">36dp</dimen>
     <dimen name="search_accelerator_height_padding">6dp</dimen>
+    <dimen name="search_accelerator_width_margin">4dp</dimen>
 
     <!-- Modern toolbar dimensions -->
     <dimen name="modern_toolbar_background_size">40dp</dimen>

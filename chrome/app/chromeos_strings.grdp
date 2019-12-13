@@ -3611,6 +3611,9 @@
   <message name="IDS_CROSTINI_UPGRADER_LAUNCH_BUTTON" desc="Label for the button in the Crostini upgrader dialog to launch the Linux terminal after upgrading Linux.">
     Launch
   </message>
+    <message name="IDS_CROSTINI_UPGRADER_RESTORE_BUTTON" desc="Label for the button in the Crostini upgrader dialog to restore a backup if there was an error upgrading Linux.">
+    Restore
+  </message>
   <message name="IDS_CROSTINI_UPGRADER_BACKING_UP_TITLE" desc="Title of the Crostini upgrader when the container backup is in progress.">
     Backing up Linux apps and files
   </message>
@@ -3635,6 +3638,9 @@
   <message name="IDS_CROSTINI_UPGRADER_SUCCEEDED" desc="Text shown by the Crostini upgrader when the upgrade is finished successfully.">
     Linux has been successfully upgraded.
   </message>
+  <message name="IDS_CROSTINI_UPGRADER_RESTORE_TITLE" desc="Title of the Crostini upgrader when the container upgrade fails and restore of a backup is in progress.">
+    Restoring Linux
+  </message>
   <message name="IDS_CROSTINI_UPGRADER_ERROR_TITLE" desc="Title of the Crostini upgrader when an error occurs.">
     Error upgrading Linux
   </message>
@@ -3649,6 +3655,13 @@
   </message>
   <message name="IDS_CROSTINI_UPGRADER_BACKUP_CHANGE_LOCATION" desc="Text shown in the Crostini upgrader dialog next to the backup checkbox with a link enabling the user to change the location to which files are backed up.">
     Change location
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_OFFER_RESTORE_MESSAGE" desc="Text shown in the Crostini upgrader dialog when the upgrade has
+    failed and the previous container backup can be restored.">
+    There was an while error upgrading Linux. We'll restore the container using your backup.
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_RESTORE_MESSAGE" desc="Title of the Crostini upgrader when the container upgrade fails and restore of a backup is in progress.">
+    Linux files and apps are being restored to their backed up state.
   </message>
   <message name="IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_LABEL" translateable="false" desc="Label for dialog warning user of unavailable Linux container until software configurations are applied.">
     Configuring Linux

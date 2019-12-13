@@ -14,7 +14,6 @@ import org.chromium.chrome.browser.ntp.RecentlyClosedBridge;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.TabState;
@@ -107,7 +106,7 @@ public class TabModelImpl extends TabModelJniBridge {
     @Override
     public void destroy() {
         for (Tab tab : mTabs) {
-            if (((TabImpl) tab).isInitialized()) ((TabImpl) tab).destroy();
+            if (tab.isInitialized()) tab.destroy();
         }
 
         mRewoundList.destroy();
@@ -230,13 +229,13 @@ public class TabModelImpl extends TabModelJniBridge {
 
     @Override
     public Tab getNextTabIfClosed(int id) {
-        TabImpl tabToClose = (TabImpl) TabModelUtils.getTabById(this, id);
-        TabImpl currentTab = (TabImpl) TabModelUtils.getCurrentTab(this);
+        Tab tabToClose = TabModelUtils.getTabById(this, id);
+        Tab currentTab = TabModelUtils.getCurrentTab(this);
         if (tabToClose == null) return currentTab;
 
         int closingTabIndex = indexOf(tabToClose);
-        TabImpl adjacentTab = (TabImpl) getTabAt((closingTabIndex == 0) ? 1 : closingTabIndex - 1);
-        TabImpl parentTab = (TabImpl) findTabInAllTabModels(tabToClose.getParentId());
+        Tab adjacentTab = getTabAt((closingTabIndex == 0) ? 1 : closingTabIndex - 1);
+        Tab parentTab = findTabInAllTabModels(tabToClose.getParentId());
 
         // Determine which tab to select next according to these rules:
         //   * If closing a background tab, keep the current tab selected.
@@ -258,7 +257,7 @@ public class TabModelImpl extends TabModelJniBridge {
             nextTab = TabModelUtils.getCurrentTab(mModelDelegate.getModel(false));
         }
 
-        return nextTab != null && ((TabImpl) nextTab).isClosing() ? null : nextTab;
+        return nextTab != null && nextTab.isClosing() ? null : nextTab;
     }
 
     @Override
@@ -282,7 +281,7 @@ public class TabModelImpl extends TabModelJniBridge {
         Tab tab = mRewoundList.getPendingRewindTab(tabId);
         if (tab == null) return;
 
-        ((TabImpl) tab).setClosing(false);
+        tab.setClosing(false);
 
         // Find a valid previous tab entry so we know what tab to insert after.  With the following
         // example, calling cancelTabClosure(4) would need to know to insert after 2.  So we have to
@@ -399,7 +398,7 @@ public class TabModelImpl extends TabModelJniBridge {
                 assert false : "Tried to close a tab from another model!";
                 continue;
             }
-            ((TabImpl) tab).setClosing(true);
+            tab.setClosing(true);
             closeTab(tab, null, false, false, canUndo, false);
         }
         if (canUndo && supportsPendingClosures()) {
@@ -419,7 +418,7 @@ public class TabModelImpl extends TabModelJniBridge {
         if (uponExit) {
             commitAllTabClosures();
 
-            for (int i = 0; i < getCount(); i++) ((TabImpl) getTabAt(i)).setClosing(true);
+            for (int i = 0; i < getCount(); i++) getTabAt(i).setClosing(true);
             while (getCount() > 0) TabModelUtils.closeTabByIndex(this, 0);
             return;
         }
@@ -429,7 +428,7 @@ public class TabModelImpl extends TabModelJniBridge {
         if (HomepageManager.shouldCloseAppWithZeroTabs()) {
             commitAllTabClosures();
 
-            for (int i = 0; i < getCount(); i++) ((TabImpl) getTabAt(i)).setClosing(true);
+            for (int i = 0; i < getCount(); i++) getTabAt(i).setClosing(true);
             while (getCount() > 0) TabModelUtils.closeTabByIndex(this, 0);
             return;
         }
@@ -455,7 +454,7 @@ public class TabModelImpl extends TabModelJniBridge {
      *                removed from this list.
      */
     public void closeAllTabs(boolean animate, boolean uponExit, boolean canUndo) {
-        for (int i = 0; i < getCount(); i++) ((TabImpl) getTabAt(i)).setClosing(true);
+        for (int i = 0; i < getCount(); i++) getTabAt(i).setClosing(true);
 
         List<Tab> closedTabs = new ArrayList<>();
         while (getCount() > 0) {
@@ -500,7 +499,7 @@ public class TabModelImpl extends TabModelJniBridge {
     private boolean hasValidTab() {
         if (mTabs.size() <= 0) return false;
         for (int i = 0; i < mTabs.size(); i++) {
-            if (!((TabImpl) mTabs.get(i)).isClosing()) return true;
+            if (!mTabs.get(i).isClosing()) return true;
         }
         return false;
     }
@@ -560,7 +559,7 @@ public class TabModelImpl extends TabModelJniBridge {
      */
     private void startTabClosure(
             Tab tab, Tab recommendedNextTab, boolean animate, boolean uponExit, boolean canUndo) {
-        ((TabImpl) tab).setClosing(true);
+        tab.setClosing(true);
 
         for (TabModelObserver obs : mObservers) obs.willCloseTab(tab, animate);
 
@@ -638,7 +637,7 @@ public class TabModelImpl extends TabModelJniBridge {
 
         // Destroy the native tab after the observer notifications have fired, otherwise they risk a
         // use after free or null dereference.
-        ((TabImpl) tab).destroy();
+        tab.destroy();
     }
 
     private class RewoundList implements TabList {
@@ -752,7 +751,7 @@ public class TabModelImpl extends TabModelJniBridge {
          */
         public void destroy() {
             for (Tab tab : mRewoundTabs) {
-                if (((TabImpl) tab).isInitialized()) ((TabImpl) tab).destroy();
+                if (tab.isInitialized()) tab.destroy();
             }
         }
 
@@ -783,7 +782,7 @@ public class TabModelImpl extends TabModelJniBridge {
     public void openNewTab(Tab parent, String url, String initiatorOrigin, String extraHeaders,
             ResourceRequestBody postData, int disposition, boolean persistParentage,
             boolean isRendererInitiated) {
-        if (((TabImpl) parent).isClosing()) return;
+        if (parent.isClosing()) return;
 
         boolean incognito = parent.isIncognito();
         @TabLaunchType

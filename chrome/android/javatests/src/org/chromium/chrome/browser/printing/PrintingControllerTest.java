@@ -29,7 +29,6 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -229,8 +228,7 @@ public class PrintingControllerTest {
             printingController.setPendingPrint(
                     new TabPrinter(currentTab), mockPrintManagerDelegate, -1, -1);
             TabModelUtils.closeCurrentTab(mActivityTestRule.getActivity().getCurrentTabModel());
-            Assert.assertFalse(
-                    "currentTab should be closed already.", ((TabImpl) currentTab).isInitialized());
+            Assert.assertFalse("currentTab should be closed already.", currentTab.isInitialized());
             printingController.startPendingPrint();
         });
     }
@@ -274,8 +272,8 @@ public class PrintingControllerTest {
             TestThreadUtils.runOnUiThreadBlocking(() -> {
                 // Close tab.
                 TabModelUtils.closeCurrentTab(mActivityTestRule.getActivity().getCurrentTabModel());
-                Assert.assertFalse("currentTab should be closed already.",
-                        ((TabImpl) currentTab).isInitialized());
+                Assert.assertFalse(
+                        "currentTab should be closed already.", currentTab.isInitialized());
 
                 final WriteResultCallbackWrapper writeResultCallback =
                         new WriteResultCallbackWrapperMock() {

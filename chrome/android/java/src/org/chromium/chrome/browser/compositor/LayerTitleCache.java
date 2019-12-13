@@ -201,7 +201,7 @@ public class LayerTitleCache implements TitleCache {
     }
 
     private void updateFaviconFromHistory(Tab tab, Bitmap faviconBitmap) {
-        if (!((TabImpl) tab).isInitialized()) return;
+        if (!tab.isInitialized()) return;
 
         int tabId = tab.getId();
         Title title = mTitles.get(tabId);

@@ -11,9 +11,6 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.util.AttributeSet;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.StringRes;
 
@@ -22,7 +19,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.ThemeColorProvider.ThemeColorObserver;
 import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider.IncognitoStateObserver;
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
@@ -45,12 +41,6 @@ class BottomToolbarNewTabButton extends ChromeImageButton
     /** A provider that notifies when the theme color changes.*/
     private ThemeColorProvider mThemeColorProvider;
 
-    /** The new tab button text label. */
-    private TextView mLabel;
-
-    /** The wrapper View that contains the new tab button and the label. */
-    private View mWrapper;
-
     public BottomToolbarNewTabButton(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -62,28 +52,6 @@ class BottomToolbarNewTabButton extends ChromeImageButton
         mBackground = ApiCompatibilityUtils.getDrawable(mResources, R.drawable.ntp_search_box);
         mBackground.mutate();
         setBackground(mBackground);
-    }
-
-    /**
-     * @param wrapper The wrapping View of this button.
-     */
-    public void setWrapperView(ViewGroup wrapper) {
-        mWrapper = wrapper;
-        mLabel = mWrapper.findViewById(R.id.new_tab_button_label);
-        if (FeatureUtilities.isLabeledBottomToolbarEnabled()) {
-            mLabel.setVisibility(View.VISIBLE);
-        } else {
-            mWrapper.setBackground(null);
-        }
-    }
-
-    @Override
-    public void setOnClickListener(OnClickListener listener) {
-        if (mWrapper != null) {
-            mWrapper.setOnClickListener(listener);
-        } else {
-            super.setOnClickListener(listener);
-        }
     }
 
     /**
@@ -129,7 +97,6 @@ class BottomToolbarNewTabButton extends ChromeImageButton
     @Override
     public void onTintChanged(ColorStateList tint, boolean useLight) {
         ApiCompatibilityUtils.setImageTintList(this, tint);
-        if (mLabel != null) mLabel.setTextColor(tint);
         updateBackground();
     }
 

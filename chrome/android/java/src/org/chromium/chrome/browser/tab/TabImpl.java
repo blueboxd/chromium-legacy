@@ -53,7 +53,6 @@ import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.ChildProcessImportance;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.RenderWidgetHostView;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.content_public.common.ResourceRequestBody;
@@ -581,32 +580,14 @@ public class TabImpl implements Tab {
         if (getWebContents() != null) getWebContents().getNavigationController().goForward();
     }
 
-    /**
-     * @return Whether or not this Tab has a live native component.  This will be true prior to
-     *         {@link #initializeNative()} being called or after {@link #destroy()}.
-     */
+    // TabLifecycle implementation.
+
+    @Override
     public boolean isInitialized() {
         return mNativeTabAndroid != 0;
     }
 
-    /**
-     * @return Whether or not the tab has something valid to render.
-     */
-    public boolean isReady() {
-        if (mNativePage != null) return true;
-        WebContents webContents = getWebContents();
-        if (webContents == null) return false;
-
-        RenderWidgetHostView rwhv = webContents.getRenderWidgetHostView();
-        return rwhv != null && rwhv.isReady();
-    }
-
-    /**
-     * Prepares the tab to be shown. This method is supposed to be called before the tab is
-     * displayed. It restores the ContentView if it is not available after the cold start and
-     * reloads the tab if its renderer has crashed.
-     * @param type Specifies how the tab was selected.
-     */
+    @Override
     public final void show(@TabSelectionType int type) {
         try {
             TraceEvent.begin("Tab.show");
@@ -646,9 +627,7 @@ public class TabImpl implements Tab {
         }
     }
 
-    /**
-     * Triggers the hiding logic for the view backing the tab.
-     */
+    @Override
     public final void hide(@TabHidingType int type) {
         try {
             TraceEvent.begin("Tab.hide");
@@ -664,6 +643,46 @@ public class TabImpl implements Tab {
             for (TabObserver observer : mObservers) observer.onHidden(this, type);
         } finally {
             TraceEvent.end("Tab.hide");
+        }
+    }
+
+    @Override
+    public boolean isClosing() {
+        return mIsClosing;
+    }
+
+    @Override
+    public void setClosing(boolean closing) {
+        mIsClosing = closing;
+        for (TabObserver observer : mObservers) observer.onClosingStateChanged(this, closing);
+    }
+
+    @Override
+    public boolean isHidden() {
+        return mIsHidden;
+    }
+
+    @Override
+    public void destroy() {
+        // Update the title before destroying the tab. http://b/5783092
+        updateTitle();
+
+        for (TabObserver observer : mObservers) observer.onDestroyed(this);
+        mObservers.clear();
+
+        mUserDataHost.destroy();
+        hideNativePage(false, null);
+        destroyWebContents(true);
+
+        TabImportanceManager.tabDestroyed(this);
+
+        // Destroys the native tab after destroying the ContentView but before destroying the
+        // InfoBarContainer. The native tab should be destroyed before the infobar container as
+        // destroying the native tab cleanups up any remaining infobars. The infobar container
+        // expects all infobars to be cleaned up before its own destruction.
+        if (mNativeTabAndroid != 0) {
+            TabImplJni.get().destroy(mNativeTabAndroid, TabImpl.this);
+            assert mNativeTabAndroid == 0;
         }
     }
 
@@ -777,28 +796,6 @@ public class TabImpl implements Tab {
     }
 
     /**
-     * @return Whether or not the tab is in the closing process.
-     */
-    public boolean isClosing() {
-        return mIsClosing;
-    }
-
-    /**
-     * @param closing Whether or not the tab is in the closing process.
-     */
-    public void setClosing(boolean closing) {
-        mIsClosing = closing;
-        for (TabObserver observer : mObservers) observer.onClosingStateChanged(this, closing);
-    }
-
-    /**
-     * @return Whether or not the tab is hidden.
-     */
-    public boolean isHidden() {
-        return mIsHidden;
-    }
-
-    /**
      * Update whether or not the current native tab and/or web contents are
      * currently visible (from an accessibility perspective), or whether
      * they're obscured by another view.
@@ -830,35 +827,6 @@ public class TabImpl implements Tab {
     public void notifyContextualActionBarVisibilityChanged(boolean show) {
         for (TabObserver observer : mObservers) {
             observer.onContextualActionBarVisibilityChanged(this, show);
-        }
-    }
-
-    /**
-     * Cleans up all internal state, destroying any {@link NativePage} or {@link WebContents}
-     * currently associated with this {@link Tab}.  This also destroys the native counterpart
-     * to this class, which means that all subclasses should erase their native pointers after
-     * this method is called.  Once this call is made this {@link Tab} should no longer be used.
-     */
-    public void destroy() {
-        // Update the title before destroying the tab. http://b/5783092
-        updateTitle();
-
-        for (TabObserver observer : mObservers) observer.onDestroyed(this);
-        mObservers.clear();
-
-        mUserDataHost.destroy();
-        hideNativePage(false, null);
-        destroyWebContents(true);
-
-        TabImportanceManager.tabDestroyed(this);
-
-        // Destroys the native tab after destroying the ContentView but before destroying the
-        // InfoBarContainer. The native tab should be destroyed before the infobar container as
-        // destroying the native tab cleanups up any remaining infobars. The infobar container
-        // expects all infobars to be cleaned up before its own destruction.
-        if (mNativeTabAndroid != 0) {
-            TabImplJni.get().destroy(mNativeTabAndroid, TabImpl.this);
-            assert mNativeTabAndroid == 0;
         }
     }
 

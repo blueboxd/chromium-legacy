@@ -104,11 +104,10 @@ public class TabTest {
     @Feature({"Tab"})
     public void testTabRestoredIfKilledWhileActivityStopped() throws Exception {
         // Ensure the tab is showing before stopping the activity.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> ((TabImpl) mTab).show(TabSelectionType.FROM_NEW));
+        TestThreadUtils.runOnUiThreadBlocking(() -> mTab.show(TabSelectionType.FROM_NEW));
 
         Assert.assertFalse(mTab.needsReload());
-        Assert.assertFalse(((TabImpl) mTab).isHidden());
+        Assert.assertFalse(mTab.isHidden());
         Assert.assertFalse(isShowingSadTab());
 
         // Stop the activity and simulate a killed renderer.
@@ -119,7 +118,7 @@ public class TabTest {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return ((TabImpl) mTab).isHidden();
+                return mTab.isHidden();
             }
         });
         Assert.assertTrue(mTab.needsReload());
@@ -131,7 +130,7 @@ public class TabTest {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return !((TabImpl) mTab).isHidden();
+                return !mTab.isHidden();
             }
         });
         Assert.assertFalse(mTab.needsReload());
@@ -142,9 +141,8 @@ public class TabTest {
     @SmallTest
     @Feature({"Tab"})
     public void testTabSecurityLevel() {
-        TestThreadUtils.runOnUiThreadBlocking(
-                (Runnable) ()
-                        -> Assert.assertEquals(
-                                ConnectionSecurityLevel.NONE, ((TabImpl) mTab).getSecurityLevel()));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals(ConnectionSecurityLevel.NONE, ((TabImpl) mTab).getSecurityLevel());
+        });
     }
 }

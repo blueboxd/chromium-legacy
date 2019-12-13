@@ -1688,33 +1688,40 @@ String AXObject::AriaTextAlternative(bool recursive,
       name_sources->back().type = name_from;
     }
 
-    const AtomicString& aria_labelledby = GetAttribute(attr);
-    if (!aria_labelledby.IsNull()) {
-      if (name_sources)
-        name_sources->back().attribute_value = aria_labelledby;
-
-      // Operate on a copy of |visited| so that if |nameSources| is not null,
-      // the set of visited objects is preserved unmodified for future
-      // calculations.
-      AXObjectSet visited_copy = visited;
+    Element* element = GetElement();
+    if (element) {
+      HeapVector<Member<Element>> elements_from_attribute;
       Vector<String> ids;
-      text_alternative =
-          TextFromAriaLabelledby(visited_copy, related_objects, ids);
-      if (!ids.IsEmpty())
-        AXObjectCache().UpdateReverseRelations(this, ids);
-      if (!text_alternative.IsNull()) {
-        if (name_sources) {
-          NameSource& source = name_sources->back();
-          source.type = name_from;
-          source.related_objects = *related_objects;
-          source.text = text_alternative;
-          *found_text_alternative = true;
-        } else {
-          *found_text_alternative = true;
-          return text_alternative;
+      ElementsFromAttribute(elements_from_attribute, attr, ids);
+
+      const AtomicString& aria_labelledby = GetAttribute(attr);
+
+      if (!aria_labelledby.IsNull()) {
+        if (name_sources)
+          name_sources->back().attribute_value = aria_labelledby;
+
+        // Operate on a copy of |visited| so that if |name_sources| is not
+        // null, the set of visited objects is preserved unmodified for future
+        // calculations.
+        AXObjectSet visited_copy = visited;
+        text_alternative = TextFromElements(
+            true, visited, elements_from_attribute, related_objects);
+        if (!ids.IsEmpty())
+          AXObjectCache().UpdateReverseRelations(this, ids);
+        if (!text_alternative.IsNull()) {
+          if (name_sources) {
+            NameSource& source = name_sources->back();
+            source.type = name_from;
+            source.related_objects = *related_objects;
+            source.text = text_alternative;
+            *found_text_alternative = true;
+          } else {
+            *found_text_alternative = true;
+            return text_alternative;
+          }
+        } else if (name_sources) {
+          name_sources->back().invalid = true;
         }
-      } else if (name_sources) {
-        name_sources->back().invalid = true;
       }
     }
   }
@@ -1796,15 +1803,22 @@ void AXObject::TokenVectorFromAttribute(Vector<String>& tokens,
 void AXObject::ElementsFromAttribute(HeapVector<Member<Element>>& elements,
                                      const QualifiedName& attribute,
                                      Vector<String>& ids) const {
+  // We compute the attr-associated elements, which are either explicitly set
+  // element references set via the IDL, or computed from the content attribute.
   TokenVectorFromAttribute(ids, attribute);
-  if (ids.IsEmpty())
+  Element* element = GetElement();
+  if (!element)
     return;
 
-  TreeScope& scope = GetNode()->GetTreeScope();
-  for (const auto& id : ids) {
-    if (Element* id_element = scope.getElementById(AtomicString(id)))
-      elements.push_back(id_element);
-  }
+  bool attr_associated_elements_are_null = true;
+  HeapVector<Member<Element>> attr_associated_elements =
+      element->GetElementArrayAttribute(attribute,
+                                        attr_associated_elements_are_null);
+  if (attr_associated_elements_are_null)
+    return;
+
+  for (const auto& element : attr_associated_elements)
+    elements.push_back(element);
 }
 
 void AXObject::AriaLabelledbyElementVector(

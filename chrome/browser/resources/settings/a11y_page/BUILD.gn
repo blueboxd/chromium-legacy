@@ -44,6 +44,7 @@ js_library("manage_a11y_page") {
   deps = [
     "..:route",
     "..:route_origin_behavior",
+    "../device_page:device_page_browser_proxy",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:web_ui_listener_behavior",
   ]

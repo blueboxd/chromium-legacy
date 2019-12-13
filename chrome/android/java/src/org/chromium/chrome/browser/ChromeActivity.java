@@ -800,8 +800,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         Tab tab = getActivityTab();
         if (hasFocus) {
             if (tab != null) {
-                if (((TabImpl) tab).isHidden()) {
-                    ((TabImpl) tab).show(TabSelectionType.FROM_USER);
+                if (tab.isHidden()) {
+                    tab.show(TabSelectionType.FROM_USER);
                 } else {
                     // The visible Tab's renderer process may have died after the activity was
                     // paused. Ensure that it's restored appropriately.
@@ -813,7 +813,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             boolean stopped = ApplicationStatus.getStateForActivity(this) == ActivityState.STOPPED;
             if (stopped) {
                 VrModuleProvider.getDelegate().onActivityHidden(this);
-                if (tab != null) ((TabImpl) tab).hide(TabHidingType.ACTIVITY_HIDDEN);
+                if (tab != null) tab.hide(TabHidingType.ACTIVITY_HIDDEN);
             }
         }
 
@@ -940,7 +940,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         Tab tab = getActivityTab();
         if (!hasWindowFocus()) {
             VrModuleProvider.getDelegate().onActivityHidden(this);
-            if (tab != null) ((TabImpl) tab).hide(TabHidingType.ACTIVITY_HIDDEN);
+            if (tab != null) tab.hide(TabHidingType.ACTIVITY_HIDDEN);
         }
 
         if (GSAState.getInstance(this).isGsaAvailable() && !SysUtils.isLowEndDevice()) {
@@ -1528,8 +1528,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         bookmarkModel.finishLoadingBookmarkModel(() -> {
             // Gives up the bookmarking if the tab is being destroyed.
-            if (!((TabImpl) tabToBookmark).isClosing()
-                    && ((TabImpl) tabToBookmark).isInitialized()) {
+            if (!tabToBookmark.isClosing() && tabToBookmark.isInitialized()) {
                 // The BookmarkModel will be destroyed by BookmarkUtils#addOrEditBookmark() when
                 // done.
                 BookmarkId newBookmarkId = BookmarkUtils.addOrEditBookmark(bookmarkId,

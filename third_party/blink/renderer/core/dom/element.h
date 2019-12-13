@@ -208,6 +208,14 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void SetFloatingPointAttribute(const QualifiedName& attribute_name,
                                  double value);
 
+  // Returns true if |this| element has attr-associated elements that were set
+  // via the IDL, rather than computed from the content attribute.
+  // See
+  // https://whatpr.org/html/3917/common-dom-interfaces.html#reflecting-content-attributes-in-idl-attributes:element
+  // for more information.
+  // This is only exposed as an implementation detail to AXRelationCache, which
+  // computes aria-owns differently for element reflection.
+  bool HasExplicitlySetAttrAssociatedElements(const QualifiedName& name);
   Element* GetElementAttribute(const QualifiedName& name);
   void SetElementAttribute(const QualifiedName&, Element*);
   HeapVector<Member<Element>> GetElementArrayAttribute(

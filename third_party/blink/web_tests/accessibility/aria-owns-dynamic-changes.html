@@ -17,29 +17,82 @@ test(function(t) {
 
     futureParent.parentElement.appendChild(child);
     assert_equals(axFutureParent.childrenCount, 1, "after appending child");
+    assert_array_equals(futureParent.ariaOwnsElements, [child]);
 
     child.id = "";
     assert_equals(axFutureParent.childrenCount, 0, "after clearing id");
+    assert_equals(futureParent.ariaOwnsElements, null);
 
     child.id = "future_child";
     assert_equals(axFutureParent.childrenCount, 1, "after setting id");
+    assert_array_equals(futureParent.ariaOwnsElements, [child]);
 
     futureParent.setAttribute("aria-owns", "");
     assert_equals(axFutureParent.childrenCount, 0, "after clearing aria-owns");
+    assert_equals(futureParent.ariaOwnsElements, null);
 
     futureParent.setAttribute("aria-owns", "future_child");
     assert_equals(axFutureParent.childrenCount, 1, "after setting aria-oens");
+    assert_array_equals(futureParent.ariaOwnsElements, [child]);
 
     child.style.visibility = 'hidden';
     assert_equals(axFutureParent.childrenCount, 1, "after setting hidden");
     assert_true(axFutureParent.childAtIndex(0).isIgnored);
+    assert_array_equals(futureParent.ariaOwnsElements, [child]);
 
     child.style.visibility = 'visible';
     assert_equals(axFutureParent.childrenCount, 1, "after setting visible");
+    assert_array_equals(futureParent.ariaOwnsElements, [child]);
 
     child.remove();
     assert_equals(axFutureParent.childrenCount, 0);
+    assert_equals(futureParent.ariaOwnsElements, null);
 }, "Aria-owns is dynamically recomputed.");
+</script>
+
+<div class="container">
+  <div id="explicitParent"></div>
+</div>
+
+<script>
+test(function(t) {
+  const axParent = accessibilityController.accessibleElementById("explicitParent");
+  const child = document.createElement("li");
+
+  // Check element reflection before inserting into the DOM.
+  explicitParent.ariaOwnsElements = [child];
+
+  assert_array_equals(explicitParent.ariaOwnsElements, [], "Element is not reflected as was not in valid scope on insertion.");
+  assert_equals(explicitParent.getAttribute("aria-owns"), "", "Content attribute should be set to empty string due to invalid element.");
+  assert_equals(axParent.childrenCount, 0, "Accessible node should have no children.");
+
+
+  // Add the element into the DOM, and set the IDL attribute.
+  explicitParent.parentElement.appendChild(child);
+  explicitParent.ariaOwnsElements = [child];
+
+  assert_array_equals(explicitParent.ariaOwnsElements, [child], "Element reference is reflected, despite the element having no id");
+  assert_equals(explicitParent.getAttribute("aria-owns"), "", "Content attribute is empty string, as element has no id");
+  assert_equals(axParent.childrenCount, 1, "If explicitly set, even without an ID the node should be in the accessibility tree.");
+
+  child.id = "futureExplicitElement";
+  const axChild = accessibilityController.accessibleElementById("futureExplicitElement");
+
+  assert_array_equals(explicitParent.ariaOwnsElements, [child], "Element has the attr associated element now.");
+  assert_equals(explicitParent.getAttribute("aria-owns"), "", "Content attribute reflects an empty string because the id was missing at the time of setting.");
+  assert_equals(axParent.childrenCount, 1, "After inserting child into DOM and explicitly setting it.")
+  assert_equals(axParent.childAtIndex(0), axChild);
+
+  // Remove the explicitly set attr by removing the content attribute.
+  explicitParent.removeAttribute("aria-owns");
+  assert_equals(explicitParent.ariaOwnsElements, null, "Reflected elements should be null since content attribute was removed.");
+  assert_equals(axParent.childrenCount, 0, "Accessible node should have no children since content attribute was removed.");
+
+  // Set the content attribute.
+  explicitParent.setAttribute("aria-owns", "futureExplicitElement");
+  assert_equals(axParent.childrenCount, 1, "Accessible node should be updated to have child since content attribute was set");
+  assert_equals(axParent.childAtIndex(0), axChild);
+}, "Explicitly set elements are reflected in the AXTree");
 </script>
 
 <div class="container">

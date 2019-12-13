@@ -69,7 +69,7 @@ public class BottomToolbarTest {
                 mActivityTestRule.getActivity().getOverviewModeBehavior().overviewVisible());
 
         ViewGroup bottomToolbar = mActivityTestRule.getActivity().findViewById(R.id.bottom_toolbar);
-        View tabSwitcherButton = bottomToolbar.findViewById(R.id.tab_switcher_button_wrapper);
+        View tabSwitcherButton = bottomToolbar.findViewById(R.id.tab_switcher_button);
 
         OverviewModeBehaviorWatcher overviewModeWatcher = new OverviewModeBehaviorWatcher(
                 mActivityTestRule.getActivity().getOverviewModeBehavior(), true, false);

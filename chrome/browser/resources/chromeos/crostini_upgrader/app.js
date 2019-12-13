@@ -23,6 +23,8 @@ const State = {
   BACKUP: 'backup',
   BACKUP_SUCCEEDED: 'backupSucceeded',
   UPGRADING: 'upgrading',
+  OFFER_RESTORE: 'offerRestore',
+  RESTORE: 'restore',
   ERROR: 'error',
   CANCELING: 'canceling',
   SUCCEEDED: 'succeeded',
@@ -53,13 +55,20 @@ Polymer({
     },
 
     /** @private */
-    upgraderProgress_: {
+    upgradeProgress_: {
+      type: Number,
+      value: 0,
+    },
+
+    /** @private */
+    restoreProgress_: {
       type: Number,
     },
 
     /** @private */
     progressMessages_: {
       type: Array,
+      value: [],
     },
 
     /**
@@ -97,6 +106,7 @@ Polymer({
       callbackRouter.onUpgradeProgress.addListener((progressMessages) => {
         assert(this.state_ === State.UPGRADING);
         this.progressMessages_.push(...progressMessages);
+        this.upgradeProgress_ = this.progressMessages_.length;
       }),
       callbackRouter.onUpgradeSucceeded.addListener(() => {
         assert(this.state_ === State.UPGRADING);
@@ -104,6 +114,22 @@ Polymer({
       }),
       callbackRouter.onUpgradeFailed.addListener(() => {
         assert(this.state_ === State.UPGRADING);
+        if (this.backupCheckboxChecked_) {
+          this.state_ = State.OFFER_RESTORE;
+        } else {
+          this.state_ = State.ERROR;
+        }
+      }),
+      callbackRouter.onRestoreProgress.addListener((percent) => {
+        assert(this.state_ === State.RESTORE);
+        this.restoreProgress_ = percent;
+      }),
+      callbackRouter.onRestoreSucceeded.addListener(() => {
+        assert(this.state_ === State.RESTORE);
+        this.state_ = State.SUCCEEDED;
+      }),
+      callbackRouter.onRestoreFailed.addListener(() => {
+        assert(this.state_ === State.RESTORE);
         this.state_ = State.ERROR;
       }),
       callbackRouter.onCanceled.addListener(() => {
@@ -141,6 +167,9 @@ Polymer({
           this.startUpgrade_();
         }
         break;
+      case State.OFFER_RESTORE:
+        this.startRestore_();
+        break;
     }
   },
 
@@ -167,7 +196,6 @@ Polymer({
     }
   },
 
-
   /** @private */
   startBackup_: function() {
     this.state_ = State.BACKUP;
@@ -179,6 +207,13 @@ Polymer({
     this.state_ = State.UPGRADING;
     BrowserProxy.getInstance().handler.upgrade();
   },
+
+  /** @private */
+  startRestore_: function() {
+    this.state_ = State.RESTORE;
+    BrowserProxy.getInstance().handler.restore();
+  },
+
 
   /** @private */
   closeDialog_: function() {
@@ -204,6 +239,7 @@ Polymer({
     switch (state) {
       case State.PROMPT:
       case State.SUCCEEDED:
+      case State.OFFER_RESTORE:
         return true;
     }
     return false;
@@ -217,6 +253,7 @@ Polymer({
   canCancel_: function(state) {
     switch (state) {
       case State.BACKUP:
+      case State.RESTORE:
       case State.BACKUP_SUCCEEDED:
       case State.CANCELING:
         return false;
@@ -243,8 +280,12 @@ Polymer({
       case State.UPGRADING:
         titleId = 'upgradingTitle';
         break;
+      case State.OFFER_RESTORE:
       case State.ERROR:
         titleId = 'errorTitle';
+        break;
+      case State.RESTORE:
+        titleId = 'restoreTitle';
         break;
       case State.CANCELING:
         titleId = 'cancelingTitle';
@@ -271,6 +312,8 @@ Polymer({
         return loadTimeData.getString('cancel');
       case State.SUCCEEDED:
         return loadTimeData.getString('launch');
+      case State.OFFER_RESTORE:
+        return loadTimeData.getString('restore');
     }
     return '';
   },
@@ -308,6 +351,9 @@ Polymer({
         break;
       case State.UPGRADING:
         messageId = 'upgradingMessage';
+        break;
+      case State.RESTORE:
+        messageId = 'restoreMessage';
         break;
       case State.SUCCEEDED:
         messageId = 'succeededMessage';
@@ -348,7 +394,7 @@ Polymer({
   getIllustrationURI_: function(state) {
     switch (state) {
       case State.BACKUP_SUCCEEDED:
-        return 'images/success_illustration.png';
+        return 'images/success_illustration.svg';
       case State.ERROR:
         return 'images/error_illustration.png';
     }

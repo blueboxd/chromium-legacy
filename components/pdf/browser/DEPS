@@ -4,3 +4,9 @@ include_rules = [
   "+ui/touch_selection",
   "+ui/strings",
 ]
+
+specific_include_rules = {
+  'pdf_web_contents_helper_browsertest.cc': [
+    "+content/shell",
+  ],
+}

@@ -41,12 +41,14 @@ void AddStringResources(content::WebUIDataSource* source) {
       {"close", IDS_APP_CLOSE},
       {"cancel", IDS_APP_CANCEL},
       {"launch", IDS_CROSTINI_UPGRADER_LAUNCH_BUTTON},
+      {"restore", IDS_CROSTINI_UPGRADER_RESTORE_BUTTON},
       {"learnMore", IDS_LEARN_MORE},
 
       {"promptTitle", IDS_CROSTINI_UPGRADER_TITLE},
       {"backingUpTitle", IDS_CROSTINI_UPGRADER_BACKING_UP_TITLE},
       {"backupSucceededTitle", IDS_CROSTINI_UPGRADER_BACKUP_SUCCEEDED_TITLE},
       {"upgradingTitle", IDS_CROSTINI_UPGRADER_UPGRADING_TITLE},
+      {"restoreTitle", IDS_CROSTINI_UPGRADER_RESTORE_TITLE},
       {"succeededTitle", IDS_CROSTINI_UPGRADER_SUCCEEDED_TITLE},
       {"cancelingTitle", IDS_CROSTINI_UPGRADER_CANCELING_TITLE},
       {"errorTitle", IDS_CROSTINI_UPGRADER_ERROR_TITLE},
@@ -58,6 +60,8 @@ void AddStringResources(content::WebUIDataSource* source) {
       {"upgradingMessage", IDS_CROSTINI_UPGRADER_UPGRADING},
       {"succeededMessage", IDS_CROSTINI_UPGRADER_SUCCEEDED},
       {"cancelingMessage", IDS_CROSTINI_UPGRADER_CANCELING},
+      {"offerRestoreMessage", IDS_CROSTINI_UPGRADER_OFFER_RESTORE_MESSAGE},
+      {"restoreMessage", IDS_CROSTINI_UPGRADER_RESTORE_MESSAGE},
 
       {"backupCheckboxMessage", IDS_CROSTINI_UPGRADER_BACKUP_CHECKBOX_MESSAGE},
       {"backupChangeLocation", IDS_CROSTINI_UPGRADER_BACKUP_CHANGE_LOCATION},
@@ -83,8 +87,8 @@ CrostiniUpgraderUI::CrostiniUpgraderUI(content::WebUI* web_ui)
 
   source->AddResourcePath("images/linux_illustration.png",
                           IDR_LINUX_ILLUSTRATION);
-  source->AddResourcePath("images/success_illustration.png",
-                          IDR_LINUX_ILLUSTRATION);
+  source->AddResourcePath("images/success_illustration.svg",
+                          IDR_LINUX_SUCCESS_ILLUSTRATION);
   source->AddResourcePath("images/error_illustration.png",
                           IDR_PLUGIN_VM_LAUNCHER_ERROR);
   source->AddResourcePath("app.js", IDR_CROSTINI_UPGRADER_APP_JS);
@@ -92,6 +96,8 @@ CrostiniUpgraderUI::CrostiniUpgraderUI(content::WebUI* web_ui)
                           IDR_CROSTINI_UPGRADER_BROWSER_PROXY_JS);
   source->AddResourcePath("crostini_upgrader.mojom-lite.js",
                           IDR_CROSTINI_UPGRADER_MOJO_LITE_JS);
+  source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
+  source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
   source->SetDefaultResource(IDR_CROSTINI_UPGRADER_INDEX_HTML);
   source->UseStringsJs();
   source->EnableReplaceI18nInJS();
@@ -121,6 +127,7 @@ void CrostiniUpgraderUI::CreatePageHandler(
   DCHECK(pending_page.is_valid());
 
   page_handler_ = std::make_unique<CrostiniUpgraderPageHandler>(
+      web_ui()->GetWebContents(),
       crostini::CrostiniUpgrader::GetForProfile(Profile::FromWebUI(web_ui())),
       std::move(pending_page_handler), std::move(pending_page),
       // Using Unretained(this) because |page_handler_| will not out-live

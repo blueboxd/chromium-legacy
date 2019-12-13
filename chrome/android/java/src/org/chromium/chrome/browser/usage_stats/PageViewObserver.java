@@ -16,7 +16,6 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabSelectionType;
@@ -202,7 +201,7 @@ public class PageViewObserver {
         switchObserverToTab(tab);
         // If the newly active tab is hidden, we don't want to check its URL yet; we'll wait until
         // the onShown event fires.
-        if (mCurrentTab != null && !((TabImpl) tab).isHidden()) {
+        if (mCurrentTab != null && !tab.isHidden()) {
             updateUrl(tab.getUrl());
         }
     }

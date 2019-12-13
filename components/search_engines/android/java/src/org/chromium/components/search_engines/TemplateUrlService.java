@@ -251,6 +251,14 @@ public class TemplateUrlService {
     }
 
     /**
+     * Finds the query in the url, if any. Returns empty if no query is present.
+     */
+    public String getSearchQueryForUrl(String url) {
+        return TemplateUrlServiceJni.get().getSearchQueryForUrl(
+                mNativeTemplateUrlServiceAndroid, TemplateUrlService.this, url);
+    }
+
+    /**
      * Finds the default search engine for the default provider and returns the url query
      * {@link String} for {@code query} with voice input source param set.
      * @param query The {@link String} that represents the text query the search url should
@@ -346,6 +354,8 @@ public class TemplateUrlService {
                 long nativeTemplateUrlServiceAndroid, TemplateUrlService caller);
         String getUrlForSearchQuery(
                 long nativeTemplateUrlServiceAndroid, TemplateUrlService caller, String query);
+        String getSearchQueryForUrl(
+                long nativeTemplateUrlServiceAndroid, TemplateUrlService caller, String url);
         String getUrlForVoiceSearchQuery(
                 long nativeTemplateUrlServiceAndroid, TemplateUrlService caller, String query);
         String getUrlForContextualSearchQuery(long nativeTemplateUrlServiceAndroid,

@@ -210,9 +210,9 @@ Polymer({
    * @private
    */
   onAppKeyUp_: function(e) {
-    if (e.key == 'ArrowRight') {
+    if (e.key === 'ArrowRight') {
       this.changeFocus_(e.currentTarget, 1);
-    } else if (e.key == 'ArrowLeft') {
+    } else if (e.key === 'ArrowLeft') {
       this.changeFocus_(e.currentTarget, -1);
     } else {
       e.currentTarget.classList.add(KEYBOARD_FOCUSED);

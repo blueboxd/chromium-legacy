@@ -886,12 +886,13 @@ class AutocompleteMediator
      * @param suggestion The suggestion to be processed.
      * @return The appropriate suggestion processor for the provided suggestion.
      */
-    private SuggestionProcessor getProcessorForSuggestion(OmniboxSuggestion suggestion) {
+    private SuggestionProcessor getProcessorForSuggestion(
+            OmniboxSuggestion suggestion, boolean isFirst) {
         if (mAnswerSuggestionProcessor.doesProcessSuggestion(suggestion)) {
             return mAnswerSuggestionProcessor;
         } else if (mEntitySuggestionProcessor.doesProcessSuggestion(suggestion)) {
             return mEntitySuggestionProcessor;
-        } else if (mEditUrlProcessor != null
+        } else if (isFirst && mEditUrlProcessor != null
                 && mEditUrlProcessor.doesProcessSuggestion(suggestion)) {
             return mEditUrlProcessor;
         }
@@ -941,7 +942,7 @@ class AutocompleteMediator
         mCurrentModels.clear();
         for (int i = 0; i < newSuggestions.size(); i++) {
             OmniboxSuggestion suggestion = newSuggestions.get(i);
-            SuggestionProcessor processor = getProcessorForSuggestion(suggestion);
+            SuggestionProcessor processor = getProcessorForSuggestion(suggestion, i == 0);
             PropertyModel model = processor.createModelForSuggestion(suggestion);
             model.set(SuggestionCommonProperties.LAYOUT_DIRECTION, mLayoutDirection);
             model.set(SuggestionCommonProperties.USE_DARK_COLORS, mUseDarkColors);

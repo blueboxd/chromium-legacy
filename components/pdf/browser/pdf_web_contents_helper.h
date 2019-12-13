@@ -26,6 +26,7 @@ class WebContents;
 namespace pdf {
 
 class PDFWebContentsHelperClient;
+class PDFWebContentsHelperTest;
 
 // Per-WebContents class to handle PDF messages.
 class PDFWebContentsHelper
@@ -67,6 +68,7 @@ class PDFWebContentsHelper
 
  private:
   friend class content::WebContentsUserData<PDFWebContentsHelper>;
+  friend class PDFWebContentsHelperTest;
 
   PDFWebContentsHelper(content::WebContents* web_contents,
                        std::unique_ptr<PDFWebContentsHelperClient> client);

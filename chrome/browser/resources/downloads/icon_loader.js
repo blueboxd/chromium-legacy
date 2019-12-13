@@ -46,7 +46,7 @@ export class IconLoader {
   finishedLoading_(e) {
     const resolver = assert(this.iconResolvers_[e.currentTarget.src]);
     if (!resolver.isFulfilled) {
-      resolver.resolve(e.type == 'load');
+      resolver.resolve(e.type === 'load');
     }
   }
 }

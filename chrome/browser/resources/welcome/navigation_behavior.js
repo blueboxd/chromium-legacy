@@ -72,7 +72,7 @@ function notifyObservers() {
     // Modules are only attached to DOM if they're for the current route, so
     // as long as the id of an element matches up to the current step, it
     // means that element is for the current route.
-    if (observer.id == `step-${step}`) {
+    if (observer.id === `step-${step}`) {
       currentRouteElement = observer;
     }
   });
@@ -152,7 +152,7 @@ export const NavigationBehavior = {
     // Modules are only attached to DOM if they're for the current route, so
     // as long as the id of an element matches up to the current step, it
     // means that element is for the current route.
-    if (this.id == `step-${step}`) {
+    if (this.id === `step-${step}`) {
       currentRouteElement = this;
       this.onRouteEnter();
       this.updateFocusForA11y();

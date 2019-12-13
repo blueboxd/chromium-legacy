@@ -281,14 +281,24 @@ cr.define('cr.ui', function() {
         return;
       }
 
-      if (hasKeyModifiers(e)) {
+      const isShiftTab = !e.altKey && !e.ctrlKey && !e.metaKey && e.shiftKey &&
+          e.key === 'Tab';
+
+      if (hasKeyModifiers(e) && !isShiftTab) {
         return;
       }
 
       let index = -1;
-
       let shouldStopPropagation = true;
-      if (e.key == 'ArrowLeft') {
+
+      if (isShiftTab) {
+        // This always moves back one element, even in RTL.
+        index = elementIndex - 1;
+        if (index < 0) {
+          // Bubble up to focus on the previous element outside the row.
+          return;
+        }
+      } else if (e.key == 'ArrowLeft') {
         index = elementIndex + (isRTL() ? 1 : -1);
       } else if (e.key == 'ArrowRight') {
         index = elementIndex + (isRTL() ? -1 : 1);

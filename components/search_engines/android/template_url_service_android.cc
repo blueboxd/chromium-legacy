@@ -5,6 +5,8 @@
 #include "components/search_engines/android/template_url_service_android.h"
 
 #include <stddef.h>
+#include <string>
+#include <vector>
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -152,6 +154,29 @@ TemplateUrlServiceAndroid::GetUrlForSearchQuery(
 }
 
 base::android::ScopedJavaLocalRef<jstring>
+TemplateUrlServiceAndroid::GetSearchQueryForUrl(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& jurl) {
+  const TemplateURL* default_provider =
+      template_url_service_->GetDefaultSearchProvider();
+
+  GURL url(base::android::ConvertJavaStringToUTF8(env, jurl));
+  base::string16 query;
+
+  if (default_provider &&
+      default_provider->url_ref().SupportsReplacement(
+          template_url_service_->search_terms_data()) &&
+      template_url_service_->IsSearchResultsPageFromDefaultSearchProvider(
+          url)) {
+    default_provider->ExtractSearchTermsFromURL(
+        url, template_url_service_->search_terms_data(), &query);
+  }
+
+  return base::android::ConvertUTF16ToJavaString(env, query);
+}
+
+base::android::ScopedJavaLocalRef<jstring>
 TemplateUrlServiceAndroid::GetUrlForVoiceSearchQuery(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -293,12 +318,12 @@ TemplateUrlServiceAndroid::AddSearchEngineForTesting(
   data.safe_for_autoreplace = true;
   data.input_encodings.push_back("UTF-8");
   data.prepopulate_id = 0;
-  data.date_created =
-      base::Time::Now() - base::TimeDelta::FromDays((int)age_in_days);
-  data.last_modified =
-      base::Time::Now() - base::TimeDelta::FromDays((int)age_in_days);
-  data.last_visited =
-      base::Time::Now() - base::TimeDelta::FromDays((int)age_in_days);
+  data.date_created = base::Time::Now() -
+                      base::TimeDelta::FromDays(static_cast<int>(age_in_days));
+  data.last_modified = base::Time::Now() -
+                       base::TimeDelta::FromDays(static_cast<int>(age_in_days));
+  data.last_visited = base::Time::Now() -
+                      base::TimeDelta::FromDays(static_cast<int>(age_in_days));
   TemplateURL* t_url =
       template_url_service_->Add(std::make_unique<TemplateURL>(data));
   CHECK(t_url) << "Failed adding template url for: " << keyword;

@@ -52,10 +52,10 @@ export class SearchService {
    */
   search(searchText) {
     const searchTerms = SearchService.splitTerms(searchText);
-    let sameTerms = searchTerms.length == this.searchTerms_.length;
+    let sameTerms = searchTerms.length === this.searchTerms_.length;
 
     for (let i = 0; sameTerms && i < searchTerms.length; ++i) {
-      if (searchTerms[i] != this.searchTerms_[i]) {
+      if (searchTerms[i] !== this.searchTerms_[i]) {
         sameTerms = false;
       }
     }

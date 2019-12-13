@@ -31,18 +31,20 @@ class CrostiniExportImportNotification
  public:
   // Used to construct CrostiniExportImportNotification to ensure it controls
   // its lifetime.
-  static CrostiniExportImportStatusTracker* Create(
-      Profile* profile,
-      ContainerId container_id,
-      const std::string& notification_id,
-      ExportImportType type,
-      base::FilePath path) {
-    return new CrostiniExportImportNotification(profile, type, notification_id,
-                                                std::move(path),
-                                                std::move(container_id));
-  }
+  class Factory : public CrostiniExportImportStatusTracker::TrackerFactory {
+   public:
+    Factory(Profile* profile,
+            ContainerId container_id,
+            const std::string& notification_id);
+    scoped_refptr<CrostiniExportImportStatusTracker> Create(
+        ExportImportType,
+        base::FilePath) override;
 
-  ~CrostiniExportImportNotification() override;
+   private:
+    Profile* profile_;
+    ContainerId container_id_;
+    const std::string& notification_id_;
+  };
 
   // Getters for testing.
   message_center::Notification* get_notification() {
@@ -53,6 +55,9 @@ class CrostiniExportImportNotification
   void Close(bool by_user) override;
   void Click(const base::Optional<int>& button_index,
              const base::Optional<base::string16>& reply) override;
+
+ protected:
+  ~CrostiniExportImportNotification() override;
 
  private:
   CrostiniExportImportNotification(Profile* profile,
@@ -69,6 +74,8 @@ class CrostiniExportImportNotification
   void SetStatusCancelledUI() override;
   void SetStatusFailedWithMessageUI(Status status,
                                     const base::string16& message) override;
+
+  friend class Factory;
 
   Profile* profile_;  // Not owned.
   ContainerId container_id_;

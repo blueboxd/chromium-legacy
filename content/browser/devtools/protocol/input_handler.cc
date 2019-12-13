@@ -204,21 +204,6 @@ SyntheticPointerActionParams::PointerActionType GetTouchPointerActionType(
   return SyntheticPointerActionParams::PointerActionType::NOT_INITIALIZED;
 }
 
-SyntheticPointerActionParams::Button GetPointerActionParamsButton(
-    const std::string& button) {
-  if (button == Input::DispatchMouseEvent::ButtonEnum::Left)
-    return SyntheticPointerActionParams::Button::LEFT;
-  if (button == Input::DispatchMouseEvent::ButtonEnum::Middle)
-    return SyntheticPointerActionParams::Button::MIDDLE;
-  if (button == Input::DispatchMouseEvent::ButtonEnum::Right)
-    return SyntheticPointerActionParams::Button::RIGHT;
-  if (button == Input::DispatchMouseEvent::ButtonEnum::Back)
-    return SyntheticPointerActionParams::Button::BACK;
-  if (button == Input::DispatchMouseEvent::ButtonEnum::Forward)
-    return SyntheticPointerActionParams::Button::FORWARD;
-  return SyntheticPointerActionParams::Button::NO_BUTTON;
-}
-
 bool GenerateTouchPoints(
     blink::WebTouchEvent* event,
     blink::WebInputEvent::Type type,
@@ -941,8 +926,8 @@ void InputHandler::DispatchSyntheticPointerActionTouch(
           SyntheticPointerActionParams::PointerActionType::CANCEL) {
     for (auto it = pointer_ids_.begin(); it != pointer_ids_.end();) {
       SyntheticPointerActionParams action_params =
-          PrepareSyntheticPointerActionParams(pointer_action_type, *it, "", 0,
-                                              0, modifiers);
+          PrepareSyntheticPointerActionParams(pointer_action_type, *it, 0, 0,
+                                              modifiers);
       param_list.push_back(action_params);
       it = pointer_ids_.erase(it);
     }
@@ -965,7 +950,7 @@ void InputHandler::DispatchSyntheticPointerActionTouch(
     }
     SyntheticPointerActionParams action_params =
         PrepareSyntheticPointerActionParams(
-            action_type, id, "", point->GetX(), point->GetY(), modifiers,
+            action_type, id, point->GetX(), point->GetY(), modifiers,
             point->GetRadiusX(1.0), point->GetRadiusY(1.0),
             point->GetRotationAngle(0.0), point->GetForce(1.0));
     param_list.push_back(action_params);
@@ -988,8 +973,8 @@ void InputHandler::DispatchSyntheticPointerActionTouch(
       }
       SyntheticPointerActionParams action_params =
           PrepareSyntheticPointerActionParams(
-              SyntheticPointerActionParams::PointerActionType::RELEASE, *it, "",
-              0, 0, modifiers);
+              SyntheticPointerActionParams::PointerActionType::RELEASE, *it, 0,
+              0, modifiers);
       param_list.push_back(action_params);
       it = pointer_ids_.erase(it);
     }
@@ -1018,7 +1003,6 @@ void InputHandler::DispatchSyntheticPointerActionTouch(
 SyntheticPointerActionParams InputHandler::PrepareSyntheticPointerActionParams(
     SyntheticPointerActionParams::PointerActionType pointer_action_type,
     int id,
-    const std::string& button_name,
     double x,
     double y,
     int key_modifiers,
@@ -1028,8 +1012,8 @@ SyntheticPointerActionParams InputHandler::PrepareSyntheticPointerActionParams(
     float force) {
   SyntheticPointerActionParams action_params(pointer_action_type);
   action_params.set_pointer_id(id);
-  SyntheticPointerActionParams::Button button =
-      GetPointerActionParamsButton(button_name);
+  const SyntheticPointerActionParams::Button button =
+      SyntheticPointerActionParams::Button::NO_BUTTON;
   switch (pointer_action_type) {
     case SyntheticPointerActionParams::PointerActionType::PRESS:
       action_params.set_position(

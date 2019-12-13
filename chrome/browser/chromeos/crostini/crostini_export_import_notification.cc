@@ -32,6 +32,23 @@ constexpr char kNotifierCrostiniExportImportOperation[] =
 
 }  // namespace
 
+CrostiniExportImportNotification::Factory::Factory(
+    Profile* profile,
+    ContainerId container_id,
+    const std::string& notification_id)
+    : profile_(profile),
+      container_id_(std::move(container_id)),
+      notification_id_(notification_id) {}
+
+scoped_refptr<CrostiniExportImportStatusTracker>
+CrostiniExportImportNotification::Factory::Create(ExportImportType type,
+                                                  base::FilePath path) {
+  return base::WrapRefCounted<CrostiniExportImportStatusTracker>(
+      new CrostiniExportImportNotification(profile_, type, notification_id_,
+                                           std::move(path),
+                                           std::move(container_id_)));
+}
+
 CrostiniExportImportNotification::CrostiniExportImportNotification(
     Profile* profile,
     ExportImportType type,
@@ -41,6 +58,7 @@ CrostiniExportImportNotification::CrostiniExportImportNotification(
     : CrostiniExportImportStatusTracker(type, std::move(path)),
       profile_(profile),
       container_id_(std::move(container_id)) {
+  AddRef();
   message_center::RichNotificationData rich_notification_data;
   rich_notification_data.vector_small_image = &kNotificationLinuxIcon;
   rich_notification_data.accent_color = ash::kSystemNotificationColorNormal;
@@ -165,7 +183,7 @@ void CrostiniExportImportNotification::Close(bool by_user) {
     case Status::FAILED_ARCHITECTURE_MISMATCH:
     case Status::FAILED_INSUFFICIENT_SPACE:
     case Status::FAILED_CONCURRENT_OPERATION:
-      delete this;
+      Release();
       return;
     default:
       NOTREACHED();

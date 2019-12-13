@@ -205,8 +205,7 @@ public class PermissionDialogController
             // no system level permissions need to be requested, so just run the
             // accept callback.
             mState = State.REQUEST_ANDROID_PERMISSIONS;
-            if (!AndroidPermissionRequester.requestAndroidPermissions(
-                        ((TabImpl) mDialogDelegate.getTab()),
+            if (!AndroidPermissionRequester.requestAndroidPermissions(mDialogDelegate.getTab(),
                         mDialogDelegate.getContentSettingsTypes(),
                         PermissionDialogController.this)) {
                 onAndroidPermissionAccepted();

@@ -28,6 +28,8 @@ import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
+import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.ui.base.Clipboard;
@@ -103,9 +105,6 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
     /** A handler for suggestion selection. */
     private SuggestionSelectionHandler mSelectionHandler;
 
-    /** The original URL that was in the omnibox when it was focused. */
-    private String mOriginalUrl;
-
     /** The original title of the page. */
     private String mOriginalTitle;
 
@@ -114,9 +113,6 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
 
     /** Whether a timing event should be recorded. This will be true once per omnibox focus. */
     private boolean mShouldRecordTimingEvent;
-
-    /** Whether the first suggestion after an omnibox focus event has been processed. */
-    private boolean mFirstSuggestionProcessedForCurrentOmniboxFocus;
 
     /** Whether this processor should ignore all subsequent suggestion. */
     private boolean mIgnoreSuggestions;
@@ -162,29 +158,18 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
     @Override
     public boolean doesProcessSuggestion(OmniboxSuggestion suggestion) {
         Tab activeTab = mTabProvider != null ? mTabProvider.get() : null;
-
         // The what-you-typed suggestion can potentially appear as the second suggestion in some
         // cases. If the first suggestion isn't the one we want, ignore all subsequent suggestions.
-        if (!mFirstSuggestionProcessedForCurrentOmniboxFocus) {
-            mFirstSuggestionProcessedForCurrentOmniboxFocus = true;
-            mIgnoreSuggestions = activeTab == null || activeTab.isNativePage()
-                    || activeTab.isIncognito()
-                    || OmniboxSuggestionType.URL_WHAT_YOU_TYPED != suggestion.getType()
-                    || !TextUtils.equals(suggestion.getUrl(), activeTab.getUrl());
-        }
-
-        if (OmniboxSuggestionType.URL_WHAT_YOU_TYPED != suggestion.getType()
-                || mIgnoreSuggestions) {
+        if (activeTab == null || activeTab.isNativePage() || activeTab.isIncognito()
+                || SadTab.isShowing(activeTab)) {
             return false;
         }
+
         mLastProcessedSuggestion = suggestion;
 
-        // Only use the URL provided by the "what you typed" suggestion on first omnibox focus.
-        // Subsequent suggestions will provide partial URLs which we do not want. If the suggestion
-        // URL matches the original, show the suggestion item.
-        if (mOriginalUrl == null) mOriginalUrl = mLastProcessedSuggestion.getUrl();
-
-        if (!TextUtils.equals(mLastProcessedSuggestion.getUrl(), mOriginalUrl)) return false;
+        if (!isSuggestionEquivalentToCurrentPage(mLastProcessedSuggestion, activeTab.getUrl())) {
+            return false;
+        }
 
         if (!mHasClearedOmniboxForFocus) {
             mHasClearedOmniboxForFocus = true;
@@ -256,11 +241,9 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
         if (hasFocus) {
             mLastOmniboxFocusTime = System.currentTimeMillis();
         } else {
-            mOriginalUrl = null;
             mOriginalTitle = null;
             mHasClearedOmniboxForFocus = false;
             mLastProcessedSuggestion = null;
-            mFirstSuggestionProcessedForCurrentOmniboxFocus = false;
             mIgnoreSuggestions = false;
         }
         mShouldRecordTimingEvent = hasFocus;
@@ -302,6 +285,24 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
             if (mSelectionHandler != null) {
                 mSelectionHandler.onEditUrlSuggestionSelected(mLastProcessedSuggestion);
             }
+        }
+    }
+
+    /**
+     * @return true if the suggestion is effectively the same as the current page, either because:
+     * 1. It's a search suggestion for the same search terms as the current SERP.
+     * 2. It's a URL suggestion for the current URL.
+     */
+    private boolean isSuggestionEquivalentToCurrentPage(
+            OmniboxSuggestion suggestion, String pageUrl) {
+        switch (suggestion.getType()) {
+            case OmniboxSuggestionType.SEARCH_WHAT_YOU_TYPED:
+                return TextUtils.equals(suggestion.getFillIntoEdit(),
+                        TemplateUrlServiceFactory.get().getSearchQueryForUrl(pageUrl));
+            case OmniboxSuggestionType.URL_WHAT_YOU_TYPED:
+                return TextUtils.equals(suggestion.getUrl(), pageUrl);
+            default:
+                return false;
         }
     }
 }

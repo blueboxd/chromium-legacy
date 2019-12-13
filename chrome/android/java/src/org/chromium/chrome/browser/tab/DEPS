@@ -4,6 +4,7 @@ include_rules = [
   "+chrome/android/java/src/org/chromium/chrome/browser/ChromeFeatureList.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/TabHidingType.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/incognito/IncognitoUtils.java",
+  "+chrome/android/java/src/org/chromium/chrome/browser/tab",
   "+chrome/android/java/src/org/chromium/chrome/browser/webapps/WebDisplayMode.java",
   "+chrome/browser/ui/android/widget",
   "+components/browser_ui/styles/android",
@@ -30,7 +31,6 @@ specific_include_rules = {
     "+chrome/android/java/src/org/chromium/chrome/browser/rlz/RevenueStats.java",
     "+chrome/android/java/src/org/chromium/chrome/browser/ssl/SecurityStateModel.java",
     "+chrome/android/java/src/org/chromium/chrome/browser/night_mode",
-    "+chrome/android/java/src/org/chromium/chrome/browser/tab",
     "+chrome/android/public/profiles/java/src/org/chromium/chrome/browser/profiles/Profile.java",
     "+chrome/browser/util/android/java/src/org/chromium/chrome/browser/util/UrlConstants.java",
 

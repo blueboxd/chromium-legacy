@@ -22,7 +22,7 @@ import org.chromium.ui.base.WindowAndroid;
  * from network but also other types of content such as NTP, navigation history, etc) and
  * presents it to users who perceive it as one of the 'pages' managed by Chrome.
  */
-public interface Tab {
+public interface Tab extends TabLifecycle {
     public static final int INVALID_TAB_ID = -1;
 
     /**

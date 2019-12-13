@@ -44,6 +44,6 @@ Polymer({
    * @private
    */
   getActiveClass_: function(index) {
-    return index == this.model.active ? 'active' : '';
+    return index === this.model.active ? 'active' : '';
   },
 });

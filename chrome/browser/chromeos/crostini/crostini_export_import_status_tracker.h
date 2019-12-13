@@ -9,13 +9,20 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 
 namespace crostini {
 
 enum class ExportImportType;
 
-class CrostiniExportImportStatusTracker {
+// CrostiniExportImportStatusTracker handles communication between the
+// CrostiniExportImport operation and ui elements that reflect progress. The
+// tracker may outlive the related export/import operation, as it does in the
+// case of a notification which reports the final success status and awaits
+// dismissal.
+class CrostiniExportImportStatusTracker
+    : public base::RefCountedThreadSafe<CrostiniExportImportStatusTracker> {
  public:
   enum class Status {
     RUNNING,
@@ -28,8 +35,15 @@ class CrostiniExportImportStatusTracker {
     FAILED_CONCURRENT_OPERATION,
   };
 
+  class TrackerFactory {
+   public:
+    virtual ~TrackerFactory() = default;
+    virtual scoped_refptr<CrostiniExportImportStatusTracker> Create(
+        ExportImportType,
+        base::FilePath) = 0;
+  };
+
   CrostiniExportImportStatusTracker(ExportImportType type, base::FilePath path);
-  virtual ~CrostiniExportImportStatusTracker();
 
   Status status() const { return status_; }
   ExportImportType type() const { return type_; }
@@ -58,7 +72,12 @@ class CrostiniExportImportStatusTracker {
   void SetStatusFailedConcurrentOperation(
       ExportImportType in_progress_operation_type);
 
+ protected:
+  virtual ~CrostiniExportImportStatusTracker();
+
  private:
+  friend class base::RefCountedThreadSafe<CrostiniExportImportStatusTracker>;
+
   void SetStatusFailedWithMessage(Status status, const base::string16& message);
 
   ExportImportType type_;

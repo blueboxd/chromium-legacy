@@ -45,6 +45,10 @@ class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& jquery);
+  base::android::ScopedJavaLocalRef<jstring> GetSearchQueryForUrl(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& jurl);
   base::android::ScopedJavaLocalRef<jstring> GetUrlForVoiceSearchQuery(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

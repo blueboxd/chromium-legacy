@@ -92,13 +92,11 @@ public class BrowsingModeBottomToolbarCoordinator {
         mMediator = new BrowsingModeBottomToolbarMediator(mModel);
 
         mHomeButton = mToolbarRoot.findViewById(R.id.home_button);
-        mHomeButton.setWrapperView(mToolbarRoot.findViewById(R.id.home_button_wrapper));
         mHomeButton.setOnClickListener(homeButtonListener);
         mHomeButton.setActivityTabProvider(mTabProvider);
         setupIPH(FeatureConstants.CHROME_DUET_HOME_BUTTON_FEATURE, mHomeButton, homeButtonListener);
 
         mShareButton = mToolbarRoot.findViewById(R.id.share_button);
-        mShareButton.setWrapperView(mToolbarRoot.findViewById(R.id.share_button_wrapper));
         mShareButtonListenerSupplierCallback = shareButtonListener -> {
             mShareButton.setOnClickListener(shareButtonListener);
         };
@@ -107,8 +105,6 @@ public class BrowsingModeBottomToolbarCoordinator {
         mShareButton.setActivityTabProvider(mTabProvider);
 
         mSearchAccelerator = mToolbarRoot.findViewById(R.id.search_accelerator);
-        mSearchAccelerator.setWrapperView(
-                mToolbarRoot.findViewById(R.id.search_accelerator_wrapper));
         mSearchAccelerator.setOnClickListener(searchAcceleratorListener);
         setupIPH(FeatureConstants.CHROME_DUET_SEARCH_FEATURE, mSearchAccelerator,
                 searchAcceleratorListener);
@@ -116,15 +112,9 @@ public class BrowsingModeBottomToolbarCoordinator {
         mTabSwitcherButtonCoordinator = new TabSwitcherButtonCoordinator(mToolbarRoot);
         // TODO(amaralp): Make this adhere to MVC framework.
         mTabSwitcherButtonView = mToolbarRoot.findViewById(R.id.tab_switcher_button);
-        mTabSwitcherButtonView.setWrapperView(
-                mToolbarRoot.findViewById(R.id.tab_switcher_button_wrapper));
 
-        // TODO(lazzzis): Refactor the long click listener. Have to specify the handler view here
-        //      in order to fix the anchor view of the long-tap menu
-        mTabSwitcherButtonView.setOnLongClickListener(
-                (view) -> tabSwitcherLongClickListner.onLongClick(mTabSwitcherButtonView));
+        mTabSwitcherButtonView.setOnLongClickListener(tabSwitcherLongClickListner);
         mMenuButton = mToolbarRoot.findViewById(R.id.menu_button_wrapper);
-        mMenuButton.setWrapperView(mToolbarRoot.findViewById(R.id.labeled_menu_button_wrapper));
     }
 
     /**

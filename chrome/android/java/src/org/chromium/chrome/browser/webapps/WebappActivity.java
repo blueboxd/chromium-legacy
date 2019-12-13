@@ -817,7 +817,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     protected void createAndShowTab() {
         TabImpl tab = (TabImpl) createTab();
         getTabModelSelector().setTab(tab);
-        ((TabImpl) tab).show(TabSelectionType.FROM_NEW);
+        tab.show(TabSelectionType.FROM_NEW);
     }
 
     @Override

@@ -11,10 +11,13 @@ from .blink_v8_bridge import blink_class_name
 from .blink_v8_bridge import blink_type_info
 from .blink_v8_bridge import make_v8_to_blink_value
 from .code_node import CodeNode
+from .code_node import Likeliness
 from .code_node import SequenceNode
 from .code_node import SymbolScopeNode
 from .code_node import TextNode
 from .code_node_cxx import CxxFuncDefNode
+from .code_node_cxx import CxxIfElseNode
+from .code_node_cxx import CxxLikelyIfNode
 from .codegen_context import CodeGenContext
 from .codegen_expr import expr_from_exposure
 from .codegen_format import format_template as _format
@@ -262,11 +265,7 @@ if ({_1}()) {{
 
         conditional = expr_from_exposure(member.exposure)
         if not conditional.is_always_true:
-            node = SequenceNode([
-                T(_format("if ({}) {{", conditional.to_text())),
-                node,
-                T("}"),
-            ])
+            node = CxxLikelyIfNode(cond=conditional, body=node)
 
         body.append(node)
 
@@ -429,33 +428,32 @@ if (!v8_dictionary->Get(current_context, member_names[{_1}].Get(${isolate}))
     _1 = _blink_member_name(member).set_api
     api_call_node.append(T(_format("{_1}(${blink_value});", _1=_1)))
 
-    throw_if_required_member_is_missing_node = None
     if member.is_required:
-        pattern = """\
+        exception_pattern = """\
 ${exception_state}.ThrowTypeError(
     ExceptionMessages::FailedToGet(
-        "{_1}", "${{dictionary.identifier}}",
+        "{}", "${{dictionary.identifier}}",
         "Required member is undefined."));
 """
-        throw_if_required_member_is_missing_node = T(
-            _format(pattern, _1=member.identifier))
+
+        check_and_fill_node = CxxIfElseNode(
+            cond="!v8_value->IsUndefined()",
+            then=api_call_node,
+            then_likeliness=Likeliness.LIKELY,
+            else_=T(_format(exception_pattern, member.identifier)),
+            else_likeliness=Likeliness.UNLIKELY)
+    else:
+        check_and_fill_node = CxxLikelyIfNode(
+            cond="!v8_value->IsUndefined()", body=api_call_node)
 
     node = SequenceNode([
         get_v8_value_node,
-        T("if (!v8_value->IsUndefined()) {"),
-        api_call_node,
-        T("} else {") if throw_if_required_member_is_missing_node else None,
-        throw_if_required_member_is_missing_node,
-        T("}"),
+        check_and_fill_node,
     ])
 
     conditional = expr_from_exposure(member.exposure)
     if not conditional.is_always_true:
-        node = SequenceNode([
-            T(_format("if ({}) {{", conditional.to_text())),
-            node,
-            T("}"),
-        ])
+        node = CxxLikelyIfNode(cond=conditional, body=node)
 
     return node
 

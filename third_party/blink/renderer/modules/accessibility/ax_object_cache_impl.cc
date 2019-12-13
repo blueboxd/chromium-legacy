@@ -1082,6 +1082,14 @@ void AXObjectCacheImpl::UpdateAriaOwns(
   relation_cache_->UpdateAriaOwns(owner, id_vector, owned_children);
 }
 
+void AXObjectCacheImpl::UpdateAriaOwnsFromAttrAssociatedElements(
+    const AXObject* owner,
+    const HeapVector<Member<Element>>& attr_associated_elements,
+    HeapVector<Member<AXObject>>& owned_children) {
+  relation_cache_->UpdateAriaOwnsFromAttrAssociatedElements(
+      owner, attr_associated_elements, owned_children);
+}
+
 bool AXObjectCacheImpl::MayHaveHTMLLabel(const HTMLElement& elem) {
   // Return false if this type of element will not accept a <label for> label.
   if (!elem.IsLabelable())

@@ -1,5 +1,10 @@
 # Tests that fail in legacy but pass in NG
 
+# accessibility/
+crbug.com/591099 accessibility/listitem-presentation-inherited.html [ Failure ]
+crbug.com/591099 accessibility/presentation-owned-elements.html [ Failure ]
+crbug.com/591099 accessibility/role-attribute.html [ Failure ]
+
 ### editing/selection/mouse/
 crbug.com/591099 editing/selection/mouse/drag_over_text_transform.html [ Crash ]
 

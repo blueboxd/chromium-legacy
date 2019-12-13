@@ -104,6 +104,11 @@ void ClientControlledState::HandleTransitionEvents(WindowState* window_state,
                                         : WindowStateType::kRightSnapped);
         window_state->set_bounds_changed_by_user(true);
 
+        // We don't want Unminimize() to restore the pre-snapped state during
+        // the transition.
+        window_state->window()->ClearProperty(
+            aura::client::kPreMinimizedShowStateKey);
+
         window_state->UpdateWindowPropertiesFromStateType();
         WindowStateType next_state = GetStateForTransitionEvent(event);
         VLOG(1) << "Processing State Transtion: event=" << event->type()

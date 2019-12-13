@@ -56,14 +56,14 @@ public class SingleTabModel implements TabModel {
             int state = ApplicationStatus.getStateForActivity(mActivity);
             if (state == ActivityState.CREATED || state == ActivityState.STARTED
                     || state == ActivityState.RESUMED) {
-                ((TabImpl) mTab).show(TabSelectionType.FROM_USER);
+                mTab.show(TabSelectionType.FROM_USER);
             }
         }
-        if (oldTab != null && ((TabImpl) oldTab).isInitialized()) {
+        if (oldTab != null && oldTab.isInitialized()) {
             for (TabModelObserver observer : mObservers) {
                 observer.didCloseTab(oldTab.getId(), oldTab.isIncognito());
             }
-            ((TabImpl) oldTab).destroy();
+            oldTab.destroy();
         }
     }
 
@@ -155,7 +155,7 @@ public class SingleTabModel implements TabModel {
 
     @Override
     public void destroy() {
-        if (mTab != null) ((TabImpl) mTab).destroy();
+        if (mTab != null) mTab.destroy();
         mTab = null;
     }
 

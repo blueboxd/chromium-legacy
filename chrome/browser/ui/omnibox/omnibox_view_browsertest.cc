@@ -536,7 +536,14 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BackspaceInKeywordMode) {
             UTF16ToUTF8(omnibox_view->GetText()));
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DesiredTLD) {
+// TODO(https://crbug.com/1030551): This test flakily times out on ASAN and
+// TSAN.
+#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
+#define MAYBE_DesiredTLD DISABLED_DesiredTLD
+#else
+#define MAYBE_DesiredTLD DesiredTLD
+#endif
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_DesiredTLD) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
   OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();
@@ -556,7 +563,14 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DesiredTLD) {
       NavigateExpectUrl(GURL("http://www.bar.com/"), ui::EF_CONTROL_DOWN));
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DesiredTLDWithTemporaryText) {
+// TODO(https://crbug.com/1030551): This test flakily times out on ASAN and
+// TSAN.
+#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
+#define MAYBE_DesiredTLDWithTemporaryText DISABLED_DesiredTLDWithTemporaryText
+#else
+#define MAYBE_DesiredTLDWithTemporaryText DesiredTLDWithTemporaryText
+#endif
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_DesiredTLDWithTemporaryText) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
   OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();
@@ -639,7 +653,14 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, AltEnter) {
   ASSERT_NO_FATAL_FAILURE(WaitForTabOpenOrClose(tab_count + 1));
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, EnterToSearch) {
+// TODO(https://crbug.com/1030551): This test flakily times out on ASAN and
+// TSAN.
+#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
+#define MAYBE_EnterToSearch DISABLED_EnterToSearch
+#else
+#define MAYBE_EnterToSearch EnterToSearch
+#endif
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_EnterToSearch) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
   OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();
